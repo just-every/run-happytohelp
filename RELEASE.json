@@ -180,6 +180,10 @@
     {
       "id": "291_native_ticket_scope.sql",
       "buyerSteps": "Apply after 290 and before the updated Worker serves traffic. Add nullable stored ticket-group scope to custom roles. Existing roles retain NULL and keep their prior authority; no activating backfill or public scope controls are introduced. Preserve role selections with the existing project_roles data during backup and restore."
+    },
+    {
+      "id": "298_agent_door_relay.sql",
+      "buyerSteps": "Back up D1, R2, Durable Objects and private settings, then apply once after 297 and before serving the 0.2.96 agent door. Add the installation-private relay and replay-alias stores, agent tombstones and the fixed 30-day call replay expiry; completed legacy calls expire from their original created_at, never upgrade time. Backfill only consented MCP audits under the current Business envelope; older pairing authority is not reconstructed. Preserve native owners, support records, audit retention and all applied migration identities. Relay and replay aliases never travel in portable archives. No provider configuration, production change or outbound relay is enabled."
     }
   ],
   "breaking": false,

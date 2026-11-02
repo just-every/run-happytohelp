@@ -32,13 +32,14 @@ export function happyPeople(env:Env):PeopleAdapter {
  const read=(id:string)=>nativePerson(env,id)
  return {
   person:read,
+  async businessStopped(){return !!await env.DB.prepare('SELECT 1 FROM bs_settings WHERE singleton=1 AND stopped=1').first()},
   async sponsor({sub}){
    const link=await linkedProject(env)
    if(!link)return null
-   const owner=await env.DB.prepare('SELECT owner_id FROM bs_settings WHERE singleton=1 AND stopped=0').first<{owner_id:string|null}>()
+   const owner=await env.DB.prepare('SELECT owner_id FROM bs_settings WHERE singleton=1').first<{owner_id:string|null}>()
    if(!owner)return null
    if(owner.owner_id===sub)return read(link.owner_user_id)
-   const rows=await env.DB.prepare("SELECT operator_id FROM bs_team WHERE business_id=? AND state IN ('active','invited')").bind(sub).all<{operator_id:string|null}>()
+   const rows=await env.DB.prepare("SELECT operator_id FROM bs_team WHERE business_id=? AND state<>'conflict'").bind(sub).all<{operator_id:string|null}>()
    return rows.results.length===1&&rows.results[0].operator_id?read(rows.results[0].operator_id):null
   },
   async session(request){const actor=await nativeSession(env,request),link=await linkedProject(env);return actor&&link&&actor.projectId===link.project_id?read(actor.id):null},

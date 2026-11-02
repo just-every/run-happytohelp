@@ -4,6 +4,7 @@ import { classIds } from './protocol.mjs';
 import { AGENT_CLASSES } from './surface.mjs';
 import { targetIdentity } from './target.mjs';
 import { auditRows } from './audit-rows.mjs';
+import { redactedAudit, redactedReview } from './erasure.mjs';
 
 export { auditRows } from './audit-rows.mjs';
 
@@ -66,9 +67,21 @@ function continuationRows(c, rows, differs, report = () => {}) {
 }
 
 export async function auditPhase(c) {
- const { rows, differs } = await auditRows(c), expected = [...c.calls];
- const reviews = expected.some(call => call.decision?.disposition === 'review') ? (await c.personJson('/agents/api/reviews')).reviews : [];
+ const snapshot = await auditRows(c), differs = snapshot.differs, expected = [...c.calls];
+ const rows = snapshot.rows.map(row => {
+  if (!row.tombstone) return row;
+  const original = c.erasureEvidence?.get(row.id);
+  c.add(`BASE-AGENT-009.erasure.${row.id}`, redactedAudit(row, original), 'Native erasure must retain the exact audit sequence and value-free decision/outcome while removing personal evidence.');
+  return original ?? row;
+ });
+ let reviews = expected.some(call => call.decision?.disposition === 'review') ? (await c.personJson('/agents/api/reviews')).reviews : [];
  if (!Array.isArray(reviews)) throw new Error('Reviews API must return reviews');
+ reviews = reviews.map(review => {
+  if (!review.tombstone) return review;
+  const original = c.erasureReviews?.get(review.id);
+  c.add(`BASE-AGENT-009.4.erasure.${review.id}`, redactedReview(review, original), 'An erased review must remain present with its value-free outcome and no personal payload.');
+  return original ?? review;
+ });
  const continuations = continuationRows(c, rows, differs, c.add);
  c.add('BASE-AGENT-009.1.count', rows.length === expected.length + continuations.size, `Expected exactly ${expected.length} audit rows for tool calls, resource reads and approval executions plus ${continuations.size} native continuations, found ${rows.length}.`);
  c.add('BASE-AGENT-009.1.unique', new Set(rows.map(row => row.id)).size === rows.length, 'Every tool call, resource read and approval execution must have its own audit ID.');
@@ -82,11 +95,16 @@ export async function auditPhase(c) {
  for (const [index, call] of expected.entries()) {
   const principal = call.principal ?? { agent: { id: c.agentId, specialist: c.surface.specialist }, consent: c.consent, sponsor: c.sponsor.id };
   const candidates = perAgent.get(principal.agent.id) ?? [], decision = call.decision;
-  const match = candidates.findIndex(row => call.kind === 'approval/execute' ? row.decision_id === decision?.id && row.id !== decision?.id
+  const match = candidates.findIndex(row => call.auditId ? row.id === call.auditId : call.kind === 'approval/execute' ? row.decision_id === decision?.id && row.id !== decision?.id
    : decision?.id ? row.id === decision.id : row.tool === call.name && row.decision_id === null && row.door === (call.kind === 'embedded' ? 'embedded' : 'mcp') && row.code === (call.code ?? null));
   const row = match < 0 ? undefined : candidates.splice(match, 1)[0];
   const ordered = row && positions.get(row) > (previous.get(principal.agent.id) ?? -1);
   if (row) previous.set(principal.agent.id, positions.get(row));
+  if (call.erasure) {
+   c.add(`BASE-AGENT-009.1.call.${index}.erased`, ordered && isDeepStrictEqual(row, call.erasure) && redactedAudit(row)
+    && row.tool === call.name && row.agent.id === principal.agent.id, 'The erasing call must retain its own ordered, value-free admission audit.');
+   continue;
+  }
   c.add(`BASE-AGENT-009.1.call.${index}`, ordered && row.tool === call.name && row.consent === principal.consent && row.agent?.id === principal.agent.id && row.agent?.specialist === principal.agent.specialist && row.sponsor?.id === principal.sponsor && (!call.principal || row.client_id === principal.clientId && row.agent?.name === principal.agent.name) && typeof row.label === 'string' && row.label.includes(' for ') && Number.isFinite(Date.parse(row.at)) && row.door === (call.kind === 'embedded' ? 'embedded' : 'mcp'), `${call.name} lacks its complete ordered audit row.`);
   if (!row) continue;
   if (call.code === 'native_proof_required') c.add(`BASE-AGENT-004.native-proof.audit.${index}`, row.outcome === 'refused' && row.code === call.code, `${call.name} native proof challenge must retain its refused audit outcome.`);
@@ -122,7 +140,7 @@ export async function auditPhase(c) {
  c.add('BASE-AGENT-010.2.events', events.length > 0 && new Set(events.map(event => event.id)).size === events.length && events.every(event => typeof event.id === 'string' && typeof event.type === 'string' && typeof event.uri === 'string' && event.actor && Number.isFinite(Date.parse(event.at))), 'Events must have stable unique ids, type, URI, actor and time.');
  for (const type of ['policy.adopted', 'approval.pending', 'approval.decided']) {
   const applicable = type === 'policy.adopted' || rows.some(row => row.approval);
-  if (applicable) c.add(`BASE-AGENT-010.6.${type}`, events.some(event => event.type === type), `Missing ${type} event.`);
+  if (applicable) c.add(`BASE-AGENT-010.6.${type}`, [...events, ...c.effectEvents ?? []].some(event => event.type === type), `Missing ${type} event while readable, including before native erasure.`);
  }
  const writeTools = new Set(rows.filter(row => row.tool !== 'resources/read' && ['done', 'replayed'].includes(row.outcome) && c.surface.tools.find(tool => tool.name === row.tool)?.readOnly === false).map(row => row.tool));
  c.add('BASE-AGENT-010.1.effects', !writeTools.size || [...events, ...c.effectEvents ?? []].some(event => event.actor?.kind === 'agent' && !['policy.decision', 'approval.pending', 'approval.decided'].includes(event.type)), 'Completed writes must produce record-change events attributed to the agent while their native resources are readable.');

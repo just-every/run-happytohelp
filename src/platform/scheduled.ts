@@ -1,3 +1,4 @@
+import {expireReplayCalls} from '../vendor/agent-base/modules/agent-door/index.ts'
 import {knowledgeWriteEnvironment} from '../modules/knowledge/write-boundary'
 import {purgeCampaignData} from '../modules/widget/campaigns/retention'
 import {enqueueScheduledReports} from '../modules/reports/schedule-queue'
@@ -25,6 +26,7 @@ export async function runScheduledInvocation(env:Env,options:{now?:number;consum
  await run('audit',input=>purgeExpiredAudit(input,options.now,scheduledStatementLimit-budget.statements))
  // Use settled spare credit only; campaign expiry never takes another consumer’s reservation.
  if(scheduledStatementLimit-budget.statements>=2){try{await purgeCampaignData({...env,DB:budget.database},options.now)}catch(error){errors.push(error)}}
+ if(scheduledStatementLimit-budget.statements>=1){try{await expireReplayCalls({options:{db:budget.database},now:()=>options.now??Date.now()})}catch(error){errors.push(error)}}
  if(errors.length)throw new AggregateError(errors,'Scheduled consumers failed')
  return budget.metrics
 }

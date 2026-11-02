@@ -114,7 +114,7 @@ function approvalFeed(rt: Runtime, items: Approval[]): string {
 function activity(rt: Runtime, rows: AuditRow[]): string {
   return `<section aria-labelledby="activity-title"><h2 id="activity-title">Recent activity</h2>${rows.length ? `<ul class="stack">${rows.map(row => {
     const name = escape(actionName(rt, row.tool, row.resource))
-    return `<li><p class="row-title">${row.approval ? `<a href="/agents/approvals/${segment(row.approval.id)}">${name}</a>` : name}</p><p class="meta">${escape(row.agent.name)} for ${escape(row.sponsor.name)} · ${escape(activityOutcome(row.decision, row.outcome, row.code))} · ${time(row.at)}</p></li>`
+    return `<li><p class="row-title">${row.approval ? `<a href="/agents/approvals/${segment(row.approval.id)}">${name}</a>` : name}</p><p class="meta">${escape(row.tombstone ? 'Erased record' : row.agent.name)}${row.tombstone ? '' : ' for ' + escape(row.sponsor.name)} · ${escape(activityOutcome(row.decision, row.outcome, row.code))} · ${time(row.at)}</p></li>`
   }).join('')}</ul>` : empty('No agent activity yet.')}</section>`
 }
 
@@ -151,6 +151,7 @@ async function approvalPage(rt: Runtime, request: Request, person: Person, id: s
   const response = await approvalDoor(rt, request, person, id)
   if (!response.ok) return shell(rt, 'Approval', '<h1>Request not found</h1><p>It does not exist, or it is not yours to see.</p><a href="/agents">Open Agents</a>', response.status)
   const { approval } = await response.json() as { approval: Approval }
+  if (approval.code === 'subject_erased') return shell(rt, 'Approval', '<h1>Record erased</h1><p>This approval is closed because the record was erased.</p><a href="/agents">Open Agents</a>', 200)
   const by = approval.prepared_by
   const sponsor = typeof by.for === 'string' ? '' : by.for.id
   const eligible = await matchingRefs(rt, person, sponsor, approval.approvers)

@@ -7,6 +7,7 @@ import { schemaErrors } from './schema.mjs';
 import { checkTarget } from './target.mjs';
 import { nativeStepHook } from './step-hooks.mjs';
 import { injectionArgs } from './injection.mjs';
+import { erasedStep } from './erasure.mjs';
 
 export function checkClasses(c, step, answer, phase) {
  const actual = answer.decision?.classes;
@@ -81,6 +82,11 @@ export async function runJourney(c, phase, { held = false, injections = false, r
     } else proof = await c.proof(step.tool, args, undefined, step.client);
    }
    let answer = await c.stepTool(step, args, proof);
+   if (answer.erasure) {
+    const value = await erasedStep(c, step, args, answer, phase, outputs);
+    await nativeStepHook(c, 'afterStep', phase, step, args, outputs, value);
+    continue;
+   }
    checkClasses(c, step, answer, phase);
    await checkTarget(c, step, outputs, answer, phase);
    const expectedDisposition = held ? needsApproval ? 'approval' : 'review' : 'autonomous';
@@ -95,6 +101,13 @@ export async function runJourney(c, phase, { held = false, injections = false, r
     await checkTarget(c, step, outputs, answer, phase, true);
     c.add(`BASE-AGENT-008.5.approver.${step.id}`, approved.ok, `Signed-in sponsor approval returned HTTP ${approved.status}.`);
     answer = await c.stepTool(step, args, { ...proof, requestState: answer.result.requestState });
+    if (answer.erasure) {
+     c.add(`BASE-AGENT-007.5.receipt.${step.id}.erased`, approved.erasure?.decision === 'approval' && isDeepStrictEqual(approved.erasure.tombstone, answer.erasure.tombstone)
+      && approved.body.approval.code === 'subject_erased' && isDeepStrictEqual(approved.body.approval.summary, {}) && approved.body.approval.summary_sha256 === '', 'An approved erasure must redact its exact saved approval and refuse payload replay with the matching tombstone.');
+     const value = await erasedStep(c, step, args, answer, phase, outputs);
+     await nativeStepHook(c, 'afterStep', phase, step, args, outputs, value);
+     continue;
+    }
     const receipt = answer.result?._meta?.['com.runeditrun/receipt'];
     // Older receipts carry only the original id; their current decision's
     // computed facts may change after the effect.
@@ -125,8 +138,13 @@ export async function runJourney(c, phase, { held = false, injections = false, r
    }
    if (injections && step.inject) {
     const injected = await injectionArgs(c, step, outputs, args);
+    const inputSchema = c.listed.get(step.tool)?.inputSchema ?? declared.inputSchema;
+    const undeclaredNarrowing = declared.widens === false && Object.keys(injected).some(key => key !== 'idempotency_key' && !Object.hasOwn(inputSchema?.properties ?? {}, key));
+    // A cached mutation still rejects undeclared narrowing input before replay.
+    const beforeInjection = undeclaredNarrowing ? await c.witness() : undefined;
     const checked = await c.stepTool(step, injected, proof);
-    c.add(`BASE-AGENT-005.5.${phase}.${step.id}`, isDeepStrictEqual(checked.decision?.classes, answer.decision?.classes) && checked.decision?.disposition === answer.decision?.disposition && !checked.result?.isError, `${step.tool} changed class, facts or decision for additional arguments.`);
+    if (undeclaredNarrowing) c.add(`BASE-AGENT-005.5.${phase}.${step.id}`, errorCode(checked) === 'invalid_arguments' && isDeepStrictEqual(beforeInjection, await c.witness()), `${step.tool} must refuse undeclared narrowing arguments as invalid_arguments without changing native state, including on replay.`);
+    else c.add(`BASE-AGENT-005.5.${phase}.${step.id}`, isDeepStrictEqual(checked.decision?.classes, answer.decision?.classes) && checked.decision?.disposition === answer.decision?.disposition && !checked.result?.isError, `${step.tool} changed class, facts or decision for additional arguments.`);
    }
    if (replay && !replayed && !c.surface.tools.find(tool => tool.name === step.tool)?.readOnly) {
     replayed = true;

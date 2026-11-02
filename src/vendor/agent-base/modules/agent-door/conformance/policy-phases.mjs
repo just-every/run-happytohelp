@@ -1,8 +1,10 @@
 import { isDeepStrictEqual } from 'node:util';
 import { webcrypto } from 'node:crypto';
-import { autonomousPolicy, policyEnvelope, signJws, seconds } from './crypto.mjs';
+import { randomUUID } from 'node:crypto';
+import { accessToken, autonomousPolicy, policyEnvelope, signJws, seconds } from './crypto.mjs';
 import { errorCode } from './protocol.mjs';
 import { nativeStepHook } from './step-hooks.mjs';
+import { erasedStep } from './erasure.mjs';
 
 export async function unsetPolicy(c, initial = false) {
  const listed = await c.mcp('tools/list');
@@ -90,6 +92,11 @@ export async function blockedPhases(c) {
     await c.adopt(autonomousPolicy());
    }
    const completed = await c.stepTool(step, args, await c.proof(step.tool, args, undefined, step.client));
+   if (completed.erasure) {
+    const value = await erasedStep(c, step, args, completed, `blocked:${cls}`, outputs);
+    await nativeStepHook(c, 'afterStep', `blocked:${cls}`, step, args, outputs, value);
+    continue;
+   }
    if (completed.result?.isError || completed.result?.structuredContent === undefined) throw new Error(`Could not prepare ${step.id} for the ${cls} blocked variant (${errorCode(completed) ?? completed.status})`);
    outputs.set(step.id, completed.result.structuredContent);
    await nativeStepHook(c, 'afterStep', `blocked:${cls}`, step, args, outputs, completed.result.structuredContent);
@@ -122,4 +129,30 @@ export async function consentRevocationPhase(c) {
  c.add('BASE-AGENT-004.consent-revoked', refused.status === 401, 'A revoked originating consent must refuse the next authenticated call.');
  await c.adopt(autonomousPolicy());
  c.add('BASE-AGENT-004.consent-no-effect', isDeepStrictEqual(before, await c.witness()), 'A call under revoked consent changed native state.');
+}
+
+/** The installation's own revocation ends an agent's Business tokens: a fresh token for the same agent is refused. */
+export async function agentRevocationPhase(c, initializeAgent) {
+ await c.adopt(autonomousPolicy());
+ await c.prepare('revocation');
+ const agentId = `rer-conformance-${randomUUID()}`, throwaway = { ...c, agentId, consent: randomUUID() };
+ if (initializeAgent) {
+  try { await initializeAgent({ agentId, person: c.person }); }
+  catch {
+   c.add('BASE-AGENT-001.agent-initializer', false, 'Native agent initialization failed; no captured mail, credentials or fixture values are logged.');
+   return;
+  }
+ }
+ const witness = { name: c.surface.witness.tool, arguments: c.resolve(c.surface.witness.args) };
+ const call = async method => c.mcp(method, method === 'tools/call' ? witness : {}, { token: await accessToken(throwaway), track: false });
+ const challenged = answer => answer.status === 401 && /resource_metadata="/.test(answer.headers.get('www-authenticate') ?? '');
+ const admitted = await call('tools/call');
+ c.add('BASE-AGENT-004.6.seed-admitted', admitted.status === 200 && admitted.result?.structuredContent !== undefined && !admitted.result.isError, 'A throwaway agent must be admitted before its revocation.');
+ const before = await c.witness();
+ const revoke = await c.personRequest(`/agents/api/agents/${encodeURIComponent(agentId)}/revoke`, { method: 'POST', body: '{}' });
+ await revoke.body?.cancel();
+ c.add('BASE-AGENT-004.6.seed-revoke', revoke.status === 200, 'The signed-in owner must be able to revoke the throwaway agent through the person door.');
+ const refused = await call('tools/call'), listed = await call('tools/list');
+ c.add('BASE-AGENT-004.6.seed-revoked', challenged(refused) && challenged(listed), 'After the installation revokes an agent, a fresh Business token for the same agent must receive 401 with a resource_metadata challenge on every method.');
+ c.add('BASE-AGENT-004.6.seed-unchanged', isDeepStrictEqual(before, await c.witness()), 'A call under a revoked agent changed native state, or the main agent lost access.');
 }

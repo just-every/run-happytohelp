@@ -4,6 +4,7 @@ import { accessToken, policyEnvelope, renewalEnvelope, seconds } from './crypto.
 import { AGENT_CLASSES } from './surface.mjs';
 import { phaseFixtures } from './fixtures.mjs';
 import { validToolName } from './tool-name.mjs';
+import { beforeDestruction, erasedAnswer, erasedCall } from './erasure.mjs';
 
 export const VERSION = '2026-07-28';
 export const DECISION = 'com.runeditrun/decision';
@@ -81,13 +82,19 @@ export function createProtocol(context) {
   const valid = approval?.id === handle.id && approval.decision_id === pending.decision?.id && approval.revision === pending.decision?.revision && /^[a-f0-9]{64}$/.test(approval.summary_sha256);
   context.add(`BASE-AGENT-008.5.summary.${handle.id}`, valid, 'The person approval must expose its exact decision, revision and summary SHA-256.');
   if (!valid) throw new Error('Cannot decide an approval without its exact summary evidence');
+  const before = action === 'approve' ? await beforeDestruction(context, approval.tool) : undefined;
   const response = await context.personRequest(`${path}/${action}`, { method: 'POST', body: JSON.stringify({ revision: approval.revision, summary_sha256: approval.summary_sha256 }) });
   const body = await responseBody(response);
+  let erasure;
+  if (response.ok && action === 'approve' && body.approval?.code === 'subject_erased') {
+   erasure = await erasedCall(context, before, approval.tool, undefined, pending.decision);
+   context.calls.push({ kind: 'approval/execute', name: approval.tool, decision: structuredClone(pending.decision), approvalId: handle.id, erasure, auditId: erasure.id });
+  }
   if (response.ok && action === 'approve' && approval.state === 'pending' && ['executed', 'refused'].includes(body.approval?.state)) context.calls.push({
    kind: 'approval/execute', name: approval.tool, decision: structuredClone(pending.decision), approvalId: handle.id, principal: pending.principal,
    state: body.approval.state, code: body.approval.code ?? null,
   });
-  return { ok: response.ok, status: response.status, body };
+  return { ok: response.ok, status: response.status, body, erasure };
  };
  context.mcp = async (method, params = {}, options = {}) => {
   const client = options.client === undefined ? undefined : context.clients.get(options.client);
@@ -95,20 +102,23 @@ export function createProtocol(context) {
   const { token = client?.token ?? await accessToken(context), version = VERSION, headers = {}, track = true } = options;
   const principal = client && options.token === undefined ? { agent: client.agent, clientId: client.clientId, consent: null, sponsor: context.sponsor.id } : undefined;
   const id = ++requestId, name = method === 'resources/read' ? params.uri : params.name;
+  const before = method === 'tools/call' ? await beforeDestruction(context, name) : undefined;
   const response = await context.request('/mcp', { method: 'POST', headers: {
    Accept: 'application/json, text/event-stream', 'Content-Type': 'application/json', Origin: context.origin,
    'MCP-Protocol-Version': version, 'Mcp-Method': method,
    ...(['tools/call', 'resources/read', 'prompts/get'].includes(method) && name ? { 'Mcp-Name': name } : {}),
    ...(token ? { Authorization: `Bearer ${token}` } : {}), ...headers,
-  }, body: JSON.stringify({ jsonrpc: '2.0', id, method, params: version === '2025-11-25' ? params : { ...params, _meta: { 'io.modelcontextprotocol/protocolVersion': version, 'io.modelcontextprotocol/clientCapabilities': { elicitation: { url: {} } }, 'io.modelcontextprotocol/clientInfo': { name: 'rer-agent-conformance', version: '1' }, ...params._meta } } }) });
+  }, body: JSON.stringify({ jsonrpc: '2.0', id, method, params: ['2025-06-18', '2025-11-25'].includes(version) ? params : { ...params, _meta: { 'io.modelcontextprotocol/protocolVersion': version, 'io.modelcontextprotocol/clientCapabilities': { elicitation: { url: {} } }, 'io.modelcontextprotocol/clientInfo': { name: 'rer-agent-conformance', version: '1' }, ...params._meta } } }) });
   const body = await responseBody(response), result = body.result, decision = result?._meta?.[DECISION] ?? body.error?.data?._meta?.[DECISION];
   const answer = { status: response.status, headers: response.headers, body, message: body, result, decision, principal };
-  if (['tools/call', 'resources/read'].includes(method) && track && (response.status !== 401 || typeof body.error?.data?.code === 'string')) context.calls.push({
+  const erased = await erasedAnswer(context, answer, before, name);
+  if (['tools/call', 'resources/read'].includes(method) && track && erased !== false && (response.status !== 401 || typeof body.error?.data?.code === 'string')) context.calls.push({
    kind: method, name: method === 'resources/read' ? 'resources/read' : params.name,
    args: structuredClone(method === 'resources/read' ? { uri: params.uri } : params.arguments ?? {}),
    decision: structuredClone(decision ?? null), code: errorCode(answer), result: structuredClone(result), principal,
    approval: structuredClone(result?._meta?.[APPROVAL] ?? body.error?.data?.approval ?? null),
    pending: result?.resultType === 'input_required' || method === 'resources/read' && errorCode(answer) === 'approval_required',
+   ...(answer.erasure ? { erasure: answer.erasure, auditId: answer.erasure.id } : {}),
   });
   return answer;
  };

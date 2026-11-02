@@ -51,6 +51,8 @@ export const archivePolicy={
  // Reconstruct the full-text index from retained messages after restore.
  derivedTables:['inbox_message_search'],
  excludeTables:[
+  // Installation-private pull membership and replay custody never transfer.
+  'agent_door_relay','agent_door_replay_aliases',
   'support_channel_attachment_grants','support_channel_link_codes',
   'crm_changes',
   'rer_mailbox_outbox',

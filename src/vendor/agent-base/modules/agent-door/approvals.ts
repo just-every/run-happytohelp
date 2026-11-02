@@ -1,9 +1,10 @@
+import { erasedResult } from './erasure.ts'
 import type { Evidence } from './audit.ts'
 import { recoverAudit } from './audit.ts'
 import type { ClassAndFacts, CallResult, Person, Principal, Runtime, ToolContext, ApprovalDisplaySummary } from './types.ts'
 import { appendEvents } from './events.ts'
 import { error, json } from './errors.ts'
-import { matchingRefs, preparedBy } from './people.ts'
+import { matchingRefs, preparedBy, businessRole } from './people.ts'
 import { executeApproval } from './approval-execution.ts'
 
 export interface SavedApproval {
@@ -14,10 +15,12 @@ export interface SavedApproval {
 interface ApprovalRecord { id: string; state: string; saved: string; approvals: string; result: string | null; version: number }
 export interface ApprovalMark { ref: string; person: string; name: string; at: string }
 export async function openApproval(rt: Runtime, saved: SavedApproval) {
+  const erased = await rt.options.db.prepare("SELECT json_extract(row,'$.tombstone') AS tombstone FROM agent_door_audit WHERE id=?").bind(saved.decision_id).first<{ tombstone: string | null }>()
+  if (erased?.tombstone) return erasedResult(JSON.parse(erased.tombstone))
   const id = crypto.randomUUID(), requestState = crypto.randomUUID()
   const approval = { id, url: `${rt.options.origin}/agents/approvals/${id}`, expires_at: saved.expires_at }
   saved.result = { ...saved.result, outcome: 'pending', approval, requestState }
-  await rt.options.db.prepare('INSERT INTO agent_door_approvals(id,state,saved) VALUES(?,?,?)').bind(id, 'pending', JSON.stringify(saved)).run()
+  await rt.options.db.prepare("INSERT INTO agent_door_approvals(id,state,saved) SELECT ?,?,? WHERE NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id=? AND json_extract(row,'$.tombstone') IS NOT NULL)").bind(id, 'pending', JSON.stringify(saved), saved.decision_id).run()
   return saved.result
 }
 export async function approvalReplay(rt: Runtime, result: CallResult): Promise<CallResult> {
@@ -36,12 +39,15 @@ export async function approvalReplay(rt: Runtime, result: CallResult): Promise<C
 }
 export function approvalView(rt: Runtime, row: ApprovalRecord) {
   const saved: SavedApproval = JSON.parse(row.saved)
+  if ((saved as SavedApproval & { tombstone?: object }).tombstone) return { id: row.id, decision_id: '', revision: null, state: row.state, code: 'subject_erased',
+    summary: {}, summary_sha256: '', tool: saved.tool, classes: [] as ClassAndFacts[], approvers: [] as string[], approvals: [],
+    expires_at: saved.expires_at, prepared_by: { agent: { id: '', name: '' }, for: { id: '', name: '' }, label: '' }, rules: [] as Array<{ class: string; rule: string | null; do: string }> }
   return { id: row.id, decision_id: saved.decision_id, revision: saved.revision, state: row.state === 'pending' && rt.now() >= Date.parse(saved.expires_at) ? 'expired' : row.state === 'executing' ? 'pending' : row.state,
     code: row.result ? JSON.parse(row.result).code ?? null : null, summary: saved.summary, summary_sha256: saved.summary_sha256,
     tool: saved.tool, classes: saved.classes, approvers: saved.approvers, approvals: JSON.parse(row.approvals), expires_at: saved.expires_at,
     prepared_by: preparedBy(saved.principal), rules: saved.result.decision?.classes.map(({ class: cls, rule, do: action }) => ({ class: cls, rule, do: action })) }
 }
-export const canReadApproval = async (rt: Runtime, person: Person, saved: SavedApproval) => person.id === saved.principal.person.id || (await matchingRefs(rt, person, saved.principal.person.id, saved.approvers)).length > 0
+export const canReadApproval = async (rt: Runtime, person: Person, saved: SavedApproval) => (saved as any).tombstone ? !!businessRole(rt.options.people, person) : person.id === saved.principal.person.id || (await matchingRefs(rt, person, saved.principal.person.id, saved.approvers)).length > 0
 export async function approvalDoor(rt: Runtime, request: Request, person: Person, id?: string, action?: string): Promise<Response> {
   if (!id) {
     if (request.method !== 'GET') return error('method_not_allowed', 405)
@@ -53,6 +59,7 @@ export async function approvalDoor(rt: Runtime, request: Request, person: Person
   if (!row) return error('not_found', 404)
   const saved: SavedApproval = JSON.parse(row.saved)
   if (!await canReadApproval(rt, person, saved)) return error('forbidden', 403)
+  if ((saved as any).tombstone && request.method !== 'GET') return error('subject_erased', 409)
   if (request.method === 'GET' && !action) return json({ approval: approvalView(rt, row) })
   if (request.method !== 'POST' || !['approve', 'reject'].includes(action ?? '')) return error('method_not_allowed', 405)
   let body: { revision?: unknown; summary_sha256?: unknown }
@@ -76,7 +83,7 @@ export async function approvalDoor(rt: Runtime, request: Request, person: Person
     .bind(nextState, JSON.stringify(approvals), id, row.version, 'pending').run()
   if (!changed.meta.changes) return error('approval_conflict', 409)
   const final = complete ? await executeApproval(rt, id, saved, approvals) : { state: nextState, code: undefined }
-  await appendEvents(rt, [{ type: 'approval.decided', uri: `${rt.options.origin}/agents/approvals/${id}`, actor: { kind: 'person', person: { id: person.id, name: person.name } }, data: { decision_id: saved.decision_id, classes: saved.classes, decision: 'approval', state: final.state, ...(final.code ? { code: final.code } : {}) } }])
+  await appendEvents(rt, [{ type: 'approval.decided', uri: `${rt.options.origin}/agents/approvals/${id}`, actor: { kind: 'person', person: { id: person.id, name: person.name } }, data: { decision_id: saved.decision_id, classes: saved.classes, decision: 'approval', state: final.state, ...(final.code ? { code: final.code } : {}) } }], saved.decision_id)
   const current = (await rt.options.db.prepare('SELECT * FROM agent_door_approvals WHERE id=?').bind(id).first<ApprovalRecord>())!
   return json({ approval: approvalView(rt, current) })
 }

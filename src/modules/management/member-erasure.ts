@@ -1,3 +1,4 @@
+import {redactionStatements,invalidateTransfersStatements} from '@runeditrun/rer/modules/portability/journal'
 import {replyDraftMemberErasure} from '../conversations/draft-erasure'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
@@ -25,7 +26,7 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const registry=await currentRegistry(c.env.DB)
  if(registry.errors.length)throw new HTTPException(503,{message:'Member erasure schema requires review'})
 // Agent-door identity copies are prepared before native anonymization.
- await c.env.DB.batch([...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...await memberDoorErasure(c.env.DB,userId),...replyDraftMemberErasure(c.env,actor.projectId,userId)])
+ await c.env.DB.batch([...await redactionStatements(c.env.DB),...await invalidateTransfersStatements(c.env.DB),...await memberDoorErasure(c.env,userId,now),...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...replyDraftMemberErasure(c.env,actor.projectId,userId)])
  return c.json({erased:true,credentialsRevoked:true,eventsRetained:true})
 })
 

@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -47,7 +48,7 @@ mobileRoutes.get('/session',async c=>{const a=await mobileActor(c);return c.json
 mobileRoutes.delete('/session',async c=>{const a=await mobileActor(c);await retireDevice(c.env,a.device.id);c.header('Mobile-Cache-Action','purge');return c.json({signedOut:true,purge:true})})
 mobileRoutes.get('/tickets',async c=>{
  const a=await mobileActor(c)
- const rows=await c.env.DB.prepare(`SELECT c.id,c.subject,c.status_id,c.priority,c.assigned_to,c.group_id,c.revision,c.ticket_version,c.updated_at FROM conversations c WHERE c.project_id=? AND ${contactAvailableSql()} ORDER BY c.updated_at DESC,c.id LIMIT 100`).bind(a.actor.projectId).all()
+ const rows=await c.env.DB.prepare(`SELECT c.id,c.subject,c.status_id,c.priority,c.assigned_to,c.group_id,c.revision,c.ticket_version,c.updated_at FROM conversations c WHERE c.project_id=? AND ${contactAvailableSql()} AND ${ticketScopeSql('?')} ORDER BY c.updated_at DESC,c.id LIMIT 100`).bind(a.actor.projectId,a.actor.id).all()
  await stillAuthorized(c.env,a);return c.json({tickets:rows.results,limit:100})
 })
 mobileRoutes.get('/tickets/:ticketId',async c=>{
@@ -77,7 +78,7 @@ mobileRoutes.post('/tickets/:ticketId/attachments',async c=>{
 })
 mobileRoutes.get('/tickets/:ticketId/attachments/:mediaId',async c=>{
  const a=await mobileActor(c),ticketId=c.req.param('ticketId')
- const m=await c.env.DB.prepare(`SELECT media.object_key,media.filename,media.content_type FROM media JOIN conversations c ON c.id=media.conversation_id AND c.project_id=media.project_id WHERE media.id=? AND c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND ${macroAttachmentAvailableSql()} AND (media.message_id IS NOT NULL OR media.uploaded_by=? OR EXISTS(SELECT 1 FROM conversation_note_media WHERE media_id=media.id))`).bind(c.req.param('mediaId'),ticketId,a.actor.projectId,a.actor.id).first<{object_key:string;filename:string;content_type:string}>()
+ const m=await c.env.DB.prepare(`SELECT media.object_key,media.filename,media.content_type FROM media JOIN conversations c ON c.id=media.conversation_id AND c.project_id=media.project_id WHERE media.id=? AND c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND ${macroAttachmentAvailableSql()} AND ${ticketScopeSql('?')} AND (media.message_id IS NOT NULL OR media.uploaded_by=? OR EXISTS(SELECT 1 FROM conversation_note_media WHERE media_id=media.id))`).bind(c.req.param('mediaId'),ticketId,a.actor.projectId,a.actor.id,a.actor.id).first<{object_key:string;filename:string;content_type:string}>()
  if(!m)throw new HTTPException(404)
  const object=await c.env.FILES.get(m.object_key);if(!object)throw new HTTPException(404)
  await stillAuthorized(c.env,a);return new Response(object.body,{headers:{...mediaResponseHeaders(m.content_type,m.filename),'Cache-Control':'no-store'}})

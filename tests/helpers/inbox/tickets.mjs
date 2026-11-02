@@ -1,3 +1,4 @@
+import {ticketResidualScopeAssertions} from './ticket-scope-residual.mjs'
 import {ticketDataScopeAssertions} from './ticket-scope.mjs'
 import {mobileTicketWork} from '../mobile.mjs'
 import assert from 'node:assert/strict'
@@ -11,6 +12,7 @@ import {queueWork,securityLog} from './queue-work.mjs'
 // private collaboration and automation all use the same native ticket history.
 export async function ticketsJourney(){
  await ticketDataScopeAssertions()
+ await ticketResidualScopeAssertions()
  await mobileTicketWork()
  const initial=Date.parse('2026-11-02T09:00:00Z'),sent=[]
  const f=await ticketFixture({bindings:{H2H_WORKFLOW_NOW:String(initial),INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:async request=>{

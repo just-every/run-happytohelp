@@ -16,9 +16,9 @@ async function approved(env:Env,t:any){
 }
 export const templateRoutes=new Hono<AppEnv>()
 const path=prefix+'/conversations/:conversationId/templates'
-templateRoutes.get(path,async c=>{const actor=await access(c,'conversations.reply'),t=await thread(c.env,actor.projectId,c.req.param('conversationId')!);if(!t)throw new HTTPException(404);return c.json({data:await approved(c.env,t)})})
+templateRoutes.get(path,async c=>{const actor=await access(c,'conversations.reply'),t=await thread(c.env,actor.projectId,c.req.param('conversationId')!,actor.id);if(!t)throw new HTTPException(404);return c.json({data:await approved(c.env,t)})})
 templateRoutes.post(path,async c=>{
- const actor=await access(c,'conversations.reply'),id=c.req.param('conversationId')!,t=await thread(c.env,actor.projectId,id);if(!t)throw new HTTPException(404)
+ const actor=await access(c,'conversations.reply'),id=c.req.param('conversationId')!,t=await thread(c.env,actor.projectId,id,actor.id);if(!t)throw new HTTPException(404)
  const b=await c.req.json(),reason=blocker(t,Date.now(),true);if(reason)throw new HTTPException(409,{message:reason})
  const template=(await approved(c.env,t)).find((v:any)=>v.id===b.template_id);if(!template)throw new HTTPException(409,{message:'Choose a currently approved utility template from this account'})
  const slots=[...template.text.matchAll(/\{\{(\d+)\}\}/g)].map((m:any)=>Number(m[1])),count=Math.max(0,...slots),parameters=b.parameters??[]

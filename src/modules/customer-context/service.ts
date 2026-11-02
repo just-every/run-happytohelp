@@ -1,11 +1,13 @@
+import {contextSubjectAllowed} from './scope'
 // @ts-ignore Retained attributed correction/retraction semantics.
 import {mergeProfile} from './profiles/version.js'
 import type { Env } from '../../platform/env'
 import {cooldown,eligibleEvidence,fingerprint,publicSignals,validateProfile,type Evidence,type ProfileType} from './evidence'
-export async function getContextPacket(env:Env,projectId:string,subjectId:string){
- const subject=await env.DB.prepare('SELECT consent,revision FROM context_subjects WHERE project_id=? AND subject_id=?').bind(projectId,subjectId).first<{consent:number;revision:number}>();
- const result=await env.DB.prepare('SELECT id,source,content,visibility,occurred_at FROM context_evidence WHERE project_id=? AND subject_id=? ORDER BY occurred_at DESC LIMIT 96').bind(projectId,subjectId).all<Evidence>();
- const evidence=eligibleEvidence(result.results.reverse());const profiles=await env.DB.prepare('SELECT type,profile FROM context_profiles WHERE project_id=? AND subject_id=?').bind(projectId,subjectId).all<{type:string;profile:string}>();
+export async function getContextPacket(env:Env,projectId:string,subjectId:string,userId?:string){
+ const visible=await contextSubjectAllowed(env,projectId,subjectId,userId)
+ const subject=visible?await env.DB.prepare('SELECT consent,revision FROM context_subjects WHERE project_id=? AND subject_id=?').bind(projectId,subjectId).first<{consent:number;revision:number}>():null;
+ const result=visible?await env.DB.prepare('SELECT id,source,content,visibility,occurred_at FROM context_evidence WHERE project_id=? AND subject_id=? ORDER BY occurred_at DESC LIMIT 96').bind(projectId,subjectId).all<Evidence>():{results:[]};
+ const evidence=eligibleEvidence(result.results.reverse());const profiles=visible?await env.DB.prepare('SELECT type,profile FROM context_profiles WHERE project_id=? AND subject_id=?').bind(projectId,subjectId).all<{type:string;profile:string}>():{results:[]};
  const profile=Object.fromEntries(profiles.results.map(p=>[p.type,JSON.parse(p.profile)]));return {version:'profile-evidence.v3',subjectId,revision:subject?.revision,evidence,evidence_fingerprint:await fingerprint(evidence),profiles:profile,consent:!!subject?.consent,approved_broad_personalization:publicSignals(profile.contact||{},!!subject?.consent)}
 }
 export async function saveProfile(env:Env,projectId:string,subjectId:string,type:ProfileType,candidate:unknown,expectedFingerprint:string){

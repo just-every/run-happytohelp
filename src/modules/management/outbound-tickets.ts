@@ -1,3 +1,5 @@
+import {ticketScopeSql} from '../access/ticket-scope'
+import {requireDestinationScope} from '../access/destination-scope'
 import {Hono,type Context} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,AppEnv,Env} from '../../platform/env'
@@ -16,6 +18,7 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
  const routes=new Hono<AppEnv>()
  routes.route('/',outboundOptionsRoutes())
  async function create(c:Context<AppEnv>,actor:Actor,input:OutboundTicketInput,notice=false){
+  await requireDestinationScope(c.env,actor,input.groupId??null)
   const sessionHash=c.get('sessionHash')
   if(input.kind==='email'&&!onCommittedMessage)throw new HTTPException(503,{message:'Outbound email delivery is unavailable'})
   const reservation=await reserveOutboundTicket(c.env,actor,sessionHash,input),conversation=await c.env.DB.prepare(`SELECT c.* FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1`).bind(reservation.conversationId,actor.projectId).first()
@@ -54,7 +57,7 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
   const actor=await requireProject(c,c.req.param('projectId'),true),inputs=await confirmOutboundNotices(c.env,actor,c.get('sessionHash'),await c.req.json()),results=[]
   // Read completed admissions once. Replaying a long prefix must never starve
   // its remaining rows; every retry still rechecks the current route authority.
-  const saved=(await c.env.DB.prepare(`SELECT cmd.local_id,m.id AS admitted_message_id,c.* FROM operator_ticket_commands cmd JOIN conversations c ON c.id=cmd.conversation_id AND c.project_id=cmd.project_id LEFT JOIN messages m ON m.conversation_id=c.id AND m.project_id=c.project_id AND m.local_id=cmd.local_id WHERE EXISTS(SELECT 1 FROM contacts ct WHERE ct.id=c.contact_id AND ct.project_id=c.project_id AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1) AND cmd.project_id=? AND cmd.actor_id=? AND cmd.local_id IN (SELECT value FROM json_each(?))`).bind(actor.projectId,actor.id,JSON.stringify(inputs.map(input=>input.localId))).all<any>()).results
+  const saved=(await c.env.DB.prepare(`SELECT cmd.local_id,m.id AS admitted_message_id,c.* FROM operator_ticket_commands cmd JOIN conversations c ON c.id=cmd.conversation_id AND c.project_id=cmd.project_id LEFT JOIN messages m ON m.conversation_id=c.id AND m.project_id=c.project_id AND m.local_id=cmd.local_id WHERE EXISTS(SELECT 1 FROM contacts ct WHERE ct.id=c.contact_id AND ct.project_id=c.project_id AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1) AND ${ticketScopeSql('?')} AND cmd.project_id=? AND cmd.actor_id=? AND cmd.local_id IN (SELECT value FROM json_each(?))`).bind(actor.id,actor.projectId,actor.id,JSON.stringify(inputs.map(input=>input.localId))).all<any>()).results
   const reserved=new Map(saved.map(({local_id,admitted_message_id,...conversation})=>[local_id,conversation]))
   const completed=new Map(saved.filter(row=>row.admitted_message_id).map(({local_id,admitted_message_id,...conversation})=>[local_id,conversation]))
   for(const input of inputs){

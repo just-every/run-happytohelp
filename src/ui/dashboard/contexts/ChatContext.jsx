@@ -471,6 +471,9 @@ export const Provider = (props) => {
         const timer = setTimeout(() => {
             close = connectedProjectIds.map(id => connectProject(id, frame => {
                 if (frame.type === 'activity' && frame.kind === 'read' && Array.isArray(frame.reads)) applyReadReceipts(frame.reads);
+                // A saved custom role: refresh the inbox and re-read the open ticket through its own loader. Only that real read
+                // (401/403/404) turns the ticket unavailable; any other outcome leaves the ticket, transcript and draft as they are.
+                else if (frame.type === 'access_changed') { setLastConnected(Date.now()); refreshInboxData(); }
                 else refreshInboxData();
             },
                 () => { refreshInboxData(); setLastConnected(Date.now()); },

@@ -10489,7 +10489,7 @@
       "executable": false
     },
     "src/ui/dashboard/contexts/ChatContext.jsx": {
-      "sha256": "52c99bd476f0770db6ce832b5d144335f0ee9c033f98518b61066f34ff60991a",
+      "sha256": "3168c9645f0b79b47209f22d7cc0acbbdc4e1f4a7fa806c7598f8286c0e9beac",
       "executable": false
     },
     "src/ui/dashboard/contexts/ConversationSuggestionsContext.jsx": {
@@ -14769,7 +14769,7 @@
       "executable": false
     },
     "tests/helpers/identity/ticket-scope-browser.mjs": {
-      "sha256": "38a012ef8522f78f874d17c11499345785e89e944218b689b552dec2efa6024f",
+      "sha256": "351896f1fdaa8caf853e335c5473b6ad96200d66bb328abd71fd9badc33534d7",
       "executable": false
     },
     "tests/helpers/identity/ticket-scope-roles.mjs": {

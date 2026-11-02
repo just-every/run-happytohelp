@@ -43,7 +43,7 @@ export async function ticketScopeBrowserJourney(browser,{width=1440,proofOnly=fa
   await good('/api/conversations/'+hidden.id+'/messages',{localId:'synthetic-hh-304-hidden',content:'Synthetic hidden transcript '+fixture,expectedRevision:0},visitor.token)
   const pageFor=async(token,url,{recordClose=false}={})=>{
    const context=await browser.newContext({viewport:{width,height:width===390?844:900}});contexts.push(context)
-   if(recordClose)await context.addInitScript(()=>{const Native=window.WebSocket;window.__h2hClosed=[];window.WebSocket=class extends Native{constructor(...args){super(...args);this.addEventListener('close',event=>window.__h2hClosed.push({url:this.url,code:event.code}))}}})
+   if(recordClose)await context.addInitScript(()=>{const Native=window.WebSocket;window.__h2hClosed=[];window.__h2hAccessFrames=[];window.WebSocket=class extends Native{constructor(...args){super(...args);this.addEventListener('close',event=>window.__h2hClosed.push({url:this.url,code:event.code}));this.addEventListener('message',event=>{if(typeof event.data==='string'&&event.data.includes('"access_changed"'))window.__h2hAccessFrames.push(Date.now())})}}})
    await context.addCookies([{name:'h2h_session',value:token,url:origin}]);const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message));await page.goto(url);return page
   }
   const capture=async(page,name)=>{await page.screenshot({path:shot(`${name}-${width}${before?'-before':''}.png`),fullPage:true});return shot(`${name}-${width}${before?'-before':''}.png`)}
@@ -86,8 +86,58 @@ export async function ticketScopeBrowserJourney(browser,{width=1440,proofOnly=fa
    console.log(`PROBE ACCESS-001 P10 ${width}: native owner/admin Roles, empty/default/selection/ungrouped/save/reload/real conflict -> ${JSON.stringify({paths,targets,overflow,persisted:persisted.ticketScope})}`)
   }else console.log(`PROBE ACCESS-001 P10 BEFORE ${width}: native owner/admin Roles -> ${JSON.stringify({paths,scopeControls:await ownerPage.getByRole('group',{name:'Ticket access'}).count()})}`)
   const agent=await pageFor(members.agent.token,origin+`/projects/${projectId}/conversations/${visible.id}`,{recordClose:true})
+  const prompts=[];agent.on('dialog',dialog=>{prompts.push(dialog.message());dialog.dismiss()})
   await agent.getByPlaceholder('Type your reply…').waitFor();await agent.getByText(transcript,{exact:true}).first().waitFor();await agent.getByPlaceholder('Type your reply…').fill(draft)
+  // A window marker and the navigation entry prove the page is never reloaded or navigated by a saved role.
+  const pageStamp=await agent.evaluate(()=>{window.__h2hStays=crypto.randomUUID();return {marker:window.__h2hStays,entries:performance.getEntriesByType('navigation').length,href:location.href}})
   const device=await good('/api/mobile/v1/devices',{platform:'ios',scopes:['read']},members.agent.token)
+  // Live access frame: a role save that leaves this ticket readable changes nothing the agent sees; the open ticket is re-read, never reset.
+  const agentRead=()=>request(D+'/'+visible.id,undefined,members.agent.token)
+  const frames=()=>agent.evaluate(()=>window.__h2hAccessFrames.length)
+  if(!before){
+   const ticketReads=[];agent.on('request',req=>{if(req.method()==='GET'&&new URL(req.url()).pathname===D+'/'+visible.id)ticketReads.push(Date.now())})
+   const intact=async(label)=>{
+    const read=await agentRead();verify(read.status,200,`${label}: the agent's read of the ticket is still 200`)
+    verify(await agent.getByText(transcript,{exact:true}).count()>0,true,`${label}: transcript stands`)
+    verify(await agent.getByPlaceholder('Type your reply…').inputValue(),draft,`${label}: draft text stands`)
+    verify(await agent.getByText(/This ticket is unavailable/).count(),0,`${label}: no unavailable state`)
+    verify(prompts,[],`${label}: no leave prompt`)
+    verify(await agent.evaluate(()=>({marker:window.__h2hStays,entries:performance.getEntriesByType('navigation').length,href:location.href})),pageStamp,`${label}: no reload or navigation`)
+    verify(await agent.locator('.conversation-list-items').filter({hasText:'Synthetic customer '+fixture}).count()>0,true,`${label}: inbox stands`)
+   }
+   const saveRole=async(body,label)=>{
+    const before=ticketReads.length,seen=await frames()
+    verify((await request(R+'/'+role.id,body,owner.token,'PUT')).status,200,`${label}: role save`)
+    // The frame makes the open ticket re-read itself, with no further message from the customer.
+    await agent.waitForFunction(count=>window.__h2hAccessFrames.length>count,seen);const deadline=Date.now()+5000
+    while(ticketReads.length===before&&Date.now()<deadline)await agent.waitForTimeout(100)
+    verify(ticketReads.length>before,true,`${label}: the frame re-read the open ticket`)
+    await agent.waitForTimeout(500);await intact(label)
+   }
+   await saveRole({...definition,ticketScope:selected},'unchanged')
+   await saveRole({...definition,name:definition.name+' renamed',ticketScope:selected},'renamed')
+   await saveRole({...definition,name:definition.name+' renamed',ticketScope:{groupIds:[group.id,other.id],includeUngrouped:true}},'widened')
+   // A re-read that fails for a reason other than access (a 500, then a dropped connection) keeps the ticket and the draft.
+   for(const [label,fail] of [['500 on re-read',route=>route.fulfill({status:500,contentType:'application/json',body:JSON.stringify({error:{message:'Synthetic outage'}})})],['network error on re-read',route=>route.abort('failed')]]){
+    let blocked=0;const handler=route=>{if(route.request().method()==='GET'){blocked++;return fail(route)}return route.continue()}
+    const matcher=url=>url.pathname===D+'/'+visible.id||url.pathname.startsWith(D+'/'+visible.id+'/buckets')
+    await agent.route(matcher,handler)
+    const seen=await frames()
+    verify((await request(R+'/'+role.id,{...definition,name:definition.name+' renamed',ticketScope:{groupIds:[group.id,other.id],includeUngrouped:true}},owner.token,'PUT')).status,200,`${label}: role save`)
+    await agent.waitForFunction(count=>window.__h2hAccessFrames.length>count,seen);const deadline=Date.now()+5000;while(!blocked&&Date.now()<deadline)await agent.waitForTimeout(100)
+    verify(blocked>0,true,`${label}: the frame re-read the open ticket and it failed`)
+    await agent.waitForTimeout(500)
+    verify(await agent.getByText(transcript,{exact:true}).count()>0,true,`${label}: transcript stands`)
+    verify(await agent.getByPlaceholder('Type your reply…').inputValue(),draft,`${label}: draft stands`)
+    verify(await agent.getByText(/This ticket is unavailable/).count(),0,`${label}: not marked unavailable`)
+    verify(prompts,[],`${label}: no leave prompt`);verify(await agent.evaluate(()=>window.__h2hStays),pageStamp.marker,`${label}: no reload`)
+    await agent.unroute(matcher,handler)
+   }
+   // Back to the original scope, then the live narrowing below.
+   await request(R+'/'+role.id,{...definition,ticketScope:selected},owner.token,'PUT')
+   await agent.waitForTimeout(500);await intact('restored')
+   paths.stays=await capture(agent,'agent-role-saves-keep-draft')
+  }
   // Edit with members: warning precedes Save, and the saved notice echoes sign-out.
   if(!before){
    await ownerPage.getByText(/Saving this role signs out the mobile devices/).waitFor()
@@ -95,9 +145,17 @@ export async function ticketScopeBrowserJourney(browser,{width=1440,proofOnly=fa
    paths.warning=await capture(ownerPage,'roles-warning')
    await ownerPage.getByLabel('Selected groups',{exact:true}).check()
    const saving=ownerPage.waitForResponse(response=>response.url().endsWith('/roles/'+role.id)&&response.request().method()==='PUT')
+   const framesSeen=await frames(),narrowRead=agent.waitForResponse(response=>new URL(response.url()).pathname===D+'/'+visible.id&&response.request().method()==='GET')
    await ownerPage.getByRole('button',{name:'Save role',exact:true}).click();verify((await saving).status(),200)
    await ownerPage.getByRole('status').filter({hasText:/Mobile devices of its members/}).waitFor()
-   // Live revocation rechecks at the next frame: the server closes this ticket's stream 1008 and the open view turns generic-unavailable.
+   // Narrowed: the frame alone re-reads the open ticket, the read is 404 and the generic state shows within about 2 s, with no customer message.
+   await agent.waitForFunction(count=>window.__h2hAccessFrames.length>count,framesSeen)
+   await agent.getByRole('alert').filter({hasText:/This ticket is unavailable/}).waitFor({timeout:2000})
+   verify((await narrowRead).status(),404,'the re-read after the frame is 404')
+   verify(await agent.getByText(transcript,{exact:true}).count(),0);verify(await agent.getByPlaceholder('Type your reply…').count(),0)
+   verify(await agent.locator('body').evaluate((body,text)=>body.innerHTML.includes(text),draft),false)
+   verify((await agentRead()).status,404,'the next read of the hidden ticket is 404')
+   // Live revocation also rechecks at the next frame: the server closes this ticket's stream 1008.
    await agent.waitForFunction(id=>window.__h2hClosed.some(close=>close.code===1008&&close.url.includes('/api/conversations/'+id+'/socket')),visible.id)
    await agent.getByRole('alert').filter({hasText:/This ticket is unavailable/}).waitFor()
    verify(await agent.getByText(transcript,{exact:true}).count(),0);verify(await agent.getByPlaceholder('Type your reply…').count(),0)

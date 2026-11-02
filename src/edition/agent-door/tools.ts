@@ -64,7 +64,7 @@ export function happyTools(env:Env):ToolDefinition[]{
   read('operations.read','Read attributed native work',['AGENT-002'],schema({id:string}),async(a,c)=>({operation:await operationRead(env,c,a.id)})),
   read('reports.read','Read native workspace report',['REPORTS-001'],schema({start:{type:'string',pattern:'^\\d{4}-\\d{2}-\\d{2}$'},end:{type:'string',pattern:'^\\d{4}-\\d{2}-\\d{2}$'}}),async(a,ctx)=>{
    await projectRead(ctx);const actor=await actorFor(env,ctx,'reports.view'),settings=await env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(actor.projectId).first<{settings_json:string}>(),timezone=JSON.parse(settings?.settings_json??'{}').timezone??'UTC'
-   return redacted({report:await readReport(env,actor.projectId,reportRange({period:'custom',start:a.start,end:a.end},timezone))})
+   return redacted({report:await readReport(env,actor.projectId,reportRange({period:'custom',start:a.start,end:a.end},timezone),actor.id)})
   }),
   read('people.read','Read customer identities',['IDENTITY-001','ACCESS-001'],schema(),async(_,ctx)=>{const actor=await projectRead(ctx);return {people:(await env.DB.prepare(`SELECT id,name,email FROM contacts WHERE project_id=? AND ${contactWritable} ORDER BY id LIMIT 100`).bind(actor.projectId).all()).results}}),
   read('workflows.read','Read current routing rules',['AUTOMATION-001','AUTOMATION-002'],schema(),async(_,ctx)=>{const actor=await projectRead(ctx);return redacted({workflows:(await env.DB.prepare('SELECT id,name,state,updated_at FROM workflow_rules WHERE project_id=? ORDER BY id').bind(actor.projectId).all()).results})}),

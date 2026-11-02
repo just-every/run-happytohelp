@@ -27,7 +27,8 @@ export async function executeGenerationProvider(
   onProviderStarted: () => void,
 ) {
   let usageResult: unknown = null;
-  const context = await replyContext(env, row.project_id, row.conversation_id, row.kind === 'suggestions' ? 'agent' : 'contact', row.id);
+  const requester = JSON.parse(row.actor_json);
+  const context = await replyContext(env, row.project_id, row.conversation_id, row.kind === 'suggestions' ? 'agent' : 'contact', row.id, requester.role === 'contact' || requester.role === 'system' ? undefined : requester.id);
   if (row.kind === 'reply') context.tools.push(handoffTool(env,row,effects));
   context.tools=executionTools(env,row,tracedTools(env,attemptId,context.tools),checkCurrent);
   if (row.instruction) {

@@ -4,6 +4,7 @@ import {webcrypto,randomUUID,randomBytes} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {protectedFeedback} from './feedback.mjs'
 import {supportToolsJourney} from './support-tools.mjs'
+import {agentDoorTicketScope} from './ticket-scope.mjs'
 import initializeReviewer from './initialize-reviewer.mjs'
 import {checkAgentArtifacts} from '../../../src/vendor/agent-base/modules/agent-door/erasure.ts'
 import {contactAgentArtifacts,memberAgentArtifacts} from '../../../src/edition/agent-door/artifacts.ts'
@@ -118,6 +119,7 @@ export async function agentDoorJourney(){
    ['conversations.list',{}],['context.read',{id:conversation.id}],['articles.list',{}],['jobs.read',{id:job.id}],['operations.read',{id:note.result.operation}],
    ['reports.read',{start:day(Date.now()-86400000),end:day(Date.now()+86400000)}],['people.read',{}],['workflows.read',{}],['ai.read',{}],['integrations.read',{}],['events.list',{}],
   ]){const read=await call('happytohelp.'+name,args);assert.equal(read.outcome,'done',name+': '+JSON.stringify(read))}
+  await agentDoorTicketScope({app,native,call,rpc,context,owner,member,memberSub,memberEmail})
   await supportToolsJourney({app,native,call,rpc,adopt,context,owner,settings,existingMemberSub:memberSub,existingMemberEmail:memberEmail,person,reviewerSub,reviewerEmail})
   const observedJob=(await call('happytohelp.jobs.read',{id:job.id})).result.job
   assert.equal(observedJob.status,'queued');assert.match(observedJob.observation,/unconfirmed/)

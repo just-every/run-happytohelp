@@ -199,3 +199,89 @@ export async function notificationTicketScopeAssertions(m){
  const foreignAssignment=await patch(hidden,f.foreign.users.operator);expect(foreignAssignment.status,400,'foreign assignee remains refused')
  probe('P9','notification compatibility',{null:'assignment email retained',otherTenant:'foreign recipients are refused by existing teammate journey',ownerRecovery:'shared S1 term defaults true'})
 }
+
+/** Observe the real provider request after public admission and queue consumption. */
+export async function promptContextScopeAssertions(a,{before=false}={}){
+ const {app,ai}=a,f=await fixture(app,'synthetic-hh-500')
+ const {w,p,A,contact,tickets:[visible,hidden],groups,scope,selected}=f
+ const evidence=[
+  {id:visible+'-context',content:'Synthetic visible aggregate observation'},
+  {id:hidden+'-context',content:'Synthetic hidden aggregate observation'},
+ ]
+ await app.db.prepare('INSERT INTO context_subjects(project_id,subject_id,consent) VALUES(?,?,1) ON CONFLICT(project_id,subject_id) DO UPDATE SET consent=1').bind(p,contact).run()
+ for(const [index,item] of evidence.entries())await app.db.prepare('INSERT INTO context_evidence(id,project_id,subject_id,source,content,visibility,occurred_at) VALUES(?,?,?,?,?,?,?)').bind(item.id,p,contact,'customer_message',item.content,'private_operational_evidence',Date.now()-1000+index).run()
+ const savedRespond=ai.respond,savedBefore=ai.before
+ const phase=before?'BEFORE':'AFTER',records=[]
+ const current=()=>app.first('SELECT revision,last_message_id FROM conversations WHERE id=? AND project_id=?',visible,p)
+ const execute=async(id,label,kind,hasContext)=>{
+  const at=ai.calls.length,jobs=(await app.takeJobs()).filter(job=>job.type==='ai.generate'&&job.id===id&&job.projectId===p)
+  assert.equal(jobs.length,1,label+' captures the publicly admitted generation job')
+  const consumed=await app.runJobs(jobs)
+  expect(consumed.retried,[],label+' queue consumption does not retry')
+  const generation=await app.first('SELECT state,error,actor_json FROM ai_generations WHERE id=?',id)
+  assert.equal(generation.state,'completed',label+': '+generation.error)
+  const requests=ai.calls.slice(at).filter(call=>call.host==='api.openai.com')
+  assert.ok(requests.length,label+' reaches the actual provider boundary')
+  if(kind==='suggestions')for(const name of ['agent_suggestion_primary','agent_suggestion_alternatives'])assert.ok(requests.some(call=>call.name===name),label+' runs '+name)
+  for(const request of requests){
+   const packet=promptScopePacket(request.body),activity=kind==='suggestions'?packet.activity:packet.evidence.customer_observations
+   const timeline=kind==='suggestions'?packet.timeline:packet.evidence.conversation
+   assert.ok(timeline.some(entry=>entry.id===visible+'-message'),label+' retains visible conversation evidence')
+   assert.ok(!JSON.stringify(request.body).includes(hidden+'-message'),label+' never includes hidden ticket messages')
+   if(hasContext){
+    expect(activity.map(item=>item.evidence_id),evidence.map(item=>'context:'+item.id),label+' retains the same consented aggregate evidence')
+    for(const item of evidence)assert.ok(JSON.stringify(request.body).includes(item.content),label+' actually transmits the aggregate observation')
+   }else{
+    expect(activity,[],label+' withholds the entire mixed-visibility contact aggregate')
+    for(const item of evidence){
+     assert.ok(!JSON.stringify(request.body).includes(item.id),label+' excludes aggregate evidence identifiers')
+     assert.ok(!JSON.stringify(request.body).includes(item.content),label+' excludes aggregate observation text')
+    }
+   }
+  }
+  const record={phase,door:kind,actor:JSON.parse(generation.actor_json).role,case:label,providerRequests:requests.length,contextEvidence:hasContext?evidence.map(item=>item.id):[]}
+  records.push(record);probe('P6 '+phase,'public AI admission -> captured real queue -> actual provider request',record)
+ }
+ try{
+  ai.before=null
+  ai.respond=body=>{
+   if(body.text?.format?.name==='agent_suggestion_alternatives')return {alternatives:[],missing_information:[]}
+   if(body.text?.format?.name==='agent_suggestion_primary')return {user_goal:'Answer the visible customer',responses:[{button:'Reply',icon:'circle-question-mark',response:'Thank you for the details.',use_when:'',evidence_ids:['message:'+visible+'-message']}],missing_information:[]}
+   return 'Thank you for the details.'
+  }
+  for(const [label,token,value,hasContext] of [
+   ['restricted',w.tokens.operator,selected,before],
+   ['all-in-scope',w.tokens.operator,{groupIds:groups,includeUngrouped:false},true],
+   ['NULL',w.tokens.operator,null,true],
+   ['owner',w.tokens.owner,empty,true],
+  ]){
+   await scope(value)
+   for(const kind of ['generations','suggestions']){
+    const frontier=await current(),admitted=await app.call(`${A}/conversations/${visible}/${kind}`,{token,body:{expectedRevision:frontier.revision}})
+    assert.equal(admitted.status,202,label+' '+kind+' public admission remains available')
+    await execute(admitted.data.id,label,kind,hasContext)
+   }
+  }
+  // A contact principal is never interpreted as a teammate when applying S1.
+  await scope(selected)
+  const {sha}=await import('../../journeys/kit/app.mjs'),token=f.p+'-contact-session'
+  await app.db.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,contact_id,expires_at) VALUES(?,?,?,'contact',?,?)").bind(sha(token),contact,p,contact,Date.now()+3600000).run()
+  const frontier=await current(),sent=await app.call(`/api/conversations/${visible}/messages`,{token,body:{localId:f.p+'-contact-turn',content:'Please help with this conversation.',expectedRevision:frontier.revision,expectedLastMessageId:frontier.last_message_id}})
+  assert.equal(sent.status,200,'contact message admission remains available')
+  const automatic=await app.first("SELECT id,actor_json FROM ai_generations WHERE project_id=? AND conversation_id=? AND json_extract(actor_json,'$.role')='contact' ORDER BY rowid DESC LIMIT 1",p,visible)
+  assert.ok(automatic,'contact message queues an automatic reply')
+  assert.equal(JSON.parse(automatic.actor_json).id,contact,'automatic generation retains the contact principal')
+  await execute(automatic.id,'contact-initiated','generations',true)
+  return records
+ }finally{ai.respond=savedRespond;ai.before=savedBefore}
+}
+
+function promptScopePacket(body){
+ const strings=value=>typeof value==='string'?[value]:value&&typeof value==='object'?Object.values(value).flatMap(strings):[]
+ for(const text of strings(body.input)){
+  const start=text.indexOf('{');if(start<0)continue
+  let packet;try{packet=JSON.parse(text.slice(start))}catch{continue}
+  if(Array.isArray(packet.activity)||Array.isArray(packet.evidence?.customer_observations))return packet
+ }
+ assert.fail('the actual provider request must contain the scoped conversation packet')
+}

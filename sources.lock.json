@@ -4273,7 +4273,7 @@
       "executable": false
     },
     "src/edition/agent-door/read.ts": {
-      "sha256": "213d564d058d5597aef17d167808ac189144c5b47c7d98657277963644c8e364",
+      "sha256": "4a3a7747f1c6c624c1861be67ccd1826d8d2efc09633cd3385d3303000d646d5",
       "executable": false
     },
     "src/edition/agent-door/resources.ts": {
@@ -4289,7 +4289,7 @@
       "executable": false
     },
     "src/edition/agent-door/tools.ts": {
-      "sha256": "88d0d5ffbc7f8ab8e8c7e76c687d9d755e4693605fb97d7c2fb643be5548d97c",
+      "sha256": "547328b26c0187cd3a6ff0a71385039826eb39eb85d3927f11eb146d809c272a",
       "executable": false
     },
     "src/edition/ai/customer-context-provider.ts": {
@@ -4545,7 +4545,7 @@
       "executable": false
     },
     "src/modules/ai-support/context.ts": {
-      "sha256": "52a25787b6428a5760ac1f25d43a7d7f95e2ddc8ae15fa723004516e4e2ed39b",
+      "sha256": "7cee5c06863ab85953b2a05187cdfddeb638538439319f540337ed23fdac8051",
       "executable": false
     },
     "src/modules/ai-support/customer-message.ts": {
@@ -4577,7 +4577,7 @@
       "executable": false
     },
     "src/modules/ai-support/generation-provider.ts": {
-      "sha256": "eecc650f56d7f44b940039dc5564cbbacdbc5c75949b6440ecdef72a5f95edcd",
+      "sha256": "83a30b483d786a9a8ccbcf129a929425bd03e7ac1e31f47c9fe345dda4d71257",
       "executable": false
     },
     "src/modules/ai-support/generation-queue.ts": {
@@ -14225,7 +14225,7 @@
       "executable": false
     },
     "tests/helpers/agent-door/journey.mjs": {
-      "sha256": "26235ec9574e404d5f809b5b882bf340e6a382e7f4f9e8161345d214900c7981",
+      "sha256": "4a67b91f4f7ef0fafcb7f8cc0e43c34bf9fece61aa0e64efffe57c8dabb950d4",
       "executable": false
     },
     "tests/helpers/agent-door/phase-fixtures.mjs": {
@@ -14246,6 +14246,10 @@
     },
     "tests/helpers/agent-door/surface-journey.json": {
       "sha256": "9a483027ff9bae0935a9ef2d03ce6e2110e0683674b3344169b1c524d9fd3d80",
+      "executable": false
+    },
+    "tests/helpers/agent-door/ticket-scope.mjs": {
+      "sha256": "21c331166ed6f8280a0094226d1a77756afcc513d652eb69a1fffd737392cef5",
       "executable": false
     },
     "tests/helpers/ai/advice-procedures-browser.mjs": {
@@ -14309,7 +14313,7 @@
       "executable": false
     },
     "tests/helpers/ai/repository.mjs": {
-      "sha256": "fe5ef2ae1595abb792da59ffd57f1175e5e258b26ece76b162aa9414586b1e38",
+      "sha256": "f8c75982219b61a48f896f8a671ea05b755e1c3dc4ab997c950bd11fe7269a30",
       "executable": false
     },
     "tests/helpers/ai/suggestion-network.mjs": {
@@ -14317,7 +14321,7 @@
       "executable": false
     },
     "tests/helpers/ai/ticket-scope.mjs": {
-      "sha256": "654c21230040e1137141ccbe26759a2fe4734d3315ea75c4cb513c508911cb54",
+      "sha256": "c9be7c37bdb98a07cb648595c3fa9ac8d7d5bf908bcee752df29bf8dbd493054",
       "executable": false
     },
     "tests/helpers/ai/training-browser.mjs": {

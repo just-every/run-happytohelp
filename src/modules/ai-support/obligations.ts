@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {cronRoom} from '../../platform/cron-budget'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
@@ -52,7 +53,7 @@ export const obligationRoutes=new Hono<AppEnv>()
 obligationRoutes.use(path+'*',async(c,next)=>{
  const pid=c.req.param('projectId')!,actor=await requireProject(c,pid,true)
  if(!(await memberAccess(c.env.DB,pid,actor.id))?.permissions.has('conversations.manage'))throw new HTTPException(403,{message:'Conversation management permission required'})
- if(!await c.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${live}`).bind(c.req.param('conversationId')!,pid).first())throw new HTTPException(404)
+ if(!await c.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${live} AND ${ticketScopeSql('?')}`).bind(c.req.param('conversationId')!,pid,actor.id).first())throw new HTTPException(404)
  c.header('Cache-Control','private, no-store');await next()
 })
 obligationRoutes.get(path,async c=>{

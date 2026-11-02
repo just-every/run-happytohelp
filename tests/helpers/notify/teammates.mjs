@@ -1,7 +1,9 @@
+import {notificationTicketScopeAssertions} from '../ai/ticket-scope.mjs'
 import assert from 'node:assert/strict'
 import {recipients} from '../email/app.mjs'
 
 export async function teammateOutcomes(m,brands){
+ await notificationTicketScopeAssertions(m)
  const {app,mail}=m,[b,foreign]=brands,{w,base,desk,req,visitor,widget}=b,id=widget.id,user=w.users.operator,address=`operator-notify-alpha@example.test`
  const kinds=['assignment','customer_updated','group','follower','mention']
  const inbox=async(token=w.tokens.operator)=>(await app.ok(base+'/notification-inbox',{token})).data

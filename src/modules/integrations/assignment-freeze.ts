@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import type {Env} from '../../platform/env'
 import {cronRoom} from '../../platform/cron-budget'
 import type {OperatorNotification} from './operator-notifications'
@@ -7,7 +8,7 @@ const claimId="'ticket-notice:'||o.project_id||':'||o.conversation_id||':team:as
 const inboxId="CASE WHEN substr(o.id,1,11)='assignment:' THEN o.id ELSE 'team-notice:'||o.project_id||':assignment:'||o.id||':'||o.user_id END"
 // Reuse the live ticket predicate without a per-notice repository read. This is
 // a correlated EXISTS, so each assignment keeps its own project/contact fence.
-const eligible=notificationTicketSql.replace('c.id=? AND c.project_id=?','c.id=o.conversation_id AND c.project_id=o.project_id')
+const eligible=notificationTicketSql.replace('c.id=? AND c.project_id=?','c.id=o.conversation_id AND c.project_id=o.project_id')+` AND ${ticketScopeSql('o.user_id')}`
 
 /** Freeze independent scheduled assignment audiences in one atomic transaction.
  * Known preparation failures retain their original per-event recovery path.
@@ -21,7 +22,7 @@ export async function freezeAssignmentNotifications(env:Env,rows:OperatorNotific
  const result=await env.DB.batch<{id:string}>([
   env.DB.prepare(`INSERT OR IGNORE INTO notification_trigger_claims(id,project_id,conversation_id,event,claim_token,state,outcome_json,created_at)
    SELECT ${claimId},o.project_id,o.conversation_id,'team:assignment:'||o.id,?2,'complete',
-    json_object('recipients',json(CASE WHEN m.user_id IS NOT NULL AND u.id IS NOT NULL AND EXISTS(SELECT 1 FROM conversations assigned WHERE assigned.id=o.conversation_id AND assigned.project_id=o.project_id AND assigned.assigned_to=o.user_id) THEN json_array(o.user_id) ELSE '[]' END)),?3
+    json_object('recipients',json(CASE WHEN m.user_id IS NOT NULL AND u.id IS NOT NULL AND EXISTS(SELECT 1 FROM conversations assigned WHERE assigned.id=o.conversation_id AND assigned.project_id=o.project_id AND assigned.assigned_to=o.user_id AND ${ticketScopeSql('o.user_id','assigned')}) THEN json_array(o.user_id) ELSE '[]' END)),?3
    FROM json_each(?1) selected JOIN operator_notifications o ON o.id=selected.value
    LEFT JOIN memberships m ON m.project_id=o.project_id AND m.user_id=o.user_id LEFT JOIN users u ON u.id=m.user_id
    WHERE o.state='pending' AND o.kind='assignment' AND ${noRecovery} AND EXISTS(${eligible})`).bind(selected,token,stamp),

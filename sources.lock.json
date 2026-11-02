@@ -4617,7 +4617,7 @@
       "executable": false
     },
     "src/modules/ai-support/obligations.ts": {
-      "sha256": "f3356f6e238925cd8b4f7422f6253d40708d714eb15934cc22669191c2d892d1",
+      "sha256": "102ecdb2bd6f7cefa20632cf0718af099c8171b6b539a86bed7b20599412a5cc",
       "executable": false
     },
     "src/modules/ai-support/presentation.ts": {
@@ -4665,11 +4665,11 @@
       "executable": false
     },
     "src/modules/ai-support/repository.ts": {
-      "sha256": "8bf3ec507514ac813ab934cd66b38d7c98967b079c59ae3959da2cde8d5a32bf",
+      "sha256": "98f502caac231a8c7c46d4e31432b1b03909268a6e0e17e2d2e23494288d96d8",
       "executable": false
     },
     "src/modules/ai-support/routes.ts": {
-      "sha256": "5f3407206339b939d21183fa4eeef68006e1f61b60068adcd23374b9de2c2747",
+      "sha256": "9b12ffb88ae53dd614a109e350b4b4a1543462b705722fbe2a79449553b775dd",
       "executable": false
     },
     "src/modules/ai-support/selection.ts": {
@@ -6417,7 +6417,7 @@
       "executable": false
     },
     "src/modules/integrations/assignment-freeze.ts": {
-      "sha256": "7a4811ac9a327d06086035c95ae8f6ea556e5f38fe943f6b91bc80d69dd39248",
+      "sha256": "b264e29a92deec5a80c87241e78e495f2d57b828755f28e121f000a39630bf8b",
       "executable": false
     },
     "src/modules/integrations/authentication-results.ts": {
@@ -6685,11 +6685,11 @@
       "executable": false
     },
     "src/modules/integrations/operator-activity.ts": {
-      "sha256": "7a4758482e044ba7372a83ddfab6de67285387b6196a81b62df1b29a167ad86c",
+      "sha256": "346735ddb358fd861d2abf4abe3e9653537a695da5c22913a5fde9151bbe6f0c",
       "executable": false
     },
     "src/modules/integrations/operator-notifications.ts": {
-      "sha256": "f8b6d3422105e0162a4a82f236c165f25edde2dce49ace2a490addd9b4c7724b",
+      "sha256": "884967a0a220fbe8742843a984cc48e45fa813634e2e634178b5872d6ed4eb12",
       "executable": false
     },
     "src/modules/integrations/participant-proof.ts": {
@@ -14245,7 +14245,7 @@
       "executable": false
     },
     "tests/helpers/ai/obligations.mjs": {
-      "sha256": "7e7fa291097807ee9491404e53346d00bb367f0c5ddb3a4497e8315ee546f4e4",
+      "sha256": "ddbbef850ff21c2aa881b13ce68b99e6b3c247bf0047d8347ccdc413a971e9dc",
       "executable": false
     },
     "tests/helpers/ai/procedures-browser.mjs": {
@@ -14265,11 +14265,15 @@
       "executable": false
     },
     "tests/helpers/ai/repository.mjs": {
-      "sha256": "b362576f56886c6832196250ff0807040e52329195719de28287ff3eded36497",
+      "sha256": "fe5ef2ae1595abb792da59ffd57f1175e5e258b26ece76b162aa9414586b1e38",
       "executable": false
     },
     "tests/helpers/ai/suggestion-network.mjs": {
       "sha256": "e880cbac483f9894cb764f24b0e171933cbeaf7be37e4b96fe1461a8ce30d79f",
+      "executable": false
+    },
+    "tests/helpers/ai/ticket-scope.mjs": {
+      "sha256": "654c21230040e1137141ccbe26759a2fe4734d3315ea75c4cb513c508911cb54",
       "executable": false
     },
     "tests/helpers/ai/training-browser.mjs": {
@@ -15001,7 +15005,7 @@
       "executable": false
     },
     "tests/helpers/notify/teammates.mjs": {
-      "sha256": "fee253473e99919d152379019493b4c36169cced536f3d864b37b8c296771aa4",
+      "sha256": "080d9682946dba4ce5f337168974c39acfc791dfe091470b59a9682c884f5f8d",
       "executable": false
     },
     "tests/helpers/openai-stream.mjs": {

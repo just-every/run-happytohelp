@@ -1,3 +1,4 @@
+import {aiTicketScopeAssertions} from './ticket-scope.mjs'
 import assert from 'node:assert/strict'
 import {assistantApp} from './app.mjs'
 import {openaiToolCall} from '../openai-stream.mjs'
@@ -10,6 +11,7 @@ const read=(repository,path,id)=>openaiToolCall('repo_read_file',{repository,pat
 export async function repositoryJourney(a,v){
  const {app,ai,p,owner}=a
  try{
+  await aiTicketScopeAssertions(a)
   await app.configure({GITHUB_TOKENS:JSON.stringify({[p]:'synthetic-mapped-installation-token'})})
   // GitHub is a fixture at the network edge: one file whose content holds a secret.
   const fetched=[];ai.network=async request=>{fetched.push(new URL(request.url).pathname);assert.match(request.url,/^https:\/\/api\.github\.com\/repos\/just-every\/run-happytohelp\/contents\/src\/app\.ts/)

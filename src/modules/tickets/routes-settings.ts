@@ -8,6 +8,8 @@ import {fieldDefinition,validateFieldValue} from './fields'
 import {groupDefinition} from './groups'
 export const ticketSettingsRoutes=new Hono<AppEnv>()
 const prefix='/projects/:projectId'
+const selectedByRole=`SELECT 1 FROM project_roles role_selection,json_each(CASE WHEN json_valid(role_selection.ticket_scope_json) THEN role_selection.ticket_scope_json ELSE NULL END,'$.groupIds') selected WHERE role_selection.project_id=? AND selected.value=?`
+const selectedGroupMessage='A role still uses this group; remove it from the selection first.'
 ticketSettingsRoutes.get(`${prefix}/ticket-settings`,async c=>c.json({data:await ticketSettings(c.env,await scope(c) as Actor)}))
 for(const kind of ['statuses','fields','groups'] as const){
  const table=`ticket_${kind}`,path=`${prefix}/ticket-${kind}`
@@ -39,6 +41,7 @@ for(const kind of ['statuses','fields','groups'] as const){
   }
   if(method==='delete'&&kind==='fields'&&await c.env.DB.prepare('SELECT 1 FROM ticket_field_values WHERE project_id=? AND field_id=? LIMIT 1').bind(actor.projectId,id).first())invalid('A field with ticket values cannot be deleted; edit its definition or make it optional instead')
   if(method==='delete'&&kind==='statuses'&&existing.is_default)invalid('Default lifecycle statuses cannot be removed')
+  if(method==='delete'&&kind==='groups'&&await c.env.DB.prepare(selectedByRole).bind(actor.projectId,id).first())throw new HTTPException(409,{message:selectedGroupMessage})
   if(method==='delete'&&kind==='groups'&&await c.env.DB.prepare('SELECT 1 FROM conversations WHERE project_id=? AND group_id=? LIMIT 1').bind(actor.projectId,id).first())invalid('Move tickets out of this group before deleting it')
   const now=Math.max(Date.now(),(existing?.updated_at??0)+1),receipt=crypto.randomUUID(),extra:string[]=[],args:any[]=[]
   if(existing){extra.push(`EXISTS(SELECT 1 FROM ${table} WHERE project_id=? AND id=? AND updated_at=?)`);args.push(actor.projectId,id,existing.updated_at)}
@@ -46,7 +49,7 @@ for(const kind of ['statuses','fields','groups'] as const){
   if(fieldSnapshot!==undefined){extra.push(`(${fieldSnapshotSql})=?`);args.push(actor.projectId,id,fieldSnapshot)}
   if(kind==='fields'&&method!=='delete')for(const role of [...JSON.parse(definition.read_roles_json),...JSON.parse(definition.write_roles_json)])if(!['owner','admin','operator','collaborator','api'].includes(role)){extra.push('EXISTS(SELECT 1 FROM project_roles WHERE project_id=? AND id=?)');args.push(actor.projectId,role)}
   if(kind==='groups'){
-   if(method==='delete'){extra.push('NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND group_id=?)');args.push(actor.projectId,id)}
+   if(method==='delete'){extra.push('NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND group_id=?)',`NOT EXISTS(${selectedByRole})`);args.push(actor.projectId,id,actor.projectId,id)}
    else{for(const user of definition.members){extra.push('EXISTS(SELECT 1 FROM memberships WHERE project_id=? AND user_id=?)');args.push(actor.projectId,user)}
     extra.push(`NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND group_id=? AND assigned_to IS NOT NULL AND assigned_to NOT IN (SELECT value FROM json_each(?)))`);args.push(actor.projectId,id,JSON.stringify(definition.members))}
   }
@@ -65,6 +68,7 @@ for(const kind of ['statuses','fields','groups'] as const){
    }
   }
   const committed=await c.env.DB.batch(statements)
+  if(!committed[0].meta.changes&&kind==='groups'&&method==='delete'&&await c.env.DB.prepare(selectedByRole).bind(actor.projectId,id).first())throw new HTTPException(409,{message:selectedGroupMessage})
   if(!committed[0].meta.changes)throw new HTTPException(409,{message:'Settings or authority changed. Reload before applying changes.'})
   if(method==='delete')return c.json({removed:true})
   const settings=await ticketSettings(c.env,actor)

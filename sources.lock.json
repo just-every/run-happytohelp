@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "40fce58d0dca7e02364709fa4a2ea69dfcd3429023148c5a4c0b126fe7f13bef",
+      "sha256": "c6ea7f72ebeb5544fa7a7eb95e46f00fb4286d57c2b2204c7cd6329db5b5ed0a",
       "executable": false
     },
     "DEMO.md": {
@@ -4449,7 +4449,7 @@
       "executable": false
     },
     "src/modules/access/assign.ts": {
-      "sha256": "7ff59010b016492bca34944ebf1fa00cac5fbaca09082e0a99ab18933ec6ae3e",
+      "sha256": "067fce4f0b80797ceb3c98a88b395d895092f69fadd5934329fe139c62a21454",
       "executable": false
     },
     "src/modules/access/catalogue.ts": {
@@ -4481,7 +4481,7 @@
       "executable": false
     },
     "src/modules/access/routes.ts": {
-      "sha256": "6176acee589eafacaf6604932e6ce870c7ad2694c373a06929e8d144075cee44",
+      "sha256": "b5589289da03b6684833bd1343833a6632d24bd75de89b96ee84a08b38f6e2cb",
       "executable": false
     },
     "src/modules/access/self-service-routes.ts": {
@@ -5265,7 +5265,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "c6435ca667e9bf2e21560a404971a101e86457078e78b7ef20207bdb16810f31",
+      "sha256": "099ba9f0eda89c7f69a8a4ce4acc80aadb391d6d5a6adbcbe1c86c8c396d98cc",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
@@ -8473,7 +8473,7 @@
       "executable": false
     },
     "src/modules/tickets/routes-settings.ts": {
-      "sha256": "0df0c8234bbf70d389226329bf5f7048735007ba004445f464330c4d49a18ea3",
+      "sha256": "040b4c942440ae8bd54b32d9e9c1cd9de118cc6fbe92ef02c6d563141864f57e",
       "executable": false
     },
     "src/modules/tickets/routes.ts": {
@@ -9853,7 +9853,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/Conversation.jsx": {
-      "sha256": "b0ca6c8446bff5e35e64f60aeef288e7e06055e580ca3fe7210dc1d566b1b1f3",
+      "sha256": "e2e9c06ff5358fd21ac56fae5cfcceda95898e700abccc66c9ce15a5c7c89eea",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ai-controls.css": {
@@ -10485,7 +10485,7 @@
       "executable": false
     },
     "src/ui/dashboard/contexts/ChatContext.jsx": {
-      "sha256": "8998d7622137933da008303037ebdd98feff0f1c4490216fcb42129d1ea86830",
+      "sha256": "a9808ecab855ba3096a88c2476b7278f218f933ea62e757f9ae385e834332949",
       "executable": false
     },
     "src/ui/dashboard/contexts/ConversationSuggestionsContext.jsx": {
@@ -10521,7 +10521,7 @@
       "executable": false
     },
     "src/ui/dashboard/hooks/useConversationLoading.jsx": {
-      "sha256": "c0ea65dea908c625ca1630e8835be9dfdf62757b14ebf236db80f7b7ef2e27ca",
+      "sha256": "5cb1c848137a766e5f4bbca71cf7f3dc5c57e95ecd2d225576c65831ff0de6bb",
       "executable": false
     },
     "src/ui/dashboard/hooks/useConversationSuggestions.jsx": {
@@ -12065,11 +12065,11 @@
       "executable": false
     },
     "src/ui/native/pages/security/RolesPage.jsx": {
-      "sha256": "0592c08154faa12a5cef563262f490f061b5775f0e2c5172fc5dca9cf753409e",
+      "sha256": "063954a302d016226bc06f6a53aa60641d6045f0ec8ef0e5dd8d1f4c6cf5fa70",
       "executable": false
     },
     "src/ui/native/pages/security/security.css": {
-      "sha256": "4bda8252d12f8b1bd3902dd5a41882e71bd21491cc2f8691af299726ec470a83",
+      "sha256": "5685cad565539978b459274257e2f4abc613c471715cc7db81173fab2916981d",
       "executable": false
     },
     "src/ui/native/pages/security/SecurityLog.jsx": {
@@ -12305,7 +12305,7 @@
       "executable": false
     },
     "src/ui/native/transport.js": {
-      "sha256": "dee2a0cef7d9b23a68c35999b31aa7bd2d88b51e259740e2d6b06cf4b31136e8",
+      "sha256": "f8f85e6910cb5edc5a1ef42f38d63a9990b850b89f22211c3d30bb687e47e5c7",
       "executable": false
     },
     "src/ui/native/workspace-page-code.js": {
@@ -14753,7 +14753,7 @@
       "executable": false
     },
     "tests/helpers/identity/roles-audit.mjs": {
-      "sha256": "91cb703ab0c57234a722decc85e794ff69b78249caf41a551afb755efffbac44",
+      "sha256": "c26a8e24dccf30970e9583b3f780752632bacff910ad3fdac539ba0127d26fd8",
       "executable": false
     },
     "tests/helpers/identity/scoped-authority.mjs": {
@@ -14761,7 +14761,7 @@
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {
-      "sha256": "45a9ad6797a37a8036f5622ffe4f5892095ce75177f8b4e0cc837b34be6c847d",
+      "sha256": "34e247c6507afb42c321ff8a1caa77d60400ac0f104120fdd6e7aed79459afd2",
       "executable": false
     },
     "tests/helpers/identity/ticket-scope.mjs": {

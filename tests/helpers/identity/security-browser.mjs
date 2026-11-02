@@ -1,3 +1,4 @@
+import {ticketScopeBrowserJourney} from './ticket-scope-browser.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
 import {readFile} from 'node:fs/promises'
@@ -8,6 +9,7 @@ import {totp} from './two-factor.mjs'
 import {magicSignIn} from './magic-browser.mjs'
 
 export async function securityBrowserJourney(browser){
+ await ticketScopeBrowserJourney(browser)
  const reservation=createServer();await new Promise(done=>reservation.listen(0,'127.0.0.1',done))
  const port=reservation.address().port;await new Promise(done=>reservation.close(done))
  const runtime=await createRuntime({port,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:`http://localhost:${port}`,EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-mail-edge',EMAIL_FROM:'support@example.test'},outboundFixture:new URL('./mail-edge.mjs',import.meta.url).href})

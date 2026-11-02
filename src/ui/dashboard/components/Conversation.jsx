@@ -110,6 +110,14 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setIsMainVisible,
         lastConnected,
     });
+    useEffect(() => {
+        if (![401,403,404].includes(loadError?.status)) return;
+        draftEditVersion.current++; draftAdoptionRef.current = null; macroDraftUsageRef.current = null;
+        setContent(''); setFiles([]); setLoadingContent(''); setDraftOrigin(null); setKnowledgeReferences([]);
+        setDraftError(''); setDraftFocusRequest(null); setIsTyping(false);
+        setEscalationDraftId(null); setNoteMacro(null); setIsNoteModalVisible(false);
+        setTicketDialog(null); setIsSending(false); setPanelAlert(false);
+    }, [loadError]);
     const applyMacroDraft = (text, metadata) => {
         if (metadata.reply_type === 'note') { setNoteMacro({content:text,media:metadata.media || []}); setIsNoteModalVisible(true); }
         else {
@@ -331,7 +339,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         return <div className="chat flex-column justify-content-center text-center">
             <div className="container-xxl">
                 { loadError ? <p className="conversation-load-error" role="alert">
-                    Couldn’t load this conversation. <button type="button" onClick={ retryConversationLoad }>Retry</button>
+                    {[401,403,404].includes(loadError.status)?'This ticket is unavailable. Your access or its group may have changed.':'Couldn’t load this conversation.'} <button type="button" onClick={ retryConversationLoad }>Retry</button>
                 </p> : <div className="spinner-border text-primary" role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div> }

@@ -31,6 +31,7 @@ export async function agentAuthority(env:Env,actor:Actor,ctx:ToolContext,tool:st
  AND (SELECT settings_json FROM project_settings WHERE project_id=m.project_id) IS ?
  AND EXISTS(SELECT 1 FROM agent_door_state WHERE id=1 AND local_paused=0 AND envelope IS ? AND local_document IS ? AND local_revision=?
   AND (envelope IS NULL OR json_extract(envelope,'$.exp')*1000>CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)))
+ ${ctx.consent?"AND NOT EXISTS(SELECT 1 FROM bs_settings WHERE singleton=1 AND stopped=1)":''}
  AND NOT EXISTS(SELECT 1 FROM agent_door_agents WHERE id=? AND revoked=1)`
  return {[nativeAgentAuthority]:{sql,operationId:crypto.randomUUID(),projectId:actor.projectId,params:[actor.projectId,actor.id,actor.role,role?.role_key??null,role?.updated_at??null,projectSettings?.settings_json??null,state.envelope,state.local_document,state.local_revision,ctx.agent.id],ctx,tool}}
 }

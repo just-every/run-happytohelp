@@ -5,6 +5,7 @@ export function agentArchiveRow(table,row){
 }
 export async function agentArchiveSafety({db,tables}){
  const q=name=>'"'+tables[name].replaceAll('"','""')+'"',checks=[];
+ for(const name of ['agent_door_relay','agent_door_replay_aliases'])if(tables[name]&&await db.prepare('SELECT 1 FROM '+q(name)+' LIMIT 1').first())throw Error('Installation-private agent custody cannot be imported');
  if(tables.followup_obligations&&tables.conversations&&tables.messages){
   checks.push(`SELECT 1 FROM ${q('followup_obligations')} o LEFT JOIN ${q('conversations')} c ON c.id=o.conversation_id AND c.project_id=o.project_id LEFT JOIN ${q('messages')} m ON m.id=o.message_id AND m.project_id=o.project_id AND m.conversation_id=o.conversation_id WHERE c.id IS NULL OR m.id IS NULL OR o.quote_start<0 OR o.quote_end<=o.quote_start OR o.quote_end>length(m.content) LIMIT 1`);
   if(tables.escalation_issues)checks.push(`SELECT 1 FROM ${q('followup_obligations')} o LEFT JOIN ${q('escalation_issues')} i ON i.id=o.dependency_id AND i.project_id=o.project_id WHERE o.dependency_id IS NOT NULL AND i.id IS NULL LIMIT 1`);

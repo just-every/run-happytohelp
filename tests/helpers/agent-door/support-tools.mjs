@@ -124,14 +124,22 @@ export async function supportToolsJourney({app,native,call,rpc,adopt,context,own
  await adopt({...autonomousPolicy(),rules:[{id:'hold',class:'*',do:'approval',approver:['person:'+reviewerSub],wait:'PT1H'}]})
  const pending=await rpc('tools/call',{name:newNames[4],arguments:pendingArgs}),pendingId=pending.data.result._meta['com.runeditrun/approval'].id
  await adopt()
+ const completedBeforeErasure=await app.first('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,firstArgs.idempotency_key)
+ const peerBeforeErasure=await app.first('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,retainedArgs.idempotency_key)
  assert.equal((await native(P+'/contacts/'+erased.contact.id+'/erase',{body:{}})).data?.erased??true,true)
  await app.configure({})
  assert.equal((await call(newNames[3],{id:erased.ticket.id})).code,'not_found')
  assert.equal((await app.call(C(erased.ticket.id)+'/macro-draft',{token:owner.token})).status,404)
- assert.equal((await call(newNames[4],firstArgs)).code,'not_found')
+ assert.equal((await call(newNames[4],firstArgs)).code,'subject_erased')
+ const erasedCall=await app.first('SELECT * FROM agent_door_calls WHERE agent=? AND decision_id=?',context.agentId,completedBeforeErasure.decision_id)
+ assert.equal(erasedCall.expires_at,completedBeforeErasure.expires_at,'erasure cannot extend a completed call replay horizon')
+ assert.equal(erasedCall.key,'erased:'+completedBeforeErasure.decision_id);assert.equal(erasedCall.digest,'')
+ assert.equal(JSON.parse(erasedCall.outcome).code,'subject_erased')
+ assert.deepEqual(await app.first('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,retainedArgs.idempotency_key),peerBeforeErasure,'a peer call stays byte-identical')
+
  assert.equal((await app.first('SELECT count(*) n FROM macro_drafts WHERE conversation_id=?',erased.ticket.id)).n,0)
- assert.equal(await app.first('SELECT id FROM agent_door_approvals WHERE id=?',pendingId),null)
- assert.equal(await app.first('SELECT id FROM agent_door_reviews WHERE id=?',erasedReviewId),null)
+ assert.match((await app.first("SELECT json_extract(saved,'$.tombstone.erasure_id') erased FROM agent_door_approvals WHERE id=?",pendingId)).erased,/^[0-9a-f-]{36}$/)
+ assert.equal((await app.first("SELECT json_extract(saved,'$.tombstone.erasure_id') erased FROM agent_door_reviews WHERE id=?",erasedReviewId)).erased,(await app.first("SELECT json_extract(saved,'$.tombstone.erasure_id') erased FROM agent_door_approvals WHERE id=?",pendingId)).erased)
  assert.equal((await call(newNames[3],{id:retained.ticket.id})).result.draft.content,retainedArgs.content)
  // Native role narrowing applies on the next request, including a cached replay.
  const role=(await native(P+'/roles',{body:{name:'Synthetic draft reader only',base:'operator',permissions:[]}})).data

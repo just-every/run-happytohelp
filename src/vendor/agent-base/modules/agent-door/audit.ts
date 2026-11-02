@@ -7,6 +7,8 @@ import type { ClassAndFacts, CompanyPolicyDecision, DecisionMeta, NativeTarget, 
 import { preparedBy } from './people.ts'
 
 export interface AuditRow {
+  tombstone?: import('./erasure.ts').Tombstone
+  role?: string
   authority?: 'none'
   company_policy?: CompanyPolicyDecision
   sequence?: number; id: string; at: string; door: 'mcp' | 'embedded'; agent: Principal['agent']; sponsor: { id: string; name: string }; label: string
@@ -16,12 +18,13 @@ export interface AuditRow {
   decision: string; outcome: 'running' | 'done' | 'refused' | 'pending' | 'failed' | 'replayed'; code: string | null
   approval: { id: string; by: string[] } | null; review: { id: string; by: string | null } | null
   idempotency_key: string | null; trace: string | null; ignored_arguments: string[]; replay_of: string | null
+  resources?: string[]; resource_count?: number
   classification_refusal?: string
 }
 export interface Evidence { company_policy?: CompanyPolicyDecision; document: PolicyDocument; usage: Record<string, number>; classes: ClassAndFacts[]; result: string; rules: unknown }
 export function newAudit(rt: Runtime, principal: Principal, tool: string, door: AuditRow['door'], trace: unknown): AuditRow {
   const id = crypto.randomUUID()
-  return { id, operation_id: principal.operationId ?? id, scopes: [...principal.scopes], client_id: principal.clientId ?? null, at: new Date(rt.now()).toISOString(), door, agent: { ...principal.agent, specialist: principal.agent.specialist ?? null }, sponsor: { id: principal.person.id, name: principal.person.name }, label: preparedBy(principal).label,
+  return { id, role: principal.person.role, operation_id: principal.operationId ?? id, scopes: [...principal.scopes], client_id: principal.clientId ?? null, at: new Date(rt.now()).toISOString(), door, agent: { ...principal.agent, specialist: principal.agent.specialist ?? null }, sponsor: { id: principal.person.id, name: principal.person.name }, label: preparedBy(principal).label,
     ...(principal.continuationItemId === undefined ? {} : { continuation_item_id: principal.continuationItemId }),
     consent: principal.consent ?? null, tool, resource: null, decision_id: null, classes: [], revision: null, rules: [], decision: 'none', outcome: 'refused', code: null, approval: null, review: null, idempotency_key: null,
     trace: typeof trace === 'string' ? trace.slice(0, 512) : null, ignored_arguments: [], replay_of: null }
@@ -33,16 +36,20 @@ export function recordDecision(row: AuditRow, decision: DecisionMeta) {
   row.rules = decision.classes.map(({ class: cls, rule, do: action }) => ({ class: cls, rule, do: action }))
 }
 export function auditInsert(rt: Runtime, row: AuditRow, evidence?: Evidence, guard?: string) {
-  return rt.options.db.prepare(`INSERT INTO agent_door_audit(id,at,agent,classes,row,evidence) SELECT ?,?,?,?,?,?${guard ? ' WHERE EXISTS(SELECT 1 FROM agent_door_usage WHERE decision_id=?)' : ''}`)
-    .bind(row.id, row.at, row.agent.id, JSON.stringify(row.classes.map(item => item.class)), JSON.stringify(row), evidence ? JSON.stringify(evidence) : null, ...(guard ? [guard] : []))
+  return rt.options.db.prepare(`INSERT INTO agent_door_audit(id,at,agent,classes,row,evidence) SELECT ?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id IN (?,?) AND json_extract(row,'$.tombstone') IS NOT NULL)${guard ? ' AND EXISTS(SELECT 1 FROM agent_door_usage WHERE decision_id=?)' : ''}`)
+    .bind(row.id, row.at, row.agent.id, JSON.stringify(row.classes.map(item => item.class)), JSON.stringify(row), evidence ? JSON.stringify(evidence) : null, row.operation_id, row.decision_id, ...(guard ? [guard] : []))
 }
 export async function audit(rt: Runtime, row: AuditRow, evidence?: Evidence) {
-  await rt.options.db.prepare(`INSERT INTO agent_door_audit(id,at,agent,classes,row,evidence) VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET classes=excluded.classes,row=excluded.row,evidence=excluded.evidence`)
-    .bind(row.id, row.at, row.agent.id, JSON.stringify(row.classes.map(item => item.class)), JSON.stringify(row), evidence ? JSON.stringify(evidence) : null).run()
+  await rt.options.db.prepare(`INSERT INTO agent_door_audit(id,at,agent,classes,row,evidence) SELECT ?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id IN (?,?) AND json_extract(row,'$.tombstone') IS NOT NULL) ON CONFLICT(id) DO UPDATE SET classes=excluded.classes,row=excluded.row,evidence=excluded.evidence WHERE json_extract(agent_door_audit.row,'$.tombstone') IS NULL`)
+    .bind(row.id, row.at, row.agent.id, JSON.stringify(row.classes.map(item => item.class)), JSON.stringify(row), evidence ? JSON.stringify(evidence) : null, row.operation_id, row.decision_id).run()
 }
 export function outcomeRow(row: AuditRow, result: import('./types.ts').CallResult) {
   if (result.decision) recordDecision(row, result.decision)
   if (row.outcome !== 'replayed' && row.outcome !== 'failed') row.outcome = result.code === 'output_invalid' || result.code === 'execution_failed' ? 'failed' : result.outcome
+  if (row.outcome === 'done' && result.resources) {
+    row.resources = result.resources.map(link => link.uri).filter(uri => typeof uri === 'string')
+    row.resource_count = row.resources.length
+  }
   row.code = result.code ?? null
   row.approval = result.approval ? { id: result.approval.id, by: (result.receipt?.approved_by as string[]) ?? [] } : null
   row.review = result.review ? { id: result.review.id, by: null } : null

@@ -1282,20 +1282,6 @@
       ]
     },
     {
-      "path": "src/modules/import-kit/src/d1/README.md",
-      "originPath": "modules/import-kit/src/d1/README.md",
-      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
-      "files": {
-        "src/modules/import-kit/src/d1/README.md": "c3b4cf6387d435b6b8df992f7556acb4f68b897f0fea42caec8522cb9cd826a0"
-      },
-      "modes": {
-        "src/modules/import-kit/src/d1/README.md": "100644"
-      },
-      "originFiles": [
-        "modules/import-kit/src/d1/README.md"
-      ]
-    },
-    {
       "path": "src/modules/import-kit/src/d1/apply-effects.ts",
       "originPath": "modules/import-kit/src/d1/apply-effects.ts",
       "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
@@ -2402,6 +2388,20 @@
       ]
     },
     {
+      "path": "src/modules/import-kit/src/d1/README.md",
+      "originPath": "modules/import-kit/src/d1/README.md",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/d1/README.md": "c3b4cf6387d435b6b8df992f7556acb4f68b897f0fea42caec8522cb9cd826a0"
+      },
+      "modes": {
+        "src/modules/import-kit/src/d1/README.md": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/d1/README.md"
+      ]
+    },
+    {
       "path": "src/modules/import-kit/src/d1/redacted-custody.ts",
       "originPath": "modules/import-kit/src/d1/redacted-custody.ts",
       "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
@@ -3438,6 +3438,20 @@
       ]
     },
     {
+      "path": "src/site/base/contract-anchor.mjs",
+      "originPath": "foundation/runtime/contract-anchor.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/site/base/contract-anchor.mjs": "b63993a57cff119f3f1d4407963d2623abe18733fffb0f04de12f43bc503821d"
+      },
+      "modes": {
+        "src/site/base/contract-anchor.mjs": "100644"
+      },
+      "originFiles": [
+        "foundation/runtime/contract-anchor.mjs"
+      ]
+    },
+    {
       "path": "src/site/base/contract-docs.mjs",
       "originPath": "foundation/runtime/contract-docs.mjs",
       "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
@@ -3814,36 +3828,41 @@
     {
       "path": "src/vendor/agent-base/modules/agent-door",
       "originPath": "modules/agent-door",
-      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "revision": "8b925fa5ffaa577df9f2e4ebab6ede8af5155baa",
       "files": {
         "src/vendor/agent-base/modules/agent-door/admission.ts": "c67ee28a1ae61b963619ffc64807baaa37b618aec41d6a2d90f1852f5beebf9e",
-        "src/vendor/agent-base/modules/agent-door/ADOPTING.md": "f6dd56fd5000bd92aadc5f73e39b3b40e4d4312b12e30a153ffdeb0753ab344b",
-        "src/vendor/agent-base/modules/agent-door/approval-execution.ts": "1284b8823863fcce156675bd3e68fd6cc9578e9e2c87f3146e7bc45d2c8ef903",
-        "src/vendor/agent-base/modules/agent-door/approvals.ts": "45757936fac519de054ca754fd45ea3e6def75f18f1e71cb6a651e6451bf767c",
-        "src/vendor/agent-base/modules/agent-door/audit.ts": "8ed6c72459407c8f015d1e04d867764f041b0c7d3239aca619ca7d42195c2621",
+        "src/vendor/agent-base/modules/agent-door/ADOPTING.md": "69136c32b303bfebed9ade8d6ed25030fefe104182ea4916e7a43306b9c3d440",
+        "src/vendor/agent-base/modules/agent-door/adoption/penny/0106_agent_erasure_custody.sql": "6e93ac2193eae573b8f8b0926211b082b407003052d14a05da1960a7841f1854",
+        "src/vendor/agent-base/modules/agent-door/adoption/penny/penny-map.ts": "a4bb5ff1181c2142a831477dad3ad091be987826240c5a1589daa5492f14b51e",
+        "src/vendor/agent-base/modules/agent-door/adoption/penny/README.md": "7b74a5b6940efc56c444f550520914487b707b34d86c931f56fa38c481ac295f",
+        "src/vendor/agent-base/modules/agent-door/approval-execution.ts": "8ffca46e26303bd4660b1c5097a625427d1f6f9a1fe2b1f2aa062ccd337c9114",
+        "src/vendor/agent-base/modules/agent-door/approvals.ts": "6781a16cccccd8fdff148cefa3fafa2841d2ab7d99d0ece1af87f61f19388791",
+        "src/vendor/agent-base/modules/agent-door/audit.ts": "c4421e21fd7580c0848d906ade0eaefc00a50f04ac963a30eaa3e4a5c9a336b0",
         "src/vendor/agent-base/modules/agent-door/capabilities.d.mts": "af9a1d9f81a15df8caef2ab257c24b031dab60690984df557b9b82022888f339",
         "src/vendor/agent-base/modules/agent-door/capabilities.mjs": "91b2e22470c325bf5ecf0aa8ef9c4e36f05069407101207ca0e5f0c2fa083695",
-        "src/vendor/agent-base/modules/agent-door/CLAUSES.md": "0568321ca8cc6c5ff5056d3e12868795aadfedd17c51aa693dd4517450a9e867",
+        "src/vendor/agent-base/modules/agent-door/CLAUSES.md": "0cae7c4f0bcb61d6814e9833a4284b5e35627187cddb6ff4d5c2948122cf8016",
         "src/vendor/agent-base/modules/agent-door/company-policy.ts": "884846582a35c7783aab697752a3fc3ae682424897139ac6c73302450e25abb0",
         "src/vendor/agent-base/modules/agent-door/conformance/audit-pages.mjs": "87ea913c66198c17ad1154b513c1d3cf8a95026b833f8c0de6cc87178c71369c",
         "src/vendor/agent-base/modules/agent-door/conformance/audit-rows.mjs": "37b13e58447f9651a1399824be1a20ec05b6492761594e197e912df47798f5f1",
-        "src/vendor/agent-base/modules/agent-door/conformance/audit.mjs": "77d720ebb0c8d2fdc8ef60f59cb24b36dc378e34f11ed0c5de0527235d1a8061",
+        "src/vendor/agent-base/modules/agent-door/conformance/audit.mjs": "9abd99e58ac1bfe2d9dda40394bf129dd841ace30bdd4820dd71ecc08f5a0dda",
         "src/vendor/agent-base/modules/agent-door/conformance/authority.d.mts": "8c6807239646015bdac4aefe0afe9714aa9baf6527f1d86fe401b420f62f836f",
         "src/vendor/agent-base/modules/agent-door/conformance/authority.mjs": "5a65a157a288507bb884105abbab65a0876b066f742a8474b33528333c9c0a73",
         "src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs": "fea7829f3d31512f99649a657ecd641b554c158abd6caf99be1d4e9d357225ad",
-        "src/vendor/agent-base/modules/agent-door/conformance/discovery.mjs": "717c388ae1a8888659ac75fd4569fcabfe47d11419110cc5d14694281a42d484",
+        "src/vendor/agent-base/modules/agent-door/conformance/discovery.mjs": "027d17955e99c80072501a5d921bb44420383bfe0a351ccbae412e8a8ad9c70d",
+        "src/vendor/agent-base/modules/agent-door/conformance/erasure.mjs": "1e33e00db3ba162c118ddfedc4802b3d073d82947603a1a02a4ae07adb8d8a02",
         "src/vendor/agent-base/modules/agent-door/conformance/fixtures.mjs": "72c80b537f070be9ddddeee743c1c586e98fff3a58cf5ae66a6bd877fec04b54",
-        "src/vendor/agent-base/modules/agent-door/conformance/index.mjs": "88d622c1ae17bcfc457dc62302ace87f61565a828322f588e592ce5678843aaf",
+        "src/vendor/agent-base/modules/agent-door/conformance/index.mjs": "9ea8870dec33d9444861dd84b269fc54d7ec7708a2bf4ac5cb810bc6ba01e011",
         "src/vendor/agent-base/modules/agent-door/conformance/injection.mjs": "cf067d3b0973534ffba1404df2a09dd883d703bf33d3f752c0d608ae22c3fd97",
         "src/vendor/agent-base/modules/agent-door/conformance/invocation.mjs": "64449afe0ab3238f635d48f213131b635d19fcd4c08a3b6765c841c13df50025",
-        "src/vendor/agent-base/modules/agent-door/conformance/journey.mjs": "6b04714c746aeec401bed3277820e9c22219591bd0b5461fc23eb8a429da2b55",
+        "src/vendor/agent-base/modules/agent-door/conformance/journey.mjs": "21f3a8fa7929f5246dcc16d1c5640d3695032e190e2032bf3a7a90f60413b468",
         "src/vendor/agent-base/modules/agent-door/conformance/narrowing.d.mts": "682cfd551854aa5ecaa3db981ab99b98aa8950b9e5dc38a60ab4259c2bbcba12",
         "src/vendor/agent-base/modules/agent-door/conformance/narrowing.mjs": "77c5158dc2f9727e1dc7afe2d566c6996b1caaf045af84cc7a33dc069fa305db",
         "src/vendor/agent-base/modules/agent-door/conformance/negative.mjs": "1159eb3d24bf4f08cbb0433750b547d3a8e45f73ba4b9ed5216adf8c7323cc90",
         "src/vendor/agent-base/modules/agent-door/conformance/network-modules.mjs": "ce846475439ffc595440a8bed77bf23a257376b323c3f9b41703f13d27dbdedc",
         "src/vendor/agent-base/modules/agent-door/conformance/network-runtime.mjs": "8478493f22c364c6030f9f205f98919267f7df7080d520463af4a749ae69bcfa",
-        "src/vendor/agent-base/modules/agent-door/conformance/policy-phases.mjs": "8b18db81d0c8918033f7f0b7c3796edd22e45f77c8cf86fa375118b82af5503b",
-        "src/vendor/agent-base/modules/agent-door/conformance/protocol.mjs": "38b571b5b7e578f15f5ae25113e70bf5e8c44e7c0579d45ecc148d080280996c",
+        "src/vendor/agent-base/modules/agent-door/conformance/policy-phases.mjs": "143cab8fb590e754bb544fbff411432e5501004bef876ab656cfa49b3c300adc",
+        "src/vendor/agent-base/modules/agent-door/conformance/protocol.mjs": "55b1dbca5dae59d28d8695297fcc9affb833a63e385e217aba1a0113cab406b7",
+        "src/vendor/agent-base/modules/agent-door/conformance/relay.mjs": "7a3821e9cb9aa439073b6615178ac89cc4af510557be2d8f501e1ffbb4bfc7b5",
         "src/vendor/agent-base/modules/agent-door/conformance/replay.mjs": "407a6b7cc91574588617868317346abc3f0e2c286e73b08da6c1d7f1c8a220ff",
         "src/vendor/agent-base/modules/agent-door/conformance/schema.mjs": "1a5c75ec466435f8c37ceab89a1d912f38dca9c3c81d30c9cd55b04797197cb2",
         "src/vendor/agent-base/modules/agent-door/conformance/security.mjs": "b15ab92d64031a3b102b8ee0f27ac21399dcf16c705c78e45ee7bd09c1a6638e",
@@ -3855,24 +3874,26 @@
         "src/vendor/agent-base/modules/agent-door/conformance/target.mjs": "50b4c58c922d7a07fdedfab45f5f531fe6e46f0fd0c7dd3e7aa572804762ba0e",
         "src/vendor/agent-base/modules/agent-door/conformance/tool-name.d.mts": "1decc30a4b3ad7eeb46248114ef01a4967fea47129c00f25794d75c9912f505a",
         "src/vendor/agent-base/modules/agent-door/conformance/tool-name.mjs": "2bedd64a69b1e2a7dc02f7218cdda66e541a955b1a0cfc289d15d96630e616e8",
+        "src/vendor/agent-base/modules/agent-door/conformance/unpair.mjs": "b95cf1cbc6f45d7e303ab0c2d96c7a91e3a111d8a7afdedc8c0926bff97d3872",
         "src/vendor/agent-base/modules/agent-door/conformance/webhooks.mjs": "0ab018eacc5568b8f4e9c6302ed1ca28c01221cad943723136ff96544bf2a7ee",
         "src/vendor/agent-base/modules/agent-door/continuation-audit.ts": "ca2a853aaa666ab175dd2bf17a4d6c0ade27483969498054bf4a3640b07b4f64",
-        "src/vendor/agent-base/modules/agent-door/counting.ts": "cdd87d7b14b898985239a22cbde707c6b6e6c9d5f3d474b335aca2d478d4b57a",
-        "src/vendor/agent-base/modules/agent-door/credentials.ts": "a3e4fdd6bb00c2b2ef6049a3dc1c1c69bc38922b5eafe8186fb3de5b4ebba501",
+        "src/vendor/agent-base/modules/agent-door/counting.ts": "ce002f19a8d7d562cf99b2a83178f3397433c1cbb7335a690309fff3caf6a1ba",
+        "src/vendor/agent-base/modules/agent-door/credentials.ts": "c1d2e915a1a53c3588d62a466c005efb5bfe476aa898b7f50be671c75d7a5c66",
+        "src/vendor/agent-base/modules/agent-door/erasure.ts": "b2b1bd494116386945b1c7bb980750c3a9070f4fbe0cf9ed4c42e4dc612aee29",
         "src/vendor/agent-base/modules/agent-door/errors.ts": "eddb4f4e05a028fb91ecf33cec78568424bf2bb329c6ca3c9b45abbcc84a56fd",
-        "src/vendor/agent-base/modules/agent-door/events.ts": "c5e911d9b692551224ae02e564232cfef2c6462dbe91a5d7e07ea0571a85cab9",
-        "src/vendor/agent-base/modules/agent-door/execution.ts": "472e879863060e8d832bd926955f7b5d068c3b723f96fecd723d48e5d4a9d2d2",
-        "src/vendor/agent-base/modules/agent-door/index.ts": "e7e90a3dab5608671af804f031f28f4c112959152b27df2f8f149ad6144b3940",
+        "src/vendor/agent-base/modules/agent-door/events.ts": "d8ccf6e0e5e0826080b4c2b8faf1ef3e02ebc3363eb0d12296256c862eeaa51d",
+        "src/vendor/agent-base/modules/agent-door/execution.ts": "f778856e47b569f5a0f51dededd0beef0678c7f9f384a0cd12b99b3ad88c2be6",
+        "src/vendor/agent-base/modules/agent-door/index.ts": "c73531d38164ab7ecf4c3bdec8c003499139d47a980addf3a992d4952e999cea",
         "src/vendor/agent-base/modules/agent-door/json-schema.ts": "65870e0cf79242318ec88ccb791d58062c1c7b417eb2cedabbfe26d8295755c9",
         "src/vendor/agent-base/modules/agent-door/native-proof.ts": "fcc9beacaf4afaeb629fb6a06d22b2f0f534d6cf6b37e0cc9f198dd51f24d57e",
         "src/vendor/agent-base/modules/agent-door/operation.ts": "e185e528be9ae8aad51d395175eb9d446b8d405bedc6b4bd562cd8361b2c22d9",
-        "src/vendor/agent-base/modules/agent-door/operator-people.ts": "394e4ecc816dad9b110f15c6b313c3f0a28617fe2a24f51a19e2c1829acd17a6",
+        "src/vendor/agent-base/modules/agent-door/operator-people.ts": "54fa541fe87e5a15b83e2ca1217f64e504333e9b7d8f72109f01c2a6d1f77d10",
         "src/vendor/agent-base/modules/agent-door/page-style.ts": "7cb531ab768ff8f216cf72b606c1af560f22b2eae5a1144d8dfdef27e88fbdd1",
         "src/vendor/agent-base/modules/agent-door/page-words.ts": "74ea381fb309e077771b5614cc491badfe54012b027e8148e9368778be7b280b",
-        "src/vendor/agent-base/modules/agent-door/pages.ts": "187ddadb79a7cebdfdcaa62929dba75a3f755f4465153b219292975e766b4e46",
-        "src/vendor/agent-base/modules/agent-door/people.ts": "b9aeb6c3190be3b4ca1f38345a55634cc7e34eda671f0467839b005406e4ac9e",
+        "src/vendor/agent-base/modules/agent-door/pages.ts": "8f397fdd81654fb02a9741a31d86c2971a54372f791ccc29c191650bfc7f7eea",
+        "src/vendor/agent-base/modules/agent-door/people.ts": "6b0752fcf0f9f9b65cf6b5bbe5f1e62200991cac29893d23a0e64c590421c57d",
         "src/vendor/agent-base/modules/agent-door/person-doors.ts": "ae6ca4f854809578d3b3402a9779a0dc4def0ff1a887d9dc3b8ec924e644b190",
-        "src/vendor/agent-base/modules/agent-door/pipeline.ts": "57363152b9b0fd9b1fc634ddc6cf8d1131df6db59904900abccae0a656008f7d",
+        "src/vendor/agent-base/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
         "src/vendor/agent-base/modules/agent-door/policy-store.ts": "63dfe334efcedcf040c28452173fb3e7c5f5d887c2d8dee8b9fd9c375afb6acc",
         "src/vendor/agent-base/modules/agent-door/policy/catalogue.ts": "7c15685b0f2a308da0cc6645f066dd8e64948c1da582550b387f69c230f8d179",
         "src/vendor/agent-base/modules/agent-door/policy/decide.ts": "b88c4b049a3000b5a823178ea400b9d097fcdb45a54c3f3a2c0b2ff7bbbc864d",
@@ -3881,20 +3902,25 @@
         "src/vendor/agent-base/modules/agent-door/policy/SHA256SUMS": "ac4707ec9d11acf6dd3c71b31b6ef61f845f737224a22b2f70106a3c9dd4d6d9",
         "src/vendor/agent-base/modules/agent-door/policy/vectors.json": "033f0681932e76f7d2787563e0e72fa36bd201bccaf3cd733085a11137cdc9ad",
         "src/vendor/agent-base/modules/agent-door/principal.ts": "5c08991834a175c8dcf68b8a41f7a2fc278e0708ff65216db0e95836e9b4d41a",
-        "src/vendor/agent-base/modules/agent-door/README.md": "64f489af43594083eb37f3286d5933d2f51c63aa0cf9cda70c18a66f0fe4ad79",
+        "src/vendor/agent-base/modules/agent-door/README.md": "a678bac491272559f7cbfb3529b53935744b4e327757848cba0331a2a52e639e",
         "src/vendor/agent-base/modules/agent-door/registry.ts": "dacde9acbe799d2cd24da7a7b8ec4f84d7560b0eb0c2171a33cc79ac87a5a8df",
+        "src/vendor/agent-base/modules/agent-door/relay.ts": "b26fdd6429cea45871fc04d2cc3b0b164fedbb10f1bfa332223eb8450555aab2",
         "src/vendor/agent-base/modules/agent-door/resource-tool.ts": "6d70880fc5d58cfdb1c3ad10a5085eac684ed85639bbbf4a7ee4be307e538e5d",
-        "src/vendor/agent-base/modules/agent-door/reviews.ts": "9884027e619179eba540fc8d9ffce871facc898c77d78479e0e16a9c37922f9b",
-        "src/vendor/agent-base/modules/agent-door/schema/agent-door.sql": "016d8a98b964385f5c4a13447361c3c783910a76aaf4606b0e0081482bc819cc",
+        "src/vendor/agent-base/modules/agent-door/reviews.ts": "4446ed025268eb4f5df39b17b188e15acdadf0f7ec49217bc75c88bba17b68f9",
+        "src/vendor/agent-base/modules/agent-door/schema/agent-door.sql": "f9adc849e49561737dab15061aa21e8ac191d982c5aa4886260b146f9bada763",
+        "src/vendor/agent-base/modules/agent-door/schema/replay-aliases.sql": "8ad6104039ba8ae3c07793e32d5ce4974bf440d56902c3b21d15d61bdfff27a8",
         "src/vendor/agent-base/modules/agent-door/subscriptions.ts": "e13e70bd1b1cad93c47457b33f17e05562ebfd65be6c69009157a815b52b4a05",
         "src/vendor/agent-base/modules/agent-door/target.ts": "4a0de4958e58b45fc0f5069df9b3cfd43e5fb519472cac64eca182621e7823b5",
-        "src/vendor/agent-base/modules/agent-door/transport.ts": "28b316feb6a2c0dd30f2b43454c4747a4a783e4f4d5513653eb655d3b0c4c4cc",
-        "src/vendor/agent-base/modules/agent-door/types.ts": "a341779dcee85e2d22eee08b31e16850376822de809679cf7fb0fdc82cdc2f6a",
-        "src/vendor/agent-base/modules/agent-door/wire.ts": "29b000c60300a20e5feb3c90d6bd0dde7af562b43c99b4aa27260c983997163f"
+        "src/vendor/agent-base/modules/agent-door/transport.ts": "fbbda7f1f48d3fd6f3d50254481540348353bfa476e8e6863bcd05aa7b898c23",
+        "src/vendor/agent-base/modules/agent-door/types.ts": "711934b041e04655ee77ac4f339e38af2ec5c3a4e176a3e3feffcde1bc257cb0",
+        "src/vendor/agent-base/modules/agent-door/wire.ts": "75c286c115901ff08a8f5b43236079eba953b1d56abc8bc7802df56591fad6c7"
       },
       "modes": {
         "src/vendor/agent-base/modules/agent-door/admission.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/ADOPTING.md": "100644",
+        "src/vendor/agent-base/modules/agent-door/adoption/penny/0106_agent_erasure_custody.sql": "100644",
+        "src/vendor/agent-base/modules/agent-door/adoption/penny/penny-map.ts": "100644",
+        "src/vendor/agent-base/modules/agent-door/adoption/penny/README.md": "100644",
         "src/vendor/agent-base/modules/agent-door/approval-execution.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/approvals.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/audit.ts": "100644",
@@ -3909,6 +3935,7 @@
         "src/vendor/agent-base/modules/agent-door/conformance/authority.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/discovery.mjs": "100644",
+        "src/vendor/agent-base/modules/agent-door/conformance/erasure.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/fixtures.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/index.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/injection.mjs": "100644",
@@ -3921,6 +3948,7 @@
         "src/vendor/agent-base/modules/agent-door/conformance/network-runtime.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/policy-phases.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/protocol.mjs": "100644",
+        "src/vendor/agent-base/modules/agent-door/conformance/relay.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/replay.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/schema.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/security.mjs": "100644",
@@ -3932,10 +3960,12 @@
         "src/vendor/agent-base/modules/agent-door/conformance/target.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/tool-name.d.mts": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/tool-name.mjs": "100644",
+        "src/vendor/agent-base/modules/agent-door/conformance/unpair.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/conformance/webhooks.mjs": "100644",
         "src/vendor/agent-base/modules/agent-door/continuation-audit.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/counting.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/credentials.ts": "100644",
+        "src/vendor/agent-base/modules/agent-door/erasure.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/errors.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/events.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/execution.ts": "100644",
@@ -3960,9 +3990,11 @@
         "src/vendor/agent-base/modules/agent-door/principal.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/README.md": "100644",
         "src/vendor/agent-base/modules/agent-door/registry.ts": "100644",
+        "src/vendor/agent-base/modules/agent-door/relay.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/resource-tool.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/reviews.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/schema/agent-door.sql": "100644",
+        "src/vendor/agent-base/modules/agent-door/schema/replay-aliases.sql": "100644",
         "src/vendor/agent-base/modules/agent-door/subscriptions.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/target.ts": "100644",
         "src/vendor/agent-base/modules/agent-door/transport.ts": "100644",
@@ -3974,6 +4006,9 @@
         "modules/agent-door/CLAUSES.md",
         "modules/agent-door/README.md",
         "modules/agent-door/admission.ts",
+        "modules/agent-door/adoption/penny/0106_agent_erasure_custody.sql",
+        "modules/agent-door/adoption/penny/README.md",
+        "modules/agent-door/adoption/penny/penny-map.ts",
         "modules/agent-door/approval-execution.ts",
         "modules/agent-door/approvals.ts",
         "modules/agent-door/audit.ts",
@@ -3987,6 +4022,7 @@
         "modules/agent-door/conformance/authority.mjs",
         "modules/agent-door/conformance/crypto.mjs",
         "modules/agent-door/conformance/discovery.mjs",
+        "modules/agent-door/conformance/erasure.mjs",
         "modules/agent-door/conformance/fixtures.mjs",
         "modules/agent-door/conformance/index.mjs",
         "modules/agent-door/conformance/injection.mjs",
@@ -3999,6 +4035,7 @@
         "modules/agent-door/conformance/network-runtime.mjs",
         "modules/agent-door/conformance/policy-phases.mjs",
         "modules/agent-door/conformance/protocol.mjs",
+        "modules/agent-door/conformance/relay.mjs",
         "modules/agent-door/conformance/replay.mjs",
         "modules/agent-door/conformance/schema.mjs",
         "modules/agent-door/conformance/security.mjs",
@@ -4010,10 +4047,12 @@
         "modules/agent-door/conformance/target.mjs",
         "modules/agent-door/conformance/tool-name.d.mts",
         "modules/agent-door/conformance/tool-name.mjs",
+        "modules/agent-door/conformance/unpair.mjs",
         "modules/agent-door/conformance/webhooks.mjs",
         "modules/agent-door/continuation-audit.ts",
         "modules/agent-door/counting.ts",
         "modules/agent-door/credentials.ts",
+        "modules/agent-door/erasure.ts",
         "modules/agent-door/errors.ts",
         "modules/agent-door/events.ts",
         "modules/agent-door/execution.ts",
@@ -4037,14 +4076,19 @@
         "modules/agent-door/policy/vectors.json",
         "modules/agent-door/principal.ts",
         "modules/agent-door/registry.ts",
+        "modules/agent-door/relay.ts",
         "modules/agent-door/resource-tool.ts",
         "modules/agent-door/reviews.ts",
         "modules/agent-door/schema/agent-door.sql",
+        "modules/agent-door/schema/replay-aliases.sql",
         "modules/agent-door/subscriptions.ts",
         "modules/agent-door/target.ts",
+        "modules/agent-door/tests/admission-flow.ts",
+        "modules/agent-door/tests/admission.fixture.ts",
         "modules/agent-door/tests/adoption-gaps.test.ts",
         "modules/agent-door/tests/company-policy.test.ts",
         "modules/agent-door/tests/door.test.ts",
+        "modules/agent-door/tests/erasure.test.ts",
         "modules/agent-door/tests/execution.test.ts",
         "modules/agent-door/tests/identity.test.ts",
         "modules/agent-door/tests/injection.test.ts",
@@ -4055,6 +4099,7 @@
         "modules/agent-door/tests/principal.test.ts",
         "modules/agent-door/tests/queued-context.test.ts",
         "modules/agent-door/tests/read-replay.test.ts",
+        "modules/agent-door/tests/relay.test.ts",
         "modules/agent-door/tests/resource-links.test.ts",
         "modules/agent-door/tests/resource-snapshot.test.ts",
         "modules/agent-door/tests/revision-probes.fixture.mjs",
@@ -6525,20 +6570,6 @@
       },
       "originFiles": [
         "modules/sendgrid-email/src/sender.ts"
-      ]
-    },
-    {
-      "path": "src/site/base/contract-anchor.mjs",
-      "originPath": "foundation/runtime/contract-anchor.mjs",
-      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
-      "files": {
-        "src/site/base/contract-anchor.mjs": "b63993a57cff119f3f1d4407963d2623abe18733fffb0f04de12f43bc503821d"
-      },
-      "modes": {
-        "src/site/base/contract-anchor.mjs": "100644"
-      },
-      "originFiles": [
-        "foundation/runtime/contract-anchor.mjs"
       ]
     }
   ],

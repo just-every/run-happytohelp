@@ -72,6 +72,8 @@ export async function authenticate(
     const bearer = authorization?.match(/^Bearer[ \t]+([^\s]+)/i)?.[1]
     if (bearer && isBusinessCredential(bearer)) {
       if (!options.trust || !/^Bearer[ \t]+[^\s]+$/i.test(authorization!)) return null
+      // A stopped Business admits no token, whoever its subject is.
+      if (await options.people.businessStopped?.()) return null
       const claims = await verifyJws(bearer, 'at+jwt', options.trust.publicKeys)
       const now = (options.now ?? Date.now)() / 1000
       if (!claims || claims.iss !== options.trust.issuer || claims.aud !== `${options.origin}/mcp` ||
@@ -90,7 +92,7 @@ export async function authenticate(
       // A token outlives no change of address: its email must still be the subject's current native email.
       if (!person?.active || person.email.trim().toLowerCase() !== claims.email) return null
       return {
-        person,
+        person, source: 'business',
         agent: { id: claims.act.sub, name: claims.act.name, specialist: claims.act.specialist as string | null | undefined },
         scopes: claims.scope === '' ? [] : claims.scope.split(' '), clientId: claims.client_id, consent: claims.consent,
       }
@@ -102,7 +104,7 @@ export async function authenticate(
       !Array.isArray(local.scopes) || !local.scopes.every(nonempty)) return null
     const person = await options.people.person(local.sponsor.id)
     if (!person?.active) return null
-    return { person, agent: local.agent, scopes: local.scopes, clientId: local.clientId }
+    return { person, source: 'local', agent: local.agent, scopes: local.scopes, clientId: local.clientId }
   } catch {
     return null
   }

@@ -38,7 +38,7 @@ export async function eraseContact(env: Env, projectId: string, contactId: strin
     ...await redactionStatements(env.DB),
     ...await invalidateTransfersStatements(env.DB),
     ...await knowledgeErasureStatements(env,projectId,contactId,emails),
-    ...erasureStatements(env, {projectId, contactId, actorId, now, emails,csvIdentities}),
+    ...await erasureStatements(env, {projectId, contactId, actorId, now, emails,csvIdentities}),
   ])
   return env.DB.prepare('SELECT * FROM contact_erasures WHERE project_id=? AND contact_id=?').bind(projectId, contactId).first<ContactErasure>()
 }

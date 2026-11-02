@@ -5,6 +5,8 @@ import {startApp} from '../../journeys/kit/app.mjs'
 import {protectedFeedback} from './feedback.mjs'
 import {supportToolsJourney} from './support-tools.mjs'
 import initializeReviewer from './initialize-reviewer.mjs'
+import {checkAgentArtifacts} from '../../../src/vendor/agent-base/modules/agent-door/erasure.ts'
+import {contactAgentArtifacts,memberAgentArtifacts} from '../../../src/edition/agent-door/artifacts.ts'
 import {doorCustody,slackEdge} from './custody.mjs'
 import {accessToken,autonomousPolicy,policyEnvelope,signJws,seconds} from '../../../src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs'
 
@@ -12,6 +14,8 @@ export async function agentDoorJourney(){
  const pair=await webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']),kid=randomUUID(),issuer='https://business.example.test',installationId=randomUUID(),origin='https://app.example',email='morgan@example.test',sub=randomUUID(),publicKeys={[kid]:await webcrypto.subtle.exportKey('jwk',pair.publicKey)},token=randomUUID()
  const app=await startApp({bindings:{APP_ORIGIN:origin,H2H_SETUP_TOKEN:token,H2H_SETUP_OWNER_EMAIL:email,RER_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_APP_ORIGIN:origin,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify(publicKeys),RER_BUSINESS_TRUST:JSON.stringify({v:1,issuer,audience:origin,subject:installationId,email,keys:publicKeys}),INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:slackEdge})
  try{
+  await checkAgentArtifacts(app.db,contactAgentArtifacts)
+  await checkAgentArtifacts(app.db,memberAgentArtifacts)
   const owner=await app.ok('/api/identity/bootstrap',{body:{setupToken:token,email,password:'Disposable-native-owner-892!zz',allowedOrigin:'https://store.example.test',ownerName:'Morgan Support'}})
   const native=(path,options={})=>app.ok(path,{token:owner.token,...options})
   const project=owner.projectId
@@ -216,5 +220,32 @@ export async function agentDoorJourney(){
   assert.ok(executedAudit.approval.by.includes(reviewerSession.id))
   assert.equal(app.requests.filter(request=>!['GET','HEAD'].includes(request.method)).length,0,'the configured network boundary receives no mutating provider request')
   await doorCustody({app,owner,project,native,person,context,call,rpc,adopt,settings,conversation})
+  // The seed's real pre-authentication router exposes only signed, bounded pulls.
+  const claims={v:1,iss:issuer,aud:origin,sub:installationId,business:context.business,after:0,limit:200,iat:seconds(),exp:seconds()+60,jti:randomUUID()}
+  const signed=await signJws(pair.privateKey,kid,'rer-agent-decisions+jwt',claims)
+  const pull=value=>app.call('/api/rer/agent-decisions',{body:{pull:value}})
+  const page=await pull(signed)
+  assert.equal(page.status,200,JSON.stringify(page.data));assert.ok(page.data.decisions.length>0)
+  assert.deepEqual((await pull(signed)).data,page.data,'a repeated pull has identical public content')
+  assert.equal((await pull('unauthorized')).status,401)
+  const relayForeign=await webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify'])
+  assert.equal((await pull(await signJws(relayForeign.privateKey,kid,'rer-agent-decisions+jwt',claims))).status,401)
+  assert.equal((await pull(await signJws(pair.privateKey,kid,'rer-agent-decisions+jwt',{...claims,business:'foreign-business'}))).status,404)
+  assert.equal((await app.call('/api/rer/agent-decisions',{method:'GET'})).status,405)
+  // Stop admission without losing the durable subject mapping: signed Pause
+  // policy can still be adopted; native owner access stays independent.
+  await app.db.prepare('UPDATE bs_settings SET stopped=1 WHERE singleton=1').run()
+  assert.equal((await rpc('tools/list')).status,401)
+  assert.equal((await pull(signed)).status,404)
+  await adopt({...autonomousPolicy(),rules:[{id:'held-owner',class:'*',do:'approval',approver:['person:'+sub],wait:'PT1H'}]},{paused:true})
+  assert.equal((await person('/agents/api/state',undefined,'h2h_session='+owner.token)).status,200)
+  await app.configure({RER_OWNER_CLAIM_ISSUER:undefined,RER_OWNER_CLAIM_INSTALLATION_ID:undefined,RER_OWNER_CLAIM_APP_ORIGIN:undefined,RER_OWNER_CLAIM_PUBLIC_KEYS:undefined,RER_BUSINESS_TRUST:undefined})
+  assert.equal((await rpc('tools/list')).status,401)
+  assert.equal((await pull(signed)).status,404)
+  const metadata=await app.call('/.well-known/oauth-protected-resource')
+  assert.equal(metadata.status,200);assert.deepEqual(metadata.data.authorization_servers,[])
+  assert.equal((await app.call('/api/identity/session',{token:owner.token})).status,200)
+  console.log('PROBE 0.2.96: complete contact/member maps; signed relay 200, replay equality, missing/foreign signature 401, foreign Business 404, GET 405; stopped Business and unclaimed tokens refused; signed stopped policy and native owner retained')
+
  }finally{await app.close()}
 }

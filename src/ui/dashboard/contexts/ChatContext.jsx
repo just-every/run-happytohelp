@@ -470,7 +470,11 @@ export const Provider = (props) => {
         let close = [];
         const timer = setTimeout(() => {
             close = connectedProjectIds.map(id => connectProject(id, frame => {
-                if (frame.type === 'activity' && frame.kind === 'read' && Array.isArray(frame.reads)) applyReadReceipts(frame.reads);
+                if (frame.type === 'access_changed') {
+                    setConversationData({}); setConversationLists({}); setBuckets([]); provisionalReplies.current.clear();
+                    window.dispatchEvent(new CustomEvent('h2h:ticket-unavailable', {detail: {conversationId: activeConversationIdRef.current, error: {status: 404}}}));
+                    location.reload();
+                } else if (frame.type === 'activity' && frame.kind === 'read' && Array.isArray(frame.reads)) applyReadReceipts(frame.reads);
                 else refreshInboxData();
             },
                 () => { refreshInboxData(); setLastConnected(Date.now()); },
@@ -524,7 +528,14 @@ export const Provider = (props) => {
             } else {
                 setLastConnected(Date.now());
             }
-        }, () => setLastConnected(Date.now()), error => console.warn(error.message));
+        }, () => setLastConnected(Date.now()), error => {
+            if ([401,403,404].includes(error.status)) {
+                setConversationData(current => {const next = {...current}; delete next[activeConversationId]; return next;});
+                setConversationLists({}); setBuckets([]); provisionalReplies.current.clear();
+                window.dispatchEvent(new CustomEvent('h2h:ticket-unavailable', {detail: {conversationId: activeConversationId, error}}));
+                refreshInboxData();
+            } else console.warn(error.message);
+        });
         conversationSocket.current = connection;
         return () => { conversationSocket.current = null; connection(); };
     }, [activeConversationId, activeProjectId]);

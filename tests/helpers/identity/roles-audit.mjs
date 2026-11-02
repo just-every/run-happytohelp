@@ -1,3 +1,4 @@
+import {ticketScopeRolesAssertions} from './ticket-scope-roles.mjs'
 import {nativeTicketScopeAssertions} from './ticket-scope.mjs'
 import {mobileAuthority} from '../mobile.mjs'
 import assert from 'node:assert/strict'
@@ -12,6 +13,7 @@ import {challengeOf,consentPage,decide} from '../delegation/applications.mjs'
  * loses what a narrowed role loses; the security log refuses edits, honours retention and holds.
  */
 export async function rolesAuditJourney(){
+ await ticketScopeRolesAssertions()
  await mobileAuthority()
  const app=await startApp({bindings:{RER_INSTALLATION_ID:'roles-installation',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}})
  try{

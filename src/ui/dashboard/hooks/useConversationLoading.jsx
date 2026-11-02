@@ -90,7 +90,11 @@ function useConversationLoading({
                     return;
                 }
 
-                console.error('Unable to load older conversation messages', error);
+                if ([401,403,404].includes(error.status)) {
+                    setReadyConversationId(null); setBuckets([]);
+                    setConversationData(current => {const next = {...current}; delete next[conversationId]; return next;});
+                    setLoadError({conversationId, error});
+                } else console.error('Unable to load older conversation messages', error);
                 setLoadMoreError(error);
             })
             .finally(() => {
@@ -170,7 +174,10 @@ function useConversationLoading({
                     return;
                 }
 
-                console.error('Unable to load conversation', error);
+                if ([401,403,404].includes(error.status)) {
+                    setReadyConversationId(null); setBuckets([]);
+                    setConversationData(current => {const next = {...current}; delete next[conversationId]; return next;});
+                } else console.error('Unable to load conversation', error);
                 setLoadError({ conversationId, error });
             })
             .finally(() => {
@@ -213,6 +220,21 @@ function useConversationLoading({
             loadConversationRef.current(true);
         }
     }, [ lastConnected ]);
+
+    useEffect(() => {
+        const unavailable = event => {
+            if (event.detail.conversationId !== conversationId) return;
+            requestGeneration.current += 1;
+            activeRequest.current?.controller.abort(); activeRequest.current = null;
+            queuedQuietRefresh.current = false;
+            setReadyConversationId(null); setBuckets([]);
+            setIsLoading(false); setIsRefreshing(false); setIsLoadingMore(false);
+            setLoadMoreError(null);
+            setLoadError({conversationId, error: event.detail.error});
+        };
+        window.addEventListener('h2h:ticket-unavailable', unavailable);
+        return () => window.removeEventListener('h2h:ticket-unavailable', unavailable);
+    }, [conversationId]);
 
     const isConversationReady = readyConversationId === conversationId;
 

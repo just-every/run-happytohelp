@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {renderKnowledgeFields,referenceVisibility} from '../knowledge/reference-store'
 import {canonicaliseFields} from '../knowledge/canonicaliser'
 import {memberReaders,readerSet} from '../knowledge/door'
@@ -11,7 +12,7 @@ import {recordOnline} from '../collaboration/presence-store'
 
 export class ConversationSocket extends DurableObject<Env>{
  async authorized(a:Attachment):Promise<SocketActor|null>{
-  const scope=a.projectId?'EXISTS(SELECT 1 FROM memberships target WHERE target.user_id=s.actor_id AND target.project_id=?) AND s.role<>\'contact\'':`EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=s.project_id AND (s.role<>'contact' OR s.contact_id=c.contact_id AND EXISTS(SELECT 1 FROM contacts ct WHERE ct.id=c.contact_id AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1)))`
+  const scope=a.projectId?'EXISTS(SELECT 1 FROM memberships target WHERE target.user_id=s.actor_id AND target.project_id=?) AND s.role<>\'contact\'':`EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=s.project_id AND (s.role<>'contact' AND ${ticketScopeSql('s.actor_id')} OR s.role='contact' AND s.contact_id=c.contact_id AND EXISTS(SELECT 1 FROM contacts ct WHERE ct.id=c.contact_id AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1)))`
   const row=await this.env.DB.prepare(`SELECT s.actor_id,s.role,u.name,s.project_id,sf.verified_at factorAt,sf.method factorMethod,
    EXISTS(SELECT 1 FROM user_factors f WHERE f.user_id=s.actor_id AND f.confirmed_at IS NOT NULL) hasFactor,
    (SELECT json_extract(ps.settings_json,'$.two_factor_roles') FROM project_settings ps WHERE ps.project_id=s.project_id) twoFactorRoles,
@@ -27,15 +28,16 @@ export class ConversationSocket extends DurableObject<Env>{
  }
  async replay(ws:WebSocket){
   const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
-  if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return}
-  const rows=await this.env.DB.prepare('SELECT o.id eventId,m.* FROM conversation_outbox o JOIN messages m ON m.id=o.message_id WHERE '+(a.projectId?'o.project_id':'o.conversation_id')+'=? AND o.id>? ORDER BY o.id LIMIT 500').bind(a.projectId||a.conversationId,a.cursor).all()
+  if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return false}
+  const rows=await this.env.DB.prepare(`SELECT o.id eventId,m.* FROM conversation_outbox o JOIN messages m ON m.id=o.message_id JOIN conversations c ON c.id=o.conversation_id AND c.project_id=o.project_id WHERE ${a.projectId?'o.project_id':'o.conversation_id'}=? AND o.id>? ${actor.role==='contact'?'':`AND ${ticketScopeSql('?')}`} ORDER BY o.id LIMIT 500`).bind(a.projectId||a.conversationId,a.cursor,...(actor.role==='contact'?[]:[actor.actor_id])).all()
   for(const row of rows.results){
    if(actor.role==='contact')delete row.content_raw
    row.media=(await this.env.DB.prepare('SELECT id,filename,content_type,size FROM media WHERE message_id=?').bind(row.id).all()).results
-   const projectId=String(row.project_id),readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id),normalized=await canonicaliseFields(this.env,projectId,row,row.actor_role==='contact'?String(row.actor_id):undefined),rendered=await renderKnowledgeFields(this.env,projectId,normalized,readers);if(actor.role!=='contact')(rendered as any).knowledgeReferences=await referenceVisibility(this.env,projectId,String(row.content||''),actor.actor_id,currentTicketReaders(projectId,String(row.conversation_id),{}));ws.send(JSON.stringify({type:a.projectId?'conversation':'message',eventId:row.eventId,conversationId:row.conversation_id,message:rendered}));a.cursor=Number(row.eventId)
+   const projectId=String(row.project_id),readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id),normalized=await canonicaliseFields(this.env,projectId,row,row.actor_role==='contact'?String(row.actor_id):undefined),rendered=await renderKnowledgeFields(this.env,projectId,normalized,readers);if(actor.role!=='contact')(rendered as any).knowledgeReferences=await referenceVisibility(this.env,projectId,String(row.content||''),actor.actor_id,currentTicketReaders(projectId,String(row.conversation_id),{}));if(actor.role!=='contact'){if(!await this.authorized(a)){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return false}if(!await this.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${ticketScopeSql('?')}`).bind(row.conversation_id,row.project_id,actor.actor_id).first())continue}ws.send(JSON.stringify({type:a.projectId?'conversation':'message',eventId:row.eventId,conversationId:row.conversation_id,message:rendered}));a.cursor=Number(row.eventId)
   }
   const latest=ws.deserializeAttachment() as Attachment
   ws.serializeAttachment({...latest,cursor:Math.max(latest.cursor,a.cursor)})
+  return true
  }
  async publishPresence(exclude?:WebSocket){
   const sockets=this.ctx.getWebSockets().filter(ws=>ws!==exclude),peers=[],receivers:WebSocket[]=[]
@@ -71,6 +73,18 @@ export class ConversationSocket extends DurableObject<Env>{
  }
  async fetch(request:Request){
   const url=new URL(request.url)
+  if(url.pathname==='/access-change'){
+   const target=await request.json() as {roleId?:string;userId?:string}
+   for(const ws of this.ctx.getWebSockets()){
+    const a=ws.deserializeAttachment() as Attachment
+    if(!a.projectId||a.conversationId)continue
+    const session=await this.env.DB.prepare('SELECT actor_id FROM sessions WHERE token_hash=?').bind(a.tokenHash).first<{actor_id:string}>()
+    if(session&&(target.userId===session.actor_id||target.roleId&&await this.env.DB.prepare('SELECT 1 FROM member_roles WHERE project_id=? AND user_id=? AND role_key=?').bind(a.projectId,session.actor_id,target.roleId).first())){
+     try{ws.send(JSON.stringify({type:'access_changed'}))}catch{await this.releaseOnline(ws);ws.close(1011,'Delivery failed')}
+    }
+   }
+   return new Response('ok')
+  }
   if(url.pathname==='/event'){
    const event=await request.json() as {conversationId:string;[key:string]:unknown}
    for(const ws of this.ctx.getWebSockets()){
@@ -79,7 +93,8 @@ export class ConversationSocket extends DurableObject<Env>{
     const actor=await this.authorized(a)
     if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');continue}
     if(event.operatorOnly===true&&actor.role==='contact')continue
-    const scope=await this.env.DB.prepare('SELECT project_id FROM conversations WHERE id=?').bind(event.conversationId).first<{project_id:string}>();if(!scope)continue;const readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id);ws.send(JSON.stringify(await renderKnowledgeFields(this.env,scope.project_id,await canonicaliseFields(this.env,scope.project_id,event),readers)))
+    if(actor.role!=='contact'&&!await this.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND ${ticketScopeSql('?')}`).bind(event.conversationId,actor.actor_id).first())continue
+    const scope=await this.env.DB.prepare('SELECT project_id FROM conversations WHERE id=?').bind(event.conversationId).first<{project_id:string}>();if(!scope)continue;const readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id);const rendered=await renderKnowledgeFields(this.env,scope.project_id,await canonicaliseFields(this.env,scope.project_id,event),readers);if(actor.role!=='contact'){if(!await this.authorized(a)){await this.releaseOnline(ws);ws.close(1008,'Session revoked');continue}if(!await this.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND ${ticketScopeSql('?')}`).bind(event.conversationId,actor.actor_id).first())continue}ws.send(JSON.stringify(rendered))
    }
    return new Response('ok')
   }
@@ -113,7 +128,7 @@ export class ConversationSocket extends DurableObject<Env>{
    else a.presence={expiresAt:Date.now()+PRESENCE_TTL_MS,typing:command.typing===true,draft:command.draft===true}
    ws.serializeAttachment(a);await this.publishPresence();return
   }
-  if(command.type==='replay'||command.type==='ping'){await this.replay(ws);ws.send(JSON.stringify({type:'pong'}))}
+  if(command.type==='replay'||command.type==='ping'){if(await this.replay(ws))ws.send(JSON.stringify({type:'pong'}))}
  }
  async webSocketClose(ws:WebSocket,code:number,reason:string){await this.releaseOnline(ws);ws.close([1005,1006,1015].includes(code)?1000:code,reason);await this.publishPresence(ws)}
  async webSocketError(ws:WebSocket){await this.releaseOnline(ws);ws.close(1011,'Socket error');await this.publishPresence(ws)}

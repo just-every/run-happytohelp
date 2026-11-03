@@ -26,10 +26,18 @@ function omittedTrigger(sql,omitted){
  return trigger.list.some((token,index)=>['on','from','join','update','into','references'].includes(trigger.words[index-1])
   &&token.text[0]!=="'"&&omitted.includes(folded(identifier(token).replace(/;$/,''))));
 }
-function omittedSchemaChange(sql,omitted,omittedTriggers){
+function omittedSchemaChange(sql,omitted,omittedTriggers,migration){
  const list=tokens(sql),words=list.map(token=>token.quoted?undefined:folded(token.text));
  const trigger=triggerDefinition(sql);
  if(trigger)return omittedTriggers.has(trigger.name);
+ // Pre-email inventories omit 162, so 299 has no command table to rebuild.
+ // Project out only that table's copy/swap; the rest of 299 still applies.
+ if(migration==='299_outbound_channel_tickets.sql'&&omitted.includes('operator_ticket_commands')){
+  const target=list[2]&&folded(identifier(list[2]).replace(/;$/,''));
+  if(target==='operator_ticket_commands_next'&&(
+   words[0]==='create'&&words[1]==='table'||words[0]==='insert'&&words[1]==='into'||words[0]==='alter'&&words[1]==='table'&&words[3]==='rename'
+  )||target==='operator_ticket_commands'&&words[0]==='drop'&&words[1]==='table')return true;
+ }
  let target;
  if(words[0]==='alter'&&words[1]==='table'&&words[3]==='add')target=list[2];
  else if(words[0]==='create'&&(words[1]==='index'||words[1]==='unique'&&words[2]==='index'))target=list[words.indexOf('on')+1];
@@ -77,7 +85,7 @@ export async function workflowArchivePolicy(root,input,{beforeTickets=false,befo
   const draftRebuild='290_native_reply_drafts.sql';
   const selected=migrations.filter(({name})=>!/^22[0-9]_/.test(name)&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name)&&!/^17[234]_/.test(name)&&name<'191_')&&(!beforeR4||!/^14[0-9]_/.test(name)&&name!==draftRebuild)&&(!beforeEmail||!/^16[0-9]_/.test(name)));
   const names=selected.map(({name})=>name);
-  const plan=selected.map(({statements})=>statements.filter(sql=>!omittedSchemaChange(sql,omitted,omittedTriggers)));
+  const plan=selected.map(({name,statements})=>statements.filter(sql=>!omittedSchemaChange(sql,omitted,omittedTriggers,name)));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);
    const tables=scratch.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row=>row.name).filter(name=>!excludedTable(name,result)&&!(result.derivedTables??[]).some(derived=>name===derived||name.startsWith(derived+'_')));

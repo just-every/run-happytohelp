@@ -2745,7 +2745,7 @@
       "executable": false
     },
     "migrations/299_outbound_channel_tickets.sql": {
-      "sha256": "de08b480bbd77ad1fef41db6a88a6b1926ed44c1a91dab808f29d6bc9c2f6f1f",
+      "sha256": "93e6f3da0dbd1c1d0669200c3f141e14087a98ecd5ee71ef9036db6e93865343",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -3945,7 +3945,7 @@
       "executable": false
     },
     "scripts/installer/workflow-archive-upgrade.mjs": {
-      "sha256": "b71fff7101efd7aa6d412e78f0f30ff06d63df55ff8eaa3265b145e73329110a",
+      "sha256": "6f23556e2e3a6f97925aefe6eed775c5ca33260a9fc04bd05d6334f4dc3ddd6f",
       "executable": false
     },
     "scripts/legacy-export/attachments.mjs": {
@@ -8321,7 +8321,7 @@
       "executable": false
     },
     "src/modules/support-channels/model.ts": {
-      "sha256": "ee174e25e0371149b1930a87012c71bed40aac20580b1e802f02d94f4831164c",
+      "sha256": "ceb32b82fd39eaf8d248653a6e44cfcd4dd71e6f8deb3f2547b67ef2233bc90f",
       "executable": false
     },
     "src/modules/support-channels/network.ts": {
@@ -8378,6 +8378,10 @@
     },
     "src/modules/support-channels/templates.ts": {
       "sha256": "fb3239021e5575dcef25da6bdecef7d2358a3e97fcc481002583f3bb7b2d3eed",
+      "executable": false
+    },
+    "src/modules/support-channels/thread-lookup.ts": {
+      "sha256": "9e0c33e9c76ea37c331642905ce8cc3bbe256898dd4a5f6c0c594b413a16c4c8",
       "executable": false
     },
     "src/modules/support-channels/TicketChannel.jsx": {
@@ -15209,7 +15213,7 @@
       "executable": false
     },
     "tests/helpers/support-channels/journeys.mjs": {
-      "sha256": "a7ca6638d6955279723c7fc79c49a2aa8034a3e59fbcafa2fc0db47b95797d01",
+      "sha256": "c7879cc59243cf566e1b6a39285168628f3377d06e83f686bb91364e6223bc6b",
       "executable": false
     },
     "tests/helpers/support-channels/outcomes-002-outcomes.mjs": {
@@ -15697,7 +15701,7 @@
       "executable": false
     },
     "tests/reports/prior-schema-upgrade.mjs": {
-      "sha256": "43bf5536d7ec139cae293649bab739e8afc3d4e2018f105c1ca48e0864a16b97",
+      "sha256": "88c5117cb21cbe24cc6cfa3aefe01dc6f0ccd09125ed4e9b45e700c8927a5f91",
       "executable": false
     },
     "tests/reports/resolution-feedback.mjs": {

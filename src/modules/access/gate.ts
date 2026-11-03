@@ -44,7 +44,7 @@ async function targetProject(c:Context<AppEnv>,actor:Actor,path:string){
  * Custom roles and collaborators are held to the permission each door needs; built-in
  * owner, admin and agent roles keep their handlers' own checks. A refusal is audited.
  */
-export async function enforceRole(c:Context<AppEnv>,actor:Actor){
+export async function enforceRole(c:Context<AppEnv>,actor:Actor,requiredPermission?:Permission){
  if(actor.role==='contact')return
  // A door that cannot be identified is treated as unclassified: refused to a collaborator unless it only reads.
  const route=answeringRoute(c)??{method:c.req.method==='HEAD'?'GET':c.req.method,path:''}
@@ -56,7 +56,7 @@ export async function enforceRole(c:Context<AppEnv>,actor:Actor){
  // parameters. Resolve its article ID against the registered route as well.
  const articleIndex=route.path.split('/').indexOf(':articleId')
  const articleId=articleIndex<0?undefined:decodeURIComponent(c.req.path.split('/')[articleIndex]??'')
- let rule=route.path?routeRule(route.method,route.path):undefined
+ let rule=requiredPermission??(route.path?routeRule(route.method,route.path):undefined)
  if(rule==='members.manage'&&/\/agents\/:userId$/.test(route.path)&&c.req.param('userId')===actor.id)rule='self'
  // A report downloaded as CSV is an export.
  if(((route.path.endsWith('/reports')||route.path.endsWith('/reports/team'))||route.path==='/api/outcomes/projects/:projectId/results')&&c.req.query('format'))rule='data.export'

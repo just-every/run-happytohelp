@@ -4461,7 +4461,7 @@
       "executable": false
     },
     "src/modules/access/gate.ts": {
-      "sha256": "2585242458d8f34b6c2a176617c2ab68590ee196c3a12f035c7b1f6212953fa9",
+      "sha256": "64b9cb35a73089e72cc9d36254c677eb75509e19894c22680833db915e7d3836",
       "executable": false
     },
     "src/modules/access/live.ts": {
@@ -5277,7 +5277,7 @@
       "executable": false
     },
     "src/modules/crm/routes.ts": {
-      "sha256": "1820c5c7e4beccbc9129ed2794d79a89530583b5c37438f942aaf430c8129327",
+      "sha256": "0fce01dbbdbff003f538c89b9fa5a7c248790099642a36c27b447a1aca0a5091",
       "executable": false
     },
     "src/modules/customer-context/collector.ts": {
@@ -14717,7 +14717,7 @@
       "executable": false
     },
     "tests/helpers/hubspot-context.mjs": {
-      "sha256": "456efeab64b956fab15242cca3c453204dd73e4c6633856d85cd58577a3b806d",
+      "sha256": "21154defb9c36f3c3f6e8dde206f375c817d571702538985e8dd2b55000c5888",
       "executable": false
     },
     "tests/helpers/hubspot/browser.mjs": {

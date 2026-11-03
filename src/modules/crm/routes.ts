@@ -5,6 +5,7 @@ import type {AppEnv,Actor} from '../../platform/env'
 import {scope} from '../management/common'
 import {ticketAuthority,ticketReadAccess} from '../tickets/model'
 import type {Permission} from '../access/catalogue'
+import {enforceRole} from '../access/gate'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {encryptToken,decryptToken} from '../integrations/secrets'
 import {auditStatement} from '../audit/record'
@@ -26,7 +27,11 @@ async function access(c:Context<AppEnv>,write=false,readTicket=false){
  if(readTicket&&!manages){
   // A role may work its selected tickets without customer-management authority.
   const readable=(['conversations.reply','conversations.notes','conversations.follow','conversations.manage'] as const).find(p=>permissions!.has(p))
-  if(!readable)throw new HTTPException(403,{message:'Your role does not allow inbox access'})
+  if(!readable){
+   // Use the same audited permission refusal as the other native routes.
+   await enforceRole(c,actor,'conversations.reply')
+   throw new HTTPException(403,{message:'Your role does not allow inbox access'})
+  }
   permission=readable
  }
  const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},permission)

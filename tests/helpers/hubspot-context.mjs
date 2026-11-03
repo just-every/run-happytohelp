@@ -119,7 +119,18 @@ export async function hubspotContextJourney(){
   for(const door of [ticketPath,map])assert.equal((await app.call(door,operator)).status,404,'scope narrowing takes effect on the next request')
   await select({groupIds:[],includeUngrouped:true})
   await app.ok(`${base}/roles/${roleId}`,{...owner,method:'PUT',body:{...role,permissions:[]}})
-  for(const door of [ticketPath,map])assert.equal((await app.call(door,operator)).status,403,'a role without inbox authority reads nothing')
+  for(const [door,route] of [[ticketPath,'/api/management/projects/:projectId/conversations/:conversationId/crm'],[map,'/api/management/projects/:projectId/crm/hubspot/contacts/:contactId']]){
+   const before=await app.sql('SELECT id FROM audit_events WHERE project_id=?',p)
+   const response=await app.call(door,operator)
+   assert.equal(response.status,403,'a role without inbox authority reads nothing')
+   assert.equal(response.data.code,'permission_denied')
+   const added=(await app.sql('SELECT * FROM audit_events WHERE project_id=?',p)).filter(event=>!before.some(row=>row.id===event.id))
+   assert.equal(added.length,1,'one audit event per refused CRM read')
+   const event=added[0]
+   assert.deepEqual({category:event.category,action:event.action,outcome:event.outcome,actor_type:event.actor_type,actor_id:event.actor_id,source:event.source,target_type:event.target_type,target_id:event.target_id,detail:JSON.parse(event.detail_json)},
+    {category:'access',action:'permission.denied',outcome:'refused',actor_type:'user',actor_id:w.users.operator,source:'dashboard',target_type:'route',target_id:'GET '+route,detail:{role:role.name,permission:'conversations.reply'}})
+  }
+  console.log('PROBE CRM-001 1: GET native ticket/customer CRM with no inbox permission -> two 403 permission_denied responses, exactly one permission.denied audit event each with native route/actor/role shape')
   await app.ok(`${base}/roles/${roleId}`,{...owner,method:'PUT',body:role})
   await operatorRead('fresh')
   const member=await app.first('SELECT * FROM memberships WHERE project_id=? AND user_id=?',p,w.users.operator)

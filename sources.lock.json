@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "e7392574821fae264926c6b085c2ff9164bf4c1cc29cf2600c5351e26580a3ee",
+      "sha256": "15b7316d47ba8816177331283630180a6a830c006028fb01c8c9743eecd4e31b",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "92bb10fe7c56f6cf19092b76a2dc130253dac05e6c78e03b1507dd287a1ee2c3",
+      "sha256": "ad4beaa4deb7eaf5dfbc11dea4ff6527bf409414ce5c37652b322b4992cc3e29",
       "executable": false
     },
     "DEMO.md": {
@@ -4485,7 +4485,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "452e93d0e1adb3b4e2fbf817812d28f5a9a8386c406b5ecf098ac897ca8c2b66",
+      "sha256": "8c2582f26a28628464a6eb534598266cea7f46e91a33a6d09b8bafc7750cabdb",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -5281,7 +5281,7 @@
       "executable": false
     },
     "src/modules/crm/routes.ts": {
-      "sha256": "2e0251c4e1161cff29f7c719fa9dc11cb4ff9a3f4b7ff8cab9b6f588202f6f0f",
+      "sha256": "1820c5c7e4beccbc9129ed2794d79a89530583b5c37438f942aaf430c8129327",
       "executable": false
     },
     "src/modules/customer-context/collector.ts": {
@@ -11285,7 +11285,7 @@
       "executable": false
     },
     "src/ui/native/crm/HubSpotContext.jsx": {
-      "sha256": "e8ac94ebfc933a95952480340a4730c8fe2f5e44f9cc27209398233a0f3def15",
+      "sha256": "3ef1bca0d08ab0a1453d59562a41f8744d115de5fe8706adef514c7f52b93b02",
       "executable": false
     },
     "src/ui/native/crm/HubSpotMapping.jsx": {
@@ -11293,7 +11293,7 @@
       "executable": false
     },
     "src/ui/native/crm/useCrmResource.js": {
-      "sha256": "11b18448ca16ec0787fc71d692244f74fb332be108d3293d3a9502cced554450",
+      "sha256": "5965f6f6cad1ccfb1648b9916c7b4e43a788098164896069ddb017200d1d396e",
       "executable": false
     },
     "src/ui/native/dashboard-bootstrap.ts": {
@@ -14441,7 +14441,7 @@
       "executable": false
     },
     "tests/helpers/customer-outcomes-edges.mjs": {
-      "sha256": "7b27ef5b9a34be83dcf687e922f7b1a94a81814ef83867961fde01b4ee9a8fdd",
+      "sha256": "cfa4936c63c0caeafa298895160bdcec10a8d402c94141f71f42a14e4e33d8f2",
       "executable": false
     },
     "tests/helpers/customer-outcomes.mjs": {
@@ -14725,11 +14725,11 @@
       "executable": false
     },
     "tests/helpers/hubspot-context.mjs": {
-      "sha256": "c8cdfc1c4f681f00b1f7eda121f9faf5fec024f668d78251832d2db125ee0f69",
+      "sha256": "456efeab64b956fab15242cca3c453204dd73e4c6633856d85cd58577a3b806d",
       "executable": false
     },
     "tests/helpers/hubspot/browser.mjs": {
-      "sha256": "99c65570670d9b1d64b3b559feaffcd16d38745189a1e5bc9b03b227bdeed6f7",
+      "sha256": "516dec31289d719ad4b79df6fb4d6ce136711487d5d2f9e8e0e92f7e9e79e8c7",
       "executable": false
     },
     "tests/helpers/hubspot/outbound.mjs": {

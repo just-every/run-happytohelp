@@ -11,7 +11,9 @@ import {createRuntime} from '../emitted-runtime.mjs';
 export async function hubspotBrowser({browser, directory}) {
     await mkdir(directory, {recursive: true});
     const provider = {email: 'maya@example.test', plan: 'Growth', entitlement: 'Business hours', status: 200, extraScope: false};
+    let providerRequests = 0;
     const server = createServer(async (request, response) => {
+        ++providerRequests;
         const url = new URL(request.url, 'http://127.0.0.1');
         let body = ''; for await (const chunk of request) body += chunk;
         if (provider.status !== 200) {response.writeHead(provider.status); response.end('Provider refused'); return;}
@@ -28,7 +30,7 @@ export async function hubspotBrowser({browser, directory}) {
         response.setHeader('Content-Type', 'application/json'); response.end(JSON.stringify(data));
     });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-    let runtime, context, passed = false;
+    let runtime, context, operatorContext, passed = false;
     try {
         const fixture = new URL('./outbound.mjs', import.meta.url); fixture.searchParams.set('target', `http://127.0.0.1:${server.address().port}`);
         runtime = await createRuntime({outboundFixture: fixture.href, vars: {INTEGRATION_ENCRYPTION_KEY: randomBytes(32).toString('base64')}});
@@ -189,19 +191,117 @@ export async function hubspotBrowser({browser, directory}) {
         await page.goto(runtime.origin + `/projects/${foreign.projectId}/hubspot-settings`); await page.getByText('Project not found', {exact: true}).first().waitFor();
         assert.equal(await page.getByRole('region', {name: 'HubSpot context'}).count(), 0);
         await openCustomer(); await fresh();
+        // The same built component serves an operator with no customer/integration permissions.
+        const operator = await runtime.seedTenant({name: 'Ticket support', email: 'operator@example.test'});
+        const role = {name: 'Ticket support only', base: 'operator', permissions: ['conversations.reply', 'conversations.notes', 'conversations.follow', 'conversations.manage']};
+        const roleId = (await api(base + '/roles', role)).data.id;
+        const deniedRoleId = (await api(base + '/roles', {name: 'No inbox', base: 'operator', permissions: []})).data.id;
+        await runtime.execute(`INSERT INTO memberships(project_id,user_id,role) VALUES('${owner.projectId}','${operator.userId}','operator'); UPDATE sessions SET project_id='${owner.projectId}',role='operator' WHERE actor_id='${operator.userId}'`);
+        await api(`${base}/agents/${operator.userId}`, {role: roleId}, 'PUT');
+        operatorContext = await browser.newContext({viewport: {width: 1440, height: 1000}});
+        await operatorContext.addCookies([{name: 'h2h_session', value: operator.token, url: runtime.origin}]);
+        const operatorPage = await operatorContext.newPage(); operatorPage.setDefaultTimeout(20000);
+        const operatorPanel = () => operatorPage.getByRole('region', {name: 'HubSpot context', exact: true});
+        const operatorGet = async path => {
+            const response = await operatorContext.request.get(runtime.origin + path);
+            assert.equal(response.status(), 200); return response.json();
+        };
+        const ticketCrm = `${base}/conversations/${ticket.id}/crm`, contactCrm = `${base}/crm/hubspot/contacts/${contact.id}`;
+        const operatorState = async state => {
+            const requests = providerRequests, expected = await api(contactCrm);
+            assert.equal(expected.state, state);
+            assert.deepEqual(await operatorGet(contactCrm), expected);
+            assert.deepEqual(await operatorGet(ticketCrm), expected);
+            await operatorPanel().getByRole('button', {name: 'Check CRM status', exact: true}).click();
+            await operatorPanel().getByText(new RegExp('^' + ({fresh: 'Fresh —', stale: 'Stale —', unmapped: 'Unmapped —', identity_mismatch: 'Identity mismatch —', disconnected: 'Disconnected —'})[state])).waitFor();
+            assert.equal(await operatorPanel().getByRole('button', {name: /Refresh|Map|Remap|Remove|Connect|Disconnect/}).count(), 0);
+            assert.equal(await operatorPanel().getByRole('link').count(), 0);
+            assert.equal(await operatorPanel().getByLabel('HubSpot contact ID', {exact: true}).count(), 0);
+            const asOf = operatorPanel().locator('.crm-facts > div').filter({has: operatorPage.getByText('As of', {exact: true})}).locator('dd');
+            assert.equal(await asOf.innerText(), await operatorPage.evaluate(value => value ? new Date(value).toLocaleString() : 'Not yet', expected.refreshed_at));
+            if (['identity_mismatch', 'disconnected', 'unmapped'].includes(state)) {
+                assert.equal(expected.context, null);
+                assert.equal(await operatorPanel().getByText('Priority response', {exact: true}).count(), 0);
+            }
+            assert.equal(providerRequests, requests, 'operator status checks use only the cached context');
+        };
+        const openOperatorTicket = async () => {
+            await operatorPage.goto(runtime.origin + `/projects/${owner.projectId}/conversations/${ticket.id}`);
+            const assistant = operatorPage.locator('#conversation-assistant');
+            if (await assistant.getAttribute('aria-hidden') === 'true') await operatorPage.getByRole('button', {name: 'Show conversation panel', exact: true}).click();
+            await operatorPage.getByRole('tab', {name: 'Ticket', exact: true}).click();
+            const heading = operatorPage.locator('#ticket-section-customer-heading');
+            if (await heading.getAttribute('aria-expanded') !== 'true') await heading.click();
+            await operatorPanel().getByText(/^Fresh —/).waitFor();
+        };
+        const operatorCaptures = async (name, ticketPanel = false) => {
+            for (const width of [1440, 390]) {
+                await operatorPage.setViewportSize({width, height: 1000});
+                if (ticketPanel) await openOperatorTicket();
+                await operatorPanel().scrollIntoViewIfNeeded();
+                await operatorPage.screenshot({path: `${directory}/operator-${name}-${width}.png`, fullPage: true});
+            }
+            await operatorPage.setViewportSize({width: 1440, height: 1000});
+            if (ticketPanel) await openOperatorTicket();
+            await operatorPage.addScriptTag({path: resolve('node_modules/axe-core/axe.min.js')});
+            assert.deepEqual(await operatorPage.evaluate(async () => (await axe.run(document.querySelector('[aria-label="HubSpot context"]'))).violations.filter(item => ['serious', 'critical'].includes(item.impact)).map(item => item.id)), [], 'operator CRM accessibility');
+            assert.ok(await operatorPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'operator screen fits');
+        };
+        await operatorPage.goto(customer); await operatorPanel().getByText(/^Fresh —/).waitFor(); await operatorState('fresh');
+        assert.equal(await operatorPanel().getByText('12', {exact: true}).isVisible(), false, 'source IDs start undisclosed');
+        await operatorPanel().getByText('HubSpot source identifiers', {exact: true}).click();
+        assert.equal(await operatorPanel().getByText('12', {exact: true}).isVisible(), true);
+        assert.equal(await operatorPanel().getByText('51', {exact: true}).count(), 1);
+        assert.equal(await operatorPanel().getByText('52', {exact: true}).count(), 1);
+        await operatorCaptures('customer-fresh');
+        await openOperatorTicket(); await operatorState('fresh'); await operatorCaptures('ticket-fresh', true);
+        const draft = operatorPage.getByRole('textbox', {name: 'Reply to conversation', exact: true});
+        await draft.fill('I am checking the cached support entitlement.');
+        const checked = operatorPage.waitForResponse(response => response.url().endsWith(ticketCrm) && response.request().method() === 'GET');
+        const requestsBeforeFocus = providerRequests;
+        await operatorPage.evaluate(() => window.dispatchEvent(new Event('focus'))); await checked;
+        assert.equal(await draft.inputValue(), 'I am checking the cached support entitlement.', 'background CRM checks preserve an open reply draft');
+        assert.equal(providerRequests, requestsBeforeFocus);
+        await operatorPage.goto(customer); await operatorPanel().getByText(/^Fresh —/).waitFor();
+        await runtime.execute(`UPDATE crm_mappings SET refreshed_at=${Date.now()-600000} WHERE project_id='${owner.projectId}' AND contact_id='${contact.id}'`);
+        await operatorState('stale'); assert.equal(await operatorPanel().getByText('Priority response', {exact: true}).count(), 2);
+        provider.email = 'different@example.test'; await api(contactCrm + '/refresh', {}); await operatorState('identity_mismatch');
+        provider.email = 'maya@example.test'; await api(contactCrm + '/refresh', {});
+        await runtime.execute(`UPDATE crm_connections SET token_cipher=NULL WHERE project_id='${owner.projectId}'`);
+        await operatorState('disconnected');
+        await api(base + '/crm/hubspot', {token: 'synthetic-hubspot-browser-token', account_id: '123', properties: {plan: 'support_plan', entitlement: 'support_entitlement'}}, 'PUT');
+        await operatorState('unmapped');
+        const requestsBeforeRefusals = providerRequests;
+        for (const [path, method, data] of [[contactCrm + '/refresh', 'POST', {}], [ticketCrm + '/refresh', 'POST', {}], [contactCrm, 'PUT', {source_contact_id: '11'}], [contactCrm, 'DELETE'], [base + '/crm/hubspot', 'PUT', {}], [base + '/crm/hubspot', 'DELETE']]) {
+            const response = await operatorContext.request.fetch(runtime.origin + path, {method, ...(data === undefined ? {} : {data})});
+            assert.equal(response.status(), 403);
+        }
+        await runtime.execute(`UPDATE project_roles SET ticket_scope_json='{"groupIds":[],"includeUngrouped":false}' WHERE project_id='${owner.projectId}' AND id='${roleId}'`);
+        for (const path of [contactCrm, ticketCrm]) assert.equal((await operatorContext.request.get(runtime.origin + path)).status(), 404);
+        await operatorPanel().getByRole('button', {name: 'Check CRM status', exact: true}).click();
+        await operatorPanel().getByRole('alert').waitFor();
+        assert.equal(await operatorPanel().getByText('Priority response', {exact: true}).count(), 0);
+        await api(`${base}/roles/${roleId}`, {...role, permissions: []}, 'PUT');
+        for (const path of [contactCrm, ticketCrm]) assert.equal((await operatorContext.request.get(runtime.origin + path)).status(), 403);
+        assert.equal(providerRequests, requestsBeforeRefusals);
+        console.log('PROBE CRM-001 3: built operator ticket/customer panels -> read-only fresh/stale/mismatch/disconnected/unmapped; localized As of, source disclosure, draft retention, six writes 403 and scoped denial; captures 1440/390');
+        await operatorContext.close(); operatorContext = null;
+        // Restore the owner's existing mapping for the retained revocation/unmap proof below.
+        await api(contactCrm, {source_contact_id: '12', company_id: company.id, source_company_id: '21'}, 'PUT');
+        await openCustomer(); await refresh(); await fresh();
         // Revoke native authority while a remapping form is open; cached source IDs must disappear too.
         await panel().getByRole('button', {name: 'Remap customer', exact: true}).click();
         assert.equal(await panel().getByLabel('HubSpot contact ID', {exact: true}).inputValue(), '12');
-        await runtime.execute(`UPDATE memberships SET role='operator' WHERE project_id='${owner.projectId}' AND user_id='${owner.userId}'; UPDATE sessions SET role='operator' WHERE actor_id='${owner.userId}'`);
+        await runtime.execute(`UPDATE memberships SET role='operator' WHERE project_id='${owner.projectId}' AND user_id='${owner.userId}'; UPDATE sessions SET role='operator' WHERE actor_id='${owner.userId}'; INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES('${owner.projectId}','${owner.userId}','${deniedRoleId}',${Date.now()})`);
         await page.evaluate(() => window.dispatchEvent(new Event('focus'))); await panel().waitFor({state: 'detached'});
         assert.equal(await panel().getByLabel('HubSpot contact ID', {exact: true}).count(), 0);
         assert.equal(await panel().getByText('Priority response', {exact: true}).count(), 0); await page.screenshot({path: `${directory}/customer-denied-1440.png`, fullPage: true});
         await page.reload(); await page.getByRole('heading', {name: 'Maya Patel', exact: true}).waitFor();
-        assert.equal(await panel().count(), 0, 'operators have no permanent CRM permission notice');
+        assert.equal(await panel().count(), 0, 'roles without inbox access have no permanent CRM permission notice');
         await openTicket(ticket.id, false);
         assert.equal(await panel().count(), 0);
         await page.goto(settings); await page.getByText('HubSpot requires a workspace owner or admin with customer management permission. Ask your owner for access.', {exact: true}).waitFor();
-        await runtime.execute(`UPDATE memberships SET role='owner' WHERE project_id='${owner.projectId}' AND user_id='${owner.userId}'; UPDATE sessions SET role='owner' WHERE actor_id='${owner.userId}'`);
+        await runtime.execute(`DELETE FROM member_roles WHERE project_id='${owner.projectId}' AND user_id='${owner.userId}'; UPDATE memberships SET role='owner' WHERE project_id='${owner.projectId}' AND user_id='${owner.userId}'; UPDATE sessions SET role='owner' WHERE actor_id='${owner.userId}'`);
         await openCustomer(); await fresh();
         await panel().getByRole('button', {name: 'Remove HubSpot mapping', exact: true}).click(); await panel().getByRole('button', {name: 'Confirm remove mapping', exact: true}).click();
         await panel().getByText('Unmapped — choose source IDs on the customer record.', {exact: true}).waitFor();
@@ -217,6 +317,6 @@ export async function hubspotBrowser({browser, directory}) {
         assert.equal(await panel().count(), 0, 'disconnected workspaces have no CRM box');
         passed = true;
     } finally {
-        await context?.close(); await runtime?.close(passed); await new Promise(resolve => server.close(resolve));
+        await operatorContext?.close(); await context?.close(); await runtime?.close(passed); await new Promise(resolve => server.close(resolve));
     }
 }

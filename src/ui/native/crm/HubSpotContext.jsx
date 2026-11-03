@@ -16,8 +16,9 @@ const states = {
 const time = value => value ? new Date(value).toLocaleString() : 'Not yet';
 export default function HubSpotContext({projectId, contact, conversationId}) {
     const access = useCrmAccess(projectId);
-    if (!access.allowed) return null;
-    return <ConnectedContext key={projectId + access.identity} {...{projectId, contact, conversationId}} writable={access.writable}/>;
+    if (!access.allowed && !access.readable) return null;
+    const props = {projectId, contact, conversationId, managed: access.allowed, writable: access.allowed && access.writable};
+    return access.allowed ? <ConnectedContext key={projectId + access.identity} {...props}/> : <Context key={JSON.stringify([projectId, access.identity, contact.id, contact.email, conversationId])} {...props}/>;
 }
 function ConnectedContext(props) {
     const {data, denied} = useCrmResource(crmRoot(props.projectId));
@@ -25,7 +26,7 @@ function ConnectedContext(props) {
     return <Context key={JSON.stringify([props.contact.id, props.conversationId, props.contact.email])} {...props}/>;
 }
 
-function Context({projectId, contact, conversationId, writable}) {
+function Context({projectId, contact, conversationId, writable, managed}) {
     // Ticket context always resolves the requester through the server's ticket route.
     const path = conversationId ? `/api/management/projects/${encodeURIComponent(projectId)}/conversations/${encodeURIComponent(conversationId)}/crm` : `${crmRoot(projectId)}/contacts/${encodeURIComponent(contact.id)}`;
     const {data, loading, error, notice, denied, run} = useCrmResource(path);
@@ -41,22 +42,23 @@ function Context({projectId, contact, conversationId, writable}) {
                 <div><dt>Source contact ID</dt><dd>{data.source_contact_id || 'Not mapped'}</dd></div>
                 <div><dt>Source company ID</dt><dd>{data.source_company_id || 'Not mapped'}</dd></div>
             </dl></details><dl className="crm-facts">
+                {!managed && <div><dt>As of</dt><dd>{time(data.refreshed_at)}</dd></div>}
                 <div><dt>Last checked</dt><dd>{time(data.checked_at)}</dd></div>
                 <div><dt>Last refreshed</dt><dd>{time(data.refreshed_at)}</dd></div>
             </dl>
-            {data.context && ['fresh', 'stale'].includes(data.state) && <ContextValues context={data.context}/>}
+            {data.context && ['fresh', 'stale'].includes(data.state) && <ContextValues context={data.context} managed={managed}/>}
         </>}
         {notice && <p role="status">{notice}</p>}
         <div className="crm-actions"><button type="button" className="btn btn-sm btn-white" disabled={loading} onClick={() => run()}>Check CRM status</button>
             {writable && data && !['unmapped', 'disconnected'].includes(data.state) && <button type="button" className="btn btn-sm btn-primary" disabled={loading} onClick={() => run({method: 'POST', suffix: '/refresh'}, 'Refresh checked. The current HubSpot state is shown above.')}>Refresh HubSpot context</button>}
-            <Link className="crm-link" to={`/projects/${projectId}/hubspot-settings`}>HubSpot settings</Link>
+            {managed && <Link className="crm-link" to={`/projects/${projectId}/hubspot-settings`}>HubSpot settings</Link>}
         </div>
-        {!denied && (conversationId ? <p><Link className="crm-link" to={`/projects/${projectId}/contacts/${contact.id}`}>Manage this customer’s mapping</Link></p> : <HubSpotMapping {...{projectId, contact, data, loading, writable, run}}/>)}
+        {!denied && managed && (conversationId ? <p><Link className="crm-link" to={`/projects/${projectId}/contacts/${contact.id}`}>Manage this customer’s mapping</Link></p> : <HubSpotMapping {...{projectId, contact, data, loading, writable, run}}/>)}
     </section>;
 }
-function ContextValues({context}) {
+function ContextValues({context, managed}) {
     const fields = context.fields || {}, contact = context.contact, company = context.company;
     return <div className="crm-values">{[['Contact', contact], ['Company', company]].filter(([,record]) => record).map(([label,record]) => <div key={label}><h4>{label} context</h4><dl className="crm-facts">
-        {[["Source ID",record.id],["Name",record.properties.name],["Plan",record.properties[fields.plan]],["Entitlement",record.properties[fields.entitlement]],["HubSpot owner ID",record.properties.hubspot_owner_id],["Source updated",time(record.updatedAt)]].filter(([label,value]) => label !== 'Name' || value).map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value || 'Not provided'}</dd></div>)}
+        {[["Source ID",record.id],["Name",record.properties.name],["Plan",record.properties[fields.plan]],["Entitlement",record.properties[fields.entitlement]],["HubSpot owner ID",record.properties.hubspot_owner_id],["Source updated",time(record.updatedAt)]].filter(([label,value]) => (label !== 'Name' || value) && (label !== 'Source ID' || managed)).map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value || 'Not provided'}</dd></div>)}
     </dl></div>)}</div>;
 }

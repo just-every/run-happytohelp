@@ -2045,7 +2045,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "41e45f52ca75b2deab693d9aa56db26171a42a0498c89e46cd024f42665c8150",
+      "sha256": "738ee6e854a7fc6b87b2a4853e943ec5422231df0bce5b64e17cefc1dfa2bf33",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -8381,7 +8381,7 @@
       "executable": false
     },
     "src/modules/support-channels/thread-lookup.ts": {
-      "sha256": "9e0c33e9c76ea37c331642905ce8cc3bbe256898dd4a5f6c0c594b413a16c4c8",
+      "sha256": "759c53b8cff471d55e38e73d9eb47a43beb42710c4b6fa9d6de243e0f7f0eb13",
       "executable": false
     },
     "src/modules/support-channels/TicketChannel.jsx": {

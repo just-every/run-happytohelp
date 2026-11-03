@@ -2,6 +2,7 @@ import {messagingOutcomes} from './outcomes-002-outcomes.mjs';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {fileURLToPath} from 'node:url';
+import {build} from 'esbuild';
 import assert from 'node:assert/strict';
 import {createHmac,randomBytes,randomUUID,generateKeyPairSync,sign} from 'node:crypto';
 import {startApp} from '../../journeys/kit/app.mjs';
@@ -65,7 +66,7 @@ export async function exchange(providers=['sms','whatsapp','instagram','messenge
  assert.equal((await h.call('/report')).data.reduce((n,r)=>n+r.count,0),providers.length+providers.filter(p=>p!=='sms').length*2);
  }finally{await h.close();}}
 export async function slack(){await sharedExchange();}
-export async function erasure(){const h=await channelHarness();try{
+export async function erasure(){await outboundThreadErasure();const h=await channelHarness();try{
  const c=await h.connect('sms');await h.deliver(c,'sms',h.event('sms'));const t=await h.ticket(c);await h.reply(t);
  await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${t.contact_id}/erase`,{token:h.token,body:{}});
  assert.equal(await h.ticket(c),null);assert.equal((await h.app.first('SELECT count(*) n FROM support_channel_fences')).n,1);const result=await h.deliver(c,'sms',h.event('sms'));assert.equal(result.status,200);assert.equal(await h.ticket(c),null);
@@ -73,7 +74,7 @@ export async function erasure(){const h=await channelHarness();try{
  const text=JSON.stringify(await h.app.sql('SELECT * FROM support_channel_events'));assert.ok(!text.includes(t.contact_id));assert.ok(!text.includes('+12025550124'));
  await h.call('/connections/'+c.id,undefined,{method:'DELETE'});await h.connect('sms');await h.deliver(c,'sms',h.event('sms'));assert.equal(await h.ticket(c),null);
  }finally{await h.close();}}
-export async function uncertainty(){const h=await channelHarness();try{
+export async function uncertainty(){await outboundThreadContinuity();await outboundTicketCreation();await outboundLookupPerformance();const h=await channelHarness();try{
  for(const response of [{status:500},{disconnect:true},{status:400}]){const p='sms',c=await h.connect(p);await h.deliver(c,p,h.event(p,{sender:'+1202555012'+(h.sends.length+5)}));const t=await h.ticket(c);h.responses.push(response);const message=await h.reply(t);const count=h.sends.length;const state=(await h.call('/conversations/'+t.conversation_id)).data.sends[0].state;assert.equal(state,response.status===400?'failed':'uncertain');await h.app.scheduled();assert.equal(h.sends.length,count,'recovery does not replay channel sends');assert.ok(message.accepted);}
  }finally{await h.close();}}
 
@@ -171,3 +172,138 @@ async function consentExchange(){const h=await channelHarness();try{
   await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${t.contact_id}/erase`,{token:h.token,body:{}});assert.equal((await status()).data,null);assert.equal((await h.app.first('SELECT count(*) n FROM support_channel_consent WHERE contact_id=?',t.contact_id)).n,0);
  }
  }finally{await h.close();}}
+
+/** Operator creation uses the real route and store; only provider HTTP is faked. */
+async function outboundTicketCreation(){const h=await channelHarness();try{
+ const {app,ws,token,sends,responses}=h,p=ws.projectId,path=`/api/dashboard/projects/${p}/tickets`,c=await h.connect('whatsapp'),phone='+12025550124';
+ const create=(patch={},who=token)=>app.call(path,{token:who,body:{kind:'whatsapp',localId:randomUUID(),connectionId:c.id,requesterPhone:phone,templateId:h.templates[0].id,parameters:['DEL-42'],subject:'Your parcel',content:'DEL-42',...patch}});
+ const counts=async()=>({tickets:(await app.first('SELECT count(*) n FROM operator_ticket_commands WHERE project_id=?',p)).n,sends:sends.length,threads:(await app.first('SELECT count(*) n FROM support_channel_threads WHERE project_id=?',p)).n,contacts:(await app.first('SELECT count(*) n FROM contacts WHERE project_id=?',p)).n});
+ let before=await counts();assert.equal((await create()).status,409);assert.deepEqual(await counts(),before,'no-consent creates nothing');
+ assert.equal((await h.deliver(c,'whatsapp',h.event('whatsapp',{sender:phone.slice(1),text:'I agree to WhatsApp support updates'}))).status,200);
+ const thread=await h.ticket(c);before=await counts();
+ for(const [patch,who,status,reason] of [[{templateId:'unapproved'},token,409,/approved/],[{parameters:[]},token,400,/parameter/],[{connectionId:'disconnected'},token,409,/disconnected/],[{},h.other.tokens.owner,403,/./]]){
+  const r=await create(patch,who);assert.equal(r.status,status,JSON.stringify(r.data));assert.match(r.data.error,reason);assert.deepEqual(await counts(),before,'refusal creates no ticket/send/customer/thread');
+ }
+ const command=randomUUID(),first=await create({localId:command});assert.equal(first.status,201,JSON.stringify(first.data));assert.equal(first.data.conversation.contact_id,thread.contact_id);assert.equal(first.data.conversation.submitter_id,ws.users.owner);assert.equal(first.data.delivery.state,'accepted');
+ const link=await app.first('SELECT * FROM operator_ticket_commands WHERE local_id=?',command);assert.equal(link.support_thread_id,thread.id);assert.equal(sends.length,before.sends+1);assert.equal(JSON.parse(sends.at(-1).body).type,'template');assert.equal(JSON.parse(sends.at(-1).body).template.components[0].parameters[0].text,'DEL-42');
+ const incoming=await h.deliver(c,'whatsapp',h.event('whatsapp',{sender:phone.slice(1),text:'Thank you for the update'}));assert.equal(incoming.data.data[0].conversation_id,first.data.conversation.id);
+ const retry=await create({localId:command});assert.equal(retry.status,200,JSON.stringify(retry.data));assert.equal(retry.data.conversation.id,first.data.conversation.id);assert.equal(sends.length,before.sends+1);
+ const simultaneous=await Promise.all([create({},ws.tokens.owner),create({},ws.tokens.admin)]);for(const r of simultaneous)assert.equal(r.status,201,JSON.stringify(r.data));assert.notEqual(simultaneous[0].data.conversation.id,simultaneous[1].data.conversation.id);assert.equal(sends.length,before.sends+3);assert.equal((await counts()).threads,before.threads);assert.equal((await counts()).contacts,before.contacts);
+ const same=randomUUID(),double=await Promise.all([create({localId:same}),create({localId:same})]);for(const r of double)assert.ok([200,201].includes(r.status),JSON.stringify(r.data));assert.equal(double[0].data.conversation.id,double[1].data.conversation.id);assert.equal(sends.length,before.sends+4);
+ responses.push({disconnect:true});const unknownId=randomUUID(),unknown=await create({localId:unknownId});assert.equal(unknown.status,201,JSON.stringify(unknown.data));assert.equal(unknown.data.delivery.state,'uncertain');const afterUnknown=sends.length;assert.equal((await create({localId:unknownId})).data.delivery.state,'uncertain');assert.equal(sends.length,afterUnknown,'unknown provider outcome never replayed');
+ await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(p,ws.users.operator,Date.now()).run();before=await counts();assert.equal((await create({},ws.tokens.operator)).status,403);assert.deepEqual(await counts(),before);
+ const role=(await app.ok(`/api/management/projects/${p}/roles`,{token,body:{name:'Synthetic restricted creator',base:'admin',permissions:['conversations.manage','conversations.reply']}})).data.id;
+ await app.ok(`/api/management/projects/${p}/agents/${ws.users.admin}`,{token,method:'PUT',body:{role}});
+ await app.db.prepare('UPDATE project_roles SET ticket_scope_json=? WHERE id=? AND project_id=?').bind(JSON.stringify({groupIds:[],includeUngrouped:false}),role,p).run();before=await counts();const outside=await create({},ws.tokens.admin);assert.equal(outside.status,403,JSON.stringify(outside.data));assert.match(outside.data.error,/destination group/);assert.deepEqual(await counts(),before);
+ assert.equal((await h.deliver(c,'whatsapp',h.event('whatsapp',{sender:phone.slice(1),text:'STOP'}))).status,200);before=await counts();const stopped=await create();assert.equal(stopped.status,409);assert.match(stopped.data.error,/opted_out/);assert.deepEqual(await counts(),before);
+ const sms=await h.connect('sms'),smsPhone='+12025550125';await h.deliver(sms,'sms',h.event('sms',{sender:smsPhone,text:'START'}));
+ const smsInput={kind:'sms',connectionId:sms.id,requesterPhone:smsPhone,templateId:undefined,parameters:undefined,content:'Your order is ready.'};assert.equal((await create(smsInput)).status,201);await app.db.prepare('UPDATE support_channel_connections SET registered=0 WHERE id=?').bind(sms.id).run();before=await counts();const a2p=await create(smsInput);assert.equal(a2p.status,409);assert.match(a2p.data.error,/a2p/);assert.deepEqual(await counts(),before);
+ await app.db.prepare("UPDATE contacts SET metadata_json=json_object('is_erased',1) WHERE id=?").bind((await h.ticket(sms)).contact_id).run();before=await counts();assert.equal((await create(smsInput)).status,409);assert.deepEqual(await counts(),before,'erased customer cannot create a ticket or send');
+ // Private call and email normalization keep their incumbent public doors.
+ const call=await app.call(path,{token,body:{kind:'call',localId:randomUUID(),requesterEmail:'caller@customer.example',subject:'Call',content:'Private notes'}});assert.equal(call.status,201,JSON.stringify(call.data));assert.equal(sends.length,before.sends);assert.ok(call.data.note);
+ console.log('PROBE OUTBOUND-001 1: POST tickets opted-in WhatsApp -> one ticket/send, existing customer/thread; SMS START -> accepted');
+ console.log('PROBE OUTBOUND-001 2: POST tickets no consent, STOP, unapproved/missing template, disconnected, A2P, denied role -> refused with no ticket/send; uncertain -> retained, no replay');
+ console.log('PROBE OUTBOUND-001 3: POST tickets duplicate/concurrent commands -> one claim per ticket, one thread/customer; erased requester -> refused; no money authority added');
+ }finally{await h.close()}}
+
+// Keep the original native conversation usable after operator tickets move intake.
+async function outboundThreadContinuity(){const h=await channelHarness();try{
+ for(const provider of ['sms','whatsapp']){
+  const c=await h.connect(provider),phone='+12025550124',sender=provider==='sms'?phone:phone.slice(1);
+  await h.deliver(c,provider,h.event(provider,{sender,text:provider==='sms'?'START':'I agree to WhatsApp support updates'}));
+  const earlier=await h.ticket(c),path=`/api/dashboard/projects/${h.ws.projectId}/tickets`;
+  const create=async()=>h.app.ok(path,{token:h.token,body:{kind:provider,localId:randomUUID(),connectionId:c.id,requesterPhone:phone,subject:'Order update',content:provider==='sms'?'Your parcel is ready.':'DEL-42',...(provider==='whatsapp'?{templateId:h.templates[0].id,parameters:['DEL-42']}:{})}});
+  const ticket=await create(),created=ticket.conversation.id;
+  const before=h.sends.length,localId=randomUUID(),expectedRevision=(await h.app.ok('/api/conversations/'+earlier.conversation_id,{token:h.token})).revision,reply=await h.reply(earlier,{localId,expectedRevision,content:'Reply in the earlier open conversation'});
+  assert.equal(reply.accepted,true);assert.equal(h.sends.length,before+1,'earlier conversation must send exactly once, not silently save');
+  await h.reply(earlier,{localId,expectedRevision,content:'Reply in the earlier open conversation'});assert.equal(h.sends.length,before+1,'same earlier reply does not send twice');
+  const receipt=await h.app.first('SELECT * FROM support_channel_sends WHERE message_id=?',reply.message.id);assert.equal(receipt.state,'accepted');assert.equal(receipt.connection_id,c.id);assert.equal(receipt.conversation_id,earlier.conversation_id);
+  const panel=(await h.call('/conversations/'+earlier.conversation_id)).data;assert.equal(panel.provider,provider);assert.ok(panel.sends.some(send=>send.message_id===reply.message.id&&send.state==='accepted'));
+  const inbox=(await h.app.ok(`/api/dashboard/projects/${h.ws.projectId}/conversations/${earlier.conversation_id}`,{token:h.token})).data;assert.equal(inbox.last_message.id,reply.message.id);assert.equal(inbox.last_message.channel_status.state,'accepted','inbox no longer says no send attempt recorded');
+  if(provider==='whatsapp'){const templates=await h.app.call(h.root+'/conversations/'+earlier.conversation_id+'/templates',{token:h.token});assert.equal(templates.status,200);assert.equal(templates.data.data[0].id,h.templates[0].id);}
+  await h.reply({conversation_id:created});assert.equal(h.sends.length,before+2,'new ticket still sends exactly once');
+  const next=await create();await h.reply({conversation_id:created});assert.equal(h.sends.length,before+4,'earlier operator ticket keeps its command link after another move');
+  const raw=h.event(provider,{sender,text:'Inbound still follows the newest operator ticket'}),inbound=await h.deliver(c,provider,raw);
+  const current=await h.ticket(c);assert.equal(current.conversation_id,next.conversation.id);
+  if(provider==='whatsapp')assert.equal(inbound.data.data[0].conversation_id,next.conversation.id);
+  const newest=await h.app.ok('/api/conversations/'+next.conversation.id+'/messages',{token:h.token});assert.equal(newest.messages.at(-1).content,'Inbound still follows the newest operator ticket');
+  const file=await h.app.ok('/api/conversations/'+earlier.conversation_id+'/media',{token:h.token,raw:true,body:'Earlier conversation attachment',headers:{'Content-Type':'text/plain','X-Filename':'earlier.txt'}});
+  await h.reply(earlier,{content:'Earlier attachment',mediaIds:[file.id]});assert.equal(h.sends.length,before+5);
+  const grant=provider==='sms'?new URLSearchParams(h.sends.at(-1).body).get('MediaUrl'):JSON.parse(h.sends.at(-1).body).document.link;
+  assert.ok(grant,'earlier-conversation media must not silently disappear');assert.equal((await h.app.call(new URL(grant).pathname)).data,'Earlier conversation attachment');
+  assert.equal((await h.app.call(h.root+'/conversations/'+earlier.conversation_id,{token:h.other.tokens.owner})).status,403);
+  // A shared requester alone is not a thread link.
+  const unrelated='synthetic-happytohelp-unrelated-'+provider;
+  await h.app.db.prepare('INSERT INTO conversations(id,project_id,contact_id,channel,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(unrelated,h.ws.projectId,earlier.contact_id,provider,Date.now(),Date.now()).run();
+  assert.equal((await h.call('/conversations/'+unrelated)).data,null,'do not widen thread lookup to every conversation of the requester');
+ }
+ console.log('PROBE OUTBOUND-001 A1: signed SMS START / WhatsApp agreement -> POST tickets -> POST earlier conversation/messages: exactly one provider send with accepted receipt, channel panel present, WhatsApp templates GET 200; new and earlier operator tickets send once; signed inbound stays on newest ticket; unrelated conversation has no channel link');
+ console.log('PROBE OUTBOUND-001-PERF P3: signed SMS/WhatsApp inbound -> create ticket -> earlier/new replies: exactly once, accepted receipt and panel, templates 200, newest inbound routing; original A1/B1 assertions retained');
+ }finally{await h.close()}}
+
+async function outboundThreadErasure(){const h=await channelHarness();try{
+ for(const provider of ['sms','whatsapp']){
+  const c=await h.connect(provider),phone='+12025550124',sender=provider==='sms'?phone:phone.slice(1);
+  await h.deliver(c,provider,h.event(provider,{sender}));const earlier=await h.ticket(c);await h.reply(earlier);
+  await h.deliver(c,provider,h.event(provider,{sender,text:provider==='sms'?'START':'I agree to WhatsApp support updates'}));
+  const created=await h.app.ok(`/api/dashboard/projects/${h.ws.projectId}/tickets`,{token:h.token,body:{kind:provider,localId:randomUUID(),connectionId:c.id,requesterPhone:phone,subject:'Order update',content:provider==='sms'?'Your parcel is ready.':'DEL-42',...(provider==='whatsapp'?{templateId:h.templates[0].id,parameters:['DEL-42']}:{})}});
+  await h.reply({conversation_id:created.conversation.id});
+  const sends=await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id IN (?,?) ORDER BY message_id',earlier.conversation_id,created.conversation.id);assert.equal(sends.length,3);assert.ok(sends.every(send=>send.provider_id&&send.error_code===null));
+  await h.deliver(c,provider,h.event(provider,{sender:provider==='sms'?'+12025550129':'12025550129'}));const other=await h.ticket(c);await h.reply(other);
+  const untouched=await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id=?',other.conversation_id);assert.equal(untouched.length,1);assert.ok(untouched[0].provider_id);
+  await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${earlier.contact_id}/erase`,{token:h.token,body:{}});
+  const erased=await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id IN (?,?) ORDER BY message_id',earlier.conversation_id,created.conversation.id);assert.equal(erased.length,sends.length);assert.ok(erased.every(send=>send.provider_id===null&&send.error_code==='contact_erased'),'earlier and new sends must all be scrubbed');
+  assert.deepEqual(await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id=?',other.conversation_id),untouched,'same-connection other customer sends remain byte-for-byte unchanged');
+ }
+ // The incumbent close/follow-up path moves the same mutable thread column.
+ const c=await h.connect('sms');await h.deliver(c,'sms',h.event('sms',{sender:'+12025550126'}));const closed=await h.ticket(c);await h.reply(closed);
+ const base=`/api/dashboard/projects/${h.ws.projectId}`,get=async()=>(await h.app.ok(base+'/conversations/'+closed.conversation_id+'/ticket',{token:h.token})).data;
+ const ticket=await get();await h.app.ok(base+'/conversations/'+closed.conversation_id+'/ticket',{token:h.token,method:'PATCH',body:{status_id:'solved',expected_version:ticket.ticket_version}});
+ const solved=await get();await h.app.configure({H2H_LOCAL:'true',H2H_WORKFLOW_NOW:String(solved.resolved_at+97*3600000)});await h.app.scheduled();await h.app.configure({});assert.equal((await get()).status_category,'closed');
+ await h.deliver(c,'sms',h.event('sms',{sender:'+12025550126',text:'Please open a follow-up'}));const moved=await h.ticket(c);assert.notEqual(moved.conversation_id,closed.conversation_id);await h.reply(moved);
+ const ids=[closed.conversation_id,moved.conversation_id],before=await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id IN (?,?)',...ids);assert.equal(before.length,2);assert.ok(before.every(send=>send.provider_id));
+ await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${closed.contact_id}/erase`,{token:h.token,body:{}});
+ const after=await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id IN (?,?)',...ids);assert.equal(after.length,2);assert.ok(after.every(send=>send.provider_id===null&&send.error_code==='contact_erased'),'closed and follow-up sends must both be scrubbed');
+ console.log('PROBE OUTBOUND-001 B1: signed inbound -> POST agent reply -> signed START/agreement -> POST operator ticket and reply -> POST contact/erase: all 3 sends per SMS/WhatsApp customer retain records with provider_id NULL and contact_erased; other customers unchanged; native solve/scheduled-close -> signed follow-up -> erase also scrubs both conversations');
+ console.log('PROBE OUTBOUND-001-PERF P6: native solve -> scheduled close -> signed SMS follow-up -> reply -> contact/erase: closed and follow-up sends both provider_id NULL/contact_erased');
+ }finally{await h.close()}}
+
+// A seeded native D1 desk: one connection, 2,000 customers and 20,000 receipts.
+// Exercise both public doors, and measure the exact lookup SQL used by thread().
+async function outboundLookupPerformance(){const h=await channelHarness();try{
+ const {app,ws,token}=h,c=await h.connect('sms');
+ for(let n=0;n<10;n++)assert.equal((await h.deliver(c,'sms',h.event('sms',{text:n===0?'START':`Question ${n}`}))).status,200);
+ const target=await h.ticket(c),now=Date.now(),customers=`WITH RECURSIVE customer(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM customer WHERE n<1999)`;
+ await app.db.batch([
+  app.db.prepare(`${customers} INSERT INTO contacts(id,project_id,name,created_at) SELECT 'perf-contact-'||n,?,'Customer '||n,? FROM customer`).bind(ws.projectId,now),
+  app.db.prepare(`${customers} INSERT INTO conversations(id,project_id,contact_id,channel,revision,created_at,updated_at) SELECT 'perf-conversation-'||n,?,'perf-contact-'||n,'sms',10,?,? FROM customer`).bind(ws.projectId,now,now),
+  app.db.prepare(`${customers} INSERT INTO support_channel_threads(id,project_id,connection_id,contact_id,conversation_id,identity_hash,recipient,channel_id,thread_key,last_inbound_at) SELECT 'perf-thread-'||n,?,?,'perf-contact-'||n,'perf-conversation-'||n,'perf-identity-'||n,'+'||(1202+n/100)||'55501'||printf('%02d',n%100),'','perf-key-'||n,? FROM customer`).bind(ws.projectId,c.id,now),
+  app.db.prepare(`${customers}, inbound(m) AS (VALUES(1) UNION ALL SELECT m+1 FROM inbound WHERE m<10) INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) SELECT 'perf-message-'||n||'-'||m,?,'perf-conversation-'||n,'perf-local-'||m,'perf-contact-'||n,'contact','Where is my order? '||m,m,? FROM customer CROSS JOIN inbound`).bind(ws.projectId,now),
+  app.db.prepare(`${customers}, inbound(m) AS (VALUES(1) UNION ALL SELECT m+1 FROM inbound WHERE m<10) INSERT INTO support_channel_events(connection_id,event_hash,thread_id,message_id,created_at) SELECT ?,'perf-event-'||n||'-'||m,'perf-thread-'||n,'perf-message-'||n||'-'||m,? FROM customer CROSS JOIN inbound`).bind(c.id,now),
+ ]);
+ assert.equal((await app.first('SELECT count(*) n FROM support_channel_threads WHERE connection_id=?',c.id)).n,2000);
+ assert.equal((await app.first('SELECT count(*) n FROM support_channel_events WHERE connection_id=?',c.id)).n,20000);
+ const bundled=await build({entryPoints:[fileURLToPath(new URL('../../../src/modules/support-channels/thread-lookup.ts',import.meta.url))],bundle:true,write:false,format:'esm',platform:'node',target:'es2022',logLevel:'silent'});
+ const {channelThreadSql}=await import('data:text/javascript;base64,'+Buffer.from(bundled.outputFiles[0].text).toString('base64'));
+ const lookup=async(conversationId,scoped)=>{
+  const sql=channelThreadSql(scoped),args=[ws.projectId,conversationId,...(scoped?[ws.users.owner]:[])],plan=await app.sql('EXPLAIN QUERY PLAN '+sql,...args);
+  assert.ok(plan.some(row=>/SEARCH event USING COVERING INDEX .*\(message_id=\?\)/.test(row.detail)),JSON.stringify(plan));
+  assert.ok(!plan.some(row=>/SCAN (event|t)\b/.test(row.detail)),JSON.stringify(plan));
+  const start=performance.now(),result=await app.db.prepare(sql).bind(...args).all(),ms=performance.now()-start;
+  assert.equal(result.results.length,1);assert.equal(result.results[0].id,target.id);
+  const own=(await app.first('SELECT count(*) n FROM messages WHERE project_id=? AND conversation_id=?',ws.projectId,conversationId)).n;
+  assert.ok(result.meta.rows_read<20*(own+1),`lookup read ${result.meta.rows_read} rows for ${own} messages`);
+  return {rows:result.meta.rows_read,ms:Number(ms.toFixed(2)),messages:own};
+ };
+ const openLookup=await lookup(target.conversation_id,true),openStart=performance.now(),opened=await app.call(h.root+'/conversations/'+target.conversation_id,{token}),openMs=performance.now()-openStart;
+ assert.equal(opened.status,200);assert.equal(opened.data.data.provider,'sms');
+ const before=h.sends.length,replyLookup=await lookup(target.conversation_id,false),replyStart=performance.now(),replied=await h.reply(target),replyMs=performance.now()-replyStart;
+ assert.equal(replied.accepted,true);assert.equal(h.sends.length,before+1);
+ // Moving intake exercises the receipt path alone for the earlier conversation,
+ // then command and pointer paths for the operator-created ticket.
+ const created=await app.ok(`/api/dashboard/projects/${ws.projectId}/tickets`,{token,body:{kind:'sms',localId:randomUUID(),connectionId:c.id,requesterPhone:'+12025550124',subject:'Order update',content:'Your parcel is ready.'}});
+ await lookup(target.conversation_id,true);await lookup(created.conversation.id,true);
+ console.log('PROBE OUTBOUND-001-PERF P1: GET channel conversation + POST reply on seeded D1 -> '+JSON.stringify({plan:(await app.sql('EXPLAIN QUERY PLAN '+channelThreadSql(false),ws.projectId,target.conversation_id)).map(row=>row.detail)})+'; indexed message receipts, no connection-wide/per-thread event scan');
+ console.log('PROBE OUTBOUND-001-PERF P2: 1 SMS connection / 2000 customers / 10 inbound each -> '+JSON.stringify({open:{lookup:openLookup,routeMs:Number(openMs.toFixed(2)),status:opened.status},reply:{lookup:replyLookup,routeMs:Number(replyMs.toFixed(2)),accepted:replied.accepted}}));
+ console.log('PROBE OUTBOUND-001-PERF P4: seeded desk -> open, reply, ticket move, historical receipt/command/pointer lookup accepted; existing channel journeys retained; only migration 299 edited');
+ }finally{await h.close()}}

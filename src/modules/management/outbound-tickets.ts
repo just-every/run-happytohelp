@@ -1,3 +1,6 @@
+import {approved} from '../support-channels/templates'
+import {outboundChannel} from './outbound-ticket-channel'
+import {channelMessage} from '../support-channels/outbound'
 import {ticketScopeSql} from '../access/ticket-scope'
 import {requireDestinationScope} from '../access/destination-scope'
 import {Hono,type Context} from 'hono'
@@ -7,7 +10,7 @@ import type {DeferEmailDelivery} from '../integrations/email'
 import {requestRoom} from '../integrations/notification-budget'
 import {requireProject} from '../../platform/auth'
 import {outboundOptionsRoutes} from './outbound-options'
-import {admitMessage,messageCommitStatements,preserveAssignment} from '../conversations/admission'
+import {admitMessage,messageAuthority,messageCommitStatements,preserveAssignment} from '../conversations/admission'
 import {noticeCommand,outboundTicketInput,type OutboundTicketInput} from './outbound-ticket-input'
 import {previewOutboundNotices,confirmOutboundNotices} from './outbound-notices'
 import {logOutboundCall,reserveOutboundTicket} from './outbound-ticket-store'
@@ -21,15 +24,22 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
   await requireDestinationScope(c.env,actor,input.groupId??null)
   const sessionHash=c.get('sessionHash')
   if(input.kind==='email'&&!onCommittedMessage)throw new HTTPException(503,{message:'Outbound email delivery is unavailable'})
-  const reservation=await reserveOutboundTicket(c.env,actor,sessionHash,input),conversation=await c.env.DB.prepare(`SELECT c.* FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1`).bind(reservation.conversationId,actor.projectId).first()
+  const channel=await outboundChannel(c.env,actor,input)
+  const reservation=await reserveOutboundTicket(c.env,actor,sessionHash,input,channel),conversation=await c.env.DB.prepare(`SELECT c.* FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1`).bind(reservation.conversationId,actor.projectId).first()
   if(!conversation)throw new HTTPException(409,{message:'Requester is unavailable'})
   if(input.kind==='call'){
    const note=await logOutboundCall(c.env,actor,sessionHash,reservation.conversationId,input.content)
    return {accepted:true,duplicate:reservation.duplicate,conversation,note}
   }
-  const result=await admitMessage(c.env,{[preserveAssignment]:true,requireAvailableRequester:true,projectId:actor.projectId,conversationId:reservation.conversationId,actor,sessionHash,localId:input.localId,content:input.content,expectedRevision:0,expectedLastMessageId:null,...(input[noticeCommand]?{[messageCommitStatements]:(messageId:string)=>[c.env.DB.prepare(`UPDATE outbound_notice_commands SET receipts_json=json_set(receipts_json,?,?) WHERE project_id=? AND id=? AND outcome='succeeded' AND EXISTS(SELECT 1 FROM conversation_outbox WHERE project_id=? AND conversation_id=? AND message_id=?)`).bind(`$."${input.localId}".messageId`,messageId,actor.projectId,input[noticeCommand],actor.projectId,reservation.conversationId,messageId)]}:{})})
+  const result=await admitMessage(c.env,{[preserveAssignment]:true,requireAvailableRequester:true,projectId:actor.projectId,conversationId:reservation.conversationId,actor,sessionHash,localId:input.localId,content:channel?.content??input.content,...(channel?{[messageAuthority]:{sql:channel.sql,args:channel.args}}:{}),expectedRevision:0,expectedLastMessageId:null,...(input[noticeCommand]?{[messageCommitStatements]:(messageId:string)=>[c.env.DB.prepare(`UPDATE outbound_notice_commands SET receipts_json=json_set(receipts_json,?,?) WHERE project_id=? AND id=? AND outcome='succeeded' AND EXISTS(SELECT 1 FROM conversation_outbox WHERE project_id=? AND conversation_id=? AND message_id=?)`).bind(`$."${input.localId}".messageId`,messageId,actor.projectId,input[noticeCommand],actor.projectId,reservation.conversationId,messageId)]}:{})})
   if(!result.accepted)return {...result,conversation}
   let generationError:string|undefined
+  if(channel){
+   // Uncertain provider claims retain the ticket and are never replayed.
+   await channelMessage(c.env,result.message!,actor,channel.continuation)
+   const delivery=await c.env.DB.prepare('SELECT state,error_code FROM support_channel_sends WHERE message_id=?').bind(result.message!.id).first()
+   return {...result,conversation,delivery}
+  }
   if(notice){
    // Admission and outbox are atomic. Provider work gets its own invocation,
    // never the dwindling capacity of a multi-requester HTTP request.
@@ -42,6 +52,16 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
   const current=await c.env.DB.prepare('SELECT * FROM conversations WHERE id=? AND project_id=?').bind(reservation.conversationId,actor.projectId).first()
   return {...result,conversation:current,...(generationError?{generationError}:{})}
  }
+ routes.get('/projects/:projectId/tickets/channels',async c=>{
+  const actor=await requireProject(c,c.req.param('projectId'),true)
+  const rows=(await c.env.DB.prepare("SELECT id,provider,sender FROM support_channel_connections WHERE project_id=? AND provider IN ('sms','whatsapp') AND revoked_at IS NULL AND token_cipher IS NOT NULL").bind(actor.projectId).all<{id:string;provider:string;sender:string}>()).results
+  return c.json({data:rows})
+ })
+ routes.get('/projects/:projectId/tickets/channels/:connectionId/templates',async c=>{
+  const actor=await requireProject(c,c.req.param('projectId'),true),id=c.req.param('connectionId')
+  if(!await c.env.DB.prepare("SELECT 1 FROM support_channel_connections WHERE id=? AND project_id=? AND provider='whatsapp' AND revoked_at IS NULL AND token_cipher IS NOT NULL").bind(id,actor.projectId).first())throw new HTTPException(409,{message:'Channel disconnected; reconnect in Settings → Support channels'})
+  return c.json({data:await approved(c.env,{connection_id:id})})
+ })
  routes.post('/projects/:projectId/tickets',async c=>{
   const actor=await requireProject(c,c.req.param('projectId'),true),body=await c.req.json()
   if(body.brandId!==undefined&&body.brandId!==actor.projectId)throw new HTTPException(400,{message:'Choose the brand workspace before creating a ticket'})

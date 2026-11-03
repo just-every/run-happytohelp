@@ -41,13 +41,26 @@ export async function priorSchemaUpgrade(){
   for(const migration of migrations.filter(m=>parseInt(m.name,10)<291))await writeFile(join(runtime.directory,'migrations',migration.name),migration.sql)
   await runtime.run(['d1','migrations','apply','DB','--local','--persist-to','.wrangler/state'])
   let beforeKnowledge
-  await runtime.withStorage(async storage=>{beforeKnowledge=await snapshot(storage)})
+  await runtime.withStorage(async storage=>{
+   await storage.inspect({sql:'INSERT INTO operator_ticket_commands(project_id,actor_id,local_id,conversation_id,intent_hash,kind,created_at) VALUES(?,?,?,?,?,?,?)',values:[project,user,'retained-call-command',thread,'retained-intent','call',7]})
+   for(const [id,kind] of [['synthetic-retained-email','email'],['synthetic-retained-call','call']]){
+    await storage.inspect({sql:'INSERT INTO conversations(id,project_id,contact_id,channel,created_at,updated_at) VALUES(?,?,?,?,?,?)',values:[id,project,contact,kind==='email'?'email':'phone',7,7]})
+    await storage.inspect({sql:'INSERT INTO operator_ticket_commands(project_id,actor_id,local_id,conversation_id,intent_hash,kind,created_at) VALUES(?,?,?,?,?,?,?)',values:[project,user,'command-'+id,id,'intent-'+id,kind,8]})
+   }
+   beforeKnowledge=await snapshot(storage)
+  })
   const knowledgeStarted=Date.now()
   for(const migration of migrations.filter(m=>parseInt(m.name,10)>=291))await writeFile(join(runtime.directory,'migrations',migration.name),migration.sql)
   await runtime.run(['d1','migrations','apply','DB','--local','--persist-to','.wrangler/state'])
   const knowledgeFinished=Date.now()
   await runtime.withStorage(async storage=>{
    const after=await snapshot(storage)
+   const command=after.rows.operator_ticket_commands.map(JSON.parse).find(row=>row.local_id==='retained-call-command')
+   assert.deepEqual(command,{project_id:project,actor_id:user,local_id:'retained-call-command',conversation_id:thread,intent_hash:'retained-intent',kind:'call',created_at:7,support_thread_id:null},'299 preserves populated command identities and defaults')
+   const commands=after.rows.operator_ticket_commands.map(JSON.parse),priorCommands=beforeKnowledge.rows.operator_ticket_commands.map(JSON.parse)
+   assert.equal(priorCommands.length,3);assert.equal(commands.length,priorCommands.length)
+   for(const retained of priorCommands)assert.deepEqual(commands.find(row=>row.conversation_id===retained.conversation_id),{...retained,support_thread_id:null},'299 preserves every populated email/call command byte and defaults its new link')
+   console.log('PROBE OUTBOUND-001 B1 upgrade: populated pre-299 installation -> native D1 migration apply -> all 3/3 existing operator commands preserved, including email/call identities, intent hashes and default NULL links')
    for(const table of ['knowledge_article_publications','knowledge_generation_sources','knowledge_index_dirty','knowledge_upgrade_reports','knowledge_upgrade_progress'])assert.equal(assertReferenceUpgrade(table,after.rows[table],beforeKnowledge.rows,after.rows,knowledgeStarted,knowledgeFinished),true)
    assert.deepEqual(after.objects,before.objects,'all prior attachment bytes and metadata survive')
    for(const [table,rows] of Object.entries(before.rows)){
@@ -55,6 +68,7 @@ export async function priorSchemaUpgrade(){
     const current=(after.rows[table]||[]).map(JSON.parse)
     for(const encoded of rows){const row=JSON.parse(encoded);assert.ok(current.some(candidate=>Object.entries(row).every(([key,value])=>candidate[key]===value)),table+' retains its prior business row')}
    }
+   await assertUpgradedCommands(storage,{project,user,thread})
   })
   await runtime.start()
   await restoredKnowledgeReady(runtime,project,'receipts')
@@ -77,4 +91,33 @@ export async function priorSchemaUpgrade(){
   assert.equal(sent.accepted,true)
   assert.equal((await call(`/api/conversations/${thread}/messages`,undefined,owner.token)).messages.at(-1).content,'Your account is still supported.')
  }finally{if(runtime)await runtime.close();await rm(directory,{recursive:true,force:true})}
+}
+
+async function assertUpgradedCommands(storage,{project,user,thread}){
+ const write=(sql,values=[])=>storage.inspect({sql,values})
+ const contact='synthetic-command-erasure',ticket='synthetic-command-erasure-ticket',earlier='synthetic-command-earlier-intake',connection='synthetic-upgrade-channel',link='synthetic-upgrade-thread'
+ await write('INSERT INTO contacts(id,project_id,name,email,created_at) VALUES(?,?,?,?,?)',[contact,project,'Command erasure customer','erasure@upgrade.example',9])
+ for(const id of [ticket,earlier])await write('INSERT INTO conversations(id,project_id,contact_id,channel,created_at,updated_at) VALUES(?,?,?,?,?,?)',[id,project,contact,'sms',9,9])
+ const insert='INSERT INTO operator_ticket_commands(project_id,actor_id,local_id,conversation_id,intent_hash,kind,created_at,support_thread_id) VALUES(?,?,?,?,?,?,?,?)'
+ await assert.rejects(()=>write(insert,[project,user,'retained-call-command',ticket,'changed-intent','call',9,null]),/UNIQUE constraint failed/,'the original command key still refuses a different ticket')
+ await assert.rejects(()=>write(insert,[project,user,'duplicate-ticket-command',thread,'changed-intent','call',9,null]),/UNIQUE constraint failed/,'one conversation still belongs to only one creation command')
+ await assert.rejects(()=>write(insert,[project,user,'invalid-thread-command',ticket,'invalid-thread-intent','sms',9,'missing-upgrade-thread']),/FOREIGN KEY constraint failed/,'a command cannot link an absent channel thread')
+ await write('INSERT INTO support_channel_connections(id,project_id,provider,account,sender,channels_json,verify_hash,created_at) VALUES(?,?,?,?,?,?,?,?)',[connection,project,'sms','synthetic-upgrade-account','+12025550124','["sms"]','synthetic-upgrade-verifier',9])
+ const insertThread=()=>write('INSERT INTO support_channel_threads(id,project_id,connection_id,contact_id,conversation_id,identity_hash,recipient,channel_id,thread_key,last_inbound_at) VALUES(?,?,?,?,?,?,?,?,?,?)',[link,project,connection,contact,ticket,'synthetic-upgrade-identity','+12025550123','sms','synthetic-upgrade-thread-key',9])
+ await insertThread()
+ await write(insert,[project,user,'linked-upgrade-command',ticket,'linked-upgrade-intent','sms',9,link])
+ const command=async()=>(await write('SELECT * FROM operator_ticket_commands WHERE conversation_id=?',[ticket])).results[0]
+ const linked=await command()
+ assert.equal(linked.support_thread_id,link,'an upgraded command retains its valid channel thread')
+ await write('DELETE FROM support_channel_threads WHERE id=?',[link])
+ assert.deepEqual(await command(),{...linked,support_thread_id:null},'thread deletion clears only the link and retains command identity')
+ await insertThread()
+ await write('UPDATE operator_ticket_commands SET support_thread_id=? WHERE conversation_id=?',[link,ticket])
+ for(const [id,conversation,state] of [['synthetic-upgrade-earlier-send',earlier,'sending'],['synthetic-upgrade-current-send',ticket,'accepted']])await write('INSERT INTO support_channel_sends(message_id,project_id,conversation_id,connection_id,state,provider_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)',[id,project,conversation,connection,state,'synthetic-provider-'+id,9,9])
+ await write("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erased',1) WHERE id=? AND project_id=?",[contact,project])
+ assert.deepEqual(await command(),{...linked,local_id:'erased:'+ticket,intent_hash:null,support_thread_id:null},'rebuilt commands retain their keys and kind while erasure scrubs intent and detaches the deleted thread')
+ assert.equal((await write('SELECT id FROM support_channel_threads WHERE id=?',[link])).results.length,0)
+ const sends=(await write('SELECT conversation_id,state,provider_id,error_code FROM support_channel_sends WHERE connection_id=? ORDER BY conversation_id',[connection])).results
+ assert.deepEqual(sends,[{conversation_id:earlier,state:'uncertain',provider_id:null,error_code:'contact_erased'},{conversation_id:ticket,state:'accepted',provider_id:null,error_code:'contact_erased'}],'erasure scrubs both the current ticket and earlier intake sends after the thread pointer moved')
+ console.log('PROBE OUTBOUND-001-PERF P5: populated migration preserves command rows; duplicate keys/conversations and missing thread links refuse; valid links survive, thread deletion nulls only the link, and contact erasure redacts commands plus current/earlier send receipts')
 }

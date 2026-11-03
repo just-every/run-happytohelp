@@ -7,7 +7,7 @@ import {publishActivity} from '../conversations/activity'
 import {access,prefix,thread,text,connection,liveConnection} from './model'
 import {providerJson} from './network'
 import {blocker,channelMessage,type Continuation} from './outbound'
-async function approved(env:Env,t:any){
+export async function approved(env:Env,t:any){
  const row=await connection(env,t.connection_id);if(row.provider!=='whatsapp')throw new HTTPException(400)
  const token=await decryptToken(env,row.project_id,row.token_cipher!)
  const data=await providerJson(`https://graph.facebook.com/v23.0/${encodeURIComponent(row.account)}/message_templates?fields=id,name,status,language,category,components&limit=100`,{headers:{Authorization:'Bearer '+token}})

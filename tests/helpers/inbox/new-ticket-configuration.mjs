@@ -1,4 +1,4 @@
-import {createHmac} from 'node:crypto'
+import {createHmac,randomBytes} from 'node:crypto'
 import assert from 'node:assert/strict'
 import {mkdir} from 'node:fs/promises'
 import {join,resolve} from 'node:path'
@@ -10,7 +10,7 @@ import {newTicketBrandOrderings,ticketOrderingBrands} from './new-ticket-brand-o
 export async function newTicketConfigurationBrowser(){
  const evidenceDir=join(process.env.H2H_EVIDENCE_DIR?resolve(process.env.H2H_EVIDENCE_DIR):tmpdir(),'outbound-tickets')
  await mkdir(evidenceDir,{recursive:true})
- const runtime=await createRuntime({queueConsumers:true,vars:{RATE_LIMITS:JSON.stringify({outboundNoticesPerProjectMinute:2}),EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-fixture-mail-provider',EMAIL_FROM:'support@example.test'},outboundFixture:new URL('../mail-provider-network.mjs',import.meta.url).href})
+ const runtime=await createRuntime({queueConsumers:true,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),RATE_LIMITS:JSON.stringify({outboundNoticesPerProjectMinute:2}),EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-fixture-mail-provider',EMAIL_FROM:'support@example.test'},outboundFixture:new URL('../mail-provider-network.mjs',import.meta.url).href})
  const browser=await launchBrowser(),errors=[];let success=false
  try{
   const call=async(path,body,token)=>{

@@ -3,6 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration:'299_outbound_channel_tickets.sql',names:['operator_ticket_commands'],change:'Widens only the kind CHECK to SMS/WhatsApp and adds nullable support_thread_id with ON DELETE SET NULL; retains command keys, old values and the erasure trigger'},
   {migration: '290_native_reply_drafts.sql', names: ['macro_drafts'], change: 'Makes usage_id nullable, adds nullable draft_id and requires exactly one of them; all prior columns and rows retained'},
   {migration: '293_knowledge_references.sql', names: ['workflow_version_immutable', 'outbound_notice_command_identity'], change: 'Adds only a project/table/row-keyed knowledge upgrade permit to the immutable update guards; original update targets and refusal messages retained'},
   {migration:'292_knowledge_entitlements.sql',names:['knowledge_categories'],change:'Adds requires_entitlement with a closed boolean constraint; every prior column definition is retained'},
@@ -56,6 +57,7 @@ export function expectedSchema(before, after, added) {
         } finally { db.close(); }
       }
     }
+    if (added.includes('299_outbound_channel_tickets.sql') && name==='operator_ticket_commands') wanted={...wanted,sql:wanted.sql.replace('CREATE TABLE operator_ticket_commands(', 'CREATE TABLE "operator_ticket_commands"(').replace("CHECK(kind IN ('email','call'))", "CHECK(kind IN ('email','call','sms','whatsapp'))").replace(' created_at INTEGER NOT NULL,', ' created_at INTEGER NOT NULL,\n support_thread_id TEXT REFERENCES support_channel_threads(id) ON DELETE SET NULL,')};
     if (added.includes('282_messaging_surveys.sql') && ['csat_responses','csat_response_history'].includes(name)) wanted = {...wanted, sql: wanted.sql.replace('CREATE TABLE '+name+'(', 'CREATE TABLE \"'+name+'\"(').replace("CHECK(channel IN ('email','widget'))","CHECK(channel IN ('email','widget','sms','whatsapp','instagram','messenger'))").replace("CHECK(response_surface IN ('email','portal','widget','unknown'))","CHECK(response_surface IN ('email','portal','widget','unknown','sms','whatsapp','instagram','messenger'))")};
     if (added.includes('195_restore_trigger_boundaries.sql') && name === 'conversation_record_resolution') wanted = {...entry, sql: entry.sql.replace(/\bEND,/g, 'END ,').replace('first_resolved_at=CASE', 'first_resolved_at= CASE')};
     if (added.includes('241_away_reply_not_a_reply.sql') && awayReplyExclusions[name]) wanted = {...wanted, sql: awayReplyExclusions[name](wanted.sql)};

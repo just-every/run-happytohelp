@@ -3,7 +3,8 @@ import {Hono,type Context} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Actor} from '../../platform/env'
 import {scope} from '../management/common'
-import {ticketAuthority} from '../tickets/model'
+import {ticketAuthority,ticketReadAccess} from '../tickets/model'
+import type {Permission} from '../access/catalogue'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {encryptToken,decryptToken} from '../integrations/secrets'
 import {auditStatement} from '../audit/record'
@@ -17,10 +18,19 @@ const invalid=(message:string):never=>{throw new HTTPException(400,{message})}
 function text(value:unknown,name:string,max=200){if(typeof value!=='string'||!value.trim()||value.length>max||/[\r\n\x00]/.test(value))invalid('Invalid '+name);return (value as string).trim()}
 const sourceId=(value:unknown)=>{const id=text(value,'source ID');if(!/^\d+$/.test(id))invalid('Source ID must be numeric');return id}
 async function input(c:Context<AppEnv>){const value=await c.req.json().catch(()=>invalid('Expected JSON'));if(!value||typeof value!=='object'||Array.isArray(value))invalid('Expected object');return value}
-async function access(c:Context<AppEnv>,write=false){
- const actor=await scope(c,true) as Actor
- const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},write?'integrations.install':'contacts.manage')
- return {actor,guard:{sql:`EXISTS(${guard.sql})`,params:guard.params}}
+async function access(c:Context<AppEnv>,write=false,readTicket=false){
+ const actor=await scope(c,!readTicket) as Actor
+ let permission:Permission=write?'integrations.install':'contacts.manage'
+ const permissions=readTicket?(await ticketReadAccess(c.env,actor)).permissions:null
+ const manages=['owner','admin'].includes(actor.role)&&(!permissions||permissions.has('contacts.manage'))
+ if(readTicket&&!manages){
+  // A role may work its selected tickets without customer-management authority.
+  const readable=(['conversations.reply','conversations.notes','conversations.follow','conversations.manage'] as const).find(p=>permissions!.has(p))
+  if(!readable)throw new HTTPException(403,{message:'Your role does not allow inbox access'})
+  permission=readable
+ }
+ const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},permission)
+ return {actor,manages,guard:{sql:`EXISTS(${guard.sql})`,params:guard.params}}
 }
 async function connection(c:Context<AppEnv>,p:string){const row=await c.env.DB.prepare('SELECT * FROM crm_connections WHERE project_id=?').bind(p).first<any>();if(!row?.token_cipher)throw new HTTPException(409,{message:'HubSpot is disconnected'});return row}
 const joined=(...guards:Guard[]):Guard=>({sql:guards.map(g=>`(${g.sql})`).join(' AND '),params:guards.flatMap(g=>g.params)})
@@ -93,7 +103,11 @@ async function readContext(c:Context<AppEnv>,p:string,contactId:string){
  }
  return c.json({...rest,state:!row.connected?'disconnected':identityMismatch?'identity_mismatch':row.state==='fresh'&&Date.now()-row.refreshed_at>300000?'stale':row.state,context:!row.connected||identityMismatch?null:context,grants_customer_access:false})
 }
-crmRoutes.get(prefix+'/contacts/:contactId',async c=>{const {actor}=await access(c);return readContext(c,actor.projectId,c.req.param('contactId')!)})
+crmRoutes.get(prefix+'/contacts/:contactId',async c=>{
+ const {actor,manages,guard}=await access(c,false,true),contactId=c.req.param('contactId')!
+ if(!manages&&!await c.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.project_id=? AND c.contact_id=? AND ${contactAvailableSql()} AND ${ticketScopeSql('?')} AND ${guard.sql} LIMIT 1`).bind(actor.projectId,contactId,actor.id,...guard.params).first())throw new HTTPException(404)
+ return readContext(c,actor.projectId,contactId)
+})
 async function refreshContext(c:Context<AppEnv>,contactId:string,ticketGuard:Guard={sql:'1',params:[]}){
  const {actor,guard}=await access(c,true),p=actor.projectId,contact=await native(c,p,contactId),conn=await connection(c,p)
  const mapping=await c.env.DB.prepare('SELECT * FROM crm_mappings WHERE project_id=? AND contact_id=?').bind(p,contact.id).first<any>()
@@ -128,7 +142,7 @@ crmRoutes.delete(prefix+'/contacts/:contactId',async c=>{
 })
 // A ticket resolves its native requester; CRM never selects or authenticates one.
 crmRoutes.get('/projects/:projectId/conversations/:conversationId/crm',async c=>{
- const {actor}=await access(c),ticket=await c.env.DB.prepare(`SELECT contact_id FROM conversations c WHERE project_id=? AND id=? AND ${contactAvailableSql()} AND ${ticketScopeSql('?')}`).bind(actor.projectId,c.req.param('conversationId'),actor.id).first<any>()
+ const {actor,guard}=await access(c,false,true),ticket=await c.env.DB.prepare(`SELECT contact_id FROM conversations c WHERE project_id=? AND id=? AND ${contactAvailableSql()} AND ${ticketScopeSql('?')} AND ${guard.sql}`).bind(actor.projectId,c.req.param('conversationId'),actor.id,...guard.params).first<any>()
  if(!ticket)throw new HTTPException(404)
  return readContext(c,actor.projectId,ticket.contact_id)
 })

@@ -7,6 +7,7 @@ export function useCrmAccess(projectId) {
     const settings = useDashboardSettings(), project = settings.projects?.[projectId];
     const permissions = project?.access?.permissions || [];
     return {allowed: ['owner', 'admin'].includes(project?.role) && permissions.includes('contacts.manage'),
+        readable: ['conversations.reply', 'conversations.notes', 'conversations.follow', 'conversations.manage'].some(permission => permissions.includes(permission)),
         writable: permissions.includes('integrations.install'),
         identity: JSON.stringify([settings.sessionVersion, project?.role, permissions])};
 }

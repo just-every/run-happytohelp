@@ -186,8 +186,9 @@ for(const base of [P,D]){
  for(const method of ['PUT','DELETE'])rules[`${method} ${base}/crm/hubspot/contacts/:contactId`]='integrations.install'
  rules[`POST ${base}/crm/hubspot/contacts/:contactId/refresh`]='integrations.install'
  rules[`GET ${base}/crm/hubspot`]='contacts.manage'
- rules[`GET ${base}/crm/hubspot/contacts/:contactId`]='contacts.manage'
- rules[`GET ${base}/conversations/:conversationId/crm`]='contacts.manage'
+ // CRM handlers resolve current inbox authority and ticket scope for cached reads.
+ rules[`GET ${base}/crm/hubspot/contacts/:contactId`]='self'
+ rules[`GET ${base}/conversations/:conversationId/crm`]='self'
  rules[`POST ${base}/conversations/:conversationId/crm/refresh`]='integrations.install'
 }
 

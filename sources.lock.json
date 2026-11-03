@@ -8321,7 +8321,7 @@
       "executable": false
     },
     "src/modules/support-channels/model.ts": {
-      "sha256": "f50823e9992ea4bc2d0407e805b5dac4a7ac2174c0fb6eb585e95435033bf43e",
+      "sha256": "ee174e25e0371149b1930a87012c71bed40aac20580b1e802f02d94f4831164c",
       "executable": false
     },
     "src/modules/support-channels/network.ts": {
@@ -15209,7 +15209,7 @@
       "executable": false
     },
     "tests/helpers/support-channels/journeys.mjs": {
-      "sha256": "fb62ee3b278025a7b8029aa50c22da6796916909959254b7d3aa8d2409a8a1f1",
+      "sha256": "a7ca6638d6955279723c7fc79c49a2aa8034a3e59fbcafa2fc0db47b95797d01",
       "executable": false
     },
     "tests/helpers/support-channels/outcomes-002-outcomes.mjs": {

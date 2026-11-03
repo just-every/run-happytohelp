@@ -226,6 +226,10 @@ async function outboundThreadContinuity(){const h=await channelHarness();try{
   const current=await h.ticket(c);assert.equal(current.conversation_id,next.conversation.id);
   if(provider==='whatsapp')assert.equal(inbound.data.data[0].conversation_id,next.conversation.id);
   const newest=await h.app.ok('/api/conversations/'+next.conversation.id+'/messages',{token:h.token});assert.equal(newest.messages.at(-1).content,'Inbound still follows the newest operator ticket');
+  const file=await h.app.ok('/api/conversations/'+earlier.conversation_id+'/media',{token:h.token,raw:true,body:'Earlier conversation attachment',headers:{'Content-Type':'text/plain','X-Filename':'earlier.txt'}});
+  await h.reply(earlier,{content:'Earlier attachment',mediaIds:[file.id]});assert.equal(h.sends.length,before+5);
+  const grant=provider==='sms'?new URLSearchParams(h.sends.at(-1).body).get('MediaUrl'):JSON.parse(h.sends.at(-1).body).document.link;
+  assert.ok(grant,'earlier-conversation media must not silently disappear');assert.equal((await h.app.call(new URL(grant).pathname)).data,'Earlier conversation attachment');
   assert.equal((await h.app.call(h.root+'/conversations/'+earlier.conversation_id,{token:h.other.tokens.owner})).status,403);
   // A shared requester alone is not a thread link.
   const unrelated='synthetic-happytohelp-unrelated-'+provider;

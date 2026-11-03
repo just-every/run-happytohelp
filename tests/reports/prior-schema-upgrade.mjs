@@ -43,6 +43,10 @@ export async function priorSchemaUpgrade(){
   let beforeKnowledge
   await runtime.withStorage(async storage=>{
    await storage.inspect({sql:'INSERT INTO operator_ticket_commands(project_id,actor_id,local_id,conversation_id,intent_hash,kind,created_at) VALUES(?,?,?,?,?,?,?)',values:[project,user,'retained-call-command',thread,'retained-intent','call',7]})
+   for(const [id,kind] of [['synthetic-retained-email','email'],['synthetic-retained-call','call']]){
+    await storage.inspect({sql:'INSERT INTO conversations(id,project_id,contact_id,channel,created_at,updated_at) VALUES(?,?,?,?,?,?)',values:[id,project,contact,kind==='email'?'email':'phone',7,7]})
+    await storage.inspect({sql:'INSERT INTO operator_ticket_commands(project_id,actor_id,local_id,conversation_id,intent_hash,kind,created_at) VALUES(?,?,?,?,?,?,?)',values:[project,user,'command-'+id,id,'intent-'+id,kind,8]})
+   }
    beforeKnowledge=await snapshot(storage)
   })
   const knowledgeStarted=Date.now()
@@ -53,6 +57,10 @@ export async function priorSchemaUpgrade(){
    const after=await snapshot(storage)
    const command=after.rows.operator_ticket_commands.map(JSON.parse).find(row=>row.local_id==='retained-call-command')
    assert.deepEqual(command,{project_id:project,actor_id:user,local_id:'retained-call-command',conversation_id:thread,intent_hash:'retained-intent',kind:'call',created_at:7,support_thread_id:null},'299 preserves populated command identities and defaults')
+   const commands=after.rows.operator_ticket_commands.map(JSON.parse),priorCommands=beforeKnowledge.rows.operator_ticket_commands.map(JSON.parse)
+   assert.equal(priorCommands.length,3);assert.equal(commands.length,priorCommands.length)
+   for(const retained of priorCommands)assert.deepEqual(commands.find(row=>row.conversation_id===retained.conversation_id),{...retained,support_thread_id:null},'299 preserves every populated email/call command byte and defaults its new link')
+   console.log('PROBE OUTBOUND-001 B1 upgrade: populated pre-299 installation -> native D1 migration apply -> all 3/3 existing operator commands preserved, including email/call identities, intent hashes and default NULL links')
    for(const table of ['knowledge_article_publications','knowledge_generation_sources','knowledge_index_dirty','knowledge_upgrade_reports','knowledge_upgrade_progress'])assert.equal(assertReferenceUpgrade(table,after.rows[table],beforeKnowledge.rows,after.rows,knowledgeStarted,knowledgeFinished),true)
    assert.deepEqual(after.objects,before.objects,'all prior attachment bytes and metadata survive')
    for(const [table,rows] of Object.entries(before.rows)){

@@ -21,8 +21,11 @@ BEGIN
  DELETE FROM email_message_options WHERE project_id=NEW.project_id AND conversation_id IN (SELECT id FROM conversations WHERE project_id=NEW.project_id AND contact_id=NEW.id);
  UPDATE operator_ticket_commands SET local_id='erased:'||conversation_id,intent_hash=NULL WHERE project_id=NEW.project_id AND conversation_id IN (SELECT id FROM conversations WHERE project_id=NEW.project_id AND contact_id=NEW.id);
 END;
--- Erasure clears provider identifiers for every ticket linked to the shared thread.
+-- The intake pointer moves for operator tickets and closed-ticket follow-ups.
+-- Erasure must scrub all of this customer's sends on the connection, including
+-- earlier inbound conversations, before the thread is deleted. Event receipts
+-- have already been detached by migration 271's erasure trigger at this point.
 CREATE TRIGGER outbound_channel_thread_erasure BEFORE DELETE ON support_channel_threads
 BEGIN
- UPDATE support_channel_sends SET provider_id=NULL,state=CASE WHEN state='sending' THEN 'uncertain' ELSE state END,error_code='contact_erased' WHERE project_id=OLD.project_id AND conversation_id IN (SELECT conversation_id FROM operator_ticket_commands WHERE support_thread_id=OLD.id);
+ UPDATE support_channel_sends SET provider_id=NULL,state=CASE WHEN state='sending' THEN 'uncertain' ELSE state END,error_code='contact_erased' WHERE project_id=OLD.project_id AND connection_id=OLD.connection_id AND conversation_id IN (SELECT id FROM conversations WHERE project_id=OLD.project_id AND contact_id=OLD.contact_id);
 END;

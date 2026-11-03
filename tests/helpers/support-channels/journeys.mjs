@@ -65,7 +65,7 @@ export async function exchange(providers=['sms','whatsapp','instagram','messenge
  assert.equal((await h.call('/report')).data.reduce((n,r)=>n+r.count,0),providers.length+providers.filter(p=>p!=='sms').length*2);
  }finally{await h.close();}}
 export async function slack(){await sharedExchange();}
-export async function erasure(){const h=await channelHarness();try{
+export async function erasure(){await outboundThreadErasure();const h=await channelHarness();try{
  const c=await h.connect('sms');await h.deliver(c,'sms',h.event('sms'));const t=await h.ticket(c);await h.reply(t);
  await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${t.contact_id}/erase`,{token:h.token,body:{}});
  assert.equal(await h.ticket(c),null);assert.equal((await h.app.first('SELECT count(*) n FROM support_channel_fences')).n,1);const result=await h.deliver(c,'sms',h.event('sms'));assert.equal(result.status,200);assert.equal(await h.ticket(c),null);
@@ -73,7 +73,7 @@ export async function erasure(){const h=await channelHarness();try{
  const text=JSON.stringify(await h.app.sql('SELECT * FROM support_channel_events'));assert.ok(!text.includes(t.contact_id));assert.ok(!text.includes('+12025550124'));
  await h.call('/connections/'+c.id,undefined,{method:'DELETE'});await h.connect('sms');await h.deliver(c,'sms',h.event('sms'));assert.equal(await h.ticket(c),null);
  }finally{await h.close();}}
-export async function uncertainty(){await outboundTicketCreation();const h=await channelHarness();try{
+export async function uncertainty(){await outboundThreadContinuity();await outboundTicketCreation();const h=await channelHarness();try{
  for(const response of [{status:500},{disconnect:true},{status:400}]){const p='sms',c=await h.connect(p);await h.deliver(c,p,h.event(p,{sender:'+1202555012'+(h.sends.length+5)}));const t=await h.ticket(c);h.responses.push(response);const message=await h.reply(t);const count=h.sends.length;const state=(await h.call('/conversations/'+t.conversation_id)).data.sends[0].state;assert.equal(state,response.status===400?'failed':'uncertain');await h.app.scheduled();assert.equal(h.sends.length,count,'recovery does not replay channel sends');assert.ok(message.accepted);}
  }finally{await h.close();}}
 
@@ -203,4 +203,60 @@ async function outboundTicketCreation(){const h=await channelHarness();try{
  console.log('PROBE OUTBOUND-001 1: POST tickets opted-in WhatsApp -> one ticket/send, existing customer/thread; SMS START -> accepted');
  console.log('PROBE OUTBOUND-001 2: POST tickets no consent, STOP, unapproved/missing template, disconnected, A2P, denied role -> refused with no ticket/send; uncertain -> retained, no replay');
  console.log('PROBE OUTBOUND-001 3: POST tickets duplicate/concurrent commands -> one claim per ticket, one thread/customer; erased requester -> refused; no money authority added');
+ }finally{await h.close()}}
+
+// Keep the original native conversation usable after operator tickets move intake.
+async function outboundThreadContinuity(){const h=await channelHarness();try{
+ for(const provider of ['sms','whatsapp']){
+  const c=await h.connect(provider),phone='+12025550124',sender=provider==='sms'?phone:phone.slice(1);
+  await h.deliver(c,provider,h.event(provider,{sender,text:provider==='sms'?'START':'I agree to WhatsApp support updates'}));
+  const earlier=await h.ticket(c),path=`/api/dashboard/projects/${h.ws.projectId}/tickets`;
+  const create=async()=>h.app.ok(path,{token:h.token,body:{kind:provider,localId:randomUUID(),connectionId:c.id,requesterPhone:phone,subject:'Order update',content:provider==='sms'?'Your parcel is ready.':'DEL-42',...(provider==='whatsapp'?{templateId:h.templates[0].id,parameters:['DEL-42']}:{})}});
+  const ticket=await create(),created=ticket.conversation.id;
+  const before=h.sends.length,localId=randomUUID(),expectedRevision=(await h.app.ok('/api/conversations/'+earlier.conversation_id,{token:h.token})).revision,reply=await h.reply(earlier,{localId,expectedRevision,content:'Reply in the earlier open conversation'});
+  assert.equal(reply.accepted,true);assert.equal(h.sends.length,before+1,'earlier conversation must send exactly once, not silently save');
+  await h.reply(earlier,{localId,expectedRevision,content:'Reply in the earlier open conversation'});assert.equal(h.sends.length,before+1,'same earlier reply does not send twice');
+  const receipt=await h.app.first('SELECT * FROM support_channel_sends WHERE message_id=?',reply.message.id);assert.equal(receipt.state,'accepted');assert.equal(receipt.connection_id,c.id);assert.equal(receipt.conversation_id,earlier.conversation_id);
+  const panel=(await h.call('/conversations/'+earlier.conversation_id)).data;assert.equal(panel.provider,provider);assert.ok(panel.sends.some(send=>send.message_id===reply.message.id&&send.state==='accepted'));
+  const inbox=(await h.app.ok(`/api/dashboard/projects/${h.ws.projectId}/conversations/${earlier.conversation_id}`,{token:h.token})).data;assert.equal(inbox.last_message.id,reply.message.id);assert.equal(inbox.last_message.channel_status.state,'accepted','inbox no longer says no send attempt recorded');
+  if(provider==='whatsapp'){const templates=await h.app.call(h.root+'/conversations/'+earlier.conversation_id+'/templates',{token:h.token});assert.equal(templates.status,200);assert.equal(templates.data.data[0].id,h.templates[0].id);}
+  await h.reply({conversation_id:created});assert.equal(h.sends.length,before+2,'new ticket still sends exactly once');
+  const next=await create();await h.reply({conversation_id:created});assert.equal(h.sends.length,before+4,'earlier operator ticket keeps its command link after another move');
+  const raw=h.event(provider,{sender,text:'Inbound still follows the newest operator ticket'}),inbound=await h.deliver(c,provider,raw);
+  const current=await h.ticket(c);assert.equal(current.conversation_id,next.conversation.id);
+  if(provider==='whatsapp')assert.equal(inbound.data.data[0].conversation_id,next.conversation.id);
+  const newest=await h.app.ok('/api/conversations/'+next.conversation.id+'/messages',{token:h.token});assert.equal(newest.messages.at(-1).content,'Inbound still follows the newest operator ticket');
+  assert.equal((await h.app.call(h.root+'/conversations/'+earlier.conversation_id,{token:h.other.tokens.owner})).status,403);
+  // A shared requester alone is not a thread link.
+  const unrelated='synthetic-happytohelp-unrelated-'+provider;
+  await h.app.db.prepare('INSERT INTO conversations(id,project_id,contact_id,channel,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(unrelated,h.ws.projectId,earlier.contact_id,provider,Date.now(),Date.now()).run();
+  assert.equal((await h.call('/conversations/'+unrelated)).data,null,'do not widen thread lookup to every conversation of the requester');
+ }
+ console.log('PROBE OUTBOUND-001 A1: signed SMS START / WhatsApp agreement -> POST tickets -> POST earlier conversation/messages: exactly one provider send with accepted receipt, channel panel present, WhatsApp templates GET 200; new and earlier operator tickets send once; signed inbound stays on newest ticket; unrelated conversation has no channel link');
+ }finally{await h.close()}}
+
+async function outboundThreadErasure(){const h=await channelHarness();try{
+ for(const provider of ['sms','whatsapp']){
+  const c=await h.connect(provider),phone='+12025550124',sender=provider==='sms'?phone:phone.slice(1);
+  await h.deliver(c,provider,h.event(provider,{sender}));const earlier=await h.ticket(c);await h.reply(earlier);
+  await h.deliver(c,provider,h.event(provider,{sender,text:provider==='sms'?'START':'I agree to WhatsApp support updates'}));
+  const created=await h.app.ok(`/api/dashboard/projects/${h.ws.projectId}/tickets`,{token:h.token,body:{kind:provider,localId:randomUUID(),connectionId:c.id,requesterPhone:phone,subject:'Order update',content:provider==='sms'?'Your parcel is ready.':'DEL-42',...(provider==='whatsapp'?{templateId:h.templates[0].id,parameters:['DEL-42']}:{})}});
+  await h.reply({conversation_id:created.conversation.id});
+  const sends=await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id IN (?,?) ORDER BY message_id',earlier.conversation_id,created.conversation.id);assert.equal(sends.length,3);assert.ok(sends.every(send=>send.provider_id&&send.error_code===null));
+  await h.deliver(c,provider,h.event(provider,{sender:provider==='sms'?'+12025550129':'12025550129'}));const other=await h.ticket(c);await h.reply(other);
+  const untouched=await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id=?',other.conversation_id);assert.equal(untouched.length,1);assert.ok(untouched[0].provider_id);
+  await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${earlier.contact_id}/erase`,{token:h.token,body:{}});
+  const erased=await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id IN (?,?) ORDER BY message_id',earlier.conversation_id,created.conversation.id);assert.equal(erased.length,sends.length);assert.ok(erased.every(send=>send.provider_id===null&&send.error_code==='contact_erased'),'earlier and new sends must all be scrubbed');
+  assert.deepEqual(await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id=?',other.conversation_id),untouched,'same-connection other customer sends remain byte-for-byte unchanged');
+ }
+ // The incumbent close/follow-up path moves the same mutable thread column.
+ const c=await h.connect('sms');await h.deliver(c,'sms',h.event('sms',{sender:'+12025550126'}));const closed=await h.ticket(c);await h.reply(closed);
+ const base=`/api/dashboard/projects/${h.ws.projectId}`,get=async()=>(await h.app.ok(base+'/conversations/'+closed.conversation_id+'/ticket',{token:h.token})).data;
+ const ticket=await get();await h.app.ok(base+'/conversations/'+closed.conversation_id+'/ticket',{token:h.token,method:'PATCH',body:{status_id:'solved',expected_version:ticket.ticket_version}});
+ const solved=await get();await h.app.configure({H2H_LOCAL:'true',H2H_WORKFLOW_NOW:String(solved.resolved_at+97*3600000)});await h.app.scheduled();await h.app.configure({});assert.equal((await get()).status_category,'closed');
+ await h.deliver(c,'sms',h.event('sms',{sender:'+12025550126',text:'Please open a follow-up'}));const moved=await h.ticket(c);assert.notEqual(moved.conversation_id,closed.conversation_id);await h.reply(moved);
+ const ids=[closed.conversation_id,moved.conversation_id],before=await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id IN (?,?)',...ids);assert.equal(before.length,2);assert.ok(before.every(send=>send.provider_id));
+ await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${closed.contact_id}/erase`,{token:h.token,body:{}});
+ const after=await h.app.sql('SELECT * FROM support_channel_sends WHERE conversation_id IN (?,?)',...ids);assert.equal(after.length,2);assert.ok(after.every(send=>send.provider_id===null&&send.error_code==='contact_erased'),'closed and follow-up sends must both be scrubbed');
+ console.log('PROBE OUTBOUND-001 B1: signed inbound -> POST agent reply -> signed START/agreement -> POST operator ticket and reply -> POST contact/erase: all 3 sends per SMS/WhatsApp customer retain records with provider_id NULL and contact_erased; other customers unchanged; native solve/scheduled-close -> signed follow-up -> erase also scrubs both conversations');
  }finally{await h.close()}}

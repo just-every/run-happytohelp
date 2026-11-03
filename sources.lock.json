@@ -2745,7 +2745,7 @@
       "executable": false
     },
     "migrations/299_outbound_channel_tickets.sql": {
-      "sha256": "fd3054636ab74ec5198dfe83cd21aae88197a67bfb4ae9b276b7989a55d6aa26",
+      "sha256": "de08b480bbd77ad1fef41db6a88a6b1926ed44c1a91dab808f29d6bc9c2f6f1f",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -7573,7 +7573,7 @@
       "executable": false
     },
     "src/modules/management/outbound-ticket-store.ts": {
-      "sha256": "39720785d16a4a542f65b8f3057ce016b27fb287511cf5c7f3bf04a5d5a50361",
+      "sha256": "65fbd880709970ccc5819c481422d1eae38e1e893ef1b7125a6d8588b4bc1668",
       "executable": false
     },
     "src/modules/management/outbound-tickets.ts": {
@@ -8321,7 +8321,7 @@
       "executable": false
     },
     "src/modules/support-channels/model.ts": {
-      "sha256": "969812a6c5327af800f7589403afc15d61afef5ee50e2c9bc7fdb323d11d360e",
+      "sha256": "f50823e9992ea4bc2d0407e805b5dac4a7ac2174c0fb6eb585e95435033bf43e",
       "executable": false
     },
     "src/modules/support-channels/network.ts": {
@@ -15209,7 +15209,7 @@
       "executable": false
     },
     "tests/helpers/support-channels/journeys.mjs": {
-      "sha256": "c013c7a14c9487bd44c0292cf8603527fa5491e19f175ac3cf69f9ded0fa4b3e",
+      "sha256": "fb62ee3b278025a7b8029aa50c22da6796916909959254b7d3aa8d2409a8a1f1",
       "executable": false
     },
     "tests/helpers/support-channels/outcomes-002-outcomes.mjs": {
@@ -15697,7 +15697,7 @@
       "executable": false
     },
     "tests/reports/prior-schema-upgrade.mjs": {
-      "sha256": "524144b03b015ccb0412749bd075aa7b9e7e59f7becc6bfa1798e6827bb87c32",
+      "sha256": "43bf5536d7ec139cae293649bab739e8afc3d4e2018f105c1ca48e0864a16b97",
       "executable": false
     },
     "tests/reports/resolution-feedback.mjs": {

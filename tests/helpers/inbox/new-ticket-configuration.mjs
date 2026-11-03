@@ -1,3 +1,4 @@
+import {createHmac,randomBytes} from 'node:crypto'
 import assert from 'node:assert/strict'
 import {mkdir} from 'node:fs/promises'
 import {join,resolve} from 'node:path'
@@ -9,7 +10,7 @@ import {newTicketBrandOrderings,ticketOrderingBrands} from './new-ticket-brand-o
 export async function newTicketConfigurationBrowser(){
  const evidenceDir=join(process.env.H2H_EVIDENCE_DIR?resolve(process.env.H2H_EVIDENCE_DIR):tmpdir(),'outbound-tickets')
  await mkdir(evidenceDir,{recursive:true})
- const runtime=await createRuntime({queueConsumers:true,vars:{RATE_LIMITS:JSON.stringify({outboundNoticesPerProjectMinute:2}),EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-fixture-mail-provider',EMAIL_FROM:'support@example.test'},outboundFixture:new URL('../mail-provider-network.mjs',import.meta.url).href})
+ const runtime=await createRuntime({queueConsumers:true,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),RATE_LIMITS:JSON.stringify({outboundNoticesPerProjectMinute:2}),EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-fixture-mail-provider',EMAIL_FROM:'support@example.test'},outboundFixture:new URL('../mail-provider-network.mjs',import.meta.url).href})
  const browser=await launchBrowser(),errors=[];let success=false
  try{
   const call=async(path,body,token)=>{
@@ -162,6 +163,25 @@ export async function newTicketConfigurationBrowser(){
    assert.equal((await request(apiCall)).body.note.id,loggedApi.body.note.id)
    assert.equal((await request({...apiCall,localId:`synthetic-happytohelp-call-cc-${width}`,cc:['synthetic-happytohelp-1@customer.example']})).status,400)
    assert.equal(copies().length,beforeCalls,'dialog/API call logs send no mail, including retries')
+   // The same native dialog creates a consented WhatsApp ticket. Only HTTP at
+   // the provider boundary is faked; refusals leave the complete draft editable.
+   const channelRoot=`/api/support-channels/projects/${projectId}`;
+   const wa=(await call(channelRoot+'/connections',{provider:'whatsapp',account:'synthetic-happytohelp-outbound',sender:'synthetic-happytohelp-phone',token:'synthetic-happytohelp-token',signing_secret:'synthetic-happytohelp-signature'},owner.token)).data;
+   const consentRaw=JSON.stringify({entry:[{id:'synthetic-happytohelp-outbound',changes:[{value:{metadata:{phone_number_id:'synthetic-happytohelp-phone'},messages:[{id:'synthetic-happytohelp-consent',from:'12025550124',timestamp:String(Math.floor(Date.now()/1000)),type:'text',text:{body:'I agree to WhatsApp support updates'}}]}}]}]});
+   const consentResponse=await fetch(runtime.origin+'/api/support-channels/webhooks/'+wa.id,{method:'POST',headers:{'Content-Type':'application/json','X-Hub-Signature-256':'sha256='+createHmac('sha256','synthetic-happytohelp-signature').update(consentRaw).digest('hex')},body:consentRaw});assert.equal(consentResponse.status,200);
+   await open();await dialog.getByLabel('Ticket type',{exact:true}).selectOption('whatsapp');
+   await dialog.getByLabel('Requester phone',{exact:true}).fill('+12025550125');await dialog.getByLabel('Support channel',{exact:true}).selectOption(wa.id);await dialog.getByLabel('Approved utility template',{exact:true}).selectOption('synthetic-happytohelp-template');await dialog.getByLabel('Template variables',{exact:true}).fill('DEL-42');await dialog.getByLabel('Subject',{exact:true}).fill('Your parcel is ready');
+   await capture('new-whatsapp');
+   const preSend=(runtime.logs.match(/CHANNEL_FIXTURE_SEND /g)||[]).length;
+   await dialog.getByRole('button',{name:'Create and send',exact:true}).click();await dialog.getByRole('alert').filter({hasText:/No recorded customer consent/}).waitFor();
+   assert.equal(await dialog.getByLabel('Template variables',{exact:true}).inputValue(),'DEL-42');assert.equal(await dialog.getByLabel('Subject',{exact:true}).inputValue(),'Your parcel is ready');assert.equal(await dialog.getByRole('button',{name:'Cancel',exact:true}).isEnabled(),true);assert.equal((runtime.logs.match(/CHANNEL_FIXTURE_SEND /g)||[]).length,preSend);
+   await capture('whatsapp-refused-draft');
+   await dialog.getByLabel('Requester phone',{exact:true}).fill('+12025550124');
+   for(const selector of ['#new-ticket-kind','#new-ticket-requesterPhone','#new-ticket-connection','#new-ticket-template','#new-ticket-parameters']){const size=await dialog.locator(selector).boundingBox();assert.ok(size.height>=44);}
+   await dialog.getByLabel('Requester phone',{exact:true}).focus();assert.equal(await page.locator(':focus').count(),1);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   const channelResult=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST');await dialog.getByRole('button',{name:'Create and send',exact:true}).click();const channelCreated=await channelResult;assert.equal(channelCreated.status(),201,await channelCreated.text());const channelTicket=await channelCreated.json();assert.equal(channelTicket.delivery.state,'accepted');await dialog.waitFor({state:'hidden'});assert.equal((runtime.logs.match(/CHANNEL_FIXTURE_SEND /g)||[]).length,preSend+1);
+   await page.goto(`${runtime.origin}/projects/${projectId}/conversations/${channelTicket.conversation.id}`);await page.locator('.transcript-message-content').getByText('Your order DEL-42 is ready.',{exact:true}).waitFor();await capture('whatsapp-created-ticket');
+   console.log('PROBE OUTBOUND-001 4: New ticket WhatsApp form at 1440 -> consent refusal retains draft; correction sends approved template; captures at 1440/390, 44px targets, one focused control, no overflow');
    // Narrow the current native role while retaining workspace membership.
    await runtime.execute(`UPDATE memberships SET role='operator' WHERE project_id='${projectId}' AND user_id='${owner.actor.id}'; UPDATE sessions SET role='operator' WHERE project_id='${projectId}' AND actor_id='${owner.actor.id}'; INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES('${projectId}','${owner.actor.id}','collaborator',1)`)
    await open()

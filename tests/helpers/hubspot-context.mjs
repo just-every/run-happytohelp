@@ -25,11 +25,20 @@ export async function hubspotContextJourney(){
   extraScope=true;assert.equal((await app.call(path,{...owner,method:'PUT',body:connect})).status,400);extraScope=false
   accountId=999;assert.equal((await app.call(path,{...owner,method:'PUT',body:connect})).status,400);accountId=123
   assert.equal((await app.call(path,{token:w.tokens.operator,method:'PUT',body:connect})).status,403)
+  const contact=(await app.ok(base+'/contacts',{...owner,body:{name:'Synthetic customer',email}})).data
+  const second=(await app.ok(base+'/contacts',{...owner,body:{name:'Other customer',email:'synthetic-hh-2@example.test'}})).data
+  const ticket=await app.ok('/api/conversations',{...owner,body:{projectId:p,contactId:contact.id}})
+  const ticketPath=`${base}/conversations/${ticket.id}/crm`
+  const neverConnectedRequests=app.requests.length
+  for(const door of [path+'/contacts/'+contact.id,ticketPath]){
+   const expected={context:null,connected:false,state:'unmapped',grants_customer_access:false}
+   assert.deepEqual(await app.ok(door,owner),expected)
+   assert.deepEqual(await app.ok(door,{token:w.tokens.operator}),expected)
+  }
+  assert.equal(app.requests.length,neverConnectedRequests)
   await app.ok(path,{...owner,method:'PUT',body:connect})
   assert.ok(!(JSON.stringify((await app.ok(path,owner)))).includes('synthetic-hh-5'))
   const stored=await app.first('SELECT token_cipher FROM crm_connections WHERE project_id=?',p);assert.ok(stored.token_cipher&&!stored.token_cipher.includes('synthetic-hh-5'))
-  const contact=(await app.ok(base+'/contacts',{...owner,body:{name:'Synthetic customer',email}})).data
-  const second=(await app.ok(base+'/contacts',{...owner,body:{name:'Other customer',email:'synthetic-hh-2@example.test'}})).data
   const company=(await app.ok(base+'/companies',{...owner,body:{name:'Synthetic company',domains:['synthetic-hh.example']}})).company
   await app.ok(`${base}/companies/${company.id}/members/${contact.id}`,{...owner,method:'PUT',body:{}})
   const map=path+'/contacts/'+contact.id,mapping={source_contact_id:'11',company_id:company.id,source_company_id:'21'}
@@ -37,8 +46,6 @@ export async function hubspotContextJourney(){
   assert.equal((await app.call(path+'/contacts/'+second.id,{...owner,method:'PUT',body:{source_contact_id:'11'}})).status,409)
   const refresh=()=>app.ok(map+'/refresh',{...owner,body:{}})
   let result=await refresh();assert.equal(result.state,'fresh');assert.equal(result.context.contact.id,'11');assert.equal(result.context.company.id,'21');assert.equal(result.context.contact.properties.support_plan,'Standard');assert.equal(result.grants_customer_access,false)
-  const ticket=await app.ok('/api/conversations',{...owner,body:{projectId:p,contactId:contact.id}})
-  const ticketPath=`${base}/conversations/${ticket.id}/crm`
   const role={name:'Ticket support without customer management',base:'operator',permissions:['conversations.reply','conversations.notes','conversations.follow','conversations.manage']}
   const roleId=(await app.ok(base+'/roles',{...owner,body:role})).data.id
   await app.ok(`${base}/agents/${w.users.operator}`,{...owner,method:'PUT',body:{role:roleId}})
@@ -64,7 +71,7 @@ export async function hubspotContextJourney(){
   assert.deepEqual(await snapshot(),beforeWrites);assert.equal(app.requests.length,requestsBeforeWrites,'refused operator writes never call HubSpot')
   assert.equal((await app.call(path,operator)).status,403,'connection administration stays private')
   assert.equal((await app.call(path+'/contacts/'+second.id,operator)).status,404,'an arbitrary customer without readable tickets grants no CRM access')
-  console.log('PROBE CRM-001 1: native operator GET ticket/customer CRM -> identical fresh owner cache; six mutations 403; provider requests and CRM writes unchanged')
+  console.log('CONTEXT baseline: native operator GET ticket/customer CRM -> identical fresh owner cache; six mutations 403; provider requests and CRM writes unchanged')
   assert.equal((await app.ok(ticketPath,owner)).context.contact.id,'11')
   assert.equal((await app.call(`/api/management/projects/${foreign.projectId}/conversations/${ticket.id}/crm`,{token:foreign.tokens.owner})).status,404)
   await app.ok(base+'/contacts/'+contact.id,{...owner,method:'PUT',body:{email:'changed@example.test'}})
@@ -87,6 +94,7 @@ export async function hubspotContextJourney(){
   await app.ok(`/api/management/projects/${foreign.projectId}/crm/hubspot`,{token:foreign.tokens.owner,method:'PUT',body:connect})
   await app.ok(map,{...owner,method:'DELETE'});assert.equal((await app.ok(map,owner)).state,'unmapped')
   await operatorRead('unmapped')
+  assert.equal((await app.ok(map,operator)).connected,true,'connected unmapped customers remain visible')
   await app.ok(map,{...owner,method:'PUT',body:mapping});await refresh()
   const otherCompany=(await app.ok(base+'/companies',{...owner,body:{name:'Other company',domains:['other.example']}})).company
   await app.ok(`${base}/companies/${otherCompany.id}/members/${second.id}`,{...owner,method:'PUT',body:{}})
@@ -137,7 +145,7 @@ export async function hubspotContextJourney(){
   await app.db.prepare('DELETE FROM memberships WHERE project_id=? AND user_id=?').bind(p,w.users.operator).run()
   assert.equal((await app.call(ticketPath,operator)).status,401,'membership revocation invalidates the session')
   await app.db.prepare('INSERT INTO memberships(project_id,user_id,role) VALUES(?,?,?)').bind(p,w.users.operator,member.role).run()
-  console.log('PROBE CRM-001 2: native CRM reads after ticket-scope narrowing -> 404; permission removal -> 403; membership revocation -> 401; foreign/customer doors refused')
+  console.log('CONTEXT baseline: native CRM reads after ticket-scope narrowing -> 404; permission removal -> 403; membership revocation -> 401; foreign/customer doors refused')
   // Authority lost while the provider was answering must refuse the durable write.
   const requesterRace=await app.call(ticketPath+'/refresh',{...owner,body:{},headers:{'x-test-before-batch':`UPDATE conversations SET contact_id='${second.id}' WHERE id='${ticket.id}'`}})
   assert.equal(requesterRace.status,409)
@@ -153,6 +161,8 @@ export async function hubspotContextJourney(){
   assert.equal((await app.ok(path,owner)).connection.connected,false);assert.equal((await app.ok(map,owner)).state,'disconnected');assert.equal((await app.call(map+'/refresh',{...owner,body:{}})).status,409)
   assert.equal((await app.first('SELECT token_cipher FROM crm_connections WHERE project_id=?',p)).token_cipher,null)
   await operatorRead('disconnected')
+  assert.equal((await app.ok(map,operator)).connected,false)
+  console.log('PROBE CRM-001 2: GET cached CRM before connect/after disconnect -> connected false; connected unmapped -> connected true; reads call no provider')
   await app.ok(path,{...owner,method:'PUT',body:connect});await app.ok(map,{...owner,method:'PUT',body:mapping});await refresh()
   await app.ok(`${base}/contacts/${contact.id}/erase`,{...owner,body:{}})
   assert.equal((await app.first('SELECT count(*) n FROM crm_mappings WHERE project_id=?',p)).n,0)

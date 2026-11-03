@@ -29,7 +29,7 @@ export function useCrmResource(path) {
             if (!controller.signal.aborted && serial.current === version) setState(previous => ({loading: false, data, error: '', notice: background ? previous.notice : notice}));
             return !controller.signal.aborted;
         } catch (error) {
-            if (!controller.signal.aborted && serial.current === version) setState({loading: false, data: null, error: error.message, notice: '', denied: [401, 403].includes(error.status)});
+            if (!controller.signal.aborted && serial.current === version) setState({loading: false, data: null, error: error.message, notice: '', denied: [401, 403].includes(error.status), missing: error.status === 404});
             return false;
         } finally {
             if (serial.current === version) pending.current = false;

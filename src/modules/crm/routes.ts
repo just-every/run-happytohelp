@@ -97,7 +97,7 @@ crmRoutes.put(prefix+'/contacts/:contactId',async c=>{
 async function readContext(c:Context<AppEnv>,p:string,contactId:string){
  const contact=await native(c,p,contactId)
  const row=await c.env.DB.prepare('SELECT m.*,c.account_id,c.token_cipher IS NOT NULL connected FROM crm_mappings m JOIN crm_connections c ON c.project_id=m.project_id WHERE m.project_id=? AND m.contact_id=?').bind(p,contactId).first<any>()
- if(!row){const conn=await c.env.DB.prepare('SELECT token_cipher IS NOT NULL connected FROM crm_connections WHERE project_id=?').bind(p).first<any>();return c.json({context:null,state:conn&&!conn.connected?'disconnected':'unmapped',grants_customer_access:false})}
+ if(!row){const conn=await c.env.DB.prepare('SELECT token_cipher IS NOT NULL connected FROM crm_connections WHERE project_id=?').bind(p).first<any>();return c.json({context:null,connected:!!conn?.connected,state:conn&&!conn.connected?'disconnected':'unmapped',grants_customer_access:false})}
  const {context_json,revision,...rest}=row
  const context=context_json?JSON.parse(context_json):null
  let identityMismatch=!!context&&(!contact.email||context.contact.properties.email?.toLowerCase()!==contact.email.toLowerCase())

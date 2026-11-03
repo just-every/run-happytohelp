@@ -75,6 +75,10 @@ export async function hubspotBrowser({browser, directory}) {
                 }
                 const target = name.startsWith('settings') ? page.getByRole('region', {name: 'HubSpot connection'}) : panel();
                 await target.evaluate(node => node.scrollIntoView({block: 'start'}));
+                if (name === 'customer-fresh' && width === 390) {
+                    const box = await target.locator('summary').boundingBox();
+                    assert.ok(box.width >= 44 && box.height >= 44, 'owner source disclosure meets the 44px phone touch rule');
+                }
                 if (name.startsWith('settings')) await page.evaluate(() => window.scrollTo(0, 0));
                 await page.screenshot({path: `${directory}/${name}-${width}.png`, fullPage: true});
                 if (name.startsWith('ticket')) {
@@ -116,6 +120,69 @@ export async function hubspotBrowser({browser, directory}) {
         };
         await page.goto(customer); await page.getByRole('heading', {name: 'Maya Patel', exact: true}).waitFor();
         assert.equal(await panel().count(), 0, 'never-connected workspaces have no CRM box');
+        const operator = await runtime.seedTenant({name: 'Ticket support', email: 'operator@example.test'});
+        const role = {name: 'Ticket support only', base: 'operator', permissions: ['conversations.reply', 'conversations.notes', 'conversations.follow', 'conversations.manage']};
+        const roleId = (await api(base + '/roles', role)).data.id;
+        const deniedRoleId = (await api(base + '/roles', {name: 'No inbox', base: 'operator', permissions: []})).data.id;
+        await runtime.execute(`INSERT INTO memberships(project_id,user_id,role) VALUES('${owner.projectId}','${operator.userId}','operator'); UPDATE sessions SET project_id='${owner.projectId}',role='operator' WHERE actor_id='${operator.userId}'`);
+        await api(`${base}/agents/${operator.userId}`, {role: roleId}, 'PUT');
+        operatorContext = await browser.newContext({viewport: {width: 1440, height: 1000}});
+        await operatorContext.addCookies([{name: 'h2h_session', value: operator.token, url: runtime.origin}]);
+        const operatorPage = await operatorContext.newPage(); operatorPage.setDefaultTimeout(20000);
+        const operatorPanel = () => operatorPage.getByRole('region', {name: 'HubSpot context', exact: true});
+        const operatorGet = async path => {
+            const response = await operatorContext.request.get(runtime.origin + path);
+            assert.equal(response.status(), 200); return response.json();
+        };
+        const ticketCrm = `${base}/conversations/${ticket.id}/crm`, contactCrm = `${base}/crm/hubspot/contacts/${contact.id}`;
+        const openTicket = async (id, expectCrm = true) => {
+            await page.goto(runtime.origin + `/projects/${owner.projectId}/conversations/${id}`);
+            const assistant = page.locator('#conversation-assistant');
+            if (await assistant.getAttribute('aria-hidden') === 'true') await page.getByRole('button', {name: 'Show conversation panel', exact: true}).click();
+            await page.getByRole('tab', {name: 'Ticket', exact: true}).click();
+            const heading = page.locator('#ticket-section-customer-heading');
+            if (await heading.count() && await heading.getAttribute('aria-expanded') === 'false') await heading.click();
+            if (expectCrm) await panel().waitFor();
+        };
+
+        const openOperatorTicket = async (expectCrm = true) => {
+            await operatorPage.goto(runtime.origin + `/projects/${owner.projectId}/conversations/${ticket.id}`);
+            const assistant = operatorPage.locator('#conversation-assistant');
+            if (await assistant.getAttribute('aria-hidden') === 'true') await operatorPage.getByRole('button', {name: 'Show conversation panel', exact: true}).click();
+            await operatorPage.getByRole('tab', {name: 'Ticket', exact: true}).click();
+            const heading = operatorPage.locator('#ticket-section-customer-heading');
+            if (await heading.getAttribute('aria-expanded') !== 'true') await heading.click();
+            if (expectCrm) await operatorPanel().getByText(/^Fresh —/).waitFor();
+        };
+        const noPanel = async (target, name, ticketId) => {
+            const region = target.getByRole('region', {name: 'HubSpot context', exact: true});
+            const path = target === page ? base + '/crm/hubspot' : ticketId ? `${base}/conversations/${ticketId}/crm` : contactCrm;
+            for (const width of [1440, 390]) {
+                await target.setViewportSize({width, height: 1000});
+                const loaded = target.waitForResponse(response => response.url().endsWith(path) && response.request().method() === 'GET');
+                if (target === page && ticketId) await openTicket(ticketId, false);
+                else if (ticketId) await openOperatorTicket(false);
+                else {await target.goto(customer); await target.getByRole('heading', {name: 'Maya Patel', exact: true}).waitFor();}
+                await (await loaded).finished();
+                await target.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+                if (width === 1440) {
+                    assert.equal(await region.count(), 0, name + ' has no CRM panel');
+                    assert.equal(await target.getByRole('alert').filter({hasText: /CRM values are hidden/}).count(), 0, name + ' has no CRM error');
+                }
+                await target.screenshot({path: `${directory}/${name}-${width}.png`, fullPage: true});
+            }
+            await target.setViewportSize({width: 1440, height: 1000});
+        };
+
+        for (const [target, name] of [[page, 'owner'], [operatorPage, 'operator']]) {
+            await noPanel(target, name + '-never-connected-customer');
+            await noPanel(target, name + '-never-connected-ticket', ticket.id);
+        }
+        // The unscoped built-in Agent must be equally quiet before a connection.
+        await api(`${base}/agents/${operator.userId}`, {role: 'operator'}, 'PUT');
+        await operatorPage.goto(customer); await operatorPage.getByRole('heading', {name: 'Maya Patel', exact: true}).waitFor();
+        assert.equal(await operatorPanel().count(), 0);
+        await api(`${base}/agents/${operator.userId}`, {role: roleId}, 'PUT');
         await page.goto(settings); await page.getByText('HubSpot disconnected', {exact: true}).waitFor(); await captures('settings-empty');
         await runtime.execute(`INSERT INTO credentials(user_id,password_hash,updated_at) VALUES('${owner.userId}','${passwordHash('synthetic-hubspot-owner-password')}',${Date.now()}); UPDATE session_factors SET verified_at=1 WHERE user_id='${owner.userId}'`);
         provider.extraScope = true; await connect(true); await page.getByRole('alert').filter({hasText: 'exact read-only scopes'}).waitFor();
@@ -151,15 +218,6 @@ export async function hubspotBrowser({browser, directory}) {
         await panel().getByText('Stale — refresh to check the latest identity and account context.', {exact: true}).waitFor();
         await panel().getByText('Business hours', {exact: true}).first().waitFor(); await captures('customer-stale-cache');
         await refresh(); await fresh();
-        const openTicket = async (id, expectCrm = true) => {
-            await page.goto(runtime.origin + `/projects/${owner.projectId}/conversations/${id}`);
-            const assistant = page.locator('#conversation-assistant');
-            if (await assistant.getAttribute('aria-hidden') === 'true') await page.getByRole('button', {name: 'Show conversation panel', exact: true}).click();
-            await page.getByRole('tab', {name: 'Ticket', exact: true}).click();
-            const heading = page.locator('#ticket-section-customer-heading');
-            if (await heading.count() && await heading.getAttribute('aria-expanded') === 'false') await heading.click();
-            if (expectCrm) await panel().waitFor();
-        };
         await openTicket(ticket.id); await fresh();
         provider.plan = 'Enterprise'; provider.entitlement = 'Priority response'; await refresh(); await fresh();
         await panel().getByText('Priority response', {exact: true}).first().waitFor(); await captures('ticket-fresh');
@@ -192,53 +250,41 @@ export async function hubspotBrowser({browser, directory}) {
         assert.equal(await page.getByRole('region', {name: 'HubSpot context'}).count(), 0);
         await openCustomer(); await fresh();
         // The same built component serves an operator with no customer/integration permissions.
-        const operator = await runtime.seedTenant({name: 'Ticket support', email: 'operator@example.test'});
-        const role = {name: 'Ticket support only', base: 'operator', permissions: ['conversations.reply', 'conversations.notes', 'conversations.follow', 'conversations.manage']};
-        const roleId = (await api(base + '/roles', role)).data.id;
-        const deniedRoleId = (await api(base + '/roles', {name: 'No inbox', base: 'operator', permissions: []})).data.id;
-        await runtime.execute(`INSERT INTO memberships(project_id,user_id,role) VALUES('${owner.projectId}','${operator.userId}','operator'); UPDATE sessions SET project_id='${owner.projectId}',role='operator' WHERE actor_id='${operator.userId}'`);
-        await api(`${base}/agents/${operator.userId}`, {role: roleId}, 'PUT');
-        operatorContext = await browser.newContext({viewport: {width: 1440, height: 1000}});
-        await operatorContext.addCookies([{name: 'h2h_session', value: operator.token, url: runtime.origin}]);
-        const operatorPage = await operatorContext.newPage(); operatorPage.setDefaultTimeout(20000);
-        const operatorPanel = () => operatorPage.getByRole('region', {name: 'HubSpot context', exact: true});
-        const operatorGet = async path => {
-            const response = await operatorContext.request.get(runtime.origin + path);
-            assert.equal(response.status(), 200); return response.json();
-        };
-        const ticketCrm = `${base}/conversations/${ticket.id}/crm`, contactCrm = `${base}/crm/hubspot/contacts/${contact.id}`;
         const operatorState = async state => {
             const requests = providerRequests, expected = await api(contactCrm);
             assert.equal(expected.state, state);
             assert.deepEqual(await operatorGet(contactCrm), expected);
             assert.deepEqual(await operatorGet(ticketCrm), expected);
             await operatorPanel().getByRole('button', {name: 'Check CRM status', exact: true}).click();
+            if (state === 'disconnected') {
+                await operatorPanel().waitFor({state: 'detached'});
+                assert.equal(providerRequests, requests, 'disconnected operator reads use no provider');
+                return;
+            }
             await operatorPanel().getByText(new RegExp('^' + ({fresh: 'Fresh —', stale: 'Stale —', unmapped: 'Unmapped —', identity_mismatch: 'Identity mismatch —', disconnected: 'Disconnected —'})[state])).waitFor();
             assert.equal(await operatorPanel().getByRole('button', {name: /Refresh|Map|Remap|Remove|Connect|Disconnect/}).count(), 0);
             assert.equal(await operatorPanel().getByRole('link').count(), 0);
             assert.equal(await operatorPanel().getByLabel('HubSpot contact ID', {exact: true}).count(), 0);
-            const asOf = operatorPanel().locator('.crm-facts > div').filter({has: operatorPage.getByText('As of', {exact: true})}).locator('dd');
-            assert.equal(await asOf.innerText(), await operatorPage.evaluate(value => value ? new Date(value).toLocaleString() : 'Not yet', expected.refreshed_at));
-            if (['identity_mismatch', 'disconnected', 'unmapped'].includes(state)) {
+            const refreshed = operatorPanel().locator('.crm-facts > div').filter({has: operatorPage.getByText('Last refreshed', {exact: true})}).locator('dd');
+            assert.equal(await refreshed.innerText(), await operatorPage.evaluate(value => value ? new Date(value).toLocaleString() : 'Not yet', expected.refreshed_at));
+            assert.equal(await operatorPanel().getByText('As of', {exact: true}).count(), 0, 'identical as-of and refreshed times have one owner-compatible label');
+            assert.equal(await refreshed.count(), 1);
+            if (['identity_mismatch', 'unmapped'].includes(state)) {
                 assert.equal(expected.context, null);
                 assert.equal(await operatorPanel().getByText('Priority response', {exact: true}).count(), 0);
             }
             assert.equal(providerRequests, requests, 'operator status checks use only the cached context');
-        };
-        const openOperatorTicket = async () => {
-            await operatorPage.goto(runtime.origin + `/projects/${owner.projectId}/conversations/${ticket.id}`);
-            const assistant = operatorPage.locator('#conversation-assistant');
-            if (await assistant.getAttribute('aria-hidden') === 'true') await operatorPage.getByRole('button', {name: 'Show conversation panel', exact: true}).click();
-            await operatorPage.getByRole('tab', {name: 'Ticket', exact: true}).click();
-            const heading = operatorPage.locator('#ticket-section-customer-heading');
-            if (await heading.getAttribute('aria-expanded') !== 'true') await heading.click();
-            await operatorPanel().getByText(/^Fresh —/).waitFor();
         };
         const operatorCaptures = async (name, ticketPanel = false) => {
             for (const width of [1440, 390]) {
                 await operatorPage.setViewportSize({width, height: 1000});
                 if (ticketPanel) await openOperatorTicket();
                 await operatorPanel().scrollIntoViewIfNeeded();
+                if (width === 390 && !ticketPanel) {
+                    const box = await operatorPanel().locator('summary').boundingBox();
+                    assert.ok(box.width >= 44 && box.height >= 44, 'operator source disclosure meets the 44px phone touch rule');
+                    console.log('PROBE CRM-001 4: built customer source summary at 390 -> ' + box.width + 'x' + box.height + ', both dimensions >=44px');
+                }
                 await operatorPage.screenshot({path: `${directory}/operator-${name}-${width}.png`, fullPage: true});
             }
             await operatorPage.setViewportSize({width: 1440, height: 1000});
@@ -247,6 +293,23 @@ export async function hubspotBrowser({browser, directory}) {
             assert.deepEqual(await operatorPage.evaluate(async () => (await axe.run(document.querySelector('[aria-label="HubSpot context"]'))).violations.filter(item => ['serious', 'critical'].includes(item.impact)).map(item => item.id)), [], 'operator CRM accessibility');
             assert.ok(await operatorPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'operator screen fits');
         };
+
+        const noTicket = (await api(base + '/contacts', {name: 'No ticket customer', email: 'no-ticket@example.test'})).data;
+        const noTicketCrm = `${base}/crm/hubspot/contacts/${noTicket.id}`;
+        const noTicketRead = operatorPage.waitForResponse(response => response.url().endsWith(noTicketCrm));
+        await operatorPage.goto(runtime.origin + `/projects/${owner.projectId}/contacts/${noTicket.id}`);
+        await operatorPage.getByRole('heading', {name: 'No ticket customer', exact: true}).waitFor();
+        const noTicketResponse = await noTicketRead;
+        assert.equal(noTicketResponse.status(), 404); await noTicketResponse.finished();
+        await operatorPage.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        assert.equal(await operatorPanel().count(), 0, 'an operator customer without a readable ticket has no CRM panel');
+        assert.equal(await operatorPage.getByRole('alert').filter({hasText: /CRM values are hidden/}).count(), 0);
+        for (const width of [1440, 390]) {
+            await operatorPage.setViewportSize({width, height: 1000});
+            await operatorPage.screenshot({path: `${directory}/operator-customer-no-ticket-${width}.png`, fullPage: true});
+        }
+        await operatorPage.setViewportSize({width: 1440, height: 1000});
+        console.log('PROBE CRM-001 3: built connected operator customer without readable ticket -> native CRM 404 retained; no panel or CRM error');
         await operatorPage.goto(customer); await operatorPanel().getByText(/^Fresh —/).waitFor(); await operatorState('fresh');
         assert.equal(await operatorPanel().getByText('12', {exact: true}).isVisible(), false, 'source IDs start undisclosed');
         await operatorPanel().getByText('HubSpot source identifiers', {exact: true}).click();
@@ -267,9 +330,16 @@ export async function hubspotBrowser({browser, directory}) {
         await operatorState('stale'); assert.equal(await operatorPanel().getByText('Priority response', {exact: true}).count(), 2);
         provider.email = 'different@example.test'; await api(contactCrm + '/refresh', {}); await operatorState('identity_mismatch');
         provider.email = 'maya@example.test'; await api(contactCrm + '/refresh', {});
-        await runtime.execute(`UPDATE crm_connections SET token_cipher=NULL WHERE project_id='${owner.projectId}'`);
+        await api(base + '/crm/hubspot', undefined, 'DELETE');
         await operatorState('disconnected');
+        for (const [target, name] of [[page, 'owner'], [operatorPage, 'operator']]) {
+            await noPanel(target, name + '-disconnected-customer');
+            await noPanel(target, name + '-disconnected-ticket', ticket.id);
+        }
+        console.log('PROBE CRM-001 2: owner/custom inbox role built customer and ticket screens before connect and after disconnect -> no panel at 1440/390; built-in Agent also hidden before connect');
+
         await api(base + '/crm/hubspot', {token: 'synthetic-hubspot-browser-token', account_id: '123', properties: {plan: 'support_plan', entitlement: 'support_entitlement'}}, 'PUT');
+        await operatorPage.goto(customer); await operatorPanel().getByText(/^Unmapped —/).waitFor();
         await operatorState('unmapped');
         const requestsBeforeRefusals = providerRequests;
         for (const [path, method, data] of [[contactCrm + '/refresh', 'POST', {}], [ticketCrm + '/refresh', 'POST', {}], [contactCrm, 'PUT', {source_contact_id: '11'}], [contactCrm, 'DELETE'], [base + '/crm/hubspot', 'PUT', {}], [base + '/crm/hubspot', 'DELETE']]) {
@@ -279,12 +349,12 @@ export async function hubspotBrowser({browser, directory}) {
         await runtime.execute(`UPDATE project_roles SET ticket_scope_json='{"groupIds":[],"includeUngrouped":false}' WHERE project_id='${owner.projectId}' AND id='${roleId}'`);
         for (const path of [contactCrm, ticketCrm]) assert.equal((await operatorContext.request.get(runtime.origin + path)).status(), 404);
         await operatorPanel().getByRole('button', {name: 'Check CRM status', exact: true}).click();
-        await operatorPanel().getByRole('alert').waitFor();
+        await operatorPanel().waitFor({state: 'detached'});
         assert.equal(await operatorPanel().getByText('Priority response', {exact: true}).count(), 0);
         await api(`${base}/roles/${roleId}`, {...role, permissions: []}, 'PUT');
         for (const path of [contactCrm, ticketCrm]) assert.equal((await operatorContext.request.get(runtime.origin + path)).status(), 403);
         assert.equal(providerRequests, requestsBeforeRefusals);
-        console.log('PROBE CRM-001 3: built operator ticket/customer panels -> read-only fresh/stale/mismatch/disconnected/unmapped; localized As of, source disclosure, draft retention, six writes 403 and scoped denial; captures 1440/390');
+        console.log('PROBE CRM-001 5: built operator fresh/stale/unmapped panels -> one localized Last refreshed value, matching owner; existing source disclosure, reply draft and six write refusals retained');
         await operatorContext.close(); operatorContext = null;
         // Restore the owner's existing mapping for the retained revocation/unmap proof below.
         await api(contactCrm, {source_contact_id: '12', company_id: company.id, source_company_id: '21'}, 'PUT');

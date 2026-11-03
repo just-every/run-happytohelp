@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "cd515f9c92903a5310606e9d6f427fbfa8a4a38026106722bbd630fdd985b3ac",
+      "sha256": "d294573f6b0f36f5e37f7e93d9a40948c40ff1bec85b4045011bc12c8e0f1647",
       "executable": false
     },
     "DEMO.md": {
@@ -5277,7 +5277,7 @@
       "executable": false
     },
     "src/modules/crm/routes.ts": {
-      "sha256": "0fce01dbbdbff003f538c89b9fa5a7c248790099642a36c27b447a1aca0a5091",
+      "sha256": "37313ac16e4f77ea144de95b16f4ee3cc7e3a303a47eed3d6161afd7d32f0ea8",
       "executable": false
     },
     "src/modules/customer-context/collector.ts": {
@@ -11269,7 +11269,7 @@
       "executable": false
     },
     "src/ui/native/crm/crm.css": {
-      "sha256": "30e9877c61a52fe028f08e4c873d63d9ca0ad99eeda6a3475b00cfffe7f435a4",
+      "sha256": "b419da455b44043bbfdb1c2d08b16e29bd608992fe2453670a378e2abe10a447",
       "executable": false
     },
     "src/ui/native/crm/HubSpotConnection.jsx": {
@@ -11277,7 +11277,7 @@
       "executable": false
     },
     "src/ui/native/crm/HubSpotContext.jsx": {
-      "sha256": "3ef1bca0d08ab0a1453d59562a41f8744d115de5fe8706adef514c7f52b93b02",
+      "sha256": "a2c7e7f3990067c7026e0acee402ed1d62707e697244f02e5363ceeea5dc2246",
       "executable": false
     },
     "src/ui/native/crm/HubSpotMapping.jsx": {
@@ -11285,7 +11285,7 @@
       "executable": false
     },
     "src/ui/native/crm/useCrmResource.js": {
-      "sha256": "5965f6f6cad1ccfb1648b9916c7b4e43a788098164896069ddb017200d1d396e",
+      "sha256": "b9547d842d6b03984749d25fe9480f43e9d869de9ba86b20ca319ef4a0c5ddbf",
       "executable": false
     },
     "src/ui/native/dashboard-bootstrap.ts": {
@@ -14717,11 +14717,11 @@
       "executable": false
     },
     "tests/helpers/hubspot-context.mjs": {
-      "sha256": "21154defb9c36f3c3f6e8dde206f375c817d571702538985e8dd2b55000c5888",
+      "sha256": "64370d3ef683263e760add9eaa310f2430673762f233f57d5c1b56abf00cbcbc",
       "executable": false
     },
     "tests/helpers/hubspot/browser.mjs": {
-      "sha256": "516dec31289d719ad4b79df6fb4d6ce136711487d5d2f9e8e0e92f7e9e79e8c7",
+      "sha256": "2645db8bdf7c18c7e6cc86c3fce2a35e3211b18c3bc775ef3a7e0bb41020fde2",
       "executable": false
     },
     "tests/helpers/hubspot/outbound.mjs": {

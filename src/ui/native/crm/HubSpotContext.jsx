@@ -29,7 +29,8 @@ function ConnectedContext(props) {
 function Context({projectId, contact, conversationId, writable, managed}) {
     // Ticket context always resolves the requester through the server's ticket route.
     const path = conversationId ? `/api/management/projects/${encodeURIComponent(projectId)}/conversations/${encodeURIComponent(conversationId)}/crm` : `${crmRoot(projectId)}/contacts/${encodeURIComponent(contact.id)}`;
-    const {data, loading, error, notice, denied, run} = useCrmResource(path);
+    const {data, loading, error, notice, denied, missing, run} = useCrmResource(path);
+    if (!managed && (missing || (!data && loading) || data?.connected === false || data?.state === 'disconnected')) return null;
     return <section className="crm-panel" aria-label="HubSpot context" aria-busy={loading}>
         <div className="crm-heading"><h3>HubSpot</h3><span className="text-muted">Read only</span></div>
         <p>{contact.name || contact.provided_name || 'Customer'}</p>
@@ -42,7 +43,6 @@ function Context({projectId, contact, conversationId, writable, managed}) {
                 <div><dt>Source contact ID</dt><dd>{data.source_contact_id || 'Not mapped'}</dd></div>
                 <div><dt>Source company ID</dt><dd>{data.source_company_id || 'Not mapped'}</dd></div>
             </dl></details><dl className="crm-facts">
-                {!managed && <div><dt>As of</dt><dd>{time(data.refreshed_at)}</dd></div>}
                 <div><dt>Last checked</dt><dd>{time(data.checked_at)}</dd></div>
                 <div><dt>Last refreshed</dt><dd>{time(data.refreshed_at)}</dd></div>
             </dl>

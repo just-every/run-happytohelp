@@ -14769,7 +14769,7 @@
       "executable": false
     },
     "tests/helpers/identity/ticket-scope-browser.mjs": {
-      "sha256": "351896f1fdaa8caf853e335c5473b6ad96200d66bb328abd71fd9badc33534d7",
+      "sha256": "82bfbb6784e9e9a837c71d3dc194d1256ea1fe0c355962c35c44fa675290744a",
       "executable": false
     },
     "tests/helpers/identity/ticket-scope-roles.mjs": {

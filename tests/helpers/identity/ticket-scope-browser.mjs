@@ -150,19 +150,25 @@ export async function ticketScopeBrowserJourney(browser,{width=1440,proofOnly=fa
    await ownerPage.getByRole('status').filter({hasText:/Mobile devices of its members/}).waitFor()
    // Narrowed: the frame alone re-reads the open ticket, the read is 404 and the generic state shows within about 2 s, with no customer message.
    await agent.waitForFunction(count=>window.__h2hAccessFrames.length>count,framesSeen)
-   await agent.getByRole('alert').filter({hasText:/This ticket is unavailable/}).waitFor({timeout:2000})
+   // The alert can render before the inbox refresh clears the selected ticket.
+   const waitForUnavailable=()=>Promise.all([
+    agent.getByRole('alert').filter({hasText:/This ticket is unavailable/}).waitFor({timeout:2000}),
+    agent.getByText(transcript,{exact:true}).first().waitFor({state:'detached',timeout:2000}),
+    agent.getByPlaceholder('Type your reply…').waitFor({state:'detached',timeout:2000})
+   ])
+   await waitForUnavailable()
    verify((await narrowRead).status(),404,'the re-read after the frame is 404')
    verify(await agent.getByText(transcript,{exact:true}).count(),0);verify(await agent.getByPlaceholder('Type your reply…').count(),0)
    verify(await agent.locator('body').evaluate((body,text)=>body.innerHTML.includes(text),draft),false)
    verify((await agentRead()).status,404,'the next read of the hidden ticket is 404')
    // Live revocation also rechecks at the next frame: the server closes this ticket's stream 1008.
    await agent.waitForFunction(id=>window.__h2hClosed.some(close=>close.code===1008&&close.url.includes('/api/conversations/'+id+'/socket')),visible.id)
-   await agent.getByRole('alert').filter({hasText:/This ticket is unavailable/}).waitFor()
+   await waitForUnavailable()
    verify(await agent.getByText(transcript,{exact:true}).count(),0);verify(await agent.getByPlaceholder('Type your reply…').count(),0)
    verify(await agent.locator('body').evaluate((body,text)=>body.innerHTML.includes(text),draft),false)
    // The next read of the hidden ticket is the same generic state, with no hidden content in the DOM.
    await agent.reload()
-   await agent.getByRole('alert').filter({hasText:/This ticket is unavailable/}).waitFor()
+   await waitForUnavailable()
    verify(await agent.getByText(transcript,{exact:true}).count(),0);verify(await agent.getByPlaceholder('Type your reply…').count(),0)
    verify(await agent.locator('body').evaluate((body,text)=>body.innerHTML.includes(text),transcript),false)
   }else if(runtime.execute)await runtime.execute(`UPDATE project_roles SET ticket_scope_json='${JSON.stringify({groupIds:[other.id],includeUngrouped:false})}' WHERE id='${role.id}'`)

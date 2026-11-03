@@ -1,4 +1,5 @@
 -- Forward-only rebuild preserving rows, keys and erasure behavior.
+CREATE INDEX support_channel_event_message ON support_channel_events(message_id,thread_id,connection_id);
 DROP TRIGGER email_threading_contact_erasure;
 CREATE TABLE operator_ticket_commands_next(
  project_id TEXT NOT NULL REFERENCES projects(id),

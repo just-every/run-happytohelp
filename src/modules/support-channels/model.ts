@@ -1,4 +1,4 @@
-import {ticketScopeSql} from '../access/ticket-scope'
+import {channelThreadSql} from './thread-lookup'
 import {HTTPException} from 'hono/http-exception'
 import type {Context} from 'hono'
 import type {AppEnv,Env,Actor} from '../../platform/env'
@@ -6,7 +6,6 @@ import {scope} from '../management/common'
 import {memberAccess} from '../access/gate'
 import type {Permission} from '../access/catalogue'
 import {hashToken} from '../../platform/auth'
-import {contactAvailableSql} from '../conversations/contact-privacy'
 export type Provider='sms'|'whatsapp'|'instagram'|'messenger'|'slack'|'teams'
 export interface Connection {id:string;project_id:string;provider:Provider;account:string;sender:string;channels_json:string;token_cipher:string|null;signing_cipher:string|null;verify_hash:string;registered:number;revoked_at:number|null}
 export const prefix='/projects/:projectId'
@@ -18,4 +17,4 @@ export async function connection(env:Env,id:string){const row=await env.DB.prepa
 // Authenticated event receipts and immutable operator commands retain served
 // conversations. Return the requested conversation for its send/media custody;
 // the stored thread pointer still chooses only subsequent inbound admission.
-export async function thread(env:Env,projectId:string,conversationId:string,userId?:string){return env.DB.prepare(`SELECT t.*,conv.id AS conversation_id,c.provider,c.account,c.sender,c.registered,c.token_cipher,c.revoked_at FROM support_channel_threads t JOIN support_channel_connections c ON c.id=t.connection_id JOIN conversations conv ON conv.project_id=t.project_id AND (conv.id=t.conversation_id OR EXISTS(SELECT 1 FROM support_channel_events event JOIN messages message ON message.id=event.message_id AND message.project_id=t.project_id WHERE event.thread_id=t.id AND event.connection_id=t.connection_id AND message.conversation_id=conv.id) OR EXISTS(SELECT 1 FROM operator_ticket_commands cmd WHERE cmd.conversation_id=conv.id AND cmd.support_thread_id=t.id)) WHERE t.project_id=? AND conv.id=? AND ${contactAvailableSql('conv')} ${userId?`AND ${ticketScopeSql('?','conv')}`:''}`).bind(projectId,conversationId,...(userId?[userId]:[])).first<any>()}
+export async function thread(env:Env,projectId:string,conversationId:string,userId?:string){return env.DB.prepare(channelThreadSql(!!userId)).bind(projectId,conversationId,...(userId?[userId]:[])).first<any>()}

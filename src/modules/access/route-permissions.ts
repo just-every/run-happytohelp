@@ -195,6 +195,8 @@ for(const base of [P,D]){
 const prefixes=['/api/v1/','/api/management/admin/']
 for(const base of [P,D]){
  rules[`POST ${base}/tickets`]='conversations.reply'
+ rules[`GET ${base}/tickets/channels`]='conversations.reply'
+ rules[`GET ${base}/tickets/channels/:connectionId/templates`]='conversations.reply'
  for(const suffix of ['notices/preview','notices'])rules[`POST ${base}/tickets/${suffix}`]='conversations.reply'
 }
 for(const action of ['connect','imap'])rules[`POST ${P}/mailboxes/${action}`]='integrations.install'

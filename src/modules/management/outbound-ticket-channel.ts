@@ -16,8 +16,11 @@ export async function outboundChannel(env:Env,actor:Actor,input:OutboundTicketIn
  const recipient=input.kind==='sms'?input.requesterPhone!:input.requesterPhone!.slice(1),identity=await hashToken(recipient)
  const t=await env.DB.prepare(`SELECT t.*,c.provider,c.account,c.sender,c.registered,c.token_cipher,c.revoked_at,ct.metadata_json,ct.email FROM support_channel_threads t JOIN support_channel_connections c ON c.id=t.connection_id AND c.project_id=t.project_id JOIN contacts ct ON ct.id=t.contact_id AND ct.project_id=t.project_id WHERE t.project_id=? AND t.connection_id=? AND t.identity_hash=? AND c.provider=? LIMIT 1`).bind(actor.projectId,input.connectionId,identity,input.kind).first<any>()
  if(!t){
-  const c=await env.DB.prepare('SELECT 1 FROM support_channel_connections WHERE id=? AND project_id=? AND provider=? AND revoked_at IS NULL AND token_cipher IS NOT NULL').bind(input.connectionId,actor.projectId,input.kind).first()
-  throw new HTTPException(409,{message:c?'No recorded customer consent for this number and channel':'Channel disconnected; reconnect in Settings → Support channels'})
+  const c=await env.DB.prepare('SELECT provider,revoked_at,token_cipher FROM support_channel_connections WHERE id=? AND project_id=?').bind(input.connectionId,actor.projectId).first<{provider:string;revoked_at:number|null;token_cipher:string|null}>()
+  if(!c)throw new HTTPException(409,{message:'Channel not found'})
+  if(c.provider!==input.kind)throw new HTTPException(409,{message:`That connection is not ${input.kind==='whatsapp'?'a WhatsApp':'an SMS'} channel`})
+  if(c.revoked_at!==null||c.token_cipher===null)throw new HTTPException(409,{message:'Channel disconnected; reconnect in Settings → Support channels'})
+  throw new HTTPException(409,{message:'No recorded customer consent for this number and channel'})
  }
  await requireTicketScope(env,actor.id,actor.projectId,t.conversation_id)
  if(['is_erasing','is_erased','is_deleted','is_blocked'].some(key=>JSON.parse(t.metadata_json??'{}')[key]))throw new HTTPException(409,{message:'Requester is unavailable'})

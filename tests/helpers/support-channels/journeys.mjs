@@ -74,7 +74,7 @@ export async function erasure(){await outboundThreadErasure();const h=await chan
  const text=JSON.stringify(await h.app.sql('SELECT * FROM support_channel_events'));assert.ok(!text.includes(t.contact_id));assert.ok(!text.includes('+12025550124'));
  await h.call('/connections/'+c.id,undefined,{method:'DELETE'});await h.connect('sms');await h.deliver(c,'sms',h.event('sms'));assert.equal(await h.ticket(c),null);
  }finally{await h.close();}}
-export async function uncertainty(){await outboundThreadContinuity();await outboundTicketCreation();await outboundLookupPerformance();const h=await channelHarness();try{
+export async function uncertainty(){await outboundThreadContinuity();await outboundChannelAuthority();await outboundTicketCreation();await outboundLookupPerformance();const h=await channelHarness();try{
  for(const response of [{status:500},{disconnect:true},{status:400}]){const p='sms',c=await h.connect(p);await h.deliver(c,p,h.event(p,{sender:'+1202555012'+(h.sends.length+5)}));const t=await h.ticket(c);h.responses.push(response);const message=await h.reply(t);const count=h.sends.length;const state=(await h.call('/conversations/'+t.conversation_id)).data.sends[0].state;assert.equal(state,response.status===400?'failed':'uncertain');await h.app.scheduled();assert.equal(h.sends.length,count,'recovery does not replay channel sends');assert.ok(message.accepted);}
  }finally{await h.close();}}
 
@@ -173,15 +173,60 @@ async function consentExchange(){const h=await channelHarness();try{
  }
  }finally{await h.close();}}
 
+/** Both native mounts apply the create/reply permission before any provider fetch. */
+async function outboundChannelAuthority(){const h=await channelHarness();try{
+ const {app,ws,token}=h,c=await h.connect('whatsapp'),project=`/api/management/projects/${ws.projectId}`;
+ const role=async(name,permissions)=>(await app.ok(project+'/roles',{token,body:{name,base:'operator',permissions}})).data.id;
+ const assign=role=>app.ok(project+'/agents/'+ws.users.operator,{token,method:'PUT',body:{role}});
+ const allowed=async who=>{
+  for(const area of ['management','dashboard']){
+   const path=`/api/${area}/projects/${ws.projectId}/tickets/channels`,before=app.requests.length;
+   const list=await app.call(path,{token:who});assert.equal(list.status,200);assert.deepEqual(list.data,{data:[{id:c.id,provider:'whatsapp',sender:h.input('whatsapp').sender}]});
+   assert.equal(app.requests.length,before,'sender list does not contact a provider');
+   const templates=await app.call(path+'/'+c.id+'/templates',{token:who});assert.equal(templates.status,200);
+   assert.deepEqual(templates.data,{data:h.templates.map(t=>({id:t.id,name:t.name,language:t.language,text:t.components[0].text}))});
+   assert.equal(app.requests.length,before+1,'authorized template list fetches the live provider once');
+   assert.ok(new URL(app.requests.at(-1).url).pathname.endsWith('/message_templates'));
+  }
+ };
+ for(const who of [ws.tokens.owner,ws.tokens.admin,ws.tokens.operator])await allowed(who);
+ const replyRole=await role('Synthetic channel replier',['conversations.reply']);await assign(replyRole);await allowed(ws.tokens.operator);
+ const noReplyRole=await role('Synthetic channel reader',['conversations.manage','conversations.notes']);
+ for(const key of ['collaborator',noReplyRole]){
+  await assign(key);const before=app.requests.length;
+  for(const area of ['management','dashboard'])for(const suffix of ['',`/${c.id}/templates`]){
+   const path=`/api/${area}/projects/${ws.projectId}/tickets/channels${suffix}`,refused=await app.call(path,{token:ws.tokens.operator});
+   assert.equal(refused.status,403);assert.equal(refused.data.code,'permission_denied');assert.equal(refused.data.permission,'conversations.reply');
+   const target=`GET /api/${area}/projects/:projectId/tickets/channels${suffix? '/:connectionId/templates':''}`;
+   const audit=await app.first("SELECT * FROM audit_events WHERE project_id=? AND actor_id=? AND action='permission.denied' AND target_id=? ORDER BY rowid DESC LIMIT 1",ws.projectId,ws.users.operator,target);
+   assert.equal(audit.category,'access');assert.equal(audit.outcome,'refused');assert.equal(audit.actor_type,'user');assert.equal(audit.target_type,'route');assert.equal(audit.source,'dashboard');
+   assert.equal(JSON.parse(audit.detail_json).permission,'conversations.reply');
+  }
+  assert.equal(app.requests.length,before,'denied channel GETs cause zero provider requests');
+  const deniedCreate=await app.call(`/api/dashboard/projects/${ws.projectId}/tickets`,{token:ws.tokens.operator,body:{}});
+  assert.equal(deniedCreate.status,403);assert.equal(deniedCreate.data.permission,'conversations.reply','sender list matches the create door');
+ }
+ assert.equal(h.sends.length,0);assert.equal((await app.first('SELECT count(*) n FROM operator_ticket_commands WHERE project_id=?',ws.projectId)).n,0);
+ console.log('PROBE OUTBOUND-001 C1: GET management/dashboard tickets/channels and channels/:id/templates -> Collaborator and custom no-reply agent 403 permission_denied with route audit and zero provider requests; owner/admin/agent/custom reply role 200 with unchanged bodies, exactly one live template fetch per authorized GET; POST tickets uses the same conversations.reply permission');
+ }finally{await h.close()}}
+
 /** Operator creation uses the real route and store; only provider HTTP is faked. */
 async function outboundTicketCreation(){const h=await channelHarness();try{
  const {app,ws,token,sends,responses}=h,p=ws.projectId,path=`/api/dashboard/projects/${p}/tickets`,c=await h.connect('whatsapp'),phone='+12025550124';
  const create=(patch={},who=token)=>app.call(path,{token:who,body:{kind:'whatsapp',localId:randomUUID(),connectionId:c.id,requesterPhone:phone,templateId:h.templates[0].id,parameters:['DEL-42'],subject:'Your parcel',content:'DEL-42',...patch}});
- const counts=async()=>({tickets:(await app.first('SELECT count(*) n FROM operator_ticket_commands WHERE project_id=?',p)).n,sends:sends.length,threads:(await app.first('SELECT count(*) n FROM support_channel_threads WHERE project_id=?',p)).n,contacts:(await app.first('SELECT count(*) n FROM contacts WHERE project_id=?',p)).n});
+ const counts=async()=>({tickets:(await app.first('SELECT count(*) n FROM operator_ticket_commands WHERE project_id=?',p)).n,conversations:(await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,sends:sends.length,threads:(await app.first('SELECT count(*) n FROM support_channel_threads WHERE project_id=?',p)).n,contacts:(await app.first('SELECT count(*) n FROM contacts WHERE project_id=?',p)).n});
  let before=await counts();assert.equal((await create()).status,409);assert.deepEqual(await counts(),before,'no-consent creates nothing');
+ const sms=await h.connect('sms');before=await counts();const requests=app.requests.length;
+ for(const [connectionId,message] of [[sms.id,'That connection is not a WhatsApp channel'],['synthetic-happytohelp-unknown','Channel not found']]){
+  const refused=await create({connectionId});assert.equal(refused.status,409);assert.equal(refused.data.error,message);assert.deepEqual(await counts(),before,'wrong or missing channel creates no ticket/send/customer/thread');
+ }
+ await h.call('/connections/'+c.id,undefined,{method:'DELETE'});before=await counts();
+ const disconnected=await create();assert.equal(disconnected.status,409);assert.equal(disconnected.data.error,'Channel disconnected; reconnect in Settings → Support channels');assert.deepEqual(await counts(),before,'revoked channel creates nothing');
+ assert.equal(app.requests.length,requests,'all three connection refusals make zero provider requests');await h.connect('whatsapp');
+ console.log('PROBE OUTBOUND-001 E1: POST tickets kind=whatsapp with live SMS / unknown / revoked WhatsApp connection -> 409 with "That connection is not a WhatsApp channel" / "Channel not found" / "Channel disconnected; reconnect in Settings → Support channels" respectively; no ticket/send/customer/thread or provider request');
  assert.equal((await h.deliver(c,'whatsapp',h.event('whatsapp',{sender:phone.slice(1),text:'I agree to WhatsApp support updates'}))).status,200);
  const thread=await h.ticket(c);before=await counts();
- for(const [patch,who,status,reason] of [[{templateId:'unapproved'},token,409,/approved/],[{parameters:[]},token,400,/parameter/],[{connectionId:'disconnected'},token,409,/disconnected/],[{},h.other.tokens.owner,403,/./]]){
+ for(const [patch,who,status,reason] of [[{templateId:'unapproved'},token,409,/approved/],[{parameters:[]},token,400,/parameter/],[{connectionId:'disconnected'},token,409,/Channel not found/],[{},h.other.tokens.owner,403,/./]]){
   const r=await create(patch,who);assert.equal(r.status,status,JSON.stringify(r.data));assert.match(r.data.error,reason);assert.deepEqual(await counts(),before,'refusal creates no ticket/send/customer/thread');
  }
  const command=randomUUID(),first=await create({localId:command});assert.equal(first.status,201,JSON.stringify(first.data));assert.equal(first.data.conversation.contact_id,thread.contact_id);assert.equal(first.data.conversation.submitter_id,ws.users.owner);assert.equal(first.data.delivery.state,'accepted');
@@ -196,7 +241,7 @@ async function outboundTicketCreation(){const h=await channelHarness();try{
  await app.ok(`/api/management/projects/${p}/agents/${ws.users.admin}`,{token,method:'PUT',body:{role}});
  await app.db.prepare('UPDATE project_roles SET ticket_scope_json=? WHERE id=? AND project_id=?').bind(JSON.stringify({groupIds:[],includeUngrouped:false}),role,p).run();before=await counts();const outside=await create({},ws.tokens.admin);assert.equal(outside.status,403,JSON.stringify(outside.data));assert.match(outside.data.error,/destination group/);assert.deepEqual(await counts(),before);
  assert.equal((await h.deliver(c,'whatsapp',h.event('whatsapp',{sender:phone.slice(1),text:'STOP'}))).status,200);before=await counts();const stopped=await create();assert.equal(stopped.status,409);assert.match(stopped.data.error,/opted_out/);assert.deepEqual(await counts(),before);
- const sms=await h.connect('sms'),smsPhone='+12025550125';await h.deliver(sms,'sms',h.event('sms',{sender:smsPhone,text:'START'}));
+ const smsPhone='+12025550125';await h.deliver(sms,'sms',h.event('sms',{sender:smsPhone,text:'START'}));
  const smsInput={kind:'sms',connectionId:sms.id,requesterPhone:smsPhone,templateId:undefined,parameters:undefined,content:'Your order is ready.'};assert.equal((await create(smsInput)).status,201);await app.db.prepare('UPDATE support_channel_connections SET registered=0 WHERE id=?').bind(sms.id).run();before=await counts();const a2p=await create(smsInput);assert.equal(a2p.status,409);assert.match(a2p.data.error,/a2p/);assert.deepEqual(await counts(),before);
  await app.db.prepare("UPDATE contacts SET metadata_json=json_object('is_erased',1) WHERE id=?").bind((await h.ticket(sms)).contact_id).run();before=await counts();assert.equal((await create(smsInput)).status,409);assert.deepEqual(await counts(),before,'erased customer cannot create a ticket or send');
  // Private call and email normalization keep their incumbent public doors.

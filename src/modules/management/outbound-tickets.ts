@@ -1,3 +1,4 @@
+import {approved} from '../support-channels/templates'
 import {outboundChannel} from './outbound-ticket-channel'
 import {channelMessage} from '../support-channels/outbound'
 import {ticketScopeSql} from '../access/ticket-scope'
@@ -51,6 +52,16 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
   const current=await c.env.DB.prepare('SELECT * FROM conversations WHERE id=? AND project_id=?').bind(reservation.conversationId,actor.projectId).first()
   return {...result,conversation:current,...(generationError?{generationError}:{})}
  }
+ routes.get('/projects/:projectId/tickets/channels',async c=>{
+  const actor=await requireProject(c,c.req.param('projectId'),true)
+  const rows=(await c.env.DB.prepare("SELECT id,provider,sender FROM support_channel_connections WHERE project_id=? AND provider IN ('sms','whatsapp') AND revoked_at IS NULL AND token_cipher IS NOT NULL").bind(actor.projectId).all<{id:string;provider:string;sender:string}>()).results
+  return c.json({data:rows})
+ })
+ routes.get('/projects/:projectId/tickets/channels/:connectionId/templates',async c=>{
+  const actor=await requireProject(c,c.req.param('projectId'),true),id=c.req.param('connectionId')
+  if(!await c.env.DB.prepare("SELECT 1 FROM support_channel_connections WHERE id=? AND project_id=? AND provider='whatsapp' AND revoked_at IS NULL AND token_cipher IS NOT NULL").bind(id,actor.projectId).first())throw new HTTPException(409,{message:'Channel disconnected; reconnect in Settings → Support channels'})
+  return c.json({data:await approved(c.env,{connection_id:id})})
+ })
  routes.post('/projects/:projectId/tickets',async c=>{
   const actor=await requireProject(c,c.req.param('projectId'),true),body=await c.req.json()
   if(body.brandId!==undefined&&body.brandId!==actor.projectId)throw new HTTPException(400,{message:'Choose the brand workspace before creating a ticket'})

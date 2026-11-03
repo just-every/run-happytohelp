@@ -41,13 +41,18 @@ export async function priorSchemaUpgrade(){
   for(const migration of migrations.filter(m=>parseInt(m.name,10)<291))await writeFile(join(runtime.directory,'migrations',migration.name),migration.sql)
   await runtime.run(['d1','migrations','apply','DB','--local','--persist-to','.wrangler/state'])
   let beforeKnowledge
-  await runtime.withStorage(async storage=>{beforeKnowledge=await snapshot(storage)})
+  await runtime.withStorage(async storage=>{
+   await storage.inspect({sql:'INSERT INTO operator_ticket_commands(project_id,actor_id,local_id,conversation_id,intent_hash,kind,created_at) VALUES(?,?,?,?,?,?,?)',values:[project,user,'retained-call-command',thread,'retained-intent','call',7]})
+   beforeKnowledge=await snapshot(storage)
+  })
   const knowledgeStarted=Date.now()
   for(const migration of migrations.filter(m=>parseInt(m.name,10)>=291))await writeFile(join(runtime.directory,'migrations',migration.name),migration.sql)
   await runtime.run(['d1','migrations','apply','DB','--local','--persist-to','.wrangler/state'])
   const knowledgeFinished=Date.now()
   await runtime.withStorage(async storage=>{
    const after=await snapshot(storage)
+   const command=after.rows.operator_ticket_commands.map(JSON.parse).find(row=>row.local_id==='retained-call-command')
+   assert.deepEqual(command,{project_id:project,actor_id:user,local_id:'retained-call-command',conversation_id:thread,intent_hash:'retained-intent',kind:'call',created_at:7,support_thread_id:null},'299 preserves populated command identities and defaults')
    for(const table of ['knowledge_article_publications','knowledge_generation_sources','knowledge_index_dirty','knowledge_upgrade_reports','knowledge_upgrade_progress'])assert.equal(assertReferenceUpgrade(table,after.rows[table],beforeKnowledge.rows,after.rows,knowledgeStarted,knowledgeFinished),true)
    assert.deepEqual(after.objects,before.objects,'all prior attachment bytes and metadata survive')
    for(const [table,rows] of Object.entries(before.rows)){

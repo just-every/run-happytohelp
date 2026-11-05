@@ -7,7 +7,7 @@ import {mailSocket,mailSocketEdge} from './complete-mail-socket.mjs'
 // https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.history/list
 // https://learn.microsoft.com/en-us/graph/api/message-delta
 // https://learn.microsoft.com/en-us/graph/api/user-sendmail
-export async function completeMailEdge(kind){
+export async function completeMailEdge(kind,{outbound}={}){
  const address=`${kind}@support.example`,alias=`returns-${kind}@support.example`
  const edge={kind,address,alias,messages:[],sent:[],attempts:0,permission:false,rejectSend:false,sessions:new Map(),commands:[]}
  const app=await startApp({captureQueue:true,...(kind==='imap'?{socketModule:`export const connect=${mailSocket.toString()}`} : {}),bindings:{
@@ -16,6 +16,7 @@ export async function completeMailEdge(kind){
   MICROSOFT_MAIL_CLIENT_ID:'synthetic-microsoft',MICROSOFT_MAIL_CLIENT_SECRET:'synthetic-microsoft',
   MAILBOX_SOCKET_HOSTS:'imap.synthetic.example,smtp.synthetic.example',MAILBOX_IMAP_AUTHSERV:'mx.customer.example',
  },outbound:async request=>{
+  if(outbound){const response=await outbound(request);if(response)return response}
   const url=new URL(request.url),path=url.pathname
   if(url.hostname==='synthetic-mail-edge.example')return mailSocketEdge(edge,request)
   if(url.hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.support.example.'}]})

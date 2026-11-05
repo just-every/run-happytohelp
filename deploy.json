@@ -76,6 +76,26 @@
       "optional": true
     },
     {
+      "binding": "EMAIL_API_KEY_NAME",
+      "environment": "EMAIL_API_KEY_NAME",
+      "optional": true
+    },
+    {
+      "binding": "MAILGUN_DOMAIN",
+      "environment": "MAILGUN_DOMAIN",
+      "optional": true
+    },
+    {
+      "binding": "MAILGUN_REGION",
+      "environment": "MAILGUN_REGION",
+      "optional": true
+    },
+    {
+      "binding": "MAILGUN_SENDING_KEY",
+      "environment": "MAILGUN_SENDING_KEY",
+      "optional": true
+    },
+    {
       "binding": "GOOGLE_MAIL_CLIENT_ID",
       "environment": "GOOGLE_MAIL_CLIENT_ID",
       "optional": true
@@ -158,6 +178,11 @@
     {
       "binding": "RER_OWNER_CLAIM_PUBLIC_KEYS",
       "environment": "RER_OWNER_CLAIM_PUBLIC_KEYS",
+      "optional": true
+    },
+    {
+      "binding": "RER_IMPORT_DOOR",
+      "environment": "RER_IMPORT_DOOR",
       "optional": true
     },
     {

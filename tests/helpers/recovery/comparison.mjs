@@ -1,4 +1,4 @@
-import {createHash} from 'node:crypto';
+import {createHash,webcrypto,randomUUID} from 'node:crypto';
 import {inspectionContext,localProcessConflict} from '@runeditrun/rer/process-diagnostics';
 import {readArtifact} from '../artifact-payloads.mjs';
 import {exportD1Sql} from '../../../scripts/installer/search-index-sql.mjs';
@@ -26,12 +26,18 @@ assert.deepEqual(artifact.deploymentSpec.migrations.map(({name, sha256}) => ({na
 await mkdir(output); // Refuse to silently reuse a previous run's state or receipt.
 const startedAt = new Date().toISOString();
 const port = Number(process.env.H2H_RECOVERY_PORT || 18260);
-const variables = {H2H_SETUP_TOKEN: setupToken};
+const claimKeys=await webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+const variables = {H2H_SETUP_TOKEN: setupToken,OWNER_EMAIL:'recovery@example.test',APP_ORIGIN:`http://127.0.0.1:${port}`,RER_IMPORT_DOOR:'on',RER_OWNER_CLAIM_ISSUER:'https://business.example.test',RER_OWNER_CLAIM_INSTALLATION_ID:'synthetic-hh-recovery',RER_OWNER_CLAIM_APP_ORIGIN:`http://127.0.0.1:${port}`,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({test:await webcrypto.subtle.exportKey('jwk',claimKeys.publicKey)})};
 let original, restored;
 try {
   original = await recoveryRuntime(artifact, {directory: join(output, 'source-runtime'), port, inspectorPort: port + 1, variables});
   await original.start();
   const journey = await seedJourney(original);
+  const doorSetting=`/api/move-in/projects/${journey.owner.projectId}/business-imports`;
+  assert.equal((await (await call(original,doorSetting,undefined,journey.owner.token)).json()).enabled,true);
+  const now=Math.floor(Date.now()/1000),signed=[{alg:'ES256',typ:'rer-import-grant+jwt',kid:'test'},{v:1,iss:variables.RER_OWNER_CLAIM_ISSUER,aud:variables.APP_ORIGIN,installationId:variables.RER_OWNER_CLAIM_INSTALLATION_ID,email:variables.OWNER_EMAIL,jti:randomUUID(),iat:now,exp:now+300,action:'status',namespace:'zendesk',maxBytes:2097152,maxChunks:32,maxRecords:5000}].map(value=>Buffer.from(JSON.stringify(value)).toString('base64url')).join('.');
+  const grant=signed+'.'+Buffer.from(await webcrypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},claimKeys.privateKey,Buffer.from(signed))).toString('base64url');
+  assert.equal((await call(original,'/api/rer/import/status',{planId:'synthetic-hh-absent'},grant)).status,404);
   const paired = await call(original, '/api/mobile/v1/devices', {platform:'ios',scopes:['read']}, journey.owner.token);
   assert.equal(paired.status,201);const mobile=await paired.json();
   assert.equal((await call(original,'/api/mobile/v1/tickets/'+journey.conversation.id,undefined,mobile.token)).status,200);
@@ -95,6 +101,8 @@ try {
   // installation must rebuild its own read linkage and canonicalisation proof.
   for(const table of ['knowledge_read_receipts','knowledge_help_links','knowledge_help_sessions','knowledge_canonicalisation_receipts','knowledge_write_guards','knowledge_upgrade_permits','knowledge_upgrade_progress'])before.rows[table]=[];
   before.rows.knowledge_upgrade_reports=before.rows.knowledge_upgrade_reports.map(value=>JSON.stringify({...JSON.parse(value),completed_at:null})).sort();
+  assert.equal(before.rows.ik_door_grants.length,1,'consumed nonce is retained as a replay fence');
+  before.rows.ik_door_settings=before.rows.ik_door_settings.map(value=>JSON.stringify({...JSON.parse(value),enabled:0})).sort();
   for(const table of ['integration_tokens','api_credentials','api_requests','api_appends'])before.rows[table]=before.rows[table].map(value=>{
    const row=JSON.parse(value);
    if(table==='api_credentials')row.revoked_at??=Math.max(1,row.created_at);
@@ -108,7 +116,7 @@ try {
   const exportedIssuer=before.rows.api_credentials.map(JSON.parse).find(row=>row.id===journey.api.erasedIssuer.data.id);assert.equal(exportedIssuer.issuer_id,null);assert.ok(exportedIssuer.revoked_at);
   assert.ok(before.rows.users.map(JSON.parse).some(row=>row.id===issuerId&&row.email==='erased:'+issuerId&&row.name==='Former teammate'));
 
-  restored = await recoveryRuntime(artifact, {directory: join(output, 'restored-runtime'), port: port + 2, inspectorPort: port + 3, variables, restoreFile: backupFile});
+  restored = await recoveryRuntime(artifact, {directory: join(output, 'restored-runtime'), port: port + 2, inspectorPort: port + 3, variables:{...variables,APP_ORIGIN:`http://127.0.0.1:${port+2}`,RER_OWNER_CLAIM_APP_ORIGIN:`http://127.0.0.1:${port+2}`}, restoreFile: backupFile});
   let after;
   await restored.withStorage(async storage => {
     assert.deepEqual((await snapshot(storage)).objects, [], 'Fresh target R2 must be empty');
@@ -126,6 +134,8 @@ try {
   assert.equal((await call(restored,'/api/mobile/v1/session',undefined,mobile.token)).status,401,'credential-free restore never revives a mobile capability');
   await verifyAccess(restored, journey, journey.owner.token);
   await verifyFreshLogin(restored, journey);
+  assert.equal((await (await call(restored,doorSetting,undefined,journey.owner.token)).json()).enabled,false,'restored door stays closed after owner sign-in despite Business bindings');
+  for(const action of ['uploads','plan','apply','status','reconcile','undo','cancel','archive','restore-check']){const response=await call(restored,'/api/rer/import/'+action,{});assert.equal(response.status,404,action+': '+await response.text());}
   await verifyRestoredApi(restored, journey);
   await restored.close();
   const receipt = {

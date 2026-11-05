@@ -1,4 +1,4 @@
-import {legacyUnitJourney,unitFixture} from './unit-journey.mjs'
+import {legacyUnitJourney,unitFixture,verifyLegacyUnitStorage} from './unit-journey.mjs'
 import {legacyPrivacyProof} from './door-privacy.mjs'
 import {businessLegacySender} from './business-sender.mjs'
 import {fileURLToPath} from 'node:url'
@@ -32,7 +32,7 @@ export async function legacyDoorJourney(){
   const small=doorFixture(email,{large:false}),limited=await transfer(small),quota=await call('plan',{uploadId:limited.uploadId},{maxRecords:small.sourceCount});assert.equal(quota.response.status,413);assert.equal(quota.data.error,'legacy_native_expansion_exceeds_grant');assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM ik_door_plans').first()).n,0)
   const boundedPlan=await ok('plan',{uploadId:limited.uploadId}),boundedApproval={fingerprint:boundedPlan.fingerprint,approvalRecordId:'synthetic-lower-grant',approvedAt:'2026-11-05T00:00:00.000Z',maxRecords:small.sourceCount};assert.equal((await call('plan',{uploadId:limited.uploadId},{maxRecords:small.sourceCount})).data.error,'legacy_native_expansion_exceeds_grant');assert.equal((await call('apply',{planId:boundedPlan.planId,reviewedFingerprint:boundedPlan.fingerprint},boundedApproval)).data.error,'legacy_native_expansion_exceeds_grant');assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,0);await ok('cancel',{planId:boundedPlan.planId})
   const plan=await businessLegacySender(h,fixture,(action,namespace,changes)=>mint(action,{...changes,namespace})),uploaded={uploadId:plan.uploadId}
-  await legacyUnitJourney({h,project,ownerId:owner.userId,email,installation,uploadId:uploaded.uploadId,fixture,transfer})
+  const compiledUnits=await legacyUnitJourney({h,project,ownerId:owner.userId,email,installation,uploadId:uploaded.uploadId,fixture,transfer})
   assert.equal(plan.summary.sourceRecords,fixture.sourceCount);assert.equal(plan.counts.rejected,0);assert.ok(plan.counts.effects>fixture.manifest.objects.length);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,0);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM legacy_door_blob_chunks').first()).n,0)
   assert.equal((await ok('plan',{uploadId:uploaded.uploadId})).planId,plan.planId)
   const approval=plan=>({fingerprint:plan.fingerprint,approvalRecordId:'synthetic-policy-approval',approvedAt:'2026-11-05T00:00:00.000Z'})
@@ -40,6 +40,7 @@ export async function legacyDoorJourney(){
   const replayGrant=mint('status'),replayRequest={...json({planId:plan.planId}),headers:{'Content-Type':'application/json',Authorization:'Bearer '+replayGrant}};assert.equal((await h.raw('/api/rer/import/status',replayRequest)).response.status,200);assert.equal((await h.raw('/api/rer/import/status',replayRequest)).response.status,403)
   assert.equal((await call('apply',{planId:plan.planId,reviewedFingerprint:'0'.repeat(64)},approval(plan))).response.status,403);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,0)
   await apply(plan)
+  await verifyLegacyUnitStorage(h,compiledUnits,project)
   assert.equal((await ok('reconcile',{planId:plan.planId})).ok,true)
   const messages=await h.call('/api/conversations/legacy-conversation/messages');assert.deepEqual(messages.messages.map(row=>row.content),['A retained historical message','An original answer'])
   assert.deepEqual((await h.db.prepare('SELECT role FROM memberships WHERE project_id=? ORDER BY role').bind(project).all()).results.map(row=>row.role),['admin','operator','owner'])

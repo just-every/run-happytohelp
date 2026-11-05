@@ -11,8 +11,11 @@ import {SendGridSendError} from '../../vendor/base/modules/sendgrid-email/src/se
 // @ts-expect-error The shared Base validator is JavaScript without declarations.
 import {validateMessage} from '../../vendor/base/modules/mail/src/core/validation.mjs'
 
-export type EmailProvider = 'resend'|'cloudflare'|'sendgrid'|'rer'
-const providers:readonly EmailProvider[]=['resend','cloudflare','sendgrid']
+// @ts-expect-error Shared native configuration is JavaScript without declarations.
+import {mailgunConfiguration} from './mailgun-configuration.mjs'
+
+export type EmailProvider = 'resend'|'cloudflare'|'sendgrid'|'mailgun'|'rer'
+const providers:readonly EmailProvider[]=['resend','cloudflare','sendgrid','mailgun']
 
 /** The selected provider is explicit when supplied; the legacy default remains Resend. */
 export function selectedEmailProvider(env:Env):EmailProvider|null{
@@ -25,6 +28,9 @@ export function emailConfigured(env:Env){
  if(typeof env.H2H_CONNECTED_MESSAGE_MAILBOX==='string')return true
  if(localMailOrigin(env)||demoMode(env))return typeof env.EMAIL_FROM==='string'&&Boolean(env.EMAIL_FROM.trim())
  const provider=selectedEmailProvider(env)
+ if(provider==='mailgun'){
+  try{mailgunConfiguration(env);return typeof env.EMAIL_FROM==='string'&&Boolean(env.EMAIL_FROM.trim())}catch{return false}
+ }
  return Boolean(provider&&typeof env.EMAIL_API_KEY==='string'&&env.EMAIL_API_KEY.trim()&&typeof env.EMAIL_FROM==='string'&&env.EMAIL_FROM.trim()&&(provider!=='cloudflare'||/^[a-f0-9]{32}$/i.test(String(env.EMAIL_ACCOUNT_ID||''))))
 }
 export function emailMode(env:Env):'local'|'remote'|'unavailable'{return emailConfigured(env)?localMailOrigin(env)?'local':'remote':'unavailable'}
@@ -41,7 +47,23 @@ export function validateEmailInput(input:EmailInput,from:string){
 }
 export function providerRequest(env:Env,input:EmailInput,from:string):[string,RequestInit]{
  const provider=selectedEmailProvider(env)
- if(!provider||provider==='sendgrid'||provider==='rer')throw new Error('The selected provider has no Resend or Cloudflare request adapter')
+ if(!provider||provider==='sendgrid'||provider==='rer')throw new Error('The selected provider has no HTTP message request adapter')
+ if(provider==='mailgun'){
+  const {key,domain,origin}=mailgunConfiguration(env),body=new FormData()
+  body.set('from',from);body.set('to',input.to);body.set('subject',input.subject);body.set('text',input.text)
+  for(const recipient of input.cc??[])body.append('cc',recipient)
+  for(const recipient of input.bcc??[])body.append('bcc',recipient)
+  if(input.html)body.set('html',input.html)
+  for(const [name,value]of Object.entries({...input.headers,...(input.replyTo?{'Reply-To':input.replyTo}:{})}))body.set('h:'+name,value)
+  for(const file of input.attachments??[]){
+   const bytes=Uint8Array.from(atob(file.content),char=>char.charCodeAt(0))
+   // Mailgun's inline Content-ID is the uploaded filename, matching the HTML cid.
+   body.append(file.contentId?'inline':'attachment',new Blob([bytes],{type:file.contentType}),file.contentId||file.filename)
+  }
+  // Mailgun documents no message-send idempotency header. The durable native
+  // delivery claim fences replays, including a lost response or missing receipt.
+  return [origin+'/v3/'+domain+'/messages',{method:'POST',headers:{Authorization:'Basic '+btoa('api:'+key)},body,redirect:'manual',signal:AbortSignal.timeout(20000)}]
+ }
  const cloudflare=provider==='cloudflare'
  return [cloudflare?`https://api.cloudflare.com/client/v4/accounts/${env.EMAIL_ACCOUNT_ID}/email/sending/send`:'https://api.resend.com/emails',{
   method:'POST',headers:{Authorization:`Bearer ${env.EMAIL_API_KEY}`,'Content-Type':'application/json',...(!cloudflare?{'Idempotency-Key':input.idempotencyKey}:{})},

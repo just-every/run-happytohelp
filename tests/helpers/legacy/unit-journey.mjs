@@ -1,6 +1,9 @@
 import '../legacy-bundle.mjs'
 import assert from 'node:assert/strict'
 import {doorFixture} from './door-fixture.mjs'
+import {createHash} from 'node:crypto'
+import {canonicalJson} from '../../../src/modules/import-kit/src/provenance/identity.ts'
+import {keys,quote} from '../../../src/modules/legacy-import/door/schema.ts'
 import {prepareLegacyUnits,compileLegacyUnits} from '../../../src/modules/legacy-import/door/units.ts'
 import {legacyUnitDependencies} from '../../../src/modules/legacy-import/door/unit-dependencies.ts'
 import {decodeLegacy} from '../../../src/modules/legacy-import/door/format.ts'
@@ -50,6 +53,9 @@ export async function legacyUnitJourney({h,project,ownerId,email,installation,up
  const a=recordKey('contacts','legacy-contact'),b=recordKey('contacts','legacy-peer')
  assert.throws(()=>compileLegacyUnits(prepared,decoded,{...dependencies,edges:[...dependencies.edges,{from:a,to:b,atomic:false,evidence:{}},{from:b,to:a,atomic:false,evidence:{}}]},upload.files,limits),error=>error.code==='legacy_work_unit_unsupported')
  assert.deepEqual(await h.snapshot(),before)
+ const huge=structuredClone(decoded);huge.manifest.source.rowCounts.conversations=157478;huge.manifest.source.cloneCounts.conversations=157478
+ const originalRead=upload.read.bind(upload),hugeUpload={...upload,read:async(path,maxBytes)=>path==='manifest.json'?Buffer.from(JSON.stringify(huge.manifest)):originalRead(path,maxBytes)}
+ await assert.rejects(()=>decodeLegacy(hugeUpload,limits.maxRecords),error=>error.code==='plan_exceeds_grant_quota')
  const changed=unitFixture(email,{mutate:tables=>{tables.conversations.find(row=>row.id==='legacy-second-conversation').contact_id='legacy-peer'}}),changedUpload=await transfer(changed,{},false),afterTransfer=await h.snapshot(),relation=await prepareLegacyUnits(h.db,await open(changedUpload.uploadId),project,ownerId,limits)
  assert.notEqual(unitFor(relation,'conversations','legacy-second-conversation').unit.relationshipsHash,second.unit.relationshipsHash);assert.notDeepEqual(unitFor(relation,'conversations','legacy-second-conversation').unit.dependsOn,second.unit.dependsOn)
  assert.deepEqual(unitFor(relation,'contacts','legacy-peer').native,unitFor(first,'contacts','legacy-peer').native)
@@ -68,4 +74,26 @@ export async function legacyUnitJourney({h,project,ownerId,email,installation,up
  assert.equal(h.outbound,outbound);assert.equal(h.queued.length,queued)
  console.log('Legacy work units POINT1/POINT2: deterministic closures/dependencies, exact physical rows/files/aliases/readable bytes, relationship/byte drift, refusal and zero preparation effects')
  return first
+}
+
+/** Compare compiler accounting with rows written by the ordinary reviewed import,
+ * including the real adapter origin rows and readable native chunks. */
+export async function verifyLegacyUnitStorage(h,compiled,project){
+ let nativeBytes=0,blobBytes=0,count=0
+ for(const {native} of compiled.units)for(const projection of native){
+  const origin=projection.table==='legacy_door_targets',names=origin?['project_id','target_id']:keys[projection.table],values=JSON.parse(origin?projection.key:decodeURIComponent(projection.key.slice(projection.key.indexOf(':')+1)))
+  const row=await h.db.prepare(`SELECT * FROM ${quote(projection.table)} WHERE ${names.map(name=>`${quote(name)} IS ?`).join(' AND ')}`).bind(...values).first()
+  assert.ok(row,`physical ${projection.table} row is readable`)
+  const generated=(await h.db.prepare(`PRAGMA table_xinfo(${quote(projection.table)})`).all()).results.filter(column=>column.hidden).map(column=>column.name)
+  for(const column of generated)delete row[column]
+  let revisionBytes=0
+  if(origin){revisionBytes=row.revision.length;assert.match(row.revision,/^[a-f0-9]{64}$/);row.revision=''}
+  const encoded=canonicalJson(row),bytes=Buffer.byteLength(encoded)+revisionBytes
+  assert.equal(createHash('sha256').update(encoded).digest('hex'),projection.valueHash)
+  assert.equal(bytes,projection.storedBytes);nativeBytes+=bytes;count++
+  if(projection.table==='legacy_door_blob_chunks'){const bytes=Buffer.from(row.base64,'base64');assert.equal(bytes.length,projection.blobBytes);blobBytes+=bytes.length}
+ }
+ assert.equal(count,compiled.totals.native);assert.equal(nativeBytes,compiled.totals.nativeBytes);assert.equal(blobBytes,compiled.totals.blobBytes)
+ assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM legacy_door_targets WHERE project_id=?').bind(project).first()).n,count/2)
+ console.log('Legacy work units: real ordinary-import storage matches every compiled physical row, byte total and source-derived projection')
 }

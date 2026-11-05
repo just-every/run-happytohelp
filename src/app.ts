@@ -1,4 +1,5 @@
 import {businessProject} from './edition/agent-door/project.ts'
+import {cutoverStatus} from './modules/cutover-status/routes'
 import {handleAgentRequest} from './edition/agent-door/index.ts'
 import {helpscoutWebhooks} from './modules/api-integrations/helpscout'
 import {assuranceRoutes} from './modules/assurance/routes'
@@ -53,6 +54,7 @@ import {voiceRoutes} from './modules/voice/routes'
 
 export const app = new Hono<AppEnv>()
 app.use('*',async(c,next)=>{const response=await handleAgentRequest(c.req.raw,c.env);if(response)return response;await next()})
+app.route('/api/rer/cutover-status',cutoverStatus)
 app.use('/api/identity/widget/profile',visitorProfileCredential)
 app.use('/api/*',knowledgeHttpDoor)
 app.use('/delegation/*',knowledgeHttpDoor)

@@ -259,12 +259,16 @@
       "buyerSteps": "Apply after 298 and before serving the updated Worker. Back up D1 and retain all migration ledger rows. Rebuilds operator ticket commands preserving existing rows, primary and unique keys, and the contact-erasure trigger; adds consent-thread links and SMS/WhatsApp kinds. No consent is granted; no provider send is replayed."
     },
     {
-      "id": "300_import_door.sql",
-      "buyerSteps": "Back up D1 and R2 first. Apply once after 299_outbound_channel_tickets.sql and before serving the updated Worker. Existing Move in imports stay intact. Business grants remain closed until a Business-provisioned first owner claim with RER_IMPORT_DOOR=on opens the door; ordinary self-host does not set it."
+      "id": "300_teammate_slack.sql",
+      "buyerSteps": "Apply after 299 and before serving the updated Worker. Back up D1 first. Creates only new tables for personal Slack notices: administrator consent, each teammate's verified Slack link, per-kind preferences and delivery outcomes; no existing table changes. Personal Slack stays off until an owner or admin enables it on one existing bot-mode Slack connection and each teammate links their own Slack member and opts in per kind. Nothing is backfilled, no consent is granted by the upgrade, and no uncertain send is replayed. These tables are never exported."
     },
     {
-      "id": "301_legacy_door_blob_chunks.sql",
-      "buyerSteps": "Back up retained D1, R2, Durable Objects, private settings, import journals/originals, privacy fences and migration history. Apply once after 300 and before the updated Worker serves traffic; never reset or edit applied SQL. Adds journaled legacy byte chunks, native target/hold metadata and an atomic historical-write fence. Live native writes keep their existing trigger behavior. Source package rows cannot replace the claimed owner/workspace. Preserve all D1 chunk tables with portable inventory; restore verifies complete byte custody and keeps Business imports off. Existing R2 objects and existing grant limits remain unchanged. Saved predecessor sources and this source slice remain unqualified and held; no deployment, real import, source-hold release or cutover is authorized."
+      "id": "301_import_door.sql",
+      "buyerSteps": "Back up D1 and R2 first. Apply once after 300_teammate_slack.sql and before serving the updated Worker. Existing Move in imports stay intact. Business grants remain closed until a Business-provisioned first owner claim with RER_IMPORT_DOOR=on opens the door; ordinary self-host does not set it."
+    },
+    {
+      "id": "302_legacy_door_blob_chunks.sql",
+      "buyerSteps": "Back up retained D1, R2, Durable Objects, private settings, import journals/originals, privacy fences and migration history. Apply once after 301 and before the updated Worker serves traffic; never reset or edit applied SQL. Adds journaled legacy byte chunks, native target/hold metadata and an atomic historical-write fence. Live native writes keep their existing trigger behavior. Source package rows cannot replace the claimed owner/workspace. Preserve all D1 chunk tables with portable inventory; restore verifies complete byte custody and keeps Business imports off. Existing R2 objects and existing grant limits remain unchanged. Saved predecessor sources and this source slice remain unqualified and held; no deployment, real import, source-hold release or cutover is authorized."
     }
   ]
 }

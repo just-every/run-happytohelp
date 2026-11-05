@@ -458,7 +458,7 @@
           "scripts/contract-docs.mjs",
           "docs/CLAIMS.md",
           "tests/journeys/deploy-nightly.mjs",
-          "migrations/301_legacy_door_blob_chunks.sql"
+          "migrations/302_legacy_door_blob_chunks.sql"
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",

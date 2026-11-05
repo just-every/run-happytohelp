@@ -2757,7 +2757,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "6c602d215f4aa56fc4dd8f9e1267a3df7845bbfde6e6e7df966b0fbc870893ad",
+      "sha256": "d888b0ce91aa97741b4ccb86c62f5c52d090270fbc1f90dac6dc748aeeb0f089",
       "executable": false
     },
     "package.json": {
@@ -4109,7 +4109,7 @@
       "executable": false
     },
     "src/app.ts": {
-      "sha256": "e500aba3db788b1d9f9ffbfffacbdf80fedc9f27e092e90d26caa281ab545daa",
+      "sha256": "468fdcc9245191076df6d1f0edfc30da429011cbeeef59883dc9c2078277b8e8",
       "executable": false
     },
     "src/base/contract-anchor.mjs": {
@@ -4489,7 +4489,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "95bd64e826ad4ae9579c0158b34cd52ec6488c44710350e1779956a87f1090e7",
+      "sha256": "9f7438102dc8993974b8783f1da082a5b0ae77cfa374b4edd1ca6bf5c198c0bc",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -5442,6 +5442,10 @@
     },
     "src/modules/customers/validation.ts": {
       "sha256": "453cd1c2e1dc124c43b7e321a65592207865d9386b2e6a943efbb52ef9d55ff5",
+      "executable": false
+    },
+    "src/modules/cutover-status/routes.ts": {
+      "sha256": "47f8926905d2374e9809f738cdd481f12ffd41534eecf790f6306de30af264ad",
       "executable": false
     },
     "src/modules/d1-transport/index.d.mts": {
@@ -14272,6 +14276,10 @@
       "sha256": "ea901036d2e35b891c335c65a138df811b9de04a86d50336a4ec99e2829259f2",
       "executable": false
     },
+    "tests/helpers/agent-door/cutover-status.mjs": {
+      "sha256": "03d013f18decdc8003b74d43b028e5bb0eac0b8e7765197661ab4d4f5ba14a51",
+      "executable": false
+    },
     "tests/helpers/agent-door/draft-upgrade.mjs": {
       "sha256": "8a885cb12d1bc1fafe156320a5158ee05fb035581c92096c60932042c9e9f914",
       "executable": false
@@ -14289,7 +14297,7 @@
       "executable": false
     },
     "tests/helpers/agent-door/journey.mjs": {
-      "sha256": "4a67b91f4f7ef0fafcb7f8cc0e43c34bf9fece61aa0e64efffe57c8dabb950d4",
+      "sha256": "f2a334ffde6e7465664536d887db0ef5f54c0aa4b228bbdc9983058dab939137",
       "executable": false
     },
     "tests/helpers/agent-door/phase-fixtures.mjs": {

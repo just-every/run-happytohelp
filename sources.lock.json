@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "e9368a9042e460ededbc2945659abb623f61cd56a90afe2f9459bb0c820281b7",
+      "sha256": "b4756a35a77537570b09a701397a46b227b40838c2a935a6e8304352fbaddb6f",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "1ba088f01f7f58ddecbdeae785b0432ff27d2e21352abf4fe9541fbb14d47c24",
+      "sha256": "3b84b94c2d8da6b45214a1af0205f386ac2dd79080706413bb82437ed3aa0dfd",
       "executable": false
     },
     "DEMO.md": {
@@ -2049,7 +2049,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "1f2339576f02e0cb679b23884b5f41211bc1c59632bb7c4a8bb388bfd703a8cc",
+      "sha256": "194deb0f932ac8ab0241f87f2b64e62b4cce2512107e550b3a79abaa2367dcb7",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2752,7 +2752,11 @@
       "sha256": "93e6f3da0dbd1c1d0669200c3f141e14087a98ecd5ee71ef9036db6e93865343",
       "executable": false
     },
-    "migrations/300_import_door.sql": {
+    "migrations/300_teammate_slack.sql": {
+      "sha256": "62cf53516d503cb8c3ff499c06484ffa2d18a3ceeaf38ee078610a2780dc3e17",
+      "executable": false
+    },
+    "migrations/301_import_door.sql": {
       "sha256": "b3143953340b76ed53b8d98e6658566fc97fa9a9a43594d098f488c0345ccd6b",
       "executable": false
     },
@@ -2761,7 +2765,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "6c602d215f4aa56fc4dd8f9e1267a3df7845bbfde6e6e7df966b0fbc870893ad",
+      "sha256": "d888b0ce91aa97741b4ccb86c62f5c52d090270fbc1f90dac6dc748aeeb0f089",
       "executable": false
     },
     "package.json": {
@@ -2841,7 +2845,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "dafa5645c2ac71d03e7b2da17ef6e6ae572bf9be848799b0a6d6605f35cb1234",
+      "sha256": "1df6645fe2e207f3fdc7634049a8cd71db7ee91b710323fc2e0ceeb2c9c82236",
       "executable": false
     },
     "rer-project.json": {
@@ -3865,7 +3869,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "a0cc93ee51750323c73b42e5435b028ff57afe623f5689ac0541a4fc2aa8cb11",
+      "sha256": "87a5fa2202576d11722a43913acdf4fc77af06d5234614e0947a0b08e76b6e95",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -4113,7 +4117,7 @@
       "executable": false
     },
     "src/app.ts": {
-      "sha256": "30744a8d7f5ac5de5a4fdccc331d4dbd6309d58f4cf9a6774be6c88a33ba2066",
+      "sha256": "921a17df55bb9683d361ce37eb87637457cc4c9ea5f2f9eccb0c0f789b743404",
       "executable": false
     },
     "src/base/contract-anchor.mjs": {
@@ -4481,7 +4485,7 @@
       "executable": false
     },
     "src/modules/access/r4-route-permissions.ts": {
-      "sha256": "79f8718b2f5a126bab39a8866726560bda1ffca45f57ca3da2596724715ab59f",
+      "sha256": "8b662ffd391fc8d47778b1be2bed5898ce01337d04de01823bb31805fdfe91c4",
       "executable": false
     },
     "src/modules/access/README.md": {
@@ -4493,7 +4497,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "c7ce181fffdd389524f7f26ae1c3e7210ba7f323311b204c05c5e208f99d8798",
+      "sha256": "54187f848befe99644514a96fa5e8882f896e378abc8d9ce552b42deef81cca5",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -5446,6 +5450,10 @@
     },
     "src/modules/customers/validation.ts": {
       "sha256": "453cd1c2e1dc124c43b7e321a65592207865d9386b2e6a943efbb52ef9d55ff5",
+      "executable": false
+    },
+    "src/modules/cutover-status/routes.ts": {
+      "sha256": "47f8926905d2374e9809f738cdd481f12ffd41534eecf790f6306de30af264ad",
       "executable": false
     },
     "src/modules/d1-transport/index.d.mts": {
@@ -7008,6 +7016,42 @@
       "sha256": "4945b2792245c199dcb262cc531f2977a58663285d74dd67228003f84afa0aae",
       "executable": false
     },
+    "src/modules/integrations/teammate-slack/authority.ts": {
+      "sha256": "ea9403ad0815645536da414399a6b4d270ec02044834d0f9f7f0a60efdddd5bc",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-slack/consent.ts": {
+      "sha256": "96eaf13ac727811fec4a45c48fe19f562ae61f935d5b49fb9ba20f5ff4e75e88",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-slack/drain.ts": {
+      "sha256": "f07a230505afa1cffac9eaa4e34eeac247ca64462bbc21e549407deb0f787bb6",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-slack/guard.ts": {
+      "sha256": "fb40ba8a3a54346578b6ad1c9f8415804bb151e05673c239cd0dd7532245838c",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-slack/index.ts": {
+      "sha256": "6ea0a875ba435e00aa71ac67d59e18bf315a85ebcedfb4270fc37e27c9ee1279",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-slack/link.ts": {
+      "sha256": "834d3978b5606d69af7d23834329c0c4ede9454e2a032c951f150003b96ee7a7",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-slack/own.ts": {
+      "sha256": "76505cff29bb69f805f49debfe37577e2dc44dbf23c2c8f4163736a225925bbe",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-slack/routes.ts": {
+      "sha256": "b758e7d65cd51e41489c244039c5f1f25d2c290a90a1f5f4f01bfc154c26ddfb",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-slack/slack-api.ts": {
+      "sha256": "6f8dbd6c431e07e145607e354336184768a7c9cf8589ec6791278e42c40c2400",
+      "executable": false
+    },
     "src/modules/integrations/triggers.ts": {
       "sha256": "306092b1a3b399a251a7a191d07e567b4b54baf2ddfea9230bf36f99fc217991",
       "executable": false
@@ -7717,7 +7761,7 @@
       "executable": false
     },
     "src/modules/management/index.ts": {
-      "sha256": "361f5f0e820a63248d00f3b3b49fd3826047888f113f5830a30a554c90cefb88",
+      "sha256": "4d18fe08f2fb531ade573872061947fb63ff8f0dc3bb0f9f227b4e571430de60",
       "executable": false
     },
     "src/modules/management/installation.ts": {
@@ -7737,7 +7781,7 @@
       "executable": false
     },
     "src/modules/management/member-erasure.ts": {
-      "sha256": "d3393ea1d681d7fd59a6821f8f7030b1d6422cb7eb5a226b3671125e4ed9a60e",
+      "sha256": "c1f9dc9ad5604ec49f54324a2f415029f453a8dd2486a343e18ed1b1708c921c",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {
@@ -10025,7 +10069,7 @@
       "executable": false
     },
     "src/platform/scheduled.ts": {
-      "sha256": "0c3d49ba8a91b22b721a1c55653158ac87ed23e7542f6b1aed31748ddb4d0603",
+      "sha256": "aae1b8943766145863037090dc20912ef320fd39de8d0969514aac068c02de35",
       "executable": false
     },
     "src/platform/security-headers.ts": {
@@ -12497,11 +12541,19 @@
       "executable": false
     },
     "src/ui/native/pages/notifications/NotificationTriggerSettings.jsx": {
-      "sha256": "35c4f0ead8ff0c15052c7e90ca8c35a761481d37e7dc0805d3a38a33a443d988",
+      "sha256": "936783b832b0aa0957b5aa21edd959c33f6a8eb2c87f5c0ab5b779291254357a",
       "executable": false
     },
     "src/ui/native/pages/notifications/PersonalNotificationSettings.jsx": {
-      "sha256": "55665e21bfb68e3a0e48fb60ecbd09f12a7579ecccbba58ab541eb330e93dae7",
+      "sha256": "c8c97fcc015df28320b0de143f840b8145054b360b8584cc49fbd15767f27606",
+      "executable": false
+    },
+    "src/ui/native/pages/notifications/PersonalSlackSettings.jsx": {
+      "sha256": "9ba06d263b59ebe93a15eb259a9319ffa595de981347e230a2bf69b8333b64d6",
+      "executable": false
+    },
+    "src/ui/native/pages/notifications/SlackConsentSettings.jsx": {
+      "sha256": "3a7b8e0973aacc63a06c6480fe48806f6b23ce032a05d1b6a616bdd2e160e83f",
       "executable": false
     },
     "src/ui/native/pages/PluginHelp.jsx": {
@@ -14784,6 +14836,10 @@
       "sha256": "ea901036d2e35b891c335c65a138df811b9de04a86d50336a4ec99e2829259f2",
       "executable": false
     },
+    "tests/helpers/agent-door/cutover-status.mjs": {
+      "sha256": "03d013f18decdc8003b74d43b028e5bb0eac0b8e7765197661ab4d4f5ba14a51",
+      "executable": false
+    },
     "tests/helpers/agent-door/draft-upgrade.mjs": {
       "sha256": "8a885cb12d1bc1fafe156320a5158ee05fb035581c92096c60932042c9e9f914",
       "executable": false
@@ -14801,7 +14857,7 @@
       "executable": false
     },
     "tests/helpers/agent-door/journey.mjs": {
-      "sha256": "4a67b91f4f7ef0fafcb7f8cc0e43c34bf9fece61aa0e64efffe57c8dabb950d4",
+      "sha256": "f2a334ffde6e7465664536d887db0ef5f54c0aa4b228bbdc9983058dab939137",
       "executable": false
     },
     "tests/helpers/agent-door/phase-fixtures.mjs": {
@@ -15337,7 +15393,7 @@
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {
-      "sha256": "34e247c6507afb42c321ff8a1caa77d60400ac0f104120fdd6e7aed79459afd2",
+      "sha256": "19bd46cc6611467eb2b270f31a2878384af9bb71ebca91c7c4c4d012b4a93fbc",
       "executable": false
     },
     "tests/helpers/identity/ticket-scope-browser.mjs": {
@@ -15636,8 +15692,24 @@
       "sha256": "99e9d45ea55c74f53953c8b85877425a51b2b448de2e823bd6951b952a75c84a",
       "executable": false
     },
+    "tests/helpers/notify/slack-browser-edge.mjs": {
+      "sha256": "04ccc0a1968adb3106e62c8568a52dc9857c9a9071e1ad706d47231a1207d2f4",
+      "executable": false
+    },
+    "tests/helpers/notify/slack-browser.mjs": {
+      "sha256": "a92ea5e7d78420e06a54b71ee4cafbfea43e349217aa8b6735c5fce28036689b",
+      "executable": false
+    },
+    "tests/helpers/notify/slack-edge.mjs": {
+      "sha256": "255ec53fbe562e18f5fbae9ca996e67feaf28207d9d2156fac117c76e64bf8be",
+      "executable": false
+    },
+    "tests/helpers/notify/slack-notices.mjs": {
+      "sha256": "e519851c7dd502e0476711110ed133c1b0bf4959fa71f0fe83faf9edb734f29b",
+      "executable": false
+    },
     "tests/helpers/notify/teammates.mjs": {
-      "sha256": "080d9682946dba4ce5f337168974c39acfc791dfe091470b59a9682c884f5f8d",
+      "sha256": "7cb5de1f2c79a9f3735d570c2b26ff154d3d95a378f4bf0b9ebdb275256aaee4",
       "executable": false
     },
     "tests/helpers/openai-stream.mjs": {

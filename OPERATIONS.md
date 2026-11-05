@@ -256,6 +256,47 @@ declaration's `secrets` array, plus
 with Cloudflare mail. It is not required for Resend or SendGrid; rer 0.2.77 requires
 every declared secret not marked `optional` on a new Worker.
 
+### Mailgun domain sending
+
+The native outbound adapter accepts `EMAIL_PROVIDER=mailgun`. Configure
+`EMAIL_FROM` as the installation support sender, `MAILGUN_DOMAIN` as the
+actual Mailgun sending domain (a DNS name, without a URL or path), and
+`MAILGUN_REGION` as `us` (default) or `eu`, matching that domain's region.
+Workspace and connected forwarding-mailbox sender, recipient, signature,
+attachment and reply-thread settings still apply.
+
+Set `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY`. That name selects the installation's
+native secret binding `MAILGUN_SENDING_KEY`; its value must be a **domain-scoped
+sending key** for `MAILGUN_DOMAIN`. This is the currently supported binding name.
+A missing/unknown name, unavailable binding, invalid domain or invalid region
+leaves mail unconfigured. The adapter never reads `EMAIL_API_KEY` as a fallback.
+Keep the separate time-limited Mailgun Routes key outside this provider; no
+Routes/account/DNS permissions or changes are needed to build it.
+
+The adapter posts multipart message fields to `/v3/{domain}/messages` at the
+US or EU Mailgun endpoint with HTTP Basic authentication. It preserves native
+To/CC/BCC, text/HTML, attachments and `h:` reply/thread headers. A returned
+message ID records provider acceptance, not recipient delivery. Rejections are
+failed; server errors, lost responses, redirects and receipts without a message
+ID remain uncertain. Existing durable command identities prevent replay,
+including after an uncertain result; reconcile before composing a new send.
+Configuring this provider grants no new send authority: agents draft and an
+authorized owner sends under the existing policy. Imports remain silent.
+
+This source adapter must ship with the same qualified release as the import door
+and cutover status. The current rer setup selector and production-mail preflight
+do not offer Mailgun; this addition does not qualify a fresh hosted deployment or
+change that shared preflight. The native binding declarations are present for the
+qualified release's installation configuration. Do not substitute another
+provider to satisfy preflight. No real sending key or live delivery has been
+tested here: automated coverage uses HTTP-edge fakes only. The owner supplies
+the sending key during the planned key configuration; live proof remains a
+separate authorized check.
+
+Protocol references: [message sending](https://documentation.mailgun.com/docs/mailgun/api-reference/send/mailgun/messages/post-v3--domain-name--messages),
+[domain sending keys](https://documentation.mailgun.com/docs/mailgun/user-manual/api-key-mgmt/rbac-mgmt)
+and [regional endpoints](https://documentation.mailgun.com/docs/mailgun/api-reference/api-overview).
+
 Preserve existing keys and owner data. Configure other optional mail/model inputs
 through the supported runtime declaration and native workspace settings. Local
 development needs no mail account: its development transport suppresses email

@@ -1,4 +1,13 @@
 {
   "schemaVersion": 1,
-  "findings": []
+  "findings": [
+    {
+      "rule": "secret.assignment",
+      "path": "src/modules/legacy-import/door/media.ts",
+      "blob": "8d86edc5f5419c9e3bebcf6dfbd3e37ae974aebe",
+      "reason": "Deterministic nonsecret media-custody locator comparison; existing session/project authority independently controls access. Static source-owner inspection binds this exact blob; no credential or authorization material is embedded.",
+      "reviewer": "FV fleet review",
+      "date": "2026-11-05"
+    }
+  ]
 }

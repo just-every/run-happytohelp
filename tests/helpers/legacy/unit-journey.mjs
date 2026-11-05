@@ -2,14 +2,14 @@ import '../legacy-bundle.mjs'
 import assert from 'node:assert/strict'
 import {doorFixture} from './door-fixture.mjs'
 import {createHash} from 'node:crypto'
-import {canonicalJson} from '../../../src/modules/import-kit/src/provenance/identity.ts'
-import {keys,quote} from '../../../src/modules/legacy-import/door/schema.ts'
-import {prepareLegacyUnits,compileLegacyUnits} from '../../../src/modules/legacy-import/door/units.ts'
-import {legacyUnitDependencies} from '../../../src/modules/legacy-import/door/unit-dependencies.ts'
-import {decodeLegacy} from '../../../src/modules/legacy-import/door/format.ts'
-import {prepareLegacy,recordKey} from '../../../src/modules/legacy-import/door/bridge.ts'
-import {packageUpload} from '../../../src/modules/import-kit/src/door/package.ts'
-import {uploadRow} from '../../../src/modules/import-kit/src/door/uploads.ts'
+const {canonicalJson}=await import('../../../src/modules/import-kit/src/provenance/identity.ts')
+const {keys,quote}=await import('../../../src/modules/legacy-import/door/schema.ts')
+const {prepareLegacyUnits,compileLegacyUnits}=await import('../../../src/modules/legacy-import/door/units.ts')
+const {legacyUnitDependencies}=await import('../../../src/modules/legacy-import/door/unit-dependencies.ts')
+const {decodeLegacy}=await import('../../../src/modules/legacy-import/door/format.ts')
+const {prepareLegacy,recordKey}=await import('../../../src/modules/legacy-import/door/bridge.ts')
+const {packageUpload}=await import('../../../src/modules/import-kit/src/door/package.ts')
+const {uploadRow}=await import('../../../src/modules/import-kit/src/door/uploads.ts')
 
 const limits={maxBytes:16*1024*1024,maxRecords:100000,maxRecordBytes:1024*1024}
 export function unitFixture(email,options={}){

@@ -1,0 +1,40 @@
+{
+  "intake": "2026-11-05T23:50:00Z",
+  "base": {
+    "source": "c0539b0001d71a6246c755e100c47141f525bf5e",
+    "frozen_gate": "PASS",
+    "gate_terminal": "2026-11-05T23:45:31Z",
+    "rubric_sha256": "3950255af61be5cbf9c57f4839b42cf4edd92353b78600bd9fb9a1d645d6755b",
+    "lifetime_fix": "1of2",
+    "builder_ordinary": 42125479357,
+    "remaining": [
+      "fresh-main reconciliation",
+      "final exact ordinary and explicitjourneys=true/clean_bootstrap=false Verify",
+      "COMPLETE full-history publication PASS",
+      "guarded integration",
+      "accepted264805b3 donor reconciliation"
+    ]
+  },
+  "hh": {
+    "source": "f2cc65bc078d8a79f6c4051b407d68bed4d5d93c",
+    "native_slice_frozen_gate": "PASS",
+    "remaining": [
+      "owning reviewed-tree COMPLETE scan/final CI/integration",
+      "accepted264805b3 effective-byte reconciliation",
+      "sole pure native workunit compiler final pushed/qualified export"
+    ]
+  },
+  "business": [
+    "actual claimed destination adoption of sealed-review/signed approval/current native authority integration",
+    "combined HH release/pin/train",
+    "concrete approvals/real grants/imports/signed receipts",
+    "separate owner cutovers"
+  ],
+  "holds": [
+    "source",
+    "stack",
+    "review"
+  ],
+  "permission_for_real_import": false,
+  "source": "user-provided dependency result, no new gate observer queried"
+}

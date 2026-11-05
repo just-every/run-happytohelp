@@ -1,0 +1,11 @@
+{"event":"business.setup_check_pending","business_id":"b1a4f31e-e11b-4852-a78e-0ca6f5c75518","app":"lamp","task":"setup"}
+{"event":"business.setup_check_pending","business_id":"b1a4f31e-e11b-4852-a78e-0ca6f5c75518","app":"lamp","task":"provision"}
+✔ A self-hosted Business prepares stable public trust and requires genuine app owner evidence, preserving historical attestations (804.353229ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2210.758615

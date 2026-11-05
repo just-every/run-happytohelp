@@ -1,0 +1,5 @@
+
+> @management/service@0.1.0 check:d1-migrations /workspace/platform
+> node scripts/build/check-d1-migrations.mjs
+
+every migration applies through the D1 remote split

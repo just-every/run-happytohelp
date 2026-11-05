@@ -1,0 +1,44 @@
+[
+  {
+    "cwd": "/workspace/base",
+    "argv": [
+      "git",
+      "merge-base",
+      "--is-ancestor",
+      "264805b3d5f74fdb6934c2c2fb2c7c1a8f08d74e",
+      "c0539b0001d71a6246c755e100c47141f525bf5e"
+    ],
+    "exit": 1,
+    "at": "2026-11-05T23:45:25.453622+00:00",
+    "shallow_clone": true,
+    "interpretation": "not established by this shallow clone; no full-history ancestry claim"
+  },
+  {
+    "cwd": "/workspace/run-happytohelp",
+    "argv": [
+      "git",
+      "merge-base",
+      "--is-ancestor",
+      "95b43191938f0530f07c691e8638a26fe0930128",
+      "f2cc65bc078d8a79f6c4051b407d68bed4d5d93c"
+    ],
+    "exit": 1,
+    "at": "2026-11-05T23:45:25.456340+00:00",
+    "shallow_clone": true,
+    "interpretation": "not established by this shallow clone; no full-history ancestry claim"
+  },
+  {
+    "cwd": "/workspace/platform",
+    "argv": [
+      "git",
+      "merge-base",
+      "--is-ancestor",
+      "278601a20c5aab59cd4158b697471de0a49c1b75",
+      "HEAD"
+    ],
+    "exit": 0,
+    "at": "2026-11-05T23:45:25.458255+00:00",
+    "shallow_clone": true,
+    "interpretation": "ancestor confirmed"
+  }
+]

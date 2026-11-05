@@ -1,0 +1,145 @@
+{
+  "tag": "bz-bounded-arrangement-1",
+  "repository": "runeditrun/platform",
+  "branch": "cloud/bz-bounded-arrangement-1",
+  "head": "4d391be83d209caefb5c4c4d1e8396f287bc71d3",
+  "tree": "486471f972bab88e01836842ed8085efc6c32825",
+  "merged_main": "278601a20c5aab59cd4158b697471de0a49c1b75",
+  "worktree_clean": true,
+  "product_pushed": true,
+  "pr": null,
+  "pr_reason": "source/stack/review hold; no auto submission authorized",
+  "checks": [
+    {
+      "kind": "MECHANICAL",
+      "cwd": "/workspace/platform",
+      "argv": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "tests/core/business-executors.test.ts",
+        "tests/core/business-provisioning.test.ts",
+        "tests/core/business-catchup-withdrawal.test.ts",
+        "tests/core/operator-data-rights.test.ts"
+      ],
+      "exit": 0,
+      "started_at": "2026-11-05T23:09:11.650483+00:00",
+      "ended_at": "2026-11-05T23:11:38.648430+00:00",
+      "log": "touched-regressions.log"
+    },
+    {
+      "kind": "MECHANICAL",
+      "cwd": "/workspace/platform",
+      "argv": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=A self-hosted Business prepares stable public trust",
+        "tests/core/business-provisioning.test.ts"
+      ],
+      "exit": 0,
+      "started_at": "2026-11-05T23:33:09.066246+00:00",
+      "ended_at": "2026-11-05T23:33:11.662858+00:00",
+      "log": "selfhost-native-authority.log"
+    },
+    {
+      "kind": "MECHANICAL",
+      "cwd": "/workspace/platform",
+      "argv": [
+        "pnpm",
+        "sources",
+        "lock"
+      ],
+      "exit": 0,
+      "started_at": "2026-11-05T23:44:32.402912+00:00",
+      "ended_at": "2026-11-05T23:44:32.943455+00:00",
+      "log": "source-lock-r4.log"
+    },
+    {
+      "kind": "MECHANICAL",
+      "cwd": "/workspace/platform",
+      "argv": [
+        "pnpm",
+        "sources",
+        "check"
+      ],
+      "exit": 0,
+      "started_at": "2026-11-05T23:44:32.973426+00:00",
+      "ended_at": "2026-11-05T23:44:33.459267+00:00",
+      "log": "source-check-r4.log"
+    },
+    {
+      "kind": "MECHANICAL",
+      "cwd": "/workspace/platform",
+      "argv": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "tests/core/business-waves.test.ts"
+      ],
+      "exit": 0,
+      "started_at": "2026-11-05T23:44:33.525004+00:00",
+      "ended_at": "2026-11-05T23:45:11.532629+00:00",
+      "log": "corrected-base-public-flow-r5.log"
+    },
+    {
+      "kind": "MECHANICAL",
+      "cwd": "/workspace/platform",
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exit": 0,
+      "started_at": "2026-11-05T23:45:43.625042+00:00",
+      "ended_at": "2026-11-05T23:46:02.060456+00:00",
+      "log": "typecheck-candidate.log"
+    },
+    {
+      "kind": "MECHANICAL",
+      "cwd": "/workspace/platform",
+      "argv": [
+        "pnpm",
+        "check:d1-migrations"
+      ],
+      "exit": 0,
+      "started_at": "2026-11-05T23:46:02.086249+00:00",
+      "ended_at": "2026-11-05T23:46:02.806963+00:00",
+      "log": "d1-migrations-candidate.log"
+    },
+    {
+      "kind": "MECHANICAL",
+      "cwd": "/workspace/platform",
+      "argv": [
+        "python3",
+        "/home/agent/rer-consolidation/.tools/cloud-push.py",
+        "origin",
+        "cloud/bz-bounded-arrangement-1"
+      ],
+      "exit": 0,
+      "started_at": "2026-11-05T23:47:24.257669+00:00",
+      "ended_at": "2026-11-05T23:47:26.338560+00:00",
+      "log": "product-push-final.log"
+    }
+  ],
+  "ci_run_id": 42132056411,
+  "ci_status": "queued",
+  "ci_conclusion": null,
+  "qualification": "not awarded",
+  "real_import_permission": false,
+  "source_hold": "active",
+  "stack_hold": "active",
+  "review_hold": "active",
+  "clause_changes": [],
+  "product_read_only_repositories": {
+    "runeditrun/base": "264805b3d5f74fdb6934c2c2fb2c7c1a8f08d74e",
+    "just-every/run-happytohelp": "1038eabbc0a89f79f5c64b5b88b836cbd2d40828"
+  },
+  "at": "2026-11-05T23:48:07.360225+00:00",
+  "base_frozen_source_review": "PASS per user23:50Z intake"
+}

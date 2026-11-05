@@ -1,0 +1,4 @@
+
+> @management/service@0.1.0 typecheck /workspace/platform
+> tsc --noEmit
+

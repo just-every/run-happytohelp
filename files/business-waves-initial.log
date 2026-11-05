@@ -1,0 +1,35 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 1 error:
+/workspace/platform/tests/helpers/business-bounded-arrangement.ts:115:7: ERROR: The symbol "before" has already been declared
+    at failureErrorWithLog (/workspace/platform/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1748:15)
+    at /workspace/platform/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/workspace/platform/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/workspace/platform/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/workspace/platform/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:514:20)
+    at addChunk (node:internal/streams/readable:575:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:526:3)
+    at Readable.push (node:internal/streams/readable:406:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v26.8.1
+✖ tests/core/business-waves.test.ts (2888.669233ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2896.390348
+
+✖ failing tests:
+
+test at tests/core/business-waves.test.ts:1:1
+✖ tests/core/business-waves.test.ts (2888.669233ms)
+  'test failed'

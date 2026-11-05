@@ -1,0 +1,623 @@
+[
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 1,
+    "started_at": "2026-11-05T22:27:54.127111+00:00",
+    "ended_at": "2026-11-05T22:27:57.970420+00:00",
+    "log": "business-waves-path-failure.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 1,
+    "started_at": "2026-11-05T22:28:31.693908+00:00",
+    "ended_at": "2026-11-05T22:28:33.973808+00:00",
+    "log": "business-waves-r2.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T22:37:01.486289+00:00",
+    "ended_at": "2026-11-05T22:37:20.699798+00:00",
+    "log": "typecheck-r2.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 1,
+    "started_at": "2026-11-05T22:40:30.884911+00:00",
+    "ended_at": "2026-11-05T22:40:33.654785+00:00",
+    "log": "business-waves-r3.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 1,
+    "started_at": "2026-11-05T22:41:35.081353+00:00",
+    "ended_at": "2026-11-05T22:41:46.132722+00:00",
+    "log": "business-waves-r4.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 1,
+    "started_at": "2026-11-05T22:42:06.676059+00:00",
+    "ended_at": "2026-11-05T22:42:17.287064+00:00",
+    "log": "business-waves-r5.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 1,
+    "started_at": "2026-11-05T22:42:57.514216+00:00",
+    "ended_at": "2026-11-05T22:43:10.556422+00:00",
+    "log": "business-waves-r6.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T22:45:18.266904+00:00",
+    "ended_at": "2026-11-05T22:45:36.378208+00:00",
+    "log": "business-waves-r7.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T22:48:00.902590+00:00",
+    "ended_at": "2026-11-05T22:48:18.395537+00:00",
+    "log": "typecheck-r3.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T22:50:54.288916+00:00",
+    "ended_at": "2026-11-05T22:51:15.688240+00:00",
+    "log": "business-waves-r8.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:00:51.611441+00:00",
+    "ended_at": "2026-11-05T23:01:09.839556+00:00",
+    "log": "typecheck-r4.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:01:57.004975+00:00",
+    "ended_at": "2026-11-05T23:02:19.393475+00:00",
+    "log": "business-waves-r9.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:07:41.975331+00:00",
+    "ended_at": "2026-11-05T23:08:04.597394+00:00",
+    "log": "business-waves-r10.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-executors.test.ts",
+      "tests/core/business-provisioning.test.ts",
+      "tests/core/business-catchup-withdrawal.test.ts",
+      "tests/core/operator-data-rights.test.ts"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:09:11.650483+00:00",
+    "ended_at": "2026-11-05T23:11:38.648430+00:00",
+    "log": "touched-regressions.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:12:54.274958+00:00",
+    "ended_at": "2026-11-05T23:13:11.570472+00:00",
+    "log": "typecheck-final.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "node",
+      "scripts/build/check-d1-migrations.mjs"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:13:11.597901+00:00",
+    "ended_at": "2026-11-05T23:13:12.062139+00:00",
+    "log": "d1-migrations.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:26:24.058660+00:00",
+    "ended_at": "2026-11-05T23:26:41.617640+00:00",
+    "log": "typecheck-merged.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "node",
+      "scripts/build/check-d1-migrations.mjs"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:26:41.645638+00:00",
+    "ended_at": "2026-11-05T23:26:42.129493+00:00",
+    "log": "d1-migrations-merged.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts",
+      "tests/core/business-executors.test.ts",
+      "tests/core/business-provisioning.test.ts",
+      "tests/core/business-catchup-withdrawal.test.ts",
+      "tests/core/operator-data-rights.test.ts"
+    ],
+    "exit": 1,
+    "started_at": "2026-11-05T23:28:00.928570+00:00",
+    "ended_at": "2026-11-05T23:30:52.430686+00:00",
+    "log": "combined-main-regressions.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:32:51.361959+00:00",
+    "ended_at": "2026-11-05T23:33:09.038099+00:00",
+    "log": "typecheck-terminal.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "--test-name-pattern=A self-hosted Business prepares stable public trust",
+      "tests/core/business-provisioning.test.ts"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:33:09.066246+00:00",
+    "ended_at": "2026-11-05T23:33:11.662858+00:00",
+    "log": "selfhost-native-authority.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:33:11.690517+00:00",
+    "ended_at": "2026-11-05T23:33:33.893417+00:00",
+    "log": "bounded-public-terminal.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:39:37.114458+00:00",
+    "ended_at": "2026-11-05T23:39:54.476681+00:00",
+    "log": "corrected-base-typecheck.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "sources",
+      "lock"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:40:09.699718+00:00",
+    "ended_at": "2026-11-05T23:40:10.214884+00:00",
+    "log": "source-lock-final.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "sources",
+      "check"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:40:10.244865+00:00",
+    "ended_at": "2026-11-05T23:40:10.727773+00:00",
+    "log": "source-check-final.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 1,
+    "started_at": "2026-11-05T23:40:23.758033+00:00",
+    "ended_at": "2026-11-05T23:40:51.657038+00:00",
+    "log": "corrected-base-public-flow.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 1,
+    "started_at": "2026-11-05T23:41:46.403716+00:00",
+    "ended_at": "2026-11-05T23:42:13.460551+00:00",
+    "log": "corrected-base-public-flow-r2.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "sources",
+      "lock"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:42:35.264879+00:00",
+    "ended_at": "2026-11-05T23:42:35.737394+00:00",
+    "log": "source-lock-r2.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "sources",
+      "check"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:42:35.764664+00:00",
+    "ended_at": "2026-11-05T23:42:36.244467+00:00",
+    "log": "source-check-r2.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 1,
+    "started_at": "2026-11-05T23:42:36.318517+00:00",
+    "ended_at": "2026-11-05T23:43:04.585543+00:00",
+    "log": "corrected-base-public-flow-r3.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "sources",
+      "lock"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:43:42.666346+00:00",
+    "ended_at": "2026-11-05T23:43:43.284074+00:00",
+    "log": "source-lock-r3.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "sources",
+      "check"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:43:43.312661+00:00",
+    "ended_at": "2026-11-05T23:43:43.819827+00:00",
+    "log": "source-check-r3.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "git",
+      "fetch",
+      "--no-tags",
+      "origin",
+      "main"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:43:48.843761+00:00",
+    "ended_at": "2026-11-05T23:43:49.671063+00:00",
+    "log": "fresh-main-final.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 1,
+    "started_at": "2026-11-05T23:43:43.887301+00:00",
+    "ended_at": "2026-11-05T23:44:09.378294+00:00",
+    "log": "corrected-base-public-flow-r4.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "sources",
+      "lock"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:44:32.402912+00:00",
+    "ended_at": "2026-11-05T23:44:32.943455+00:00",
+    "log": "source-lock-r4.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "sources",
+      "check"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:44:32.973426+00:00",
+    "ended_at": "2026-11-05T23:44:33.459267+00:00",
+    "log": "source-check-r4.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:44:33.525004+00:00",
+    "ended_at": "2026-11-05T23:45:11.532629+00:00",
+    "log": "corrected-base-public-flow-r5.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:45:43.625042+00:00",
+    "ended_at": "2026-11-05T23:46:02.060456+00:00",
+    "log": "typecheck-candidate.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "check:d1-migrations"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:46:02.086249+00:00",
+    "ended_at": "2026-11-05T23:46:02.806963+00:00",
+    "log": "d1-migrations-candidate.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "git",
+      "fetch",
+      "--no-tags",
+      "origin",
+      "main"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:47:06.627557+00:00",
+    "ended_at": "2026-11-05T23:47:07.413714+00:00",
+    "log": "prepush-main.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "python3",
+      "/home/agent/rer-consolidation/.tools/cloud-push.py",
+      "origin",
+      "cloud/bz-bounded-arrangement-1"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:47:24.257669+00:00",
+    "ended_at": "2026-11-05T23:47:26.338560+00:00",
+    "log": "product-push-final.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "git",
+      "ls-remote",
+      "--refs",
+      "origin",
+      "refs/heads/cloud/bz-bounded-arrangement-1"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:47:35.082465+00:00",
+    "ended_at": "2026-11-05T23:47:36.065474+00:00",
+    "log": "remote-product-head.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "git",
+      "diff",
+      "--stat",
+      "origin/main...HEAD"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-05T23:48:07.387760+00:00",
+    "ended_at": "2026-11-05T23:48:07.411401+00:00",
+    "log": "own-product-diff.log"
+  }
+]

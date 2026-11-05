@@ -1,0 +1,20 @@
+[
+  {
+    "clone": "/workspace/platform",
+    "head": "4d391be83d209caefb5c4c4d1e8396f287bc71d3",
+    "status": "",
+    "branch": "cloud/bz-bounded-arrangement-1"
+  },
+  {
+    "clone": "/workspace/base",
+    "head": "264805b3d5f74fdb6934c2c2fb2c7c1a8f08d74e",
+    "status": "",
+    "branch": "cloud/bz-bounded-arrangement-1"
+  },
+  {
+    "clone": "/workspace/run-happytohelp",
+    "head": "1038eabbc0a89f79f5c64b5b88b836cbd2d40828",
+    "status": "",
+    "branch": "cloud/bz-bounded-arrangement-1"
+  }
+]

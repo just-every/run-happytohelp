@@ -1,0 +1,37 @@
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+✖ Business wave approval gates bounded, authorized import progression (710.163823ms)
+ℹ The actual bounded arrangement stays non-applying until destination review evidence and approval authority exist
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3506.644853
+
+✖ failing tests:
+
+test at tests/core/business-waves.test.ts:40:1
+✖ Business wave approval gates bounded, authorized import progression (710.163823ms)
+  Error [AggregateError]: The actual bounded arrangement stays non-applying until destination review evidence and approval authority exist
+      at foldCheckpoint (/workspace/platform/tests/core/fold-step.ts:74:29)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (/workspace/platform/tests/core/business-waves.test.ts:41:1)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    [errors]: [
+      AssertionError [ERR_ASSERTION]: {"error":"Ambiguous request path","code":"platform_flags_ambiguous_request_path","requestId":"f9930433-af22-48da-8bf2-497b2f21e3fb"}
+      
+      400 !== 409
+      
+          at json (/workspace/platform/tests/helpers/business-spool.ts:9:64)
+          at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+          at async boundedArrangementDoor (/workspace/platform/tests/helpers/business-bounded-arrangement.ts:37:16)
+          at async foldCheckpoint (/workspace/platform/tests/core/fold-step.ts:58:3)
+          at async TestContext.<anonymous> (/workspace/platform/tests/core/business-waves.test.ts:41:1)
+          at async Test.run (node:internal/test_runner/test:1409:7)
+          at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+    ]
+  }

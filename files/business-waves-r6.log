@@ -1,0 +1,37 @@
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+✖ Business wave approval gates bounded, authorized import progression (11420.901218ms)
+ℹ The actual bounded arrangement stays non-applying until destination review evidence and approval authority exist
+ℹ bounded arrangement: 10 actual signed status transports; no execution authority; previous migration ledger preserved
+ℹ Business separately approves actual Base execution children and completes only on destination aggregate reconciliation
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12631.000039
+
+✖ failing tests:
+
+test at tests/core/business-waves.test.ts:41:1
+✖ Business wave approval gates bounded, authorized import progression (11420.901218ms)
+  Error [AggregateError]: Business separately approves actual Base execution children and completes only on destination aggregate reconciliation
+      at foldCheckpoint (/workspace/platform/tests/core/fold-step.ts:74:29)
+      at async TestContext.<anonymous> (/workspace/platform/tests/core/business-waves.test.ts:43:1)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    [errors]: [
+      Error: import_door_too_large
+          at transport (/workspace/platform/tests/helpers/business-bounded-native.ts:76:40)
+          at async sendBoundedWaves (file:///workspace/platform/tests/fixtures/rer-grant-base/cli/business/bounded-waves.mjs:48:20)
+          at async boundedNativeDoor (/workspace/platform/tests/helpers/business-bounded-native.ts:135:18)
+          at async foldCheckpoint (/workspace/platform/tests/core/fold-step.ts:58:3)
+          at async TestContext.<anonymous> (/workspace/platform/tests/core/business-waves.test.ts:43:1)
+          at async Test.run (node:internal/test_runner/test:1409:7)
+          at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+    ]
+  }

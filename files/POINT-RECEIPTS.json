@@ -1,0 +1,43 @@
+{
+  "source_head": "4d391be83d209caefb5c4c4d1e8396f287bc71d3",
+  "cwd": "/workspace/platform",
+  "argv": [
+    "pnpm",
+    "exec",
+    "tsx",
+    "--test",
+    "--test-concurrency=1",
+    "tests/core/business-waves.test.ts"
+  ],
+  "exit": 0,
+  "log": "corrected-base-public-flow-r5.log",
+  "points": {
+    "1": [
+      "actual task HTTP/MCP arrangement",
+      "complete census/ordered descriptors from Base",
+      "nonapplying parent",
+      "prior ledger/data preserved"
+    ],
+    "2": [
+      "separate parent/children agent approvals",
+      "actual signed Base capabilities/current native approval authority",
+      "native-vs-source quota",
+      "foreign/changed/out-of-order/expiry/revocation/claim/policy refusal"
+    ],
+    "3": [
+      "partial native4 complete head null",
+      "lost-response replay has no duplicate provenance",
+      "all-child exact actual aggregate completion",
+      "nativeSuccess true and false preserved"
+    ],
+    "4": [
+      "global0/3 and0/4 inbounds",
+      "global1/3 and1/4 refused until actual independent authenticated judgment",
+      "self/altered/replayed/revoked judgment refusal",
+      "same namespace/lineage and unchanged targetless custody"
+    ]
+  },
+  "native_grouping": "tiny explicitly synthetic edition; no HH grouping claim",
+  "destination_storage": "real local SQLite/D1 limit port",
+  "qualification": "not independent acceptance"
+}

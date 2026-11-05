@@ -1,0 +1,39 @@
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+✖ Business wave approval gates bounded, authorized import progression (962.734698ms)
+ℹ The actual bounded arrangement stays non-applying until destination review evidence and approval authority exist
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1877.697163
+
+✖ failing tests:
+
+test at tests/core/business-waves.test.ts:40:1
+✖ Business wave approval gates bounded, authorized import progression (962.734698ms)
+  Error [AggregateError]: The actual bounded arrangement stays non-applying until destination review evidence and approval authority exist
+      at foldCheckpoint (/workspace/platform/tests/core/fold-step.ts:74:29)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (/workspace/platform/tests/core/business-waves.test.ts:41:1)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    [errors]: [
+      AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+      + actual - expected
+      
+      + 'business_protocol'
+      - 'business_bounded_authority_changed'
+                  ^
+      
+          at boundedArrangementDoor (/workspace/platform/tests/helpers/business-bounded-arrangement.ts:117:9)
+          at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+          at async foldCheckpoint (/workspace/platform/tests/core/fold-step.ts:58:3)
+          at async TestContext.<anonymous> (/workspace/platform/tests/core/business-waves.test.ts:41:1)
+          at async Test.run (node:internal/test_runner/test:1409:7)
+          at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+    ]
+  }

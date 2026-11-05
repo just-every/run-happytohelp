@@ -1,0 +1,13 @@
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+PUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/bz-bounded-arrangement-1
+PUSH_CREDENTIAL sha256_16=8addacf6ac95b0bc bundle_file_age_seconds=4170 token_issue_age=unknown
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+To https://github.com/runeditrun/platform.git
+!	HEAD:refs/heads/cloud/bz-bounded-arrangement-1	[remote rejected] (failure)
+Done
+remote: fatal error in commit_refs        
+error: failed to push some refs to 'https://github.com/runeditrun/platform.git'
+PUSH_REJECTED attempt=1 exit=1 HTTP=unknown (not supplied by Git) command=git push --porcelain origin HEAD:refs/heads/cloud/bz-bounded-arrangement-1
+BUNDLE path=/home/agent/rer-consolidation/work/push-rescue/cloud_bz-bounded-arrangement-1-20261105T232334Z-62983a25975f.bundle head=62983a25975f714b28b567c9c9ea32bb50b9419b sha256=01846d1fee26a2877ec17a5288445a546f512d009c14317689ba7911efddc977 verified=true
+Preserve this VM/clone and retrieve the bundle before ending its retention period.
+BLOCKED command=git push --porcelain origin HEAD:refs/heads/cloud/bz-bounded-arrangement-1 HTTP=unknown (not supplied by Git); retain verified bundle and clone

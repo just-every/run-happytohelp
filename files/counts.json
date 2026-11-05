@@ -1,0 +1,53 @@
+{
+  "business_wave_test_registrations": {
+    "before": 1,
+    "after": 1
+  },
+  "business_wave_checkpoints": {
+    "before": 4,
+    "after": 7
+  },
+  "contract_statuses": {
+    "before": {
+      "partial": 7
+    },
+    "after": {
+      "partial": 7
+    }
+  },
+  "clause_changes": [],
+  "migration": {
+    "new": "144_business_bounded_arrangements.sql",
+    "existing_migration_edits": [],
+    "previous_max": 143,
+    "new_tables": 5
+  },
+  "source_native_probe": {
+    "source": 3,
+    "native": 6,
+    "execution_maxRecords": 2,
+    "native_before": 0,
+    "partial_native": 4,
+    "partial_complete_head": null,
+    "reconciled_native": 6,
+    "global_catchup": {
+      "in_bound": "0/3",
+      "out_of_bound": "1/3"
+    }
+  },
+  "merged_main": "278601a20c5aab59cd4158b697471de0a49c1b75",
+  "contract_sha256": {
+    "main": "938610898634010206152e5e473eba5927020ecedf06fd55e58b65568c8ab535",
+    "candidate": "938610898634010206152e5e473eba5927020ecedf06fd55e58b65568c8ab535"
+  },
+  "retained_source_probe": {
+    "source": 4,
+    "native": 6,
+    "execution_maxRecords": 2,
+    "nativeSuccess": false,
+    "aggregateSuccess": true,
+    "in_bound": "0/4",
+    "out_of_bound": "1/4",
+    "children": 3
+  }
+}

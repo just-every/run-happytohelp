@@ -1,0 +1,32 @@
+[
+  {
+    "number": 1,
+    "argv": [
+      "gh",
+      "api",
+      "repos/runeditrun/platform/actions/runs?head_sha=4d391be83d209caefb5c4c4d1e8396f287bc71d3&per_page=100",
+      "--jq",
+      ".workflow_runs | map({id,name,status,conclusion,head_sha,html_url})"
+    ],
+    "cwd": "/workspace/platform",
+    "exit": 0,
+    "at": "2026-11-05T23:47:35.055380+00:00",
+    "epoch": 1793922454.3845906,
+    "file": "verify-discovery.json"
+  },
+  {
+    "number": 2,
+    "argv": [
+      "gh",
+      "api",
+      "repos/runeditrun/platform/actions/runs/42132056411",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "cwd": "/workspace/platform",
+    "exit": 0,
+    "at": "2026-11-05T23:52:44.543776+00:00",
+    "epoch": 1793922763.955827,
+    "file": "verify-poll-1.json"
+  }
+]

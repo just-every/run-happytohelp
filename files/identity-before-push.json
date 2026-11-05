@@ -1,0 +1,14 @@
+{
+  "cwd": "/workspace/platform",
+  "argv": [
+    "git",
+    "log",
+    "origin/main..HEAD",
+    "--format=%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)"
+  ],
+  "exit": 0,
+  "candidate_count": 6,
+  "all_parents": true,
+  "trailers": [],
+  "head": "4d391be83d209caefb5c4c4d1e8396f287bc71d3"
+}

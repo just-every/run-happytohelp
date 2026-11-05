@@ -1,0 +1,8 @@
+{
+  "cwd": "/workspace/platform",
+  "scope": "own diff origin/main...HEAD and regular packet files",
+  "at": "2026-11-05T23:47:24.231456+00:00",
+  "findings": [],
+  "exit": 0,
+  "notes": "No credential values logged; not fleet COMPLETE-history scan."
+}

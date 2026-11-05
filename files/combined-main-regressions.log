@@ -1,0 +1,1059 @@
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+✔ catch-up mismatch never withdraws a reused owner-approved plan with work in progress (687.598074ms)
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+✔ a newly previewed mismatch is preserved when any platform record holds it (521.468149ms)
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+✔ a newly previewed unheld mismatch uses only the cancel grant (555.147537ms)
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+✔ the ordinary owner-approved catch-up still applies and reconciles (561.153258ms)
+✔ A computer starts its own pairing, its owner approves the code once, and the credential is collected exactly once (490.860893ms)
+✔ Only an owner of that Business sees, approves or refuses a pairing; every refusal is typed, bounded and changes nothing (533.755572ms)
+✔ Client task event IDs cannot occupy server transition keys or another task scope (483.908961ms)
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+✔ A paired computer leases and completes checked work: profile, consented scan and classification (6154.749262ms)
+ℹ pre-upgrade raw retries: signals=1; quota=184 unchanged; events=1; completion=200; other-task raw key is independent
+ℹ self-host stale/replayed ACKs refused=1+1/2; stale proposals=0
+✔ A paired computer reads only its own Business public identity as the owner edits the profile (511.601871ms)
+ℹ before profile edit {"id":"3f45ce1a-d8cf-4d38-b3ae-04dd58f57456","name":"Synthetic Harbour Studio","legal_name":null,"brand_color":null,"logo_url":null}
+ℹ after profile edit {"id":"3f45ce1a-d8cf-4d38-b3ae-04dd58f57456","name":"Synthetic Harbour Collective","legal_name":"Synthetic Harbour Pty Ltd","brand_color":"#286a58","logo_url":"https://images.example.com/synthetic-harbour-logo.png"}; private profile fields absent
+ℹ second Business device {"id":"3435b25d-c378-4bf5-b1ef-bffb2fac7d19","name":"Synthetic Fern Workshop","legal_name":null,"brand_color":null,"logo_url":null}
+ℹ uploaded HTTPS logo returned; asset reference yields logo_url=null; browser-only self=401; executor list projection unchanged
+✔ Device credentials cannot submit browser consent or complete human-only tasks (593.258822ms)
+ℹ first scan with no tool names after consent: complete=200 (was 409 business_completion_check_pending)
+PROBE N17-3 DELETE /api/business/:id/executors/:executorId -> mails=1; same DELETE repeated -> mails=0; self DELETE /api/business/executors/self -> mails=1
+✔ Revocation invalidates the device and all outstanding task and MCP tokens on their next call (509.581973ms)
+ℹ browser revocation, self revocation and unused-device expiry: GET self=401
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.owner_mail.failed","key":"computer-revoked:005f0430-efae-4e8a-bb4d-d9607838c368","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.owner_mail.failed","key":"computer-revoked:1539d467-1d43-42a6-ac13-b222131b3406","error_type":"Error"}
+{"event":"business.owner_mail.failed","key":"computer-revoked:f289d784-4d92-4d2e-b44e-9df21942a57a","error_type":"Error"}
+✔ MCP refuses human answers and exposes templates without raw evidence; tokens stay scoped and expire (3741.217436ms)
+ℹ Paused agents receive the owner pause notice through MCP and the CLI client; Resume restores work
+ℹ paused MCP notice (since=true): PASS
+ℹ paused CLI server reason (since=true): PASS
+ℹ paused MCP notice (since=false): PASS
+ℹ paused CLI server reason (since=false): PASS
+ℹ Resume restores the same MCP and CLI questions: PASS
+ℹ A case is claimed only under a confirmed policy by its own agent, released to a person on failure, and read and reported through MCP
+ℹ A computer grant’s byte allowance debits each MCP resource read once by its operation id, refuses whole when it does not fit, and stays in its Business
+ℹ grant bytes: 5/4/3 -> complete/complete/budget_exhausted; ledger 5->1, 4->0, 3 unchanged; replay unchanged
+ℹ A seed registers its debit key in its adoption answer, and bound agent access is issued only for a live paired computer of that seed
+ℹ seed bytes binding: key registered only by an adopted answer; bound access names a live computer; every other computer refused with no row
+ℹ A seed’s signed debit for a read under bound access posts to the computer’s byte grant once by its operation id, answers a Business-signed receipt, and is otherwise refused
+ℹ seed bytes: probe 5/4/3 -> complete/complete/budget_exhausted; ledger 5->1, 4->0, 3 unchanged; replay unchanged; shared allowance with native reads
+ℹ idle-expired device: GET self=401
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+✔ A leased export reads the closed inputs its vendor needs, from the Business’s evidence or the owner’s one answer, and nothing else reads them (8742.865842ms)
+ℹ Sentry bound refusal: RECORD_LIMIT; narrowed complete bundle: 26 issues plus project and release; no native import
+{"event":"business.setup_check_pending","business_id":"9c7d05f1-65c3-4fed-bf12-69952f0bde13","app":"lamp","task":"provision"}
+S02_HTTP unpaid-tasks status=200
+{"event":"business.owner_mail.failed","key":"payment:cs_business_1","error_type":"Error"}
+{"event":"business.setup_check_pending","business_id":"ce37b973-75cd-472b-9387-363225fc8e42","app":"errors-workbench","task":"provision"}
+S02_HTTP provided before-pass status=creating fields=none action=none
+{"event":"business.setup_check_pending","business_id":"ce37b973-75cd-472b-9387-363225fc8e42","app":"errors-workbench","task":"provision"}
+S02_HTTP provided PASS builds=1 optionalStops=0 secretValuesExposed=0 answerSources=business,rer,generated
+{"event":"business.owner_mail.failed","key":"payment:cs_business_1","error_type":"Error"}
+{"event":"business.setup_check_pending","business_id":"41568946-81ee-462b-912d-dfcb575b408c","app":"errors-workbench","task":"provision"}
+S02_HTTP missing before-pass status=needs_you fields=SERVICE_REGION action=Answer Service region for this app.
+S02_HTTP missing stopped code=setup_answers_required fields=[{"name":"SERVICE_REGION","label":"Service region","kind":"text"}]
+{"event":"business.setup_check_pending","business_id":"41568946-81ee-462b-912d-dfcb575b408c","app":"errors-workbench","task":"provision"}
+S02_HTTP missing PASS builds=1 optionalStops=0 secretValuesExposed=0 answerSources=business,rer,owner,generated
+{"event":"business.owner_mail.failed","key":"payment:cs_business_1","error_type":"Error"}
+{"event":"business.setup_check_pending","business_id":"417d4b0d-abcf-4a1e-b4d6-ce2c96084d22","app":"errors-workbench","task":"provision"}
+{"event":"delivery.build_after_settings","installation_id":"9894e097-a002-4df8-8d1d-76fb94a897e1","status":202,"dispatched":true}
+S02_HTTP stored before-pass status=building fields=none action=none
+{"event":"business.setup_check_pending","business_id":"417d4b0d-abcf-4a1e-b4d6-ce2c96084d22","app":"errors-workbench","task":"provision"}
+S02_B1 {"afterSave":"Owner Custom Name","afterPass":"Owner Custom Name","profile":{"value":"Owner Custom Name","profile":"Acme Shared Name","overridden":true},"dispatches":1}
+{"event":"broker.prepare_phase","run_id":"77","phase":"provenance","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"transfer","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"validation","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"inspect_get","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"retention","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"retained_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"retained_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"recording","elapsed_ms":0}
+{"event":"broker.prepare_phase","run_id":"77","phase":"complete","elapsed_ms":0}
+S02_B1 PASS saved=Owner Custom Name firstPass=Owner Custom Name overridden=true firstBuild=Owner Custom Name
+S02_HTTP stored PASS builds=1 optionalStops=0 secretValuesExposed=0 answerSources=business,rer,stored,generated
+{"event":"business.owner_mail.failed","key":"payment:cs_business_1","error_type":"Error"}
+{"event":"business.setup_check_pending","business_id":"97f8198f-d300-4df7-a2b6-d9b052c522a4","app":"errors-workbench","task":"provision"}
+S02_HTTP secret before-pass status=needs_you fields=none action=Add Owner access key in the app’s settings.
+S02_HTTP secret stopped code=app_secrets_required fields=[{"name":"OWNER_ACCESS_KEY","label":"Owner access key","kind":"secret"}]
+{"event":"delivery.build_after_settings","installation_id":"bd45dc0d-6eed-4c36-990e-301f1ddd027a","status":202,"dispatched":true}
+{"event":"business.setup_check_pending","business_id":"97f8198f-d300-4df7-a2b6-d9b052c522a4","app":"errors-workbench","task":"provision"}
+S02_HTTP secret PASS builds=1 optionalStops=0 secretValuesExposed=0 answerSources=business,rer,generated,stored
+{"event":"business.setup_check_pending","business_id":"e97326ea-9ba3-4bf5-aad6-67f8ad9f94c5","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"e97326ea-9ba3-4bf5-aad6-67f8ad9f94c5","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"e97326ea-9ba3-4bf5-aad6-67f8ad9f94c5","app":"errors-workbench","task":"provision"}
+PREPARE_REFUSAL_PROBE {"refused":true,"unavailable":false,"first":"plan_spec_mismatch","at_deadline":"plan_spec_mismatch","observed_run":"42","dispatch_state":"ended","dispatches":1}
+{"event":"business.setup_check_pending","business_id":"7950089a-f999-49ed-98a0-17dae6991335","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"7950089a-f999-49ed-98a0-17dae6991335","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"7950089a-f999-49ed-98a0-17dae6991335","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"7950089a-f999-49ed-98a0-17dae6991335","app":"errors-workbench","task":"provision"}
+PREPARE_REFUSAL_PROBE {"refused":false,"unavailable":false,"first":null,"at_deadline":"step_deadline_exceeded","observed_run":null,"dispatch_state":"dispatched","dispatches":1}
+{"event":"business.setup_check_pending","business_id":"704cb6c3-7307-42eb-8faa-ad60a1f7f4b1","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"704cb6c3-7307-42eb-8faa-ad60a1f7f4b1","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"704cb6c3-7307-42eb-8faa-ad60a1f7f4b1","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"704cb6c3-7307-42eb-8faa-ad60a1f7f4b1","app":"errors-workbench","task":"provision"}
+PREPARE_REFUSAL_PROBE {"refused":false,"unavailable":true,"first":null,"at_deadline":"step_deadline_exceeded","observed_run":null,"dispatch_state":"dispatched","dispatches":1}
+{"event":"business.setup_check_pending","business_id":"6d3b3a68-f24c-453b-b76b-9e124931bf5e","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"6d3b3a68-f24c-453b-b76b-9e124931bf5e","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"6d3b3a68-f24c-453b-b76b-9e124931bf5e","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"ede475b0-596a-42d9-81f9-f102dcef5210","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"ede475b0-596a-42d9-81f9-f102dcef5210","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"ede475b0-596a-42d9-81f9-f102dcef5210","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"26f16fa4-5568-4473-96f3-8eac446746ce","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"26f16fa4-5568-4473-96f3-8eac446746ce","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"26f16fa4-5568-4473-96f3-8eac446746ce","app":"errors-workbench","task":"provision"}
+REPOSITORY_PROGRESS E1 PASS elapsed_ms=243000 attempts=2 first_files_ms=174000 copied=2647/2647 step=build presses=0 failure=none
+{"event":"business.setup_check_pending","business_id":"0951a747-5e96-4d6b-889d-c506300e84de","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"0951a747-5e96-4d6b-889d-c506300e84de","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"0951a747-5e96-4d6b-889d-c506300e84de","app":"errors-workbench","task":"provision"}
+{"event":"delivery.repository_copy_timed_out","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","phase":"prepare","progressSaved":false,"failures":1}
+{"event":"delivery.repository_copy_attempt","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","outcome":"timed_out","copied":0,"total":0,"retryAt":1793921561034,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"business.setup_check_pending","business_id":"0951a747-5e96-4d6b-889d-c506300e84de","app":"errors-workbench","task":"provision"}
+{"event":"delivery.repository_copy_timed_out","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","phase":"prepare","progressSaved":false,"failures":2}
+{"event":"delivery.repository_copy_attempt","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","outcome":"timed_out","copied":0,"total":0,"retryAt":1793921801034,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"business.setup_check_pending","business_id":"0951a747-5e96-4d6b-889d-c506300e84de","app":"errors-workbench","task":"provision"}
+{"event":"delivery.repository_copy_timed_out","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","phase":"prepare","progressSaved":false,"failures":1}
+{"event":"delivery.repository_copy_attempt","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","outcome":"timed_out","copied":0,"total":0,"retryAt":1793922041034,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_timed_out","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","phase":"prepare","progressSaved":false,"failures":2}
+{"event":"delivery.repository_copy_attempt","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","outcome":"timed_out","copied":0,"total":0,"retryAt":1793922281034,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+REPOSITORY_PROGRESS E2 spent code=copy_stalled try_again=false reply_by=2026-11-06T23:43:41.034Z task=with_us operator_mails=1->1 second_retry=409:business_publish_retry_used
+{"event":"delivery.repository_copy_timed_out","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","phase":"prepare","progressSaved":false,"failures":3}
+{"event":"delivery.repository_copy_attempt","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","outcome":"timed_out","copied":0,"total":0,"retryAt":1793922581034,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_timed_out","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","phase":"prepare","progressSaved":false,"failures":4}
+{"event":"delivery.repository_copy_attempt","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","outcome":"timed_out","copied":0,"total":0,"retryAt":1793922821034,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_timed_out","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","phase":"prepare","progressSaved":false,"failures":5}
+{"event":"delivery.repository_copy_attempt","installationId":"6f912e51-72ef-485b-af98-25fe9f010edb","outcome":"timed_out","copied":0,"total":0,"retryAt":1793923061034,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+REPOSITORY_PROGRESS E2 held codes=[copy_stalled,retry_limit] copy_stop=retry_limit with_us=12/12 presses=[409,409,409,409,409,409,409,409,409,409,409,409] accepted=0 attempts_after_stop=0 copy=failed:4 operator_mails=1 last=retry_limit:false
+REPOSITORY_PROGRESS E2 PASS stopped_ms=420000 code=copy_stalled retryable=true copied=0 try_again=new_attempt spent=with_us held=retry_limit
+{"event":"business.setup_check_pending","business_id":"acb4c612-5ffa-448f-88f1-8e361e633352","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"acb4c612-5ffa-448f-88f1-8e361e633352","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"acb4c612-5ffa-448f-88f1-8e361e633352","app":"errors-workbench","task":"provision"}
+{"event":"delivery.repository_copy_attempt","installationId":"f311f736-3831-4b3e-8f64-5765bd73517f","outcome":"rate_limited","copied":0,"total":0,"retryAt":1793922022602,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":0},"pushes":0,"pushedBytes":0}
+{"event":"business.setup_check_pending","business_id":"acb4c612-5ffa-448f-88f1-8e361e633352","app":"errors-workbench","task":"provision"}
+{"event":"delivery.repository_copy_attempt","installationId":"f311f736-3831-4b3e-8f64-5765bd73517f","outcome":"rate_limited","copied":0,"total":0,"retryAt":1793922082602,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":0},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_attempt","installationId":"f311f736-3831-4b3e-8f64-5765bd73517f","outcome":"error","copiedBefore":0,"phase":"prepare","ms":{"prepare":0},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_attempt","installationId":"f311f736-3831-4b3e-8f64-5765bd73517f","outcome":"error","copiedBefore":0,"phase":"prepare","ms":{"prepare":0},"pushes":0,"pushedBytes":0}
+REPOSITORY_PROGRESS E3 spent code=forbidden try_again=false reply_by=2026-11-06T23:41:22.602Z task=with_us operator_mails=1->1 second_retry=409:business_publish_retry_used
+REPOSITORY_PROGRESS E3 PASS rate_limited=retry_at secondary=retry_at refused=forbidden refused_again=with_us
+{"event":"business.setup_check_pending","business_id":"7e17ef20-9887-4d2c-be75-5276b46f9c60","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"7e17ef20-9887-4d2c-be75-5276b46f9c60","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"7e17ef20-9887-4d2c-be75-5276b46f9c60","app":"errors-workbench","task":"provision"}
+{"event":"delivery.repository_copy_failed","installationId":"42d41981-ccf4-4db0-a325-9f0ad3429053","failures":1,"error":"network connection lost"}
+REPOSITORY_PROGRESS E4 blob_reads=[85,0] listings=[1,0] lost=true kept=3/3 pass_ms=310000 pass_failure=none attempt2=complete copied=2647/2647 kept_after=0
+{"event":"business.setup_check_pending","business_id":"647fe082-6a06-43a7-9837-515dfa6c1a87","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"647fe082-6a06-43a7-9837-515dfa6c1a87","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"647fe082-6a06-43a7-9837-515dfa6c1a87","app":"errors-workbench","task":"provision"}
+{"event":"delivery.repository_copy_timed_out","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","phase":"prepare","progressSaved":false,"failures":1}
+{"event":"delivery.repository_copy_attempt","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","outcome":"timed_out","copied":0,"total":0,"retryAt":1793921566269,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"business.setup_check_pending","business_id":"647fe082-6a06-43a7-9837-515dfa6c1a87","app":"errors-workbench","task":"provision"}
+{"event":"delivery.repository_copy_timed_out","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","phase":"prepare","progressSaved":false,"failures":2}
+{"event":"delivery.repository_copy_attempt","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","outcome":"timed_out","copied":0,"total":0,"retryAt":1793921806269,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_timed_out","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","phase":"prepare","progressSaved":false,"failures":3}
+{"event":"delivery.repository_copy_attempt","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","outcome":"timed_out","copied":0,"total":0,"retryAt":1793922106269,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_timed_out","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","phase":"prepare","progressSaved":false,"failures":4}
+{"event":"delivery.repository_copy_attempt","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","outcome":"timed_out","copied":0,"total":0,"retryAt":1793922346269,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_timed_out","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","phase":"prepare","progressSaved":false,"failures":5}
+{"event":"delivery.repository_copy_attempt","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","outcome":"timed_out","copied":0,"total":0,"retryAt":1793922586269,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+REPOSITORY_PROGRESS E5 away code=retry_limit retryable=true try_again=true status=stopped copy=failed press=200 claim=true resumed=queued:0
+{"event":"delivery.repository_copy_timed_out","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","phase":"prepare","progressSaved":false,"failures":1}
+{"event":"delivery.repository_copy_attempt","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","outcome":"timed_out","copied":0,"total":0,"retryAt":1793922766269,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_timed_out","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","phase":"prepare","progressSaved":false,"failures":2}
+{"event":"delivery.repository_copy_attempt","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","outcome":"timed_out","copied":0,"total":0,"retryAt":1793923006269,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+REPOSITORY_PROGRESS E5 spent code=copy_stalled try_again=false reply_by=2026-11-06T23:55:46.269Z task=with_us operator_mails=1->1 second_retry=409:business_publish_retry_used
+{"event":"delivery.repository_copy_timed_out","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","phase":"prepare","progressSaved":false,"failures":3}
+{"event":"delivery.repository_copy_attempt","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","outcome":"timed_out","copied":0,"total":0,"retryAt":1793923306269,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_timed_out","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","phase":"prepare","progressSaved":false,"failures":4}
+{"event":"delivery.repository_copy_attempt","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","outcome":"timed_out","copied":0,"total":0,"retryAt":1793923546269,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_timed_out","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","phase":"prepare","progressSaved":false,"failures":5}
+{"event":"delivery.repository_copy_attempt","installationId":"99740fed-7e2b-43cf-bbff-c3a5fb34c59a","outcome":"timed_out","copied":0,"total":0,"retryAt":1793923786269,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+REPOSITORY_PROGRESS E5 held codes=[copy_stalled,retry_limit] copy_stop=retry_limit with_us=12/12 presses=[409,409,409,409,409,409,409,409,409,409,409,409] accepted=0 attempts_after_stop=0 copy=failed:4 operator_mails=1 last=retry_limit:false
+REPOSITORY_PROGRESS E5 PASS away=retry_limit try_again=claimed spent=with_us held=retry_limit
+{"event":"business.setup_check_pending","business_id":"f03ca842-1f70-449b-9499-a42472044acb","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f03ca842-1f70-449b-9499-a42472044acb","app":"errors-workbench","task":"provision"}
+{"event":"delivery.repository_copy_attempt","installationId":"cc18d483-b5bf-4a1d-9fe9-a329f127cbe6","outcome":"timed_out","copied":0,"total":0,"retryAt":1793921568057,"counted":true,"copiedBefore":0,"phase":"prepare","ms":{"prepare":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_attempt","installationId":"cc18d483-b5bf-4a1d-9fe9-a329f127cbe6","outcome":"timed_out","copied":0,"total":85,"retryAt":1793921748057,"counted":false,"copiedBefore":0,"phase":"push","ms":{"prepare":0,"commit":180000,"push":0},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_attempt","installationId":"cc18d483-b5bf-4a1d-9fe9-a329f127cbe6","outcome":"timed_out","copied":0,"total":85,"retryAt":1793921928057,"counted":false,"copiedBefore":0,"phase":"push","ms":{"prepare":0,"commit":0,"push":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_attempt","installationId":"cc18d483-b5bf-4a1d-9fe9-a329f127cbe6","outcome":"timed_out","copied":0,"total":85,"retryAt":1793922108057,"counted":false,"copiedBefore":0,"phase":"record","ms":{"prepare":0,"record":180000},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_attempt","installationId":"cc18d483-b5bf-4a1d-9fe9-a329f127cbe6","outcome":"complete","copied":85,"total":85,"copiedBefore":0,"phase":"record","ms":{"prepare":0,"record":0},"pushes":0,"pushedBytes":0}
+COPY_PROOF blobs=84 rounds=3 checks_per_round=1 resume_blob_reads=0 pushes=1 failures_without_progress=1 failures_with_progress=1
+{"event":"business.setup_check_pending","business_id":"dfa89b99-3b76-4d28-a5b2-9f065a4267e2","app":"errors-workbench","task":"provision"}
+{"event":"delivery.build_after_settings","installation_id":"0558634e-214f-4ed0-ad7b-1d18a0fad9c1","status":202,"dispatched":true}
+{"event":"business.setup_check_pending","business_id":"dfa89b99-3b76-4d28-a5b2-9f065a4267e2","app":"errors-workbench","task":"provision"}
+INSTALL_STATE settings → Building → Checking → Publish → Ready; Tasks and Overview agree without retry
+{"event":"business.setup_check_pending","business_id":"a807b338-3338-4c6f-b14d-5476831c1260","app":"errors-workbench","task":"provision"}
+PROBE 4 settings {"stage":"creating","status":"creating","owner_action":null,"failure":null,"publish_failure":null,"degraded":false,"task":"creating"}
+{"event":"business.setup_check_pending","business_id":"a807b338-3338-4c6f-b14d-5476831c1260","app":"errors-workbench","task":"provision"}
+PROBE 4 prepared {"stage":"verifying","status":"publishing","owner_action":null,"failure":null,"publish_failure":null,"degraded":false,"task":"publishing","readyToPublishMails":0}
+{"event":"business.setup_check_pending","business_id":"a807b338-3338-4c6f-b14d-5476831c1260","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a807b338-3338-4c6f-b14d-5476831c1260","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a807b338-3338-4c6f-b14d-5476831c1260","app":"errors-workbench","task":"provision"}
+PROBE 3 deadline-told {"step":"publish","firstDeadline":"2026-11-05T23:38:50.147Z","deadline":"2026-11-05T23:39:50.147Z","promised":"2026-11-05T23:38:50.147Z"}
+{"event":"business.setup_check_pending","business_id":"a807b338-3338-4c6f-b14d-5476831c1260","app":"errors-workbench","task":"provision"}
+PROBE U-10 ready-by-moved {"first":"2026-11-05T23:30:50.147Z","readyBy":"2026-11-05T23:46:20.147Z","firstEstimate":"2026-11-05T23:30:50.147Z","delay":{"step":"publish","because":"publishing the first version is still making progress past its estimate"}}
+PROBE 2 degraded-window {"stage":"verifying","status":"publishing","owner_action":null,"failure":null,"publish_failure":null,"degraded":true,"until":"2026-11-05T23:40:20.147Z","failureMails":0}
+PROBE 1 failure-shown {"stage":"failed","status":"stopped","owner_action":null,"failure":"publish/publication_failed","publish_failure":{"release_id":"62b219b5-b491-44cb-9779-5a77ad9b43a0","state":"verification_failed","stalled":false,"try_again":true,"tried_at":null,"reply_by":null},"degraded":true,"task":"stopped","mailedFailed":["62b219b5-b491-44cb-9779-5a77ad9b43a0"]}
+PROBE 2 no-false-calm {"stage":"failed","failureStep":"publish","mailRelease":"62b219b5-b491-44cb-9779-5a77ad9b43a0","pageRelease":"62b219b5-b491-44cb-9779-5a77ad9b43a0"}
+{"event":"business.setup_check_pending","business_id":"a807b338-3338-4c6f-b14d-5476831c1260","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a807b338-3338-4c6f-b14d-5476831c1260","app":"errors-workbench","task":"provision"}
+PROBE 1 try-again {"retry":200,"rechecked":true,"stage":"failed","status":"with_us","owner_action":null,"failure":"publish/publication_failed","publish_failure":{"release_id":"62b219b5-b491-44cb-9779-5a77ad9b43a0","state":"verification_failed","stalled":false,"try_again":false,"tried_at":"2026-11-05T23:50:20.148Z","reply_by":"2026-11-06T23:50:20.148Z"},"degraded":true,"operatorMails":1,"secondTryAgain":409}
+PROBE 3 spent-told {"task":"with_us","ownerQueue":["export.inputs"]}
+{"event":"business.setup_check_pending","business_id":"43991471-c53d-410d-be84-b03591af7a48","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"43991471-c53d-410d-be84-b03591af7a48","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"43991471-c53d-410d-be84-b03591af7a48","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"43991471-c53d-410d-be84-b03591af7a48","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"43991471-c53d-410d-be84-b03591af7a48","app":"errors-workbench","task":"provision"}
+PROBE 2 stalled {"stage":"failed","status":"stopped","failure":"publish/step_deadline_exceeded","publish_failure":{"release_id":"4d656de8-3265-47c6-ae6b-47bb9a3afa4b","state":"deploying","stalled":true,"try_again":true,"tried_at":null,"reply_by":null},"degraded":false,"degraded_until":null,"release":"deploying","task":"stopped","ownerWaitMails":1}
+{"event":"business.setup_check_pending","business_id":"43991471-c53d-410d-be84-b03591af7a48","app":"errors-workbench","task":"provision"}
+PROBE 2 try-again {"retry":200,"stage":"verifying","status":"publishing","failure":null,"publish_failure":null,"degraded":false,"degraded_until":null,"step":"publish","deadline":"2026-11-05T23:49:52.412Z"}
+{"event":"business.setup_check_pending","business_id":"43991471-c53d-410d-be84-b03591af7a48","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"43991471-c53d-410d-be84-b03591af7a48","app":"errors-workbench","task":"provision"}
+PROBE 4 degraded-no-window {"stage":"verifying","status":"publishing","failure":null,"publish_failure":null,"degraded":true,"degraded_until":null,"step":"claim","deadline":"2026-11-05T23:44:52.412Z"}
+PROBE 2 stalled-again {"stage":"failed","status":"stopped","failure":"claim/step_deadline_exceeded","publish_failure":{"release_id":"4d656de8-3265-47c6-ae6b-47bb9a3afa4b","state":"deploying","stalled":true,"try_again":false,"tried_at":"2026-11-05T23:39:52.412Z","reply_by":null},"degraded":true,"degraded_until":null,"told":{"release_id":"4d656de8-3265-47c6-ae6b-47bb9a3afa4b","state":"deploying","stalled":true,"try_again":false,"tried_at":"2026-11-05T23:39:52.412Z","reply_by":"2026-11-06T23:44:52.413Z"},"operator":1,"secondTryAgain":409}
+PROBE 3 ours {"task":"with_us","ownerQueue":["export.inputs"],"underWay":{"title":"Looking into the first version · run-spool","state":"with_us"},"operatorAfterLaterPass":1}
+{"event":"business.setup_check_pending","business_id":"eb0c4397-7f7b-4266-9ec0-7e9541cfb5eb","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"eb0c4397-7f7b-4266-9ec0-7e9541cfb5eb","app":"uptime","task":"provision"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_check_pending","business_id":"eb0c4397-7f7b-4266-9ec0-7e9541cfb5eb","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+{"event":"business.setup_source_unreadable","installation_id":"02abe6c8-209b-4b10-82c5-63060e295537","code":"setup_source_unreadable","error_type":"GitHubApiError"}
+PROBE 1 one-source-unreadable {"before":{"status":{"tasks":200,"apps":200,"uptime":200,"spool":200,"overview":200},"uptime":{"task":"needs_you","failure":null,"listed":"needs_you","owner_action":"Fill in app settings"},"spool":{"task":"creating","status":"creating","listed":"creating"}},"during":{"status":{"tasks":200,"apps":200,"uptime":200,"spool":200,"overview":200},"uptime":{"task":"stopped","failure":"setup_source_unreadable","listed":"stopped","owner_action":null},"spool":{"task":"creating","status":"creating","listed":"creating"}},"pass":"ok","after":{"status":{"tasks":200,"apps":200,"uptime":200,"spool":200,"overview":200},"uptime":{"task":"stopped","failure":"setup_source_unreadable","listed":"stopped","owner_action":null},"spool":{"task":"building","status":"building","listed":"building"}}}
+{"event":"business.setup_check_pending","business_id":"eb0c4397-7f7b-4266-9ec0-7e9541cfb5eb","app":"errors-workbench","task":"provision"}
+PROBE 1 source-readable-again {"status":{"tasks":200,"apps":200,"uptime":200,"spool":200,"overview":200},"uptime":{"task":"needs_you","failure":null,"listed":"needs_you","owner_action":"Fill in app settings"},"spool":{"task":"building","status":"building","listed":"building"}}
+{"event":"business.setup_check_pending","business_id":"ce66abce-30e1-4e75-9b16-59cc9cfc3b26","app":"errors-workbench","task":"provision"}
+{"event":"delivery.repository_copy_attempt","installationId":"c168d78e-04ad-4eac-a61b-c4676592f59c","outcome":"complete","copied":4,"total":4,"copiedBefore":0,"phase":"record","ms":{"prepare":61,"commit":0,"push":18,"record":3},"pushes":1,"pushedBytes":2040}
+PROBE 1 hands-off settings {"ownerAction":null,"status":"creating","answers":[]}
+{"event":"business.setup_check_pending","business_id":"ce66abce-30e1-4e75-9b16-59cc9cfc3b26","app":"errors-workbench","task":"provision"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"provenance","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"transfer","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"validation","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"inspect_get","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"retention","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"retained_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"retained_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"recording","elapsed_ms":0}
+{"event":"broker.prepare_phase","run_id":"77","phase":"complete","elapsed_ms":0}
+PROBE 1 hands-off prepared {"ownerAction":null,"status":"publishing"}
+{"event":"business.setup_check_pending","business_id":"ce66abce-30e1-4e75-9b16-59cc9cfc3b26","app":"errors-workbench","task":"provision"}
+PROBE 2 replay {"launches":1,"sameAttempt":true,"builds":1}
+{"event":"delivery.publish_phases","release_id":"7d89d45be2b58a2285aa6050aab057f0fdd32982c0477d1b6e58127348384d1b","environment":"production","verified":true,"phases":[{"phase":"checking","startedAt":"2026-11-05T23:29:55.762Z","seconds":0},{"phase":"resources","startedAt":"2026-11-05T23:29:55.762Z","seconds":0},{"phase":"uploading","startedAt":"2026-11-05T23:29:55.762Z","seconds":0},{"phase":"addresses","startedAt":"2026-11-05T23:29:55.762Z","seconds":0},{"phase":"verifying","startedAt":"2026-11-05T23:29:55.762Z","seconds":0},{"phase":"owner_claim","startedAt":"2026-11-05T23:29:55.762Z","seconds":0},{"phase":"verifying","startedAt":"2026-11-05T23:29:55.762Z","seconds":0}]}
+PROBE 1 hands-off published state {"release":{"state":"verified","deployment_id":"rer-ddf500d5760135f3-prod-project-v4-deployment"},"target":{"current_deployment_id":"rer-ddf500d5760135f3-prod-project-v4-deployment","active_release_id":null,"disconnected_at":null},"installation":{"status":"draft"}}
+PROBE 1 hands-off Live {"stage":"ready","status":"done","claimed":true,"launches":1,"postpaymentPresses":0,"failure":null,"health":{"status":"unknown","result":"unknown","error":null,"checked_at":null,"cause":null}}
+PROBE 4 manual-later-release later=prepared automaticLaunches=1; existing owner-settings/manual publication journey retained
+{"event":"business.setup_check_pending","business_id":"4416da9b-e549-4321-93e6-3d27dd39bf6d","app":"errors-workbench","task":"provision"}
+{"event":"delivery.repository_copy_attempt","installationId":"1115ae06-aa38-43ff-8e37-27156833515a","outcome":"complete","copied":4,"total":4,"copiedBefore":0,"phase":"record","ms":{"prepare":61,"commit":0,"push":18,"record":2},"pushes":1,"pushedBytes":2098}
+{"event":"business.setup_check_pending","business_id":"4416da9b-e549-4321-93e6-3d27dd39bf6d","app":"errors-workbench","task":"provision"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"provenance","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"transfer","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"validation","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"inspect_get","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"retention","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"retained_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"retained_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"recording","elapsed_ms":0}
+{"event":"broker.prepare_phase","run_id":"77","phase":"complete","elapsed_ms":0}
+PROBE 3 authority-genuine-waits requiredField=SERVICE_REGION reasonRetained=true reducedVerification=verification_review_required publication=0
+{"event":"delivery.migration_import","release_id":"22222222-2222-4222-8222-222222222222","file":"001.sql","batch":1,"attempt":1,"error":null,"binding":"DB"}
+{"event":"delivery.publish_phases","release_id":"22222222-2222-4222-8222-222222222222","environment":"production","verified":true,"phases":[{"phase":"checking","startedAt":"2026-11-05T23:28:56.912Z","seconds":0},{"phase":"resources","startedAt":"2026-11-05T23:28:56.922Z","seconds":0},{"phase":"restore_point","startedAt":"2026-11-05T23:28:56.926Z","seconds":0},{"phase":"migrations","startedAt":"2026-11-05T23:28:56.933Z","seconds":0},{"phase":"uploading","startedAt":"2026-11-05T23:28:56.939Z","seconds":0},{"phase":"addresses","startedAt":"2026-11-05T23:28:56.944Z","seconds":0},{"phase":"verifying","startedAt":"2026-11-05T23:28:56.953Z","seconds":0}]}
+ASSISTED_CLAIM {"hosting":"assisted","created":201,"joined":200,"publish":202,"state":"verified","bootstrapRequests":0,"tokenRetired":false,"tokenBound":true}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-auth","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-docs","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-forms","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-crm","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"oncall","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-auth","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-crm","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-docs","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-forms","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"oncall","task":"provision"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"provenance","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"transfer","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"validation","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"inspect_get","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"retention","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"retained_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"retained_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"recording","elapsed_ms":0}
+{"event":"broker.prepare_phase","run_id":"77","phase":"complete","elapsed_ms":0}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-auth","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-crm","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-docs","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-forms","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"oncall","task":"provision"}
+{"event":"delivery.migration_import","release_id":"88397b843d105d0405ad9012f0d105115bbc39bf521f9bd6b6182da2c84cc8ef","file":"0001_initial.sql","batch":1,"attempt":1,"error":null,"binding":"DB"}
+{"event":"delivery.publish_phases","release_id":"88397b843d105d0405ad9012f0d105115bbc39bf521f9bd6b6182da2c84cc8ef","environment":"production","verified":true,"phases":[{"phase":"checking","startedAt":"2026-11-05T23:29:59.356Z","seconds":0},{"phase":"resources","startedAt":"2026-11-05T23:29:59.356Z","seconds":0},{"phase":"restore_point","startedAt":"2026-11-05T23:29:59.356Z","seconds":0},{"phase":"migrations","startedAt":"2026-11-05T23:29:59.356Z","seconds":0},{"phase":"uploading","startedAt":"2026-11-05T23:29:59.356Z","seconds":0},{"phase":"addresses","startedAt":"2026-11-05T23:29:59.356Z","seconds":0},{"phase":"verifying","startedAt":"2026-11-05T23:29:59.356Z","seconds":0},{"phase":"owner_claim","startedAt":"2026-11-05T23:29:59.356Z","seconds":25},{"phase":"verifying","startedAt":"2026-11-05T23:30:24.356Z","seconds":0}]}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-auth","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-crm","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-docs","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"fixture-forms","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cfcbbf32-4dc2-483a-babe-402fb7e1c782","app":"uptime","task":"provision"}
+ONCALL_CLAIM {"dueApps":8,"bootstrapRequests":1,"readyClaimed":true,"claimed":true,"failure":null,"postpaymentPresses":0}
+{"event":"business.setup_check_pending","business_id":"bb3257a3-7bb7-4571-8293-75380c407fb9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"bb3257a3-7bb7-4571-8293-75380c407fb9","app":"errors-workbench","task":"provision"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"provenance","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"transfer","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"validation","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"inspect_get","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"retention","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"retained_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"retained_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"recording","elapsed_ms":0}
+{"event":"broker.prepare_phase","run_id":"77","phase":"complete","elapsed_ms":0}
+{"event":"business.setup_check_pending","business_id":"bb3257a3-7bb7-4571-8293-75380c407fb9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"bb3257a3-7bb7-4571-8293-75380c407fb9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"bb3257a3-7bb7-4571-8293-75380c407fb9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"bb3257a3-7bb7-4571-8293-75380c407fb9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"bb3257a3-7bb7-4571-8293-75380c407fb9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"bb3257a3-7bb7-4571-8293-75380c407fb9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"bb3257a3-7bb7-4571-8293-75380c407fb9","app":"errors-workbench","task":"provision"}
+{"event":"delivery.publish_phases","release_id":"37c9cca3887664162d1f56bf11d92c6066ce58653dcf04079b6a2d773917c679","environment":"production","verified":true,"phases":[{"phase":"checking","startedAt":"2026-11-05T23:30:01.399Z","seconds":0},{"phase":"resources","startedAt":"2026-11-05T23:30:01.399Z","seconds":0},{"phase":"uploading","startedAt":"2026-11-05T23:30:01.399Z","seconds":350},{"phase":"addresses","startedAt":"2026-11-05T23:35:51.399Z","seconds":0},{"phase":"verifying","startedAt":"2026-11-05T23:35:51.399Z","seconds":200},{"phase":"owner_claim","startedAt":"2026-11-05T23:39:11.399Z","seconds":700},{"phase":"verifying","startedAt":"2026-11-05T23:50:51.399Z","seconds":200}]}
+PUBLICATION_CLOCK {"observations":[{"milestone":"upload","failure":null},{"milestone":"readiness","failure":null},{"milestone":"token-free upload","failure":null},{"milestone":"token-free upload","failure":null},{"milestone":"retired readiness","failure":null}],"claimed":true,"failure":null,"postpaymentPresses":0}
+{"event":"business.setup_check_pending","business_id":"761b409e-09af-48f8-b42a-8770e93b6dbb","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"761b409e-09af-48f8-b42a-8770e93b6dbb","app":"errors-workbench","task":"provision"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"provenance","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"transfer","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"validation","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"inspect_get","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"retention","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"retained_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"retained_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"recording","elapsed_ms":0}
+{"event":"broker.prepare_phase","run_id":"77","phase":"complete","elapsed_ms":0}
+{"event":"business.setup_check_pending","business_id":"761b409e-09af-48f8-b42a-8770e93b6dbb","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"761b409e-09af-48f8-b42a-8770e93b6dbb","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"761b409e-09af-48f8-b42a-8770e93b6dbb","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"761b409e-09af-48f8-b42a-8770e93b6dbb","app":"errors-workbench","task":"provision"}
+PUBLICATION_STALLED {"step":"publish","code":"step_deadline_exceeded","retryable":true,"at":"2026-11-05T23:49:52.815Z","message":"Publishing its first version didn’t finish in time, so it isn’t live yet."}
+{"event":"business.setup_check_pending","business_id":"293d5538-a9d6-4d65-9a3a-4d00773e6c03","app":"oncall","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"293d5538-a9d6-4d65-9a3a-4d00773e6c03","app":"oncall","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"0b9f51d6-3f3b-4e52-a04a-a36ae1592cb2","app":"oncall","task":"provision"}
+{"event":"delivery.build_after_settings","installation_id":"4bdc4139-fcfd-479d-beac-f988b9c6644f","status":202,"dispatched":true}
+{"event":"business.setup_check_pending","business_id":"0b9f51d6-3f3b-4e52-a04a-a36ae1592cb2","app":"oncall","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"d10c4ccc-4d23-4c78-b7be-c4db074cd39c","app":"oncall","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"d10c4ccc-4d23-4c78-b7be-c4db074cd39c","app":"oncall","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"d10c4ccc-4d23-4c78-b7be-c4db074cd39c","app":"oncall","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"fd4183ff-2ebe-4e02-a7b7-8b2a70d644fa","app":"uptime","task":"provision"}
+{"event":"delivery.build_after_settings","installation_id":"9baea63d-4c8a-4cb7-b5f6-bf40f591fb2e","status":202,"dispatched":true}
+{"event":"business.setup_check_pending","business_id":"315897ca-6e7f-4e2b-b3f1-485310264120","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"315897ca-6e7f-4e2b-b3f1-485310264120","app":"errors-workbench","task":"provision"}
+STAGED_COPY_PROOF files=2613 attempts=timed_out:0->1179,rate_limited:1179->1179,timed_out:1179->2357,complete:2357->2613 staging_pushes=3 install_pushes=1 completed_by_comparison=1 repeated_objects=0 failures=0
+{"event":"business.setup_check_pending","business_id":"4854b103-ce50-4316-ae8d-d19f02ceb8e8","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"4854b103-ce50-4316-ae8d-d19f02ceb8e8","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"4854b103-ce50-4316-ae8d-d19f02ceb8e8","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"4854b103-ce50-4316-ae8d-d19f02ceb8e8","app":"errors-workbench","task":"provision"}
+SUBSCRIBED OUTAGE: 503/network checkout refused; typed source_unavailable; existing apps and done plan.review unchanged; additional Stripe calls 0
+{"event":"business.setup_check_pending","business_id":"4854b103-ce50-4316-ae8d-d19f02ceb8e8","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"4854b103-ce50-4316-ae8d-d19f02ceb8e8","app":"uptime","task":"provision"}
+TASK_READS [{"phase":"created","role":"owner","status":200,"requests":0,"writes":0},{"phase":"created","role":"viewer","status":200,"requests":0,"writes":0}]
+TASK_READS [{"phase":"unreadable","role":"owner","status":200,"requests":0,"writes":0},{"phase":"unreadable","role":"viewer","status":200,"requests":0,"writes":0}]
+UNREADABLE_APP_LIST 200
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"uptime","task":"provision"}
+TASK_READS [{"phase":"paid","role":"owner","status":200,"requests":0,"writes":0},{"phase":"paid","role":"viewer","status":200,"requests":0,"writes":0}]
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"lamp","task":"provision"}
+TASK_READS [{"phase":"building","role":"owner","status":200,"requests":0,"writes":0},{"phase":"building","role":"viewer","status":200,"requests":0,"writes":0}]
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"8804f56e-8922-44fc-be0a-8d132d96e2e3","app":"uptime","task":"provision"}
+RETRY_STATUS {"retryable":true,"setup_failure":false,"installation_failure":false}
+INSTALLABILITY: 503/network approval and checkout refused with source_unavailable; invalid/missing setup refused with not_installable; refusal and offers share one reading; approved releases survive a catalogue advance; app Continue to payment hands off to the Business plan with no billing rows or Stripe calls, non-owner 403; recheck paid successfully; later failure shared by Business/app/generate-plan
+{"event":"business.setup_check_pending","business_id":"d8ea2460-f605-4a47-aaf1-f11531bb084c","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"d8ea2460-f605-4a47-aaf1-f11531bb084c","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"d8ea2460-f605-4a47-aaf1-f11531bb084c","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"f2b7767f-8203-4dd0-a64c-5e3f044ae6f2","app":"uptime","task":"provision"}
+{"event":"delivery.build_after_settings","installation_id":"5e4dffa8-6496-4e6d-aa5c-abe3ff1a3a4f","status":202,"dispatched":true}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"f8291126-95f2-4acf-b4ad-8edacd1e6766","waited_ms":10000}
+CREATE_RESUME 25s +21s stage=creating failure=none
+{"event":"business.setup_check_pending","business_id":"f8291126-95f2-4acf-b4ad-8edacd1e6766","app":"errors-workbench","task":"provision"}
+CREATE_RESUME 25s +60s stage=creating failure=none
+CREATE_RESUME 25s +120s stage=creating failure=none
+CREATE_RESUME 25s +120s stage=creating failure=none
+{"event":"business.setup_check_pending","business_id":"f8291126-95f2-4acf-b4ad-8edacd1e6766","app":"errors-workbench","task":"provision"}
+CREATE_RESUME 25s +126s stage=building failure=none
+{"event":"business.setup_check_pending","business_id":"f8291126-95f2-4acf-b4ad-8edacd1e6766","app":"errors-workbench","task":"provision"}
+RESUME_PROOF create 25s PASS failures=0 builds=1 installations=1 repositories=1 checkouts=1 subscriptions=1 extra_stripe_writes=0
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"a8cadf59-113c-4f3e-8505-4666895bb30e","waited_ms":10000}
+CREATE_RESUME 45s +21s stage=creating failure=none
+{"event":"business.setup_check_pending","business_id":"a8cadf59-113c-4f3e-8505-4666895bb30e","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a8cadf59-113c-4f3e-8505-4666895bb30e","app":"errors-workbench","task":"provision"}
+CREATE_RESUME 45s +45.1s stage=creating failure=none
+{"event":"business.setup_check_pending","business_id":"a8cadf59-113c-4f3e-8505-4666895bb30e","app":"errors-workbench","task":"provision"}
+CREATE_RESUME 45s +49.4s stage=building failure=none
+{"event":"business.setup_check_pending","business_id":"a8cadf59-113c-4f3e-8505-4666895bb30e","app":"errors-workbench","task":"provision"}
+RESUME_PROOF create 45s PASS failures=0 builds=1 installations=1 repositories=1 checkouts=1 subscriptions=1 extra_stripe_writes=0
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"b4cfed14-d8c8-425d-9747-810ac02d822e","waited_ms":10000}
+CREATE_RESUME 90s +21s stage=creating failure=none
+{"event":"business.setup_check_pending","business_id":"b4cfed14-d8c8-425d-9747-810ac02d822e","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b4cfed14-d8c8-425d-9747-810ac02d822e","app":"errors-workbench","task":"provision"}
+CREATE_RESUME 90s +90.1s stage=creating failure=none
+{"event":"business.setup_check_pending","business_id":"b4cfed14-d8c8-425d-9747-810ac02d822e","app":"errors-workbench","task":"provision"}
+CREATE_RESUME 90s +94.5s stage=building failure=none
+{"event":"business.setup_check_pending","business_id":"b4cfed14-d8c8-425d-9747-810ac02d822e","app":"errors-workbench","task":"provision"}
+RESUME_PROOF create 90s PASS failures=0 builds=1 installations=1 repositories=1 checkouts=1 subscriptions=1 extra_stripe_writes=0
+{"event":"business.setup_check_pending","business_id":"9ee6628d-6392-41ac-a54a-d9555b2f4a0b","app":"errors-workbench","task":"provision"}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"9ee6628d-6392-41ac-a54a-d9555b2f4a0b","waited_ms":10000}
+{"event":"business.setup_check_pending","business_id":"9ee6628d-6392-41ac-a54a-d9555b2f4a0b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9ee6628d-6392-41ac-a54a-d9555b2f4a0b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9ee6628d-6392-41ac-a54a-d9555b2f4a0b","app":"errors-workbench","task":"provision"}
+RESUME_PROOF repository 25s PASS failures=0 provider_starts=1 builds=1 installations=1 checkouts=1 subscriptions=1
+{"event":"business.setup_check_pending","business_id":"91b53ba4-575f-4279-8457-707d8c00fe3d","app":"errors-workbench","task":"provision"}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"91b53ba4-575f-4279-8457-707d8c00fe3d","waited_ms":10000}
+{"event":"business.setup_check_pending","business_id":"91b53ba4-575f-4279-8457-707d8c00fe3d","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"91b53ba4-575f-4279-8457-707d8c00fe3d","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"91b53ba4-575f-4279-8457-707d8c00fe3d","app":"errors-workbench","task":"provision"}
+RESUME_PROOF repository 45s PASS failures=0 provider_starts=1 builds=1 installations=1 checkouts=1 subscriptions=1
+{"event":"business.setup_check_pending","business_id":"4aaf1740-59ba-47d9-b64c-ddbea052353f","app":"errors-workbench","task":"provision"}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"4aaf1740-59ba-47d9-b64c-ddbea052353f","waited_ms":10000}
+{"event":"business.setup_check_pending","business_id":"4aaf1740-59ba-47d9-b64c-ddbea052353f","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"4aaf1740-59ba-47d9-b64c-ddbea052353f","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"4aaf1740-59ba-47d9-b64c-ddbea052353f","app":"errors-workbench","task":"provision"}
+RESUME_PROOF repository 90s PASS failures=0 provider_starts=1 builds=1 installations=1 checkouts=1 subscriptions=1
+{"event":"business.setup_check_pending","business_id":"e52369f5-3ee0-4a45-ba2b-2db654b0d670","app":"errors-workbench","task":"provision"}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"e52369f5-3ee0-4a45-ba2b-2db654b0d670","waited_ms":10000}
+{"event":"business.setup_check_pending","business_id":"e52369f5-3ee0-4a45-ba2b-2db654b0d670","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"e52369f5-3ee0-4a45-ba2b-2db654b0d670","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"e52369f5-3ee0-4a45-ba2b-2db654b0d670","app":"errors-workbench","task":"provision"}
+RESUME_PROOF configure 25s PASS failures=0 provider_starts=1 builds=1 installations=1 checkouts=1 subscriptions=1
+{"event":"business.setup_check_pending","business_id":"812b73a1-65f5-4097-a44d-cc9ac48a6365","app":"errors-workbench","task":"provision"}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"812b73a1-65f5-4097-a44d-cc9ac48a6365","waited_ms":10000}
+{"event":"business.setup_check_pending","business_id":"812b73a1-65f5-4097-a44d-cc9ac48a6365","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"812b73a1-65f5-4097-a44d-cc9ac48a6365","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"812b73a1-65f5-4097-a44d-cc9ac48a6365","app":"errors-workbench","task":"provision"}
+RESUME_PROOF configure 45s PASS failures=0 provider_starts=1 builds=1 installations=1 checkouts=1 subscriptions=1
+{"event":"business.setup_check_pending","business_id":"a48a2e13-9a15-4f6a-8307-403571275c21","app":"errors-workbench","task":"provision"}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"a48a2e13-9a15-4f6a-8307-403571275c21","waited_ms":10000}
+{"event":"business.setup_check_pending","business_id":"a48a2e13-9a15-4f6a-8307-403571275c21","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a48a2e13-9a15-4f6a-8307-403571275c21","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a48a2e13-9a15-4f6a-8307-403571275c21","app":"errors-workbench","task":"provision"}
+RESUME_PROOF configure 90s PASS failures=0 provider_starts=1 builds=1 installations=1 checkouts=1 subscriptions=1
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"e3206c67-fa82-4fd7-ad93-e2841a0c5b7e","waited_ms":10000}
+RESUME_DEADLINE create PASS attempt_20s=deferred stop=step_deadline_exceeded after=120s typed_retryable=true
+{"event":"business.setup_check_pending","business_id":"cf7699bb-65fd-4d71-bdde-e059194d7205","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"cf7699bb-65fd-4d71-bdde-e059194d7205","app":"errors-workbench","task":"provision"}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"cf7699bb-65fd-4d71-bdde-e059194d7205","waited_ms":10000}
+{"event":"business.setup_check_pending","business_id":"cf7699bb-65fd-4d71-bdde-e059194d7205","app":"errors-workbench","task":"provision"}
+RESUME_DEADLINE repository PASS attempt_20s=deferred stop=copy_stalled after=300.011s typed_retryable=true
+{"event":"business.setup_check_pending","business_id":"79bbf02d-af1f-4252-89a2-06fd442774c4","app":"errors-workbench","task":"provision"}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"79bbf02d-af1f-4252-89a2-06fd442774c4","waited_ms":10000}
+RESUME_DEADLINE configure PASS attempt_20s=deferred stop=step_deadline_exceeded after=120s typed_retryable=true
+DEADLINE_PROOF A1 {"pass":1,"apps":[{"app":"errors-workbench","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"fixture-auth","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"fixture-crm","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"fixture-docs","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"fixture-forms","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"lamp","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"uptime","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false}],"installations":10}
+DEADLINE_PROOF A1 {"pass":2,"apps":[{"app":"errors-workbench","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"fixture-auth","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"fixture-crm","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"fixture-docs","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"fixture-forms","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"lamp","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false},{"app":"uptime","step":"create","code":"INSTALLATION_LIMIT_REACHED","retryable":false}],"installations":10}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"fixture-crm","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"fixture-docs","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"fixture-forms","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"fixture-auth","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"fixture-auth","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"fixture-crm","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"fixture-docs","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"fixture-forms","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b35d3fce-5c6a-4f9c-aa15-64ef6c34cba2","app":"uptime","task":"provision"}
+DEADLINE_PROOF A1 PASS apps=7 duplicate_installations=0 checkouts=1 subscriptions=1
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-auth","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-crm","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-docs","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-forms","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-auth","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-crm","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-docs","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-forms","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"uptime","task":"provision"}
+DEADLINE_PROOF A2 {"apps":[{"app":"errors-workbench"},{"app":"fixture-auth"},{"app":"fixture-crm"},{"app":"fixture-docs"},{"app":"fixture-forms"},{"app":"lamp"},{"app":"uptime"}],"owner_doors_answered":true,"preflight":{"step":"preflight","code":"preflight_deadline_exceeded","retryable":true,"message":"The hosting checks did not finish. Run Edit Run will try them again on the next pass."},"preflight_reads":3}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-auth","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-docs","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-crm","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"fixture-forms","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"358c40df-209b-4999-bd6c-0d138263428c","app":"lamp","task":"provision"}
+DEADLINE_PROOF A2 PASS apps=7 duplicate_installations=0 checkouts=1 subscriptions=1
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"a13e7f70-44b6-4022-b245-2641a1f427cc","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"11e0199b-d79c-42f5-83b5-e7628d15cbdd","app":"lamp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"11e0199b-d79c-42f5-83b5-e7628d15cbdd","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"11e0199b-d79c-42f5-83b5-e7628d15cbdd","app":"uptime","task":"provision"}
+✔ Business setup progresses only with approved plans, owner authority and healthy apps (69987.359404ms)
+ℹ An unpaid linked app reads its plan refusal without managed-mail settings
+ℹ Managed answers: provided
+ℹ Managed answers: missing
+ℹ Managed answers: stored
+ℹ Managed answers: secret
+ℹ A prepare refusal stops the first build on the next scheduled pass
+ℹ An unobserved dispatch without a prepare refusal keeps waiting
+ℹ An unavailable GitHub run read keeps the dispatched build waiting
+ℹ O-04: setup notices follow the current installation action, including a pre-send state change
+ℹ O-04: only a scheduled source retry has a time; Try again retires the retained wait on the same copy
+ℹ O-04: Business and Apps present the same Stripe subscription day across time zones
+ℹ Catalogue source copy checks authority per read round and resumes a landed push without source reads
+ℹ Repository progress E1
+ℹ Repository progress E2
+ℹ Repository progress E3
+ℹ Repository progress E4
+ℹ Repository progress E5
+ℹ Business reads one install through owner settings, build, publish and Live
+ℹ A failed first publish says so on the setup page as its mail does, with one Try again and then who looks at it by when
+ℹ A first publish whose step runs out of time while its release never ends gets the same one Try again, then is ours to look into
+ℹ One app whose setup source can't be read stops on its own while Tasks, Apps and Overview still answer for the others
+ℹ Managed first setup reaches Live through scheduled provisioning without a postpayment press
+ℹ Managed initial setup retains genuine source questions and verification consent
+ℹ Managed setup prepares the service’s private settings before and around the owner’s first Save
+ℹ Assisted Business adoption leaves an imported owner-visible setup token under owner control
+ℹ Oncall claims its generated owner-visible token hands-off among eight due apps
+ℹ Publication keeps progressing through upload, owner bootstrap, token retirement and readiness beyond ten minutes
+ℹ Repeated publication phase reports cannot postpone a genuinely stalled upload
+ℹ Oncall’s scheduled pass saves its private settings with its plan; a Save from the form opened before asks for none and changes nothing
+ℹ An owner’s first Oncall Save that lands while the pass generates its own plan is the saved configuration
+ℹ An Oncall plan saved before its owner token was made is the service’s to finish, never the owner’s
+ℹ A genuinely owner-supplied credential stays needs_owner until the write-only door has it
+ℹ A 2613-file catalogue source copies hands-off through a push timeout and a GitHub rate limit, resuming its staged pushes and completing a landed push by comparison
+ℹ A paid Business preserves its coverage while standalone apps open their own checkout
+ℹ One plan approval sets up Spool, Uptime and Lamp under one Business subscription, accepting only each approved first release
+ℹ Business secrets are write-only, and the new doors refuse device, task and cross-origin credentials
+ℹ A replaced or removed Business mail key reaches each app’s stored settings, Claim completes only for the Business owner, and a live app that stops answering needs attention again, but never for one lost probe
+ℹ The scheduled pass takes every Business in turn, owner-waiting ones after those that can move
+ℹ An unproved Managed Business can resume an older setup graph and claim Set up without bypassing its health check
+{"event":"business.setup_check_pending","business_id":"9cee314f-2452-4d20-9381-e7be03a0c69b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9cee314f-2452-4d20-9381-e7be03a0c69b","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9cee314f-2452-4d20-9381-e7be03a0c69b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9cee314f-2452-4d20-9381-e7be03a0c69b","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9cee314f-2452-4d20-9381-e7be03a0c69b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9cee314f-2452-4d20-9381-e7be03a0c69b","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9cee314f-2452-4d20-9381-e7be03a0c69b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9cee314f-2452-4d20-9381-e7be03a0c69b","app":"uptime","task":"provision"}
+TWO_APP_SYNC first {"spool":"Synthetic Shared One","uptime":"Synthetic Shared One"}
+TWO_APP_SYNC override {"spool":"Synthetic App Override","uptime":"Synthetic Shared Two"}
+TWO_APP_SYNC retry {"spool":"Synthetic App Override","uptime":"Synthetic Shared Three"}
+{"event":"business.setup_check_pending","business_id":"efe5200d-2f1b-4326-8703-a0f2e7c40ee9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"efe5200d-2f1b-4326-8703-a0f2e7c40ee9","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"efe5200d-2f1b-4326-8703-a0f2e7c40ee9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"efe5200d-2f1b-4326-8703-a0f2e7c40ee9","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"efe5200d-2f1b-4326-8703-a0f2e7c40ee9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"efe5200d-2f1b-4326-8703-a0f2e7c40ee9","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"efe5200d-2f1b-4326-8703-a0f2e7c40ee9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"efe5200d-2f1b-4326-8703-a0f2e7c40ee9","app":"uptime","task":"provision"}
+LOGO_SYNC upload {"spool":"https://manage.example/api/business-logos/efe5200d-2f1b-4326-8703-a0f2e7c40ee9","uptime":"https://manage.example/api/business-logos/efe5200d-2f1b-4326-8703-a0f2e7c40ee9"}
+LOGO_SYNC cleared {"spool":"https://cdn.acme.example.org/spool-own-logo.png","uptime":""}
+{"event":"business.setup_check_pending","business_id":"4b2e6772-f6c1-4033-acda-7fd683a627ce","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"4b2e6772-f6c1-4033-acda-7fd683a627ce","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"4b2e6772-f6c1-4033-acda-7fd683a627ce","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"4b2e6772-f6c1-4033-acda-7fd683a627ce","app":"uptime","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"4b2e6772-f6c1-4033-acda-7fd683a627ce","app":"errors-workbench","task":"provision"}
+✔ Business profile propagation preserves app overrides and current publication state (5539.76547ms)
+ℹ Business display names reach two live apps and their releases while an app override survives later profile changes
+ℹ A Business logo upload reaches two live apps at one stable address, keeps an app override, is replaced, cleared and erased, and refuses bad or foreign files
+ℹ A Business profile change never builds an app the latest plan dropped, stops for the owner when a build fails and leaves a healthy live app set up
+FAIRNESS_PROOF {"first":{"served":["working1","working2","longest","newer"],"deferred":["longest","newer","working1","working2"]},"second":{"served":["working2","working3","longest","newer"],"deferred":["working3","working2","longest","newer"]},"third":{"served":["working1","working2","working3","longest","newer"],"deferred":["working1","working2","longest","working3"]}}
+✔ The scheduled pass serves the Business waiting longest on its owner, however many working Businesses use their whole shares (741.847972ms)
+{"event":"business.setup_check_pending","business_id":"9adec75c-1d41-4bdc-9bf3-25c5c5ea6803","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9adec75c-1d41-4bdc-9bf3-25c5c5ea6803","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9adec75c-1d41-4bdc-9bf3-25c5c5ea6803","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"9adec75c-1d41-4bdc-9bf3-25c5c5ea6803","app":"errors-workbench","task":"provision"}
+MIDPASS_PROOF {"subscription":{"status":"active","updated_at":"2026-11-05T23:29:46.017Z"},"parked":{"state":"owner","advanced_at":"2026-11-05T23:29:46.000Z","next_at":"2026-11-05T23:39:46.032Z"},"taken":{"state":"working","advanced_at":"2026-11-05T23:29:46.071Z","next_at":"2026-11-05T23:29:46.071Z"},"copy_started":true,"again":{"state":"working","advanced_at":"2026-11-05T23:29:46.110Z","next_at":"2026-11-05T23:29:46.110Z"}}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"920710e3-ca90-438b-a5cb-86bb19569738","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"561a3b1c-c38d-4955-8583-603f51e9a93b","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"9f49d3b8-735c-476c-800d-1c727428bdd4","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"6c431ebc-389b-4441-bc8f-21ef9522b924","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"920710e3-ca90-438b-a5cb-86bb19569738","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"28fd380c-6bf5-45a2-b85c-217f09d2cd65","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"f8fade1d-bcd8-4f91-8a16-0a848c2eaa44","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"38917c63-d23c-4ef1-a34a-341634b4906b","waited_ms":10000}
+{"event":"business.setup_check_pending","business_id":"920710e3-ca90-438b-a5cb-86bb19569738","app":"errors-workbench","task":"provision"}
+COPY_START_PROOF {"paid":"00:01:00","before":{"at":"00:00:00","ownerDue":23,"passMs":29000,"served":["new-install","owner-due-0","owner-due-1","owner-due-2"],"copy":null,"aborts":0,"failure":null},"passes":[{"at":"00:01:01","ownerDue":20,"passMs":29000,"served":["new-install","owner-due-3","owner-due-4","owner-due-5"],"copy":{"status":"queued","queuedAt":"2026-11-06T00:01:44.300Z"},"aborts":0,"failure":null}],"queuedAt":"2026-11-06T00:01:44.300Z","secondsToCopy":44.3,"failure":null}
+{"event":"delivery.repository_copy_attempt","installationId":"bbe95167-7cfc-4a76-8234-62ab2f8a558c","outcome":"complete","copied":4,"total":4,"copiedBefore":0,"phase":"record","ms":{"prepare":0,"commit":0,"push":0,"record":0},"pushes":1,"pushedBytes":2055}
+{"event":"business.setup_check_pending","business_id":"920710e3-ca90-438b-a5cb-86bb19569738","app":"errors-workbench","task":"provision"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"provenance","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"transfer","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"validation","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"staging_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"inspect_get","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"refresh_saved_plan","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"retention","elapsed_ms":0}
+{"event":"broker.prepare_operation","operation":"retained_head","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_operation","operation":"retained_put","elapsed_ms":0,"outcome":"settled"}
+{"event":"broker.prepare_phase","run_id":"77","phase":"recording","elapsed_ms":0}
+{"event":"broker.prepare_phase","run_id":"77","phase":"complete","elapsed_ms":0}
+{"event":"business.setup_check_pending","business_id":"920710e3-ca90-438b-a5cb-86bb19569738","app":"errors-workbench","task":"provision"}
+{"event":"delivery.publish_phases","release_id":"db33bc15bd1a2f43aec7177f8b619a697b7a154686db84ee7b11aabe28ec8f4a","environment":"production","verified":true,"phases":[{"phase":"checking","startedAt":"2026-11-06T00:03:05.400Z","seconds":0},{"phase":"resources","startedAt":"2026-11-06T00:03:05.400Z","seconds":0},{"phase":"uploading","startedAt":"2026-11-06T00:03:05.400Z","seconds":0},{"phase":"addresses","startedAt":"2026-11-06T00:03:05.400Z","seconds":0},{"phase":"verifying","startedAt":"2026-11-06T00:03:05.400Z","seconds":0},{"phase":"owner_claim","startedAt":"2026-11-06T00:03:05.400Z","seconds":0},{"phase":"verifying","startedAt":"2026-11-06T00:03:05.400Z","seconds":0}]}
+COPY_START_PROOF live {"stage":"ready","claimed":true,"ownerAction":null,"failure":null,"presses":0,"builds":1,"launches":1}
+{"event":"business.setup_check_pending","business_id":"b985be28-d5c4-48df-be5b-8fcd596a4afc","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b985be28-d5c4-48df-be5b-8fcd596a4afc","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b985be28-d5c4-48df-be5b-8fcd596a4afc","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b985be28-d5c4-48df-be5b-8fcd596a4afc","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b985be28-d5c4-48df-be5b-8fcd596a4afc","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b985be28-d5c4-48df-be5b-8fcd596a4afc","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"b985be28-d5c4-48df-be5b-8fcd596a4afc","app":"errors-workbench","task":"provision"}
+STAGE70_REFUSAL_PROOF {"passes":30,"refusedPosts":3,"afterTryAgain":4,"failure":"provisioning_error","seen":["provisioning_error"]}
+STAGE70_REPLAY_PROOF {"doorAnsweredMs":21250,"dispatches":{"errors-workbench":1,"fixture-auth":1,"fixture-forms":1,"fixture-docs":1},"preparedAtPass":{"fixture-auth":4,"fixture-forms":4,"errors-workbench":5,"fixture-docs":56},"acceptedAtPass":{"fixture-auth":4,"errors-workbench":5,"fixture-forms":14,"fixture-docs":56},"stops":[{"app":"fixture-docs","step":"build","at":"2026-11-05T23:45:51.428Z","prepared":false,"pass":14}],"retried":{"step":"build","code":"step_deadline_exceeded"},"failures":{"errors-workbench":null,"fixture-auth":null,"fixture-forms":null,"fixture-docs":null}}
+{"event":"business.setup_check_pending","business_id":"9adec75c-1d41-4bdc-9bf3-25c5c5ea6803","app":"errors-workbench","task":"provision"}
+PROBE N17-2 owner-waiting-mail job + GET /api/business/25f117c5-4706-44c3-a048-6c9a0be81e25/apps, unpaid app waiting on its owner -> mails inside the quiet window=0; a minute on=1; replayed by job and route ten minutes on=0; a wait that cleared inside the window -> wait mails=0
+EMAIL platform stall
+Subject: Spool: Run Edit Run is on it
+Spool’s setup is paused. A step of setup hit a problem on our side. Nothing needs you: Run Edit Run is on it and tries again by itself at 5 Nov, 23:50 UTC. The setup page shows how it goes.
+
+Open setup: https://manage.example/business/25f117c5-4706-44c3-a048-6c9a0be81e25/apps/errors-workbench
+EMAIL owner step
+Subject: Spool: setup needs you
+Spool’s setup stopped on a step that only you can do: Pay for your Business. Open it and Run Edit Run carries on from there.
+
+Open setup: https://manage.example/business/25f117c5-4706-44c3-a048-6c9a0be81e25/apps/errors-workbench
+{"event":"business.setup_check_pending","business_id":"bb2636b2-046d-4f0a-a599-30bc46c3d1c9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"bb2636b2-046d-4f0a-a599-30bc46c3d1c9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"bb2636b2-046d-4f0a-a599-30bc46c3d1c9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"bb2636b2-046d-4f0a-a599-30bc46c3d1c9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"bb2636b2-046d-4f0a-a599-30bc46c3d1c9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"47a16853-95bd-4886-af4f-28fe3500544f","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"47a16853-95bd-4886-af4f-28fe3500544f","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"47a16853-95bd-4886-af4f-28fe3500544f","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"47a16853-95bd-4886-af4f-28fe3500544f","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"50c1a0a6-792d-4068-9401-7295ae84516b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"50c1a0a6-792d-4068-9401-7295ae84516b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"50c1a0a6-792d-4068-9401-7295ae84516b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"50c1a0a6-792d-4068-9401-7295ae84516b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"53d27668-052e-4343-8f91-2c31d91545e6","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"53d27668-052e-4343-8f91-2c31d91545e6","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"53d27668-052e-4343-8f91-2c31d91545e6","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"53d27668-052e-4343-8f91-2c31d91545e6","app":"errors-workbench","task":"provision"}
+PROBE T-05 copy stall: (a) 1 mail ["Spool: Run Edit Run is on it"] chips [We’re on it] / (b) 1 mail ["Spool: Run Edit Run is on it"] chips [We’re on it] / mixed 1 mail ["Spool: Run Edit Run is on it"] chips [We’re on it] / killed 1 mail ["Spool: Run Edit Run is on it"] chips [We’re on it]
+EMAIL copy stall (a) (before the stop: ["Payment received for Acme"])
+Subject: Spool: Run Edit Run is on it
+Spool’s setup is paused. Copying the source is waiting on a busy platform answer. Nothing needs you: Run Edit Run is on it and tries again by itself at 5 Nov, 23:55 UTC. The setup page shows how it goes.
+
+Open setup: https://manage.example/business/bb2636b2-046d-4f0a-a599-30bc46c3d1c9/apps/errors-workbench
+EMAIL copy stall (b) (before the stop: ["Payment received for Acme"])
+Subject: Spool: Run Edit Run is on it
+Spool’s setup is paused. Copying the source is waiting on a busy platform answer. Nothing needs you: Run Edit Run is on it and tries again by itself at 6 Nov, 00:06 UTC. The setup page shows how it goes.
+
+Open setup: https://manage.example/business/47a16853-95bd-4886-af4f-28fe3500544f/apps/errors-workbench
+EMAIL copy stall mixed (before the stop: ["Payment received for Acme"])
+Subject: Spool: Run Edit Run is on it
+Spool’s setup is paused. Copying the source is waiting on a busy platform answer. Nothing needs you: Run Edit Run is on it and tries again by itself at 6 Nov, 00:17 UTC. The setup page shows how it goes.
+
+Open setup: https://manage.example/business/50c1a0a6-792d-4068-9401-7295ae84516b/apps/errors-workbench
+EMAIL copy stall killed (before the stop: ["Payment received for Acme"])
+Subject: Spool: Run Edit Run is on it
+Spool’s setup is paused. Copying the source is waiting on a busy platform answer. Nothing needs you: Run Edit Run is on it and tries again by itself at 6 Nov, 00:30 UTC. The setup page shows how it goes.
+
+Open setup: https://manage.example/business/53d27668-052e-4343-8f91-2c31d91545e6/apps/errors-workbench
+✔ A payment that lands while a pass reads it as pending is taken up by the next pass, and an unchanged owner-waiting Business keeps its interval (20639.096715ms)
+ℹ A new Managed install behind a stage 66 provisioning backlog starts its copy within one pass of payment and reaches Live hands-off
+ℹ Two concurrent Managed installs, one advanced from its owner’s demo door, are accepted within two passes of their builds, and no finished build stops at its deadline
+ℹ T-05 source copy refused by D1, owner mail read (a)
+ℹ T-05 source copy refused by D1, owner mail read (b)
+ℹ T-05 source copy refused by D1, owner mail read mixed
+ℹ T-05 source copy refused by D1, owner mail read killed
+{"event":"business.setup_check_pending","business_id":"e56b78be-1a10-4036-96b2-89055a843a41","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"e56b78be-1a10-4036-96b2-89055a843a41","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"e56b78be-1a10-4036-96b2-89055a843a41","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"e56b78be-1a10-4036-96b2-89055a843a41","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"e56b78be-1a10-4036-96b2-89055a843a41","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"e56b78be-1a10-4036-96b2-89055a843a41","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"e56b78be-1a10-4036-96b2-89055a843a41","app":"errors-workbench","task":"provision"}
+PUBLISH_DATA_PROOF files=69 imports=2 passes=3 data_changes_s=74 stops=[]
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"590e1078-8413-4548-8dd9-90dc125cf719","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"aa2d03d0-e916-4416-9381-cbf7876593b9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"aa2d03d0-e916-4416-9381-cbf7876593b9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"aa2d03d0-e916-4416-9381-cbf7876593b9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"aa2d03d0-e916-4416-9381-cbf7876593b9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"aa2d03d0-e916-4416-9381-cbf7876593b9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"aa2d03d0-e916-4416-9381-cbf7876593b9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"aa2d03d0-e916-4416-9381-cbf7876593b9","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"5106fb0b-0aec-4709-bf44-78daf116d45b","app":"errors-workbench","task":"provision"}
+✔ A first publish with many data changes finishes hands-off and resumes them exactly once (10445.199282ms)
+ℹ A first publish of 69 data changes at about 37 s per import finishes with no owner press across the scheduled passes
+ℹ A first publish keeps its step while its data changes advance, and stops typed and retryable after a whole window without one
+ℹ A resumed first publish applies each data change once and in order
+ℹ A data change failing inside a shared import stops the first publish with its own typed failure, never the step deadline
+{"event":"business.setup_check_pending","business_id":"0e6edba5-845d-4a48-b4e6-bdec7c746d6a","app":"happytohelp","task":"provision"}
+{"event":"business.setup_check_pending","business_id":"0e6edba5-845d-4a48-b4e6-bdec7c746d6a","app":"orbit","task":"provision"}
+PROBE S-01 before payment HTTP apps=orbit
+{"event":"business.setup_check_pending","business_id":"0e6edba5-845d-4a48-b4e6-bdec7c746d6a","app":"orbit","task":"provision"}
+PROBE S-01 HTTP after payment apps=Orbit count=1 profile=Orbit removed=410 checkout=409/business_app_removed_from_plan next_question excludes HappyToHelp; Orbit repository copy starts
+PROBE R-03.1 HTTP approved rev1=HappyToHelp rev2=Orbit; fresh checkout paid; covered=Orbit; stale_reused=false
+PROBE R-03.2 HTTP current paid selection=Orbit; provisioning copies=Orbit; HappyToHelp access=false
+{"event":"business.setup_check_pending","business_id":"0e6edba5-845d-4a48-b4e6-bdec7c746d6a","app":"orbit","task":"provision"}
+PROBE R-03.3 HTTP old checkout not reused; late rev1 webhook=typed mismatch; provisions=none; owner/operator issue recorded
+✔ A paid plan revision covers and starts Orbit after removing HappyToHelp (R-03) (916.044312ms)
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"2b133621-ab29-4e13-b685-e71063db5ae5","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"c0dd6d9d-3114-4d9a-b7f0-02b9990ca5ff","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"81e45ffe-ce30-48e6-a838-8f4ec96bfe5c","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"2535d121-7559-4aac-bec0-94c3dec2195a","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"eb0d0729-9654-4a47-ab3d-a7c302af99f2","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"ae1328c3-515a-4969-a598-30a471d19de9","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"b3f4f25f-7a68-40f5-8c1b-8ea4ea49fb90","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"0abdf5a4-d110-4ab7-ae82-e5ba7abe482a","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"2fb5c18c-63c7-4e9f-ba86-74512fa90f75","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"c3d63435-ad9e-4c40-80ec-f680304b7c9f","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"bbec1579-2e72-4f85-ad20-2b0bdac9b17d","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"3ac5217c-1bdc-4b71-8da9-ea90322a5c6d","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"d99fa470-46f7-4760-b892-5c97a301e12d","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"6b9b9fb2-d165-4f83-993f-ee6ef0171fc5","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"98405655-91b1-4632-afa3-f52d1558f8f3","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"ecb22f27-5ad2-4b98-8102-13071981cd8e","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"9587c861-7268-49cc-815e-9a97a9005b3d","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"c805adb2-739d-4ba0-86c1-c81db80a9709","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"61e5cb95-ba70-463a-a1aa-3b7147b4ce9f","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"175c5021-d1df-48ed-a00b-c2e0033b2be4","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"8e90ee61-9116-44e5-86f0-51fc29bec33c","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"546b4fc1-85a8-4ab6-9c07-f363f8f6d531","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"b2260efa-236a-4c1e-a3de-c66bfc2b7e26","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"351655de-f69b-4a85-9e85-4aa29b46fa66","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"90756b61-eb8f-4756-a6df-1e14595bc7ee","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"2201fe22-176f-4748-b664-aa5f8dd1ae12","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"4ddd11dd-db51-4d15-89ea-0a94145259e1","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"16038f8d-5138-44e1-9f3e-ccbbdcb84e16","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"fb3cc9b0-cab5-4cbf-b818-dfaec02881ca","waited_ms":10000}
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"9719d071-701b-48ad-acaf-69beeb0fbbb3","waited_ms":10000}
+PROVISIONING_PASS_PROOF {"scenario":"thirty-due","rows":30,"served":30,"passes":3,"passLoopMs":[29000,29000,21200],"heartbeatWallMs":[29000,29000,21200],"maxConcurrentSourceReads":4,"duplicateAdmissions":0}
+✔ Thirty due Businesses drain owner-first and oldest-first within five scheduled passes, exactly once (1928.839356ms)
+{"event":"business.provisioning_deferred","job":"business-provisioning","business_id":"bd685d6a-efa9-4c5c-882e-6dfa4c8162c3","waited_ms":10000}
+PROVISIONING_PASS_PROOF {"scenario":"held-first-row","rows":12,"served":12,"passes":1,"passLoopMs":[10000],"heartbeatWallMs":[10000],"maxConcurrentSourceReads":2,"duplicateAdmissions":0}
+✔ A held provisioning source does not starve later due Businesses or abort its provider step (999.066598ms)
+{"event":"business.setup_check_pending","business_id":"c71d4d31-f27b-42b5-8977-7cb4ee656415","app":"lamp","task":"setup"}
+✖ A self-hosted Business prepares stable public trust and requires genuine app owner evidence, preserving historical attestations (792.533162ms)
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:1fdb0903-1155-4ee7-a946-3d0b99b2a2fa","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:2e953c93-a688-454f-941a-c1f417c18867","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:2f0dda8b-3392-4feb-bab6-cc5918208138","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:370c3482-e09a-424c-948d-cca78020bb14","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:4bd55c48-79bc-4221-954f-fe54d4451ff8","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:523f1ad7-3383-443b-8681-586986385224","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:53784cf5-1739-4678-b0af-056924729013","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:548c073e-cec4-49d9-a0e4-81ac849e7f78","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:5a161394-80e1-4914-99bc-61f92f99d13e","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:5e836667-05ad-4968-8da7-d9aa662a0b3e","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:5eace74d-3782-4d85-a4a2-b39efe4be0ca","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:6079365b-a825-4c08-824a-573daca520aa","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:631a6839-830b-442d-9adf-0f05bae353d9","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:72384686-58d5-45ed-8310-9e6026f2a318","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:7bbffd91-39ef-47f0-a4e1-a50fd6722fcc","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:8082c479-a193-4e70-9995-fe4cc0bbad09","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:83e573d3-addf-413d-afbd-62da50e95781","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:926b241e-9e96-4ff8-aed7-f82437c40906","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:967c3425-c35f-4606-ac73-3534d40ba35d","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:a3253b62-435b-4405-b32d-7325ed679c1c","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:a6fe6f34-b1aa-4788-b188-1d8e368665b6","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:bae8dd84-559a-4671-9186-04dd59135b69","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:be574a44-9870-4798-940a-0943b2f87bd1","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:c01a716b-898d-4997-b4b3-7d53f4bbda01","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"4df3c0a2-4dc1-4e50-80ad-5079863a592d:seed:errors-workbench:import:cb583114-7ada-418d-a8a9-3e99aa32c21d","error":"This app’s import door is not ready for this export"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:0751cac1-9b3b-452d-b825-ad0d75b3e44c","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:0c1a5679-d3c5-465b-bd93-816724200aa6","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:137ae0bc-561c-40b0-aab5-f71e26da0bbd","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:164eca8c-c30b-4ef7-a84e-d3caacb31603","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:1bb0b36f-185b-4d9b-b2ae-ff0bc7109e0c","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:1fdae71d-6fa2-4ee2-97ad-a8d0bc112d02","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:22320fbe-1b61-4061-9a96-8d37e7b71ca7","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:2513bc37-3584-4b23-a70d-2eff384bfb7f","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:2bffc8de-a57a-4ae0-a1e0-924742ef1d47","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:2f532005-fb9c-4253-9237-65d2ec7d54ee","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:316f0bbe-d0e3-41fd-96b8-2b22d8634c29","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:3393a2d3-97e3-4a84-92f7-ea3c5e1bd464","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:3a8dd4e4-c7ea-431d-97fb-a9605590643e","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:3ec5efc8-fd7a-4d3b-99d2-f44975309359","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:459beedc-647f-4b23-a1f2-ed6a3354e7aa","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:470e2f69-d9f9-4501-a646-2a28d2e771c6","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:484288ed-d3fc-4bab-a6a9-1fdb7fd77a30","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:526e90fd-55d0-42f4-ac8a-b3fe9523ea91","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:5c182f00-314d-431c-974b-4ca8ce76c2ab","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:5e866ec3-dde2-412e-beab-2b4ac02d6d45","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:5fbac4cb-2c49-4ea0-897b-5918dc82da08","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:60c0f0ce-e4f9-42c6-810c-789a60aeac48","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:6ade9031-139e-472f-b15d-64fc4d890d50","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:6e412aff-8143-4097-84d0-fc90070b9002","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"5d3c605c-5902-4ebd-9101-3f48a42f84b4:seed:errors-workbench:import:718f66b5-5e88-41e2-87dc-14914b310569","error":"This app’s import door is not ready for this export"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:05444ae0-a3c3-4b49-a1ce-ce8d62e40e6e","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:05a59bee-6db5-490a-80e6-8e787c05b4d3","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:0632038e-523e-488d-9409-97bcfcc09e97","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:06cd87d7-318a-44ea-885f-d6aba972e1e8","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:06ddd84b-5e40-49ce-b19c-f7b4fbd1f679","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:08d0d174-64a9-4b38-b74a-55f6994910f5","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:0927a0c2-f7e1-4c29-9f8d-43a8cacc9a73","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:0ad3ba63-6c29-4124-95cc-4e139e3b284a","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:0ba89396-d7e5-4f9e-8fcf-0f640d63f47e","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:0c3aedac-890c-488c-8d59-4698073cd876","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:0c93295f-0b2d-47af-92cb-1d33082c4fda","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:0d0d20ef-73a5-4bd5-9447-8ef9891f9110","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:0db42bb1-2ee4-43dd-9cb4-69c16c0e54c7","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:0ee5eaec-685b-4f0d-bd7c-7746b69a7aed","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:0f3c8bb8-2dcd-43eb-8920-d79bb19434d5","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:1004fc74-99a9-4897-9d30-1bf381dfef1a","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:108b671a-c04a-440b-8bf8-265e839d501b","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:10c7070d-7f1e-4576-878a-8a6bea46275d","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:14edbb11-3bda-4ce8-ba67-3d865de62472","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:1513e539-85e4-4138-b896-d5c7209e4ce3","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:17bfe99a-8a75-45a1-868b-0849ed591444","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:17e30968-bd11-4ce6-b1f8-e8b6a4357d20","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:19423582-2a88-4548-96f1-f1e8efce321b","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:1a4cf122-163c-4289-b21a-25c92c63280c","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"d6fc3a10-48ae-4c14-8e77-94b7d4d6e048:seed:errors-workbench:import:1ba82342-52c4-4828-b6eb-e0fc1d3968e7","error":"This app’s import door is not ready for this export"}
+✔ Business wave approval gates bounded, authorized import progression (21106.810244ms)
+ℹ The actual bounded arrangement stays non-applying until destination review evidence and approval authority exist
+ℹ bounded arrangement: 10 actual signed status transports; no execution authority; previous migration ledger preserved
+ℹ Business separately approves actual Base execution children and completes only on destination aggregate reconciliation
+ℹ POINT1/2/3 PROBE: actual Base+SQLite via Business task/grant/HTTP door, source=3 native=6 > execution grant=2; exact parent/3 children; one final child missing leaves 4 native rows and head=null; same-lineage replay; aggregate-only completion
+ℹ POINT2 PROBE: actual destination approval expiry refuses fresh and already-signed child requests; exact one-way revocation is idempotent, cannot re-enable old capabilities, and preserves the complete baseline
+ℹ POINT4 PROBE: real Base complete baseline=3; global 0/3 catch-up agent-reviewed in policy; global 1/3 refuses before independent genuine separate-agent decision, rejects self/changed/replayed/revoked judgment, then actual reviewed catch-up and aggregate reconciliation use the same namespace/migration
+ℹ One plan approval asks for one approval per wave; the owner approves a wave over the door’s previews and only then does the server import
+ℹ Device credentials, task tokens and MCP tokens are refused on the wave doors and change nothing
+ℹ The scheduled import pass keeps moving the oldest runnable import while older imports wait on their owners
+ℹ Waves are read and approved within D1’s 100-parameter limit for every admitted size
+✔ Access-authorized suspension blocks installation ingress and switches the gateway until audited restoration (518.077477ms)
+✔ owner audit HTTP reads isolate entries and advance the cursor while refusing anonymous and widget callers (481.341571ms)
+✔ operator access export requires current staff and owner authority and isolates private data (2958.886523ms)
+ℹ data rights requires staff Access, current owner session and matching verified identity
+ℹ access and deletion dry runs leave all D1 rows and R2 bytes unchanged and describe the action
+ℹ access export contains owner data and files without another owner or authentication material
+✔ operator erasure removes only eligible owner data without stranding foreign keys (4535.52974ms)
+ℹ deletion removes exactly one owner and relational descendants, preserves append-only audit and foreign owner bytes
+ℹ deletion prerequisites and R2 failures never report deletion
+ℹ deletion handles real billing/credit descendants and does not strand foreign keys
+ℹ deletion erases an owner with a row in every table child-first, with foreign keys on, on main's migrations
+ℹ deletion erases an owner with a row in every table child-first, with foreign keys on, on production's order (087 after 088)
+ℹ deletion still refuses retained evidence, a paying Business and an open Business checkout, and changes nothing
+ℹ deletion breaks a self-reference by one statement and a cycle of foreign keys by deferring them
+ℹ tests 27
+ℹ suites 0
+ℹ pass 26
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 171095.492637
+
+✖ failing tests:
+
+test at tests/core/business-provisioning.test.ts:2101:1
+✖ A self-hosted Business prepares stable public trust and requires genuine app owner evidence, preserving historical attestations (792.533162ms)
+  AssertionError [ERR_ASSERTION]: a changed destination generation invalidates bounded authority before effects
+  
+  null !== 0
+  
+      at selfHostJourney (/workspace/platform/tests/helpers/business-self-host.ts:67:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

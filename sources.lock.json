@@ -1633,7 +1633,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "41f2cf65884334adbe4f9cb83f511da5f87b38ceaf1fb7852a868424d8bb8383",
+      "sha256": "86171125fb23ca81d4ffb9429e74d31d58ee9196b33d0175d09051a97e22f4ba",
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
@@ -2753,7 +2753,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "6c602d215f4aa56fc4dd8f9e1267a3df7845bbfde6e6e7df966b0fbc870893ad",
+      "sha256": "c748baa5b9ffa7534d64625d374f0270aab01b5f0bfe4d6fcb191369f0ab4168",
       "executable": false
     },
     "package.json": {
@@ -2965,7 +2965,7 @@
       "executable": false
     },
     "scripts/delivery/base/packaging.json": {
-      "sha256": "ed1311248216825351b92fb059bcd171dc7473ff1e8decb302bd3f3870160ce8",
+      "sha256": "cb20d579ad4bf2f90eff12a1f7e158b48419725553e56dc4671d31220a588328",
       "executable": false
     },
     "scripts/delivery/base/paths.mjs": {
@@ -3045,7 +3045,7 @@
       "executable": false
     },
     "scripts/deployment/environment.mjs": {
-      "sha256": "8d0a8c49ba3a323018aaa484b893e6d95dcb910b42b1708c613a139433e2b31a",
+      "sha256": "dd34a0b78074d39509e86233da4569b7eb147bd68b6d57e8f365ea59c2e0e8a3",
       "executable": false
     },
     "scripts/deployment/mail-declaration.mjs": {
@@ -6485,7 +6485,7 @@
       "executable": false
     },
     "src/modules/integrations/email-provider.ts": {
-      "sha256": "64c5fc80938c5024da37274c251fef2e58488f619ba739cd7ef5e1236e44a8a8",
+      "sha256": "9ebfe23dc96caaca9c3f7990b20c37bf991e84a89282bdb0dd816c9aa4ac7a2c",
       "executable": false
     },
     "src/modules/integrations/email-reply-address.ts": {
@@ -6513,7 +6513,7 @@
       "executable": false
     },
     "src/modules/integrations/email.ts": {
-      "sha256": "3cc89af00804b6f52974d988c19470a5e2cc17ce73384d63f7059fe21f67b16a",
+      "sha256": "ce61b7e2a47f256a4c18d4fcac719a80efb6bcf133ec4649c2f0b8d969cd3ee4",
       "executable": false
     },
     "src/modules/integrations/github-discovery.ts": {
@@ -6650,6 +6650,10 @@
     },
     "src/modules/integrations/mailboxes/types.ts": {
       "sha256": "8b88bb398aee8e1c116ae344c4275039baaedbe18bfdd69f41b2edd9835fcc8b",
+      "executable": false
+    },
+    "src/modules/integrations/mailgun-configuration.mjs": {
+      "sha256": "5b9f7143d88124e486a80898fb701f9cc304e33cb648acd5519519b9773f934c",
       "executable": false
     },
     "src/modules/integrations/message-mail-status.ts": {
@@ -7333,7 +7337,7 @@
       "executable": false
     },
     "src/modules/management/activation/types.ts": {
-      "sha256": "8234027b0a3f51ff29cf272dcc903881bdf5554aaeb64dea04723bd0c03e1c62",
+      "sha256": "60b69716dff9fdce85e9455b1559b975d00ba8cd785b19f201d518578efb31cc",
       "executable": false
     },
     "src/modules/management/admin.ts": {
@@ -14533,11 +14537,11 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "aac7f2dd687c97f2815d49efa9fc7eff72c95362c02084b5fc38f00aac15da95",
+      "sha256": "4776a6ac184dd1700a20042741e687949364ab98232a14907d42ade903aabfd7",
       "executable": false
     },
     "tests/helpers/email/complete-mail-edge.mjs": {
-      "sha256": "de52a5da07119b9e4e4945519f0066900bf80a2e997a5b0f56232d776bed26ad",
+      "sha256": "76e3dabf578b981bebc7af2a99ae642effdcfdbb242bc2384506057fe2eb9adf",
       "executable": false
     },
     "tests/helpers/email/complete-mail-outcomes.mjs": {
@@ -14562,6 +14566,10 @@
     },
     "tests/helpers/email/mailbox-provider.mjs": {
       "sha256": "eed1ee5b61e04c903d0fc1d79ec2fa02a2e4cb13acb8325591704a040d2684a5",
+      "executable": false
+    },
+    "tests/helpers/email/mailgun.mjs": {
+      "sha256": "9b452772b666ae24d5d799a53d6977f84bd46a04caefa3960c2e66e276734c88",
       "executable": false
     },
     "tests/helpers/email/outbound-configuration.mjs": {

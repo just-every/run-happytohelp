@@ -58,6 +58,10 @@ async function sendThroughSelectedProvider(env:Env,input:EmailInput,from:string,
   const receipt=await sendGridDelivery(env,input,from)
   return receipt.providerMessageId
  }
+ if(selectedEmailProvider(env)==='mailgun'&&!emailConfigured(env)){
+  await updateDelivery(env,input.idempotencyKey,'failed','Mailgun sending configuration is unavailable')
+  throw new HTTPException(503,{message:'Mailgun sending configuration is unavailable'})
+ }
  const response=await notificationFetch(...providerRequest(env,input,from))
  if(!response.ok){await updateDelivery(env,input.idempotencyKey,response.status>=500?'uncertain':'failed',`Provider HTTP ${response.status}`);throw new HTTPException(502,{message:'Email provider rejected delivery'})}
  const receipt=providerReceipt(env,await response.json(),input.to)

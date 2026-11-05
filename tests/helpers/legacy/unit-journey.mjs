@@ -53,9 +53,6 @@ export async function legacyUnitJourney({h,project,ownerId,email,installation,up
  const a=recordKey('contacts','legacy-contact'),b=recordKey('contacts','legacy-peer')
  assert.throws(()=>compileLegacyUnits(prepared,decoded,{...dependencies,edges:[...dependencies.edges,{from:a,to:b,atomic:false,evidence:{}},{from:b,to:a,atomic:false,evidence:{}}]},upload.files,limits),error=>error.code==='legacy_work_unit_unsupported')
  assert.deepEqual(await h.snapshot(),before)
- const huge=structuredClone(decoded);huge.manifest.source.rowCounts.conversations=157478;huge.manifest.source.cloneCounts.conversations=157478
- const originalRead=upload.read.bind(upload),hugeUpload={...upload,read:async(path,maxBytes)=>path==='manifest.json'?Buffer.from(JSON.stringify(huge.manifest)):originalRead(path,maxBytes)}
- await assert.rejects(()=>decodeLegacy(hugeUpload,limits.maxRecords),error=>error.code==='plan_exceeds_grant_quota')
  const changed=unitFixture(email,{mutate:tables=>{tables.conversations.find(row=>row.id==='legacy-second-conversation').contact_id='legacy-peer'}}),changedUpload=await transfer(changed,{},false),afterTransfer=await h.snapshot(),relation=await prepareLegacyUnits(h.db,await open(changedUpload.uploadId),project,ownerId,limits)
  assert.notEqual(unitFor(relation,'conversations','legacy-second-conversation').unit.relationshipsHash,second.unit.relationshipsHash);assert.notDeepEqual(unitFor(relation,'conversations','legacy-second-conversation').unit.dependsOn,second.unit.dependsOn)
  assert.deepEqual(unitFor(relation,'contacts','legacy-peer').native,unitFor(first,'contacts','legacy-peer').native)

@@ -15865,11 +15865,11 @@
       "executable": false
     },
     "tests/helpers/legacy/signed-door.mjs": {
-      "sha256": "bf938083af2bfea3b8930b0377f9c8bb6f8067a5899fe0f1e87f815238757e40",
+      "sha256": "79a02c5ea83219c33fdd8ebe00541f9b27f2adf40394d588d7be16f917b25b00",
       "executable": false
     },
     "tests/helpers/legacy/unit-journey.mjs": {
-      "sha256": "4167bf8952ba38d7176190a71dc831e34ce5c5c8cef4eff0232e9c1d1d5b0c4e",
+      "sha256": "50d24eecf0add0b013cb379c42185269d9facfd6e002b4f29a1f9205d0092da8",
       "executable": false
     },
     "tests/helpers/mail-provider-network.mjs": {

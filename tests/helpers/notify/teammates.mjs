@@ -1,6 +1,7 @@
 import {notificationTicketScopeAssertions} from '../ai/ticket-scope.mjs'
 import assert from 'node:assert/strict'
 import {recipients} from '../email/app.mjs'
+import {slackNoticeJourney} from './slack-notices.mjs'
 
 export async function teammateOutcomes(m,brands){
  await notificationTicketScopeAssertions(m)
@@ -69,4 +70,6 @@ export async function teammateOutcomes(m,brands){
  assert.equal(mail.sent.slice(beforeRevoke).filter(e=>recipients(e.body).includes(address)).length,0,'revoked members receive neither customer updates nor mentions')
  assert.equal((await app.call(base+'/notification-inbox',{token:w.tokens.operator})).status,401,'revoked members cannot read old ticket notices')
  assert.equal((await app.call(`${desk}/conversations/${id}/ticket`,{token:w.tokens.operator})).status,401,'the same current membership gates the ticket')
+ // Personal Slack leg of the same acceptance point: its own workspace, Slack's network edge faked.
+ await slackNoticeJourney()
 }

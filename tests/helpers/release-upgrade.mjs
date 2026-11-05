@@ -12,6 +12,7 @@ import {baselines, repository} from './upgrade-baselines.mjs';
 import {findDatabase, snapshot, schema, bucketSnapshot} from './upgrade-snapshot.mjs';
 import {expectedMigrationRows, expectedSchema, schemaExceptions} from './upgrade-exceptions.mjs';
 import {readBack, priorState} from './upgrade-readback.mjs';
+import {restoredOwnerEntryReady} from './recovery/knowledge-ready.mjs';
 
 
 // Prior-data upgrade: build each released source, populate it through its own
@@ -104,7 +105,8 @@ async function upgrade(label) {
       assert.deepEqual(order, declared, 'The previous release receives exactly the listed release and pending source migrations in order');
     }
     assert.ok(receipt.files.identical, 'Stored files changed during upgrade');
-    current = await createRuntime({persist: state});
+    current = await createRuntime({persist: state, queueConsumers: true});
+    await restoredOwnerEntryReady(current);
     receipt.readBack = await readBack(current.origin, database, data, prior);
     receipt.seconds = Math.round((Date.now() - started) / 1000);
     if (evidence) { await mkdir(evidence, {recursive: true}); await writeFile(join(evidence, `upgrade-${label}.json`), JSON.stringify(receipt, null, 2) + '\n'); }

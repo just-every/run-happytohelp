@@ -14933,7 +14933,7 @@
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {
-      "sha256": "9b94eff5e7abd29a70a681d44497cedc6a1527c8574bf991a719b6a7e3982bb9",
+      "sha256": "622b80a120d36a205798b286df283de43a7832aa02311e6d925decd2c27b0c52",
       "executable": false
     },
     "tests/helpers/installer/reproducible.mjs": {
@@ -15141,7 +15141,7 @@
       "executable": false
     },
     "tests/helpers/recovery/knowledge-ready.mjs": {
-      "sha256": "46380c9787d2b2bdf9787a303e582b106ba0d12b566eddcd5ff4f89e88901c53",
+      "sha256": "2535cd1c75c377b497f450624a5294bdf966c5f637e02ae6f4b0140584f13d90",
       "executable": false
     },
     "tests/helpers/recovery/r4-data.mjs": {
@@ -15165,7 +15165,7 @@
       "executable": false
     },
     "tests/helpers/release-upgrade.mjs": {
-      "sha256": "fad7eecb5697684c8378deb1cc1aa60137640a461f632ab434a2f0f895d1ccfc",
+      "sha256": "a8bf549c8635b31e9cc53d67bacd9e8d2f9d37e8fd14895eb8af4d2fc5670ad3",
       "executable": false
     },
     "tests/helpers/reports-portable.mjs": {

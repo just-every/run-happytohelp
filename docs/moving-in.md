@@ -366,3 +366,49 @@ deadline with a hand calculation before using the policy for live work.
 A second identical import is a no-op. Undo removes an unchanged imported policy
 before its calendar. Native edits or activation preserve the policy; a calendar
 referenced by a remaining policy is also preserved.
+
+## Business import door
+
+A Business-authorized installation can carry `RER_IMPORT_DOOR=on` with its
+owner-claim trust and canonical owner email. Its first native owner claim opens
+Business imports without an extra owner task. The claim's original live workspace
+is bound on the server. Ordinary self-host leaves the variable unset; hosting
+mode and a self-attested claim alone supply no authority. A genuinely linked,
+claimed self-host installation needs the same Business-authorized trust and flag.
+Actual Business linkage and platform-minted grants remain externally unqualified.
+
+Business uses Base's ES256, action-bound, single-use grants at
+`POST /api/rer/import/{uploads,plan,apply,status,reconcile,undo,cancel,archive,restore-check}`.
+Only `zendesk` is accepted. Upload one complete documented offline NDJSON or ZIP
+bundle inside the existing 2 MiB, 5,000-record and 128 KiB-per-ticket limits.
+The preview reports source counts by kind and the exact bundle digest and
+review fingerprint. Apply requires that reviewed fingerprint and Business's
+opaque agent-policy approval record. The approval does not represent an owner
+click. Imports retain historical messages and private notes, send nothing, grant
+historical staff no access, and stay excluded from Reports. Strict undo preserves
+native edits by refusing a conflicting reversal.
+
+The claimed owner can read or POST `{enabled, revokedKids?}` to
+`/api/move-in/projects/:projectId/business-imports`. Admins and operators cannot
+use this backend control. Closing the door returns grant requests to 404;
+subsequent claims and sign-ins never reopen it. Key revocations persist. Restored
+portable data starts with Business imports disabled and retains consumed grant nonces only as replay fences.
+The existing owner/admin Move in upload, review, apply and undo doors remain.
+There is no new UI or cutover route.
+
+Well-formed Zendesk articles with boolean `draft` and an explicit restricted
+`user_segment_id` or non-empty array `user_segment_ids` are **held back** with a
+source-located reason. They count as unmapped/explained, never rejected or native
+successes, and create no article, category, link, redirect, search or retrieval
+content. Drafts remain drafts. Unknown/malformed audiences and all other existing
+refusals remain rejections. A later public-to-restricted change is a conflict;
+public content is never silently replaced. Live Help Center import is separate
+and remains under KNOWLEDGE-002/MOVE-IN-002 custody.
+
+Inbox search accepts the exact original Zendesk ticket ID, with or without `#`,
+under the same workspace and ticket permissions as every other inbox query.
+Erasure withdraws door upload, snapshot and archive custody and fences same or
+corrected source identities. Workspace deletion also withdraws opaque door
+custody. These are documented-format, synthetic-only behaviors; real exports,
+Business stage rehearsal, signed receipts, catch-ups and live cutover remain
+unqualified dependencies. `importers.json` therefore remains `importer_unverified`.

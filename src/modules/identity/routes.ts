@@ -1,3 +1,4 @@
+import {healImportDoor} from '../move-in/door/authority'
 import { Hono } from 'hono'
 import type { AppEnv } from '../../platform/env'
 import { requireActor,requireProject } from '../../platform/auth'
@@ -28,7 +29,7 @@ routes.route('/',magicLink)
 routes.route('/',twoFactor)
 routes.route('/',emailStepUp)
 routes.route('/',ownerRecovery)
-routes.get('/session',async c=>{const {security,...actor}=await requireActor(c),twoFactor=security?pendingFactor(security):null;return c.json(twoFactor?{...actor,twoFactor}:actor)})
+routes.get('/session',async c=>{const {security,...actor}=await requireActor(c),twoFactor=security?pendingFactor(security):null;await healImportDoor(c.env,actor.id);return c.json(twoFactor?{...actor,twoFactor}:actor)})
 routes.delete('/session',async c=>{await endSession(c);return c.json({revoked:true})})
 routes.get('/projects/:projectId',async c=>{await requireProject(c,c.req.param('projectId'),true);return c.json(await c.env.DB.prepare('SELECT id,name,widget_key,allowed_origin,created_at FROM projects WHERE id=?').bind(c.req.param('projectId')).first())})
 

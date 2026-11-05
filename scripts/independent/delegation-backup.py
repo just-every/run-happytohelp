@@ -44,6 +44,9 @@ def sanitize(sql):
         db.executescript(sql)
         db.execute('PRAGMA foreign_keys=OFF')
         tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        if 'ik_door_settings' in tables:
+            # A restored installation retains replay fences, never an open door.
+            db.execute('UPDATE ik_door_settings SET enabled=0')
         for table in CREDENTIAL_TABLES + KNOWLEDGE_PRIVATE_TABLES:
             if table in tables:
                 db.execute(f'DELETE FROM "{table}"')

@@ -62,7 +62,7 @@ export function providerRequest(env:Env,input:EmailInput,from:string):[string,Re
   }
   // Mailgun documents no message-send idempotency header. The durable native
   // delivery claim fences replays, including a lost response or missing receipt.
-  return [origin+'/v3/'+domain+'/messages',{method:'POST',headers:{Authorization:'Basic '+btoa('api:'+key)},body,redirect:'error',signal:AbortSignal.timeout(20000)}]
+  return [origin+'/v3/'+domain+'/messages',{method:'POST',headers:{Authorization:'Basic '+btoa('api:'+key)},body,redirect:'manual',signal:AbortSignal.timeout(20000)}]
  }
  const cloudflare=provider==='cloudflare'
  return [cloudflare?`https://api.cloudflare.com/client/v4/accounts/${env.EMAIL_ACCOUNT_ID}/email/sending/send`:'https://api.resend.com/emails',{

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {generate} from '../../move-in/generator.mjs'
 import {completeMailEdge,customerMime} from './complete-mail-edge.mjs'
 import {validateRuntimeEnvironment,runtimeVariables,runtimeSecrets} from '../../../scripts/deployment/environment.mjs'
 
@@ -26,6 +27,7 @@ export async function mailgunJourney(){
   if(responseMode==='redirect')return new Response(null,{status:307,headers:{Location:'https://untrusted.example/messages'}})
   return Response.json({id,message:'Queued. Thank you.'})
  }})
+ console.log('PROBE Mailgun: native workspace and forwarding mailbox ready')
  const {app,token,projectId,ok}=m,foreign=await app.seedWorkspace('synthetic-mailgun-foreign'),settings=m.base+'/email-settings'
  try{
   // Runtime/deployment consume the same named secret, without copying it into
@@ -52,6 +54,7 @@ export async function mailgunJourney(){
    assert.equal(refused.status,503)
    assert.equal(wires.length,before,'unavailable configuration cannot call any provider')
   }
+  console.log('PROBE POINT2: missing/unknown key names, unavailable key, domain and region errors refused before sending')
   await app.configure({...configured,MAILGUN_REGION:undefined})
   const first=await verify('synthetic-hh-owner-verification')
   assert.equal(first.status,200);assert.equal(first.data.state,'sent');assert.equal(first.data.id,wires.at(-1).id)
@@ -97,11 +100,12 @@ export async function mailgunJourney(){
   assert.equal(attachment.name,'return-label.txt');assert.equal(attachment.type,'text/plain')
   assert.equal(await attachment.text(),'Synthetic return label bytes')
   assert.equal((await app.first('SELECT provider_id FROM email_deliveries WHERE id=?','message:'+sent.message.id+':notification')).provider_id,wire.id)
+  console.log('PROBE POINT1: owner inbox reply reaches Mailgun EU multipart HTTP edge with named key, support From, recipients, thread headers and attachment')
   const attempts=wires.length
   await reply('synthetic-mailgun-owner-reply','Your replacement ships today.');await app.drainJobs()
   assert.equal(wires.length,attempts)
   const denied=await app.call(path+'/messages',{token:foreign.tokens.owner,body:{...commands.get('synthetic-mailgun-owner-reply'),localId:'synthetic-mailgun-denied'}})
-  assert.equal(denied.status,403);assert.equal(wires.length,attempts)
+  assert.equal(denied.status,404,'the native ticket door hides another tenant’s conversation');assert.equal(wires.length,attempts)
   await m.deliver(customerMime(m,{id:'synthetic-mailgun-follow',to:form.get('h:Reply-To'),subject:'Changed subject',headers:'In-Reply-To: '+form.get('h:Message-ID')+'\r\n'}),{envelopeTo:form.get('h:Reply-To')})
   await app.drainJobs()
   assert.equal((await ok('/api/conversations')).conversations.length,1)
@@ -113,6 +117,8 @@ export async function mailgunJourney(){
    const prior=wires.length,failed=await reply('synthetic-mailgun-'+mode,'A distinct later answer '+mode)
    await app.until(async()=>await status(failed.message.id)===expected,{message:'Mailgun '+mode+' is '+expected})
    assert.equal(wires.length,prior+1)
+   const identity=wires.at(-1).body.get('h:Message-ID'),commandAttempts=()=>wires.filter(wire=>wire.body.get('h:Message-ID')===identity).length
+   assert.ok(identity);assert.equal(commandAttempts(),1)
    const rows=await app.sql('SELECT state,provider_id,error FROM email_deliveries WHERE id=?','message:'+failed.message.id+':notification')
    assert.equal(rows[0].state,expected);assert.equal(rows[0].provider_id,null)
    assert.ok(!JSON.stringify(rows).includes(configured.MAILGUN_SENDING_KEY))
@@ -120,8 +126,21 @@ export async function mailgunJourney(){
    await reply('synthetic-mailgun-'+mode,'A distinct later answer '+mode);await app.drainJobs()
    await app.db.prepare('UPDATE conversation_outbox SET delivered_at=NULL WHERE message_id=?').bind(failed.message.id).run()
    await app.scheduled()
-   assert.equal(wires.length,prior+1,mode+' never automatically replays')
+   assert.equal(commandAttempts(),1,mode+' never automatically replays this reply; separate queued notices keep their own identities')
+   assert.deepEqual(await app.sql('SELECT state,provider_id,error FROM email_deliveries WHERE id=?','message:'+failed.message.id+':notification'),rows)
   }
+  const beforeImport=wires.length,imports='/api/move-in/projects/'+projectId+'/imports'
+  const uploaded=(await app.ok(imports+'?vendor=zendesk',{token,raw:true,body:generate('zendesk',1),headers:{'X-Import-Filename':'synthetic-history.jsonl','X-Import-Schema':'2.16','Content-Type':'application/octet-stream'}})).data
+  await app.drainJobs()
+  const reviewed=(await ok(imports+'/'+uploaded.id)).data
+  assert.equal(reviewed.state,'ready');assert.equal(reviewed.plan.counts.rejected,0)
+  await ok(imports+'/'+uploaded.id+'/apply',{fingerprint:reviewed.plan.fingerprint});await app.drainJobs()
+  assert.equal((await ok(imports+'/'+uploaded.id)).data.state,'completed')
+  await app.scheduled()
+  assert.equal(wires.length,beforeImport,'imported history sends no email or notices through a configured Mailgun provider')
+  console.log('PROBE POINT3: reviewed Zendesk history imported through the native door with no sends or notices')
+  console.log('PROBE POINT2: rejected, rate-limited, server-error, lost-response, missing-receipt and redirect outcomes visible; retries never replay')
+  console.log('PROBE POINT3: anonymous and foreign-tenant sends refused; native reply threading and duplicate protection retained')
   assert.equal(m.edge.attempts,0,'Mailgun never falls back to the previous Resend transport')
  }finally{await m.close()}
 }

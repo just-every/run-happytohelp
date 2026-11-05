@@ -2045,7 +2045,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "738ee6e854a7fc6b87b2a4853e943ec5422231df0bce5b64e17cefc1dfa2bf33",
+      "sha256": "7fc49070b9ca9c7e9e719ae915bc19fac9eef442f33e22049611aae88e3382e5",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2057,7 +2057,7 @@
       "executable": false
     },
     "management/integration/managed-deploy.json": {
-      "sha256": "019727a2b678d17693cff6d2968c85fe6c59cf2529a4915e6dbee79df9d2d126",
+      "sha256": "0f3b9fdb10e841bb7d57e516d0ba8f43ec7dbf5b763bbc73849d52fb978720aa",
       "executable": false
     },
     "management/integration/native-setup.json": {
@@ -6485,7 +6485,7 @@
       "executable": false
     },
     "src/modules/integrations/email-provider.ts": {
-      "sha256": "9ebfe23dc96caaca9c3f7990b20c37bf991e84a89282bdb0dd816c9aa4ac7a2c",
+      "sha256": "b9452b1bb6146aa9ae55af8978c9030b5a6c7f0908f5ff55058ba7597cc6eddf",
       "executable": false
     },
     "src/modules/integrations/email-reply-address.ts": {
@@ -6513,7 +6513,7 @@
       "executable": false
     },
     "src/modules/integrations/email.ts": {
-      "sha256": "ce61b7e2a47f256a4c18d4fcac719a80efb6bcf133ec4649c2f0b8d969cd3ee4",
+      "sha256": "17c02ea05257ea53f2afeb44395f52fe22ab4bcedc7e30db970084276bb36d72",
       "executable": false
     },
     "src/modules/integrations/github-discovery.ts": {
@@ -14569,7 +14569,7 @@
       "executable": false
     },
     "tests/helpers/email/mailgun.mjs": {
-      "sha256": "9b452772b666ae24d5d799a53d6977f84bd46a04caefa3960c2e66e276734c88",
+      "sha256": "d870bc88d87afcfbf7d21a0408c7acaa5febe9e5bf2e5e48514a942610d03018",
       "executable": false
     },
     "tests/helpers/email/outbound-configuration.mjs": {

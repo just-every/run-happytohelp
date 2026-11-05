@@ -63,6 +63,7 @@ async function sendThroughSelectedProvider(env:Env,input:EmailInput,from:string,
   throw new HTTPException(503,{message:'Mailgun sending configuration is unavailable'})
  }
  const response=await notificationFetch(...providerRequest(env,input,from))
+ if(selectedEmailProvider(env)==='mailgun'&&response.status>=300&&response.status<400)throw new Error('Email provider redirect refused; delivery outcome unknown')
  if(!response.ok){await updateDelivery(env,input.idempotencyKey,response.status>=500?'uncertain':'failed',`Provider HTTP ${response.status}`);throw new HTTPException(502,{message:'Email provider rejected delivery'})}
  const receipt=providerReceipt(env,await response.json(),input.to)
  if(!receipt.accepted){await updateDelivery(env,input.idempotencyKey,'failed','Recipient permanently rejected');throw new HTTPException(502,{message:'Email recipient permanently rejected'})}

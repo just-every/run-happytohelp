@@ -6,7 +6,7 @@ import {recordKey,type PreparedLegacy} from './bridge'
 import type {DecodedLegacy} from './format'
 import {keys,quote,type LegacyTable} from './schema'
 import {targetId,type LegacyValue} from './targets'
-import {unitGroups,unitHash,unitRefusal,type LegacyDependency} from './unit-graph'
+import {unitCompare,unitGroups,unitHash,unitRefusal,type LegacyDependency} from './unit-graph'
 
 type Projection={owner:string;value:LegacyValue}
 /** Read installed schema and explicitly retained lineage anchors. This does no
@@ -83,6 +83,6 @@ export async function legacyUnitDependencies(db:D1Database,prepared:PreparedLega
  // Actual cross-entry FK cycles cannot be given an insert order by the current
  // native adapter. Soft publication/transcript cycles remain explicit closures.
  unitGroups([...source.keys()],edges.filter(edge=>edge.from!==edge.to&&(edge.evidence as {reason?:string}).reason==='foreign-key').map(edge=>({...edge,atomic:false})))
- return {destination,ownerId,preparedHash:unitHash([...prepared.mapping].sort(([a],[b])=>a.localeCompare(b))),edges,anchors:anchors.sort((a,b)=>canonicalJson(a).localeCompare(canonicalJson(b)))}
+ return {destination,ownerId,preparedHash:unitHash([...prepared.mapping].sort(([a],[b])=>unitCompare(a,b))),edges,anchors:anchors.sort((a,b)=>unitCompare(canonicalJson(a),canonicalJson(b)))}
 }
 export type LegacyUnitDependencies=Awaited<ReturnType<typeof legacyUnitDependencies>>

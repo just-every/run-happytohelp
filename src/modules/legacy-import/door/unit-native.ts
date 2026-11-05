@@ -2,7 +2,7 @@ import {Buffer} from 'node:buffer'
 import type {TargetEffect} from '../../import-kit/src/types'
 import {canonicalJson} from '../../import-kit/src/provenance/identity'
 import {legacyTargets,LEGACY_TARGET,targetId,type LegacyValue} from './targets'
-import {unitHash,unitRefusal} from './unit-graph'
+import {unitCompare,unitHash,unitRefusal} from './unit-graph'
 
 /** Inspect the actual adapter's inert SQL description, never execute it. This
  * describes its two persistent rows, rather than counting an effect as one row.
@@ -24,5 +24,5 @@ export function legacyUnitNative(effects:readonly TargetEffect[],destination:str
    const blobBytes=table==='legacy_door_blob_chunks'?Buffer.from(String(image.base64),'base64').length:0
    return {table,key:table==='legacy_door_targets'?canonicalJson([destination,effect.targetId]):effect.targetId,valueHash:unitHash(image),storedBytes:Buffer.byteLength(canonicalJson(image))+metadataBytes,blobBytes}
   })
- }).sort((a,b)=>a.table.localeCompare(b.table)||a.key.localeCompare(b.key))
+ }).sort((a,b)=>unitCompare(a.table,b.table)||unitCompare(a.key,b.key))
 }

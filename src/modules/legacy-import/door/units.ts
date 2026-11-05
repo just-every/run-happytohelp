@@ -11,7 +11,7 @@ import {LEGACY_LIMITS} from './limits'
 import {legacyUnitDependencies,type LegacyUnitDependencies} from './unit-dependencies'
 import {legacyUnitCustody} from './unit-custody'
 import {legacyUnitNative} from './unit-native'
-import {unitGroups,unitHash,unitRefusal} from './unit-graph'
+import {unitCompare,unitGroups,unitHash,unitRefusal} from './unit-graph'
 
 /** Pure source compilation. This is neither a census reader nor a bounded
  * runtime adapter: the existing complete preparation has already admitted the
@@ -19,7 +19,7 @@ import {unitGroups,unitHash,unitRefusal} from './unit-graph'
 export function compileLegacyUnits(prepared:PreparedLegacy,decoded:DecodedLegacy,dependencies:LegacyUnitDependencies,files:readonly DoorPackageFile[],input:ReaderLimits={}){
  const limits=limitsFor(input),records=new Map(prepared.records.map(record=>[recordKey(record.kind,record.sourceId),record])),maxRecords=Math.min(limits.maxRecords,LEGACY_LIMITS.records)
  if(records.size!==prepared.records.length||records.size!==prepared.mapping.size||[...prepared.mapping.keys()].some(key=>!records.has(key)))return unitRefusal('Prepared source identities and mapping do not cover each other exactly.')
- if(dependencies.preparedHash!==unitHash([...prepared.mapping].sort(([a],[b])=>a.localeCompare(b))))return unitRefusal('Dependency context differs from the prepared projection.')
+ if(dependencies.preparedHash!==unitHash([...prepared.mapping].sort(([a],[b])=>unitCompare(a,b))))return unitRefusal('Dependency context differs from the prepared projection.')
  if(prepared.records.length>LEGACY_LIMITS.records||prepared.nativeRows>LEGACY_LIMITS.records)throw new DoorError('plan_exceeds_grant_quota',413)
  const expected=Object.values(decoded.bundle.tables).reduce((n,rows)=>n+rows.length,0)+decoded.objects.length+1
  if(records.size!==expected||canonicalJson(records.get(recordKey('legacy-manifest',String(decoded.manifest.source.projectId)))?.payload)!==canonicalJson(decoded.manifest))return unitRefusal('Prepared source does not cover the complete decoded snapshot.')
@@ -31,7 +31,7 @@ export function compileLegacyUnits(prepared:PreparedLegacy,decoded:DecodedLegacy
  const units=groups.map(members=>{
   const group=members[0],source=members.map(id=>records.get(id)!),effects=members.flatMap(id=>prepared.mapping.get(id)!.effects),native=legacyUnitNative(effects,dependencies.destination)
   for(const row of native){const key=recordKey(row.table,row.key);if(owned.has(key))return unitRefusal('Two source units own the same physical native row.');owned.add(key)}
-  const dependsOn=[...new Set(dependencies.edges.filter(edge=>owner.get(edge.from)===group&&owner.get(edge.to)!==group).map(edge=>ids.get(owner.get(edge.to)!)!))].sort(),evidence=dependencies.edges.filter(edge=>owner.get(edge.from)===group).map(edge=>({...edge})).sort((a,b)=>canonicalJson(a).localeCompare(canonicalJson(b)))
+  const dependsOn=[...new Set(dependencies.edges.filter(edge=>owner.get(edge.from)===group&&owner.get(edge.to)!==group).map(edge=>ids.get(owner.get(edge.to)!)!))].sort(),evidence=dependencies.edges.filter(edge=>owner.get(edge.from)===group).map(edge=>({...edge})).sort((a,b)=>unitCompare(canonicalJson(a),canonicalJson(b)))
   const relationshipsHash=unitHash({edges:evidence,anchors:dependencies.anchors.filter(anchor=>owner.get(anchor.from)===group),dependencies:dependsOn.map(id=>[id,fingerprints.get(id)])}),{files:unitFiles,aliases}=custody.get(group)!
   const unit={id:ids.get(group)!,dependsOn,records:source,files:unitFiles,aliases,relationshipsHash},projectionHash=unitHash(native),fingerprint=unitHash({unit,native,custody:unitFiles.map(file=>files.find(declared=>declared.path===file.path)),dispositions:members.map(id=>[id,prepared.mapping.get(id)!.unmapped??[],prepared.mapping.get(id)!.rejection??null])})
   const sourceBytes=source.reduce((n,record)=>n+Buffer.byteLength(canonicalJson(record)),0),nativeBytes=native.reduce((n,row)=>n+row.storedBytes,0)

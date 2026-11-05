@@ -4,7 +4,7 @@ import {canonicalJson} from '../../import-kit/src/provenance/identity'
 import {recordKey,type PreparedLegacy} from './bridge'
 import {legacyBlobContext} from './blob-context'
 import type {DecodedLegacy} from './format'
-import {unitRefusal} from './unit-graph'
+import {unitCompare,unitRefusal} from './unit-graph'
 
 const alias=(kind:string,sourceId:string,role:'context'|'archive'|'rejected'|'metadata',files:string[])=>({kind,sourceId,role,files:files.sort()})
 const file=(path:string,role:'source'|'object'|'context',logicalBytes:number)=>({path,role,logicalBytes})
@@ -28,6 +28,6 @@ export function legacyUnitCustody(prepared:PreparedLegacy,decoded:DecodedLegacy,
  for(const record of prepared.records){const id=recordKey(record.kind,record.sourceId),mapped=prepared.mapping.get(id)!;if(mapped.rejection||!mapped.effects.length)addAlias(owner.get(id)!,alias('legacy-disposition:'+record.kind,record.sourceId,mapped.rejection?'rejected':'archive',recordFiles.get(id)??['manifest.json']))}
  if(fileOwners.size!==declared.size)return unitRefusal('A verified file has no compiler custody owner.')
  for(const {owner:id,value} of aliasOwners.values())byOwner.get(id)!.aliases.push(value)
- for(const value of byOwner.values()){value.files.sort((a,b)=>a.path.localeCompare(b.path));value.aliases.sort((a,b)=>recordKey(a.kind,a.sourceId).localeCompare(recordKey(b.kind,b.sourceId)))}
+ for(const value of byOwner.values()){value.files.sort((a,b)=>unitCompare(a.path,b.path));value.aliases.sort((a,b)=>unitCompare(recordKey(a.kind,a.sourceId),recordKey(b.kind,b.sourceId)))}
  return byOwner
 }

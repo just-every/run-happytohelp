@@ -3849,7 +3849,7 @@
       "executable": false
     },
     "scripts/installer/native-local.mjs": {
-      "sha256": "df742425e82f608e1bf66a566d64bc4dc0d8edda04a1722dd1abe089d5598bb2",
+      "sha256": "1f60fab1a1a55678365430c4f224f62b198b8aefda9104c5a925b464d5300655",
       "executable": false
     },
     "scripts/installer/offline-deploy.mjs": {

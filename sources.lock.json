@@ -7529,7 +7529,7 @@
       "executable": false
     },
     "src/modules/legacy-import/door/units.ts": {
-      "sha256": "405c12a297fdd47f5eb01bbcd34b29cd4dcdf35007f1b33e141da32a0af7fdc9",
+      "sha256": "25d0d32ea02e9cc0bbc906140711f9382663725bacd0dd2c212e0885ff844968",
       "executable": false
     },
     "src/modules/legacy-import/door/upload-custody.ts": {
@@ -15865,7 +15865,7 @@
       "executable": false
     },
     "tests/helpers/legacy/signed-door.mjs": {
-      "sha256": "2e3dd53571f5b4fe9c5d4dfdd1547f64bf17826c9d6b695604c4e04a765fedb8",
+      "sha256": "138ad7ec69566b6f45d2ccb8d0309cdb44e5bafffdd046ccfd9bf9adaadb3221",
       "executable": false
     },
     "tests/helpers/legacy/unit-journey.mjs": {

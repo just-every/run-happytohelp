@@ -1,3 +1,4 @@
+import {handleImportDoor} from './modules/move-in/door'
 import {businessProject} from './edition/agent-door/project.ts'
 import {handleAgentRequest} from './edition/agent-door/index.ts'
 import {helpscoutWebhooks} from './modules/api-integrations/helpscout'
@@ -53,6 +54,7 @@ import {voiceRoutes} from './modules/voice/routes'
 
 export const app = new Hono<AppEnv>()
 app.use('*',async(c,next)=>{const response=await handleAgentRequest(c.req.raw,c.env);if(response)return response;await next()})
+app.use('/api/rer/import/*',async(c,next)=>{const response=await handleImportDoor(c.req.raw,c.env);if(response)return response;await next()})
 app.use('/api/identity/widget/profile',visitorProfileCredential)
 app.use('/api/*',knowledgeHttpDoor)
 app.use('/delegation/*',knowledgeHttpDoor)

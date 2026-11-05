@@ -41,7 +41,7 @@ export function indexFile(file:ExportFile,vendor:Vendor,maxRecords:number=LIMITS
  catch(error){if(error instanceof Error&&error.message==='export_record_limit')throw error;positions.push({start:0,end:0,row:1,pointer:'',error:error instanceof TypeError?'invalid_utf8':error instanceof Error?error.message:'invalid_export'})}
  return positions
 }
-export function* parseFile(file:ExportFile,vendor:Vendor,start=0,limit=LIMITS.parseBatch,index=indexFile(file,vendor)):Generator<ParsedItem> {
+export function* parseFile(file:ExportFile,vendor:Vendor,start=0,limit:number=LIMITS.parseBatch,index=indexFile(file,vendor)):Generator<ParsedItem> {
  const hash=sha256(file.bytes);let raw:string;try{raw=new TextDecoder('utf-8',{fatal:true}).decode(file.bytes).replace(/^\uFEFF/,'')}catch{yield {ordinal:start,diagnostic:issue('invalid_utf8',file.name,1)};return}
  for(let ordinal=start;ordinal<Math.min(index.length,start+limit);ordinal++){
   const item=index[ordinal]

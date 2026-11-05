@@ -1,3 +1,5 @@
+import {withdrawDoorCustody} from '../move-in/door/erasure'
+import {erasureEnvironment} from './contact-erasure/authority'
 import {brandReports} from './brand-reports'
 import {brands} from './brands'
 import {recentMailboxProof} from '../identity/two-factor/state'
@@ -129,8 +131,10 @@ projects.delete('/projects/:projectId',async c=>{
      settings_json=excluded.settings_json,
      updated_at=excluded.updated_at
  `).bind(a.projectId,a.projectId,a.projectId,a.projectId,now,now,now)
+ await withdrawDoorCustody(erasureEnvironment(c.env,a.projectId,a.id,c.get('sessionHash')),a.projectId,a.id,{values:[`workspace:${a.projectId}`]},c.get('sessionHash'))
  await c.env.DB.batch<any>([
   archiveSettings,
+  c.env.DB.prepare('DELETE FROM h2h_import_door_identities WHERE project_id=?').bind(a.projectId),
   c.env.DB.prepare('UPDATE email_settings SET inbound_address=NULL,is_enabled=0,updated_at=? WHERE project_id=?').bind(now,a.projectId),
   c.env.DB.prepare('UPDATE sessions SET revoked_at=? WHERE project_id=?').bind(now,a.projectId),
   c.env.DB.prepare("UPDATE identity_tokens SET consumed_at=COALESCE(consumed_at,?) WHERE project_id=? AND kind='invite'").bind(now,a.projectId),

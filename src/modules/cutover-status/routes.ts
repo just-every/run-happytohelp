@@ -28,7 +28,7 @@ cutoverStatus.post('/',async c=>{
  const since=Date.parse(body.since)
  if(!Number.isFinite(since)||new Date(since).toISOString()!==body.since)return c.json({error:'invalid_request'},400)
  // One SQLite snapshot. Outbox rows are committed message events, not page views,
- // delivery receipts or a second count of their messages. Erased records stay out.
+ // delivery receipts or a second count of their messages. Only retained rows count.
  const row=await c.env.DB.prepare(`SELECT
   (SELECT count(*) FROM conversations WHERE project_id=?1 AND created_at>?2) AS conversations,
   (SELECT count(*) FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id

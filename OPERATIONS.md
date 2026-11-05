@@ -908,8 +908,9 @@ and returns the status object directly: `created_since` contains `conversations`
 and `messages`, `events_since` counts retained `conversation_outbox` message
 events committed strictly after `since`, and `last_event_at` is the latest retained
 event's ISO timestamp (or null). Counts cover only the native workspace linked in
-`h2h_business_project`; erased conversations/messages are excluded. An outbox
-event counts once regardless of delivery or retry. Imported messages without an
+`h2h_business_project`. Only events whose message and conversation remain stored
+count; content erasure retains transcript skeletons and their aggregate counts.
+An outbox event counts once regardless of delivery or retry. Imported messages without an
 outbox event contribute only to their honestly timestamped creation counts.
 
 This read requires a Base-verified ES256 RER grant with action `cutover-status`,

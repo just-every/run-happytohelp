@@ -10,18 +10,37 @@ function decode([type, value]) {
   return type === 'text' ? bytes.toString() : bytes;
 }
 
+function loadTables(db, before, beforeSchema, names) {
+  for (const name of names) {
+    db.exec(beforeSchema[name].sql);
+    const {columns, rows} = before[name];
+    const insert = db.prepare(`INSERT INTO ${quote(name)}(${columns.map(quote).join(',')}) VALUES(${columns.map(() => '?').join(',')})`);
+    for (const row of rows) insert.run(...JSON.parse(row).map(decode));
+  }
+}
+
+// Migration 298 inserts one relay row per eligible prior audit row. Earlier
+// releases have no agent door tables, so their new relay starts at zero.
+export function relayBackfillCount(before, beforeSchema) {
+  if (!before.agent_door_audit || !before.agent_door_state) return 0n;
+  const db = new DatabaseSync(':memory:', {enableForeignKeyConstraints: false});
+  try {
+    loadTables(db, before, beforeSchema, ['agent_door_audit', 'agent_door_state']);
+    const statement = db.prepare(`SELECT count(*) AS count FROM agent_door_audit
+      WHERE json_extract(row,'$.door')='mcp' AND json_extract(row,'$.consent') IS NOT NULL
+        AND (SELECT json_extract(envelope,'$.business') FROM agent_door_state WHERE id=1) IS NOT NULL`);
+    statement.setReadBigInts(true);
+    return statement.get().count;
+  } finally { db.close(); }
+}
+
 // Execute only the documented column transformations on the exact prior rows.
 // SQLite preserves json_set formatting, NULL predicates, defaults and upsert
 // selection; application triggers are deliberately absent from this expectation.
 export function expectedDataMigrations(before, beforeSchema, added) {
   const expected = {}, db = new DatabaseSync(':memory:', {enableForeignKeyConstraints: false});
   try {
-    for (const name of ['contacts', 'sessions', 'memberships', 'projects', 'project_settings', 'user_project_preferences']) {
-      db.exec(beforeSchema[name].sql);
-      const {columns, rows} = before[name];
-      const insert = db.prepare(`INSERT INTO ${quote(name)}(${columns.map(quote).join(',')}) VALUES(${columns.map(() => '?').join(',')})`);
-      for (const row of rows) insert.run(...JSON.parse(row).map(decode));
-    }
+    loadTables(db, before, beforeSchema, ['contacts', 'sessions', 'memberships', 'projects', 'project_settings', 'user_project_preferences']);
     if (added.includes('125_contact_email_proof.sql')) {
       // Only metadata_json.email_unproven for unsigned, email-bearing widget
       // contacts with a matching visitor session. Signed identities are retained.

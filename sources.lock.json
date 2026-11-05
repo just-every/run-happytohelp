@@ -15245,11 +15245,11 @@
       "executable": false
     },
     "tests/helpers/upgrade-data-expectations.mjs": {
-      "sha256": "434550334365351d326b42ca779ec51bed682b850787478e8939af5f9aff2457",
+      "sha256": "ac86535a1087877b2971a84d68efca96aa5030b9b695aa6c2841f34dd7ba2a45",
       "executable": false
     },
     "tests/helpers/upgrade-exceptions.mjs": {
-      "sha256": "fe4167d1a30201a281f75fd0dd6967aa0c029b6f60e0fcd28a008f8845e7f812",
+      "sha256": "9850d4c386185ae0fa9ffa828d4ccf05645b3dce461b99d540d90beb68237c3a",
       "executable": false
     },
     "tests/helpers/upgrade-interrupted-erasure.mjs": {

@@ -1,3 +1,4 @@
+import {legacyUnitJourney,unitFixture} from './unit-journey.mjs'
 import {legacyPrivacyProof} from './door-privacy.mjs'
 import {businessLegacySender} from './business-sender.mjs'
 import {fileURLToPath} from 'node:url'
@@ -26,11 +27,12 @@ export async function legacyDoorJourney(){
   await h.call(`/api/move-in/projects/${project}/business-imports`,json({enabled:true,revokedKids:['revoked']}));assert.equal((await h.raw('/api/rer/import/uploads',{...json({}),headers:{'Content-Type':'application/json',Authorization:'Bearer '+mint('uploads',{},'revoked')}})).response.status,403)
   const unsupported=packageFixture(doorFixture(email,{large:false}));unsupported.manifest.source.format='undeclared-format';const unsupportedId=await upload(Buffer.from(JSON.stringify(unsupported.manifest)),'rer-package.json');assert.equal((await call('plan',{uploadId:unsupportedId})).data.error,'seed_package_unsupported')
   const credential=packageFixture(doorFixture(email,{large:false,mutate:tables=>{tables.users[0].password='synthetic-refused-credential'}}));for(const bytes of credential.segments){await upload(bytes,'rer-segment');await upload(bytes,'rer-segment')}await assert.rejects(()=>upload(credential.manifestBytes,'rer-package.json'),/source_credential/);for(const segment of credential.manifest.segments)assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM ik_door_uploads WHERE bundle_sha256=?').bind(segment.sha256).first()).n,0)
-  const baseline=await h.snapshot(),fixture=doorFixture(email),outbound=h.outbound,queued=h.queued.length
+  const baseline=await h.snapshot(),fixture=unitFixture(email),outbound=h.outbound,queued=h.queued.length
   assert.ok(fixture.manifest.chunks.some(part=>part.bytes===4*1024*1024));assert.ok(fixture.bytes.length>2*1024*1024)
   const small=doorFixture(email,{large:false}),limited=await transfer(small),quota=await call('plan',{uploadId:limited.uploadId},{maxRecords:small.sourceCount});assert.equal(quota.response.status,413);assert.equal(quota.data.error,'legacy_native_expansion_exceeds_grant');assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM ik_door_plans').first()).n,0)
   const boundedPlan=await ok('plan',{uploadId:limited.uploadId}),boundedApproval={fingerprint:boundedPlan.fingerprint,approvalRecordId:'synthetic-lower-grant',approvedAt:'2026-11-05T00:00:00.000Z',maxRecords:small.sourceCount};assert.equal((await call('plan',{uploadId:limited.uploadId},{maxRecords:small.sourceCount})).data.error,'legacy_native_expansion_exceeds_grant');assert.equal((await call('apply',{planId:boundedPlan.planId,reviewedFingerprint:boundedPlan.fingerprint},boundedApproval)).data.error,'legacy_native_expansion_exceeds_grant');assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,0);await ok('cancel',{planId:boundedPlan.planId})
   const plan=await businessLegacySender(h,fixture,(action,namespace,changes)=>mint(action,{...changes,namespace})),uploaded={uploadId:plan.uploadId}
+  await legacyUnitJourney({h,project,ownerId:owner.userId,email,installation,uploadId:uploaded.uploadId,fixture,transfer})
   assert.equal(plan.summary.sourceRecords,fixture.sourceCount);assert.equal(plan.counts.rejected,0);assert.ok(plan.counts.effects>fixture.manifest.objects.length);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,0);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM legacy_door_blob_chunks').first()).n,0)
   assert.equal((await ok('plan',{uploadId:uploaded.uploadId})).planId,plan.planId)
   const approval=plan=>({fingerprint:plan.fingerprint,approvalRecordId:'synthetic-policy-approval',approvedAt:'2026-11-05T00:00:00.000Z'})

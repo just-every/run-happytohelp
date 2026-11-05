@@ -1677,7 +1677,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "3b84b94c2d8da6b45214a1af0205f386ac2dd79080706413bb82437ed3aa0dfd",
+      "sha256": "310df30c65e3a4b6c56096164e8d80e1e2bbf24da07d20e406596d0a63938616",
       "executable": false
     },
     "DEMO.md": {
@@ -7477,7 +7477,7 @@
       "executable": false
     },
     "src/modules/legacy-import/door/README.md": {
-      "sha256": "c5465613ea75ce1c362d90c57f1e5a7cdad09f61d903c16bddaeebf4f4dd3e28",
+      "sha256": "3664fa0ae7e4b7e159815a33cb24dea367b0ec71460144938e08a65359bdce63",
       "executable": false
     },
     "src/modules/legacy-import/door/references.ts": {
@@ -7506,6 +7506,26 @@
     },
     "src/modules/legacy-import/door/undo.ts": {
       "sha256": "8c6539014bf6138ecf6abda370b84cf6d7a813de9c67f6e4f353ca6555211483",
+      "executable": false
+    },
+    "src/modules/legacy-import/door/unit-custody.ts": {
+      "sha256": "56f563401f82e4c4606d2b9e1cecd10504e24f797c6e8952c461410d2a6fabd0",
+      "executable": false
+    },
+    "src/modules/legacy-import/door/unit-dependencies.ts": {
+      "sha256": "849a6e29cb1a8cb5d8261c7541e437d9adf6c05a79f129005cd78082226052b0",
+      "executable": false
+    },
+    "src/modules/legacy-import/door/unit-graph.ts": {
+      "sha256": "6006406f490ede20c51eea98e8c5292a9fe53140458cd1b3eb3cb4c5d2cdb07b",
+      "executable": false
+    },
+    "src/modules/legacy-import/door/unit-native.ts": {
+      "sha256": "17f7981963574c4f49ac6767aed9f4455fd58cbb14225e0fcc44a0cfcb2e040e",
+      "executable": false
+    },
+    "src/modules/legacy-import/door/units.ts": {
+      "sha256": "405c12a297fdd47f5eb01bbcd34b29cd4dcdf35007f1b33e141da32a0af7fdc9",
       "executable": false
     },
     "src/modules/legacy-import/door/upload-custody.ts": {
@@ -15821,7 +15841,7 @@
       "executable": false
     },
     "tests/helpers/legacy/door-fixture.mjs": {
-      "sha256": "a1b98d877ddcc4f9e7960f7ea64df5d0ce265286ba990ea5def6d10e01f469d0",
+      "sha256": "e08efe7a8d9495137deebe92e52ea1e92d8b3db7479b21c5babd62799d3d8c26",
       "executable": false
     },
     "tests/helpers/legacy/door-privacy.mjs": {
@@ -15837,7 +15857,11 @@
       "executable": false
     },
     "tests/helpers/legacy/signed-door.mjs": {
-      "sha256": "86aa5f8c2d4f287d7f8898ebb4141ed55f0927c1dbacdb10bfb2e3b6c41d17b9",
+      "sha256": "0ec1b3a0cc1ad3c417d6ba4ddb1f26320cb9dc28b4d461a4f584cf5d067be3e8",
+      "executable": false
+    },
+    "tests/helpers/legacy/unit-journey.mjs": {
+      "sha256": "fdf8bfa9575724daa1d6ae4d60a0e7ace2533f26ee4e214358a6f9391b624e51",
       "executable": false
     },
     "tests/helpers/mail-provider-network.mjs": {

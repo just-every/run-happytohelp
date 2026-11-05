@@ -78,3 +78,56 @@ Receiver/cleanup adoption uses only `package.ts`, `types.ts`, `planning.ts`,
 `5dd6b3c170dd50e494008e4b8f80050a6ff36e14`. Those bytes are separately recorded;
 other selected Base sources and HH adaptations retain their provenance. The
 bound donor is SAVED/unqualified, not accepted or integrated.
+
+## Nonapplying native work-unit compiler
+
+`prepareLegacyUnits` in `units.ts` uses the actual package decoder and
+`prepareLegacy`, including retained native transcript context, constraints,
+immutable financial history and the complete native-set preflight. It reads the
+installed foreign-key schema and retained lineage anchors, then calls the pure
+`compileLegacyUnits`. It does not index custody, save a plan, apply SQL or emit an
+import receipt. The ordinary package source still owns its identity indexing.
+No existing route uses this compiler. It is not an over-cap or census reader:
+the complete 157,478-record source still refuses the 100,000-record allowance.
+
+Every prepared source identity and its complete MappingResult stay together.
+Conversation/transcript and path-bound media/object/pivot closures coalesce;
+knowledge publication pointers, versions, documents, category links and article
+snapshots coalesce. Shared contacts remain separately owned dependencies. The
+compiler resolves installed foreign keys and explicit soft references from the
+prepared values, and uses existing Relationships/blob context for source media
+custody. Only the current project/owner and actual retained same-lineage native
+rows can be external anchors. Missing, foreign, ambiguous or unsupported
+references, cycles outside declared atomic closures, and over-bound indivisible
+groups refuse the compilation. There is no remainder or guessed order.
+
+Unit keys hash sorted source identities. Each unit has a dependency-first order,
+relationship digest, native projection digest and full fingerprint, committing
+its mapping dispositions, aliases, files and dependency fingerprints. File
+custody is assigned once even when a file contains rows from several units;
+context copies and archive/rejected/metadata identities are separate aliases.
+Repeated opaque blob aliases have one deterministic owner and retain all their
+file references. They do not grant shared-object or subject authority.
+
+The native projection reads the real target adapter's inert SQL descriptions.
+It counts both the business/chunk row and its `legacy_door_targets` origin row,
+including hold rows and the origin's duplicated chunk value. `storedBytes` is
+readable UTF-8 canonical JSON of the adapter's supplied column image, plus the
+fixed SHA-256 width of the kit-assigned origin revision; it is not a SQLite file
+allocation estimate. Origin fingerprints commit source-derived fields, excluding
+the future job revision. `blobBytes` counts decoded object bytes once in their
+chunk rows; encoded copies are included in native stored bytes. Kit journal and
+transient historical-write-fence rows are separate. These definitions permit
+comparison with the actual native storage door without inventing a future job.
+
+The returned `unit` and `native` shapes are structurally useful to the fixed
+Base 8ff `WaveUnit` and `WaveNativeRow` interfaces. No bounded-source adapter,
+authority predicate, census, approval, grant, migration or runtime is installed.
+The existing ordinary engine does not acquire cross-entry atomicity from these
+arrays. Later adoption must honor indivisible closures within its qualified
+transaction/checkpoint bounds, retain all existing native/erasure/Undo guards,
+and reconcile its exact installed native rows and runtime metadata. A complete
+nonapplying parent, finite approved budgets, separately approved ordered
+immutable children, one lineage, the previous complete head while partial, and
+all-child reconciliation with readable bytes and the gone boundary remain
+separate conditional obligations. Source/stack/review and release holds remain.

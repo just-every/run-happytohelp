@@ -38,10 +38,11 @@ export async function fenceAndStage(env: Env, projectId: string, contactId: stri
   return fenceImportErasure(env,projectId,contactId)
 }
 
-/** Delete staged objects from R2. Deleting an absent key succeeds, so retries are safe. */
+/** Legacy-door media is journaled D1 custody; its staged audit row never authorizes an R2 deletion.
+ * Delete staged objects from R2. Deleting an absent key succeeds, so retries are safe. */
 export async function deleteStagedObjects(env: Env, projectId: string, contactId: string) {
   let after='',total=0
-  for(;;){const rows=(await env.DB.prepare('SELECT object_key FROM contact_erasure_objects WHERE project_id=?1 AND contact_id=?2 AND object_key>?3 UNION SELECT object_key FROM move_in_erasure_objects WHERE project_id=?1 AND contact_id=?2 AND object_key>?3 ORDER BY object_key LIMIT ?4').bind(projectId,contactId,after,R2_DELETE_LIMIT).all<{object_key:string}>()).results
+  for(;;){const rows=(await env.DB.prepare("SELECT object_key FROM contact_erasure_objects WHERE project_id=?1 AND contact_id=?2 AND object_key>?3 AND object_key NOT LIKE 'legacy-door/%' UNION SELECT object_key FROM move_in_erasure_objects WHERE project_id=?1 AND contact_id=?2 AND object_key>?3 AND object_key NOT LIKE 'legacy-door/%' ORDER BY object_key LIMIT ?4").bind(projectId,contactId,after,R2_DELETE_LIMIT).all<{object_key:string}>()).results
     if(!rows.length)break
     await env.FILES.delete(rows.map(row=>row.object_key));total+=rows.length;after=rows.at(-1)!.object_key
   }

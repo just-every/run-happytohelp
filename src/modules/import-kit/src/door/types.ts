@@ -12,8 +12,29 @@ export interface ImportDoorRawUpload {
   readonly sha256: string;
   readonly size: number;
 }
+export interface DoorPackageFile { readonly path: string; readonly bytes: number; readonly sha256: string; readonly offset: number }
+export interface DoorPackageManifest {
+  format: 'rer-door-package/1'; source: {format: string; [key: string]: Json}; mode: string;
+  stream: {bytes: number; sha256: string}; segments: {bytes: number; sha256: string}[];
+  index: {path: 'index.ndjson'; bytes: number; sha256: string};
+  records: {total: number | null; byKind: Record<string, number>}; totals: Json;
+}
+export interface ImportDoorPackageUpload {
+  readonly manifest: Readonly<DoorPackageManifest>;
+  readonly files: readonly Readonly<DoorPackageFile>[];
+  /** A verified file, bounded by the declaration and the caller's optional tighter limit. */
+  read(path: string, maxBytes?: number): Promise<Uint8Array>;
+}
+export interface ImportDoorPackageSource {
+  formats: readonly string[];
+  maxBytes: number;
+  maxSegments: number;
+  /** Return the whole logical snapshot, never one plan per segment or record wave. */
+  read(upload: ImportDoorPackageUpload, limits: Readonly<Required<ReaderLimits>>): ParsedRecord[] | Promise<ParsedRecord[]>;
+}
 /** One decoded source; existing adapters may keep the mount's format. */
 export interface ImportDoorSource {
+  package?: ImportDoorPackageSource;
   mapping: ImportMapping;
   parse(value: Json, index: number): ParsedRecord | ParsedRecord[];
   ownerPrincipalId?: string;

@@ -46,6 +46,9 @@ export function runtimeOptions<T extends RuntimeConfiguration>(options: T): T & 
     || (options.format === 'raw' ? typeof options.readRaw !== 'function' || options.intake !== undefined
       : typeof options.parse !== 'function')) throw new DoorError('invalid_configuration',503);
   if (options.intake !== undefined) intakeIdentity(options.intake);
+  const pkg = options.package;
+  if (pkg && (options.intake || !Array.isArray(pkg.formats) || !pkg.formats.length || pkg.formats.some(f=>typeof f!=='string' || !f.trim())
+    || !Number.isSafeInteger(pkg.maxBytes) || pkg.maxBytes < 1 || !Number.isSafeInteger(pkg.maxSegments) || pkg.maxSegments < 1 || typeof pkg.read !== 'function')) throw new DoorError('invalid_configuration',503);
   return options as T & ImportDoorRuntime;
 }
 /** Server-side mount only. A null response belongs to another dispatcher. Every

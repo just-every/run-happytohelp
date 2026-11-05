@@ -1,0 +1,21 @@
+import type {D1Database} from '../../import-kit/src/d1/types'
+import type {Row} from '../types'
+import {invalid} from './format'
+
+/** Only pure legacy mapper destinations and explicit inert dependants. Neither
+ * source input nor retained metadata can choose an arbitrary SQL table. */
+export const keys={users:['id'],user_settings:['user_id'],memberships:['project_id','user_id'],contacts:['id'],context_subjects:['project_id','subject_id'],conversations:['id'],conversation_ai:['conversation_id'],conversation_buckets:['id'],messages:['id'],conversation_notes:['id'],conversation_participants:['id'],media:['id'],ai_profiles:['id'],ai_defaults:['id'],knowledge_datasets:['id'],knowledge_versions:['id'],knowledge_documents:['id'],knowledge_categories:['id'],knowledge_articles:['id'],knowledge_article_categories:['article_id','category_id'],knowledge_article_publications:['project_id','article_id','source_version'],macros:['id'],macro_heads:['macro_id'],macro_versions:['macro_id','version'],plugins:['id'],context_collectors:['project_id','subject_id'],context_actions:['id'],context_profiles:['project_id','subject_id','type'],context_evidence:['id'],context_insights:['id'],context_summaries:['id'],context_tracked_events:['id'],ai_generations:['id'],ai_attempts:['id'],ai_round_usage:['attempt_id','request_id'],local_grants:['id'],local_devices:['id'],local_device_settings:['device_id','project_id'],local_jobs:['id'],local_events:['job_id','event_id'],training_runs:['id'],training_cases:['id'],billing_accounts:['project_id'],billing_ledger:['id'],billing_operations:['id'],billing_usage_history:['id'],reporting_legacy_conversations:['project_id','conversation_id'],legacy_door_blob_chunks:['project_id','media_id','ordinal'],legacy_door_holds:['project_id','source_table','source_id','reason']} as const
+export type LegacyTable=keyof typeof keys
+export const quote=(name:string)=>{if(!/^[a-z][a-z0-9_]*$/.test(name))throw new Error('legacy_native_identifier');return '"'+name+'"'}
+export function tableName(value:string):LegacyTable{if(!Object.hasOwn(keys,value))throw new Error('legacy_native_table');return value as LegacyTable}
+export interface Column {name:string;type:string;notnull:number;dflt_value:string|null;pk:number;hidden?:number}
+const cache=new WeakMap<D1Database,Map<LegacyTable,Column[]>>()
+export async function columns(db:D1Database,table:LegacyTable){let shapes=cache.get(db);if(!shapes){shapes=new Map();cache.set(db,shapes)}let shape=shapes.get(table);if(!shape){shape=(await db.prepare(`PRAGMA table_xinfo(${quote(table)})`).all<Column>()).results;if(!shape.length)throw new Error('legacy_native_schema_missing');shapes.set(table,shape)}return shape}
+function defaultValue(sql:string|null):unknown{if(sql===null)return null;const s=sql.replace(/^\((.*)\)$/,'$1');if(/^NULL$/i.test(s))return null;if(/^[-+]?\d+(\.\d+)?$/.test(s))return Number(s);if(s.startsWith("'")&&s.endsWith("'"))return s.slice(1,-1).replaceAll("''", "'");throw new Error('legacy_native_default_requires_value')}
+export async function completeRow(db:D1Database,table:LegacyTable,input:Row):Promise<{row:Row;columns:string[];generated:string[];omitted:string[]}>{
+ const shape=await columns(db,table),row:Row={},names=shape.map(c=>c.name)
+ for(const c of shape){if(c.hidden)continue;let value=input[c.name]===undefined?defaultValue(c.dflt_value):input[c.name];if(value===null&&c.notnull)invalid('Legacy native projection lacks a required field.');if(typeof value==='boolean')value=value?1:0;if(typeof value==='number'&&/TEXT|CHAR/i.test(c.type))value=String(value);if(value!==null&&/INT|REAL|NUMERIC/i.test(c.type)&&typeof value==='string'&&/^[-+]?\d+(\.\d+)?$/.test(value)){value=Number(value);if(!Number.isFinite(value)||Number.isInteger(value)&&!Number.isSafeInteger(value))invalid('Legacy numeric projection exceeds exact native storage.')}row[c.name]=typeof value==='object'&&value!==null?JSON.stringify(value):value}
+ if(table==='knowledge_articles')row.publication_version=String(row.source_incarnation)+':'+String(row.source_revision)
+ for(const key of keys[table])if(row[key]===null||row[key]===undefined)invalid('Legacy native projection lacks its complete identity.')
+ return {row,columns:names,generated:shape.filter(c=>c.hidden).map(c=>c.name),omitted:Object.keys(input).filter(key=>!names.includes(key))}
+}

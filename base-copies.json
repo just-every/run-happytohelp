@@ -3382,94 +3382,394 @@
       ]
     },
     {
-      "path": "src/modules/import-kit/src/door",
-      "originPath": "modules/import-kit/src/door",
+      "path": "src/modules/import-kit/src/door/admission.ts",
+      "originPath": "modules/import-kit/src/door/admission.ts",
+      "revision": "5dd6b3c170dd50e494008e4b8f80050a6ff36e14",
+      "files": {
+        "src/modules/import-kit/src/door/admission.ts": "31f925ba4bb05b6408385d1e9c0928d7c3321f0afaad86dc4c013507db8a73cc"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/admission.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/admission.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/ADOPTING.md",
+      "originPath": "modules/import-kit/src/door/ADOPTING.md",
       "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
       "files": {
-        "src/modules/import-kit/src/door/admission.ts": "8f35144e2dce9518dca504783b288a5d496919649f71f0f580d8066b3af784e8",
-        "src/modules/import-kit/src/door/ADOPTING.md": "4e817164806b382efb1dbd950aee33b8810a892d37243bc8e464ab241f436525",
-        "src/modules/import-kit/src/door/archive.ts": "349a6c4ba23cacb21b6e6a7c014ac7373d278b5a668966ef0246cebb5a0aa354",
-        "src/modules/import-kit/src/door/authority.ts": "1ce2dc859d114e076bc2ad9a731565b18527bde20109ee1ff83e3342c0c9ca6a",
-        "src/modules/import-kit/src/door/failures.ts": "74bf5247fb8976924ce4b6de84fabd0aedd82bb8fcf03e4d8aa8b6baa3105f1e",
-        "src/modules/import-kit/src/door/grants.ts": "93d87a2673a5e6c2ea33eee4e42aec4e9afe5fa32a795bb1dd56dfc5ae9b3b52",
-        "src/modules/import-kit/src/door/handler.ts": "ffc70cf01cfb91035edfe567fcc058127567254873350311bd262c4ffab5ceaa",
-        "src/modules/import-kit/src/door/index.ts": "67489c928b090225818971d89f4ed66a4f940bc9d3bb751514386e8c629234da",
-        "src/modules/import-kit/src/door/intake-policy.ts": "c8814605021d9bd32b7f36af0d344530154707e736c93c863a3a4bc693021f59",
-        "src/modules/import-kit/src/door/intake-upload.ts": "e0c740e9650a649f36d640cdeb8dad5dfa11ed934d2086caa59c2acb58ac8131",
-        "src/modules/import-kit/src/door/intake/csv.ts": "5f34704d2e9e3814330342e50e8866471c924c0bab423109470f6bf48165d9f2",
-        "src/modules/import-kit/src/door/intake/json.ts": "a5eea8e5c5fd5dae01275a8fe7b6ca1c66841f5ea1b41751da3f0d79e80de415",
-        "src/modules/import-kit/src/door/intake/projection.ts": "cd9c439f60c9c5180acea395d8ed0edd285624851a56b942197d3ea2c063a039",
-        "src/modules/import-kit/src/door/intake/types.ts": "97fea2ccdb3bfb85bec82f8429fe11ebbdbcff437383ea20b1293d2e147426a1",
-        "src/modules/import-kit/src/door/inventory.ts": "0e080c4d14fb501099bf3dece0a2dcb624c4aa4e3a6ec0fe35fc07a944ef9e46",
-        "src/modules/import-kit/src/door/jobs.ts": "556787ef97ee3988edf1eec3a8a2993e4150c5b2e344d67edf0e0ae7b0205010",
-        "src/modules/import-kit/src/door/limits.ts": "3e9c4c9d6ff062c94531dfb1e8621e9a30983aa23e4893ae664f1cb2bc074b5d",
-        "src/modules/import-kit/src/door/operator.ts": "2ba4c679bb17edd92697a890f50957e84223eb8e16efdd1b07e0d2dc3fb6cd43",
-        "src/modules/import-kit/src/door/planning.ts": "dd6ccb3069ff0c8bb29a82bd408bd8fa4a030fee230bd39433b05dc728a025bc",
-        "src/modules/import-kit/src/door/protocol.ts": "2c1a9b04609a64b27768cded64bdef3f3155405882c5a74a6c9336fa6a631d4c",
-        "src/modules/import-kit/src/door/raw.ts": "bd1717c736d62367081ef57601b3dedb72dba9cb7afb770b45b9fa330573e3c1",
-        "src/modules/import-kit/src/door/README.md": "14e940323738d713b07cdc07e8eb602638be20208136fda638da8251cec08969",
-        "src/modules/import-kit/src/door/refusals.ts": "4c8c0c4f3a2c3da2fe666fde2dfb829e4c369032b1062928fac421debe0d2d24",
-        "src/modules/import-kit/src/door/schema.ts": "51f8231be89be178e31fd78c07198d6f6661fe246d9b38f94236298f35d3d5d7",
-        "src/modules/import-kit/src/door/store.ts": "ab418e02292a52929b3560a241ead4047252873eae685701dad2783010afab69",
-        "src/modules/import-kit/src/door/types.ts": "7413afb4be8765c89f83a839fea570e336c002be66bc86f957a43bd03c1d2ed1",
+        "src/modules/import-kit/src/door/ADOPTING.md": "4e817164806b382efb1dbd950aee33b8810a892d37243bc8e464ab241f436525"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/ADOPTING.md": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/ADOPTING.md"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/archive.ts",
+      "originPath": "modules/import-kit/src/door/archive.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/archive.ts": "349a6c4ba23cacb21b6e6a7c014ac7373d278b5a668966ef0246cebb5a0aa354"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/archive.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/archive.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/authority.ts",
+      "originPath": "modules/import-kit/src/door/authority.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/authority.ts": "1ce2dc859d114e076bc2ad9a731565b18527bde20109ee1ff83e3342c0c9ca6a"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/authority.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/authority.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/failures.ts",
+      "originPath": "modules/import-kit/src/door/failures.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/failures.ts": "74bf5247fb8976924ce4b6de84fabd0aedd82bb8fcf03e4d8aa8b6baa3105f1e"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/failures.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/failures.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/grants.ts",
+      "originPath": "modules/import-kit/src/door/grants.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/grants.ts": "93d87a2673a5e6c2ea33eee4e42aec4e9afe5fa32a795bb1dd56dfc5ae9b3b52"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/grants.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/grants.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/handler.ts",
+      "originPath": "modules/import-kit/src/door/handler.ts",
+      "revision": "5dd6b3c170dd50e494008e4b8f80050a6ff36e14",
+      "files": {
+        "src/modules/import-kit/src/door/handler.ts": "bf43839ccee4359fb6229838442d3fc4383b013f489e9122e762a071a10902a1"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/handler.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/handler.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/index.ts",
+      "originPath": "modules/import-kit/src/door/index.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/index.ts": "67489c928b090225818971d89f4ed66a4f940bc9d3bb751514386e8c629234da"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/index.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/index.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/intake-policy.ts",
+      "originPath": "modules/import-kit/src/door/intake-policy.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/intake-policy.ts": "c8814605021d9bd32b7f36af0d344530154707e736c93c863a3a4bc693021f59"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/intake-policy.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/intake-policy.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/intake-upload.ts",
+      "originPath": "modules/import-kit/src/door/intake-upload.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/intake-upload.ts": "e0c740e9650a649f36d640cdeb8dad5dfa11ed934d2086caa59c2acb58ac8131"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/intake-upload.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/intake-upload.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/intake/csv.ts",
+      "originPath": "modules/import-kit/src/door/intake/csv.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/intake/csv.ts": "5f34704d2e9e3814330342e50e8866471c924c0bab423109470f6bf48165d9f2"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/intake/csv.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/intake/csv.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/intake/json.ts",
+      "originPath": "modules/import-kit/src/door/intake/json.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/intake/json.ts": "a5eea8e5c5fd5dae01275a8fe7b6ca1c66841f5ea1b41751da3f0d79e80de415"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/intake/json.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/intake/json.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/intake/projection.ts",
+      "originPath": "modules/import-kit/src/door/intake/projection.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/intake/projection.ts": "cd9c439f60c9c5180acea395d8ed0edd285624851a56b942197d3ea2c063a039"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/intake/projection.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/intake/projection.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/intake/types.ts",
+      "originPath": "modules/import-kit/src/door/intake/types.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/intake/types.ts": "97fea2ccdb3bfb85bec82f8429fe11ebbdbcff437383ea20b1293d2e147426a1"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/intake/types.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/intake/types.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/inventory.ts",
+      "originPath": "modules/import-kit/src/door/inventory.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/inventory.ts": "0e080c4d14fb501099bf3dece0a2dcb624c4aa4e3a6ec0fe35fc07a944ef9e46"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/inventory.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/inventory.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/jobs.ts",
+      "originPath": "modules/import-kit/src/door/jobs.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/jobs.ts": "556787ef97ee3988edf1eec3a8a2993e4150c5b2e344d67edf0e0ae7b0205010"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/jobs.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/jobs.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/limits.ts",
+      "originPath": "modules/import-kit/src/door/limits.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/limits.ts": "3e9c4c9d6ff062c94531dfb1e8621e9a30983aa23e4893ae664f1cb2bc074b5d"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/limits.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/limits.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/operator.ts",
+      "originPath": "modules/import-kit/src/door/operator.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/operator.ts": "2ba4c679bb17edd92697a890f50957e84223eb8e16efdd1b07e0d2dc3fb6cd43"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/operator.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/operator.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/package.ts",
+      "originPath": "modules/import-kit/src/door/package.ts",
+      "revision": "5dd6b3c170dd50e494008e4b8f80050a6ff36e14",
+      "files": {
+        "src/modules/import-kit/src/door/package.ts": "9d956ec68c3333d7ea251f4ec17fe51024f0ecc44bdb86c6fc7b6fdd7c2bac30"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/package.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/package.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/planning.ts",
+      "originPath": "modules/import-kit/src/door/planning.ts",
+      "revision": "5dd6b3c170dd50e494008e4b8f80050a6ff36e14",
+      "files": {
+        "src/modules/import-kit/src/door/planning.ts": "7c606a908b485af02bbf54f8f04b3f9beb8892140eeeb65fc3c4d9221cadbc03"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/planning.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/planning.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/protocol.ts",
+      "originPath": "modules/import-kit/src/door/protocol.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/protocol.ts": "2c1a9b04609a64b27768cded64bdef3f3155405882c5a74a6c9336fa6a631d4c"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/protocol.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/protocol.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/raw.ts",
+      "originPath": "modules/import-kit/src/door/raw.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/raw.ts": "bd1717c736d62367081ef57601b3dedb72dba9cb7afb770b45b9fa330573e3c1"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/raw.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/raw.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/README.md",
+      "originPath": "modules/import-kit/src/door/README.md",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/README.md": "14e940323738d713b07cdc07e8eb602638be20208136fda638da8251cec08969"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/README.md": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/README.md"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/refusals.ts",
+      "originPath": "modules/import-kit/src/door/refusals.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/refusals.ts": "4c8c0c4f3a2c3da2fe666fde2dfb829e4c369032b1062928fac421debe0d2d24"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/refusals.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/refusals.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/schema.ts",
+      "originPath": "modules/import-kit/src/door/schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/schema.ts": "51f8231be89be178e31fd78c07198d6f6661fe246d9b38f94236298f35d3d5d7"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/schema.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/schema.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/store.ts",
+      "originPath": "modules/import-kit/src/door/store.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
+        "src/modules/import-kit/src/door/store.ts": "ab418e02292a52929b3560a241ead4047252873eae685701dad2783010afab69"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/store.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/store.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/types.ts",
+      "originPath": "modules/import-kit/src/door/types.ts",
+      "revision": "5dd6b3c170dd50e494008e4b8f80050a6ff36e14",
+      "files": {
+        "src/modules/import-kit/src/door/types.ts": "ead9134600794f3a56a859c667d1fc9c4fccec1de1acff983cda2ce961fa4622"
+      },
+      "modes": {
+        "src/modules/import-kit/src/door/types.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/door/types.ts"
+      ]
+    },
+    {
+      "path": "src/modules/import-kit/src/door/uploads.ts",
+      "originPath": "modules/import-kit/src/door/uploads.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": {
         "src/modules/import-kit/src/door/uploads.ts": "31b6ae6e7d1a615ed3f348209d907fd160b1a331af0efb0e7e8ba71782d44c82"
       },
       "modes": {
-        "src/modules/import-kit/src/door/admission.ts": "100644",
-        "src/modules/import-kit/src/door/ADOPTING.md": "100644",
-        "src/modules/import-kit/src/door/archive.ts": "100644",
-        "src/modules/import-kit/src/door/authority.ts": "100644",
-        "src/modules/import-kit/src/door/failures.ts": "100644",
-        "src/modules/import-kit/src/door/grants.ts": "100644",
-        "src/modules/import-kit/src/door/handler.ts": "100644",
-        "src/modules/import-kit/src/door/index.ts": "100644",
-        "src/modules/import-kit/src/door/intake-policy.ts": "100644",
-        "src/modules/import-kit/src/door/intake-upload.ts": "100644",
-        "src/modules/import-kit/src/door/intake/csv.ts": "100644",
-        "src/modules/import-kit/src/door/intake/json.ts": "100644",
-        "src/modules/import-kit/src/door/intake/projection.ts": "100644",
-        "src/modules/import-kit/src/door/intake/types.ts": "100644",
-        "src/modules/import-kit/src/door/inventory.ts": "100644",
-        "src/modules/import-kit/src/door/jobs.ts": "100644",
-        "src/modules/import-kit/src/door/limits.ts": "100644",
-        "src/modules/import-kit/src/door/operator.ts": "100644",
-        "src/modules/import-kit/src/door/planning.ts": "100644",
-        "src/modules/import-kit/src/door/protocol.ts": "100644",
-        "src/modules/import-kit/src/door/raw.ts": "100644",
-        "src/modules/import-kit/src/door/README.md": "100644",
-        "src/modules/import-kit/src/door/refusals.ts": "100644",
-        "src/modules/import-kit/src/door/schema.ts": "100644",
-        "src/modules/import-kit/src/door/store.ts": "100644",
-        "src/modules/import-kit/src/door/types.ts": "100644",
         "src/modules/import-kit/src/door/uploads.ts": "100644"
       },
       "originFiles": [
-        "modules/import-kit/src/door/ADOPTING.md",
-        "modules/import-kit/src/door/README.md",
-        "modules/import-kit/src/door/admission.ts",
-        "modules/import-kit/src/door/archive.ts",
-        "modules/import-kit/src/door/authority.ts",
-        "modules/import-kit/src/door/failures.ts",
-        "modules/import-kit/src/door/grants.ts",
-        "modules/import-kit/src/door/handler.ts",
-        "modules/import-kit/src/door/index.ts",
-        "modules/import-kit/src/door/intake-policy.ts",
-        "modules/import-kit/src/door/intake-upload.ts",
-        "modules/import-kit/src/door/intake/csv.ts",
-        "modules/import-kit/src/door/intake/json.ts",
-        "modules/import-kit/src/door/intake/projection.ts",
-        "modules/import-kit/src/door/intake/types.ts",
-        "modules/import-kit/src/door/inventory.ts",
-        "modules/import-kit/src/door/jobs.ts",
-        "modules/import-kit/src/door/limits.ts",
-        "modules/import-kit/src/door/operator.ts",
-        "modules/import-kit/src/door/planning.ts",
-        "modules/import-kit/src/door/protocol.ts",
-        "modules/import-kit/src/door/raw.ts",
-        "modules/import-kit/src/door/refusals.ts",
-        "modules/import-kit/src/door/schema.ts",
-        "modules/import-kit/src/door/store.ts",
-        "modules/import-kit/src/door/types.ts",
         "modules/import-kit/src/door/uploads.ts"
       ]
     },

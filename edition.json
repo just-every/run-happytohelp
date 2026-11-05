@@ -338,7 +338,8 @@
         "runeditrun/import-kit",
         "happytohelp/outcomes",
         "happytohelp/reports",
-        "happytohelp/api-integrations"
+        "happytohelp/api-integrations",
+        "runeditrun/import-door-package"
       ],
       "source": {
         "kind": "local",
@@ -456,7 +457,8 @@
           "docs/triage.md",
           "scripts/contract-docs.mjs",
           "docs/CLAIMS.md",
-          "tests/journeys/deploy-nightly.mjs"
+          "tests/journeys/deploy-nightly.mjs",
+          "migrations/301_legacy_door_blob_chunks.sql"
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",
@@ -721,7 +723,19 @@
       "source": {
         "kind": "local",
         "paths": [
-          "src/modules/import-kit"
+          "src/modules/import-kit/CONTRACT.md",
+          "src/modules/import-kit/FIXTURES.md",
+          "src/modules/import-kit/README.md",
+          "src/modules/import-kit/csv",
+          "src/modules/import-kit/module.json",
+          "src/modules/import-kit/schema",
+          "src/modules/import-kit/src/d1",
+          "src/modules/import-kit/src/journal",
+          "src/modules/import-kit/src/plan",
+          "src/modules/import-kit/src/provenance",
+          "src/modules/import-kit/src/readers",
+          "src/modules/import-kit/src/storage",
+          "src/modules/import-kit/src/types.ts"
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",
@@ -1562,6 +1576,52 @@
           "docs/api.md",
           "tests/connections",
           "tests/journeys/connections.mjs"
+        ]
+      }
+    },
+    {
+      "id": "runeditrun/import-door-package",
+      "role": "module",
+      "requires": [
+        "runeditrun/import-kit"
+      ],
+      "source": {
+        "kind": "local",
+        "paths": [
+          "src/modules/import-kit/src/door"
+        ],
+        "origin": {
+          "repository": "https://github.com/runeditrun/base.git",
+          "revision": "5dd6b3c170dd50e494008e4b8f80050a6ff36e14",
+          "paths": [
+            "modules/import-kit/src/door/admission.ts",
+            "modules/import-kit/src/door/handler.ts",
+            "modules/import-kit/src/door/planning.ts",
+            "modules/import-kit/src/door/types.ts",
+            "modules/import-kit/src/door/package.ts"
+          ]
+        },
+        "mappings": [
+          {
+            "path": "src/modules/import-kit/src/door/admission.ts",
+            "originPath": "modules/import-kit/src/door/admission.ts"
+          },
+          {
+            "path": "src/modules/import-kit/src/door/handler.ts",
+            "originPath": "modules/import-kit/src/door/handler.ts"
+          },
+          {
+            "path": "src/modules/import-kit/src/door/planning.ts",
+            "originPath": "modules/import-kit/src/door/planning.ts"
+          },
+          {
+            "path": "src/modules/import-kit/src/door/types.ts",
+            "originPath": "modules/import-kit/src/door/types.ts"
+          },
+          {
+            "path": "src/modules/import-kit/src/door/package.ts",
+            "originPath": "modules/import-kit/src/door/package.ts"
+          }
         ]
       }
     }

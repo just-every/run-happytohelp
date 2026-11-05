@@ -1,3 +1,4 @@
+import {legacyTargets,LEGACY_TARGET} from '../legacy-import/door/targets'
 import type { D1Sql, D1TargetAdapter, TargetRow, D1Database } from '../import-kit/src/d1/index'
 import {LIMITS} from './types'
 import type { NativeValue } from './readers/normalise'
@@ -61,7 +62,7 @@ function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sq
  if(row&&kind==='form'){clauses.push('NOT EXISTS(SELECT 1 FROM request_form_submissions WHERE project_id=? AND form_id=?)');bindings.push(destination,id)}
  if(row&&kind==='group'){clauses.push('NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND group_id=?)');bindings.push(destination,id)}
  if(row&&kind==='sla_policy'){clauses.push('NOT EXISTS(SELECT 1 FROM ticket_sla_state WHERE project_id=? AND policy_id=?)');bindings.push(destination,id)}
- if(row){clauses.push('EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=? AND revision=? AND source_json=?)');bindings.push(destination,kind,id,row.revision,JSON.stringify((row.value as unknown as NativeValue).source))}
+ if(row&&row.revision!=='native'){clauses.push('EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=? AND revision=? AND source_json=?)');bindings.push(destination,kind,id,row.revision,JSON.stringify((row.value as unknown as NativeValue).source))}
  else {clauses.push('NOT EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?)');bindings.push(destination,kind,id)}
  return {sql:`(${clauses.join(' AND ')})`,params:bindings}
 }
@@ -81,7 +82,7 @@ export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
  if(kind==='conversation'&&!value.tables.move_in_attachment_bytes.length)delete value.tables.move_in_attachment_bytes
  return value
 }
-export const nativeTargets:D1TargetAdapter={
+const moveInTargets:D1TargetAdapter={
  async read(db,destination,kind,id){
   const defs=definitions(kind),row:any=await db.prepare(`SELECT ${defs.map((t,i)=>`${select(t)} AS t${i}`).join(',')},(SELECT source_json FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?) AS source,(SELECT revision FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?) AS revision`).bind(...defs.flatMap(t=>params(t,destination,id)),destination,kind,id,destination,kind,id).first()
   const tables:NativeValue['tables']={};for(let i=0;i<defs.length;i++){const t=defs[i];tables[t.name]=JSON.parse(row[`t${i}`]).map((values:any[])=>Object.fromEntries(t.columns.map((column,index)=>[column,values[index]])))}
@@ -173,4 +174,15 @@ function matchesOwnedSet(rows:TargetRow[],destination:string):D1Sql[]{
   }
  }
  return guards
+}
+
+/** Both signed namespaces use the same kit engine and native custody hooks. */
+const legacyInventories=new WeakSet<TargetRow[]>()
+export const nativeTargets:D1TargetAdapter={
+ read:(db,destination,kind,id)=>(kind===LEGACY_TARGET?legacyTargets:moveInTargets).read(db,destination,kind,id),
+ matches:(row,destination,kind,id)=>(kind===LEGACY_TARGET?legacyTargets:moveInTargets).matches(row,destination,kind,id),
+ write:row=>(row.targetKind===LEGACY_TARGET?legacyTargets:moveInTargets).write(row),
+ remove:(destination,kind,id)=>(kind===LEGACY_TARGET?legacyTargets:moveInTargets).remove(destination,kind,id),
+ async list(db,destination){const rows=await moveInTargets.list(db,destination);if(await db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='legacy_door_targets'").first()){rows.push(...await legacyTargets.list(db,destination));legacyInventories.add(rows)}return rows},
+ matchesMany:(rows,destination)=>[...moveInTargets.matchesMany!(rows.filter(row=>row.targetKind!==LEGACY_TARGET),destination),...(legacyInventories.has(rows)||rows.some(row=>row.targetKind===LEGACY_TARGET)?legacyTargets.matchesMany!(rows.filter(row=>row.targetKind===LEGACY_TARGET),destination):[])]
 }

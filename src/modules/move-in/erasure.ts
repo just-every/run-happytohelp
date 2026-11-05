@@ -1,3 +1,4 @@
+import {legacyContactAliases} from '../legacy-import/door/identities'
 import {HTTPException} from 'hono/http-exception'
 import {auditLegacyCustody} from './legacy-identities'
 import {messages as erasedMessages} from '../management/contact-erasure/scope'
@@ -20,7 +21,7 @@ function identityFenceStatements(env:Env,projectId:string,seeds:string[]){
 }
 export async function retainErasureIdentity(env:Env,projectId:string,contactId:string,contact:ErasureIdentity){
  const origin=await env.DB.prepare("SELECT vendor,source_id FROM move_in_origins WHERE project_id=? AND target_kind='contact' AND target_id=?").bind(projectId,contactId).first<any>()
- const seeds=contactDigests(projectId,contact);if(origin)seeds.push(sourceDigest(projectId,origin.vendor,origin.source_id))
+ const seeds=legacyContactAliases(projectId,contactId,contact);if(origin)seeds.push(sourceDigest(projectId,origin.vendor,origin.source_id))
  return identityFenceStatements(env,projectId,seeds)
 }
 /** Mixed artifacts are indivisible custody: erase each run that holds an erased
@@ -30,7 +31,7 @@ export async function fenceImportErasure(env:Env,projectId:string,contactId:stri
  if(!await auditLegacyCustody(env,projectId))throw new HTTPException(409,{message:'Older import originals are being indexed for erasure. Retry erasure to continue; completed identity indexing is retained.'})
  const contact=await env.DB.prepare('SELECT email,external_id,metadata_json FROM contacts WHERE project_id=? AND id=?').bind(projectId,contactId).first<any>()
  const origin=await env.DB.prepare("SELECT vendor,source_id FROM move_in_origins WHERE project_id=? AND target_kind='contact' AND target_id=?").bind(projectId,contactId).first<any>()
- const seeds=contactDigests(projectId,contact??{});if(origin)seeds.push(sourceDigest(projectId,origin.vendor,origin.source_id))
+ const seeds=legacyContactAliases(projectId,contactId,contact??{});if(origin)seeds.push(sourceDigest(projectId,origin.vendor,origin.source_id))
  await env.DB.batch(identityFenceStatements(env,projectId,seeds))
  // Incomplete runs are checked against their uninterpreted-value index; any
  // incomplete run not cleared here (no index, or admitted since) stays in scope.

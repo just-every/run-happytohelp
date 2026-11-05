@@ -1,3 +1,4 @@
+import {seedRuntimeLegacy,verifyRuntimeLegacy} from '../legacy/runtime-door.mjs';
 import {createHash,webcrypto,randomUUID} from 'node:crypto';
 import {inspectionContext,localProcessConflict} from '@runeditrun/rer/process-diagnostics';
 import {readArtifact} from '../artifact-payloads.mjs';
@@ -27,7 +28,7 @@ await mkdir(output); // Refuse to silently reuse a previous run's state or recei
 const startedAt = new Date().toISOString();
 const port = Number(process.env.H2H_RECOVERY_PORT || 18260);
 const claimKeys=await webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
-const variables = {H2H_SETUP_TOKEN: setupToken,OWNER_EMAIL:'recovery@example.test',APP_ORIGIN:`http://127.0.0.1:${port}`,RER_IMPORT_DOOR:'on',RER_OWNER_CLAIM_ISSUER:'https://business.example.test',RER_OWNER_CLAIM_INSTALLATION_ID:'synthetic-hh-recovery',RER_OWNER_CLAIM_APP_ORIGIN:`http://127.0.0.1:${port}`,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({test:await webcrypto.subtle.exportKey('jwk',claimKeys.publicKey)})};
+const variables = {H2H_SETUP_TOKEN: setupToken,OWNER_EMAIL:'recovery@example.test',APP_ORIGIN:`http://127.0.0.1:${port}`,RER_IMPORT_DOOR:'on',RER_INSTALLATION_ID:'synthetic-hh-recovery',RER_MANAGEMENT_ORIGIN:'https://business.example.test',RER_OWNER_CLAIM_ISSUER:'https://business.example.test',RER_OWNER_CLAIM_INSTALLATION_ID:'synthetic-hh-recovery',RER_OWNER_CLAIM_APP_ORIGIN:`http://127.0.0.1:${port}`,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({test:await webcrypto.subtle.exportKey('jwk',claimKeys.publicKey)})};
 let original, restored;
 try {
   original = await recoveryRuntime(artifact, {directory: join(output, 'source-runtime'), port, inspectorPort: port + 1, variables});
@@ -38,6 +39,7 @@ try {
   const now=Math.floor(Date.now()/1000),signed=[{alg:'ES256',typ:'rer-import-grant+jwt',kid:'test'},{v:1,iss:variables.RER_OWNER_CLAIM_ISSUER,aud:variables.APP_ORIGIN,installationId:variables.RER_OWNER_CLAIM_INSTALLATION_ID,email:variables.OWNER_EMAIL,jti:randomUUID(),iat:now,exp:now+300,action:'status',namespace:'zendesk',maxBytes:2097152,maxChunks:32,maxRecords:5000}].map(value=>Buffer.from(JSON.stringify(value)).toString('base64url')).join('.');
   const grant=signed+'.'+Buffer.from(await webcrypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},claimKeys.privateKey,Buffer.from(signed))).toString('base64url');
   assert.equal((await call(original,'/api/rer/import/status',{planId:'synthetic-hh-absent'},grant)).status,404);
+  const legacy=await seedRuntimeLegacy(original,journey.owner,claimKeys,variables);
   const paired = await call(original, '/api/mobile/v1/devices', {platform:'ios',scopes:['read']}, journey.owner.token);
   assert.equal(paired.status,201);const mobile=await paired.json();
   assert.equal((await call(original,'/api/mobile/v1/tickets/'+journey.conversation.id,undefined,mobile.token)).status,200);
@@ -101,7 +103,7 @@ try {
   // installation must rebuild its own read linkage and canonicalisation proof.
   for(const table of ['knowledge_read_receipts','knowledge_help_links','knowledge_help_sessions','knowledge_canonicalisation_receipts','knowledge_write_guards','knowledge_upgrade_permits','knowledge_upgrade_progress'])before.rows[table]=[];
   before.rows.knowledge_upgrade_reports=before.rows.knowledge_upgrade_reports.map(value=>JSON.stringify({...JSON.parse(value),completed_at:null})).sort();
-  assert.equal(before.rows.ik_door_grants.length,1,'consumed nonce is retained as a replay fence');
+  assert.equal(before.rows.ik_door_grants.length,1+legacy.grants,'consumed nonce is retained as a replay fence');
   before.rows.ik_door_settings=before.rows.ik_door_settings.map(value=>JSON.stringify({...JSON.parse(value),enabled:0})).sort();
   for(const table of ['integration_tokens','api_credentials','api_requests','api_appends'])before.rows[table]=before.rows[table].map(value=>{
    const row=JSON.parse(value);
@@ -134,6 +136,7 @@ try {
   assert.equal((await call(restored,'/api/mobile/v1/session',undefined,mobile.token)).status,401,'credential-free restore never revives a mobile capability');
   await verifyAccess(restored, journey, journey.owner.token);
   await verifyFreshLogin(restored, journey);
+  await verifyRuntimeLegacy(restored,journey.owner,legacy);
   assert.equal((await (await call(restored,doorSetting,undefined,journey.owner.token)).json()).enabled,false,'restored door stays closed after owner sign-in despite Business bindings');
   for(const action of ['uploads','plan','apply','status','reconcile','undo','cancel','archive','restore-check']){const response=await call(restored,'/api/rer/import/'+action,{});assert.equal(response.status,404,action+': '+await response.text());}
   await verifyRestoredApi(restored, journey);

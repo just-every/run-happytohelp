@@ -1,3 +1,4 @@
+import {legacyDoorJourney} from '../helpers/legacy/signed-door.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {execFile} from 'node:child_process'
@@ -55,4 +56,5 @@ test('a legacy package is reviewed, imported and replayed through its command; t
   assert.equal((await call('/api/identity/setup')).data.available,false)
  }finally{if(runtime)await runtime.close(true);await rm(scratch,{recursive:true,force:true})}
  await legacyCustodyJourney()
+ await legacyDoorJourney()
 })

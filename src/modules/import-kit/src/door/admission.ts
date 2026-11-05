@@ -21,7 +21,7 @@ async function source(options: ImportDoorOptions, namespace: string): Promise<Im
   if (!options.source) return runtimeOptions(options);
   const listed = await options.source(namespace);
   if (!listed) throw new DoorError('unknown_import_source');
-  return runtimeOptions({...options, parse: listed.parse, mapping: listed.mapping, intake: listed.intake,
+  return runtimeOptions({...options, parse: listed.parse, mapping: listed.mapping, intake: listed.intake, package: listed.package,
     format: listed.format ?? options.format, readRaw: 'readRaw' in listed ? listed.readRaw : undefined,
     ownerPrincipalId: listed.ownerPrincipalId ?? options.ownerPrincipalId});
 }

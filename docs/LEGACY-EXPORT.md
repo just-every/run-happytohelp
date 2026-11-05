@@ -64,6 +64,25 @@ bash scripts/legacy-export/export-project.sh PROJECT_UUID LEGACY_GIT_SHA gpt-5.6
 
 Run once per project into a distinct directory. The resulting `import/` and `snapshot/` packages contain private support data: transfer them through the owner's private channel, never Git or a public PR.
 
+## Signed native package delivery
+
+Business can register this same credential-free directory with `rer business
+legacy-package add DIR` and deliver it with `rer business run --once` under the
+separate `happytohelp-legacy` grant namespace. The native receiver reviews one
+complete logical snapshot over grant-sized transport segments; preview has no
+native business writes. Apply requires the exact reviewed fingerprint and policy
+approval, and Undo follows the same journal for rows and original media bytes.
+The owner-facing vendor selector is unchanged.
+
+This receiver eagerly materializes bounded files and records. Its 16 MiB package
+allowance admits normal 4 MiB row parts; optional 32 MiB parts and snapshots whose
+primary or expanded native counts exceed the existing grant refuse as a whole.
+It does not provide larger-grant record waves or a partial-delta wire format.
+Catch-up means a complete cumulative database snapshot including later changes.
+Read [the receiver's custody and refusal limits](../src/modules/legacy-import/door/README.md)
+before preparing a source. This source implementation does not qualify a real
+migration or release either predecessor's source hold.
+
 ## Re-pass an exported package
 
 When the text policy changes after an export, apply it to the exported rows instead of reading the source again:

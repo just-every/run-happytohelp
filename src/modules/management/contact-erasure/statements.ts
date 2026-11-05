@@ -1,3 +1,4 @@
+import {legacyErasure} from '../../legacy-import/door/erasure'
 import {voiceErasureCount,voiceErasureStatements} from '../../voice/erasure'
 import {feedbackErasureCount,feedbackErasureStatements} from '../../feedback/erasure'
 import {triageErasureCount,triageErasureStatements} from '../../triage/erasure'
@@ -80,6 +81,7 @@ export function emailEvidenceStatements(env:Env,request:Pick<ErasureRequest,'pro
 export async function erasureStatements(env: Env, request: ErasureRequest) {
   const {projectId, contactId, actorId, now} = request
   const iso = new Date(now).toISOString()
+  const legacy=await legacyErasure(env,projectId,contactId)
   const bound = (sql: string) => env.DB.prepare(sql).bind(projectId, contactId)
   const withTime = (sql: string, time: number | string) => env.DB.prepare(sql).bind(projectId, contactId, time)
   return [
@@ -100,6 +102,7 @@ export async function erasureStatements(env: Env, request: ErasureRequest) {
     ...csvCustomerErasureStatements(env,projectId,contactId,request.csvIdentities??request.emails),
     ...portalErasureStatements(env,projectId,contactId,request.emails),
     // Copies of the contact's data held outside the canonical rows, removed while those rows still identify them.
+    ...legacy.before,
     bound(legacyArchiveRedaction),
     ...importErasureStatements(env,projectId,contactId),
     ...eraseSurveyStatements(env,projectId,contactId),
@@ -141,5 +144,6 @@ export async function erasureStatements(env: Env, request: ErasureRequest) {
     bound(`UPDATE contacts SET name=NULL,email=NULL,external_id=NULL,is_verified=0,metadata_json=json_object('is_deleted',1,'is_blocked',1,'is_erased',1) WHERE project_id=?1 AND id IN (SELECT contact_id FROM mailbox_contact_aliases WHERE project_id=?1 AND canonical_id=?2)`),
     bound('DELETE FROM mailbox_contact_aliases WHERE project_id=?1 AND canonical_id=?2'),
     bound('DELETE FROM contact_erasure_objects WHERE project_id=?1 AND contact_id=?2'),
+    ...legacy.after,
   ]
 }

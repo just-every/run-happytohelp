@@ -261,6 +261,10 @@
     {
       "id": "300_import_door.sql",
       "buyerSteps": "Back up D1 and R2 first. Apply once after 299_outbound_channel_tickets.sql and before serving the updated Worker. Existing Move in imports stay intact. Business grants remain closed until a Business-provisioned first owner claim with RER_IMPORT_DOOR=on opens the door; ordinary self-host does not set it."
+    },
+    {
+      "id": "301_legacy_door_blob_chunks.sql",
+      "buyerSteps": "Back up retained D1, R2, Durable Objects, private settings, import journals/originals, privacy fences and migration history. Apply once after 300 and before the updated Worker serves traffic; never reset or edit applied SQL. Adds journaled legacy byte chunks, native target/hold metadata and an atomic historical-write fence. Live native writes keep their existing trigger behavior. Source package rows cannot replace the claimed owner/workspace. Preserve all D1 chunk tables with portable inventory; restore verifies complete byte custody and keeps Business imports off. Existing R2 objects and existing grant limits remain unchanged. Saved predecessor sources and this source slice remain unqualified and held; no deployment, real import, source-hold release or cutover is authorized."
     }
   ]
 }

@@ -804,6 +804,14 @@ bytes/hashes kept; see `src/modules/legacy-import/README.md`.
   training or provider work needs reconciling before any new provider attempt.
 - No imported session, password token or device grant is trusted as authority.
 
+The signed Business door has a separate bounded legacy package reader under
+`happytohelp-legacy`; it does not add a vendor-selector control. Review the whole
+snapshot and exact fingerprint before Apply, then reconcile native rows and byte
+downloads. Catch-up requires a complete cumulative snapshot; no partial delta or
+record wave is implied. See [the reader's limits and custody](src/modules/legacy-import/door/README.md).
+This is source implementation, not migration or release qualification; retained
+source holds and independent qualification still apply.
+
 ## Measure local usage and costs
 
 These docs don't give a typical monthly bill, because hosted costs haven't been

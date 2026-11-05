@@ -4185,7 +4185,7 @@
       "executable": false
     },
     "src/app.ts": {
-      "sha256": "daa5770fd5d95236a2c34ed278cf784eec7c2275b836680fb6fb76f4018bebb2",
+      "sha256": "921a17df55bb9683d361ce37eb87637457cc4c9ea5f2f9eccb0c0f789b743404",
       "executable": false
     },
     "src/base/contract-anchor.mjs": {

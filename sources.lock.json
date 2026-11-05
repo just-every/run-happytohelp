@@ -7393,11 +7393,11 @@
       "executable": false
     },
     "src/modules/legacy-import/door/bounds.ts": {
-      "sha256": "267752a55a2655af802d17ca52af9df3a80a2e060bde9e4ef3d5ff549e9d0931",
+      "sha256": "67eb06e64746158f569bac956f245624c5f7e4b9cc2b71a05c3e3bddff091ea1",
       "executable": false
     },
     "src/modules/legacy-import/door/bridge.ts": {
-      "sha256": "3ecfd21b1cfd3abcb3c9f3c145622b6687e59402807a91343aec173042b13a9e",
+      "sha256": "56f5bde87c47b1bdcd4a86e2c402152e0b280f0928d798e46c668d4ac8ce5a9b",
       "executable": false
     },
     "src/modules/legacy-import/door/constraints.ts": {
@@ -7406,6 +7406,10 @@
     },
     "src/modules/legacy-import/door/erasure.ts": {
       "sha256": "46238a0389d5313b666ee8aeba153dfc65c072db4adbdbac4436906830103339",
+      "executable": false
+    },
+    "src/modules/legacy-import/door/financial.ts": {
+      "sha256": "2d6dbc4825215f0889b35d754373415790d4b63d947b38141bf72c0ce4b3422c",
       "executable": false
     },
     "src/modules/legacy-import/door/format.ts": {
@@ -7433,7 +7437,7 @@
       "executable": false
     },
     "src/modules/legacy-import/door/README.md": {
-      "sha256": "e14881025ce1b516f2a2094b0f4cdd16c8fb2981c18a795556df347c64848ab8",
+      "sha256": "c5465613ea75ce1c362d90c57f1e5a7cdad09f61d903c16bddaeebf4f4dd3e28",
       "executable": false
     },
     "src/modules/legacy-import/door/references.ts": {
@@ -7454,6 +7458,10 @@
     },
     "src/modules/legacy-import/door/targets.ts": {
       "sha256": "6f344f55d8c489e76525435c8d1c8fc9dbc66187d70e798b789725d6da1fd5dc",
+      "executable": false
+    },
+    "src/modules/legacy-import/door/transcript.ts": {
+      "sha256": "27b95d4b6e75c2f6a12ffb4498245103360e1fc0f8c63073244b0551b6048a97",
       "executable": false
     },
     "src/modules/legacy-import/door/undo.ts": {
@@ -8133,7 +8141,7 @@
       "executable": false
     },
     "src/modules/move-in/door/index.ts": {
-      "sha256": "76eab9c18f7d092bd64b20e9d713c36e1d0be6cb4e606e2b98234cb799222232",
+      "sha256": "e1e6237ffd9cc4200d0ac1d0f9fadf1c334b84ab9c67c165438eb3ccdbefd6de",
       "executable": false
     },
     "src/modules/move-in/door/prepared-sql.ts": {

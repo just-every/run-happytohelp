@@ -2,6 +2,7 @@ import {legacyBlobContext} from './blob-context'
 import {Buffer} from 'node:buffer'
 import {archiveOnly} from '../archive-only'
 import {preflightLegacy} from './preflight'
+import {retainedTranscriptContext} from './transcript'
 import type {D1Database} from '../../import-kit/src/d1/types'
 import type {Json,MappingResult,ParsedRecord,TargetEffect} from '../../import-kit/src/types'
 import {canonicalJson,sha256} from '../../import-kit/src/provenance/identity'
@@ -31,7 +32,7 @@ export async function prepareLegacy(db:D1Database,decoded:DecodedLegacy,destinat
  for(const [table,rows] of Object.entries(original.tables))tables[table]=rows.map(row=>Object.fromEntries(Object.entries(row).map(([key,value])=>[key,key==='project_id'||table==='projects'&&key==='id'?destination:userFields.has(key)&&remap.has(String(value))?remap.get(String(value)):table==='users'&&key==='id'&&remap.has(String(value))?remap.get(String(value)):value])))
  const objectById=new Map(decoded.objects.map(object=>[String(object.metadata.mediaId),object]))
  for(const row of tables.media??[]){const object=objectById.get(String(row.id));if(!object)invalid('Legacy media has no object.');row.object_key=object.metadata.key}
- const context:LegacyBundle={...original,tables},mapping=new Map<string,MappingResult>(),records:ParsedRecord[]=[],seen=new Set<string>(),nativeIds=new Set<string>();let nativeRows=0,blobChunks=0,eagerBytes=0
+ const context=await retainedTranscriptContext(db,destination,{...original,tables}),mapping=new Map<string,MappingResult>(),records:ParsedRecord[]=[],seen=new Set<string>(),nativeIds=new Set<string>();let nativeRows=0,blobChunks=0,eagerBytes=0
  async function effect(mapped:MappedRow,source:{table:string;id:string}):Promise<TargetEffect>{
   const table=tableName(mapped.table),complete=await completeRow(db,table,mapped.row),id=targetId(table,complete.row)
   if(nativeIds.has(id))invalid('Legacy source rows propose the same native identity.');nativeIds.add(id)

@@ -48,6 +48,14 @@ Catch-up is another complete cumulative database snapshot, including changes
 since 16 October. There is no partial-delta wire format. Relationship-derived
 values enter source fingerprints; unchanged targets are reused, replacements
 and conflicts are explicit, and missing source rows are reported and retained.
+Retained native message ordering stays in the relationship context when a source
+message disappears or becomes archive-only; it is not another primary source row.
+Surviving messages therefore keep a complete retained transcript without compacting
+their revisions onto a retained message's unique slot. Historical ledger, usage,
+operation and reconciliation-hold values cannot be replaced by catch-up. Planning
+refuses changed values, and Apply fences every financial value atomically, including
+approvals saved by the previous reader. Exact kit Undo can still restore prior images;
+native contact erasure keeps its existing precedence.
 Undoing a catch-up restores its preceding snapshot before the initial import
 can be undone. Later native edits or shared references refuse strict reversal.
 

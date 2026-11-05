@@ -1,4 +1,5 @@
 import {legacyPlanQuota} from '../../legacy-import/door/quota'
+import {immutableFinancialGuards} from '../../legacy-import/door/financial'
 import {indexCompletedLegacyUpload} from '../../legacy-import/door/upload-custody'
 import {legacyHeaderRefusal} from '../../legacy-import/door/refusal'
 import {legacyUndoGuards} from '../../legacy-import/door/undo'
@@ -42,6 +43,11 @@ export async function handleImportDoor(request:Request,env:Env):Promise<Response
      const row=await database.prepare('SELECT * FROM ik_door_plans WHERE id=? AND installation_id=? AND namespace=? AND complete=1').bind(body.planId,claim.installationId,namespace).first<DoorPlanRow>()
      if(row){
       const boundedSnapshot=namespace===LEGACY_NAMESPACE?await legacyPlanQuota(database,claim,binding,request,row):null
+      if(boundedSnapshot&&request.url.endsWith('/apply')){
+       const guards=immutableFinancialGuards(boundedSnapshot.plan.entries.flatMap(entry=>entry.effects))
+       for(const guard of guards)if((await database.prepare(`SELECT (${guard.sql}) clear`).bind(...guard.params??[]).first<{clear:number}>())?.clear!==1)throw new DoorError('legacy_financial_custody_conflict',409,{reason:'Historical financial rows and reconciliation holds are immutable; prior custody retained.'})
+       extra.push(...guards)
+      }
       if(namespace==='zendesk'&&request.url.endsWith('/apply')&&(await database.prepare('SELECT state FROM ik_jobs WHERE id=?').bind(row.job_id??'').first<{state:string}>())?.state!=='completed'){
       const snapshot=await loadSnapshot({options:{database,destination:binding.project_id,ownerPrincipalId:binding.owner_id},access:{installationId:claim.installationId,namespace}} as DoorRequest,row)
       extra.push(...publicationPredicates(binding.project_id,snapshot.plan.entries.flatMap(entry=>entry.effects.filter(effect=>effect.targetKind==='contact').map(effect=>publicationContact(binding.project_id,effect.targetId,effect.value)))))

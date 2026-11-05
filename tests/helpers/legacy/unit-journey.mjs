@@ -25,10 +25,11 @@ export function unitFixture(email,options={}){
 }
 export async function legacyUnitJourney({h,project,ownerId,email,installation,uploadId,fixture,transfer}){
  const request={options:{database:h.db,limits,package:{formats:['happytohelp-legacy-chunks-v1'],maxBytes:limits.maxBytes,maxSegments:8}},access:{installationId:installation,namespace:'happytohelp-legacy',maxBytes:2*1024*1024,maxChunks:32,maxRecords:limits.maxRecords}}
- const open=async id=>packageUpload(request,await uploadRow(request,id)),upload=await open(uploadId),before=await h.snapshot(),outbound=h.outbound,queued=h.queued.length
+ const snapshot=async()=>{const {_cf_METADATA,...state}=await h.snapshot();return state}
+ const open=async id=>packageUpload(request,await uploadRow(request,id)),upload=await open(uploadId),before=await snapshot(),outbound=h.outbound,queued=h.queued.length
  const first=await prepareLegacyUnits(h.db,upload,project,ownerId,limits),repeat=await prepareLegacyUnits(h.db,upload,project,ownerId,limits)
  assert.deepEqual(repeat,first,'pure preparation repeats exact membership, dependencies, byte totals and fingerprints')
- assert.deepEqual(await h.snapshot(),before,'decoder, native preparation and compiler produce no database effects or success receipt')
+ assert.deepEqual(await snapshot(),before,'decoder, native preparation and compiler produce no database effects or success receipt')
  const unitFor=(compiled,kind,id)=>compiled.units.find(entry=>entry.unit.records.some(record=>record.kind===kind&&record.sourceId===id))
  const contact=unitFor(first,'contacts','legacy-contact'),conversation=unitFor(first,'conversations','legacy-conversation'),second=unitFor(first,'conversations','legacy-second-conversation'),article=unitFor(first,'articles','legacy-article')
  assert.notEqual(conversation.unit.id,second.unit.id);assert.ok(conversation.unit.dependsOn.includes(contact.unit.id));assert.ok(second.unit.dependsOn.includes(contact.unit.id))
@@ -52,22 +53,23 @@ export async function legacyUnitJourney({h,project,ownerId,email,installation,up
  assert.throws(()=>compileLegacyUnits(prepared,decoded,{...dependencies,edges:[...dependencies.edges,{from:identities[0],to:'foreign-primary',atomic:false,evidence:{}}]},upload.files,limits),error=>error.code==='legacy_work_unit_unsupported')
  const a=recordKey('contacts','legacy-contact'),b=recordKey('contacts','legacy-peer')
  assert.throws(()=>compileLegacyUnits(prepared,decoded,{...dependencies,edges:[...dependencies.edges,{from:a,to:b,atomic:false,evidence:{}},{from:b,to:a,atomic:false,evidence:{}}]},upload.files,limits),error=>error.code==='legacy_work_unit_unsupported')
- assert.deepEqual(await h.snapshot(),before)
- const changed=unitFixture(email,{mutate:tables=>{tables.conversations.find(row=>row.id==='legacy-second-conversation').contact_id='legacy-peer'}}),changedUpload=await transfer(changed,{},false),afterTransfer=await h.snapshot(),relation=await prepareLegacyUnits(h.db,await open(changedUpload.uploadId),project,ownerId,limits)
+ assert.deepEqual(await snapshot(),before)
+ const changed=unitFixture(email,{mutate:tables=>{tables.conversations.find(row=>row.id==='legacy-second-conversation').contact_id='legacy-peer'}}),changedUpload=await transfer(changed,{},false),afterTransfer=await snapshot(),relation=await prepareLegacyUnits(h.db,await open(changedUpload.uploadId),project,ownerId,limits)
  assert.notEqual(unitFor(relation,'conversations','legacy-second-conversation').unit.relationshipsHash,second.unit.relationshipsHash);assert.notDeepEqual(unitFor(relation,'conversations','legacy-second-conversation').unit.dependsOn,second.unit.dependsOn)
  assert.deepEqual(unitFor(relation,'contacts','legacy-peer').native,unitFor(first,'contacts','legacy-peer').native)
- assert.deepEqual(await h.snapshot(),afterTransfer)
+ assert.deepEqual(await snapshot(),afterTransfer)
  const changedBytes=Buffer.from(fixture.bytes);changedBytes[0]^=1
- const bytesFixture=unitFixture(email,{objectBytes:changedBytes}),byteUpload=await transfer(bytesFixture,{},false),beforeBytes=await h.snapshot(),bytes=await prepareLegacyUnits(h.db,await open(byteUpload.uploadId),project,ownerId,limits)
+ const bytesFixture=unitFixture(email,{objectBytes:changedBytes}),byteUpload=await transfer(bytesFixture,{},false),beforeBytes=await snapshot(),bytes=await prepareLegacyUnits(h.db,await open(byteUpload.uploadId),project,ownerId,limits)
  assert.equal(unitFor(bytes,'legacy-object','legacy-media').unit.id,conversation.unit.id)
  assert.notEqual(unitFor(bytes,'legacy-object','legacy-media').projectionHash,conversation.projectionHash);assert.notEqual(unitFor(bytes,'legacy-object','legacy-media').fingerprint,conversation.fingerprint)
- assert.deepEqual(await h.snapshot(),beforeBytes)
- for(const mutate of [tables=>{tables.conversations[0].contact_id='missing-contact'},tables=>{tables.messages[0].project_id='foreign-project'}]){
-  const bad=unitFixture(email,{large:false,mutate}),id=await transfer(bad,{},false),beforeRefusal=await h.snapshot()
-  const badUpload=await open(id.uploadId)
-  await assert.rejects(()=>prepareLegacyUnits(h.db,badUpload,project,ownerId,limits))
-  assert.deepEqual(await h.snapshot(),beforeRefusal)
- }
+ assert.deepEqual(await snapshot(),beforeBytes)
+ const missing=unitFixture(email,{large:false,mutate:tables=>{tables.conversations[0].contact_id='missing-contact'}}),missingId=await transfer(missing,{},false),beforeMissing=await snapshot(),missingUpload=await open(missingId.uploadId)
+ await assert.rejects(()=>prepareLegacyUnits(h.db,missingUpload,project,ownerId,limits),error=>error.code==='legacy_native_relationship_missing')
+ assert.deepEqual(await snapshot(),beforeMissing)
+ const foreign=unitFixture(email,{large:false,mutate:tables=>{tables.messages[0].project_id='foreign-project'}})
+ await assert.rejects(()=>transfer(foreign,{},false),/source_invalid_or_credential_source_data/)
+ assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,0)
+ assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM legacy_door_blob_chunks').first()).n,0)
  assert.equal(h.outbound,outbound);assert.equal(h.queued.length,queued)
  console.log('Legacy work units POINT1/POINT2: deterministic closures/dependencies, exact physical rows/files/aliases/readable bytes, relationship/byte drift, refusal and zero preparation effects')
  return first

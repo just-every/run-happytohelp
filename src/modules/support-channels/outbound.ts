@@ -17,7 +17,7 @@ export function blocker(t:any,now=Date.now(),continuation=false){
  return null
 }
 /** A durable claim precedes every provider request. Unknown outcomes are never replayed. */
-export async function channelMessage(env:Env,message:Record<string,unknown>,actor:Actor,continuation?:Continuation){
+export async function channelMessage(env:Env,message:Record<string,unknown>,actor:Actor,continuation?:Continuation,authorize?:()=>Promise<boolean>){
  const t=await thread(env,actor.projectId,String(message.conversation_id))
  if(!t)return !!await env.DB.prepare("SELECT 1 FROM conversations WHERE id=? AND project_id=? AND channel IN ('sms','whatsapp','instagram','messenger','slack','teams')").bind(message.conversation_id,actor.projectId).first()
  if(actor.role==='contact')return true
@@ -32,7 +32,7 @@ export async function channelMessage(env:Env,message:Record<string,unknown>,acto
   if(['whatsapp','instagram','messenger'].includes(t.provider)&&files.length>1)throw new HTTPException(422,{message:'one_attachment_per_social_message'})
   const request=await channelRequest(env,t,current,token,String(message.content),files,continuation)
   const live=await thread(env,actor.projectId,String(message.conversation_id)),fresh=await connection(env,t.connection_id)
-  if(!live||blocker(live,Date.now(),!!continuation)||fresh.token_cipher!==current.token_cipher||(['slack','teams'].includes(live.provider)&&!JSON.parse(fresh.channels_json).includes(live.channel_id))||!(await memberAccess(env.DB,actor.projectId,actor.id))?.permissions.has('conversations.reply')){state='blocked';error='channel_authority_changed'}
+  if(!live||blocker(live,Date.now(),!!continuation)||fresh.token_cipher!==current.token_cipher||(['slack','teams'].includes(live.provider)&&!JSON.parse(fresh.channels_json).includes(live.channel_id))||!(await memberAccess(env.DB,actor.projectId,actor.id))?.permissions.has('conversations.reply')||authorize&&!await authorize()){state='blocked';error='channel_authority_changed'}
   else{
    requested=true
    const response=await httpsTransport.send(request),data=(()=>{try{return JSON.parse(response.body)}catch{return null}})()

@@ -1,4 +1,5 @@
 import {channelMessage} from './modules/support-channels/outbound'
+import {problemMessageDelivery} from './modules/tickets/problem-delivery'
 import {dispatchTriage} from './modules/triage/worker'
 import {inCron,cronRequire} from './platform/cron-budget'
 import {workflowEnvironment} from './modules/workflows/clock'
@@ -21,7 +22,11 @@ export async function applyMessageEffects(env:Env,message:Record<string,unknown>
  // must not spend the scheduler's bounded effect allocation probing channel stores.
  const project=await env.DB.prepare("SELECT (SELECT channel FROM conversations c WHERE c.id=? AND c.project_id=p.id) channel FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)").bind(message.conversation_id,actor.projectId).first<{channel:string|null}>()
  if(!project)return
- if(['sms','whatsapp','instagram','messenger','slack','teams'].includes(project.channel??'')&&await channelMessage(env,message,actor))return
+ if(['sms','whatsapp','instagram','messenger','slack','teams'].includes(project.channel??'')){
+  // Problem replies retain their reviewed requester/link/authority fence on
+  // immediate effects and durable outbox recovery alike.
+  if(await problemMessageDelivery(env,message,actor)||await channelMessage(env,message,actor))return
+ }
  if(await isAutomaticInboundEmail(env,actor.projectId,message))return
  await dispatchTriage(env,String(message.conversation_id)).catch(()=>console.error('Triage dispatch deferred to recovery'))
  if(options.workflow!==false)await processWorkflowEvents(env,String(message.conversation_id),20)

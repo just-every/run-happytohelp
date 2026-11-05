@@ -31,7 +31,7 @@ export async function previewProblemSolve(env:Env,actor:Actor,id:string,input:an
    if(rendered.unresolved.length)throw new HTTPException(422,{message:`Resolve placeholders: ${rendered.unresolved.join(', ')}`})
    if(input.solve_incidents!==false)await prepareTicketChange(env,actor,ticket.id,{status_id:'solved',expected_version:loaded.ticket_version},authority)
    results.push({...frontier(loaded),subject:loaded.subject,requester_name:destination.contact_name,channel:loaded.channel,reply:rendered.text,destination,status:'ready'})
-  }catch(error){results.push({...frontier(ticket),status:'blocked',reason:problemError(error)})}
+  }catch(error){results.push({...frontier(ticket),subject:ticket.subject,channel:ticket.channel,status:'blocked',reason:problemError(error)})}
  }
  const role=await env.DB.prepare('SELECT mr.role_key,pr.updated_at FROM member_roles mr LEFT JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=? AND mr.user_id=?').bind(actor.projectId,actor.id).first<any>()
  const plan={actor_role:actor.role,role_key:guard.access!.key,role_assignment:role?.role_key??null,role_updated_at:role?.updated_at??null,problem_version:root.version,solve_incidents:input.solve_incidents!==false,tickets:results}

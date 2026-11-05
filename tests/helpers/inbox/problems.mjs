@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {createHash,createHmac} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
+import {problemChannelsJourney} from './problems-channels.mjs'
 import {seedReportFixture} from '../reports-team-fixture.mjs'
 
 export async function problemJourney(){
@@ -179,4 +180,5 @@ export async function problemJourney(){
   assert.deepEqual(invitations.flatMap(mail=>mail.to).sort(),[outage.email,reports[0].email,reports[1].email].sort(),'each solved ticket invites only its own requester, once; the unlinked incident invites nobody')
   console.log(JSON.stringify({proof:'R10 problem incidents',linked:25,solved:23,providerRejected:1,optOutBlocked:1,emails:sends,replayEmails:0,slaChecked:checked,invitations:invitations.length}))
  }finally{await app.close()}
+ await problemChannelsJourney()
 }

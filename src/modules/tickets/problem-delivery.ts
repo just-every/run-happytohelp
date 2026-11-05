@@ -7,12 +7,20 @@ import {recipientReplyAddress} from '../integrations/email-reply-address'
 import {loopSuppressionHeaders} from '../integrations/notification-delivery'
 import {notificationAddress} from '../integrations/notification-recipients'
 import {problemAvailableSql,problemRequesterSql} from './problem-model'
+import {ticketScopeSql} from '../access/ticket-scope'
+import {channelMessage} from '../support-channels/outbound'
+import {problemMessagingChannel,problemChannelDestination,problemChannelGuard,problemChannelOutcome} from './problem-channel'
 export async function problemDestination(env:Env,projectId:string,ticket:any,requester?:{id:string;name:string|null;email:string|null;metadata_json:string}){
  const contact=requester??await env.DB.prepare('SELECT id,name,email,metadata_json FROM contacts WHERE project_id=? AND id=?').bind(projectId,ticket.contact_id).first<any>()
  if(!contact)return {reason:'Requester is unavailable'}
  const metadata=JSON.parse(contact.metadata_json||'{}')
  if(metadata.is_erased||metadata.is_erasing||metadata.is_deleted||metadata.is_blocked)return {reason:'Requester is unavailable'}
  if(ticket.channel==='widget')return {channel:'widget',contact_id:contact.id,contact_name:contact.name,contact_email:contact.email,metadata_json:contact.metadata_json,recipient:null,mailbox_id:ticket.mailbox_id??null}
+ if(problemMessagingChannel(ticket.channel)){
+  const destination=await problemChannelDestination(env,projectId,ticket)
+  if(destination.reason)return {reason:destination.reason}
+  return {channel:ticket.channel,contact_id:contact.id,contact_name:contact.name,contact_email:contact.email,metadata_json:contact.metadata_json,mailbox_id:ticket.mailbox_id??null,...destination}
+ }
  if(ticket.channel!=='email')return {reason:`No native ${ticket.channel} reply transport is available. No reply was sent.`}
  if(metadata.portal_notification_emails===0)return {reason:'Requester has opted out of email notifications'}
  const recipient=notificationAddress(contact)
@@ -69,9 +77,18 @@ export async function problemMessageDelivery(env:Env,message:any,actor:Actor):Pr
   await env.DB.prepare("UPDATE ticket_problem_attempts SET state='blocked',reason='Ticket, requester, consent, link or sender authority changed before delivery',updated_at=? WHERE id=? AND state='ready'").bind(Date.now(),row.id).run()
   return {state:'blocked',reason:'Ticket, requester, consent, link or sender authority changed before delivery'}
  }
- const claimed=await env.DB.prepare(`UPDATE ticket_problem_attempts SET state='sending',updated_at=? WHERE id=? AND state='ready' AND message_id=? AND EXISTS(SELECT 1 FROM ticket_problem_previews p JOIN ticket_problems problem ON problem.project_id=p.project_id AND problem.conversation_id=p.problem_id JOIN conversations root ON root.id=p.problem_id AND root.project_id=p.project_id WHERE p.id=ticket_problem_attempts.preview_id AND p.state='executing' AND problem.version=p.problem_version AND root.ticket_version=p.problem_ticket_version AND root.revision=p.problem_revision AND root.last_message_id IS p.problem_last_message_id AND ${problemAvailableSql('root')}) AND EXISTS(SELECT 1 FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id JOIN memberships m ON m.project_id=c.project_id AND m.user_id=? WHERE c.project_id=ticket_problem_attempts.project_id AND c.id=ticket_problem_attempts.incident_id AND c.ticket_version=? AND c.revision=? AND c.last_message_id=? AND c.channel=? AND c.mailbox_id IS ? AND ct.id=? AND ct.name IS ? AND ct.email IS ? AND ct.metadata_json=? AND m.role=? AND (SELECT role_key FROM member_roles WHERE project_id=m.project_id AND user_id=m.user_id) IS ? AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=m.project_id AND mr.user_id=m.user_id) IS ? AND ${problemAvailableSql()} AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL))`).bind(Date.now(),row.id,message.id,row.actor_id,item.expected_version+1,item.expected_revision+1,message.id,item.destination.channel,item.destination.mailbox_id,item.destination.contact_id,item.destination.contact_name,item.destination.contact_email,item.destination.metadata_json,plan.actor_role,plan.role_assignment,plan.role_updated_at).run()
+ const channelGuard=problemChannelGuard(item.destination)
+ const fence=`message_id=? AND EXISTS(SELECT 1 FROM ticket_problem_previews p JOIN ticket_problems problem ON problem.project_id=p.project_id AND problem.conversation_id=p.problem_id JOIN conversations root ON root.id=p.problem_id AND root.project_id=p.project_id WHERE p.id=ticket_problem_attempts.preview_id AND p.state='executing' AND problem.version=p.problem_version AND root.ticket_version=p.problem_ticket_version AND root.revision=p.problem_revision AND root.last_message_id IS p.problem_last_message_id AND ${problemAvailableSql('root')}) AND EXISTS(SELECT 1 FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id JOIN memberships m ON m.project_id=c.project_id AND m.user_id=? WHERE c.project_id=ticket_problem_attempts.project_id AND c.id=ticket_problem_attempts.incident_id AND c.ticket_version=? AND c.revision=? AND c.last_message_id=? AND c.channel=? AND c.mailbox_id IS ? AND ct.id=? AND ct.name IS ? AND ct.email IS ? AND ct.metadata_json=? AND m.role=? AND (SELECT role_key FROM member_roles WHERE project_id=m.project_id AND user_id=m.user_id) IS ? AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=m.project_id AND mr.user_id=m.user_id) IS ? AND ${problemAvailableSql()} AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) AND EXISTS(SELECT 1 FROM ticket_problem_incidents link WHERE link.project_id=c.project_id AND link.incident_id=c.id AND link.problem_id=ticket_problem_attempts.problem_id) AND ${ticketScopeSql('?')} AND ${channelGuard.sql})`
+ const fenceArgs=[message.id,row.actor_id,item.expected_version+1,item.expected_revision+1,message.id,item.destination.channel,item.destination.mailbox_id,item.destination.contact_id,item.destination.contact_name,item.destination.contact_email,item.destination.metadata_json,plan.actor_role,plan.role_assignment,plan.role_updated_at,row.actor_id,...channelGuard.args]
+ const claimed=await env.DB.prepare(`UPDATE ticket_problem_attempts SET state='sending',updated_at=? WHERE id=? AND state='ready' AND ${fence}`).bind(Date.now(),row.id,...fenceArgs).run()
  if(!claimed.meta.changes)return {state:'uncertain',reason:'Another worker owns this delivery; it will not be replayed'}
  try{
+  if(problemMessagingChannel(item.destination.channel)){
+   // The shared sender's boolean means handled. Only its durable receipt says
+   // whether the provider accepted, delivered, refused or lost this request.
+   await channelMessage(env,message,{...actor,id:row.actor_id,role:plan.actor_role},undefined,async()=>!!await env.DB.prepare(`SELECT 1 FROM ticket_problem_attempts WHERE id=? AND state='sending' AND ${fence}`).bind(row.id,...fenceArgs).first())
+   return settleProblemChannel(env,row,message)
+  }
   let state='sent',reason:string|undefined
   if(item.destination.channel==='email'){
    const result=await sendEmail(env,await problemEmail(env,row,item,message),undefined,true)
@@ -82,6 +99,7 @@ export async function problemMessageDelivery(env:Env,message:any,actor:Actor):Pr
   await env.DB.prepare("UPDATE ticket_problem_attempts SET state=?,reason=?,updated_at=? WHERE id=? AND state='sending'").bind(terminal,reason??null,Date.now(),row.id).run()
   return {state:terminal,...(reason?{reason}:{})}
  }catch{
+  if(problemMessagingChannel(item.destination.channel))return settleProblemChannel(env,row,message)
   const delivery=await env.DB.prepare('SELECT state,error FROM email_deliveries WHERE id=?').bind(`message:${message.id}:notification`).first<{state:string;error:string|null}>()
   // A held send stays pending for replay to resend once or fail after the hold's bound.
   if(delivery?.state==='sending'&&delivery.error===rerMailHeld)return {state:'sending',reason:rerMailHeld}
@@ -89,4 +107,11 @@ export async function problemMessageDelivery(env:Env,message:any,actor:Actor):Pr
   await env.DB.prepare("UPDATE ticket_problem_attempts SET state=?,reason=?,updated_at=? WHERE id=? AND state='sending'").bind(state,reason,Date.now(),row.id).run()
   return {state,reason}
  }
+}
+
+async function settleProblemChannel(env:Env,row:any,message:any){
+ const receipt=await env.DB.prepare('SELECT state,error_code FROM support_channel_sends WHERE message_id=? AND project_id=? AND conversation_id=?').bind(message.id,row.project_id,row.incident_id).first<{state:string;error_code:string|null}>()
+ const outcome=problemChannelOutcome(receipt),state=outcome.state==='delivered'?'sent':outcome.state==='accepted'?'sending':outcome.state
+ await env.DB.prepare("UPDATE ticket_problem_attempts SET state=?,reason=?,updated_at=? WHERE id=? AND state='sending'").bind(state,outcome.reason,Date.now(),row.id).run()
+ return {state:outcome.state==='delivered'?'sent':outcome.state,reason:outcome.reason}
 }

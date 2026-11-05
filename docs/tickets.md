@@ -46,9 +46,9 @@ For an issue affecting several customers, mark its tracking ticket as a **Proble
 
 In the problem, compose a public update and preview it before sending. Placeholders such as `{{contact.name}}` and `{{agent.name}}` are expanded separately for every requester; unresolved placeholders block that ticket. Review each rendered reply, channel and recipient. Choose whether to solve the incidents or send an update that leaves them open. The problem itself is solved after this operation. You can also solve the problem through the ordinary status control without sending an incident update.
 
-Email replies go only to each incident's requester, through that incident's connected mailbox when present. Widget replies appear in that incident's own conversation and do not send an extra email. Opted-out email recipients, unavailable requesters, disconnected mailboxes, unsupported channels and changed tickets are reported with a reason. Unsupported channels wait for their own transport; an email address does not turn another channel into email.
+Email replies go only to each incident's requester, through that incident's connected mailbox when present. Widget replies appear in that incident's own conversation and do not send an extra email. Linked SMS and WhatsApp incidents use their original connected support channel and its existing consent rules. STOP, revoked connections, missing SMS registration and expired WhatsApp reply windows block the update visibly; a problem update never chooses a continuation template automatically. Opted-out email recipients, unavailable requesters, disconnected mailboxes, unsupported channels and changed tickets are reported with a reason. Unsupported channels wait for their own transport; an email address does not turn another channel into email.
 
-Each ticket has a separate result. A failed or uncertain send leaves the incident open. The result remains readable after reloading; repeating the same operation does not resend its replies. A new customer message, changed requester, changed link or permission loss invalidates the reviewed ticket before delivery. For more than 100 incidents, review and send explicit batches from the incident pages. Ticket history and the security log record links, admitted replies and confirmed bulk solves. Export/import preserves the relationship history while preventing old previews or uncertain sends from restarting.
+Each ticket has a separate result. Messaging results distinguish provider acceptance, confirmed delivery, refusal and uncertainty using the channel's durable receipt. Acceptance leaves the incident open until delivery is known. A later delivery callback updates the result without automatically solving the incident or sending again; change its status separately after review. Channel delivery does not establish customer recovery. A blocked, failed or uncertain send leaves the incident open. The result remains readable after reloading; repeating the same operation does not resend its replies. A new customer message, changed requester, changed link or permission loss invalidates the reviewed ticket before delivery. For more than 100 incidents, review and send explicit batches from the incident pages. Ticket history and the security log record links, admitted replies and confirmed bulk solves. Export/import preserves the relationship history while preventing old previews or uncertain sends from restarting.
 
 ### Engineering context on a problem
 
@@ -59,8 +59,9 @@ observed time, provider update time and connection state. Disconnected context
 is marked stale and never presented as a fresh provider read. A signed shipped
 fix creates a draft for operator approval; it does not prove customer recovery
 or send to the linked incidents. Preview an incident update separately to
-render and approve each requester's reply. SMS and expired messaging windows
-remain unavailable until a supported, consented channel is connected.
+render and approve each requester's reply. SMS requires a registered, connected
+sender and current reply consent. WhatsApp also requires an open reply window;
+expired windows remain blocked for this bulk update.
 
 ### Suggested problems
 

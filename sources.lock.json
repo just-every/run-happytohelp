@@ -7593,7 +7593,7 @@
       "executable": false
     },
     "src/modules/management/native-settings-read.ts": {
-      "sha256": "f82142b8c290a17891ddd893f95ba14b772635bee2b348e1a3a886742382bf70",
+      "sha256": "f5fbce57b861c479640eaa15db1f86babf2573ce33d6fdbce28757003e439c44",
       "executable": false
     },
     "src/modules/management/outbound-configuration.ts": {
@@ -14813,7 +14813,7 @@
       "executable": false
     },
     "tests/helpers/identity/native-settings-authority.mjs": {
-      "sha256": "a53f53fff974d695c49b028065dd885493dd6c684fca466e7a6cd2c407a73ec2",
+      "sha256": "b4198599921805e80d42a14b6c077a6c6958c17a6f143097aa9137c6995d786b",
       "executable": false
     },
     "tests/helpers/identity/native-settings-browser.mjs": {

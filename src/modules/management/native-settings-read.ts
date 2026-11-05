@@ -10,7 +10,7 @@ export async function readNativeSettings(env:Env,projectId:string){
  if(!source||typeof source!=='object'||Array.isArray(source))throw new HTTPException(500,{message:'Workspace settings could not load'})
  // The widget key is a public installation identifier (IDENTITY-001).
  const data:Record<string,unknown>={id:row.id,name:row.name,widget_key:row.widget_key,allowed_origin:row.allowed_origin}
- for(const key of ['website','timezone','help_center_domain','primary_color','display_mode','sidebar_artwork_id','brand_image_url','logo_url','brand_name','avatar_url','welcome_message','unavailable_message','presence_away_message','default_visitor_ai_id','default_verified_user_ai_id']){
+ for(const key of ['website','timezone','help_center_domain','primary_color','color','display_mode','sidebar_artwork_id','brand_image_url','logo_url','brand_name','avatar_url','welcome_message','unavailable_message','presence_away_message','default_visitor_ai_id','default_verified_user_ai_id']){
   if(typeof source[key]==='string'||source[key]===null)data[key]=source[key]
  }
  for(const key of ['is_contact_tracking_enabled','proactive_help_enabled','sidebar_artwork_enabled','is_available','is_availability_schedule_enabled','is_presence_away_enabled','is_human_response_enabled']){

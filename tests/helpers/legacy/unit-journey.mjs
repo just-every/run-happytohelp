@@ -66,11 +66,15 @@ export async function legacyUnitJourney({h,project,ownerId,email,installation,up
  const missing=unitFixture(email,{large:false,mutate:tables=>{tables.conversations[0].contact_id='missing-contact'}}),missingId=await transfer(missing,{},false),beforeMissing=await snapshot(),missingUpload=await open(missingId.uploadId)
  await assert.rejects(()=>prepareLegacyUnits(h.db,missingUpload,project,ownerId,limits),error=>error.code==='legacy_native_relationship_missing')
  assert.deepEqual(await snapshot(),beforeMissing)
+ const cyclic=unitFixture(email,{large:false,mutate:tables=>{tables.categories[0].parent_id='cycle-category';tables.categories.push({...tables.categories[0],id:'cycle-category',slug:'cycle-category',parent_id:'legacy-category'})}}),cycleId=await transfer(cyclic,{},false),beforeCycle=await snapshot(),cycleUpload=await open(cycleId.uploadId)
+ await assert.rejects(()=>prepareLegacyUnits(h.db,cycleUpload,project,ownerId,limits),error=>error.code==='legacy_work_unit_unsupported')
+ assert.deepEqual(await snapshot(),beforeCycle)
  const foreign=unitFixture(email,{large:false,mutate:tables=>{tables.messages[0].project_id='foreign-project'}})
  await assert.rejects(()=>transfer(foreign,{},false),/source_invalid_or_credential_source_data/)
  assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,0)
  assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM legacy_door_blob_chunks').first()).n,0)
  assert.equal(h.outbound,outbound);assert.equal(h.queued.length,queued)
+ console.log('Legacy work unit totals',JSON.stringify(first.totals))
  console.log('Legacy work units POINT1/POINT2: deterministic closures/dependencies, exact physical rows/files/aliases/readable bytes, relationship/byte drift, refusal and zero preparation effects')
  return first
 }

@@ -7,5 +7,5 @@ export interface Run { id:string; identity_audited:number; project_id:string; ac
 export interface MappingInput { projectId:string; actorId:string; vendor:Vendor; source:SourceBundle; tagIds:Map<string,string> }
 export interface SourceClaim {identity:string;source_hash:string;mapping_version:string;effects_hash:string;job_id:string}
 /** known: records an earlier import already holds without native effects; they stay out of new kit plans. */
-export interface PreparedMapping { known:Set<string>; retained?:Map<string,SourceClaim>; retainedCategories?:PublicationCategory[]; effects:Map<string,TargetEffect[]>; rejections:Map<string,string>; omissions:Map<string,string[]> }
+export interface PreparedMapping { known:Set<string>; heldBack?:Map<string,string>; retained?:Map<string,SourceClaim>; retainedCategories?:PublicationCategory[]; effects:Map<string,TargetEffect[]>; rejections:Map<string,string>; omissions:Map<string,string[]> }
 export const recordKey = (record:SourceRecord) => `${record.kind}/${record.sourceId}`

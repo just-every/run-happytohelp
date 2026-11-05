@@ -161,6 +161,11 @@
       "optional": true
     },
     {
+      "binding": "RER_IMPORT_DOOR",
+      "environment": "RER_IMPORT_DOOR",
+      "optional": true
+    },
+    {
       "binding": "RER_BUSINESS_TRUST",
       "environment": "RER_BUSINESS_TRUST",
       "optional": true

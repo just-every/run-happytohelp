@@ -1,3 +1,4 @@
+import {healImportDoor} from '../move-in/door/authority'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from '../../platform/env'
@@ -9,7 +10,7 @@ ownerClaim.post('/bootstrap', async c => {
  requireSetupOrigin(c)
  c.header('Cache-Control', 'no-store')
  // Rer retires the private setup token after this durable claim. Repeats remain closed after retirement.
- if (!await setupAvailable(c.env.DB)) return c.json({error: 'already_initialized'}, 409)
+ if (!await setupAvailable(c.env.DB)){await healImportDoor(c.env);return c.json({error: 'already_initialized'}, 409)}
  if (!configuredToken(c.env)) throw new HTTPException(503, {message: 'Owner setup is awaiting its installation credential'})
  let body: Record<string, unknown>
  try {
@@ -36,8 +37,9 @@ ownerClaim.post('/bootstrap', async c => {
    // Derive the native name from the actual owner email configured on this Worker.
   }, {emailClaim:true})
  } catch (error) {
-  if (error instanceof HTTPException && error.status === 409) return c.json({error: 'already_initialized'}, 409)
+  if (error instanceof HTTPException && error.status === 409){await healImportDoor(c.env);return c.json({error: 'already_initialized'}, 409)}
   throw error
  }
+ await healImportDoor(c.env)
  return c.redirect(returnTo, 303)
 })

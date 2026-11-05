@@ -115,7 +115,13 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
      if(typeof p.draft!=='boolean')throw new Error('article_publication_required')
      if(!Object.hasOwn(p,'user_segment_id')&&!Object.hasOwn(p,'user_segment_ids'))throw new Error('article_audience_unknown')
      if(Object.hasOwn(p,'user_segment_ids')&&!Array.isArray(p.user_segment_ids))throw new Error('article_audience_unknown')
-     if(p.user_segment_id!=null||array(p.user_segment_ids).length)throw new Error('restricted_article_not_imported');status=p.draft?'draft':'published'
+     if(p.user_segment_id!=null)sourceId(p.user_segment_id,'zendesk')
+     if(Array.isArray(p.user_segment_ids))for(const segment of p.user_segment_ids)sourceId(segment,'zendesk')
+     if(p.user_segment_id!=null||array(p.user_segment_ids).length){
+      // Validate the article before withholding it; malformed content stays a rejection.
+      time(p.created_at,'iso');time(p.updated_at,'iso');text(p.title,'article_title_required');text(p.body,'article_body_required')
+      ;(result.heldBack??=new Map()).set(key,'restricted_article_held_back');result.effects.set(key,[]);result.omissions.set(key,[...omissions,'restricted_article_held_back']);continue
+     }status=p.draft?'draft':'published'
     }else{if(!['draft','published'].includes(p.state))throw new Error('article_publication_required');if(p.audience!=null||p.audience_rules!=null)throw new Error('restricted_article_not_imported');status=p.state}
     time(p.created_at,vendor==='zendesk'?'iso':'unix');const updated=time(p.updated_at,vendor==='zendesk'?'iso':'unix')
     tables.knowledge_articles=[{id:target,project_id:projectId,category_id:null,slug:`import-${vendor}-${record.sourceId.replace(/[^a-zA-Z0-9-]/g,'-')}-${target.slice(-8)}`,title:text(p.title,'article_title_required'),content:vendor==='intercom'&&typeof p.body_markdown==='string'?text(p.body_markdown,'article_body_required'):await htmlToMarkdown(text(p.body,'article_body_required')),summary:'',status,updated_at:updated,position:0,source_revision:1,source_incarnation:crypto.randomUUID()}]

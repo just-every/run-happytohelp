@@ -36,6 +36,15 @@ export async function priorSchemaUpgrade(){
    await write('INSERT INTO media(id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)',['synthetic-file',project,thread,user,'synthetic/receipt','receipt.bin','application/octet-stream',bytes.length,'synthetic-answer',5])
    await storage.inspect({key:'synthetic/receipt',bytes,options:{httpMetadata:{contentType:'application/octet-stream'},customMetadata:{purpose:'retained-receipt'}}})
    await write('INSERT INTO knowledge_articles(id,project_id,slug,title,content,summary,status,updated_at) VALUES(?,?,?,?,?,?,?,?)',['synthetic-article',project,'receipts','Receipt guide','Your receipt remains available.','', 'published',5])
+   // A prior Move in import, including its private journal, survives the new
+   // door migration. It remains historical and excluded from native Reports.
+   await write('INSERT INTO conversations(id,project_id,contact_id,revision,last_message_id,created_at,updated_at,resolved_at) VALUES(?,?,?,?,?,?,?,?)',['synthetic-old-import',project,contact,1,'synthetic-old-message',3,6,6])
+   await write('INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,?,?,?,?,?,?)',['synthetic-old-message',project,'synthetic-old-import','synthetic-old-message',contact,'contact','synthetic-hh prior imported message',1,4])
+   await write('INSERT INTO move_in_conversations VALUES(?,?,?,?,?,?,?)',['synthetic-old-import',project,'zendesk','991100','synthetic-hh prior import','closed','email'])
+   await write('INSERT INTO move_in_message_sources VALUES(?,?,?,?,?,?)',['synthetic-old-message',project,JSON.stringify({id:'991101',name:'synthetic-hh-991101',role:'contact'}),'991102',JSON.stringify('2024-01-01T00:00:00Z'),'source'])
+   await write('INSERT INTO move_in_notes VALUES(?,?,?,?,?,?,?)',['synthetic-old-note',project,'synthetic-old-import',JSON.stringify({id:'991103',name:'synthetic-hh-991103',role:'operator'}),'synthetic-hh prior private note',5,JSON.stringify('2024-01-01T00:00:01Z')])
+   await write('INSERT INTO move_in_runs(id,project_id,actor_id,session_hash,vendor,filename,artifact_hash,object_key,bytes,state,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',['synthetic-old-run',project,user,'retired-old-session','zendesk','synthetic-hh-prior.ndjson','0'.repeat(64),'synthetic/prior-import',2,'completed',3,6])
+   await storage.inspect({key:'synthetic/prior-import',bytes:[123,125],options:{httpMetadata:{contentType:'application/octet-stream'}}})
    before=await snapshot(storage)
   })
   for(const migration of migrations.filter(m=>parseInt(m.name,10)<291))await writeFile(join(runtime.directory,'migrations',migration.name),migration.sql)
@@ -76,9 +85,13 @@ export async function priorSchemaUpgrade(){
    const response=await fetch(runtime.origin+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body)})
    assert.equal(response.ok,true,`${path}: ${response.status}`);return response.json()
   }
+  for(const action of ['uploads','plan','apply','status','reconcile','undo','cancel','archive','restore-check']){const response=await fetch(runtime.origin+'/api/rer/import/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});assert.equal(response.status,404,'upgraded install grants stay closed: '+await response.text())}
   const owner=await call('/api/identity/login',{email:'owner@upgrade.example',password})
   assert.equal(owner.actor.id,user);assert.equal(owner.actor.projectId,project)
   assert.equal((await call('/api/identity/setup')).available,false)
+  const retained=(await call(`/api/dashboard/projects/${project}/conversations/synthetic-old-import`,undefined,owner.token)).data;assert.equal(retained.imported.source_id,'991100')
+  assert.equal((await call(`/api/move-in/projects/${project}/imports/synthetic-old-run`,undefined,owner.token)).data.state,'completed')
+  const imported=(await call('/api/conversations/synthetic-old-import/messages',undefined,owner.token));assert.equal(imported.messages[0].content,'synthetic-hh prior imported message')
   const messages=await call(`/api/conversations/${thread}/messages`,undefined,owner.token)
   assert.deepEqual(messages.messages.map(m=>[m.id,m.content]),[['synthetic-question','Where is my receipt?'],['synthetic-answer','Here is the retained receipt.']])
   assert.equal(messages.revision,2);assert.equal(messages.lastMessageId,'synthetic-answer')

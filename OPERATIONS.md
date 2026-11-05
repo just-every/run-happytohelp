@@ -942,6 +942,32 @@ a source lock is not product or provider acceptance.
 
 The operating declaration is available in `OPERATIONS.json`. The current pinned global `rer` launcher bootstraps the checkout’s locked dependencies before it dispatches `rer describe`, including in a fresh clone. NATIVE-001’s before-dependency inspection point remains blocked on a Base launcher change. Published rer 0.2.79 has the same ordering. A successful description after bootstrap does not establish dependency-free inspection.
 
+## Business cutover activity read
+
+`POST /api/rer/cutover-status` accepts only `{ "since": "<ISO timestamp>" }`
+and returns the status object directly: `created_since` contains `conversations`
+and `messages`, `events_since` counts retained `conversation_outbox` message
+events committed strictly after `since`, and `last_event_at` is the latest retained
+event's ISO timestamp (or null). Counts cover only the native workspace linked in
+`h2h_business_project`. Only events whose message and conversation remain stored
+count; content erasure retains transcript skeletons and their aggregate counts.
+An outbox event counts once regardless of delivery or retry. Imported messages without an
+outbox event contribute only to their honestly timestamped creation counts.
+
+This read requires a Base-verified ES256 RER grant with action `cutover-status`,
+the configured owner-claim issuer, public keys, installation and app origin, and
+the current linked native owner's email. Missing/conflicting trust or a missing,
+deleted or suspended linked workspace refuses the read. Import grants and native
+session tokens do not authorize it. Base permits repeat reads within the grant's
+short lifetime without recording a nonce. The route writes nothing, initiates no
+provider work, and sends `Cache-Control: no-store`.
+
+Opening a widget page alone creates no general durable event. Business can check
+real message activity here; a page-open-only check still needs separately agreed
+widget instrumentation. Real Business linkage, owner-claim release evidence and
+minted grants remain the Business installation's responsibility. This endpoint
+does not switch widgets, approve a cutover or deploy a release.
+
 ## Managed conversation mail v1
 
 The application declares `mail.providers: ["rer"]` and `H2H_RER_MAIL_VERSION=1`. Managed routing is assigned by the platform through `MAIL_PROVIDER`, `MAIL_FROM`, `MAIL_RELAY_URL`, `RER_MAILBOX_ID`, `RER_MAIL_ADDRESS` and `RER_MAIL_CONTROL_URL`. Keep `MAIL_API_KEY`, `RER_MAIL_INGRESS_KEY`, `INBOUND_EMAIL_TOKEN` and the existing `INTEGRATION_ENCRYPTION_KEY` private. They are application authority/data keys; no provider credential is requested from a Managed customer. Native and Assisted direct-provider configuration still uses `EMAIL_*`.

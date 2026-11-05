@@ -257,6 +257,14 @@
     {
       "id": "299_outbound_channel_tickets.sql",
       "buyerSteps": "Apply after 298 and before serving the updated Worker. Back up D1 and retain all migration ledger rows. Rebuilds operator ticket commands preserving existing rows, primary and unique keys, and the contact-erasure trigger; adds consent-thread links and SMS/WhatsApp kinds. No consent is granted; no provider send is replayed."
+    },
+    {
+      "id": "300_teammate_slack.sql",
+      "buyerSteps": "Apply after 299 and before serving the updated Worker. Back up D1 first. Creates only new tables for personal Slack notices: administrator consent, each teammate's verified Slack link, per-kind preferences and delivery outcomes; no existing table changes. Personal Slack stays off until an owner or admin enables it on one existing bot-mode Slack connection and each teammate links their own Slack member and opts in per kind. Nothing is backfilled, no consent is granted by the upgrade, and no uncertain send is replayed. These tables are never exported."
+    },
+    {
+      "id": "301_import_door.sql",
+      "buyerSteps": "Back up D1 and R2 first. Apply once after 300_teammate_slack.sql and before serving the updated Worker. Existing Move in imports stay intact. Business grants remain closed until a Business-provisioned first owner claim with RER_IMPORT_DOOR=on opens the door; ordinary self-host does not set it."
     }
   ]
 }

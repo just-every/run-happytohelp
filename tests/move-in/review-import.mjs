@@ -29,6 +29,7 @@ export async function reviewImportJourney(){
    records.filter(row=>row.ticket).forEach((row,index)=>{row.ticket.status=states[index];row.ticket.via={channel:index%2?'email':'web'}})
    records.find(row=>row.ticket).ticket.custom_fields=fieldValues
    records.push(...configurationSource())
+   for(const [id,audience] of [[60003,{user_segment_id:7}],[60004,{user_segment_ids:[7]}]])records.push({article:{id,title:`synthetic-hh-${id}`,body:`synthetic-hh-${id} restricted`,draft:false,created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-01T00:00:00Z',...audience}})
   }
   source.body=encode(records)
   const h=await nativeHarness()
@@ -43,6 +44,7 @@ export async function reviewImportJourney(){
    assertBusinessEquality(initial,await h.snapshot())
    const ready=await review(h,source.vendor,source.body)
    assert.equal(ready.plan.counts.rejected,source.vendor==='zendesk'?2:0,JSON.stringify(ready.plan))
+   if(source.vendor==='zendesk')for(const id of ['60003','60004']){const decision=ready.plan.decisions.find(row=>row.kind==='article'&&row.sourceId===id);assert.equal(decision.rejection,undefined);assert.ok(decision.omissions.some(item=>item.reason==='restricted_article_held_back'));assert.deepEqual(decision.targets,[])}
    assert.ok(ready.plan.decisions.every(item=>item.sourceId&&item.location.artifact==='history.jsonl'&&item.location.row>0))
    assert.ok(ready.plan.decisions.some(item=>item.targets.some(target=>target.kind==='conversation')))
    assertBusinessEquality(initial,await h.snapshot())
@@ -94,6 +96,15 @@ export async function reviewImportJourney(){
    await apply(h,repacked)
    assertBusinessEquality(landed,await h.snapshot())
    assert.deepEqual(Buffer.from(await (await (await h.files).get(custody.object_key)).arrayBuffer()),Buffer.from(source.body),'later reviews retain immutable source custody')
+   if(source.vendor==='zendesk'){
+    const publicLater=structuredClone(records);publicLater.find(row=>row.article?.id===60003).article.user_segment_id=null
+    const addition=await review(h,'zendesk',encode(publicLater),'synthetic-hh-public-later.ndjson'),decision=addition.plan.decisions.find(row=>row.sourceId==='60003'&&row.kind==='article')
+    assert.equal(decision.rejection,undefined);assert.equal(decision.targets.length,1,'held back records never claim a kit source id')
+    await apply(h,addition)
+    const restrictedAgain=await review(h,'zendesk',source.body+'\n','synthetic-hh-restricted-again.ndjson')
+    assert.equal(restrictedAgain.plan.decisions.find(row=>row.sourceId==='60003'&&row.kind==='article').rejection,'source_changed_conflict')
+    await undo(h,addition);assertBusinessEquality(landed,await h.snapshot())
+   }
    await undo(h,repacked);await undo(h,ready)
    assertBusinessEquality(initial,await h.snapshot())
    assert.equal(h.outbound,0,'review, publication, repeat and undo make no provider requests')

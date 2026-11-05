@@ -19,6 +19,7 @@ type Rule=Permission|'self'|'none'
 const P='/api/management/projects/:projectId',D='/api/dashboard/projects/:projectId',C=`${D}/conversations/:conversationId`,K='/api/knowledge/:projectId',X='/api/customer-context/:projectId/:subjectId',L='/api/projects/:project'
 const rules:Record<string,Rule>={
  'POST /api/rer/business-project':'integrations.install','GET /api/rer/business-project':'self',
+ 'POST /api/rer/cutover-status':'none',
  // Own account and sign-in
  'POST /auth/signout':'self','POST /api/identity/switch-project':'self','POST /api/identity/password':'self','POST /api/identity/accept-invitation':'self','DELETE /api/identity/session':'self',
  'PUT /api/management/profile':'self',[`PUT ${P}/agents/:userId/primary`]:'self',
@@ -106,6 +107,7 @@ const rules:Record<string,Rule>={
  [`POST ${L}/local-agent-authorizations/decision`]:'integrations.install',[`DELETE ${L}/local-agent-grants/:grant`]:'integrations.install',
  'POST /delegation/authorize':'integrations.install','POST /delegation/settings/revoke':'integrations.install','POST /delegation/settings/clients':'integrations.install',
  // Move in
+ 'POST /api/move-in/projects/:projectId/business-imports':'data.import',
  'POST /api/move-in/projects/:projectId/imports':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/apply':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/resume':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/undo':'data.import',
  'POST /api/move-in/projects/:projectId/imports/:runId/ownership/preview':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/ownership/apply':'data.import',
  // Doors with their own authority

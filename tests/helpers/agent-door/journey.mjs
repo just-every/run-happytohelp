@@ -9,9 +9,11 @@ import initializeReviewer from './initialize-reviewer.mjs'
 import {checkAgentArtifacts} from '../../../src/vendor/agent-base/modules/agent-door/erasure.ts'
 import {contactAgentArtifacts,memberAgentArtifacts} from '../../../src/edition/agent-door/artifacts.ts'
 import {doorCustody,slackEdge} from './custody.mjs'
+import {cutoverStatusJourney} from './cutover-status.mjs'
 import {accessToken,autonomousPolicy,policyEnvelope,signJws,seconds} from '../../../src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs'
 
 export async function agentDoorJourney(){
+ await cutoverStatusJourney()
  const pair=await webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']),kid=randomUUID(),issuer='https://business.example.test',installationId=randomUUID(),origin='https://app.example',email='morgan@example.test',sub=randomUUID(),publicKeys={[kid]:await webcrypto.subtle.exportKey('jwk',pair.publicKey)},token=randomUUID()
  const app=await startApp({bindings:{APP_ORIGIN:origin,H2H_SETUP_TOKEN:token,H2H_SETUP_OWNER_EMAIL:email,RER_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_APP_ORIGIN:origin,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify(publicKeys),RER_BUSINESS_TRUST:JSON.stringify({v:1,issuer,audience:origin,subject:installationId,email,keys:publicKeys}),INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:slackEdge})
  try{

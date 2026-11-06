@@ -17,7 +17,7 @@ Next action: `hh-notify-teams-next11`, NOTIFY-001 point 2 personal Teams notices
 
 Dispatch remains a local-lane decision: check active/queued/unpublished duplicate custody for NOTIFY-001 Teams and shared Teams-link/scheduler overlap, then the lifetime two-FIX history across tags and equivalent issues. This planner cannot clear fleet custody from source. The frozen list remains SLA-001, ESCALATION-001, FORMS-001, REPORTS-002, PROCEDURE-001, API-002 and PUSH-002. No new acceptance or held-out gate material is supplied. The full builder validation, claim, publication and one-candidate custody restrictions are included in the queue brief; no tests were run by this planner.
 
-Actual packet retained at `$HOME/rer-consolidation/work/hh-plan-next-11/packet/`: `REPORT.md` and `INSPECTION-RECEIPT.json`. Only those explicit regular non-secret files are selected for report-only evidence publication. Product terminal provenance is the inspected main SHA above, with zero product candidate commits. Evidence publication is separate from product readiness, acceptance and landing.
+Actual packet retained at `$HOME/rer-consolidation/work/hh-plan-next-11/packet/`: `REPORT.md`, `INSPECTION-RECEIPT.json` and `TRANSPORT-RECEIPT.json`. Only those explicit regular non-secret files are selected for report-only evidence publication. Product terminal provenance is the inspected main SHA above, with zero product candidate commits. Evidence publication is separate from product readiness, acceptance and landing.
 
 ```queue-entries
 [

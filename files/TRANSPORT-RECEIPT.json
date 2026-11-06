@@ -1,0 +1,23 @@
+{
+  "action": "initial report-only evidence publication",
+  "candidate_identity_check": {
+    "actual_output": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n",
+    "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+    "commits": [
+      "df88339c3d4b43b2171b3a7d16132792337864b0"
+    ],
+    "head": "df88339c3d4b43b2171b3a7d16132792337864b0",
+    "identity": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "ref": "refs/heads/evidence/hh-plan-next-11",
+    "result": "PASS",
+    "trailers": "absent or permitted AI noreply",
+    "walk": "all reachable candidates and side parents"
+  },
+  "head": "df88339c3d4b43b2171b3a7d16132792337864b0",
+  "meaning": "Report transport only; no product readiness, acceptance or landing signal.",
+  "product_head_before_and_after": "bad0eb66a55677528823751181910356d9dfc7d6",
+  "product_status_before_and_after": "clean",
+  "ref": "refs/heads/evidence/hh-plan-next-11",
+  "repository": "just-every/run-happytohelp",
+  "result": "published"
+}

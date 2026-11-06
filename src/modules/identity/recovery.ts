@@ -4,11 +4,11 @@ import type { AppEnv } from '../../platform/env'
 import { hashToken } from '../../platform/auth'
 import { requiredString,id } from '../../platform/db'
 import { sendEmail } from '../integrations/email'
-import { emailMode } from '../integrations/email-provider'
+import { emailMode, emailOffMessage } from '../integrations/email-provider'
 import { recoveryAvailable } from './availability'
 export const recovery=new Hono<AppEnv>()
 recovery.post('/forgot-password',async c=>{
- if(!recoveryAvailable(c.env))throw new HTTPException(503,{message:'Password reset by email is not set up on this installation, so no reset link was sent. The workspace owner must reset your password.'})
+ if(!recoveryAvailable(c.env))throw new HTTPException(503,{message:`${emailOffMessage} No reset link was sent: the workspace owner must reset your password.`})
  const body=await c.req.json(),email=requiredString(body.email,'email',320).toLowerCase(),now=Date.now(),key=await hashToken(`reset:${email}`)
  const recent=await c.env.DB.prepare('SELECT window_start FROM login_attempts WHERE key=?').bind(key).first<{window_start:number}>();if(recent&&recent.window_start>now-60000)throw new HTTPException(429,{message:'Please wait before requesting another reset'})
  await c.env.DB.prepare('INSERT INTO login_attempts VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET window_start=excluded.window_start').bind(key,now).run()

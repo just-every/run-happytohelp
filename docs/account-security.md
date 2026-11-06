@@ -131,6 +131,10 @@ and the result. Entries cannot be edited.
 Names are shown as they are now. A person whose account is gone shows as a
 former teammate; the entry itself stays.
 
+## Signing in when the installation sends no email
+
+An installation deployed with outbound email off cannot email a sign-in link or a password reset. Whoever deployed it can issue a one-time link for an existing owner or admin with `node scripts/hosted-signin.mjs`, using the Cloudflare credentials that deployed it. The link works once, within 15 minutes, goes through the same sign-in page as an emailed link and appears in the member's security log the same way. A member with a second factor still proves it.
+
 ## Owner recovery
 
 An owner who loses every factor and every recovery code recovers through the

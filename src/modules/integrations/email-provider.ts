@@ -33,6 +33,8 @@ export function emailConfigured(env:Env){
  }
  return Boolean(provider&&typeof env.EMAIL_API_KEY==='string'&&env.EMAIL_API_KEY.trim()&&typeof env.EMAIL_FROM==='string'&&env.EMAIL_FROM.trim()&&(provider!=='cloudflare'||/^[a-f0-9]{32}$/i.test(String(env.EMAIL_ACCOUNT_ID||''))))
 }
+/** What every refusal says when no email provider is set up: the installation sends nothing. */
+export const emailOffMessage='Outbound email is off for this installation, so nothing was sent. Turn it on by adding an email provider (docs/email).'
 export function emailMode(env:Env):'local'|'remote'|'unavailable'{return emailConfigured(env)?localMailOrigin(env)?'local':'remote':'unavailable'}
 function namedAddress(from:string){
  const named=from.match(/^(.*?)\s*<([^>]+)>$/)

@@ -12,11 +12,11 @@ function Sending({sending, installation, role, projectId}) {
  if (sending?.mode === 'local') return <div className="sh-state" data-sending="local"><span className="h2h-chip h2h-chip--muted">Local trial</span><p>Email is not sent from a local trial. Sign-in links, invitations and replies are suppressed, so you can try everything safely. Sending works once you deploy.</p></div>;
  if (sending?.mode === 'remote') return <><div className="sh-state" data-sending="ready"><span className="h2h-chip"><i className="fe fe-check" aria-hidden="true"/>Working</span><p>Sending is set up: mail goes out through {providers[sending.provider] || sending.provider}{sending.from ? <> from <b>{sending.from}</b></> : null}.</p></div>{role === 'owner' && <OwnerTestMail projectId={projectId}/>}</>;
  return <div data-sending="missing">
-  <div className="sh-state"><span className="h2h-chip h2h-chip--muted">Not set up</span><p>HappyToHelp needs an email service to send sign-in links, invitations and your replies to customers.</p></div>
+  <div className="sh-state"><span className="h2h-chip h2h-chip--muted">Outbound email is off</span><p>This installation sends nothing: no sign-in links, invitations, notifications or replies to customers. Incoming mail and everything else keep working. To turn sending on, give it an email service:</p></div>
   <div className="sh-steps"><ol>
    <li>Make an API key with one of these services: <a href="https://resend.com/api-keys" target="_blank" rel="noreferrer">Resend</a>, <a href="https://app.sendgrid.com/settings/api_keys" target="_blank" rel="noreferrer">SendGrid</a> or <a href="/docs/integrations#extra-steps-for-cloudflare-email-sending">Cloudflare Email Sending</a>. Choose that service in your installation’s email setup.</li>
    <li>Verify the address you send from with that service.</li>
-   <li>Add your provider key and sending address in installation setup.</li>
+   <li>Add your provider key and sending address with <code>rer deploy --set-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY</code> (Resend or SendGrid), run from the checkout that deployed this installation.</li>
   </ol></div>
   <p><a href="/docs/email">Open the email setup guide</a></p>
  </div>;

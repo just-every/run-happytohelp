@@ -6,7 +6,7 @@ import type { AppEnv, Env } from '../../platform/env'
 import { hashToken } from '../../platform/auth'
 import { serverSecret } from '../../platform/db'
 import { emailConfigured, sendEmail } from '../integrations/email'
-import {emailMode} from '../integrations/email-provider'
+import {emailMode,emailOffMessage} from '../integrations/email-provider'
 import { sessionCookie } from './session'
 import { signInFactor } from './two-factor/sign-in'
 import { sessionFactorStatement } from './two-factor/state'
@@ -39,7 +39,7 @@ magicLink.post('/magic-link', async c => {
  c.header('Cache-Control', 'no-store')
  if(emailMode(c.env)==='local')throw new HTTPException(503,{message:'Local development signs in automatically through rer dev. Use your password instead.'})
  const origin = linkOrigin(c.env)
- if (!origin || !emailConfigured(c.env)) throw new HTTPException(503, { message: 'Email sign-in is not configured. Use your password or contact the workspace owner.' })
+ if (!origin || !emailConfigured(c.env)) throw new HTTPException(503, { message: `${emailOffMessage} No sign-in link was sent: use your password, or ask whoever runs this installation for a sign-in link.` })
  const body = await c.req.json().catch(() => null)
  const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
  if (email.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HTTPException(400, { message: 'Enter a valid email address.' })

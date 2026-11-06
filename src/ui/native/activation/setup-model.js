@@ -120,7 +120,7 @@ function rowFor(data, id) {
    if(facts.mail?.managed&&!observed)return {...base,state:facts.mail.managed.error?'problem':'set',value:facts.mail.managed.error|| (facts.mail.managed.lastOutboundAcceptanceAt?'The provider accepted an email for you. Use an emailed sign-in link to confirm it arrived.':'Your assigned address sends account and support email once Run Edit Run activates it.')};
    if (facts.mail?.mode === 'unavailable') {
     const names = own?.state === 'unavailable' ? requiredNames(own.detail) : '';
-    return {...base, state: 'unavailable', value: `Email isn’t configured, so we can’t email you.${names ? ` It needs ${names}.` : ''}`};
+    return {...base, state: 'unavailable', value: `Outbound email is off for this installation, so we can’t email you.${names ? ` Turning it on needs ${names}.` : ''}`};
    }
    return withObservation('set', facts.mail?.mode === 'local' ? 'Email is suppressed during local development. No email is sent.' : observed ? `${/delivered/i.test(own.receiptRef || '') ? 'Delivered' : 'Received'}. ${own.checkedAt ? `Confirmed ${utc(own.checkedAt)}.` : ''}`.trim() : 'Not confirmed yet. Signing in with an emailed link, or the test on the Email page, confirms it.');
   }

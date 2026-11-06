@@ -1,6 +1,6 @@
 import type {Actor,Env} from '../../platform/env'
 import {memberAccess} from '../access/gate'
-import {sendEmail,resendHeldEmails,emailConfigured,type EmailInput} from '../integrations/email'
+import {sendEmail,resendHeldEmails,emailConfigured,emailOffMessage,type EmailInput} from '../integrations/email'
 import {rerMailHeld,openRerMailHolds} from '../integrations/rer-mail-hold'
 import {renderConversationEmail} from '../integrations/email-content'
 import {recipientReplyAddress} from '../integrations/email-reply-address'
@@ -20,7 +20,7 @@ export async function problemDestination(env:Env,projectId:string,ticket:any,req
  const settings=await env.DB.prepare('SELECT is_enabled FROM email_settings WHERE project_id=?').bind(projectId).first<{is_enabled:number}>()
  if(settings?.is_enabled===0)return {reason:'Workspace email is disabled'}
  if(ticket.mailbox_id){if(!await env.DB.prepare("SELECT 1 FROM mailbox_connections WHERE project_id=? AND id=? AND status='connected'").bind(projectId,ticket.mailbox_id).first())return {reason:'Incident mailbox is disconnected'}}
- else if(!emailConfigured(env))return {reason:'Email provider is not configured'}
+ else if(!emailConfigured(env))return {reason:emailOffMessage}
  return {channel:'email',contact_id:contact.id,contact_name:contact.name,contact_email:contact.email,metadata_json:contact.metadata_json,recipient,mailbox_id:ticket.mailbox_id??null}
 }
 export const sameDestination=(left:any,right:any)=>JSON.stringify(left)===JSON.stringify(right)

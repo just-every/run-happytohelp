@@ -38,11 +38,16 @@ async function failing(h,when,work){
 }
 const whileParsing=filename=>`BEFORE INSERT ON move_in_records WHEN (SELECT filename FROM move_in_runs WHERE id=NEW.run_id)='${filename}'`
 // The reviewer's session ends, then the reviewer signs in again with a new one.
-const endSession=h=>h.db.prepare("UPDATE sessions SET revoked_at=? WHERE actor_id='owner' AND revoked_at IS NULL").bind(Date.now()).run()
-async function signIn(h){
+const endSession=(h,actor='owner')=>h.db.prepare("UPDATE sessions SET revoked_at=? WHERE actor_id=? AND revoked_at IS NULL").bind(Date.now(),actor).run()
+async function signIn(h,actor='owner',role='owner'){
  const token=randomBytes(32).toString('hex'),hash=createHash('sha256').update(token).digest('hex')
- await h.db.batch([h.db.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,'owner','p','owner',?)").bind(hash,Date.now()+86400000),h.db.prepare("INSERT INTO session_factors(token_hash,user_id,method,verified_at) VALUES(?,'owner','password',?)").bind(hash,Date.now())])
- h.rememberSession('owner',token)
+ await h.db.batch([h.db.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,'p',?,?)").bind(hash,actor,role,Date.now()+86400000),h.db.prepare("INSERT INTO session_factors(token_hash,user_id,method,verified_at) VALUES(?,?,'password',?)").bind(hash,actor,Date.now())])
+ h.rememberSession(actor,token)
+}
+// Another member of the workspace, signed in.
+async function addMember(h,actor,role){
+ await h.db.batch([h.db.prepare('INSERT INTO users(id,email,name,created_at) VALUES(?,?,?,1)').bind(actor,`${actor}@example.test`,actor),h.db.prepare("INSERT INTO memberships VALUES('p',?,?)").bind(actor,role)])
+ await signIn(h,actor,role)
 }
 
 test('an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo',{timeout:600_000},async()=>{
@@ -287,5 +292,145 @@ test('a refused record never holds back a valid one and a stopped batch is never
   assert.deepEqual(repeat.totals.keptAsImported,{tickets:1,users:1,organizations:1})
   assert.equal(accounted(repeat.totals.tickets,repeat.totals.keptAsImported),repeat.totals.tickets.seen,'every ticket seen is accounted for')
   assert.ok(repeat.batches.every(b=>b.state==='completed'||b.nothingToImport),'no batch is left behind')
+ }finally{await h.close()}
+})
+
+test('any owner or admin pulls and the next pull by any of them works; every owner and admin sees the workspace pull, and an owner stops or takes over another member’s stopped pull, or stops an approved pull that stopped or whose admin was removed',{timeout:1_500_000},async()=>{
+ const zendesk=fakeZendesk(),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
+ try{
+  await connect(h,zendesk)
+  await addMember(h,'admin','admin')
+  const as=(actor,options={})=>({...options,actor})
+  const pullAs=async actor=>(await h.call(`${api}/zendesk/pulls`,as(actor,post({})))).data
+  const viewAs=async(id,actor='owner')=>(await h.call(`${api}/zendesk/pulls/${id}`,as(actor))).data
+  const latestAs=async actor=>(await h.call(`${api}/zendesk/pulls`,as(actor))).data[0]
+  const statusOf=async(path,actor='owner')=>(await h.raw(`${api}/zendesk/pulls/${path}`,as(actor,post({})))).response.status
+  async function pulled(actor){const started=await pullAs(actor),{maxStatements}=await drain(h);assert.ok(maxStatements<=980);return started}
+  async function approveAs(id,actor){
+   const ready=await viewAs(id,actor);assert.equal(ready.state,'ready',JSON.stringify({error:ready.error,phase:ready.phase}))
+   await h.call(`${api}/zendesk/pulls/${id}/approve`,as(actor,post({fingerprint:ready.fingerprint})))
+   const {maxStatements}=await drain(h),done=await viewAs(id,actor)
+   assert.equal(done.state,'applied',JSON.stringify({error:done.error}));assert.ok(maxStatements<=980,'every invocation stays inside the D1 statement budget')
+   assert.equal(accounted(done.totals.tickets,done.totals.keptAsImported),done.totals.tickets.seen,'every ticket seen is accounted for')
+   assert.ok(done.batches.every(b=>b.state==='completed'||b.nothingToImport),'no batch is left behind')
+   return done
+  }
+  const messagesOf=async id=>(await rows(h,"SELECT COUNT(*) n FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id=?",id))[0].n
+  const caughtUp=pull=>pull.batches.find(b=>b.state==='completed'&&(b.summary.ticketsNew||b.summary.replies))
+  const firstTickets=[['101',1],['102',1],['104',1],['105',1]],everyTicket=[...firstTickets,['106',1],['107',1]]
+
+  // The owner pulls and approves.
+  const first=await pulled('owner')
+  let pull=await approveAs(first.id,'owner')
+  assert.equal(pull.totals.tickets.imported,4);assert.deepEqual(await sourceIds(h),firstTickets)
+  const replies=await messagesOf('101')
+
+  // An admin pulls new tickets and replies, and the pull is ready for the admin's review.
+  // Every owner and admin sees that one pull; only the admin approves it, and a pull that
+  // has not stopped is not taken over.
+  zendesk.state.repeat=true
+  const second=await pullAs('admin')
+  assert.equal((await h.raw(`${api}/zendesk/pulls`,post({}))).response.status,409,'one pull at a time per workspace')
+  assert.ok((await drain(h)).maxStatements<=980)
+  const reviewed=await viewAs(second.id,'admin')
+  assert.equal(reviewed.state,'ready',JSON.stringify({error:reviewed.error,phase:reviewed.phase}))
+  const seen=await latestAs('owner')
+  assert.deepEqual([seen.id,seen.yours,seen.canStop,seen.canTakeOver],[second.id,false,true,false],'the owner sees the admin’s pull')
+  assert.equal(await statusOf(`${second.id}/resume`),409,'a pull that has not stopped is not taken over')
+  assert.equal((await h.raw(`${api}/zendesk/pulls/${second.id}/approve`,post({fingerprint:(await viewAs(second.id)).fingerprint}))).response.status,403,'only the member who started a pull approves it')
+  pull=await approveAs(second.id,'admin')
+  assert.deepEqual([pull.yours,pull.totals.tickets.imported,pull.totals.replies.imported],[true,2,2],'the admin’s pull imports its new tickets and replies')
+  assert.deepEqual(await sourceIds(h),everyTicket);assert.equal(await messagesOf('101'),replies+1)
+  const adminBatch=caughtUp(pull)
+
+  // The owner pulls again after the admin: nothing is new, and the pull works.
+  const third=await pulled('owner')
+  pull=await approveAs(third.id,'owner')
+  assert.deepEqual([pull.totals.tickets.imported,pull.totals.replies.imported],[0,0])
+  assert.deepEqual(await sourceIds(h),everyTicket)
+
+  // The admin undoes their batch and pulls again; the pull stops on a transient database
+  // failure. The owner sees it stopped and stops it; the owner's next pull imports everything.
+  await h.call(`${api}/imports/${adminBatch.runId}/undo`,as('admin',post({})));await drain(h)
+  assert.deepEqual(await sourceIds(h),firstTickets)
+  const fourth=await pullAs('admin')
+  await failing(h,whileParsing(`zendesk-pull-${fourth.id.slice(0,8)}-1.jsonl`),()=>drain(h))
+  const halted=await latestAs('owner')
+  assert.deepEqual([halted.id,halted.state,halted.error,halted.yours,halted.canStop,halted.canTakeOver],[fourth.id,'reviewing','batch_review_stopped:Import database operation failed',false,true,true],'the owner sees the admin’s stopped pull and may stop or take it over')
+  await h.call(`${api}/zendesk/pulls/${fourth.id}/abandon`,post({}))
+  assert.equal((await viewAs(fourth.id,'admin')).state,'abandoned')
+  const fifth=await pulled('owner')
+  const watched=await latestAs('admin')
+  assert.deepEqual([watched.id,watched.yours,watched.canStop,watched.canTakeOver],[fifth.id,false,false,false],'the admin sees the owner’s pull')
+  for(const step of ['abandon','resume'])assert.equal(await statusOf(`${fifth.id}/${step}`,'admin'),403,`an admin cannot ${step} another member’s pull`)
+  pull=await approveAs(fifth.id,'owner')
+  assert.deepEqual([pull.totals.tickets.imported,pull.totals.replies.imported],[2,2],'the stopped pull’s records import under the owner')
+  assert.deepEqual(await sourceIds(h),everyTicket);assert.equal(await messagesOf('101'),replies+1)
+
+  // The owner undoes that batch. The admin pulls again, and the admin's session ends before
+  // the pull can run: it stops. The owner takes it over; it reads again under the owner and imports everything.
+  await h.call(`${api}/imports/${caughtUp(pull).runId}/undo`,post({}));await drain(h)
+  assert.deepEqual(await sourceIds(h),firstTickets)
+  const sixth=await pullAs('admin')
+  await endSession(h,'admin')
+  await drain(h)
+  const stuck=await viewAs(sixth.id)
+  assert.deepEqual([stuck.state,stuck.error,stuck.yours,stuck.canTakeOver],['pulling','import_authority_revoked',false,true])
+  assert.equal(await statusOf(`${sixth.id}/resume`),202,'the owner takes the stopped pull over')
+  await drain(h)
+  pull=await approveAs(sixth.id,'owner')
+  assert.deepEqual([pull.yours,pull.totals.tickets.imported,pull.totals.replies.imported],[true,2,2],'the taken-over pull imports everything under the owner')
+  assert.deepEqual(await sourceIds(h),everyTicket);assert.equal(await messagesOf('101'),replies+1)
+  const [takeover]=await rows(h,"SELECT actor_id FROM audit_events WHERE action='import.pull.taken_over'")
+  assert.equal(takeover?.actor_id,'owner','the takeover is in the security log')
+
+  // The admin signs in again and approves a pull. While it imports under the admin, nobody
+  // else stops it. A transient database failure stops it mid-import: the admin may resume
+  // it, and an owner may stop it. Stopped, the batch it did not import stays out, and the
+  // admin's next pull imports it.
+  await h.call(`${api}/imports/${caughtUp(pull).runId}/undo`,post({}));await drain(h)
+  assert.deepEqual(await sourceIds(h),firstTickets)
+  await signIn(h,'admin','admin')
+  const seventh=await pulled('admin')
+  await h.call(`${api}/zendesk/pulls/${seventh.id}/approve`,as('admin',post({fingerprint:(await viewAs(seventh.id,'admin')).fingerprint})))
+  const running=await viewAs(seventh.id)
+  assert.deepEqual([running.state,running.error,running.canStop,running.canTakeOver],['applying',null,false,false],'an approved pull running under its admin is not stopped by anyone else')
+  assert.equal(await statusOf(`${seventh.id}/abandon`),409)
+  await failing(h,'BEFORE INSERT ON conversations',()=>drain(h))
+  const stalled=await viewAs(seventh.id)
+  assert.deepEqual([stalled.state,stalled.yours,stalled.canStop,stalled.canTakeOver],['applying',false,true,false],'the owner may stop the approved pull once it has stopped');assert.match(stalled.error,/^batch_stopped:/)
+  assert.equal((await viewAs(seventh.id,'admin')).canStop,false,'the admin resumes their approved pull; an owner stops it')
+  assert.equal(await statusOf(`${seventh.id}/abandon`,'admin'),409)
+  assert.equal(await statusOf(`${seventh.id}/resume`),409,'an approved pull is never taken over')
+  assert.equal(await statusOf(`${seventh.id}/abandon`),200)
+  assert.equal((await viewAs(seventh.id,'admin')).state,'abandoned')
+  assert.deepEqual(await sourceIds(h),firstTickets,'the batch the stopped pull did not import stays out')
+  const eighth=await pulled('admin')
+  pull=await approveAs(eighth.id,'admin')
+  assert.deepEqual([pull.totals.tickets.imported,pull.totals.replies.imported],[2,2],'the next pull imports what the stopped pull did not')
+  assert.deepEqual(await sourceIds(h),everyTicket);assert.equal(await messagesOf('101'),replies+1)
+
+  // The admin approves a pull and is removed from the workspace while it imports: it stops.
+  // The owner stops it, and the owner's next pull imports what it did not, once.
+  await h.call(`${api}/imports/${caughtUp(pull).runId}/undo`,as('admin',post({})));await drain(h)
+  assert.deepEqual(await sourceIds(h),firstTickets)
+  const ninth=await pulled('admin')
+  await h.call(`${api}/zendesk/pulls/${ninth.id}/approve`,as('admin',post({fingerprint:(await viewAs(ninth.id,'admin')).fingerprint})))
+  await drain(h,{hold:job=>job.type==='move-in'})
+  assert.deepEqual((await viewAs(ninth.id)).batches.filter(b=>b.covered).map(b=>b.state),['applying'],'the approved batch is importing')
+  await h.call('/api/management/projects/p/agents/admin',{method:'DELETE'})
+  await drain(h,{retries:true})
+  const orphaned=await viewAs(ninth.id)
+  assert.deepEqual([orphaned.state,orphaned.error,orphaned.canStop,orphaned.canTakeOver],['applying','import_authority_revoked',true,false],'the owner may stop the approved pull of a removed admin')
+  assert.equal(await statusOf(`${ninth.id}/resume`),409,'an approved pull is never taken over')
+  assert.equal((await h.raw(`${api}/zendesk/pulls`,post({}))).response.status,409,'the stopped pull holds the workspace until it is stopped')
+  assert.equal(await statusOf(`${ninth.id}/abandon`),200)
+  assert.deepEqual(await sourceIds(h),firstTickets)
+  const tenth=await pulled('owner')
+  pull=await approveAs(tenth.id,'owner')
+  assert.deepEqual([pull.yours,pull.totals.tickets.imported,pull.totals.replies.imported],[true,2,2],'the owner’s next pull imports what the removed admin’s pull did not')
+  assert.deepEqual(await sourceIds(h),everyTicket);assert.equal(await messagesOf('101'),replies+1)
+  const stops=await rows(h,"SELECT actor_id,target_id,detail_json FROM audit_events WHERE action='import.pull.abandoned' ORDER BY at")
+  assert.deepEqual(stops.slice(-2).map(e=>[e.actor_id,e.target_id,JSON.parse(e.detail_json).startedBy,JSON.parse(e.detail_json).approved]),[['owner',seventh.id,'admin',true],['owner',ninth.id,'admin',true]],'each stop of an approved pull is in the security log')
  }finally{await h.close()}
 })

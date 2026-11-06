@@ -65,6 +65,7 @@ export const archivePolicy={
   'operator_notification_activity','operator_notifications',
   // Slack identity links, consent and pending personal deliveries never travel.
   'teammate_slack_consent','teammate_slack_links','teammate_slack_preferences','teammate_slack_deliveries',
+  'teammate_teams_consent','teammate_teams_codes','teammate_teams_links','teammate_teams_preferences','teammate_teams_deliveries',
   // Preserve grants, reference bodies and source/shingle indexes. Live read
   // linkage and local canonicalisation completion must not survive a restore;
   // the restored installation canonicalises before nonmember disclosure.

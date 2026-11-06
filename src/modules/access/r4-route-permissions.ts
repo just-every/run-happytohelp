@@ -9,6 +9,8 @@ export function r4RouteRule(method:string,path:string):Rule|undefined{
  if(/^\/notification-(?:preferences|inbox)(?:\/:id\/read)?$/.test(tail))return 'self'
  if(tail==='/teammate-slack/consent')return 'integrations.install'
  if(/^\/teammate-slack(?:\/(?:preferences|link|link\/verify|outcomes))?$/.test(tail))return 'self'
+ if(tail==='/teammate-teams/consent')return 'integrations.install'
+ if(/^\/teammate-teams(?:\/(?:preferences|link|outcomes))?$/.test(tail))return 'self'
  if(tail==='/macros')return 'self'
  if(tail==='/macros/attachment-options')return 'self'
  if(/^\/macros\/:macroId(?:\/(?:versions|usage))?$/.test(tail))return 'self'

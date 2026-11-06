@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {createHmac,randomUUID} from 'node:crypto'
+import {memberCopies} from './member-copies.mjs'
 import {accessToken,autonomousPolicy} from '../../../src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs'
 
 /** The door journey's only answered network edge: a Slack Connect customer channel. */
@@ -22,12 +23,14 @@ export async function doorCustody({app,owner,project,native,person,context,call,
  const email='taylor@example.test',sub=randomUUID()
  const invite=(await native(`/api/management/projects/${project}/agents`,{body:{email}})).data
  await app.ok('/api/identity/accept-token',{body:{token:new URL(invite.invitationUrl).searchParams.get('token'),name:'Taylor Support',password:'Disposable-native-taylor-415!zz'}})
- const taylor=(await app.ok('/api/identity/login',{body:{email,password:'Disposable-native-taylor-415!zz'}})).actor
+ const taylorSession=await app.ok('/api/identity/login',{body:{email,password:'Disposable-native-taylor-415!zz'}}),taylor=taylorSession.actor
  assert.equal((await settings(4,[{id:sub,email,name:'Taylor Support',role:'member',invite:1}])).status,200)
  const note=await call('happytohelp.conversations.note',{id:conversation.id,content:'Carrier scan checked.',idempotency_key:randomUUID()},await accessToken(context,{sub,email,act:{sub:randomUUID(),name:'Taylor helper',specialist:'support agent'}}))
  assert.equal(note.outcome,'done',JSON.stringify(note))
  assert.match(await stored(),/Taylor/)
+ const verifyCopies=await memberCopies({app,owner,project,native,person,context,call,rpc,adopt,settings,conversation,taylor,taylorSession,sub,email})
  assert.equal((await app.call(`/api/management/projects/${project}/agents/${taylor.id}/erase`,{token:owner.token,body:{}})).status,200)
+ await verifyCopies()
  const operation=(await call('happytohelp.operations.read',{id:note.result.operation})).result.operation,transcript=await call('happytohelp.conversations.read',{id:conversation.id})
  const name=async id=>(await app.first('SELECT name FROM users WHERE id=?',id)).name
  assert.equal(operation.tool,'happytohelp.conversations.note');assert.equal(operation.sponsor_name,await name(taylor.id),'attribution follows the anonymized account')

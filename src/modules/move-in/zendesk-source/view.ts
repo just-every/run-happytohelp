@@ -3,8 +3,9 @@ import {covered,pullBatches,pullFingerprint,stopped,type BatchSummary} from './a
 import {json,type PullRow} from './pull-store'
 import {emptyHeld} from './settle'
 const REFUSALS_SHOWN=500
-/** Progress, totals by kind and every refusal by source id. Never a token, code, verifier or link. */
-export async function pullView(env:Env,pull:PullRow){
+/** Progress, totals by kind and every refusal by source id, with what the viewing member
+ * may do with it. Never a token, code, verifier or link. */
+export async function pullView(env:Env,pull:PullRow,viewer:{yours:boolean;canStop:boolean;canTakeOver:boolean}){
  const batches=await pullBatches(env,pull.id),counts=json<any>(pull.counts_json,{}),approval=json<{runId:string}[]>(pull.approval_json,[])
  const staged=pull.state==='pulling'?(await env.DB.prepare('SELECT kind,state,COUNT(*) n FROM move_in_zendesk_staged WHERE pull_id=? GROUP BY kind,state').bind(pull.id).all<{kind:string;state:string;n:number}>()).results:[]
  const refusals=(await env.DB.prepare('SELECT kind,source_id sourceId,reason FROM move_in_zendesk_refusals WHERE pull_id=? ORDER BY kind,CAST(source_id AS INTEGER) LIMIT ?').bind(pull.id,REFUSALS_SHOWN).all<{kind:string;sourceId:string;reason:string}>()).results
@@ -15,7 +16,7 @@ export async function pullView(env:Env,pull:PullRow){
  const summaries=batches.map(b=>b.summary_json?JSON.parse(b.summary_json) as BatchSummary:null),sum=(pick:(s:BatchSummary)=>number,only?:(i:number)=>boolean)=>summaries.reduce((total,s,i)=>total+(s&&(!only||only(i))?pick(s):0),0)
  const fingerprint=pull.state==='ready'?pullFingerprint(batches):null,coverable=pull.state==='ready'?covered(batches).map(b=>b.run_id):approval.map(a=>a.runId)
  return {
-  id:pull.id,state:pull.state,phase:pull.phase,subdomain:pull.subdomain,error:pull.error,nextAt:pull.next_at||null,createdAt:pull.created_at,approvedAt:pull.approved_at,fingerprint,
+  id:pull.id,state:pull.state,phase:pull.phase,...viewer,subdomain:pull.subdomain,error:pull.error,nextAt:pull.next_at||null,createdAt:pull.created_at,approvedAt:pull.approved_at,fingerprint,
   progress:{phase:pull.phase,commentsPending:n('ticket','comments'),ticketsRead:n('ticket','ready','packed'),batches:batches.length,batchesReviewed:summaries.filter(Boolean).length,batchesApplied:batches.filter(b=>b.state==='completed').length,batchesStopped:batches.filter(stopped).length},
   totals:{
    tickets:{seen:source.tickets,deleted:source.deleted,imported:sum(s=>s.ticketsNew,i=>batches[i].state==='completed'),refused:refusedOf('ticket'),alreadyImported:held.tickets.unchanged},

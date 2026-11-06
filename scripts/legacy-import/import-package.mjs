@@ -19,7 +19,7 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
   const index=await packageContext(root,manifest,{timestamp:types.timestamp,...relationships});
   try{
     const runId=`legacy-package:${digest}`,options={context:index.context,objectKeys:index.objectKeys},tables={};
-    let objects={uploaded:0,present:0};const env=()=>target?.env;
+    let objects={uploaded:0,present:0};const env=()=>target?.env,workspaces=new Set();
     const order=table=>{const i=tableOrder.indexOf(table);return i<0?1000:i};
     // A chunk is identified by its file and digest, never by its place in the order.
     const chunks=manifest.chunks.filter(part=>!Object.hasOwn(excluded,part.table)).sort((a,b)=>order(a.table)-order(b.table)).map(part=>({part,chunk:part.file}));
@@ -29,24 +29,26 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
       // resumable outage can commit chunks; a known conflict commits none.
       for(const {part,chunk} of chunks){
         const rows=await readPart(root,part),table=part.table;
-        const bundle={format:'happytohelp-legacy-v1',source:{repository:manifest.source.repository,revision:manifest.source.revision,exportedAt:manifest.source.exportedAt,projectId:manifest.source.projectId,package:digest,chunk,table,chunkSha256:part.sha256},tables:{[table]:rows}};
+        const bundle=chunkBundle(manifest,digest,part,rows);
         await importLegacy(env(),bundle,{...options,checkOnly:true});
         await target.renew?.();
       }
       const existing=await env().DB.prepare('SELECT bundle_digest FROM legacy_import_runs WHERE id=?').bind(runId).first();
       if(existing&&existing.bundle_digest!==digest)throw Error('Import digest conflict');
       // Object validation also precedes all writes, including the run journal.
-      await importObjects(target,root,manifest,runId,{concurrency,checkOnly:true});
+      // Media rows are journaled in their chunks' runs; erased attachments are read from those runs by key.
+      const mediaRuns=await Promise.all(manifest.chunks.filter(part=>part.table==='media').map(async part=>`legacy:${await types.digest(types.stable(chunkBundle(manifest,digest,part,await readPart(root,part))))}`));
+      await importObjects(target,root,manifest,runId,{concurrency,checkOnly:true,mediaRuns});
       await env().DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(runId,types.stable(manifest.source),digest,Date.now()).run();
       progress({step:'objects',seconds:seconds(started)});
-      objects=await importObjects(target,root,manifest,runId,{concurrency,progress});
+      objects=await importObjects(target,root,manifest,runId,{concurrency,progress,mediaRuns});
     }
     // Parent tables finish before their children start; chunks of one table are independent.
     for(const table of [...new Set(chunks.map(c=>c.part.table))]){
       const queue=chunks.filter(c=>c.part.table===table),total=tables[table]={sourceRows:0,mappedRows:0,archivedOnly:0,holds:0,applied:0,replayed:0};
       const one=async({part,chunk})=>{const begun=Date.now();
-        const rows=await readPart(root,part);
-        const bundle={format:'happytohelp-legacy-v1',source:{repository:manifest.source.repository,revision:manifest.source.revision,exportedAt:manifest.source.exportedAt,projectId:manifest.source.projectId,package:digest,chunk,table,chunkSha256:part.sha256},tables:{[table]:rows}};
+        const rows=await readPart(root,part);if(table==='projects')for(const row of rows)workspaces.add(String(row.id));
+        const bundle=chunkBundle(manifest,digest,part,rows);
         const result=target?await importLegacy(env(),bundle,options):{...(await planImport(bundle,options)).summary,applied:0,replayed:0};
         total.sourceRows+=result.sourceRows;total.mappedRows+=result.mappedRows;total.archivedOnly+=result.archivedOnly.length;total.holds+=result.holds.length;total.applied+=result.applied;total.replayed+=result.replayed;
         progress({chunk,table,rows:result.sourceRows,applied:result.applied,replayed:result.replayed,ms:Date.now()-begun,...(result.d1Ms===undefined?{}:{d1Ms:result.d1Ms,maxBatchMs:result.maxBatchMs})});
@@ -55,7 +57,10 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
     }
     if(target)await env().DB.prepare("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=?").bind(Date.now(),runId).run();
     const sum=key=>Object.values(tables).reduce((n,t)=>n+t[key],0);
-    return {id:runId,manifestSha256:digest,projectId:manifest.source.projectId,sourceRows:sum('sourceRows'),packageRows:Object.values(sourceCounts).reduce((n,c)=>n+c,0),excluded,mappedRows:sum('mappedRows'),archivedOnly:sum('archivedOnly'),holds:sum('holds'),applied:sum('applied'),replayed:sum('replayed'),objects:manifest.objects.length,objectsUploaded:objects.uploaded,objectsPresent:objects.present,mediaBytes:manifest.mediaBytes,sessions:target?.sessions,seconds:seconds(started),tables};
+    return {id:runId,manifestSha256:digest,projectId:manifest.source.projectId,workspaces:[...workspaces],sourceRows:sum('sourceRows'),packageRows:Object.values(sourceCounts).reduce((n,c)=>n+c,0),excluded,mappedRows:sum('mappedRows'),archivedOnly:sum('archivedOnly'),holds:sum('holds'),applied:sum('applied'),replayed:sum('replayed'),objects:manifest.objects.length,objectsUploaded:objects.uploaded,objectsPresent:objects.present,mediaBytes:manifest.mediaBytes,sessions:target?.sessions,seconds:seconds(started),tables};
   }finally{await index.close();}
 }
 const seconds=since=>Math.round((Date.now()-since)/100)/10;
+// The bundle one chunk is imported as. Its digest names the chunk's own journal run, so a repeat of the same package
+// reproduces the same run ids.
+const chunkBundle=(manifest,digest,part,rows)=>({format:'happytohelp-legacy-v1',source:{repository:manifest.source.repository,revision:manifest.source.revision,exportedAt:manifest.source.exportedAt,projectId:manifest.source.projectId,package:digest,chunk:part.file,table:part.table,chunkSha256:part.sha256},tables:{[part.table]:rows}});

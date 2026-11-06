@@ -7,6 +7,7 @@ import {scope} from './common'
 import {issuerGuard} from '../../platform/integration-authority'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement} from '../audit/record'
+import {memberBusinessErasure} from '../../edition/agent-door/member-business-erasure'
 import {memberDoorErasure} from '../../edition/agent-door/erasure'
 
 export const memberErasure=new Hono<AppEnv>()
@@ -25,8 +26,8 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const context:ErasureContext={env:c.env,project:actor.projectId,user:userId,actor:actor.id,now,guard:{sql:`EXISTS(${guard.sql}) AND ${eligible}`,params:[...guard.params,...args]}}
  const registry=await currentRegistry(c.env.DB)
  if(registry.errors.length)throw new HTTPException(503,{message:'Member erasure schema requires review'})
-// Agent-door identity copies are prepared before native anonymization.
- await c.env.DB.batch([...await redactionStatements(c.env.DB),...await invalidateTransfersStatements(c.env.DB),...await memberDoorErasure(c.env,userId,now),...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...replyDraftMemberErasure(c.env,actor.projectId,userId)])
+ // Agent-door identity copies are prepared before native anonymization.
+ await c.env.DB.batch([...await redactionStatements(c.env.DB),...await invalidateTransfersStatements(c.env.DB),...await memberDoorErasure(c.env,userId,now),...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...replyDraftMemberErasure(c.env,actor.projectId,userId),...await memberBusinessErasure(c.env.DB,actor.projectId,userId)])
  return c.json({erased:true,credentialsRevoked:true,eventsRetained:true})
 })
 
@@ -56,6 +57,7 @@ const memberPolicies:Record<string,RegistryEntry>={
  integration_token_events:{effects:[{prefix:"INSERT INTO integration_token_events(namespace,id,token_id,at,action,feature) SELECT namespace,lower(hex(randomblob(16))),id,?,'revoked','integrations.tokens' FROM api_credentials",source:'api_credentials',where:'issuer_id=? AND revoked_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
  integration_tokens:{effects:[{prefix:"UPDATE integration_tokens SET revoked_at=coalesce(revoked_at,?),token_hash='erased:'||id",where:'credential_id IN (SELECT id FROM api_credentials WHERE namespace=? AND issuer_id=?)',before:c=>[c.now],after:c=>[c.project,c.user]}]},
  api_credentials:{effects:[{prefix:'UPDATE api_credentials SET issuer_id=NULL,revoked_at=coalesce(revoked_at,?)',where:'issuer_id=?',before:c=>[c.now],after:c=>[c.user]}]},
+ context_tracked_events:{effects:[{prefix:"UPDATE context_tracked_events SET payload=json_set(payload,'$.name','Former teammate')",where:"type='AGENT_ASSIGNED' AND json_valid(payload) AND coalesce(json_extract(payload,'$.is_ai'),0)=0 AND (json_extract(payload,'$.assigned_to')=? OR (json_type(payload,'$.assigned_to') IS NULL AND json_extract(payload,'$.name')=(SELECT name FROM users WHERE id=?)))",after:c=>[c.user,c.user]}]},
  // Grants are workspace history, not a capability held by their issuer. Retain
  // the opaque grantor id after account anonymization; deleting a grant must
  // never clear the collection's explicit-entitlement requirement.
@@ -65,6 +67,7 @@ const memberPolicies:Record<string,RegistryEntry>={
  ...Object.fromEntries(['credentials','user_settings','user_factors','recovery_codes','session_factors','webauthn_challenges'].map(table=>[table,accountDelete()])),
  ...Object.fromEntries(['user_project_preferences','member_roles','operator_presence','mobile_devices','support_channel_members','support_channel_link_codes','memberships'].map(table=>[table,workspaceDelete()])),
  ...Object.fromEntries(['teammate_slack_consent','teammate_slack_links','teammate_slack_preferences','teammate_slack_deliveries'].map(table=>[table,workspaceDelete()])),
+ ...Object.fromEntries(['teammate_teams_consent','teammate_teams_codes','teammate_teams_links','teammate_teams_preferences','teammate_teams_deliveries'].map(table=>[table,workspaceDelete()])),
  magic_signins:{erase:{column:'user_id',nullable:true}},
  sessions:{erase:{column:'actor_id',nullable:true,predicate:"actor_id=? AND role<>'contact'",args:c=>[c.user]}},
  macro_drafts:{erase:{column:'actor_id'}},

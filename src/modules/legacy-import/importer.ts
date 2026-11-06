@@ -53,7 +53,7 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
  }
  const objects=[]
  for(const object of plan.objects){
-  const erased=await env.DB.prepare("SELECT 1 FROM legacy_import_rows WHERE source_table='media' AND source_id IN (SELECT json_extract(value,'$.id') FROM json_each(?)) AND source_json='{}' LIMIT 1").bind(JSON.stringify((options.context??bundle).tables.media?.filter(row=>String(row.object_key||row.storage_key)===object.key)??[])).first()
+  const erased=await env.DB.prepare("SELECT 1 FROM legacy_import_rows WHERE run_id=? AND source_table='media' AND source_id IN (SELECT json_extract(value,'$.id') FROM json_each(?)) AND source_json='{}' LIMIT 1").bind(plan.id,JSON.stringify((options.context??bundle).tables.media?.filter(row=>String(row.object_key||row.storage_key)===object.key)??[])).first()
   if(erased)continue
   const current=await env.FILES.get(object.key)
   if(current&&await digest(new Uint8Array(await current.arrayBuffer()))!==object.sha256)throw new Error(`Existing R2 object differs: ${object.key}`)

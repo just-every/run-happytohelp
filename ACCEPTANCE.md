@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 3 | 72 | 11 | 86 |
+| Core | 4 | 71 | 11 | 86 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 3 | 72 | 16 | 91 |
+| Full target | 4 | 71 | 16 | 91 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -260,7 +260,7 @@ Core · published · **partial** · Cites BASE-OPS-003, BASE-MAIL-001, BASE-DATA
 
 #### PUBLIC-001 — Homepage hero and two support moments
 
-Core · published · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
+Core · published · **done** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** The retained homepage hero (RL-10) places the headline “Knows what your customer needs before they do.” stands left-aligned beside one hand-drawn picture of both moments on a pale aqua blob, joined by an aqua pen arrow: 1, a checkout page in its window with the widget's offer card (signed with the speech-bubble mark) floating over its corner; 2, a conversation already solved (a customer, Maya, cannot turn on the Spanish version of her store; the agent's fix, beside a code glyph, says it is fixed; the reply to Maya carries Send inside it, the only step left), each numbered on a filled aqua disc; with the subhead “Some customers who get stuck never write in. They just leave.”, the line “100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk”, an aqua pen-stroke flourish under the calls to action that draws itself in once, and under the picture the captions “Before they ask” (“When someone seems stuck, the widget offers a hand.”) and “When they ask” (“Your Codex or Claude fixes the problem and writes the reply. You press Send.”) on filled aqua number discs;
 
@@ -271,7 +271,7 @@ Core · published · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-00
 4. Calls to action retain the once-drawn aqua flourish; under reduced motion the final drawing is complete.
 
 **Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`; Builder replay evidence: `tests/helpers/public-site-journey.mjs` (hero geometry, DOM copy and drawing); `tests/helpers/public-site-motion.mjs` (once-drawn flourish and reduced motion); `tests/homepage-browser.mjs` via `tests/journeys/public-browser.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: homepage headline; retained subhead; free alternative line; wide side-by-side layout; captions below drawing; phone stacked layout; left-aligned headline; shared aqua blob; checkout offer overlays corner; offer retains mark; Send is inside prepared reply; connecting aqua arrow; numbered caption discs; moment captions; Spanish-store solved-conversation text; flourish draws once within timing bound; reduced-motion final flourish. Asserted: no outcome in the currently cited test files. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: left-aligned headline. Asserted: homepage headline; retained subhead; free alternative line; wide side-by-side layout; captions below drawing; phone stacked layout; shared aqua blob; checkout offer overlays corner; offer retains mark; Send is inside prepared reply; connecting aqua arrow; numbered caption discs; moment captions; Spanish-store solved-conversation text; flourish draws once within timing bound; reduced-motion final flourish.
+**Gap.** None.
 
 #### PUBLIC-002 — Free product promise
 

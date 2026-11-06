@@ -2,6 +2,7 @@ import {notificationTicketScopeAssertions} from '../ai/ticket-scope.mjs'
 import assert from 'node:assert/strict'
 import {recipients} from '../email/app.mjs'
 import {slackNoticeJourney} from './slack-notices.mjs'
+import {teamsNoticeJourney} from './teams-notices.mjs'
 
 export async function teammateOutcomes(m,brands){
  await notificationTicketScopeAssertions(m)
@@ -72,4 +73,5 @@ export async function teammateOutcomes(m,brands){
  assert.equal((await app.call(`${desk}/conversations/${id}/ticket`,{token:w.tokens.operator})).status,401,'the same current membership gates the ticket')
  // Personal Slack leg of the same acceptance point: its own workspace, Slack's network edge faked.
  await slackNoticeJourney()
+ await teamsNoticeJourney()
 }

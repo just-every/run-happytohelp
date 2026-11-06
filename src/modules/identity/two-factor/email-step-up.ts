@@ -7,7 +7,7 @@ import {clientAddress} from '../../../platform/rate-limits'
 import {loginDestination} from '../../../platform/dashboard-path'
 import {requestSource} from '../../audit/record'
 import {emailConfigured,sendEmail} from '../../integrations/email'
-import {emailMode} from '../../integrations/email-provider'
+import {emailMode,emailOffMessage} from '../../integrations/email-provider'
 import {linkOrigin,magicLinkLimit} from '../magic-link'
 import {accountAudit,runAll} from './factors'
 
@@ -21,7 +21,7 @@ emailStepUp.post('/step-up/email',async c=>{
  const origin=linkOrigin(c.env)
  if(emailMode(c.env)==='local'||!origin||!emailConfigured(c.env)){
   await audit('step_up.email_link_refused','refused','email_unavailable')
-  throw new HTTPException(503,{message:'Email sign-in is not configured. Contact the workspace owner.'})
+  throw new HTTPException(503,{message:`${emailOffMessage} Contact the workspace owner.`})
  }
  const user=await c.env.DB.prepare('SELECT email FROM users WHERE id=?').bind(actor.id).first<{email:string}>()
  if(!user)throw new HTTPException(401)

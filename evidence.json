@@ -1,0 +1,22 @@
+{
+  "files": [
+    {
+      "blob": "8c9fe8540c3ad6ace33d4bed6f2eedb9fd45c671",
+      "bytes": 6634,
+      "path": "INSPECTION-RECEIPT.json",
+      "sha256": "d1bc5291f663b1bd228918c46404e3e8581d40d035558a7f49dbb62b5dbaf30f"
+    },
+    {
+      "blob": "732cb3618614e08c2f7856669d9801adaaab6313",
+      "bytes": 15904,
+      "path": "REPORT.md",
+      "sha256": "8366b0eb6dabbcc4061bcaa425b7cd52c927246b47c211a8af0f8306bccd2e32"
+    }
+  ],
+  "product_branch": "main",
+  "product_head": "bad0eb66a55677528823751181910356d9dfc7d6",
+  "ref": "refs/heads/evidence/hh-plan-next-11",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-plan-next-11"
+}

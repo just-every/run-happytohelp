@@ -1,0 +1,187 @@
+{
+  "checks": {
+    "application_build": "NOT RUN: read-only planner",
+    "browser": "NOT RUN: prohibited for this planner",
+    "ci": "NOT RUN: no polling or dispatch",
+    "fleet_duplicate_custody": "NOT CLEARED: local lane must check before dispatch",
+    "lifetime_FIX": "NOT CLEARED: local lane must check all tags and equivalent issues before dispatch",
+    "provider_qualification": "NOT RUN: no provider calls or application key setup",
+    "source_inspection": "completed",
+    "tests": "NOT RUN: source inspection only",
+    "typecheck": "NOT RUN: read-only planner"
+  },
+  "clone_mode": "--depth 1 --filter=blob:none --single-branch --branch main",
+  "files": [
+    {
+      "bytes": 5019,
+      "path": "AGENTS.md",
+      "sha256": "40710644b2bb1b4fdde10b609c7c5b83f2180fc401018e2de42edfe7fe98693c"
+    },
+    {
+      "bytes": 340865,
+      "path": "CONTRACT.md",
+      "sha256": "3b84b94c2d8da6b45214a1af0205f386ac2dd79080706413bb82437ed3aa0dfd"
+    },
+    {
+      "bytes": 7643,
+      "path": "HANDOVER.md",
+      "sha256": "45a2ba8500c48bdeab1349c299a626bf83b1c62f7f0a6ee529eb18c5b26453fc"
+    },
+    {
+      "bytes": 309637,
+      "path": "ACCEPTANCE.md",
+      "sha256": "b4756a35a77537570b09a701397a46b227b40838c2a935a6e8304352fbaddb6f"
+    },
+    {
+      "bytes": 5027,
+      "path": "src/modules/integrations/notification-teammates.ts",
+      "sha256": "80e4671788afd755ebcd8c1ec111cc8b40ac8f99bc68c286ed153319e2faff3b"
+    },
+    {
+      "bytes": 4929,
+      "path": "src/modules/integrations/notification-teammate-delivery.ts",
+      "sha256": "ba86069471fe8870151ef581df62594a48bfb9d2fe5df6d79aa4dd857dd131b2"
+    },
+    {
+      "bytes": 423,
+      "path": "src/modules/integrations/notification-kinds.ts",
+      "sha256": "393c5d4a02440fdd79fa5cda51394542b6d69cf175813110a3558029521a81a0"
+    },
+    {
+      "bytes": 2079,
+      "path": "src/modules/integrations/teammate-slack/routes.ts",
+      "sha256": "b758e7d65cd51e41489c244039c5f1f25d2c290a90a1f5f4f01bfc154c26ddfb"
+    },
+    {
+      "bytes": 4521,
+      "path": "src/modules/integrations/teammate-slack/own.ts",
+      "sha256": "76505cff29bb69f805f49debfe37577e2dc44dbf23c2c8f4163736a225925bbe"
+    },
+    {
+      "bytes": 2864,
+      "path": "src/modules/integrations/teammate-slack/guard.ts",
+      "sha256": "fb40ba8a3a54346578b6ad1c9f8415804bb151e05673c239cd0dd7532245838c"
+    },
+    {
+      "bytes": 8115,
+      "path": "src/modules/integrations/teammate-slack/drain.ts",
+      "sha256": "f07a230505afa1cffac9eaa4e34eeac247ca64462bbc21e549407deb0f787bb6"
+    },
+    {
+      "bytes": 2087,
+      "path": "src/modules/integrations/teammate-slack/slack-api.ts",
+      "sha256": "6f8dbd6c431e07e145607e354336184768a7c9cf8589ec6791278e42c40c2400"
+    },
+    {
+      "bytes": 4447,
+      "path": "src/modules/support-channels/teams.ts",
+      "sha256": "884281e9e14143ce15a7544d95dfeb9d8bb65693ce5a524cbd7601b3b7574475"
+    },
+    {
+      "bytes": 12514,
+      "path": "src/modules/support-channels/shared.ts",
+      "sha256": "71a70aec14357037c8424fad26caf90cfafc417b1567e27a4e4541897d6274b5"
+    },
+    {
+      "bytes": 9731,
+      "path": "src/modules/support-channels/inbound.ts",
+      "sha256": "23fec653d36dd8835de8b8eb9ce44b12c7b6aa69ce465272c18065a4154d19c5"
+    },
+    {
+      "bytes": 2949,
+      "path": "src/modules/support-channels/routes.ts",
+      "sha256": "63d3febfd0b3fce426404b9e782bbdbe6625b2dc8c6ef0feb2d3f192d753ce73"
+    },
+    {
+      "bytes": 2288,
+      "path": "src/modules/support-channels/model.ts",
+      "sha256": "ceb32b82fd39eaf8d248653a6e44cfcd4dd71e6f8deb3f2547b67ef2233bc90f"
+    },
+    {
+      "bytes": 2730,
+      "path": "src/platform/scheduled.ts",
+      "sha256": "aae1b8943766145863037090dc20912ef320fd39de8d0969514aac068c02de35"
+    },
+    {
+      "bytes": 2078,
+      "path": "src/ui/native/pages/notifications/PersonalNotificationSettings.jsx",
+      "sha256": "c8c97fcc015df28320b0de143f840b8145054b360b8584cc49fbd15767f27606"
+    },
+    {
+      "bytes": 6263,
+      "path": "tests/helpers/notify/teammates.mjs",
+      "sha256": "7cb5de1f2c79a9f3735d570c2b26ff154d3d95a378f4bf0b9ebdb275256aaee4"
+    },
+    {
+      "bytes": 18880,
+      "path": "tests/helpers/notify/slack-notices.mjs",
+      "sha256": "e519851c7dd502e0476711110ed133c1b0bf4959fa71f0fe83faf9edb734f29b"
+    },
+    {
+      "bytes": 4510,
+      "path": "tests/helpers/notify/slack-browser.mjs",
+      "sha256": "a92ea5e7d78420e06a54b71ee4cafbfea43e349217aa8b6735c5fce28036689b"
+    },
+    {
+      "bytes": 6771,
+      "path": "tests/helpers/identity/security-browser.mjs",
+      "sha256": "19bd46cc6611467eb2b270f31a2878384af9bb71ebca91c7c4c4d012b4a93fbc"
+    },
+    {
+      "bytes": 60985,
+      "path": "tests/helpers/support-channels/journeys.mjs",
+      "sha256": "530132713a708302d7b29638311d2472a3d82aad5ac49e96728faa3479f85b79"
+    },
+    {
+      "bytes": 762,
+      "path": "tests/journeys/email.mjs",
+      "sha256": "072fb0744516646de9279f5680ce2e4d3bd575de58ab6413f73bc4997a72c09a"
+    },
+    {
+      "bytes": 1202,
+      "path": "tests/journeys/identity-browser.mjs",
+      "sha256": "b96a926b1155a5e60ddcb0bf38514d685550c01d74e41ef9b58183f51fc56700"
+    },
+    {
+      "bytes": 1503,
+      "path": "tests/journeys/connections.mjs",
+      "sha256": "a019bf800b75baafe31e359691e33fc996d8f8a74230569169e5c2e7ae986026"
+    },
+    {
+      "bytes": 11845,
+      "path": "tests/helpers/inbox/tickets.mjs",
+      "sha256": "14b0c27291080e70c83fc4369e7ec11fc5dccb1a86626fffbbad038dfa923e60"
+    },
+    {
+      "bytes": 1808,
+      "path": "src/modules/macros/placeholders.ts",
+      "sha256": "4bb9adff89b5b9eb674b88b1198b4eabd5ac8168001177d520b632b415b0580c"
+    }
+  ],
+  "observed_at_utc": "2026-11-06T16:05:35.254264+00:00",
+  "product_branch": "main",
+  "product_candidate_commits": 0,
+  "product_index_changed": false,
+  "product_worktree_status": "",
+  "public_evidence_ref": "refs/heads/evidence/hh-plan-next-11",
+  "repository": "just-every/run-happytohelp",
+  "role": "planner",
+  "schema": 1,
+  "selected_proposals": [
+    {
+      "clause": "NOTIFY-001",
+      "dispatch": "conditional on fresh local lane clearance",
+      "point": 2,
+      "slice": "personal Microsoft Teams teammate notifications",
+      "tag": "hh-notify-teams-next11"
+    }
+  ],
+  "source_head": "bad0eb66a55677528823751181910356d9dfc7d6",
+  "source_ref": "origin/main",
+  "supplied_custody": {
+    "private_release_do_not_build": "24bc8de90e0a8d2c0df484ea344025765755c53c",
+    "public_chain_do_not_duplicate": "300750c7cadd4e398547a4cf18e234d74c29ed55",
+    "slack_landed": "1038eabbc0a89f79f5c64b5b88b836cbd2d40828"
+  },
+  "tag": "hh-plan-next-11"
+}

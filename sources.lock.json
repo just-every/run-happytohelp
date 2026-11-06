@@ -14961,7 +14961,7 @@
       "executable": false
     },
     "tests/helpers/agent-door/member-copies.mjs": {
-      "sha256": "1ab3bf4d35bc986e373e71f00ee8210ad83f9333c25f22769b1c0b4238abceec",
+      "sha256": "e1c88b18126376fe9f713ededebdef952c03d4f8f99ea33b711046124784cf52",
       "executable": false
     },
     "tests/helpers/agent-door/member-export.mjs": {

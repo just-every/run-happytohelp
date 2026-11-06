@@ -25,15 +25,17 @@ export function fakeZendesk(){
   106:{record:ticket(106,1,'new','synthetic-hh follow-up after the move'),comments:[comment(10601,1,8,'synthetic-hh one more question'),comment(10602,2,8,'synthetic-hh answered',true)]},
   107:{record:ticket(107,3,'new','synthetic-hh question from a renamed person'),comments:[comment(10701,3,8,'synthetic-hh hello again')]},
  }
- // After the first pull: ticket 101 gets a new public reply, and person 3 is renamed.
- const changed={101:{record:{...tickets[101].record,updated_at:at(9)},comments:[...tickets[101].comments,comment(10103,1,9,'synthetic-hh a reply after the move')]}}
- const renamed={...users[2],name:'synthetic-hh person 3 renamed'}
+ // After the first pull: ticket 101 gets a new public reply and a private note, ticket 102 changes status,
+ // person 3 is renamed, the organization changes, and tickets 106 and 107 are new.
+ const changed={101:{record:{...tickets[101].record,updated_at:at(9)},comments:[...tickets[101].comments,comment(10103,1,9,'synthetic-hh a reply after the move'),comment(10104,2,9,'synthetic-hh internal follow-up',false)]},102:{record:{...tickets[102].record,status:'solved',updated_at:at(9)},comments:tickets[102].comments}}
+ const renamed={...users[2],name:'synthetic-hh person 3 renamed',updated_at:at(9)}
  const current=id=>state.repeat&&changed[id]?changed[id]:tickets[id],people=()=>state.repeat?users.map(u=>u.id===3?renamed:u):users
  const field=(id,type,title,extra={})=>({url:`${ORIGIN}/api/v2/ticket_fields/${id}.json`,id,type,title,raw_title:title,description:'',raw_description:'',position:id,active:true,required:false,collapsed_for_agents:false,regexp_for_validation:null,title_in_portal:title,raw_title_in_portal:title,visible_in_portal:true,editable_in_portal:true,required_in_portal:false,tag:null,created_at:at(1),updated_at:at(1),removable:true,key:null,agent_description:null,agent_can_edit:true,...extra})
  const fields=[field(70,'checkbox','Synthetic flag'),field(71,'subject','Subject',{removable:false}),field(72,'text','Synthetic agent note',{visible_in_portal:false,editable_in_portal:false})]
  const article=(id,title,draft,segment)=>({id,url:`${ORIGIN}/api/v2/help_center/en-us/articles/${id}.json`,html_url:`https://${SUBDOMAIN}.zendesk.com/hc/en-us/articles/${id}`,author_id:2,comments_disabled:false,draft,promoted:false,position:0,vote_sum:0,vote_count:0,section_id:900,created_at:at(1),updated_at:at(2),name:title,title,source_locale:'en-us',locale:'en-us',outdated:false,outdated_locales:[],edited_at:at(2),user_segment_id:segment,user_segment_ids:segment===null?[]:[segment],permission_group_id:1,content_tag_ids:[],label_names:[],body:`<p>${title} body</p>`})
  const articles=[article(801,'Synthetic public guide',false,null),article(802,'Synthetic draft guide',true,null),article(803,'Synthetic agents-only guide',false,5)]
- const organizations=[{id:7,url:`${ORIGIN}/api/v2/organizations/7.json`,name:'synthetic-hh workshop',shared_tickets:false,shared_comments:false,external_id:null,created_at:at(1),updated_at:at(1),domain_names:['synthetic-hh.example'],details:'',notes:'',group_id:null,tags:[],organization_fields:{}}]
+ const organization={id:7,url:`${ORIGIN}/api/v2/organizations/7.json`,name:'synthetic-hh workshop',shared_tickets:false,shared_comments:false,external_id:null,created_at:at(1),updated_at:at(1),domain_names:['synthetic-hh.example'],details:'',notes:'',group_id:null,tags:[],organization_fields:{}}
+ const companies=()=>[state.repeat?{...organization,name:'synthetic-hh workshop renamed',updated_at:at(9)}:organization]
  const json=(body,status=200,headers={})=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json',...headers}})
  const bearer=request=>{const value=request.headers.get('Authorization')?.replace(/^Bearer /,'');assert.ok(value&&state.access.has(value),'Zendesk read with a live rotated access token');return value}
  const cursorPage=(rows,request,key,size=100)=>{const url=new URL(request.url),after=url.searchParams.get('page[after]'),start=after?Number(after):0,page=rows.slice(start,start+size),more=start+size<rows.length;return json({[key]:page,meta:{has_more:more,after_cursor:more?String(start+size):null,before_cursor:null},links:{next:more?`${ORIGIN}/elsewhere`:null}})}
@@ -62,14 +64,15 @@ export function fakeZendesk(){
   if(request.method==='DELETE'){state.access.delete(token);return new Response(null,{status:204})}
   if(url.pathname==='/api/v2/ticket_fields.json')return cursorPage(fields,request,'ticket_fields')
   if(url.pathname==='/api/v2/help_center/articles.json')return cursorPage(articles,request,'articles')
-  if(url.pathname==='/api/v2/incremental/organizations.json'){const start=Number(url.searchParams.get('start_time'));return json(start===0?{organizations,end_time:1704100000,end_of_stream:true,next_page:null,count:1}:{organizations:[],end_time:start,end_of_stream:true,next_page:null,count:0})}
-  if(url.pathname==='/api/v2/incremental/users/cursor.json'){if(url.searchParams.get('start_time')==='0')return json({users,after_cursor:'users-after-1',before_cursor:null,end_of_stream:true});assert.equal(url.searchParams.get('cursor'),'users-after-1');return json({users:state.repeat?[renamed]:[],after_cursor:'users-after-1',end_of_stream:true})}
+  // Each export from the start returns the account as it is now; after a cursor, only what changed.
+  if(url.pathname==='/api/v2/incremental/organizations.json'){const start=Number(url.searchParams.get('start_time'));return json(start===0?{organizations:companies(),end_time:1704100000,end_of_stream:true,next_page:null,count:1}:state.repeat&&start===1704100000?{organizations:companies(),end_time:1704200000,end_of_stream:true,next_page:null,count:1}:{organizations:[],end_time:start,end_of_stream:true,next_page:null,count:0})}
+  if(url.pathname==='/api/v2/incremental/users/cursor.json'){if(url.searchParams.get('start_time')==='0')return json({users:people(),after_cursor:'users-after-1',before_cursor:null,end_of_stream:true});assert.equal(url.searchParams.get('cursor'),'users-after-1');return json({users:state.repeat?[renamed]:[],after_cursor:'users-after-1',end_of_stream:true})}
   if(url.pathname==='/api/v2/incremental/tickets/cursor.json'){
    assert.equal(url.searchParams.get('support_type_scope'),'all');assert.equal(url.searchParams.get('exclude_deleted'),null)
    const cursor=url.searchParams.get('cursor')
-   if(url.searchParams.get('start_time')==='0')return json({tickets:[101,102,103].map(id=>tickets[id].record),after_cursor:'tickets-after-1',end_of_stream:false})
-   if(cursor==='tickets-after-1')return json({tickets:[104,105].map(id=>tickets[id].record),after_cursor:'tickets-after-2',end_of_stream:true})
-   assert.equal(cursor,'tickets-after-2');return json({tickets:state.repeat?[101,106,107].map(id=>current(id).record):[],after_cursor:'tickets-after-3',end_of_stream:true})
+   if(url.searchParams.get('start_time')==='0')return json({tickets:[101,102,103].map(id=>current(id).record),after_cursor:'tickets-after-1',end_of_stream:false})
+   if(cursor==='tickets-after-1')return json({tickets:[104,105,...(state.repeat?[106,107]:[])].map(id=>current(id).record),after_cursor:'tickets-after-2',end_of_stream:true})
+   assert.ok(['tickets-after-2','tickets-after-3'].includes(cursor),cursor);return json({tickets:state.repeat&&cursor==='tickets-after-2'?[101,102,106,107].map(id=>current(id).record):[],after_cursor:'tickets-after-3',end_of_stream:true})
   }
   const comments=url.pathname.match(/^\/api\/v2\/tickets\/(\d+)\/comments\.json$/)
   if(comments){
@@ -79,7 +82,7 @@ export function fakeZendesk(){
    return cursorPage(entry.comments,request,'comments',comments[1]==='102'?1:100)
   }
   const many=url.pathname.match(/^\/api\/v2\/(users|organizations)\/show_many\.json$/)
-  if(many){const wanted=new Set(url.searchParams.get('ids').split(',').map(Number)),source=many[1]==='users'?people():organizations;return json({[many[1]]:source.filter(row=>wanted.has(row.id))})}
+  if(many){const wanted=new Set(url.searchParams.get('ids').split(',').map(Number)),source=many[1]==='users'?people():companies();return json({[many[1]]:source.filter(row=>wanted.has(row.id))})}
   return json({error:'InvalidEndpoint'},404)
  }
  /** What Zendesk's consent page does once the admin approves: the code goes back to the callback. */

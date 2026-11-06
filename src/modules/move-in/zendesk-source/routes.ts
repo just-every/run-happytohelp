@@ -23,13 +23,17 @@ zendeskPullRoutes.get(root,async c=>{const actor=await importActor(c),rows=(awai
 zendeskPullRoutes.get(`${root}/:pullId`,async c=>{const {pull}=await ownedPull(c);return c.json({data:await pullView(c.env,pull)})})
 
 /** Pull everything: one pull at a time per workspace. A pull after a finished one
- * starts from that pull's saved export cursors, so it reads only new or changed records. */
+ * starts from that pull's saved export cursors, so it reads only new or changed records.
+ * Once a pulled batch has been undone since then, the next pull reads the whole account
+ * again: what the undo took out comes back, and what is still held is settled away. */
 zendeskPullRoutes.post(root,async c=>{
  const actor=await importActor(c),connection=await getConnection(c.env,actor.project_id)
  if(connection?.state!=='connected')throw new HTTPException(409,{message:connection?.state==='reconnect'?'Reconnect Zendesk, then pull again.':'Connect Zendesk first.'})
  const previous=(await latestPulls(c.env,actor.project_id,20)).results
  const active=previous.find(p=>!['applied','abandoned'].includes(p.state));if(active)throw new HTTPException(409,{message:'A Zendesk pull is already in progress for this workspace.'})
- const start=previous.find(p=>p.subdomain===connection.subdomain&&p.state==='applied'&&p.resume_json)?.resume_json??'{}'
+ const base=previous.find(p=>p.subdomain===connection.subdomain&&p.state==='applied'&&p.resume_json)
+ const undone=base&&await c.env.DB.prepare("SELECT 1 FROM move_in_zendesk_pulls p CROSS JOIN move_in_zendesk_pull_runs pr ON pr.pull_id=p.id CROSS JOIN move_in_runs r ON r.id=pr.run_id WHERE p.project_id=? AND p.subdomain=? AND r.state NOT IN ('ready','completed','erased') AND r.updated_at>=? LIMIT 1").bind(actor.project_id,connection.subdomain,base.created_at).first()
+ const start=base&&!undone?base.resume_json!:'{}'
  const id=crypto.randomUUID(),now=Date.now()
  await c.env.DB.batch([c.env.DB.prepare("INSERT INTO move_in_zendesk_pulls(id,project_id,actor_id,session_hash,subdomain,state,phase,start_json,created_at,updated_at) VALUES(?,?,?,?,?,'pulling','fields',?,?,?)").bind(id,actor.project_id,actor.actor_id,actor.session_hash,connection.subdomain,start,now,now),audit(c,actor,'import.pull.started',id,{repeat:start!=='{}'})])
  const pull=(await getPull(c.env,id))!;await enqueuePull(c.env,pull)

@@ -56,10 +56,11 @@ CREATE TABLE move_in_zendesk_pulls(
  updated_at INTEGER NOT NULL);
 CREATE UNIQUE INDEX move_in_zendesk_pulls_active ON move_in_zendesk_pulls(project_id) WHERE state NOT IN ('applied','abandoned');
 CREATE INDEX move_in_zendesk_pulls_project ON move_in_zendesk_pulls(project_id,created_at);
--- Source records read by a pull, until they are packed into Move in batches.
+-- Source records read by a pull, until they are packed into Move in batches. A
+-- ticket_comment is a reply that arrived on a ticket an earlier import holds.
 CREATE TABLE move_in_zendesk_staged(
  pull_id TEXT NOT NULL,
- kind TEXT NOT NULL CHECK(kind IN ('ticket','user','organization','ticket_field','article')),
+ kind TEXT NOT NULL CHECK(kind IN ('ticket','ticket_comment','user','organization','ticket_field','article')),
  source_id TEXT NOT NULL,
  state TEXT NOT NULL CHECK(state IN ('comments','ready','packed','deleted','missing')),
  record_json TEXT,
@@ -83,3 +84,11 @@ CREATE TABLE move_in_zendesk_pull_runs(
  summary_json TEXT,
  PRIMARY KEY(pull_id,ordinal));
 CREATE INDEX move_in_zendesk_pull_runs_run ON move_in_zendesk_pull_runs(run_id);
+-- The hash of each packed ticket's own fields (comments and update clocks left
+-- out), so a later pull can tell a ticket whose fields changed from one that only
+-- gained replies. A hash only; no source content.
+CREATE TABLE move_in_zendesk_ticket_fields(
+ project_id TEXT NOT NULL,
+ source_id TEXT NOT NULL,
+ fields_hash TEXT NOT NULL,
+ PRIMARY KEY(project_id,source_id));

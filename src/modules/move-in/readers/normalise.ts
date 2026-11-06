@@ -87,6 +87,19 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
     tables.conversation_tags=[...new Set(tags(record).map(tagKey))].map(name=>({project_id:projectId,conversation_id:target,tag_id:tagIds.get(name)??id('tag',name)}))
     if(vendor==='zendesk'){tables.ticket_field_values=zendeskTicketFields(record,projectId,target,records,omissions);if(p.custom_status_id!=null)omissions.push('zendesk_custom_status_not_mapped:'+p.custom_status_id)}
     if(p.assignee_id||p.admin_assignee_id||p.team_assignee_id)omissions.push('historical_assignment_not_activated')
+   }else if(vendor==='zendesk'&&record.kind==='ticket_comment'){
+    // One reply on a conversation an earlier import holds. Its native message (or
+    // private note) has the ID the ticket's own comments use, so a comment is
+    // never imported twice; the conversation itself is left as imported.
+    const ticket=sourceId(p.ticket_id,vendor),conversation=id('conversation',ticket),person=author(p.author_id)
+    if(typeof p.public!=='boolean')throw new Error('comment_visibility_required')
+    const body=text(p.plain_body??p.body,'message_body_missing'),when=time(p.created_at,'iso')
+    kind='reply';target=id('message',`${ticket}:${record.sourceId}`)
+    if(p.public){
+     tables.messages=[{id:target,project_id:projectId,conversation_id:conversation,local_id:`import:${record.sourceId}`,actor_id:person.role==='contact'?id('contact',person.id):`import:${vendor}:${person.id}`,actor_role:person.role,content:body,created_at:when,intent_hash:null,bucket_id:null,erased_at:null,citations_json:'[]'}]
+     tables.move_in_message_sources=[{message_id:target,project_id:projectId,author_json:JSON.stringify(person),source_id:record.sourceId,source_time:JSON.stringify(p.created_at),time_provenance:'source'}]
+    }else tables.move_in_notes=[{id:target,project_id:projectId,conversation_id:conversation,author_json:JSON.stringify(person),content:body,created_at:when,source_time:JSON.stringify(p.created_at)}]
+    if(array(p.attachments).length)omissions.push('attachments_metadata_retained_bytes_not_imported')
    }else if(record.kind==='macro'){
     kind='macro';target=id(kind,record.sourceId);let body:string,title:string,created:number,updated:number
     if(vendor==='zendesk'){
@@ -129,7 +142,7 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
    }else{result.effects.set(key,[]);result.omissions.set(key,[`unsupported_record_kind:${record.kind}`]);continue}
    if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,vendor,record,tables.conversations[0].created_at)
    const history=vendor==='zendesk'&&kind==='conversation'?zendeskOffline(p,projectId,target,tables,omissions):undefined
-   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,...(vendor==='zendesk'&&Array.isArray(p._offline_provenance)?{packedProvenance:p._offline_provenance}:{}),...(history?{history}:{}),...(kind==='conversation'?{ownership:sourceOwnership(vendor,p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
+   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,...(kind==='reply'?{conversation:tables.messages?.[0]?.conversation_id??tables.move_in_notes[0].conversation_id}:{}),...(vendor==='zendesk'&&Array.isArray(p._offline_provenance)?{packedProvenance:p._offline_provenance}:{}),...(history?{history}:{}),...(kind==='conversation'?{ownership:sourceOwnership(vendor,p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit');result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}]);if(omissions.length)result.omissions.set(key,omissions)
   }catch(error){result.rejections.set(key,error instanceof Error?error.message:'record_mapping_failed');result.effects.set(key,[]);if(omissions.length)result.omissions.set(key,omissions)}
  }

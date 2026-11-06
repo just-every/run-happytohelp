@@ -48,13 +48,15 @@ export default function MoveInZendesk({projectId,onOpenRun}){
 }
 
 function PullStatus({pull,busy,onStep,onOpenRun}){
- const {tickets,articles}=pull.totals,covered=pull.batches.filter(b=>b.covered).length,waiting=pull.batches.filter(b=>b.waiting);
+ const {tickets,articles,replies,keptAsImported:kept}=pull.totals,covered=pull.batches.filter(b=>b.covered).length,waiting=pull.batches.filter(b=>b.waiting);
  const heading=pull.state==='ready'?'Ready for your approval':pull.state==='applied'?'Pull imported':pull.state==='abandoned'?'Pull stopped':phases[pull.phase]||'Working';
  return <section className="mt-3" aria-label="Zendesk pull">
   <h3>{heading}</h3>
   {pull.error?<p role="alert">{reasonLabel(pull.error.replace(/:\d+$/,''))} <button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>onStep('resume')}>Resume pull</button></p>:working.includes(pull.state)&&<p role="status">{phases[pull.phase]||'Working'}…{pull.nextAt>Date.now()?' Zendesk asked us to wait a moment.':''}</p>}
   <ul>
-   <li>Tickets: {tickets.seen} seen, {tickets.deleted} deleted in Zendesk (not imported), {tickets.imported} imported, {tickets.refused} refused</li>
+   <li>Tickets: {tickets.seen} seen, {tickets.deleted} deleted in Zendesk (not imported){tickets.alreadyImported?`, ${tickets.alreadyImported} already imported`:''}, {tickets.imported} imported, {tickets.refused} refused</li>
+   {replies.seen>0&&<li>New replies on imported tickets: {replies.imported} imported, {replies.refused} refused</li>}
+   {kept.tickets+kept.users+kept.organizations>0&&<li>Changed in Zendesk, kept as imported: {count(kept.tickets,'ticket')}, {count(kept.users,'person','people')}, {count(kept.organizations,'organization')}</li>}
    <li>People: {pull.totals.users} · Organizations: {pull.totals.organizations}</li>
    <li>Articles: {articles.published} to publish, {articles.draft} drafts, {articles.heldBack} held back for restricted audiences{articles.unavailable?' (no Help Center)':''}</li>
    <li>Batches: {pull.progress.batchesReviewed} of {pull.progress.batches} reviewed, {pull.progress.batchesApplied} imported</li>

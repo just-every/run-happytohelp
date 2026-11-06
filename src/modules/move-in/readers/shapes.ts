@@ -39,6 +39,9 @@ export const recordShapes:Record<string,Shape>={
  'zendesk/automation':record({...common('iso'),title:string,active:boolean,position:integer,conditions:configurationConditions,actions:array({type:'action'})},['id','title','conditions','actions']),
  'zendesk/user':{...record({...common('iso'),...contactFields,role:oneOf('end-user','agent','admin'),organization_id:nullable(id),tags:nullable(array(string))},['id']),person:true},
  'zendesk/ticket':record({...common('iso'),subject:nullable(string),requester_id:reference,status:oneOf('new','open','pending','hold','solved','closed'),tags:nullable(array(string)),comments:array(comment),attachments:nullable(opaque),assignee_id:nullable(reference),group_id:nullable(id),custom_fields:array(record({id,value:nullable(opaque)},['id','value'])),via},['requester_id','comments']),
+ // A reply that arrived on a ticket an earlier import holds, keyed by its own
+ // comment ID and attached to that ticket's conversation through ticket_id.
+ 'zendesk/ticket_comment':record({...comment.fields,ticket_id:id,html_body:nullable(string),audit_id:nullable(id)},['id','author_id','ticket_id','public','created_at']),
  'zendesk/macro':record({...common('iso'),title:string,restriction:nullable(opaque),actions:array({type:'action'})}),
  'zendesk/article':record({...common('iso'),title:string,body:string,draft:boolean,user_segment_id:nullable(id),user_segment_ids:array(id),...articleStructure}),
  'intercom/contact':{...record({...common('unix'),...contactFields,tags:tagList,companies:record({data:array(record({id,type:oneOf('company'),url:string},['id','type'])),url:string,total_count:integer,has_more:boolean},['data','total_count','has_more'])},['id']),person:true},
@@ -64,6 +67,7 @@ for(const [key,schema] of Object.entries(recordShapes)){const kind=key.split('/'
 // The wrapper determines Zendesk record kind. Ticket type is a nullable
 // business classification, not the Intercom document discriminator.
 recordShapes['zendesk/ticket_field'].fields!.type=string
+recordShapes['zendesk/ticket_comment'].fields!.type=nullable(string)
 recordShapes['zendesk/ticket'].fields!.type=nullable(oneOf('problem','incident','question','task'))
 export interface ShapeIssue {code:'unsupported_source_field'|'malformed_source_field'|'opaque_source_field'|'source_shape_limit';path:string;reason:string}
 /** uninterpreted: every retained value the schema does not read, for whole-value erasure. */

@@ -20,7 +20,7 @@ async function drain(h){
 }
 const pullOf=async(h,id)=>(await h.call(`${api}/zendesk/pulls/${id}`)).data
 
-test('an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id and pulls again without duplicates',{timeout:600_000},async()=>{
+test('an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo',{timeout:600_000},async()=>{
  const zendesk=fakeZendesk(),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
  try{
   // Connect: a public PKCE client, a single-use state bound to this session and workspace.
@@ -51,7 +51,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.equal(pull.state,'ready',JSON.stringify({error:pull.error,phase:pull.phase}))
   assert.equal(zendesk.state.tokenRequests[1].grant_type,'refresh_token','the short first token is refreshed before reading')
   assert.ok(zendesk.state.requests.filter(r=>r.path==='/api/v2/tickets/101/comments.json').length>=2,'429 is retried after Retry-After')
-  assert.deepEqual(pull.totals.tickets,{seen:5,deleted:1,imported:0,refused:0})
+  assert.deepEqual(pull.totals.tickets,{seen:5,deleted:1,imported:0,refused:0,alreadyImported:0})
   assert.deepEqual(pull.totals.articles,{seen:3,published:1,draft:1,heldBack:1})
   assert.equal(pull.totals.users,5);assert.equal(pull.totals.organizations,1)
   const waiting=pull.batches.filter(b=>b.waiting)
@@ -96,29 +96,70 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.equal((await h.raw(`${api}/zendesk/connect`,post({subdomain:'synthetic-other',clientId:CLIENT_ID}))).response.status,409)
 
   // A repeat pull reads only what is new or changed, and every source id keeps one conversation.
-  // Ticket 101 changed (a new reply) and person 3 was renamed: the engine never replaces a held
-  // record, so both are refused by id before packing, as is new ticket 107 from that person.
-  // Neither holds new ticket 106, which imports under the one approval.
-  const [{replies}]=await rows(h,"SELECT COUNT(*) replies FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'")
+  // Ticket 101 gained a reply and a private note, ticket 102 changed status, person 3 was renamed and the
+  // organization changed: what an earlier import holds is kept as imported and counted, the
+  // reply imports onto 101's conversation, and new tickets 106 and 107 import, 107 linked to
+  // person 3's existing contact. Nothing is refused.
+  const notesOf=async id=>(await rows(h,"SELECT COUNT(*) n FROM move_in_notes m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id=?",id))[0].n
+  const messagesOf=async id=>(await rows(h,"SELECT COUNT(*) n FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id=?",id))[0].n
+  const conversationOf=async id=>(await rows(h,"SELECT c.id,c.contact_id,c.revision,c.last_message_id,s.source_state FROM conversations c JOIN move_in_conversations s ON s.conversation_id=c.id WHERE s.source_id=?",id))[0]
+  const sourceIds=async()=>(await rows(h,'SELECT source_id,COUNT(*) n FROM move_in_conversations GROUP BY source_id ORDER BY CAST(source_id AS INTEGER)')).map(r=>[r.source_id,r.n])
+  const replies=await messagesOf('101'),privateNotes=await notesOf('101'),first101=await conversationOf('101')
+  const [person3]=await rows(h,"SELECT target_id id FROM move_in_origins WHERE target_kind='contact' AND source_id='3'")
+  const keptRecords={tickets:1,users:1,organizations:1}
   zendesk.state.repeat=true
   const again=(await h.call(`${api}/zendesk/pulls`,post({}))).data
-  await drain(h)
+  let budget=await drain(h)
   let repeat=await pullOf(h,again.id)
   assert.equal(repeat.state,'ready',JSON.stringify({error:repeat.error}))
-  assert.deepEqual(repeat.totals.tickets,{seen:3,deleted:0,imported:0,refused:2})
-  assert.deepEqual(repeat.refusals.filter(r=>['ticket','user'].includes(r.kind)).map(r=>[r.kind,r.sourceId,r.reason]),[['ticket','101','source_changed_conflict'],['ticket','107','conversation_contact_rejected'],['user','3','source_changed_conflict']])
+  assert.deepEqual(repeat.totals.tickets,{seen:4,deleted:0,imported:0,refused:0,alreadyImported:1},'101 gained only a reply; 102 is kept as imported')
+  assert.deepEqual(repeat.totals.replies,{seen:2,imported:0,refused:0})
+  assert.deepEqual(repeat.totals.keptAsImported,keptRecords,'changed in Zendesk, kept as imported')
+  assert.deepEqual(repeat.refusals.filter(r=>r.kind!=='ticket_field'),[],'nothing new is refused')
   assert.deepEqual(repeat.batches.filter(b=>b.waiting).map(b=>b.summary.refused),[2],'only the refused field definitions wait again')
-  assert.ok(repeat.batches.filter(b=>b.summary.tickets).every(b=>b.covered),'no ticket batch waits')
+  assert.ok(repeat.batches.filter(b=>b.summary.tickets||b.summary.replies).every(b=>b.covered),'no ticket or reply batch waits')
   await h.call(`${api}/zendesk/pulls/${again.id}/approve`,post({fingerprint:repeat.fingerprint}))
-  await drain(h)
+  budget=await drain(h)
   repeat=await pullOf(h,again.id)
   assert.equal(repeat.state,'applied',JSON.stringify({error:repeat.error}))
-  assert.equal(repeat.totals.tickets.imported,1)
-  const sources=await rows(h,'SELECT source_id,COUNT(*) n FROM move_in_conversations GROUP BY source_id ORDER BY CAST(source_id AS INTEGER)')
-  assert.deepEqual(sources.map(r=>[r.source_id,r.n]),[['101',1],['102',1],['104',1],['105',1],['106',1]])
-  const [{after:repliesAfter}]=await rows(h,"SELECT COUNT(*) after FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'")
-  assert.equal(repliesAfter,replies,'the changed ticket keeps what was imported')
+  assert.equal(repeat.totals.tickets.imported,2);assert.equal(repeat.totals.replies.imported,2)
+  assert.ok(budget.maxStatements<=980,'a repeat pull stays inside the D1 statement budget')
+  const everyTicket=[['101',1],['102',1],['104',1],['105',1],['106',1],['107',1]]
+  assert.deepEqual(await sourceIds(),everyTicket)
+  assert.equal(await messagesOf('101'),replies+1,'the reply on 101 imports as one more message')
+  assert.equal(await notesOf('101'),privateNotes+1,'and the private comment as one more private note')
+  const caughtUp=await conversationOf('101'),[reply]=await rows(h,"SELECT m.id,m.revision,m.actor_role,m.local_id FROM messages m WHERE m.conversation_id=? ORDER BY m.revision DESC LIMIT 1",caughtUp.id)
+  assert.deepEqual([reply.local_id,reply.actor_role,reply.revision],['import:10103','contact',first101.revision+1],'the reply follows the imported history in source order')
+  assert.deepEqual([caughtUp.revision,caughtUp.last_message_id],[first101.revision+1,reply.id],'the conversation shows the reply as its latest message')
+  assert.equal((await conversationOf('107')).contact_id,person3.id,'107 links to person 3’s existing contact')
+  assert.equal((await rows(h,'SELECT name FROM contacts WHERE id=?',person3.id))[0].name,'synthetic-hh person 3','the renamed person is kept as imported')
+  assert.equal((await conversationOf('102')).source_state,'closed','the changed ticket is kept as imported')
   assert.equal((await rows(h,'SELECT COUNT(*) n FROM contacts'))[0].n,4,'returning people are not duplicated')
+
+  // Undo the repeat pull's batch, then pull again: the same records import again, and the pull reports them.
+  const caughtUpBatches=repeat.batches.filter(b=>b.state==='completed'&&(b.summary.ticketsNew||b.summary.replies))
+  assert.equal(caughtUpBatches.length,1,'one batch carries the new tickets and the reply')
+  await h.call(`/api/move-in/projects/p/imports/${caughtUpBatches[0].runId}/undo`,post({}))
+  await drain(h)
+  assert.deepEqual(await sourceIds(),everyTicket.filter(([id])=>!['106','107'].includes(id)))
+  assert.deepEqual([await messagesOf('101'),await notesOf('101')],[replies,privateNotes],'undo takes the reply and the note out')
+  assert.deepEqual(await conversationOf('101'),first101,'and returns 101 to its imported state')
+  const third=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+  budget=await drain(h)
+  let back=await pullOf(h,third.id)
+  assert.equal(back.state,'ready',JSON.stringify({error:back.error}))
+  assert.deepEqual(back.totals.tickets,{seen:7,deleted:1,imported:0,refused:0,alreadyImported:3},'after an undo the whole account is read again')
+  assert.deepEqual(back.totals.replies,{seen:2,imported:0,refused:0})
+  assert.deepEqual(back.totals.keptAsImported,keptRecords)
+  await h.call(`${api}/zendesk/pulls/${third.id}/approve`,post({fingerprint:back.fingerprint}))
+  budget=await drain(h)
+  back=await pullOf(h,third.id)
+  assert.equal(back.state,'applied',JSON.stringify({error:back.error}))
+  assert.deepEqual([back.totals.tickets.imported,back.totals.replies.imported],[2,2],'the undone tickets and replies import again')
+  assert.ok(budget.maxStatements<=980)
+  assert.deepEqual(await sourceIds(),everyTicket)
+  assert.deepEqual([await messagesOf('101'),await notesOf('101')],[replies+1,privateNotes+1])
+  assert.equal((await conversationOf('107')).contact_id,person3.id)
 
   // Every source read was a GET; the only POSTs went to the token endpoint.
   for(const r of zendesk.state.requests)assert.ok(r.method==='GET'||r.method==='POST'&&r.path==='/oauth/tokens',`${r.method} ${r.path}`)

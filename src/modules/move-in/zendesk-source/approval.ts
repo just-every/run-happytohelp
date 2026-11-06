@@ -4,13 +4,13 @@ import {reviewPlan} from '../review-report'
 import {approve,getRun} from '../service'
 import type {Run} from '../types'
 import type {PullContext} from './context'
-export interface BatchSummary {tickets:number;ticketsNew:number;ticketsRefused:number;users:number;organizations:number;articles:{published:number;draft:number;heldBack:number};refused:number;error?:string;skipped?:boolean}
+export interface BatchSummary {tickets:number;ticketsNew:number;ticketsRefused:number;replies?:number;users:number;organizations:number;articles:{published:number;draft:number;heldBack:number};refused:number;error?:string;skipped?:boolean}
 export interface PullBatch {ordinal:number;run_id:string;summary_json:string|null;state:string;error:string|null;review_fingerprint:string|null;total:number;filename:string}
 export const pullBatches=async(env:Env,pullId:string)=>(await env.DB.prepare('SELECT p.ordinal,p.run_id,p.summary_json,r.state,r.error,r.review_fingerprint,r.total,r.filename FROM move_in_zendesk_pull_runs p JOIN move_in_runs r ON r.id=p.run_id WHERE p.pull_id=? ORDER BY p.ordinal').bind(pullId).all<PullBatch>()).results
 const settled=(batch:PullBatch)=>!!batch.error||!['uploaded','parsing','planning'].includes(batch.state)
 /** What one reviewed batch holds, by kind, with each refusal named by source id. */
 async function summarize(env:Env,run:Run){
- const empty:BatchSummary={tickets:0,ticketsNew:0,ticketsRefused:0,users:0,organizations:0,articles:{published:0,draft:0,heldBack:0},refused:0}
+ const empty:BatchSummary={tickets:0,ticketsNew:0,ticketsRefused:0,replies:0,users:0,organizations:0,articles:{published:0,draft:0,heldBack:0},refused:0}
  if(run.error)return {summary:{...empty,error:run.error},refusals:[]}
  if(!run.plan_json)return {summary:{...empty,skipped:true},refusals:[]}
  const plan:any=await reviewPlan(env,run),summary=structuredClone(empty),refusals:{kind:string;sourceId:string;reason:string}[]=[]
@@ -18,6 +18,7 @@ async function summarize(env:Env,run:Run){
   const reasons=(d.omissions??[]).map((o:any)=>o.reason)
   if(d.rejection){summary.refused++;if(d.sourceId)refusals.push({kind:d.kind,sourceId:String(d.sourceId),reason:String(d.rejection)})}
   if(d.kind==='ticket'){summary.tickets++;if(d.rejection)summary.ticketsRefused++;else if(d.targets?.some((t:any)=>t.kind==='conversation'))summary.ticketsNew++}
+  else if(d.kind==='ticket_comment'){if(!d.rejection&&d.targets?.some((t:any)=>t.kind==='reply'))summary.replies!++}
   else if(d.kind==='user')summary.users++
   else if(d.kind==='organization')summary.organizations++
   else if(d.kind==='article'&&!d.rejection){if(reasons.includes('restricted_article_held_back'))summary.articles.heldBack++;else{const status=d.targets?.find((t:any)=>t.kind==='article')?.status;if(status==='published')summary.articles.published++;else if(status==='draft')summary.articles.draft++}}

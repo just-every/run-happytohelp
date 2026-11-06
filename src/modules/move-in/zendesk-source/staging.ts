@@ -3,7 +3,7 @@ import {sourceId} from '../readers/common'
 import {ZendeskError} from '../zendesk-connection/errors'
 import type {PullContext} from './context'
 import {sanitize} from './sanitize'
-export type StagedKind='ticket'|'user'|'organization'|'ticket_field'|'article'
+export type StagedKind='ticket'|'ticket_comment'|'user'|'organization'|'ticket_field'|'article'
 export type StagedState='comments'|'ready'|'packed'|'deleted'|'missing'
 export const bytesOf=(text:string)=>new TextEncoder().encode(text).length
 export function zendeskId(value:unknown){try{return sourceId(value,'zendesk')}catch{throw new ZendeskError('zendesk_response_invalid')}}

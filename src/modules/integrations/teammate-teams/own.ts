@@ -20,7 +20,7 @@ export async function ownStatus(env:Env,member:Member){
  const link=await env.DB.prepare('SELECT aad_object_id,verified_at FROM teammate_teams_links WHERE project_id=? AND user_id=?').bind(member.projectId,member.id).first<{aad_object_id:string;verified_at:number}>()
  const rows=await env.DB.prepare('SELECT kind,enabled FROM teammate_teams_preferences WHERE project_id=? AND user_id=?').bind(member.projectId,member.id).all<{kind:string;enabled:number}>()
  const reason=await unavailableReason(env,member.projectId)
- return {available:reason===null,unavailable_reason:reason,link:link?{state:'verified'}:null,
+ return {available:reason===null,unavailable_reason:reason,delivery_available:reason===null&&!!link,delivery_unavailable_reason:reason??(link?null:'Link your personal Teams chat before notices can be delivered.'),link:link?{state:'verified'}:null,
   preferences:teammateKinds.map(kind=>({kind,label:notificationLabels[kind],enabled:rows.results.some(row=>row.kind===kind&&row.enabled===1)}))}
 }
 export async function savePreferences(env:Env,member:Member,entries:unknown){

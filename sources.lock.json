@@ -7069,7 +7069,7 @@
       "executable": false
     },
     "src/modules/integrations/teammate-teams/consent.ts": {
-      "sha256": "8e5dd9989383d2de375cdbb2e3694e7f4cc391ea26ad60f5811907daf6926de1",
+      "sha256": "926392875cf732c92d595309bce14090b3dc69aefede28a6087eed0f64f852fe",
       "executable": false
     },
     "src/modules/integrations/teammate-teams/drain.ts": {
@@ -7089,7 +7089,7 @@
       "executable": false
     },
     "src/modules/integrations/teammate-teams/own.ts": {
-      "sha256": "bf408e6894dc348039a75392e183cc54bac1c10c13333207f0b230af439bb868",
+      "sha256": "b829f8006d9be0cd7c89967576be3c28707b7b7dc4c7c8c0c5ad1af150814bba",
       "executable": false
     },
     "src/modules/integrations/teammate-teams/routes.ts": {
@@ -12685,7 +12685,7 @@
       "executable": false
     },
     "src/ui/native/pages/notifications/PersonalTeamsSettings.jsx": {
-      "sha256": "50d17834031528e66ad75d1038657ee55ce4cc954acb8cd30b0884aa9af096f9",
+      "sha256": "cc6641b745724f84826edb2dd9ca2867cf578a07e3552b40684eddfb4a04fac9",
       "executable": false
     },
     "src/ui/native/pages/notifications/SlackConsentSettings.jsx": {
@@ -15861,7 +15861,7 @@
       "executable": false
     },
     "tests/helpers/notify/teams-browser.mjs": {
-      "sha256": "14e279d832495a4ea1e21b1e7a588a3fdd5072e1219630973b0ed88a72c570f4",
+      "sha256": "e893d45af8d7d29eefd4739cfbd38db49e78d5fbdac1a91a69afaa02a6b28bc7",
       "executable": false
     },
     "tests/helpers/notify/teams-edge.mjs": {
@@ -15869,7 +15869,7 @@
       "executable": false
     },
     "tests/helpers/notify/teams-notices.mjs": {
-      "sha256": "5297c5199c2111be5e0e4244c7dc41ab370d110b69ff69ae83523835ac840a50",
+      "sha256": "37409bbaa79b77a9276889f9956f60471f9012f9471a87a68304a9c1089322d6",
       "executable": false
     },
     "tests/helpers/openai-stream.mjs": {

@@ -33,6 +33,7 @@ export async function teamsNoticeJourney(){
   assert.equal((await app.call(path+'/link',{...op,method:'POST'})).status,409)
   for(const method of ['GET','PUT'])assert.equal((await app.call(path+'/consent',{...op,method,...(method==='PUT'?{body:{connection_id:connection.id}}:{})})).status,403)
   await consent(connection.id)
+  assert.equal((await req(path,op)).delivery_available,false,'missing link is visibly unavailable')
   await prefs(true);await quiet('no personal conversation means no delivery',()=>patch(t,{assigned_to:user}))
   const code=await newCode(),saved=await app.first('SELECT * FROM teammate_teams_codes WHERE user_id=?',user)
   assert.equal(saved.token_hash,sha(code));assert.equal(saved.expires_at<=Date.now()+600000,true);assert.ok(!Object.values(saved).includes(code),'only the code hash persists')
@@ -41,6 +42,7 @@ export async function teamsNoticeJourney(){
   assert.equal((await app.first('SELECT count(*) n FROM teammate_teams_links')).n,0)
   const raw=edge.event({code,text:`<at>Bot</at> notify link ${code}`})
   assert.equal((await deliver(raw)).status,200)
+  assert.equal((await req(path,op)).delivery_available,true)
   assert.equal((await deliver(raw)).status,403,'a used code cannot link twice')
   assert.deepEqual(await app.first('SELECT (SELECT count(*) FROM contacts) contacts,(SELECT count(*) FROM conversations) conversations,(SELECT count(*) FROM support_channel_threads) threads,(SELECT count(*) FROM support_channel_members) members'),baseline,'personal linking confers no intake or command authority')
   await quiet('no notices from before linking are backfilled')
@@ -56,6 +58,11 @@ export async function teamsNoticeJourney(){
   const personalCode=await newCode()
   assert.equal((await deliver(edge.event({text:'support link '+personalCode}))).status,403)
   assert.equal((await app.first('SELECT count(*) n FROM support_channel_members')).n,0)
+  const oldCode=await newCode(),second=await connect(owner,{account:'synthetic-hh-second-tenant'})
+  await consent(second.id)
+  assert.equal((await app.first('SELECT count(*) n FROM teammate_teams_links')).n,0,'switching consent retires personal links')
+  assert.equal((await deliver(edge.event({code:oldCode}))).status,403,'switching consent invalidates old codes')
+  await consent(connection.id);await link()
   probe('link',{authenticated:true,hashed:true,singleUse:true,expires:true,sessionBound:true,noIntake:true})
 
   const g=(await req(desk+'/ticket-groups',{...owner,body:{name:'Teams group',members:[user]}})).data
@@ -105,6 +112,11 @@ export async function teamsNoticeJourney(){
    const outcome=await app.first('SELECT notice_id,state FROM teammate_teams_deliveries ORDER BY created_at DESC,rowid DESC LIMIT 1');assert.equal(outcome.state,'uncertain');assert.equal(edge.calls.length-before,1)
    await app.configure({});await settle();await app.scheduled(undefined,{after:4000000});assert.equal(edge.calls.length-before,1);assert.equal((await app.first('SELECT state FROM teammate_teams_deliveries WHERE notice_id=?',outcome.notice_id)).state,'uncertain')
   }
+  const interrupted=await app.first("SELECT notice_id FROM teammate_teams_deliveries WHERE state='accepted' LIMIT 1")
+  await app.db.prepare("UPDATE teammate_teams_deliveries SET state='sending',started_at=? WHERE notice_id=?").bind(Date.now()-601000,interrupted.notice_id).run()
+  before=edge.calls.length;await app.configure({});await settle()
+  assert.equal(edge.calls.length,before,'a persisted interrupted send is not replayed')
+  assert.equal((await app.first('SELECT state FROM teammate_teams_deliveries WHERE notice_id=?',interrupted.notice_id)).state,'uncertain')
   edge.tokenScript.push('failed');before=edge.calls.length;await customer(ticketId);await settle();assert.equal(edge.calls.length,before);assert.equal((await app.first('SELECT state FROM teammate_teams_deliveries ORDER BY created_at DESC,rowid DESC LIMIT 1')).state,'failed')
   edge.script.push(403);before=edge.calls.length;await customer(ticketId);await settle();assert.equal(edge.calls.length-before,1);assert.equal((await app.first('SELECT state FROM teammate_teams_deliveries ORDER BY created_at DESC,rowid DESC LIMIT 1')).state,'failed')
   // Revocation during the token request is caught by the final SQL recheck.
@@ -113,9 +125,16 @@ export async function teamsNoticeJourney(){
 
   await consent(null);await quiet('consent revoked',()=>customer(ticketId));assert.equal((await app.first('SELECT count(*) n FROM teammate_teams_links')).n,0)
   await consent(connection.id);await link();await prefs(true)
-  await app.db.prepare("DELETE FROM audit_events WHERE action='support_channel.connected' AND target_id=?").bind(connection.id).run()
+  await req(base+'/audit/retention',{...owner,method:'PUT',body:{days:90}})
+  await app.scheduled(undefined,{after:91*86400000})
+  assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='support_channel.connected' AND target_id=?",connection.id)).n,0,'real retention purges installer evidence')
+  await req(base+'/audit/retention',{...owner,method:'PUT',body:{days:null}})
   await quiet('missing installer evidence fails closed',()=>customer(ticketId));assert.match((await req(path,op)).unavailable_reason,/administrator must reconnect/)
   await connect();await link();await prefs(true)
+  const limitedAdmin=(await req(base+'/roles',{...owner,body:{name:'Teams installer without integration permission',base:'admin',permissions:['settings.manage']}})).data.id
+  await req(base+'/agents/'+w.users.admin,{...owner,method:'PUT',body:{role:limitedAdmin}})
+  await quiet('installer effective integration permission lost',()=>customer(ticketId))
+  await req(base+'/agents/'+w.users.admin,{...owner,method:'PUT',body:{role:'admin'}})
   await req(base+'/agents/'+w.users.admin,{...owner,method:'DELETE'});await quiet('installer lost authority',()=>customer(ticketId))
   await connect(owner);await link();await prefs(true)
   assert.equal((await count(()=>customer(ticketId))).length,1)

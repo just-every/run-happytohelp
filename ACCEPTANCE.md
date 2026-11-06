@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 4 | 71 | 11 | 86 |
+| Core | 5 | 70 | 11 | 86 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 4 | 71 | 16 | 91 |
+| Full target | 5 | 70 | 16 | 91 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -275,7 +275,7 @@ Core · published · **done** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 �
 
 #### PUBLIC-002 — Free product promise
 
-Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
+Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** “Not just better. Free.” (100% free and open source, free as in code and free as in cost, MIT licensed, “No seats. No plans. No fees.”, each promise after a line icon in a pale aqua circle, with the MIT license drawn as an ink card over a wordless code editor, “free of charge” and the rights highlighted in aqua);
 
@@ -284,7 +284,7 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 2. The page makes no price, hosting, provider or unrelated-service promotion.
 
 **Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`; `tests/journeys/public-browser.mjs`; `tests/helpers/homepage/free-browser.mjs`, “freeProductPromise”: visitor walks the Free section, free/open-source and MIT promises, no seats/plans/fees, wordless editor with overlaid ink license, aqua promise circles and no price/hosting/provider/unrelated-service promotion); noPromotions also constrains all outbound homepage links to the offered source and licence.; Builder replay evidence: `tests/helpers/public-site-journey.mjs` (free promises, MIT licence/editor layering, aqua icon circles, promotion and destination refusal); `tests/homepage-browser.mjs` via `tests/journeys/public-browser.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: free-product statement; MIT licensing; no seats; no plans; no fees; wordless code editor; license card placement; aqua promise circles; no price claim; no hosting claim; no provider promotion; no unrelated-service promotion. Asserted: no outcome in the currently cited test files.
+**Gap.** None.
 
 #### PUBLIC-003 — Support desk, move-in invitation and closing
 

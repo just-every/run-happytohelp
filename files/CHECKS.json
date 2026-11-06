@@ -81,5 +81,10 @@
     "before": "3 DONE / 72 PARTIAL / 16 MISSING / 91 total",
     "after": "3 DONE / 72 PARTIAL / 16 MISSING / 91 total"
   },
-  "clause_status_changes": []
+  "clause_status_changes": [],
+  "ci_run_id": 42265304164,
+  "ci_url": "https://github.com/just-every/run-happytohelp/actions/runs/42265304164",
+  "ci_status": "completed/success",
+  "gh_calls": 5,
+  "blockers": []
 }

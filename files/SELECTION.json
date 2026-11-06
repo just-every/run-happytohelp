@@ -19,7 +19,8 @@
     "screenshots/account-security/teams-consent-1440.png",
     "screenshots/account-security/teams-consent-390.png",
     "screenshots/account-security/teams-linked-1440.png",
-    "screenshots/account-security/teams-linked-390.png"
+    "screenshots/account-security/teams-linked-390.png",
+    "SELECTION.json"
   ],
   "symlinks": false,
   "injected_value_matches": 0,

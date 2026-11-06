@@ -48,3 +48,9 @@ GAP NOTIFY-001: Real installed-tenant Teams receipt (R-6), live channel qualific
 CLAIM NOTIFY-001 PARTIAL points=none tests=tests/helpers/notify/teams-notices.mjs#teamsNoticeJourney; tests/helpers/notify/teams-browser.mjs#teamsSettingsBrowser
 
 Mechanical checks: contract write/check exit 0 (zero documents written); source lock/check exit 0; first-party authoring exit 0; typecheck exit 0; build exit 0; local setup applied migration 303 and deployment-spec generation exit 0. The touched notification/email registration passed in 500.2 seconds; Account security passed in 285.1 seconds; five CHANNELS registrations passed in 181.0 seconds.
+
+## Terminal custody
+
+Product branch cloud/hh-notify001-teams-n1 is pushed at 5d9af470f7ca11b32c300795407863fb4c1788bb. Verify run 42265304164 completed SUCCESS on that exact SHA, observed through REST with five GitHub API calls total and no failed jobs. No PR was created. No product blocker remains. Independent gate, COMPLETE Mac publication admission and landing remain separate and unclaimed.
+
+READY branch=cloud/hh-notify001-teams-n1 head=5d9af470f7ca11b32c300795407863fb4c1788bb

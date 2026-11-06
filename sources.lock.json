@@ -4061,11 +4061,11 @@
       "executable": false
     },
     "scripts/legacy-import/import-package.mjs": {
-      "sha256": "cf3b539781a2728ba40d15f3dc91b8ec90c81e60781d21633182fe6753572491",
+      "sha256": "ceb5225a2894065e0ab00cd00e5f0179a642d28a6ecb79caf49e21bf741d9dd1",
       "executable": false
     },
     "scripts/legacy-import/objects.mjs": {
-      "sha256": "ecf7bdafa912b228d33a2f35e14d9c89ba9f866de124db83be656f24e6253c27",
+      "sha256": "d55dbea7937a96c3b2b4c874071d97cd9f76ba205886c39471a2aba503ffeb62",
       "executable": false
     },
     "scripts/legacy-import/package.mjs": {
@@ -7377,7 +7377,7 @@
       "executable": false
     },
     "src/modules/legacy-import/importer.ts": {
-      "sha256": "0c37d033df240cc7ad265db9d0819e8f39612938ccff94ce8e9ba06afa184827",
+      "sha256": "5c677754b2718ffda039415b0d8a7352c0295a7b690a22111f79aeca2293bf42",
       "executable": false
     },
     "src/modules/legacy-import/map-core.ts": {

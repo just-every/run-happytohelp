@@ -26,10 +26,13 @@ export async function writePart(root,file,value){const bytes=JSON.stringify(valu
 
 // Only relationships used by native mapping are held while importing. Payload
 // tables (notably AI usage) stay on disk and are processed one bounded chunk at a time.
+// Delivery ids travel with message context, so a delta's import sees every earlier message's id;
+// delegations carry their conversation, so a delta can tell whose conversation an event is in.
 const contextFields={projects:null,users:['id','type','email','deleted_at'],ais:null,ai_defaults:null,
  contacts:['id','project_id','deleted_at','identifier','external_id','created_at'],conversations:['id','project_id','contact_id','deleted_at'],
- messages:['id','project_id','conversation_id','contact_id','agent_id','ai_id','created_at','deleted_at'],
+ messages:['id','project_id','conversation_id','contact_id','agent_id','ai_id','created_at','deleted_at','local_id'],
  mediables:null,datasets:null,dataset_files:['id','dataset_id','deleted_at','updated_at','created_at','markdown','content'],
+ support_delegations:['id','project_id','conversation_id','deleted_at'],
  media:null};
 export async function snapshotPackage(connection,options){return publishDirectory(options.output,async root=>{
   const chunks=[],context=[],retained={};let rows=[],bytes=2,table,index=0,ctxRows=[],ctxBytes=2,ctxTable,ctxIndex=0;
@@ -37,9 +40,12 @@ export async function snapshotPackage(connection,options){return publishDirector
   const flushContext=async()=>{if(ctxRows.length){context.push({table:ctxTable,count:ctxRows.length,...await writePart(root,`context-${String(ctxIndex++).padStart(6,'0')}.json`,ctxRows)});ctxRows=[];ctxBytes=2;}};
   const limit=options.chunkBytes??chunkLimit;if(!Number.isSafeInteger(limit)||limit<1024||limit>32*1024*1024)throw Error('Chunk bytes must be between 1024 and 33554432');
   const bundle=await extractProject(connection,{...options,sink:{
-    async row(t,row){table=t;const size=Buffer.byteLength(JSON.stringify(row))+1;if(size+2>limit)throw Error(`Legacy row exceeds chunk bytes: ${t}`);if(bytes+size>limit)await flush();rows.push(row);bytes+=size;
-      if(t==='projects'||t==='media')(retained[t]??=[]).push(row);
-      if(Object.hasOwn(contextFields,t)){ctxTable=t;const fields=contextFields[t],r=fields?Object.fromEntries(fields.filter(k=>row[k]!==undefined).map(k=>[k,row[k]])):row;const n=Buffer.byteLength(JSON.stringify(r))+1;if(ctxBytes+n>limit)await flushContext();ctxRows.push(r);ctxBytes+=n;}
+    // A delta's chunks carry only its changed rows; context stays whole, except media, whose
+    // context is exactly the attachments the package copies and the import uploads.
+    async row(t,row,carried=true){table=t;
+      if(carried){const size=Buffer.byteLength(JSON.stringify(row))+1;if(size+2>limit)throw Error(`Legacy row exceeds chunk bytes: ${t}`);if(bytes+size>limit)await flush();rows.push(row);bytes+=size;}
+      if(t==='projects'||(t==='media'&&carried))(retained[t]??=[]).push(row);
+      if(Object.hasOwn(contextFields,t)&&(t!=='media'||carried)){ctxTable=t;const fields=contextFields[t],r=fields?Object.fromEntries(fields.filter(k=>row[k]!==undefined).map(k=>[k,row[k]])):row;const n=Buffer.byteLength(JSON.stringify(r))+1;if(ctxBytes+n>limit)await flushContext();ctxRows.push(r);ctxBytes+=n;}
     },async endTable(){await flush();await flushContext();}
   }});
   const attachments=enrichMedia(retained); // Adds deterministic keys to media context below.

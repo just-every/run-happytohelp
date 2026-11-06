@@ -221,7 +221,7 @@ and other reserved trial domains because they cannot receive sign-in mail. Suppl
 a real mailbox privately in `OWNER_EMAIL` or an owned 0600 `--env-file` for both
 dry run and deployment. Rer generates missing setup/encryption secrets. It also deploys
 the generated `INBOUND_EMAIL_TOKEN` for reply-mailbox authentication. Existing
-Worker secrets are retained; use `rer deploy --set-secret NAME` to change one
+Worker secrets are retained; use `rer deploy --set-secret <name>` to change one
 deliberately. Rer keeps the values it generates (`INBOUND_EMAIL_TOKEN`,
 `INTEGRATION_ENCRYPTION_KEY`, `H2H_OWNER_RECOVERY_KEY`) in the private 0600 file
 `.rer/deploy/<environment>.secrets.env` beside `.rer/deploy/<environment>.json`.
@@ -255,6 +255,88 @@ declaration's `secrets` array, plus
 `{"binding":"MAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}`, and supply that account ID privately before deploying
 with Cloudflare mail. It is not required for Resend or SendGrid; rer 0.2.77 requires
 every declared secret not marked `optional` on a new Worker.
+
+### Deploy with outbound email off
+
+A company's history can move into its own hosted installation before its mail is
+cut over, so a deploy can choose to send nothing. Put `MAIL_PROVIDER=none` and a
+real `OWNER_EMAIL` in the environment or the owned 0600 `--env-file`, with no
+other mail input (`EMAIL_*`, `MAIL_*`, the Mailgun sending inputs
+`MAILGUN_DOMAIN`, `MAILGUN_REGION` and `MAILGUN_SENDING_KEY`, mailbox OAuth or socket
+settings; supplying any of them with `none` refuses before anything is built):
+
+```sh
+rer deploy --environment production --env-file ~/happytohelp-deploy.env
+```
+
+`none` is always spelled out. A missing `MAIL_PROVIDER`, `later` or `direct`
+still needs a mail provider, exactly as before. With `none`, rer reports that
+outbound email is off and names the sign-in command below; the Worker is bound
+to no mail provider, key or sender, and `rer deploy --dry-run` lists nothing
+mail-related as missing and makes no outbound request. The installation then
+sends nothing: sign-in links, password resets, invitations, notifications,
+replies by email, the Email settings test send and surveys each refuse or record
+"Outbound email is off for this installation" instead of pretending, and
+**Setup** and **Email settings** say so with how to turn it on. Incoming mail,
+imports and everything that does not send keep working.
+
+To turn Mailgun mail on later, put `EMAIL_PROVIDER=mailgun`, `EMAIL_FROM`, `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_REGION` (`us` or `eu`, written out), `MAILGUN_SENDING_KEY` (a domain-scoped sending key) and `MAILGUN_WEBHOOK_SIGNING_KEY` (Mailgun's HTTP webhook signing key, which verifies mail Mailgun forwards to you) in your `--env-file`, remove `MAIL_PROVIDER=none` from it,
+and run one command from the checkout that deployed the installation. The
+installation must already run this release, because a secret change makes one
+new Worker version from the live one without rebuilding:
+
+```sh
+rer deploy --environment production --env-file ~/happytohelp-deploy.env --set-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY,MAILGUN_WEBHOOK_SIGNING_KEY
+```
+
+Resend, SendGrid and Cloudflare Email Sending take the inputs in the provider
+table of [Email and integrations](src/modules/integrations/README.md#choose-a-provider),
+set the same way in one `--set-secret` run.
+
+To turn sending off again, remove the six sending inputs. A plain redeploy keeps
+every secret the Worker holds, so a redeploy with `MAIL_PROVIDER=none` alone does
+not stop sending; the removal must be an `--unset-secret` run. Mailgun receiving
+continues, because the signing key binds no way to send:
+
+```sh
+rer deploy --environment production --env-file ~/happytohelp-deploy.env --unset-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY
+```
+
+Then take those six inputs out of the file and put `MAIL_PROVIDER=none` back in it
+for later deploys.
+
+To stop Mailgun receiving, first point the Mailgun route elsewhere, then remove the
+signing key. Every forward is then refused; Mailgun retries for 8 hours and then
+drops the message. A removed declared secret is retired, so later plain deploys
+omit it until it is set again:
+
+```sh
+rer deploy --environment production --env-file ~/happytohelp-deploy.env --unset-secret MAILGUN_WEBHOOK_SIGNING_KEY
+```
+
+### Sign in without mail
+
+An installation that sends no mail has no emailed sign-in link, and a moved-in
+owner has no password. From the checkout that deployed it, with the Cloudflare
+credentials that deployed it, mint a one-time link:
+
+```sh
+node scripts/hosted-signin.mjs --environment production --project <workspaceId> [--open] [--json] [--env-file ~/happytohelp-deploy.env]
+node scripts/hosted-signin.mjs --environment production --email <memberEmail>
+```
+
+`--project` signs in that workspace's single owner and refuses when it has none or
+several; `--email` names an owner or admin who belongs to exactly one workspace
+(use `--project` when they belong to several). The command refuses unless the live
+Worker is the one this checkout deployed and the target is an existing owner or
+admin of an existing workspace. It writes one single-use grant, valid 15 minutes,
+into the deployment's D1 (only its hash is stored, the way an emailed link is) and
+prints the native link once to stdout. `--json` prints
+`{"link":…,"email":…,"expiresAt":…}` with `expiresAt` in epoch milliseconds, and
+`--open` opens the link in your default browser and prints only the email and
+expiry. The link is never written to disk, a log or a receipt, nothing is sent,
+and its use appears in the member's security log like an emailed link. It works
+whether mail is on or off.
 
 ### Mailgun domain sending
 
@@ -293,6 +375,32 @@ tested here: automated coverage uses HTTP-edge fakes only. The owner supplies
 the sending key during the planned key configuration; live proof remains a
 separate authorized check.
 
+#### Receiving from a Mailgun route
+
+A Mailgun route can forward your support mail to HappyToHelp. Set
+`MAILGUN_WEBHOOK_SIGNING_KEY` to the account's **HTTP webhook signing key** (never the
+sending key or the Routes key; it is a runtime secret, never a plain variable), and
+point a route's `forward()` action at
+`https://<your HappyToHelp address>/api/integrations/email/mailgun/inbound`
+(`POST`; form-urlencoded, or multipart/form-data with attachments, up to 30 MB). The
+URL carries no secret: Mailgun posts `timestamp`, `token` and `signature`, the hex
+HMAC-SHA256 of `timestamp + token` under the key, and HappyToHelp compares it in
+constant time. A forward is refused with 403, writing no record, when the key is unset
+or empty, the signature is missing, malformed or wrong, the timestamp is more than five
+minutes ahead or older than nine hours (Mailgun retries for 8 hours and may keep its
+first timestamp), or the token was already used. Each token is used once, and is freed
+again when the forward is not answered 200, so Mailgun's retry of the same request can
+succeed. The key appears in no response, log line, stored row or export.
+
+The workspace that receives the recipient address gets the mail, with the same
+threading, attachment limits, automatic-mail classification, Suspended policy and
+Closed-ticket handling as the other inbound doors. Received, repeated, Suspended and
+Closed-ticket mail is answered 200, the only answer Mailgun accepts; an address no
+workspace receives is answered 404 and Mailgun retries it. Sending and receiving are
+independent: removing the six sending inputs leaves receiving on, and removing the
+signing key stops receiving only. The commands are above under Deploy with outbound
+email off.
+
 Protocol references: [message sending](https://documentation.mailgun.com/docs/mailgun/api-reference/send/mailgun/messages/post-v3--domain-name--messages),
 [domain sending keys](https://documentation.mailgun.com/docs/mailgun/user-manual/api-key-mgmt/rbac-mgmt)
 and [regional endpoints](https://documentation.mailgun.com/docs/mailgun/api-reference/api-overview).
@@ -314,6 +422,26 @@ account. It is an external change requiring owner authorization. Release produce
 source/artifacts with its existing `--repo` and `--output` arguments and never
 pushes or deploys.
 Inspect `rer describe` and per-command `--help` for other flags.
+
+### Receiving mail that Amazon SES stores in S3
+
+A company whose support address receives mail through Amazon SES can have that mail read from an S3 bucket and admitted as conversations. The reader is **off** until `LEGACY_MAIL_S3_BUCKET`, `LEGACY_MAIL_S3_PREFIX`, `LEGACY_MAIL_S3_MAILBOX`, `LEGACY_AWS_REGION`, `LEGACY_AWS_ACCESS_KEY_ID` and `LEGACY_AWS_SECRET_ACCESS_KEY` are all set; `LEGACY_MAIL_S3_REPLAY_PREFIX` is optional. With any required input missing it makes no request and writes nothing, so a release carrying it can be deployed before the bucket exists. What each input means, the receipt rule, the bucket policy that makes the SES prefix trustworthy, the read-only IAM policy and how mail is bound, judged and held are in [Receive mail that Amazon SES stores in S3](docs/email.md#receive-mail-that-amazon-ses-stores-in-s3).
+
+Turn it on from the checkout that deployed the installation, with the inputs in your private `--env-file`. The key halves are runtime secrets, never plain variables. A deploy refuses a partial set and a malformed bucket, region, address or prefix. Nothing else changes, and a secret change makes one new Worker version from the live one without rebuilding, so the installation must already run this release first:
+
+```sh
+rer deploy --environment production --env-file <file> --set-secret LEGACY_MAIL_S3_BUCKET,LEGACY_MAIL_S3_PREFIX,LEGACY_MAIL_S3_REPLAY_PREFIX,LEGACY_MAIL_S3_MAILBOX,LEGACY_AWS_REGION,LEGACY_AWS_ACCESS_KEY_ID,LEGACY_AWS_SECRET_ACCESS_KEY
+```
+
+Set `LEGACY_MAIL_S3_MAILBOX` as the inbound address of the workspace that should receive the mail (**Settings → Email**). Mail that arrives first waits as `pending_mailbox` and is admitted within a minute of that address being set. Check **Settings → Email**, or `GET /api/management/projects/:projectId/email-settings`, for `legacyMailS3`.
+
+Turn it off by removing the required inputs from the Worker; the optional replay prefix may go too. Receipts and everything already admitted stay, and nothing further is listed or read:
+
+```sh
+rer deploy --environment production --env-file <file> --unset-secret LEGACY_MAIL_S3_BUCKET,LEGACY_MAIL_S3_PREFIX,LEGACY_MAIL_S3_REPLAY_PREFIX,LEGACY_MAIL_S3_MAILBOX,LEGACY_AWS_REGION,LEGACY_AWS_ACCESS_KEY_ID,LEGACY_AWS_SECRET_ACCESS_KEY
+```
+
+Then remove the seven inputs from your `--env-file`. To rotate the key, put the new halves in the file and run `--set-secret LEGACY_AWS_ACCESS_KEY_ID,LEGACY_AWS_SECRET_ACCESS_KEY` alone.
 
 ### If setup fails at the R2 step
 
@@ -437,7 +565,8 @@ platform administrators (see [the integrations guide](src/modules/integrations/R
 | AI replies, assist, profiles and monitoring (Ensemble) | The installer's `AI_PROVIDER` answer (`openai`, `anthropic`, `google`, `deepseek`, `xai`, `openrouter` or `later`, the default) chooses which key to store at setup; models are selected in workspace and AI configuration (the dashboard's **AI** page); `CONTEXT_MODEL` for widget-triggered context work. Every new workspace's starter assistant answers visitors by itself once any provider key is installed, within `AI_DAILY_CEILINGS`; with none, new conversations stay with the team | Selected `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`/`GEMINI_API_KEY`, `DEEPSEEK_API_KEY`, `XAI_API_KEY`, `OPENROUTER_API_KEY`; the key is optional at setup and never stored with `later` |
 | Knowledge crawl and semantic search | `APIFY_CRAWLER_ACTOR_ID` (`apify~website-content-crawler`), `QDRANT_URL`, `KNOWLEDGE_EMBEDDING_MODEL` | `APIFY_TOKEN`, `QDRANT_API_KEY`, `OPENAI_API_KEY`. Website sources need none of these: without the two Apify values HappyToHelp reads up to 40 pages of a public site itself ([Website knowledge](docs/website-knowledge.md)). Keyword search needs none of these providers. |
 | Help center import from another provider (Intercom or Freshdesk; Zendesk articles come through Move in's Zendesk connection) | Platform/subdomain and destination workspace chosen for each import | `INTERCOM_TOKEN` or `FRESHDESK_TOKEN` for the selected provider; Zendesk uses `INTEGRATION_ENCRYPTION_KEY` for its stored sign-in |
-| Email, sending and receiving | `EMAIL_PROVIDER` (`resend`, `cloudflare` or `sendgrid`), `EMAIL_ACCOUNT_ID` for Cloudflare, optional `INBOUND_EMAIL_DOMAIN` (the domain new workspaces' reply mailboxes are created under; default `in.` plus the workspace's website host), workspace email settings; built-in inbound endpoints | `EMAIL_API_KEY`, `EMAIL_FROM` (the installation sender every new workspace uses until its own domain is verified), `INBOUND_EMAIL_TOKEN` (generated by local setup and deployed for inbound authentication; with it every new workspace gets a reply-by-email mailbox; provider domain routing and a webhook still need configuration) |
+| Email, sending and receiving | `EMAIL_PROVIDER` (`resend`, `cloudflare`, `sendgrid` or `mailgun`), `EMAIL_ACCOUNT_ID` for Cloudflare, the Mailgun inputs (`MAILGUN_DOMAIN`, `MAILGUN_REGION`, `MAILGUN_SENDING_KEY`, and `MAILGUN_WEBHOOK_SIGNING_KEY` for receiving), optional `INBOUND_EMAIL_DOMAIN` (the domain new workspaces' reply mailboxes are created under; default `in.` plus the workspace's website host), workspace email settings; built-in inbound endpoints | `EMAIL_API_KEY`, `EMAIL_FROM` (the installation sender every new workspace uses until its own domain is verified), `INBOUND_EMAIL_TOKEN` (generated by local setup and deployed for inbound authentication; with it every new workspace gets a reply-by-email mailbox; provider domain routing and a webhook still need configuration) |
+| Receive mail that Amazon SES stores in S3 | `LEGACY_MAIL_S3_BUCKET`, `LEGACY_MAIL_S3_PREFIX`, optional `LEGACY_MAIL_S3_REPLAY_PREFIX`, `LEGACY_MAIL_S3_MAILBOX`, `LEGACY_AWS_REGION`; off unless every required input is set (see [Receiving mail that Amazon SES stores in S3](#receiving-mail-that-amazon-ses-stores-in-s3)) | `LEGACY_AWS_ACCESS_KEY_ID`, `LEGACY_AWS_SECRET_ACCESS_KEY` (a key that can only list and get under the two prefixes) |
 | Lead research and reviewed outreach | `LEAD_MODEL`; each lead is saved and reviewed before sending | `OPENAI_API_KEY`, selected email configuration |
 | GitHub | `GITHUB_CLIENT_ID`, optionally `GITHUB_PROJECT_ID` for one fixed credential | `GITHUB_CLIENT_SECRET`, `INTEGRATION_ENCRYPTION_KEY`; optional `GITHUB_TOKEN` or JSON `GITHUB_TOKENS` map keyed by project ID |
 | Brand image generation | Explicit `BRAND_IMAGE_MODEL`, `BRAND_IMAGE_SIZE`, `BRAND_IMAGE_QUALITY` | `OPENAI_API_KEY` |

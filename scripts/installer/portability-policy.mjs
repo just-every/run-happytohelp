@@ -46,7 +46,10 @@ export const archivePolicy={
  importRow:(table,row)=>table==='ik_door_settings'?{...row,enabled:0}:table==='knowledge_upgrade_reports'?{...row,completed_at:null}:table==='helpscout_connections'?{...row,secret_ciphertext:null,claim:null,claim_until:null}:table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:['integration_tokens','api_credentials'].includes(table)&&row.revoked_at==null?{...row,revoked_at:1}:row,
  product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await voiceArchiveSafety(input);await supportChannelArchiveSafety(input);await feedbackArchiveSafety(input);await knowledgeArchiveSafety(input);await agentArchiveSafety(input);await rerMailArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
  // Keep invitation history, but restored archives never restore a live survey link or queued send.
- exportRow:(table,original)=>{const row=table==='ik_door_settings'?{...original,enabled:0}:voiceArchiveRow(table,supportChannelArchiveRow(table,feedbackArchiveRow(table,agentArchiveRow(table,original))));return table==='helpscout_connections'?{...row,secret_ciphertext:null,claim:null,claim_until:null}:table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:rerMailArchiveRow(table,asyncWorkArchiveRow(table,trainingArchiveRow(table,triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='integration_tokens'?{...row,token_hash:'revoked:'+row.id,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_credentials'?{...row,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_requests'?{...row,response_json:null,erased:1}:table==='api_appends'?{...row,response_json:null}:table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
+ exportRow:(table,original)=>{const row=table==='ik_door_settings'?{...original,enabled:0}:voiceArchiveRow(table,supportChannelArchiveRow(table,feedbackArchiveRow(table,agentArchiveRow(table,original))));
+  // The receipts are the arrival record a legacy delta reads and the reader's idempotency fence, so they travel; the
+  // sender and the private copy's key do not.
+  return table==='legacy_mail_s3_receipts'?{...row,raw_key:null,sender_address:null}:table==='helpscout_connections'?{...row,secret_ciphertext:null,claim:null,claim_until:null}:table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:rerMailArchiveRow(table,asyncWorkArchiveRow(table,trainingArchiveRow(table,triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='integration_tokens'?{...row,token_hash:'revoked:'+row.id,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_credentials'?{...row,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_requests'?{...row,response_json:null,erased:1}:table==='api_appends'?{...row,response_json:null}:table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
   :table==='mailbox_connections'?{...row,credential_cipher:null,status:'disconnected',cursor_json:null,sync_lock:null,sync_lock_until:null}
   :table==='knowledge_upgrade_reports'?{...row,completed_at:null}
   :table==='mailbox_sends'&&row.state==='sending'?{...row,state:'uncertain',error_code:'restored_pending_send'}:row))))))));},
@@ -57,6 +60,10 @@ export const archivePolicy={
   // ik_door_settings is neutralized on export, import and staged validation.
   // Installation-private pull membership and replay custody never transfer.
   'agent_door_relay','agent_door_replay_aliases',
+  // Mailgun signature replay fences are short-lived and never travel.
+  'mailgun_inbound_tokens',
+  // The Amazon SES reader lists again after a restore; its last-list time belongs to this installation.
+  'legacy_mail_s3_state',
   'support_channel_attachment_grants','support_channel_link_codes',
   'crm_changes',
   'rer_mailbox_outbox',
@@ -65,6 +72,7 @@ export const archivePolicy={
   'operator_notification_activity','operator_notifications',
   // Slack identity links, consent and pending personal deliveries never travel.
   'teammate_slack_consent','teammate_slack_links','teammate_slack_preferences','teammate_slack_deliveries',
+  'teammate_teams_consent','teammate_teams_codes','teammate_teams_links','teammate_teams_preferences','teammate_teams_deliveries',
   // Preserve grants, reference bodies and source/shingle indexes. Live read
   // linkage and local canonicalisation completion must not survive a restore;
   // the restored installation canonicalises before nonmember disclosure.

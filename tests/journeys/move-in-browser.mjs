@@ -1,3 +1,5 @@
+import {zendeskResumeBrowserFlow} from '../move-in/zendesk-resume-browser.mjs'
+import {zendeskConnectBrowserFlow} from '../move-in/zendesk-connect-browser.mjs'
 import {zendeskOfflineBrowserFlow} from '../move-in/zendesk-offline-browser.mjs'
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
@@ -15,7 +17,7 @@ const errors=[],results=[],owner={email:'move-in-browser@example.test',password:
 const axe=await readFile(new URL('../../node_modules/axe-core/axe.min.js',import.meta.url),'utf8')
 async function inspect(name){await page.addScriptTag({content:axe});const result=await page.evaluate(async()=>{const scan=await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return {violations:scan.violations.filter(v=>['serious','critical'].includes(v.impact)).map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})),overflow:document.documentElement.scrollWidth>innerWidth+1}});assert.deepEqual(result.violations,[],name);assert.equal(result.overflow,false,name);await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:shot(`${name}.png`),fullPage:true});results.push({name,...result})}
 before(async()=>{
- runtime=await createRuntime({queueConsumers:true});shot=await evidence('move-in')
+ runtime=await createRuntime({queueConsumers:true,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}});shot=await evidence('move-in')
  request=async(path,{body,method=body===undefined?'GET':'POST',token}={})=>{const response=await fetch(runtime.origin+path,{method,headers:{...(token?{Authorization:`Bearer ${token}`}:{}),...(body===undefined?{}:{'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify(body)});assert.ok(response.ok,`${method} ${path} ${response.status}`);return response.json()}
  const setup=await request('/api/identity/bootstrap',{body:{...owner,name:'Import Owner',allowedOrigin:runtime.origin}});project=setup.projectId;token=(await request('/api/identity/login',{body:owner})).token;base=`/projects/${project}`
  browser=await launchBrowser();context=await browser.newContext({viewport:{width:1440,height:1000},bypassCSP:true});page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',error=>errors.push(error.message));page.on('dialog',async dialog=>{errors.push('Unexpected script dialog');await dialog.dismiss()})
@@ -46,10 +48,12 @@ async function vendorJourney(width,vendor){
 
 }
 
-test('an owner reviews a Zendesk export, imports its history, opens and filters imported tickets, detects a repeat and undoes the complete import',guarded(async()=>{
+test('an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import',guarded(async()=>{
  await page.goto(runtime.origin+base+'/settings')
  await page.getByRole('link',{name:'Move in existing support history',exact:true}).click()
  await page.getByRole('heading',{name:'Move in',exact:true}).waitFor()
+ await zendeskConnectBrowserFlow({page,origin:runtime.origin,base,project,shot})
+ await zendeskResumeBrowserFlow({page,runtime,project,inspect})
  await vendorJourney(1440,'zendesk')
  await zendeskOfflineBrowserFlow({page,origin:runtime.origin,base,inspect,request,project,token})
  await reviewExplanations(page,runtime.origin,base,shot)

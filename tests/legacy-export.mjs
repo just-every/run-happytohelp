@@ -9,9 +9,10 @@ import {randomBytes} from 'node:crypto';
 import {seedLegacy} from './legacy-export/fixture.mjs';
 import {assertArtifact,assertAllNativeStores,assertMappedBusinessState} from './legacy-export/assertions.mjs';
 import {assertCredentialRefusals} from './legacy-export/refusals.mjs';
+import {assertDeltaSweep} from './legacy-export/delta.mjs';
 
 // One public-command integration flow, using real MySQL and local D1/R2.
-test('project snapshot → attachment bytes → native import → safe replay', {timeout:240000}, async () => {
+test('project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark', {timeout:360000}, async () => {
   const output=process.env.LEGACY_TEST_OUTPUT?resolve(process.env.LEGACY_TEST_OUTPUT):await mkdtemp(join(tmpdir(),'h2h-legacy-export-'));
   await mkdir(output,{recursive:true,mode:0o700});
   const database='h2h_export_'+randomBytes(5).toString('hex'),reader='export_'+randomBytes(5).toString('hex');
@@ -23,6 +24,10 @@ test('project snapshot → attachment bytes → native import → safe replay', 
     const child=spawn(process.execPath,[script,...args],{env:{...process.env,WRANGLER_SEND_METRICS:'false',WRANGLER_LOG:'error',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false',...env},stdio:['ignore','pipe','pipe']});let stdout='',stderr='';
     child.stdout.on('data',b=>stdout+=b);child.stderr.on('data',b=>stderr+=b);
     child.once('error',reject);child.once('exit',code=>code===0?resolveRun(stdout):reject(Error(`${script} exited ${code}: ${stdout}\n${stderr}`)));
+  });
+  const status=(script,args=[])=>new Promise((resolveRun,reject)=>{
+    const child=spawn(process.execPath,[script,...args],{env:{...process.env,WRANGLER_SEND_METRICS:'false',WRANGLER_LOG:'error',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false'},stdio:['ignore','pipe','inherit']});let stdout='';
+    child.stdout.on('data',b=>stdout+=b);child.once('error',reject);child.once('exit',code=>resolveRun({code,stdout}));
   });
   const persist=join(output,'native-state'),objectDirectory=join(output,'source-objects');
   let success=false;
@@ -99,7 +104,10 @@ test('project snapshot → attachment bytes → native import → safe replay', 
       assert.equal((await proxy.env.DB.prepare("SELECT COUNT(*) n FROM local_events WHERE json_extract(payload,'$.message')='Reading invoice details'").first()).n,2,'delegation progress text is live');
       await assertAllNativeStores(proxy.env,fixture.secrets,persist);
     }finally{await proxy.dispose();}
-    await writeFile(join(output,'results.json'),JSON.stringify({fixture:fixture.counts,native,imports:results,files,persist},null,2));
+    const delta=await assertDeltaSweep({admin,run,status,env,output,persist,objectDirectory,projectId:fixture.projectIds[0],
+      snapshotArgs:['snapshot','--project',fixture.projectIds[0],'--revision','fixture-legacy-schema','--ai-model','gpt-5.6-luna','--mail-from-domain','example.test'],
+      fullSnapshot:join(output,'project-1.snapshot'),fullImport:join(output,'project-1.import')});
+    await writeFile(join(output,'results.json'),JSON.stringify({fixture:fixture.counts,native,imports:results,files,persist,delta},null,2));
     console.log(JSON.stringify({output,fixture:fixture.counts,native,replayApplied:results.map(r=>r.replay.applied)}));success=true;
   }finally{
     await admin.query(`DROP DATABASE IF EXISTS \`${database}\``);await admin.query(`DROP USER IF EXISTS '${reader}'@'%'`);await admin.end();

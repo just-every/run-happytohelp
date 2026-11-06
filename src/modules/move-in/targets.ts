@@ -24,12 +24,16 @@ const entities:Record<string,Table[]>={
  article:[table('knowledge_articles','id','id,project_id,category_id,slug,title,content,summary,status,updated_at,position,source_revision,source_incarnation,publication_version','id',['publication_version']),table('knowledge_article_categories','article_id','article_id,category_id','category_id')],
  // A reply imported onto a conversation an earlier import holds: its own message
  // (or private note) and source row. Its revision is the conversation's next one,
- // taken when it is written, so it is not part of its reviewed image.
+ // taken when it is written, so it is not part of its reviewed image. Files fetched
+ // here onto it later (a message's media, a note's move_in_note_media links) are
+ // native additions: they change its image, so undo keeps it as edited here.
  reply:[
   direct(table('messages','id','id,project_id,conversation_id,local_id,actor_id,actor_role,content,created_at,intent_hash,bucket_id,erased_at,citations_json')),
   direct(table('move_in_message_sources','message_id','message_id,project_id,author_json,source_id,source_time,time_provenance')),
   direct(table('move_in_notes','id','id,project_id,conversation_id,author_json,content,created_at,source_time')),
-  direct(table('message_authorship','message_id','message_id,project_id,kind,source_kind,source_id,source_part,recorded_at'),true)
+  direct(table('message_authorship','message_id','message_id,project_id,kind,source_kind,source_id,source_part,recorded_at'),true),
+  direct(table('media','message_id','id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at','id'),true),
+  {...table('move_in_note_media','note_id','note_id,media_id','media_id'),nativeOnly:true}
  ],
  conversation:[
   table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id,subject,status_id,status_category,channel,group_id'),
@@ -57,11 +61,19 @@ const entities:Record<string,Table[]>={
    table('conversation_buckets','conversation_id','id,conversation_id,created_at,metadata_json','id')
   ].map(t=>({...t,nativeOnly:true}))]
 }
+/** A reply with no fetched files keeps the image it was applied with, so replies
+ * applied before files could be fetched still undo as unchanged. */
+function withoutEmptyFiles(tables:NativeValue['tables']){for(const name of ['media','move_in_note_media'])if(!tables[name]?.length)delete tables[name]}
 function definitions(kind:string){const value=entities[kind];if(!value)throw new Error('unsupported_native_target');return value}
-function where(t:Table){if(t.direct)return `project_id=? AND ${t.key}=?`;if(t.name==='macro_heads')return 'macro_id=? AND macro_id IN (SELECT id FROM macros WHERE project_id=?)';if(t.name==='message_authorship')return 'message_id IN (SELECT id FROM messages WHERE conversation_id=? AND project_id=?)';if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return 'resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=? AND project_id=?)';if(t.nativeOnly)return 'conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)';if(t.name==='move_in_message_sources')return 'project_id=? AND message_id IN (SELECT id FROM messages WHERE project_id=? AND conversation_id=?)';if(t.name==='knowledge_article_categories')return 'article_id=? AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=?)';return `project_id=? AND ${t.key}=?`}
+/** The SQL text selecting one key's rows of a table. A single read binds the
+ * project and key in order (see params); a selected-key read refers to them by
+ * expression, so both build the same predicate from one definition. */
+interface Ref {project:string;id:string}
+const bound:Ref={project:'?',id:'?'}
+function where(t:Table,{project,id}:Ref=bound){if(t.direct)return `project_id=${project} AND ${t.key}=${id}`;if(t.name==='macro_heads')return `macro_id=${id} AND macro_id IN (SELECT id FROM macros WHERE project_id=${project})`;if(t.name==='move_in_note_media')return `note_id=${id} AND note_id IN (SELECT id FROM move_in_notes WHERE project_id=${project})`;if(t.name==='message_authorship')return `message_id IN (SELECT id FROM messages WHERE conversation_id=${id} AND project_id=${project})`;if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return `resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=${id} AND project_id=${project})`;if(t.nativeOnly)return `conversation_id=${id} AND conversation_id IN (SELECT id FROM conversations WHERE project_id=${project})`;if(t.name==='move_in_message_sources')return `project_id=${project} AND message_id IN (SELECT id FROM messages WHERE project_id=${project} AND conversation_id=${id})`;if(t.name==='knowledge_article_categories')return `article_id=${id} AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=${project})`;return `project_id=${project} AND ${t.key}=${id}`}
 function params(t:Table,destination:string,id:string){return t.direct?[destination,id]:t.nativeOnly?[id,destination]:t.name==='move_in_message_sources'?[destination,destination,id]:['knowledge_article_categories','macro_heads'].includes(t.name)?[id,destination]:[destination,id]}
 const realPolicyColumns=new Set(['first_response_minutes','next_response_minutes','resolution_minutes','approaching_minutes','unattended_minutes'])
-function select(t:Table){const columns=t.columns.map(c=>t.name==='sla_policies'&&realPolicyColumns.has(c)?`CASE WHEN ${c}=CAST(${c} AS INTEGER) THEN CAST(${c} AS INTEGER) ELSE ${c} END`:c);return `(SELECT COALESCE(json_group_array(json_array(${columns.join(',')})),'[]') FROM (SELECT ${t.columns.join(',')} FROM ${t.name} WHERE ${where(t)} ORDER BY ${t.order}))`}
+function select(t:Table,ref:Ref=bound){const columns=t.columns.map(c=>t.name==='sla_policies'&&realPolicyColumns.has(c)?`CASE WHEN ${c}=CAST(${c} AS INTEGER) THEN CAST(${c} AS INTEGER) ELSE ${c} END`:c);return `(SELECT COALESCE(json_group_array(json_array(${columns.join(',')})),'[]') FROM (SELECT ${t.columns.join(',')} FROM ${t.name} WHERE ${where(t,ref)} ORDER BY ${t.order}))`}
 function orderKey(t:Table,row:Record<string,any>){return t.name==='email_threading_keys'?`${row.key_kind}:${row.key_value}`:String(row[t.order])}
 function expected(t:Table,value:NativeValue){return JSON.stringify([...(value.tables[t.name]??[])].sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0).map(row=>t.columns.map(column=>column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null)))}
 function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sql {
@@ -90,19 +102,52 @@ export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
  // value of earlier contact imports so their existing repeat/undo custody holds.
  if(kind==='contact'&&!value.tables.contact_companies.length)delete value.tables.contact_companies
  if(kind==='conversation'&&!value.tables.move_in_attachment_bytes.length)delete value.tables.move_in_attachment_bytes
+ if(kind==='reply')withoutEmptyFiles(value.tables)
  return value
+}
+/** One read's row, as returned by either read path: the rows of each table the
+ * kind owns, the source the import recorded and its revision. An unowned native
+ * collision is visible to the kit and cannot be overwritten without review. */
+function decodeRead(destination:string,kind:string,id:string,row:any):TargetRow|undefined{
+ const defs=definitions(kind),tables:NativeValue['tables']={};for(let i=0;i<defs.length;i++){const t=defs[i];tables[t.name]=JSON.parse(row[`t${i}`]).map((values:any[])=>Object.fromEntries(t.columns.map((column,index)=>[column,values[index]])))}
+ if(kind==='contact'&&!tables.contact_companies.length)delete tables.contact_companies
+ if(kind==='conversation'&&!tables.move_in_attachment_bytes.length)delete tables.move_in_attachment_bytes
+ if(kind==='reply')withoutEmptyFiles(tables)
+ if(!row.source&&kind==='contact'&&tables.contacts[0]&&JSON.parse(tables.contacts[0].metadata_json||'{}').is_erased===1)return undefined
+ if(!row.source&&!Object.values(tables).some(rows=>rows.length))return undefined
+ return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:{tables,source:row.source?JSON.parse(row.source):{}} as any}
+}
+/** Selected keys, one result per key in input order. Each key's tables are the
+ * single read's own subqueries (same predicates, order and column decoding),
+ * correlated to one JSON list of its kind's ids, so a window of keys is one
+ * round trip. Nothing outside the listed ids is read. Any error rejects the
+ * whole call and the kit goes back to single reads, which fail at the same
+ * entry as before. */
+const READ_MANY_IDS=20,READ_MANY_STATEMENTS=5
+async function readSelected(db:D1Database,destination:string,keys:readonly {kind:string;id:string}[]):Promise<(TargetRow|undefined)[]>{
+ const ids=new Map<string,Set<string>>()
+ for(const key of keys){definitions(key.kind);(ids.get(key.kind)??ids.set(key.kind,new Set()).get(key.kind)!).add(key.id)}
+ const queries:{kind:string;ids:string[]}[]=[]
+ for(const [kind,set] of ids){const all=[...set];for(let i=0;i<all.length;i+=READ_MANY_IDS)queries.push({kind,ids:all.slice(i,i+READ_MANY_IDS)})}
+ const rows=new Map<string,any>()
+ for(let i=0;i<queries.length;i+=READ_MANY_STATEMENTS){
+  const part=queries.slice(i,i+READ_MANY_STATEMENTS)
+  const statements=part.map(({kind,ids})=>{
+   const defs=definitions(kind),ref:Ref={project:'?1',id:'wanted.value'}
+   return db.prepare(`SELECT wanted.value AS id,${defs.map((t,n)=>`${select(t,ref)} AS t${n}`).join(',')},(SELECT source_json FROM move_in_origins WHERE project_id=?1 AND target_kind=?3 AND target_id=wanted.value) AS source,(SELECT revision FROM move_in_origins WHERE project_id=?1 AND target_kind=?3 AND target_id=wanted.value) AS revision FROM json_each(?2) wanted`).bind(destination,JSON.stringify(ids),kind)
+  })
+  // A lone statement needs no batch (a batch also carries the publication guards).
+  const results=(statements.length===1?[await statements[0].all()]:await db.batch(statements)) as {results:any[]}[]
+  part.forEach(({kind},n)=>{for(const row of results[n].results)rows.set(JSON.stringify([kind,row.id]),row)})
+ }
+ return keys.map(({kind,id})=>decodeRead(destination,kind,id,rows.get(JSON.stringify([kind,id]))))
 }
 export const nativeTargets:D1TargetAdapter={
  async read(db,destination,kind,id){
   const defs=definitions(kind),row:any=await db.prepare(`SELECT ${defs.map((t,i)=>`${select(t)} AS t${i}`).join(',')},(SELECT source_json FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?) AS source,(SELECT revision FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?) AS revision`).bind(...defs.flatMap(t=>params(t,destination,id)),destination,kind,id,destination,kind,id).first()
-  const tables:NativeValue['tables']={};for(let i=0;i<defs.length;i++){const t=defs[i];tables[t.name]=JSON.parse(row[`t${i}`]).map((values:any[])=>Object.fromEntries(t.columns.map((column,index)=>[column,values[index]])))}
-  if(kind==='contact'&&!tables.contact_companies.length)delete tables.contact_companies
-  if(kind==='conversation'&&!tables.move_in_attachment_bytes.length)delete tables.move_in_attachment_bytes
-  if(!row.source&&kind==='contact'&&tables.contacts[0]&&JSON.parse(tables.contacts[0].metadata_json||'{}').is_erased===1)return undefined
-  if(!row.source&&!Object.values(tables).some(rows=>rows.length))return undefined
-  // An unowned native collision is visible to the kit and cannot be overwritten without review.
-  return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:{tables,source:row.source?JSON.parse(row.source):{}} as any}
+  return decodeRead(destination,kind,id,row)
  },
+ readMany:readSelected,
  matches:guard,
  matchesMany:matchesOwnedSet,
  write(row){const value=row.value as unknown as NativeValue,statements:D1Sql[]=[]
@@ -110,7 +155,8 @@ export const nativeTargets:D1TargetAdapter={
   if(row.targetKind==='conversation')statements.push({sql:'INSERT INTO move_in_native_fences(project_id,conversation_id) VALUES(?,?)',params:[row.destination,row.targetId]})
   for(const t of definitions(row.targetKind).filter(t=>!t.nativeOnly&&!['macro_heads','macro_versions'].includes(t.name)))for(const item of value.tables[t.name]??[]){if(item.project_id!==undefined&&item.project_id!==row.destination)throw new Error('native_destination_mismatch');const columns=t.columns.filter(c=>!t.generated?.includes(c));statements.push({sql:`INSERT ${t.name==='context_subjects'?'OR REPLACE ':''}INTO ${t.name}(${columns.join(',')}) VALUES(${columns.map(()=>'?').join(',')})`,params:columns.map(c=>item[c]??null)})}
   if(row.targetKind==='macro'){const version=value.tables.macro_versions[0];statements.push({sql:'UPDATE macro_versions SET actions_json=?,scope_json=? WHERE macro_id=? AND project_id=? AND version=1',params:[version.actions_json,version.scope_json,row.targetId,row.destination]})}
-  if(row.targetKind==='contact'){const contact=value.tables.contacts[0];statements.push({sql:'UPDATE move_in_contact_keys SET email_digest=? WHERE project_id=? AND contact_id=? AND EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND id=? AND email IS ?)',params:[emailKey(row.destination,contact.email),row.destination,row.targetId,row.destination,row.targetId,contact.email]})}
+  // A contact with no email has no contact-key row to index.
+  if(row.targetKind==='contact'&&typeof value.tables.contacts[0].email==='string'){const contact=value.tables.contacts[0];statements.push({sql:'UPDATE move_in_contact_keys SET email_digest=? WHERE project_id=? AND contact_id=? AND EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND id=? AND email IS ?)',params:[emailKey(row.destination,contact.email),row.destination,row.targetId,row.destination,row.targetId,contact.email]})}
   if(row.targetKind==='article'){const article=value.tables.knowledge_articles[0];statements.push({sql:'UPDATE knowledge_articles SET source_incarnation=?,source_revision=? WHERE id=? AND project_id=?',params:[article.source_incarnation,article.source_revision,row.targetId,row.destination]})}
   if(row.targetKind==='conversation')statements.push({sql:'DELETE FROM move_in_native_fences WHERE project_id=? AND conversation_id=?',params:[row.destination,row.targetId]})
   statements.push({sql:'INSERT INTO move_in_origins(project_id,target_kind,target_id,vendor,source_id,source_json,revision) VALUES(?,?,?,?,?,?,?)',params:[row.destination,row.targetKind,row.targetId,value.source.vendor,value.source.id,JSON.stringify(value.source),row.revision]});return statements
@@ -148,6 +194,7 @@ function snapshotQuery(t:Table){
     t.name==='message_authorship'?`SELECT c.*,m.conversation_id AS bundle_id FROM ${ids} CROSS JOIN messages m ON m.project_id=?1 AND m.conversation_id=wanted.value CROSS JOIN message_authorship c ON c.message_id=m.id AND c.project_id=?1`:
     t.name==='conversation_ratings'||t.name==='conversation_rating_history'?`SELECT c.*,r.conversation_id AS bundle_id FROM ${ids} CROSS JOIN conversation_resolutions r ON r.project_id=?1 AND r.conversation_id=wanted.value CROSS JOIN ${t.name} c ON c.resolution_id=r.id`:
     t.name==='move_in_message_sources'?`SELECT c.*,m.conversation_id AS bundle_id FROM ${ids} CROSS JOIN messages m ON m.project_id=?1 AND m.conversation_id=wanted.value CROSS JOIN move_in_message_sources c ON c.message_id=m.id AND c.project_id=?1`:
+    t.name==='move_in_note_media'?`SELECT c.*,c.note_id AS bundle_id FROM ${ids} CROSS JOIN move_in_notes n ON n.id=wanted.value AND n.project_id=?1 CROSS JOIN move_in_note_media c ON c.note_id=n.id`:
     t.nativeOnly?`SELECT c.*,c.conversation_id AS bundle_id FROM ${ids} CROSS JOIN conversations v ON v.id=wanted.value AND v.project_id=?1 CROSS JOIN ${t.name} c ON c.conversation_id=v.id`:
     t.name==='knowledge_article_categories'?`SELECT c.*,c.article_id AS bundle_id FROM ${ids} CROSS JOIN knowledge_articles a ON a.id=wanted.value AND a.project_id=?1 CROSS JOIN knowledge_article_categories c ON c.article_id=a.id`:
     `SELECT c.*,c.${t.key} AS bundle_id FROM ${ids} CROSS JOIN ${t.name} c ON c.${t.key}=wanted.value AND c.project_id=?1`

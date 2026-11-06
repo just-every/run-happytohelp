@@ -33,7 +33,7 @@
       },
       "acknowledged": {
         ".github/workflows/verify.yml": {
-          "sha256": "0f7e64cbef0e7606151a9c7cc49b99fe3a6e80c468d75ec6a8fe95e001a19acc",
+          "sha256": "2a0daac7972875a4b8e40901f8e988b2de6ebb99d5a0c63faea613ed274e8308",
           "mode": "100644"
         }
       }
@@ -1197,18 +1197,24 @@
     {
       "path": "src/modules/d1-transport",
       "originPath": "modules/d1-transport",
-      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "revision": "c51d0ed40f64d44ba4c4c9ae2c7728ef60a4dd84",
       "files": {
         "src/modules/d1-transport/index.d.mts": "b1dcfba529210c9237fa257faa0da8c9062bef946961ba8edeb8af7e171611f3",
-        "src/modules/d1-transport/index.mjs": "f3de81d8dc2726fca11d401a73edfad6a5f9efc42aa6cd3d63bd3b25be26d2a6"
+        "src/modules/d1-transport/index.mjs": "f3de81d8dc2726fca11d401a73edfad6a5f9efc42aa6cd3d63bd3b25be26d2a6",
+        "src/modules/d1-transport/limits.d.mts": "3ca5258e5f6230b3486610a40d38c362c75e84ab947fedbf4038ab24988808cd",
+        "src/modules/d1-transport/limits.mjs": "81ca0076b1b46c2c35952c60a6631c6708a7248b2315785771098b4794c2ed40"
       },
       "modes": {
         "src/modules/d1-transport/index.d.mts": "100644",
-        "src/modules/d1-transport/index.mjs": "100644"
+        "src/modules/d1-transport/index.mjs": "100644",
+        "src/modules/d1-transport/limits.d.mts": "100644",
+        "src/modules/d1-transport/limits.mjs": "100644"
       },
       "originFiles": [
         "modules/d1-transport/index.d.mts",
-        "modules/d1-transport/index.mjs"
+        "modules/d1-transport/index.mjs",
+        "modules/d1-transport/limits.d.mts",
+        "modules/d1-transport/limits.mjs"
       ]
     },
     {
@@ -1478,11 +1484,25 @@
       ]
     },
     {
+      "path": "src/modules/import-kit/src/d1/apply-reads.ts",
+      "originPath": "modules/import-kit/src/d1/apply-reads.ts",
+      "revision": "c51d0ed40f64d44ba4c4c9ae2c7728ef60a4dd84",
+      "files": {
+        "src/modules/import-kit/src/d1/apply-reads.ts": "c6c22bf2e08852190a5b190496068516d499fee329c96f3faac142b4371b1896"
+      },
+      "modes": {
+        "src/modules/import-kit/src/d1/apply-reads.ts": "100644"
+      },
+      "originFiles": [
+        "modules/import-kit/src/d1/apply-reads.ts"
+      ]
+    },
+    {
       "path": "src/modules/import-kit/src/d1/apply.ts",
       "originPath": "modules/import-kit/src/d1/apply.ts",
-      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "revision": "c51d0ed40f64d44ba4c4c9ae2c7728ef60a4dd84",
       "files": {
-        "src/modules/import-kit/src/d1/apply.ts": "ca224ce45e3df9b35a9dc675e72d14b29d3c840a27fbf5d63b71c7ab6638f5cd"
+        "src/modules/import-kit/src/d1/apply.ts": "a2a0138317e6cdeb883c44dd9e96d6c00092c7443034d94040be2cc9190f96d4"
       },
       "modes": {
         "src/modules/import-kit/src/d1/apply.ts": "100644"
@@ -2012,9 +2032,9 @@
     {
       "path": "src/modules/import-kit/src/d1/history.ts",
       "originPath": "modules/import-kit/src/d1/history.ts",
-      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "revision": "c51d0ed40f64d44ba4c4c9ae2c7728ef60a4dd84",
       "files": {
-        "src/modules/import-kit/src/d1/history.ts": "6d4e90a5fa63146a8ad1ee968d4f2e5f5584af7740ec05fb45d1c2c701aebcf4"
+        "src/modules/import-kit/src/d1/history.ts": "cfa24ee98947fff13dbbeba3b47e316e94abc66cf6e72a7ad1b110f6f17abfd3"
       },
       "modes": {
         "src/modules/import-kit/src/d1/history.ts": "100644"
@@ -3286,9 +3306,9 @@
     {
       "path": "src/modules/import-kit/src/d1/types.ts",
       "originPath": "modules/import-kit/src/d1/types.ts",
-      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "revision": "c51d0ed40f64d44ba4c4c9ae2c7728ef60a4dd84",
       "files": {
-        "src/modules/import-kit/src/d1/types.ts": "6aa12c766998a259e38675ad69270b32073c9138b8101e6be7ea9cd1e0940e64"
+        "src/modules/import-kit/src/d1/types.ts": "5f0cdca8c333bff60cff45ea8245d8fde6824e40a96800680d634b67697ac710"
       },
       "modes": {
         "src/modules/import-kit/src/d1/types.ts": "100644"
@@ -3574,9 +3594,9 @@
     {
       "path": "src/modules/import-kit/src/provenance/credentials.ts",
       "originPath": "modules/import-kit/src/provenance/credentials.ts",
-      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "revision": "ff1bbbd6e3b8f3e8195f059673a26cc5cb9b7557",
       "files": {
-        "src/modules/import-kit/src/provenance/credentials.ts": "13cc5d10682ad95763d6056c80deb89f6576cdc7c83d19f201102d6ed9641eaa"
+        "src/modules/import-kit/src/provenance/credentials.ts": "42572e8c789b7e3ac264d581e778d979f8dad01e8be79c872854e38fd3cafa2a"
       },
       "modes": {
         "src/modules/import-kit/src/provenance/credentials.ts": "100644"

@@ -3,6 +3,7 @@ import {nativeRequest} from '../transport';
 import {Feedback,Field} from './forms';
 import CopyCommand from '../setup-help/CopyCommand';
 import {reasonLabel} from './move-in-presentation';
+import MoveInZendeskFiles from './MoveInZendeskFiles';
 
 const returned={connected:'Zendesk is connected.',denied:'Zendesk sign-in was cancelled. Choose Connect to try again.',expired:'The Zendesk sign-in took too long. Choose Connect again.',failed:'Zendesk did not accept the sign-in. Check the client Identifier and its redirect URL, then connect again.',conflict:'This workspace already holds history from another Zendesk account.'};
 const working=['pulling','reviewing','applying'];
@@ -37,22 +38,27 @@ export default function MoveInZendesk({projectId,onOpenRun}){
    <form onSubmit={connect}>
     <Field name="subdomain" label="Zendesk subdomain" hint="acme for acme.zendesk.com" value={form.subdomain} onChange={(_,value)=>setForm(old=>({...old,subdomain:value}))} required/>
     <Field name="clientId" label="OAuth client Identifier" value={form.clientId} onChange={(_,value)=>setForm(old=>({...old,clientId:value}))} required/>
-    <button className="btn btn-primary" disabled={busy||!form.subdomain||!form.clientId}>Connect</button>
+    <button type="submit" className="btn btn-primary" disabled={busy||!form.subdomain||!form.clientId}>Connect</button>
    </form>
   </>:<>
    <p><b>Connected to {connection.subdomain}.zendesk.com</b> <button type="button" className="btn btn-link" disabled={busy||working.includes(pull?.state)} onClick={disconnect}>Disconnect</button></p>
    {!pull||['applied','abandoned'].includes(pull.state)?<button type="button" className="btn btn-primary" disabled={busy} onClick={start}>{pull?.state==='applied'?'Pull new and changed history':'Pull everything'}</button>:null}
   </>}
   {pull&&<PullStatus pull={pull} busy={busy} onStep={step} onOpenRun={onOpenRun}/>}
+  {connection.state!=='none'&&<MoveInZendeskFiles base={base} connected={connection.connected} ready={pull?.state==='applied'}/>}
  </div>;
 }
 
 function PullStatus({pull,busy,onStep,onOpenRun}){
  const {tickets,articles,replies,keptAsImported:kept}=pull.totals,covered=pull.batches.filter(b=>b.covered),refusedInCovered=covered.some(b=>b.summary?.refused>0);
+ const needsResume=pull.state==='ready'&&pull.approvedAt===null&&(pull.needsReplan||pull.batches.some(b=>b.error));
  const heading=pull.state==='ready'?'Ready for your approval':pull.state==='applied'?'Pull imported':pull.state==='abandoned'?'Pull stopped':phases[pull.phase]||'Working';
  return <section className="mt-3" aria-label="Zendesk pull">
   <h3>{heading}</h3>
-  {pull.error?<p role="alert">{reasonLabel(pull.error.replace(/:\d+$/,''))} <button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>onStep('resume')}>Resume pull</button></p>:working.includes(pull.state)&&<p role="status">{phases[pull.phase]||'Working'}…{pull.nextAt>Date.now()?' Zendesk asked us to wait a moment.':''}</p>}
+  {!pull.yours&&<p className="settings-note">Started by another member of this workspace.</p>}
+  {pull.error?<p role="alert">{reasonLabel(pull.error.replace(/:\d+$/,''))} {pull.yours&&<button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>onStep('resume')}>Resume pull</button>}</p>:working.includes(pull.state)&&<p role="status">{phases[pull.phase]||'Working'}…{pull.nextAt>Date.now()?' Zendesk asked us to wait a moment.':''}</p>}
+  {!pull.error&&needsResume&&pull.yours&&<p><button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>onStep('resume')}>Resume pull</button></p>}
+  {pull.canTakeOver&&<p><button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>onStep('resume')}>Take over pull</button> <span className="settings-note">It reads again under your name.</span></p>}
   <ul>
    <li>Tickets: {tickets.seen} seen, {tickets.deleted} deleted in Zendesk (not imported){tickets.alreadyImported?`, ${tickets.alreadyImported} already imported`:''}, {tickets.imported} imported, {tickets.refused} refused</li>
    {replies.seen>0&&<li>New replies on imported tickets: {replies.imported} imported, {replies.refused} refused</li>}
@@ -61,9 +67,10 @@ function PullStatus({pull,busy,onStep,onOpenRun}){
    <li>Articles: {articles.published} to publish, {articles.draft} drafts, {articles.heldBack} held back for restricted audiences{articles.unavailable?' (no Help Center)':''}</li>
    <li>Batches: {pull.progress.batchesReviewed} of {pull.progress.batches} reviewed, {pull.progress.batchesApplied} imported</li>
   </ul>
-  {pull.state==='ready'&&<div className="move-in-actions"><button type="button" className="btn btn-primary" disabled={busy} onClick={()=>onStep('approve')}>{covered.length?`Approve and import ${count(covered.length,'batch','batches')}`:'Approve: nothing new to import'}</button>{refusedInCovered&&<span className="settings-note">Refused records stay out; everything else imports.</span>}</div>}
-  {pull.batches.length>0&&<details className="move-in-details"><summary>Batches</summary><ul>{pull.batches.map(b=><li key={b.ordinal}><button type="button" className="btn btn-link" onClick={()=>onOpenRun(b.runId)}>{b.filename}</button> {b.stopped?`stopped: ${reasonLabel(b.error)}`:b.nothingToImport?'nothing to import':b.state}</li>)}</ul></details>}
+  {pull.state==='ready'&&pull.yours&&<div className="move-in-actions"><button type="button" className="btn btn-primary" disabled={busy} onClick={()=>onStep('approve')}>{covered.length?`Approve and import ${count(covered.length,'batch','batches')}`:'Approve: nothing new to import'}</button>{refusedInCovered&&<span className="settings-note">Refused records stay out; everything else imports.</span>}</div>}
+  {pull.batches.length>0&&<details className="move-in-details"><summary>Batches</summary><ul>{pull.batches.map(b=><li key={b.ordinal}>{pull.yours?<button type="button" className="btn btn-link" onClick={()=>onOpenRun(b.runId)}>{b.filename}</button>:b.filename} {b.stopped?`stopped: ${reasonLabel(b.error)}`:b.nothingToImport?'nothing to import':b.state}</li>)}</ul></details>}
   {pull.refusalsTotal>0&&<details className="move-in-details"><summary>{count(pull.refusalsTotal,'refused record')}</summary><ul>{pull.refusals.map(r=><li key={`${r.kind}/${r.sourceId}`}>{r.kind.replace('_',' ')} {r.sourceId}: {reasonLabel(r.reason)}</li>)}</ul></details>}
-  {['pulling','reviewing','ready'].includes(pull.state)&&<button type="button" className="btn btn-link" disabled={busy} onClick={()=>onStep('abandon')}>Stop this pull</button>}
+  {pull.canStop&&<button type="button" className="btn btn-link" disabled={busy} onClick={()=>onStep('abandon')}>Stop this pull</button>}
+  {pull.canStop&&pull.state==='applying'&&<span className="settings-note">Batches already imported stay; the next pull imports the rest.</span>}
  </section>;
 }

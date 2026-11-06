@@ -86,7 +86,31 @@ commands, independently of whether any public site currently calls them.
 | `consent` with `{provided: boolean}` | Honor deferred initialization and revocation. Revocation releases UI, connection and collected pending activity. |
 | `raw` with `{onChange: function}` | Keep callers on legacy unless individually migrated; no claim that a raw legacy collector callback has a native bridge. |
 | `destroy` | Native lifecycle addition; removes the widget and pending initialization. |
+| `shutdown` | Native addition for sign-out, like Intercom's `shutdown`: works in any state (queued before the script loads, during initialization, while awaiting consent or mounted), removes the widget like `destroy` and forgets every widget session this page origin stores. Call `init` again for the next visitor. |
 | Any other command | Unsupported; migrate its caller rather than silently acknowledge it. Native `preview` is a separate owner preview surface, not evidence of an original public command. |
+
+### Visitors who sign in and out
+
+The widget keeps a visitor's conversation only for the visitor the page supplies
+in `contact` (through `init`, `update` or the legacy top-level fields), never for
+details the visitor types into the widget. That visitor is its `identifier`
+(exact, trimmed) when present, otherwise its `email` (trimmed, any letter case),
+otherwise an anonymous visitor. A browser keeps one anonymous and one signed-in
+session per installation:
+
+- A page with a different visitor never reads, writes or shows another visitor's
+  conversation; it starts a new session for its own visitor.
+- A visitor who chatted signed out and then signs in (without a signature) keeps
+  that conversation, now with the name and email the page supplies, recorded as
+  unverified; later signed-out pages start fresh. A signed visitor (`hash`) starts
+  or resumes its verified contact instead.
+- A visitor returning while it is still the browser's signed-in session gets its
+  conversation back. Another visitor signing in replaces that session, so the
+  first starts fresh afterwards (a signed visitor is re-linked by its signature).
+
+Call `h2h('shutdown')` when a visitor signs out, and before switching accounts
+without a page load, then `h2h('init', …)` for the next visitor. Shutdown does not
+revoke server sessions; it removes the widget and this browser's stored sessions.
 
 ## JavaScript options
 
@@ -230,7 +254,7 @@ change is claimed here.
 | Caller/receiver | Decision before retirement |
 | --- | --- |
 | `<project-slug>@mail.<MAIL_FROM_DOMAIN>` and `<project-slug>+<conversation-id>@mail.<MAIL_FROM_DOMAIN>` | **Drain/preserve.** The actual mail domain is owner configuration, not necessarily `happytohelp.com`. Preserve project slugs, plus addresses and conversation IDs. Legacy SES → S3 MIME → Lambda/Artisan receives mail, rather than a public inbound HTTP URL. Owner inventories stored/unprocessed MIME and receipt IDs and assigns every receipt to exactly one receiver. |
-| Native inbound replacement | Configure Email Worker or `/api/integrations/email/sendgrid/inbound` / authenticated `/api/integrations/email/inbound` explicitly. Preserve envelope sender, recipients, provider receipt/message identity and machine-generated classification. Reconcile ambiguous old outcomes, process the backlog once, and never run both systems' autonomous replies for the same receipt. See [inbound recovery](INBOUND-EMAIL-RECOVERY.md). |
+| Native inbound replacement | Configure Email Worker, `/api/integrations/email/sendgrid/inbound`, signature-verified `/api/integrations/email/mailgun/inbound` or authenticated `/api/integrations/email/inbound` explicitly. Preserve envelope sender, recipients, provider receipt/message identity and machine-generated classification. Reconcile ambiguous old outcomes, process the backlog once, and never run both systems' autonomous replies for the same receipt. See [inbound recovery](INBOUND-EMAIL-RECOVERY.md). |
 | `APP_URL/webhooks/apify/{datasetId}` (`POST`; optional development `NGROK_HOST`) | **Drain** in-flight legacy crawls on their original callback. Native Apify start/poll is separate; do not redirect late callbacks to create fresh native corpus jobs. |
 | `APP_URL/github/callback` (`GET`, or `GITHUB_REDIRECT_URI`) | **Drain** in-flight legacy OAuth states. Owner registers native `/api/management/github/callback` with the OAuth application, then reconnects with native consent and current owner/admin authority. Redirecting old state does not authorize native. |
 | AWS `happytohelp-completions-<environment>-{answer,ingest,delete}` in `us-east-1` | **Drain/reconcile** legacy internal jobs. These are Lambda invocation names, not public URLs to repoint. Native knowledge/AI do not require recreating them. |

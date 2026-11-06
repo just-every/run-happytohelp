@@ -67,6 +67,7 @@ const memberPolicies:Record<string,RegistryEntry>={
  ...Object.fromEntries(['credentials','user_settings','user_factors','recovery_codes','session_factors','webauthn_challenges'].map(table=>[table,accountDelete()])),
  ...Object.fromEntries(['user_project_preferences','member_roles','operator_presence','mobile_devices','support_channel_members','support_channel_link_codes','memberships'].map(table=>[table,workspaceDelete()])),
  ...Object.fromEntries(['teammate_slack_consent','teammate_slack_links','teammate_slack_preferences','teammate_slack_deliveries'].map(table=>[table,workspaceDelete()])),
+ ...Object.fromEntries(['teammate_teams_consent','teammate_teams_codes','teammate_teams_links','teammate_teams_preferences','teammate_teams_deliveries'].map(table=>[table,workspaceDelete()])),
  magic_signins:{erase:{column:'user_id',nullable:true}},
  sessions:{erase:{column:'actor_id',nullable:true,predicate:"actor_id=? AND role<>'contact'",args:c=>[c.user]}},
  macro_drafts:{erase:{column:'actor_id'}},

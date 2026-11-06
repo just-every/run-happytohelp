@@ -4,6 +4,112 @@ Use **Settings → Email** to configure sending, forwarding and connected mailbo
 
 Forwarding uses the installation's email provider. Connected mailboxes receive and send through the account you authorize. Disconnecting stops intake and sending while keeping ticket history.
 
+## Outbound email off
+
+An installation deployed with `MAIL_PROVIDER=none` sends nothing. Sign-in links, password resets, invitations, notifications, replies by email, the test send and surveys each report that outbound email is off, and **Settings → Email** and **Setup** say so. Receiving mail, importing and everything that does not send keep working. Owners get in with a one-time link from `node scripts/hosted-signin.mjs`, or their password.
+
+### Turn Mailgun on
+
+Run this from the checkout that deployed the installation, with `EMAIL_PROVIDER=mailgun`, `EMAIL_FROM`, `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_REGION` (`us` or `eu`, written out), `MAILGUN_SENDING_KEY` (a domain-scoped sending key) and `MAILGUN_WEBHOOK_SIGNING_KEY` (Mailgun's HTTP webhook signing key, which verifies mail Mailgun forwards to you) in your private `--env-file` and `MAIL_PROVIDER=none` removed from it. Nothing else changes. A secret change makes one new Worker version from the live one without rebuilding, so the installation must already run this release first:
+
+```sh
+rer deploy --environment production --env-file <file> --set-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY,MAILGUN_WEBHOOK_SIGNING_KEY
+```
+
+Resend, SendGrid and Cloudflare Email Sending take their own inputs, listed in the provider table of [Email and integrations](../src/modules/integrations/README.md#choose-a-provider); they are set the same way, one `--set-secret` run naming those inputs.
+
+### Turn sending off again
+
+Use this to stop all sending while keeping the installation. It removes the six sending inputs; Mailgun receiving continues. A plain redeploy keeps every secret the Worker holds, so redeploying with `MAIL_PROVIDER=none` alone does not stop sending. Run:
+
+```sh
+rer deploy --environment production --env-file <file> --unset-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY
+```
+
+Then remove the six sending inputs from your `--env-file` and put `MAIL_PROVIDER=none` back in it for later deploys. `MAILGUN_WEBHOOK_SIGNING_KEY` may stay in the file, because it binds no way to send.
+
+### Stop Mailgun receiving
+
+Use this to retire the signing key, for example when you leave Mailgun. First point the Mailgun route somewhere else, then run:
+
+```sh
+rer deploy --environment production --env-file <file> --unset-secret MAILGUN_WEBHOOK_SIGNING_KEY
+```
+
+Every forward is then refused. Mailgun retries a refused forward for 8 hours and then drops it, so move the route first. To rotate the key instead, put the new value in the file and run `--set-secret MAILGUN_WEBHOOK_SIGNING_KEY` alone.
+
+### Mail through a Mailgun route
+
+With `MAILGUN_WEBHOOK_SIGNING_KEY` set, a Mailgun route can forward your support mail to `POST /api/integrations/email/mailgun/inbound`. Mailgun signs each forward, so the route URL carries no secret and none shows in the Mailgun dashboard or its logs. A forward is accepted when its signature verifies under the key, its timestamp is within five minutes ahead or nine hours behind, and its token has not been used before; anything else is refused without writing a record. Received, repeated and Suspended mail is answered 200, which is all Mailgun accepts; an address no workspace receives is not, so Mailgun retries it. Route setup is in [Email and integrations](../src/modules/integrations/README.md#option-3-mailgun-route).
+
+## Receive mail that Amazon SES stores in S3
+
+Use this when your support address receives mail through Amazon SES (the domain's MX is `inbound-smtp.<region>.amazonaws.com`) and you want that mail to reach a HappyToHelp workspace, including replies to per-conversation addresses of the form `help+<conversation id>@mail.example.com`. An SES receipt rule stores each message in an S3 bucket; HappyToHelp lists the bucket on its own schedule, reads each new object and admits it as a conversation. There is no inbound URL to protect and no function to run in your AWS account, and a message waits in the bucket for as long as HappyToHelp is down. Nothing happens until the inputs below are all set.
+
+### What to set up in AWS
+
+- **A receipt rule** with one S3 action, for the address and its `+label` forms, that writes each message to your bucket under the **SES prefix**, for example `ses/<name>/`. SES stores the message exactly as it received it, with its own headers on top, in an object named by the SES message id. When the rule is created SES also writes one object named `AMAZON_SES_SETUP_NOTIFICATION`; HappyToHelp records it and never reads it as mail.
+- **A bucket policy** so that everything under the SES prefix was written by SES: only SES may put there, and nobody may delete there. SES's own verdict headers in those objects are then trusted; nothing else in a message is.
+
+```json
+{"Version":"2012-10-17","Statement":[
+ {"Sid":"SesMayWrite","Effect":"Allow","Principal":{"Service":"ses.amazonaws.com"},"Action":"s3:PutObject","Resource":"arn:aws:s3:::<bucket>/ses/<name>/*","Condition":{"StringEquals":{"AWS:SourceAccount":"<account id>"}}},
+ {"Sid":"OnlySesWrites","Effect":"Deny","Principal":"*","Action":"s3:PutObject","Resource":"arn:aws:s3:::<bucket>/ses/<name>/*","Condition":{"StringNotEquals":{"aws:PrincipalServiceName":"ses.amazonaws.com"}}},
+ {"Sid":"NobodyDeletes","Effect":"Deny","Principal":"*","Action":["s3:DeleteObject","s3:DeleteObjectVersion"],"Resource":"arn:aws:s3:::<bucket>/ses/<name>/*"}]}
+```
+
+- **A replay prefix** (optional), for example `replay/<name>/`, in the same bucket. Operators write recovered copies of mail your old help desk failed to process there. It must not contain, and must not sit inside, the SES prefix. Nothing under it is ever trusted as authenticated, whatever its headers say.
+- **A read-only key** for HappyToHelp. It needs to list and get under the two prefixes and nothing else; add `kms:Decrypt` for the specific key only if the bucket uses SSE-KMS.
+
+```json
+{"Version":"2012-10-17","Statement":[
+ {"Effect":"Allow","Action":"s3:ListBucket","Resource":"arn:aws:s3:::<bucket>","Condition":{"StringLike":{"s3:prefix":["ses/<name>/*","replay/<name>/*"]}}},
+ {"Effect":"Allow","Action":"s3:GetObject","Resource":["arn:aws:s3:::<bucket>/ses/<name>/*","arn:aws:s3:::<bucket>/replay/<name>/*"]}]}
+```
+
+### The inputs
+
+All seven are optional on a new deployment. The reader is **off** unless the bucket, the SES prefix, the mailbox, the region and both halves of the key are set; the replay prefix is optional. A partial set, or a value of the wrong shape, is refused when you deploy.
+
+| Input | Meaning |
+| --- | --- |
+| `LEGACY_MAIL_S3_BUCKET` | The bucket. |
+| `LEGACY_MAIL_S3_PREFIX` | The SES prefix, ending in `/`. SES's verdict headers under it count. |
+| `LEGACY_MAIL_S3_REPLAY_PREFIX` | Optional. The operator-written prefix, ending in `/`. Never authenticated. |
+| `LEGACY_MAIL_S3_MAILBOX` | The one address this reader admits mail for, and its `+label` forms. It must be the inbound address of a workspace (**Settings → Email**); mail waits until one is. |
+| `LEGACY_AWS_REGION` | The bucket's region, which is also where SES receives. |
+| `LEGACY_AWS_ACCESS_KEY_ID`, `LEGACY_AWS_SECRET_ACCESS_KEY` | The read-only key. Runtime secrets; they appear in no response, row or export. |
+
+How to turn the reader on and off is in [Operations](../OPERATIONS.md#receiving-mail-that-amazon-ses-stores-in-s3).
+
+### What HappyToHelp does with each object
+
+- **Lists both prefixes every minute**, through every page, and gives each new key one receipt. Each minute it gives up to 20 new keys per prefix a receipt, and reads and admits up to 10 messages, so a backlog of N messages takes about N/10 minutes. The replay prefix is listed only in a minute that took in the SES prefix to its end, so a message's SES copy is always recorded before its replay copy. Every request is a signed read-only `GET` to the bucket's own host under the two prefixes.
+- **Binds the message to your mailbox by SES's own record.** The envelope recipient is read only from the first `Received` header, and only when it names SES receiving in your region and carries a `for` clause. The message is routed only when that address is the mailbox or one of its `+label` forms. It is never taken from `To:` or `Cc:`. Anything else is held in the workspace that receives on the mailbox as **Suspended** with the reason `envelope_recipient_unproven`, with its bytes kept.
+- **Judges the sender by SES's verdict.** For the SES prefix only, the first `Authentication-Results` header counts, and only when its server is `amazonses.com`. A passing DMARC for the From domain, a passing DKIM or SPF aligned to it, verifies the sender and the mail is admitted. A failing check, or a header that cannot be read unambiguously, lands in Suspended as `authentication_failed`; no verdict at all lands as `sender_unproven`.
+- **Threads replies.** `help+<conversation id>@…` joins that conversation when the sender is its contact, a participant or a member, as it does for every other way mail arrives. A reply address issued by HappyToHelp (`+r.<token>`) joins by possession. Everything else follows the usual rules for new mail.
+- **Never trusts the replay prefix.** Mail there is routed to the plain mailbox with its label dropped, so even a live reply address cannot admit it. It lands in Suspended as `sender_unproven`; it creates no message, no AI work and no outgoing email. Review it in **Suspended**: because its sender is unproven, it can be kept as a private note, and Suspended keeps it for 14 days.
+- **Admits once.** By object key, by SES message id (a copy of a message under the replay prefix holds nothing new once its SES copy is known), by Message-ID and by the private copy's key. Reruns change nothing. If the legacy desk also stored the message, a [legacy delta sweep](LEGACY-EXPORT.md#delta-sweeps) skips it: the receipts keep each SES message id for that.
+- **Waits for its workspace.** While no workspace receives on the mailbox the receipts are `pending_mailbox`, neither admitted nor held; they are retried every minute.
+- **Retries and shows failure.** An S3 or other error retries with a delay that starts at seconds and grows to an hour; after twelve attempts the receipt shows as `failed`. One failing object never delays the others.
+- **Holds mail over 25 MB** whole in Suspended as `message_too_large`, and never admits it. An object larger than SES stores (40 MiB) is shown there too without being read, and stays in the bucket.
+- **Keeps the message private.** Before admitting it, HappyToHelp writes an encrypted copy of the raw message (it can carry a live reply address) to private storage, deletes it once the receipt is final, and sweeps any left behind after seven days. Contact erasure in the workspace that receives on the mailbox covers it; an erasure in any other workspace leaves the reader's receipts as they are. Review copies in Suspended have reply addresses redacted.
+
+### What you see
+
+The email settings read (`GET /api/management/projects/:projectId/email-settings`, owners and admins) gains `legacyMailS3` for the workspace that receives on the mailbox, and `null` for every other workspace and whenever the reader is off:
+
+```json
+"legacyMailS3": {
+ "mailbox": "help@mail.example.com",
+ "lastListedAt": "2026-11-08T10:00:00.000Z",
+ "lastListError": null,
+ "counts": {"pending":0,"pendingMailbox":0,"complete":12,"held":{"envelope_recipient_unproven":1},"failed":0,"setupNotice":1,"duplicate":0,"replay":0}
+}
+```
+
+`lastListedAt` is the last list that succeeded and is `null` before the first. `pending` counts receipts listed but not finished, including those in flight or waiting to retry; `held` counts by Suspended reason; `replay` counts every receipt from the replay prefix in any state.
+
 ## Managed email
 
 A compatible Managed installation receives an address from Run Edit Run before its first workspace is created. Setup shows it under **What we’ve set**. There is no customer mail key, provider account or DNS task. Independent and Assisted installations keep their direct Resend, SendGrid or Cloudflare setup.
@@ -31,7 +137,7 @@ Set `APP_ORIGIN` to your HTTPS HappyToHelp origin and configure these installati
 | Gmail / Google Workspace | `GOOGLE_MAIL_CLIENT_ID`, `GOOGLE_MAIL_CLIENT_SECRET` | `https://<your-origin>/api/management/mailboxes/oauth/gmail/callback` |
 | Microsoft 365 / Outlook | `MICROSOFT_MAIL_CLIENT_ID`, `MICROSOFT_MAIL_CLIENT_SECRET` | `https://<your-origin>/api/management/mailboxes/oauth/microsoft/callback` |
 
-Keep the values in an owner-only private env file. The native deploy declaration accepts these names; install each with `rer deploy --environment YOUR-ENVIRONMENT --env-file private-mail.env --set-secret NAME`, replacing `NAME` with the setting to install. The same command accepts the IMAP settings below.
+Keep the values in an owner-only private env file. The native deploy declaration accepts these names; install each with `rer deploy --environment YOUR-ENVIRONMENT --env-file private-mail.env --set-secret <setting>`, replacing `<setting>` with the name of the setting to install. The same command accepts the IMAP settings below.
 
 Both use `INTEGRATION_ENCRYPTION_KEY`, the installation's base64-encoded 32-byte encryption key. Keep that key available for existing connections; replacing it without migrating the encrypted credentials makes those credentials unreadable. Never paste secrets into ticket notes or commit them to the repository.
 

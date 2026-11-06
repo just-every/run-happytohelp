@@ -224,6 +224,17 @@ operation owns the state".
 All new verbs accept `--help`, `--cwd PATH`, `--non-interactive` and `--json`;
 release has its own preserved parser. No command implies provider acceptance.
 
+### Outbound email off
+
+Set `MAIL_PROVIDER=none` with a real `OWNER_EMAIL` in the private `--env-file` (or
+environment) to deploy an installation that sends nothing. It is the only input:
+supplying `EMAIL_*`, `MAIL_*`, `MAILGUN_*` or mailbox settings with it is refused.
+`none` is never assumed from a missing value; leave `MAIL_PROVIDER` out and a
+deploy still needs a mail provider. The owner then signs in with
+`node scripts/hosted-signin.mjs`, described under Sign in without mail in
+Operations. Turning mail on later is one `rer deploy --set-secret` of the provider
+inputs, described in the email guide.
+
 ### Custom application origin
 
 Attach your hostname to the deployed Worker in your Cloudflare account, then add

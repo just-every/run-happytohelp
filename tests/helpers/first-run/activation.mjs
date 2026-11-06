@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {startApp} from '../../journeys/kit/app.mjs'
+import {snapshotTables} from './table-snapshot.mjs'
 
 const row=(data,id)=>data.steps.find(item=>item.id===id)
 const modelKey='synthetic-activation-model',mailKey='synthetic-activation-mail'
@@ -34,7 +35,7 @@ export async function activationJourney(){
   const path=`/api/management/projects/${owner.projectId}/activation`
   const setup=async(suffix='',body)=>{const response=await app.call(path+suffix,{token:owner.token,body,status:200});responses.push(response.data);for(const receipt of await app.sql('SELECT fingerprint FROM activation_receipts'))fingerprints.add(receipt.fingerprint);return response.data.data}
   const tables=(await app.sql("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")).map(r=>r.name).filter(n=>!n.startsWith('_cf_')&&!n.startsWith('sqlite_'))
-  const snapshot=()=>Promise.all(tables.map(async n=>(await app.sql('SELECT * FROM "'+n.replaceAll('"','""')+'"')).map(r=>JSON.stringify(r)).sort()))
+  const snapshot=async()=>(await snapshotTables(app,tables)).map(rows=>rows.map(r=>JSON.stringify(r)).sort())
   const pureRead=async()=>{const before=await snapshot(),calls=app.requests.length,data=await setup();assert.deepEqual(await snapshot(),before,'Setup GET writes no table');assert.equal(app.requests.length,calls,'Setup GET calls no provider');return data}
   const empty=await pureRead()
   assert.equal(empty.total,8);assert.equal(empty.done,0);assert.equal(empty.applicableTotal,5)

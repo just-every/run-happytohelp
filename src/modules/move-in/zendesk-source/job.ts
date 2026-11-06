@@ -6,10 +6,8 @@ import {readComments,readPeople} from './comments'
 import {Deferred,type PullContext} from './context'
 import {enqueuePull} from './notify'
 import {packBatch} from './packing'
-import {claimPull,getPull,json,pullAllowed,savePull,stopPull,type Phase,type PullRow} from './pull-store'
+import {claimPull,getPull,HOLD_MS,json,pullAllowed,savePull,stopPull,type Phase,type PullRow} from './pull-store'
 import {readArticles,readFields,readOrganizations,readTickets,readUsers} from './reading'
-// Ten Zendesk reads of at most 30 seconds each finish inside one hold.
-const HOLD_MS=6*60*1000
 const reads:Partial<Record<Phase,(ctx:PullContext)=>Promise<void>>>={fields:readFields,articles:readArticles,organizations:readOrganizations,users:readUsers,tickets:readTickets,comments:readComments,people:readPeople,packing:packBatch}
 /** One bounded step of a pull per queue message: a few Zendesk reads, one packed
  * batch, or review and apply bookkeeping. Each step commits a durable checkpoint. */
@@ -17,7 +15,9 @@ export async function advancePull(env:Env,id:string,projectId:string){
  const found=await getPull(env,id),now=Date.now()
  if(!found||found.project_id!==projectId||found.error||['applied','abandoned'].includes(found.state))return
  if(found.next_at>now){await enqueuePull(env,found,found.next_at-now);return}
- if(found.lease_until&&found.lease_until>now){await enqueuePull(env,found,found.lease_until-now+1000);return}
+ // A child can notify before its approving parent releases the lease. Retry
+ // the wake promptly; the unchanged lease/version claim still owns all work.
+ if(found.lease_until&&found.lease_until>now){const wait=found.lease_until-now+1000;await enqueuePull(env,found,found.state==='applying'?Math.min(1000,wait):wait);return}
  const pull=await claimPull(env,found,now,HOLD_MS);if(!pull)return
  if(!await pullAllowed(env,pull)){await stopPull(env,pull,'import_authority_revoked');return}
  const ctx:PullContext={env,pull,token:'',cursor:json(pull.cursor_json,{}),counts:{redacted:0,...json(pull.counts_json,{})},incremental:json(pull.incremental_json,[]),resume:json(pull.resume_json,{}),statements:[],phase:pull.phase,state:pull.state,patch:{},requests:0,more:false}

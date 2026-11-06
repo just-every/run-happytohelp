@@ -2,11 +2,13 @@ import {ZendeskError} from '../zendesk-connection/errors'
 import {zendeskFetch} from '../zendesk-connection/http'
 import {markReconnect,getConnection} from '../zendesk-connection/store'
 import {Deferred,type PullContext} from './context'
+/** What a source read needs: the pull's context, or a smaller one of the same shape. */
+export type SourceContext=Pick<PullContext,'env'|'token'|'requests'|'incremental'>&{pull:Pick<PullContext['pull'],'subdomain'|'project_id'>}
 /** Zendesk allows 10 incremental export requests a minute. */
 export const INCREMENTAL_WINDOW_MS=60000,INCREMENTAL_PER_WINDOW=10
 export function incrementalWait(log:number[],now:number){const recent=log.filter(at=>now-at<INCREMENTAL_WINDOW_MS);return recent.length>=INCREMENTAL_PER_WINDOW?recent[recent.length-INCREMENTAL_PER_WINDOW]+INCREMENTAL_WINDOW_MS-now:0}
 /** Every source read is a GET to the connection's own subdomain. */
-export async function sourceGet(ctx:PullContext,path:string,{incremental=false,missing=false}:{incremental?:boolean;missing?:boolean}={}):Promise<any>{
+export async function sourceGet(ctx:SourceContext,path:string,{incremental=false,missing=false}:{incremental?:boolean;missing?:boolean}={}):Promise<any>{
  const now=Date.now()
  if(incremental){const wait=incrementalWait(ctx.incremental,now);if(wait>0)throw new Deferred(wait)}
  const response=await zendeskFetch(ctx.pull.subdomain,path,{method:'GET',token:ctx.token})

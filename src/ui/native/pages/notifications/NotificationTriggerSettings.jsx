@@ -3,6 +3,7 @@ import {nativeRequest} from '../../transport';
 import {Section,Feedback} from '../forms';
 import {useUnsavedChanges} from '../../NavigationGuard';
 import SlackConsentSettings from './SlackConsentSettings';
+import TeamsConsentSettings from './TeamsConsentSettings';
 export default function NotificationTriggerSettings({projectId}){
  const path=`/api/management/projects/${projectId}/notification-triggers`,[data,setData]=useState(null),[error,setError]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false);
  const [newEvent,setNewEvent]=useState('request_received'),[newChannel,setNewChannel]=useState('email'),[brandOnly,setBrandOnly]=useState(false);
@@ -22,5 +23,5 @@ export default function NotificationTriggerSettings({projectId}){
  </fieldset>)}
  {data.can_manage&&<div className="mb-4"><h3 className="h6">Add a channel template</h3><label className="form-label" htmlFor="notification-new-event">Event</label><select id="notification-new-event" className="form-select mb-2" value={newEvent} onChange={e=>setNewEvent(e.target.value)}><option value="request_received">Request received</option><option value="ticket_solved">Ticket solved</option></select><label className="form-label" htmlFor="notification-new-channel">Channel</label><select id="notification-new-channel" className="form-select mb-2" value={newChannel} onChange={e=>setNewChannel(e.target.value)}>{['email','widget','form','api','*'].map(channel=><option key={channel} value={channel}>{channel==='*'?'All channels':channel}</option>)}</select><label className="form-check mb-2"><input className="form-check-input" type="checkbox" checked={brandOnly} onChange={e=>setBrandOnly(e.target.checked)}/><span className="form-check-label">Only this workspace brand</span></label><button type="button" className="btn btn-outline-secondary" onClick={addScope}>Add template</button></div>}
  {data.can_manage&&<button className="btn btn-primary" disabled={busy}>{busy?'Saving…':'Save customer notifications'}</button>}
- </Section>{data.can_manage&&<SlackConsentSettings projectId={projectId}/>}{data.outcomes?.length>0&&<Section title="Recent notification outcomes"><ul>{data.outcomes.map((row,index)=><li key={index}>Ticket #{row.conversation_id} · {row.event==='request_received'?'Request received':row.event==='ticket_solved'?'Solved':'Workflow or teammate notice'} · {row.state}{row.outcome?.error&&`: ${row.outcome.error}`}</li>)}</ul></Section>}</form>;
+ </Section>{data.can_manage&&<SlackConsentSettings projectId={projectId}/>}{data.can_manage&&<TeamsConsentSettings projectId={projectId}/>}{data.outcomes?.length>0&&<Section title="Recent notification outcomes"><ul>{data.outcomes.map((row,index)=><li key={index}>Ticket #{row.conversation_id} · {row.event==='request_received'?'Request received':row.event==='ticket_solved'?'Solved':'Workflow or teammate notice'} · {row.state}{row.outcome?.error&&`: ${row.outcome.error}`}</li>)}</ul></Section>}</form>;
 }

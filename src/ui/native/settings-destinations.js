@@ -12,6 +12,7 @@ export const settingsGroups = [
         { label: 'Widget', path: 'widget-settings' },
         { label: 'Email', path: 'email-settings' },
         { label: 'Suspended email', path: 'suspended' },
+        { label: 'Cutover', path: 'cutover' },
     ] },
     { label: 'Team', destinations: [
         { label: 'Agents', path: 'agents' },

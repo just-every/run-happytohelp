@@ -7,6 +7,7 @@ import {handleEmail as ordinaryHandleEmail} from '../integrations/email-worker'
 import {inboundTarget} from '../integrations/inbound-routing'
 import {plainEmail} from '../integrations/email-reply'
 import {headerFromAddress,sendGridVerdict,authenticationVerdict} from '../integrations/inbound-sender'
+import {createMailgunInbound} from '../integrations/mailgun-inbound'
 import {hashToken} from '../../platform/auth'
 import {partnerGrant,receivePartnerReply} from './partner-reply'
 import {parseInboundMime} from '../integrations/unreadable-email'
@@ -75,6 +76,12 @@ inboundEmail.use('/email/sendgrid/inbound',async(c,next)=>{
  const result=await deliver(c.env,selected,{messageId:rawId.length>200?await hashToken(rawId):rawId,sender:from,content,senderFailed:verdict.failed,attachments:files})
  return c.json(result,result?.duplicate?200:201)
 })
+// Mailgun route forwards are signed, so they take the same partner interception after their signature is checked.
+inboundEmail.route('/',createMailgunInbound(async(c,mail)=>{
+ const selected=await selectedGrant(c.env,mail.recipients);if(!selected)return null
+ if(!mail.from)throw new HTTPException(403,{message:'One header From address is required for a partner reply'})
+ return deliver(c.env,selected,{messageId:mail.messageId,sender:mail.from,content:mail.content,senderFailed:mail.verdict.failed,attachments:mail.attachments})
+}))
 inboundEmail.route('/',ordinaryInbound)
 
 export async function handleEmail(message:ForwardableEmailMessage,env:Env,execution:ExecutionContext){

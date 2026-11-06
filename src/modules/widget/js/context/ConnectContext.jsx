@@ -3,6 +3,7 @@ import AppContext from './AppContext';
 import Collector from '../collection/Collector';
 import {isBot} from '../includes/bot';
 import {WidgetTransport} from '../../transport';
+import {visitorIdentity} from '../../visitor-identity';
 import {v4 as uuidv4} from 'uuid';
 import {emptyTypingState, normalizeTypingState, insightTypingState} from './typingState';
 import {cancelReplyStream, clearMatchingReplyTyping, isCancelledReply, removePartialReply} from './replyStream';
@@ -25,6 +26,10 @@ export function ConnectProvider({children, open, setOpen, setInsightOpen, onSett
   const [conversationId, setConversationId] = useState(null);
   const [contact, setContact] = useState(context.contact || {});
   const [localContact, setLocalContact] = useState(context.contact || {});
+  const initialContact = useRef(localContact);
+  // The visitor the host page supplies. A different visitor gets its own transport and session.
+  const identity = visitorIdentity(context.contact);
+  const pageIdentity = useRef(identity);
   const [messages, setMessages] = useState([]);
   const [resolution, setResolution] = useState(null);
   const [agentTyping, setAgentTyping] = useState(emptyTypingState);
@@ -121,18 +126,26 @@ export function ConnectProvider({children, open, setOpen, setInsightOpen, onSett
   useEffect(() => {
     const active = () => transport.current === client && !client.closed;
     const onError = error => { if (active()) fail(error); };
-    const client = new WidgetTransport({apiOrigin: context.apiOrigin, widgetKey: context.widgetKey, onEvent: event => { if (active()) eventHandler.current(event); }, onError});
+    let details = {...localContact, ...context.contact};
+    if (pageIdentity.current !== identity) {
+      // Nothing the previous visitor supplied or typed reaches the new visitor's session or its contact action.
+      pageIdentity.current = identity;
+      details = {...context.contact};
+      initialContact.current = details;
+      setLocalContact(details);
+    }
+    const client = new WidgetTransport({apiOrigin: context.apiOrigin, widgetKey: context.widgetKey, contact: context.contact, onEvent: event => { if (active()) eventHandler.current(event); }, onError});
     transport.current = client;
     setMessages([]); setResolution(null); setContactAuth({}); setContact(context.contact || {}); setConversationId(null); setConnectionState('connecting');
     // Installation presence is independent of optional page/activity collection.
     // Send one authenticated ping once the real visitor session is ready.
-    client.connect({...localContact, ...context.contact}).then(async () => {
+    client.connect(details).then(async () => {
       await client.action('pingActive', {});
       const result = await client.action('contextConsent', {});
       if (active()) setMonitoring(result.monitoring);
     }).catch(onError);
     return () => { client.close(); Collector.setCollectorEnabled(false); Collector.setMessageHandler(null); };
-  }, [context.apiOrigin, context.widgetKey, context.contact?.hash, context.contact?.identifier, fail]);
+  }, [context.apiOrigin, context.widgetKey, context.contact?.hash, identity, fail]);
   const assertConnected = useCallback(() => transport.current ? transport.current.connect(localContact) : Promise.reject(new Error('Widget is initializing')), [localContact]);
   const retryConnection = useCallback(async () => {
     const client = transport.current;
@@ -198,7 +211,6 @@ export function ConnectProvider({children, open, setOpen, setInsightOpen, onSett
   useEffect(() => {
     setLocalContact(current => JSON.stringify(current) === JSON.stringify(context.contact || {}) ? current : {...current, ...context.contact});
   }, [context.contact]);
-  const initialContact = useRef(localContact);
   useEffect(() => {
     if (localContact === initialContact.current) return;
     transport.current?.action('contact', localContact).then(result => setContact({...localContact, ...result.contact, loading_email: false, loading_name: false})).catch(error => { setContact(current => ({...current, loading_email: false, loading_name: false})); fail(error); });

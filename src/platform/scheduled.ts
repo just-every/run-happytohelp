@@ -9,6 +9,7 @@ import {runScheduled} from '../jobs'
 import {dispatchOperatorNotifications} from '../modules/integrations/notifications'
 import {purgeExpiredAudit} from '../modules/audit/retention'
 import {drainTeammateSlack,noticeCost} from '../modules/integrations/teammate-slack'
+import {drainTeammateTeams,teamsNoticeCost} from '../modules/integrations/teammate-teams'
 
 type Consumer='cron'|'notifications'|'reports'|'audit'
 /** Serial handoff makes unused reservations spendable without double admission.
@@ -30,6 +31,7 @@ export async function runScheduledInvocation(env:Env,options:{now?:number;consum
  if(scheduledStatementLimit-budget.statements>=1){try{await expireReplayCalls({options:{db:budget.database},now:()=>options.now??Date.now()})}catch(error){errors.push(error)}}
  // Personal Slack notices spend only what the consumers above left unused.
  if(scheduledStatementLimit-budget.statements>=noticeCost){try{await drainTeammateSlack({...env,DB:budget.database},{now:options.now,room:()=>scheduledStatementLimit-budget.statements})}catch(error){errors.push(error)}}
+ if(scheduledStatementLimit-budget.statements>=teamsNoticeCost){try{await drainTeammateTeams({...env,DB:budget.database},{now:options.now,room:()=>scheduledStatementLimit-budget.statements})}catch(error){errors.push(error)}}
  if(errors.length)throw new AggregateError(errors,'Scheduled consumers failed')
  return budget.metrics
 }

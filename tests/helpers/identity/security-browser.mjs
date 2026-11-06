@@ -8,12 +8,13 @@ import {auditPage,evidence,viewports} from '../../journeys/kit/browser.mjs'
 import {totp} from './two-factor.mjs'
 import {magicSignIn} from './magic-browser.mjs'
 import {slackSettingsBrowser} from '../notify/slack-browser.mjs'
+import {teamsSettingsBrowser} from '../notify/teams-browser.mjs'
 
 export async function securityBrowserJourney(browser){
  await ticketScopeBrowserJourney(browser)
  const reservation=createServer();await new Promise(done=>reservation.listen(0,'127.0.0.1',done))
  const port=reservation.address().port;await new Promise(done=>reservation.close(done))
- const runtime=await createRuntime({port,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:`http://localhost:${port}`,EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-mail-edge',EMAIL_FROM:'support@example.test'},outboundFixture:new URL('../notify/slack-browser-edge.mjs',import.meta.url).href})
+ const runtime=await createRuntime({port,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:`http://localhost:${port}`,EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-mail-edge',EMAIL_FROM:'support@example.test'},outboundFixture:new URL('../notify/notify-browser-edge.mjs',import.meta.url).href})
  const origin=runtime.origin.replace('127.0.0.1','localhost'),shot=await evidence('account-security'),errors=[]
  const password='owner-correct-horse-battery'
  let passed=false
@@ -27,6 +28,7 @@ export async function securityBrowserJourney(browser){
   owner.on('pageerror',error=>errors.push(error.message))
   // Personal Slack settings (NOTIFY-001) run first: connection and consent changes need no second factor yet.
   await slackSettingsBrowser({page:owner,runtime,origin,tenant,shot})
+ await teamsSettingsBrowser({page:owner,runtime,origin,tenant,shot})
   await owner.goto(origin+'/users/profile')
   await owner.getByRole('navigation',{name:'Settings sections'}).getByRole('button',{name:'Security',exact:true}).click()
   await owner.getByRole('button',{name:'Add an authenticator app'}).click()

@@ -23,3 +23,15 @@ export async function expireRerMailRaw(env:Env){
  const known=new Set(retained.map(row=>row.object_key)),orphaned=old.filter(object=>!known.has(object.key)).map(object=>object.key)
  if(orphaned.length)await env.FILES.delete(orphaned)
 }
+/** The Amazon SES reader's private transport copy is deleted by its own job once the receipt is final. This sweep takes
+ * the copy a job left behind (it died between the receipt and the delete), and any copy older than seven days. */
+export async function expireLegacyMailS3Raw(env:Env){
+ if(!cronRoom(env,3))return
+ const now=Date.now()
+ const rows=(await env.DB.prepare("SELECT object_key,raw_key FROM legacy_mail_s3_receipts WHERE raw_key IS NOT NULL AND updated_at<? AND (state IN ('complete','held') OR updated_at<?) ORDER BY updated_at LIMIT 10").bind(now-60000,now-7*86400000).all<{object_key:string;raw_key:string}>()).results
+ for(const row of rows){
+  if(!cronRoom(env,1))break
+  await env.FILES.delete(row.raw_key)
+  await env.DB.prepare('UPDATE legacy_mail_s3_receipts SET raw_key=NULL WHERE object_key=? AND raw_key=?').bind(row.object_key,row.raw_key).run()
+ }
+}

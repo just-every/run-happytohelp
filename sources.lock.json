@@ -2049,7 +2049,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "2924c9ead7e31081993c0665c98d09b53033e2354c6387acbe35fb15dcff2176",
+      "sha256": "37d0f63f809c5000c91e789233b3ff86e18bf3fcb78af171b2e12a3dee4449f0",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2764,6 +2764,10 @@
       "sha256": "13f7dc52a1784cbfa5ca311ad888ee44111bf2bf22ed1a8c90d4b88d00c75842",
       "executable": false
     },
+    "migrations/303_teammate_teams.sql": {
+      "sha256": "e7f0dca0639171f13c0d69406d8d04df20752cccfe14076a800c0d8776e8a6c5",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2849,7 +2853,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "a91dc763f1830e7387647a9e94b57db98969f5c8a89f2cc2affba02354e78cb1",
+      "sha256": "061a71758774ced0abf8eb956d0cc3aa89641170567bb050ac48a33a3d84ffb3",
       "executable": false
     },
     "rer-project.json": {
@@ -3873,7 +3877,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "87a5fa2202576d11722a43913acdf4fc77af06d5234614e0947a0b08e76b6e95",
+      "sha256": "4cd90d50710c374b97cf2120e250ba9e6e5f3f2baf55b5fb066e1ffc13c3478b",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -4489,7 +4493,7 @@
       "executable": false
     },
     "src/modules/access/r4-route-permissions.ts": {
-      "sha256": "8b662ffd391fc8d47778b1be2bed5898ce01337d04de01823bb31805fdfe91c4",
+      "sha256": "b08d69dc906b385d55e0f21090f7986634290a10d85f3f97bc25655ab725f7ce",
       "executable": false
     },
     "src/modules/access/README.md": {
@@ -7060,6 +7064,38 @@
       "sha256": "6f8dbd6c431e07e145607e354336184768a7c9cf8589ec6791278e42c40c2400",
       "executable": false
     },
+    "src/modules/integrations/teammate-teams/authority.ts": {
+      "sha256": "0920e69610d4fa9fcae47dac16f38b9ce4dcc0453a055e7ae343c2eec8dbb18e",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-teams/consent.ts": {
+      "sha256": "8e5dd9989383d2de375cdbb2e3694e7f4cc391ea26ad60f5811907daf6926de1",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-teams/drain.ts": {
+      "sha256": "dff218af79f2eb29724b322ba4e21a06ec5002f94cfabb1a37c75d6fd4d3917f",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-teams/guard.ts": {
+      "sha256": "aef3e43db6078dcf435c881d62babaa3b97e9e6de0e358df5ab5292df1a43b22",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-teams/index.ts": {
+      "sha256": "391a207d1e145b4cfa1dd83f22a162ca1137cd75abe1d25c2ef8f493d97e4a8f",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-teams/link.ts": {
+      "sha256": "f71b76aebb8736ba5ccfee9376007533f7c36d22d551f62cf2008e0aed93686f",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-teams/own.ts": {
+      "sha256": "bf408e6894dc348039a75392e183cc54bac1c10c13333207f0b230af439bb868",
+      "executable": false
+    },
+    "src/modules/integrations/teammate-teams/routes.ts": {
+      "sha256": "2d9195623fe063195554cb47c2b23792da7869c2020633838f7686fc2547cb52",
+      "executable": false
+    },
     "src/modules/integrations/triggers.ts": {
       "sha256": "306092b1a3b399a251a7a191d07e567b4b54baf2ddfea9230bf36f99fc217991",
       "executable": false
@@ -7769,7 +7805,7 @@
       "executable": false
     },
     "src/modules/management/index.ts": {
-      "sha256": "4d18fe08f2fb531ade573872061947fb63ff8f0dc3bb0f9f227b4e571430de60",
+      "sha256": "214d4ddd71db560c883843ea42cd69613982316cd8c31dcf72b4a89cc65d35ca",
       "executable": false
     },
     "src/modules/management/installation.ts": {
@@ -7789,7 +7825,7 @@
       "executable": false
     },
     "src/modules/management/member-erasure.ts": {
-      "sha256": "c1f9dc9ad5604ec49f54324a2f415029f453a8dd2486a343e18ed1b1708c921c",
+      "sha256": "da1b8336877ca6953e72911a1324a3ec978339474cd4723b560d29c9d53e1867",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {
@@ -9001,7 +9037,7 @@
       "executable": false
     },
     "src/modules/support-channels/inbound.ts": {
-      "sha256": "23fec653d36dd8835de8b8eb9ce44b12c7b6aa69ce465272c18065a4154d19c5",
+      "sha256": "89e1944183756b9396abcce959e78828839df6f801e50e4bb527aee0871108eb",
       "executable": false
     },
     "src/modules/support-channels/install.ts": {
@@ -10161,7 +10197,7 @@
       "executable": false
     },
     "src/platform/scheduled.ts": {
-      "sha256": "aae1b8943766145863037090dc20912ef320fd39de8d0969514aac068c02de35",
+      "sha256": "6a0ef436b7ee55f9e85650e24fe41c67d8b76a08fe111a3af9bf6743143b9103",
       "executable": false
     },
     "src/platform/security-headers.ts": {
@@ -12637,19 +12673,27 @@
       "executable": false
     },
     "src/ui/native/pages/notifications/NotificationTriggerSettings.jsx": {
-      "sha256": "936783b832b0aa0957b5aa21edd959c33f6a8eb2c87f5c0ab5b779291254357a",
+      "sha256": "0be630dc1b24f606b2f963952d039b253c8cee955dd4626e0e6fc0a728513094",
       "executable": false
     },
     "src/ui/native/pages/notifications/PersonalNotificationSettings.jsx": {
-      "sha256": "c8c97fcc015df28320b0de143f840b8145054b360b8584cc49fbd15767f27606",
+      "sha256": "fbfdfeafbcb44e053bf291a08b6844ddbed8e2bb2435718430a6d5173cd6a78f",
       "executable": false
     },
     "src/ui/native/pages/notifications/PersonalSlackSettings.jsx": {
       "sha256": "9ba06d263b59ebe93a15eb259a9319ffa595de981347e230a2bf69b8333b64d6",
       "executable": false
     },
+    "src/ui/native/pages/notifications/PersonalTeamsSettings.jsx": {
+      "sha256": "50d17834031528e66ad75d1038657ee55ce4cc954acb8cd30b0884aa9af096f9",
+      "executable": false
+    },
     "src/ui/native/pages/notifications/SlackConsentSettings.jsx": {
       "sha256": "3a7b8e0973aacc63a06c6480fe48806f6b23ce032a05d1b6a616bdd2e160e83f",
+      "executable": false
+    },
+    "src/ui/native/pages/notifications/TeamsConsentSettings.jsx": {
+      "sha256": "00f1924aa2c629bb05e9b24d65b4ebca66e06c82d7e5f44aef07c90641a9c40f",
       "executable": false
     },
     "src/ui/native/pages/PluginHelp.jsx": {
@@ -15493,7 +15537,7 @@
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {
-      "sha256": "19bd46cc6611467eb2b270f31a2878384af9bb71ebca91c7c4c4d012b4a93fbc",
+      "sha256": "748dcec25e0c5040a358f7d0dc4354ac5403a7cd2208ac998d1c35e142bdab4a",
       "executable": false
     },
     "tests/helpers/identity/ticket-scope-browser.mjs": {
@@ -15788,6 +15832,10 @@
       "sha256": "557e8bd58d0f75cb6a40b6e549903420a558b4f81c4b006ca6bab6365117ccb8",
       "executable": false
     },
+    "tests/helpers/notify/notify-browser-edge.mjs": {
+      "sha256": "ff3243ac6f93832b86743d8b09f93f3e7c9bae71ad1d714f8bbb5391304a63b6",
+      "executable": false
+    },
     "tests/helpers/notify/outcomes.mjs": {
       "sha256": "99e9d45ea55c74f53953c8b85877425a51b2b448de2e823bd6951b952a75c84a",
       "executable": false
@@ -15809,7 +15857,19 @@
       "executable": false
     },
     "tests/helpers/notify/teammates.mjs": {
-      "sha256": "7cb5de1f2c79a9f3735d570c2b26ff154d3d95a378f4bf0b9ebdb275256aaee4",
+      "sha256": "597218f870049af5119af6ff3d1f0166293e2d3329910183aa69afb4209a76b1",
+      "executable": false
+    },
+    "tests/helpers/notify/teams-browser.mjs": {
+      "sha256": "14e279d832495a4ea1e21b1e7a588a3fdd5072e1219630973b0ed88a72c570f4",
+      "executable": false
+    },
+    "tests/helpers/notify/teams-edge.mjs": {
+      "sha256": "c067bf515590b4ef5f2700fb68470cd592faf794a161bcffc7c5ac14401f971b",
+      "executable": false
+    },
+    "tests/helpers/notify/teams-notices.mjs": {
+      "sha256": "5297c5199c2111be5e0e4244c7dc41ab370d110b69ff69ae83523835ac840a50",
       "executable": false
     },
     "tests/helpers/openai-stream.mjs": {

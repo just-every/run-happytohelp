@@ -12,6 +12,7 @@ import {sharedEvent} from './shared'
 import {verifyTeams} from './teams'
 import {inboundMedia,discardMedia} from './media'
 import {publishActivity} from '../conversations/activity'
+import {capturePersonalTeamsLink} from '../integrations/teammate-teams'
 export const inbound=new Hono<AppEnv>()
 const webhook='/webhooks/:id'
 inbound.get(webhook,async c=>{const row=await connection(c.env,c.req.param('id'));if(row.provider==='sms'||row.provider==='slack'||row.provider==='teams'||c.req.query('hub.mode')!=='subscribe'||await digest(c.req.query('hub.verify_token')||'')!==row.verify_hash)throw new HTTPException(403);return c.text(c.req.query('hub.challenge')||'')})
@@ -21,6 +22,7 @@ inbound.post(webhook,async c=>{
  const secret=await decryptToken(c.env,row.project_id,row.signing_cipher!),url=new URL(c.req.url);if(c.env.APP_ORIGIN){const base=new URL(String(c.env.APP_ORIGIN));url.protocol=base.protocol;url.host=base.host}
  if(row.provider==='teams')await verifyTeams(row,raw,c.req.raw.headers);else await verify(row,secret,url.href,raw,c.req.raw.headers)
  if(row.provider==='slack'){const body=JSON.parse(raw);if(body.type==='url_verification')return c.json({challenge:body.challenge})}
+ if(row.provider==='teams'){const linked=await capturePersonalTeamsLink(c.env,row,raw);if(linked)return c.json({received:true,data:[linked]})}
  const receipts=[];for(const event of events(row,raw))receipts.push(await receive(c.env,row,event))
  return row.provider==='sms'?c.body(receipts.some(r=>'help' in r&&r.help)?'<Response><Message>For support, reply with your question. Send START to allow support replies or STOP to opt out.</Message></Response>':'<Response/>',200,{'Content-Type':'text/xml'}):c.json({received:true,data:receipts})
 })

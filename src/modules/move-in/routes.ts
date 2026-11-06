@@ -1,3 +1,4 @@
+import {importDoorSettings} from './door/settings'
 import {ownershipOptions,previewOwnership,activateOwnership} from './ownership'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
@@ -25,6 +26,7 @@ async function runView(env:Env,run:Run){return {...publicRun(run),plan:await rev
 export function publicRun(run:Run){return {id:run.id,vendor:run.vendor,filename:run.filename,bytes:run.bytes,state:run.state,cursor:run.cursor,parsed:run.parsed_total,error:run.error,createdAt:run.created_at,plan:planSummary(run.plan_json),report:run.report_json?JSON.parse(run.report_json):null}}
 async function uploadBytes(request:Request){if(Number(request.headers.get('content-length'))>LIMITS.inputBytes)throw new HTTPException(413,{message:'Upload limit is 2 MiB'});const reader=request.body?.getReader();if(!reader)return new Uint8Array(0);let length=0;const chunks:Uint8Array[]=[];try{for(;;){const next=await reader.read();if(next.done)break;length+=next.value.length;if(length>LIMITS.inputBytes){await reader.cancel();throw new HTTPException(413,{message:'Upload limit is 2 MiB'})}chunks.push(next.value)}}finally{reader.releaseLock()}const result=new Uint8Array(length);let offset=0;for(const chunk of chunks){result.set(chunk,offset);offset+=chunk.length}return result}
 export const moveInRoutes=new Hono<AppEnv>()
+moveInRoutes.route('/',importDoorSettings)
 moveInRoutes.use('*',async(c,next)=>{c.env={...c.env,DB:boundedDatabase(c.env.DB).database};await next()})
 const root='/projects/:projectId/imports'
 // Starting, applying, resuming and undoing an import are recorded in the workspace's security log.

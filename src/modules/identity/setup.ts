@@ -1,3 +1,4 @@
+import {healImportDoor} from '../move-in/door/authority'
 import { Hono, type Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from '../../platform/env'
@@ -106,6 +107,7 @@ export async function createNativeOwner(c: Context<AppEnv>, body: Record<string,
  if (!results[0].meta.changes) throw new HTTPException(409, {message: 'Owner setup is already complete. Sign in with your existing account.'})
  c.header('Set-Cookie', sessionCookie(token,c.req.url))
  c.header('Cache-Control', 'no-store')
+ await healImportDoor(c.env,userId)
  await defaults.after()
  return {projectId,userId,token,welcomeEmail:await sendWelcomeEmail(c.env,{projectId,workspaceName:name,ownerEmail:email})}
 }

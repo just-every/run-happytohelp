@@ -55,7 +55,7 @@ function orderKey(t:Table,row:Record<string,any>){return t.name==='email_threadi
 function expected(t:Table,value:NativeValue){return JSON.stringify([...(value.tables[t.name]??[])].sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0).map(row=>t.columns.map(column=>column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null)))}
 function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sql {
  const defs=definitions(kind),clauses:string[]=[],bindings:any[]=[]
- for(const t of defs){clauses.push(`${select(t)}=?`);bindings.push(...params(t,destination,id),row?expected(t,row.value as unknown as NativeValue):'[]')}
+ for(const t of defs){if(!row&&kind==='contact'&&t.name==='contacts'){clauses.push(`(${select(t)}=? OR EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND id=? AND name IS NULL AND email IS NULL AND external_id IS NULL AND is_verified=0 AND json_extract(metadata_json,'$.is_erased')=1))`);bindings.push(...params(t,destination,id),'[]',destination,id)}else{clauses.push(`${select(t)}=?`);bindings.push(...params(t,destination,id),row?expected(t,row.value as unknown as NativeValue):'[]')}}
  // Equality describes the imported definition. References created by the
  // same import do not change it; undoReferencesClear protects deletion.
  if(row&&kind==='form'){clauses.push('NOT EXISTS(SELECT 1 FROM request_form_submissions WHERE project_id=? AND form_id=?)');bindings.push(destination,id)}
@@ -87,11 +87,13 @@ export const nativeTargets:D1TargetAdapter={
   const tables:NativeValue['tables']={};for(let i=0;i<defs.length;i++){const t=defs[i];tables[t.name]=JSON.parse(row[`t${i}`]).map((values:any[])=>Object.fromEntries(t.columns.map((column,index)=>[column,values[index]])))}
   if(kind==='contact'&&!tables.contact_companies.length)delete tables.contact_companies
   if(kind==='conversation'&&!tables.move_in_attachment_bytes.length)delete tables.move_in_attachment_bytes
+  if(!row.source&&kind==='contact'&&tables.contacts[0]&&JSON.parse(tables.contacts[0].metadata_json||'{}').is_erased===1)return undefined
   if(!row.source&&!Object.values(tables).some(rows=>rows.length))return undefined
   // An unowned native collision is visible to the kit and cannot be overwritten without review.
   return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:{tables,source:row.source?JSON.parse(row.source):{}} as any}
  },
  matches:guard,
+ matchesMany:matchesOwnedSet,
  write(row){const value=row.value as unknown as NativeValue,statements:D1Sql[]=[]
   if(row.targetKind==='conversation')statements.push({sql:'INSERT INTO move_in_native_fences(project_id,conversation_id) VALUES(?,?)',params:[row.destination,row.targetId]})
   for(const t of definitions(row.targetKind).filter(t=>!t.nativeOnly&&!['macro_heads','macro_versions'].includes(t.name)))for(const item of value.tables[t.name]??[]){if(item.project_id!==undefined&&item.project_id!==row.destination)throw new Error('native_destination_mismatch');const columns=t.columns.filter(c=>!t.generated?.includes(c));statements.push({sql:`INSERT ${t.name==='context_subjects'?'OR REPLACE ':''}INTO ${t.name}(${columns.join(',')}) VALUES(${columns.map(()=>'?').join(',')})`,params:columns.map(c=>item[c]??null)})}
@@ -149,4 +151,26 @@ async function snapshotsForOrigins(db:D1Database,destination:string,origins:any[
   for(const origin of owned){const tables:NativeValue['tables']={};for(const t of definitions(kind))tables[t.name]=snapshots.get(t.name)?.get(origin.target_id)??[];result.push({destination,targetKind:kind,targetId:origin.target_id,revision:origin.revision,value:completeNativeValue(kind,{tables,source:JSON.parse(origin.source_json)}) as any})}
  }
  return result
+}
+
+/** Fixed query count and exact owned-set fences. SQL compares each canonical
+ * ordered table image; count and origin/revision markers close the set. */
+function matchesOwnedSet(rows:TargetRow[],destination:string):D1Sql[]{
+ const guards:D1Sql[]=[{sql:'(SELECT COUNT(*) FROM move_in_origins WHERE project_id=?)=?',params:[destination,rows.length]}]
+ for(const kind of Object.keys(entities)){
+  const owned=rows.filter(row=>row.targetKind===kind).sort((a,b)=>a.targetId.localeCompare(b.targetId)),ids=JSON.stringify(owned.map(row=>row.targetId))
+  guards.push({sql:'(SELECT COUNT(*) FROM move_in_origins WHERE project_id=? AND target_kind=?)=?',params:[destination,kind,owned.length]})
+  if(!owned.length)continue
+  // Origin JSON is parsed by list; compare canonical JSON in SQL as well as
+  // revisions, so textual whitespace cannot hide a value change.
+  guards.push({sql:`NOT EXISTS(SELECT 1 FROM json_each(?) expected WHERE NOT EXISTS(SELECT 1 FROM move_in_origins o WHERE o.project_id=? AND o.target_kind=? AND o.target_id=json_extract(expected.value,'$.id') AND o.revision=json_extract(expected.value,'$.revision') AND json(o.source_json)=json(json_extract(expected.value,'$.source'))))`,params:[JSON.stringify(owned.map(row=>({id:row.targetId,revision:row.revision,source:(row.value as unknown as NativeValue).source}))),destination,kind]})
+  for(const t of definitions(kind)){
+   const expectedRows=owned.flatMap(row=>(row.value as unknown as NativeValue).tables[t.name]??[]).map(row=>t.columns.map(column=>row[column]??null))
+   // Compare a sorted multiset of JSON arrays, preserving NULL, numeric types,
+   // Unicode and every owned column, including attachments and private notes.
+   const images=expectedRows.map(row=>JSON.stringify(row)).sort(),columns=t.columns.map(column=>t.name==='sla_policies'&&realPolicyColumns.has(column)?`CASE WHEN ${column}=CAST(${column} AS INTEGER) THEN CAST(${column} AS INTEGER) ELSE ${column} END`:column)
+   guards.push({sql:`(WITH scope(project,ids) AS (VALUES(?,?)) SELECT COALESCE(json_group_array(json(image)),'[]') FROM (SELECT json_array(${columns.join(',')}) image FROM (${snapshotQuery(t).replaceAll('?1','(SELECT project FROM scope)').replaceAll('?2','(SELECT ids FROM scope)')}) ORDER BY image))=?`,params:[destination,ids,JSON.stringify(images.map(image=>JSON.parse(image)))]})
+  }
+ }
+ return guards
 }

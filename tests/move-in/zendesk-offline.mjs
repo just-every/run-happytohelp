@@ -1,3 +1,4 @@
+import {zendeskDoorJourney} from './zendesk-door.mjs'
 import assert from 'node:assert/strict'
 import {nativeHarness} from './harness.mjs'
 import {review as reviewSource,apply as applySource,rows as readRows} from './journey-kit.mjs'
@@ -8,6 +9,7 @@ const root='/api/move-in/projects/p/imports',post=body=>({method:'POST',headers:
 /** One owner's offline move, inspected through the existing review, ticket,
  * media and erasure doors. Absorbed by the existing Zendesk landing journey. */
 export async function zendeskOfflineJourney(){
+ await zendeskDoorJourney()
  // Reuse main's current public-door harness after its older landing wrapper was retired.
  const imported=async(vendor,body,{apply=true,before,check})=>{
   const h=await nativeHarness()

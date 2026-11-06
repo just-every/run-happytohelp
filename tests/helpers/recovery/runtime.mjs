@@ -32,7 +32,7 @@ export async function recoveryRuntime(artifact, {directory, port, inspectorPort,
   };
   await writeFile(join(directory, 'wrangler.json'), JSON.stringify(config));
   const wrangler = resolve('node_modules/wrangler/bin/wrangler.js');
-  const env = {PATH: process.env.PATH, TMPDIR:process.env.TMPDIR, CI: '1', WRANGLER_SEND_METRICS: 'false', CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV: 'false', WRANGLER_LOG_PATH: process.env.WRANGLER_LOG_PATH || join(directory, 'wrangler.log')};
+  const env = {PATH: process.env.PATH, TMPDIR:process.env.TMPDIR, CI: '1', WRANGLER_SEND_METRICS: 'false', CLOUDFLARE_CF_FETCH_ENABLED:'false', CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV: 'false', WRANGLER_LOG_PATH: process.env.WRANGLER_LOG_PATH || join(directory, 'wrangler.log')};
   let child, storageOpen = false, logs = '';
   function launch(args) {
     const processRun = spawn(process.execPath, [wrangler, ...args, '--config', join(directory, 'wrangler.json')], {cwd: directory, env, stdio: ['ignore', 'pipe', 'pipe']});

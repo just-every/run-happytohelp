@@ -14,6 +14,8 @@ function identityFenceStatements(env:Env,projectId:string,seeds:string[]){
    SELECT value FROM json_each(?2)
    UNION SELECT l.source_digest FROM move_in_identity_links l JOIN aliases a ON a.digest=l.digest WHERE l.project_id=?1
    UNION SELECT l.digest FROM move_in_identity_links l JOIN aliases a ON a.digest=l.source_digest WHERE l.project_id=?1
+   UNION SELECT l.source_digest FROM h2h_import_door_identities l JOIN aliases a ON a.digest=l.digest WHERE l.project_id=?1
+   UNION SELECT l.digest FROM h2h_import_door_identities l JOIN aliases a ON a.digest=l.source_digest WHERE l.project_id=?1
   ) INSERT OR IGNORE INTO move_in_erased_identities(project_id,digest) SELECT ?1,digest FROM aliases`).bind(projectId,encoded)]
 }
 export async function retainErasureIdentity(env:Env,projectId:string,contactId:string,contact:ErasureIdentity){
@@ -64,12 +66,13 @@ export function importErasureStatements(env:Env,projectId:string,contactId:strin
  return [
   bind(`DELETE FROM move_in_message_sources WHERE project_id=?1 AND message_id IN (SELECT id FROM messages WHERE ${erasedMessages})`),
   bind(`DELETE FROM move_in_notes WHERE project_id=?1 AND (conversation_id IN (${conversations}) OR (json_extract(author_json,'$.role')='contact' AND EXISTS(SELECT 1 FROM move_in_origins o JOIN move_in_conversations c ON c.conversation_id=move_in_notes.conversation_id AND c.project_id=o.project_id AND c.vendor=o.vendor WHERE o.project_id=?1 AND o.target_kind='contact' AND o.target_id=?2 AND o.source_id=json_extract(move_in_notes.author_json,'$.id'))))`),
-  bind(`DELETE FROM move_in_origins WHERE project_id=?1 AND ((target_kind='contact' AND target_id=?2) OR (NOT(target_kind='contact' AND target_id<>?2) AND (target_kind,target_id) IN (SELECT target_kind,target_id FROM ik_provenance WHERE job_id IN (${jobs}))))`),
+  bind(`DELETE FROM move_in_origins WHERE project_id=?1 AND ((target_kind='contact' AND target_id=?2) OR (target_kind='conversation' AND target_id IN (${conversations})) OR (NOT(target_kind='contact' AND target_id<>?2) AND (target_kind,target_id) IN (SELECT target_kind,target_id FROM ik_provenance WHERE job_id IN (${jobs}))))`),
   bind(`UPDATE ik_d1_creation_plans SET released=1 WHERE released=0 AND job_id IN (${jobs})`),
   ...['ik_d1_plan_index','ik_d1_indexed_jobs','ik_d1_stream_pages','ik_d1_reversal_reports','ik_d1_creation_plans','ik_d1_history','ik_d1_entries','ik_provenance','ik_stages','ik_sources','ik_batches','ik_d1_plan_chunks','ik_d1_original_chunks','ik_originals','ik_original_sets'].map(table=>bind(`DELETE FROM ${table} WHERE job_id IN (${jobs})`)),
   bind(`DELETE FROM ik_jobs WHERE id IN (${jobs})`),bind(`DELETE FROM move_in_batches WHERE run_id IN (${runs})`),bind(`DELETE FROM move_in_identity_links WHERE run_id IN (${runs})`),bind(`DELETE FROM move_in_records WHERE run_id IN (${runs})`),
   bind(`UPDATE move_in_runs SET state='erased',filename='',object_key='',session_hash='',files_json='[]',diagnostics_json='[]',review_fingerprint=NULL,total=0,plan_json=NULL,report_json=NULL,kit_job_id=NULL,error=NULL WHERE id IN (${runs})`),
   bind(`UPDATE move_in_conversations SET source_id='',subject='',source_channel='' WHERE project_id=?1 AND conversation_id IN (${conversations})`),
+  env.DB.prepare(`DELETE FROM h2h_import_door_identities WHERE project_id=?1 AND bundle_sha256 IN (SELECT l.bundle_sha256 FROM h2h_import_door_identities l JOIN move_in_erased_identities e ON e.project_id=l.project_id AND e.digest=l.digest WHERE l.project_id=?1)`).bind(projectId),
   bind('DELETE FROM move_in_erasure_objects WHERE project_id=?1 AND contact_id=?2'),
   bind('DELETE FROM move_in_erasure_runs WHERE project_id=?1 AND contact_id=?2')
  ]

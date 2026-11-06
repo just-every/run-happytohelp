@@ -1,3 +1,4 @@
+import {mailgunJourney} from './mailgun.mjs'
 import {outboundConfigurationJourney} from './outbound-configuration.mjs'
 import {senderDomainJourney} from './domain.mjs'
 import {sendgridInboundJourney} from './sendgrid-inbound.mjs'
@@ -16,6 +17,7 @@ import {workflowNotices,workflowGroupNotices} from './workflow-notices.mjs'
 // mail, private partner work and terminal provider outcomes in the same store.
 export async function completeEmailJourney(){
  await outboundConfigurationJourney()
+ await mailgunJourney()
  const m=await mailApp(),{app,mail,operator}=m
  try{
   const id=await notificationTriggersJourney(m),base='/api/management/projects/p',ticket=`/api/dashboard/projects/p/conversations/${id}`

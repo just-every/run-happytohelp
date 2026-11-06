@@ -22,13 +22,13 @@ export async function retainReview(env:Env,run:Run,source:SourceBundle,prepared:
  const batches:ChildPlan[]=[],contacts:PublicationContact[]=[],categories:PublicationCategory[]=[...(prepared.retainedCategories??[])],decisions:any[]=[],diagnostics=[...source.diagnostics],counts:any={input:0,unique:0,duplicates:0,mapped:0,unmapped:0,rejected:0,effects:0,byKind:{}}
  // Rejected, retained and already-held records stay out of the kit's journals: a rejection claims
  // no source ID, so a corrected copy of the record can be uploaded and imported later.
- const held=(key:string)=>prepared.rejections.has(key)||prepared.known.has(key)||!!prepared.retained?.has(key)
+ const held=(key:string)=>prepared.rejections.has(key)||prepared.heldBack?.has(key)||prepared.known.has(key)||!!prepared.retained?.has(key)
  const records=source.records.filter(record=>!held(recordKey(record)))
  for(const record of source.records){
   const key=recordKey(record);if(!held(key))continue
   const omissions=(prepared.omissions.get(key)??[]).map(reason=>({reason})),rejection=prepared.rejections.get(key)
   counts.input++;counts.unique++;counts.byKind[record.kind]=(counts.byKind[record.kind]??0)+1
-  if(!rejection){counts.unmapped++;decisions.push({kind:record.kind,sourceId:record.sourceId,location:record.location,omissions:[...omissions,{reason:'earlier_import_already_holds_record'}],targets:[]});continue}
+  if(!rejection){counts.unmapped++;decisions.push({kind:record.kind,sourceId:record.sourceId,location:record.location,omissions:prepared.heldBack?.has(key)?omissions:[...omissions,{reason:'earlier_import_already_holds_record'}],targets:[]});continue}
   counts.rejected++;if(omissions.length)counts.unmapped++
   decisions.push({kind:record.kind,sourceId:record.sourceId,location:record.location,rejection,omissions:[...omissions,...(prepared.retained?.has(key)?[{reason:'previously_imported_source_retained_native_edit'}]:[])],targets:[]})
   diagnostics.push({severity:'error',code:'REJECTED',message:rejection,kind:record.kind,sourceId:record.sourceId,location:record.location})

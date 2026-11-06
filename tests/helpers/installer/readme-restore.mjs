@@ -11,6 +11,7 @@ import {seedPortableData,verifyPortableData} from '../rer-data.mjs';
 import {interruptPortableTraining} from '../training-portable.mjs';
 import {interruptPortableWork,verifyPortableWork} from '../unfinished-portable.mjs';
 import {seedReportClaimedRecovery} from '../reports-portable.mjs';
+import {restoredOwnerEntryReady} from '../recovery/knowledge-ready.mjs';
 
 // The README clone-and-restore journey: setup twice, owner entry at 1440, D1/R2/Durable Object round trip into a fresh clone, reset.
 export async function readmeRestoreJourney(){
@@ -68,6 +69,7 @@ try{
  await verifyPortableWork(target,portable);
  await mkdir(join(target,'.seed'),{mode:0o700,recursive:true});await writeFile(join(target,'.seed/local-answers.json'),JSON.stringify(answer),{mode:0o600});
  await command(target,['setup','--answers','.seed/local-answers.json','--port',String(port),'--non-interactive'],env);runtime=await serve(target,env);
+ await restoredOwnerEntryReady(runtime);
  const retained=await post(origin,'/api/identity/login',{email:answer.OWNER_EMAIL,password,projectId:project.id});assert.equal(retained.actor.id,logged.actor.id,'restored native owner identity is preserved');assert.equal(retained.actor.projectId,project.id,'the owner selects the restored support workspace');
  await verifyPortableData(origin,portable,retained.token,json);
  assert.equal((await fetch(origin+'/api/v1/contacts',{headers:{Authorization:'Bearer '+grant.token}})).status,401,'restored install rejects old API grant');

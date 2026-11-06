@@ -10,7 +10,7 @@ import {unstable_splitSqlQuery} from 'wrangler';
 import {parseJsonc} from '@runeditrun/rer/jsonc';
 import {createPortability} from '@runeditrun/rer/modules/portability';
 import {exportArchive,fileRecords} from '@runeditrun/rer/modules/portability/files';
-import {appliedMigrations,platformMigrationPreflight} from '@runeditrun/rer/internal/cli/portability-migrations.mjs';
+import {appliedMigrations,nativeMigrationPreflight} from '@runeditrun/rer/portability-migrations';
 import {archivePolicy} from './portability-policy.mjs';
 import {hostedD1} from './hosted-d1.mjs';
 import {hostedR2} from './hosted-r2.mjs';
@@ -58,7 +58,7 @@ export async function hostedExport({output,configPath,stopped,origin}){
   const DB=hostedD1({accountId:config.account_id,databaseId:config.d1_databases[0].database_id,token:process.env.CLOUDFLARE_API_TOKEN});
   FILES=await hostedR2({accountId:config.account_id,bucket:config.r2_buckets[0].bucket_name,token:process.env.CLOUDFLARE_API_TOKEN,directory:temporary});
   await promisify(execFile)(process.execPath,['scripts/migrations.mjs'],{cwd:root});
-  await platformMigrationPreflight(root,DB,'DB',{},unstable_splitSqlQuery);
+  await nativeMigrationPreflight({root,db:DB,binding:'DB'});
   const migrations=await appliedMigrations(root,DB,'DB',{},unstable_splitSqlQuery);
   // The source must carry a real, recognized migration ledger; never prepare a
   // remote installation or fabricate a ledger while exporting its prior data.

@@ -6,7 +6,7 @@ import { join } from 'node:path';
 
 export const manifestPath = 'docs/site.json';
 
-export type ManifestPage = { section: string; slug: string; label: string; source: string; href: string };
+export type ManifestPage = { section: string; slug: string; label: string; source: string; href: string; hidden: boolean };
 export type ManifestSection = { title: string; pages: ManifestPage[] };
 export type GithubOnlyEntry = { source: string; reason: string };
 export type Manifest = { sections: ManifestSection[]; pages: ManifestPage[]; githubOnly: GithubOnlyEntry[] };
@@ -45,7 +45,7 @@ export function readManifest(root: string): Manifest {
       slugs.add(slug);
       if (!label) problems.push(`${where}: no label`);
       useSource(source, where);
-      return { section: title, slug, label, source, href: docsHref(slug) };
+      return { section: title, slug, label, source, href: docsHref(slug), hidden: page.hidden === true };
     });
     return { title, pages };
   });

@@ -2,7 +2,18 @@
 
 `rer demo` (the same as `rer dev --demo`) runs a throwaway copy, signed in
 as the saved owner with realistic data. Its title and marked nav label read
-`<Seed> Demo`; local dev reads `<Seed> Dev`. There is no injected bar or outbox.
+`<Seed> Demo`; local dev reads `<Seed> Dev`. Beside the marked product navigation,
+**Run <Seed>** opens the canonical run site’s `/run` chooser. There is no injected
+bar or outbox.
+
+The exit uses only spare space beside or directly below the label and truncates its own text.
+It stays out of the host layout, preserving sibling rectangles and document
+width relative to the same header with the Demo suffix but no exit. It never
+repairs an already overflowing host header. With no readable room it remains
+a keyboard stop; keyboard focus reveals the full link above clipping ancestors.
+The full name is also its accessible name and title. The host keeps ownership
+of its responsive layout.
+
 
 Invite another person through the app, then choose **Sign in as <name>** in
 operator access or at `/signin`. Owners and invited people use the same one-click
@@ -74,7 +85,15 @@ Production build/deploy refuses `RER_DEMO` in declarations or settings.
 
 4. **The nav label.** Mark the product text with `data-rer-name`, for example
    `<span data-rer-name>Uptime</span>`. Base adds the Demo/Dev suffix and sets
-   the document title suffix itself, including after client navigation.
+   the document title suffix itself, including after client navigation. Demo mode
+   also adds a Run link beside that label, using the existing link and theme tokens.
+   `demoSockets()` supplies its public name and URL from `deploy-demo.json`
+   (`name` and optional `runUrl`), plus the existing run-site declaration's domain
+   (the command adapter's `site.declaration`, normally `deploy-site.json`),
+   in local demos and hosted builds. Both refuse invalid `runUrl` destinations
+   before rendering; only HTTPS `/run` URLs without credentials, queries or
+   fragments are accepted.
+   Local-only demos use the same declaration; no hosting credentials are needed.
 
 Add `.rer/demo/` to `.gitignore`. Run `rer demo`, open `RER_OPEN`, and try a
 real public fetch and a send: both flows complete, and only the fetch leaves.
@@ -84,8 +103,14 @@ real public fetch and a send: both flows complete, and only the fetch leaves.
 `rer deploy --demo` publishes the seed at `demo.<domain>`. Turnstile admits a
 visitor into their own native Worker Loader isolate and SQLite Durable Object
 storage. The ordinary production Worker bundle is built once, with static files
-served directly at the edge. The visitor lands signed in as the demo owner with
-sample data and `RER_DEMO=1`; account effects remain simulated by the demo guard.
+served directly at the edge. While the visitor waits for the human check and
+sign-in, the start page prefetches the console's hashed JS and CSS at idle
+priority (at most 1 MiB compressed, the `deploy.operatorPath` views first; the
+chunks are read from the build's Vite manifest, else its `build.assetsDir`), so
+each view's first visit is served from the browser's cache. Those built chunks
+are served `immutable` from the edge wherever the build put them. The visitor lands
+signed in as the demo owner with sample data and `RER_DEMO=1`; account effects
+remain simulated by the demo guard.
 Each copy ends after 60 minutes or 15 idle minutes, or when the visitor signs
 out (`POST /auth/signout`), when its storage is erased and the visitor sees the
 ended page with "Start a new demo".
@@ -94,13 +119,20 @@ ended page with "Start a new demo".
    export its Worker entry and declare all resources in its Wrangler config.
 2. Add `deploy-demo.json`: `{"version":1,"domain":"run-example.com","name":"Example"}`.
    Optional `maxInstances` limits concurrent visitors (default 10), `ownerEmail`
-   sets the demo owner (default owner@demo.invalid), and `settings` contains plain
+   sets the demo owner (default owner@demo.invalid), `runUrl` sets the canonical
+   HTTPS `/run` chooser (default the declared run-site domain, then the demo
+   domain), and `settings` contains plain
    demo settings. Secrets and front-owned settings cannot be supplied there.
 3. Copy `run-demo.yml` to `.github/workflows/run-demo.yml`. It installs the seed's
    locked dependencies and invokes `rer deploy --demo`; Docker is unnecessary.
    Set `RUN_DEMO_DEPLOY=true` to deploy on pushes to main. The manual `test_only`
    input targets `demo.test.<domain>` in the separate `demo-test` environment,
-   using Turnstile's always-passing test keys. Test starts require the private
+   using Turnstile's always-passing test keys. It moves the declaration's domain
+   to `test.<domain>` and every `settings` host under `demo.<domain>` (such as
+   a `container.hostVariables` host like `page.demo.<domain>`) to the same name
+   under `demo.test.<domain>`; production is unchanged. The existing run-site
+   declaration keeps exits on the canonical site when the demo domain is scoped.
+   An edition without a run-site declaration sets `runUrl` for a scoped test host. Test starts require the private
    measurement token, passed as `rer_demo_measure` cookie or
    `x-rer-demo-measurement` header. Do not commit that token.
 4. In the `run-demo` GitHub environment, set `CLOUDFLARE_ACCOUNT_ID`,

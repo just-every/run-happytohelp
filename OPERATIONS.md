@@ -256,6 +256,47 @@ declaration's `secrets` array, plus
 with Cloudflare mail. It is not required for Resend or SendGrid; rer 0.2.77 requires
 every declared secret not marked `optional` on a new Worker.
 
+### Mailgun domain sending
+
+The native outbound adapter accepts `EMAIL_PROVIDER=mailgun`. Configure
+`EMAIL_FROM` as the installation support sender, `MAILGUN_DOMAIN` as the
+actual Mailgun sending domain (a DNS name, without a URL or path), and
+`MAILGUN_REGION` as `us` (default) or `eu`, matching that domain's region.
+Workspace and connected forwarding-mailbox sender, recipient, signature,
+attachment and reply-thread settings still apply.
+
+Set `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY`. That name selects the installation's
+native secret binding `MAILGUN_SENDING_KEY`; its value must be a **domain-scoped
+sending key** for `MAILGUN_DOMAIN`. This is the currently supported binding name.
+A missing/unknown name, unavailable binding, invalid domain or invalid region
+leaves mail unconfigured. The adapter never reads `EMAIL_API_KEY` as a fallback.
+Keep the separate time-limited Mailgun Routes key outside this provider; no
+Routes/account/DNS permissions or changes are needed to build it.
+
+The adapter posts multipart message fields to `/v3/{domain}/messages` at the
+US or EU Mailgun endpoint with HTTP Basic authentication. It preserves native
+To/CC/BCC, text/HTML, attachments and `h:` reply/thread headers. A returned
+message ID records provider acceptance, not recipient delivery. Rejections are
+failed; server errors, lost responses, redirects and receipts without a message
+ID remain uncertain. Existing durable command identities prevent replay,
+including after an uncertain result; reconcile before composing a new send.
+Configuring this provider grants no new send authority: agents draft and an
+authorized owner sends under the existing policy. Imports remain silent.
+
+This source adapter must ship with the same qualified release as the import door
+and cutover status. The current rer setup selector and production-mail preflight
+do not offer Mailgun; this addition does not qualify a fresh hosted deployment or
+change that shared preflight. The native binding declarations are present for the
+qualified release's installation configuration. Do not substitute another
+provider to satisfy preflight. No real sending key or live delivery has been
+tested here: automated coverage uses HTTP-edge fakes only. The owner supplies
+the sending key during the planned key configuration; live proof remains a
+separate authorized check.
+
+Protocol references: [message sending](https://documentation.mailgun.com/docs/mailgun/api-reference/send/mailgun/messages/post-v3--domain-name--messages),
+[domain sending keys](https://documentation.mailgun.com/docs/mailgun/user-manual/api-key-mgmt/rbac-mgmt)
+and [regional endpoints](https://documentation.mailgun.com/docs/mailgun/api-reference/api-overview).
+
 Preserve existing keys and owner data. Configure other optional mail/model inputs
 through the supported runtime declaration and native workspace settings. Local
 development needs no mail account: its development transport suppresses email
@@ -395,7 +436,7 @@ platform administrators (see [the integrations guide](src/modules/integrations/R
 | Owner access and sign-up | `APP_ORIGIN` (deployment derives it), `REGISTRATION_ENABLED`, optional `H2H_SETUP_OWNER_EMAIL` | `H2H_SETUP_TOKEN` (used once by `rer deploy` to claim the owner; `/setup` recovery only); optional `TURNSTILE_SECRET` |
 | AI replies, assist, profiles and monitoring (Ensemble) | The installer's `AI_PROVIDER` answer (`openai`, `anthropic`, `google`, `deepseek`, `xai`, `openrouter` or `later`, the default) chooses which key to store at setup; models are selected in workspace and AI configuration (the dashboard's **AI** page); `CONTEXT_MODEL` for widget-triggered context work. Every new workspace's starter assistant answers visitors by itself once any provider key is installed, within `AI_DAILY_CEILINGS`; with none, new conversations stay with the team | Selected `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`/`GEMINI_API_KEY`, `DEEPSEEK_API_KEY`, `XAI_API_KEY`, `OPENROUTER_API_KEY`; the key is optional at setup and never stored with `later` |
 | Knowledge crawl and semantic search | `APIFY_CRAWLER_ACTOR_ID` (`apify~website-content-crawler`), `QDRANT_URL`, `KNOWLEDGE_EMBEDDING_MODEL` | `APIFY_TOKEN`, `QDRANT_API_KEY`, `OPENAI_API_KEY`. Website sources need none of these: without the two Apify values HappyToHelp reads up to 40 pages of a public site itself ([Website knowledge](docs/website-knowledge.md)). Keyword search needs none of these providers. |
-| Help center import from another provider (Intercom, Freshdesk or Zendesk) | Platform/subdomain and destination workspace chosen for each import | `INTERCOM_TOKEN`, `FRESHDESK_TOKEN`, `ZENDESK_TOKEN`/`ZENDESK_EMAIL` for the selected provider |
+| Help center import from another provider (Intercom or Freshdesk; Zendesk articles come through Move in's Zendesk connection) | Platform/subdomain and destination workspace chosen for each import | `INTERCOM_TOKEN` or `FRESHDESK_TOKEN` for the selected provider; Zendesk uses `INTEGRATION_ENCRYPTION_KEY` for its stored sign-in |
 | Email, sending and receiving | `EMAIL_PROVIDER` (`resend`, `cloudflare` or `sendgrid`), `EMAIL_ACCOUNT_ID` for Cloudflare, optional `INBOUND_EMAIL_DOMAIN` (the domain new workspaces' reply mailboxes are created under; default `in.` plus the workspace's website host), workspace email settings; built-in inbound endpoints | `EMAIL_API_KEY`, `EMAIL_FROM` (the installation sender every new workspace uses until its own domain is verified), `INBOUND_EMAIL_TOKEN` (generated by local setup and deployed for inbound authentication; with it every new workspace gets a reply-by-email mailbox; provider domain routing and a webhook still need configuration) |
 | Lead research and reviewed outreach | `LEAD_MODEL`; each lead is saved and reviewed before sending | `OPENAI_API_KEY`, selected email configuration |
 | GitHub | `GITHUB_CLIENT_ID`, optionally `GITHUB_PROJECT_ID` for one fixed credential | `GITHUB_CLIENT_SECRET`, `INTEGRATION_ENCRYPTION_KEY`; optional `GITHUB_TOKEN` or JSON `GITHUB_TOKENS` map keyed by project ID |
@@ -900,6 +941,32 @@ a source lock is not product or provider acceptance.
 ### Operating description before installation
 
 The operating declaration is available in `OPERATIONS.json`. The current pinned global `rer` launcher bootstraps the checkout’s locked dependencies before it dispatches `rer describe`, including in a fresh clone. NATIVE-001’s before-dependency inspection point remains blocked on a Base launcher change. Published rer 0.2.79 has the same ordering. A successful description after bootstrap does not establish dependency-free inspection.
+
+## Business cutover activity read
+
+`POST /api/rer/cutover-status` accepts only `{ "since": "<ISO timestamp>" }`
+and returns the status object directly: `created_since` contains `conversations`
+and `messages`, `events_since` counts retained `conversation_outbox` message
+events committed strictly after `since`, and `last_event_at` is the latest retained
+event's ISO timestamp (or null). Counts cover only the native workspace linked in
+`h2h_business_project`. Only events whose message and conversation remain stored
+count; content erasure retains transcript skeletons and their aggregate counts.
+An outbox event counts once regardless of delivery or retry. Imported messages without an
+outbox event contribute only to their honestly timestamped creation counts.
+
+This read requires a Base-verified ES256 RER grant with action `cutover-status`,
+the configured owner-claim issuer, public keys, installation and app origin, and
+the current linked native owner's email. Missing/conflicting trust or a missing,
+deleted or suspended linked workspace refuses the read. Import grants and native
+session tokens do not authorize it. Base permits repeat reads within the grant's
+short lifetime without recording a nonce. The route writes nothing, initiates no
+provider work, and sends `Cache-Control: no-store`.
+
+Opening a widget page alone creates no general durable event. Business can check
+real message activity here; a page-open-only check still needs separately agreed
+widget instrumentation. Real Business linkage, owner-claim release evidence and
+minted grants remain the Business installation's responsibility. This endpoint
+does not switch widgets, approve a cutover or deploy a release.
 
 ## Managed conversation mail v1
 

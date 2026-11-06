@@ -19,7 +19,7 @@
     }
   },
   "managed": {
-    "workflowRef": "runeditrun/delivery/.github/workflows/trusted-build.yml@34cf6c23b5cb86eff0068049bc39feeb38c8ffa9",
+    "workflowRef": "runeditrun/delivery/.github/workflows/trusted-build.yml@ff70d729948753ffdcceeca94aad063af2dcd979",
     "artifactFile": "happytohelp-worker-artifact.json",
     "buildProfile": "project",
     "verificationProfiles": [
@@ -41,6 +41,9 @@
       "publicVariableNames": [
         "APP_ORIGIN",
         "EMAIL_PROVIDER",
+        "EMAIL_API_KEY_NAME",
+        "MAILGUN_DOMAIN",
+        "MAILGUN_REGION",
         "EMAIL_ACCOUNT_ID",
         "INBOUND_EMAIL_DOMAIN",
         "RER_INSTALLATION_ID",
@@ -90,6 +93,7 @@
         "ZENDESK_TOKEN",
         "ZENDESK_EMAIL",
         "EMAIL_API_KEY",
+        "MAILGUN_SENDING_KEY",
         "EMAIL_FROM",
         "INBOUND_EMAIL_TOKEN",
         "INTEGRATION_ENCRYPTION_KEY",

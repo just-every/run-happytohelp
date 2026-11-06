@@ -177,13 +177,30 @@ export async function accountLookupJourney(f,customer){
 }
 
 async function accountLookupUpgrade(){
- const f=await selfServiceFixture({migrate:name=>name<'259_account_lookup_fields.sql'}),{app,p,owner,signin,api,form,valid}=f
- try{
-  const customer=await signin('synthetic-hh-upgrade@example.com'),ticket=(await app.call(`${api}/${form.id}/submissions`,{...customer,body:valid,status:201})).data.ticket
+ // Stage only the account-field upgrade: the merged knowledge module's independent schema exists before the prior workspace, so no historical Knowledge conversion is pending.
+ const f=await selfServiceFixture({migrate:name=>name<'259_account_lookup_fields.sql'||/^\d+_knowledge_/.test(name),beforeRoutes:async app=>{
+  // Stage prior definitions, typed values and a workflow event directly: current
+  // native authorization requires the fully migrated schema before serving routes.
+  const prior=await app.seedWorkspace('synthetic-hh-account-upgrade')
+  await app.db.batch([
+   app.db.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES('synthetic-hh-prior-contact',?,'Synthetic prior customer','synthetic-hh-prior@example.test',1)").bind(prior.projectId),
+   app.db.prepare("INSERT INTO conversations(id,project_id,contact_id,last_message_id,revision,created_at,updated_at) VALUES('synthetic-hh-prior-ticket',?,'synthetic-hh-prior-contact','synthetic-hh-prior-message',1,1,1)").bind(prior.projectId),
+   app.db.prepare("INSERT INTO ticket_fields(project_id,id,name,type,validation_json,updated_at) VALUES(?,'synthetic-hh-prior-order','Order number','regex',?,1)").bind(prior.projectId,JSON.stringify({pattern:'^NS-[0-9]+$'})),
+   app.db.prepare("INSERT INTO ticket_field_values(project_id,conversation_id,field_id,value_json) VALUES(?,'synthetic-hh-prior-ticket','synthetic-hh-prior-order',?)").bind(prior.projectId,JSON.stringify('NS-10482')),
+  ])
   const snapshot=async()=>({fields:await app.sql('SELECT * FROM ticket_fields ORDER BY project_id,id'),values:await app.sql('SELECT * FROM ticket_field_values ORDER BY project_id,conversation_id,field_id'),events:await app.sql('SELECT * FROM workflow_events ORDER BY id')})
   const before=await snapshot()
+  assert.ok(before.fields.length&&before.values.length&&before.events.length,'the historical transition contains definitions, typed values and a workflow journal')
   await applyMigrations(app.db,name=>name==='259_account_lookup_fields.sql')
   assert.deepEqual(await snapshot(),before,'extending the field type retains definitions, typed values and the workflow journal byte for byte')
+  await applyMigrations(app.db,name=>name>'259_account_lookup_fields.sql'&&!/^\d+_knowledge_/.test(name))
+  // The upgraded current route can edit the retained historical field and journal it.
+  await app.ok(`/api/dashboard/projects/${prior.projectId}/conversations/synthetic-hh-prior-ticket/ticket`,{token:prior.tokens.owner,method:'PATCH',body:{fields:{'synthetic-hh-prior-order':'NS-10483'}}})
+  assert.equal((await app.first("SELECT value_json FROM ticket_field_values WHERE conversation_id='synthetic-hh-prior-ticket' AND field_id='synthetic-hh-prior-order'")).value_json,JSON.stringify('NS-10483'))
+  assert.ok((await app.sql("SELECT after_json FROM workflow_events WHERE conversation_id='synthetic-hh-prior-ticket'")).some(row=>JSON.parse(row.after_json).fields?.['synthetic-hh-prior-order']==='NS-10483'),'editing the retained historical field still journals its new typed value')
+ }}),{app,p,owner,signin,api,form,valid}=f
+ try{
+  const customer=await signin('synthetic-hh-upgrade@example.com'),ticket=(await app.call(`${api}/${form.id}/submissions`,{...customer,body:valid,status:201})).data.ticket
   await app.ok(`/api/dashboard/projects/${p}/conversations/${ticket.id}/ticket`,{...owner,method:'PATCH',body:{fields:{[f.order.id]:'NS-10483'}}})
   assert.equal((await app.first('SELECT value_json FROM ticket_field_values WHERE conversation_id=? AND field_id=?',ticket.id,f.order.id)).value_json,'"NS-10483"')
   assert.ok((await app.sql('SELECT after_json FROM workflow_events WHERE conversation_id=?',ticket.id)).some(row=>JSON.parse(row.after_json).fields?.[f.order.id]==='NS-10483'),'editing a retained field still journals its new typed value')

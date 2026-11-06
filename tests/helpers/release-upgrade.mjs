@@ -12,6 +12,7 @@ import {baselines, repository} from './upgrade-baselines.mjs';
 import {findDatabase, snapshot, schema, bucketSnapshot} from './upgrade-snapshot.mjs';
 import {expectedMigrationRows, expectedSchema, schemaExceptions} from './upgrade-exceptions.mjs';
 import {readBack, priorState} from './upgrade-readback.mjs';
+import {restoredOwnerEntryReady} from './recovery/knowledge-ready.mjs';
 
 
 // Prior-data upgrade: build each released source, populate it through its own
@@ -96,13 +97,16 @@ async function upgrade(label) {
     assert.deepEqual(order, added, 'Upgrade applied exactly the missing migrations in order');
     assert.deepEqual(receipt.failures, [], 'Pre-existing application rows changed outside exact migration exceptions');
     assert.deepEqual(changedSchema, [], 'Prior schema changed outside the listed replacements');
-    // Published release metadata stays immutable while source carries explicitly
-    // declared pending migrations. Keep the exact-order comparison for both.
+    // Published release metadata stays immutable. Its groups declare membership;
+    // Wrangler applies flat names by numeric prefix, then code-unit filename.
     if (baseline.previous) {
-      assert.deepEqual(order, [...release.migrations, ...release.pendingMigrations].map(migration => migration.id), 'The previous release receives exactly the listed release and pending source migrations in order');
+      const declared = [...release.migrations, ...release.pendingMigrations].map(migration => migration.id)
+        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10) || (a < b ? -1 : a > b ? 1 : 0));
+      assert.deepEqual(order, declared, 'The previous release receives exactly the listed release and pending source migrations in order');
     }
     assert.ok(receipt.files.identical, 'Stored files changed during upgrade');
-    current = await createRuntime({persist: state});
+    current = await createRuntime({persist: state, queueConsumers: true});
+    await restoredOwnerEntryReady(current);
     receipt.readBack = await readBack(current.origin, database, data, prior);
     receipt.seconds = Math.round((Date.now() - started) / 1000);
     if (evidence) { await mkdir(evidence, {recursive: true}); await writeFile(join(evidence, `upgrade-${label}.json`), JSON.stringify(receipt, null, 2) + '\n'); }

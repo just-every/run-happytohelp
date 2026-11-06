@@ -4,13 +4,10 @@ const link = (href, text) => <a href={href} target="_blank" rel="noreferrer">{te
 
 /** What each help-center import needs, in the provider's own words for where to find it. */
 export const importGuides = {
+ // Zendesk articles come in with the rest of the account through Move in, where restricted articles are held back.
  zendesk: {
-  intro: 'Copies your Zendesk Guide categories, sections and articles. Published articles stay published and drafts stay drafts.',
-  subdomain: 'The first part of your Zendesk address: acme for acme.zendesk.com.',
-  secrets: [
-   {name: 'ZENDESK_EMAIL', example: 'you@example.com', what: 'the email address of the Zendesk admin who creates the token below.', how: null},
-   {name: 'ZENDESK_TOKEN', example: 'your-zendesk-api-token', what: 'a Zendesk API token.', how: <>In Zendesk Admin Center, open <b>Apps and integrations</b>, <b>APIs</b>, <b>API tokens</b>, then <b>Add API token</b> and copy it: it is shown only once. Zendesk deletes tokens unused for 30 days, so make one just before you import ({link('https://support.zendesk.com/hc/en-us/articles/4408889192858', 'Zendesk’s guide')}).</>},
-  ],
+  intro: 'Zendesk Help Center articles import through Move in: connect Zendesk there and pull. Published articles stay published, drafts stay drafts, and articles for restricted audiences are held back.',
+  moveIn: true,
  },
  intercom: {
   intro: 'Copies your Intercom Help Center collections, sections and articles. Published articles stay published and drafts stay drafts.',

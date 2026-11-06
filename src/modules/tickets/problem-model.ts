@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {availableTicketSql,ticketAuthority,type TicketAuthority} from './model'
@@ -12,7 +13,10 @@ export function sameFrontier(ticket:any,expected:ProblemFrontier){return ticket.
 export const problemAvailableSql=(alias='c')=>`${availableTicketSql(alias)} AND ${writableConversationSql(alias)} AND EXISTS(SELECT 1 FROM contacts pc WHERE pc.project_id=${alias}.project_id AND pc.id=${alias}.contact_id AND coalesce(json_extract(pc.metadata_json,'$.is_blocked'),0)!=1 AND coalesce(json_extract(pc.metadata_json,'$.is_deleted'),0)!=1)`
 export const problemRequesterSql=(alias='c')=>`(SELECT json_object('id',id,'name',name,'email',email,'metadata_json',metadata_json) FROM contacts WHERE project_id=${alias}.project_id AND id=${alias}.contact_id)`
 export async function problemTicket(env:Env,actor:Actor,id:string,authority:TicketAuthority){
- const guard=await ticketAuthority(env,actor,authority)
+ const current=await ticketAuthority(env,actor,authority,'conversations.manage',id)
+ // Composed message guards reuse this authority without adding its full SQL
+ // expression depth to each enclosing predicate. The CTE is evaluated live.
+ const guard={...current,sql:`WITH problem_authority AS MATERIALIZED (${current.sql}) SELECT 1 FROM problem_authority`}
  const row=await env.DB.prepare(`SELECT c.*,${problemRequesterSql()} problem_requester_json FROM conversations c WHERE c.project_id=? AND c.id=? AND ${problemAvailableSql()} AND EXISTS(${guard.sql})`).bind(actor.projectId,id,...guard.params).first<any>()
  if(!row)throw new HTTPException(404,{message:'Ticket is unavailable'})
  const {problem_requester_json,...ticket}=row
@@ -23,11 +27,11 @@ export async function readProblem(env:Env,actor:Actor,id:string,authority:Ticket
  const {ticket}=await problemTicket(env,actor,id,authority)
  const [problem,parent,incidents,recent,engineering]=await env.DB.batch<any>([
   env.DB.prepare('SELECT version FROM ticket_problems WHERE project_id=? AND conversation_id=?').bind(actor.projectId,id),
-  env.DB.prepare(`SELECT p.problem_id,c.subject,c.status_category FROM ticket_problem_incidents p JOIN conversations c ON c.id=p.problem_id AND c.project_id=p.project_id WHERE p.project_id=? AND p.incident_id=? AND ${problemAvailableSql()}`).bind(actor.projectId,id),
-  env.DB.prepare(`SELECT c.id,c.subject,c.channel,c.status_category,c.ticket_version,c.revision,c.last_message_id,ct.name requester_name,ct.email requester_email FROM ticket_problem_incidents p JOIN conversations c ON c.id=p.incident_id AND c.project_id=p.project_id JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE p.project_id=? AND p.problem_id=? AND ${problemAvailableSql()} ORDER BY p.created_at,c.id LIMIT 101 OFFSET ?`).bind(actor.projectId,id,offset),
+  env.DB.prepare(`SELECT p.problem_id,c.subject,c.status_category FROM ticket_problem_incidents p JOIN conversations c ON c.id=p.problem_id AND c.project_id=p.project_id WHERE p.project_id=? AND p.incident_id=? AND ${ticketScopeSql('?')} AND ${problemAvailableSql()}`).bind(actor.projectId,id,actor.id),
+  env.DB.prepare(`SELECT c.id,c.subject,c.channel,c.status_category,c.ticket_version,c.revision,c.last_message_id,ct.name requester_name,ct.email requester_email FROM ticket_problem_incidents p JOIN conversations c ON c.id=p.incident_id AND c.project_id=p.project_id JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE p.project_id=? AND p.problem_id=? AND ${ticketScopeSql('?')} AND ${problemAvailableSql()} ORDER BY p.created_at,c.id LIMIT 101 OFFSET ?`).bind(actor.projectId,id,actor.id,offset),
   env.DB.prepare("SELECT id FROM ticket_problem_previews WHERE project_id=? AND problem_id=? AND actor_id=? AND json_extract(plan_json,'$.kind') IS NULL ORDER BY created_at DESC,id DESC LIMIT 1").bind(actor.projectId,id,actor.id),
   env.DB.prepare(`SELECT l.id,i.provider,i.issue_key,i.url,i.status,i.assignee,i.provider_updated_at,l.recovery,CASE WHEN connection.token_cipher IS NULL THEN 'disconnected' ELSE 'connected' END connection_state,coalesce((SELECT max(received_at) FROM escalation_deliveries d WHERE d.connection_id=i.connection_id AND d.issue_id=i.id),l.created_at) observed_at FROM escalation_links l JOIN escalation_issues i ON i.id=l.issue_id AND i.project_id=l.project_id LEFT JOIN escalation_connections connection ON connection.id=i.connection_id AND connection.project_id=l.project_id WHERE l.project_id=? AND l.conversation_id=? ORDER BY l.created_at,l.id`).bind(actor.projectId,id),
  ])
- return {engineering_issues:engineering.results.map(issue=>({...issue,stale:issue.connection_state!=='connected'})),recent_preview_id:recent.results[0]?.id??null,is_problem:!!problem.results[0],problem_version:problem.results[0]?.version??null,ticket:frontier(ticket),status_category:ticket.status_category,parent:parent.results[0]??null,incidents:incidents.results.slice(0,100),incident_count:(await env.DB.prepare('SELECT count(*) total FROM ticket_problem_incidents WHERE project_id=? AND problem_id=?').bind(actor.projectId,id).first<{total:number}>())!.total,has_more:incidents.results.length>100,incident_offset:offset}
+ return {engineering_issues:engineering.results.map(issue=>({...issue,stale:issue.connection_state!=='connected'})),recent_preview_id:recent.results[0]?.id??null,is_problem:!!problem.results[0],problem_version:problem.results[0]?.version??null,ticket:frontier(ticket),status_category:ticket.status_category,parent:parent.results[0]??null,incidents:incidents.results.slice(0,100),incident_count:(await env.DB.prepare(`SELECT count(*) total FROM ticket_problem_incidents p JOIN conversations c ON c.id=p.incident_id AND c.project_id=p.project_id WHERE p.project_id=? AND p.problem_id=? AND ${ticketScopeSql('?')}`).bind(actor.projectId,id,actor.id).first<{total:number}>())!.total,has_more:incidents.results.length>100,incident_offset:offset}
 }
 export function problemError(error:unknown){return error instanceof HTTPException&&error.status<500?error.message:'Outcome could not be confirmed. Reload the ticket and delivery status before composing another reply.'}

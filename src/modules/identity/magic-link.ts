@@ -1,3 +1,4 @@
+import {healImportDoor} from '../move-in/door/authority'
 import {loginDestination} from '../../platform/dashboard-path.js'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
@@ -85,5 +86,6 @@ magicLink.post('/magic-link/consume', async c => {
  // An email link is a primary sign-in only: an account with a second factor still proves it.
  const twoFactor=await signInFactor(c.env.DB,admitted!.actor_id,admitted!.project_id,admitted!.role)
  await runAll(c.env.DB,[...(twoFactor==='verify'?[]:[sessionFactorStatement(c.env.DB,sessionHash,admitted!.actor_id,'email_link')]),...await accountAudit(c.env.DB,admitted!.actor_id,{category:'auth',action:twoFactor?'sign_in.email_link_accepted':'sign_in.succeeded',actor:{type:'user',id:admitted!.actor_id},source:'dashboard',detail:{method:'email_link'}})])
+ await healImportDoor(c.env,admitted!.actor_id)
  return c.json({ signedIn: true, destination: loginDestination(body.returnTo,new URL(c.req.url).origin,!admitted?.project_id), ...(twoFactor?{twoFactor}:{}) })
 })

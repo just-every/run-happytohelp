@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {startApp} from '../../journeys/kit/app.mjs'
+import {brandsOutcomes} from './brands-outcomes.mjs'
 
 export async function brandsJourney(){
  const sent=[]
@@ -80,7 +81,7 @@ export async function brandsJourney(){
    assert.equal((await app.call(`/api/management/projects/${own.projectId}/mailboxes/${foreign.box.id}`,{token:own.brandOwner,method:'PATCH',body:{senderAddress:foreign.box.address}})).status,404)
   }
   await app.ok(`/api/management/projects/${a.projectId}/settings`,{token:owner,method:'PUT',body:{collect_email:false}})
-  assert.equal((await app.ok(`/api/management/projects/${b.projectId}/settings`,{token:owner})).data.collect_email,true)
+  assert.equal((await app.ok(selection,{token:owner})).data.brands.find(row=>row.id===b.projectId).policy.collectEmail,true)
   const manifest=(await app.ok(selection,{token:owner})).data
   assert.deepEqual(manifest.brands.map(r=>r.policy.collectEmail),[false,true]);assert.notEqual(manifest.brands[0].widgetKey,manifest.brands[1].widgetKey)
   assert.deepEqual(manifest.brands.map(r=>r.helpCenterContextUrl),['https://help.alpha.example.test/','https://help.beta.example.test/'])
@@ -89,6 +90,7 @@ export async function brandsJourney(){
   const report=(await app.ok(reports,{token:shared})).data
   assert.deepEqual(report.brands.map(r=>r.volume),[2,2]);assert.equal(report.aggregate.volume,4);assert.equal(report.aggregate.resolved,4)
   assert.ok(report.brands.every(r=>!('comments' in r)));assert.equal(report.aggregate.satisfactionRate,null)
+  await brandsOutcomes({app,alpha,records,owner,shared,selection,reports,sent})
   // Membership is per brand, including global inbox reads and aggregate reports.
   await app.ok(`/api/management/projects/${b.projectId}/agents/${alpha.users.operator}`,{token:b.brandOwner,method:'DELETE'})
   assert.equal((await app.call(reports,{token:shared})).status,403)

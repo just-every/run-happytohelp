@@ -1,17 +1,19 @@
 # Run it on your computer
 
-Start it with one line. You need **Node.js 22 or later** (with npm) and Git; check
-with `node --version`.
+Start with the [getting-started guide](docs/getting-started.md), or paste this
+line into your terminal:
 
 ```sh
-npx -y @runeditrun/rer dev just-every/run-happytohelp
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
 ```
 
 That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
 Node and pnpm, installs dependencies, sets up a local owner and starts the app. To
 set it up without starting it, use `npx -y @runeditrun/rer setup just-every/run-happytohelp`.
-Without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp`
-brings its own. To start it again later, run `cd run-happytohelp && rer dev`.
+macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
+If you already have Node 22 or later, the alternative is
+`npx -y @runeditrun/rer dev just-every/run-happytohelp`.
+To start it again later, run `cd run-happytohelp && rer dev`.
 
 Dev uses its local address for the chat widget and generates a private owner
 password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the

@@ -13,7 +13,7 @@ const inside=(outer,inner)=>inner.x>=outer.x&&inner.y>=outer.y&&inner.x+inner.wi
 async function presentation(page,repository){
  assert.equal(await text(page.locator('h1')),'Knows what your customer needs before they do.')
  assert.equal(await text(page.locator('.hero-sub')),'Some customers who get stuck never write in. They just leave.')
- assert.equal(await text(page.locator('.hero-free')),'100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk')
+ assert.equal(await text(page.locator('.hero-free')),'Open source alternative to Zendesk, Intercom, Help Scout and Freshdesk')
  assert.equal(await style(page.locator('h1'),'text-align'),'start','headline is left aligned in this left-to-right document')
  const copy=await box(page.locator('.hero-copy')),stage=await box(page.locator('.hero-stage'))
  const before=await box(page.locator('.story-before')),when=await box(page.locator('.story-when'))
@@ -57,8 +57,9 @@ async function presentation(page,repository){
  }
 
  // PUBLIC-002: free promise, wordless editor, licence above it, and no marketing detours.
- assert.equal(await text(page.locator('#free h2')),'Not just better. Free.')
- assert.match(await text(page.locator('#free .split-copy')),/100% free and open source.*Free as in code, and free as in cost.*MIT licensed/)
+ assert.equal(await text(page.locator('#free h2')),'Yours to run and change.')
+ assert.equal(await text(page.locator('#free .split-copy > p:not(.free-note)')),'HappyToHelp is open source and MIT licensed, so it’s yours to use, change and run however you like.')
+ assert.equal(await text(page.locator('#free .split-copy > p.free-note')),'You can also have all the source for free.')
  assert.deepEqual(await page.locator('.proof li').allTextContents(),['No seats.','No plans.','No fees.'])
  for(const circle of await page.locator('.proof-icon').all()){
   assert.equal(await style(circle,'background-color'),'rgb(214, 245, 250)');assert.equal(await style(circle,'border-radius'),'50%')

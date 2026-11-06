@@ -2,7 +2,9 @@ import { retainedSql } from './retained-values.ts';
 import { changedLazy, putRow } from './expected-state.ts';
 import { compressedPlan, storedStreamPage } from './stream-plan.ts';
 import { expandCompressedEnvelope } from './compressed-plan.ts';
+import { planReadScope } from './verified-plan.ts';
 import { Buffer } from 'node:buffer';
+import { RPC_LIMIT } from '../../../d1-transport/index.mjs';
 import { createHash } from 'node:crypto';
 import type { ImportPlan } from '../types.ts';
 import type { D1Database, D1Sql, D1PlanCodec } from './types.ts';
@@ -26,13 +28,15 @@ export interface StoredPlan {
 export const LARGE_PLAN_BYTES = 4 * 1024 * 1024;
 const large = (envelope: any): boolean => envelope?.d1Plan === 1 && Number.isSafeInteger(envelope.size) && envelope.size > LARGE_PLAN_BYTES;
 const snapshots = new WeakMap<ImportPlan, StoredPlan>();
-// Legacy chunks may approach D1's 2 MB value ceiling. Three rows remain below
-// the RPC ceiling even with JSON escaping and whole-result two-byte strings.
-const PLAN_READ_ROWS = 3;
-export function planChunkReads(body: string, fenced = false): number {
+// Reserve room for JSON row metadata and D1's whole-result two-byte strings.
+// Measure the actual JSON-encoded row ceiling before choosing a page size:
+// legacy chunks can be much larger than today's 128 KiB canonical chunks.
+const planReadRows = (bytes: number): number => Math.max(1, Math.min(64, Math.floor((RPC_LIMIT / 4) / (bytes + 512))));
+const quotedChunkBytes = (chunks: readonly { body: string }[]): number => chunks.reduce((max, chunk) => Math.max(max, Buffer.byteLength(JSON.stringify(chunk))), 0);
+export function planChunkReads(body: string, fenced: boolean, chunks: readonly { body: string }[]): number {
   const envelope = JSON.parse(body);
   // A fenced large plan's revision read precedes its chunk reads.
-  return envelope?.d1Plan === 1 ? Math.ceil((envelope.chunks + 1) / PLAN_READ_ROWS) + Number(fenced && large(envelope)) : 0;
+  return envelope?.d1Plan === 1 ? 1 + Math.ceil((envelope.chunks + 1) / planReadRows(quotedChunkBytes(chunks))) + Number(fenced && large(envelope)) : 0;
 }
 export function encodePlan(plan: ImportPlan, id: string): StoredPlan {
   const chunks: StoredPlan['chunks'] = [], hash = createHash('sha256'); let size = 0;
@@ -71,14 +75,18 @@ export async function loadPlans(rows: any[], db: D1Database, codec?: D1PlanCodec
         const revision = await db.prepare('SELECT revision FROM ik_d1_custody_revisions WHERE job_id=?').bind(row.id).first();
         if (revision && Number.isSafeInteger(revision.revision)) fences.set(row.id, revision.revision);
       }
-      for (let offset = 0; offset <= envelope.chunks; offset += PLAN_READ_ROWS) {
-        const found = await db.prepare(`SELECT * FROM ik_d1_plan_chunks WHERE job_id IN (SELECT value FROM json_each(?))${fence?` AND (${fence.sql})`:''} ORDER BY job_id,ordinal LIMIT ${PLAN_READ_ROWS} OFFSET ${offset}`).bind(JSON.stringify([row.id]),...fence?.params??[]).all();
+      const ceiling = await db.prepare(`SELECT MAX(length(CAST(json_object('job_id',job_id,'ordinal',ordinal,'body',body) AS BLOB))) AS bytes FROM ik_d1_plan_chunks WHERE job_id=?${fence?` AND (${fence.sql})`:''}`).bind(row.id,...fence?.params??[]).first();
+      if (!Number.isSafeInteger(ceiling?.bytes) || (ceiling!.bytes as number) < 2) throw new Error('STORED_PLAN_CHANGED');
+      const readRows = planReadRows(ceiling!.bytes as number);
+      for (let offset = 0; offset <= envelope.chunks; offset += readRows) {
+        const found = await db.prepare(`SELECT * FROM ik_d1_plan_chunks WHERE job_id IN (SELECT value FROM json_each(?))${fence?` AND (${fence.sql})`:''} ORDER BY job_id,ordinal LIMIT ${readRows} OFFSET ${offset}`).bind(JSON.stringify([row.id]),...fence?.params??[]).all();
         chunks.push(...found.results);
-        if (found.results.length < PLAN_READ_ROWS) break;
+        if (found.results.length < readRows) break;
       }
     }
   }
   for (const row of rows) {
+    const scope = planReadScope(db, row.id, row.plan_json, codec);
     const parsed = JSON.parse(row.plan_json), parts = chunks.filter(c => c.job_id === row.id);
     let plan: ImportPlan, compressed = false;
     if (parsed?.d1Plan === 1) {
@@ -86,11 +94,11 @@ export async function loadPlans(rows: any[], db: D1Database, codec?: D1PlanCodec
       const body = parts.map(c => c.body).join('');
       if (Buffer.byteLength(body) !== parsed.size || sha256(body) !== parsed.sha256) throw new Error('STORED_PLAN_CHANGED');
       const payload = JSON.parse(body);
-      if ([2,3].includes(payload?.d1Plan)) { if (parsed.entries !== undefined) throw new Error('STORED_PLAN_CHANGED'); plan = expandCompressedEnvelope(body,payload,codec); compressed = true; }
+      if ([2,3].includes(payload?.d1Plan)) { if (parsed.entries !== undefined) throw new Error('STORED_PLAN_CHANGED'); plan = expandCompressedEnvelope(body,payload,codec,scope); compressed = true; }
       else { if (canonicalHash(payload) !== parsed.sha256) throw new Error('STORED_PLAN_CHANGED'); plan = payload; }
       // The entry locator a referenced read trusts must describe these exact chunks.
       if (parsed.entries !== undefined && canonicalJson(entryLocator(plan, parts)) !== canonicalJson(parsed.entries)) throw new Error('STORED_PLAN_CHANGED');
-    } else plan = [2,3].includes(parsed?.d1Plan) ? expandCompressedEnvelope(row.plan_json,parsed,codec) : parsed;
+    } else plan = [2,3].includes(parsed?.d1Plan) ? expandCompressedEnvelope(row.plan_json,parsed,codec,scope) : parsed;
     const captured = fences.get(row.id);
     snapshots.set(plan, { body: row.plan_json, chunks: parts, ...(row.custody_revision === undefined ? {} : {revision: row.custody_revision}), ...(compressed ? {compressed} : {}), ...(captured === undefined ? {} : {fence: captured}) }); result.set(row.id, plan);
   }

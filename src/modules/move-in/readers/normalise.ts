@@ -1,3 +1,4 @@
+import {zendeskOffline} from './zendesk-offline'
 import {sourceOwnership} from '../source-ownership'
 import {mapCompanies} from './companies'
 import {zendeskFields,zendeskTicketFields} from './zendesk-fields'
@@ -68,7 +69,7 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
      if(p.via?.channel!=null&&typeof p.via.channel!=='string')throw new Error('conversation_source_channel_invalid')
      if(!Array.isArray(p.comments)||!p.comments.length)throw new Error('ticket_comments_required')
      for(const part of p.comments){if(!object(part)||typeof part.public!=='boolean')throw new Error('comment_visibility_required');await add(part,sourceId(part.id,vendor),part.plain_body??part.body,part.public,time(part.created_at,'iso'),author(part.author_id),part.created_at,'source')}
-     if(p.attachments||p.comments.some((v:any)=>array(v.attachments).length))omissions.push('attachments_metadata_retained_bytes_not_imported')
+
     }else{
      if(!object(p.source)||!['email','messenger'].includes(p.channel?.initial))throw new Error('conversation_source_channel_unsupported')
      if(p.conversation_parts?.type!=='conversation_part.list'||!Array.isArray(p.conversation_parts.conversation_parts))throw new Error('conversation_parts_required')
@@ -84,8 +85,21 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
     tables.move_in_conversations=[{conversation_id:target,project_id:projectId,vendor,source_id:record.sourceId,subject:typeof p.subject==='string'?p.subject:typeof p.title==='string'?p.title:typeof p.source?.subject==='string'?p.source.subject:'',source_state:state,source_channel:vendor==='zendesk'?(p.via?.channel??'unknown'):p.channel.initial}]
     tables.messages=rows;tables.move_in_message_sources=sources;tables.move_in_notes=notes
     tables.conversation_tags=[...new Set(tags(record).map(tagKey))].map(name=>({project_id:projectId,conversation_id:target,tag_id:tagIds.get(name)??id('tag',name)}))
-    if(vendor==='zendesk')tables.ticket_field_values=zendeskTicketFields(record,projectId,target,records,omissions)
+    if(vendor==='zendesk'){tables.ticket_field_values=zendeskTicketFields(record,projectId,target,records,omissions);if(p.custom_status_id!=null)omissions.push('zendesk_custom_status_not_mapped:'+p.custom_status_id)}
     if(p.assignee_id||p.admin_assignee_id||p.team_assignee_id)omissions.push('historical_assignment_not_activated')
+   }else if(vendor==='zendesk'&&record.kind==='ticket_comment'){
+    // One reply on a conversation an earlier import holds. Its native message (or
+    // private note) has the ID the ticket's own comments use, so a comment is
+    // never imported twice; the conversation itself is left as imported.
+    const ticket=sourceId(p.ticket_id,vendor),conversation=id('conversation',ticket),person=author(p.author_id)
+    if(typeof p.public!=='boolean')throw new Error('comment_visibility_required')
+    const body=text(p.plain_body??p.body,'message_body_missing'),when=time(p.created_at,'iso')
+    kind='reply';target=id('message',`${ticket}:${record.sourceId}`)
+    if(p.public){
+     tables.messages=[{id:target,project_id:projectId,conversation_id:conversation,local_id:`import:${record.sourceId}`,actor_id:person.role==='contact'?id('contact',person.id):`import:${vendor}:${person.id}`,actor_role:person.role,content:body,created_at:when,intent_hash:null,bucket_id:null,erased_at:null,citations_json:'[]'}]
+     tables.move_in_message_sources=[{message_id:target,project_id:projectId,author_json:JSON.stringify(person),source_id:record.sourceId,source_time:JSON.stringify(p.created_at),time_provenance:'source'}]
+    }else tables.move_in_notes=[{id:target,project_id:projectId,conversation_id:conversation,author_json:JSON.stringify(person),content:body,created_at:when,source_time:JSON.stringify(p.created_at)}]
+    if(array(p.attachments).length)omissions.push('attachments_metadata_retained_bytes_not_imported')
    }else if(record.kind==='macro'){
     kind='macro';target=id(kind,record.sourceId);let body:string,title:string,created:number,updated:number
     if(vendor==='zendesk'){
@@ -114,14 +128,21 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
      if(typeof p.draft!=='boolean')throw new Error('article_publication_required')
      if(!Object.hasOwn(p,'user_segment_id')&&!Object.hasOwn(p,'user_segment_ids'))throw new Error('article_audience_unknown')
      if(Object.hasOwn(p,'user_segment_ids')&&!Array.isArray(p.user_segment_ids))throw new Error('article_audience_unknown')
-     if(p.user_segment_id!=null||array(p.user_segment_ids).length)throw new Error('restricted_article_not_imported');status=p.draft?'draft':'published'
+     if(p.user_segment_id!=null)sourceId(p.user_segment_id,'zendesk')
+     if(Array.isArray(p.user_segment_ids))for(const segment of p.user_segment_ids)sourceId(segment,'zendesk')
+     if(p.user_segment_id!=null||array(p.user_segment_ids).length){
+      // Validate the article before withholding it; malformed content stays a rejection.
+      time(p.created_at,'iso');time(p.updated_at,'iso');text(p.title,'article_title_required');text(p.body,'article_body_required')
+      ;(result.heldBack??=new Map()).set(key,'restricted_article_held_back');result.effects.set(key,[]);result.omissions.set(key,[...omissions,'restricted_article_held_back']);continue
+     }status=p.draft?'draft':'published'
     }else{if(!['draft','published'].includes(p.state))throw new Error('article_publication_required');if(p.audience!=null||p.audience_rules!=null)throw new Error('restricted_article_not_imported');status=p.state}
     time(p.created_at,vendor==='zendesk'?'iso':'unix');const updated=time(p.updated_at,vendor==='zendesk'?'iso':'unix')
     tables.knowledge_articles=[{id:target,project_id:projectId,category_id:null,slug:`import-${vendor}-${record.sourceId.replace(/[^a-zA-Z0-9-]/g,'-')}-${target.slice(-8)}`,title:text(p.title,'article_title_required'),content:vendor==='intercom'&&typeof p.body_markdown==='string'?text(p.body_markdown,'article_body_required'):await htmlToMarkdown(text(p.body,'article_body_required')),summary:'',status,updated_at:updated,position:0,source_revision:1,source_incarnation:crypto.randomUUID()}]
     if(p.translated_content||p.section_id||p.parent_id||p.tags||p.scheduled_publish_at||p.scheduled_unpublish_at||p.ai_agent_availability)omissions.push('article_structure_or_translations_retained_in_original_only')
    }else{result.effects.set(key,[]);result.omissions.set(key,[`unsupported_record_kind:${record.kind}`]);continue}
    if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,vendor,record,tables.conversations[0].created_at)
-   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,...(kind==='conversation'?{ownership:sourceOwnership(vendor,p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
+   const history=vendor==='zendesk'&&kind==='conversation'?zendeskOffline(p,projectId,target,tables,omissions):undefined
+   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,...(kind==='reply'?{conversation:tables.messages?.[0]?.conversation_id??tables.move_in_notes[0].conversation_id}:{}),...(vendor==='zendesk'&&Array.isArray(p._offline_provenance)?{packedProvenance:p._offline_provenance}:{}),...(history?{history}:{}),...(kind==='conversation'?{ownership:sourceOwnership(vendor,p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit');result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}]);if(omissions.length)result.omissions.set(key,omissions)
   }catch(error){result.rejections.set(key,error instanceof Error?error.message:'record_mapping_failed');result.effects.set(key,[]);if(omissions.length)result.omissions.set(key,omissions)}
  }

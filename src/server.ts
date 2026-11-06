@@ -1,4 +1,5 @@
 // Demo mode first: it guards fetch before any other module can keep it (DEMO.md).
+import {isAgentPath} from './edition/agent-door/index.ts'
 import {withDemo} from './vendor/base/modules/demo/index.mjs'
 import {demoOwner,seedDemo} from './demo'
 import {canonicalNavigation} from './platform/canonical-navigation'
@@ -24,6 +25,7 @@ export { ConversationSocket } from './modules/conversations/socket'
 async function keepDevRenderAlive(request:Request,execution:ExecutionContext):Promise<Response>{const response=start.fetch(request);if(import.meta.env.DEV)execution.waitUntil(Promise.resolve(response).then(()=>{},()=>{}));return response}
 async function route(request:Request,env:Env,execution:ExecutionContext,path:string,publicSite:boolean):Promise<Response>{
 
+ if(isAgentPath(path))return app.fetch(request,env,execution);
  if(path==='/auth/bootstrap'||path==='/auth/owner-claim'||path==='/auth/signout')return app.fetch(request,env,execution);
  const login=await loginDocument(request,env,request=>app.fetch(request,env,execution));if(login)return login;
  if(isDelegationDocument(request))return delegationDocument(request,env,execution,()=>keepDevRenderAlive(request,execution));if(path.startsWith('/delegation/'))return app.fetch(request,env,execution);if(path.startsWith('/preview/'))return app.fetch(request,env,execution);if(publicSite)return publicSiteRoutes.fetch(request,env,execution);return dispatch(request,()=>app.fetch(request,env,execution),()=>keepDevRenderAlive(request,execution))

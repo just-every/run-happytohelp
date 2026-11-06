@@ -1,15 +1,18 @@
+import {mailgunConfiguration} from '../../src/modules/integrations/mailgun-configuration.mjs'
+
 /** Runtime bindings selected by native modules. Values never appear in describe/plan output. */
 export const secretNames = [
  'OPENAI_API_KEY','ANTHROPIC_API_KEY','GOOGLE_API_KEY','GEMINI_API_KEY',
  'DEEPSEEK_API_KEY','XAI_API_KEY','OPENROUTER_API_KEY','APIFY_TOKEN','QDRANT_API_KEY',
- 'INTERCOM_TOKEN','FRESHDESK_TOKEN','ZENDESK_TOKEN','ZENDESK_EMAIL',
- 'EMAIL_API_KEY','EMAIL_FROM','INBOUND_EMAIL_TOKEN','MAIL_API_KEY','RER_MAIL_INGRESS_KEY',
+ 'INTERCOM_TOKEN','FRESHDESK_TOKEN',
+ 'EMAIL_API_KEY','MAILGUN_SENDING_KEY','EMAIL_FROM','INBOUND_EMAIL_TOKEN','MAIL_API_KEY','RER_MAIL_INGRESS_KEY',
  'INTEGRATION_ENCRYPTION_KEY','H2H_SETUP_TOKEN','OWNER_EMAIL',
  'GITHUB_CLIENT_SECRET','GITHUB_TOKEN','GITHUB_TOKENS','TURNSTILE_SECRET','FORMS_TURNSTILE_SECRET_KEY',
 ]
 export const variableNames = [
- 'EMAIL_PROVIDER','EMAIL_ACCOUNT_ID','INBOUND_EMAIL_DOMAIN',
+ 'EMAIL_PROVIDER','EMAIL_API_KEY_NAME','MAILGUN_DOMAIN','MAILGUN_REGION','EMAIL_ACCOUNT_ID','INBOUND_EMAIL_DOMAIN',
  'MAIL_PROVIDER','MAIL_FROM','MAIL_RELAY_URL','H2H_RER_MAIL_VERSION','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL',
+ 'RER_OWNER_CLAIM_ISSUER','RER_OWNER_CLAIM_INSTALLATION_ID','RER_OWNER_CLAIM_APP_ORIGIN','RER_OWNER_CLAIM_PUBLIC_KEYS','RER_BUSINESS_TRUST','RER_IMPORT_DOOR',
  'RER_INSTALLATION_ID','RER_MANAGEMENT_ORIGIN','H2H_SETUP_OWNER_EMAIL','WIDGET_ORIGIN','REGISTRATION_ENABLED','LEAD_MODEL','CONTEXT_MODEL','KNOWLEDGE_EMBEDDING_MODEL','QDRANT_URL',
  'APIFY_CRAWLER_ACTOR_ID','GITHUB_CLIENT_ID','GITHUB_PROJECT_ID','PREVIEW_ORIGIN',
  'BRAND_IMAGE_MODEL','BRAND_IMAGE_SIZE',
@@ -30,11 +33,19 @@ const configured=(env,name)=>typeof env[name]==='string'&&env[name].trim()!==''
 /** The setup's direct choice selects the native adapter, not a mail provider. */
 export function deploymentMailEnvironment(env){
  if(env.MAIL_PROVIDER==='rer')return {...env}
- const nativeProviders=['resend','cloudflare','sendgrid']
- if(configured(env,'MAIL_PROVIDER')&&env.MAIL_PROVIDER!=='direct'&&!nativeProviders.includes(env.MAIL_PROVIDER))throw new Error('MAIL_PROVIDER must be direct, resend, cloudflare, sendgrid or rer')
- if(nativeProviders.includes(env.MAIL_PROVIDER)&&env.MAIL_PROVIDER!==env.EMAIL_PROVIDER)throw new Error('Native MAIL_PROVIDER must match EMAIL_PROVIDER')
- if(!configured(env,'EMAIL_PROVIDER'))return {...env,MAIL_PROVIDER:env.MAIL_PROVIDER==='direct'?'':env.MAIL_PROVIDER}
- return {...env,MAIL_PROVIDER:env.EMAIL_PROVIDER,MAIL_FROM:env.EMAIL_FROM,MAIL_API_KEY:env.EMAIL_API_KEY}
+ const nativeProviders=['resend','cloudflare','sendgrid','mailgun']
+ if(configured(env,'MAIL_PROVIDER')&&env.MAIL_PROVIDER!=='direct'&&!nativeProviders.includes(env.MAIL_PROVIDER))throw new Error('MAIL_PROVIDER must be direct, resend, cloudflare, sendgrid, mailgun or rer')
+ if(nativeProviders.includes(env.MAIL_PROVIDER)&&configured(env,'EMAIL_PROVIDER')&&env.MAIL_PROVIDER!==env.EMAIL_PROVIDER)throw new Error('Native MAIL_PROVIDER must match EMAIL_PROVIDER')
+ const provider=nativeProviders.includes(env.MAIL_PROVIDER)?env.MAIL_PROVIDER:env.EMAIL_PROVIDER
+ if(!provider)return {...env,MAIL_PROVIDER:env.MAIL_PROVIDER==='direct'?'':env.MAIL_PROVIDER}
+ const paired=(publicName,nativeName)=>{
+  if(configured(env,publicName)&&configured(env,nativeName)&&env[publicName]!==env[nativeName])throw new Error(`${publicName} must match ${nativeName}`)
+  return configured(env,publicName)?env[publicName]:env[nativeName]
+ }
+ const sender=paired('MAIL_FROM','EMAIL_FROM')
+ if(provider==='mailgun')return {...env,EMAIL_PROVIDER:provider,EMAIL_FROM:sender,MAIL_PROVIDER:provider,MAIL_FROM:sender}
+ const key=paired('MAIL_API_KEY','EMAIL_API_KEY')
+ return {...env,EMAIL_PROVIDER:provider,EMAIL_FROM:sender,EMAIL_API_KEY:key,MAIL_PROVIDER:provider,MAIL_FROM:sender,MAIL_API_KEY:key}
 }
 export function runtimeVariables(env){validateRuntimeEnvironment(env);env=deploymentMailEnvironment(env);return Object.fromEntries(variableNames.filter(name=>configured(env,name)).map(name=>[name,env[name]]))}
 export function runtimeSecrets(env){return Object.fromEntries(secretNames.filter(name=>configured(env,name)).map(name=>[name,env[name]]))}
@@ -45,9 +56,14 @@ function validateRemoteMailSelection(env){
   for(const name of ['MAIL_RELAY_URL','RER_MAIL_CONTROL_URL']){const url=runtimeUrl(env[name],name);if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash)throw new Error(`${name} must be HTTPS without credentials or query parameters`)}
   return
  }
- deploymentMailEnvironment(env)
- if(configured(env,'EMAIL_PROVIDER')&&!['resend','cloudflare','sendgrid'].includes(env.EMAIL_PROVIDER))throw new Error('EMAIL_PROVIDER must be resend, cloudflare or sendgrid')
+ env=deploymentMailEnvironment(env)
+ if(configured(env,'EMAIL_PROVIDER')&&!['resend','cloudflare','sendgrid','mailgun'].includes(env.EMAIL_PROVIDER))throw new Error('EMAIL_PROVIDER must be resend, cloudflare, sendgrid or mailgun')
  if(env.EMAIL_PROVIDER==='cloudflare'&&!/^[a-f0-9]{32}$/i.test(env.EMAIL_ACCOUNT_ID||''))throw new Error('Cloudflare email requires EMAIL_ACCOUNT_ID')
+ if(env.EMAIL_PROVIDER==='mailgun'){
+  mailgunConfiguration(env)
+  if(!configured(env,'EMAIL_FROM'))throw new Error('Mailgun email requires EMAIL_FROM')
+  return
+ }
  if(configured(env,'EMAIL_PROVIDER'))for(const name of ['EMAIL_API_KEY','EMAIL_FROM'])if(!configured(env,name))throw new Error(`${env.EMAIL_PROVIDER} email requires ${name}`)
 }
 function runtimeUrl(value,name){

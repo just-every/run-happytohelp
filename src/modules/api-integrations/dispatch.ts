@@ -1,10 +1,11 @@
 import {cronRoom} from '../../platform/cron-budget'
 import {scheduledProjects,advanceDispatchCursor,readyIntentSql} from './scheduling'
 import type {Env} from '../../platform/env'
-import {DeliveryService,createSlackNotifier,createWebhookProtocol} from '../../vendor/base/modules/integrations/index.ts'
+import {DeliveryService,createSlackNotifier,createWebhookProtocol,createSlackBotProtocol,createSlackIncomingWebhookProtocol} from '../../vendor/base/modules/integrations/index.ts'
 import {NativeDeliveryRepository} from './delivery-repository'
 import {destination,DestinationUnavailable} from './destinations'
-import {httpsTransport} from './transport'
+import {httpsTransport,connectedTransport} from './transport'
+import {connectedPreviewText,protectConnectedFields} from '../knowledge/connected-door'
 export const slackTemplates={
  'conversation.created':(data:{conversation_id?:string;title?:string})=>({summary:'New conversation',sections:[data.title||'A customer started a conversation. Open your support inbox to reply.']}),
  'integration.test':()=>({summary:'Slack connection test',sections:['This is an explicit test from your support workspace.']})
@@ -15,12 +16,17 @@ export function services(env:Env,projectId:string,transport= httpsTransport){
   repo.observeDestination(id,target.secret_ciphertext)
   return target
  }
- const webhook=new DeliveryService({repository:repo,transport,protocols:[createWebhookProtocol({resolveDestination:async id=>(await read(id)).secret.url,signingKey:async envelope=>{
+ const edge=connectedTransport(env,projectId,repo,read,transport)
+ const webhook=new DeliveryService({repository:repo,transport:edge.transport,protocols:[edge.protocol(createWebhookProtocol({resolveDestination:async id=>(await read(id)).secret.url,signingKey:async envelope=>{
   const intent=await env.DB.prepare('SELECT e.erased_at FROM native_integration_intents i JOIN native_integration_events e ON e.id=i.event_id WHERE i.id=? AND i.project_id=? AND e.project_id=?').bind(envelope.id,projectId,projectId).first<any>()
   if(!intent||intent.erased_at!==null)throw Error('Event unavailable')
   const key=(await read(envelope.destinationId)).secret.key;return Uint8Array.from(key.match(/../g),(part:string)=>parseInt(part,16))
- }})]})
- const slack=createSlackNotifier({repository:repo,transport,templates:slackTemplates,incomingWebhook:async id=>(await read(id)).secret.url,bot:async id=>(await read(id)).secret})
+ }}))]})
+ const incomingWebhook=async(id:string)=>(await read(id)).secret.url,bot=async(id:string)=>(await read(id)).secret
+ const slack=createSlackNotifier({repository:repo,transport:edge.transport,templates:slackTemplates,incomingWebhook,bot})
+ // Base still owns enqueue serialization, escaping, attempts and classification.
+ // Its dispatch protocols associate the immutable wire with our disclosure door.
+ slack.delivery=new DeliveryService({repository:repo,transport:edge.transport,protocols:[edge.protocol(createSlackIncomingWebhookProtocol({resolveDestination:incomingWebhook})),edge.protocol(createSlackBotProtocol({resolveDestination:bot}))]})
  return {repo,webhook,slack}
 }
 /** Native intents were committed alongside their domain event. Preparing the
@@ -37,7 +43,7 @@ export async function dispatchIntegrations(env:Env,projectId?:string){
   const s=services(env,project,transport),pending=await env.DB.prepare(`SELECT i.id,i.destination_id,d.kind,d.mode,e.event,e.body,e.created_at,e.conversation_id,e.rowid sequence FROM native_integration_intents i JOIN native_integration_events e ON e.id=i.event_id AND e.project_id=i.project_id JOIN native_integration_destinations d ON d.id=i.destination_id AND d.project_id=i.project_id WHERE i.project_id=? AND i.prepared_at IS NULL AND ${readyIntentSql} ORDER BY e.rowid,i.id LIMIT ?`).bind(project,preparations).all<any>()
   for(const row of pending.results){if(!cronRoom(env,47)){deferred=true;break}preparations--;worked=true;try{
    await destination(env,project,row.destination_id)
-   if(row.kind==='webhook')await s.webhook.enqueue({id:row.id,tenant:project,destinationId:row.destination_id,event:row.event,protocol:'webhook',body:JSON.stringify({id:row.id,event:row.event,sequence:row.sequence,created_at:new Date(row.created_at).toISOString(),data:JSON.parse(row.body)})})
+   if(row.kind==='webhook')await s.webhook.enqueue({id:row.id,tenant:project,destinationId:row.destination_id,event:row.event,protocol:'webhook',body:JSON.stringify(await protectConnectedFields(env,project,{id:row.id,event:row.event,sequence:row.sequence,created_at:new Date(row.created_at).toISOString(),data:JSON.parse(row.body)}))})
    else {
     let title:string|undefined
     if(row.event==='conversation.created'){
@@ -45,7 +51,7 @@ export async function dispatchIntegrations(env:Env,projectId?:string){
      // for the actual visitor context; the logical created intent remains one.
      const first=await env.DB.prepare("SELECT m.content FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE m.project_id=? AND m.conversation_id=? AND m.actor_role='contact' AND m.erased_at IS NULL AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 ORDER BY m.revision,m.id LIMIT 1").bind(project,row.conversation_id).first<{content:string}>()
      if(!first)continue
-     title=Array.from(first.content).slice(0,500).join('')
+     title=await connectedPreviewText(env,project,first.content,500)
     }
     await s.slack.enqueue({id:row.id,tenant:project,destinationId:row.destination_id,event:row.event,mode:row.mode,data:{conversation_id:row.conversation_id,title}})
    }

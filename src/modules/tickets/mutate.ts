@@ -1,4 +1,5 @@
 import {syncSharedStatus} from '../support-channels/shared-sync'
+import {agentOperation,nativeAgentAuthority,type NativeAgentAuthority} from '../../platform/agent-authority'
 import {inTicketBatch,admitTicketWork} from './request-batch'
 import {auditStatement,type AuditEvent} from '../audit/record'
 import {processWorkflowEvents} from '../workflows/events'
@@ -57,6 +58,7 @@ export async function mutateTicket(env:Env,actor:Actor,id:string,input:TicketCha
  if(assignmentChanged||['solved','closed'].includes(next.status_category))statements.push(env.DB.prepare(`UPDATE ai_generations SET state='cancelled',updated_at=? WHERE project_id=? AND conversation_id=? AND state IN ('queued','running') AND ${accepted}`).bind(new Date(now).toISOString(),actor.projectId,id,receipt,id))
  if(assignmentChanged){statements.push(assignmentHistoryStatement(env,{id:receipt,conversationId:id,actorId,agentId:next.assigned_to,aiId:next.current_ai_id,createdAt:now},accepted,[receipt,id]),assignmentNotificationStatement(env,{id:receipt,projectId:actor.projectId,conversationId:id,actorId,previousAssignee:current.assigned_to,assignee:next.assigned_to},accepted,[receipt,id]))}
  if(receiptAudit)statements.push(auditStatement(env.DB,receiptAudit,now,{sql:accepted,params:[receipt,id]}))
+ if(authority[nativeAgentAuthority])statements.push(agentOperation(env,authority as NativeAgentAuthority,'conversation',id,{sql:accepted,params:[receipt,id]},{history_id:receipt}))
  admitTicketWork(env,statements.length+(inTicketBatch(env)?24:64))
  let committed=false
  try{committed=Boolean((await env.DB.batch(statements))[0].meta.changes)}catch(error){
@@ -73,7 +75,9 @@ export async function mutateTicket(env:Env,actor:Actor,id:string,input:TicketCha
  if(change.ai_id&&!change.agent_id)await onAssistantAssignment(env,actor.projectId,id,{sql:`${accepted} AND c.assigned_to IS NULL AND c.last_message_id IS ? AND EXISTS(SELECT 1 FROM conversation_ai WHERE conversation_id=c.id AND ai_id=?) AND EXISTS(${guard.sql}) AND ${availableTicketSql()}`,params:[receipt,id,current.last_message_id,change.ai_id,...guard.params]},assignmentChanged)
  if(current.group_id!==next.group_id&&next.group_id){const members=await env.DB.prepare('SELECT user_id FROM ticket_group_members WHERE project_id=? AND group_id=?').bind(actor.projectId,next.group_id).all<{user_id:string}>();await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:id,event:'group',eventId:receipt,actorId:actor.id,recipientIds:members.results.map(m=>m.user_id)})}
  await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:id,event:'ticket_updated',eventId:receipt,actorId:actor.id})
- if(assignmentChanged||current.status_id!==next.status_id)await syncSharedStatus(env,actor.projectId,id)
+ // Agent ticket tools declare only internal (standard) work, so an agent's change never
+ // posts to the customer's shared thread; a person's native change still does.
+ if((assignmentChanged||current.status_id!==next.status_id)&&!authority[nativeAgentAuthority])await syncSharedStatus(env,actor.projectId,id)
  if(current.status_id!==next.status_id)await publishResolution(env,actor.projectId,id)
  return inTicketBatch(env)?{ticket_version:current.ticket_version+1}:await getTicket(env,actor,id,authority.tokenAuthority)
  }catch(error){throw new TicketCommittedError(id,current.ticket_version+1,error)}

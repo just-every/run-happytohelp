@@ -62,9 +62,17 @@ export async function saveConnection(env:Env,input:{id:string;projectId:string;p
  ]);if(!results[0].meta.changes)throw new HTTPException(409,{message:'Mailbox connection or authority changed'})}catch(error){if(/constraint|unique/i.test(String(error)))throw new HTTPException(409,{message:'Mailbox address already connected'});throw error}
 }
 export async function publicMailbox(env:Env,row:MailboxRow){
- const [aliases,signatures]=await Promise.all([
+ const [aliases,signatures,delivery]=await Promise.all([
   env.DB.prepare('SELECT address,can_send,is_primary FROM mailbox_addresses WHERE mailbox_id=? ORDER BY is_primary DESC,address').bind(row.id).all(),
   env.DB.prepare('SELECT agent_id,text,html FROM mailbox_signatures WHERE mailbox_id=? ORDER BY agent_id').bind(row.id).all(),
+  // Forwarding and connected accounts share durable email delivery outcomes.
+  // Show the latest reply's refusal/uncertainty even when incoming sync works.
+  env.DB.prepare(`SELECT d.state FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id
+   LEFT JOIN email_message_options o ON o.project_id=m.project_id AND o.conversation_id=m.conversation_id AND o.local_id=m.local_id
+   JOIN email_deliveries d ON d.project_id=m.project_id AND (d.id='message:'||m.id||':notification' OR substr(d.id,1,length('message:'||m.id||':notification:'))='message:'||m.id||':notification:')
+   WHERE m.project_id=? AND coalesce(o.mailbox_id,c.mailbox_id)=?
+   ORDER BY m.created_at DESC,CASE d.state WHEN 'uncertain' THEN 0 WHEN 'failed' THEN 1 ELSE 2 END,d.updated_at DESC LIMIT 1`)
+   .bind(row.project_id,row.id).first<{state:string}>(),
  ])
- return {id:row.id,provider:row.provider,address:row.address,display_name:row.display_name,sender_address:row.sender_address||row.address,status:row.status,last_sync_at:row.last_sync_at,error_code:row.error_code,cursor:row.cursor_json?JSON.parse(row.cursor_json):null,addresses:aliases.results.map((a:any)=>({...a,can_send:Boolean(a.can_send),is_primary:Boolean(a.is_primary)})),signatures:signatures.results}
+ return {id:row.id,provider:row.provider,address:row.address,display_name:row.display_name,sender_address:row.sender_address||row.address,status:row.status,last_sync_at:row.last_sync_at,error_code:row.error_code||(delivery?.state==='failed'?'Mailbox provider rejected delivery':delivery?.state==='uncertain'?'Mailbox delivery outcome unknown; reconcile before retrying':null),cursor:row.cursor_json?JSON.parse(row.cursor_json):null,addresses:aliases.results.map((a:any)=>({...a,can_send:Boolean(a.can_send),is_primary:Boolean(a.is_primary)})),signatures:signatures.results}
 }

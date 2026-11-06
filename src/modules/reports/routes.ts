@@ -4,7 +4,8 @@ import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
 import {scope} from '../management/common'
 import {reportRange,validTimezone} from './calendar'
-import {readReport} from './read'
+import {readReport,ordinaryReportGuard} from './read'
+import {ticketScopeSql} from '../access/ticket-scope'
 import {exportCSV,summaryCSV} from './csv'
 import {exportTranscripts} from './transcripts'
 import {requireStepUp} from '../identity/two-factor/step-up'
@@ -19,6 +20,7 @@ reports.route('/',teamReports)
 reports.get('/projects/:projectId/reports',async c=>{
  const actor=await scope(c)
  await requireReportPermission(c,actor,'reports.view')
+ const {check}=await ordinaryReportGuard(c.env,actor.projectId,actor.id)
  const settings=await c.env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(actor.projectId).first<{settings_json:string}>(),timezone=JSON.parse(settings?.settings_json||'{}').timezone||'UTC'
  if(!validTimezone(timezone))throw new HTTPException(422,{message:'Choose a valid workspace timezone in Project settings before opening Reports'})
  const query=c.req.query(),range=reportRange(query,timezone)
@@ -28,8 +30,14 @@ reports.get('/projects/:projectId/reports',async c=>{
   await requireStepUp(c,actor,'reports.export')
   const transcripts=query.format==='transcripts.json'
   await auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'reports.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{format:query.format,...(transcripts?{scope:'all_workspace_conversations'}:{start:range.start,end:range.end})}}).run()
-  const body=transcripts?exportTranscripts(c.env,actor.projectId):query.format==='summary.csv'?summaryCSV(await readReport(c.env,actor.projectId,range)):exportCSV(c.env,actor.projectId,range)
+  const body=transcripts?exportTranscripts(c.env,actor.projectId,actor.id,check):query.format==='summary.csv'?summaryCSV(await readReport(c.env,actor.projectId,range,actor.id)):exportCSV(c.env,actor.projectId,range,actor.id,check)
+  await check()
   return new Response(body,{status:200,headers:{'Content-Type':`${transcripts?'application/json':'text/csv'}; charset=utf-8`,'Content-Disposition':`attachment; filename="${query.format}"`,'Cache-Control':'no-store'}})
  }
- return c.json({...await readReport(c.env,actor.projectId,range),campaigns:await campaignReport(c.env,actor.projectId,range.startAt,range.endAt)})
+ const report=await readReport(c.env,actor.projectId,range,actor.id),campaigns=await campaignReport(c.env,actor.projectId,range.startAt,range.endAt)
+ // Campaign aggregates have no ticket-cohort parameter. Refuse this ordinary
+ // response if they could disclose excluded tickets; their retention stays unchanged.
+ if(campaigns.length&&await c.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.project_id=? AND NOT ${ticketScopeSql('?')} LIMIT 1`).bind(actor.projectId,actor.id).first())throw new HTTPException(403,{message:'This report includes campaign data outside your ticket selection.'})
+ await check()
+ return c.json({...report,campaigns})
 })

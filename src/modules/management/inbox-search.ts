@@ -27,11 +27,13 @@ export async function attachMatchedMessages(env:Env,term:string,rows:{id:string;
 export function inboxSearchCondition(term:string){
  const needle=term.replace(/[A-Z]/g,letter=>letter.toLowerCase())
  const fields=["t.name","t.email","json_extract(t.metadata_json,'$.provided_name')","json_extract(t.metadata_json,'$.provided_email')"]
+ const source=`EXISTS(SELECT 1 FROM move_in_conversations imported WHERE imported.project_id=c.project_id AND imported.conversation_id=c.id AND imported.source_id=? AND imported.source_id<>'')`
+ const sourceId=term.startsWith('#')?term.slice(1):term
  const identity=`EXISTS(SELECT 1 FROM contacts t WHERE t.id=c.contact_id AND t.project_id=c.project_id AND (${fields.map(field=>`instr(lower(coalesce(${field},'')),?)>0`).join(' OR ')}))`
  // Quotes group a phrase; other whitespace-separated terms may occur in any order.
  // Every part is quoted before joining, so user text can never introduce FTS syntax.
  const words=searchWords(term)
  // Punctuation-only queries have no indexed words; they can still match identity.
- if(!words)return {sql:identity,params:fields.map(()=>needle)}
- return {sql:`(${identity} OR c.id IN (SELECT conversation_id FROM inbox_message_search WHERE inbox_message_search MATCH ?))`,params:[...fields.map(()=>needle),words]}
+ if(!words)return {sql:`(${identity} OR ${source})`,params:[...fields.map(()=>needle),sourceId]}
+ return {sql:`(${identity} OR ${source} OR c.id IN (SELECT conversation_id FROM inbox_message_search WHERE inbox_message_search MATCH ?))`,params:[...fields.map(()=>needle),sourceId,words]}
 }

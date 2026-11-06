@@ -48,6 +48,10 @@ export async function prepareNativeLocal(context){
  await addMissingTokens(context,saved);
 }
 export async function nativeOwner(context){
+ // Restored owners are already authoritative in canonical local D1. Preserve
+ // them before asking a public API that can be fenced by a pending data upgrade.
+ // Demo claims its separate throwaway state instead of this checkout's owner.
+ if(!context.demo&&(await localOwner(context.root)).length){await context.store.step('Existing owner and workspace preserved');return;}
  const request=(path,body)=>fetch(context.origin+path,{...(body?{method:'POST',headers:{Origin:context.origin,'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),signal:context.signal});
  const response=await request('/api/identity/setup');
  if(!response.ok)throw context.fail('setup');

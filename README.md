@@ -110,7 +110,7 @@ an existing 0.3 installation follows [Upgrading from 0.3.x](OPERATIONS.md#upgrad
 
 ## Run it on your computer
 
-The [install and run guide](https://happytohelp.com/docs/install) covers
+The [install and run guide](https://happytohelp.com/docs/getting-started) covers
 installation, local sign-in and stopping the app, step by step.
 
 Start it with one line. You need **Node.js 22 or later** (with npm) and Git; check

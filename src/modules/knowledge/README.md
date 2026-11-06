@@ -38,14 +38,15 @@ two alone is refused with a sentence naming the missing setting. Supplied
 documents, Apify datasets and conversation messages can also be ingested.
 Article/category authoring includes hierarchy, cycle checks, ordering, summaries,
 publication and multiple categories. Public reads and search expose published
-articles only. Native Intercom, Freshdesk and Zendesk imports use a durable job
+articles only. Native Intercom and Freshdesk imports use a durable job
 per provider page and stable project/provider identities. HTML is converted in
 Workers; executable elements are removed. Repeating an import updates its records.
+Zendesk Help Center articles import through Move in's Zendesk connection, where
+restricted articles are held back and drafts stay drafts.
 
 Optional configuration: `APIFY_TOKEN`, `APIFY_CRAWLER_ACTOR_ID`,
 `OPENAI_API_KEY`, `KNOWLEDGE_EMBEDDING_MODEL`, `QDRANT_URL` (HTTPS),
-`QDRANT_API_KEY`, `INTERCOM_TOKEN`, `FRESHDESK_TOKEN`, `ZENDESK_EMAIL`,
-`ZENDESK_TOKEN`. Missing selected configuration is an explicit error. Credentials
+`QDRANT_API_KEY`, `INTERCOM_TOKEN`, `FRESHDESK_TOKEN`. Missing selected configuration is an explicit error. Credentials
 are never stored in import jobs. Publication and provider execution require the
 edition's operating authorization.
 
@@ -89,3 +90,21 @@ redaction review and the source's proven private email-domain collection; generi
 article and collection edits preserve this boundary. Native correction analysis
 uses source and later cited reopened cycles without publishing automatically.
 Apply the pending migrations in RELEASE.json before serving the updated Worker.
+AI retrieval uses `door.ts` for the required reader set: the operator and every
+current ticket recipient must pass the current tenant, publication, lineage,
+brand and account/company rules. Dataset documents remain visible while their
+published dataset contains that URL. IDs are `article:<id>` and `knowledge:<id>`;
+continuations pin the sourceVersion issued by search. Publication snapshots fix
+which text a reference renders; edits and refreshes do not withdraw old replies.
+Unpublication, revocation, lineage moves and deletion do.
+
+`reference-store.ts` owns opaque references and rendering. `canonicaliser.ts`
+recognizes copied normalized word runs, including previous publications and
+translations. `write-boundary.ts` protects bound D1 text writes, while admission
+and mail claims embed the same current visibility predicate. Model transcript
+references render as titles and links; bodies enter through recorded knowledge
+tools. Native links use APP_ORIGIN and `/help/<projectId>/<slug>`.
+
+The round remains partial. The current evidence and limitations, including cached
+desktop provider history outside the server write scope, are recorded in
+[website knowledge](../../../docs/website-knowledge.md).

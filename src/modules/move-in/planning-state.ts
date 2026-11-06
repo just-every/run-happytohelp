@@ -24,6 +24,9 @@ export async function planningState(env:Env,run:Run,records:SourceRecord[],prepa
   if(!ids.length){nativeIds.set(kind,new Set());continue}
   nativeIds.set(kind,new Set((await env.DB.prepare(`SELECT n.id FROM json_each(?2) wanted CROSS JOIN ${table} n ON n.id=wanted.value AND n.project_id=?1`).bind(run.project_id,JSON.stringify(ids)).all<{id:string}>()).results.map(row=>row.id)))
  }
+ // A reply is a message or a private note, by the same native ID.
+ const replies=candidates.filter(candidate=>candidate.kind==='reply').map(candidate=>candidate.id)
+ nativeIds.set('reply',new Set(replies.length?(await env.DB.prepare('SELECT n.id FROM json_each(?2) wanted CROSS JOIN messages n ON n.id=wanted.value AND n.project_id=?1 UNION SELECT n.id FROM json_each(?2) wanted CROSS JOIN move_in_notes n ON n.id=wanted.value AND n.project_id=?1').bind(run.project_id,JSON.stringify(replies)).all<{id:string}>()).results.map(row=>row.id):[]))
  const companyDomains=effects.filter(effect=>effect.targetKind==='company').flatMap(effect=>(effect.value as any).tables.company_domains)
  if(companyDomains.length){const conflicts=(await env.DB.prepare("SELECT DISTINCT json_extract(candidate.value,'$.company_id') id FROM json_each(?2) candidate JOIN company_domains native ON native.project_id=?1 AND native.domain=json_extract(candidate.value,'$.domain') AND native.company_id<>json_extract(candidate.value,'$.company_id')").bind(run.project_id,JSON.stringify(companyDomains)).all<{id:string}>()).results;for(const record of records)if((prepared.effects.get(`${record.kind}/${record.sourceId}`)??[]).some(effect=>effect.targetKind==='company'&&conflicts.some(row=>row.id===effect.targetId)))prepared.rejections.set(`${record.kind}/${record.sourceId}`,'company_domain_conflict')}
  // EXISTS returns one bit per candidate, even if old native data contains many

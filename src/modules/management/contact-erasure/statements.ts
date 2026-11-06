@@ -18,6 +18,7 @@ import type {Env} from '../../../platform/env'
 import {legacyArchiveRedaction} from './archive'
 import {erasureInboundEvidenceStatements} from './inbound-evidence'
 import {attempts,contextJobs,contextTables,conversations,generations,localJobs,messages,projectConversations,staged,subject,trackedTables} from './scope'
+import {contactDoorErasure} from '../../../edition/agent-door/erasure'
 
 export interface ErasureRequest {projectId: string; contactId: string; actorId: string; now: number; emails: string[];csvIdentities?:string[]}
 
@@ -76,12 +77,13 @@ function emailDeliveries(env: Env, request: Pick<ErasureRequest,'projectId'|'con
 }
 export function emailEvidenceStatements(env:Env,request:Pick<ErasureRequest,'projectId'|'contactId'|'emails'>){return [emailDeliveries(env,request),...erasureInboundEvidenceStatements(env.DB,request)]}
 
-export function erasureStatements(env: Env, request: ErasureRequest) {
+export async function erasureStatements(env: Env, request: ErasureRequest) {
   const {projectId, contactId, actorId, now} = request
   const iso = new Date(now).toISOString()
   const bound = (sql: string) => env.DB.prepare(sql).bind(projectId, contactId)
   const withTime = (sql: string, time: number | string) => env.DB.prepare(sql).bind(projectId, contactId, time)
   return [
+    ...await contactDoorErasure(env,projectId,contactId,now,request.emails),
     env.DB.prepare(tombstone).bind(projectId, contactId, actorId, now),
     ...feedbackErasureStatements(env,projectId,contactId),
     ...voiceErasureStatements(env,projectId,contactId),

@@ -1,3 +1,5 @@
+import {redactionStatements,invalidateTransfersStatements} from '@runeditrun/rer/modules/portability/journal'
+import {replyDraftMemberErasure} from '../conversations/draft-erasure'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -5,6 +7,7 @@ import {scope} from './common'
 import {issuerGuard} from '../../platform/integration-authority'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement} from '../audit/record'
+import {memberDoorErasure} from '../../edition/agent-door/erasure'
 
 export const memberErasure=new Hono<AppEnv>()
 /** Erase an installation account only when this workspace owns its sole membership.
@@ -22,7 +25,8 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const context:ErasureContext={env:c.env,project:actor.projectId,user:userId,actor:actor.id,now,guard:{sql:`EXISTS(${guard.sql}) AND ${eligible}`,params:[...guard.params,...args]}}
  const registry=await currentRegistry(c.env.DB)
  if(registry.errors.length)throw new HTTPException(503,{message:'Member erasure schema requires review'})
- await c.env.DB.batch(Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]))
+// Agent-door identity copies are prepared before native anonymization.
+ await c.env.DB.batch([...await redactionStatements(c.env.DB),...await invalidateTransfersStatements(c.env.DB),...await memberDoorErasure(c.env,userId,now),...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...replyDraftMemberErasure(c.env,actor.projectId,userId)])
  return c.json({erased:true,credentialsRevoked:true,eventsRetained:true})
 })
 
@@ -52,15 +56,22 @@ const memberPolicies:Record<string,RegistryEntry>={
  integration_token_events:{effects:[{prefix:"INSERT INTO integration_token_events(namespace,id,token_id,at,action,feature) SELECT namespace,lower(hex(randomblob(16))),id,?,'revoked','integrations.tokens' FROM api_credentials",source:'api_credentials',where:'issuer_id=? AND revoked_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
  integration_tokens:{effects:[{prefix:"UPDATE integration_tokens SET revoked_at=coalesce(revoked_at,?),token_hash='erased:'||id",where:'credential_id IN (SELECT id FROM api_credentials WHERE namespace=? AND issuer_id=?)',before:c=>[c.now],after:c=>[c.project,c.user]}]},
  api_credentials:{effects:[{prefix:'UPDATE api_credentials SET issuer_id=NULL,revoked_at=coalesce(revoked_at,?)',where:'issuer_id=?',before:c=>[c.now],after:c=>[c.user]}]},
+ // Grants are workspace history, not a capability held by their issuer. Retain
+ // the opaque grantor id after account anonymization; deleting a grant must
+ // never clear the collection's explicit-entitlement requirement.
+ knowledge_collection_entitlements:{},
+ knowledge_company_entitlements:{},
  users:{accountOnly:true,anonymize:true},
  ...Object.fromEntries(['credentials','user_settings','user_factors','recovery_codes','session_factors','webauthn_challenges'].map(table=>[table,accountDelete()])),
- ...Object.fromEntries(['user_project_preferences','member_roles','operator_presence','support_channel_members','support_channel_link_codes','memberships'].map(table=>[table,workspaceDelete()])),
+ ...Object.fromEntries(['user_project_preferences','member_roles','operator_presence','mobile_devices','support_channel_members','support_channel_link_codes','memberships'].map(table=>[table,workspaceDelete()])),
+ ...Object.fromEntries(['teammate_slack_consent','teammate_slack_links','teammate_slack_preferences','teammate_slack_deliveries'].map(table=>[table,workspaceDelete()])),
  magic_signins:{erase:{column:'user_id',nullable:true}},
  sessions:{erase:{column:'actor_id',nullable:true,predicate:"actor_id=? AND role<>'contact'",args:c=>[c.user]}},
+ macro_drafts:{erase:{column:'actor_id'}},
  conversation_followers:{erase:{column:'user_id',through:'conversation_id'}},
  ticket_handle_sessions:{effects:[{prefix:'UPDATE ticket_handle_sessions SET ended_at=max(started_at,?)',where:'user_id=? AND ended_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
  audit_events:{audit:true},
- ...Object.fromEntries(['macros','conversation_reads','conversation_notes','github_oauth_states','move_in_runs','local_pairings','local_grants','local_authorizations','local_devices','operator_notifications','ticket_group_members','ticket_views','notification_preferences','notification_inbox','conversation_note_mentions','routing_operators','mailbox_oauth_states','email_sender_rules','email_message_options','operator_ticket_commands','report_schedules','report_schedule_recipients','report_schedule_deliveries','customer_identity_links','customer_identity_link_history','voice_context_links','api_notes'].map(table=>[table,{}])),
+ ...Object.fromEntries(['macros','conversation_reads','conversation_notes','github_oauth_states','move_in_runs','local_pairings','local_grants','local_authorizations','local_devices','operator_notifications','ticket_group_members','ticket_views','notification_preferences','notification_inbox','conversation_note_mentions','routing_operators','mailbox_oauth_states','email_sender_rules','email_message_options','operator_ticket_commands','report_schedules','report_schedule_recipients','report_schedule_deliveries','customer_identity_links','customer_identity_link_history','voice_context_links','api_notes','h2h_business_project'].map(table=>[table,{}])),
  platform_admins:{accountOnly:true},owner_recoveries:{accountOnly:true},
  assertion_cleanup:{internal:'cleanup'},
 }

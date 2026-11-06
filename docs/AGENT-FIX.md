@@ -29,7 +29,9 @@ reply in HappyToHelp.
 
 If a new visitor message arrives while you are reviewing a draft, its earlier
 conversation position cannot authorize a send. Read the new message and request
-a fresh investigation. The earlier proposal remains available to inspect.
+a fresh investigation. The earlier proposal remains available to inspect, but its Run action refuses a
+new fix against the changed conversation. Repeating an approval already recorded
+returns the same child task, including when two approval requests arrive together.
 
 If you revoke a computer while work is running, HappyToHelp withdraws authority
 and records **Authority revoked · local outcome unconfirmed**. Revocation does
@@ -41,6 +43,20 @@ An unverified resolve result needs your input and cannot supply a sent reply.
 An uncertain reply receipt needs review: inspect the transcript before taking
 any further action. HappyToHelp does not automatically replay that uncertain
 delivery; a message may already have reached the visitor.
+
+If the separate observation still shows the failure and requests your review,
+HappyToHelp keeps it awaiting input: it cannot supply a draft or send a reply.
+The case stays open with its assigned operator. After you send a confirmed
+report with **Resolve**, a later customer message reopens the ticket with that
+operator and the earlier resolution cycle and evidence retained. Investigate
+the new report; the earlier successful read does not establish current recovery.
+
+If the connector disappears during a change, the job stays running until its
+outcome is reconciled. Restarting does not dispatch the change again, and
+requesting cancellation does not establish that it stopped or undid anything.
+Read the customer system separately before sending a recovery claim. Pending
+report effects resume once after a Worker restart, or stop with authorization
+lost if the computer was revoked or the operator left the workspace.
 
 The maintained journey exercises these steps against the emitted application,
 the real local connector and a disposable customer-system fixture. Its model

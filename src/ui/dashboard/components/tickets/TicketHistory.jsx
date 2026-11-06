@@ -33,6 +33,7 @@ function HistoryEntry({ item, settings, agents, assistants, conversation, tags }
     let actor = actorRoles[item.actor_type] || 'Unknown actor';
     if (['user', 'agent'].includes(item.actor_type) && agent(item.actor_id)) actor = personName(agent(item.actor_id));
     if (['contact', 'customer'].includes(item.actor_type)) actor = erased ? 'Erased customer' : contact(item.actor_id) ? personName(contact(item.actor_id), true) : 'Customer (name unavailable)';
+    if (item.prepared_by) actor = `${item.prepared_by.agent} for ${item.prepared_by.sponsor}`;
     const value = (key, recorded, field) => {
         if (recorded === undefined || missing(recorded)) return key === 'assigned_to' && recorded === null ? 'Unassigned' : plainValue(recorded);
         if (field) {
@@ -60,7 +61,8 @@ function HistoryEntry({ item, settings, agents, assistants, conversation, tags }
         if (key === 'erased' || key === 'status_category' && changes.status_id?.from !== changes.status_id?.to) continue;
         const operational = operationalHistory(key, change, changes);
         if (operational !== undefined) { rows.push(operational); continue; }
-        if (key === 'fields') {
+        if (key === 'form') { rows.push(<li key={key}><strong>Request form:</strong> {plainValue(change.to)} · Version {change.version}</li>);
+        } else if (key === 'fields') {
             for (const [id, fieldChange] of Object.entries(change || {})) {
                 const field = settings.fields?.find(field => field.id === id);
                 // Never recover or display a value when its field definition is no longer visible.

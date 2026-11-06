@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {assistantApp} from './app.mjs'
+import {assertProviderNormalization} from './configured-execution.mjs'
 
 const keys={ANTHROPIC_API_KEY:'sk-ant-fixture',GOOGLE_API_KEY:'google-fixture',DEEPSEEK_API_KEY:'sk-fixture',XAI_API_KEY:'xai-fixture',OPENROUTER_API_KEY:'sk-fixture'}
 
@@ -14,6 +14,7 @@ export async function providersJourney(a){
    const v=await a.visitor();await v.say('Which plan fits me?');await a.run()
    const [answer]=await a.generations(v.conversationId);assert.equal(answer.state,'completed',model+': '+answer.error)
    assert.deepEqual((await v.transcript()).messages.filter(m=>m.actor_role==='ai').map(m=>m.content),['Provider fixture answer'],model)
+   await assertProviderNormalization(a,v,model)
    const usage=JSON.parse(answer.output_json).usage;assert.equal(usage.input_tokens,12,model);assert.equal(usage.output_tokens,4,model)
    // A refusal is one attempt: the generation records it and redelivery calls nobody.
    ai.reject=true;const refused=await a.visitor();await refused.say('And now?');const jobs=await app.takeJobs(),before=a.providerCalls()

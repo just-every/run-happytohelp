@@ -82,7 +82,13 @@ export async function assertMappedBusinessState(env,sources,files) {
     assert.ok(html.indexOf('Getting started')<html.indexOf('Account overview'),'H08 published sibling order');
     assert.equal(html.includes('Unpublished billing tips'),false,'H08 draft categories stay private');
     const article=source.tables.articles.find(row=>row.published_at);
-    assert.equal((await helpCenterRoutes.request(`http://localhost/help/${project.slug}/${article.slug}`,{},env)).status,200,'C03 article link resolves through alias');
+    // This published article also belongs to the unpublished billing collection.
+    // Import preserves that lineage; the alias must obey the same publication
+    // policy as every other help door rather than revive hidden knowledge.
+    const hidden=await helpCenterRoutes.request(`http://localhost/help/${project.slug}/${article.slug}`,{},env);
+    const missing=await helpCenterRoutes.request(`http://localhost/help/${project.slug}/missing-article`,{},env);
+    assert.equal(hidden.status,404,'C03 unpublished collection withdraws the imported article alias');
+    assert.equal(await hidden.text(),await missing.text(),'C03 hidden and missing imported article aliases are indistinguishable');
     const settings=await env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(project.id).first();
     assert.equal(JSON.parse(settings.settings_json).help_center_domain,new URL(`https://${project.help_center_domain}`).href,'H17 full HTTPS help-center URL');
     for (const insight of source.tables.insights) {

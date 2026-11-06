@@ -1,3 +1,4 @@
+import {knowledgeAnswerFields} from '../knowledge/model-door'
 import {finalizeGeneration} from './generation-finalization'
 import type { Env, Job } from '../../platform/env';
 import type { Generation } from './repository';
@@ -22,9 +23,10 @@ export async function handleGeneration(env: Env, job: Job, effects: GenerationEf
         return true;
     }
     if (row.state === 'running') {
-        // A previous delivery may have reached the provider. Never replay it.
-        await transition(env, row.id, 'uncertain', 'Interrupted attempt; provider outcome requires review');
-        await env.DB.prepare("UPDATE ai_attempts SET state='uncertain',finished_at=? WHERE generation_id=? AND state='running'").bind(new Date().toISOString(), row.id).run();
+        // Redelivery does not prove that the claimed execution stopped. Keep
+        // its running frontier eligible for guarded final admission, without
+        // starting another provider call. Scheduled deadline recovery alone
+        // marks abandoned executions uncertain; it never replays the provider.
         return true;
     }
     try {
@@ -49,7 +51,7 @@ export async function handleGeneration(env: Env, job: Job, effects: GenerationEf
         await checkCurrent();
         const { result, usage: usageResult } = await executeGenerationProvider(env, row, attemptId, abort, checkCurrent, effects, () => { providerStarted = true; });
         // A generation cancelled meanwhile (by an operator or contact erasure) does not keep provider output.
-        await env.DB.prepare("UPDATE ai_generations SET output_json=? WHERE id=? AND state<>'cancelled'").bind(JSON.stringify({ result, usage: usageResult }), row.id).run();
+        await env.DB.prepare("UPDATE ai_generations SET output_json=? WHERE id=? AND state<>'cancelled'").bind(JSON.stringify({ result:await knowledgeAnswerFields(env,row.project_id,row.id,result), usage: usageResult }), row.id).run();
         await checkCurrent();
         const admitted = await finalizeGeneration(env,row,attemptId,result,usageResult);
         finalCommitted = admitted?.accepted ?? false;

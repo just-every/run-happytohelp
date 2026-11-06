@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import {startApp} from '../journeys/kit/app.mjs'
 
 // Only external mail, DNS, and Turnstile are faked; all identities, D1 and admission are real.
-export async function selfServiceFixture({failSurveys=false,migrate}={}){
+export async function selfServiceFixture({failSurveys=false,migrate,beforeRoutes}={}){
  const mail=[],challenges=[];let rejectSurveys=failSurveys
  const app=await startApp({migrate,captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',INBOUND_EMAIL_TOKEN:'fixture-survey-signing-key-for-self-service',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-provider-key',EMAIL_FROM:'support@example.com',FORMS_TURNSTILE_SITE_KEY:'synthetic-site',FORMS_TURNSTILE_SECRET_KEY:'synthetic-secret'},outbound:async request=>{
   if(request.url.startsWith('https://cloudflare-dns.com/'))return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.com.'}]})
@@ -10,6 +10,8 @@ export async function selfServiceFixture({failSurveys=false,migrate}={}){
   if(request.url==='https://api.resend.com/emails'){const body=await request.json();mail.push(body);if(rejectSurveys&&body.text.includes('/api/outcomes/surveys/'))return Response.json({error:'Provider unavailable'},{status:503});return Response.json({id:'message-'+mail.length})}
   throw new Error('Unexpected provider request '+request.url)
  }})
+ // Historical upgrade fixtures finish staging and apply pending schema before current routes run.
+ await beforeRoutes?.(app)
  const workspace=await app.seedWorkspace('self-service'),foreign=await app.seedWorkspace('self-service-foreign'),p=workspace.projectId,owner={token:workspace.tokens.owner},admin=`/api/forms/projects/${p}/forms`,api=`/api/forms/${p}`
  await app.db.prepare("INSERT INTO email_settings VALUES(?,'Northstar Support','support@example.com','help@example.com',1,1)").bind(p).run()
  const field=async body=>(await app.ok(`/api/management/projects/${p}/ticket-fields`,{...owner,body})).data

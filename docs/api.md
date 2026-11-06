@@ -104,21 +104,23 @@ header = "Content-Type: application/json"
 EOF_CURL
 ```
 
-List articles, including drafts (`articles:read`):
+List articles in the editor view (`articles:read` and `articles:write`, issued by a member with knowledge editing permission):
 
 ```sh
-curl --silent --show-error --config - "$H2H_URL/api/v1/articles" <<EOF_CURL
+curl --silent --show-error --config - "$H2H_URL/api/v1/articles?view=editor" <<EOF_CURL
 header = "Authorization: Bearer $H2H_TOKEN"
 EOF_CURL
 ```
 
-Get an article (`articles:read`):
+Get an article in the editor view (the same permissions apply):
 
 ```sh
-curl --silent --show-error --config - "$H2H_URL/api/v1/articles/$ARTICLE_ID" <<EOF_CURL
+curl --silent --show-error --config - "$H2H_URL/api/v1/articles/$ARTICLE_ID?view=editor" <<EOF_CURL
 header = "Authorization: Bearer $H2H_TOKEN"
 EOF_CURL
 ```
+
+Without `view=editor`, article reads use anonymous current publication and collection access. Use `?contact_id=` to evaluate one customer. Editor access never follows from `articles:read` alone.
 
 Create a draft (`articles:write`):
 
@@ -545,3 +547,145 @@ Sharing a handoff never publishes a customer reply or confirms recovery. An
 operator writes and explicitly sends any customer update in the ordinary reply
 composer. Teams inbound status and automatic fix-shipped drafts are not implemented.
 The ESCALATION-001 clause remains partial pending policy and live qualification.
+
+## Managed connectors (API-001)
+
+The unpublished Zapier app definition is
+`src/modules/api-integrations/zapier-app.mjs`. Install it privately with the
+workspace API origin and bearer credential. The definition exports Zapier Platform
+`creates`, `searches` and REST-hook operations; its hook performer validates
+the tenant, destination, event and signature before returning event IDs. Its request templates use native
+find/create contact, reply, resolve and draft-article operations. Find contacts
+with `GET /api/v1/contacts?email=…` (exact, case-insensitive); search and create
+require their separate read and write scopes. Replies retain `localId` replay
+and `expectedRevision` conflict protection. Creation and customer-side append
+retain the machine protocol's admission and erasure fences; Zapier grants no
+additional authority. App publication and live Zapier qualification remain R-11.
+
+REST hooks use `POST /api/v1/zapier/hooks` with
+`{"event":"contact.updated","url":"https://receiver.example.com/events"}`.
+The response shows `{id, secret, event, project_id}` once. Use
+`DELETE /api/v1/zapier/hooks/{id}` to unsubscribe; only the subscribing
+credential can remove it. `GET /api/v1/zapier/sample?event=contact.updated`
+reads up to five current native records, never fabricated samples. Conversation,
+contact and article events respectively require `conversations:read`,
+`contacts:read` and `articles:read`. Native source-product reach still applies.
+Hooks use the same signed, bounded delivery pipeline and uncertain-outcome
+reconciliation as owner-created webhooks. Revocation disables every destination
+bound to that credential; expiry and lost scopes also fence sending.
+
+Alongside conversation events, `contact.created`, `contact.updated` and
+`article.published` contain only the record ID. Their intents commit in the same
+transaction as the domain write; historical import apply/undo stays inert.
+Verify the `v1=` SHA-256 HMAC over the UTF-8 JSON array
+`["integrations.webhook.v1", tenant, destination, event, id, timestamp, rawBody]`
+using the hex-decoded secret. Bind tenant and destination to the subscription
+and compare signatures in constant time; reject changed bytes or destination.
+Do not treat an unsigned ID alone as a verified event.
+
+### HTTP MCP
+
+`POST /api/v1/mcp` accepts JSON-RPC 2.0 `initialize`,
+`notifications/initialized`, `tools/list` and `tools/call` over bearer-only HTTP.
+It returns the negotiated `2025-03-26` protocol and no CORS permissions. Native
+sessions and provider credentials cannot authenticate it. `tools/list` includes
+only tools the credential's scopes permit. Tools list/read conversations,
+messages, contacts and articles, create/update contacts, draft articles, reply
+and resolve. Calls delegate to the native guarded routes: tenant reach, private
+note exclusion, erasure, quotas, usage audits and revocation stay enforced.
+A refused tool returns `result.isError: true` and the native error inside text
+content; invalid/revoked bearer credentials and exhausted quotas retain HTTP
+401/429. This is a session-free JSON HTTP transport; streaming/resumption and
+real Claude, ChatGPT, Codex or Copilot compatibility require R-21 qualification.
+The held Base company-policy API remains separate.
+
+```json
+{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_conversations","arguments":{"limit":25}}}
+```
+
+### Reviewed Help Scout coexistence
+
+An owner/admin with recent step-up connects at
+`PUT /api/management/projects/{projectId}/connections/helpscout` with
+`app_id`, `app_secret`, `webhook_secret` and numeric-string `mailbox_id`.
+Credentials use the existing workspace encryption custody and are never read
+back. `GET` returns connection metadata; `DELETE` disconnects, deleting the
+credentials while preserving the mailbox, incremental cursor and page position.
+Reconnect with rotated credentials for that same mailbox. A different mailbox
+cannot inherit the cursor. Archives strip credentials and active pull claims;
+reconnect after restoring.
+
+Explicit `POST …/helpscout/pull` with `{}` obtains a client-credentials token,
+then reads the fixed `https://api.helpscout.net/v2/` origin. Conversations use
+`modifiedSince` and ascending `modifiedAt` under the selected mailbox. One pull
+stages at most one conversation list page (25 conversations), with complete
+conversation/customer detail and thread pages. A continuation retains the page
+URL and original scan start; only completing that scan advances `cursor`.
+Responses are unmodified leaves in a JSON array submitted in process to the
+ordinary Help Scout import door with the reviewer's own native session. Each
+conversation has its own reviewed run, so an erased-identity 410 skips that
+conversation with a count and reason while unrelated conversations can stage.
+Existing import source/hash fences make old imports no-ops or conflicts,
+never additional native copies. Nothing applies without the person's ordinary
+import review and approval. An interruption does not advance cursor/page state.
+The first successful scan's start time becomes the inclusive incremental cursor;
+changes during a scan are included by the next scan.
+
+HTTPS refuses redirects, bounds each request to 10 seconds and each response to
+64 KiB, and limits a pull to 30 seconds, 128 calls and 2 MiB total. A limit
+refusal leaves the cursor in place. HTTP 429 is `rate_limited`; 401/403 is
+`credentials_refused`; transport, size and pagination failures have safe error
+classes. No automatic retry loop or provider error text is stored or displayed.
+OAuth app installation/account qualification remains external under R-11.
+
+Configure the provider's webhook URL as
+`/api/helpscout/projects/{projectId}/webhook`. Intake requires
+`X-HelpScout-Signature`: base64 HMAC-SHA1 of the exact raw body using the
+configured webhook secret. Verification uses constant-time WebCrypto comparison
+and a 64 KiB body bound. Only a SHA-256 body digest and receipt time are stored;
+identical deliveries count once. Intake only records changes waiting; it never
+imports, applies or contacts a provider. Help Scout credentials/signatures grant
+no native API/MCP authority, and native API credentials grant no Help Scout
+management or intake authority.
+
+### Connection health and manual reconciliation
+
+Owner/admin-only `GET /api/management/projects/{projectId}/connections/connectors`
+and the existing Connections settings show API tokens, MCP, webhooks, Slack,
+Zapier hooks and Help Scout. Rows show scopes/events, configuration, recent
+queued/uncertain/failed delivery counts, safe attempt summaries and health.
+`failing` means a retained failed delivery or Help Scout error; `degraded` means
+uncertain delivery; `ok` means no observed failure, with unconfigured rows
+explicitly labeled. API and MCP share bearer authority and its latest 200 usage receipts; a
+refused scope or quota marks both rows degraded, without presenting either as
+a provider outage. Delivery counts cover the most recent 200 intents;
+configuration/scopes cover at most 100 active destinations/credentials.
+Uncertain webhook reconciliation names the observed attempt and offers one
+explicit resend approval. Help Scout shows cursor, last pull, waiting events,
+erased skips and a manual pull. Secrets, destination URLs, provider error bodies
+and customer text never enter the catalog. Unattended scheduled pulls and
+automatic apply are not implemented; imports remain person-reviewed.
+
+## Move in: Zendesk connection and pull
+
+These routes take a workspace **owner or admin session** (the dashboard's
+session, or a session bearer token for the same person), not a workspace API
+token. They return JSON, never a token, code, verifier or link, except Connect,
+which returns the Zendesk consent page address to open. `PROJECT_ID` is the
+workspace and `PULL_ID` a pull. See [Move in](moving-in.md#connect-zendesk-and-pull-everything).
+
+| Method and path | What it does |
+| --- | --- |
+| `POST /api/move-in/projects/PROJECT_ID/zendesk/connect` | Body `{"subdomain":"acme","clientId":"…"}`. Returns `{"url":"https://acme.zendesk.com/oauth/authorizations/new?…"}` with `response_type=code`, `scope=read hc:read`, a single-use `state` bound to this session and workspace, and an S256 `code_challenge`. 409 when the workspace already holds another subdomain's history. |
+| `GET /api/move-in/zendesk/callback` | Zendesk's redirect target, `APP_ORIGIN` + this path. Checks `state` and the session, exchanges the code with its PKCE verifier (no client secret), stores the tokens encrypted, and redirects to Move in with `?zendesk=connected` (or `denied`, `expired`, `failed`, `conflict`). |
+| `GET /api/move-in/projects/PROJECT_ID/zendesk/connection` | `{connected, state, subdomain, clientKind:"public", scopes, accessExpiresAt, refreshExpiresAt}`; `state` is `connected`, `reconnect`, `disconnected` or `none`. |
+| `DELETE /api/move-in/projects/PROJECT_ID/zendesk/connection` | Removes the stored tokens and returns `{"disconnected":true,"revoke":{"outcome":"revoked","status":204}}`, where `outcome` is Zendesk's answer to revoking the current token: `revoked`, `refused`, `unreachable` or `not_held`. |
+| `POST /api/move-in/projects/PROJECT_ID/zendesk/pulls` | Starts a pull (201). One pull at a time per workspace (409). After an applied pull, a new one reads only what is new or changed; after a pulled batch was undone, it reads the whole account again. |
+| `GET /api/move-in/projects/PROJECT_ID/zendesk/pulls` | Your latest pulls. |
+| `GET /api/move-in/projects/PROJECT_ID/zendesk/pulls/PULL_ID` | `state` (`pulling`, `reviewing`, `ready`, `applying`, `applied`, `abandoned`), `phase`, `error`, `nextAt`, `progress`, `totals` (`tickets`: seen, deleted, alreadyImported, imported and refused; `replies` on already imported tickets: seen, imported and refused; `keptAsImported`: tickets, users and organizations changed in Zendesk and kept as imported; users; organizations; articles published, draft and held back), `refusals` by kind and source id with reasons, `batches` (each an ordinary Move in import: `runId`, `state`, `error`, `summary`, `covered`, `stopped`, `nothingToImport`) and, when `ready`, the `fingerprint` to approve. A pull with a stopped batch keeps its `state`, names the batch's reason in `error` and counts it in `progress.batchesStopped`. |
+| `POST /api/move-in/projects/PROJECT_ID/zendesk/pulls/PULL_ID/approve` | Body `{"fingerprint":"…"}` from the current view (409 when stale). Binds every batch's reviewed fingerprint; each batch with something to import then applies in the background, its refused records staying out with their reasons. The pull becomes `applied` only when no batch is left. |
+| `POST /api/move-in/projects/PROJECT_ID/zendesk/pulls/PULL_ID/resume` | After a stop: this session takes over and the pull continues from its checkpoint, with every batch that stopped in review or while importing, or whose session ended. |
+| `POST /api/move-in/projects/PROJECT_ID/zendesk/pulls/PULL_ID/abandon` | Stops a pull before approval and removes what it staged. Batches already prepared stay as ordinary imports. |
+
+Each pulled batch is also listed, reviewed, resumed and undone through the
+existing `/api/move-in/projects/PROJECT_ID/imports` routes.

@@ -1,3 +1,4 @@
+import {mobileApprovals} from '../mobile-approvals.mjs';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {join} from 'node:path';
@@ -22,7 +23,7 @@ export async function newVisitor({origin,api,projectId}){
  const say=async content=>{const current=await transcript();return visitor('/api/conversations/'+conversation.id+'/messages',{localId:randomUUID(),content,expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId})};
  await say(report);return {session,transcript,say};
 }
-export async function runCase({origin,api,actor,fixture,directory,ui}){
+export async function runCase({origin,api,actor,fixture,directory,ui,mobile=false}){
  const projectId=actor.projectId;
  fixture.reset();
  const visitor=ui?await ui.visitor():await newVisitor({origin,api,projectId});
@@ -41,6 +42,7 @@ export async function runCase({origin,api,actor,fixture,directory,ui}){
   if(ui)return ui.delegate(worker.deviceId,mode,instructions,jobs);
   return (await api(path,{device_id:worker.deviceId,mode,instructions,request_id:randomUUID()})).data;
  };
+ let mobileWork;
  try{
   const investigation=await delegate('investigate','Investigate the Spanish setting on the disposable fixture. Read only; propose any change for my approval.');
   assert.equal(investigation.status,'queued');assert.equal(investigation.mode,'investigate');assert.equal(investigation.operator_id,actor.id);
@@ -52,7 +54,8 @@ export async function runCase({origin,api,actor,fixture,directory,ui}){
   assert.equal((await jobs()).length,1);assert.equal(fixture.enabled,false);assert.equal(fixture.events.filter(e=>e.method==='POST').length,0);await noReply();
   await ui?.refresh();await screenshot('c','Read-only findings show evidence, a proposed resolve action and an unsent reply. No customer setting has changed.');
   const approvedAt=Date.now();
-  const approval=ui?await ui.approve(path,investigation.id):(await api(path+'/'+investigation.id+'/result/follow-up-actions/enable',{})).data;
+  if(mobile)mobileWork=await mobileApprovals({origin,api,actor,conversationId,jobId:investigation.id,visitor});
+  const approval=mobileWork?mobileWork.approval:ui?await ui.approve(path,investigation.id):(await api(path+'/'+investigation.id+'/result/follow-up-actions/enable',{})).data;
   const child=await lookup(approval.child_delegation_id);assert.ok(child);assert.equal(child.parent_delegation_id,investigation.id);assert.equal(child.source_proposal_id,'enable');assert.equal(child.mode,'resolve');assert.equal(child.operator_id,actor.id);assert.equal(child.status,'queued');
   assert.ok(Date.parse(child.created_at)>=approvedAt-1000);assert.equal(fixture.enabled,false);
   const replayApproval=(await api(path+'/'+investigation.id+'/result/follow-up-actions/enable',{})).data;assert.equal(replayApproval.child_delegation_id,child.id);assert.equal((await jobs()).length,2);
@@ -70,7 +73,8 @@ export async function runCase({origin,api,actor,fixture,directory,ui}){
   assert.ok(observed.context.internal_notes.some(n=>n.id==='delegation:'+child.id));
   await noReply();await ui?.refresh();await screenshot('f','A distinct investigation reads the customer setting itself and confirms it; the operator sees both reports.');
   const reply=observed.result.replies[0];let sent;
-  if(ui)sent=await ui.send(reply,observation.id);
+  if(mobileWork)sent=await mobileWork.send(reply,observation.id);
+  else if(ui)sent=await ui.send(reply,observation.id);
   else{
    const before=await transcript();
    const draft=(await api(path+'/'+observation.id+'/result/draft',{proposal_id:reply.id,expected_revision:before.revision,expected_last_message_id:before.lastMessageId})).data;
@@ -89,5 +93,5 @@ export async function runCase({origin,api,actor,fixture,directory,ui}){
   const notes=bucket.events.filter(event=>event.type==='INTERNAL_NOTE');assert.equal(notes.length,3);
   for(const job of final){const note=notes.find(n=>n.id==='delegation:'+job.id);assert.ok(note);assert.equal(note.agent_id,actor.id);assert.ok(Date.parse(note.created_at)>=Date.parse(job.started_at));assert.ok(note.content.includes(job.result.summary));assert.ok(note.content.includes(job.result.actions[0].evidence))}
   return {projectId,conversationId,deviceId:worker.deviceId,investigationId:investigation.id,childId:child.id,observationId:observation.id,messageId:sent.message.id,jobs:final,notes,fixtureEvents:[...fixture.events],operatorId:actor.id};
- }finally{await worker.close();await visitor.close?.()}
+ }finally{await mobileWork?.close();await worker.close();await visitor.close?.()}
 }

@@ -3,8 +3,11 @@ import {LIMITS} from './types'
 import type { NativeValue } from './readers/normalise'
 import {completeImportedTicket} from './ticket-state'
 import {emailKey} from './contact-keys'
-interface Table {name:string;key:string;columns:string[];order:string;generated?:string[];nativeOnly?:boolean}
+import {removeUnusedImportedArticle} from '../knowledge/import-undo'
+interface Table {name:string;key:string;columns:string[];order:string;generated?:string[];nativeOnly?:boolean;direct?:boolean}
 const table=(name:string,key:string,columns:string,order=key,generated?:string[]):Table=>({name,key,columns:columns.split(','),order,generated})
+// A table read by its own key alone, whatever its name means for other kinds.
+const direct=(t:Table,nativeOnly=false):Table=>({...t,direct:true,...(nativeOnly?{nativeOnly}:{})})
 const entities:Record<string,Table[]>={
  company:[table('companies','id','id,project_id,name,attributes_json,portal_company_view,revision,created_at,updated_at,merged_into'),table('company_domains','company_id','project_id,company_id,domain','domain')],
  field:[table('ticket_fields','id','project_id,id,name,type,required,options_json,validation_json,read_roles_json,write_roles_json,updated_at')],
@@ -19,6 +22,15 @@ const entities:Record<string,Table[]>={
  contact:[table('contacts','id','id,project_id,name,email,external_id,created_at,is_verified,metadata_json'),table('context_subjects','subject_id','project_id,subject_id,consent,revision,help_types,bot_enabled'),table('contact_companies','contact_id','project_id,contact_id,company_id')],
  macro:[table('macros','id','id,project_id,title,content,created_by,created_at,updated_at'),table('macro_heads','macro_id','macro_id,version,archived_at,archived_by'),table('macro_versions','macro_id','macro_id,project_id,version,title,content,actions_json,scope_json,created_by,created_at','version')],
  article:[table('knowledge_articles','id','id,project_id,category_id,slug,title,content,summary,status,updated_at,position,source_revision,source_incarnation,publication_version','id',['publication_version']),table('knowledge_article_categories','article_id','article_id,category_id','category_id')],
+ // A reply imported onto a conversation an earlier import holds: its own message
+ // (or private note) and source row. Its revision is the conversation's next one,
+ // taken when it is written, so it is not part of its reviewed image.
+ reply:[
+  direct(table('messages','id','id,project_id,conversation_id,local_id,actor_id,actor_role,content,created_at,intent_hash,bucket_id,erased_at,citations_json')),
+  direct(table('move_in_message_sources','message_id','message_id,project_id,author_json,source_id,source_time,time_provenance')),
+  direct(table('move_in_notes','id','id,project_id,conversation_id,author_json,content,created_at,source_time')),
+  direct(table('message_authorship','message_id','message_id,project_id,kind,source_kind,source_id,source_part,recorded_at'),true)
+ ],
  conversation:[
   table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id,subject,status_id,status_category,channel,group_id'),
   table('move_in_conversations','conversation_id','conversation_id,project_id,vendor,source_id,subject,source_state,source_channel'),
@@ -46,15 +58,15 @@ const entities:Record<string,Table[]>={
   ].map(t=>({...t,nativeOnly:true}))]
 }
 function definitions(kind:string){const value=entities[kind];if(!value)throw new Error('unsupported_native_target');return value}
-function where(t:Table){if(t.name==='macro_heads')return 'macro_id=? AND macro_id IN (SELECT id FROM macros WHERE project_id=?)';if(t.name==='message_authorship')return 'message_id IN (SELECT id FROM messages WHERE conversation_id=? AND project_id=?)';if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return 'resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=? AND project_id=?)';if(t.nativeOnly)return 'conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)';if(t.name==='move_in_message_sources')return 'project_id=? AND message_id IN (SELECT id FROM messages WHERE project_id=? AND conversation_id=?)';if(t.name==='knowledge_article_categories')return 'article_id=? AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=?)';return `project_id=? AND ${t.key}=?`}
-function params(t:Table,destination:string,id:string){return t.nativeOnly?[id,destination]:t.name==='move_in_message_sources'?[destination,destination,id]:['knowledge_article_categories','macro_heads'].includes(t.name)?[id,destination]:[destination,id]}
+function where(t:Table){if(t.direct)return `project_id=? AND ${t.key}=?`;if(t.name==='macro_heads')return 'macro_id=? AND macro_id IN (SELECT id FROM macros WHERE project_id=?)';if(t.name==='message_authorship')return 'message_id IN (SELECT id FROM messages WHERE conversation_id=? AND project_id=?)';if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return 'resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=? AND project_id=?)';if(t.nativeOnly)return 'conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)';if(t.name==='move_in_message_sources')return 'project_id=? AND message_id IN (SELECT id FROM messages WHERE project_id=? AND conversation_id=?)';if(t.name==='knowledge_article_categories')return 'article_id=? AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=?)';return `project_id=? AND ${t.key}=?`}
+function params(t:Table,destination:string,id:string){return t.direct?[destination,id]:t.nativeOnly?[id,destination]:t.name==='move_in_message_sources'?[destination,destination,id]:['knowledge_article_categories','macro_heads'].includes(t.name)?[id,destination]:[destination,id]}
 const realPolicyColumns=new Set(['first_response_minutes','next_response_minutes','resolution_minutes','approaching_minutes','unattended_minutes'])
 function select(t:Table){const columns=t.columns.map(c=>t.name==='sla_policies'&&realPolicyColumns.has(c)?`CASE WHEN ${c}=CAST(${c} AS INTEGER) THEN CAST(${c} AS INTEGER) ELSE ${c} END`:c);return `(SELECT COALESCE(json_group_array(json_array(${columns.join(',')})),'[]') FROM (SELECT ${t.columns.join(',')} FROM ${t.name} WHERE ${where(t)} ORDER BY ${t.order}))`}
 function orderKey(t:Table,row:Record<string,any>){return t.name==='email_threading_keys'?`${row.key_kind}:${row.key_value}`:String(row[t.order])}
 function expected(t:Table,value:NativeValue){return JSON.stringify([...(value.tables[t.name]??[])].sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0).map(row=>t.columns.map(column=>column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null)))}
 function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sql {
  const defs=definitions(kind),clauses:string[]=[],bindings:any[]=[]
- for(const t of defs){clauses.push(`${select(t)}=?`);bindings.push(...params(t,destination,id),row?expected(t,row.value as unknown as NativeValue):'[]')}
+ for(const t of defs){if(!row&&kind==='contact'&&t.name==='contacts'){clauses.push(`(${select(t)}=? OR EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND id=? AND name IS NULL AND email IS NULL AND external_id IS NULL AND is_verified=0 AND json_extract(metadata_json,'$.is_erased')=1))`);bindings.push(...params(t,destination,id),'[]',destination,id)}else{clauses.push(`${select(t)}=?`);bindings.push(...params(t,destination,id),row?expected(t,row.value as unknown as NativeValue):'[]')}}
  // Equality describes the imported definition. References created by the
  // same import do not change it; undoReferencesClear protects deletion.
  if(row&&kind==='form'){clauses.push('NOT EXISTS(SELECT 1 FROM request_form_submissions WHERE project_id=? AND form_id=?)');bindings.push(destination,id)}
@@ -64,7 +76,7 @@ function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sq
  else {clauses.push('NOT EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?)');bindings.push(destination,kind,id)}
  return {sql:`(${clauses.join(' AND ')})`,params:bindings}
 }
-export function nativeStatementCount(kind:string,value:NativeValue){return definitions(kind).filter(t=>!t.nativeOnly).reduce((n,t)=>n+(value.tables[t.name]?.length??0),0)+1+(kind==='conversation'?2:kind==='article'||kind==='contact'?1:0)}
+export function nativeStatementCount(kind:string,value:NativeValue){return definitions(kind).filter(t=>!t.nativeOnly).reduce((n,t)=>n+(value.tables[t.name]?.length??0),0)+1+(kind==='conversation'?2:kind==='reply'?4:kind==='article'||kind==='contact'?1:0)}
 export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
  if(kind==='conversation')completeImportedTicket(value)
  if(kind==='macro'){
@@ -86,12 +98,15 @@ export const nativeTargets:D1TargetAdapter={
   const tables:NativeValue['tables']={};for(let i=0;i<defs.length;i++){const t=defs[i];tables[t.name]=JSON.parse(row[`t${i}`]).map((values:any[])=>Object.fromEntries(t.columns.map((column,index)=>[column,values[index]])))}
   if(kind==='contact'&&!tables.contact_companies.length)delete tables.contact_companies
   if(kind==='conversation'&&!tables.move_in_attachment_bytes.length)delete tables.move_in_attachment_bytes
+  if(!row.source&&kind==='contact'&&tables.contacts[0]&&JSON.parse(tables.contacts[0].metadata_json||'{}').is_erased===1)return undefined
   if(!row.source&&!Object.values(tables).some(rows=>rows.length))return undefined
   // An unowned native collision is visible to the kit and cannot be overwritten without review.
   return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:{tables,source:row.source?JSON.parse(row.source):{}} as any}
  },
  matches:guard,
+ matchesMany:matchesOwnedSet,
  write(row){const value=row.value as unknown as NativeValue,statements:D1Sql[]=[]
+  if(row.targetKind==='reply')return replyWrite(row.destination,row.targetId,value,row.revision)
   if(row.targetKind==='conversation')statements.push({sql:'INSERT INTO move_in_native_fences(project_id,conversation_id) VALUES(?,?)',params:[row.destination,row.targetId]})
   for(const t of definitions(row.targetKind).filter(t=>!t.nativeOnly&&!['macro_heads','macro_versions'].includes(t.name)))for(const item of value.tables[t.name]??[]){if(item.project_id!==undefined&&item.project_id!==row.destination)throw new Error('native_destination_mismatch');const columns=t.columns.filter(c=>!t.generated?.includes(c));statements.push({sql:`INSERT ${t.name==='context_subjects'?'OR REPLACE ':''}INTO ${t.name}(${columns.join(',')}) VALUES(${columns.map(()=>'?').join(',')})`,params:columns.map(c=>item[c]??null)})}
   if(row.targetKind==='macro'){const version=value.tables.macro_versions[0];statements.push({sql:'UPDATE macro_versions SET actions_json=?,scope_json=? WHERE macro_id=? AND project_id=? AND version=1',params:[version.actions_json,version.scope_json,row.targetId,row.destination]})}
@@ -100,7 +115,7 @@ export const nativeTargets:D1TargetAdapter={
   if(row.targetKind==='conversation')statements.push({sql:'DELETE FROM move_in_native_fences WHERE project_id=? AND conversation_id=?',params:[row.destination,row.targetId]})
   statements.push({sql:'INSERT INTO move_in_origins(project_id,target_kind,target_id,vendor,source_id,source_json,revision) VALUES(?,?,?,?,?,?,?)',params:[row.destination,row.targetKind,row.targetId,value.source.vendor,value.source.id,JSON.stringify(value.source),row.revision]});return statements
  },
- remove(destination,kind,id){const statements=[...definitions(kind)].filter(t=>!t.nativeOnly).reverse().map(t=>({sql:`DELETE FROM ${t.name} WHERE ${where(t)}`,params:params(t,destination,id)})).concat([{sql:'DELETE FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?',params:[destination,kind,id]}]);if(kind==='calendar')statements.unshift({sql:'INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM sla_policies WHERE project_id=? AND calendar_id=?) THEN 1 ELSE 0 END',params:[destination,id]});if(kind==='conversation'){statements.unshift({sql:"DELETE FROM context_tracked_events WHERE project_id=? AND type='MESSAGE_READ' AND json_valid(payload) AND json_extract(payload,'$.conversation_id')=?",params:[destination,id]});statements.unshift({sql:'DELETE FROM conversation_reads WHERE conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)',params:[id,destination]});statements.unshift({sql:'INSERT INTO move_in_native_fences(project_id,conversation_id) VALUES(?,?)',params:[destination,id]});statements.push({sql:'DELETE FROM move_in_native_fences WHERE project_id=? AND conversation_id=?',params:[destination,id]})}return statements},
+ remove(destination,kind,id){if(kind==='reply')return replyRemove(destination,id);const statements=[...definitions(kind)].filter(t=>!t.nativeOnly).reverse().map(t=>({sql:`DELETE FROM ${t.name} WHERE ${where(t)}`,params:params(t,destination,id)})).concat([{sql:'DELETE FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?',params:[destination,kind,id]}]);if(kind==='calendar')statements.unshift({sql:'INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM sla_policies WHERE project_id=? AND calendar_id=?) THEN 1 ELSE 0 END',params:[destination,id]});if(kind==='conversation'){statements.unshift({sql:"DELETE FROM context_tracked_events WHERE project_id=? AND type='MESSAGE_READ' AND json_valid(payload) AND json_extract(payload,'$.conversation_id')=?",params:[destination,id]});statements.unshift({sql:'DELETE FROM conversation_reads WHERE conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)',params:[id,destination]});statements.unshift({sql:'INSERT INTO move_in_native_fences(project_id,conversation_id) VALUES(?,?)',params:[destination,id]});statements.push({sql:'DELETE FROM move_in_native_fences WHERE project_id=? AND conversation_id=?',params:[destination,id]})}if(kind==='article')statements.push(...removeUnusedImportedArticle(destination,id));return statements},
  async list(db,destination){
   const origins=(await db.prepare('SELECT * FROM move_in_origins WHERE project_id=? ORDER BY target_kind,target_id').bind(destination).all<any>()).results
   return snapshotsForOrigins(db,destination,origins)
@@ -128,7 +143,8 @@ function snapshotQuery(t:Table){
  // CROSS JOIN fixes the bounded candidate list as the outer loop. Otherwise
  // SQLite can choose a project index and visit every unrelated workspace row.
  const ids='json_each(?2) wanted'
- return t.name==='macro_heads'?`SELECT c.*,c.macro_id AS bundle_id FROM ${ids} CROSS JOIN macros m ON m.id=wanted.value AND m.project_id=?1 CROSS JOIN macro_heads c ON c.macro_id=m.id`:
+ return t.direct?`SELECT c.*,c.${t.key} AS bundle_id FROM ${ids} CROSS JOIN ${t.name} c ON c.${t.key}=wanted.value AND c.project_id=?1`:
+    t.name==='macro_heads'?`SELECT c.*,c.macro_id AS bundle_id FROM ${ids} CROSS JOIN macros m ON m.id=wanted.value AND m.project_id=?1 CROSS JOIN macro_heads c ON c.macro_id=m.id`:
     t.name==='message_authorship'?`SELECT c.*,m.conversation_id AS bundle_id FROM ${ids} CROSS JOIN messages m ON m.project_id=?1 AND m.conversation_id=wanted.value CROSS JOIN message_authorship c ON c.message_id=m.id AND c.project_id=?1`:
     t.name==='conversation_ratings'||t.name==='conversation_rating_history'?`SELECT c.*,r.conversation_id AS bundle_id FROM ${ids} CROSS JOIN conversation_resolutions r ON r.project_id=?1 AND r.conversation_id=wanted.value CROSS JOIN ${t.name} c ON c.resolution_id=r.id`:
     t.name==='move_in_message_sources'?`SELECT c.*,m.conversation_id AS bundle_id FROM ${ids} CROSS JOIN messages m ON m.project_id=?1 AND m.conversation_id=wanted.value CROSS JOIN move_in_message_sources c ON c.message_id=m.id AND c.project_id=?1`:
@@ -148,4 +164,53 @@ async function snapshotsForOrigins(db:D1Database,destination:string,origins:any[
   for(const origin of owned){const tables:NativeValue['tables']={};for(const t of definitions(kind))tables[t.name]=snapshots.get(t.name)?.get(origin.target_id)??[];result.push({destination,targetKind:kind,targetId:origin.target_id,revision:origin.revision,value:completeNativeValue(kind,{tables,source:JSON.parse(origin.source_json)}) as any})}
  }
  return result
+}
+
+/** Fixed query count and exact owned-set fences. SQL compares each canonical
+ * ordered table image; count and origin/revision markers close the set. */
+function matchesOwnedSet(rows:TargetRow[],destination:string):D1Sql[]{
+ const guards:D1Sql[]=[{sql:'(SELECT COUNT(*) FROM move_in_origins WHERE project_id=?)=?',params:[destination,rows.length]}]
+ for(const kind of Object.keys(entities)){
+  const owned=rows.filter(row=>row.targetKind===kind).sort((a,b)=>a.targetId.localeCompare(b.targetId)),ids=JSON.stringify(owned.map(row=>row.targetId))
+  guards.push({sql:'(SELECT COUNT(*) FROM move_in_origins WHERE project_id=? AND target_kind=?)=?',params:[destination,kind,owned.length]})
+  if(!owned.length)continue
+  // Origin JSON is parsed by list; compare canonical JSON in SQL as well as
+  // revisions, so textual whitespace cannot hide a value change.
+  guards.push({sql:`NOT EXISTS(SELECT 1 FROM json_each(?) expected WHERE NOT EXISTS(SELECT 1 FROM move_in_origins o WHERE o.project_id=? AND o.target_kind=? AND o.target_id=json_extract(expected.value,'$.id') AND o.revision=json_extract(expected.value,'$.revision') AND json(o.source_json)=json(json_extract(expected.value,'$.source'))))`,params:[JSON.stringify(owned.map(row=>({id:row.targetId,revision:row.revision,source:(row.value as unknown as NativeValue).source}))),destination,kind]})
+  for(const t of definitions(kind)){
+   const expectedRows=owned.flatMap(row=>(row.value as unknown as NativeValue).tables[t.name]??[]).map(row=>t.columns.map(column=>row[column]??null))
+   // Compare a sorted multiset of JSON arrays, preserving NULL, numeric types,
+   // Unicode and every owned column, including attachments and private notes.
+   const images=expectedRows.map(row=>JSON.stringify(row)).sort(),columns=t.columns.map(column=>t.name==='sla_policies'&&realPolicyColumns.has(column)?`CASE WHEN ${column}=CAST(${column} AS INTEGER) THEN CAST(${column} AS INTEGER) ELSE ${column} END`:column)
+   guards.push({sql:`(WITH scope(project,ids) AS (VALUES(?,?)) SELECT COALESCE(json_group_array(json(image)),'[]') FROM (SELECT json_array(${columns.join(',')}) image FROM (${snapshotQuery(t).replaceAll('?1','(SELECT project FROM scope)').replaceAll('?2','(SELECT ids FROM scope)')}) ORDER BY image))=?`,params:[destination,ids,JSON.stringify(images.map(image=>JSON.parse(image)))]})
+  }
+ }
+ return guards
+}
+
+/** A reply joins its conversation as the next revision and its latest message,
+ * under the same fence that keeps imported history inert. A private note changes
+ * only its own row. */
+function replyWrite(destination:string,id:string,value:NativeValue,revision:string):D1Sql[]{
+ const conversation=String(value.source.conversation),message=value.tables.messages?.[0],statements:D1Sql[]=[{sql:'INSERT INTO move_in_native_fences(project_id,conversation_id) VALUES(?,?)',params:[destination,conversation]}]
+ for(const t of definitions('reply').filter(t=>!t.nativeOnly))for(const item of value.tables[t.name]??[]){
+  if(item.project_id!==destination||item.conversation_id!==undefined&&item.conversation_id!==conversation)throw new Error('native_destination_mismatch')
+  if(t.name==='messages')statements.push({sql:`INSERT INTO messages(${t.columns.join(',')},revision) SELECT ${t.columns.map(()=>'?').join(',')},revision+1 FROM conversations WHERE project_id=? AND id=?`,params:[...t.columns.map(c=>item[c]??null),destination,conversation]},{sql:'INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(SELECT 1 FROM messages WHERE project_id=? AND id=?) THEN 1 ELSE 0 END',params:[destination,id]})
+  else statements.push({sql:`INSERT INTO ${t.name}(${t.columns.join(',')}) VALUES(${t.columns.map(()=>'?').join(',')})`,params:t.columns.map(c=>item[c]??null)})
+ }
+ if(message)statements.push({sql:'UPDATE conversations SET revision=revision+1,last_message_id=? WHERE project_id=? AND id=?',params:[id,destination,conversation]})
+ statements.push({sql:'DELETE FROM move_in_native_fences WHERE project_id=? AND conversation_id=?',params:[destination,conversation]},{sql:'INSERT INTO move_in_origins(project_id,target_kind,target_id,vendor,source_id,source_json,revision) VALUES(?,?,?,?,?,?,?)',params:[destination,'reply',id,value.source.vendor,value.source.id,JSON.stringify(value.source),revision]})
+ return statements
+}
+/** Undo takes the reply out again. While it is still the conversation's latest
+ * message, the conversation returns to its previous revision and latest message;
+ * a later native reply keeps its place. */
+function replyRemove(destination:string,id:string):D1Sql[]{
+ const conversation="(SELECT json_extract(source_json,'$.conversation') FROM move_in_origins WHERE project_id=? AND target_kind='reply' AND target_id=?)"
+ return [
+  {sql:`INSERT INTO move_in_native_fences(project_id,conversation_id) SELECT ?,${conversation}`,params:[destination,destination,id]},
+  {sql:`UPDATE conversations SET revision=revision-1,last_message_id=(SELECT m.id FROM messages m WHERE m.project_id=?1 AND m.conversation_id=conversations.id AND m.id<>?2 ORDER BY m.revision DESC LIMIT 1) WHERE project_id=?1 AND id=(SELECT json_extract(source_json,'$.conversation') FROM move_in_origins WHERE project_id=?1 AND target_kind='reply' AND target_id=?2) AND last_message_id=?2 AND revision=(SELECT revision FROM messages WHERE project_id=?1 AND id=?2)`,params:[destination,id]},
+  ...[...definitions('reply')].filter(t=>!t.nativeOnly).reverse().map(t=>({sql:`DELETE FROM ${t.name} WHERE ${where(t)}`,params:params(t,destination,id)})),
+  {sql:`DELETE FROM move_in_native_fences WHERE project_id=? AND conversation_id=${conversation}`,params:[destination,destination,id]},
+  {sql:'DELETE FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?',params:[destination,'reply',id]}]
 }

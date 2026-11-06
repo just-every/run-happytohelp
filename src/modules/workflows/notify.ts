@@ -12,7 +12,14 @@ export interface WorkflowNotificationResult {state:'pending'|'complete'|'failed'
 export async function notifyWorkflow(env:Env,input:WorkflowNotification):Promise<WorkflowNotificationResult>{
  const {projectId,conversationId,id,kind,recipientId,message}=input,now=workflowNow(env)
  const prior=await env.DB.prepare('SELECT state,detail FROM workflow_notifications WHERE id=? AND project_id=? AND conversation_id=?').bind(id,projectId,conversationId).first<any>()
- if(prior&&prior.state!=='pending')return {state:prior.state==='sending'?'uncertain':prior.state,detail:prior.detail??undefined}
+ if(prior&&prior.state!=='pending'){
+  if(prior.state==='sending'){
+   const detail='Notification claim was interrupted; delivery outcome is unknown; no automatic replay'
+   await env.DB.prepare("UPDATE workflow_notifications SET state='uncertain',detail=?,updated_at=? WHERE id=? AND project_id=? AND conversation_id=? AND state='sending'").bind(detail,now,id,projectId,conversationId).run()
+   return {state:'uncertain',detail}
+  }
+  return {state:prior.state,detail:prior.detail??undefined}
+ }
  const customer=['customer_update','request_received','solved'].includes(kind)
  if(kind.startsWith('sla_')&&!recipientId)return {state:'cancelled',detail:'An SLA alert requires a named current operator'}
  if(customer&&recipientId)return {state:'cancelled',detail:'Customer notices use the ticket’s current proven customer addresses'}

@@ -19,8 +19,9 @@ export function DocsPage({ page, sections, repository, version }: DocsView) {
   useCurrentDocs(version);
   const order = sections.flatMap(section => section.pages.map(entry => ({ ...entry, section: section.title })));
   const index = order.findIndex(entry => entry.slug === page.slug);
-  const current = order[index];
-  const stroke = assignTitleStrokes(sections).get(page.slug)!;
+  const current = order[index] ?? { label: page.title, section: 'Start here' };
+  const strokes = assignTitleStrokes(sections);
+  const stroke = strokes.get(page.slug) ?? strokes.get('getting-started')!;
   return <div className="h2h-home h2h-docs">
     <a className="skip-link" href="#docs-content">Skip to the content</a>
     <SiteHeader home="/" current="docs" />

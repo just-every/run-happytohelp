@@ -4,6 +4,16 @@ Use **Settings → Email** to configure sending, forwarding and connected mailbo
 
 Forwarding uses the installation's email provider. Connected mailboxes receive and send through the account you authorize. Disconnecting stops intake and sending while keeping ticket history.
 
+## Outbound email off
+
+An installation deployed with `MAIL_PROVIDER=none` sends nothing. Sign-in links, password resets, invitations, notifications, replies by email, the test send and surveys each report that outbound email is off, and **Settings → Email** and **Setup** say so. Receiving mail, importing and everything that does not send keep working. Owners get in with a one-time link from `node scripts/hosted-signin.mjs`, or their password.
+
+To turn sending on, run this from the checkout that deployed the installation, with the provider inputs in your private `--env-file` and `MAIL_PROVIDER=none` removed from it. Nothing else changes:
+
+```sh
+rer deploy --environment production --env-file <file> --set-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY
+```
+
 ## Managed email
 
 A compatible Managed installation receives an address from Run Edit Run before its first workspace is created. Setup shows it under **What we’ve set**. There is no customer mail key, provider account or DNS task. Independent and Assisted installations keep their direct Resend, SendGrid or Cloudflare setup.

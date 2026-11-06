@@ -463,19 +463,6 @@
         "field": "MAIL_PROVIDER",
         "equals": "rer"
       }
-    },
-    {
-      "name": "RER_MAIL_INGRESS_KEY",
-      "label": "Private managed receiving authority",
-      "kind": "secret",
-      "required": true,
-      "when": {
-        "field": "MAIL_PROVIDER",
-        "equals": "rer"
-      },
-      "ownerVisible": false,
-      "input": "managed",
-      "generate": "hex"
     }
   ],
   "steps": [

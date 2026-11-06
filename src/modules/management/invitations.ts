@@ -6,7 +6,7 @@ import {requiredString} from '../../platform/db'
 import {scope} from './common'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement,requestSource} from '../audit/record'
-import {sendEmail,emailConfigured} from '../integrations/email'
+import {sendEmail,emailConfigured,emailOffMessage} from '../integrations/email'
 import {INVITATION_LIFETIME_SECONDS,issueInvitation,manageableInvitation,revokeInvitation} from './invitation-store'
 
 export const invitations=new Hono<AppEnv>()
@@ -70,7 +70,7 @@ invitations.post('/projects/:projectId/invitations/:invitationId/link',async c=>
 
 invitations.post('/projects/:projectId/invitations/:invitationId/resend',async c=>{
  const a=await scope(c,true),invitation=await reissuable(c,a)
- if(!emailConfigured(c.env))throw new HTTPException(503,{message:'Email delivery is not configured, so the invitation cannot be emailed. Copy the link and share it instead.'})
+ if(!emailConfigured(c.env))throw new HTTPException(503,{message:`${emailOffMessage} The invitation cannot be emailed: copy the link and share it instead.`})
  const link=await issueInvitation(c.env.DB,String(c.env.APP_ORIGIN||new URL(c.req.url).origin),a.projectId,invitation.email,invitation.role)
  const receipt=await mailInvitation(c.env,a.projectId,a.id,invitation.email,invitation.role,link.hash,link.url)
  await reissued(c,a,invitation.role,link.hash,'email')

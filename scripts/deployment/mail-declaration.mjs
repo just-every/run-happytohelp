@@ -10,8 +10,11 @@ export function managedMailDeclaration(declaration){
 }
 export function nativeMailSetupManifest(manifest){
  const native=structuredClone(manifest);
- // Rer generates declared secrets even when their setup condition is inactive.
- // Native MAIL_API_KEY maps the owner's EMAIL_API_KEY and must never be generated.
- native.fields=native.fields.filter(field=>field.name!=='MAIL_API_KEY');
+ // This manifest serves every deploy whose MAIL_PROVIDER is not `rer`, so its
+ // managed-mail fields are never active. Rer generates declared secrets even when
+ // their setup condition is inactive: drop those keys so a native or mail-off
+ // deploy binds no managed mail authority. Native MAIL_API_KEY maps the owner's
+ // EMAIL_API_KEY and must never be generated.
+ native.fields=native.fields.filter(field=>!(field.generate&&field.when?.field==='MAIL_PROVIDER'&&field.when.equals==='rer'));
  return native;
 }

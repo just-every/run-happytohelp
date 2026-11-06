@@ -23,7 +23,12 @@ export function fakeZendesk(){
   104:{record:ticket(104,4,'solved','synthetic-hh very long thread'),comments:largeComments()},
   105:{record:ticket(105,5,'pending','synthetic-hh screenshot attached'),comments:[comment(10501,5,2,`synthetic-hh see screenshot ${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,true,{attachments:[inline(70501)]})]},
   106:{record:ticket(106,1,'new','synthetic-hh follow-up after the move'),comments:[comment(10601,1,8,'synthetic-hh one more question'),comment(10602,2,8,'synthetic-hh answered',true)]},
+  107:{record:ticket(107,3,'new','synthetic-hh question from a renamed person'),comments:[comment(10701,3,8,'synthetic-hh hello again')]},
  }
+ // After the first pull: ticket 101 gets a new public reply, and person 3 is renamed.
+ const changed={101:{record:{...tickets[101].record,updated_at:at(9)},comments:[...tickets[101].comments,comment(10103,1,9,'synthetic-hh a reply after the move')]}}
+ const renamed={...users[2],name:'synthetic-hh person 3 renamed'}
+ const current=id=>state.repeat&&changed[id]?changed[id]:tickets[id],people=()=>state.repeat?users.map(u=>u.id===3?renamed:u):users
  const field=(id,type,title,extra={})=>({url:`${ORIGIN}/api/v2/ticket_fields/${id}.json`,id,type,title,raw_title:title,description:'',raw_description:'',position:id,active:true,required:false,collapsed_for_agents:false,regexp_for_validation:null,title_in_portal:title,raw_title_in_portal:title,visible_in_portal:true,editable_in_portal:true,required_in_portal:false,tag:null,created_at:at(1),updated_at:at(1),removable:true,key:null,agent_description:null,agent_can_edit:true,...extra})
  const fields=[field(70,'checkbox','Synthetic flag'),field(71,'subject','Subject',{removable:false}),field(72,'text','Synthetic agent note',{visible_in_portal:false,editable_in_portal:false})]
  const article=(id,title,draft,segment)=>({id,url:`${ORIGIN}/api/v2/help_center/en-us/articles/${id}.json`,html_url:`https://${SUBDOMAIN}.zendesk.com/hc/en-us/articles/${id}`,author_id:2,comments_disabled:false,draft,promoted:false,position:0,vote_sum:0,vote_count:0,section_id:900,created_at:at(1),updated_at:at(2),name:title,title,source_locale:'en-us',locale:'en-us',outdated:false,outdated_locales:[],edited_at:at(2),user_segment_id:segment,user_segment_ids:segment===null?[]:[segment],permission_group_id:1,content_tag_ids:[],label_names:[],body:`<p>${title} body</p>`})
@@ -58,23 +63,23 @@ export function fakeZendesk(){
   if(url.pathname==='/api/v2/ticket_fields.json')return cursorPage(fields,request,'ticket_fields')
   if(url.pathname==='/api/v2/help_center/articles.json')return cursorPage(articles,request,'articles')
   if(url.pathname==='/api/v2/incremental/organizations.json'){const start=Number(url.searchParams.get('start_time'));return json(start===0?{organizations,end_time:1704100000,end_of_stream:true,next_page:null,count:1}:{organizations:[],end_time:start,end_of_stream:true,next_page:null,count:0})}
-  if(url.pathname==='/api/v2/incremental/users/cursor.json'){if(url.searchParams.get('start_time')==='0')return json({users,after_cursor:'users-after-1',before_cursor:null,end_of_stream:true});assert.equal(url.searchParams.get('cursor'),'users-after-1');return json({users:[],after_cursor:'users-after-1',end_of_stream:true})}
+  if(url.pathname==='/api/v2/incremental/users/cursor.json'){if(url.searchParams.get('start_time')==='0')return json({users,after_cursor:'users-after-1',before_cursor:null,end_of_stream:true});assert.equal(url.searchParams.get('cursor'),'users-after-1');return json({users:state.repeat?[renamed]:[],after_cursor:'users-after-1',end_of_stream:true})}
   if(url.pathname==='/api/v2/incremental/tickets/cursor.json'){
    assert.equal(url.searchParams.get('support_type_scope'),'all');assert.equal(url.searchParams.get('exclude_deleted'),null)
    const cursor=url.searchParams.get('cursor')
    if(url.searchParams.get('start_time')==='0')return json({tickets:[101,102,103].map(id=>tickets[id].record),after_cursor:'tickets-after-1',end_of_stream:false})
    if(cursor==='tickets-after-1')return json({tickets:[104,105].map(id=>tickets[id].record),after_cursor:'tickets-after-2',end_of_stream:true})
-   assert.equal(cursor,'tickets-after-2');return json({tickets:state.repeat?[tickets[106].record]:[],after_cursor:'tickets-after-3',end_of_stream:true})
+   assert.equal(cursor,'tickets-after-2');return json({tickets:state.repeat?[101,106,107].map(id=>current(id).record):[],after_cursor:'tickets-after-3',end_of_stream:true})
   }
   const comments=url.pathname.match(/^\/api\/v2\/tickets\/(\d+)\/comments\.json$/)
   if(comments){
    assert.equal(url.searchParams.get('include_inline_images'),'true')
    if(comments[1]==='101'&&!state.throttled){state.throttled=true;return new Response('{"error":"TooManyRequests"}',{status:429,headers:{'Retry-After':'1','Content-Type':'application/json'}})}
-   const entry=tickets[comments[1]];if(!entry||entry.record.status==='deleted')return json({error:'RecordNotFound'},404)
+   const entry=current(comments[1]);if(!entry||entry.record.status==='deleted')return json({error:'RecordNotFound'},404)
    return cursorPage(entry.comments,request,'comments',comments[1]==='102'?1:100)
   }
   const many=url.pathname.match(/^\/api\/v2\/(users|organizations)\/show_many\.json$/)
-  if(many){const wanted=new Set(url.searchParams.get('ids').split(',').map(Number)),source=many[1]==='users'?users:organizations;return json({[many[1]]:source.filter(row=>wanted.has(row.id))})}
+  if(many){const wanted=new Set(url.searchParams.get('ids').split(',').map(Number)),source=many[1]==='users'?people():organizations;return json({[many[1]]:source.filter(row=>wanted.has(row.id))})}
   return json({error:'InvalidEndpoint'},404)
  }
  /** What Zendesk's consent page does once the admin approves: the code goes back to the callback. */

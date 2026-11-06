@@ -96,18 +96,28 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.equal((await h.raw(`${api}/zendesk/connect`,post({subdomain:'synthetic-other',clientId:CLIENT_ID}))).response.status,409)
 
   // A repeat pull reads only what is new or changed, and every source id keeps one conversation.
+  // Ticket 101 changed (a new reply) and person 3 was renamed: the engine never replaces a held
+  // record, so both are refused by id before packing, as is new ticket 107 from that person.
+  // Neither holds new ticket 106, which imports under the one approval.
+  const [{replies}]=await rows(h,"SELECT COUNT(*) replies FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'")
   zendesk.state.repeat=true
   const again=(await h.call(`${api}/zendesk/pulls`,post({}))).data
   await drain(h)
   let repeat=await pullOf(h,again.id)
   assert.equal(repeat.state,'ready',JSON.stringify({error:repeat.error}))
-  assert.equal(repeat.totals.tickets.seen,1)
+  assert.deepEqual(repeat.totals.tickets,{seen:3,deleted:0,imported:0,refused:2})
+  assert.deepEqual(repeat.refusals.filter(r=>['ticket','user'].includes(r.kind)).map(r=>[r.kind,r.sourceId,r.reason]),[['ticket','101','source_changed_conflict'],['ticket','107','conversation_contact_rejected'],['user','3','source_changed_conflict']])
+  assert.deepEqual(repeat.batches.filter(b=>b.waiting).map(b=>b.summary.refused),[2],'only the refused field definitions wait again')
+  assert.ok(repeat.batches.filter(b=>b.summary.tickets).every(b=>b.covered),'no ticket batch waits')
   await h.call(`${api}/zendesk/pulls/${again.id}/approve`,post({fingerprint:repeat.fingerprint}))
   await drain(h)
   repeat=await pullOf(h,again.id)
   assert.equal(repeat.state,'applied',JSON.stringify({error:repeat.error}))
+  assert.equal(repeat.totals.tickets.imported,1)
   const sources=await rows(h,'SELECT source_id,COUNT(*) n FROM move_in_conversations GROUP BY source_id ORDER BY CAST(source_id AS INTEGER)')
   assert.deepEqual(sources.map(r=>[r.source_id,r.n]),[['101',1],['102',1],['104',1],['105',1],['106',1]])
+  const [{after:repliesAfter}]=await rows(h,"SELECT COUNT(*) after FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'")
+  assert.equal(repliesAfter,replies,'the changed ticket keeps what was imported')
   assert.equal((await rows(h,'SELECT COUNT(*) n FROM contacts'))[0].n,4,'returning people are not duplicated')
 
   // Every source read was a GET; the only POSTs went to the token endpoint.

@@ -3,6 +3,7 @@ import {admitExport} from '../routes'
 import {zendeskField} from '../readers/zendesk-fields'
 import {ZendeskError} from '../zendesk-connection/errors'
 import type {PullContext} from './context'
+import {settled} from './settle'
 import {refuse,type StagedKind} from './staging'
 /** A batch is an ordinary Move in upload in every bound but its source: at most
  * 2 MiB and 5,000 records, carrying the people, companies and field definitions its
@@ -63,9 +64,11 @@ async function remainingBatch(ctx:PullContext,limit:number):Promise<Batch|null>{
  return null
 }
 /** One batch per invocation enters Move in through the same admission as an
- * upload. Packing is deterministic, so a repeated step finds the same run. A batch
- * admission refuses is halved until the one record it names is refused by name. */
+ * upload, once every staged record has settled against earlier imports. Packing is
+ * deterministic, so a repeated step finds the same run. A batch admission refuses
+ * is halved until the one record it names is refused by name. */
 export async function packBatch(ctx:PullContext){
+ if(!await settled(ctx))return
  const ordinal=Number(ctx.cursor.ordinal??0),limit=Number(ctx.cursor.limit??CANDIDATES)
  const batch=await ticketBatch(ctx,limit)??await remainingBatch(ctx,limit)
  if(!batch){await finishPacking(ctx);return}

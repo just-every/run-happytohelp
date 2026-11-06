@@ -30,8 +30,21 @@ function validateLimitMap(env,name,keys,fractional=[]){
  for(const [key,value]of Object.entries(values)){if(!keys.includes(key))throw new Error(`${name} has unknown limit ${key}`);if(typeof value!=='number'||!Number.isFinite(value)||value<=0||!fractional.includes(key)&&!Number.isSafeInteger(value))throw new Error(`${name}.${key} must be a positive ${fractional.includes(key)?'number':'integer'}`)}
 }
 const configured=(env,name)=>typeof env[name]==='string'&&env[name].trim()!==''
+/** Every input that could bind a way to send. Outbound email off accepts none of them. */
+const mailInputNames=[
+ 'EMAIL_PROVIDER','EMAIL_FROM','EMAIL_API_KEY','EMAIL_API_KEY_NAME','EMAIL_ACCOUNT_ID','MAILGUN_DOMAIN','MAILGUN_REGION','MAILGUN_SENDING_KEY',
+ 'MAIL_FROM','MAIL_API_KEY','MAIL_RELAY_URL','H2H_RER_MAIL_VERSION','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL','RER_MAIL_INGRESS_KEY',
+ 'GOOGLE_MAIL_CLIENT_ID','GOOGLE_MAIL_CLIENT_SECRET','MICROSOFT_MAIL_CLIENT_ID','MICROSOFT_MAIL_CLIENT_SECRET','MAILBOX_SOCKET_HOSTS','MAILBOX_SOCKET_PORTS','MAILBOX_IMAP_AUTHSERV',
+]
+/** Outbound email is off only when the deploy says so: MAIL_PROVIDER=none, never a missing value. */
+export const outboundEmailOff=env=>env.MAIL_PROVIDER==='none'
+function validateOutboundEmailOff(env){
+ const bound=mailInputNames.filter(name=>configured(env,name))
+ if(bound.length)throw new Error(`MAIL_PROVIDER=none turns outbound email off, so it cannot be combined with ${bound.join(', ')}. Remove them, or choose a mail provider`)
+}
 /** The setup's direct choice selects the native adapter, not a mail provider. */
 export function deploymentMailEnvironment(env){
+ if(outboundEmailOff(env)){validateOutboundEmailOff(env);return {...env}}
  if(env.MAIL_PROVIDER==='rer')return {...env}
  const nativeProviders=['resend','cloudflare','sendgrid','mailgun']
  if(configured(env,'MAIL_PROVIDER')&&env.MAIL_PROVIDER!=='direct'&&!nativeProviders.includes(env.MAIL_PROVIDER))throw new Error('MAIL_PROVIDER must be direct, resend, cloudflare, sendgrid, mailgun or rer')
@@ -47,9 +60,11 @@ export function deploymentMailEnvironment(env){
  const key=paired('MAIL_API_KEY','EMAIL_API_KEY')
  return {...env,EMAIL_PROVIDER:provider,EMAIL_FROM:sender,EMAIL_API_KEY:key,MAIL_PROVIDER:provider,MAIL_FROM:sender,MAIL_API_KEY:key}
 }
-export function runtimeVariables(env){validateRuntimeEnvironment(env);env=deploymentMailEnvironment(env);return Object.fromEntries(variableNames.filter(name=>configured(env,name)).map(name=>[name,env[name]]))}
+// With outbound email off nothing mail-related is bound, MAIL_PROVIDER=none included.
+export function runtimeVariables(env){validateRuntimeEnvironment(env);env=deploymentMailEnvironment(env);return Object.fromEntries(variableNames.filter(name=>configured(env,name)&&!(name==='MAIL_PROVIDER'&&outboundEmailOff(env))).map(name=>[name,env[name]]))}
 export function runtimeSecrets(env){return Object.fromEntries(secretNames.filter(name=>configured(env,name)).map(name=>[name,env[name]]))}
 function validateRemoteMailSelection(env){
+ if(outboundEmailOff(env)){validateOutboundEmailOff(env);return}
  if(env.MAIL_PROVIDER==='rer'){
   for(const name of ['MAIL_FROM','MAIL_RELAY_URL','MAIL_API_KEY','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL','RER_MAIL_INGRESS_KEY','INBOUND_EMAIL_TOKEN','INTEGRATION_ENCRYPTION_KEY'])if(!configured(env,name))throw new Error(`Managed email requires ${name}`)
   if(env.H2H_RER_MAIL_VERSION!=='1'||env.MAIL_FROM.toLowerCase()!==env.RER_MAIL_ADDRESS.toLowerCase())throw new Error('Managed conversation mail requires version 1 and the assigned address')

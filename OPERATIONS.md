@@ -256,6 +256,61 @@ declaration's `secrets` array, plus
 with Cloudflare mail. It is not required for Resend or SendGrid; rer 0.2.77 requires
 every declared secret not marked `optional` on a new Worker.
 
+### Deploy with outbound email off
+
+A company's history can move into its own hosted installation before its mail is
+cut over, so a deploy can choose to send nothing. Put `MAIL_PROVIDER=none` and a
+real `OWNER_EMAIL` in the environment or the owned 0600 `--env-file`, with no
+other mail input (`EMAIL_*`, `MAIL_*`, `MAILGUN_*`, mailbox OAuth or socket
+settings; supplying any of them with `none` refuses before anything is built):
+
+```sh
+rer deploy --environment production --env-file ~/happytohelp-deploy.env
+```
+
+`none` is always spelled out. A missing `MAIL_PROVIDER`, `later` or `direct`
+still needs a mail provider, exactly as before. With `none`, rer reports that
+outbound email is off and names the sign-in command below; the Worker is bound
+to no mail provider, key or sender, and `rer deploy --dry-run` lists nothing
+mail-related as missing and makes no outbound request. The installation then
+sends nothing: sign-in links, password resets, invitations, notifications,
+replies by email, the Email settings test send and surveys each refuse or record
+"Outbound email is off for this installation" instead of pretending, and
+**Setup** and **Email settings** say so with how to turn it on. Incoming mail,
+imports and everything that does not send keep working.
+
+To turn mail on later, set the provider inputs privately and run one command from
+the checkout that deployed the installation, then remove `MAIL_PROVIDER=none`
+from your `--env-file`:
+
+```sh
+rer deploy --environment production --env-file ~/happytohelp-deploy.env --set-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY
+```
+
+### Sign in without mail
+
+An installation that sends no mail has no emailed sign-in link, and a moved-in
+owner has no password. From the checkout that deployed it, with the Cloudflare
+credentials that deployed it, mint a one-time link:
+
+```sh
+node scripts/hosted-signin.mjs --environment production --project <workspaceId> [--open] [--json] [--env-file ~/happytohelp-deploy.env]
+node scripts/hosted-signin.mjs --environment production --email <memberEmail>
+```
+
+`--project` signs in that workspace's single owner and refuses when it has none or
+several; `--email` names an owner or admin who belongs to exactly one workspace
+(use `--project` when they belong to several). The command refuses unless the live
+Worker is the one this checkout deployed and the target is an existing owner or
+admin of an existing workspace. It writes one single-use grant, valid 15 minutes,
+into the deployment's D1 (only its hash is stored, the way an emailed link is) and
+prints the native link once to stdout. `--json` prints
+`{"link":…,"email":…,"expiresAt":…}` with `expiresAt` in epoch milliseconds, and
+`--open` opens the link in your default browser and prints only the email and
+expiry. The link is never written to disk, a log or a receipt, nothing is sent,
+and its use appears in the member's security log like an emailed link. It works
+whether mail is on or off.
+
 ### Mailgun domain sending
 
 The native outbound adapter accepts `EMAIL_PROVIDER=mailgun`. Configure

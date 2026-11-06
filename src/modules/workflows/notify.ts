@@ -44,7 +44,7 @@ export async function notifyWorkflow(env:Env,input:WorkflowNotification):Promise
   const state=delivered.state
   const locallySuppressed=state==='suppressed'&&('deliveries' in delivered||'outcome' in delivered&&Array.isArray(delivered.outcome?.deliveries))
   result=state==='complete'||state==='sent'||locallySuppressed?{state:'complete',...(state==='suppressed'?{detail:'Development mail was suppressed; no external delivery occurred'}:{})}
-   :state==='not_configured'?{state:'not_delivered',detail:'Not sent: email delivery is not configured'}
+   :state==='not_configured'?{state:'not_delivered',detail:'Not sent: outbound email is off for this installation'}
    :state==='no_recipient'?{state:'not_delivered',detail:customer?'Not sent: no proven eligible customer address':'Not sent: no current permitted member is eligible for this notice'}
    :state==='disabled'?{state:'not_delivered',detail:'Not sent: ticket email is disabled'}
    :state==='cancelled'||state==='not_new_request'||state==='suppressed'?{state:'cancelled',detail:'Ticket, recipient or workflow changed before the delivery claim'}

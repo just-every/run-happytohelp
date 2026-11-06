@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
+import {delegatedTicketScopeAssertions} from './ticket-scope.mjs'
+import {mobileAdoption} from '../mobile-adoption.mjs'
 
 export const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aS1sAAAAASUVORK5CYII=','base64')
 
@@ -9,7 +11,7 @@ export const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0
 async function draftRuntime(){
  const app=await startApp({captureQueue:true}),db=app.db,bucket=await app.files
  const request=async(path,body,token,headers={},method=body===undefined?'GET':'POST')=>{const response=await app.request(path,{body,token,headers,method});return {status:response.status,body:await response.json()}}
- const fixture=async({count=1,verified=true,mode='resolve',legacyOnly=false}={})=>{
+ const fixture=async({count=1,verified=true,mode='resolve',legacyOnly=false,followUpMode}={})=>{
   const projectId=randomUUID(),userId=randomUUID(),conversationId=randomUUID(),contactId=randomUUID(),token=randomUUID()
   await db.batch([
    db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,?,?,?,1)').bind(projectId,'Draft test',randomUUID(),'http://localhost'),
@@ -32,6 +34,7 @@ async function draftRuntime(){
    assert.equal(upload.status,200,await upload.clone().text());localAttachmentIds.push((await upload.json()).data.id)
   }
   const result={summary:'Completed native upload fixture',actions:[],verified,reply_draft:'Legacy editable body',attachment_ids:localAttachmentIds,replies:[{id:'selected',title:'Reply',body:'Editable proposal body',attachment_ids:localAttachmentIds}],follow_up_actions:[]}
+  if(followUpMode)result.follow_up_actions=[{id:'automatic-reply',title:'Prepared work',mode:followUpMode,instructions:'Prepared synthetic follow-up',attachment_ids:[]}]
   if(legacyOnly)delete result.replies
   await post(`/api/local-agents/jobs/${job.id}/result`,{run_id:claim.run_id,event_id:randomUUID(),status:'completed',result},paired.token)
   const draftPath=base+'/'+job.id+'/result/draft',command={proposal_id:'selected',expected_revision:0,expected_last_message_id:null}
@@ -44,7 +47,7 @@ async function draftRuntime(){
  const keys=async f=>(await bucket.list()).objects.filter(o=>o.key.startsWith(f.projectId+'/')).map(o=>o.key).sort()
  const bytes=async key=>Buffer.from(await (await bucket.get(key)).arrayBuffer())
  const noAdoption=async f=>{assert.deepEqual(await f.media(),[]);assert.deepEqual(await f.messages(),[]);assert.deepEqual(await keys(f),[])}
- return {app,bucket,request,fixture,run,one,keys,bytes,noAdoption,close:()=>app.close()}
+ return {app,bucket,request,fixture,run,one,keys,bytes,png,noAdoption,close:()=>app.close()}
 }
 
 export async function adoptionJourney(){
@@ -58,6 +61,7 @@ export async function adoptionJourney(){
   await run('DROP TRIGGER adoption_storage_outage')
   const retried=await interrupted.adopt();assert.equal(retried.status,200)
   const recovered=await interrupted.adopt();assert.deepEqual(recovered.body.data,retried.body.data)
+  await mobileAdoption(runtime)
   // Local and legacy Use adopt exact native owned media, deduplicate, then ordinary Send admits exactly once.
   const f=await fixture(),[first,concurrent]=await Promise.all([f.adopt(),f.adopt()])
   assert.equal(first.status,200,JSON.stringify(first));assert.equal(concurrent.status,200,JSON.stringify(concurrent));assert.deepEqual(first.body.data,concurrent.body.data)
@@ -94,10 +98,23 @@ export async function adoptionJourney(){
   await run('INSERT INTO memberships VALUES(?,?,?)',s.projectId,other.userId,'operator');const peerToken=randomUUID()
   await run('INSERT INTO sessions VALUES(?,?,?,?,NULL,?,NULL)',sha(peerToken),other.userId,s.projectId,'operator',Date.now()+3600000)
   assert.equal((await request(s.draftPath,s.command,peerToken)).status,409,'a same-project peer does not own this job')
-  assert.equal((await request(s.draftPath.replace(s.conversationId,other.conversationId),s.command,s.token)).status,409)
+  assert.equal((await request(s.draftPath.replace(s.conversationId,other.conversationId),s.command,s.token)).status,404)
   assert.equal((await request(s.draftPath.replace(s.jobId,other.jobId),s.command,s.token)).status,409)
   assert.equal((await request(s.draftPath.replace(s.projectId,other.projectId),s.command,s.token)).status,403)
   await run('UPDATE local_devices SET user_id=? WHERE id=?',other.userId,s.deviceId);assert.equal((await s.adopt()).status,409);await noAdoption(s)
+
+  // A live scope restriction at the final media INSERT cannot adopt prepared
+  // local screenshots. Retain the draft's existing guard and byte cleanup.
+  const scoped=await fixture(),role=await request(`/api/management/projects/${scoped.projectId}/roles`,{name:'Synthetic S5 draft scope',base:'operator',permissions:['conversations.reply']},scoped.token)
+  assert.equal(role.status,201)
+  await run('INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES(?,?,?,1)',scoped.projectId,scoped.userId,role.body.data.id)
+  const empty=JSON.stringify({groupIds:[],includeUngrouped:false})
+  const lostDraft=await scoped.adopt({}, {'x-test-statement':'INSERT INTO media','x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${empty}' WHERE id='${role.body.data.id}'`})
+  assert.equal(lostDraft.status,409);await noAdoption(scoped)
+  assert.equal((await scoped.adopt()).status,404);await noAdoption(scoped)
+  await run('UPDATE project_roles SET ticket_scope_json=NULL WHERE id=?',role.body.data.id)
+  assert.equal((await scoped.adopt()).status,200);assert.equal((await scoped.media()).length,1)
+  console.log('PROBE ACCESS-001 P7: POST native result/draft; scope narrowed at media commit -> 409, no media/messages/copied bytes; next request 404; NULL retry 200')
 
   // Proposal selection, the immutable frontier and required fields are checked.
   const v=await fixture()
@@ -155,4 +172,5 @@ export async function adoptionJourney(){
   assert.equal((await one("SELECT status FROM local_receipts WHERE job_id=? AND proposal_id='legacy'",l.jobId)).status,'sent')
   const delivered=await l.media();assert.equal(delivered.length,1);assert.equal(delivered[0].uploaded_by,l.userId);assert.equal((await l.messages()).length,1);assert.deepEqual(await bytes(delivered[0].object_key),png)
  }finally{await runtime.close()}
+ await delegatedTicketScopeAssertions()
 }

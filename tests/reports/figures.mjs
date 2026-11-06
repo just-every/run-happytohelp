@@ -1,3 +1,4 @@
+import {reportTicketScopeAssertions} from '../helpers/reports/ticket-scope.mjs'
 import assert from 'node:assert/strict';
 import {harness} from './harness.mjs';
 const time=Date.parse;
@@ -89,4 +90,5 @@ export async function calendarReportsJourney(){
  assert.equal((await h.raw('/api/dashboard/projects/p/reports?period=7')).status,200);
 
  }finally{await h.close()}
+ await reportTicketScopeAssertions()
 }

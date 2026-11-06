@@ -18,10 +18,8 @@ export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBun
  const mediaRows=rows.flatMap(row=>row.mapped.filter(m=>m.table==='media'));for(const media of mediaRows){if(!keys.has(String(media.row.object_key)))throw new Error(`Media ${media.row.id} requires exported bytes for ${media.row.object_key}`)}
  return {id:`legacy:${bundleDigest}`,bundleDigest,source:bundle.source,rows,objects:bundle.objects||[],summary:{sourceRows:rows.length,mappedRows:rows.reduce((n,r)=>n+r.mapped.length,0),archivedOnly:rows.filter(r=>!r.mapped.length).map(r=>`${r.table}:${r.sourceId}`),holds:rows.flatMap(r=>r.mapped.filter(m=>m.hold).map(m=>`${r.table}:${r.sourceId}: ${m.hold}`)),objects:keys.size}}
 }
-export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>}={}){
+export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;checkOnly?:boolean}={}){
  const plan=await planImport(bundle,options),existing=await env.DB.prepare('SELECT id,bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{id:string;bundle_digest:string;state:string}>();if(existing&&existing.bundle_digest!==plan.bundleDigest)throw new Error('Import digest conflict')
- await env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now()).run()
- for(const object of plan.objects){const bytes=Uint8Array.from(atob(object.dataBase64),c=>c.charCodeAt(0)),current=await env.FILES.get(object.key);if(current&&await digest(new Uint8Array(await current.arrayBuffer()))!==object.sha256)throw new Error(`Existing R2 object differs: ${object.key}`);if(!current){const stored=await env.FILES.put(object.key,bytes,{onlyIf:{etagDoesNotMatch:'*'},customMetadata:{sha256:object.sha256,legacyImport:plan.id}});if(!stored){const raced=await env.FILES.get(object.key);if(!raced||await digest(new Uint8Array(await raced.arrayBuffer()))!==object.sha256)throw new Error(`Concurrent R2 object conflict: ${object.key}`)}};await env.DB.prepare('INSERT OR IGNORE INTO legacy_import_objects VALUES(?,?,?,?)').bind(plan.id,object.key,object.sha256,bytes.length).run()}
  // A run's journal is read once. Existing canonical rows are looked up, and new
  // rows written, as one JSON array parameter per statement, so a production-sized
  // chunk costs a few D1 round trips and never approaches D1's 100 bound
@@ -45,6 +43,25 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
    for(const row of found.results)current.set(identity(table,keys.map(k=>row[k])),row)
   }
  }
+ // Preflight every canonical row and object before changing either store. A
+ // conflict in a later batch/chunk must not leave earlier business rows applied.
+ const proposed=new Map(current)
+ for(const source of pending)for(const mapped of source.mapped){
+  const row=columnsOf(mapped),values=mapped.key.map(k=>row[k]),id=identity(mapped.table,values),prior=proposed.get(id)
+  if(prior){for(const [key,value]of Object.entries(row))if(prior[key]!==value)throw new Error(`Existing data conflict ${mapped.table}:${values.join(':')} column ${key}; no rows overwritten`)}
+  else proposed.set(id,row)
+ }
+ const objects=[]
+ for(const object of plan.objects){
+  const erased=await env.DB.prepare("SELECT 1 FROM legacy_import_rows WHERE source_table='media' AND source_id IN (SELECT json_extract(value,'$.id') FROM json_each(?)) AND source_json='{}' LIMIT 1").bind(JSON.stringify((options.context??bundle).tables.media?.filter(row=>String(row.object_key||row.storage_key)===object.key)??[])).first()
+  if(erased)continue
+  const current=await env.FILES.get(object.key)
+  if(current&&await digest(new Uint8Array(await current.arrayBuffer()))!==object.sha256)throw new Error(`Existing R2 object differs: ${object.key}`)
+  objects.push(object)
+ }
+ if(options.checkOnly)return {id:plan.id,...plan.summary,applied:0,replayed,d1Ms:0,maxBatchMs:0}
+ await env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now()).run()
+ for(const object of objects){const bytes=Uint8Array.from(atob(object.dataBase64),c=>c.charCodeAt(0)),current=await env.FILES.get(object.key);if(current&&await digest(new Uint8Array(await current.arrayBuffer()))!==object.sha256)throw new Error(`Existing R2 object differs: ${object.key}`);if(!current){const stored=await env.FILES.put(object.key,bytes,{onlyIf:{etagDoesNotMatch:'*'},customMetadata:{sha256:object.sha256,legacyImport:plan.id}});if(!stored){const raced=await env.FILES.get(object.key);if(!raced||await digest(new Uint8Array(await raced.arrayBuffer()))!==object.sha256)throw new Error(`Concurrent R2 object conflict: ${object.key}`)}};await env.DB.prepare('INSERT OR IGNORE INTO legacy_import_objects VALUES(?,?,?,?)').bind(plan.id,object.key,object.sha256,bytes.length).run()}
  // Each source row's share of every statement its group binds: its journal entry, its holds,
  // its reporting row and its canonical rows' values. A group is sized by the largest of these,
  // so no statement's JSON parameter can outgrow the group, however small the rows are.

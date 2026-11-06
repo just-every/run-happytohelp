@@ -1,6 +1,6 @@
 import React from 'react';
 import CopyCommand from '../setup-help/CopyCommand';
-import {freshdeskScript,helpScoutScript,intercomApiScript,intercomContactsScript,zendeskScript} from './move-in-guides';
+import {freshdeskScript,helpScoutScript,intercomApiScript,intercomContactsScript} from './move-in-guides';
 
 const tools = <>Open Terminal on a Mac (or a shell on Linux), make a folder for the files with <code>mkdir move-in && cd move-in</code>, then paste the script and press Return. It works in the Mac’s standard shell (zsh) and in bash. It needs <code>curl</code> and <code>jq</code>: a Mac from macOS 15 has both; otherwise run <code>brew install jq</code>. It asks for each value in turn and does not show or save the secret.</>;
 const link = (href, text) => <a href={href} target="_blank" rel="noreferrer">{text}</a>;
@@ -8,12 +8,7 @@ const link = (href, text) => <a href={href} target="_blank" rel="noreferrer">{te
 /** How to produce the file Move in accepts, step by step, from each vendor's own export or API. */
 export const vendorGuides = {
  zendesk: {label: 'Zendesk', accept: '.json,.jsonl,.ndjson,.zip', guide: <>
-  <ol>
-   <li>In Zendesk Admin Center, open <b>Apps and integrations</b>, <b>APIs</b>, <b>API tokens</b>, and add a token. Copy it.</li>
-   <li>Copy this script and run it. {tools} It asks for your Zendesk address, the admin’s email and the token.<CopyCommand text={zendeskScript}/></li>
-   <li>It writes <code>zendesk-move-in-1.ndjson</code>, <code>-2</code> and so on: 50 tickets each, with every comment and the people in them. Upload them one at a time below.</li>
-  </ol>
-  <p className="sh-note">Saved replies (macros) and Help Center articles are optional extras, each a line like <code>{'{"macro":{...}}'}</code>; the <a href="/docs/moving-in#zendesk">Zendesk section of the Move in guide</a> shows a complete example of each. To copy only your help articles, use Knowledge, Import instead.</p>
+  <p>Already have offline exports? <a href="/docs/moving-in#offline-zendesk-account-files">Pack local ticket, user, organization, comment and history files with supplied attachments</a>, then upload them here. Saved replies (macros) and configuration can be uploaded too, each a line like <code>{'{"macro":{...}}'}</code>; the <a href="/docs/moving-in#zendesk">Zendesk section of the Move in guide</a> shows a complete example of each.</p>
  </>},
  intercom: {label: 'Intercom', accept: '.json,.jsonl,.zip', guide: <>
   <p>Intercom’s own API gives everything Move in needs. You need an Intercom admin account; nothing else to set up.</p>

@@ -26,7 +26,7 @@ export default function SurveySettings({projectId,role,onDirtyChange}){
   {error&&<p role="alert">{error} <button type="button" className="btn btn-white" onClick={()=>latest.current?persist(latest.current):load()}>Retry</button></p>}
   {state&&<p role="status">{state}</p>}
   {settings?<fieldset disabled={!canManage} className="csat-settings">
-   <Field name="enabled" label="Send email surveys after resolution" type="checkbox" value={settings.enabled} onChange={change}/>
+   <Field name="enabled" label="Send surveys after resolution" type="checkbox" value={settings.enabled} onChange={change}/>
    <Field name="widgetEnabled" label="Show surveys in the widget after resolution" type="checkbox" value={settings.widgetEnabled} onChange={change}/>
    <Field name="scale" label="Rating scale" value={settings.scale} onChange={change} options={[{value:'thumbs',label:'Thumbs up / down'},{value:'five',label:'1–5 rating'}]}/>
    <Field name="locale" label="Survey language" value={settings.locale} onChange={change} options={[{value:'en',label:'English'},{value:'es',label:'Español'},{value:'fr',label:'Français'}]}/>

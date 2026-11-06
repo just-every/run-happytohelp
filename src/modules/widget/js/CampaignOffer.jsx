@@ -6,7 +6,7 @@ export default function CampaignOffer(){
  const [offer,setOffer]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const prepare=useRef(context.prepareCampaign);prepare.current=context.prepareCampaign;
  const entered=useRef(Date.now()),exitIntent=useRef(false),offered=useRef(false),path=useRef(location.pathname);
- const enabled=monitoring?.enabled===true&&conversationSettings.campaignsEnabled===true;
+ const enabled=context.settings.collector.enabled!==false&&monitoring?.enabled===true&&conversationSettings.campaignsEnabled===true;
  useEffect(()=>{if(!enabled){setOffer(null);}},[enabled]);
  useEffect(()=>{
   if(!enabled||open||offered.current)return;

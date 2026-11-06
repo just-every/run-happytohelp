@@ -1,3 +1,4 @@
+import {publicSiteJourney} from './helpers/public-site-journey.mjs'
 import assert from 'node:assert/strict'
 import {auditPage,viewports} from './journeys/kit/browser.mjs'
 import {freeProductPromise} from './helpers/homepage/free-browser.mjs'
@@ -6,7 +7,7 @@ import {see} from './helpers/homepage/visual.mjs'
 
 async function publishedSections({page,shot}){
  const sections=page.getByRole('main').locator(':scope > section'),footer=page.getByRole('contentinfo')
- const headings=['Not just better. Free.','The rest of your support desk','Try it beside what you have','Ready when you are.']
+ const headings=['Yours to run and change.','The rest of your support desk','Try it beside what you have','Ready when you are.']
  assert.equal(await sections.first().getByRole('heading',{level:1}).count(),1,'the hero opens the published section sequence')
  assert.deepEqual(await sections.locator('h2').allTextContents(),headings,'the visitor encounters Free, desk, move-in and closing in their published order')
  const positions=await sections.evaluateAll(nodes=>nodes.map(node=>({top:node.getBoundingClientRect().top,bottom:node.getBoundingClientRect().bottom,heading:node.querySelector('h1,h2').getBoundingClientRect().top})))
@@ -42,6 +43,7 @@ async function noPromotions(page,source){
 }
 
 export async function homepageJourney({page,origin,shot}){
+ await publicSiteJourney({page,origin,shot})
  const errors=[]
  page.on('pageerror',error=>errors.push(error.message))
  await page.setViewportSize(viewports.desktop)

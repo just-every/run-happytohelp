@@ -19,12 +19,12 @@ export const sha=value=>createHash('sha256').update(value).digest('hex')
 // Every migration whose file name `select` accepts, in one atomic batch (a single D1 round trip).
 export const applyMigrations=async(db,select=()=>true)=>db.batch((await migrations()).filter(migration=>select(migration.name)).flatMap(migration=>migration.statements).map(sql=>db.prepare(sql)))
 
-export async function startApp({bindings={},outbound,origin='https://app.example',captureQueue=false,migrate=true,listen=false,entry,cf,socketModule}={}){
+export async function startApp({bindings={},outbound,origin='https://app.example',captureQueue=false,migrate=true,listen=false,entry,cf,socketModule,persist}={}){
  const directory=await mkdtemp(join(tmpdir(),'h2h-app-')),script=await bundle(entry,socketModule),requests=[]
  let current={...bindings},mf,db,url,port=0
  const outboundService=async request=>{const body=request.method==='GET'||request.method==='HEAD'?'':await request.clone().text();const entry={url:request.url,method:request.method,headers:Object.fromEntries(request.headers),body};requests.push(entry);if(!outbound)throw new Error('External calls prohibited: '+request.url);return outbound(request,entry)}
  const start=async()=>{
-  mf=new Miniflare(convertV4MiniflareOptions({name:'h2h-app',...(cf?{cf}:{}),...(listen?{host:'127.0.0.1',port}:{}),modules:true,script,unsafeTriggerHandlers:true,compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{...(captureQueue?{H2H_TEST_CAPTURE_QUEUE:'1'}:{}),...Object.fromEntries(Object.entries(current).filter(([,value])=>value!==undefined))},d1Databases:{DB:'h2h-app'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},queueProducers:{JOBS:'h2h-app-jobs'},queueConsumers:{'h2h-app-jobs':{maxBatchSize:1,maxRetries:0}},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService}))
+  mf=new Miniflare(convertV4MiniflareOptions({name:'h2h-app',...(cf?{cf}:{}),...(listen?{host:'127.0.0.1',port}:{}),modules:true,script,unsafeTriggerHandlers:true,compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{...(captureQueue?{H2H_TEST_CAPTURE_QUEUE:'1'}:{}),...Object.fromEntries(Object.entries(current).filter(([,value])=>value!==undefined))},d1Databases:{DB:'h2h-app'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},queueProducers:{JOBS:'h2h-app-jobs'},queueConsumers:{'h2h-app-jobs':{maxBatchSize:1,maxRetries:0}},resourcePersistencePath:persist||join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService}))
   db=await mf.getD1Database('DB')
   if(listen){url=String(await mf.ready).replace(/\/$/,'');port=Number(new URL(url).port)}
  }

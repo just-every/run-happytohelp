@@ -1,3 +1,4 @@
+import {apiIntegrationRule} from '../api-integrations/permissions'
 import {feedbackRouteRule} from '../feedback/permissions'
 import {assuranceRouteRule} from '../assurance/permissions'
 import {supportChannelRule} from '../support-channels/permissions'
@@ -18,6 +19,7 @@ type Rule=Permission|'self'|'none'
 const P='/api/management/projects/:projectId',D='/api/dashboard/projects/:projectId',C=`${D}/conversations/:conversationId`,K='/api/knowledge/:projectId',X='/api/customer-context/:projectId/:subjectId',L='/api/projects/:project'
 const rules:Record<string,Rule>={
  'POST /api/rer/business-project':'integrations.install','GET /api/rer/business-project':'self',
+ 'POST /api/rer/cutover-status':'none',
  // Own account and sign-in
  'POST /auth/signout':'self','POST /api/identity/switch-project':'self','POST /api/identity/password':'self','POST /api/identity/accept-invitation':'self','DELETE /api/identity/session':'self',
  'PUT /api/management/profile':'self',[`PUT ${P}/agents/:userId/primary`]:'self',
@@ -64,8 +66,10 @@ const rules:Record<string,Rule>={
  'POST /api/knowledge/:projectId/proposals/:id/analyze-corrections':'knowledge.edit',
  'POST /api/ai-support/projects/:projectId/conversations/:conversationId/obligations/:id/complete':'conversations.manage',
  // Knowledge
+ [`GET ${K}/upgrade-report`]:'settings.manage',
+ [`POST ${K}/references/insert`]:'knowledge.read',[`POST ${K}/references/preview`]:'knowledge.read',
  [`POST ${K}/articles`]:'knowledge.publish',[`DELETE ${K}/articles/:articleId`]:'knowledge.publish',[`PUT ${K}/articles/:articleId/categories`]:'knowledge.edit',[`PUT ${K}/articles/:articleId/order`]:'knowledge.edit',
- [`POST ${K}/categories`]:'knowledge.edit',[`PUT ${K}/categories/:categoryId`]:'knowledge.edit',[`DELETE ${K}/categories/:categoryId`]:'knowledge.edit',
+ [`GET ${K}/categories/:categoryId/entitlements`]:'knowledge.publish',[`PUT ${K}/categories/:categoryId/entitlements`]:'knowledge.publish',[`POST ${K}/categories`]:'knowledge.edit',[`PUT ${K}/categories/:categoryId`]:'knowledge.edit',[`DELETE ${K}/categories/:categoryId`]:'knowledge.edit',
  [`POST ${K}/datasets`]:'knowledge.publish',[`PUT ${K}/datasets/:datasetId`]:'knowledge.publish',[`POST ${K}/datasets/:datasetId/crawl`]:'knowledge.publish',[`POST ${K}/datasets/:datasetId/refresh`]:'knowledge.publish',[`DELETE ${K}/datasets/:datasetId`]:'knowledge.publish',
  [`POST ${K}/import/:platform`]:'data.import',
  // Members and roles
@@ -83,7 +87,7 @@ const rules:Record<string,Rule>={
  [`PATCH ${D}/report-schedules/:scheduleId`]:'data.export',
  [`DELETE ${D}/report-schedules/:scheduleId`]:'data.export',
  // Workspace settings
- 'POST /api/management/projects':'settings.manage',[`PUT ${P}/settings`]:'settings.manage',[`DELETE ${P}`]:'data.erase',
+ 'POST /api/management/projects':'settings.manage',[`GET ${P}/settings`]:'settings.manage',[`PUT ${P}/settings`]:'settings.manage',[`DELETE ${P}`]:'data.erase',
  [`PUT ${P}/appearance`]:'settings.manage',[`PUT ${P}/artwork`]:'settings.manage',[`PUT ${P}/widget-settings`]:'settings.manage',[`PUT ${P}/widget-campaigns/:campaignId`]:'settings.manage',[`PUT ${P}/availability`]:'settings.manage',[`PUT ${P}/ai`]:'settings.manage',
  [`POST ${P}/brand-media`]:'settings.manage',[`POST ${P}/activation/check`]:'settings.manage',[`POST ${P}/activation/skip`]:'settings.manage',[`POST ${P}/activation/local-trial`]:'settings.manage',[`POST ${P}/activation/test-mail`]:'settings.manage',
  [`POST ${P}/email-settings/managed/reconcile`]:'settings.manage',[`POST ${P}/email-settings/managed/retry`]:'settings.manage',
@@ -103,7 +107,9 @@ const rules:Record<string,Rule>={
  [`POST ${L}/local-agent-authorizations/decision`]:'integrations.install',[`DELETE ${L}/local-agent-grants/:grant`]:'integrations.install',
  'POST /delegation/authorize':'integrations.install','POST /delegation/settings/revoke':'integrations.install','POST /delegation/settings/clients':'integrations.install',
  // Move in
+ 'POST /api/move-in/projects/:projectId/business-imports':'data.import',
  'POST /api/move-in/projects/:projectId/imports':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/apply':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/resume':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/undo':'data.import',
+ 'POST /api/move-in/projects/:projectId/zendesk/connect':'data.import','DELETE /api/move-in/projects/:projectId/zendesk/connection':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls/:pullId/approve':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls/:pullId/resume':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls/:pullId/abandon':'data.import',
  'POST /api/move-in/projects/:projectId/imports/:runId/ownership/preview':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/ownership/apply':'data.import',
  // Doors with their own authority
  'POST /auth/bootstrap':'none','POST /auth/owner-claim':'none','POST /api/identity/login':'none','POST /api/identity/accept-token':'none','POST /api/identity/forgot-password':'none','POST /api/identity/widget/session':'none','POST /api/identity/register':'none','POST /api/identity/verify-email':'none','POST /api/identity/bootstrap':'none','POST /api/identity/link-status':'none','POST /api/identity/magic-link':'none','POST /api/identity/magic-link/consume':'none','POST /api/identity/owner-recovery':'none',
@@ -183,14 +189,17 @@ for(const base of [P,D]){
  for(const method of ['PUT','DELETE'])rules[`${method} ${base}/crm/hubspot/contacts/:contactId`]='integrations.install'
  rules[`POST ${base}/crm/hubspot/contacts/:contactId/refresh`]='integrations.install'
  rules[`GET ${base}/crm/hubspot`]='contacts.manage'
- rules[`GET ${base}/crm/hubspot/contacts/:contactId`]='contacts.manage'
- rules[`GET ${base}/conversations/:conversationId/crm`]='contacts.manage'
+ // CRM handlers resolve current inbox authority and ticket scope for cached reads.
+ rules[`GET ${base}/crm/hubspot/contacts/:contactId`]='self'
+ rules[`GET ${base}/conversations/:conversationId/crm`]='self'
  rules[`POST ${base}/conversations/:conversationId/crm/refresh`]='integrations.install'
 }
 
 const prefixes=['/api/v1/','/api/management/admin/']
 for(const base of [P,D]){
  rules[`POST ${base}/tickets`]='conversations.reply'
+ rules[`GET ${base}/tickets/channels`]='conversations.reply'
+ rules[`GET ${base}/tickets/channels/:connectionId/templates`]='conversations.reply'
  for(const suffix of ['notices/preview','notices'])rules[`POST ${base}/tickets/${suffix}`]='conversations.reply'
 }
 for(const action of ['connect','imap'])rules[`POST ${P}/mailboxes/${action}`]='integrations.install'
@@ -204,7 +213,7 @@ rules[`POST ${P}/suspended/:id/recover`]='conversations.manage'
 rules[`DELETE ${P}/suspended/:id`]='conversations.manage'
 rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
- const owned=feedbackRouteRule(method,path)??assuranceRouteRule(method,path)
+ const owned=apiIntegrationRule(method,path)??feedbackRouteRule(method,path)??assuranceRouteRule(method,path)
  if(owned)return owned
  if(path==='/api/voice/hooks/:numberId')return 'none'
  if(path.startsWith('/api/voice/projects/:projectId/')){
@@ -214,6 +223,8 @@ export function routeRule(method:string,path:string):Rule|undefined{
   if(path.includes('/conversations/'))return method==='GET'?'conversations.manage':'conversations.reply'
   return 'integrations.install'
  }
+ if(path==='/api/mobile/v1/devices'||path==='/api/mobile/v1/devices/:deviceId')return 'self'
+ if(path.startsWith('/api/mobile/v1/'))return 'none'
  if(path==='/api/escalations/webhooks/:connectionId'||path==='/api/escalations/attachments/:token')return 'none'
  if(path.startsWith('/api/escalations/projects/:projectId/')){
   if(method==='GET')return 'self'

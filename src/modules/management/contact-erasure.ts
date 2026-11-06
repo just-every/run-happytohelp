@@ -1,3 +1,5 @@
+import {eraseDoorContact} from '../move-in/door/erasure'
+import {redactionStatements,invalidateTransfersStatements} from '@runeditrun/rer/modules/portability/journal'
 import {csvErasureIdentities} from '../import-kit/csv/erasure'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
@@ -31,10 +33,10 @@ export async function eraseContact(env: Env, projectId: string, contactId: strin
   await deleteStagedObjects(env, projectId, contactId)
   const emails=[...new Set([...contactEmails(contact),...contactEmails(fenced??{})])]
   const csvIdentities=[...new Set([...csvBeforeFence,...await csvErasureIdentities(env,projectId,contactId,emails)])]
-  await env.DB.batch([
-    ...await knowledgeErasureStatements(env,projectId,contactId,emails),
-    ...erasureStatements(env, {projectId, contactId, actorId, now, emails,csvIdentities}),
-  ])
+  await eraseDoorContact(env,projectId,contactId,actorId,emails,sessionHash,async scoped=>({
+    checkpoint:await redactionStatements(scoped.DB),
+    native:[...await invalidateTransfersStatements(scoped.DB),...await knowledgeErasureStatements(scoped,projectId,contactId,emails),...await erasureStatements(scoped,{projectId,contactId,actorId,now,emails,csvIdentities})],
+  }))
   return env.DB.prepare('SELECT * FROM contact_erasures WHERE project_id=? AND contact_id=?').bind(projectId, contactId).first<ContactErasure>()
 }
 

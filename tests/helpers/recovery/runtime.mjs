@@ -27,12 +27,12 @@ export async function recoveryRuntime(artifact, {directory, port, inspectorPort,
     r2_buckets: [{binding: 'FILES', bucket_name: 'recovery-files'}],
     durable_objects: {bindings: spec.durableObjects.map(x => ({name: x.binding, class_name: x.className}))},
     migrations: spec.durableObjectMigrations.map(x => ({tag: x.tag, new_sqlite_classes: x.newSqliteClasses})),
-    queues: {producers: [{binding: 'JOBS', queue: 'recovery-jobs'}, {binding: 'JOBS_DEAD_LETTER', queue: 'recovery-dead'}]},
+    queues: {producers: [{binding: 'JOBS', queue: 'recovery-jobs'}, {binding: 'JOBS_DEAD_LETTER', queue: 'recovery-dead'}], consumers: [{queue:'recovery-jobs',max_batch_size:1,max_batch_timeout:0,max_retries:0}]},
     vars: {...spec.publicVariables, ...variables},
   };
   await writeFile(join(directory, 'wrangler.json'), JSON.stringify(config));
   const wrangler = resolve('node_modules/wrangler/bin/wrangler.js');
-  const env = {PATH: process.env.PATH, TMPDIR:process.env.TMPDIR, CI: '1', WRANGLER_SEND_METRICS: 'false', CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV: 'false', WRANGLER_LOG_PATH: process.env.WRANGLER_LOG_PATH || join(directory, 'wrangler.log')};
+  const env = {PATH: process.env.PATH, TMPDIR:process.env.TMPDIR, CI: '1', WRANGLER_SEND_METRICS: 'false', CLOUDFLARE_CF_FETCH_ENABLED:'false', CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV: 'false', WRANGLER_LOG_PATH: process.env.WRANGLER_LOG_PATH || join(directory, 'wrangler.log')};
   let child, storageOpen = false, logs = '';
   function launch(args) {
     const processRun = spawn(process.execPath, [wrangler, ...args, '--config', join(directory, 'wrangler.json')], {cwd: directory, env, stdio: ['ignore', 'pipe', 'pipe']});

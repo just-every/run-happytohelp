@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict'
 import {providersJourney} from './providers.mjs'
+import {agent001Outcomes} from './agent001-outcomes.mjs'
 import {repositoryJourney} from './repository.mjs'
 import {cycleOutcomes} from './cycle-outcomes.mjs'
 import {assistantApp} from './app.mjs'
-import {openaiToolCall} from '../openai-stream.mjs'
+import {openaiStream,openaiToolCall} from '../openai-stream.mjs'
+import {socketClient} from '../widget/sockets.mjs'
 
 const trace=async(a,v)=>{
  const response=await a.app.call(`/api/ai-support/projects/${a.p}/conversations/${v.conversationId}/trace`,{token:a.owner,status:200})
@@ -88,6 +90,8 @@ export async function answersJourney(){
   const privateArticle=(await app.call(`/api/knowledge/${p}/articles`,{token:a.owner,body:{title:'Private export guide',content:'Privatemarker: reset the export queue using a fresh draft.',categoryIds:[category],status:'published'},status:201})).data.id
   let privateVersion=(await app.first('SELECT publication_version FROM knowledge_articles WHERE id=?',privateArticle)).publication_version
   const privateVisitor=async(email,proven=true)=>a.visitor('Member',proven?{identifier:email,email,contact_hash:createHmac('sha256',secret).update(email).digest('hex')}:{email})
+  const entitledIds=[]
+  const grant=async visitor=>{entitledIds.push(visitor.contactId);await app.call(`/api/knowledge/${p}/categories/${category}/entitlements`,{token:a.owner,method:'PUT',body:{required:true,contactIds:entitledIds,companyIds:[]},status:200});return visitor}
   const privateAnswer=async(visitor,{revoke=false,cite=true}={})=>{
    let turn=0,observed
    ai.respond=async body=>{
@@ -100,7 +104,7 @@ export async function answersJourney(){
    await visitor.say('How can I use the privatemarker guidance?');await a.run()
    return {observed,answers:(await visitor.transcript()).messages.filter(m=>m.actor_role==='ai')}
   }
-  const member=await privateVisitor('member@trusted.test')
+  const member=await grant(await privateVisitor('member@trusted.test'))
   const permitted=await privateAnswer(member)
   assert.match(permitted.observed,/reset the export queue/);assert.equal(permitted.answers.length,1)
   assert.equal(JSON.parse(permitted.answers[0].citations_json)[0].id,'article:'+privateArticle)
@@ -128,26 +132,26 @@ export async function answersJourney(){
    await visitor.say('Comment utiliser ce guide en français?');await a.run()
    return {observed,ref,answers:(await visitor.transcript()).messages.filter(m=>m.actor_role==='ai')}
   }
-  const translated=await localized(await privateVisitor('french@trusted.test'))
+  const translated=await localized(await grant(await privateVisitor('french@trusted.test')))
   assert.match(translated.observed,/réinitialiser la file/);assert.equal(translated.answers.length,1)
   const translatedCitation=JSON.parse(translated.answers[0].citations_json)[0]
   assert.equal(translatedCitation.locale,'fr');assert.equal(translatedCitation.localeFallback,false);assert.match(translatedCitation.url,/locale=fr/)
   await translate('Unreviewed French secret', 'draft')
-  const retained=await localized(await privateVisitor('draft-reader@trusted.test'))
+  const retained=await localized(await grant(await privateVisitor('draft-reader@trusted.test')))
   assert.match(retained.observed,/réinitialiser la file/);assert.doesNotMatch(retained.observed,/Unreviewed French secret/)
   assert.equal(retained.ref.sourceVersion,translated.ref.sourceVersion,'editing a draft preserves the reviewed identity')
-  const changed=await localized(await privateVisitor('raced-fr@trusted.test'),{before:()=>translate('Guidemarqueur: nouvelle publication.')})
+  const changed=await localized(await grant(await privateVisitor('raced-fr@trusted.test')),{before:()=>translate('Guidemarqueur: nouvelle publication.')})
   assert.equal(changed.answers.length,0,'a translated publication changed mid-answer admits no stale customer draft')
-  const uncited=await localized(await privateVisitor('uncited-fr@trusted.test'),{cite:false,before:()=>translate('Guidemarqueur: troisième publication.')})
+  const uncited=await localized(await grant(await privateVisitor('uncited-fr@trusted.test')),{cite:false,before:()=>translate('Guidemarqueur: troisième publication.')})
   assert.equal(uncited.answers.length,0,'uncited translated evidence has the same atomic fence')
-  const localeChanged=await localized(await privateVisitor('locale-race@trusted.test'),{before:()=>management('/experience',{defaultLocale:'fr',locales:['en','fr'],templates:{}})})
+  const localeChanged=await localized(await grant(await privateVisitor('locale-race@trusted.test')),{before:()=>management('/experience',{defaultLocale:'fr',locales:['en','fr'],templates:{}})})
   assert.equal(localeChanged.answers.length,0,'changing the configured source language withdraws old locale evidence')
   await management('/experience',{defaultLocale:'en',locales:['en','fr'],templates:{}})
   for(const visitor of [await privateVisitor('french@other.test'),await privateVisitor('typed-fr@trusted.test',false),await a.visitor()]){
    const denied=await localized(visitor);assert.doesNotMatch(denied.observed,/Guidemarqueur|nouvelle publication|troisième publication/)
   }
   await app.call(`/api/knowledge/${p}/articles`,{token:a.owner,body:{id:privateArticle,title:'Private export guide',slug:'private-export-guide',content:'Privatemarker: reset the export queue using a fresh draft. Updated source.',status:'published'},status:201})
-  const fallback=await localized(await privateVisitor('fallback@trusted.test'),{query:'privatemarker'})
+  const fallback=await localized(await grant(await privateVisitor('fallback@trusted.test')),{query:'privatemarker'})
   assert.match(fallback.observed,/localeFallback/);assert.match(fallback.observed,/Updated source/)
   // Select the issued fallback explicitly; the server, not the model, discloses it.
   let fallbackTurn=0
@@ -156,7 +160,7 @@ export async function answersJourney(){
    if(fallbackTurn===2){const issued=await app.first('SELECT source_id,source_version FROM ai_generation_sources WHERE source_id=? ORDER BY rowid DESC LIMIT 1','article:'+privateArticle);return openaiToolCall('cite_knowledge',{sources:[{id:issued.source_id,sourceVersion:issued.source_version}]},'fallback-cite')}
    return 'Read the source guidance.'
   }
-  const fallbackVisitor=await privateVisitor('fallback-cited@trusted.test');await fallbackVisitor.say('Please explain in French');await a.run()
+  const fallbackVisitor=await grant(await privateVisitor('fallback-cited@trusted.test'));await fallbackVisitor.say('Please explain in French');await a.run()
   const fallbackMessage=(await fallbackVisitor.transcript()).messages.find(m=>m.actor_role==='ai')
   assert.match(fallbackMessage.content,/Knowledge language fallback: fr → en/)
   assert.equal(JSON.parse(fallbackMessage.citations_json)[0].localeFallback,true)
@@ -164,12 +168,41 @@ export async function answersJourney(){
   privateVersion=(await app.first('SELECT publication_version FROM knowledge_articles WHERE id=?',privateArticle)).publication_version
   // Even an uncited source is fenced at final admission. Model deltas never
   // bypass that fence or leak an answer while the recipient's grant is revoked.
-  const revoked=await privateVisitor('revoked@trusted.test')
+  const revoked=await grant(await privateVisitor('revoked@trusted.test'))
   const upgradePrivate=await app.request(`/api/conversations/${revoked.conversationId}/socket?token=${revoked.token}`,{headers:{Upgrade:'websocket'}})
   const privateSocket=upgradePrivate.webSocket;privateSocket.accept();const privateFrames=[]
   privateSocket.addEventListener('message',event=>privateFrames.push(JSON.parse(event.data)))
   const revokedAnswer=await privateAnswer(revoked,{revoke:true,cite:false})
   assert.equal(revokedAnswer.answers.length,0);assert.ok(!privateFrames.some(frame=>frame.type==='chunk'),'unadmitted model deltas are never customer-visible');privateSocket.close()
+
+  // A real operator takes over between the provider's provisional delta and
+  // completion. Neither the live widget nor later replay may promote that text.
+  const raced=await a.visitor(),racedPath=`/api/conversations/${raced.conversationId}`
+  const live=await socketClient(app)(`${racedPath}/socket?token=${raced.token}`);assert.equal(live.status,101)
+  let deltaSent=false,takeover
+  const provisional='A superseded model answer must never be sent.'
+  ai.respond=async()=>{
+   const body=await openaiStream(provisional).text(),boundary=body.indexOf('\n\n')+2,encode=new TextEncoder();let part=0
+   return new Response(new ReadableStream({async pull(controller){
+    if(part++===0){controller.enqueue(encode.encode(body.slice(0,boundary)));deltaSent=true;return}
+    const current=await raced.transcript();assert.equal(current.messages.filter(message=>message.actor_role==='ai').length,0,'a provisional delta has no durable answer before completion')
+    takeover=(await app.call(racedPath+'/messages',{token:a.owner,body:{localId:'stream-takeover',content:'A teammate is handling this now.',expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})).data
+    assert.equal(takeover.accepted,true)
+    controller.enqueue(encode.encode(body.slice(boundary)));controller.close()
+   }},{highWaterMark:0}),{headers:{'content-type':'text/event-stream'}})
+  }
+  try{
+   const question=await raced.say('Please help with my return'),jobs=await app.takeJobs(),before=a.providerCalls()
+   await a.run(jobs);assert.equal(deltaSent,true);assert.equal(a.providerCalls(),before+1)
+   const superseded=await trace(a,raced);assert.equal(superseded.state,'cancelled','operator admission atomically cancels the superseded generation');assert.equal(superseded.committedAnswer,null)
+   const committed=await raced.transcript();assert.deepEqual(committed.messages.map(message=>message.id),[question.message.id,takeover.message.id]);assert.equal(committed.revision,2)
+   live.socket.send(JSON.stringify({type:'ping'}));await live.next(frame=>frame.type==='pong')
+   assert.deepEqual(live.frames.filter(frame=>frame.type==='message').map(frame=>frame.message.id),committed.messages.map(message=>message.id))
+   assert.ok(!live.frames.some(frame=>frame.type==='chunk'||JSON.stringify(frame).includes(provisional)),'superseded model text never crosses the widget socket')
+   await a.run(jobs);assert.equal(a.providerCalls(),before+1,'redelivery never retries the superseded paid attempt')
+  }finally{live.socket.close()}
+  const replayed=await socketClient(app)(`${racedPath}/socket?token=${raced.token}`);assert.equal(replayed.status,101)
+  try{replayed.socket.send(JSON.stringify({type:'ping'}));await replayed.next(frame=>frame.type==='pong');assert.deepEqual(replayed.frames.filter(frame=>frame.type==='message').map(frame=>frame.message.id),(await raced.transcript()).messages.map(message=>message.id));assert.ok(!JSON.stringify(replayed.frames).includes(provisional),'replay contains only guarded committed replies')}finally{replayed.socket.close()}
 
   // Asking for a person hands the conversation to a human; the assistant writes nothing more and a person can reply.
   ai.respond=async()=>openaiToolCall('switch_agent',{agent_id:'human'},'handoff')
@@ -190,6 +223,7 @@ export async function answersJourney(){
   assert.equal((await app.call(`/api/conversations/${handoff.conversationId}/messages`,{token:a.owner,body:{localId:'operator-reply',content:'Human reply',expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})).data.accepted,true)
   await repositoryJourney(a,handoff)
   await providersJourney(a)
+  await agent001Outcomes(a)
   ai.respond=()=>{throw new DOMException('Connection lost at the provider','TimeoutError')}
   const timed=await a.action(handoff.conversationId,'agentAssist',{options:{request_id:crypto.randomUUID()}});assert.equal(timed.status,202)
   const pending=await app.takeJobs(),beforeTimeout=a.providerCalls();await a.run(pending);await a.run(pending)

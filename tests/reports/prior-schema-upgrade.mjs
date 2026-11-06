@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {assertReferenceUpgrade} from '../helpers/knowledge/reference-upgrade.mjs'
 import {pbkdf2Sync,randomBytes} from 'node:crypto'
 import {mkdtemp,writeFile,rm} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
@@ -6,6 +7,7 @@ import {join} from 'node:path'
 import {readArtifact} from '../helpers/artifact-payloads.mjs'
 import {recoveryRuntime} from '../helpers/recovery/runtime.mjs'
 import {snapshot} from '../helpers/recovery/snapshot.mjs'
+import {restoredKnowledgeReady} from '../helpers/recovery/knowledge-ready.mjs'
 
 // An older populated installation is upgraded in place. Its data and password
 // are read through the current application, rather than pinning migration names.
@@ -34,27 +36,62 @@ export async function priorSchemaUpgrade(){
    await write('INSERT INTO media(id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)',['synthetic-file',project,thread,user,'synthetic/receipt','receipt.bin','application/octet-stream',bytes.length,'synthetic-answer',5])
    await storage.inspect({key:'synthetic/receipt',bytes,options:{httpMetadata:{contentType:'application/octet-stream'},customMetadata:{purpose:'retained-receipt'}}})
    await write('INSERT INTO knowledge_articles(id,project_id,slug,title,content,summary,status,updated_at) VALUES(?,?,?,?,?,?,?,?)',['synthetic-article',project,'receipts','Receipt guide','Your receipt remains available.','', 'published',5])
+   // A prior Move in import, including its private journal, survives the new
+   // door migration. It remains historical and excluded from native Reports.
+   await write('INSERT INTO conversations(id,project_id,contact_id,revision,last_message_id,created_at,updated_at,resolved_at) VALUES(?,?,?,?,?,?,?,?)',['synthetic-old-import',project,contact,1,'synthetic-old-message',3,6,6])
+   await write('INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,?,?,?,?,?,?)',['synthetic-old-message',project,'synthetic-old-import','synthetic-old-message',contact,'contact','synthetic-hh prior imported message',1,4])
+   await write('INSERT INTO move_in_conversations VALUES(?,?,?,?,?,?,?)',['synthetic-old-import',project,'zendesk','991100','synthetic-hh prior import','closed','email'])
+   await write('INSERT INTO move_in_message_sources VALUES(?,?,?,?,?,?)',['synthetic-old-message',project,JSON.stringify({id:'991101',name:'synthetic-hh-991101',role:'contact'}),'991102',JSON.stringify('2024-01-01T00:00:00Z'),'source'])
+   await write('INSERT INTO move_in_notes VALUES(?,?,?,?,?,?,?)',['synthetic-old-note',project,'synthetic-old-import',JSON.stringify({id:'991103',name:'synthetic-hh-991103',role:'operator'}),'synthetic-hh prior private note',5,JSON.stringify('2024-01-01T00:00:01Z')])
+   await write('INSERT INTO move_in_runs(id,project_id,actor_id,session_hash,vendor,filename,artifact_hash,object_key,bytes,state,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',['synthetic-old-run',project,user,'retired-old-session','zendesk','synthetic-hh-prior.ndjson','0'.repeat(64),'synthetic/prior-import',2,'completed',3,6])
+   await storage.inspect({key:'synthetic/prior-import',bytes:[123,125],options:{httpMetadata:{contentType:'application/octet-stream'}}})
    before=await snapshot(storage)
   })
-  for(const migration of migrations)await writeFile(join(runtime.directory,'migrations',migration.name),migration.sql)
+  for(const migration of migrations.filter(m=>parseInt(m.name,10)<291))await writeFile(join(runtime.directory,'migrations',migration.name),migration.sql)
   await runtime.run(['d1','migrations','apply','DB','--local','--persist-to','.wrangler/state'])
+  let beforeKnowledge
+  await runtime.withStorage(async storage=>{
+   await storage.inspect({sql:'INSERT INTO operator_ticket_commands(project_id,actor_id,local_id,conversation_id,intent_hash,kind,created_at) VALUES(?,?,?,?,?,?,?)',values:[project,user,'retained-call-command',thread,'retained-intent','call',7]})
+   for(const [id,kind] of [['synthetic-retained-email','email'],['synthetic-retained-call','call']]){
+    await storage.inspect({sql:'INSERT INTO conversations(id,project_id,contact_id,channel,created_at,updated_at) VALUES(?,?,?,?,?,?)',values:[id,project,contact,kind==='email'?'email':'phone',7,7]})
+    await storage.inspect({sql:'INSERT INTO operator_ticket_commands(project_id,actor_id,local_id,conversation_id,intent_hash,kind,created_at) VALUES(?,?,?,?,?,?,?)',values:[project,user,'command-'+id,id,'intent-'+id,kind,8]})
+   }
+   beforeKnowledge=await snapshot(storage)
+  })
+  const knowledgeStarted=Date.now()
+  for(const migration of migrations.filter(m=>parseInt(m.name,10)>=291))await writeFile(join(runtime.directory,'migrations',migration.name),migration.sql)
+  await runtime.run(['d1','migrations','apply','DB','--local','--persist-to','.wrangler/state'])
+  const knowledgeFinished=Date.now()
   await runtime.withStorage(async storage=>{
    const after=await snapshot(storage)
+   const command=after.rows.operator_ticket_commands.map(JSON.parse).find(row=>row.local_id==='retained-call-command')
+   assert.deepEqual(command,{project_id:project,actor_id:user,local_id:'retained-call-command',conversation_id:thread,intent_hash:'retained-intent',kind:'call',created_at:7,support_thread_id:null},'299 preserves populated command identities and defaults')
+   const commands=after.rows.operator_ticket_commands.map(JSON.parse),priorCommands=beforeKnowledge.rows.operator_ticket_commands.map(JSON.parse)
+   assert.equal(priorCommands.length,3);assert.equal(commands.length,priorCommands.length)
+   for(const retained of priorCommands)assert.deepEqual(commands.find(row=>row.conversation_id===retained.conversation_id),{...retained,support_thread_id:null},'299 preserves every populated email/call command byte and defaults its new link')
+   console.log('PROBE OUTBOUND-001 B1 upgrade: populated pre-299 installation -> native D1 migration apply -> all 3/3 existing operator commands preserved, including email/call identities, intent hashes and default NULL links')
+   for(const table of ['knowledge_article_publications','knowledge_generation_sources','knowledge_index_dirty','knowledge_upgrade_reports','knowledge_upgrade_progress'])assert.equal(assertReferenceUpgrade(table,after.rows[table],beforeKnowledge.rows,after.rows,knowledgeStarted,knowledgeFinished),true)
    assert.deepEqual(after.objects,before.objects,'all prior attachment bytes and metadata survive')
    for(const [table,rows] of Object.entries(before.rows)){
     if(['sqlite_sequence','d1_migrations','owner_setup'].includes(table))continue
     const current=(after.rows[table]||[]).map(JSON.parse)
     for(const encoded of rows){const row=JSON.parse(encoded);assert.ok(current.some(candidate=>Object.entries(row).every(([key,value])=>candidate[key]===value)),table+' retains its prior business row')}
    }
+   await assertUpgradedCommands(storage,{project,user,thread})
   })
   await runtime.start()
+  await restoredKnowledgeReady(runtime,project,'receipts')
   const call=async(path,body,token)=>{
    const response=await fetch(runtime.origin+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body)})
    assert.equal(response.ok,true,`${path}: ${response.status}`);return response.json()
   }
+  for(const action of ['uploads','plan','apply','status','reconcile','undo','cancel','archive','restore-check']){const response=await fetch(runtime.origin+'/api/rer/import/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});assert.equal(response.status,404,'upgraded install grants stay closed: '+await response.text())}
   const owner=await call('/api/identity/login',{email:'owner@upgrade.example',password})
   assert.equal(owner.actor.id,user);assert.equal(owner.actor.projectId,project)
   assert.equal((await call('/api/identity/setup')).available,false)
+  const retained=(await call(`/api/dashboard/projects/${project}/conversations/synthetic-old-import`,undefined,owner.token)).data;assert.equal(retained.imported.source_id,'991100')
+  assert.equal((await call(`/api/move-in/projects/${project}/imports/synthetic-old-run`,undefined,owner.token)).data.state,'completed')
+  const imported=(await call('/api/conversations/synthetic-old-import/messages',undefined,owner.token));assert.equal(imported.messages[0].content,'synthetic-hh prior imported message')
   const messages=await call(`/api/conversations/${thread}/messages`,undefined,owner.token)
   assert.deepEqual(messages.messages.map(m=>[m.id,m.content]),[['synthetic-question','Where is my receipt?'],['synthetic-answer','Here is the retained receipt.']])
   assert.equal(messages.revision,2);assert.equal(messages.lastMessageId,'synthetic-answer')
@@ -67,4 +104,33 @@ export async function priorSchemaUpgrade(){
   assert.equal(sent.accepted,true)
   assert.equal((await call(`/api/conversations/${thread}/messages`,undefined,owner.token)).messages.at(-1).content,'Your account is still supported.')
  }finally{if(runtime)await runtime.close();await rm(directory,{recursive:true,force:true})}
+}
+
+async function assertUpgradedCommands(storage,{project,user,thread}){
+ const write=(sql,values=[])=>storage.inspect({sql,values})
+ const contact='synthetic-command-erasure',ticket='synthetic-command-erasure-ticket',earlier='synthetic-command-earlier-intake',connection='synthetic-upgrade-channel',link='synthetic-upgrade-thread'
+ await write('INSERT INTO contacts(id,project_id,name,email,created_at) VALUES(?,?,?,?,?)',[contact,project,'Command erasure customer','erasure@upgrade.example',9])
+ for(const id of [ticket,earlier])await write('INSERT INTO conversations(id,project_id,contact_id,channel,created_at,updated_at) VALUES(?,?,?,?,?,?)',[id,project,contact,'sms',9,9])
+ const insert='INSERT INTO operator_ticket_commands(project_id,actor_id,local_id,conversation_id,intent_hash,kind,created_at,support_thread_id) VALUES(?,?,?,?,?,?,?,?)'
+ await assert.rejects(()=>write(insert,[project,user,'retained-call-command',ticket,'changed-intent','call',9,null]),/UNIQUE constraint failed/,'the original command key still refuses a different ticket')
+ await assert.rejects(()=>write(insert,[project,user,'duplicate-ticket-command',thread,'changed-intent','call',9,null]),/UNIQUE constraint failed/,'one conversation still belongs to only one creation command')
+ await assert.rejects(()=>write(insert,[project,user,'invalid-thread-command',ticket,'invalid-thread-intent','sms',9,'missing-upgrade-thread']),/FOREIGN KEY constraint failed/,'a command cannot link an absent channel thread')
+ await write('INSERT INTO support_channel_connections(id,project_id,provider,account,sender,channels_json,verify_hash,created_at) VALUES(?,?,?,?,?,?,?,?)',[connection,project,'sms','synthetic-upgrade-account','+12025550124','["sms"]','synthetic-upgrade-verifier',9])
+ const insertThread=()=>write('INSERT INTO support_channel_threads(id,project_id,connection_id,contact_id,conversation_id,identity_hash,recipient,channel_id,thread_key,last_inbound_at) VALUES(?,?,?,?,?,?,?,?,?,?)',[link,project,connection,contact,ticket,'synthetic-upgrade-identity','+12025550123','sms','synthetic-upgrade-thread-key',9])
+ await insertThread()
+ await write(insert,[project,user,'linked-upgrade-command',ticket,'linked-upgrade-intent','sms',9,link])
+ const command=async()=>(await write('SELECT * FROM operator_ticket_commands WHERE conversation_id=?',[ticket])).results[0]
+ const linked=await command()
+ assert.equal(linked.support_thread_id,link,'an upgraded command retains its valid channel thread')
+ await write('DELETE FROM support_channel_threads WHERE id=?',[link])
+ assert.deepEqual(await command(),{...linked,support_thread_id:null},'thread deletion clears only the link and retains command identity')
+ await insertThread()
+ await write('UPDATE operator_ticket_commands SET support_thread_id=? WHERE conversation_id=?',[link,ticket])
+ for(const [id,conversation,state] of [['synthetic-upgrade-earlier-send',earlier,'sending'],['synthetic-upgrade-current-send',ticket,'accepted']])await write('INSERT INTO support_channel_sends(message_id,project_id,conversation_id,connection_id,state,provider_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)',[id,project,conversation,connection,state,'synthetic-provider-'+id,9,9])
+ await write("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erased',1) WHERE id=? AND project_id=?",[contact,project])
+ assert.deepEqual(await command(),{...linked,local_id:'erased:'+ticket,intent_hash:null,support_thread_id:null},'rebuilt commands retain their keys and kind while erasure scrubs intent and detaches the deleted thread')
+ assert.equal((await write('SELECT id FROM support_channel_threads WHERE id=?',[link])).results.length,0)
+ const sends=(await write('SELECT conversation_id,state,provider_id,error_code FROM support_channel_sends WHERE connection_id=? ORDER BY conversation_id',[connection])).results
+ assert.deepEqual(sends,[{conversation_id:earlier,state:'uncertain',provider_id:null,error_code:'contact_erased'},{conversation_id:ticket,state:'accepted',provider_id:null,error_code:'contact_erased'}],'erasure scrubs both the current ticket and earlier intake sends after the thread pointer moved')
+ console.log('PROBE OUTBOUND-001-PERF P5: populated migration preserves command rows; duplicate keys/conversations and missing thread links refuse; valid links survive, thread deletion nulls only the link, and contact erasure redacts commands plus current/earlier send receipts')
 }

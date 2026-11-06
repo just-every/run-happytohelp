@@ -1,3 +1,6 @@
+import {agentErasureStatements,checkAgentArtifacts} from '../../vendor/agent-base/modules/agent-door/index.ts'
+import type {Env} from '../../platform/env'
+import {contactAgentArtifacts,memberAgentArtifacts} from './artifacts.ts'
 /**
  * The agent door keeps its own copies of people and customer records: native attribution
  * (h2h_agent_operations) and Base's agents, audit, events, approvals, reviews and saved
@@ -8,32 +11,21 @@
 /** The name member erasure gives the anonymized account (management/member-erasure.ts). */
 export const formerTeammate='Former teammate'
 
-// Customer erasure statements bind ?1 = project id and ?2 = contact id, like contact-erasure/scope.ts.
 // The door serves one linked workspace, so another workspace's erasure never reaches its stores.
-const linked='EXISTS(SELECT 1 FROM h2h_business_project WHERE singleton=1 AND project_id=?1)'
-const subjects='SELECT ?2 value UNION ALL SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2'
-const resources=`SELECT 'happytohelp://projects/'||?1||'/conversations/'||id FROM conversations WHERE project_id=?1 AND contact_id=?2
- UNION ALL SELECT 'happytohelp://projects/'||?1||'/conversations/'||id||'/context' FROM conversations WHERE project_id=?1 AND contact_id=?2`
-/** A stored value names the contact, one of its conversations or a door resource for one.
- * The substring test only skips documents that cannot match before the exact JSON test. */
-const references=(column:string)=>`(EXISTS(SELECT 1 FROM (${subjects}) s WHERE instr(${column},s.value)>0)
- AND EXISTS(SELECT 1 FROM json_tree(${column}) j WHERE j.type='text' AND (j.atom IN (${subjects}) OR j.atom IN (${resources}))))`
-/** The native target and policy evidence stay; the subject, arguments and recipients go. */
-const erasedSummary=(column:string)=>`json_set(json_remove(${column},'$.summary.target','$.summary.arguments','$.summary.recipients','$.summary.amount','$.summary.payee','$.summary.role'),'$.summary.items',json_array('Customer data erased'))`
-
-export function contactDoorErasure(db:D1Database,projectId:string,contactId:string){
- const bound=(sql:string)=>db.prepare(sql).bind(projectId,contactId)
- return [
-  // Held work for the customer is closed, never approved or sent: it reads as refused because
-  // the record is unavailable. Executed results keep their receipt without the native output.
-  bound(`UPDATE agent_door_approvals SET state=CASE WHEN state='pending' THEN 'refused' ELSE state END,
-   result=CASE WHEN state='pending' THEN json_set(json_extract(saved,'$.result'),'$.outcome','refused','$.code','resource_unavailable') ELSE json_remove(result,'$.result') END,
-   saved=json_set(${erasedSummary('saved')},'$.args',json('{}')),version=version+1
-   WHERE ${linked} AND (${references('saved')} OR ${references('result')})`),
-  // A replay of finished work refuses before it reads this; the saved native output goes.
-  bound(`UPDATE agent_door_calls SET outcome=json_remove(outcome,'$.result') WHERE ${linked} AND ${references('outcome')}`),
-  bound(`UPDATE agent_door_reviews SET saved=${erasedSummary('saved')} WHERE ${linked} AND ${references('saved')}`),
- ]
+export async function contactDoorErasure(env:Env,projectId:string,contactId:string,now:number,emails:readonly string[]){
+ await checkAgentArtifacts(env.DB,contactAgentArtifacts)
+ if(!await env.DB.prepare('SELECT 1 FROM h2h_business_project WHERE singleton=1 AND project_id=?').bind(projectId).first())return []
+ const contact=await env.DB.prepare('SELECT email,external_id FROM contacts WHERE project_id=? AND id=?').bind(projectId,contactId).first<{email:string|null;external_id:string|null}>()
+ const conversations=(await env.DB.prepare('SELECT id FROM conversations WHERE project_id=? AND contact_id=?').bind(projectId,contactId).all<{id:string}>()).results
+ const operations=(await env.DB.prepare("SELECT id FROM h2h_agent_operations WHERE project_id=? AND target_type='conversation' AND target_id IN (SELECT id FROM conversations WHERE project_id=? AND contact_id=?)").bind(projectId,projectId,contactId).all<{id:string}>()).results
+ const values=[contactId,...new Set([...emails,...(contact?.email?[contact.email]:[])]),...(contact?.external_id?[{sourceUserId:contact.external_id}]:[]),...conversations.map(row=>row.id),...operations.map(row=>row.id)]
+ const erasureId=crypto.randomUUID()
+ const statements=await agentErasureStatements({db:env.DB,map:contactAgentArtifacts,subject:{values:JSON.stringify(values)},secret:String(env.INTEGRATION_ENCRYPTION_KEY??''),
+  tombstone:{erasure_id:erasureId,at:new Date(now).toISOString()},
+  // The outer native erasure already checkpoints and invalidates transfers once.
+  checkpoint:async()=>[]})
+ // Native held work still closes as refused; its content and replay handle are tombstones.
+ return [...statements,env.DB.prepare("UPDATE agent_door_approvals SET state='refused' WHERE state='held' AND json_extract(saved,'$.tombstone.erasure_id')=?").bind(erasureId)]
 }
 
 const quoted=(value:string)=>JSON.stringify(value)
@@ -45,7 +37,12 @@ type Value={value:string|null;id?:string|null}
  * anonymized account's. An agent the teammate sponsored keeps its id; its display name
  * loses only an embedded copy of the teammate's name. Run before the account is anonymized.
  */
-export async function memberDoorErasure(db:D1Database,userId:string):Promise<D1PreparedStatement[]>{
+export async function memberDoorErasure(env:Env,userId:string,now:number):Promise<D1PreparedStatement[]>{
+ const db=env.DB
+ const member=await db.prepare('SELECT email FROM users WHERE id=?').bind(userId).first<{email:string}>()
+ const operations=(await db.prepare('SELECT id FROM h2h_agent_operations WHERE sponsor_id=?').bind(userId).all<{id:string}>()).results
+ const tombstones=await agentErasureStatements({db,map:memberAgentArtifacts,subject:{values:JSON.stringify([userId,member?.email,...operations.map(row=>row.id)].filter(Boolean))},secret:String(env.INTEGRATION_ENCRYPTION_KEY??''),
+  tombstone:{erasure_id:crypto.randomUUID(),at:new Date(now).toISOString()},checkpoint:async()=>[]})
  // D1 limits compound SELECTs, so each copy is its own read.
  const read=async(queries:string[])=>(await db.batch<Value>(queries.map(sql=>db.prepare(sql).bind(userId)))).flatMap(result=>result.results)
  const [names,emails,agents]=await Promise.all([
@@ -81,6 +78,7 @@ export async function memberDoorErasure(db:D1Database,userId:string):Promise<D1P
  const outputs=(from:string,to:string)=>[text('agent_door_calls','outcome',from,to),text('agent_door_approvals','result',from,to)]
  const label=(agent:string)=>`${agent}||' for '||?2`
  return [
+  ...tombstones,
   ...known.flatMap(name=>[
    ...outputs(quoted(name),quoted(formerTeammate)),
    ...outputs(' for '+quoted(name).slice(1),' for '+quoted(formerTeammate).slice(1)),

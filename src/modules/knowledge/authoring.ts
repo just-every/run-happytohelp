@@ -23,9 +23,9 @@ authoring.post('/:projectId/datasets/:datasetId/crawl',async c=>{const datasetId
 authoring.put('/:projectId/categories/:categoryId',async c=>c.json(await writeCategory(c.env,c.req.param('projectId'),c.req.param('categoryId'),await c.req.json(),await knowledgeEditorGuard(c))))
 authoring.delete('/:projectId/categories/:categoryId',async c=>{
  const cid=c.req.param('categoryId'),pid=c.req.param('projectId'),guard=await knowledgeEditorGuard(c)
- const category=await c.env.DB.prepare('SELECT audience,is_published FROM knowledge_categories WHERE id=? AND project_id=?').bind(cid,pid).first<any>()
- if(category&&(category.audience!=='public'||!category.is_published))throw new HTTPException(409,{message:'Publish the collection and set public access explicitly before deleting it'})
- const condition=`EXISTS(SELECT 1 FROM knowledge_categories WHERE id=? AND project_id=? AND audience='public' AND is_published=1) AND EXISTS(${guard.sql})`,args=[cid,pid,...guard.params]
+ const category=await c.env.DB.prepare('SELECT audience,is_published,requires_entitlement FROM knowledge_categories WHERE id=? AND project_id=?').bind(cid,pid).first<any>()
+ if(category&&(category.audience!=='public'||!category.is_published||category.requires_entitlement))throw new HTTPException(409,{message:'Publish the collection and set public access explicitly before deleting it'})
+ const condition=`EXISTS(SELECT 1 FROM knowledge_categories WHERE id=? AND project_id=? AND audience='public' AND is_published=1 AND requires_entitlement=0) AND EXISTS(${guard.sql})`,args=[cid,pid,...guard.params]
  await c.env.DB.batch([c.env.DB.prepare(`UPDATE knowledge_categories SET parent_id=NULL WHERE parent_id=? AND project_id=? AND ${condition}`).bind(cid,pid,...args),c.env.DB.prepare(`UPDATE knowledge_articles SET category_id=NULL WHERE category_id=? AND project_id=? AND ${condition}`).bind(cid,pid,...args),c.env.DB.prepare(`DELETE FROM knowledge_categories WHERE id=? AND project_id=? AND ${condition}`).bind(cid,pid,...args)])
  return c.json({deleted:true})
 })

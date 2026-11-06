@@ -3,7 +3,7 @@ import {freshdeskShapes} from './freshdesk-shapes'
 import {object,sourceId,time} from './common'
 import type {Vendor} from '../types'
 
-type Shape={type:'string'|'boolean'|'integer'|'id'|'iso'|'unix'|'visibility'|'opaque'|'object'|'array'|'action'|'condition';nullable?:boolean;values?:string[];fields?:Record<string,Shape>;item?:Shape;required?:string[];person?:boolean;reference?:boolean}
+type Shape={type:'string'|'number'|'boolean'|'integer'|'id'|'iso'|'unix'|'visibility'|'opaque'|'object'|'array'|'action'|'condition'|'zendesk-audit';nullable?:boolean;values?:string[];fields?:Record<string,Shape>;item?:Shape;required?:string[];person?:boolean;reference?:boolean}
 const string:Shape={type:'string'},boolean:Shape={type:'boolean'},integer:Shape={type:'integer'},id:Shape={type:'id'},opaque:Shape={type:'opaque'}
 const nullable=(shape:Shape):Shape=>({...shape,nullable:true})
 const oneOf=(...values:string[]):Shape=>({...string,values})
@@ -39,6 +39,9 @@ export const recordShapes:Record<string,Shape>={
  'zendesk/automation':record({...common('iso'),title:string,active:boolean,position:integer,conditions:configurationConditions,actions:array({type:'action'})},['id','title','conditions','actions']),
  'zendesk/user':{...record({...common('iso'),...contactFields,role:oneOf('end-user','agent','admin'),organization_id:nullable(id),tags:nullable(array(string))},['id']),person:true},
  'zendesk/ticket':record({...common('iso'),subject:nullable(string),requester_id:reference,status:oneOf('new','open','pending','hold','solved','closed'),tags:nullable(array(string)),comments:array(comment),attachments:nullable(opaque),assignee_id:nullable(reference),group_id:nullable(id),custom_fields:array(record({id,value:nullable(opaque)},['id','value'])),via},['requester_id','comments']),
+ // A reply that arrived on a ticket an earlier import holds, keyed by its own
+ // comment ID and attached to that ticket's conversation through ticket_id.
+ 'zendesk/ticket_comment':record({...comment.fields,ticket_id:id,html_body:nullable(string),audit_id:nullable(id)},['id','author_id','ticket_id','public','created_at']),
  'zendesk/macro':record({...common('iso'),title:string,restriction:nullable(opaque),actions:array({type:'action'})}),
  'zendesk/article':record({...common('iso'),title:string,body:string,draft:boolean,user_segment_id:nullable(id),user_segment_ids:array(id),...articleStructure}),
  'intercom/contact':{...record({...common('unix'),...contactFields,tags:tagList,companies:record({data:array(record({id,type:oneOf('company'),url:string},['id','type'])),url:string,total_count:integer,has_more:boolean},['data','total_count','has_more'])},['id']),person:true},
@@ -54,10 +57,17 @@ export const recordShapes:Record<string,Shape>={
 Object.assign(recordShapes,helpScoutShapes({record,array,nullable,string,integer,id,reference,opaque,boolean}),freshdeskShapes({record,array,nullable,string,integer,id,reference,opaque,boolean}))
 for(const [plural,singular] of Object.entries({organizations:'organization',conversations:'conversation',customers:'contact',tags:'tag'}))recordShapes[`helpscout/inbox-list:${plural}`]=record({_embedded:record({[plural]:array(recordShapes[`helpscout/${singular}`])}),page:recordShapes['helpscout/$page'].fields!.value,_links:recordShapes['helpscout/$links'].fields!.value})
 for(const [plural,singular] of Object.entries({collections:'collection',categories:'category',articles:'article-ref'}))recordShapes[`helpscout/docs-list:${plural}`]=record({page:integer,pages:integer,count:integer,items:array(recordShapes[`helpscout/${singular}`])})
+const packedProvenance=record({file:string,sha256:string,row:integer,pointer:string},['file','sha256','row','pointer'])
+for(const kind of ['user','organization','ticket_field'])recordShapes[`zendesk/${kind}`].fields!._offline_provenance=array(packedProvenance)
+const sourceSla=record({target:{type:'number'},unit:string,business_hours:boolean,policy:record({id,title:string,description:nullable(string)},['id'])})
+const offlineAttachment=record({attachment_id:id,comment_id:id,path:string,sha256:string,base64:string},['attachment_id','comment_id','path','sha256','base64'])
+const offline=record({format:string,comments_complete:boolean,redacted_urls:integer,attachments:array(offlineAttachment),history:record({metrics:oneOf('missing','supplied'),audits:oneOf('missing','supplied')}),metric_events:array(record({id,ticket_id:id,instance_id:id,type:string,metric:string,time:{type:'iso'},status:record({calendar:{type:'number'},business:{type:'number'}}),sla:sourceSla,deleted:boolean},['id','ticket_id','instance_id','type','metric','time'])),audits:array(record({id,ticket_id:id,author_id:reference,created_at:{type:'iso'},events:array({type:'zendesk-audit'})},['id','ticket_id','created_at','events'])),provenance:array(packedProvenance)},['format'])
+Object.assign(recordShapes['zendesk/ticket'].fields!,{_offline:offline,comment_count:integer,comments_truncated:boolean,comments_incomplete:boolean,has_more:boolean,next_page:nullable(string),custom_status_id:nullable(id)})
 for(const [key,schema] of Object.entries(recordShapes)){const kind=key.split('/')[1];if(!key.startsWith('helpscout/')&&!key.startsWith('freshdesk/')&&!kind.startsWith('$')){schema.fields!.type=oneOf(kind);schema.fields!.kind=oneOf(kind)}}
 // The wrapper determines Zendesk record kind. Ticket type is a nullable
 // business classification, not the Intercom document discriminator.
 recordShapes['zendesk/ticket_field'].fields!.type=string
+recordShapes['zendesk/ticket_comment'].fields!.type=nullable(string)
 recordShapes['zendesk/ticket'].fields!.type=nullable(oneOf('problem','incident','question','task'))
 export interface ShapeIssue {code:'unsupported_source_field'|'malformed_source_field'|'opaque_source_field'|'source_shape_limit';path:string;reason:string}
 /** uninterpreted: every retained value the schema does not read, for whole-value erasure. */
@@ -66,17 +76,21 @@ const escape=(value:string)=>value.replace(/~/g,'~0').replace(/\//g,'~1')
 export const SHAPE_NODE_LIMIT=4096
 /** Depth is bounded by the static, acyclic schema; work and diagnostics also have
  * explicit per-record caps. Unknown/opaque subtrees are classified at their root. */
-export function auditShape(vendor:Vendor,kind:string,payload:unknown):ShapeAudit {
+export function auditShape(vendor:Vendor,kind:string,payload:unknown,nodeLimit:number=SHAPE_NODE_LIMIT):ShapeAudit {
  const result:ShapeAudit={complete:true,issues:[],people:[],references:[],uninterpreted:[],nodes:0},shape=recordShapes[`${vendor}/${vendor==='helpscout'&&kind.startsWith('metadata:')?(kind.endsWith('/page')?'$page':kind.endsWith('/_links')?'$links':/\/(pages|count)$/.test(kind)?'$count':kind):kind}`]
  let nodes=0,stopped=false
  const issue=(code:ShapeIssue['code'],path:string,reason:string)=>{result.complete=false;if(result.issues.length<128)result.issues.push({code,path,reason});else if(result.issues.length===128)result.issues.push({code:'source_shape_limit',path,reason:'field_diagnostics_truncated'})}
- const count=(path:string)=>{result.nodes=++nodes;if(nodes<=SHAPE_NODE_LIMIT)return true;result.complete=false;result.exhausted=path;stopped=true;return false}
+ const count=(path:string)=>{result.nodes=++nodes;if(nodes<=nodeLimit)return true;result.complete=false;result.exhausted=path;stopped=true;return false}
  if(!shape){issue('unsupported_source_field','','record_kind_not_understood');result.uninterpreted.push(payload);return result}
  function visit(value:unknown,schema:Shape,path:string){
   if(stopped)return
   if(!count(path))return
   if(value===null&&schema.nullable)return
   if(schema.type==='opaque'){issue('opaque_source_field',path,'retained_value_not_identity_indexed');result.uninterpreted.push(value);return}
+  if(schema.type==='zendesk-audit'){
+   const status=object(value)&&['Change','Create'].includes(value.type)&&value.field_name==='status'
+   visit(value,record({id,type:string,field_name:string,previous_value:status?string:opaque,value:status?string:opaque,sla:sourceSla},['id','type']),path);return
+  }
   if(schema.type==='condition'){
    const field=object(value)?value.field:undefined
    const valueShape:Shape=['group_id','assignee_id','requester_id'].includes(field)?reference:['status','priority','tags'].includes(field)?string:typeof field==='string'&&field.startsWith('hours_since_')?(typeof (value as any).value==='number'?integer:string):opaque
@@ -97,6 +111,7 @@ export function auditShape(vendor:Vendor,kind:string,payload:unknown):ShapeAudit
   let valid=false
   if(schema.type==='id'){try{sourceId(value,vendor);valid=true}catch{}}
   else if(schema.type==='iso'||schema.type==='unix'){try{time(value,schema.type);valid=true}catch{}}
+  else if(schema.type==='number')valid=typeof value==='number'&&Number.isFinite(value)
   else if(schema.type==='integer')valid=typeof value==='number'&&Number.isSafeInteger(value)&&value>=0
   else if(schema.type==='visibility')valid=typeof value==='boolean'||value==='true'||value==='false'
   else valid=typeof value===schema.type

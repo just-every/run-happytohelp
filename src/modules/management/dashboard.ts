@@ -1,3 +1,5 @@
+import {operatorMergeTarget} from '../conversation-actions/merge-read'
+import {ticketScopeSql} from '../access/ticket-scope'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -13,7 +15,7 @@ import {compileFilters,parseFilters,queryJSON} from '../tickets/filters'
 import {compileSort,parseSort} from '../tickets/sort'
 import {savedQueue} from '../tickets/views'
 export const dashboard=new Hono<AppEnv>()
-export async function dashboardAccess(c:any){const actor=await requireActor(c);if(actor.role==='contact')throw new HTTPException(403);const row=await c.env.DB.prepare('SELECT c.*,m.role membership_role FROM conversations c JOIN memberships m ON m.project_id=c.project_id WHERE c.id=? AND m.user_id=? AND EXISTS(SELECT 1 FROM projects p WHERE p.id=c.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,"$.deleted_at") IS NOT NULL)').bind(c.req.param('conversationId'),actor.id).first();if(!row||c.req.param('projectId')&&row.project_id!==c.req.param('projectId'))throw new HTTPException(404);return {actor:{...actor,projectId:row.project_id,role:row.membership_role},conversation:row}}
+export async function dashboardAccess(c:any){const actor=await requireActor(c);if(actor.role==='contact')throw new HTTPException(403);const row=await c.env.DB.prepare(`SELECT c.*,m.role membership_role,${ticketScopeSql('m.user_id')} scope_allowed FROM conversations c JOIN memberships m ON m.project_id=c.project_id WHERE c.id=? AND m.user_id=? AND EXISTS(SELECT 1 FROM projects p WHERE p.id=c.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,"$.deleted_at") IS NOT NULL)`).bind(c.req.param('conversationId'),actor.id).first();if(!row||c.req.param('projectId')&&row.project_id!==c.req.param('projectId'))throw new HTTPException(404);if(!row.scope_allowed)throw new HTTPException(404);delete row.scope_allowed;return {actor:{...actor,projectId:row.project_id,role:row.membership_role},conversation:row}}
 for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  dashboard.get(prefix,async c=>{
  const a=await requireActor(c)
@@ -21,7 +23,8 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  const project=c.req.param('projectId')
  if(project)await scope(c)
  const page=Math.max(1,parseInt(c.req.query('page')||'1')||1),search=inboxSearchTerm(c)
- const conditions=["EXISTS(SELECT 1 FROM memberships m WHERE m.project_id=c.project_id AND m.user_id=?)",hasMessages,"NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)"],params:any[]=[a.id]
+ const conditions=["EXISTS(SELECT 1 FROM memberships m WHERE m.project_id=c.project_id AND m.user_id=?)",hasMessages,"NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)"],params:any[]=[a.id,a.id]
+ conditions.push(ticketScopeSql('?'))
  if(project){conditions.push('c.project_id=?');params.push(project)}
  const saved=await savedQueue(c.env,a,project,c.req.query('saved_view'))
  const requestedFilters=queryJSON(c.req.query('filters'),'filters'),requestedSort=queryJSON(c.req.query('sort'),'sort')
@@ -54,7 +57,7 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  return c.json({data,meta:{pagination:{total:count!.total,current_page:page,total_pages:Math.max(1,Math.ceil(count!.total/30))}}})
  })
  dashboard.get(`${prefix}/counts`,async c=>{const a=await requireActor(c);if(a.role==='contact')throw new HTTPException(403);const project=c.req.param('projectId');if(project)await scope(c);const counts=await inboxCounts(c.env,a.id,project);return c.json({data:counts})})
- dashboard.get(`${prefix}/:conversationId`,async c=>{const {actor,conversation}=await dashboardAccess(c);return c.json({data:await conversationData(c.env,conversation,actor.id,true)})})
+ dashboard.get(`${prefix}/:conversationId`,async c=>{const {actor,conversation}=await dashboardAccess(c);const data=await conversationData(c.env,conversation,actor.id,true);if(data.merged_into)data.merged_into=await operatorMergeTarget(c.env,actor.projectId,conversation.id,actor.id);return c.json({data})})
  dashboard.get(`${prefix}/:conversationId/buckets`,async c=>{
  const {conversation}=await dashboardAccess(c),page=Math.max(1,parseInt(c.req.query('page')||'1')||1)
  const createdBefore=c.req.query('created_before'),stamp=createdBefore?Date.parse(createdBefore):null

@@ -12,8 +12,32 @@ const {tokens,identifier,folded}=await import(new URL('./generated.mjs',import.m
 // Project additive schema changes onto the historical subsystem inventory.
 // A subsystem omitted from that inventory has no table to alter or index, even
 // when its later evolution lives in a migration outside its original range.
-function omittedSchemaChange(sql,omitted){
+function triggerDefinition(sql){
  const list=tokens(sql),words=list.map(token=>token.quoted?undefined:folded(token.text));
+ if(!['create','drop'].includes(words[0])||words[1]!=='trigger')return;
+ const name=list[words[2]==='if'?(words[0]==='create'?5:4):2];
+ return {name:folded(identifier(name).replace(/;$/,'')),operation:words[0],list,words};
+}
+function omittedTrigger(sql,omitted){
+ const trigger=triggerDefinition(sql);
+ if(trigger?.operation!=='create')return false;
+ // Only table references count; a quoted message or an identically named
+ // column does not make a trigger part of an omitted subsystem.
+ return trigger.list.some((token,index)=>['on','from','join','update','into','references'].includes(trigger.words[index-1])
+  &&token.text[0]!=="'"&&omitted.includes(folded(identifier(token).replace(/;$/,''))));
+}
+function omittedSchemaChange(sql,omitted,omittedTriggers,migration){
+ const list=tokens(sql),words=list.map(token=>token.quoted?undefined:folded(token.text));
+ const trigger=triggerDefinition(sql);
+ if(trigger)return omittedTriggers.has(trigger.name);
+ // Pre-email inventories omit 162, so 299 has no command table to rebuild.
+ // Project out only that table's copy/swap; the rest of 299 still applies.
+ if(migration==='299_outbound_channel_tickets.sql'&&omitted.includes('operator_ticket_commands')){
+  const target=list[2]&&folded(identifier(list[2]).replace(/;$/,''));
+  if(target==='operator_ticket_commands_next'&&(
+   words[0]==='create'&&words[1]==='table'||words[0]==='insert'&&words[1]==='into'||words[0]==='alter'&&words[1]==='table'&&words[3]==='rename'
+  )||target==='operator_ticket_commands'&&words[0]==='drop'&&words[1]==='table')return true;
+ }
  let target;
  if(words[0]==='alter'&&words[1]==='table'&&words[3]==='add')target=list[2];
  else if(words[0]==='create'&&(words[1]==='index'||words[1]==='unique'&&words[2]==='index'))target=list[words.indexOf('on')+1];
@@ -26,6 +50,8 @@ export const ticketTables=['ticket_statuses','ticket_groups','ticket_group_membe
 // The exact R3 row transition remains supported, including old erasure receipts.
 // No invented customer data: these are the cells migration 130/132 introduced.
 export function workflowArchiveUpgradeRow(table,row){
+ // The native draft rebuild retains every old cell and adds only a null direct-draft marker.
+ if(table==='macro_drafts'&&row.draft_id===undefined)return {...row,draft_id:null};
  if(table==='conversations'&&row.status_id===undefined){
   const category=row.resolved_at!==null?'solved':row.revision>0?'open':'new';
   row={...row,status_id:category,status_category:category,subject:'',priority:'normal',channel:'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'rer'};
@@ -49,19 +75,26 @@ export async function workflowArchivePolicy(root,input,{beforeTickets=false,befo
   // v0.4.2, the last pre-ticket release, ends at 190; every later migration
   // (191's ticket_history index onward) only ever runs after the ticket model.
   // R7b's reserved 172–174 numbers also landed after the pre-ticket release.
-  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^22[0-9]_/.test(name)&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name)&&!/^17[234]_/.test(name)&&name<'191_')&&(!beforeR4||!/^14[0-9]_/.test(name))&&(!beforeEmail||!/^16[0-9]_/.test(name))).sort();
-  // This inventory deliberately has no workflow journal (150 is omitted).
-  // Later replacements of its trigger and the consent trigger on the omitted
-  // workflow_schedules table stay omitted too. Keep the other statements in
-  // mixed migrations, including 241's resolution correction and 266's consent.
-  const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))
-   .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+(?:workflow_changed|support_channel_opted_out_schedule)\b/i.test(sql)&&!omittedSchemaChange(sql,omitted))));
+  const migrations=await Promise.all((await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')).sort()
+   .map(async name=>({name,statements:unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))})));
+  // Read definitions even in omitted migrations so later DROP/CREATE pairs
+  // stay together. SQLite validates every trigger when a later table is
+  // renamed; historical inventories cannot retain references to absent stores.
+  const omittedTriggers=new Set(migrations.flatMap(migration=>migration.statements)
+   .filter(sql=>omittedTrigger(sql,omitted)).map(sql=>triggerDefinition(sql).name));
+  const draftRebuild='290_native_reply_drafts.sql';
+  const selected=migrations.filter(({name})=>!/^22[0-9]_/.test(name)&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name)&&!/^17[234]_/.test(name)&&name<'191_')&&(!beforeR4||!/^14[0-9]_/.test(name)&&name!==draftRebuild)&&(!beforeEmail||!/^16[0-9]_/.test(name)));
+  const names=selected.map(({name})=>name);
+  const plan=selected.map(({name,statements})=>statements.filter(sql=>!omittedSchemaChange(sql,omitted,omittedTriggers,name)));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);
    const tables=scratch.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row=>row.name).filter(name=>!excludedTable(name,result)&&!(result.derivedTables??[]).some(derived=>name===derived||name.startsWith(derived+'_')));
    // Retain Base's refusal of unrelated skipped data migrations. Only the
    // explicitly supported ticket backfill above is allowed to upgrade rows.
-   if(plan.slice(index+1).some(statements=>statements.some(sql=>changesData(sql,tables))))continue;
+   // This edition-owned rebuild copies the original draft cells exactly; the
+   // row adapter above supplies its nullable marker. All other data migrations
+   // retain the existing refusal fence.
+   if(plan.slice(index+1).some((statements,offset)=>names[index+1+offset]!==draftRebuild&&statements.some(sql=>changesData(sql,tables))))continue;
    acceptedSchemas[await schemaIdentity(db,config)]={upgradeRow:workflowArchiveUpgradeRow};
   }
   return {...result,acceptedSchemas};

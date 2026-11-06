@@ -1,3 +1,4 @@
+import {healImportDoor} from '../move-in/door/authority'
 import {acceptExistingInvitation,usableIdentityToken} from './invitation-acceptance'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
@@ -35,6 +36,7 @@ accounts.post('/login',async c=>{
   ...(twoFactor==='verify'?[]:[sessionFactorStatement(c.env.DB,tokenHash,user.id,'password',now)]),
   ...await accountAudit(c.env.DB,user.id,{category:'auth',action:twoFactor?'sign_in.password_accepted':'sign_in.succeeded',actor:{type:'user',id:user.id},source:'dashboard',detail:{method:'password',...(twoFactor?{twoFactor}:{})}}),
  ])
+ await healImportDoor(c.env,user.id)
  c.header('Set-Cookie',sessionCookie(token,c.req.url))
  return c.json({token,actor:{id:user.id,projectId:membership?.project_id||null,role:membership?.role||'operator'},accountOnly:!membership,memberships:memberships.results,...(twoFactor?{twoFactor}:{})})
 })

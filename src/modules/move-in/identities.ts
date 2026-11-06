@@ -1,7 +1,7 @@
 import {sha256,canonicalJson} from '../import-kit/src/provenance/identity'
 import type {Env} from '../../platform/env'
 import {sourceId} from './readers/common'
-import {LIMITS,type Vendor} from './types'
+import {LIMITS,type RecordLimits,type Vendor} from './types'
 import {indexUpload,type IdentityIndexIssue} from './readers/identity-index'
 import {AdmissionError} from './readers/admission-error'
 export interface IdentityLink {digest:string;source:string}
@@ -15,7 +15,7 @@ export function contactDigests(project:string,contact:{email?:unknown;external_i
 }
 /** Index only identity hashes, before raw custody is admitted. This includes
  * rejected and not-yet-reviewed records, and never depends on native origins. */
-export async function uploadIdentities(project:string,vendor:Vendor,name:string,bytes:Uint8Array):Promise<{links:IdentityLink[];complete:boolean;uninterpreted:string[];incomplete?:IdentityIndexIssue}>{
+export async function uploadIdentities(project:string,vendor:Vendor,name:string,bytes:Uint8Array,limits:RecordLimits=LIMITS):Promise<{links:IdentityLink[];complete:boolean;uninterpreted:string[];incomplete?:IdentityIndexIssue}>{
  const links=new Map<string,IdentityLink>(),retained:unknown[]=[];let hashes=0,aliasComplete=true,incomplete:IdentityIndexIssue|undefined
  const complete=await indexUpload(vendor,name,bytes,(people,references,location,uninterpreted)=>{
   retained.push(...uninterpreted)
@@ -31,7 +31,7 @@ export async function uploadIdentities(project:string,vendor:Vendor,name:string,
    if(typeof person.external_id==='string'&&person.external_id){const external=digest('external',person.external_id);add(source?.hash??external,external)}
    if(source)add(source.hash,digest('external',`import:${vendor}:${source.value}`))
   }
- },issue=>{incomplete??=issue})
+ },issue=>{incomplete??=issue},limits)
  const whole=complete&&aliasComplete
  return {links:[...links.values()],complete:whole,uninterpreted:whole?[]:uninterpretedDigests(project,vendor,retained),...(!whole?{incomplete}:{})}
 }

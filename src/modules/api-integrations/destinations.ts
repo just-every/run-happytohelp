@@ -5,9 +5,9 @@ import {validateDestination,resolveSlackWebhook,resolveSlackBot} from '../../ven
 import {encryptToken,decryptToken} from '../integrations/secrets'
 import {issuerGuard,type Issuer} from '../../platform/integration-authority'
 export class DestinationUnavailable extends Error {}
-export const EVENTS=['conversation.status_changed','conversation.assigned','conversation.created','message.created','conversation.resolved','conversation.rated'] as const
+export const EVENTS=['contact.created','contact.updated','article.published','conversation.status_changed','conversation.assigned','conversation.created','message.created','conversation.resolved','conversation.rated'] as const
 export async function destination(env:Env,projectId:string,id:string){
- const row=await env.DB.prepare("SELECT d.* FROM native_integration_destinations d WHERE d.project_id=? AND d.id=? AND d.enabled=1 AND EXISTS(SELECT 1 FROM projects p WHERE p.id=d.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings p WHERE p.project_id=d.project_id AND json_extract(p.settings_json,'$.deleted_at') IS NOT NULL)").bind(projectId,id).first<any>()
+ const row=await env.DB.prepare("SELECT d.* FROM native_integration_destinations d WHERE d.project_id=? AND d.id=? AND d.enabled=1 AND (d.credential_id IS NULL OR EXISTS(SELECT 1 FROM api_credentials c WHERE c.namespace=d.project_id AND c.id=d.credential_id AND c.revoked_at IS NULL AND (c.expires_at IS NULL OR c.expires_at>?) AND (d.connector<>'zapier' OR NOT EXISTS(SELECT 1 FROM json_each(d.events_json) ev WHERE NOT EXISTS(SELECT 1 FROM json_each(c.scopes) sc WHERE sc.value=CASE WHEN ev.value LIKE 'contact.%' THEN 'contacts:read' WHEN ev.value LIKE 'article.%' THEN 'articles:read' ELSE 'conversations:read' END))))) AND EXISTS(SELECT 1 FROM projects p WHERE p.id=d.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings p WHERE p.project_id=d.project_id AND json_extract(p.settings_json,'$.deleted_at') IS NOT NULL)").bind(projectId,id,Date.now()).first<any>()
  if(!row)throw new DestinationUnavailable('Destination unavailable')
  try{return {...row,secret:JSON.parse(await decryptToken(env,projectId,row.secret_ciphertext))}}catch{throw new DestinationUnavailable('Destination unavailable')}
 }

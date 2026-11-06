@@ -63,3 +63,9 @@ The cap is **240 effective leaf checks**, not runner registrations. At `29f60c5a
 Date: 2026-10-20. Ruled by: owner (retained approvals 1, 2, 8 and 20 October). Clauses: PUBLIC-001, PUBLIC-002, PUBLIC-003, PUBLIC-004, PUBLIC-005.
 
 Keep the owner-approved homepage, UI and behavior intact. The complete retained public design is in docs/contract/public-design.md and its detailed acceptance source is in docs/verify.md. The rewrite changes no marketing or product behavior.
+
+### RL-101 — Separate offline Zendesk import clause
+
+Date: 2026-10-28T09:10Z. Ruled by: ct. Clauses: ZENDESK-IMPORT-001, MOVE-IN-002.
+
+ct approved ZENDESK-IMPORT-001 as one separate Core clause carrying the six acceptance points of the original offline Zendesk brief, starting missing. MOVE-IN-002 keeps its text, Status and Gap, the Freshdesk attachment deferrals are unchanged, and shared M3 transport remains a named bz dependency. The clause was not in the contract at the rewrite's old reference `8fe2cd7328a3e6d6b6013ad8e379c410c5b21b7a`, so it is *From:* new and `docs/contract/ID-MAP.json` still maps MOVE-IN-002 as kept, with no entry for this clause. ct's 1 November 2026 lineage ruling (ct-scope-hh-zendesk-lineage-20261101-0245) restored it to CONTRACT.md without changing any other clause, Status or Gap.

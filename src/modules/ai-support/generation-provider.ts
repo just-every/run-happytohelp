@@ -27,7 +27,8 @@ export async function executeGenerationProvider(
   onProviderStarted: () => void,
 ) {
   let usageResult: unknown = null;
-  const context = await replyContext(env, row.project_id, row.conversation_id, row.kind === 'suggestions' ? 'agent' : 'contact', row.id);
+  const requester = JSON.parse(row.actor_json);
+  const context = await replyContext(env, row.project_id, row.conversation_id, row.kind === 'suggestions' ? 'agent' : 'contact', row.id, requester.role === 'contact' || requester.role === 'system' ? undefined : requester.id);
   if (row.kind === 'reply') context.tools.push(handoffTool(env,row,effects));
   context.tools=executionTools(env,row,tracedTools(env,attemptId,context.tools),checkCurrent);
   if (row.instruction) {
@@ -42,6 +43,16 @@ export async function executeGenerationProvider(
       if (event.type === 'agent_start') onProviderStarted();
       await saveEvent(env, attemptId, event);
       await checkCurrent();
+      // An unoffered call invalidates this customer answer. Letting the model
+      // continue after a tool lookup failure can publish a false success claim.
+      if (row.kind === 'reply' && event.type === 'tool_start') {
+        const offered = context.tools.find(tool => tool.definition.function.name === event.tool_call?.function?.name);
+        if (!offered) {
+          const error = new Error('Unoffered customer tool denied');
+          abort.abort(error);
+          throw error;
+        }
+      }
       // Customer text is published only by durable message admission. Model
       // deltas can contain a source revoked mid-turn; sending them here would
       // bypass the final recipient/source and clean-handoff checks.

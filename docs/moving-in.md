@@ -14,16 +14,56 @@ Uploads are limited to 2 MiB, with at most 2 MiB of expanded source bytes, 64 ZI
 
 Planning reads only candidate native identities and complete related target bundles. A persisted email index preserves Unicode comparisons and reconciles at most 100 changed native contacts per background turn; unrelated workspace history is not accumulated in memory. A native target larger than 512 KiB, or combined native candidates larger than 8 MiB, is reported as a review-size conflict before its content is loaded. Parsing indexes structural source offsets and physical lines once per file, then stages at most 100 records per batch from those saved positions. Archive extraction stages at most 20 entries per batch. One immutable review covers the whole import. Internally, reviewed plans contain at most twenty source records, 512 KiB of estimated decision material and 1 MiB of serialized plan data; an individual decision beyond that bound is refused. Large conversation bundles get a plan of their own; any record needing more than 750 native SQL writes is rejected during review with its source location. A review supports at most 300 internal plans; a larger expansion is refused before approval. Application and undo process at most twenty source records or target bundles per batch, with an additional whole-invocation D1 statement cap. Durable child journals apply in dependency order and undo in reverse order while the report shows global progress. Original uploads and extracted source bytes are retained in private object storage. The global review binds the exact original upload and parsed files by private object key, size and digest; every apply/undo invocation verifies those bytes again. Each smaller Base journal retains its reviewed decisions, source digests and provenance, and explicitly marks original bytes unavailable within that child journal. Exact bytes live in the private group custody, not duplicated in every child journal. Erasure fences the entire group before removing all child journals and source objects.
 
-Unsupported records and fields are reported rather than turned into guessed data. Attachment metadata stays in the original unless explicitly supplied Freshdesk bytes pass the checks below. Other vendors do not yet attach bytes to native messages. Automation, assignment rules, external actions, company and segment rules, and unsupported conversation parts are not activated. Inspect the report's source filename, physical line and JSON pointer to locate a problem. Invalid JSON, duplicate JSON members (including equivalent escaped names), invalid UTF-8, excessive nesting, oversized records, excess source positions and exhausted identity work budgets refuse the entire upload before private R2 and D1 custody or native effects. The refusal gives the source file, physical line, JSON path and reason. Every ZIP member is checked first, including directories and later extraction batches; no partial upload is retained. An export with no source records is refused after the complete bounded scan. Blank files, supported empty record lists and empty stored or deflated directories can accompany actual records, including records in later archive batches. Directories must first pass header, empty-body and checksum validation. Unsupported record kinds still count as source records and reach the reasoned plan. ZIP32 stored or deflated members and checked 32-bit data descriptors are supported. Opaque archive comments or extra fields, undeclared bytes, encrypted, multidisk or ZIP64 members and unsupported compression are refused; repackage the source files without that metadata. Correct the export and upload again. Valid JSON with unsupported kinds or mapping errors still reaches the reasoned plan; those decisions have no fabricated source ID or native effect. Input counts include repeated records and derived tags; per-kind counts describe distinct identified decisions plus invalid positions. The progress total counts only identified source decisions.
+Unsupported records and fields are reported rather than turned into guessed data. Attachment metadata stays in the original unless explicitly supplied Freshdesk or offline Zendesk bytes pass the checks below. Intercom and Help Scout do not yet attach bytes to native messages. Automation, assignment rules, external actions, company and segment rules, and unsupported conversation parts are not activated. Inspect the report's source filename, physical line and JSON pointer to locate a problem. Invalid JSON, duplicate JSON members (including equivalent escaped names), invalid UTF-8, excessive nesting, oversized records, excess source positions and exhausted identity work budgets refuse the entire upload before private R2 and D1 custody or native effects. The refusal gives the source file, physical line, JSON path and reason. Every ZIP member is checked first, including directories and later extraction batches; no partial upload is retained. An export with no source records is refused after the complete bounded scan. Blank files, supported empty record lists and empty stored or deflated directories can accompany actual records, including records in later archive batches. Directories must first pass header, empty-body and checksum validation. Unsupported record kinds still count as source records and reach the reasoned plan. ZIP32 stored or deflated members and checked 32-bit data descriptors are supported. Opaque archive comments or extra fields, undeclared bytes, encrypted, multidisk or ZIP64 members and unsupported compression are refused; repackage the source files without that metadata. Correct the export and upload again. Valid JSON with unsupported kinds or mapping errors still reaches the reasoned plan; those decisions have no fabricated source ID or native effect. Input counts include repeated records and derived tags; per-kind counts describe distinct identified decisions plus invalid positions. The progress total counts only identified source decisions.
 
 ## Zendesk
+
+There are two ways in. **Connect Zendesk** reads the whole account for you: every ticket, archived ones included, with every comment, the people and organizations in them, ticket fields and Help Center articles. **Upload files** takes an account JSON export or packed offline files. Both go through the same review, approval, undo and erasure.
+
+### Connect Zendesk and pull everything
+
+This uses Zendesk OAuth with a **Public** client, so no client secret exists anywhere and the sign-in is held only in this HappyToHelp, encrypted with its integration key. Zendesk API tokens are not used.
+
+1. In Zendesk **Admin Center**, open **Apps and integrations → APIs → OAuth clients** and choose **Add OAuth client**.
+   - **Name:** anything, for example *HappyToHelp move in*.
+   - **Identifier:** keep the suggested one, or choose your own. You enter it in HappyToHelp.
+   - **Client kind:** **Public**. Public clients use PKCE.
+   - **Redirect URLs:** `<your HappyToHelp origin>/api/move-in/zendesk/callback`, for example `https://support.example.com/api/move-in/zendesk/callback`. The Move in page shows yours, ready to copy.
+   - **Allowed scopes:** **read** and **hc:read** only.
+2. In HappyToHelp, open **Settings → Move in existing support history**, keep **Zendesk** selected, and enter your Zendesk subdomain (`acme` for `acme.zendesk.com`) and the client's **Identifier**. Choose **Connect**. Zendesk asks a Zendesk admin to allow read access, then returns you to Move in. The full export needs an admin's connection.
+3. Choose **Pull everything**. The pull runs in the background; you can leave the page. It shows what it is reading, then per kind: tickets seen, deleted in Zendesk, already imported, imported and refused; replies on imported tickets; records changed in Zendesk and kept as imported; people; organizations; and articles to publish, drafts and held back. Refused records are listed by Zendesk id with the reason.
+4. When every batch is reviewed, choose **Approve and import**. That one approval covers the whole pull and binds each batch's reviewed plan. Every batch with something to import then imports by itself, one after another. A refused record never holds back the others: it stays out, listed by Zendesk id with its reason, and the rest of its batch imports. A batch whose every record was refused or is already imported has nothing to import.
+5. The pull says **Pull imported** only when every record it saw is imported, already imported, kept as imported or refused with a reason. If a batch stops on the way, for example on a brief database failure or after your session ended, the pull stops too and names it. **Resume pull** continues it from its last checkpoint; a pull you stop instead is read again by the next one, which brings the stopped batch's records in as a new batch.
+
+What comes across:
+- Tickets come from Zendesk's incremental ticket export, which includes archived tickets (ordinary ticket listing leaves them out). Each ticket's comments are read page by page with inline images listed. Public comments become messages and private comments become private notes, in source order with their authors.
+- Deleted tickets are recorded as deleted in Zendesk. They are neither imported nor counted as refused.
+- People who are end users become contacts. Agents and admins stay source authors only: no staff access is created. A person's last sign-in and last edit times are left out, so an unchanged person is recognised as the same record in a later pull.
+- Organizations become companies. Ticket field definitions are reviewed in a batch of their own; a ticket's value for a field this importer cannot recreate stays in its source and is named in the review.
+- Public published articles publish; drafts stay drafts. Articles for a restricted audience (a user segment) are held back: they create no article, category, link, search or AI answer content.
+- Attachment and inline-image metadata is kept, named as an omission; the files themselves are not imported yet. Download links and their tokens are removed, and user details, queries and fragments are stripped from links before anything is stored.
+- An import is inert, as above: nothing is sent, assigned, notified or answered by AI, and imported history stays out of Reports.
+
+Limits and pace:
+- A batch is an ordinary Move in import of at most 2 MiB and 5,000 records, carrying the people, organizations and field definitions its tickets need. A ticket imports whole as one conversation in one import, up to 960 KiB of cleaned JSON and 750 native rows (about 370 public or 745 private comments). A larger ticket is refused by id with its reason; it is never split, shortened or dropped silently. Uploaded files keep their 2 MiB and 128 KiB-per-record limits.
+- Zendesk allows 10 incremental export requests a minute; the pull keeps to that and waits as long as Zendesk's `Retry-After` asks. Waiting is scheduled, not slept. A Zendesk refusal of the incremental export (HTTP 403) stops the pull with that reason; nothing is read another way.
+- The sign-in is renewed shortly before it expires (access lasts up to 48 hours, renewal up to 90 days). If Zendesk refuses the renewal, Move in shows **Reconnect Zendesk** and does not retry by itself.
+- Pulling again later (**Pull new and changed history**) starts where the last applied pull stopped, so it reads only tickets, people and organizations that are new or changed in Zendesk. New tickets import as new conversations. Each Zendesk id still maps to one conversation, and records already imported and unchanged are left as they are.
+- New replies on a ticket that is already imported come across: each Zendesk comment the conversation does not yet have imports as a reply of its own, keyed by its Zendesk comment id, at the end of that conversation (public comments as messages, private comments as private notes). The conversation itself is not rewritten.
+- A ticket, person or organization that changed in Zendesk after it was imported (a new status, subject, assignee or tags; a new name or email) is kept as imported. The pull counts it under **changed in Zendesk, kept as imported** and never refuses it for that. New tickets and replies from a changed person link to that person's existing contact, and a changed organization stays the company it was. Only a record that is new and cannot be imported is refused. A changed ticket field definition or article is still refused by id (`source_changed_conflict`); the rest of its batch imports.
+- Undoing a pulled batch takes out what it imported, replies included. The next pull then reads the whole account again from the start: everything the undo took out imports again, and everything still held is recognised and left as it is.
+- One workspace holds one Zendesk account. Once it holds Zendesk history, connecting a different subdomain is refused; use another workspace for another account.
+- **Disconnect** removes the stored sign-in and asks Zendesk to revoke it, reporting Zendesk's answer. If Zendesk does not revoke it, remove the OAuth client in Admin Center.
+- Hosted pulls need the Workers Paid plan's D1 budget, as every import does.
+
+### Upload Zendesk files
 
 Use the documented [account JSON export](https://support.zendesk.com/hc/en-us/articles/4408886165402-Exporting-data-to-a-JSON-CSV-or-XML-file), with one singular wrapped object per nonblank line, for example `{"user":{...}}` or `{"ticket":{...}}`. Ticket records must contain the complete comments array; a ticket description is not a substitute. Include the users needed to identify requesters and comment authors. Each comment needs its source ID, original creation timestamp and explicit `public` boolean. Public comments become messages; private comments become private notes.
 
 Saved replies and Help Center articles are separate API supplements, not part of a claim that the account export contains every supported kind:
 
 - Upload [Macros API](https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/) records as `{"macro":{...}}`. One reply action, priority, built-in status and add/remove tags translate to native macros. Requester, assignee, current-user, ticket-title/link and organization-name placeholders translate to native placeholders; unknown expressions stay visible in review and block sending until resolved. Private replies become native notes. Restricted macros, template logic and placeholders inside HTML attributes are refused before markup conversion can discard them. Unsupported actions are listed individually. Import runs no actions: review the native macro preview before manually applying it; reply text becomes a composer draft and is never sent automatically. Repeat/undo also compare the macro action version and retain later native edits.
-- Upload [Articles API](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/) records as `{"article":{...}}`. The `draft` flag and audience fields must be explicit. Public published articles stay published; drafts stay drafts. Restricted or unknown-audience articles are rejected.
+- Upload [Articles API](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/) records as `{"article":{...}}`. The `draft` flag and audience fields must be explicit. Public published articles stay published; drafts stay drafts. Restricted articles are held back; unknown-audience articles are rejected.
 
 A minimal file with one saved reply and one article, one record per line. The reply text is the `comment_value` action's `value`, as plain text or HTML:
 
@@ -33,6 +73,109 @@ A minimal file with one saved reply and one article, one record per line. The re
 ```
 
 IDs must be positive safe integers or canonical positive decimal strings. String IDs remain strings, including IDs too large for a safe JavaScript number. Exact repeated records are collapsed; conflicting duplicate IDs are rejected. Ticket tags are actual exported strings, normalized for workspace uniqueness. User tags remain contact metadata and do not become conversation tags. No numeric vendor tag ID is invented. Standalone tag inventories are reported as unsupported.
+
+### Offline Zendesk account files
+
+Already downloaded account files can be packed locally without a service token:
+
+```sh
+node scripts/pack-zendesk-offline.mjs local-manifest.json > synthetic-hh-move.ndjson
+```
+
+Upload the resulting file through **Move in → Zendesk → Upload and review**.
+The packer reads local files only, makes no network requests and never writes
+native state. It accepts source JSON arrays, objects with `tickets`, `users` or
+`organizations` arrays, `ticket_fields` supplements, and singular wrapped JSONL/NDJSON records. Split account
+members can appear in any order. Unpacked uploads retain the existing singular
+wrapper-per-line format; arbitrary account JSON collections require this packing
+step. ZIP uploads may contain multiple such wrapped files, within the same limits.
+
+The manifest is local packing metadata, not a Zendesk export schema. Paths are
+relative to its directory; absolute paths, parent traversal, symlinks and files
+outside that directory are refused. For example:
+
+```json
+{
+  "format": "happytohelp-zendesk-offline-v1",
+  "files": [
+    {"kind":"ticket","path":"tickets.json"},
+    {"kind":"user","path":"users.json"},
+    {"kind":"organization","path":"organizations.json"},
+    {"kind":"comments","path":"comments-1001.json","ticket_id":1001,"complete":true,"page":1,"pages":1},
+    {"kind":"metrics","path":"metrics.json"},
+    {"kind":"audits","path":"audits.json"}
+  ],
+  "attachments": [
+    {"ticket_id":1001,"comment_id":101,"attachment_id":501,"path":"bytes/receipt.txt","size":5,"sha256":"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"}
+  ]
+}
+```
+
+Here the local file contains exactly `hello`. Its corresponding Zendesk comment
+attachment must have `id:501`, `file_name`, `content_type` and `size:5`. Zendesk's
+`content_url` is metadata, never a download instruction. Duplicate filenames are
+fine; attachment IDs and local paths must have exactly one owner. The packer removes attachment download URLs entirely, including path-based
+access tokens, and strips user information, queries and fragments from other
+URL values before output; direct uploads with
+credential-bearing links are refused before custody. Direct Zendesk attachment
+URL metadata with any query, fragment or credential path is refused as well; pack it locally to
+strip those access-bearing parts first. Original local files are not
+uploaded by this command. Preserve them privately yourself when appropriate.
+
+Comments files hold a `comments` array (or an array of comments), associated with
+the manifest's explicit `ticket_id`. Supply every page, numbered from 1 through
+`pages`, each marked `complete:true` only after reconciling it; a non-null
+`next_page`, a missing page, source `comments_truncated`/`comments_incomplete`,
+or a mismatched `comment_count` makes the ticket visibly incomplete and rejects
+it in review. Supplied comments replace the ticket's embedded array. Without a
+separate file, the embedded complete array remains supported. A description
+never replaces missing comments. Identical repeated tickets reach the mounted review as exact repeated records and are counted once; differing
+copies require correction before packing. Conflicting IDs in direct uploads
+remain source-located review rejections.
+
+Metric files hold `ticket_metric_events`; audit files hold `audits`. Each record
+joins by its original `ticket_id`; for a per-ticket response that omits it, set
+`ticket_id` on that manifest file. Empty event files can declare that ticket ID
+to distinguish supplied-empty from missing history. Event IDs, instance IDs,
+metric names, timestamps, audit status transitions, source targets and supplied
+elapsed units remain inert private history. Unknown event types stay labeled as
+unsupported. Privacy/redaction audit events are unsupported and refuse the ticket. Use a
+separately reconciled supported conversation export; old text is never treated
+as the redacted version.
+Missing files stay unavailable; current status never supplies an invented SLA
+result. Staff with current ticket access open **Details → Summary → Imported
+status and SLA history**. Customers cannot read this private history.
+
+Packing enrichments live only under a ticket's `_offline` object, identified by
+`format:happytohelp-zendesk-offline-v1`: `attachments` binds `attachment_id`,
+`comment_id`, relative `path`, `sha256` and canonical `base64`; `history` declares
+`metrics` and `audits` as `missing` or `supplied`; `metric_events`, `audits` and
+`provenance` retain their source file, digest, row and JSON pointer. These are
+explicit local packing fields, never required fields in an untouched Zendesk
+export. The review identifies packed file/row/pointer and source ticket ID;
+provenance retains the original component locations inside private ticket custody.
+Packed users, organizations and field definitions carry the same file/digest/row/pointer
+as a list under `_offline_provenance`, retained in their guarded native source provenance.
+The exact packed bytes bind the reviewed fingerprint.
+
+Supplied bytes use the existing native media store and access rules, at most
+48 KiB per file and 20 supplied files per ticket. Public comments keep public
+attachments; internal notes keep teammate-only attachments. Types and bounds
+match Freshdesk. URL-only attachments are visible omissions, never binary
+successes. Digest, size or ownership mismatches reject the entire ticket before
+native effects. Inert history is part of the native adapter's guarded
+`move_in_origins.source_json`, its plans, repeat/undo and portable database;
+there is no separate history store. Erasure removes the affected custody and
+bytes and keeps source-identity replay fences.
+
+Keep each packed upload and its decoded input within 2 MiB, each ticket with its
+history and bytes within 128 KiB, and source plus derived records within 5,000.
+Larger exports need separate manifest batches of complete tickets, each including
+their users, organizations, field definitions and relevant history. Do not split
+one ticket's conversation across independent imports. A complete ticket beyond
+128 KiB cannot be imported by this bounded slice. Full configuration fidelity,
+shared M3 opt-in/Business grants/catch-up transport, signed real-export
+qualification, other vendors and final live cutover remain unproved.
 
 ## Intercom
 
@@ -223,6 +366,8 @@ A Zendesk file can also contain singular `group`, `view`, `schedule`, `trigger` 
 
 New imports retain their explicit lifecycle and channel. Zendesk/Freshdesk distinguish final Closed from Solved; Help Scout/Intercom use a reopenable Closed state, which maps to native Solved. Historical owners are not granted native access or activated. Existing imported records are not rewritten when this mapping changes: a changed mapping meeting earlier native state remains a review conflict.
 
+After import, review the ownership page and explicitly map the recorded historical owners and groups to current workspace members and groups. The chosen owner must still belong to the chosen group when activation applies; changed import authority or membership requires a fresh review. Activation preserves the requester and lifecycle, grants no historical staff access and sends no notifications. Help Scout records one assignee, either a user or a team, so its source does not provide both assignments on one ticket. Older imports without assignment snapshots remain unactivated; historical ownership is never guessed.
+
 
 ### Bounded Zendesk SLA policies
 
@@ -261,3 +406,49 @@ deadline with a hand calculation before using the policy for live work.
 A second identical import is a no-op. Undo removes an unchanged imported policy
 before its calendar. Native edits or activation preserve the policy; a calendar
 referenced by a remaining policy is also preserved.
+
+## Business import door
+
+A Business-authorized installation can carry `RER_IMPORT_DOOR=on` with its
+owner-claim trust and canonical owner email. Its first native owner claim opens
+Business imports without an extra owner task. The claim's original live workspace
+is bound on the server. Ordinary self-host leaves the variable unset; hosting
+mode and a self-attested claim alone supply no authority. A genuinely linked,
+claimed self-host installation needs the same Business-authorized trust and flag.
+Actual Business linkage and platform-minted grants remain externally unqualified.
+
+Business uses Base's ES256, action-bound, single-use grants at
+`POST /api/rer/import/{uploads,plan,apply,status,reconcile,undo,cancel,archive,restore-check}`.
+Only `zendesk` is accepted. Upload one complete documented offline NDJSON or ZIP
+bundle inside the existing 2 MiB, 5,000-record and 128 KiB-per-ticket limits.
+The preview reports source counts by kind and the exact bundle digest and
+review fingerprint. Apply requires that reviewed fingerprint and Business's
+opaque agent-policy approval record. The approval does not represent an owner
+click. Imports retain historical messages and private notes, send nothing, grant
+historical staff no access, and stay excluded from Reports. Strict undo preserves
+native edits by refusing a conflicting reversal.
+
+The claimed owner can read or POST `{enabled, revokedKids?}` to
+`/api/move-in/projects/:projectId/business-imports`. Admins and operators cannot
+use this backend control. Closing the door returns grant requests to 404;
+subsequent claims and sign-ins never reopen it. Key revocations persist. Restored
+portable data starts with Business imports disabled and retains consumed grant nonces only as replay fences.
+The existing owner/admin Move in upload, review, apply and undo doors remain.
+There is no new UI or cutover route.
+
+Well-formed Zendesk articles with boolean `draft` and an explicit restricted
+`user_segment_id` or non-empty array `user_segment_ids` are **held back** with a
+source-located reason. They count as unmapped/explained, never rejected or native
+successes, and create no article, category, link, redirect, search or retrieval
+content. Drafts remain drafts. Unknown/malformed audiences and all other existing
+refusals remain rejections. A later public-to-restricted change is a conflict;
+public content is never silently replaced. Live Help Center import is separate
+and remains under KNOWLEDGE-002/MOVE-IN-002 custody.
+
+Inbox search accepts the exact original Zendesk ticket ID, with or without `#`,
+under the same workspace and ticket permissions as every other inbox query.
+Erasure withdraws door upload, snapshot and archive custody and fences same or
+corrected source identities. Workspace deletion also withdraws opaque door
+custody. These are documented-format, synthetic-only behaviors; real exports,
+Business stage rehearsal, signed receipts, catch-ups and live cutover remain
+unqualified dependencies. `importers.json` therefore remains `importer_unverified`.

@@ -3,6 +3,12 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration:'299_outbound_channel_tickets.sql',names:['operator_ticket_commands'],change:'Widens only the kind CHECK to SMS/WhatsApp and adds nullable support_thread_id with ON DELETE SET NULL; retains command keys, old values and the erasure trigger'},
+  {migration: '290_native_reply_drafts.sql', names: ['macro_drafts'], change: 'Makes usage_id nullable, adds nullable draft_id and requires exactly one of them; all prior columns and rows retained'},
+  {migration: '293_knowledge_references.sql', names: ['workflow_version_immutable', 'outbound_notice_command_identity'], change: 'Adds only a project/table/row-keyed knowledge upgrade permit to the immutable update guards; original update targets and refusal messages retained'},
+  {migration:'292_knowledge_entitlements.sql',names:['knowledge_categories'],change:'Adds requires_entitlement with a closed boolean constraint; every prior column definition is retained'},
+  {migration:'281_managed_connectors.sql',names:['native_integration_destinations','api_destination_filter'],change:'Adds connector origin and permits workspace-wide Zapier subscriptions while retaining machine/native origin filters'},
+  {migration:'282_messaging_surveys.sql',names:['csat_responses','csat_response_history'],change:'Widens only channel and response-surface checks to the four permitted messaging providers, retaining every column and row'},
   {migration: '0105_edition_delegation.sql', names: ['knowledge_articles'], change: 'Adds source_revision and source_incarnation; original columns retained'},
   {migration: '0108_public_answer_citations.sql', names: ['knowledge_articles', 'messages'], change: 'Adds generated publication_version and citations_json; original definitions retained'},
   {migration: '122_email_content.sql', names: ['messages'], change: 'Adds nullable content_raw TEXT'},
@@ -22,6 +28,7 @@ export const schemaExceptions = [
   {migration: '246_imported_ticket_lifecycle.sql', names: ['ticket_conversation_defaults'], change: 'Adds only the reviewed import fence to status defaults; every other trigger clause is retained'},
   {migration: '248_customer_recovery.sql', names: ['csat_responses', 'csat_response_history'], change: 'Adds only explicit customer recovery with unknown for existing feedback; every prior column and row is retained'},
   {migration: '253_api_requests.sql', names: ['integration_tokens','native_integration_destinations'], change: 'Adds credential reference, display prefix and destination filters; legacy secret columns retained and every secret backfilled to its own credential'},
+  {migration: '291_native_ticket_scope.sql', names: ['project_roles'], change: 'Adds only nullable stored ticket scope; every prior column and row is retained'},
   {migration: '251_knowledge_read_selection.sql', names: ['project_roles'], change: 'Adds only nullable knowledge_article_ids TEXT constrained to a valid JSON array; every prior column and row is retained'},
   {migration: '267_translated_ai_publications.sql', names: ['knowledge_translations'], change: 'Adds nullable publication_version TEXT; every prior column definition is retained'},
   {migration: '268_help_domain_publication.sql', names: ['knowledge_experience'], change: "Adds nullable published_host TEXT and link_color TEXT NOT NULL DEFAULT ''; every prior column definition is retained"},
@@ -35,8 +42,12 @@ export function expectedSchema(before, after, added) {
   for (const [name, entry] of Object.entries(before)) {
     const fence = added.includes('0110_move_in.sql') && {context_message_added: 'NEW', context_message_removed: 'OLD'}[name];
     let wanted = fence ? {...entry, sql: entry.sql.replace(' BEGIN ', ` WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=${fence}.project_id AND f.conversation_id=${fence}.conversation_id) BEGIN `)} : entry;
+    if(added.includes('281_managed_connectors.sql')&&name==='api_destination_filter')wanted={...entry,sql:entry.sql.replace("d.credential_id IS NOT NULL AND NOT EXISTS","d.credential_id IS NOT NULL AND NOT (d.connector='zapier' AND EXISTS(SELECT 1 FROM api_credentials c WHERE c.namespace=d.project_id AND c.id=d.credential_id AND c.source_product IS NULL)) AND NOT EXISTS")};
     if (entry.type === 'table') {
-      const alters = tableChanges.filter(change => added.includes(change.migration) && change.table === name);
+      // Multiple migrations can extend the same prior table. Apply the exact
+      // declared transformations in the collected migration sequence.
+      const alters = tableChanges.filter(change => added.includes(change.migration) && change.table === name)
+        .sort((a, b) => added.indexOf(a.migration) - added.indexOf(b.migration));
       if (alters.length) {
         const db = new DatabaseSync(':memory:');
         try {
@@ -46,11 +57,14 @@ export function expectedSchema(before, after, added) {
         } finally { db.close(); }
       }
     }
+    if (added.includes('299_outbound_channel_tickets.sql') && name==='operator_ticket_commands') wanted={...wanted,sql:wanted.sql.replace('CREATE TABLE operator_ticket_commands(', 'CREATE TABLE "operator_ticket_commands"(').replace("CHECK(kind IN ('email','call'))", "CHECK(kind IN ('email','call','sms','whatsapp'))").replace(' created_at INTEGER NOT NULL,', ' created_at INTEGER NOT NULL,\n support_thread_id TEXT REFERENCES support_channel_threads(id) ON DELETE SET NULL,')};
+    if (added.includes('282_messaging_surveys.sql') && ['csat_responses','csat_response_history'].includes(name)) wanted = {...wanted, sql: wanted.sql.replace('CREATE TABLE '+name+'(', 'CREATE TABLE \"'+name+'\"(').replace("CHECK(channel IN ('email','widget'))","CHECK(channel IN ('email','widget','sms','whatsapp','instagram','messenger'))").replace("CHECK(response_surface IN ('email','portal','widget','unknown'))","CHECK(response_surface IN ('email','portal','widget','unknown','sms','whatsapp','instagram','messenger'))")};
     if (added.includes('195_restore_trigger_boundaries.sql') && name === 'conversation_record_resolution') wanted = {...entry, sql: entry.sql.replace(/\bEND,/g, 'END ,').replace('first_resolved_at=CASE', 'first_resolved_at= CASE')};
     if (added.includes('241_away_reply_not_a_reply.sql') && awayReplyExclusions[name]) wanted = {...wanted, sql: awayReplyExclusions[name](wanted.sql)};
     if (added.includes('246_imported_ticket_lifecycle.sql') && name === 'ticket_conversation_defaults') wanted = {...wanted, sql: importedStatusDefaults(wanted.sql)};
     if (added.includes('181_context_message_subjects.sql') && name === 'context_message_added') wanted = {...entry, sql: messageSubjectTrigger};
     if (added.includes('182_import_kit_reversal_retirement.sql') && name === 'ik_d1_stream_revision_update') wanted = {...entry, sql: streamRetirementTrigger};
+    if (added.includes('293_knowledge_references.sql') && knowledgeUpgradeTriggers[name]) wanted = {...entry, sql: knowledgeUpgradeTriggers[name]};
     if (added.includes('121_move_in_categories.sql')) {
       if (name === 'edition_category_insert') {
         if (after[name] !== undefined) changed.push(name);
@@ -84,6 +98,16 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
+  {migration: '290_native_reply_drafts.sql', table: 'macro_drafts', sql: `CREATE TABLE native_reply_draft_upgrade(
+ project_id TEXT NOT NULL,conversation_id TEXT NOT NULL,actor_id TEXT NOT NULL,
+ usage_id TEXT REFERENCES macro_usage(id),draft_id TEXT,
+ content TEXT NOT NULL,reply_type TEXT NOT NULL CHECK(reply_type IN ('public','note')),
+ unresolved_json TEXT NOT NULL,media_ids_json TEXT NOT NULL,updated_at INTEGER NOT NULL,
+ PRIMARY KEY(project_id,conversation_id,actor_id),
+ CHECK((usage_id IS NOT NULL AND draft_id IS NULL) OR (usage_id IS NULL AND draft_id IS NOT NULL))
+); DROP TABLE macro_drafts; ALTER TABLE native_reply_draft_upgrade RENAME TO macro_drafts;`},
+  {migration:'292_knowledge_entitlements.sql',table:'knowledge_categories',sql:'ALTER TABLE knowledge_categories ADD COLUMN requires_entitlement INTEGER NOT NULL DEFAULT 0 CHECK(requires_entitlement IN (0,1))'},
+  {migration:'281_managed_connectors.sql',table:'native_integration_destinations',sql:"ALTER TABLE native_integration_destinations ADD COLUMN connector TEXT NOT NULL DEFAULT 'native';"},
   {migration:"257_sla_slack.sql",table:"sla_policies",sql:"ALTER TABLE sla_policies ADD COLUMN slack_destination_id TEXT;"},
   {migration:"257_sla_slack.sql",table:"sla_alerts",sql:"ALTER TABLE sla_alerts ADD COLUMN slack_destination_id TEXT; ALTER TABLE sla_alerts ADD COLUMN slack_state TEXT NOT NULL DEFAULT 'not_configured'; ALTER TABLE sla_alerts ADD COLUMN slack_attempts INTEGER NOT NULL DEFAULT 0; ALTER TABLE sla_alerts ADD COLUMN slack_started_at INTEGER; ALTER TABLE sla_alerts ADD COLUMN slack_next_attempt_at INTEGER; ALTER TABLE sla_alerts ADD COLUMN slack_error TEXT;"},
   {migration:"258_teams_escalations.sql",table:"escalation_connections",sql:"ALTER TABLE escalation_connections ADD COLUMN installed_by TEXT;"},
@@ -117,7 +141,15 @@ const tableChanges = [
   {migration: '190_email_step_up.sql', table: 'session_factors', sql: `CREATE TABLE session_factors_email(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL,method TEXT NOT NULL CHECK(method IN ('password','email_link','totp','webauthn','recovery','installation')),verified_at INTEGER NOT NULL); DROP TABLE session_factors; ALTER TABLE session_factors_email RENAME TO session_factors`},
   ...['csat_responses','csat_response_history'].map(table=>({migration:'244_csat_response_surface.sql',table,sql:`ALTER TABLE ${table} ADD COLUMN response_surface TEXT NOT NULL DEFAULT 'unknown' CHECK(response_surface IN ('email','portal','widget','unknown'))`})),
   ...['csat_responses','csat_response_history'].map(table=>({migration:'248_customer_recovery.sql',table,sql:`ALTER TABLE ${table} ADD COLUMN recovery TEXT NOT NULL DEFAULT 'unknown' CHECK(recovery IN ('unknown','recovered','not_recovered'))`})),
+  {migration: '291_native_ticket_scope.sql', table: 'project_roles', sql: "ALTER TABLE project_roles ADD COLUMN ticket_scope_json TEXT\n CHECK(ticket_scope_json IS NULL OR coalesce((json_valid(ticket_scope_json) AND json_type(ticket_scope_json)='object' AND json_type(ticket_scope_json,'$.groupIds')='array' AND json_type(ticket_scope_json,'$.includeUngrouped') IN ('true','false')),0))"},
   {migration: '251_knowledge_read_selection.sql', table: 'project_roles', sql: "ALTER TABLE project_roles ADD COLUMN knowledge_article_ids TEXT CHECK(knowledge_article_ids IS NULL OR (json_valid(knowledge_article_ids) AND json_type(knowledge_article_ids)='array'))"},
 ];
 const messageSubjectTrigger = 'CREATE TRIGGER context_message_added AFTER INSERT ON messages WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.conversation_id) BEGIN UPDATE context_subjects SET revision=revision+1 WHERE project_id=NEW.project_id AND subject_id IN (SELECT contact_id FROM conversations WHERE id=NEW.conversation_id AND project_id=NEW.project_id UNION SELECT NEW.actor_id); END';
 const streamRetirementTrigger = "CREATE TRIGGER ik_d1_stream_revision_update BEFORE UPDATE ON ik_d1_stream_revisions WHEN NEW.stream_id IS NOT OLD.stream_id OR NEW.destination IS NOT OLD.destination OR NEW.mapping_version IS NOT OLD.mapping_version OR NEW.principal_id IS NOT OLD.principal_id OR NEW.fingerprint IS NOT OLD.fingerprint OR NEW.total IS NOT OLD.total OR NEW.layout_hash IS NOT OLD.layout_hash OR NEW.layout_revision<OLD.layout_revision OR NEW.progress_revision<=OLD.progress_revision OR ((NEW.namespace IS NOT OLD.namespace OR NEW.operation_key IS NOT OLD.operation_key) AND NOT (NEW.namespace='' AND NEW.operation_key='' AND NOT EXISTS(SELECT 1 FROM ik_d1_streams WHERE id=OLD.stream_id) AND EXISTS(SELECT 1 FROM ik_d1_retirements WHERE id=OLD.stream_id AND kind='stream'))) BEGIN SELECT RAISE(ABORT,'IMPORT_STREAM_REVISION_CHANGED'); END";
+
+// 293 retains both immutable guards except for the exact, row-scoped upgrade
+// permit. Keep their complete expected definitions independent of migrations.
+const knowledgeUpgradeTriggers = {
+  workflow_version_immutable: "CREATE TRIGGER workflow_version_immutable BEFORE UPDATE ON workflow_rule_versions WHEN NOT EXISTS(SELECT 1 FROM knowledge_upgrade_permits WHERE project_id=OLD.project_id AND table_name='workflow_rule_versions' AND row_key=json_array(OLD.rule_id,OLD.version)) BEGIN SELECT RAISE(ABORT,'Published workflow versions are immutable'); END",
+  outbound_notice_command_identity: "CREATE TRIGGER outbound_notice_command_identity BEFORE UPDATE OF id,project_id,actor_id,intent_key,created_at,outcome,detail_json ON outbound_notice_commands WHEN NOT EXISTS(SELECT 1 FROM knowledge_upgrade_permits WHERE project_id=OLD.project_id AND table_name='outbound_notice_commands' AND row_key=json_array(OLD.id,OLD.project_id)) BEGIN SELECT RAISE(ABORT,'notice_command_immutable'); END",
+};

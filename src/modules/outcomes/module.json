@@ -7,6 +7,7 @@
     "migrations/112_conversation_outcomes.sql",
     "migrations/113_outcomes_history.sql",
     "tests/reports/support-outcomes.mjs",
+    "tests/reports/resolution-feedback.mjs",
     "tests/reports/figures.mjs",
     "tests/journeys/reports.mjs",
     "tests/journeys/upgrade.mjs",

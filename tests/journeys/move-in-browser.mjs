@@ -1,8 +1,10 @@
+import {zendeskOfflineBrowserFlow} from '../move-in/zendesk-offline-browser.mjs'
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile,writeFile} from 'node:fs/promises'
 import {randomBytes} from 'node:crypto'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
+import {reviewExplanations} from '../move-in/outcomes-policy.mjs'
 import {generate} from '../move-in/generator.mjs'
 import {launchBrowser,evidence} from './kit/browser.mjs'
 
@@ -49,6 +51,8 @@ test('an owner reviews a Zendesk export, imports its history, opens and filters 
  await page.getByRole('link',{name:'Move in existing support history',exact:true}).click()
  await page.getByRole('heading',{name:'Move in',exact:true}).waitFor()
  await vendorJourney(1440,'zendesk')
+ await zendeskOfflineBrowserFlow({page,origin:runtime.origin,base,inspect,request,project,token})
+ await reviewExplanations(page,runtime.origin,base,shot)
  await configurationBrowser(1440)
  await configurationBrowser(390)
 }))

@@ -12,10 +12,15 @@ async function storedSha256(bucket,key){const object=await bucket.get(key);retur
  * its stored checksum; one without it (multipart, or written by something else) is
  * read back whole and hashed. An existing object with other bytes stops the import.
  * Each object is recorded in legacy_import_objects for the package run. */
-export async function importObjects(target,root,manifest,runId,{concurrency=1,progress=()=>{}}={}){
+export async function importObjects(target,root,manifest,runId,{concurrency=1,progress=()=>{},checkOnly=false}={}){
   let uploaded=0,present=0;
   const confirm=async object=>{const {FILES}=target.env,head=await FILES.head(object.key);if(!head)return false;if(head.size!==object.size||(head.checksums?.sha256?hex(head.checksums.sha256):await storedSha256(FILES,object.key))!==object.sha256)throw Error(`Existing R2 object differs: ${object.key}`);return true;};
   await inWaves(manifest.objects,concurrency,async object=>{
+    // Contact erasure redacts the media source copy but keeps its journal identity.
+    // A repeat must not recreate its file, even though the native media row is gone.
+    const erased=await target.env.DB.prepare("SELECT 1 FROM legacy_import_rows WHERE source_table='media' AND source_id=? AND source_json='{}' LIMIT 1").bind(String(object.mediaId)).first();
+    if(erased)return;
+    if(checkOnly){await confirm(object);return;}
     if(await confirm(object))present++;
     else{await putObject(target.env.FILES,packageFile(root,object.file),object,runId);if(!await confirm(object))throw Error(`Imported R2 object missing: ${object.key}`);uploaded++;}
     await target.env.DB.prepare('INSERT OR IGNORE INTO legacy_import_objects VALUES(?,?,?,?)').bind(runId,object.key,object.sha256,object.size).run();

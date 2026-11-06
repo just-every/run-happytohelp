@@ -1,3 +1,4 @@
+import {admitMessage,atomicMessage} from '../conversations/admission'
 import type {Actor,Env} from '../../platform/env'
 import {teamAvailability} from './live-availability'
 import {emailMode} from '../integrations/email-provider'
@@ -31,13 +32,13 @@ export async function postAwayReply(env:Env,message:Record<string,unknown>,actor
  const content=back?reply:`${reply} ${humanResponseTime(settings.widget_settings?.text)}`
  // Stamped on the clock admission used for the message that earned it (a local install may set that clock).
  const id=crypto.randomUUID(),now=workflowNow(env)
- const [inserted]=await env.DB.batch([
+ const admitted=await admitMessage(env,{[atomicMessage]:true,projectId:actor.projectId,conversationId:String(message.conversation_id),operatorId:actor.id,messages:[{content}],commit:([normalisedContent])=>[
   env.DB.prepare(`INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) SELECT ?,c.project_id,c.id,?,?,'system',?,c.revision+1,? FROM conversations c
    WHERE c.id=? AND c.project_id=? AND c.revision=? AND c.last_message_id=? AND NOT EXISTS(SELECT 1 FROM messages WHERE conversation_id=c.id AND local_id=?)`)
-   .bind(id,AWAY_REPLY,AWAY_AUTHOR,content,now,message.conversation_id,actor.projectId,row.revision,message.id,AWAY_REPLY),
+   .bind(id,AWAY_REPLY,AWAY_AUTHOR,normalisedContent,now,message.conversation_id,actor.projectId,row.revision,message.id,AWAY_REPLY),
   env.DB.prepare('UPDATE conversations SET revision=revision+1,last_message_id=?,updated_at=? WHERE id=? AND EXISTS(SELECT 1 FROM messages WHERE id=?)').bind(id,now,message.conversation_id,id),
   // Delivered on insert: open widgets and inboxes receive it through the socket, and no follow-up ever runs for it.
   env.DB.prepare('INSERT INTO conversation_outbox(project_id,conversation_id,message_id,created_at,delivered_at) SELECT project_id,conversation_id,id,created_at,created_at FROM messages WHERE id=?').bind(id),
- ])
- return inserted.meta.changes?id:null
+ ]})
+ return admitted.accepted&&admitted.results![0].meta.changes?id:null
 }

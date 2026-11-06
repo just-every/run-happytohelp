@@ -5,6 +5,7 @@ export async function matchesRef(rt: Runtime, person: Person, sponsor: string, r
   if (!person.active) return false
   if (ref === 'sponsor') return person.id === sponsor
   if (rt.options.trust) {
+    if (await rt.options.people.businessStopped?.()) return false
     const member = await rt.options.people.businessMember?.(person)
     return !!member && (ref.startsWith('person:') ? member.id === ref.slice(7) : member.role !== null && ref === `role:${member.role}`)
   }

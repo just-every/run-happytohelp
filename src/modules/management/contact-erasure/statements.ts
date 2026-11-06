@@ -77,12 +77,13 @@ function emailDeliveries(env: Env, request: Pick<ErasureRequest,'projectId'|'con
 }
 export function emailEvidenceStatements(env:Env,request:Pick<ErasureRequest,'projectId'|'contactId'|'emails'>){return [emailDeliveries(env,request),...erasureInboundEvidenceStatements(env.DB,request)]}
 
-export function erasureStatements(env: Env, request: ErasureRequest) {
+export async function erasureStatements(env: Env, request: ErasureRequest) {
   const {projectId, contactId, actorId, now} = request
   const iso = new Date(now).toISOString()
   const bound = (sql: string) => env.DB.prepare(sql).bind(projectId, contactId)
   const withTime = (sql: string, time: number | string) => env.DB.prepare(sql).bind(projectId, contactId, time)
   return [
+    ...await contactDoorErasure(env,projectId,contactId,now,request.emails),
     env.DB.prepare(tombstone).bind(projectId, contactId, actorId, now),
     ...feedbackErasureStatements(env,projectId,contactId),
     ...voiceErasureStatements(env,projectId,contactId),
@@ -100,7 +101,6 @@ export function erasureStatements(env: Env, request: ErasureRequest) {
     ...portalErasureStatements(env,projectId,contactId,request.emails),
     // Copies of the contact's data held outside the canonical rows, removed while those rows still identify them.
     bound(legacyArchiveRedaction),
-    ...contactDoorErasure(env.DB,projectId,contactId),
     ...importErasureStatements(env,projectId,contactId),
     ...eraseSurveyStatements(env,projectId,contactId),
     ...['conversation_ratings','conversation_rating_history'].map(table=>bound(`UPDATE ${table} SET comment='' WHERE resolution_id IN (SELECT id FROM conversation_resolutions WHERE project_id=?1 AND (contact_id=?2 OR conversation_id IN (${conversations}))) AND comment<>''`)),

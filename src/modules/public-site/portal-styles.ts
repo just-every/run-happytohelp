@@ -17,6 +17,7 @@ export const portalStyles=`
 .help-center-content>ol>li{padding:1.25rem 0;border-bottom:1px solid #dbe5e6}
 .help-center-content article h2{font-size:1rem;margin:0 0 .25rem}
 .help-center-content article p{overflow-wrap:anywhere;line-height:1.7}
+.help-center-content .portal-knowledge-unavailable{color:#4d666a}
 .help-center-content time{font-size:.9rem;color:#4d666a}
 .help-center-content a{overflow-wrap:anywhere}
 .help-center-content :focus-visible{outline:3px solid #177b85;outline-offset:3px}

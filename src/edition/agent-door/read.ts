@@ -51,7 +51,8 @@ export async function articleRead(env:Env,who:Who,id:string){
 }
 export async function contextRead(env:Env,who:Who,id:string){
  const actor=await actorFor(env,who),conversation=await conversationRead(env,who,id)
- return redacted(await getContextPacket(env,actor.projectId,conversation.ticket.contact_id))
+ // Match the native JSON packet, which omits an absent subject revision.
+ return redacted(JSON.parse(JSON.stringify(await getContextPacket(env,actor.projectId,conversation.ticket.contact_id,actor.id))))
 }
 export async function jobRead(env:Env,who:Who,id:string){
  const actor=await actorFor(env,who)

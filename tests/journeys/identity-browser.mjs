@@ -12,3 +12,8 @@ test('an owner records a deployment profile and executed evidence, sees activati
  const browser=await launchBrowser()
  try{await assuranceBrowserJourney(browser)}finally{await browser.close()}
 })
+
+import {builtOutcomes} from '../helpers/first-run/outcomes.mjs'
+import {activationBrowserJourney} from '../helpers/first-run/activation-browser.mjs'
+test('a first owner and a signed-in owner reach Setup and install a working widget',builtOutcomes)
+test('Setup observes receipts, protects keys and preserves uncertain mail across restarts',activationBrowserJourney)

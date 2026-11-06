@@ -165,10 +165,11 @@ export function ConnectProvider({children, open, setOpen, setInsightOpen, onSett
     });
   }, [context.settings.collector.enabled, fail, setFilteredMessages]);
   useEffect(() => {
-    Collector.setCollectorEnabled(collectorReady && monitoring?.enabled === true && !open);
-    if (collectorReady && monitoring?.enabled === true && !open) Collector.init();
+    const enabled = context.settings.collector.enabled && collectorReady && monitoring?.enabled === true && !open;
+    Collector.setCollectorEnabled(enabled);
+    if (enabled) Collector.init();
     Collector.setMessageHandler((action, data) => sendMessage(action, data).catch(() => null));
-  }, [sendMessage, collectorReady, monitoring?.enabled, open]);
+  }, [sendMessage, collectorReady, monitoring?.enabled, open, context.settings.collector.enabled]);
   const setMonitoringConsent = useCallback(async consent => {
     const result = await transport.current.action('contextConsent', {consent});
     setMonitoring(result.monitoring);

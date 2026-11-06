@@ -7,7 +7,7 @@ import {assertAuthority,importContext} from './context'
 import {assertUndoReferences} from './undo-references'
 import {objectKey,updateRun} from './run-store'
 import {reviewFingerprint,type ReviewManifest} from './plans'
-import {LIMITS,MAPPING_VERSION,type Run} from './types'
+import {LIMITS,MAPPING_VERSION,runLimits,type Run} from './types'
 import {reconcileContactKeys} from './contact-keys'
 import {publicationPredicates,publicationDatabase,reviewedContacts} from './publication'
 import {skipUnstartedUndo} from './partial-undo'
@@ -21,7 +21,7 @@ async function verifyGroupCustody(env:Env,run:Run,review:ReviewManifest){
 export async function approveReview(env:Env,run:Run,fingerprint:string){
  await assertAuthority(env,run);if(run.state!=='ready'||run.review_fingerprint!==fingerprint)throw new Error('review_fingerprint_mismatch')
  const review=await readReview(env,run,fingerprint);await verifyGroupCustody(env,run,review)
- const statements=review.batches.map((batch,index)=>{if(batch.ordinal!==index||batch.bytes>LIMITS.planBytes||batch.key!==objectKey(run,`plans/${batch.fingerprint}`))throw new Error('reviewed_plan_changed');return env.DB.prepare('INSERT INTO move_in_batches(run_id,ordinal,plan_key,fingerprint,total) VALUES(?,?,?,?,?)').bind(run.id,index,batch.key,batch.fingerprint,batch.total)})
+ const statements=review.batches.map((batch,index)=>{if(batch.ordinal!==index||batch.bytes>runLimits(run).planBytes||batch.key!==objectKey(run,`plans/${batch.fingerprint}`))throw new Error('reviewed_plan_changed');return env.DB.prepare('INSERT INTO move_in_batches(run_id,ordinal,plan_key,fingerprint,total) VALUES(?,?,?,?,?)').bind(run.id,index,batch.key,batch.fingerprint,batch.total)})
  await updateRun(env,run,{state:'applying',cursor:0,error:null,session_hash:run.session_hash},statements)
 }
 async function publishCheckpoint(env:Env,run:Run,batch:Batch,job:ImportJob){
@@ -46,7 +46,7 @@ export async function advanceBatch(env:Env,run:Run){
  const publication=undo?[]:publicationPredicates(run.project_id,await reviewedContacts(env,review))
  for(const predicate of publication)if(!(await env.DB.prepare(`SELECT (${predicate.sql}) allowed`).bind(...predicate.params!).first<{allowed:number}>())?.allowed)throw new Error('native_contact_changed_since_review')
  const context={...importContext({...env,DB:publicationDatabase(env.DB,[...publication,...categoryPredicates,...retained])},{...run,kit_job_id:batch.kit_job_id},fence),operationKey:`${run.id}/${batch.ordinal}`}
- if(!batch.kit_job_id){if(undo)throw new Error('import_job_missing');const object=await env.FILES.get(batch.plan_key);if(!object||object.size>LIMITS.planBytes)throw new Error('reviewed_plan_missing');const plan=await object.json<ImportPlan>();if(plan.fingerprint!==batch.fingerprint||plan.entries.length!==batch.total)throw new Error('reviewed_plan_changed');const job=await createD1ImportJob(plan,{...context,reviewedFingerprint:batch.fingerprint});await publishCheckpoint(env,run,batch,job);return}
+ if(!batch.kit_job_id){if(undo)throw new Error('import_job_missing');const object=await env.FILES.get(batch.plan_key);if(!object||object.size>runLimits(run).planBytes)throw new Error('reviewed_plan_missing');const plan=await object.json<ImportPlan>();if(plan.fingerprint!==batch.fingerprint||plan.entries.length!==batch.total)throw new Error('reviewed_plan_changed');const job=await createD1ImportJob(plan,{...context,reviewedFingerprint:batch.fingerprint});await publishCheckpoint(env,run,batch,job);return}
  // Both entry points perform Base current authorization, stored-plan validation,
  // custody/inventory checks and atomic fences. No redundant read-and-reload.
  // A stopped child can own a queued or partially applied job. Base rollback

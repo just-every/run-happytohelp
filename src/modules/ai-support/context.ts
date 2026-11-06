@@ -10,7 +10,7 @@ import { getContextPacket } from '../customer-context/service'
 import { boundTimeline,boundActivity } from './assist/packetBounds.js'
 // @ts-ignore Retained packet formatting.
 import { customerReplyPacket } from './replies/packet.js'
-export async function replyContext(env:Env,projectId:string,conversationId:string,audience:'agent'|'contact'='contact',generationId?:string){
+export async function replyContext(env:Env,projectId:string,conversationId:string,audience:'agent'|'contact'='contact',generationId?:string,actorId?:string){
  const conversation=await env.DB.prepare('SELECT * FROM conversations WHERE id=? AND project_id=?').bind(conversationId,projectId).first<any>()
  if(!conversation)throw new Error('Conversation not found')
  const [project,customer,rows,notes,profile,customerContext]=await Promise.all([
@@ -19,7 +19,7 @@ export async function replyContext(env:Env,projectId:string,conversationId:strin
  env.DB.prepare('SELECT id,actor_role,content,created_at,revision FROM messages WHERE conversation_id=? AND project_id=? ORDER BY revision DESC LIMIT 100').bind(conversationId,projectId).all<any>(),
  env.DB.prepare('SELECT n.id,n.content,n.created_at FROM conversation_notes n JOIN conversations c ON c.id=n.conversation_id WHERE c.id=? AND c.project_id=? ORDER BY n.created_at DESC LIMIT 40').bind(conversationId,projectId).all<any>(),
  env.DB.prepare(`SELECT a.id,a.name,a.prompt,a.model,a.avatar_url FROM conversations c JOIN ai_profiles a ON a.id=${audience==='agent'?assistanceProfileSql:replyProfileSql} WHERE c.id=? AND a.project_id=? AND a.is_enabled=1`).bind(conversationId,projectId).first<any>(),
- getContextPacket(env,projectId,conversation.contact_id)])
+ getContextPacket(env,projectId,conversation.contact_id,actorId)])
  if(!profile)throw new Error('CONFIGURATION_REQUIRED: enabled selected conversation AI')
  const timeline=rows.results.reverse().map(m=>({kind:'message',evidence_id:`message:${m.id}`,id:m.id,role:m.actor_role,content:m.content,created_at:m.created_at,visibility:'customer-conversation'}))
  const privateNotes=notes.results.reverse().map(n=>({...n,evidence_id:`note:${n.id}`,visibility:'private-to-operators'}))

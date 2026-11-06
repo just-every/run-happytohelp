@@ -1,3 +1,5 @@
+import {withdrawDoorCustody} from '../move-in/door/erasure'
+import {erasureEnvironment} from './contact-erasure/authority'
 import {brandReports} from './brand-reports'
 import {brands} from './brands'
 import {recentMailboxProof} from '../identity/two-factor/state'
@@ -11,7 +13,7 @@ import { id,requiredString,serverSecret } from '../../platform/db'
 import { clientAddress,enforceRateLimits } from '../../platform/rate-limits'
 import {person} from './dashboard-data'
 import {artworkUrl} from './workspace-artwork'
-import {scope,text,url,decode} from './common'
+import {scope,text,url} from './common'
 import {isPlatformAdmin} from './admin'
 import {appearanceSettings} from './appearance-settings'
 import {workspaceDefaults} from './provisioning/index'
@@ -20,6 +22,8 @@ import {websiteAddress} from './website-address'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement,requestSource} from '../audit/record'
 import {accountAudit} from '../identity/two-factor/factors'
+import {readNativeSettings} from './native-settings-read'
+import {memberAccess} from '../access/gate'
 import {projectAccess} from '../access/catalogue'
 export const projects=new Hono<AppEnv>()
 projects.route('/',brandReports).route('/',brands)
@@ -69,7 +73,11 @@ projects.post('/projects',async c=>{
  await defaults.after()
  return c.json({id:projectId,name,allowed_origin:origin},201)
 })
-projects.get('/projects/:projectId/settings',async c=>{const a=await scope(c);return c.json({data:decode(await c.env.DB.prepare('SELECT p.id,p.name,p.widget_key,p.allowed_origin,p.created_at,s.settings_json FROM projects p LEFT JOIN project_settings s ON s.project_id=p.id WHERE p.id=?').bind(a.projectId).first())})})
+projects.get('/projects/:projectId/settings',async c=>{
+ const a=await scope(c,true),access=await memberAccess(c.env.DB,a.projectId,a.id)
+ if(!access?.permissions.has('settings.manage'))throw new HTTPException(403,{message:'Workspace settings permission required. Ask your owner for access.'})
+ return c.json({data:await readNativeSettings(c.env,a.projectId)})
+})
 projects.put('/projects/:projectId/settings',async c=>{
  const a=await scope(c,true),b=await c.req.json(),appearance=appearanceSettings(b)
  if('timezone' in b&&!validTimezone(b.timezone))throw new HTTPException(400,{message:'Choose a valid IANA timezone'})
@@ -123,8 +131,10 @@ projects.delete('/projects/:projectId',async c=>{
      settings_json=excluded.settings_json,
      updated_at=excluded.updated_at
  `).bind(a.projectId,a.projectId,a.projectId,a.projectId,now,now,now)
+ await withdrawDoorCustody(erasureEnvironment(c.env,a.projectId,a.id,c.get('sessionHash')),a.projectId,a.id,{values:[`workspace:${a.projectId}`]},c.get('sessionHash'))
  await c.env.DB.batch<any>([
   archiveSettings,
+  c.env.DB.prepare('DELETE FROM h2h_import_door_identities WHERE project_id=?').bind(a.projectId),
   c.env.DB.prepare('UPDATE email_settings SET inbound_address=NULL,is_enabled=0,updated_at=? WHERE project_id=?').bind(now,a.projectId),
   c.env.DB.prepare('UPDATE sessions SET revoked_at=? WHERE project_id=?').bind(now,a.projectId),
   c.env.DB.prepare("UPDATE identity_tokens SET consumed_at=COALESCE(consumed_at,?) WHERE project_id=? AND kind='invite'").bind(now,a.projectId),

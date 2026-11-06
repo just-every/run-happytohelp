@@ -23,6 +23,7 @@ export async function socketJourney(){
   assert.equal((await socketTo(`${path}?token=${contact.token}`,{Origin:'https://foreign.example'})).status,403,'a foreign origin cannot open the socket')
   const visitor=await socketTo(`${path}?token=${contact.token}`,{Origin:'https://widget.example'});assert.equal(visitor.status,101)
   const replay=await visitor.next();assert.equal(replay.type,'message');assert.equal(replay.message.content,'Persistent message');assert.equal('content_raw' in replay.message,false,'the original email body is operator-only')
+  assert.equal((await socketTo(`${path}?token=${other.token}&after=${replay.eventId}`,{Origin:'https://widget.example'})).status,404,'a durable cursor conveys no replay authority to another visitor')
   // The operator project stream announces conversation activity; a visitor token cannot open it.
   const project=await socketTo(`/api/projects/${p}/socket`,{Cookie:`h2h_session=${owner}`,Origin:'https://app.example'});assert.equal(project.status,101)
   const projectFrame=await project.next();assert.equal(projectFrame.type,'conversation');assert.equal(projectFrame.conversationId,conversation.id);project.socket.close()
@@ -65,6 +66,6 @@ export async function socketJourney(){
   await app.call('/api/identity/session',{token:contact.token,method:'DELETE',status:200})
   assert.equal((await app.call(`/api/conversations/${conversation.id}/messages`,{token:contact.token})).status,401)
   const closed=new Promise(resolve=>visitor.socket.addEventListener('close',resolve,{once:true}));visitor.socket.send(JSON.stringify({type:'ping'}));await closed
-  assert.equal((await socketTo(`${path}?token=${contact.token}`,{Origin:'https://widget.example'})).status,401)
+  assert.equal((await socketTo(`${path}?token=${contact.token}&after=${caught.eventId}`,{Origin:'https://widget.example'})).status,401,'a revoked visitor cannot resume a durable replay cursor')
  }finally{await app.close()}
 }

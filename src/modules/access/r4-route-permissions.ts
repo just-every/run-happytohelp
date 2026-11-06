@@ -7,6 +7,8 @@ export function r4RouteRule(method:string,path:string):Rule|undefined{
  const tail=path.replace(new RegExp(`^${base}`),'')
  if(tail==='/notification-triggers')return method==='GET'?'self':'settings.manage'
  if(/^\/notification-(?:preferences|inbox)(?:\/:id\/read)?$/.test(tail))return 'self'
+ if(tail==='/teammate-slack/consent')return 'integrations.install'
+ if(/^\/teammate-slack(?:\/(?:preferences|link|link\/verify|outcomes))?$/.test(tail))return 'self'
  if(tail==='/macros')return 'self'
  if(tail==='/macros/attachment-options')return 'self'
  if(/^\/macros\/:macroId(?:\/(?:versions|usage))?$/.test(tail))return 'self'

@@ -471,6 +471,9 @@ export const Provider = (props) => {
         const timer = setTimeout(() => {
             close = connectedProjectIds.map(id => connectProject(id, frame => {
                 if (frame.type === 'activity' && frame.kind === 'read' && Array.isArray(frame.reads)) applyReadReceipts(frame.reads);
+                // A saved custom role: refresh the inbox and re-read the open ticket through its own loader. Only that real read
+                // (401/403/404) turns the ticket unavailable; any other outcome leaves the ticket, transcript and draft as they are.
+                else if (frame.type === 'access_changed') { setLastConnected(Date.now()); refreshInboxData(); }
                 else refreshInboxData();
             },
                 () => { refreshInboxData(); setLastConnected(Date.now()); },
@@ -524,7 +527,14 @@ export const Provider = (props) => {
             } else {
                 setLastConnected(Date.now());
             }
-        }, () => setLastConnected(Date.now()), error => console.warn(error.message));
+        }, () => setLastConnected(Date.now()), error => {
+            if ([401,403,404].includes(error.status)) {
+                setConversationData(current => {const next = {...current}; delete next[activeConversationId]; return next;});
+                setConversationLists({}); setBuckets([]); provisionalReplies.current.clear();
+                window.dispatchEvent(new CustomEvent('h2h:ticket-unavailable', {detail: {conversationId: activeConversationId, error}}));
+                refreshInboxData();
+            } else console.warn(error.message);
+        });
         conversationSocket.current = connection;
         return () => { conversationSocket.current = null; connection(); };
     }, [activeConversationId, activeProjectId]);

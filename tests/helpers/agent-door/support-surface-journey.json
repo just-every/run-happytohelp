@@ -1,0 +1,136 @@
+{
+  "journey": [
+    {
+      "id": "operator-saved-replies",
+      "tool": "happytohelp.saved_replies.list",
+      "args": {
+        "q": "Synthetic operator preparation"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "sensitive",
+          "facts": {
+            "measure": 1,
+            "kind": "protected-content"
+          }
+        }
+      ]
+    },
+    {
+      "id": "operator-saved-reply",
+      "tool": "happytohelp.saved_replies.read",
+      "args": {
+        "id": {
+          "$fixture": "support",
+          "pointer": "/reply_id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "sensitive",
+          "facts": {
+            "measure": 1,
+            "kind": "protected-content"
+          }
+        }
+      ]
+    },
+    {
+      "id": "operator-settings",
+      "tool": "happytohelp.settings.read",
+      "args": {
+        "project_id": {
+          "$fixture": "support",
+          "pointer": "/project_id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "sensitive",
+          "facts": {
+            "measure": 1,
+            "kind": "protected-content"
+          }
+        }
+      ]
+    },
+    {
+      "id": "operator-draft",
+      "tool": "happytohelp.conversations.draft",
+      "args": {
+        "id": {
+          "$fixture": "support",
+          "pointer": "/conversation_id"
+        },
+        "content": "Synthetic patient record 321-54-6789 prepared reply.",
+        "draft_id": null,
+        "revision": {
+          "$fixture": "support",
+          "pointer": "/revision"
+        },
+        "last_message_id": {
+          "$fixture": "support",
+          "pointer": "/last_message_id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$fixture": "support",
+          "pointer": "/conversation_id"
+        }
+      }
+    },
+    {
+      "id": "operator-draft-read",
+      "tool": "happytohelp.drafts.read",
+      "args": {
+        "id": {
+          "$fixture": "support",
+          "pointer": "/conversation_id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "sensitive",
+          "facts": {
+            "measure": 1,
+            "kind": "protected-content"
+          }
+        }
+      ]
+    }
+  ]
+}

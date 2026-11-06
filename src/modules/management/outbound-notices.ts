@@ -1,3 +1,4 @@
+import {requireDestinationScope} from '../access/destination-scope'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -9,6 +10,7 @@ import {noticeCommand,outboundNoticeInputs} from './outbound-ticket-input'
 export async function previewOutboundNotices(env:Env,actor:Actor,sessionHash:string,body:Record<string,unknown>){
  await ticketAuthority(env,actor,{sessionHash,source:'dashboard'},'conversations.reply')
  const inputs=outboundNoticeInputs(body)
+ await requireDestinationScope(env,actor,null)
  for(const input of inputs){
   const rows=(await env.DB.prepare('SELECT metadata_json FROM contacts WHERE project_id=? AND lower(email)=? LIMIT 2').bind(actor.projectId,input.requesterEmail).all<{metadata_json:string}>()).results
   if(rows.length>1)throw new HTTPException(409,{message:'A requester email matches several contacts; resolve their identity before previewing'})
@@ -21,6 +23,7 @@ export async function previewOutboundNotices(env:Env,actor:Actor,sessionHash:str
 /** Reserve an immutable command independently of the disposable audit history.
  * Ticket and outbox admission update its recovery identities in their own batches. */
 export async function confirmOutboundNotices(env:Env,actor:Actor,sessionHash:string,body:Record<string,unknown>){
+ await requireDestinationScope(env,actor,null)
  const inputs=outboundNoticeInputs(body),fingerprint=await hashToken(JSON.stringify(inputs)),intentKey=await hashToken(inputs[0].localId)
  const guard=await ticketAuthority(env,actor,{sessionHash,source:'dashboard'},'conversations.reply')
  const id=`outbound-notice:${await hashToken(JSON.stringify([actor.projectId,actor.id,inputs[0].localId]))}`

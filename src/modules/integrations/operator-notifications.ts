@@ -1,5 +1,7 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {dispatchPendingTeammateNotifications} from './notification-teammate-delivery'
 import {teammateTicketNotification} from './notification-teammates'
+import {freezeAssignmentNotifications} from './assignment-freeze'
 import type {Env} from '../../platform/env'
 import {boundedDatabase} from '../../platform/d1-budget'
 import {cronConsumer,cronRoom} from '../../platform/cron-budget'
@@ -20,8 +22,8 @@ export interface AssignmentNotification {
 export function assignmentNotificationStatement(env:Env,event:AssignmentNotification,acceptedSql:string,acceptedArgs:unknown[]){
  return env.DB.prepare(`INSERT OR IGNORE INTO operator_notifications(id,project_id,conversation_id,user_id,kind,through_revision,created_at)
  SELECT ?,c.project_id,c.id,?,'assignment',c.revision,? FROM conversations c
- WHERE c.id=? AND c.project_id=? AND c.assigned_to=? AND ? IS NOT NULL AND ? IS NOT ? AND ?<>? AND (${acceptedSql})`)
- .bind(`assignment:${event.id}`,event.assignee,Date.now(),event.conversationId,event.projectId,event.assignee,event.assignee,event.assignee,event.previousAssignee,event.assignee,event.actorId,...acceptedArgs)
+ WHERE c.id=? AND c.project_id=? AND c.assigned_to=? AND ? IS NOT NULL AND ? IS NOT ? AND ?<>? AND ${ticketScopeSql('?','c')} AND (${acceptedSql})`)
+ .bind(`assignment:${event.id}`,event.assignee,Date.now(),event.conversationId,event.projectId,event.assignee,event.assignee,event.assignee,event.previousAssignee,event.assignee,event.actorId,event.assignee,...acceptedArgs)
 }
 const escapeHtml=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!))
 export type OperatorNotification={id:string;project_id:string;conversation_id:string;user_id:string;kind:'assignment'|'unread';batch_id:string|null;through_revision:number;recovery_id?:string|null}
@@ -38,14 +40,16 @@ async function recipient(env:Env,row:Notification){
  FROM conversations c JOIN users u ON u.id=? JOIN memberships m ON m.user_id=u.id AND m.project_id=c.project_id
  LEFT JOIN user_settings s ON s.user_id=u.id LEFT JOIN user_project_preferences p ON p.project_id=m.project_id AND p.user_id=u.id
  LEFT JOIN conversation_reads r ON r.conversation_id=c.id AND r.user_id=u.id LEFT JOIN email_settings e ON e.project_id=c.project_id
- WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND (?='assignment' OR c.resolved_at IS NULL)
+ WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND ${ticketScopeSql('m.user_id')} AND (?='assignment' OR c.resolved_at IS NULL)
  AND NOT EXISTS(SELECT 1 FROM notification_preferences np WHERE np.project_id=c.project_id AND np.user_id=u.id AND np.kind='customer_updated' AND np.email=0)
  AND (c.assigned_to=u.id OR (?='unread' AND c.assigned_to IS NULL AND p.is_notified_on_unassigned_activity=1
  AND NOT EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL)))`)
  .bind(row.user_id,row.conversation_id,row.project_id,row.kind,row.kind).first<Recipient>()
 }
 async function sendNotification(env:Env,row:Notification){
- if(row.kind==='assignment'){return await teammateTicketNotification(env,{projectId:row.project_id,conversationId:row.conversation_id,event:'assignment',eventId:row.id,recipientIds:[row.user_id]})}
+ if(row.kind==='assignment'){
+  if(!await env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${ticketScopeSql('?')}`).bind(row.conversation_id,row.project_id,row.user_id).first())return
+  return await teammateTicketNotification(env,{projectId:row.project_id,conversationId:row.conversation_id,event:'assignment',eventId:row.id,recipientIds:[row.user_id]})}
  if(await recordedNotification(env,row.id))return
  if(!await isProjectActive(env,row.project_id)||!emailConfigured(env))return
  const user=await recipient(env,row)
@@ -70,6 +74,7 @@ async function sendNotification(env:Env,row:Notification){
   if(rich.html)rich.html+=`<p>Open conversation: <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p>`
  }
  const replyTo=await recipientReplyAddress(env,user.inbound_address,row.project_id,row.conversation_id,user.email)
+ if(!await recipient(env,row))return
  await deliverNotification(env,{projectId:row.project_id,to:user.email,subject:'Unread HappyToHelp conversation messages',text,...rich,replyTo,headers:loopSuppressionHeaders({}),idempotencyKey:row.id})
 }
 export async function deliverOperatorNotification(env:Env,row:OperatorNotification){
@@ -113,7 +118,9 @@ export async function dispatchOperatorNotifications(env:Env,options:{projectId?:
  env=cronConsumer(env,limit-budget.statements)
  const pending=await env.DB.prepare(`${operatorPendingSql} WHERE o.state='pending' ${options.projectId?'AND o.project_id=?':''} ${options.conversationId?'AND o.conversation_id=?':''} ORDER BY o.created_at,o.id LIMIT 100`)
  .bind(...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<Notification>()
+ const frozen=await freezeAssignmentNotifications(env,pending.results)
  for(const row of pending.results){
+  if(frozen.completed.has(row.id))continue
   // Rendering is two bulk reads, even for a full 100-message digest. Admission
   // includes assignment's one-recipient fan-out and every failure receipt.
   if(!cronRoom(env,operatorAdmission(row)))break
@@ -121,5 +128,5 @@ export async function dispatchOperatorNotifications(env:Env,options:{projectId?:
  }
  // Pending work may be empty or cheaper than its admission. Let the teammate
  // queue spend that settled remainder instead of leaving it idle.
- if(teammatesDeferred&&limit-budget.statements>=19)await dispatchPendingTeammateNotifications(cronConsumer(deliveryEnv,limit-budget.statements),options)
+ if((teammatesDeferred||frozen.queued)&&limit-budget.statements>=19)await dispatchPendingTeammateNotifications(cronConsumer(deliveryEnv,limit-budget.statements),options)
 }

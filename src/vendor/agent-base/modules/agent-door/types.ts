@@ -8,13 +8,19 @@ export type JsonSchema = boolean | { [key: string]: unknown }
 export interface JsonSchemaObject { type: 'object'; properties?: Record<string, JsonSchema>; required?: string[]; [key: string]: unknown }
 export interface Person { id: string; email: string; name: string; role: string; active: boolean }
 export interface Agent { id: string; name: string; specialist?: string | null }
-export interface Principal { person: Person; agent: Agent; scopes: string[]; clientId?: string; consent?: string; nativeProof?: { kind: string; reference: string }; operationId?: string; idempotencyKey?: string | null; continuationItemId?: string }
+/** Where admission came from: a signed Business token, or the seed's own credential. Embedded invocations carry none. */
+export type PrincipalSource = 'business' | 'local'
+export interface Principal { person: Person; agent: Agent; source?: PrincipalSource; scopes: string[]; clientId?: string; consent?: string; nativeProof?: { kind: string; reference: string }; operationId?: string; idempotencyKey?: string | null; continuationItemId?: string }
 export interface PeopleAdapter {
   sponsor(claims: { sub: string }): Promise<Person | null>
   person(id: string): Promise<Person | null>
   session(request: Request): Promise<Person | null>
   businessRole?(person: Person): 'owner' | 'editor' | null
   businessMember?(person: Person): Promise<{ id: string; role: 'owner' | 'editor' | null } | null>
+  /** True once Business is stopped or detached. Business tokens, and approver or reviewer refs that name Business people
+   * (`person:`, `role:`), then stop applying; `sponsor` refs, seed credentials and native sessions do not. `sponsor()`
+   * must keep resolving subjects, so a signed policy that names Business people can still be adopted. Omitted: never stopped. */
+  businessStopped?(): Promise<boolean>
 }
 export interface Trust { issuer: string; installationId: string; appOrigin: string; publicKeys: Record<string, JsonWebKey> }
 export interface ClassAndFacts { class: ClassId; facts: ClassFacts }
@@ -89,6 +95,7 @@ export type CompanyPolicyInput = Immutable<{
 }>
 export type CompanyPolicyContext = Pick<ToolContext, 'db' | 'person' | 'agent' | 'consent' | 'scopes' | 'clientId' | 'operationId' | 'idempotencyKey' | 'seed' | 'origin' | 'now' | 'door'>
 export interface AgentDoorOptions {
+  erasure?: import("./erasure.ts").AgentErasureOptions
   seed: string; name: string; specialist: string; version?: string; db: D1Database; origin: string; trust: Trust | null
   capabilities?: readonly Capability[]
   tools: ToolDefinition[]; resources?: ResourceDefinition[]

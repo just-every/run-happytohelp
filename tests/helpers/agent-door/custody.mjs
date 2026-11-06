@@ -11,7 +11,7 @@ export async function slackEdge(request){
  if(url.pathname==='/api/conversations.info')return Response.json({ok:true,channel:{id:url.searchParams.get('channel'),is_member:true,is_ext_shared:true}})
  return Response.json({ok:true,ts:'1710000000.2'})
 }
-const doorTables=['h2h_agent_operations','agent_door_agents','agent_door_audit','agent_door_events','agent_door_calls','agent_door_approvals','agent_door_reviews']
+const doorTables=['h2h_agent_operations','agent_door_agents','agent_door_audit','agent_door_events','agent_door_calls','agent_door_approvals','agent_door_reviews','agent_door_usage','agent_door_state','agent_door_relay','agent_door_replay_aliases']
 
 /** Erasure reaches every door copy, and an agent's ticket work stays internal. */
 export async function doorCustody({app,owner,project,native,person,context,call,rpc,adopt,settings,conversation}){
@@ -52,9 +52,10 @@ export async function doorCustody({app,owner,project,native,person,context,call,
  await app.configure({})
  const views=Object.fromEntries((await person('/agents/api/approvals',undefined,ownerCookie)).data.approvals.map(view=>[view.id,view]))
  const erin=views[held.erin.approval],kai=views[held.kai.approval]
- assert.equal(erin.state,'refused');assert.equal(erin.code,'resource_unavailable');assert.equal(kai.state,'pending')
+ assert.equal(erin.state,'refused');assert.equal(erin.code,'subject_erased');assert.equal(kai.state,'pending')
  assert.doesNotMatch(JSON.stringify([erin,await app.sql('SELECT * FROM agent_door_approvals')]),/erin@|4417 promised to erin/)
- for(const [view,state] of [[erin,'refused'],[kai,'executed']])assert.equal((await person(`/agents/api/approvals/${view.id}/approve`,{revision:view.revision,summary_sha256:view.summary_sha256},ownerCookie)).data.approval.state,state)
+ assert.equal((await person(`/agents/api/approvals/${erin.id}/approve`,{revision:erin.revision,summary_sha256:erin.summary_sha256},ownerCookie)).status,409,'erased work cannot be approved')
+ assert.equal((await person(`/agents/api/approvals/${kai.id}/approve`,{revision:kai.revision,summary_sha256:kai.summary_sha256},ownerCookie)).data.approval.state,'executed')
  for(const [name,count] of [['erin',0],['kai',1]])assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',held[name].conversation.id)).n,count)
  assert.equal((await call('happytohelp.conversations.note',held.erin.args)).outcome,'refused')
  // An agent's assignment of a Slack Connect ticket posts nothing to the customer thread

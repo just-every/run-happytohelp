@@ -1,5 +1,5 @@
 import {getKnowledgeExperience,validLocale} from './experience'
-import {accessParams,type HelpAccess} from './access'
+import {visibleArticleSql,type Readers} from './door'
 import {isProjectActive,requireActiveProject} from '../../platform/project-status'
 import {cronRoom} from '../../platform/cron-budget'
 import {dispatchKnowledgeJob,recoverKnowledgeJobs} from './recovery'
@@ -9,7 +9,7 @@ import {readWebsite} from './website-reader'
 import {stageCorpus,consumePage} from './ingestion'
 import type { Env, Job } from '../../platform/env'
 import { apifyDocuments, collection, embeddings, qdrant, type DocumentInput } from './providers'
-import {articleEligibilitySql,articleCanonicalUrl,readKnowledgeSource} from './public-sources'
+import {articleCanonicalUrl,readKnowledgeSource} from './public-sources'
 export interface Citation { id:string;sourceVersion:string;url:string;title:string;content:string;score:number;locale?:string;requestedLocale?:string;localeFallback?:boolean }
 export function validateDocuments(value:unknown):DocumentInput[]{
  if(!Array.isArray(value)||value.length===0)throw new Error('Expected nonempty documents');
@@ -57,22 +57,23 @@ export async function consumeJob(job:Job,env:Env):Promise<boolean>{
  const docs=validateDocuments(input.documents??messageDocs??await apifyDocuments(env,input.apifyDatasetId));await stageCorpus(env,job,docs,!!input.semantic);return true
  }catch(error){await fail(env,String(job.datasetId),job.id,error);return true}
 }
-export async function searchKnowledge(env:Env,projectId:string,query:string,mode:'lexical'|'semantic'='lexical',access?:HelpAccess,requestedLocale?:string):Promise<Citation[]>{
+export async function searchKnowledge(env:Env,projectId:string,query:string,readers:Readers,mode:'lexical'|'semantic'='lexical',requestedLocale?:string):Promise<Citation[]>{
  await requireActiveProject(env,projectId);
  const versions=await env.DB.prepare('SELECT v.id,v.semantic,v.embedding_model FROM knowledge_datasets d JOIN knowledge_versions v ON v.id=d.published_version WHERE d.project_id=?').bind(projectId).all<{id:string;semantic:number;embedding_model:string}>();
  const rows=await env.DB.prepare('SELECT f.id,f.version_id sourceVersion,f.url,f.title,f.content FROM knowledge_documents f JOIN knowledge_datasets d ON d.published_version=f.version_id WHERE d.project_id=?').bind(projectId).all<Citation>();
- const articles=await env.DB.prepare(`SELECT id,publication_version sourceVersion,slug,title,content FROM knowledge_articles a WHERE project_id=? AND ${articleEligibilitySql('a','?', '?')}`).bind(projectId,...accessParams(access)).all<any>();
+ const articles=await env.DB.prepare(`SELECT id,publication_version sourceVersion,slug,title,content FROM knowledge_articles a WHERE project_id=? AND ${visibleArticleSql('a',readers)}`).bind(projectId).all<any>();
  const native:Citation[]=[],settings=requestedLocale?await getKnowledgeExperience(env,projectId):null
- if(requestedLocale&&(!settings!.locales.includes(validLocale(requestedLocale))))throw new Error('Choose a configured knowledge locale')
- for(const a of articles.results){
-  const tr=requestedLocale&&requestedLocale!==settings!.defaultLocale?await env.DB.prepare('SELECT publication_version FROM knowledge_translations WHERE article_id=? AND locale=? AND published_source_version=? AND published_json IS NOT NULL').bind(a.id,requestedLocale,a.sourceVersion).first<any>():null
-  const ref={id:`article:${a.id}`,sourceVersion:requestedLocale?`${a.sourceVersion}~${requestedLocale}~${tr?.publication_version||'base'}~${settings!.defaultLocale}`:a.sourceVersion}
-  const row=await readKnowledgeSource(env,projectId,ref,access)
+ if(requestedLocale&&!settings!.locales.includes(validLocale(requestedLocale)))throw new Error('Choose a configured knowledge locale')
+ for(const article of articles.results){
+  const translated=requestedLocale&&requestedLocale!==settings!.defaultLocale?await env.DB.prepare('SELECT publication_version FROM knowledge_translations WHERE article_id=? AND locale=? AND published_source_version=? AND published_json IS NOT NULL').bind(article.id,requestedLocale,article.sourceVersion).first<any>():null
+  const ref={id:`article:${article.id}`,sourceVersion:requestedLocale?`${article.sourceVersion}~${requestedLocale}~${translated?.publication_version||'base'}~${settings!.defaultLocale}`:article.sourceVersion}
+  const row=await readKnowledgeSource(env,projectId,ref,readers)
   if(row)native.push({...row,...ref,score:0})
  }
+
  const tokens=[...new Set(query.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(t=>t.length>=3))].slice(0,24);
  const rank=(docs:Citation[])=>docs.map(d=>({...d,score:tokens.reduce((n,t)=>n+(d.title.toLowerCase().includes(t)?6:0)+(d.content.toLowerCase().includes(t)?1:0),0)})).filter(d=>d.score>0).sort((a,b)=>b.score-a.score);
- const current=async(docs:Citation[])=>{const result:Citation[]=[];for(const d of docs){const row=await readKnowledgeSource(env,projectId,d,access);if(row)result.push({...d,...row,content:snippet(row.content,tokens,2800)})}return result};
+ const current=async(docs:Citation[])=>{const result:Citation[]=[];for(const d of docs){const row=await readKnowledgeSource(env,projectId,d,readers);if(row)result.push({...d,...row,content:snippet(row.content,tokens,2800)})}return result};
  if(mode==='semantic'){
  if(!versions.results.length)return current(rank(native).slice(0,3));
  if(versions.results.some(v=>!v.semantic))throw new Error('SEMANTIC_INDEX_UNAVAILABLE: publish all selected datasets with semantic indexing');

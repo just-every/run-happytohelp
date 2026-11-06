@@ -1,3 +1,4 @@
+import {obligationTicketScopeAssertions} from './ticket-scope.mjs'
 import assert from 'node:assert/strict'
 import {assistantApp} from './app.mjs'
 import {openaiToolCall} from '../openai-stream.mjs'
@@ -84,5 +85,6 @@ export async function obligationsJourney(){
  await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erasing',1) WHERE id=?").bind(v.contactId).run()
  assert.equal((await call('')).status,404)
  assert.equal((await app.first('SELECT count(*) n FROM followup_obligations')).n,0,'erasure removes obligations and accepted history')
+ await obligationTicketScopeAssertions(a)
  }finally{await a.close()}
 }

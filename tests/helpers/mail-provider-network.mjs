@@ -1,7 +1,9 @@
+import channelNetwork from './support-channels/browser-network.mjs';
 import assert from 'node:assert/strict';
 
 // The real Worker still validates, records and sends each mail request.
 export default async request => {
+    if(new URL(request.url).hostname==='graph.facebook.com'){if(request.method==='POST')console.log('CHANNEL_FIXTURE_SEND '+await request.clone().text());return channelNetwork(request);}
     assert.equal(request.url, 'https://api.resend.com/emails', 'unexpected outbound request');
     assert.equal(request.method, 'POST');
     assert.equal(request.headers.get('Authorization'), 'Bearer synthetic-fixture-mail-provider');

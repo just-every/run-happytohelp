@@ -2065,7 +2065,7 @@
       "executable": false
     },
     "management/integration/native-setup.json": {
-      "sha256": "221aa488bcdec3177afc7b910bd3eefc866f3b6745c72f125412219e5e6c2855",
+      "sha256": "86c8880b67f2b1e679eeaf34a5dd605aeea4d34228cd10908c0775b55c2b8f59",
       "executable": false
     },
     "management/integration/plan.ts": {
@@ -3065,7 +3065,7 @@
       "executable": false
     },
     "scripts/deployment/mail-declaration.mjs": {
-      "sha256": "b5fe71ba5038477d3bdd5838f2d6387307f1c7ab37a09ca0ba6f327273aaf43d",
+      "sha256": "6bdc3934c0052dca8ae113a5fee0f63917ec1871995357395e6ef8a2ed8b103f",
       "executable": false
     },
     "scripts/edition-authoring/adopt.mjs": {

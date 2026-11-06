@@ -74,12 +74,25 @@ zendeskPullRoutes.post(`${root}/:pullId/resume`,async c=>{
  return c.json({data:await view(c,actor,pull.id)},202)
 })
 
-/** Stop a pull before approval and remove what it staged. Batches it already packed stay
- * as ordinary imports. A workspace owner may stop another member's pull. */
+/** Stop a pull and remove what it staged. Before approval, the member who started it or
+ * a workspace owner may stop it. An approved pull that has stopped, or whose member can
+ * no longer act, a workspace owner may stop: the batches it imported stay as ordinary
+ * imports and the rest are not imported. The workspace's next pull reads Zendesk again
+ * and imports what this one did not. Each stop is in the security log. */
 zendeskPullRoutes.post(`${root}/:pullId/abandon`,async c=>{
  const {actor,pull}=await workspacePull(c)
  if(pull.actor_id!==actor.actor_id&&actor.role!=='owner')throw othersPull()
- if(!['pulling','reviewing','ready'].includes(pull.state))throw new HTTPException(409,{message:'An approved pull cannot be abandoned; undo its imports instead'})
- await c.env.DB.batch([c.env.DB.prepare("UPDATE move_in_zendesk_pulls SET state='abandoned',lease_until=NULL,version=version+1,updated_at=? WHERE id=?").bind(Date.now(),pull.id),c.env.DB.prepare('DELETE FROM move_in_zendesk_staged WHERE pull_id=?').bind(pull.id),audit(c,actor,'import.pull.abandoned',pull.id)])
+ if(!(await access(c.env,pull,actor)).canStop)throw new HTTPException(409,{message:pull.state==='applying'?'An approved pull keeps importing while it runs; a workspace owner can stop it once it stops or its member can no longer act':'This pull has already finished'})
+ // Before approval the stop wins over the pull's own next step, unless its member has
+ // approved it meanwhile. An approved pull is stopped only as it was seen, so a resume
+ // by its member in between is never undone.
+ const approved=pull.state==='applying',fence=approved?' AND version=?':" AND state IN ('pulling','reviewing','ready')",at=approved?[pull.version]:[]
+ try{await c.env.DB.batch([
+  c.env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(SELECT 1 FROM move_in_zendesk_pulls WHERE id=?${fence}) THEN 1 ELSE 0 END`).bind(pull.id,...at),
+  c.env.DB.prepare(`UPDATE move_in_zendesk_pulls SET state='abandoned',lease_until=NULL,version=version+1,updated_at=? WHERE id=?${fence}`).bind(Date.now(),pull.id,...at),
+  c.env.DB.prepare('DELETE FROM move_in_zendesk_staged WHERE pull_id=?').bind(pull.id),
+  audit(c,actor,'import.pull.abandoned',pull.id,{startedBy:pull.actor_id,approved}),
+  c.env.DB.prepare('DELETE FROM ik_d1_assertions')])}
+ catch(error){if((await getPull(c.env,pull.id))?.version!==pull.version)throw new HTTPException(409,{message:'This pull changed; look at it again'});throw error}
  return c.json({data:await view(c,actor,pull.id)})
 })

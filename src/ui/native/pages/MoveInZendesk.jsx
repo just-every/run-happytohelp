@@ -67,5 +67,6 @@ function PullStatus({pull,busy,onStep,onOpenRun}){
   {pull.batches.length>0&&<details className="move-in-details"><summary>Batches</summary><ul>{pull.batches.map(b=><li key={b.ordinal}>{pull.yours?<button type="button" className="btn btn-link" onClick={()=>onOpenRun(b.runId)}>{b.filename}</button>:b.filename} {b.stopped?`stopped: ${reasonLabel(b.error)}`:b.nothingToImport?'nothing to import':b.state}</li>)}</ul></details>}
   {pull.refusalsTotal>0&&<details className="move-in-details"><summary>{count(pull.refusalsTotal,'refused record')}</summary><ul>{pull.refusals.map(r=><li key={`${r.kind}/${r.sourceId}`}>{r.kind.replace('_',' ')} {r.sourceId}: {reasonLabel(r.reason)}</li>)}</ul></details>}
   {pull.canStop&&<button type="button" className="btn btn-link" disabled={busy} onClick={()=>onStep('abandon')}>Stop this pull</button>}
+  {pull.canStop&&pull.state==='applying'&&<span className="settings-note">Batches already imported stay; the next pull imports the rest.</span>}
  </section>;
 }

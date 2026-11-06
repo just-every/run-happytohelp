@@ -8,8 +8,8 @@
       "status": "documented format",
       "evidence": {
         "link": "evidence:docs/moving-in.md",
-        "sha256": "ae7e2f1813e398af0e573e0c4950c3d6966f93e26334cb796c81155474941c0b",
-        "size": 54541,
+        "sha256": "aa163e34f89a4b95c338b1a415638346d592988ec52982384725155a2ef17157",
+        "size": 55393,
         "sourceRepository": "just-every/run-happytohelp",
         "sourceRevision": "91ece86b9f3286a9c8480fccbbc00c7bd0a18011",
         "sourcePath": "src/modules/move-in/readers/zendesk-offline.ts",

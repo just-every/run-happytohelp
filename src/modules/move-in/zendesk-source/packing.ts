@@ -94,18 +94,19 @@ export async function packBatch(ctx:PullContext){
  }else throw new ZendeskError('zendesk_batch_admission_failed',result.status)
  ctx.more=true
 }
-/** The same bytes as an earlier run return that run while it can still carry them:
- * one ready for review, applying or completed, or this step repeated finding its own
- * batch still being admitted or prepared under this pull's session, without a stop.
- * Any other earlier run (stopped, undone, erased, or left in preparation by another
+/** The same bytes as an earlier run return that run while it can still carry them
+ * for this pull's member: one of theirs ready for review or completed, or this step
+ * repeated finding its own batch still being admitted or prepared under this pull's
+ * session, without a stop. Any other earlier run (another member's, stopped, left
+ * importing by a stopped pull, undone, erased, or left in preparation by another
  * session) is admitted again as a new run: a trailing blank line, which the reader
  * skips, makes it a new file with the same records. */
-const CARRIES=['ready','applying','completed'],PREPARING=['uploading','uploaded','parsing','planning']
+const CARRIES=['ready','completed'],PREPARING=['uploading','uploaded','parsing','planning']
 async function admissible(ctx:PullContext,lines:string[]){
  for(let blank=0;blank<READMISSIONS;blank++){
   const bytes=new TextEncoder().encode(lines.join('\n')+'\n'+'\n'.repeat(blank))
-  const prior=await ctx.env.DB.prepare("SELECT state,error,session_hash FROM move_in_runs WHERE project_id=? AND vendor='zendesk' AND artifact_hash=?").bind(ctx.pull.project_id,sha256(bytes)).first<{state:string;error:string|null;session_hash:string}>()
-  if(!prior||CARRIES.includes(prior.state)||!prior.error&&PREPARING.includes(prior.state)&&prior.session_hash===ctx.pull.session_hash)return bytes
+  const prior=await ctx.env.DB.prepare("SELECT actor_id,state,error,session_hash FROM move_in_runs WHERE project_id=? AND vendor='zendesk' AND artifact_hash=?").bind(ctx.pull.project_id,sha256(bytes)).first<{actor_id:string;state:string;error:string|null;session_hash:string}>()
+  if(!prior||prior.actor_id===ctx.pull.actor_id&&!prior.error&&(CARRIES.includes(prior.state)||PREPARING.includes(prior.state)&&prior.session_hash===ctx.pull.session_hash))return bytes
  }
  throw new ZendeskError('zendesk_batch_readmission_limit')
 }

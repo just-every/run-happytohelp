@@ -40,7 +40,7 @@ export default function MagicLogin() {
  };
  return <IdentityFrame>
   <h1>{token ? 'Sign in to your workspace' : local ? 'Local owner sign-in' : available ? 'Email me a sign-in link' : 'Email sign-in'}</h1>
-  <p className="id-lede">{token ? 'Press Sign in to use your one-time link. Links expire after 15 minutes.' : local ? 'rer dev signs you in automatically as the local owner. Open the app address it prints. Email is suppressed during local development. No email is sent.' : available ? 'Enter the email address you use for your workspace.' : !options&&!failed ? 'Checking whether email sign-in is available…' : failed ? 'Email sign-in availability could not be checked. You can still use your password.' : 'Email sign-in needs a configured mail provider. Use your password to sign in.'}</p>
+  <p className="id-lede">{token ? 'Press Sign in to use your one-time link. Links expire after 15 minutes.' : local ? 'rer dev signs you in automatically as the local owner. Open the app address it prints. Email is suppressed during local development. No email is sent.' : available ? 'Enter the email address you use for your workspace.' : !options&&!failed ? 'Checking whether email sign-in is available…' : failed ? 'Email sign-in availability could not be checked. You can still use your password.' : 'Outbound email is off for this installation, so sign-in links are not sent. Use your password, or ask whoever runs this installation for a one-time sign-in link.'}</p>
   <Alert>{error}</Alert>
   {sent && <p role="status" className="id-note">{sent}</p>}
   {(token||available)&&<form method="post" onSubmit={submit}>

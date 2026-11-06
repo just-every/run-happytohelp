@@ -9,9 +9,9 @@ import {localMailOrigin} from '../../edition/local-mail/configuration'
 import {sendDevelopment} from '../../edition/local-mail/sender.mjs'
 import {emailMode} from './email-provider'
 import type {Env} from '../../platform/env'
-import {emailConfigured, providerRequest, providerReceipt, selectedEmailProvider, sendGridDelivery, providerMessage, validateEmailInput} from './email-provider'
+import {emailConfigured, emailOffMessage, providerRequest, providerReceipt, selectedEmailProvider, sendGridDelivery, providerMessage, validateEmailInput} from './email-provider'
 import {SendGridSendError} from '../../vendor/base/modules/sendgrid-email/src/sender'
-export {emailConfigured} from './email-provider'
+export {emailConfigured,emailOffMessage} from './email-provider'
 import {HTTPException} from 'hono/http-exception'
 import {demoEffect} from '../../vendor/base/modules/demo/index.mjs'
 import {prepareConversationEmail,operatorTicketMessage} from './email-preparation'
@@ -135,7 +135,7 @@ async function suppressDevelopment(env:Env,input:EmailInput,from:string):Promise
 }
 export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelivery,holdable=false):Promise<EmailOutcome>{
  input=await canonicaliseMail(env,await prepareConversationEmail(env,input))
- if(!input.mailboxId&&!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
+ if(!input.mailboxId&&!emailConfigured(env))throw new HTTPException(503,{message:emailOffMessage})
  const from=await senderFor(env,input)
  validateEmailInput(input,from)
  if(localMailOrigin(env))return suppressDevelopment(env,await renderMail(env,input),from)
@@ -157,7 +157,7 @@ export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelive
 export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:DeferEmailDelivery,holdable=false):Promise<EmailOutcome[]>{
  if(!inputs.length)return []
  inputs=await Promise.all(inputs.map(async input=>canonicaliseMail(env,await prepareConversationEmail(env,input))))
- if(inputs.some(input=>!input.mailboxId)&&!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
+ if(inputs.some(input=>!input.mailboxId)&&!emailConfigured(env))throw new HTTPException(503,{message:emailOffMessage})
  const prepared=await Promise.all(inputs.map(async input=>{const from=await senderFor(env,input);validateEmailInput(input,from);return {input,from,intentHash:await hashToken(JSON.stringify({...input,from}))}}))
  if(localMailOrigin(env))return Promise.all(prepared.map(async({input,from})=>suppressDevelopment(env,await renderMail(env,input),from)))
  const now=Date.now()

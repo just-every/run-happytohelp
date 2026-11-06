@@ -3,7 +3,7 @@ import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
 import {serverSecret} from '../../platform/db'
-import {sendEmail,emailConfigured} from '../integrations/email'
+import {sendEmail,emailConfigured,emailOffMessage} from '../integrations/email'
 import {linkOrigin} from '../identity/magic-link'
 import {knowledgeRateLimit} from '../knowledge/feedback'
 import {activeSourceProjectSql} from '../knowledge/public-sources'
@@ -21,7 +21,7 @@ portalAccess.post('/:projectId/access/request',async c=>{
  const projectId=c.req.param('projectId'),body=await portalBody(c),email=typeof body.email==='string'?body.email.trim().toLowerCase():''
  if(email.length>320||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new HTTPException(400,{message:'Enter a valid email address'})
  const origin=linkOrigin(c.env)
- if(!origin||!emailConfigured(c.env))throw new HTTPException(503,{message:'Email sign-in is not configured'})
+ if(!origin||!emailConfigured(c.env))throw new HTTPException(503,{message:emailOffMessage})
  await knowledgeRateLimit(c.env,`portal-ip:${projectId}:${c.req.header('CF-Connecting-IP')||'unknown'}`,30)
  await knowledgeRateLimit(c.env,`portal-email:${projectId}:${email}`,5)
  const aliases=(await c.env.DB.prepare('SELECT slug FROM public_project_aliases WHERE project_id=?').bind(projectId).all<{slug:string}>()).results.map(row=>row.slug)

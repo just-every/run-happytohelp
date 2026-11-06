@@ -14,6 +14,8 @@ const relationships=await import('../src/modules/legacy-import/relationships.ts'
 const types=await import('../src/modules/legacy-import/types.ts')
 const {importPackage}=await import('./legacy-import/import-package.mjs')
 const {localTarget,remoteTarget}=await import('./legacy-import/target.mjs')
+const {indexImportedKnowledge}=await import('./legacy-import/knowledge-index.mjs')
+const {updateKnowledgeIndex}=await import('../src/modules/knowledge/canonicaliser.ts')
 const concurrency=Number(value('--concurrency')??1);if(!Number.isSafeInteger(concurrency)||concurrency<1||concurrency>16)throw new Error(usage)
 // Wrangler announces each remote connection on stdout; the command's stdout is its summary alone.
 process.env.WRANGLER_LOG??='warn'
@@ -22,14 +24,21 @@ const progress=line=>process.stderr.write(JSON.stringify({at:new Date().toISOStr
 // A killed run cannot delete its private index of package rows; the next run does.
 const {removeStaleDirectories}=await import('./legacy-import/scratch.mjs')
 const stale=await removeStaleDirectories();if(stale.length)progress({step:'removed-stale',directories:stale.length})
+let bundleProjects
 async function run(target){
  if(pkg)return importPackage(pkg,target,{planImport,importLegacy,tableOrder,relationships,types},{expectManifestSha256:value('--expect-manifest-sha256'),excludeTables,concurrency,progress})
- const bundle=JSON.parse(await readFile(file,'utf8'));if(target)return importLegacy(target.env,bundle)
+ const bundle=JSON.parse(await readFile(file,'utf8'));bundleProjects=bundle.tables?.projects;if(target)return importLegacy(target.env,bundle)
  const plan=await planImport(bundle);return {id:plan.id,...plan.summary}
 }
 if(!apply)console.log(JSON.stringify(await run(null),null,2))
 else{
  const target=remote?await remoteTarget({database:value('--database'),bucket:value('--bucket')}):await localTarget(value('--persist-to')??'.wrangler/state')
  progress({step:'target',target:target.label})
- try{console.log(JSON.stringify(await run(target),null,2))}finally{await target.close()}
+ try{
+  const summary=await run(target)
+  // Index imported knowledge before the workspace is used (see knowledge-index.mjs).
+  const projects=pkg?[summary.projectId]:(bundleProjects??[]).map(row=>String(row.id))
+  summary.knowledgeIndex=await indexImportedKnowledge(target,projects,updateKnowledgeIndex,{progress})
+  console.log(JSON.stringify(summary,null,2))
+ }finally{await target.close()}
 }

@@ -33,6 +33,8 @@ test('a legacy package is reviewed, imported and replayed through its command; t
   const args=['--file',file,'--apply','--persist-to',persist]
   const applied=await command(args),repeat=await command(args)
   assert.ok(applied.applied>0);assert.equal(repeat.applied,0);assert.equal(repeat.replayed,applied.applied)
+  // Imported knowledge is indexed by the command, so the first workspace request does no index rebuild.
+  assert.ok(applied.knowledgeIndex.sources>0);assert.equal(applied.knowledgeIndex.pending,0);assert.deepEqual(repeat.knowledgeIndex,{sources:0,pending:0})
   const damaged=join(scratch,'damaged');await cp(root,damaged,{recursive:true})
   const chunk=join(damaged,'rows-000000.json')
   await writeFile(chunk,(await readFile(chunk,'utf8'))+' ')
@@ -50,6 +52,9 @@ test('a legacy package is reviewed, imported and replayed through its command; t
   assert.ok(inbox.some(row=>row.id==='conv'))
   const state=await runtime.execute("SELECT state FROM ai_generations WHERE id='gen'; SELECT status FROM training_runs WHERE id='run'; SELECT state FROM billing_operations WHERE id='bill-op'; SELECT status FROM local_jobs WHERE id='job'; SELECT amount_minor FROM billing_ledger WHERE id='charge';")
   assert.match(state,/uncertain/);assert.match(state,/revoked/);assert.match(state,/123/)
+  // The imported owner opens the workspace and creates another one.
+  assert.equal((await call('/api/management/bootstrap?projectId=p',{token,status:200})).data.project.id,'p')
+  assert.equal((await call('/api/management/projects',{token,status:201,body:{name:'Imported owner email',allowed_origin:'https://widget.example'}})).data.name,'Imported owner email')
   const articles=await call('/api/knowledge/p/articles',{token,status:200})
   assert.ok(articles.data.some(article=>article.id==='article'))
   assert.equal((await call('/api/identity/setup')).data.available,false)

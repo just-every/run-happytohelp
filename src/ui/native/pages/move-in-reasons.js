@@ -13,3 +13,23 @@ Object.assign(reasons,{
  sla_policy_imported_inactive_explicit_activation_required:'The SLA policy is inactive. Review it in native SLA settings, activate its calendar, then deliberately activate the policy.',
  sla_policy_native_pause_and_order_review_required:'Review native policy order and pauses: pending pauses clocks; on-hold does not. No historical tickets gain clocks or alerts.',
 });
+
+// Zendesk pull: what stopped a pull or kept one record out of it, in plain words.
+Object.assign(reasons,{
+ ticket_size_limit:'This ticket is larger than one import can hold whole (960 KiB with every comment), so it was not imported. It is never split or shortened.',
+ source_identity_node_limit:'This record is too deeply detailed to check every identity in it, so it was not imported.',
+ user_size_limit:'This person’s record is too large to import.',organization_size_limit:'This organization’s record is too large to import.',ticket_field_size_limit:'This field definition is too large to import.',article_size_limit:'This article is too large to import.',
+ erased_identity_match:'This record holds a person whose data was erased here, so it is not imported again.',
+ zendesk_reconnect_required:'Reconnect Zendesk: its sign-in expired or was refused. The pull continues from where it stopped.',
+ zendesk_incremental_export_refused:'Zendesk refused the full export (HTTP 403). It needs a Zendesk admin’s connection; nothing is read another way.',
+ zendesk_request_refused:'Zendesk refused a read (HTTP 403). Check that the OAuth client allows the read and hc:read scopes.',
+ zendesk_request_failed:'Zendesk answered with an error. Resume the pull to continue from its last checkpoint.',
+ zendesk_refresh_failed:'Zendesk could not renew the sign-in just now. Resume the pull to try again.',
+ zendesk_unreachable:'Zendesk could not be reached. Resume the pull to continue from its last checkpoint.',
+ zendesk_response_invalid:'Zendesk returned something unexpected, so the pull stopped rather than guess.',
+ zendesk_export_stalled:'Zendesk’s organization export did not advance, so the pull stopped rather than loop.',
+ zendesk_batch_admission_failed:'A prepared batch could not enter review. Resume the pull to try again.',
+ batch_review_changed:'A batch changed after your approval. Review the pull again before importing it.',
+ zendesk_connection_changed:'The Zendesk connection changed while the pull was running. Connect the same Zendesk account, then resume.',
+ import_authority_revoked:'Your session ended or your access changed. Sign in again, then choose Resume pull.',
+});

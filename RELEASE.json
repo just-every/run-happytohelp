@@ -265,6 +265,10 @@
     {
       "id": "301_import_door.sql",
       "buyerSteps": "Back up D1 and R2 first. Apply once after 300_teammate_slack.sql and before serving the updated Worker. Existing Move in imports stay intact. Business grants remain closed until a Business-provisioned first owner claim with RER_IMPORT_DOOR=on opens the door; ordinary self-host does not set it."
+    },
+    {
+      "id": "302_move_in_zendesk_pull.sql",
+      "buyerSteps": "Back up D1 and R2 first. Apply once after 301_import_door.sql and before serving the updated Worker. Adds a source column to Move in runs (existing runs stay uploads) and new tables for the Zendesk OAuth connection, its single-use authorizations, pulls, staged source records, refusals and pulled batches. Tokens and verifiers are stored only as ciphertext under INTEGRATION_ENCRYPTION_KEY; keep that key with the deployment, since a restored connection without it must be reconnected. No connection or pull starts by migration, and Zendesk is never contacted until an owner or admin connects. The Knowledge import's Zendesk API-token path is removed: unset ZENDESK_EMAIL and ZENDESK_TOKEN, and import Zendesk articles through Move in."
     }
   ]
 }

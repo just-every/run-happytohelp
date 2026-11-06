@@ -10,25 +10,6 @@
 // - a glob is used only once a file is known to exist (zsh stops on a pattern with no match).
 import {prompt, secret, required} from './terminal-prompts';
 
-export const zendeskScript = `(
-${prompt('ZD', 'Zendesk address, the yourcompany in yourcompany.zendesk.com')}
-${prompt('ZD_EMAIL', 'Email of the Zendesk admin who made the API token')}
-${secret('ZD_TOKEN', 'Zendesk API token')}
-${required('ZD', 'ZD_EMAIL', 'ZD_TOKEN')}
-api() { curl -gfsS -u "$ZD_EMAIL/token:$ZD_TOKEN" "https://$ZD.zendesk.com/api/v2/$1"; }
-page='tickets.json?page[size]=50'; n=1
-while [ -n "$page" ]; do
-  api "$page" > page.json || { echo 'Zendesk refused the request: check the address, email and token.'; exit 1; }
-  jq -c '.tickets[]' page.json | while read -r t; do
-    api "tickets/$(jq -r .id <<<"$t")/comments.json" | jq -c --argjson t "$t" '{ticket: ($t + {comments: .comments})}'
-  done > tickets.ndjson
-  ids=$(jq -r '.ticket | .requester_id, .comments[].author_id' tickets.ndjson | sort -u | paste -sd, -)
-  { api "users/show_many.json?ids=$ids" | jq -c '.users[] | {user: .}'; cat tickets.ndjson; } > "zendesk-move-in-$n.ndjson"
-  page=$(jq -r 'if .meta.has_more then .links.next | sub("^.*/api/v2/"; "") else "" end' page.json); n=$((n+1))
-done
-rm -f page.json tickets.ndjson; ls zendesk-move-in-*.ndjson
-)`;
-
 export const helpScoutScript = `(
 ${prompt('HS_APP_ID', 'Help Scout App ID')}
 ${secret('HS_SECRET', 'Help Scout App Secret')}

@@ -15,6 +15,8 @@ import {runWorkflows,workflowEnvironment} from './modules/workflows/runtime'
 import {withWorkflowInvocation} from './modules/workflows/invocation'
 import {dispatchIntegrations} from './modules/api-integrations/dispatch'
 import {advanceImport,getWorkRun} from './modules/move-in/service'
+import {advancePull} from './modules/move-in/zendesk-source/job'
+import {PULL_JOB} from './modules/move-in/zendesk-source/notify'
 import {generationEffects} from './edition/ai/generation-effects'
 import {requestContextModel} from './edition/ai/customer-context-provider'
 import {isProjectActive} from './platform/project-status'
@@ -43,6 +45,7 @@ export async function consumeJob(job:Job,env:Env) {
  if(job.type!=='lead.process'&&!await isProjectActive(env,job.projectId))return
  if(job.type==='integrations'){await dispatchIntegrations(env,job.projectId);return}
  if(job.type==='move-in'){const run=await getWorkRun(env,job.id);if(run&&run.project_id===job.projectId)await advanceImport(env,run);return}
+ if(job.type===PULL_JOB){await advancePull(env,job.id,job.projectId);return}
  if(await consumeTriage(job,env))return
  if(await handleGeneration(env,job,generationEffects))return
  if(await consumeKnowledge(job,env))return

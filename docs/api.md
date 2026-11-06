@@ -665,3 +665,27 @@ explicit resend approval. Help Scout shows cursor, last pull, waiting events,
 erased skips and a manual pull. Secrets, destination URLs, provider error bodies
 and customer text never enter the catalog. Unattended scheduled pulls and
 automatic apply are not implemented; imports remain person-reviewed.
+
+## Move in: Zendesk connection and pull
+
+These routes take a workspace **owner or admin session** (the dashboard's
+session, or a session bearer token for the same person), not a workspace API
+token. They return JSON, never a token, code, verifier or link, except Connect,
+which returns the Zendesk consent page address to open. `PROJECT_ID` is the
+workspace and `PULL_ID` a pull. See [Move in](moving-in.md#connect-zendesk-and-pull-everything).
+
+| Method and path | What it does |
+| --- | --- |
+| `POST /api/move-in/projects/PROJECT_ID/zendesk/connect` | Body `{"subdomain":"acme","clientId":"…"}`. Returns `{"url":"https://acme.zendesk.com/oauth/authorizations/new?…"}` with `response_type=code`, `scope=read hc:read`, a single-use `state` bound to this session and workspace, and an S256 `code_challenge`. 409 when the workspace already holds another subdomain's history. |
+| `GET /api/move-in/zendesk/callback` | Zendesk's redirect target, `APP_ORIGIN` + this path. Checks `state` and the session, exchanges the code with its PKCE verifier (no client secret), stores the tokens encrypted, and redirects to Move in with `?zendesk=connected` (or `denied`, `expired`, `failed`, `conflict`). |
+| `GET /api/move-in/projects/PROJECT_ID/zendesk/connection` | `{connected, state, subdomain, clientKind:"public", scopes, accessExpiresAt, refreshExpiresAt}`; `state` is `connected`, `reconnect`, `disconnected` or `none`. |
+| `DELETE /api/move-in/projects/PROJECT_ID/zendesk/connection` | Removes the stored tokens and returns `{"disconnected":true,"revoke":{"outcome":"revoked","status":204}}`, where `outcome` is Zendesk's answer to revoking the current token: `revoked`, `refused`, `unreachable` or `not_held`. |
+| `POST /api/move-in/projects/PROJECT_ID/zendesk/pulls` | Starts a pull (201). One pull at a time per workspace (409). After an applied pull, a new one reads only what is new or changed. |
+| `GET /api/move-in/projects/PROJECT_ID/zendesk/pulls` | Your latest pulls. |
+| `GET /api/move-in/projects/PROJECT_ID/zendesk/pulls/PULL_ID` | `state` (`pulling`, `reviewing`, `ready`, `applying`, `applied`, `abandoned`), `phase`, `error`, `nextAt`, `progress`, `totals` (tickets seen, deleted, imported and refused; users; organizations; articles published, draft and held back), `refusals` by kind and source id with reasons, `batches` (each an ordinary Move in import: `runId`, `state`, `summary`, `covered`, `waiting`) and, when `ready`, the `fingerprint` to approve. |
+| `POST /api/move-in/projects/PROJECT_ID/zendesk/pulls/PULL_ID/approve` | Body `{"fingerprint":"…"}` from the current view (409 when stale). Binds every batch's reviewed fingerprint; each batch whose review refused nothing then applies in the background. Batches with refusals wait and use the ordinary import routes (`/api/move-in/projects/PROJECT_ID/imports/RUN_ID/apply`). |
+| `POST /api/move-in/projects/PROJECT_ID/zendesk/pulls/PULL_ID/resume` | After a stop: this session takes over and the pull continues from its checkpoint, resuming a stopped approved batch too. |
+| `POST /api/move-in/projects/PROJECT_ID/zendesk/pulls/PULL_ID/abandon` | Stops a pull before approval and removes what it staged. Batches already prepared stay as ordinary imports. |
+
+Each pulled batch is also listed, reviewed, resumed and undone through the
+existing `/api/move-in/projects/PROJECT_ID/imports` routes.

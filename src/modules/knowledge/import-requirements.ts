@@ -2,8 +2,8 @@ import type {Env} from '../../platform/env'
 import type {ImportPlatform} from './importers'
 
 /** The installation secrets each provider's import signs in with. */
-export const importSecrets:Record<ImportPlatform,string[]>={zendesk:['ZENDESK_EMAIL','ZENDESK_TOKEN'],freshdesk:['FRESHDESK_TOKEN'],intercom:['INTERCOM_TOKEN']}
-const names:Record<ImportPlatform,string>={zendesk:'Zendesk',freshdesk:'Freshdesk',intercom:'Intercom'}
+export const importSecrets:Record<ImportPlatform,string[]>={freshdesk:['FRESHDESK_TOKEN'],intercom:['INTERCOM_TOKEN']}
+const names:Record<ImportPlatform,string>={freshdesk:'Freshdesk',intercom:'Intercom'}
 const list=(values:string[])=>values.length>1?`${values.slice(0,-1).join(', ')} and ${values.at(-1)}`:values[0]
 
 export function missingImportSecrets(env:Env,platform:ImportPlatform){return importSecrets[platform].filter(name=>typeof env[name]!=='string'||!env[name])}
@@ -23,7 +23,7 @@ export function checkImportSecrets(env:Env,platform:ImportPlatform){
 /** What a refused provider page means for the person importing. */
 export function importPageFailure(platform:ImportPlatform,status:number,origin:string){
  const secrets=list(importSecrets[platform])
- if(status===401||status===403)return `${names[platform]} refused the sign-in (HTTP ${status}). Check ${secrets}${platform==='zendesk'?': ZENDESK_EMAIL must be the Zendesk user who created ZENDESK_TOKEN, and token access must be on':''}.`
+ if(status===401||status===403)return `${names[platform]} refused the sign-in (HTTP ${status}). Check ${secrets}.`
  if(status===404)return `Nothing was found at ${origin} (HTTP 404). Check ${platform==='intercom'?'the Intercom token':'the Subdomain'} and that the help center is turned on.`
  if(status===429)return `${names[platform]} asked us to slow down (HTTP 429). Wait a few minutes, then import again.`
  return `${names[platform]} answered HTTP ${status}. Try the import again later.`

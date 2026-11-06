@@ -28,6 +28,7 @@ const patterns=[
  [/^saved_reply_reference_not_content:(.*)$/,([,id])=>`A message used saved reply ${id}; the saved reply itself isn’t part of this file.`],
  [/^attachments_metadata_retained_bytes_not_imported:.*$/,()=>reasons.attachments_metadata_retained_bytes_not_imported],
  [/^source_metadata_only:(.*)$/,([,kind])=>`The ${sourceKinds[kind]||kind} is kept in your original file only.`],
+ [/^batch_stopped:(.*)$/,([,code])=>`An approved batch stopped: ${reasonLabel(code)} Resume the pull to continue.`],
 ];
 export const kindLabel=kind=>labels[kind]||String(kind).replaceAll('_',' ');
 export function reasonLabel(reason){

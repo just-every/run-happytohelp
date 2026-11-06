@@ -8,7 +8,7 @@ import {importContext} from './context'
 import {nativeStatementCount} from './targets'
 import {publicationContact,type PublicationContact} from './publication'
 import {objectKey,updateRun} from './run-store'
-import {LIMITS,MAPPING_VERSION,recordKey,type Run,type PreparedMapping,type SourceClaim} from './types'
+import {LIMITS,MAPPING_VERSION,recordKey,runLimits,type Run,type PreparedMapping,type SourceClaim} from './types'
 /** The words a report link shows for an imported record: its subject, name or title. */
 function targetLabel(value:any){const t=value?.tables??{},label=t.companies?.[0]?.name||t.move_in_conversations?.[0]?.subject||t.contacts?.[0]?.name||t.contacts?.[0]?.email||t.knowledge_articles?.[0]?.title||t.macros?.[0]?.title||t.knowledge_categories?.[0]?.name||t.workspace_tags?.[0]?.name||t.workflow_rules?.[0]?.name||t.sla_policies?.[0]?.name||t.workflow_calendars?.[0]?.name||t.ticket_groups?.[0]?.name||t.ticket_views?.[0]?.name||t.ticket_fields?.[0]?.name||(t.request_forms?.[0]?JSON.parse(t.request_forms[0].config_json).title:null);return typeof label==='string'&&label.trim()?label.trim().slice(0,120):undefined}
 export interface ChildPlan {ordinal:number;key:string;fingerprint:string;total:number;bytes:number}
@@ -34,11 +34,11 @@ export async function retainReview(env:Env,run:Run,source:SourceBundle,prepared:
   diagnostics.push({severity:'error',code:'REJECTED',message:rejection,kind:record.kind,sourceId:record.sourceId,location:record.location})
  }
  const map=(record:any)=>{const key=recordKey(record);return {effects:prepared.rejections.has(key)?[]:prepared.effects.get(key)??[],...(prepared.rejections.has(key)?{rejection:prepared.rejections.get(key)}:{}),unmapped:(prepared.omissions.get(key)??[]).map(reason=>({reason}))}}
- const context=importContext(env,run),ranges:[number,number][]=[]
- const childPlan=(records:typeof source.records)=>{const plan=buildImportPlan({records,artifacts:source.artifacts,diagnostics:[]},{version:MAPPING_VERSION,map},context),body=canonicalJson(plan),bytes=Buffer.byteLength(body);if(bytes>LIMITS.planBytes)throw new Error('review_plan_size_limit');return {plan,body,bytes}}
+ const context=importContext(env,run),ranges:[number,number][]=[],limits=runLimits(run)
+ const childPlan=(records:typeof source.records)=>{const plan=buildImportPlan({records,artifacts:source.artifacts,diagnostics:[]},{version:MAPPING_VERSION,map},context),body=canonicalJson(plan),bytes=Buffer.byteLength(body);if(bytes>limits.planBytes)throw new Error('review_plan_size_limit');return {plan,body,bytes}}
  let cursor=0
  do{if(batches.length>=LIMITS.planChildren)throw new Error('review_partition_limit');const batchRecords:typeof source.records=[];let size=0,nativeTotal=0
-  while(cursor<records.length&&batchRecords.length<LIMITS.planBatch){const record=records[cursor],nativeStatements=map(record).effects.reduce((n,effect)=>n+nativeStatementCount(effect.targetKind,effect.value as any),0),cost=Buffer.byteLength(canonicalJson(record))*2+Buffer.byteLength(canonicalJson(map(record)))+2048;if(cost>LIMITS.planContentBytes)throw new Error('record_review_size_limit');if(batchRecords.length&&(size+cost>LIMITS.planContentBytes||nativeTotal+nativeStatements>LIMITS.nativeStatements||nativeStatements>40))break;batchRecords.push(record);size+=cost;nativeTotal+=nativeStatements;cursor++;if(nativeStatements>40)break}
+  while(cursor<records.length&&batchRecords.length<LIMITS.planBatch){const record=records[cursor],nativeStatements=map(record).effects.reduce((n,effect)=>n+nativeStatementCount(effect.targetKind,effect.value as any),0),cost=Buffer.byteLength(canonicalJson(record))*2+Buffer.byteLength(canonicalJson(map(record)))+2048;if(cost>limits.planContentBytes)throw new Error('record_review_size_limit');if(batchRecords.length&&(size+cost>LIMITS.planContentBytes||nativeTotal+nativeStatements>LIMITS.nativeStatements||nativeStatements>40))break;batchRecords.push(record);size+=cost;nativeTotal+=nativeStatements;cursor++;if(nativeStatements>40)break}
   const {plan,bytes}=childPlan(batchRecords);ranges.push([cursor-batchRecords.length,cursor])
   batches.push({ordinal:batches.length,key:objectKey(run,`plans/${plan.fingerprint}`),fingerprint:plan.fingerprint,total:plan.entries.length,bytes})
   for(const key of Object.keys(counts).filter(key=>key!=='byKind'))counts[key]+=plan.counts[key as keyof typeof plan.counts] as number

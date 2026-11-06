@@ -1,0 +1,90 @@
+import assert from 'node:assert/strict'
+import {createHash} from 'node:crypto'
+// A synthetic Zendesk account at the network edge: OAuth (public PKCE client),
+// incremental cursor exports, cursor-paged comments, show_many and Help Center.
+// No real account, customer or name; every value here is invented.
+export const SUBDOMAIN='synthetic-hh',CLIENT_ID='synthetic-hh-public-client',ORIGIN=`https://${SUBDOMAIN}.zendesk.com`
+export const PATH_TOKEN='synthetic-hh-path-token-9f8e7d',QUERY_TOKEN='synthetic-hh-query-token-1a2b3c'
+const at=day=>`2024-01-${String(day).padStart(2,'0')}T00:00:00Z`,stamp=(day,second)=>`2024-01-${String(day).padStart(2,'0')}T${String(Math.floor(second/3600)%24).padStart(2,'0')}:${String(Math.floor(second/60)%60).padStart(2,'0')}:${String(second%60).padStart(2,'0')}Z`
+const inline=id=>({id,file_name:'inline.png',content_type:'image/png',size:68,inline:true,content_url:`${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,mapped_content_url:`${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,url:`${ORIGIN}/api/v2/attachments/${id}.json`,thumbnails:[]})
+const comment=(id,author,day,text,visible=true,extra={})=>({id,type:'Comment',author_id:author,body:text,html_body:`<div class="zd-comment"><p>${text}</p></div>`,plain_body:text,public:visible,attachments:[],audit_id:id+50000,via:{channel:'email',source:{from:{},to:{},rel:null}},created_at:typeof day==='string'?day:at(day),metadata:{system:{client:'synthetic-hh-client'},custom:{}},...extra})
+const ticket=(id,requester,status,subject,extra={})=>({url:`${ORIGIN}/api/v2/tickets/${id}.json`,id,external_id:null,via:{channel:'email',source:{from:{},to:{},rel:null}},created_at:at(2),updated_at:at(3),generated_timestamp:1704250000+id,type:null,subject,raw_subject:subject,description:subject,priority:null,status,recipient:null,requester_id:requester,submitter_id:requester,assignee_id:2,organization_id:null,group_id:null,collaborator_ids:[],follower_ids:[],email_cc_ids:[],forum_topic_id:null,problem_id:null,has_incidents:false,is_public:true,due_at:null,tags:['synthetic-hh-tag'],custom_fields:[{id:70,value:null},{id:72,value:null}],satisfaction_rating:null,sharing_agreement_ids:[],custom_status_id:null,fields:[],followup_ids:[],ticket_form_id:null,brand_id:1,allow_channelback:false,allow_attachments:true,from_messaging_channel:false,...extra})
+const user=(id,role,extra={})=>({id,url:`${ORIGIN}/api/v2/users/${id}.json`,name:`synthetic-hh person ${id}`,email:`synthetic-hh-${id}@example.test`,created_at:at(1),updated_at:at(4),last_login_at:at(5),time_zone:'UTC',locale:'en-US',role,verified:true,active:true,organization_id:null,phone:null,photo:{id:id+900,content_url:`${ORIGIN}/system/photos/${id}/avatar.png?token=${QUERY_TOKEN}`,thumbnails:[]},tags:[],user_fields:{},...extra})
+/** At least 400 KiB of sanitized JSON in 300 comments, public and private mixed. */
+export function largeComments(){return Array.from({length:300},(_,i)=>comment(40000+i,i%2?2:4,stamp(6,i*60),`synthetic-hh long history ${i} `+'lorem ipsum dolor sit amet '.repeat(16),i%3!==2))}
+export function fakeZendesk(){
+ const state={authorizations:new Map(),grants:new Map(),access:new Set(),refresh:new Set(),tokenRequests:[],requests:[],throttled:false,issued:0,repeat:false}
+ const users=[user(1,'end-user',{organization_id:7}),user(2,'agent'),user(3,'end-user'),user(4,'end-user'),user(5,'end-user')]
+ const tickets={
+  101:{record:ticket(101,1,'open','synthetic-hh open order question',{custom_fields:[{id:70,value:true},{id:72,value:null}]}),comments:[comment(10101,1,2,'synthetic-hh where is my order'),comment(10102,2,3,'synthetic-hh internal check',false)]},
+  // Archived: closed long ago. Listing Tickets omits these; the incremental export returns them.
+  102:{record:ticket(102,3,'closed','synthetic-hh archived refund'),comments:[comment(10201,3,2,'synthetic-hh refund please'),comment(10202,2,3,'synthetic-hh refunded on page two')]},
+  103:{record:ticket(103,3,'deleted','synthetic-hh deleted spam'),comments:[]},
+  104:{record:ticket(104,4,'solved','synthetic-hh very long thread'),comments:largeComments()},
+  105:{record:ticket(105,5,'pending','synthetic-hh screenshot attached'),comments:[comment(10501,5,2,`synthetic-hh see screenshot ${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,true,{attachments:[inline(70501)]})]},
+  106:{record:ticket(106,1,'new','synthetic-hh follow-up after the move'),comments:[comment(10601,1,8,'synthetic-hh one more question'),comment(10602,2,8,'synthetic-hh answered',true)]},
+ }
+ const field=(id,type,title,extra={})=>({url:`${ORIGIN}/api/v2/ticket_fields/${id}.json`,id,type,title,raw_title:title,description:'',raw_description:'',position:id,active:true,required:false,collapsed_for_agents:false,regexp_for_validation:null,title_in_portal:title,raw_title_in_portal:title,visible_in_portal:true,editable_in_portal:true,required_in_portal:false,tag:null,created_at:at(1),updated_at:at(1),removable:true,key:null,agent_description:null,agent_can_edit:true,...extra})
+ const fields=[field(70,'checkbox','Synthetic flag'),field(71,'subject','Subject',{removable:false}),field(72,'text','Synthetic agent note',{visible_in_portal:false,editable_in_portal:false})]
+ const article=(id,title,draft,segment)=>({id,url:`${ORIGIN}/api/v2/help_center/en-us/articles/${id}.json`,html_url:`https://${SUBDOMAIN}.zendesk.com/hc/en-us/articles/${id}`,author_id:2,comments_disabled:false,draft,promoted:false,position:0,vote_sum:0,vote_count:0,section_id:900,created_at:at(1),updated_at:at(2),name:title,title,source_locale:'en-us',locale:'en-us',outdated:false,outdated_locales:[],edited_at:at(2),user_segment_id:segment,user_segment_ids:segment===null?[]:[segment],permission_group_id:1,content_tag_ids:[],label_names:[],body:`<p>${title} body</p>`})
+ const articles=[article(801,'Synthetic public guide',false,null),article(802,'Synthetic draft guide',true,null),article(803,'Synthetic agents-only guide',false,5)]
+ const organizations=[{id:7,url:`${ORIGIN}/api/v2/organizations/7.json`,name:'synthetic-hh workshop',shared_tickets:false,shared_comments:false,external_id:null,created_at:at(1),updated_at:at(1),domain_names:['synthetic-hh.example'],details:'',notes:'',group_id:null,tags:[],organization_fields:{}}]
+ const json=(body,status=200,headers={})=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json',...headers}})
+ const bearer=request=>{const value=request.headers.get('Authorization')?.replace(/^Bearer /,'');assert.ok(value&&state.access.has(value),'Zendesk read with a live rotated access token');return value}
+ const cursorPage=(rows,request,key,size=100)=>{const url=new URL(request.url),after=url.searchParams.get('page[after]'),start=after?Number(after):0,page=rows.slice(start,start+size),more=start+size<rows.length;return json({[key]:page,meta:{has_more:more,after_cursor:more?String(start+size):null,before_cursor:null},links:{next:more?`${ORIGIN}/elsewhere`:null}})}
+ const grant=(lifetime)=>{const access=`synthetic-access-${++state.issued}`,refresh=`synthetic-refresh-${state.issued}`;state.access.add(access);state.refresh.add(refresh);return {access_token:access,refresh_token:refresh,token_type:'bearer',scope:'read hc:read',expires_in:lifetime,refresh_token_expires_in:7776000}}
+ async function handler(request){
+  const url=new URL(request.url)
+  assert.equal(url.origin,ORIGIN,'every request goes to the connected subdomain')
+  state.requests.push({method:request.method,path:url.pathname,search:url.search})
+  if(url.pathname==='/oauth/tokens'){
+   assert.equal(request.method,'POST')
+   const body=await request.json();state.tokenRequests.push(body)
+   assert.equal(body.client_secret,undefined,'a public client sends no secret');assert.equal(body.client_id,CLIENT_ID)
+   assert.equal(body.expires_in,172800);assert.equal(body.refresh_token_expires_in,7776000)
+   if(body.grant_type==='authorization_code'){
+    const issued=state.grants.get(body.code);assert.ok(issued,'known authorization code');state.grants.delete(body.code)
+    assert.equal(body.redirect_uri,issued.redirect_uri)
+    assert.equal(createHash('sha256').update(body.code_verifier).digest('base64url'),issued.challenge,'verifier matches the S256 challenge')
+    // A short first lifetime makes the pull refresh before it reads.
+    return json(grant(60),201)
+   }
+   assert.equal(body.grant_type,'refresh_token');assert.ok(state.refresh.delete(body.refresh_token),'refresh token is single use')
+   state.access.clear();return json(grant(172800),201)
+  }
+  assert.ok(request.method==='GET'||request.method==='DELETE'&&url.pathname==='/api/v2/oauth/tokens/current.json',`${request.method} ${url.pathname}`)
+  const token=bearer(request)
+  if(request.method==='DELETE'){state.access.delete(token);return new Response(null,{status:204})}
+  if(url.pathname==='/api/v2/ticket_fields.json')return cursorPage(fields,request,'ticket_fields')
+  if(url.pathname==='/api/v2/help_center/articles.json')return cursorPage(articles,request,'articles')
+  if(url.pathname==='/api/v2/incremental/organizations.json'){const start=Number(url.searchParams.get('start_time'));return json(start===0?{organizations,end_time:1704100000,end_of_stream:true,next_page:null,count:1}:{organizations:[],end_time:start,end_of_stream:true,next_page:null,count:0})}
+  if(url.pathname==='/api/v2/incremental/users/cursor.json'){if(url.searchParams.get('start_time')==='0')return json({users,after_cursor:'users-after-1',before_cursor:null,end_of_stream:true});assert.equal(url.searchParams.get('cursor'),'users-after-1');return json({users:[],after_cursor:'users-after-1',end_of_stream:true})}
+  if(url.pathname==='/api/v2/incremental/tickets/cursor.json'){
+   assert.equal(url.searchParams.get('support_type_scope'),'all');assert.equal(url.searchParams.get('exclude_deleted'),null)
+   const cursor=url.searchParams.get('cursor')
+   if(url.searchParams.get('start_time')==='0')return json({tickets:[101,102,103].map(id=>tickets[id].record),after_cursor:'tickets-after-1',end_of_stream:false})
+   if(cursor==='tickets-after-1')return json({tickets:[104,105].map(id=>tickets[id].record),after_cursor:'tickets-after-2',end_of_stream:true})
+   assert.equal(cursor,'tickets-after-2');return json({tickets:state.repeat?[tickets[106].record]:[],after_cursor:'tickets-after-3',end_of_stream:true})
+  }
+  const comments=url.pathname.match(/^\/api\/v2\/tickets\/(\d+)\/comments\.json$/)
+  if(comments){
+   assert.equal(url.searchParams.get('include_inline_images'),'true')
+   if(comments[1]==='101'&&!state.throttled){state.throttled=true;return new Response('{"error":"TooManyRequests"}',{status:429,headers:{'Retry-After':'1','Content-Type':'application/json'}})}
+   const entry=tickets[comments[1]];if(!entry||entry.record.status==='deleted')return json({error:'RecordNotFound'},404)
+   return cursorPage(entry.comments,request,'comments',comments[1]==='102'?1:100)
+  }
+  const many=url.pathname.match(/^\/api\/v2\/(users|organizations)\/show_many\.json$/)
+  if(many){const wanted=new Set(url.searchParams.get('ids').split(',').map(Number)),source=many[1]==='users'?users:organizations;return json({[many[1]]:source.filter(row=>wanted.has(row.id))})}
+  return json({error:'InvalidEndpoint'},404)
+ }
+ /** What Zendesk's consent page does once the admin approves: the code goes back to the callback. */
+ function consent(authorizeUrl){
+  const url=new URL(authorizeUrl),p=url.searchParams
+  assert.equal(url.origin,ORIGIN);assert.equal(url.pathname,'/oauth/authorizations/new')
+  assert.equal(p.get('response_type'),'code');assert.equal(p.get('client_id'),CLIENT_ID);assert.equal(p.get('scope'),'read hc:read');assert.equal(p.get('code_challenge_method'),'S256')
+  assert.match(p.get('code_challenge'),/^[A-Za-z0-9_-]{43}$/);assert.match(p.get('state'),/^[A-Za-z0-9_-]{43}$/)
+  const code=`synthetic-code-${state.grants.size+1}`;state.grants.set(code,{challenge:p.get('code_challenge'),redirect_uri:p.get('redirect_uri')})
+  return {code,state:p.get('state'),redirectUri:p.get('redirect_uri')}
+ }
+ return {handler,consent,state,tickets}
+}

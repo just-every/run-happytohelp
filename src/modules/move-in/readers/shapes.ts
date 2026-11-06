@@ -72,11 +72,11 @@ const escape=(value:string)=>value.replace(/~/g,'~0').replace(/\//g,'~1')
 export const SHAPE_NODE_LIMIT=4096
 /** Depth is bounded by the static, acyclic schema; work and diagnostics also have
  * explicit per-record caps. Unknown/opaque subtrees are classified at their root. */
-export function auditShape(vendor:Vendor,kind:string,payload:unknown):ShapeAudit {
+export function auditShape(vendor:Vendor,kind:string,payload:unknown,nodeLimit:number=SHAPE_NODE_LIMIT):ShapeAudit {
  const result:ShapeAudit={complete:true,issues:[],people:[],references:[],uninterpreted:[],nodes:0},shape=recordShapes[`${vendor}/${vendor==='helpscout'&&kind.startsWith('metadata:')?(kind.endsWith('/page')?'$page':kind.endsWith('/_links')?'$links':/\/(pages|count)$/.test(kind)?'$count':kind):kind}`]
  let nodes=0,stopped=false
  const issue=(code:ShapeIssue['code'],path:string,reason:string)=>{result.complete=false;if(result.issues.length<128)result.issues.push({code,path,reason});else if(result.issues.length===128)result.issues.push({code:'source_shape_limit',path,reason:'field_diagnostics_truncated'})}
- const count=(path:string)=>{result.nodes=++nodes;if(nodes<=SHAPE_NODE_LIMIT)return true;result.complete=false;result.exhausted=path;stopped=true;return false}
+ const count=(path:string)=>{result.nodes=++nodes;if(nodes<=nodeLimit)return true;result.complete=false;result.exhausted=path;stopped=true;return false}
  if(!shape){issue('unsupported_source_field','','record_kind_not_understood');result.uninterpreted.push(payload);return result}
  function visit(value:unknown,schema:Shape,path:string){
   if(stopped)return

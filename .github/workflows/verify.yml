@@ -155,7 +155,7 @@ jobs:
           - name: import-and-reports
             browser: false
             commands: |
-              node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs tests/journeys/move-in-custody.mjs tests/journeys/move-in-erasure.mjs tests/journeys/reports.mjs tests/journeys/legacy.mjs tests/journeys/public.mjs
+              node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs tests/journeys/move-in-custody.mjs tests/journeys/move-in-erasure.mjs tests/journeys/move-in-zendesk-pull.mjs tests/journeys/reports.mjs tests/journeys/legacy.mjs tests/journeys/public.mjs
           - name: support-workflow-browser
             browser: true
             commands: |

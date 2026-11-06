@@ -18,12 +18,48 @@ Unsupported records and fields are reported rather than turned into guessed data
 
 ## Zendesk
 
+There are two ways in. **Connect Zendesk** reads the whole account for you: every ticket, archived ones included, with every comment, the people and organizations in them, ticket fields and Help Center articles. **Upload files** takes an account JSON export or packed offline files. Both go through the same review, approval, undo and erasure.
+
+### Connect Zendesk and pull everything
+
+This uses Zendesk OAuth with a **Public** client, so no client secret exists anywhere and the sign-in is held only in this HappyToHelp, encrypted with its integration key. Zendesk API tokens are not used.
+
+1. In Zendesk **Admin Center**, open **Apps and integrations → APIs → OAuth clients** and choose **Add OAuth client**.
+   - **Name:** anything, for example *HappyToHelp move in*.
+   - **Identifier:** keep the suggested one, or choose your own. You enter it in HappyToHelp.
+   - **Client kind:** **Public**. Public clients use PKCE.
+   - **Redirect URLs:** `<your HappyToHelp origin>/api/move-in/zendesk/callback`, for example `https://support.example.com/api/move-in/zendesk/callback`. The Move in page shows yours, ready to copy.
+   - **Allowed scopes:** **read** and **hc:read** only.
+2. In HappyToHelp, open **Settings → Move in existing support history**, keep **Zendesk** selected, and enter your Zendesk subdomain (`acme` for `acme.zendesk.com`) and the client's **Identifier**. Choose **Connect**. Zendesk asks a Zendesk admin to allow read access, then returns you to Move in. The full export needs an admin's connection.
+3. Choose **Pull everything**. The pull runs in the background; you can leave the page. It shows what it is reading, then per kind: tickets seen, deleted in Zendesk, imported and refused; people; organizations; and articles to publish, drafts and held back. Refused records are listed by Zendesk id with the reason.
+4. When every batch is reviewed, choose **Approve and import**. That one approval covers the whole pull and binds each batch's reviewed plan. Every batch whose review refused nothing then imports by itself, one after another. A batch with refused records waits, showing its reasons: open it from **Batches** to review and approve it like an uploaded file, or leave it. **Resume pull** continues from the last checkpoint after a stop, for example after your session ended.
+
+What comes across:
+- Tickets come from Zendesk's incremental ticket export, which includes archived tickets (ordinary ticket listing leaves them out). Each ticket's comments are read page by page with inline images listed. Public comments become messages and private comments become private notes, in source order with their authors.
+- Deleted tickets are recorded as deleted in Zendesk. They are neither imported nor counted as refused.
+- People who are end users become contacts. Agents and admins stay source authors only: no staff access is created. A person's last sign-in and last edit times are left out, so an unchanged person is recognised as the same record in a later pull.
+- Organizations become companies. Ticket field definitions are reviewed in a batch of their own; a ticket's value for a field this importer cannot recreate stays in its source and is named in the review.
+- Public published articles publish; drafts stay drafts. Articles for a restricted audience (a user segment) are held back: they create no article, category, link, search or AI answer content.
+- Attachment and inline-image metadata is kept, named as an omission; the files themselves are not imported yet. Download links and their tokens are removed, and user details, queries and fragments are stripped from links before anything is stored.
+- An import is inert, as above: nothing is sent, assigned, notified or answered by AI, and imported history stays out of Reports.
+
+Limits and pace:
+- A batch is an ordinary Move in import of at most 2 MiB and 5,000 records, carrying the people, organizations and field definitions its tickets need. A ticket imports whole as one conversation in one import, up to 960 KiB of cleaned JSON and 750 native rows (about 370 public or 745 private comments). A larger ticket is refused by id with its reason; it is never split, shortened or dropped silently. Uploaded files keep their 2 MiB and 128 KiB-per-record limits.
+- Zendesk allows 10 incremental export requests a minute; the pull keeps to that and waits as long as Zendesk's `Retry-After` asks. Waiting is scheduled, not slept. A Zendesk refusal of the incremental export (HTTP 403) stops the pull with that reason; nothing is read another way.
+- The sign-in is renewed shortly before it expires (access lasts up to 48 hours, renewal up to 90 days). If Zendesk refuses the renewal, Move in shows **Reconnect Zendesk** and does not retry by itself.
+- Pulling again later starts where the last applied pull stopped, so it reads only tickets, people and organizations that are new or changed in Zendesk. Each Zendesk id still maps to one conversation. A ticket that changed in Zendesk after it was imported is refused by id (`source_changed_conflict`) rather than imported twice; undo its batch and pull again to take the new version.
+- One workspace holds one Zendesk account. Once it holds Zendesk history, connecting a different subdomain is refused; use another workspace for another account.
+- **Disconnect** removes the stored sign-in and asks Zendesk to revoke it, reporting Zendesk's answer. If Zendesk does not revoke it, remove the OAuth client in Admin Center.
+- Hosted pulls need the Workers Paid plan's D1 budget, as every import does.
+
+### Upload Zendesk files
+
 Use the documented [account JSON export](https://support.zendesk.com/hc/en-us/articles/4408886165402-Exporting-data-to-a-JSON-CSV-or-XML-file), with one singular wrapped object per nonblank line, for example `{"user":{...}}` or `{"ticket":{...}}`. Ticket records must contain the complete comments array; a ticket description is not a substitute. Include the users needed to identify requesters and comment authors. Each comment needs its source ID, original creation timestamp and explicit `public` boolean. Public comments become messages; private comments become private notes.
 
 Saved replies and Help Center articles are separate API supplements, not part of a claim that the account export contains every supported kind:
 
 - Upload [Macros API](https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/) records as `{"macro":{...}}`. One reply action, priority, built-in status and add/remove tags translate to native macros. Requester, assignee, current-user, ticket-title/link and organization-name placeholders translate to native placeholders; unknown expressions stay visible in review and block sending until resolved. Private replies become native notes. Restricted macros, template logic and placeholders inside HTML attributes are refused before markup conversion can discard them. Unsupported actions are listed individually. Import runs no actions: review the native macro preview before manually applying it; reply text becomes a composer draft and is never sent automatically. Repeat/undo also compare the macro action version and retain later native edits.
-- Upload [Articles API](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/) records as `{"article":{...}}`. The `draft` flag and audience fields must be explicit. Public published articles stay published; drafts stay drafts. Restricted or unknown-audience articles are rejected.
+- Upload [Articles API](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/) records as `{"article":{...}}`. The `draft` flag and audience fields must be explicit. Public published articles stay published; drafts stay drafts. Restricted articles are held back; unknown-audience articles are rejected.
 
 A minimal file with one saved reply and one article, one record per line. The reply text is the `comment_value` action's `value`, as plain text or HTML:
 

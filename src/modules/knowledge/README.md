@@ -38,14 +38,15 @@ two alone is refused with a sentence naming the missing setting. Supplied
 documents, Apify datasets and conversation messages can also be ingested.
 Article/category authoring includes hierarchy, cycle checks, ordering, summaries,
 publication and multiple categories. Public reads and search expose published
-articles only. Native Intercom, Freshdesk and Zendesk imports use a durable job
+articles only. Native Intercom and Freshdesk imports use a durable job
 per provider page and stable project/provider identities. HTML is converted in
 Workers; executable elements are removed. Repeating an import updates its records.
+Zendesk Help Center articles import through Move in's Zendesk connection, where
+restricted articles are held back and drafts stay drafts.
 
 Optional configuration: `APIFY_TOKEN`, `APIFY_CRAWLER_ACTOR_ID`,
 `OPENAI_API_KEY`, `KNOWLEDGE_EMBEDDING_MODEL`, `QDRANT_URL` (HTTPS),
-`QDRANT_API_KEY`, `INTERCOM_TOKEN`, `FRESHDESK_TOKEN`, `ZENDESK_EMAIL`,
-`ZENDESK_TOKEN`. Missing selected configuration is an explicit error. Credentials
+`QDRANT_API_KEY`, `INTERCOM_TOKEN`, `FRESHDESK_TOKEN`. Missing selected configuration is an explicit error. Credentials
 are never stored in import jobs. Publication and provider execution require the
 edition's operating authorization.
 

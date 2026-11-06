@@ -6,9 +6,10 @@ import { archiveChunk } from './readers/archive'
 import { parseFile,indexFile } from './readers/records'
 import { assertAuthority } from './context'
 import {approveReview,advanceBatch} from './batches'
-import { LIMITS,type Run } from './types'
+import { LIMITS,runLimits,type Run } from './types'
 import {getRun,getWorkRun,objectKey,updateRun} from './run-store'
 import {preparePlan} from './plan'
+import {notifyPull} from './zendesk-source/notify'
 export {getRun,getWorkRun} from './run-store'
 export async function enqueue(env:Env,run:Run){await env.JOBS.send({type:'move-in',id:run.id,projectId:run.project_id})}
 async function unpack(env:Env,run:Run){const original=await env.FILES.get(run.object_key);if(!original)throw new Error('original_upload_missing');const chunk=await archiveChunk(run.filename,new Uint8Array(await original.arrayBuffer()),run.cursor),files=chunk.files,descriptors=JSON.parse(run.files_json),written:string[]=[]
@@ -17,13 +18,13 @@ async function unpack(env:Env,run:Run){const original=await env.FILES.get(run.ob
 }
 async function parseChunk(env:Env,run:Run){const files=JSON.parse(run.files_json),file=files[run.file_index];if(!file){await updateRun(env,run,{state:'planning',cursor:0});return}
  const object=await env.FILES.get(file.key);if(!object)throw new Error('source_file_missing');const bytes=new Uint8Array(await object.arrayBuffer());if(sha256(bytes)!==file.sha256)throw new Error('source_file_changed')
- const chunk=[...parseFile({name:file.name,bytes},run.vendor,run.cursor,LIMITS.parseBatch,file.index)],statements:D1PreparedStatement[]=[],diagnostics=JSON.parse(run.diagnostics_json)
+ const chunk=[...parseFile({name:file.name,bytes},run.vendor,run.cursor,LIMITS.parseBatch,file.index,runLimits(run).recordBytes)],statements:D1PreparedStatement[]=[],diagnostics=JSON.parse(run.diagnostics_json)
  for(const item of chunk){if(item.diagnostic)diagnostics.push(item.record?item.diagnostic:{...item.diagnostic,kind:'invalid-record'});if(item.record)statements.push(env.DB.prepare('INSERT INTO move_in_records(run_id,ordinal,record_json,serialized) VALUES(?,?,?,?)').bind(run.id,run.parsed_total+statements.length,JSON.stringify(item.record),(item as any).serialized))}
  if(run.parsed_total+statements.length>LIMITS.records)throw new Error('export_record_limit')
  await updateRun(env,run,{cursor:chunk.length===LIMITS.parseBatch?run.cursor+chunk.length:0,file_index:chunk.length===LIMITS.parseBatch?run.file_index:run.file_index+1,parsed_total:run.parsed_total+statements.length,diagnostics_json:JSON.stringify(diagnostics)},statements)
 }
 export async function approve(env:Env,run:Run,fingerprint:string){await requireAuditedCustody(env,run);await approveReview(env,run,fingerprint);await enqueue(env,run)}
 export async function advanceImport(env:Env,run:Run){await assertAuthority(env,run);if(run.error||!['uploaded','parsing','planning','applying','undoing'].includes(run.state))return
- try{await requireAuditedCustody(env,run);if(run.state==='uploaded')await unpack(env,run);else if(run.state==='parsing')await parseChunk(env,run);else if(run.state==='planning')await preparePlan(env,run);else await advanceBatch(env,run)}catch(error){const code=error instanceof Error?error.message:'import_failed';await assertAuthority(env,run);await updateRun(env,run,{error:code.startsWith('D1_')?'Import database operation failed':code.slice(0,200)});return}
- const current=await getWorkRun(env,run.id);if(current&&!current.error&&['uploaded','parsing','planning','applying','undoing'].includes(current.state))await enqueue(env,current)
+ try{await requireAuditedCustody(env,run);if(run.state==='uploaded')await unpack(env,run);else if(run.state==='parsing')await parseChunk(env,run);else if(run.state==='planning')await preparePlan(env,run);else await advanceBatch(env,run)}catch(error){const code=error instanceof Error?error.message:'import_failed';await assertAuthority(env,run);await updateRun(env,run,{error:code.startsWith('D1_')?'Import database operation failed':code.slice(0,200)});await notifyPull(env,run);return}
+ const current=await getWorkRun(env,run.id);if(current&&!current.error&&['uploaded','parsing','planning','applying','undoing'].includes(current.state))await enqueue(env,current);else await notifyPull(env,current??run)
 }

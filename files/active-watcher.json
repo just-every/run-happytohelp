@@ -1,0 +1,9 @@
+{
+  "pid": 11825,
+  "run_id": 42134997491,
+  "head": "b78e6eae4185b4ec5ca935340a6b5cc43d8bd084",
+  "active": false,
+  "exit": 0,
+  "ended_at": "2026-11-06T00:26:47.730131Z",
+  "reason": "bounded observation budget reserved"
+}

@@ -1,0 +1,8 @@
+{
+  "repository": "runeditrun/platform",
+  "head": "b78e6eae4185b4ec5ca935340a6b5cc43d8bd084",
+  "source_path": "src/business/bounded/review.ts",
+  "sha256": "1ad920deee169c3f21f609be28ed6e7cf3225b2a96429311f7dd00870f319f1b",
+  "scope": "type declarations only; exact source attachment; no native implementation or qualification",
+  "adoption": "actual destination code supplies and installs this integration; default absent"
+}

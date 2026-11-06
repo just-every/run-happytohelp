@@ -1,5 +1,5 @@
 {
-  "intake": "2026-11-05T23:50:00Z",
+  "intake": "latest post23:59Z update, received during2026-11-06 active task",
   "base": {
     "source": "c0539b0001d71a6246c755e100c47141f525bf5e",
     "frozen_gate": "PASS",
@@ -13,7 +13,19 @@
       "COMPLETE full-history publication PASS",
       "guarded integration",
       "accepted264805b3 donor reconciliation"
-    ]
+    ],
+    "integrator": {
+      "status": "BLOCKED",
+      "terminal": "2026-11-05T23:59:12Z",
+      "head": null,
+      "pushed": false,
+      "conflicts": [
+        "export-task.mjs bounded sender/completion versus sweep catch-up",
+        "task-state.mjs bounded grant versus async signer",
+        "generated copies"
+      ],
+      "owner": "GR original integrator"
+    }
   },
   "hh": {
     "source": "f2cc65bc078d8a79f6c4051b407d68bed4d5d93c",
@@ -22,7 +34,21 @@
       "owning reviewed-tree COMPLETE scan/final CI/integration",
       "accepted264805b3 effective-byte reconciliation",
       "sole pure native workunit compiler final pushed/qualified export"
-    ]
+    ],
+    "final_native": {
+      "head": "287e2f4dfc87273426633418b254c8cd73f35407",
+      "complete_history_scan": "PASS0",
+      "verify": 42131432487,
+      "status": "runtime FAIL missing managed_revoke_destinations trigger/customerPortal",
+      "owner": "HH native family"
+    },
+    "compiler": {
+      "status": "BLOCKED private/unpushed, not a public interface",
+      "head": "794b7ee9b22176a075ce71f70fdaa8b43107c0ea",
+      "source_checks": "both original points pass per owner intake",
+      "remaining": "publication disposition and public qualified export",
+      "source_read": false
+    }
   },
   "business": [
     "actual claimed destination adoption of sealed-review/signed approval/current native authority integration",

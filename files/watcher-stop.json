@@ -1,0 +1,7 @@
+{
+  "pid": 10506,
+  "command": "python3 /tmp/bz-watch.py",
+  "reason": "new accepted main requires a new Business candidate; stop old-head observation",
+  "signal": "SIGTERM",
+  "at": "2026-11-06T00:06:15.993301+00:00"
+}

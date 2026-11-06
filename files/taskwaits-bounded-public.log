@@ -1,0 +1,116 @@
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.computer_connected_mail.failed","error_type":"Error"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:06f35f78-e2c6-4346-b732-39201c95ef51","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:0be171c2-c46c-4930-aef9-9632b5e34e36","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:0d113746-8535-4877-a77e-6245373e72a6","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:1816a8de-0ac5-4678-b1fc-a569b1ea51a2","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:27146b80-148a-4db2-8bb9-0491766d5d99","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:319dc5bb-6b77-4413-83d9-1dfb71fe9c37","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:37a5c405-7bdb-442f-8248-7c11a6be4f0a","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:37eff4f7-6307-48c4-9064-872d2aa643e3","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:3ecc67d3-d2c7-43f4-b4d8-53af0ed7ca6b","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:4239a99d-055b-431b-a517-1b98938bd3be","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:4a66e464-3296-4cab-9840-7399f1cc60e6","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:4d97b564-4d76-4eed-8510-0061a9760a90","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:541517ad-dd5a-4ab6-91ad-fbb7aeb0188c","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:54614f16-d9df-4942-b1c3-b87f861ffb06","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:54985f93-110b-436b-a317-e9d7857013bb","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:5ed1fc32-9e19-4e52-bf93-627b74b7c6d2","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:65bf44b7-cfa6-4403-8da5-94f3480ca350","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:6d52fe56-8d26-44d7-897a-7b15e926cf3d","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:858d9253-e928-4da2-b838-43573106f2ad","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:8d3204c2-9c3e-46db-b164-752fd7a5447f","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:be4bda75-2d4f-479a-bea8-da7b19e6dbdc","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:c1653e62-4f77-415e-b086-3f71a1b1f1c0","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:c7efaff5-23e9-4f36-82ad-1c0bc89aad5c","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:d73c3d4b-9fdf-41e2-abd2-2b59de3866b3","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"8a195109-94c0-4f73-93b7-73342f64fc97:seed:errors-workbench:import:da25124c-de1e-4ef9-a5ee-652edfb0c712","error":"This app’s import door is not ready for this export"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:025e83df-2207-4c42-a817-ce5a3dc69013","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:02df239a-c01c-4e6a-beae-48d2df0e069f","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:0595d2b6-5b07-40ce-a2da-612e3ebd523b","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:05b49f2b-9583-43b4-880c-f57ffed1043d","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:074a5574-395f-4ca2-ad77-0c0e8887b0bd","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:07938fcb-57ea-4068-8484-24df054291fe","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:079c8f60-c8cf-4708-958b-cf57a7e09b53","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:09dc8beb-301d-48d2-8a9e-74bccd148dba","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:0afff4ba-3127-4fcb-9441-d0a715bc92d2","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:0c20d2ad-fbb1-4906-a354-5a433517d404","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:0c94bf1d-bd5b-4ff1-8852-59d5d424f81b","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:0fff69d6-596d-4e62-8c77-96d94b48b336","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:144302bf-fa7c-4566-b0fe-aa99885e942d","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:24a60165-6424-421e-90fd-27d9030c8803","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:292668a9-9109-4b09-9233-7767fc5dfb61","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:2c421399-0c5f-4f74-8104-0287f6ac6a77","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:4077dc0d-4485-49af-82e2-44ac88351ad7","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:40867111-90da-451a-a1f7-eb3d369a16d2","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:4865904f-9eaf-4456-88bc-67348ee93ab1","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:51a16f9a-c0e6-4df3-8c73-104e1830f28f","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:5a5166b7-b41c-4a34-89fb-06b3e034bf6b","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:5f5af08d-2364-4773-8bbf-af46902db115","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:60ed55af-7585-4bb5-9923-49956ee3610c","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:661b7206-3e18-4a24-922a-191ebb8a8a62","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"7116d80e-94c2-4d35-9acb-261d50fdb0bc:seed:errors-workbench:import:6635fc77-ed21-4cbd-933b-925fd3f2e09d","error":"This app’s import door is not ready for this export"}
+{"event":"delivery.build_after_settings_failed","installation_id":"mail-app","error_type":"Error"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:01c33cc6-1b27-4826-a77b-305bf5269e53","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:041c3752-d5e0-4cf6-ae77-af5ffb5a5d87","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:044e54a9-ba66-4b44-b32b-8b42537d1e63","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:04fb46b3-60b2-4333-b8f3-c08826406787","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:08fa0864-976a-491b-8267-723eeeab6fe1","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:0ac410ed-ef78-4af4-91b1-e5ccaa3a9282","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:0af96bca-86c0-42ad-a309-a4c2dc1f1ed0","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:0b026ae9-a892-403a-9dae-ce2e677de859","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:0c88086d-ebe4-4518-b65e-fd7bc1cd68b2","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:0d0951e0-2208-4d9d-a048-a0a92e9882f7","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:0e2e127c-d5bf-4863-b3cb-fe64d7f30949","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:1033501c-84dd-4212-ae00-7eed7455ff51","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:10e769c8-a3a5-45a8-b75a-9fd740d29f86","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:12310bb4-dd67-47e3-80ea-373155f5f6c9","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:1273d31e-3ae9-4088-a29c-78afe0742d82","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:13805041-ea79-48bb-b2fc-28ef6d2d55f9","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:14971129-df7d-4e0e-85c8-cccdf36ae341","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:16121516-9854-4523-9e84-fbe2f61b9647","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:174a6964-96dd-4f16-9c88-d2e580c84c0a","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:1a8721c5-17f8-4f10-be52-f7d14d46ff45","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:1aaa061a-dc26-46c3-8b61-538cc81d2638","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:1c6f493d-0568-4833-8d01-785bd87a63e5","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:1d84f986-81df-4500-9344-590519d5786d","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:1d851b91-96f6-462a-be37-c8159a095501","error":"This app’s import door is not ready for this export"}
+{"event":"business.import_apply_deferred","task":"e387ecbf-31bb-479d-9102-d3fb0eaf0bed:seed:errors-workbench:import:1da6b4ea-b44e-4356-b29e-dc95126d10e3","error":"This app’s import door is not ready for this export"}
+✔ Business wave approval gates bounded, authorized import progression (37783.946198ms)
+ℹ The actual bounded arrangement stays non-applying until destination review evidence and approval authority exist
+ℹ bounded arrangement: 10 actual signed status transports; no execution authority; previous migration ledger preserved
+ℹ Business separately approves actual Base execution children and completes only on destination aggregate reconciliation
+ℹ POINT1/2/3 PROBE: actual Base c053+SQLite via Business task/grant/HTTP door, source=3 native=6 > execution grant=2; exact parent/3 children; unapproved remainder leaves 4 native rows and head=null; same-lineage replay; aggregate-only completion/nativeSuccess=true
+ℹ POINT2 PROBE: actual destination approval expiry refuses fresh and already-signed child requests; exact one-way revocation is idempotent, cannot re-enable old capabilities, and preserves the complete baseline
+ℹ POINT4 PROBE: real Base c053 complete baseline=3; global 0/3 catch-up agent-reviewed in policy, including retained targetless exemption; global 1/3 refuses before independent genuine separate-agent decision, rejects self/changed/replayed/revoked judgment, then actual reviewed catch-up and aggregate reconciliation use the same namespace/migration
+ℹ Business retains approved targetless custody and consumes corrected Base aggregate success without inventing native success
+ℹ POINT1/2/3 PROBE: actual Base c053+SQLite via Business task/grant/HTTP door, source=4 native=6 > execution grant=2; exact parent/3 children; unapproved remainder leaves 4 native rows and head=null; same-lineage replay; aggregate-only completion/nativeSuccess=false
+ℹ POINT2 PROBE: actual destination approval expiry refuses fresh and already-signed child requests; exact one-way revocation is idempotent, cannot re-enable old capabilities, and preserves the complete baseline
+ℹ POINT4 PROBE: real Base c053 complete baseline=4; global 0/4 catch-up agent-reviewed in policy, including retained targetless exemption; global 1/4 refuses before independent genuine separate-agent decision, rejects self/changed/replayed/revoked judgment, then actual reviewed catch-up and aggregate reconciliation use the same namespace/migration
+ℹ One plan approval asks for one approval per wave; the owner approves a wave over the door’s previews and only then does the server import
+ℹ Device credentials, task tokens and MCP tokens are refused on the wave doors and change nothing
+ℹ The scheduled import pass keeps moving the oldest runnable import while older imports wait on their owners
+ℹ Waves are read and approved within D1’s 100-parameter limit for every admitted size
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 38975.736291

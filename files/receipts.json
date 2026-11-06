@@ -619,5 +619,149 @@
     "started_at": "2026-11-05T23:48:07.387760+00:00",
     "ended_at": "2026-11-05T23:48:07.411401+00:00",
     "log": "own-product-diff.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "git",
+      "fetch",
+      "--no-tags",
+      "origin",
+      "main"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-06T00:06:04.362144+00:00",
+    "ended_at": "2026-11-06T00:06:05.362683+00:00",
+    "log": "taskwaits-main-fetch.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "sources",
+      "lock"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-06T00:07:00.930882+00:00",
+    "ended_at": "2026-11-06T00:07:01.673390+00:00",
+    "log": "taskwaits-source-lock.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "sources",
+      "check"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-06T00:07:01.701602+00:00",
+    "ended_at": "2026-11-06T00:07:02.294987+00:00",
+    "log": "taskwaits-source-check.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-06T00:07:02.359550+00:00",
+    "ended_at": "2026-11-06T00:07:20.716890+00:00",
+    "log": "taskwaits-typecheck.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-waves.test.ts"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-06T00:07:20.745202+00:00",
+    "ended_at": "2026-11-06T00:08:00.130051+00:00",
+    "log": "taskwaits-bounded-public.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "exec",
+      "tsx",
+      "--test",
+      "--test-concurrency=1",
+      "tests/core/business-executors.test.ts",
+      "tests/core/business-provisioning.test.ts",
+      "tests/core/business-catchup-withdrawal.test.ts",
+      "tests/core/operator-data-rights.test.ts"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-06T00:08:25.759747+00:00",
+    "ended_at": "2026-11-06T00:10:58.455528+00:00",
+    "log": "taskwaits-touched-regressions.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "pnpm",
+      "check:d1-migrations"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-06T00:10:58.502536+00:00",
+    "ended_at": "2026-11-06T00:10:59.245348+00:00",
+    "log": "taskwaits-d1-migrations.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "git",
+      "fetch",
+      "--no-tags",
+      "origin",
+      "main"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-06T00:11:03.980945+00:00",
+    "ended_at": "2026-11-06T00:11:04.597335+00:00",
+    "log": "taskwaits-prepush-fetch.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "python3",
+      "/home/agent/rer-consolidation/.tools/cloud-push.py",
+      "origin",
+      "cloud/bz-bounded-arrangement-1"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-06T00:11:22.887629+00:00",
+    "ended_at": "2026-11-06T00:11:24.998327+00:00",
+    "log": "taskwaits-product-push.log"
+  },
+  {
+    "kind": "MECHANICAL",
+    "cwd": "/workspace/platform",
+    "argv": [
+      "git",
+      "ls-remote",
+      "--refs",
+      "origin",
+      "refs/heads/cloud/bz-bounded-arrangement-1"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-06T00:11:41.738067+00:00",
+    "ended_at": "2026-11-06T00:11:42.478248+00:00",
+    "log": "taskwaits-remote-head.log"
   }
 ]

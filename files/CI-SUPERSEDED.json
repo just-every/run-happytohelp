@@ -1,0 +1,25 @@
+{
+  "repository": "runeditrun/platform",
+  "head": "4d391be83d209caefb5c4c4d1e8396f287bc71d3",
+  "runs": [
+    {
+      "conclusion": null,
+      "head_sha": "4d391be83d209caefb5c4c4d1e8396f287bc71d3",
+      "html_url": "https://github.com/runeditrun/platform/actions/runs/42132056411",
+      "id": 42132056411,
+      "name": "Verify RER management service",
+      "status": "in_progress"
+    }
+  ],
+  "observer": "single REST watcher",
+  "github_api_calls_used": 3,
+  "minimum_interval_seconds": 300,
+  "qualified": false,
+  "latest": {
+    "conclusion": null,
+    "head_sha": "4d391be83d209caefb5c4c4d1e8396f287bc71d3",
+    "html_url": "https://github.com/runeditrun/platform/actions/runs/42132056411",
+    "status": "queued"
+  },
+  "latest_call_file": "verify-poll-2.json"
+}

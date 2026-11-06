@@ -1,0 +1,35 @@
+{
+  "head": "b78e6eae4185b4ec5ca935340a6b5cc43d8bd084",
+  "path": "/home/agent/rer-consolidation/work/bz-bounded-arrangement-1/platform-b78e6eae4185b4ec5ca935340a6b5cc43d8bd084.bundle",
+  "sha256": "952486b947df9c5d06ddfd46ce75f916711b1385445c0502dc86266babacd676",
+  "bytes": 14569472,
+  "verified": true,
+  "commands": [
+    {
+      "cwd": "/workspace/platform",
+      "argv": [
+        "git",
+        "bundle",
+        "create",
+        "/home/agent/rer-consolidation/work/bz-bounded-arrangement-1/platform-b78e6eae4185b4ec5ca935340a6b5cc43d8bd084.bundle",
+        "--all",
+        "HEAD"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "cwd": "/workspace/platform",
+      "argv": [
+        "git",
+        "bundle",
+        "verify",
+        "/home/agent/rer-consolidation/work/bz-bounded-arrangement-1/platform-b78e6eae4185b4ec5ca935340a6b5cc43d8bd084.bundle"
+      ],
+      "exit": 0,
+      "output": "The bundle contains these 5 refs:\nb78e6eae4185b4ec5ca935340a6b5cc43d8bd084 refs/heads/cloud/bz-bounded-arrangement-1\nc037a12c520291909d23fdeeff15afdcea466a6b refs/heads/main\nf49fd338ff0ff1248ad50ae89681e0d0ead6a516 refs/remotes/origin/HEAD\nf49fd338ff0ff1248ad50ae89681e0d0ead6a516 refs/remotes/origin/main\nb78e6eae4185b4ec5ca935340a6b5cc43d8bd084 HEAD\nThe bundle records a complete history.\nThe bundle uses this hash algorithm: sha1\n/home/agent/rer-consolidation/work/bz-bounded-arrangement-1/platform-b78e6eae4185b4ec5ca935340a6b5cc43d8bd084.bundle is okay\n"
+    }
+  ],
+  "publication": "recovery data only, outside report packet",
+  "at": "2026-11-06T00:12:41.827195+00:00"
+}

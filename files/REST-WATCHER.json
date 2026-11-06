@@ -1,12 +1,16 @@
 {
   "repository": "runeditrun/platform",
-  "run_id": 42132056411,
-  "head": "4d391be83d209caefb5c4c4d1e8396f287bc71d3",
-  "discovery_utc": "2026-11-05T23:47:34.384591Z",
-  "next_earliest_call_utc": "2026-11-05T23:52:34.384591Z",
-  "poll_api": "repos/runeditrun/platform/actions/runs/42132056411",
-  "observer_count": 1,
+  "run_id": 42134997491,
+  "head": "b78e6eae4185b4ec5ca935340a6b5cc43d8bd084",
+  "observer_count": 0,
+  "active": false,
+  "observer_history": "old candidate stopped; exactly one observer active at any time",
+  "calls_used": 8,
   "call_limit": 10,
-  "old_run_queries": 0,
+  "last_observed_utc": "2026-11-06T00:26:47.730131Z",
+  "last_status": "in_progress",
+  "last_conclusion": null,
+  "custody": "PUSHED; no READY",
+  "old_run_queries_after_supersession": 0,
   "reruns_or_dispatches": 0
 }

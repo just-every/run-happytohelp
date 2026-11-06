@@ -1,25 +1,27 @@
 {
   "repository": "runeditrun/platform",
-  "head": "4d391be83d209caefb5c4c4d1e8396f287bc71d3",
+  "head": "b78e6eae4185b4ec5ca935340a6b5cc43d8bd084",
   "runs": [
     {
       "conclusion": null,
-      "head_sha": "4d391be83d209caefb5c4c4d1e8396f287bc71d3",
-      "html_url": "https://github.com/runeditrun/platform/actions/runs/42132056411",
-      "id": 42132056411,
+      "head_sha": "b78e6eae4185b4ec5ca935340a6b5cc43d8bd084",
+      "html_url": "https://github.com/runeditrun/platform/actions/runs/42134997491",
+      "id": 42134997491,
       "name": "Verify RER management service",
-      "status": "in_progress"
+      "status": "pending"
     }
   ],
-  "observer": "single REST watcher",
-  "github_api_calls_used": 2,
-  "minimum_interval_seconds": 300,
-  "qualified": false,
   "latest": {
     "conclusion": null,
-    "head_sha": "4d391be83d209caefb5c4c4d1e8396f287bc71d3",
-    "html_url": "https://github.com/runeditrun/platform/actions/runs/42132056411",
-    "status": "queued"
+    "head_sha": "b78e6eae4185b4ec5ca935340a6b5cc43d8bd084",
+    "html_url": "https://github.com/runeditrun/platform/actions/runs/42134997491",
+    "status": "in_progress"
   },
-  "latest_call_file": "verify-poll-1.json"
+  "latest_call_file": "verify-watch-8.json",
+  "observer": "single REST watcher; superseded observer stopped",
+  "github_api_calls_used": 8,
+  "minimum_interval_seconds": 300,
+  "qualified": false,
+  "latest_observed_at": "2026-11-06T00:26:47.730131+00:00",
+  "source_custody": "PUSHED"
 }

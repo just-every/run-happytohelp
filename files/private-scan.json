@@ -1,8 +1,14 @@
 {
   "cwd": "/workspace/platform",
-  "scope": "own diff origin/main...HEAD and regular packet files",
-  "at": "2026-11-05T23:47:24.231456+00:00",
+  "scope": "own diff against actual f49 main and regular packet files",
+  "at": "2026-11-06T00:11:22.861245+00:00",
   "findings": [],
   "exit": 0,
-  "notes": "No credential values logged; not fleet COMPLETE-history scan."
+  "notes": "No values logged; independent COMPLETE Mac publication scan remains owed.",
+  "final_packet_scan": {
+    "at": "2026-11-06T00:28:09.944680+00:00",
+    "files": 102,
+    "findings": [],
+    "exit": 0
+  }
 }

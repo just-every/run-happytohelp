@@ -1,0 +1,35 @@
+[
+  {
+    "repository": "runeditrun/platform",
+    "repo": "/workspace/platform",
+    "exit": 0,
+    "at": "2026-11-05T23:53:34.932586+00:00",
+    "log": "evidence-platform-initial.log",
+    "lines": [
+      "EVIDENCE repo=runeditrun/platform ref=refs/heads/evidence/bz-bounded-arrangement-1 head=5bf2628acf5f19e556b15b3320f49676c6c7c2a4"
+    ],
+    "selected_files": 71
+  },
+  {
+    "repository": "runeditrun/base",
+    "repo": "/workspace/base",
+    "exit": 0,
+    "at": "2026-11-05T23:53:54.256211+00:00",
+    "log": "evidence-base-initial.log",
+    "lines": [
+      "EVIDENCE repo=runeditrun/base ref=refs/heads/evidence/bz-bounded-arrangement-1 head=3e41f58e2b69e634aa63323b5bf785f492f71759"
+    ],
+    "selected_files": 71
+  },
+  {
+    "repository": "just-every/run-happytohelp",
+    "repo": "/workspace/run-happytohelp",
+    "exit": 0,
+    "at": "2026-11-05T23:54:17.355031+00:00",
+    "log": "evidence-hh-initial.log",
+    "lines": [
+      "EVIDENCE repo=just-every/run-happytohelp ref=refs/heads/evidence/bz-bounded-arrangement-1 head=d7bb0aa2d7e2360ea761cab5a2648b3e73d463c4"
+    ],
+    "selected_files": 71
+  }
+]

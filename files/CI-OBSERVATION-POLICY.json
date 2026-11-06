@@ -1,0 +1,66 @@
+{
+  "calls_used": 8,
+  "limit": 10,
+  "minimum_seconds": 300,
+  "single_active_watcher": true,
+  "superseded_watcher_stopped_pid": 10506,
+  "calls": [
+    {
+      "call": 1,
+      "candidate": "4d391be",
+      "interval_seconds": null,
+      "interval_ok": true,
+      "file": "verify-discovery.json"
+    },
+    {
+      "call": 2,
+      "candidate": "4d391be",
+      "interval_seconds": 309.571236371994,
+      "interval_ok": true,
+      "file": "verify-poll-1.json"
+    },
+    {
+      "call": 3,
+      "candidate": "4d391be",
+      "interval_seconds": 304.6839075088501,
+      "interval_ok": true,
+      "file": "verify-poll-2.json"
+    },
+    {
+      "call": 4,
+      "candidate": "4d391be",
+      "interval_seconds": 314.04677963256836,
+      "interval_ok": true,
+      "file": "verify-poll-3.json"
+    },
+    {
+      "call": 5,
+      "candidate": "b78e6ea",
+      "interval_seconds": null,
+      "interval_ok": true,
+      "file": "final-verify-discovery.json"
+    },
+    {
+      "call": 6,
+      "candidate": "b78e6ea",
+      "interval_seconds": 302.0449390411377,
+      "interval_ok": true,
+      "file": "verify-watch-6.json"
+    },
+    {
+      "call": 7,
+      "candidate": "b78e6ea",
+      "interval_seconds": 302.02639412879944,
+      "interval_ok": true,
+      "file": "verify-watch-7.json"
+    },
+    {
+      "call": 8,
+      "candidate": "b78e6ea",
+      "interval_seconds": 302.022492647171,
+      "interval_ok": true,
+      "file": "verify-watch-8.json"
+    }
+  ],
+  "exit": 0
+}

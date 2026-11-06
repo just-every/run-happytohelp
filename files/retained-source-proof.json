@@ -1,0 +1,42 @@
+{
+  "cwd": "/workspace/platform",
+  "head": "b78e6eae4185b4ec5ca935340a6b5cc43d8bd084",
+  "compared_main": "f49fd338ff0ff1248ad50ae89681e0d0ead6a516",
+  "at": "2026-11-06T00:08:55.699448+00:00",
+  "old_checkpoint_count": 4,
+  "old_checkpoint_bodies": [
+    {
+      "name": "'One plan approval asks for one approval per wave; the owner approves a wave over the door\u2019s previews and only then does the server import',async t=>{",
+      "exact_body_retained": true,
+      "body_sha256": "730d1bf712b4d5000fa2f55ab1ffe0e180e5e9f762b9e5bbf533f0c20e556fc8"
+    },
+    {
+      "name": "'Device credentials, task tokens and MCP tokens are refused on the wave doors and change nothing',async t=>{",
+      "exact_body_retained": true,
+      "body_sha256": "e40b1b9603008da5c865f5e1b4f4620eda2787938ca65c3fd9aea56951e4723e"
+    },
+    {
+      "name": "'The scheduled import pass keeps moving the oldest runnable import while older imports wait on their owners',async t=>{",
+      "exact_body_retained": true,
+      "body_sha256": "78a789b2e0b55a2cf75eb330e5fc3727080bef1607bba145cc40d15290717b4a"
+    },
+    {
+      "name": "'Waves are read and approved within D1\u2019s 100-parameter limit for every admitted size',async t=>{",
+      "exact_body_retained": true,
+      "body_sha256": "eb9e4adf6f8994c3742fa8d8e70cf0e3f9950f77247929e23b0397e786271b55"
+    }
+  ],
+  "existing_migration_count": 127,
+  "existing_migration_edits": [],
+  "contract_views": {
+    "CONTRACT.md": {
+      "main_sha256": "938610898634010206152e5e473eba5927020ecedf06fd55e58b65568c8ab535",
+      "candidate_sha256": "938610898634010206152e5e473eba5927020ecedf06fd55e58b65568c8ab535"
+    },
+    "ACCEPTANCE.md": {
+      "main_sha256": "49b3793be895232469826a9c5484b270b2e813c731477826f22e7ca9138bb2d6",
+      "candidate_sha256": "49b3793be895232469826a9c5484b270b2e813c731477826f22e7ca9138bb2d6"
+    }
+  },
+  "exit": 0
+}

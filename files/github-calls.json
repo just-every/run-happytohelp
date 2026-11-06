@@ -28,5 +28,95 @@
     "at": "2026-11-05T23:52:44.543776+00:00",
     "epoch": 1793922763.955827,
     "file": "verify-poll-1.json"
+  },
+  {
+    "number": 3,
+    "argv": [
+      "gh",
+      "api",
+      "repos/runeditrun/platform/actions/runs/42132056411",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "cwd": "/workspace/platform",
+    "exit": 0,
+    "at": "2026-11-05T23:57:49.176822+00:00",
+    "epoch": 1793923068.6397345,
+    "file": "verify-poll-2.json"
+  },
+  {
+    "number": 4,
+    "argv": [
+      "gh",
+      "api",
+      "repos/runeditrun/platform/actions/runs/42132056411",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "cwd": "/workspace/platform",
+    "exit": 0,
+    "at": "2026-11-06T00:03:03.263363+00:00",
+    "epoch": 1793923382.6865141,
+    "file": "verify-poll-3.json"
+  },
+  {
+    "number": 5,
+    "argv": [
+      "gh",
+      "api",
+      "repos/runeditrun/platform/actions/runs?head_sha=b78e6eae4185b4ec5ca935340a6b5cc43d8bd084&per_page=100",
+      "--jq",
+      ".workflow_runs | map({id,name,status,conclusion,head_sha,html_url})"
+    ],
+    "cwd": "/workspace/platform",
+    "exit": 0,
+    "at": "2026-11-06T00:11:41.708364+00:00",
+    "epoch": 1793923901.055796,
+    "file": "final-verify-discovery.json"
+  },
+  {
+    "number": 6,
+    "argv": [
+      "gh",
+      "api",
+      "repos/runeditrun/platform/actions/runs/42134997491",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "cwd": "/workspace/platform",
+    "exit": 0,
+    "at": "2026-11-06T00:16:43.729672+00:00",
+    "epoch": 1793924203.100735,
+    "file": "verify-watch-6.json"
+  },
+  {
+    "number": 7,
+    "argv": [
+      "gh",
+      "api",
+      "repos/runeditrun/platform/actions/runs/42134997491",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "cwd": "/workspace/platform",
+    "exit": 0,
+    "at": "2026-11-06T00:21:45.694197+00:00",
+    "epoch": 1793924505.127129,
+    "file": "verify-watch-7.json"
+  },
+  {
+    "number": 8,
+    "argv": [
+      "gh",
+      "api",
+      "repos/runeditrun/platform/actions/runs/42134997491",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "cwd": "/workspace/platform",
+    "exit": 0,
+    "at": "2026-11-06T00:26:47.730131+00:00",
+    "epoch": 1793924807.1496217,
+    "file": "verify-watch-8.json"
   }
 ]

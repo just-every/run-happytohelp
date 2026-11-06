@@ -3805,7 +3805,7 @@
       "executable": false
     },
     "scripts/import-legacy.mjs": {
-      "sha256": "653f473e9ff61ad3c167841713c63af255133120469a36c39e3f466de3c59569",
+      "sha256": "368fd109ca0aeb2dd2f1f29d66ef1c3f76efc4a3d29cfc731407ca7294f1ba9c",
       "executable": false
     },
     "scripts/independent/delegation-backup.py": {
@@ -4066,6 +4066,10 @@
     },
     "scripts/legacy-import/import-package.mjs": {
       "sha256": "ceb5225a2894065e0ab00cd00e5f0179a642d28a6ecb79caf49e21bf741d9dd1",
+      "executable": false
+    },
+    "scripts/legacy-import/knowledge-index.mjs": {
+      "sha256": "b6c424affba1a26b724192531cc49f91c586e5a823d7f085c8088e1b7ee9894b",
       "executable": false
     },
     "scripts/legacy-import/objects.mjs": {
@@ -7441,7 +7445,7 @@
       "executable": false
     },
     "src/modules/legacy-import/README.md": {
-      "sha256": "eee64b655dd41c308bdc428ef77f3bc77025ff3c89767aff015219772e28a091",
+      "sha256": "08b32ac6643982f14453a17ca1986008a49376b86174bec8f570697d6985a0b4",
       "executable": false
     },
     "src/modules/legacy-import/relationships.ts": {
@@ -16245,7 +16249,7 @@
       "executable": false
     },
     "tests/journeys/legacy.mjs": {
-      "sha256": "c3fe7b06c8f664c200fa0398465939e20917388e43626ec9be756be0433b7d42",
+      "sha256": "c2c2877aef83a46c2c2ca2652d97dd5c2447041a049086fc07e5b88bc10e69d7",
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {

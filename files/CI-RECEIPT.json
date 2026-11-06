@@ -1,0 +1,25 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "head_sha": "5d9af470f7ca11b32c300795407863fb4c1788bb",
+  "gh_calls": 1,
+  "runs": [
+    {
+      "id": 42265304164,
+      "name": "Verify",
+      "status": "queued",
+      "conclusion": null,
+      "head_sha": "5d9af470f7ca11b32c300795407863fb4c1788bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/42265304164"
+    }
+  ],
+  "observations": [
+    {
+      "id": 42265304164,
+      "status": "queued",
+      "conclusion": null,
+      "head_sha": "5d9af470f7ca11b32c300795407863fb4c1788bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/42265304164"
+    }
+  ],
+  "run_id": 42265304164
+}

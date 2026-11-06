@@ -1,0 +1,136 @@
+{
+  "files": [
+    {
+      "blob": "2e4f69511224853d6c6510199c5cd95836f2f423",
+      "bytes": 2543,
+      "path": "CHECKS.json",
+      "sha256": "0e6050b80021b32e27d8495fbe2f04552c2fd185d414d6a4ad135272e205cb33"
+    },
+    {
+      "blob": "9f9325665790b3be7a0cb9c8f571602f7b145dd5",
+      "bytes": 699,
+      "path": "CI-RECEIPT.json",
+      "sha256": "4b69e378152f14c16bcea54ea9afe115bc98da8d2e19ea8923ca9ff582a40f8d"
+    },
+    {
+      "blob": "9a8e0cbeb511209e364c641efdc86d3bdf53b2f6",
+      "bytes": 1804,
+      "path": "PLAN.md",
+      "sha256": "c1e01834cad1075b14f5ef22f6c0e47ad12d7535079fe39a5c7b799b89265e6f"
+    },
+    {
+      "blob": "b5d21ef6a4c63573c4d7c34fe1d48f50fbbc6aca",
+      "bytes": 7759,
+      "path": "REPORT.md",
+      "sha256": "d87f178015b2ab6a9f3c41d364cc5b5faab1251d0a1f9cc37bdaeb8164483ea6"
+    },
+    {
+      "blob": "fce3fe7246fe29287d05947b6ddd40f070910e8d",
+      "bytes": 328,
+      "path": "SCOPE-RECEIPT.json",
+      "sha256": "9f5fe60b94ac40e9323c2f1f0d95f07d51d62659027664d13414ab026c9242e2"
+    },
+    {
+      "blob": "6b1c2861d265787a291a8a39c5a02770a3ed63a1",
+      "bytes": 786,
+      "path": "SELECTION.json",
+      "sha256": "0a3e1402bd5537910b1d1a19ad58c0d840dc2f3ff7794b89144563fba3fe80df"
+    },
+    {
+      "blob": "b49bc8c7f75c8dc458c0b7cd56865172fa78ddd4",
+      "bytes": 8161,
+      "path": "TEST-INVENTORY.json",
+      "sha256": "08efb154f91095762431c639d97078897ebdbef22ebd7aadd87c49880deac5ef"
+    },
+    {
+      "blob": "e0746d82caf17348cdc04c253bcde3312f0717a8",
+      "bytes": 136,
+      "path": "authoring.log",
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "blob": "afea3dea853273b8f21e64483dc5b315dba4ecfb",
+      "bytes": 2490,
+      "path": "browser.log",
+      "sha256": "1a21c04024314fb7dba4ee409901eea41073069ec02e73e8f4d4982fd55b846d"
+    },
+    {
+      "blob": "6372b317835bf55f22a389e481ee09e31ae8df25",
+      "bytes": 88870,
+      "path": "build.log",
+      "sha256": "d79ad8b271db03e3e6686524dfca9fbd8ce28237c03db4cd419b311b5ab11ed9"
+    },
+    {
+      "blob": "3c86266104500be8fe132938ed7c2e589cfed5de",
+      "bytes": 98,
+      "path": "contract.log",
+      "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    },
+    {
+      "blob": "bc0c442dd080f79afbb38adab4234430c827a3a1",
+      "bytes": 5405,
+      "path": "email.log",
+      "sha256": "e6a6ece2e1f338313d3989fcd3281ac6bdf0f8cd501ebc8ce7e235bc5c179f36"
+    },
+    {
+      "blob": "cebd6844c66921c1b02c7731f1514dccefbd0ef0",
+      "bytes": 201635,
+      "path": "screenshots/account-security/teams-consent-1440.png",
+      "sha256": "636bbdf9acd41f2377ecf50a2bf53fd6032c21a5f259dffc212c25f7756276d9"
+    },
+    {
+      "blob": "b1ab16d982b535a7bc2a29ffa5dc08a459f83b52",
+      "bytes": 146823,
+      "path": "screenshots/account-security/teams-consent-390.png",
+      "sha256": "34d14fee9838ec7ac60c8ea7f915f53797b549ecdb0147140646252141145669"
+    },
+    {
+      "blob": "db0250f2c49cb90530c745b93e3ff1f76c9d0918",
+      "bytes": 158255,
+      "path": "screenshots/account-security/teams-linked-1440.png",
+      "sha256": "8e5319f1ea7cc231149d8b2d5ca616df5c3fd538b407dea9bd8f8088b649a135"
+    },
+    {
+      "blob": "7c49d7efd18031c0ec391b8f0c5697d41e522d0d",
+      "bytes": 122697,
+      "path": "screenshots/account-security/teams-linked-390.png",
+      "sha256": "9be40e565b67c5908604742793fe92a56c7e265740c7cb5d22a78cb7b2e16ace"
+    },
+    {
+      "blob": "4e7a25538a2c1ddc967d882b98d56e9db2fe8fc8",
+      "bytes": 135847,
+      "path": "screenshots/account-security/teams-unavailable-1440.png",
+      "sha256": "c60a69fe27a04d773a6a7f21b2d1c77bc273f9012b85560afe5a65abfe58a580"
+    },
+    {
+      "blob": "8df2bc93ba1e8839e1ea27c68fc7151d74afdecf",
+      "bytes": 103843,
+      "path": "screenshots/account-security/teams-unavailable-390.png",
+      "sha256": "adcf38fc8f085bba37364846598e22a2ed9cc94a8a7bda4fc977b73eae859021"
+    },
+    {
+      "blob": "9e63acec2240208de7389c7d882e7f65642706d1",
+      "bytes": 4799,
+      "path": "support-channels.log",
+      "sha256": "55307a14cf41472b81eea375aabf1c2f3e22ac1528a205d8c3aa595ee0c9f938"
+    },
+    {
+      "blob": "06480e4f98d036a44ab42ead057891b2f2c87a9e",
+      "bytes": 702,
+      "path": "teams-runtime.log",
+      "sha256": "8e3a36ce4dbeeb1d275a16c5ddbd4e2b22bb0a5c790e0cec0cbd6049d996833f"
+    },
+    {
+      "blob": "90806991252d6c96aab750bae5db2f89c96d363a",
+      "bytes": 111,
+      "path": "typecheck.log",
+      "sha256": "1c0155d74bc069a41e4bb43b49a231b27876ff3596c95adaf51881aa075d484b"
+    }
+  ],
+  "product_branch": "cloud/hh-notify001-teams-n1",
+  "product_head": "5d9af470f7ca11b32c300795407863fb4c1788bb",
+  "ref": "refs/heads/evidence/hh-notify001-teams-n1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-notify001-teams-n1"
+}

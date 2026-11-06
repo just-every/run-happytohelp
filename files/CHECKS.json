@@ -1,0 +1,85 @@
+{
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "checks": [
+    {
+      "name": "Teams public-door helper",
+      "command": "node -e import(teams-notices).then(teamsNoticeJourney)",
+      "exit": 0,
+      "log": "teams-runtime.log"
+    },
+    {
+      "name": "Notification/email incumbent journey",
+      "command": "node --test --test-concurrency=1 tests/journeys/email.mjs",
+      "exit": 0,
+      "log": "email.log"
+    },
+    {
+      "name": "Frozen CHANNELS registrations",
+      "command": "node --test --test-concurrency=1 --test-name-pattern='support channels:' tests/journeys/connections.mjs",
+      "exit": 0,
+      "log": "support-channels.log"
+    },
+    {
+      "name": "Typecheck",
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "name": "Build",
+      "command": "npx -y @runeditrun/rer build (through cloud_run)",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "name": "Contract views",
+      "command": "node src/site/base/contract-docs.mjs write; check; restore views from origin/main",
+      "exit": 0,
+      "log": "contract.log"
+    },
+    {
+      "name": "Source lock",
+      "command": "node scripts/edition-authoring/cli.mjs lock; check",
+      "exit": 0,
+      "log": null
+    },
+    {
+      "name": "First-party authoring",
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "authoring.log"
+    },
+    {
+      "name": "Migration/deployment spec",
+      "command": "setup applied 303 locally; node scripts/delivery/generate-spec.mjs",
+      "exit": 0,
+      "log": null
+    },
+    {
+      "name": "Account security browser incumbent journey",
+      "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium node --test --test-concurrency=1 --test-name-pattern='an owner explicitly redeems' tests/journeys/identity-browser.mjs",
+      "exit": 0,
+      "log": "browser.log"
+    }
+  ],
+  "browser": "passed",
+  "publication_scan": "pending fleet Mac COMPLETE scan",
+  "independent_gate": "not claimed",
+  "release": "none",
+  "pr": null,
+  "head_sha": "5d9af470f7ca11b32c300795407863fb4c1788bb",
+  "branch": "cloud/hh-notify001-teams-n1",
+  "product_push": {
+    "branch": "cloud/hh-notify001-teams-n1",
+    "head": "5d9af470f7ca11b32c300795407863fb4c1788bb",
+    "status": "pushed",
+    "guard": "cloud-push.py",
+    "attempts": 1
+  },
+  "before_after_counts": {
+    "before": "3 DONE / 72 PARTIAL / 16 MISSING / 91 total",
+    "after": "3 DONE / 72 PARTIAL / 16 MISSING / 91 total"
+  },
+  "clause_status_changes": []
+}

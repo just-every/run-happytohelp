@@ -1,0 +1,18 @@
+{
+  "frozen_files_compared": 790,
+  "differences": [],
+  "H-SC1": "exact import and guarded statement only",
+  "contract_changes": false,
+  "status_before": {
+    "done": 3,
+    "partial": 72,
+    "missing": 16,
+    "total": 91
+  },
+  "status_after": {
+    "done": 3,
+    "partial": 72,
+    "missing": 16,
+    "total": 91
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "files": [
+    "REPORT.md",
+    "PLAN.md",
+    "CHECKS.json",
+    "CI-RECEIPT.json",
+    "SCOPE-RECEIPT.json",
+    "TEST-INVENTORY.json",
+    "teams-runtime.log",
+    "email.log",
+    "support-channels.log",
+    "browser.log",
+    "typecheck.log",
+    "build.log",
+    "contract.log",
+    "authoring.log",
+    "screenshots/account-security/teams-unavailable-1440.png",
+    "screenshots/account-security/teams-unavailable-390.png",
+    "screenshots/account-security/teams-consent-1440.png",
+    "screenshots/account-security/teams-consent-390.png",
+    "screenshots/account-security/teams-linked-1440.png",
+    "screenshots/account-security/teams-linked-390.png"
+  ],
+  "symlinks": false,
+  "injected_value_matches": 0,
+  "product_head": "5d9af470f7ca11b32c300795407863fb4c1788bb"
+}

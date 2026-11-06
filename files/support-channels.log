@@ -1,0 +1,54 @@
+TAP version 13
+# (node:4781) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: support channels: credentials
+ok 1 - support channels: credentials
+  ---
+  duration_ms: 5512.507782
+  type: 'test'
+  ...
+# Subtest: support channels: exchange
+ok 2 - support channels: exchange
+  ---
+  duration_ms: 131031.383759
+  type: 'test'
+  ...
+# Subtest: support channels: slack
+ok 3 - support channels: slack
+  ---
+  duration_ms: 6016.285526
+  type: 'test'
+  ...
+# PROBE OUTBOUND-001 B1: signed inbound -> POST agent reply -> signed START/agreement -> POST operator ticket and reply -> POST contact/erase: all 3 sends per SMS/WhatsApp customer retain records with provider_id NULL and contact_erased; other customers unchanged; native solve/scheduled-close -> signed follow-up -> erase also scrubs both conversations
+# PROBE OUTBOUND-001-PERF P6: native solve -> scheduled close -> signed SMS follow-up -> reply -> contact/erase: closed and follow-up sends both provider_id NULL/contact_erased
+# Subtest: support channels: erasure
+ok 4 - support channels: erasure
+  ---
+  duration_ms: 12090.718825
+  type: 'test'
+  ...
+# PROBE OUTBOUND-001 A1: signed SMS START / WhatsApp agreement -> POST tickets -> POST earlier conversation/messages: exactly one provider send with accepted receipt, channel panel present, WhatsApp templates GET 200; new and earlier operator tickets send once; signed inbound stays on newest ticket; unrelated conversation has no channel link
+# PROBE OUTBOUND-001-PERF P3: signed SMS/WhatsApp inbound -> create ticket -> earlier/new replies: exactly once, accepted receipt and panel, templates 200, newest inbound routing; original A1/B1 assertions retained
+# PROBE OUTBOUND-001 C1: GET management/dashboard tickets/channels and channels/:id/templates -> Collaborator and custom no-reply agent 403 permission_denied with route audit and zero provider requests; owner/admin/agent/custom reply role 200 with unchanged bodies, exactly one live template fetch per authorized GET; POST tickets uses the same conversations.reply permission
+# PROBE OUTBOUND-001 E1: POST tickets kind=whatsapp with live SMS / unknown / revoked WhatsApp connection -> 409 with "That connection is not a WhatsApp channel" / "Channel not found" / "Channel disconnected; reconnect in Settings → Support channels" respectively; no ticket/send/customer/thread or provider request
+# PROBE OUTBOUND-001 1: POST tickets opted-in WhatsApp -> one ticket/send, existing customer/thread; SMS START -> accepted
+# PROBE OUTBOUND-001 2: POST tickets no consent, STOP, unapproved/missing template, disconnected, A2P, denied role -> refused with no ticket/send; uncertain -> retained, no replay
+# PROBE OUTBOUND-001 3: POST tickets duplicate/concurrent commands -> one claim per ticket, one thread/customer; erased requester -> refused; no money authority added
+# PROBE OUTBOUND-001-PERF P1: GET channel conversation + POST reply on seeded D1 -> {"plan":["MATERIALIZE requested","SEARCH conversations USING INDEX sqlite_autoindex_conversations_1 (id=?)","MATERIALIZE served","MERGE (UNION)","LEFT","MERGE (UNION)","LEFT","SCAN conv","SEARCH message USING COVERING INDEX move_in_native_messages (project_id=? AND conversation_id=?)","SEARCH event USING COVERING INDEX support_channel_event_message (message_id=?)","SEARCH linked USING INDEX sqlite_autoindex_support_channel_threads_1 (id=?)","USE TEMP B-TREE FOR ORDER BY","RIGHT","SCAN conv","SEARCH cmd USING INDEX sqlite_autoindex_operator_ticket_commands_1 (conversation_id=?)","USE TEMP B-TREE FOR ORDER BY","RIGHT","SCAN conv","SEARCH pointer USING INDEX support_channel_conversation (project_id=? AND conversation_id=?)","USE TEMP B-TREE FOR ORDER BY","SCAN conv","SCAN served","SEARCH t USING INDEX sqlite_autoindex_support_channel_threads_1 (id=?)","SEARCH c USING INDEX sqlite_autoindex_support_channel_connections_1 (id=?)","SEARCH privacy_contact EXISTS USING INDEX sqlite_autoindex_contacts_1 (id=?)"]}; indexed message receipts, no connection-wide/per-thread event scan
+# PROBE OUTBOUND-001-PERF P2: 1 SMS connection / 2000 customers / 10 inbound each -> {"open":{"lookup":{"rows":66,"ms":7.4,"messages":10},"routeMs":14.28,"status":200},"reply":{"lookup":{"rows":64,"ms":14.65,"messages":10},"routeMs":47.99,"accepted":true}}
+# PROBE OUTBOUND-001-PERF P4: seeded desk -> open, reply, ticket move, historical receipt/command/pointer lookup accepted; existing channel journeys retained; only migration 299 edited
+# Subtest: support channels: uncertainty
+ok 5 - support channels: uncertainty
+  ---
+  duration_ms: 25979.697461
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 180980.366426

@@ -1,0 +1,20 @@
+TAP version 13
+# PROBE ACCESS-001 P10 1440: native owner/admin Roles, empty/default/selection/ungrouped/save/reload/real conflict -> {"paths":{"owner":"/home/agent/rer-consolidation/work/hh-notify001-teams-n1/packet/screenshots/ticket-scope/roles-owner-1440.png","admin":"/home/agent/rer-consolidation/work/hh-notify001-teams-n1/packet/screenshots/ticket-scope/roles-admin-1440.png","empty":"/home/agent/rer-consolidation/work/hh-notify001-teams-n1/packet/screenshots/ticket-scope/roles-empty-1440.png","failed":"/home/agent/rer-consolidation/work/hh-notify001-teams-n1/packet/screenshots/ticket-scope/roles-failed-save-1440.png"},"targets":[{"height":44,"width":640},{"height":44,"width":640},{"height":44,"width":620},{"height":44,"width":620},{"height":44,"width":620}],"overflow":[false,false],"persisted":{"groupIds":["b695841b-3d64-4693-80a5-d89d53ec9842"],"includeUngrouped":true}}
+# PROBE ACCESS-001 P11 1440: agent ticket/draft open, owner narrows role, stream closes at the next frame, reload reads generic unavailable -> {"path":"/home/agent/rer-consolidation/work/hh-notify001-teams-n1/packet/screenshots/ticket-scope/agent-revoked-1440.png","transcriptPresent":0,"draftPresent":0}
+# PROBE ACCESS-001 P12 1440: scoped collaborator read/note/follow, reply/field refusal, hidden ticket; member mobile after warned role save -> {"allowed":"/home/agent/rer-consolidation/work/hh-notify001-teams-n1/packet/screenshots/ticket-scope/collaborator-allowed-1440.png","hidden":"/home/agent/rer-consolidation/work/hh-notify001-teams-n1/packet/screenshots/ticket-scope/collaborator-hidden-1440.png","reply":403,"fields":403,"mobile":{"status":401,"code":"mobile_session_invalid"},"warning":"/home/agent/rer-consolidation/work/hh-notify001-teams-n1/packet/screenshots/ticket-scope/roles-warning-1440.png"}
+# PROBE NOTIFY-001 teams Settings: consent, authenticated personal link, preference persistence, unlink at 1440; captures teams-{unavailable,consent,linked}-{1440,390}.png
+# Subtest: an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session
+ok 1 - an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session
+  ---
+  duration_ms: 285100.858792
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 288666.47294

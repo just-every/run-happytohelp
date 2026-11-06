@@ -37,7 +37,7 @@ export default function MoveInZendesk({projectId,onOpenRun}){
    <form onSubmit={connect}>
     <Field name="subdomain" label="Zendesk subdomain" hint="acme for acme.zendesk.com" value={form.subdomain} onChange={(_,value)=>setForm(old=>({...old,subdomain:value}))} required/>
     <Field name="clientId" label="OAuth client Identifier" value={form.clientId} onChange={(_,value)=>setForm(old=>({...old,clientId:value}))} required/>
-    <button className="btn btn-primary" disabled={busy||!form.subdomain||!form.clientId}>Connect</button>
+    <button type="submit" className="btn btn-primary" disabled={busy||!form.subdomain||!form.clientId}>Connect</button>
    </form>
   </>:<>
    <p><b>Connected to {connection.subdomain}.zendesk.com</b> <button type="button" className="btn btn-link" disabled={busy||working.includes(pull?.state)} onClick={disconnect}>Disconnect</button></p>

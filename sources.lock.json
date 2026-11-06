@@ -12657,7 +12657,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveIn.jsx": {
-      "sha256": "0adf615e547877362b3868cd3bc4547b0e0d0866715f2f7983a4a79bb8a5583c",
+      "sha256": "be20735f03a6af852bc3fe5eda12dd10640ea1e916cb82f7cec4abc2b1269ab1",
       "executable": false
     },
     "src/ui/native/pages/MoveInGuide.jsx": {
@@ -12677,7 +12677,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInZendesk.jsx": {
-      "sha256": "6a5fa11d550bd812a34fdf7f901e61477902418ba3204dfc378e666b7861cfa1",
+      "sha256": "26dd1fd880517b14bacd1782f5d62b5200fcb3c14bc341436402dd487f4e9610",
       "executable": false
     },
     "src/ui/native/pages/notifications/NotificationInbox.jsx": {
@@ -16253,7 +16253,7 @@
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
-      "sha256": "2c03cd227f50f6c2479e156b973df16ec6b77dbec4e5a21b0a288ab01a93fec3",
+      "sha256": "3c5367e53712a782a83bb70aa15ba6d7e01ddc30c71cd240b14001229ed4389e",
       "executable": false
     },
     "tests/journeys/move-in-capacity.mjs": {
@@ -16466,6 +16466,10 @@
     },
     "tests/move-in/worker.ts": {
       "sha256": "53a97035c600e8859654cfd4f995d7b63d9ebbae6b5835a9bf1bb5a0daca0c6e",
+      "executable": false
+    },
+    "tests/move-in/zendesk-connect-browser.mjs": {
+      "sha256": "3e58c77fd87605fc9f0dd62680136e52fc3e4d9da447c6b6494e4d2495329c8c",
       "executable": false
     },
     "tests/move-in/zendesk-door.mjs": {

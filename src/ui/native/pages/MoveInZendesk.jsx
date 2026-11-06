@@ -48,7 +48,7 @@ export default function MoveInZendesk({projectId,onOpenRun}){
 }
 
 function PullStatus({pull,busy,onStep,onOpenRun}){
- const {tickets,articles,replies,keptAsImported:kept}=pull.totals,covered=pull.batches.filter(b=>b.covered).length,waiting=pull.batches.filter(b=>b.waiting);
+ const {tickets,articles,replies,keptAsImported:kept}=pull.totals,covered=pull.batches.filter(b=>b.covered),refusedInCovered=covered.some(b=>b.summary?.refused>0);
  const heading=pull.state==='ready'?'Ready for your approval':pull.state==='applied'?'Pull imported':pull.state==='abandoned'?'Pull stopped':phases[pull.phase]||'Working';
  return <section className="mt-3" aria-label="Zendesk pull">
   <h3>{heading}</h3>
@@ -61,8 +61,8 @@ function PullStatus({pull,busy,onStep,onOpenRun}){
    <li>Articles: {articles.published} to publish, {articles.draft} drafts, {articles.heldBack} held back for restricted audiences{articles.unavailable?' (no Help Center)':''}</li>
    <li>Batches: {pull.progress.batchesReviewed} of {pull.progress.batches} reviewed, {pull.progress.batchesApplied} imported</li>
   </ul>
-  {pull.state==='ready'&&<div className="move-in-actions"><button type="button" className="btn btn-primary" disabled={busy} onClick={()=>onStep('approve')}>Approve and import {count(covered,'batch','batches')}</button>{waiting.length>0&&<span className="settings-note">{count(waiting.length,'batch','batches')} with refused records wait for your review below.</span>}</div>}
-  {pull.batches.length>0&&<details className="move-in-details"><summary>Batches</summary><ul>{pull.batches.map(b=><li key={b.ordinal}><button type="button" className="btn btn-link" onClick={()=>onOpenRun(b.runId)}>{b.filename}</button> {b.waiting?`waits: ${count(b.summary.refused,'refused record')}`:b.state}</li>)}</ul></details>}
+  {pull.state==='ready'&&<div className="move-in-actions"><button type="button" className="btn btn-primary" disabled={busy} onClick={()=>onStep('approve')}>{covered.length?`Approve and import ${count(covered.length,'batch','batches')}`:'Approve: nothing new to import'}</button>{refusedInCovered&&<span className="settings-note">Refused records stay out; everything else imports.</span>}</div>}
+  {pull.batches.length>0&&<details className="move-in-details"><summary>Batches</summary><ul>{pull.batches.map(b=><li key={b.ordinal}><button type="button" className="btn btn-link" onClick={()=>onOpenRun(b.runId)}>{b.filename}</button> {b.stopped?`stopped: ${reasonLabel(b.error)}`:b.nothingToImport?'nothing to import':b.state}</li>)}</ul></details>}
   {pull.refusalsTotal>0&&<details className="move-in-details"><summary>{count(pull.refusalsTotal,'refused record')}</summary><ul>{pull.refusals.map(r=><li key={`${r.kind}/${r.sourceId}`}>{r.kind.replace('_',' ')} {r.sourceId}: {reasonLabel(r.reason)}</li>)}</ul></details>}
   {['pulling','reviewing','ready'].includes(pull.state)&&<button type="button" className="btn btn-link" disabled={busy} onClick={()=>onStep('abandon')}>Stop this pull</button>}
  </section>;

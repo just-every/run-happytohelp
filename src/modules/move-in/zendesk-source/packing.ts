@@ -28,7 +28,7 @@ async function bodies(ctx:PullContext,kind:StagedKind,wanted:string[]){
  * omission. Every definition is still reviewed in the fields batch. */
 async function acceptedFields(ctx:PullContext,wanted:string[]){
  const accepted=new Set<string>()
- for(const [id,body] of await bodies(ctx,'ticket_field',wanted)){try{zendeskField({payload:JSON.parse(body)} as any,ctx.pull.project_id);accepted.add(id)}catch{}}
+ for(const [id,body] of await bodies(ctx,'ticket_field',wanted)){try{zendeskField({sourceId:id,payload:JSON.parse(body)} as any,ctx.pull.project_id);accepted.add(id)}catch{}}
  return accepted
 }
 /** New tickets first, then replies on tickets earlier imports hold, with what they reference. */
@@ -71,8 +71,8 @@ async function remainingBatch(ctx:PullContext,limit:number):Promise<Batch|null>{
 /** One batch per invocation enters Move in through the same admission as an
  * upload, once every staged record has settled against earlier imports. Packing is
  * deterministic, so a repeated step finds the same run; a batch identical to one
- * that was undone is admitted again as a new run. A batch admission refuses is
- * halved until the one record it names is refused by name. */
+ * that stopped, was undone or was erased is admitted again as a new run. A batch
+ * admission refuses is halved until the one record it names is refused by name. */
 export async function packBatch(ctx:PullContext){
  if(!await settled(ctx))return
  const ordinal=Number(ctx.cursor.ordinal??0),limit=Number(ctx.cursor.limit??CANDIDATES)
@@ -94,15 +94,18 @@ export async function packBatch(ctx:PullContext){
  }else throw new ZendeskError('zendesk_batch_admission_failed',result.status)
  ctx.more=true
 }
-/** The same bytes as an earlier run return that run, so a repeated step finds its
- * own batch. When that earlier run was undone, the batch is admitted again as a new
- * run: a trailing blank line, which the reader skips, makes it a new file with the
- * same records. */
+/** The same bytes as an earlier run return that run while it can still carry them:
+ * one ready for review, applying or completed, or this step repeated finding its own
+ * batch still being admitted or prepared under this pull's session, without a stop.
+ * Any other earlier run (stopped, undone, erased, or left in preparation by another
+ * session) is admitted again as a new run: a trailing blank line, which the reader
+ * skips, makes it a new file with the same records. */
+const CARRIES=['ready','applying','completed'],PREPARING=['uploading','uploaded','parsing','planning']
 async function admissible(ctx:PullContext,lines:string[]){
  for(let blank=0;blank<READMISSIONS;blank++){
   const bytes=new TextEncoder().encode(lines.join('\n')+'\n'+'\n'.repeat(blank))
-  const prior=await ctx.env.DB.prepare("SELECT state FROM move_in_runs WHERE project_id=? AND vendor='zendesk' AND artifact_hash=?").bind(ctx.pull.project_id,sha256(bytes)).first<{state:string}>()
-  if(prior?.state!=='undone')return bytes
+  const prior=await ctx.env.DB.prepare("SELECT state,error,session_hash FROM move_in_runs WHERE project_id=? AND vendor='zendesk' AND artifact_hash=?").bind(ctx.pull.project_id,sha256(bytes)).first<{state:string;error:string|null;session_hash:string}>()
+  if(!prior||CARRIES.includes(prior.state)||!prior.error&&PREPARING.includes(prior.state)&&prior.session_hash===ctx.pull.session_hash)return bytes
  }
  throw new ZendeskError('zendesk_batch_readmission_limit')
 }

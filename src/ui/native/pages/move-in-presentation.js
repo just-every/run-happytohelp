@@ -29,6 +29,7 @@ const patterns=[
  [/^attachments_metadata_retained_bytes_not_imported:.*$/,()=>reasons.attachments_metadata_retained_bytes_not_imported],
  [/^source_metadata_only:(.*)$/,([,kind])=>`The ${sourceKinds[kind]||kind} is kept in your original file only.`],
  [/^batch_stopped:(.*)$/,([,code])=>`An approved batch stopped: ${reasonLabel(code)} Resume the pull to continue.`],
+ [/^batch_review_stopped:(.*)$/,([,code])=>`A batch stopped while it was prepared for review: ${reasonLabel(code)}`],
 ];
 export const kindLabel=kind=>labels[kind]||String(kind).replaceAll('_',' ');
 export function reasonLabel(reason){

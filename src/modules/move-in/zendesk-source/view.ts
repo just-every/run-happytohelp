@@ -1,5 +1,5 @@
 import type {Env} from '../../../platform/env'
-import {covered,pullBatches,pullFingerprint,type BatchSummary} from './approval'
+import {covered,pullBatches,pullFingerprint,stopped,type BatchSummary} from './approval'
 import {json,type PullRow} from './pull-store'
 import {emptyHeld} from './settle'
 const REFUSALS_SHOWN=500
@@ -16,7 +16,7 @@ export async function pullView(env:Env,pull:PullRow){
  const fingerprint=pull.state==='ready'?pullFingerprint(batches):null,coverable=pull.state==='ready'?covered(batches).map(b=>b.run_id):approval.map(a=>a.runId)
  return {
   id:pull.id,state:pull.state,phase:pull.phase,subdomain:pull.subdomain,error:pull.error,nextAt:pull.next_at||null,createdAt:pull.created_at,approvedAt:pull.approved_at,fingerprint,
-  progress:{phase:pull.phase,commentsPending:n('ticket','comments'),ticketsRead:n('ticket','ready','packed'),batches:batches.length,batchesReviewed:summaries.filter(Boolean).length,batchesApplied:batches.filter(b=>b.state==='completed').length},
+  progress:{phase:pull.phase,commentsPending:n('ticket','comments'),ticketsRead:n('ticket','ready','packed'),batches:batches.length,batchesReviewed:summaries.filter(Boolean).length,batchesApplied:batches.filter(b=>b.state==='completed').length,batchesStopped:batches.filter(stopped).length},
   totals:{
    tickets:{seen:source.tickets,deleted:source.deleted,imported:sum(s=>s.ticketsNew,i=>batches[i].state==='completed'),refused:refusedOf('ticket'),alreadyImported:held.tickets.unchanged},
    replies:{seen:source.replies??0,imported:sum(s=>s.replies??0,i=>batches[i].state==='completed'),refused:refusedOf('ticket_comment')},
@@ -27,6 +27,7 @@ export async function pullView(env:Env,pull:PullRow){
    redactedLinks:counts.redacted??0
   },
   refusals,refusalsTotal:refusedTotal.reduce((total,row)=>total+row.n,0),
-  batches:batches.map((b,i)=>({ordinal:b.ordinal,runId:b.run_id,filename:b.filename,state:b.state,error:b.error,summary:summaries[i],covered:coverable.includes(b.run_id),waiting:!!summaries[i]&&(summaries[i]!.refused>0)&&b.state==='ready'}))
+  // A stopped batch is what is left of a pull that has not finished; Resume continues it.
+  batches:batches.map((b,i)=>({ordinal:b.ordinal,runId:b.run_id,filename:b.filename,state:b.state,error:b.error,summary:summaries[i],covered:coverable.includes(b.run_id),stopped:stopped(b),nothingToImport:!!summaries[i]&&b.state==='ready'&&!b.total}))
  }
 }

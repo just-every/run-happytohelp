@@ -3,14 +3,12 @@ import {HTTPException} from 'hono/http-exception'
 import type {Context} from 'hono'
 import type {AppEnv} from '../../../platform/env'
 import {auditStatement,requestSource} from '../../audit/record'
-import {guarded} from '../context'
-import {enqueue,getRun} from '../service'
 import {importActor,type ImportActor} from '../routes'
-import type {Run} from '../types'
 import {getConnection} from '../zendesk-connection/store'
 import {covered,pullBatches,pullFingerprint} from './approval'
 import {enqueuePull} from './notify'
 import {getPull,latestPulls,savePull,type PullRow} from './pull-store'
+import {resumeBatches} from './takeover'
 import {pullView} from './view'
 const root='/projects/:projectId/zendesk/pulls'
 export const zendeskPullRoutes=new Hono<AppEnv>()
@@ -51,11 +49,12 @@ zendeskPullRoutes.post(`${root}/:pullId/approve`,async c=>{
  return c.json({data:await pullView(c.env,(await getPull(c.env,pull.id))!)},202)
 })
 
-/** Resume after a stop: the current session takes over, and a stopped approved batch resumes too. */
+/** Resume after a stop: the current session takes over the pull, and every batch that
+ * stopped, in review or while importing, continues from its checkpoint. */
 zendeskPullRoutes.post(`${root}/:pullId/resume`,async c=>{
  const {actor,pull}=await ownedPull(c)
  if(!['pulling','reviewing','applying'].includes(pull.state))throw new HTTPException(409,{message:'This pull has nothing to resume'})
- if(pull.state==='applying')for(const entry of JSON.parse(pull.approval_json||'[]') as {runId:string}[]){const run=await getRun(c.env,entry.runId);if(run?.error&&['applying','undoing'].includes(run.state)){await guarded(c.env,{...run,actor_id:actor.actor_id,session_hash:actor.session_hash} as Run,[c.env.DB.prepare('UPDATE move_in_runs SET error=NULL,session_hash=? WHERE id=?').bind(actor.session_hash,run.id)]);await enqueue(c.env,run)}}
+ await resumeBatches(c.env,pull.id,actor)
  await savePull(c.env,withSession(pull,actor),{error:null,next_at:0,session_hash:actor.session_hash})
  await enqueuePull(c.env,pull)
  return c.json({data:await pullView(c.env,(await getPull(c.env,pull.id))!)},202)

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {randomBytes} from 'node:crypto'
+import {createHash,randomBytes} from 'node:crypto'
 import {nativeHarness} from '../move-in/harness.mjs'
 import {rows} from '../move-in/journey-kit.mjs'
 import {fakeZendesk,largeComments,SUBDOMAIN,CLIENT_ID,PATH_TOKEN,QUERY_TOKEN} from '../move-in/zendesk-pull-fixture.mjs'
@@ -8,17 +8,42 @@ import {fakeZendesk,largeComments,SUBDOMAIN,CLIENT_ID,PATH_TOKEN,QUERY_TOKEN} fr
 const api='/api/move-in/projects/p',post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
 const secretish=/synthetic-(?:access|refresh|code)-\d|synthetic-hh-(?:path|query)-token/
 // Steps every queued job; a pull waiting on Zendesk's Retry-After or its incremental window has a persisted next_at.
-async function drain(h){
- let steps=0,maxStatements=0
+// hold sets jobs aside until the rest have run, as a slow queue would deliver them; retries
+// allows a job that fails outright (the queue retries it).
+async function drain(h,{hold,retries=false}={}){
+ let steps=0,maxStatements=0;const held=[]
  while(h.queued.length){
   assert.ok(steps++<3000,'pull finishes in bounded steps')
   const job=h.queued[0]
+  if(hold?.(job)){held.push(h.queued.shift());continue}
   if(job.type==='move-in.zendesk'){const [pull]=await rows(h,'SELECT next_at FROM move_in_zendesk_pulls WHERE id=?',job.id);const wait=(pull?.next_at??0)-Date.now();if(wait>0)await new Promise(resolve=>setTimeout(resolve,wait+20))}
-  const result=await h.step();assert.deepEqual(result.effects,{widget:0});assert.deepEqual(result.retried,[]);maxStatements=Math.max(maxStatements,result.statements)
+  const result=await h.step();assert.deepEqual(result.effects,{widget:0});if(!retries)assert.deepEqual(result.retried,[]);maxStatements=Math.max(maxStatements,result.statements)
  }
+ h.queued.push(...held)
  return {steps,maxStatements}
 }
 const pullOf=async(h,id)=>(await h.call(`${api}/zendesk/pulls/${id}`)).data
+const sourceIds=async h=>(await rows(h,'SELECT source_id,COUNT(*) n FROM move_in_conversations GROUP BY source_id ORDER BY CAST(source_id AS INTEGER)')).map(r=>[r.source_id,r.n])
+// Every ticket the pull saw is deleted in Zendesk, imported, refused, already imported or kept as imported.
+const accounted=(t,kept)=>t.deleted+t.imported+t.refused+t.alreadyImported+kept.tickets
+async function connect(h,zendesk){
+ const consent=zendesk.consent((await h.call(`${api}/zendesk/connect`,post({subdomain:SUBDOMAIN,clientId:CLIENT_ID}))).url)
+ assert.equal((await h.raw(`/api/move-in/zendesk/callback?${new URLSearchParams({code:consent.code,state:consent.state})}`)).response.status,302)
+}
+// A transient D1 failure while work runs: the statement the trigger names fails, as on a
+// database hiccup, and the import engine records it on the batch's run.
+async function failing(h,when,work){
+ await h.db.prepare(`CREATE TRIGGER synthetic_d1_failure ${when} BEGIN SELECT RAISE(ABORT,'synthetic transient failure'); END`).run()
+ try{return await work()}finally{await h.db.prepare('DROP TRIGGER synthetic_d1_failure').run()}
+}
+const whileParsing=filename=>`BEFORE INSERT ON move_in_records WHEN (SELECT filename FROM move_in_runs WHERE id=NEW.run_id)='${filename}'`
+// The reviewer's session ends, then the reviewer signs in again with a new one.
+const endSession=h=>h.db.prepare("UPDATE sessions SET revoked_at=? WHERE actor_id='owner' AND revoked_at IS NULL").bind(Date.now()).run()
+async function signIn(h){
+ const token=randomBytes(32).toString('hex'),hash=createHash('sha256').update(token).digest('hex')
+ await h.db.batch([h.db.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,'owner','p','owner',?)").bind(hash,Date.now()+86400000),h.db.prepare("INSERT INTO session_factors(token_hash,user_id,method,verified_at) VALUES(?,'owner','password',?)").bind(hash,Date.now())])
+ h.rememberSession('owner',token)
+}
 
 test('an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo',{timeout:600_000},async()=>{
  const zendesk=fakeZendesk(),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
@@ -54,21 +79,22 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.deepEqual(pull.totals.tickets,{seen:5,deleted:1,imported:0,refused:0,alreadyImported:0})
   assert.deepEqual(pull.totals.articles,{seen:3,published:1,draft:1,heldBack:1})
   assert.equal(pull.totals.users,5);assert.equal(pull.totals.organizations,1)
-  const waiting=pull.batches.filter(b=>b.waiting)
-  assert.equal(waiting.length,1,'the field definitions batch waits with its refusals')
+  const refusedOnly=pull.batches.filter(b=>b.summary.refused&&!b.covered)
+  assert.deepEqual(refusedOnly.map(b=>[b.summary.refused,b.nothingToImport]),[[2,true]],'only the field definitions batch, whose every record was refused, has nothing to import')
+  assert.ok(pull.batches.filter(b=>!b.nothingToImport).every(b=>b.covered),'the approval covers every batch with something to import')
   assert.deepEqual(pull.refusals.filter(r=>r.kind==='ticket_field').map(r=>[r.sourceId,r.reason]),[['71','field_type_not_supported'],['72','field_permissions_require_native_review']])
   assert.doesNotMatch(JSON.stringify(pull),secretish)
   const conversationsBefore=(await rows(h,'SELECT COUNT(*) n FROM conversations'))[0].n
   assert.equal(conversationsBefore,0,'review alone has no native effect')
 
-  // One approval binds every reviewed batch; each refusal-free batch then applies by itself.
+  // One approval binds every reviewed batch; each batch with something to import then applies by itself.
   assert.equal((await h.raw(`${api}/zendesk/pulls/${pull.id}/approve`,post({fingerprint:'stale'}))).response.status,409)
   await h.call(`${api}/zendesk/pulls/${pull.id}/approve`,post({fingerprint:pull.fingerprint}))
   const applying=await drain(h)
   pull=await pullOf(h,started.id)
   assert.equal(pull.state,'applied',JSON.stringify({error:pull.error}))
   assert.equal(pull.totals.tickets.imported,4)
-  assert.equal(pull.batches.find(b=>b.waiting).state,'ready','a batch with refusals is not applied')
+  assert.equal(pull.batches.find(b=>b.nothingToImport).state,'ready','a batch whose every record was refused has nothing to apply')
   assert.ok(Math.max(first.maxStatements,applying.maxStatements)<=980,'every invocation stays inside the D1 statement budget')
 
   const imported=await rows(h,'SELECT s.source_id,c.id,c.assigned_to FROM move_in_conversations s JOIN conversations c ON c.id=s.conversation_id ORDER BY CAST(s.source_id AS INTEGER)')
@@ -116,7 +142,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.deepEqual(repeat.totals.replies,{seen:2,imported:0,refused:0})
   assert.deepEqual(repeat.totals.keptAsImported,keptRecords,'changed in Zendesk, kept as imported')
   assert.deepEqual(repeat.refusals.filter(r=>r.kind!=='ticket_field'),[],'nothing new is refused')
-  assert.deepEqual(repeat.batches.filter(b=>b.waiting).map(b=>b.summary.refused),[2],'only the refused field definitions wait again')
+  assert.deepEqual(repeat.batches.filter(b=>b.summary.refused).map(b=>[b.summary.refused,b.nothingToImport]),[[2,true]],'only the field definitions are refused again, and they have nothing to import')
   assert.ok(repeat.batches.filter(b=>b.summary.tickets||b.summary.replies).every(b=>b.covered),'no ticket or reply batch waits')
   await h.call(`${api}/zendesk/pulls/${again.id}/approve`,post({fingerprint:repeat.fingerprint}))
   budget=await drain(h)
@@ -170,5 +196,96 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   const [after]=await rows(h,'SELECT state,access_ciphertext,refresh_ciphertext FROM move_in_zendesk_connections')
   assert.deepEqual(after,{state:'disconnected',access_ciphertext:null,refresh_ciphertext:null})
   assert.equal(h.outboundRequests.filter(r=>r.hostname!==`${SUBDOMAIN}.zendesk.com`).length,0,'nothing else was contacted: no mail, AI or notification')
+ }finally{await h.close()}
+})
+
+test('a refused record never holds back a valid one and a stopped batch is never left behind: the first pull and a repeat pull import every valid record and name each refusal',{timeout:600_000},async()=>{
+ const zendesk=fakeZendesk({refusedPeople:true}),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
+ try{
+  await connect(h,zendesk)
+  // The first pull's ticket batch stops on a transient database failure while it is parsed.
+  const first=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+  await failing(h,whileParsing(`zendesk-pull-${first.id.slice(0,8)}-1.jsonl`),()=>drain(h))
+  let pull=await pullOf(h,first.id)
+  assert.equal(pull.state,'reviewing','a pull with a stopped batch is neither ready nor applied')
+  assert.equal(pull.error,'batch_review_stopped:Import database operation failed')
+  const stopped=pull.batches.filter(b=>b.stopped)
+  assert.deepEqual(stopped.map(b=>[b.ordinal,b.state,b.error,b.summary]),[[0,'parsing','Import database operation failed',null]],'the stopped batch is named with its reason and never counted as reviewed')
+  assert.equal(pull.progress.batchesStopped,1)
+  assert.equal((await rows(h,'SELECT COUNT(*) n FROM conversations'))[0].n,0)
+
+  // Stop that pull. The next one reads the account again and admits the stopped batch's
+  // records as a new run; when that run stops too, Resume continues it from its checkpoint.
+  await h.call(`${api}/zendesk/pulls/${first.id}/abandon`,post({}))
+  const second=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+  await failing(h,whileParsing(`zendesk-pull-${second.id.slice(0,8)}-1.jsonl`),()=>drain(h))
+  pull=await pullOf(h,second.id)
+  assert.equal(pull.state,'reviewing')
+  const [again]=pull.batches.filter(b=>b.stopped)
+  assert.equal(again.ordinal,0);assert.notEqual(again.runId,stopped[0].runId,'the next pull admits the stopped batch again as a new run')
+  await h.call(`${api}/zendesk/pulls/${second.id}/resume`,post({}))
+  await drain(h)
+  pull=await pullOf(h,second.id)
+  assert.equal(pull.state,'ready',JSON.stringify({error:pull.error}))
+  assert.equal(pull.progress.batchesStopped,0)
+
+  // Person 8 has no valid email and requests ticket 109, in the same batch as every valid ticket.
+  // The approval covers that batch: its valid records import and the two refusals are named.
+  const ticketBatch=pull.batches.find(b=>b.summary.tickets)
+  assert.deepEqual([ticketBatch.summary.tickets,ticketBatch.summary.ticketsNew,ticketBatch.summary.refused,ticketBatch.covered],[5,4,2,true],'a batch with refused records is covered by the one approval')
+  await h.call(`${api}/zendesk/pulls/${second.id}/approve`,post({fingerprint:pull.fingerprint}))
+  let budget=await drain(h)
+  pull=await pullOf(h,second.id)
+  assert.equal(pull.state,'applied',JSON.stringify({error:pull.error}))
+  assert.ok(budget.maxStatements<=980)
+  assert.deepEqual(await sourceIds(h),[['101',1],['102',1],['104',1],['105',1]],'every valid ticket imports beside the refused one')
+  assert.deepEqual(pull.refusals.filter(r=>r.kind!=='ticket_field').map(r=>[r.kind,r.sourceId,r.reason]),[['ticket','109','conversation_contact_unavailable'],['user','8','contact_email_missing_or_invalid']])
+  assert.deepEqual(pull.totals.tickets,{seen:6,deleted:1,imported:4,refused:1,alreadyImported:0})
+  assert.equal(accounted(pull.totals.tickets,pull.totals.keptAsImported),pull.totals.tickets.seen,'every ticket seen is accounted for')
+  const contacts=async()=>(await rows(h,'SELECT COUNT(*) n FROM contacts'))[0].n
+  assert.equal(pull.totals.users,(await contacts())+1+1,'people seen are four contacts, one refused person and one staff author')
+  assert.ok(pull.batches.every(b=>b.state==='completed'||b.nothingToImport),'no batch is left behind')
+
+  // A repeat pull with new replies on 101, new tickets 106 and 107, and new person 6 without
+  // a valid email who requests ticket 108, all in one batch: everything valid imports.
+  zendesk.state.repeat=true
+  const replies=(await rows(h,"SELECT COUNT(*) n FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'"))[0].n
+  const third=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+  // The reviewer's session ends while the batch waits for its turn in the queue. Its step
+  // cannot run, so it hands control back to the pull, which stops and says why; after a
+  // new sign-in, Resume hands the waiting batch to the new session.
+  await drain(h,{hold:job=>job.type==='move-in'})
+  assert.equal((await pullOf(h,third.id)).state,'reviewing')
+  await endSession(h)
+  await drain(h,{retries:true})
+  const [lapsed]=await rows(h,'SELECT state,error FROM move_in_zendesk_pulls WHERE id=?',third.id)
+  assert.deepEqual(lapsed,{state:'reviewing',error:'import_authority_revoked'},'the pull stops and names the ended session')
+  await signIn(h)
+  await h.call(`${api}/zendesk/pulls/${third.id}/resume`,post({}))
+  await drain(h)
+  let repeat=await pullOf(h,third.id)
+  assert.equal(repeat.state,'ready',JSON.stringify({error:repeat.error}))
+  const caughtUp=repeat.batches.find(b=>b.summary.tickets||b.summary.replies)
+  assert.deepEqual([caughtUp.summary.ticketsNew,caughtUp.summary.replies,caughtUp.summary.refused,caughtUp.covered],[2,2,2,true])
+  // A transient database failure stops the approved batch mid-import: the pull is not
+  // imported, names the stopped batch, and Resume finishes it.
+  await h.call(`${api}/zendesk/pulls/${third.id}/approve`,post({fingerprint:repeat.fingerprint}))
+  await failing(h,'BEFORE INSERT ON conversations',()=>drain(h))
+  repeat=await pullOf(h,third.id)
+  assert.equal(repeat.state,'applying');assert.match(repeat.error,/^batch_stopped:/)
+  assert.deepEqual(repeat.batches.filter(b=>b.stopped).map(b=>[b.runId,b.state]),[[caughtUp.runId,'applying']])
+  await h.call(`${api}/zendesk/pulls/${third.id}/resume`,post({}))
+  budget=await drain(h)
+  repeat=await pullOf(h,third.id)
+  assert.equal(repeat.state,'applied',JSON.stringify({error:repeat.error}))
+  assert.ok(budget.maxStatements<=980)
+  assert.deepEqual(await sourceIds(h),[['101',1],['102',1],['104',1],['105',1],['106',1],['107',1]],'106 and 107 import, 108 and 109 stay out')
+  assert.equal((await rows(h,"SELECT COUNT(*) n FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'"))[0].n,replies+1,'the new public reply on 101 imports')
+  assert.deepEqual(repeat.refusals.filter(r=>r.kind!=='ticket_field').map(r=>[r.kind,r.sourceId,r.reason]),[['ticket','108','conversation_contact_unavailable'],['user','6','contact_email_missing_or_invalid']])
+  assert.deepEqual(repeat.totals.tickets,{seen:5,deleted:0,imported:2,refused:1,alreadyImported:1})
+  assert.deepEqual(repeat.totals.replies,{seen:2,imported:2,refused:0})
+  assert.deepEqual(repeat.totals.keptAsImported,{tickets:1,users:1,organizations:1})
+  assert.equal(accounted(repeat.totals.tickets,repeat.totals.keptAsImported),repeat.totals.tickets.seen,'every ticket seen is accounted for')
+  assert.ok(repeat.batches.every(b=>b.state==='completed'||b.nothingToImport),'no batch is left behind')
  }finally{await h.close()}
 })

@@ -7,13 +7,18 @@ import {memberExport} from './member-export.mjs'
 export async function memberCopies({app,owner,project,native,person,context,call,rpc,adopt,settings,conversation,taylor,taylorSession,sub,email}){
  const root=`/api/dashboard/projects/${project}/conversations/${conversation.id}`,erase=`/api/management/projects/${project}/agents/${taylor.id}/erase`,cookie='h2h_session='+owner.token
  const member={id:sub,email,name:'Taylor Support',role:'member',invite:1}
- const other=(await app.sql('SELECT business_id id,email,business_role role,invite FROM bs_team WHERE operator_id<>?',taylor.id)).map(row=>({...row,name:'Unrelated teammate'}))
+ // Earlier public-door steps erased a teammate. Their inactive hash binding is
+ // an erasure fence, never an email to put back into a signed Business roster.
+ const other=(await app.sql("SELECT b.business_id id,b.email,b.business_role role,b.invite FROM bs_team b JOIN users u ON u.id=b.operator_id WHERE b.operator_id<>? AND u.email<>'erased:'||u.id",taylor.id)).map(row=>({...row,name:'Unrelated teammate'}))
+ const priorErased=await app.sql("SELECT b.* FROM bs_team b JOIN users u ON u.id=b.operator_id WHERE u.email='erased:'||u.id ORDER BY b.email")
+ assert.ok(priorErased.length,'the earlier member erasure left a durable Business fence')
  // Preserve an unrelated active teammate in the managed roster.
  const survivor=(await native(`/api/management/projects/${project}/agents`,{body:{email:'synthetic-happytohelp-survivor@example.test'}})).data
  await app.ok('/api/identity/accept-token',{body:{token:new URL(survivor.invitationUrl).searchParams.get('token'),name:'Synthetic Survivor',password:'synthetic-happytohelp-survivor-password'}})
  const survivorSession=await app.ok('/api/identity/login',{body:{email:survivor.email,password:'synthetic-happytohelp-survivor-password'}})
  const live={id:randomUUID(),email:survivor.email,name:'Synthetic Survivor',role:'member',invite:1}
  assert.equal((await settings(5,[member,live,...other])).status,200)
+ assert.deepEqual(await app.sql("SELECT b.* FROM bs_team b JOIN users u ON u.id=b.operator_id WHERE u.email='erased:'||u.id ORDER BY b.email"),priorErased,'signed roster omission preserves earlier erased bindings')
  const unrelatedBefore=await app.first('SELECT * FROM bs_team WHERE business_id=?',live.id)
  assert.equal(unrelatedBefore.state,'active')
  // A retained pre-upgrade receipt has only the legacy assignee-name copy;
@@ -50,7 +55,14 @@ export async function memberCopies({app,owner,project,native,person,context,call
   assert.deepEqual(afterBuckets.flatMap(bucket=>bucket.events).filter(event=>event.type==='AGENT_ASSIGNED').map(({id,created_at})=>({id,created_at})),chronology,'E1 nonpersonal assignment chronology survives')
   assert.ok(JSON.stringify(afterBuckets).includes('Morgan Support'),'E1 another teammate assigned by the erased actor survives')
   assert.ok(review,'E2 useful review history survives')
-  assert.equal(review.state,before.state);assert.equal(review.tool,before.tool);assert.equal(review.decision_id,before.decision_id)
+  assert.equal(before.state,'open');assert.equal(review.state,'executed','E2 erased review retains its executed outcome as terminal history')
+  assert.equal(review.tool,before.tool)
+  assert.equal(review.outcome,'executed');assert.deepEqual(review.classes,before.classes.map(item=>item.class))
+  assert.equal(review.decision_id,undefined,'E2 erased review strips its saved decision handle')
+  assert.ok(review.tombstone.erasure_id);assert.ok(Number.isFinite(Date.parse(review.tombstone.at)),'E2 retained review records a dated erasure tombstone')
+  assert.equal(review.summary,undefined);assert.equal(review.undo,undefined)
+  const undo=await person(`/agents/api/reviews/${reviewId}/undo`,{},cookie)
+  assert.equal(undo.status,409);assert.equal(undo.data.code,'subject_erased','E2 erased review cannot undo the assignment')
   assert.doesNotMatch(JSON.stringify(afterReviews),/Taylor Support/,'E2 ordinary owner reviews redact copied assignment summaries')
   assert.doesNotMatch(exported,/Taylor Support|taylor@example.test/,'E1 E2 E3 native D1 export contains no erased copied identity')
   assert.ok(exported.includes('agent_door_reviews')&&exported.includes(reviewId)&&exported.includes('AGENT_ASSIGNED'),'export retains real populated assignment and review history')

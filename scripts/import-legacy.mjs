@@ -37,8 +37,8 @@ else{
  try{
   const summary=await run(target)
   // Index imported knowledge before the workspace is used (see knowledge-index.mjs).
-  const projects=pkg?[summary.projectId]:(bundleProjects??[]).map(row=>String(row.id))
-  summary.knowledgeIndex=await indexImportedKnowledge(target,projects,updateKnowledgeIndex,{progress})
+  const {workspaces=(bundleProjects??[]).map(row=>String(row.id))}=summary;delete summary.workspaces
+  summary.knowledgeIndex=await indexImportedKnowledge(target,workspaces,updateKnowledgeIndex,{progress})
   console.log(JSON.stringify(summary,null,2))
  }finally{await target.close()}
 }

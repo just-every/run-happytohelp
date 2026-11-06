@@ -3801,7 +3801,7 @@
       "executable": false
     },
     "scripts/import-legacy.mjs": {
-      "sha256": "368fd109ca0aeb2dd2f1f29d66ef1c3f76efc4a3d29cfc731407ca7294f1ba9c",
+      "sha256": "22dcc2e223b33b2955a039ff39408a4974afd10d927b9f9fea1819ab3e2c06c8",
       "executable": false
     },
     "scripts/independent/delegation-backup.py": {
@@ -4061,7 +4061,7 @@
       "executable": false
     },
     "scripts/legacy-import/import-package.mjs": {
-      "sha256": "cf3b539781a2728ba40d15f3dc91b8ec90c81e60781d21633182fe6753572491",
+      "sha256": "faf3e5a087cf7d54717f328a5d8efc7b3cb7ef7d365fdf9a2b45a721291f7735",
       "executable": false
     },
     "scripts/legacy-import/knowledge-index.mjs": {

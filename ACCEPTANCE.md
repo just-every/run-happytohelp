@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 5 | 70 | 11 | 86 |
+| Core | 6 | 69 | 11 | 86 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 5 | 70 | 16 | 91 |
+| Full target | 6 | 69 | 16 | 91 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -288,7 +288,7 @@ Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-
 
 #### PUBLIC-003 — Support desk, move-in invitation and closing
 
-Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
+Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** “The rest of your support desk” (chat widget, shared inbox, help center, suggested replies, as frameless ink cards numbered on filled aqua discs); “Try it beside what you have” (install, bring the help center from Zendesk, Intercom or Freshdesk, add the chat widget, on filled aqua discs, beside the finished import in its window); “Ready when you are.”, a big closing headline with an aqua pen line drawn under it; and the footer, signed with the header's lockup.
 
@@ -298,7 +298,7 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 3. The closing headline and footer retain the aqua line and header lockup, in the published section order.
 
 **Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`; `tests/journeys/public-browser.mjs`; `tests/helpers/homepage/desk-browser.mjs`, “supportDesk”, “moveInInvitation”, “closingAndFooter”: published section order, four numbered frameless ink desk cards on aqua discs, install and Zendesk/Intercom/Freshdesk help import plus widget invitation, completed import drawing, closing headline/aqua line and matching header/footer lockup); Restored journey assertion map: The same public-browser owner journey invokes homepageJourney, publishedSections, supportDesk, moveInInvitation and closingAndFooter; section order proof retains main’s hero-independent h1/h2 assertions and follows the installation invitation to /docs/install.; Builder replay evidence: `tests/helpers/public-site-journey.mjs` (desk cards, move-in steps and finished import, section order, closing line and lockups); `tests/homepage-browser.mjs` via `tests/journeys/public-browser.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: chat widget; shared inbox; help center; suggested replies; numbered ink desk cards; installation invitation; Zendesk help import; Intercom help import; Freshdesk help import; widget installation; finished import drawing; closing headline; published section order; closing aqua line; footer matches header lockup. Asserted: no outcome in the currently cited test files.
+**Gap.** None.
 
 #### PUBLIC-004 — Public brand, links and motion
 

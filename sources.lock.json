@@ -15725,7 +15725,7 @@
       "executable": false
     },
     "tests/helpers/outcomes-002-email-outcomes.mjs": {
-      "sha256": "077463a4e2ee3f7df45c1f58a53b3f2b8a8e772ef28c0fef1ba6f9d792c074c9",
+      "sha256": "acfed37b17a220bb2b604a4a9c15e10fae1ff9cea70494ca25badcd4051b0ae3",
       "executable": false
     },
     "tests/helpers/platform-archive.mjs": {

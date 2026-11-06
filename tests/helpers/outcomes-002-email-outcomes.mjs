@@ -51,7 +51,7 @@ export async function emailOutcomes(){
 }
 
 async function surveyUpgrade(){
- const f=await selfServiceFixture({migrate:name=>!name.startsWith('281_')}),{app,p,owner}=f;
+ const f=await selfServiceFixture({migrate:name=>!name.startsWith('282_')}),{app,p,owner}=f;
  try{
   await app.ok(`/api/outcomes/projects/${p}/settings`,{...owner,method:'PUT',body:{enabled:true,scale:'five',locale:'en',delayMinutes:0,expiresDays:1}});
   const incoming=await app.ok('/api/integrations/email/inbound',{headers:{Authorization:'Bearer fixture-survey-signing-key-for-self-service'},body:{messageId:'pre-messaging-survey',to:'help@example.com',from:'prior@example.com',text:'Keep my existing response.'}});

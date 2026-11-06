@@ -52,7 +52,9 @@ function PullStatus({pull,busy,onStep,onOpenRun}){
  const heading=pull.state==='ready'?'Ready for your approval':pull.state==='applied'?'Pull imported':pull.state==='abandoned'?'Pull stopped':phases[pull.phase]||'Working';
  return <section className="mt-3" aria-label="Zendesk pull">
   <h3>{heading}</h3>
-  {pull.error?<p role="alert">{reasonLabel(pull.error.replace(/:\d+$/,''))} <button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>onStep('resume')}>Resume pull</button></p>:working.includes(pull.state)&&<p role="status">{phases[pull.phase]||'Working'}…{pull.nextAt>Date.now()?' Zendesk asked us to wait a moment.':''}</p>}
+  {!pull.yours&&<p className="settings-note">Started by another member of this workspace.</p>}
+  {pull.error?<p role="alert">{reasonLabel(pull.error.replace(/:\d+$/,''))} {pull.yours&&<button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>onStep('resume')}>Resume pull</button>}</p>:working.includes(pull.state)&&<p role="status">{phases[pull.phase]||'Working'}…{pull.nextAt>Date.now()?' Zendesk asked us to wait a moment.':''}</p>}
+  {pull.canTakeOver&&<p><button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>onStep('resume')}>Take over pull</button> <span className="settings-note">It reads again under your name.</span></p>}
   <ul>
    <li>Tickets: {tickets.seen} seen, {tickets.deleted} deleted in Zendesk (not imported){tickets.alreadyImported?`, ${tickets.alreadyImported} already imported`:''}, {tickets.imported} imported, {tickets.refused} refused</li>
    {replies.seen>0&&<li>New replies on imported tickets: {replies.imported} imported, {replies.refused} refused</li>}
@@ -61,9 +63,9 @@ function PullStatus({pull,busy,onStep,onOpenRun}){
    <li>Articles: {articles.published} to publish, {articles.draft} drafts, {articles.heldBack} held back for restricted audiences{articles.unavailable?' (no Help Center)':''}</li>
    <li>Batches: {pull.progress.batchesReviewed} of {pull.progress.batches} reviewed, {pull.progress.batchesApplied} imported</li>
   </ul>
-  {pull.state==='ready'&&<div className="move-in-actions"><button type="button" className="btn btn-primary" disabled={busy} onClick={()=>onStep('approve')}>{covered.length?`Approve and import ${count(covered.length,'batch','batches')}`:'Approve: nothing new to import'}</button>{refusedInCovered&&<span className="settings-note">Refused records stay out; everything else imports.</span>}</div>}
-  {pull.batches.length>0&&<details className="move-in-details"><summary>Batches</summary><ul>{pull.batches.map(b=><li key={b.ordinal}><button type="button" className="btn btn-link" onClick={()=>onOpenRun(b.runId)}>{b.filename}</button> {b.stopped?`stopped: ${reasonLabel(b.error)}`:b.nothingToImport?'nothing to import':b.state}</li>)}</ul></details>}
+  {pull.state==='ready'&&pull.yours&&<div className="move-in-actions"><button type="button" className="btn btn-primary" disabled={busy} onClick={()=>onStep('approve')}>{covered.length?`Approve and import ${count(covered.length,'batch','batches')}`:'Approve: nothing new to import'}</button>{refusedInCovered&&<span className="settings-note">Refused records stay out; everything else imports.</span>}</div>}
+  {pull.batches.length>0&&<details className="move-in-details"><summary>Batches</summary><ul>{pull.batches.map(b=><li key={b.ordinal}>{pull.yours?<button type="button" className="btn btn-link" onClick={()=>onOpenRun(b.runId)}>{b.filename}</button>:b.filename} {b.stopped?`stopped: ${reasonLabel(b.error)}`:b.nothingToImport?'nothing to import':b.state}</li>)}</ul></details>}
   {pull.refusalsTotal>0&&<details className="move-in-details"><summary>{count(pull.refusalsTotal,'refused record')}</summary><ul>{pull.refusals.map(r=><li key={`${r.kind}/${r.sourceId}`}>{r.kind.replace('_',' ')} {r.sourceId}: {reasonLabel(r.reason)}</li>)}</ul></details>}
-  {['pulling','reviewing','ready'].includes(pull.state)&&<button type="button" className="btn btn-link" disabled={busy} onClick={()=>onStep('abandon')}>Stop this pull</button>}
+  {pull.canStop&&<button type="button" className="btn btn-link" disabled={busy} onClick={()=>onStep('abandon')}>Stop this pull</button>}
  </section>;
 }

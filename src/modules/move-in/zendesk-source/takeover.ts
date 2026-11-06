@@ -22,10 +22,12 @@ export async function resumeBatches(env:Env,pullId:string,actor:ImportActor){
  * sees it; the member who started it approves and resumes it. A workspace owner may
  * also stop another member's pull before its approval, or take it over once it has
  * stopped or its member can no longer act. An approved pull imports batches its member
- * reviewed, so it continues under that member. */
+ * reviewed, so it continues under that member while it runs; once it has stopped, or
+ * its member can no longer act, a workspace owner may stop it. */
 export async function access(env:Env,pull:PullRow,actor:Pick<ImportActor,'actor_id'|'role'>){
- const yours=pull.actor_id===actor.actor_id,open=BEFORE_APPROVAL.includes(pull.state),owner=actor.role==='owner'
- return {yours,canStop:open&&(yours||owner),canTakeOver:!yours&&owner&&open&&(!!pull.error||!await pullAllowed(env,pull))}
+ const yours=pull.actor_id===actor.actor_id,open=BEFORE_APPROVAL.includes(pull.state),approved=pull.state==='applying',owner=actor.role==='owner'
+ const halted=owner&&(approved||open&&!yours)&&(!!pull.error||!await pullAllowed(env,pull))
+ return {yours,canStop:open&&(yours||owner)||approved&&halted,canTakeOver:open&&!yours&&halted}
 }
 /** Taking over starts the pull again under the owner from the same starting point: it
  * reads Zendesk again and admits what it reads as the owner's own batches, since another

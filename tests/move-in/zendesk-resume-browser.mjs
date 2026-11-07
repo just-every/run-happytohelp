@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
 
 // Real upload/review/apply creates the batch custody. Only the historical pull
-// linkage and old review metadata are seeded, with the emitted Worker stopped.
+// linkage, old review metadata and a historical run error are seeded, with the emitted Worker stopped.
 // Resume then uses the ordinary HTTP route, queue and planning engine.
 export async function zendeskResumeBrowserFlow({page,runtime,project:originalProject,inspect}){
  const origin=runtime.origin,created=await page.request.post(origin+'/api/management/projects',{data:{name:'Northstar support history',allowedOrigin:origin}})
@@ -68,6 +68,37 @@ export async function zendeskResumeBrowserFlow({page,runtime,project:originalPro
   await page.reload();await region.waitFor()
   assert.equal(await resume.count(),0,'a current pull has no mapping recovery action after reload')
   assert.equal((await get(api+'/zendesk/pulls'))[0].needsReplan,false)
+  // A ready batch can carry an error left by an earlier delivery even though its
+  // review is current and the pull itself has no error. The list is the page's
+  // initial status source; no application response is intercepted or replaced.
+  const runError='step_conflict'
+  await runtime.restart(()=>runtime.execute(`UPDATE move_in_runs SET error=${quote(runError)} WHERE id=${ids[2]};`))
+  await page.reload()
+  const errored=await readPull(),listed=(await get(api+'/zendesk/pulls'))[0]
+  assert.deepEqual([errored.state,errored.error,errored.approvedAt,errored.needsReplan],['ready',null,null,false])
+  assert.equal(errored.batches[2].error,runError)
+  assert.equal(listed.batches[2].error,runError,'the page list exposes the batch run error')
+  await resume.waitFor()
+  await capture('run-error')
+  const recoveryResponse=page.waitForResponse(r=>new URL(r.url()).pathname===`${api}/zendesk/pulls/${pullId}/resume`&&r.request().method()==='POST')
+  await resume.click()
+  const recovering=await recoveryResponse
+  assert.equal(recovering.status(),202)
+  const recovery=(await recovering.json()).data
+  assert.equal(recovery.state,'reviewing')
+  assert.deepEqual([recovery.batches[2].state,recovery.batches[2].summary,recovery.batches[2].error],['planning',null,null],'the errored current review goes back to planning')
+  const recoveredRun=await until(()=>readRun(runs[2].id),r=>r.state==='ready'&&r.plan?.mappingRevision===currentRevision)
+  assert.equal(recoveredRun.error,null,'the real planner leaves the recovered run error-free')
+  const recovered=await until(readPull,p=>p.state==='ready')
+  assert.equal(recovered.error,null)
+  assert.equal(recovered.needsReplan,false)
+  assert.ok(recovered.batches.every(b=>b.error===null),'all batch run errors have cleared')
+  assert.ok(recovered.batches.slice(0,3).every(b=>b.covered),'every unapproved batch is covered by the next approval')
+  assert.deepEqual([(await readRun(runs[3].id)).state,(await readRun(runs[3].id)).plan.mappingRevision],['completed',oldRevision],'run-error recovery leaves the approved batch alone')
+  await resume.waitFor({state:'hidden'})
+  await capture('recovered')
+  await page.reload();await region.waitFor()
+  assert.equal(await resume.count(),0,'an error-free current pull has no recovery action after reload')
  }finally{
   await switchProject(originalProject)
   await page.goto(origin+`/projects/${originalProject}/move-in`)

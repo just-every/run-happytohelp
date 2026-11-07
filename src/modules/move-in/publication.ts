@@ -30,6 +30,13 @@ export function publicationPredicates(project:string,contacts:PublicationContact
    OR EXISTS(SELECT 1 FROM contacts native WHERE native.project_id=? AND native.external_id=json_extract(candidate.value,'$.external') AND native.id<>json_extract(candidate.value,'$.id')))`,params:[JSON.stringify(contacts.slice(start,start+500)),project,project]})
  return predicates
 }
+/** Keep the same per-predicate diagnostics, in one D1 read round trip. The
+ * publication wrapper still repeats every predicate around each atomic write. */
+export async function checkPublication(db:D1Database,groups:{predicates:D1Sql[];error:string}[]){
+ const checks=groups.flatMap(group=>group.predicates.map(predicate=>({predicate,error:group.error})));if(!checks.length)return
+ const results=await db.batch<{allowed:number}>(checks.map(({predicate})=>db.prepare(`SELECT (${predicate.sql}) allowed`).bind(...predicate.params!)))
+ for(let index=0;index<checks.length;index++)if(!results[index].results[0]?.allowed)throw new Error(checks[index].error)
+}
 /** The outer bounded D1 port counts these additional statements too. They share
  * Base's native transaction; a failed postcondition rolls back all its effects. */
 export function publicationDatabase(db:D1Database,predicates:D1Sql[]):D1Database{

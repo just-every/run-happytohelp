@@ -17,9 +17,11 @@ export const LIMITS = { inputBytes: 2 * 1024 * 1024, expandedBytes: 2 * 1024 * 1
  * record, and is then alone in its reviewed child plan. The record bound keeps the
  * parsed row (record and its serialized copy) inside D1's 2,000,000-byte statement
  * limit. Uploads keep LIMITS unchanged, including the 2 MiB file and 128 KiB record. */
-export const PULL_LIMITS = { recordBytes: 960 * 1024, shapeNodes: 32768, planContentBytes: 4 * 1024 * 1024, planBytes: 4 * 1024 * 1024 } as const
+// Larger reviewed children amortize job creation; apply still publishes at most
+// 20 entries per delivery and retains the 750 native-statement/512 KiB bounds.
+export const PULL_LIMITS = { recordBytes: 960 * 1024, shapeNodes: 32768, planContentBytes: 4 * 1024 * 1024, planBytes: 4 * 1024 * 1024, planBatch:100 } as const
 export type RunSource = 'upload' | 'zendesk-pull'
-export type RecordLimits = { recordBytes:number; shapeNodes?:number; planContentBytes:number; planBytes:number }
+export type RecordLimits = { recordBytes:number; shapeNodes?:number; planContentBytes:number; planBytes:number;planBatch:number }
 export const runLimits = (run:{source?:string|null}):RecordLimits => run.source==='zendesk-pull' ? PULL_LIMITS : LIMITS
 export interface Run { id:string; source?:RunSource; identity_audited:number; project_id:string; actor_id:string; session_hash:string; vendor:Vendor; filename:string; artifact_hash:string; object_key:string; bytes:number; state:string; cursor:number; file_index:number; files_json:string; diagnostics_json:string; parsed_total:number; kit_job_id:string|null; review_fingerprint:string|null; total:number; plan_json:string|null; report_json:string|null; error:string|null; created_at:number; updated_at:number }
 export interface MappingInput { projectId:string; actorId:string; vendor:Vendor; source:SourceBundle; tagIds:Map<string,string> }

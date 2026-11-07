@@ -58,10 +58,15 @@ const entities:Record<string,Table[]>={
   ].map(t=>({...t,nativeOnly:true}))]
 }
 function definitions(kind:string){const value=entities[kind];if(!value)throw new Error('unsupported_native_target');return value}
-function where(t:Table){if(t.direct)return `project_id=? AND ${t.key}=?`;if(t.name==='macro_heads')return 'macro_id=? AND macro_id IN (SELECT id FROM macros WHERE project_id=?)';if(t.name==='message_authorship')return 'message_id IN (SELECT id FROM messages WHERE conversation_id=? AND project_id=?)';if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return 'resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=? AND project_id=?)';if(t.nativeOnly)return 'conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)';if(t.name==='move_in_message_sources')return 'project_id=? AND message_id IN (SELECT id FROM messages WHERE project_id=? AND conversation_id=?)';if(t.name==='knowledge_article_categories')return 'article_id=? AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=?)';return `project_id=? AND ${t.key}=?`}
+/** The SQL text selecting one key's rows of a table. A single read binds the
+ * project and key in order (see params); a selected-key read refers to them by
+ * expression, so both build the same predicate from one definition. */
+interface Ref {project:string;id:string}
+const bound:Ref={project:'?',id:'?'}
+function where(t:Table,{project,id}:Ref=bound){if(t.direct)return `project_id=${project} AND ${t.key}=${id}`;if(t.name==='macro_heads')return `macro_id=${id} AND macro_id IN (SELECT id FROM macros WHERE project_id=${project})`;if(t.name==='message_authorship')return `message_id IN (SELECT id FROM messages WHERE conversation_id=${id} AND project_id=${project})`;if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return `resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=${id} AND project_id=${project})`;if(t.nativeOnly)return `conversation_id=${id} AND conversation_id IN (SELECT id FROM conversations WHERE project_id=${project})`;if(t.name==='move_in_message_sources')return `project_id=${project} AND message_id IN (SELECT id FROM messages WHERE project_id=${project} AND conversation_id=${id})`;if(t.name==='knowledge_article_categories')return `article_id=${id} AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=${project})`;return `project_id=${project} AND ${t.key}=${id}`}
 function params(t:Table,destination:string,id:string){return t.direct?[destination,id]:t.nativeOnly?[id,destination]:t.name==='move_in_message_sources'?[destination,destination,id]:['knowledge_article_categories','macro_heads'].includes(t.name)?[id,destination]:[destination,id]}
 const realPolicyColumns=new Set(['first_response_minutes','next_response_minutes','resolution_minutes','approaching_minutes','unattended_minutes'])
-function select(t:Table){const columns=t.columns.map(c=>t.name==='sla_policies'&&realPolicyColumns.has(c)?`CASE WHEN ${c}=CAST(${c} AS INTEGER) THEN CAST(${c} AS INTEGER) ELSE ${c} END`:c);return `(SELECT COALESCE(json_group_array(json_array(${columns.join(',')})),'[]') FROM (SELECT ${t.columns.join(',')} FROM ${t.name} WHERE ${where(t)} ORDER BY ${t.order}))`}
+function select(t:Table,ref:Ref=bound){const columns=t.columns.map(c=>t.name==='sla_policies'&&realPolicyColumns.has(c)?`CASE WHEN ${c}=CAST(${c} AS INTEGER) THEN CAST(${c} AS INTEGER) ELSE ${c} END`:c);return `(SELECT COALESCE(json_group_array(json_array(${columns.join(',')})),'[]') FROM (SELECT ${t.columns.join(',')} FROM ${t.name} WHERE ${where(t,ref)} ORDER BY ${t.order}))`}
 function orderKey(t:Table,row:Record<string,any>){return t.name==='email_threading_keys'?`${row.key_kind}:${row.key_value}`:String(row[t.order])}
 function expected(t:Table,value:NativeValue){return JSON.stringify([...(value.tables[t.name]??[])].sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0).map(row=>t.columns.map(column=>column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null)))}
 function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sql {
@@ -92,17 +97,46 @@ export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
  if(kind==='conversation'&&!value.tables.move_in_attachment_bytes.length)delete value.tables.move_in_attachment_bytes
  return value
 }
+/** One read's row, as returned by either read path: the rows of each table the
+ * kind owns, the source the import recorded and its revision. An unowned native
+ * collision is visible to the kit and cannot be overwritten without review. */
+function decodeRead(destination:string,kind:string,id:string,row:any):TargetRow|undefined{
+ const defs=definitions(kind),tables:NativeValue['tables']={};for(let i=0;i<defs.length;i++){const t=defs[i];tables[t.name]=JSON.parse(row[`t${i}`]).map((values:any[])=>Object.fromEntries(t.columns.map((column,index)=>[column,values[index]])))}
+ if(kind==='contact'&&!tables.contact_companies.length)delete tables.contact_companies
+ if(kind==='conversation'&&!tables.move_in_attachment_bytes.length)delete tables.move_in_attachment_bytes
+ if(!row.source&&kind==='contact'&&tables.contacts[0]&&JSON.parse(tables.contacts[0].metadata_json||'{}').is_erased===1)return undefined
+ if(!row.source&&!Object.values(tables).some(rows=>rows.length))return undefined
+ return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:{tables,source:row.source?JSON.parse(row.source):{}} as any}
+}
+/** Selected keys, one result per key in input order. Each key's tables are the
+ * single read's own subqueries (same predicates, order and column decoding),
+ * correlated to one JSON list of its kind's ids, so a window of keys is one
+ * round trip. Nothing outside the listed ids is read. Any error rejects the
+ * whole call and the kit goes back to single reads, which fail at the same
+ * entry as before. */
+const READ_MANY_IDS=20,READ_MANY_STATEMENTS=5
+async function readSelected(db:D1Database,destination:string,keys:readonly {kind:string;id:string}[]):Promise<(TargetRow|undefined)[]>{
+ const ids=new Map<string,Set<string>>()
+ for(const key of keys){definitions(key.kind);(ids.get(key.kind)??ids.set(key.kind,new Set()).get(key.kind)!).add(key.id)}
+ const queries:{kind:string;ids:string[]}[]=[]
+ for(const [kind,set] of ids){const all=[...set];for(let i=0;i<all.length;i+=READ_MANY_IDS)queries.push({kind,ids:all.slice(i,i+READ_MANY_IDS)})}
+ const rows=new Map<string,any>()
+ for(let i=0;i<queries.length;i+=READ_MANY_STATEMENTS){
+  const part=queries.slice(i,i+READ_MANY_STATEMENTS)
+  const results=await db.batch(part.map(({kind,ids})=>{
+   const defs=definitions(kind),ref:Ref={project:'?1',id:'wanted.value'}
+   return db.prepare(`SELECT wanted.value AS id,${defs.map((t,n)=>`${select(t,ref)} AS t${n}`).join(',')},(SELECT source_json FROM move_in_origins WHERE project_id=?1 AND target_kind=?3 AND target_id=wanted.value) AS source,(SELECT revision FROM move_in_origins WHERE project_id=?1 AND target_kind=?3 AND target_id=wanted.value) AS revision FROM json_each(?2) wanted`).bind(destination,JSON.stringify(ids),kind)
+  }))
+  part.forEach(({kind},n)=>{for(const row of results[n].results as any[])rows.set(JSON.stringify([kind,row.id]),row)})
+ }
+ return keys.map(({kind,id})=>decodeRead(destination,kind,id,rows.get(JSON.stringify([kind,id]))))
+}
 export const nativeTargets:D1TargetAdapter={
  async read(db,destination,kind,id){
   const defs=definitions(kind),row:any=await db.prepare(`SELECT ${defs.map((t,i)=>`${select(t)} AS t${i}`).join(',')},(SELECT source_json FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?) AS source,(SELECT revision FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?) AS revision`).bind(...defs.flatMap(t=>params(t,destination,id)),destination,kind,id,destination,kind,id).first()
-  const tables:NativeValue['tables']={};for(let i=0;i<defs.length;i++){const t=defs[i];tables[t.name]=JSON.parse(row[`t${i}`]).map((values:any[])=>Object.fromEntries(t.columns.map((column,index)=>[column,values[index]])))}
-  if(kind==='contact'&&!tables.contact_companies.length)delete tables.contact_companies
-  if(kind==='conversation'&&!tables.move_in_attachment_bytes.length)delete tables.move_in_attachment_bytes
-  if(!row.source&&kind==='contact'&&tables.contacts[0]&&JSON.parse(tables.contacts[0].metadata_json||'{}').is_erased===1)return undefined
-  if(!row.source&&!Object.values(tables).some(rows=>rows.length))return undefined
-  // An unowned native collision is visible to the kit and cannot be overwritten without review.
-  return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:{tables,source:row.source?JSON.parse(row.source):{}} as any}
+  return decodeRead(destination,kind,id,row)
  },
+ readMany:readSelected,
  matches:guard,
  matchesMany:matchesOwnedSet,
  write(row){const value=row.value as unknown as NativeValue,statements:D1Sql[]=[]

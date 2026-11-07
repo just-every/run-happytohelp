@@ -128,8 +128,8 @@ async function readSelected(db:D1Database,destination:string,keys:readonly {kind
    return db.prepare(`SELECT wanted.value AS id,${defs.map((t,n)=>`${select(t,ref)} AS t${n}`).join(',')},(SELECT source_json FROM move_in_origins WHERE project_id=?1 AND target_kind=?3 AND target_id=wanted.value) AS source,(SELECT revision FROM move_in_origins WHERE project_id=?1 AND target_kind=?3 AND target_id=wanted.value) AS revision FROM json_each(?2) wanted`).bind(destination,JSON.stringify(ids),kind)
   })
   // A lone statement needs no batch (a batch also carries the publication guards).
-  const results=statements.length===1?[await statements[0].all<any>()]:await db.batch<any>(statements)
-  part.forEach(({kind},n)=>{for(const row of results[n].results as any[])rows.set(JSON.stringify([kind,row.id]),row)})
+  const results=(statements.length===1?[await statements[0].all()]:await db.batch(statements)) as {results:any[]}[]
+  part.forEach(({kind},n)=>{for(const row of results[n].results)rows.set(JSON.stringify([kind,row.id]),row)})
  }
  return keys.map(({kind,id})=>decodeRead(destination,kind,id,rows.get(JSON.stringify([kind,id]))))
 }

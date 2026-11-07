@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "dc849017d69e0da434f77034d0da4eec889cff635fabba9c8efc2dc78a2b5d84",
+      "sha256": "2ee1e6369d39d6d5e6b1959b999a20d75759425660b5a48404e5ffc01d631d7f",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8acfd42917513ed566c1d88e98848d9b0ca1521b77d8e0399f4f2ac52dbad740",
+      "sha256": "828d637a4e1c9ef134abd89becae4722c8c1ca4579732927c99286181caacb5a",
       "executable": false
     },
     "DEMO.md": {
@@ -1653,7 +1653,7 @@
       "executable": false
     },
     "docs/api.md": {
-      "sha256": "bb56496e82afbe03a4b69773b1e5a6ea99bbaa36f64db0bdb210f635f837155b",
+      "sha256": "b22141e0f46fd832d019cfa43a565202f367ac65cbc183f8033ee5e7cbc62ce3",
       "executable": false
     },
     "docs/AUTHORING.md": {
@@ -1789,7 +1789,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "c118584fb8c95e9eced3ec2b30122cfb8be53cefe7ebc3d6c40c0e1cbc859eb9",
+      "sha256": "f63525767838f7a4b9a03846d5d9f16034a6341d6c816a91c00e67473796a675",
       "executable": false
     },
     "docs/NAVIGATION.md": {
@@ -1885,7 +1885,7 @@
       "executable": false
     },
     "importers.json": {
-      "sha256": "180c5e13517cc7a1d147a68dfe78293c464dcaac185f81424cf2107f1369f255",
+      "sha256": "098d67a40a57ebf9f645c8ee35c9a6223023e9ff8f264f895a9590000dec6e7f",
       "executable": false
     },
     "LICENSE": {
@@ -2053,7 +2053,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "aa326c9151750275f81b9e21d43cef8646c544687e4622904e1f209264aac87b",
+      "sha256": "7e17f884769a360e1da74a06a65695036bda0cbc8c91dd7e78ee2125738d27f7",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2792,6 +2792,10 @@
       "sha256": "69acc3a9ec147cb9a828fe5c1f71092a1c5ccdff437e8c2c011c12cd16efb92f",
       "executable": false
     },
+    "migrations/309_move_in_zendesk_attachments.sql": {
+      "sha256": "3e4570372178fa141d7a2cef766ce53a0e259a05be8ed489f03416a085fb7d0e",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2877,7 +2881,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "bc42f3d8ebaf162ff2abf074d660c328732390803286113999ed0e4cbddfe009",
+      "sha256": "3b1179bbcb408659ce647eef7e8704f0ac8a5d15d69b634aa95784540460c188",
       "executable": false
     },
     "rer-project.json": {
@@ -4525,7 +4529,7 @@
       "executable": false
     },
     "src/jobs.ts": {
-      "sha256": "f7a1bf39997c42f856a641fd6d3b535ad5f88f9aefe6823f64031e833f60afbd",
+      "sha256": "f50d371d0d7a9d8978984ce8887ede4bce52b3a308b98ae75ad0d3370311f635",
       "executable": false
     },
     "src/message-effects.ts": {
@@ -4565,7 +4569,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "053e8e14239c9a60bb8eb18386bd9bee6eb9c4ca71d06e027f8f571934a16676",
+      "sha256": "74e61b945a3a300a852cfe5f47227bf4cddc6eb1ed4e7227f2f5a5946e6604eb",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -5245,7 +5249,7 @@
       "executable": false
     },
     "src/modules/collaboration/note-media.ts": {
-      "sha256": "9d572e98c317ef44b4aed4fc1e347cefd35e584a223dc3d78d3b5719130fcbe0",
+      "sha256": "e7d9a06e349734f51bf7cff29e4d71ce67a316f2f5f21b9fc120d7aae1325328",
       "executable": false
     },
     "src/modules/collaboration/notes.ts": {
@@ -8385,7 +8389,7 @@
       "executable": false
     },
     "src/modules/move-in/routes.ts": {
-      "sha256": "090cfd2b2943d0c6528c10ee266f6c46e41f24fdef9c854caede5e50ac9b81dc",
+      "sha256": "f5ffa364c7ecec2c01575916d0799f914e7180144459868192472b386f56ef50",
       "executable": false
     },
     "src/modules/move-in/run-store.ts": {
@@ -8424,12 +8428,40 @@
       "sha256": "00a6739bc317503b339897ca3a41d13331b89eaedeb6f8e35d5a5ca181f2332d",
       "executable": false
     },
+    "src/modules/move-in/zendesk-attachments/download.ts": {
+      "sha256": "ce3a8d748ab159a938b3549b6ff1261fd945a4bf507a5e5abae009a72737a7b1",
+      "executable": false
+    },
+    "src/modules/move-in/zendesk-attachments/files.ts": {
+      "sha256": "256aaa672574d0831c74f7264d19df9b0cb39d5e33d9f85f4f8527f85f1ea07a",
+      "executable": false
+    },
+    "src/modules/move-in/zendesk-attachments/job.ts": {
+      "sha256": "3651c45d50aa5d6af80ee3706b793cfa6e4e01a87ca21ef0ca0efa58c6fa0af8",
+      "executable": false
+    },
+    "src/modules/move-in/zendesk-attachments/ledger.ts": {
+      "sha256": "d760cc1ee9e2bfd4922e376b6f75906bdaedda5d70a1237ee97c5f4d56e544ae",
+      "executable": false
+    },
+    "src/modules/move-in/zendesk-attachments/routes.ts": {
+      "sha256": "0565ed7f951c0982dcb72bb4d0a8c5cc229ab5501c39c0f2be442a7b7dc30e6a",
+      "executable": false
+    },
+    "src/modules/move-in/zendesk-attachments/store.ts": {
+      "sha256": "9a0e0f27d0ef8bd93c7b1cf8cd0e0755ebba6f11ade13c763233494308940145",
+      "executable": false
+    },
+    "src/modules/move-in/zendesk-attachments/view.ts": {
+      "sha256": "7f855c1454aeddde86c5ae5cffabbb5ec2fc4c10bf431b4abe8f0658356be6f7",
+      "executable": false
+    },
     "src/modules/move-in/zendesk-connection/errors.ts": {
       "sha256": "8033cf52ba017b49aa57e5999f0a4c2dcaf3b691d40b1ca7484120a684e26599",
       "executable": false
     },
     "src/modules/move-in/zendesk-connection/http.ts": {
-      "sha256": "d356108af5c9d3d95ed3ac81a5855c7fe5bd42736a63338775230fa9583ffb19",
+      "sha256": "e86985d0156e8e9be604952794bdd58d77b60d8ea333b21760e310d678f3eb0f",
       "executable": false
     },
     "src/modules/move-in/zendesk-connection/oauth.ts": {
@@ -8481,7 +8513,7 @@
       "executable": false
     },
     "src/modules/move-in/zendesk-source/requests.ts": {
-      "sha256": "1384961acd79df004422cdeacea2262125d8bc34f17bf291b6912cb877cd6876",
+      "sha256": "baa087b982ffeec1e0cd4dc999c289118e30195162564d9fe847db798c5371ea",
       "executable": false
     },
     "src/modules/move-in/zendesk-source/routes.ts": {
@@ -12841,7 +12873,11 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInZendesk.jsx": {
-      "sha256": "3ff2dfb9c5f95786bcb0309a7636dee3ad9c520ab47397bc9cc28816c690e166",
+      "sha256": "c4badfee6600bc1f1d7f6f02f6d1a2af0924700eb9bb22eabb5280344db22903",
+      "executable": false
+    },
+    "src/ui/native/pages/MoveInZendeskFiles.jsx": {
+      "sha256": "5d8a072660088471fa58cb02e961f124bf3fdba41847d7cefaf282b5ce61e6a8",
       "executable": false
     },
     "src/ui/native/pages/notifications/NotificationInbox.jsx": {
@@ -16457,7 +16493,7 @@
       "executable": false
     },
     "tests/journeys/move-in-zendesk-pull.mjs": {
-      "sha256": "9047af35a6c1c5d872961778dda84b53d7044e2ddfb496da14adfdafb62c00ce",
+      "sha256": "769843f0eb7f2434990212cdb7003141e461c4e093046a537ba9a78dab7107c0",
       "executable": false
     },
     "tests/journeys/public-browser.mjs": {
@@ -16685,7 +16721,7 @@
       "executable": false
     },
     "tests/move-in/zendesk-pull-fixture.mjs": {
-      "sha256": "927f6d8d2049b683fb5f455631b927e9bb97043ed8073178375f3f55d407a9be",
+      "sha256": "e269596f56e25311d6c28d3b1c7cdb02f0447fb39232a000e60bad104b198fe1",
       "executable": false
     },
     "tests/move-in/zendesk-resume-browser.mjs": {

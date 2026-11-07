@@ -3,6 +3,8 @@ export const SCOPES=['read','hc:read'] as const
 export const SUBDOMAIN=/^[a-z0-9][a-z0-9-]{0,62}$/
 export const CLIENT_ID=/^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/
 export const zendeskOrigin=(subdomain:string)=>{if(!SUBDOMAIN.test(subdomain))throw new ZendeskError('zendesk_subdomain_invalid');return `https://${subdomain}.zendesk.com`}
+/** The account's own attachment host, where Zendesk's attachment downloads redirect. */
+export const attachmentOrigin=(subdomain:string)=>{zendeskOrigin(subdomain);return `https://${subdomain}.zdusercontent.com`}
 export interface ZendeskResponse {status:number;data:any;retryAfter?:number}
 /** Every Zendesk request goes to the connection's own subdomain and never follows a redirect. */
 export async function zendeskFetch(subdomain:string,path:string,init:{method:'GET'|'POST'|'DELETE';token?:string;body?:unknown}):Promise<ZendeskResponse>{

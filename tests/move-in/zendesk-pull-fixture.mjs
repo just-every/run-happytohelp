@@ -5,6 +5,12 @@ import {createHash} from 'node:crypto'
 // No real account, customer or name; every value here is invented.
 export const SUBDOMAIN='synthetic-hh',CLIENT_ID='synthetic-hh-public-client',ORIGIN=`https://${SUBDOMAIN}.zendesk.com`
 export const PATH_TOKEN='synthetic-hh-path-token-9f8e7d',QUERY_TOKEN='synthetic-hh-query-token-1a2b3c'
+// The account's own attachment host, where its downloads redirect, and a host it does not own.
+export const FILES_ORIGIN=`https://${SUBDOMAIN}.zdusercontent.com`,FOREIGN_ORIGIN='https://synthetic-elsewhere.example'
+const attachmentToken=id=>`synthetic-hh-attachment-token-${id}`,signedToken=id=>`synthetic-hh-signed-${id}`
+/** Invented bytes: a 60 KiB zip-typed file (over the old 48 KiB cap, outside the old six types) and a small CSV. */
+export const ATTACHMENT_BYTES={81001:Buffer.from(Array.from({length:60*1024},(_,i)=>(i*131+7)%256)),81002:Buffer.from('synthetic-hh,internal\n1,2\n'),70501:Buffer.from(Array.from({length:68},(_,i)=>(i*17)%256))}
+const file=(id,name,type,size,extra={})=>({id,file_name:name,content_type:type,size,inline:false,deleted:false,malware_scan_result:'malware_not_found',malware_access_override:false,content_url:`${ORIGIN}/attachments/token/${attachmentToken(id)}/?name=${name}`,mapped_content_url:`${ORIGIN}/attachments/token/${attachmentToken(id)}/?name=${name}`,url:`${ORIGIN}/api/v2/attachments/${id}.json`,thumbnails:[],...extra})
 const at=day=>`2024-01-${String(day).padStart(2,'0')}T00:00:00Z`,stamp=(day,second)=>`2024-01-${String(day).padStart(2,'0')}T${String(Math.floor(second/3600)%24).padStart(2,'0')}:${String(Math.floor(second/60)%60).padStart(2,'0')}:${String(second%60).padStart(2,'0')}Z`
 const inline=id=>({id,file_name:'inline.png',content_type:'image/png',size:68,inline:true,content_url:`${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,mapped_content_url:`${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,url:`${ORIGIN}/api/v2/attachments/${id}.json`,thumbnails:[]})
 const comment=(id,author,day,text,visible=true,extra={})=>({id,type:'Comment',author_id:author,body:text,html_body:`<div class="zd-comment"><p>${text}</p></div>`,plain_body:text,public:visible,attachments:[],audit_id:id+50000,via:{channel:'email',source:{from:{},to:{},rel:null}},created_at:typeof day==='string'?day:at(day),metadata:{system:{client:'synthetic-hh-client'},custom:{}},...extra})
@@ -17,13 +23,18 @@ export function largeComments(){return Array.from({length:300},(_,i)=>comment(40
  * starts like a link and whose chat transcript Zendesk itself wrote (author -1); ticket 110's
  * requester, person 9, is no longer in Zendesk. Once it has changed: person 6, whose email is
  * malformed, requests ticket 108, and agent 2 raises ticket 111 for themselves. */
-export function fakeZendesk({edgeCases=false,credentialTicket=false}={}){
- const state={authorizations:new Map(),grants:new Map(),access:new Set(),refresh:new Set(),tokenRequests:[],requests:[],throttled:false,issued:0,repeat:false}
+/** With attachments, comments on tickets 101 and 102 carry files: a public zip and a private
+ * note's CSV whose downloads redirect to the account's own attachment host (the zip's first
+ * download is throttled with Retry-After), a file on a host the account does not own, one
+ * whose download redirects to such a host, and a deleted one. Tickets in state.gone are no
+ * longer returned. Without it, the account is exactly as before. */
+export function fakeZendesk({edgeCases=false,credentialTicket=false,attachments=false}={}){
+ const state={authorizations:new Map(),grants:new Map(),access:new Set(),refresh:new Set(),tokenRequests:[],requests:[],throttled:false,issued:0,repeat:false,downloads:[],downloadThrottled:false,gone:new Set()}
  const users=[user(1,'end-user',{organization_id:7}),user(2,'agent'),user(3,'end-user'),user(4,'end-user'),user(5,'end-user'),...(edgeCases?[user(8,'end-user',{email:null})]:[])]
  const tickets={
-  101:{record:ticket(101,1,'open','synthetic-hh open order question',{custom_fields:[{id:70,value:true},{id:72,value:null}]}),comments:[comment(10101,1,2,'synthetic-hh where is my order'),comment(10102,2,3,'synthetic-hh internal check',false)]},
+  101:{record:ticket(101,1,'open','synthetic-hh open order question',{custom_fields:[{id:70,value:true},{id:72,value:null}]}),comments:[comment(10101,1,2,'synthetic-hh where is my order',true,attachments?{attachments:[file(81001,'synthetic-hh-report.zip','application/zip',ATTACHMENT_BYTES[81001].length),{...file(81003,'synthetic-hh-elsewhere.pdf','application/pdf',10),content_url:`${FOREIGN_ORIGIN}/attachments/token/${attachmentToken(81003)}/?name=elsewhere.pdf`}]}:{}),comment(10102,2,3,'synthetic-hh internal check',false,attachments?{attachments:[file(81002,'synthetic-hh-internal.csv','text/csv',ATTACHMENT_BYTES[81002].length)]}:{})]},
   // Archived: closed long ago. Listing Tickets omits these; the incremental export returns them.
-  102:{record:ticket(102,3,'closed','synthetic-hh archived refund'),comments:[comment(10201,3,2,'synthetic-hh refund please'),comment(10202,2,3,'synthetic-hh refunded on page two')]},
+  102:{record:ticket(102,3,'closed','synthetic-hh archived refund'),comments:[comment(10201,3,2,'synthetic-hh refund please',true,attachments?{attachments:[file(81004,'synthetic-hh-moved.png','image/png',10),file(81005,'synthetic-hh-deleted.png','image/png',10,{deleted:true})]}:{}),comment(10202,2,3,'synthetic-hh refunded on page two')]},
   103:{record:ticket(103,3,'deleted','synthetic-hh deleted spam'),comments:[]},
   104:{record:ticket(104,4,'solved','synthetic-hh very long thread'),comments:largeComments()},
   105:{record:ticket(105,5,'pending','synthetic-hh screenshot attached'),comments:[comment(10501,5,2,`synthetic-hh see screenshot ${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,true,{attachments:[inline(70501)]})]},
@@ -54,6 +65,13 @@ export function fakeZendesk({edgeCases=false,credentialTicket=false}={}){
  const grant=(lifetime)=>{const access=`synthetic-access-${++state.issued}`,refresh=`synthetic-refresh-${state.issued}`;state.access.add(access);state.refresh.add(refresh);return {access_token:access,refresh_token:refresh,token_type:'bearer',scope:'read hc:read',expires_in:lifetime,refresh_token_expires_in:7776000}}
  async function handler(request){
   const url=new URL(request.url)
+  if(attachments&&url.origin===FILES_ORIGIN){
+   // The account's attachment host: a signed, temporary link, never the API token.
+   assert.equal(request.headers.get('Authorization'),null,'the attachment host never receives the token')
+   const found=url.pathname.match(/^\/attachment\/(\d+)\//),id=found&&Number(found[1])
+   state.downloads.push({host:'files',id})
+   assert.equal(url.searchParams.get('token'),signedToken(id));return new Response(ATTACHMENT_BYTES[id],{status:200,headers:{'Content-Type':'application/octet-stream','Content-Length':String(ATTACHMENT_BYTES[id].length)}})
+  }
   assert.equal(url.origin,ORIGIN,'every request goes to the connected subdomain')
   state.requests.push({method:request.method,path:url.pathname,search:url.search})
   if(url.pathname==='/oauth/tokens'){
@@ -86,8 +104,16 @@ export function fakeZendesk({edgeCases=false,credentialTicket=false}={}){
    if(cursor==='tickets-after-1')return json({tickets:[104,105,...(state.repeat?[106,107]:[]),...(edgeCases?[109,110,...(state.repeat?[108,111]:[])]:[]),...(credentialTicket?[112]:[])].map(id=>current(id).record),after_cursor:'tickets-after-2',end_of_stream:true})
    assert.ok(['tickets-after-2','tickets-after-3'].includes(cursor),cursor);return json({tickets:state.repeat&&cursor==='tickets-after-2'?[101,102,106,107,...(edgeCases?[108,111]:[])].map(id=>current(id).record):[],after_cursor:'tickets-after-3',end_of_stream:true})
   }
+  // Ticket 105's inline image keeps its original path token.
+  const download=attachments&&url.pathname.match(new RegExp(`^/attachments/token/(?:synthetic-hh-attachment-token-(\\d+)|(${PATH_TOKEN}))/$`))
+  if(download){
+   const id=download[2]?70501:Number(download[1]);bearer(request);state.downloads.push({host:'account',id})
+   if(id===81001&&!state.downloadThrottled){state.downloadThrottled=true;return new Response('',{status:429,headers:{'Retry-After':'1'}})}
+   return new Response(null,{status:302,headers:{Location:id===81004?`${FOREIGN_ORIGIN}/attachment/${id}/moved.png?token=${signedToken(id)}`:`${FILES_ORIGIN}/attachment/${id}/file?token=${signedToken(id)}`}})
+  }
   const comments=url.pathname.match(/^\/api\/v2\/tickets\/(\d+)\/comments\.json$/)
   if(comments){
+   if(state.gone.has(comments[1]))return json({error:'RecordNotFound'},404)
    assert.equal(url.searchParams.get('include_inline_images'),'true')
    if(comments[1]==='101'&&!state.throttled){state.throttled=true;return new Response('{"error":"TooManyRequests"}',{status:429,headers:{'Retry-After':'1','Content-Type':'application/json'}})}
    const entry=current(comments[1]);if(!entry||entry.record.status==='deleted')return json({error:'RecordNotFound'},404)

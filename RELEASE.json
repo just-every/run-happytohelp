@@ -208,6 +208,10 @@
     {
       "id": "308_legacy_mail_s3.sql",
       "buyerSteps": "Back up D1 first; apply once after 307_legacy_import_delta.sql, before serving the updated Worker. Additive only: a receipts table with one row per object the optional Amazon SES S3 reader lists (and an index of the few that still hold a private copy), and a one-row table of its last list. No backfill, no existing row changes, nothing is read, sent, queued or enabled: the reader stays off until LEGACY_MAIL_S3_BUCKET, LEGACY_MAIL_S3_PREFIX, LEGACY_MAIL_S3_MAILBOX, LEGACY_AWS_REGION, LEGACY_AWS_ACCESS_KEY_ID and LEGACY_AWS_SECRET_ACCESS_KEY are all set. The receipts travel in exports with the sender address and private copy reference cleared; the list state stays with the installation."
+    },
+    {
+      "id": "309_move_in_zendesk_attachments.sql",
+      "buyerSteps": "Back up D1 and R2 first. Apply once after 308_legacy_mail_s3.sql and before serving the updated Worker. Adds the Zendesk attachment-file runs, a per-workspace ledger of each imported comment's attachments by Zendesk id (ids, states and reason codes only; no file name, URL or token), the tickets Zendesk no longer returned, and links from imported private notes to their files. Existing imports, media and private notes are unchanged; no run starts by migration, and files are fetched only when an owner or admin chooses Fetch files over the existing Zendesk connection. Fetched files live in R2 under import-bytes/ with their media rows; back up and restore them with the native media."
     }
   ],
   "breaking": false,

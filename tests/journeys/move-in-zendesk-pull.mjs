@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {createHash,randomBytes} from 'node:crypto'
 import {nativeHarness} from '../move-in/harness.mjs'
 import {rows} from '../move-in/journey-kit.mjs'
-import {fakeZendesk,largeComments,SUBDOMAIN,CLIENT_ID,PATH_TOKEN,QUERY_TOKEN} from '../move-in/zendesk-pull-fixture.mjs'
+import {fakeZendesk,largeComments,SUBDOMAIN,CLIENT_ID,PATH_TOKEN,QUERY_TOKEN,ATTACHMENT_BYTES} from '../move-in/zendesk-pull-fixture.mjs'
 
 const api='/api/move-in/projects/p',post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
 const secretish=/synthetic-(?:access|refresh|code)-\d|synthetic-hh-(?:path|query)-token/
@@ -537,5 +537,95 @@ test('an owner reads the Cutover sources with their live Zendesk counts after a 
   assert.equal(sources[0].state,'incumbent');assert.equal(sources[1].steps.length+sources[2].steps.length+sources[3].steps.length,0)
   assert.deepEqual(await rows(h,"SELECT action,actor_id,detail_json FROM audit_events WHERE action='cutover.step.recorded' ORDER BY at").then(events=>events.map(e=>[e.actor_id,JSON.parse(e.detail_json).source])),[['owner','zendesk'],['owner','zendesk']],'one security-log event per recorded step')
   assert.equal(h.outboundRequests.length,outbound,'nothing was sent or fetched')
+ }finally{await h.close()}
+})
+
+test('an owner fetches every imported comment\'s files over the Zendesk connection into private storage: shown in place, private notes stay private, refusals by id, Retry-After honoured, and a second run fetches nothing already stored',{timeout:900_000},async()=>{
+ const zendesk=fakeZendesk({attachments:true}),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
+ const files=`${api}/zendesk/attachments`,tokenish=/synthetic-(?:access|refresh|code)-\d|synthetic-hh-(?:path|query|attachment)-token|synthetic-hh-signed|zdusercontent|synthetic-elsewhere/
+ // Steps attachment and pull jobs alike, waiting out a persisted Retry-After.
+ async function run(){
+  let steps=0
+  while(h.queued.length){
+   assert.ok(steps++<500,'the run finishes in bounded steps')
+   const job=h.queued[0],[row]=job.type==='move-in.zendesk.attachments'?await rows(h,'SELECT next_at FROM move_in_zendesk_attachment_pulls WHERE id=?',job.id):[]
+   const wait=(row?.next_at??0)-Date.now();if(wait>0)await new Promise(resolve=>setTimeout(resolve,wait+20))
+   const result=await h.step();assert.deepEqual(result.retried,[],'a step never throws to the queue');assert.ok(result.statements<=980,'each step stays inside the D1 budget')
+  }
+ }
+ try{
+  await connect(h,zendesk)
+  assert.equal((await h.raw(files,post({}))).response.status,409,'nothing imported yet: nothing to fetch for')
+  const started=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+  await drain(h);const ready=await pullOf(h,started.id)
+  await h.call(`${api}/zendesk/pulls/${ready.id}/approve`,post({fingerprint:ready.fingerprint}));await drain(h)
+  assert.equal((await pullOf(h,started.id)).state,'applied')
+  assert.equal(zendesk.state.downloads.length,0,'the pull itself stays metadata-only')
+
+  // Only an owner or admin of this workspace starts it; one run at a time.
+  await addMember(h,'admin','admin')
+  for(const actor of ['operator','foreign'])assert.ok([403,404].includes((await h.raw(files,{...post({}),actor})).response.status),actor)
+  assert.equal((await h.raw(files,{...post({}),headers:{'Content-Type':'application/json',Authorization:''}})).response.status,401)
+  zendesk.state.gone.add('104')
+  const first=(await h.call(files,{...post({}),actor:'admin'})).data
+  assert.deepEqual([first.state,first.error],['running',null])
+  assert.equal((await h.raw(files,post({}))).response.status,409,'one run at a time per workspace')
+  await run()
+  let view=(await h.call(`${files}/${first.id}`)).data
+  assert.equal(view.state,'done',JSON.stringify(view.error))
+  assert.deepEqual(view.totals,{attachments:6,stored:3,pending:0,refused:3})
+  assert.deepEqual(view.refusals,[{attachmentId:null,ticketId:'104',reason:'zendesk_ticket_not_found'},{attachmentId:'81003',ticketId:'101',reason:'attachment_host_not_owned'},{attachmentId:'81004',ticketId:'102',reason:'attachment_host_not_owned'},{attachmentId:'81005',ticketId:'102',reason:'attachment_deleted'}])
+  assert.equal(view.refusalsTotal,4)
+  assert.deepEqual((await h.call(files)).data.id,first.id,'the workspace\'s latest run')
+  assert.ok(zendesk.state.downloads.filter(d=>d.id===81001&&d.host==='account').length>=2,'the throttled download is retried after Retry-After')
+  assert.deepEqual([...new Set(h.outboundRequests.map(r=>r.hostname))].sort(),[`${SUBDOMAIN}.zdusercontent.com`,`${SUBDOMAIN}.zendesk.com`],'only the account\'s own two hosts are ever requested')
+
+  // Shown in place and downloaded byte-exact; a private note's file reaches the team only.
+  const [ticket]=await rows(h,"SELECT c.id,c.contact_id FROM conversations c JOIN move_in_conversations s ON s.conversation_id=c.id WHERE s.source_id='101'")
+  const media=await rows(h,'SELECT id,filename,content_type,size,message_id,uploaded_by FROM media WHERE conversation_id=? ORDER BY filename',ticket.id)
+  assert.deepEqual(media.map(m=>[m.filename,m.content_type,m.size,m.message_id===null,m.uploaded_by]),[['synthetic-hh-internal.csv','text/csv',ATTACHMENT_BYTES[81002].length,true,'import:zendesk'],['synthetic-hh-report.zip','application/zip',ATTACHMENT_BYTES[81001].length,false,'import:zendesk']])
+  const [note,zip]=media,url=m=>`/api/conversations/${ticket.id}/media/${m.id}`
+  const shown=await h.call(`/api/conversations/${ticket.id}/messages`)
+  assert.deepEqual(shown.messages.flatMap(m=>m.media.map(f=>f.filename)),['synthetic-hh-report.zip'],'the public file shows on its message')
+  assert.ok(Buffer.from((await h.download(url(zip))).bytes).equals(ATTACHMENT_BYTES[81001]),'byte-exact over 48 KiB')
+  assert.ok(Buffer.from((await h.download(url(note))).bytes).equals(ATTACHMENT_BYTES[81002]),'the team downloads the private note\'s file')
+  const transcript=JSON.stringify(await h.call(`/api/dashboard/projects/p/conversations/${ticket.id}/buckets`))
+  assert.ok(transcript.includes('synthetic-hh-internal.csv'),'the private file shows on its private note')
+  await h.contactSession('customer','p',ticket.contact_id)
+  const seen=await h.call(`/api/conversations/${ticket.id}/messages`,{actor:'customer'})
+  assert.deepEqual(seen.messages.flatMap(m=>m.media.map(f=>f.filename)),['synthetic-hh-report.zip'])
+  assert.ok(Buffer.from((await h.download(url(zip),'customer')).bytes).equals(ATTACHMENT_BYTES[81001]),'the customer downloads the public file')
+  assert.equal((await h.download(url(note),'customer')).status,404,'a private note\'s file never reaches the customer')
+  assert.equal((await h.download(url(zip),'foreign')).status,404,'another workspace cannot download it')
+  const signedOut=await h.raw(url(zip),{headers:{Authorization:''}});assert.ok([401,403,404].includes(signedOut.response.status))
+  const [inline]=await rows(h,"SELECT m.id,m.conversation_id FROM media m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='105'")
+  assert.ok(Buffer.from((await h.download(`/api/conversations/${inline.conversation_id}/media/${inline.id}`)).bytes).equals(ATTACHMENT_BYTES[70501]),'an inline image is fetched too')
+
+  // No token, signed link, Location or file URL is kept anywhere.
+  assert.doesNotMatch(JSON.stringify(await h.snapshot()),tokenish)
+  const objects=(await (await h.files).list({include:['httpMetadata','customMetadata']})).objects.filter(o=>o.key.startsWith('import-bytes/'))
+  assert.equal(objects.length,3);assert.doesNotMatch(JSON.stringify(objects.map(o=>[o.key,o.httpMetadata,o.customMetadata])),tokenish)
+  assert.equal((await rows(h,"SELECT COUNT(*) n FROM audit_events WHERE action='import.attachments.started'"))[0].n,1)
+
+  // A second run fetches nothing already stored. Its member's session ends mid-run: the run
+  // stops with its reason, and Resume by a new session continues it from its checkpoint.
+  const fetched=zendesk.state.downloads.length
+  zendesk.state.gone.delete('104')
+  const second=(await h.call(files,post({}))).data
+  await endSession(h)
+  await run()
+  await signIn(h)
+  view=(await h.call(`${files}/${second.id}`)).data
+  assert.deepEqual([view.state,view.error],['running','import_authority_revoked'])
+  assert.equal((await h.raw(`${files}/${second.id}/resume`,{...post({}),actor:'operator'})).response.status,403)
+  assert.equal((await h.call(`${files}/${second.id}/resume`,post({}))).data.error,null)
+  assert.equal((await h.raw(`${files}/${second.id}/resume`,post({}))).response.status,409,'only a stopped run resumes')
+  await run()
+  view=(await h.call(`${files}/${second.id}`)).data
+  assert.equal(view.state,'done',JSON.stringify(view.error))
+  assert.deepEqual(view.totals,{attachments:6,stored:3,pending:0,refused:3})
+  assert.ok(!view.refusals.some(r=>r.ticketId==='104'),'a ticket Zendesk returns again leaves the list')
+  assert.deepEqual(zendesk.state.downloads.slice(fetched).filter(d=>[81001,81002,70501].includes(d.id)),[],'nothing already stored is downloaded again')
+  assert.ok(zendesk.state.downloads.slice(fetched).some(d=>d.id===81004),'a refused file is tried again')
  }finally{await h.close()}
 })

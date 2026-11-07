@@ -96,6 +96,7 @@ export async function zendeskResumeBrowserFlow({page,runtime,project:originalPro
   assert.ok(recovered.batches.slice(0,3).every(b=>b.covered),'every unapproved batch is covered by the next approval')
   assert.deepEqual([(await readRun(runs[3].id)).state,(await readRun(runs[3].id)).plan.mappingRevision],['completed',oldRevision],'run-error recovery leaves the approved batch alone')
   await resume.waitFor({state:'hidden'})
+  await region.getByRole('button',{name:/^Approve/}).waitFor()
   await capture('recovered')
   await page.reload();await region.waitFor()
   assert.equal(await resume.count(),0,'an error-free current pull has no recovery action after reload')

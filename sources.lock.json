@@ -16521,7 +16521,7 @@
       "executable": false
     },
     "tests/move-in/zendesk-resume-browser.mjs": {
-      "sha256": "78e64a393925d0b778dd27e1f2a695e4fa96072420abf26877a2c4137425d981",
+      "sha256": "fc07a54487b50797aa89b0f2ad0cb0c750aa0087edb3995d2adbeee6952f58a6",
       "executable": false
     },
     "tests/move-in/zip.mjs": {

@@ -3,13 +3,15 @@ import {freshdeskShapes} from './freshdesk-shapes'
 import {object,sourceId,time} from './common'
 import type {Vendor} from '../types'
 
-type Shape={type:'string'|'number'|'boolean'|'integer'|'id'|'iso'|'unix'|'visibility'|'opaque'|'object'|'array'|'action'|'condition'|'zendesk-audit';nullable?:boolean;values?:string[];fields?:Record<string,Shape>;item?:Shape;required?:string[];person?:boolean;reference?:boolean}
+type Shape={type:'string'|'number'|'boolean'|'integer'|'id'|'author'|'iso'|'unix'|'visibility'|'opaque'|'object'|'array'|'action'|'condition'|'zendesk-audit';nullable?:boolean;values?:string[];fields?:Record<string,Shape>;item?:Shape;required?:string[];person?:boolean;reference?:boolean}
 const string:Shape={type:'string'},boolean:Shape={type:'boolean'},integer:Shape={type:'integer'},id:Shape={type:'id'},opaque:Shape={type:'opaque'}
 const nullable=(shape:Shape):Shape=>({...shape,nullable:true})
 const oneOf=(...values:string[]):Shape=>({...string,values})
 const array=(item:Shape):Shape=>({type:'array',item})
 const record=(fields:Record<string,Shape>,required:string[]=[]):Shape=>({type:'object',fields,required})
 const reference:Shape={...id,reference:true}
+// A Zendesk comment author: a person's id, or Zendesk's own system author (-1, as on chat transcripts).
+const author:Shape={type:'author',reference:true}
 const configurationConditions=record({all:array({type:'condition'}),any:array({type:'condition'})},['all','any'])
 const person=record({id:reference,type:oneOf('contact','user','lead','admin','teammate','team','bot','campaign','system'),name:nullable(string),email:nullable(string),external_id:nullable(string)},['id'])
 person.person=true
@@ -17,7 +19,7 @@ const tag=record({id,type:oneOf('tag'),name:string},['name'])
 const tagList=nullable(record({type:oneOf('list','tag.list'),tags:array(tag),data:array(tag)}))
 const channel=record({initial:oneOf('email','messenger')},['initial'])
 const via=nullable(record({channel:string,source:nullable(opaque)}))
-const comment=record({id,author_id:reference,public:boolean,body:nullable(string),plain_body:nullable(string),created_at:{type:'iso'},attachments:nullable(opaque),metadata:nullable(opaque),via},['id','author_id'])
+const comment=record({id,author_id:author,public:boolean,body:nullable(string),plain_body:nullable(string),created_at:{type:'iso'},attachments:nullable(opaque),metadata:nullable(opaque),via},['id','author_id'])
 const source=record({id,type:oneOf('email','messenger'),subject:nullable(string),body:nullable(string),author:person,attachments:nullable(opaque)},['id','author'])
 const part=record({id,type:oneOf('conversation_part'),part_type:oneOf('comment','note'),body:nullable(string),created_at:{type:'unix'},updated_at:{type:'unix'},author:person,attachments:nullable(opaque)},['id','author'])
 const articleStructure={translated_content:nullable(opaque),section_id:nullable(id),parent_id:nullable(id),tags:nullable(opaque),scheduled_publish_at:nullable(opaque),scheduled_unpublish_at:nullable(opaque),ai_agent_availability:nullable(opaque)}
@@ -74,6 +76,8 @@ export interface ShapeIssue {code:'unsupported_source_field'|'malformed_source_f
 export interface ShapeAudit {complete:boolean;issues:ShapeIssue[];people:Record<string,any>[];references:unknown[];uninterpreted:unknown[];nodes:number;exhausted?:string}
 const escape=(value:string)=>value.replace(/~/g,'~0').replace(/\//g,'~1')
 export const SHAPE_NODE_LIMIT=4096
+/** Zendesk writes comments it authored itself (a chat transcript, say) with author_id -1, never a person's id. */
+export const systemAuthor=(value:unknown)=>typeof value==='number'&&Number.isSafeInteger(value)&&value<=0
 /** Depth is bounded by the static, acyclic schema; work and diagnostics also have
  * explicit per-record caps. Unknown/opaque subtrees are classified at their root. */
 export function auditShape(vendor:Vendor,kind:string,payload:unknown,nodeLimit:number=SHAPE_NODE_LIMIT):ShapeAudit {
@@ -109,7 +113,9 @@ export function auditShape(vendor:Vendor,kind:string,payload:unknown,nodeLimit:n
   }
   if(schema.type==='array'){if(!Array.isArray(value)){issue('malformed_source_field',path,'expected_array');result.uninterpreted.push(value);return}for(let i=0;i<value.length&&!stopped;i++)visit(value[i],schema.item!,`${path}/${i}`);return}
   let valid=false
-  if(schema.type==='id'){try{sourceId(value,vendor);valid=true}catch{}}
+  // The system author is understood structure, and no person's identity.
+  if(schema.type==='author'&&systemAuthor(value))return
+  if(schema.type==='id'||schema.type==='author'){try{sourceId(value,vendor);valid=true}catch{}}
   else if(schema.type==='iso'||schema.type==='unix'){try{time(value,schema.type);valid=true}catch{}}
   else if(schema.type==='number')valid=typeof value==='number'&&Number.isFinite(value)
   else if(schema.type==='integer')valid=typeof value==='number'&&Number.isSafeInteger(value)&&value>=0

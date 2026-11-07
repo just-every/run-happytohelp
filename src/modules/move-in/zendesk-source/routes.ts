@@ -54,7 +54,9 @@ zendeskPullRoutes.post(`${root}/:pullId/approve`,async c=>{
 })
 
 /** Resume after a stop: the current session takes over the pull, and every batch that
- * stopped, in review or while importing, continues from its checkpoint. A workspace
+ * stopped, in review or while importing, continues from its checkpoint. Before approval,
+ * a batch reviewed under an earlier mapping revision is reviewed again, so a pull that
+ * was ready goes back to review. A workspace
  * owner resuming another member's stopped pull takes it over: it starts again under
  * the owner, and the other member's batches stay as their ordinary imports. */
 zendeskPullRoutes.post(`${root}/:pullId/resume`,async c=>{
@@ -67,9 +69,9 @@ zendeskPullRoutes.post(`${root}/:pullId/resume`,async c=>{
   await enqueuePull(c.env,pull)
   return c.json({data:await view(c,actor,pull.id)},202)
  }
- if(!['pulling','reviewing','applying'].includes(pull.state))throw new HTTPException(409,{message:'This pull has nothing to resume'})
- await resumeBatches(c.env,pull.id,actor)
- await savePull(c.env,withSession(pull,actor),{error:null,next_at:0,session_hash:actor.session_hash})
+ if(!['pulling','reviewing','ready','applying'].includes(pull.state))throw new HTTPException(409,{message:'This pull has nothing to resume'})
+ const replanned=await resumeBatches(c.env,pull,actor)
+ await savePull(c.env,withSession(pull,actor),{error:null,next_at:0,session_hash:actor.session_hash,...(replanned&&pull.state==='ready'?{state:'reviewing',phase:'review'}:{})})
  await enqueuePull(c.env,pull)
  return c.json({data:await view(c,actor,pull.id)},202)
 })

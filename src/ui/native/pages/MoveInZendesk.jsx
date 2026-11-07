@@ -54,6 +54,7 @@ function PullStatus({pull,busy,onStep,onOpenRun}){
   <h3>{heading}</h3>
   {!pull.yours&&<p className="settings-note">Started by another member of this workspace.</p>}
   {pull.error?<p role="alert">{reasonLabel(pull.error.replace(/:\d+$/,''))} {pull.yours&&<button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>onStep('resume')}>Resume pull</button>}</p>:working.includes(pull.state)&&<p role="status">{phases[pull.phase]||'Working'}…{pull.nextAt>Date.now()?' Zendesk asked us to wait a moment.':''}</p>}
+  {!pull.error&&pull.needsReplan&&pull.yours&&<p><button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>onStep('resume')}>Resume pull</button></p>}
   {pull.canTakeOver&&<p><button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>onStep('resume')}>Take over pull</button> <span className="settings-note">It reads again under your name.</span></p>}
   <ul>
    <li>Tickets: {tickets.seen} seen, {tickets.deleted} deleted in Zendesk (not imported){tickets.alreadyImported?`, ${tickets.alreadyImported} already imported`:''}, {tickets.imported} imported, {tickets.refused} refused</li>

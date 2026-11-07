@@ -1,3 +1,4 @@
+import {zendeskResumeBrowserFlow} from '../move-in/zendesk-resume-browser.mjs'
 import {zendeskConnectBrowserFlow} from '../move-in/zendesk-connect-browser.mjs'
 import {zendeskOfflineBrowserFlow} from '../move-in/zendesk-offline-browser.mjs'
 import test,{before,after} from 'node:test'
@@ -52,6 +53,7 @@ test('an owner connects Zendesk twice, reviews an export, imports and filters it
  await page.getByRole('link',{name:'Move in existing support history',exact:true}).click()
  await page.getByRole('heading',{name:'Move in',exact:true}).waitFor()
  await zendeskConnectBrowserFlow({page,origin:runtime.origin,base,project,shot})
+ await zendeskResumeBrowserFlow({page,runtime,project,inspect})
  await vendorJourney(1440,'zendesk')
  await zendeskOfflineBrowserFlow({page,origin:runtime.origin,base,inspect,request,project,token})
  await reviewExplanations(page,runtime.origin,base,shot)

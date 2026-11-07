@@ -5,8 +5,8 @@ import {approve,getRun} from '../service'
 import type {Run} from '../types'
 import type {PullContext} from './context'
 export interface BatchSummary {tickets:number;ticketsNew:number;ticketsRefused:number;replies?:number;users:number;organizations:number;articles:{published:number;draft:number;heldBack:number};refused:number;error?:string;skipped?:boolean}
-export interface PullBatch {ordinal:number;run_id:string;summary_json:string|null;state:string;error:string|null;review_fingerprint:string|null;total:number;filename:string}
-export const pullBatches=async(env:Env,pullId:string)=>(await env.DB.prepare('SELECT p.ordinal,p.run_id,p.summary_json,r.state,r.error,r.review_fingerprint,r.total,r.filename FROM move_in_zendesk_pull_runs p JOIN move_in_runs r ON r.id=p.run_id WHERE p.pull_id=? ORDER BY p.ordinal').bind(pullId).all<PullBatch>()).results
+export interface PullBatch {ordinal:number;run_id:string;summary_json:string|null;state:string;error:string|null;review_fingerprint:string|null;plan_json:string|null;total:number;filename:string}
+export const pullBatches=async(env:Env,pullId:string)=>(await env.DB.prepare('SELECT p.ordinal,p.run_id,p.summary_json,r.state,r.error,r.review_fingerprint,r.plan_json,r.total,r.filename FROM move_in_zendesk_pull_runs p JOIN move_in_runs r ON r.id=p.run_id WHERE p.pull_id=? ORDER BY p.ordinal').bind(pullId).all<PullBatch>()).results
 /** A batch is prepared for review in these states, then applied or undone. One that
  * holds an error in any of them has stopped, and Resume continues it. */
 const PREPARING=['uploaded','parsing','planning'],WORKING=[...PREPARING,'applying','undoing']

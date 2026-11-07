@@ -1,18 +1,27 @@
+import {sessionStorageKey, visitorIdentity} from './visitor-identity';
+
 /** Only preferences belong in JSON. Network and device context comes from the request. */
 const contactEnvironment = () => ({
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   language: typeof navigator === 'undefined' ? undefined : navigator.language,
 });
 
-/** Native, tenant-scoped browser transport. No dashboard dependency. */
+/**
+ * Native, tenant-scoped browser transport. No dashboard dependency.
+ * `contact` is what the host page supplies; it alone decides which stored session this visitor may use.
+ * A browser keeps one anonymous and one signed-in session per installation, each recording its identity.
+ */
 export class WidgetTransport {
-  constructor({ apiOrigin, widgetKey, onEvent = () => {}, onError = () => {} }) {
+  constructor({ apiOrigin, widgetKey, contact = {}, onEvent = () => {}, onError = () => {} }) {
     const origin = new URL(apiOrigin);
     if (origin.protocol !== 'https:' && !(origin.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(origin.hostname))) throw new Error('Widget API requires HTTPS');
     if (!widgetKey) throw new Error('A widgetKey is required');
     this.origin = origin.origin; this.widgetKey = widgetKey;
     this.onEvent = onEvent; this.onError = onError;
-    this.storageKey = `rer-widget:${this.origin}:${widgetKey}`;
+    this.contact = contact || {};
+    this.identity = visitorIdentity(this.contact) || 'anonymous';
+    this.anonymousKey = sessionStorageKey(this.origin, widgetKey);
+    this.storageKey = this.identity === 'anonymous' ? this.anonymousKey : `${this.anonymousKey}:identified`;
     this.closed = false; this.eventId = 0; this.revision = 0; this.lastMessageId = null;
     this.abort = new AbortController();
     this.pending = new Map(); this.mediaURLs = new Map();
@@ -70,23 +79,35 @@ export class WidgetTransport {
     }
     this.configuration = configuration;
     this.onEvent({type: 'configuration', configuration});
-    try { this.session = JSON.parse(localStorage.getItem(this.storageKey)); } catch { this.session = null; }
+    if (this.closed) throw new Error('Widget connection is closed');
+    // The page's own identity fields win over details typed into the widget.
+    contact = {...contact, ...this.contact};
+    this.session = this.select();
     const signedIdentity = contact.hash ? contact.identifier || contact.email : null;
     if (!this.session?.token || signedIdentity && this.session.verifiedIdentity !== signedIdentity) {
-      this.session = await this.request('/api/identity/widget/session', {method: 'POST', json: {...contactEnvironment(), widgetKey: this.widgetKey, name: contact.name || contact.provided_name, email: contact.email, provided_name: contact.provided_name, provided_email: contact.provided_email, identifier: contact.identifier, contact_hash: contact.hash, metadata: contact.metadata, previewToken: contact.preview_token}});
-      if (this.session.verified && signedIdentity) this.session.verifiedIdentity = signedIdentity;
-      localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+      // A new session request never carries a stored bearer token.
+      this.session = null;
+      const session = await this.request('/api/identity/widget/session', {method: 'POST', json: {...contactEnvironment(), widgetKey: this.widgetKey, name: contact.name || contact.provided_name, email: contact.email, provided_name: contact.provided_name, provided_email: contact.provided_email, identifier: contact.identifier, contact_hash: contact.hash, metadata: contact.metadata, previewToken: contact.preview_token}});
+      if (session.verified && signedIdentity) session.verifiedIdentity = signedIdentity;
+      this.session = {...session, identity: this.identity};
+      this.save(true);
     }
     // Contact details are current private server data, never part of the
     // persisted browser session. Check authority before resolving a conversation.
-    const profile = await this.request('/api/identity/widget/profile');
+    let profile = await this.request('/api/identity/widget/profile');
     if (!this.session.conversationId) {
       const existing = await this.request('/api/conversations');
       const conversation = existing.conversations?.[0] || await this.request('/api/conversations', {method: 'POST', json: {projectId: this.session.projectId}});
       this.session.conversationId = (conversation.conversation || conversation).id;
-      localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+      this.save();
     }
     this.conversationId = this.session.conversationId;
+    if (this.session.claimPending) {
+      // The signed-in visitor now owns the conversation it started signed out: record the page's name and email (unverified).
+      profile = await this.request(`/api/conversations/${this.conversationId}/widget-events`, {method: 'POST', json: {action: 'contact', data: {name: this.contact.name, email: this.contact.email}}});
+      delete this.session.claimPending;
+      this.save();
+    }
     await this.refresh();
     if (!this.closed) {
       this.onEvent({type: 'session', session: this.session, contact: profile.contact});
@@ -94,11 +115,36 @@ export class WidgetTransport {
     }
     return this.session;
   }
+  /**
+   * The stored session this page's visitor may use, or null to start a new one. Anonymous pages use only an anonymous
+   * session; an identified page uses the signed-in session recorded for it, or (unsigned) claims the anonymous one.
+   * Another identity's session is removed, never read into this transport.
+   */
+  select() {
+    const stored = this.stored(this.storageKey);
+    if (stored?.token && stored.identity === this.identity) return stored;
+    if (this.identity === 'anonymous') return null;
+    if (stored) localStorage.removeItem(this.storageKey);
+    const anonymous = this.stored(this.anonymousKey);
+    if (this.contact.hash || !anonymous?.token || anonymous.identity !== 'anonymous') return null;
+    const claimed = {...anonymous, identity: this.identity, claimPending: true};
+    localStorage.setItem(this.storageKey, JSON.stringify(claimed));
+    localStorage.removeItem(this.anonymousKey);
+    return claimed;
+  }
+  stored(key) {
+    try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
+  }
+  /** Persist this session only while it is still the one stored in its slot, so a closed, shut-down or replaced transport writes nothing. */
+  save(create = false) {
+    if (this.closed || !create && this.stored(this.storageKey)?.token !== this.session.token) return;
+    localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+  }
   // A closed ticket is final: the server admits the visitor's next turn into its linked follow-up, which this widget follows from then on.
   follow(conversationId) {
     if (!conversationId || conversationId === this.conversationId) return false;
     this.session.conversationId = this.conversationId = conversationId; this.revision = 0; this.lastMessageId = null; this.eventId = 0;
-    localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+    this.save();
     this.onEvent({type: 'session', session: this.session});
     this.openSocket();
     return true;
@@ -114,7 +160,7 @@ export class WidgetTransport {
     if (result.mergedInto && result.mergedInto !== this.conversationId) {
       this.socket?.close(); this.conversationId = result.mergedInto;
       this.session.conversationId = result.mergedInto; this.revision = 0; this.lastMessageId = null; this.eventId = 0;
-      localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+      this.save();
       const transcript = await this.refresh();
       this.onEvent({type:'session',session:this.session});
       if (!this.closed) this.openSocket();
@@ -193,7 +239,7 @@ export class WidgetTransport {
         await this.refresh();
         command = {localId: data.local_id, content: data.content, expectedRevision: this.revision, expectedLastMessageId: this.lastMessageId, mediaIds: [...(data.media_ids || [])]};
         this.session.pendingCommands[data.local_id] = command;
-        localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+        this.save();
       } else if (command.content !== data.content || JSON.stringify(command.mediaIds) !== JSON.stringify(data.media_ids || [])) {
         throw new Error('A pending message identity cannot be reused with different content or attachments');
       }
@@ -204,24 +250,24 @@ export class WidgetTransport {
           if (error.rateLimited) {
             // Refused before admission: forget the command so it is never sent later without the visitor.
             delete this.session.pendingCommands[data.local_id];
-            localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+            this.save();
             error.definitiveRejection = true;
             throw error;
           }
           if (error.status !== 409 || error.detail?.accepted !== false) throw error;
           delete this.session.pendingCommands[data.local_id];
-          localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+          this.save();
           error.definitiveRejection = true;
           if (admissionAttempt || error.detail.reason !== 'conversation_changed_or_admission_denied') throw error;
           const transcript = await this.refresh();
           if (transcript.messages.some(message => message.local_id === data.local_id)) throw error;
           command = {...command, expectedRevision: this.revision, expectedLastMessageId: this.lastMessageId};
           this.session.pendingCommands[data.local_id] = command;
-          localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+          this.save();
         }
       }
       delete this.session.pendingCommands[data.local_id];
-      localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+      this.save();
       this.follow(result.followupConversationId);
       if (result.message) this.onEvent({type: 'message', message: await this.message(result.message)});
       await this.refresh();

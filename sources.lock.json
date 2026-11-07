@@ -16652,6 +16652,10 @@
       "sha256": "777b76fd77b8913aec529b602555db5b30b93dc29471c2d0f8cfda568fd384df",
       "executable": false
     },
+    "tests/move-in/apply-replay-worker.ts": {
+      "sha256": "fed85bc39ee464659a381d3a5bdbd3039b3877372edeeabf18e26ec01f01e21a",
+      "executable": false
+    },
     "tests/move-in/apply-replay.mjs": {
       "sha256": "6f447f4789ef954a33cba04713086de4183f8df7ee01b8d8b6da4058301dcc53",
       "executable": false

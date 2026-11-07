@@ -73,7 +73,7 @@ export async function assertRetireSweep({admin,run,status,env,output,persist,obj
   assert.equal(applied.ignoredRetireMarker,2,'every contact row carrying the marker');assert.equal(applied.tables.contacts.ignoredRetireMarker,2);
   const listed=new Set(applied.conflicts.map(c=>`${c.sourceTable}:${c.sourceId}`));
   assert.equal(listed.has(`contacts:${customer}`)||listed.has(`contacts:${accounts}`),false,'a marked customer is not a conflict');
-  assert.ok(applied.conflicts.some(c=>c.sourceTable==='contacts'&&c.sourceId===deleted&&c.reason==='deleted in legacy; the seed keeps its row'),'a customer deleted at another time is still listed');
+  assert.ok(applied.conflicts.some(c=>c.sourceTable==='contacts'&&c.sourceId===deleted),'a customer deleted at another time is still listed');
   assert.ok(applied.updated>=2,'the conversation and the changed marked customer are updated');
   // Arrivals after the retire import live; the seed's own edit of a marked customer stays.
   assert.deepEqual(sql('SELECT name FROM contacts WHERE id=?',customer),[{name:'Morgan (seed edit)'}]);

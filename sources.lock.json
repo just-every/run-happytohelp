@@ -16473,7 +16473,7 @@
       "executable": false
     },
     "tests/legacy-export/retire.mjs": {
-      "sha256": "50ee782ee32b467fab59015ee356ae7797c7056d59f5efae128c6708eaa104fe",
+      "sha256": "b29583b88aacd9f2e97669f97c120141871ce431b82904d15ec91dfb795164ab",
       "executable": false
     },
     "tests/legacy-export/schema.sql": {

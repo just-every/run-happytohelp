@@ -12,12 +12,14 @@ const ticket=(id,requester,status,subject,extra={})=>({url:`${ORIGIN}/api/v2/tic
 const user=(id,role,extra={})=>({id,url:`${ORIGIN}/api/v2/users/${id}.json`,name:`synthetic-hh person ${id}`,email:`synthetic-hh-${id}@example.test`,created_at:at(1),updated_at:at(4),last_login_at:at(5),time_zone:'UTC',locale:'en-US',role,verified:true,active:true,organization_id:null,phone:null,photo:{id:id+900,content_url:`${ORIGIN}/system/photos/${id}/avatar.png?token=${QUERY_TOKEN}`,thumbnails:[]},tags:[],user_fields:{},...extra})
 /** At least 400 KiB of sanitized JSON in 300 comments, public and private mixed. */
 export function largeComments(){return Array.from({length:300},(_,i)=>comment(40000+i,i%2?2:4,stamp(6,i*60),`synthetic-hh long history ${i} `+'lorem ipsum dolor sit amet '.repeat(16),i%3!==2))}
-/** With refusedPeople, the account also holds people the engine refuses (no valid
- * email), each the requester of one ticket: person 8 and ticket 109 from the start,
- * and person 6 and ticket 108 once it has changed. */
-export function fakeZendesk({refusedPeople=false,credentialTicket=false}={}){
+/** With edgeCases, the account also holds what real accounts hold at their edges. From the
+ * start: person 8, a chat visitor with no email, requests ticket 109, whose description only
+ * starts like a link and whose chat transcript Zendesk itself wrote (author -1); ticket 110's
+ * requester, person 9, is no longer in Zendesk. Once it has changed: person 6, whose email is
+ * malformed, requests ticket 108, and agent 2 raises ticket 111 for themselves. */
+export function fakeZendesk({edgeCases=false,credentialTicket=false}={}){
  const state={authorizations:new Map(),grants:new Map(),access:new Set(),refresh:new Set(),tokenRequests:[],requests:[],throttled:false,issued:0,repeat:false}
- const users=[user(1,'end-user',{organization_id:7}),user(2,'agent'),user(3,'end-user'),user(4,'end-user'),user(5,'end-user'),...(refusedPeople?[user(8,'end-user',{email:'synthetic-hh-8-without-address'})]:[])]
+ const users=[user(1,'end-user',{organization_id:7}),user(2,'agent'),user(3,'end-user'),user(4,'end-user'),user(5,'end-user'),...(edgeCases?[user(8,'end-user',{email:null})]:[])]
  const tickets={
   101:{record:ticket(101,1,'open','synthetic-hh open order question',{custom_fields:[{id:70,value:true},{id:72,value:null}]}),comments:[comment(10101,1,2,'synthetic-hh where is my order'),comment(10102,2,3,'synthetic-hh internal check',false)]},
   // Archived: closed long ago. Listing Tickets omits these; the incremental export returns them.
@@ -27,16 +29,18 @@ export function fakeZendesk({refusedPeople=false,credentialTicket=false}={}){
   105:{record:ticket(105,5,'pending','synthetic-hh screenshot attached'),comments:[comment(10501,5,2,`synthetic-hh see screenshot ${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,true,{attachments:[inline(70501)]})]},
   106:{record:ticket(106,1,'new','synthetic-hh follow-up after the move'),comments:[comment(10601,1,8,'synthetic-hh one more question'),comment(10602,2,8,'synthetic-hh answered',true)]},
   107:{record:ticket(107,3,'new','synthetic-hh question from a renamed person'),comments:[comment(10701,3,8,'synthetic-hh hello again')]},
-  ...(credentialTicket?{110:{record:ticket(110,1,'open','synthetic-hh credential in ticket text',{description:'?api_key=synthetic-hh-refused-secret'}),comments:[comment(11001,1,2,'synthetic-hh credential in ticket text')]}}:{}),
-  ...(refusedPeople?{
-   109:{record:ticket(109,8,'open','synthetic-hh question without an address'),comments:[comment(10901,8,2,'synthetic-hh no address on file')]},
-   108:{record:ticket(108,6,'new','synthetic-hh question from a new person without an address'),comments:[comment(10801,6,8,'synthetic-hh hello from a new person')]},
+  ...(credentialTicket?{112:{record:ticket(112,1,'open','synthetic-hh credential in ticket text',{description:'?api_key=synthetic-hh-refused-secret'}),comments:[comment(11201,1,2,'synthetic-hh credential in ticket text')]}}:{}),
+  ...(edgeCases?{
+   109:{record:ticket(109,8,'open','synthetic-hh chat without an address',{description:'http:// see below',via:{channel:'chat',source:{from:{},to:{},rel:null}}}),comments:[comment(10901,8,2,'synthetic-hh no address on file'),comment(10902,-1,3,'synthetic-hh chat transcript',true,{via:{channel:'chat_transcript',source:{from:{},to:{},rel:null}}})]},
+   110:{record:ticket(110,9,'open','synthetic-hh question from a person since removed'),comments:[comment(11001,9,2,'synthetic-hh hello from a removed person')]},
+   108:{record:ticket(108,6,'new','synthetic-hh question from a new person with a malformed address'),comments:[comment(10801,6,8,'synthetic-hh hello from a new person')]},
+   111:{record:ticket(111,2,'open','synthetic-hh agent raised this themselves'),comments:[comment(11101,2,8,'synthetic-hh follow up with the courier'),comment(11102,2,8,'synthetic-hh internal reminder',false)]},
   }:{}),
  }
  // After the first pull: ticket 101 gets a new public reply and a private note, ticket 102 changes status,
  // person 3 is renamed, the organization changes, and tickets 106 and 107 are new.
  const changed={101:{record:{...tickets[101].record,updated_at:at(9)},comments:[...tickets[101].comments,comment(10103,1,9,'synthetic-hh a reply after the move'),comment(10104,2,9,'synthetic-hh internal follow-up',false)]},102:{record:{...tickets[102].record,status:'solved',updated_at:at(9)},comments:tickets[102].comments}}
- const renamed={...users[2],name:'synthetic-hh person 3 renamed',updated_at:at(9)},arrived=refusedPeople?[user(6,'end-user',{email:'not-an-email',created_at:at(8),updated_at:at(8)})]:[]
+ const renamed={...users[2],name:'synthetic-hh person 3 renamed',updated_at:at(9)},arrived=edgeCases?[user(6,'end-user',{email:'not-an-email',created_at:at(8),updated_at:at(8)})]:[]
  const current=id=>state.repeat&&changed[id]?changed[id]:tickets[id],people=()=>state.repeat?[...users.map(u=>u.id===3?renamed:u),...arrived]:users
  const field=(id,type,title,extra={})=>({url:`${ORIGIN}/api/v2/ticket_fields/${id}.json`,id,type,title,raw_title:title,description:'',raw_description:'',position:id,active:true,required:false,collapsed_for_agents:false,regexp_for_validation:null,title_in_portal:title,raw_title_in_portal:title,visible_in_portal:true,editable_in_portal:true,required_in_portal:false,tag:null,created_at:at(1),updated_at:at(1),removable:true,key:null,agent_description:null,agent_can_edit:true,...extra})
  const fields=[field(70,'checkbox','Synthetic flag'),field(71,'subject','Subject',{removable:false}),field(72,'text','Synthetic agent note',{visible_in_portal:false,editable_in_portal:false})]
@@ -79,8 +83,8 @@ export function fakeZendesk({refusedPeople=false,credentialTicket=false}={}){
    assert.equal(url.searchParams.get('support_type_scope'),'all');assert.equal(url.searchParams.get('exclude_deleted'),null)
    const cursor=url.searchParams.get('cursor')
    if(url.searchParams.get('start_time')==='0')return json({tickets:[101,102,103].map(id=>current(id).record),after_cursor:'tickets-after-1',end_of_stream:false})
-   if(cursor==='tickets-after-1')return json({tickets:[104,105,...(state.repeat?[106,107]:[]),...(refusedPeople?[109,...(state.repeat?[108]:[])]:[]),...(credentialTicket?[110]:[])].map(id=>current(id).record),after_cursor:'tickets-after-2',end_of_stream:true})
-   assert.ok(['tickets-after-2','tickets-after-3'].includes(cursor),cursor);return json({tickets:state.repeat&&cursor==='tickets-after-2'?[101,102,106,107,...(refusedPeople?[108]:[])].map(id=>current(id).record):[],after_cursor:'tickets-after-3',end_of_stream:true})
+   if(cursor==='tickets-after-1')return json({tickets:[104,105,...(state.repeat?[106,107]:[]),...(edgeCases?[109,110,...(state.repeat?[108,111]:[])]:[]),...(credentialTicket?[112]:[])].map(id=>current(id).record),after_cursor:'tickets-after-2',end_of_stream:true})
+   assert.ok(['tickets-after-2','tickets-after-3'].includes(cursor),cursor);return json({tickets:state.repeat&&cursor==='tickets-after-2'?[101,102,106,107,...(edgeCases?[108,111]:[])].map(id=>current(id).record):[],after_cursor:'tickets-after-3',end_of_stream:true})
   }
   const comments=url.pathname.match(/^\/api\/v2\/tickets\/(\d+)\/comments\.json$/)
   if(comments){

@@ -205,7 +205,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
 })
 
 test('a refused record never holds back a valid one and a stopped batch is never left behind: credential refusals stay out of packed batches across resume and every valid record imports',{timeout:600_000},async()=>{
- const zendesk=fakeZendesk({refusedPeople:true,credentialTicket:true}),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
+ const zendesk=fakeZendesk({edgeCases:true,credentialTicket:true}),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
  try{
   await connect(h,zendesk)
   // The first pull's ticket batch stops on a transient database failure while it is parsed.
@@ -229,8 +229,8 @@ test('a refused record never holds back a valid one and a stopped batch is never
   const [again]=pull.batches.filter(b=>b.stopped)
   assert.equal(again.ordinal,0);assert.notEqual(again.runId,stopped[0].runId,'the next pull admits the stopped batch again as a new run')
   const packedBeforeResume=pull.batches.map(b=>b.runId)
-  const credentialRefusal=pull.refusals.find(r=>r.kind==='ticket'&&r.sourceId==='110')
-  assert.ok(credentialRefusal?.reason,'the credential record is already refused by its Zendesk id before batch review resumes')
+  const credentialRefusal=pull.refusals.find(r=>r.kind==='ticket'&&r.sourceId==='112')
+  assert.equal(credentialRefusal?.reason,'CREDENTIAL_IN_DURABLE_URL','the genuine credential record is refused by its Zendesk id before batch review resumes')
   async function packedTickets(){
    const records=[]
    for(const batch of (await pullOf(h,second.id)).batches){
@@ -239,38 +239,67 @@ test('a refused record never holds back a valid one and a stopped batch is never
     assert.ok(original)
     records.push(...(await original.text()).split('\n').filter(line=>line.trim()).map(line=>JSON.parse(line)))
    }
-   assert.ok(records.every(record=>record.ticket?.id!==110),'the credential-failing ticket never enters any packed original')
+   assert.ok(records.every(record=>record.ticket?.id!==112),'the credential-failing ticket never enters any packed original')
    return records.filter(record=>record.ticket).map(record=>String(record.ticket.id)).sort()
   }
-  assert.deepEqual(await packedTickets(),['101','102','104','105','109'],'the batch packs every other ticket')
+  assert.deepEqual(await packedTickets(),['101','102','104','105','109','110'],'the batch packs every other live ticket, including the missing-requester case for review')
   await h.call(`${api}/zendesk/pulls/${second.id}/resume`,post({}))
   await drain(h)
   pull=await pullOf(h,second.id)
   assert.equal(pull.state,'ready',JSON.stringify({error:pull.error}))
   assert.equal(pull.progress.batchesStopped,0)
   assert.deepEqual(pull.batches.map(b=>b.runId),packedBeforeResume,'resume continues the same batches without packing the refused record again')
-  assert.deepEqual(pull.refusals.find(r=>r.kind==='ticket'&&r.sourceId==='110'),credentialRefusal)
-  assert.deepEqual(await packedTickets(),['101','102','104','105','109'])
+  assert.deepEqual(pull.refusals.find(r=>r.kind==='ticket'&&r.sourceId==='112'),credentialRefusal)
+  assert.deepEqual(await packedTickets(),['101','102','104','105','109','110'])
 
-  // Person 8 has no valid email and requests ticket 109, in the same batch as every valid ticket.
-  // The approval covers that batch: its valid records import and all refusals are named.
+  // A pull reviewed before W3 is planned again on Resume from its existing custody.
+  // Packing refusals have no batch to re-plan and must survive that refresh too.
+  const reads=zendesk.state.requests.length
+  const reviewed=pull.batches.find(b=>b.summary.tickets)
+  const [oldRun]=await rows(h,'SELECT plan_json FROM move_in_runs WHERE id=?',reviewed.runId)
+  const oldPlan=JSON.parse(oldRun.plan_json);delete oldPlan.mappingRevision
+  await h.db.prepare('UPDATE move_in_runs SET plan_json=? WHERE id=?').bind(JSON.stringify(oldPlan),reviewed.runId).run()
+  await h.call(`${api}/zendesk/pulls/${second.id}/resume`,post({}))
+  assert.equal((await pullOf(h,second.id)).state,'reviewing','an older review returns to planning')
+  await drain(h)
+  pull=await pullOf(h,second.id)
+  assert.equal(pull.state,'ready',JSON.stringify({error:pull.error}))
+  const [freshRun]=await rows(h,'SELECT plan_json FROM move_in_runs WHERE id=?',reviewed.runId)
+  assert.ok(JSON.parse(freshRun.plan_json).mappingRevision>1,'the older batch is reviewed under the current mapping')
+  assert.equal(zendesk.state.requests.length,reads,'re-planning reads existing custody, not Zendesk')
+  assert.deepEqual(pull.batches.map(b=>b.runId),packedBeforeResume)
+  assert.deepEqual(pull.refusals.find(r=>r.kind==='ticket'&&r.sourceId==='112'),credentialRefusal,'re-planning preserves the packing refusal')
+  assert.deepEqual(await packedTickets(),['101','102','104','105','109','110'])
+
+  // Ticket 110's requester is no longer in Zendesk, in the same batch as every valid ticket,
+  // among them chat ticket 109 from person 8, who has no email. The approval covers that
+  // batch: its valid records import and the one refusal is named.
   const ticketBatch=pull.batches.find(b=>b.summary.tickets)
-  assert.deepEqual([ticketBatch.summary.tickets,ticketBatch.summary.ticketsNew,ticketBatch.summary.refused,ticketBatch.covered],[5,4,2,true],'a batch with refused records is covered by the one approval')
+  assert.deepEqual([ticketBatch.summary.tickets,ticketBatch.summary.ticketsNew,ticketBatch.summary.refused,ticketBatch.covered],[6,5,1,true],'a batch with a refused record is covered by the one approval')
   await h.call(`${api}/zendesk/pulls/${second.id}/approve`,post({fingerprint:pull.fingerprint}))
   let budget=await drain(h)
   pull=await pullOf(h,second.id)
   assert.equal(pull.state,'applied',JSON.stringify({error:pull.error}))
   assert.ok(budget.maxStatements<=980)
-  assert.deepEqual(await sourceIds(h),[['101',1],['102',1],['104',1],['105',1]],'every valid ticket imports beside the refused one')
-  assert.deepEqual(pull.refusals.filter(r=>r.kind!=='ticket_field').map(r=>[r.kind,r.sourceId,r.reason]),[['ticket','109','conversation_contact_unavailable'],['ticket','110','CREDENTIAL_IN_DURABLE_URL'],['user','8','contact_email_missing_or_invalid']])
-  assert.deepEqual(pull.totals.tickets,{seen:7,deleted:1,imported:4,refused:2,alreadyImported:0})
+  assert.deepEqual(await sourceIds(h),[['101',1],['102',1],['104',1],['105',1],['109',1]],'every valid ticket imports beside the refused one')
+  assert.deepEqual(pull.refusals.filter(r=>r.kind!=='ticket_field').map(r=>[r.kind,r.sourceId,r.reason]),[['ticket','110','conversation_contact_unavailable'],['ticket','112','CREDENTIAL_IN_DURABLE_URL']],'the missing requester and genuine credential are each refused by source id and reason')
+  assert.deepEqual(pull.totals.tickets,{seen:8,deleted:1,imported:5,refused:2,alreadyImported:0})
   assert.equal(accounted(pull.totals.tickets,pull.totals.keptAsImported),pull.totals.tickets.seen,'every ticket seen is accounted for')
   const contacts=async()=>(await rows(h,'SELECT COUNT(*) n FROM contacts'))[0].n
-  assert.equal(pull.totals.users,(await contacts())+1+1,'people seen are four contacts, one refused person and one staff author')
+  assert.equal(pull.totals.users,(await contacts())+1,'people seen are five contacts, one without an email, and one staff author')
+  // Person 8 comes across with no email, matched by its Zendesk id; the transcript Zendesk wrote
+  // itself is a system message in source order; the description that only starts like a link is prose.
+  const contactOf=async id=>(await rows(h,"SELECT c.name,c.email,c.external_id,c.is_verified FROM contacts c JOIN move_in_origins o ON o.target_id=c.id AND o.target_kind='contact' WHERE o.source_id=?",id))[0]
+  assert.deepEqual(await contactOf('8'),{name:'synthetic-hh person 8',email:null,external_id:'import:zendesk:8',is_verified:0})
+  assert.equal((await rows(h,'SELECT COUNT(*) n FROM move_in_contact_keys k JOIN move_in_origins o ON o.target_id=k.contact_id WHERE o.source_id=?','8'))[0].n,0,'a contact with no email has no email key')
+  const chat=await rows(h,"SELECT m.local_id,m.actor_role FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='109' ORDER BY m.revision")
+  assert.deepEqual(chat.map(m=>[m.local_id,m.actor_role]),[['import:10901','contact'],['import:10902','system']])
   assert.ok(pull.batches.every(b=>b.state==='completed'||b.nothingToImport),'no batch is left behind')
 
-  // A repeat pull with new replies on 101, new tickets 106 and 107, and new person 6 without
-  // a valid email who requests ticket 108, all in one batch: everything valid imports.
+  // A repeat pull with new replies on 101, new tickets 106 and 107, new person 6 with a
+  // malformed email who requests ticket 108, and ticket 111 that agent 2 raised for themselves,
+  // all in one batch: everything imports. The first pull already holds agent 2 as a staff
+  // author with no native record; the requester still comes across as an inert contact.
   zendesk.state.repeat=true
   const replies=(await rows(h,"SELECT COUNT(*) n FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'"))[0].n
   const third=(await h.call(`${api}/zendesk/pulls`,post({}))).data
@@ -289,7 +318,7 @@ test('a refused record never holds back a valid one and a stopped batch is never
   let repeat=await pullOf(h,third.id)
   assert.equal(repeat.state,'ready',JSON.stringify({error:repeat.error}))
   const caughtUp=repeat.batches.find(b=>b.summary.tickets||b.summary.replies)
-  assert.deepEqual([caughtUp.summary.ticketsNew,caughtUp.summary.replies,caughtUp.summary.refused,caughtUp.covered],[2,2,2,true])
+  assert.deepEqual([caughtUp.summary.ticketsNew,caughtUp.summary.replies,caughtUp.summary.refused,caughtUp.covered],[4,2,0,true])
   // A transient database failure stops the approved batch mid-import: the pull is not
   // imported, names the stopped batch, and Resume finishes it.
   await h.call(`${api}/zendesk/pulls/${third.id}/approve`,post({fingerprint:repeat.fingerprint}))
@@ -302,10 +331,18 @@ test('a refused record never holds back a valid one and a stopped batch is never
   repeat=await pullOf(h,third.id)
   assert.equal(repeat.state,'applied',JSON.stringify({error:repeat.error}))
   assert.ok(budget.maxStatements<=980)
-  assert.deepEqual(await sourceIds(h),[['101',1],['102',1],['104',1],['105',1],['106',1],['107',1]],'106 and 107 import, 108 and 109 stay out')
+  assert.deepEqual(await sourceIds(h),[['101',1],['102',1],['104',1],['105',1],['106',1],['107',1],['108',1],['109',1],['111',1]],'106, 107, 108 and 111 import; 110 stays out')
   assert.equal((await rows(h,"SELECT COUNT(*) n FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'"))[0].n,replies+1,'the new public reply on 101 imports')
-  assert.deepEqual(repeat.refusals.filter(r=>r.kind!=='ticket_field').map(r=>[r.kind,r.sourceId,r.reason]),[['ticket','108','conversation_contact_unavailable'],['user','6','contact_email_missing_or_invalid']])
-  assert.deepEqual(repeat.totals.tickets,{seen:5,deleted:0,imported:2,refused:1,alreadyImported:1})
+  assert.deepEqual(repeat.refusals.filter(r=>r.kind!=='ticket_field'),[],'nothing new is refused')
+  assert.deepEqual(repeat.totals.tickets,{seen:6,deleted:0,imported:4,refused:0,alreadyImported:1})
+  assert.deepEqual(await contactOf('6'),{name:'synthetic-hh person 6',email:null,external_id:'import:zendesk:6',is_verified:0},'a malformed email is never kept as an address')
+  // Agent 2's own ticket has an inert contact for agent 2: no email, unverified, no access; the staff comments stay theirs.
+  const staffRaised=await rows(h,"SELECT c.contact_id,c.assigned_to FROM conversations c JOIN move_in_conversations s ON s.conversation_id=c.id WHERE s.source_id='111'")
+  assert.deepEqual(await contactOf('2'),{name:'synthetic-hh person 2',email:null,external_id:'import:zendesk:2',is_verified:0})
+  assert.deepEqual([staffRaised.length,staffRaised[0].assigned_to],[1,null])
+  assert.equal((await rows(h,'SELECT external_id FROM contacts WHERE id=?',staffRaised[0].contact_id))[0].external_id,'import:zendesk:2')
+  assert.equal((await rows(h,'SELECT COUNT(*) n FROM sessions WHERE contact_id=?',staffRaised[0].contact_id))[0].n,0,'the inert contact has no access')
+  assert.deepEqual((await rows(h,"SELECT DISTINCT m.actor_role FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='111'")).map(m=>m.actor_role),['operator'])
   assert.deepEqual(repeat.totals.replies,{seen:2,imported:2,refused:0})
   assert.deepEqual(repeat.totals.keptAsImported,{tickets:1,users:1,organizations:1})
   assert.equal(accounted(repeat.totals.tickets,repeat.totals.keptAsImported),repeat.totals.tickets.seen,'every ticket seen is accounted for')

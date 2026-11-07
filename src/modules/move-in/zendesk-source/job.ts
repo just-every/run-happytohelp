@@ -6,10 +6,8 @@ import {readComments,readPeople} from './comments'
 import {Deferred,type PullContext} from './context'
 import {enqueuePull} from './notify'
 import {packBatch} from './packing'
-import {claimPull,getPull,json,pullAllowed,savePull,stopPull,type Phase,type PullRow} from './pull-store'
+import {claimPull,getPull,HOLD_MS,json,pullAllowed,savePull,stopPull,type Phase,type PullRow} from './pull-store'
 import {readArticles,readFields,readOrganizations,readTickets,readUsers} from './reading'
-// Ten Zendesk reads of at most 30 seconds each finish inside one hold.
-const HOLD_MS=6*60*1000
 const reads:Partial<Record<Phase,(ctx:PullContext)=>Promise<void>>>={fields:readFields,articles:readArticles,organizations:readOrganizations,users:readUsers,tickets:readTickets,comments:readComments,people:readPeople,packing:packBatch}
 /** One bounded step of a pull per queue message: a few Zendesk reads, one packed
  * batch, or review and apply bookkeeping. Each step commits a durable checkpoint. */

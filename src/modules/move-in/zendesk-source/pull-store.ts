@@ -8,6 +8,8 @@ export const latestPulls=(env:Env,projectId:string,limit=10)=>env.DB.prepare('SE
 /** The reviewer's own session authorizes every background step, as for an upload. */
 export const pullAuthority=(pull:Pick<PullRow,'project_id'|'actor_id'|'session_hash'>)=>authority({id:'',project_id:pull.project_id,actor_id:pull.actor_id,session_hash:pull.session_hash})
 export async function pullAllowed(env:Env,pull:PullRow){const a=pullAuthority(pull);return !!(await env.DB.prepare(`SELECT (${a.sql}) allowed`).bind(...a.params!).first<{allowed:number}>())?.allowed}
+// Ten Zendesk reads of at most 30 seconds each finish inside one hold.
+export const HOLD_MS=6*60*1000
 /** One invocation holds the pull while it reads; a duplicate queue message finds it held. */
 export async function claimPull(env:Env,pull:PullRow,now:number,holdMs:number){
  const claimed=await env.DB.prepare('UPDATE move_in_zendesk_pulls SET lease_until=?,version=version+1 WHERE id=? AND version=? AND (lease_until IS NULL OR lease_until<=?)').bind(now+holdMs,pull.id,pull.version,now).run()

@@ -12,7 +12,7 @@ export const pullBatches=async(env:Env,pullId:string)=>(await env.DB.prepare('SE
 const PREPARING=['uploaded','parsing','planning'],WORKING=[...PREPARING,'applying','undoing']
 export const stopped=(batch:Pick<PullBatch,'state'|'error'>)=>!!batch.error&&WORKING.includes(batch.state)
 /** What one reviewed batch holds, by kind, with each refusal named by source id. */
-async function summarize(env:Env,run:Run){
+export async function summarize(env:Env,run:Run){
  const empty:BatchSummary={tickets:0,ticketsNew:0,ticketsRefused:0,replies:0,users:0,organizations:0,articles:{published:0,draft:0,heldBack:0},refused:0}
  if(run.error)return {summary:{...empty,error:run.error},refusals:[]}
  if(!run.plan_json)return {summary:{...empty,skipped:true},refusals:[]}

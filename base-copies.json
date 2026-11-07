@@ -3574,9 +3574,9 @@
     {
       "path": "src/modules/import-kit/src/provenance/credentials.ts",
       "originPath": "modules/import-kit/src/provenance/credentials.ts",
-      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "revision": "ff1bbbd6e3b8f3e8195f059673a26cc5cb9b7557",
       "files": {
-        "src/modules/import-kit/src/provenance/credentials.ts": "13cc5d10682ad95763d6056c80deb89f6576cdc7c83d19f201102d6ed9641eaa"
+        "src/modules/import-kit/src/provenance/credentials.ts": "42572e8c789b7e3ac264d581e778d979f8dad01e8be79c872854e38fd3cafa2a"
       },
       "modes": {
         "src/modules/import-kit/src/provenance/credentials.ts": "100644"

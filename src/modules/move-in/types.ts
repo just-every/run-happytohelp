@@ -2,6 +2,15 @@ import type {PublicationCategory} from './category-publication'
 import type { SourceBundle, SourceRecord, TargetEffect } from '../import-kit/src/types'
 export type Vendor = 'zendesk' | 'intercom' | 'helpscout' | 'freshdesk'
 export const MAPPING_VERSION = 'happytohelp-move-in-1'
+/** The mapping's revision within MAPPING_VERSION. A revision only maps records an earlier
+ * one refused (2: staff requesters as inert contacts, customers with no usable email,
+ * Zendesk system-authored comments); every record an earlier revision mapped keeps the
+ * same effects, so imports and source claims made under it stay valid and still undo.
+ * Each review records the revision it was built under (none before 2). A pulled batch
+ * reviewed under an earlier revision and not yet approved is planned again on Resume,
+ * so its review reflects what this revision imports. */
+export const MAPPING_REVISION = 2
+export const reviewedRevision = (planJson:string|null):number => {try{const revision=JSON.parse(planJson||'{}').mappingRevision;return Number.isSafeInteger(revision)?revision:1}catch{return 1}}
 export const LIMITS = { inputBytes: 2 * 1024 * 1024, expandedBytes: 2 * 1024 * 1024, recordBytes: 128 * 1024, records: 5000, opaqueNodes:4096, opaqueUploadNodes:200000, identityNodes:200000, identityLinks:20000, identityHashes:40000, archiveEntries: 64, parseBatch: 100, planBatch: 10, planChildren:500, nativeStatements:750, planContentBytes:512*1024, planBytes:1024*1024, applyBatch: 20 } as const
 /** A Zendesk pull reads complete tickets from the connected account inside this
  * Worker; nothing is uploaded. One pulled record may be larger than an uploaded

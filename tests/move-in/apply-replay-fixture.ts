@@ -9,13 +9,13 @@ import type {Env} from '../../src/platform/env'
 /** Test-edge preparation only. Native mapping, bounded reviewed plans and exact
  * R2 originals are real; approval and every apply step use the public doors. */
 export async function seedApplyReplay(request:Request,env:Env){
- const {index,runs=61,entries=14770,tickets=6214}=await request.json<any>()
+ const {index,runs=61,entries=14770,tickets=6214,comments=3}=await request.json<any>()
  if(!Number.isSafeInteger(index)||index<0||index>=runs)throw new Error('invalid_fixture_index')
  const share=(total:number)=>Math.floor(total/runs)+(index<total%runs?1:0)
  const ticketCount=share(tickets),contactCount=share(entries-tickets),offset=index*10000
  if(contactCount<ticketCount)throw new Error('fixture_requires_local_requesters')
  const stamp='2024-01-01T00:00:00Z',users=Array.from({length:contactCount},(_,i)=>({user:{id:offset+i+1,role:'end-user',name:`synthetic-hh-${offset+i+1}`,email:`synthetic-hh-${offset+i+1}@example.test`,created_at:stamp}}))
- const history=Array.from({length:ticketCount},(_,i)=>{const id=offset+i+1;return {ticket:{id,requester_id:id,subject:`synthetic-hh ticket ${id}`,description:`synthetic-hh history ${id}`,status:['open','pending','solved','closed'][i%4],created_at:stamp,updated_at:stamp,via:{channel:i%2?'email':'web'},comments:Array.from({length:3},(_,n)=>({id:id*10+n,author_id:id,body:`synthetic-hh message ${id}/${n}`,public:n!==2,created_at:stamp}))}}})
+ const history=Array.from({length:ticketCount},(_,i)=>{const id=offset+i+1;return {ticket:{id,requester_id:id,subject:`synthetic-hh ticket ${id}`,description:`synthetic-hh history ${id}`,status:['open','pending','solved','closed'][i%4],created_at:stamp,updated_at:stamp,via:{channel:i%2?'email':'web'},comments:Array.from({length:comments},(_,n)=>({id:id*10+n,author_id:id,body:`synthetic-hh message ${id}/${n}`,public:n%3!==2,created_at:stamp}))}}})
  const rows=[...users,...history],body=rows.map(row=>JSON.stringify(row)).join('\n')+'\n',bytes=new TextEncoder().encode(body),hash=sha256(bytes),id=`synthetic-hh-replay-${index}`,key=`move-in/p/${id}/original`
  const session=await env.DB.prepare("SELECT token_hash FROM sessions WHERE actor_id='owner' AND project_id='p'").first<{token_hash:string}>()
  if(!session)throw new Error('fixture_owner_missing')
@@ -31,7 +31,7 @@ export async function seedApplyReplay(request:Request,env:Env){
  const {summary}=await summarize(env,ready)
  await env.DB.prepare('INSERT INTO move_in_zendesk_pull_runs(pull_id,ordinal,run_id,summary_json) VALUES(?,?,?,?)').bind(pullId,index,id,JSON.stringify(summary)).run()
  const fingerprint=index===runs-1?pullFingerprint(await pullBatches(env,pullId)):undefined
- return Response.json({id,entries:rows.length,tickets:ticketCount,contacts:contactCount,pullId,fingerprint})
+ return Response.json({id,entries:rows.length,tickets:ticketCount,contacts:contactCount,bytes:bytes.length,pullId,fingerprint})
 }
 
 /** Test-edge comparison of the adapter's two read paths over the applied data:

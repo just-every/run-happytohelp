@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url'
 import {nativeHarness} from './harness.mjs'
 
 const root=resolve(fileURLToPath(new URL('../..',import.meta.url)))
-const fixture={runs:61,entries:14770,tickets:6214}
+const replayFixture={runs:61,entries:14770,tickets:6214,comments:3}
 const empty=()=>({d1RoundTrips:0,entryReads:{source:0,target:0,predecessor:0},setReads:{source:0,target:0,predecessor:0},r2:{get:0,head:0,put:0,delete:0,list:0},queueSends:0,wallMs:0,maxStepWallMs:0,maxStatements:0,maxStepRoundTrips:0,steps:0})
 const trips=total=>total.d1RoundTrips+Object.values(total.r2).reduce((sum,n)=>sum+n,0)+total.queueSends
 function add(total,step){assert.ok(step.metrics,'binding metrics missing');total.d1RoundTrips+=step.metrics.d1RoundTrips;total.queueSends+=step.metrics.queueSends;for(const key of Object.keys(total.entryReads)){total.entryReads[key]+=step.metrics.entryReads[key];total.setReads[key]+=step.metrics.setReads[key]};for(const key of Object.keys(total.r2))total.r2[key]+=step.metrics.r2[key];total.wallMs+=step.wallMs;total.maxStepWallMs=Math.max(total.maxStepWallMs,step.wallMs);total.maxStatements=Math.max(total.maxStatements,step.statements||0);total.maxStepRoundTrips=Math.max(total.maxStepRoundTrips,step.metrics.d1RoundTrips+Object.values(step.metrics.r2).reduce((sum,n)=>sum+n,0)+step.metrics.queueSends);total.steps++}
@@ -21,19 +21,20 @@ async function archivedSource(ref){
   await Promise.all([archive,extract].map(child=>new Promise((ok,no)=>{let error='';child.stderr.on('data',chunk=>{error+=chunk});child.on('error',no);child.on('close',code=>code===0?ok():no(new Error(`Archive ${ref}: ${error}`)))})))
   await symlink(join(root,'node_modules'),join(directory,'node_modules'),'dir')
   await mkdir(join(directory,'tests/move-in'),{recursive:true})
-  for(const name of ['worker.ts','apply-metrics.ts','apply-replay-fixture.ts'])await copyFile(join(root,'tests/move-in',name),join(directory,'tests/move-in',name))
+  for(const name of ['worker.ts','apply-replay-worker.ts','apply-metrics.ts','apply-replay-fixture.ts'])await copyFile(join(root,'tests/move-in',name),join(directory,'tests/move-in',name))
   return directory
  }catch(error){await rm(directory,{recursive:true,force:true});throw error}
 }
 
-export async function replayApply({label='CANDIDATE',sourceRoot=root,evidenceDir=process.env.H2H_EVIDENCE_DIR||join(root,'logs/apply-replay')}={}){
- const h=await nativeHarness({sourceRoot,bindings:process.env.H2H_APPLY_TRACE?{APPLY_TRACE:'1'}:{}}),total=empty(),steps=[],runs=[]
+export async function replayApply({label='CANDIDATE',sourceRoot=root,fixture=replayFixture,evidenceDir=process.env.H2H_EVIDENCE_DIR||join(root,'logs/apply-replay')}={}){
+ const h=await nativeHarness({sourceRoot,workerEntry:'tests/move-in/apply-replay-worker.ts',bindings:process.env.H2H_APPLY_TRACE?{APPLY_TRACE:'1'}:{}}),total=empty(),steps=[],runs=[]
  const record=(runId,phase,started,metrics,statements=0)=>{const row={runId,phase,wallMs:performance.now()-started,metrics,statements};steps.push(row);add(total,row)}
  try{
   const seeded=[]
   for(let index=0;index<fixture.runs;index++)seeded.push(await h.call('/_test/apply-replay/seed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...fixture,index})}))
   assert.equal(seeded.reduce((n,run)=>n+run.entries,0),fixture.entries)
   assert.equal(seeded.reduce((n,run)=>n+run.tickets,0),fixture.tickets)
+  for(const run of seeded){assert.ok(run.entries<=5000,'replay stays within the pull record bound');assert.ok(run.bytes<=2*1024*1024,'replay stays within the pull byte bound')}
   const pull=seeded.at(-1),started=performance.now(),approved=await h.raw(`/api/move-in/projects/p/zendesk/pulls/${pull.pullId}/approve`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fingerprint:pull.fingerprint})})
   assert.ok(approved.response.ok,JSON.stringify(approved.data));record(pull.pullId,'approval',started,approved.metrics)
   while(h.queued.length){
@@ -53,12 +54,12 @@ export async function replayApply({label='CANDIDATE',sourceRoot=root,evidenceDir
    console.log(`${label}_RUN ${JSON.stringify(runs.at(-1))}`)
   }
   const counts=await h.db.prepare('SELECT (SELECT COUNT(*) FROM contacts) contacts,(SELECT COUNT(*) FROM conversations) tickets,(SELECT COUNT(*) FROM messages) messages,(SELECT COUNT(*) FROM move_in_notes) notes,(SELECT COUNT(*) FROM ik_sources) sources').first()
-  assert.equal(counts.contacts,fixture.entries-fixture.tickets);assert.equal(counts.tickets,fixture.tickets);assert.equal(counts.messages,fixture.tickets*2);assert.equal(counts.notes,fixture.tickets);assert.equal(counts.sources,fixture.entries)
+  assert.equal(counts.contacts,fixture.entries-fixture.tickets);assert.equal(counts.tickets,fixture.tickets);assert.equal(counts.messages,fixture.tickets*(fixture.comments-Math.floor(fixture.comments/3)));assert.equal(counts.notes,fixture.tickets*Math.floor(fixture.comments/3));assert.equal(counts.sources,fixture.entries)
   assert.equal(h.outbound,0)
   if(label==='CANDIDATE'){const reads=await h.call('/_test/apply-replay/compare-reads',{method:'POST'});console.log(`${label}_READ_MANY ${JSON.stringify(reads)}`);assert.equal(reads.mismatched,0);assert.ok(reads.present>=fixture.entries);assert.deepEqual(reads.failures,{malformedSingle:true,malformedSelected:true,malformedUnselected:true,unknownKind:true})}
   const receipt={label,fixture,counts,pull:{id:pull.pullId,state:finished.state,progress:finished.progress},...total,runs,steps}
   await mkdir(evidenceDir,{recursive:true});await writeFile(join(evidenceDir,`${label.toLowerCase()}.json`),JSON.stringify(receipt,null,2)+'\n')
-  console.log(`${label} ${JSON.stringify({fixture,counts,...total,roundTrips:trips(total),evidence:join(evidenceDir,`${label.toLowerCase()}.json`)})}`)
+  console.log(`${label} ${JSON.stringify({fixture,counts,...total,roundTrips:trips(total),statementMargin:980-total.maxStatements,evidence:join(evidenceDir,`${label.toLowerCase()}.json`)})}`)
   return receipt
  }finally{await h.close()}
 }
@@ -78,7 +79,9 @@ export async function applyPerformanceReplay({baselineRef=process.env.H2H_APPLY_
  const candidate=await replayApply({label:'CANDIDATE',evidenceDir}),reduction=trips(baseline)/trips(candidate),d1Reduction=baseline.d1RoundTrips/candidate.d1RoundTrips
  console.log(`APPLY_REDUCTION ${JSON.stringify({baselineRef,roundTrips:reduction,d1RoundTrips:d1Reduction,baselineWallMs:baseline.wallMs,candidateWallMs:candidate.wallMs,reportOnly})}`)
  if(!reportOnly)assert.ok(reduction>=REQUIRED_REDUCTION,`Round trips reduced ${reduction.toFixed(2)}x (D1 ${d1Reduction.toFixed(2)}x); require at least ${REQUIRED_REDUCTION}x`)
- return {baseline,candidate,reduction}
+ // The gate's accepted high-predicate pull must finish in one pass, with no Resume.
+ const budget=await replayApply({label:'HIGH_PREDICATES',fixture:{runs:1,entries:5000,tickets:170,comments:8},evidenceDir})
+ return {baseline,candidate,budget,reduction}
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const option=name=>{const at=process.argv.indexOf(name);return at<0?undefined:process.argv[at+1]}

@@ -37,7 +37,8 @@ export async function advanceBatch(env:Env,run:Run){
  const retained=undo?[]:retainedSourcePredicates(run.project_id,run.vendor,review.retainedSources??[])
  const publication=undo?[]:publicationPredicates(run.project_id,await reviewedContacts(env,review))
  await checkPublication(env.DB,[{predicates:categoryPredicates,error:'native_category_changed_since_review'},{predicates:retained,error:'retained_source_changed_since_review'},{predicates:publication,error:'native_contact_changed_since_review'}])
- const context={...importContext({...env,DB:publicationDatabase(env.DB,[...publication,...categoryPredicates,...retained])},{...run,kit_job_id:batch.kit_job_id},fence),operationKey:`${run.id}/${batch.ordinal}`}
+ const predicates=[...publication,...categoryPredicates,...retained]
+ const context={...importContext({...env,DB:publicationDatabase(env.DB,predicates)},{...run,kit_job_id:batch.kit_job_id},fence),operationKey:`${run.id}/${batch.ordinal}`}
  if(!batch.kit_job_id){if(undo)throw new Error('import_job_missing');const object=await env.FILES.get(batch.plan_key);if(!object||object.size>runLimits(run).planBytes)throw new Error('reviewed_plan_missing');const plan=await object.json<ImportPlan>();if(plan.fingerprint!==batch.fingerprint||plan.entries.length!==batch.total)throw new Error('reviewed_plan_changed');const job=await createD1ImportJob(plan,{...context,reviewedFingerprint:batch.fingerprint});await publishCheckpoint(env,run,batch,job);return}
  // Both entry points perform Base current authorization, stored-plan validation,
  // custody/inventory checks and atomic fences. No redundant read-and-reload.
@@ -45,5 +46,5 @@ export async function advanceBatch(env:Env,run:Run){
  // reverses that actual journal; completed children keep normal undo semantics.
  const jobState=undo?(await env.DB.prepare('SELECT state FROM ik_jobs WHERE id=?').bind(batch.kit_job_id).first<{state:string}>())?.state:null
  const reverse=jobState&&['completed','undoing','undone'].includes(jobState)?undoD1Import:rollbackD1Import
- const job=undo?await reverse(batch.kit_job_id,context):await applyD1ImportBatches(batch.kit_job_id,applyStep(context));await publishCheckpoint(env,run,batch,job)
+ const job=undo?await reverse(batch.kit_job_id,context):await applyD1ImportBatches(batch.kit_job_id,applyStep(context,predicates.length));await publishCheckpoint(env,run,batch,job)
 }

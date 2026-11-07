@@ -204,8 +204,8 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
  }finally{await h.close()}
 })
 
-test('a refused record never holds back a valid one and a stopped batch is never left behind: the first pull and a repeat pull import every valid record and name each refusal',{timeout:600_000},async()=>{
- const zendesk=fakeZendesk({edgeCases:true}),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
+test('a refused record never holds back a valid one and a stopped batch is never left behind: credential refusals stay out of packed batches across resume and every valid record imports',{timeout:600_000},async()=>{
+ const zendesk=fakeZendesk({edgeCases:true,credentialTicket:true}),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
  try{
   await connect(h,zendesk)
   // The first pull's ticket batch stops on a transient database failure while it is parsed.
@@ -228,11 +228,48 @@ test('a refused record never holds back a valid one and a stopped batch is never
   assert.equal(pull.state,'reviewing')
   const [again]=pull.batches.filter(b=>b.stopped)
   assert.equal(again.ordinal,0);assert.notEqual(again.runId,stopped[0].runId,'the next pull admits the stopped batch again as a new run')
+  const packedBeforeResume=pull.batches.map(b=>b.runId)
+  const credentialRefusal=pull.refusals.find(r=>r.kind==='ticket'&&r.sourceId==='112')
+  assert.equal(credentialRefusal?.reason,'CREDENTIAL_IN_DURABLE_URL','the genuine credential record is refused by its Zendesk id before batch review resumes')
+  async function packedTickets(){
+   const records=[]
+   for(const batch of (await pullOf(h,second.id)).batches){
+    const [run]=await rows(h,'SELECT object_key FROM move_in_runs WHERE id=?',batch.runId)
+    const original=await (await h.files).get(run.object_key)
+    assert.ok(original)
+    records.push(...(await original.text()).split('\n').filter(line=>line.trim()).map(line=>JSON.parse(line)))
+   }
+   assert.ok(records.every(record=>record.ticket?.id!==112),'the credential-failing ticket never enters any packed original')
+   return records.filter(record=>record.ticket).map(record=>String(record.ticket.id)).sort()
+  }
+  assert.deepEqual(await packedTickets(),['101','102','104','105','109','110'],'the batch packs every other live ticket, including the missing-requester case for review')
   await h.call(`${api}/zendesk/pulls/${second.id}/resume`,post({}))
   await drain(h)
   pull=await pullOf(h,second.id)
   assert.equal(pull.state,'ready',JSON.stringify({error:pull.error}))
   assert.equal(pull.progress.batchesStopped,0)
+  assert.deepEqual(pull.batches.map(b=>b.runId),packedBeforeResume,'resume continues the same batches without packing the refused record again')
+  assert.deepEqual(pull.refusals.find(r=>r.kind==='ticket'&&r.sourceId==='112'),credentialRefusal)
+  assert.deepEqual(await packedTickets(),['101','102','104','105','109','110'])
+
+  // A pull reviewed before W3 is planned again on Resume from its existing custody.
+  // Packing refusals have no batch to re-plan and must survive that refresh too.
+  const reads=zendesk.state.requests.length
+  const reviewed=pull.batches.find(b=>b.summary.tickets)
+  const [oldRun]=await rows(h,'SELECT plan_json FROM move_in_runs WHERE id=?',reviewed.runId)
+  const oldPlan=JSON.parse(oldRun.plan_json);delete oldPlan.mappingRevision
+  await h.db.prepare('UPDATE move_in_runs SET plan_json=? WHERE id=?').bind(JSON.stringify(oldPlan),reviewed.runId).run()
+  await h.call(`${api}/zendesk/pulls/${second.id}/resume`,post({}))
+  assert.equal((await pullOf(h,second.id)).state,'reviewing','an older review returns to planning')
+  await drain(h)
+  pull=await pullOf(h,second.id)
+  assert.equal(pull.state,'ready',JSON.stringify({error:pull.error}))
+  const [freshRun]=await rows(h,'SELECT plan_json FROM move_in_runs WHERE id=?',reviewed.runId)
+  assert.ok(JSON.parse(freshRun.plan_json).mappingRevision>1,'the older batch is reviewed under the current mapping')
+  assert.equal(zendesk.state.requests.length,reads,'re-planning reads existing custody, not Zendesk')
+  assert.deepEqual(pull.batches.map(b=>b.runId),packedBeforeResume)
+  assert.deepEqual(pull.refusals.find(r=>r.kind==='ticket'&&r.sourceId==='112'),credentialRefusal,'re-planning preserves the packing refusal')
+  assert.deepEqual(await packedTickets(),['101','102','104','105','109','110'])
 
   // Ticket 110's requester is no longer in Zendesk, in the same batch as every valid ticket,
   // among them chat ticket 109 from person 8, who has no email. The approval covers that
@@ -245,8 +282,8 @@ test('a refused record never holds back a valid one and a stopped batch is never
   assert.equal(pull.state,'applied',JSON.stringify({error:pull.error}))
   assert.ok(budget.maxStatements<=980)
   assert.deepEqual(await sourceIds(h),[['101',1],['102',1],['104',1],['105',1],['109',1]],'every valid ticket imports beside the refused one')
-  assert.deepEqual(pull.refusals.filter(r=>r.kind!=='ticket_field').map(r=>[r.kind,r.sourceId,r.reason]),[['ticket','110','conversation_contact_unavailable']],'only the ticket whose requester is gone is refused')
-  assert.deepEqual(pull.totals.tickets,{seen:7,deleted:1,imported:5,refused:1,alreadyImported:0})
+  assert.deepEqual(pull.refusals.filter(r=>r.kind!=='ticket_field').map(r=>[r.kind,r.sourceId,r.reason]),[['ticket','110','conversation_contact_unavailable'],['ticket','112','CREDENTIAL_IN_DURABLE_URL']],'the missing requester and genuine credential are each refused by source id and reason')
+  assert.deepEqual(pull.totals.tickets,{seen:8,deleted:1,imported:5,refused:2,alreadyImported:0})
   assert.equal(accounted(pull.totals.tickets,pull.totals.keptAsImported),pull.totals.tickets.seen,'every ticket seen is accounted for')
   const contacts=async()=>(await rows(h,'SELECT COUNT(*) n FROM contacts'))[0].n
   assert.equal(pull.totals.users,(await contacts())+1,'people seen are five contacts, one without an email, and one staff author')

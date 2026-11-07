@@ -1,11 +1,12 @@
 import {LIMITS} from '../types'
 import {sha256} from '../../import-kit/src/d1/index'
+import {assertNoCredentials,CredentialError} from '../../import-kit/src/provenance/credentials'
 import {admitExport} from '../routes'
 import {zendeskField} from '../readers/zendesk-fields'
 import {ZendeskError} from '../zendesk-connection/errors'
 import type {PullContext} from './context'
 import {settled,ticketFieldsHash} from './settle'
-import {refuse,type StagedKind} from './staging'
+import {refuse,zendeskId,type StagedKind} from './staging'
 /** A batch is an ordinary Move in upload in every bound but its source: at most
  * 2 MiB and 5,000 records, carrying the people, companies and field definitions its
  * tickets and replies reference, framed as the Zendesk reader takes them
@@ -13,6 +14,23 @@ import {refuse,type StagedKind} from './staging'
 const BATCH_BYTES=LIMITS.inputBytes-16*1024,BATCH_RECORDS=LIMITS.records,CANDIDATES=200,READMISSIONS=100
 interface Row {source_id:string;bytes:number;refs_json?:string|null;organization?:string|null}
 interface Batch {lines:string[];primary:{kind:StagedKind;id:string}[];packed:Partial<Record<StagedKind,string[]>>;tickets?:Map<string,string>}
+/** Inspect exactly what the whole-file backstop will see, including supporting
+ * records. Commit refusals before selecting again: queued deletions are not yet
+ * visible, and no original containing a refused record may enter Move in. */
+function credentialSafe(ctx:PullContext,batch:Batch){
+ let refused=0
+ for(const line of batch.lines){
+  const framed=JSON.parse(line)
+  try{assertNoCredentials(framed)}catch(error){
+   if(!(error instanceof CredentialError))throw error
+   const [kind,record]=Object.entries(framed)[0] as [StagedKind,{id:unknown}]
+   refuse(ctx,kind,zendeskId(record.id),error.message)
+   // Keep even an entirely unsafe batch inside one invocation's D1 budget.
+   if(++refused>=CANDIDATES)break
+  }
+ }
+ return refused===0
+}
 const ids=(values:Iterable<string>)=>JSON.stringify([...values])
 async function sized(ctx:PullContext,kind:StagedKind,states:string[],wanted?:string[],limit=1000){
  if(wanted&&!wanted.length)return [] as Row[]
@@ -78,6 +96,7 @@ export async function packBatch(ctx:PullContext){
  const ordinal=Number(ctx.cursor.ordinal??0),limit=Number(ctx.cursor.limit??CANDIDATES)
  const batch=await ticketBatch(ctx,limit)??await remainingBatch(ctx,limit)
  if(!batch){await finishPacking(ctx);return}
+ if(!credentialSafe(ctx,batch)){ctx.more=true;return}
  const bytes=await admissible(ctx,batch.lines)
  const result=await admitExport(ctx.env,{project_id:ctx.pull.project_id,actor_id:ctx.pull.actor_id,session_hash:ctx.pull.session_hash},'zendesk',`zendesk-pull-${ctx.pull.id.slice(0,8)}-${ordinal+1}.jsonl`,bytes,'zendesk-pull')
  if(result.status===200||result.status===201){

@@ -6,16 +6,18 @@ import {Deferred} from '../zendesk-source/context'
 import {HOLD_MS} from '../zendesk-source/pull-store'
 import {afterCursor,list,sourceGet,type SourceContext} from '../zendesk-source/requests'
 import {downloadAttachment,MAX_BYTES} from './download'
-import {storeFile} from './files'
+import {fileKey,putFile,recordFile} from './files'
 import {heldTicket,nextTicket,pageAttachments,recordMissingTicket,recordPage,recordRefusals,unfetched} from './ledger'
-import {claimRun,cursorOf,enqueueRun,getRun,runAllowed,saveRun,stopRun,type AttachmentRun,type Cursor} from './store'
+import {claimRun,cursorOf,enqueueRun,getRun,runAllowed,saveRun,settleLost,stopRun,type AttachmentRun,type Cursor} from './store'
 /** One step's bounds: a few Zendesk reads, a few files, about one largest file of
  * bytes, and no new download after two minutes, well inside the step's hold. */
 const REQUESTS=10,DOWNLOADS=10,STEP_MS=120000
 interface Step {cursor:Cursor;source:SourceContext;subdomain:string;downloads:number;bytes:number;started:number;refusals:{a:string;r:string}[];done:boolean;more:boolean}
 /** One bounded step of an attachment run per queue message. It catches its own
  * failures and records a stop: it never throws to the queue, whose retries would
- * replay downloads. */
+ * replay downloads. A step that died holding the run (out of memory, a crash) is not
+ * repeated on its own, since it could die the same way: the run stops as lost, and
+ * Resume repeats it from its checkpoint on a person's say. */
 export async function advanceAttachments(env:Env,id:string,projectId:string){
  try{await advance(env,id,projectId)}catch{console.error('Zendesk attachment step could not record its outcome')}
 }
@@ -24,6 +26,7 @@ async function advance(env:Env,id:string,projectId:string){
  if(!found||found.project_id!==projectId||found.error||found.state!=='running')return
  if(found.next_at>now){await enqueueRun(env,found,found.next_at-now);return}
  if(found.lease_until&&found.lease_until>now){await enqueueRun(env,found,found.lease_until-now+1000);return}
+ if(found.lease_until){await settleLost(env,found,now);return}
  const run=await claimRun(env,found,now,HOLD_MS);if(!run)return
  if(!await runAllowed(env,run)){await stopRun(env,run,'import_authority_revoked');return}
  const step:Step={cursor:cursorOf(run),source:{env,pull:{subdomain:run.subdomain,project_id:run.project_id},token:'',requests:0,incremental:[]},subdomain:run.subdomain,downloads:0,bytes:0,started:now,refusals:[],done:false,more:false}
@@ -72,11 +75,19 @@ async function work(env:Env,run:AttachmentRun,step:Step){
    if(file.deleted){step.refusals.push({a:file.attachmentId,r:'attachment_deleted'});continue}
    if(file.malware){step.refusals.push({a:file.attachmentId,r:'attachment_malware_detected'});continue}
    if(spent(step)){step.more=true;return}
-   step.downloads++
-   const result=await downloadAttachment(step.subdomain,file.contentUrl,step.source.token)
-   if('refused' in result){step.refusals.push({a:file.attachmentId,r:result.refused});continue}
-   step.bytes+=result.bytes.byteLength
-   if(await storeFile(env,run,held.conversation,file,result.bytes)==='not_held')step.refusals.push({a:file.attachmentId,r:'attachment_comment_not_held'})
+   // Bytes already in R2 (a step that died between storing them and recording them) are recorded without a request.
+   const key=fileKey(run,held.conversation,file),kept=await env.FILES.head(key)
+   let size=kept?.size
+   if(size===undefined){
+    step.downloads++
+    const result=await downloadAttachment(step.subdomain,file.contentUrl,file.size,step.source.token)
+    if('refused' in result){step.refusals.push({a:file.attachmentId,r:result.refused});continue}
+    step.bytes+=result.length
+    const failed=await putFile(env,key,file,result)
+    if(failed){step.refusals.push({a:file.attachmentId,r:failed});continue}
+    size=result.length
+   }
+   if(await recordFile(env,run,held.conversation,file,key,size)==='not_held')step.refusals.push({a:file.attachmentId,r:'attachment_comment_not_held'})
   }
   step.cursor=next?{after:step.cursor.after,ticket:held.ticket,page:next}:{after:held.ticket}
  }

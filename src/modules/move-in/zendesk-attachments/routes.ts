@@ -5,31 +5,36 @@ import type {AppEnv} from '../../../platform/env'
 import {auditStatement,requestSource} from '../../audit/record'
 import {importActor,type ImportActor} from '../routes'
 import {getConnection} from '../zendesk-connection/store'
-import {enqueueRun,getRun,latestRun,type AttachmentRun} from './store'
+import {enqueueRun,getRun,latestRun,settleLost,unfinishedRun,type AttachmentRun} from './store'
 import {attachmentView} from './view'
-const root='/projects/:projectId/zendesk/attachments'
+const root='/projects/:projectId/zendesk/attachments',GOING='Zendesk files are already being fetched for this workspace.'
 export const zendeskAttachmentRoutes=new Hono<AppEnv>()
 const audit=(c:Context<AppEnv>,actor:ImportActor,action:string,run:string,detail:Record<string,unknown>={})=>auditStatement(c.env.DB,{projectId:actor.project_id,category:'data',action,actor:{type:'user',id:actor.actor_id},source:requestSource(c),target:{type:'import',id:run},detail:{vendor:'zendesk',...detail}})
-async function workspaceRun(c:Context<AppEnv>){const actor=await importActor(c),run=await getRun(c.env,c.req.param('runId')!);if(!run||run.project_id!==actor.project_id)throw new HTTPException(404);return {actor,run}}
+// Every read settles a lost run first, so it shows its stop and Resume or a new run gets past it.
+async function workspaceRun(c:Context<AppEnv>){const actor=await importActor(c),run=await getRun(c.env,c.req.param('runId')!);if(!run||run.project_id!==actor.project_id)throw new HTTPException(404);return {actor,run:await settleLost(c.env,run)}}
 const view=async(c:Context<AppEnv>,id:string)=>attachmentView(c.env,(await getRun(c.env,id)) as AttachmentRun)
 
-zendeskAttachmentRoutes.get(root,async c=>{const actor=await importActor(c),run=await latestRun(c.env,actor.project_id);return c.json({data:run?await attachmentView(c.env,run):null})})
+zendeskAttachmentRoutes.get(root,async c=>{const actor=await importActor(c),run=await latestRun(c.env,actor.project_id);return c.json({data:run?await attachmentView(c.env,await settleLost(c.env,run)):null})})
 zendeskAttachmentRoutes.get(`${root}/:runId`,async c=>{const {run}=await workspaceRun(c);return c.json({data:await attachmentView(c.env,run)})})
 
 /** Fetch every imported comment's files over the workspace's existing connection. It
  * changes no imported record, only adds files to them, so it needs no approval. One run
- * at a time per workspace; a run after a finished one fetches only what is not stored. */
+ * at a time per workspace: 409 while one is going. A stopped run is closed by the new one
+ * (it keeps its reason and no longer resumes); a run after a finished or stopped one
+ * fetches only what is not stored. */
 zendeskAttachmentRoutes.post(root,async c=>{
  const actor=await importActor(c),connection=await getConnection(c.env,actor.project_id)
  if(connection?.state!=='connected')throw new HTTPException(409,{message:connection?.state==='reconnect'?'Reconnect Zendesk, then fetch the files again.':'Connect Zendesk first.'})
  const held=await c.env.DB.prepare("SELECT COUNT(*) n FROM move_in_conversations WHERE project_id=? AND vendor='zendesk'").bind(actor.project_id).first<{n:number}>()
  if(!held?.n)throw new HTTPException(409,{message:'Import Zendesk tickets first; their files come after.'})
- if(await c.env.DB.prepare("SELECT 1 FROM move_in_zendesk_attachment_pulls WHERE project_id=? AND state='running'").bind(actor.project_id).first())throw new HTTPException(409,{message:'Zendesk files are already being fetched for this workspace.'})
+ const unfinished=await unfinishedRun(c.env,actor.project_id)
+ if(unfinished&&!(await settleLost(c.env,unfinished)).error)throw new HTTPException(409,{message:GOING})
  const id=crypto.randomUUID(),now=Date.now()
  try{await c.env.DB.batch([
+  c.env.DB.prepare("UPDATE move_in_zendesk_attachment_pulls SET state='done',lease_until=NULL,version=version+1,updated_at=? WHERE project_id=? AND state='running' AND error IS NOT NULL").bind(now,actor.project_id),
   c.env.DB.prepare("INSERT INTO move_in_zendesk_attachment_pulls(id,project_id,actor_id,session_hash,subdomain,state,created_at,updated_at) VALUES(?,?,?,?,?,'running',?,?)").bind(id,actor.project_id,actor.actor_id,actor.session_hash,connection.subdomain,now,now),
   audit(c,actor,'import.attachments.started',id,{conversations:held.n})])}
- catch(error){if(await c.env.DB.prepare("SELECT 1 FROM move_in_zendesk_attachment_pulls WHERE project_id=? AND state='running'").bind(actor.project_id).first())throw new HTTPException(409,{message:'Zendesk files are already being fetched for this workspace.'});throw error}
+ catch(error){if(await c.env.DB.prepare("SELECT 1 FROM move_in_zendesk_attachment_pulls WHERE project_id=? AND state='running' AND error IS NULL").bind(actor.project_id).first())throw new HTTPException(409,{message:GOING});throw error}
  await enqueueRun(c.env,{id,project_id:actor.project_id})
  return c.json({data:await view(c,id)},201)
 })

@@ -8277,7 +8277,7 @@
       "executable": false
     },
     "src/modules/move-in/service.ts": {
-      "sha256": "3bdafd7a017732a6aa80aa0b1b70e025d3daeee408843261b608f2491a9df403",
+      "sha256": "9efa0b038fdbcada5ca4dc269c6a63dd20a7f42ba1f79197facfa6fc7fa5e919",
       "executable": false
     },
     "src/modules/move-in/source-ownership.ts": {
@@ -16413,7 +16413,7 @@
       "executable": false
     },
     "tests/move-in/apply-fences.mjs": {
-      "sha256": "99fd46bf1baa9a0f358af1b24e58aaa5f8d249241e7bc345c3729e01a3608d62",
+      "sha256": "b986b31105c30869255d5cc60e0578bb2d98b473a1e1f2e54c8e6d48c91b84d1",
       "executable": false
     },
     "tests/move-in/apply-metrics.ts": {

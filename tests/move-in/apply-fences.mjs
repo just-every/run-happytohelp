@@ -32,6 +32,13 @@ try{
   await h.drain();const stopped=await state(h,ready)
   assert.equal(stopped.state,'applying');assert.equal(stopped.error,'source_custody_changed');assertBusinessEquality(snapshot,await h.snapshot())
  }
+ // A genuinely old run must complete its identity audit before even claiming a
+ // queue step. A database trigger observes the write order, not an internal spy.
+ const legacy=await review(h,'zendesk',generate('zendesk',2),'synthetic-hh-legacy.jsonl')
+ await h.call(`${root}/${legacy.id}/apply`,json({fingerprint:legacy.plan.fingerprint}))
+ await h.db.prepare('UPDATE move_in_runs SET identity_audited=0 WHERE id=?').bind(legacy.id).run()
+ await h.db.prepare("CREATE TRIGGER synthetic_audit_before_touch BEFORE UPDATE OF updated_at ON move_in_runs WHEN NEW.state='applying' AND NEW.identity_audited<>1 BEGIN SELECT RAISE(ABORT,'custody_audit_required_before_write'); END").run()
+ try{await h.drain();assert.equal((await state(h,legacy)).state,'completed')}finally{await h.db.prepare('DROP TRIGGER synthetic_audit_before_touch').run()}
  assert.equal(h.outbound,0)
  console.log('APPLY_FENCES duplicate apply/undo, private custody, replacement and deletion passed')
 }finally{await h.close()}

@@ -15,7 +15,7 @@ export function largeComments(){return Array.from({length:300},(_,i)=>comment(40
 /** With refusedPeople, the account also holds people the engine refuses (no valid
  * email), each the requester of one ticket: person 8 and ticket 109 from the start,
  * and person 6 and ticket 108 once it has changed. */
-export function fakeZendesk({refusedPeople=false}={}){
+export function fakeZendesk({refusedPeople=false,credentialTicket=false}={}){
  const state={authorizations:new Map(),grants:new Map(),access:new Set(),refresh:new Set(),tokenRequests:[],requests:[],throttled:false,issued:0,repeat:false}
  const users=[user(1,'end-user',{organization_id:7}),user(2,'agent'),user(3,'end-user'),user(4,'end-user'),user(5,'end-user'),...(refusedPeople?[user(8,'end-user',{email:'synthetic-hh-8-without-address'})]:[])]
  const tickets={
@@ -27,6 +27,7 @@ export function fakeZendesk({refusedPeople=false}={}){
   105:{record:ticket(105,5,'pending','synthetic-hh screenshot attached'),comments:[comment(10501,5,2,`synthetic-hh see screenshot ${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,true,{attachments:[inline(70501)]})]},
   106:{record:ticket(106,1,'new','synthetic-hh follow-up after the move'),comments:[comment(10601,1,8,'synthetic-hh one more question'),comment(10602,2,8,'synthetic-hh answered',true)]},
   107:{record:ticket(107,3,'new','synthetic-hh question from a renamed person'),comments:[comment(10701,3,8,'synthetic-hh hello again')]},
+  ...(credentialTicket?{110:{record:ticket(110,1,'open','synthetic-hh credential in ticket text',{description:'?api_key=synthetic-hh-refused-secret'}),comments:[comment(11001,1,2,'synthetic-hh credential in ticket text')]}}:{}),
   ...(refusedPeople?{
    109:{record:ticket(109,8,'open','synthetic-hh question without an address'),comments:[comment(10901,8,2,'synthetic-hh no address on file')]},
    108:{record:ticket(108,6,'new','synthetic-hh question from a new person without an address'),comments:[comment(10801,6,8,'synthetic-hh hello from a new person')]},
@@ -78,7 +79,7 @@ export function fakeZendesk({refusedPeople=false}={}){
    assert.equal(url.searchParams.get('support_type_scope'),'all');assert.equal(url.searchParams.get('exclude_deleted'),null)
    const cursor=url.searchParams.get('cursor')
    if(url.searchParams.get('start_time')==='0')return json({tickets:[101,102,103].map(id=>current(id).record),after_cursor:'tickets-after-1',end_of_stream:false})
-   if(cursor==='tickets-after-1')return json({tickets:[104,105,...(state.repeat?[106,107]:[]),...(refusedPeople?[109,...(state.repeat?[108]:[])]:[])].map(id=>current(id).record),after_cursor:'tickets-after-2',end_of_stream:true})
+   if(cursor==='tickets-after-1')return json({tickets:[104,105,...(state.repeat?[106,107]:[]),...(refusedPeople?[109,...(state.repeat?[108]:[])]:[]),...(credentialTicket?[110]:[])].map(id=>current(id).record),after_cursor:'tickets-after-2',end_of_stream:true})
    assert.ok(['tickets-after-2','tickets-after-3'].includes(cursor),cursor);return json({tickets:state.repeat&&cursor==='tickets-after-2'?[101,102,106,107,...(refusedPeople?[108]:[])].map(id=>current(id).record):[],after_cursor:'tickets-after-3',end_of_stream:true})
   }
   const comments=url.pathname.match(/^\/api\/v2\/tickets\/(\d+)\/comments\.json$/)

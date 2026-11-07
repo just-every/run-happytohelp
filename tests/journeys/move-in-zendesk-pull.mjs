@@ -204,8 +204,8 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
  }finally{await h.close()}
 })
 
-test('a refused record never holds back a valid one and a stopped batch is never left behind: the first pull and a repeat pull import every valid record and name each refusal',{timeout:600_000},async()=>{
- const zendesk=fakeZendesk({refusedPeople:true}),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
+test('a refused record never holds back a valid one and a stopped batch is never left behind: credential refusals stay out of packed batches across resume and every valid record imports',{timeout:600_000},async()=>{
+ const zendesk=fakeZendesk({refusedPeople:true,credentialTicket:true}),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
  try{
   await connect(h,zendesk)
   // The first pull's ticket batch stops on a transient database failure while it is parsed.
@@ -244,8 +244,8 @@ test('a refused record never holds back a valid one and a stopped batch is never
   assert.equal(pull.state,'applied',JSON.stringify({error:pull.error}))
   assert.ok(budget.maxStatements<=980)
   assert.deepEqual(await sourceIds(h),[['101',1],['102',1],['104',1],['105',1]],'every valid ticket imports beside the refused one')
-  assert.deepEqual(pull.refusals.filter(r=>r.kind!=='ticket_field').map(r=>[r.kind,r.sourceId,r.reason]),[['ticket','109','conversation_contact_unavailable'],['user','8','contact_email_missing_or_invalid']])
-  assert.deepEqual(pull.totals.tickets,{seen:6,deleted:1,imported:4,refused:1,alreadyImported:0})
+  assert.deepEqual(pull.refusals.filter(r=>r.kind!=='ticket_field').map(r=>[r.kind,r.sourceId,r.reason]),[['ticket','109','conversation_contact_unavailable'],['ticket','110','CREDENTIAL_IN_DURABLE_URL'],['user','8','contact_email_missing_or_invalid']])
+  assert.deepEqual(pull.totals.tickets,{seen:7,deleted:1,imported:4,refused:2,alreadyImported:0})
   assert.equal(accounted(pull.totals.tickets,pull.totals.keptAsImported),pull.totals.tickets.seen,'every ticket seen is accounted for')
   const contacts=async()=>(await rows(h,'SELECT COUNT(*) n FROM contacts'))[0].n
   assert.equal(pull.totals.users,(await contacts())+1+1,'people seen are four contacts, one refused person and one staff author')

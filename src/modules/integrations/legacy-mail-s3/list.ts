@@ -24,11 +24,12 @@ export async function recoverLegacyMailS3(env:Env){
  const introduced=new Set<string>()
  try{await wakePendingMailbox(env,config)}catch(error){console.error('Amazon SES reader wake failed',error instanceof Error?error.name:'error')}
  try{
-  let complete=true
-  // SES's prefix first: when one message sits under both, the copy SES wrote is the one that holds its id.
-  const prefixes:[string,'ses'|'replay'][]=[[config.sesPrefix,'ses'],...(config.replayPrefix?[[config.replayPrefix,'replay'] as [string,'replay']]:[])]
-  for(const [prefix,source] of prefixes)complete=await listPrefix(env,config,prefix,source,introduced)&&complete
-  await recordList(env,complete?{ok:true}:{ok:false,error:'list_incomplete'})
+  // SES's prefix first, and the replay prefix only in a tick that took in SES's whole listing: when one message sits under
+  // both, the copy SES wrote is always the one that holds its id. A tick that leaves the replay prefix for later, because
+  // SES still has new keys, has still listed completely.
+  const ses=await listPrefix(env,config,config.sesPrefix,'ses',introduced)
+  const replay=ses==='end'&&config.replayPrefix?await listPrefix(env,config,config.replayPrefix,'replay',introduced):'end'
+  await recordList(env,ses!=='stopped'&&replay!=='stopped'?{ok:true}:{ok:false,error:'list_incomplete'})
  }catch(error){
   const phrase=error instanceof S3Error?error.code:'list_failed'
   try{await recordList(env,{ok:false,error:phrase})}catch(inner){console.error('Amazon SES reader list state failed',inner instanceof Error?inner.name:'error')}
@@ -42,12 +43,15 @@ async function wakePendingMailbox(env:Env,config:LegacyMailS3Config){
  if(!await receivingMailbox(env,[config.mailbox]))return
  await env.DB.prepare("UPDATE legacy_mail_s3_receipts SET state='pending',next_at=0,updated_at=? WHERE state='pending_mailbox'").bind(Date.now()).run()
 }
+/** How one prefix's list ended: `end`, its last page was read; `capped`, it gave this tick's share of new keys a receipt;
+ * `stopped`, it ran out of statement room or pages first. */
+type ListEnd='end'|'capped'|'stopped'
 /** List every page of one prefix (keys are SES message ids, which sort randomly, so new mail can land on any page and the
- * bucket keeps every object), and give each unknown key one receipt. False when the list stopped before the end. */
-async function listPrefix(env:Env,config:LegacyMailS3Config,prefix:string,source:'ses'|'replay',introduced:Set<string>){
+ * bucket keeps every object), and give each unknown key one receipt. */
+async function listPrefix(env:Env,config:LegacyMailS3Config,prefix:string,source:'ses'|'replay',introduced:Set<string>):Promise<ListEnd>{
  let token:string|undefined,fresh=0
  for(let pages=0;pages<MAX_PAGES;pages++){
-  if(!cronRoom(env,3))return false
+  if(!cronRoom(env,3))return 'stopped'
   const page=await listObjects(config,prefix,token)
   // A directory marker is not an object SES wrote.
   const objects=page.objects.filter(object=>object.key.startsWith(prefix)&&!object.key.endsWith('/'))
@@ -70,11 +74,11 @@ async function listPrefix(env:Env,config:LegacyMailS3Config,prefix:string,source
     fresh+=added.length
    }
   }
-  if(fresh>=NEW_PER_PREFIX)return true
-  if(!page.truncated)return true
+  if(fresh>=NEW_PER_PREFIX)return 'capped'
+  if(!page.truncated)return 'end'
   token=page.next!
  }
- return false
+ return 'stopped'
 }
 async function recordList(env:Env,outcome:{ok:true}|{ok:false;error:string}){
  const now=Date.now()

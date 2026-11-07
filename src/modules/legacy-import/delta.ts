@@ -4,11 +4,11 @@ import {planImport,writtenColumns,canonicalRows} from './importer'
 import {identity,targetSchemas,byteSlices,jsonBytes} from './d1'
 import {readStates,stateEntry,stateKey,targetKeyOf,unchangedSinceImport,type ImportState} from './state'
 import {projectTables,identityTables,contactsOf} from './delta-scope'
-import type {DeltaPlan} from './delta-plan'
+import {skippedRow,type DeltaPlan} from './delta-plan'
 import {deltaBatch} from './delta-batch'
 
 export interface DeltaConflict {sourceTable:string;sourceId:string;targetTable:string;targetKey:string;reason:string}
-export type DeltaStatus='mapped'|'updated'|'unchanged'|'conflict'|'kept'|'erased'|'archived_only'
+export type DeltaStatus='mapped'|'updated'|'unchanged'|'conflict'|'kept'|'erased'|'skipped'|'archived_only'
 type Planned=Awaited<ReturnType<typeof planImport>>['rows'][number]
 export interface Decision {source:Planned;status:DeltaStatus;mapped:MappedRow[];appends:MappedRow[];updates:{mapped:MappedRow;changed:string[]}[];state:unknown[][];conflicts:DeltaConflict[];target:{table:string|null;key:string|null}}
 
@@ -23,7 +23,8 @@ function positioned(mapped:MappedRow,plan:DeltaPlan):MappedRow{
 /** Apply one chunk of a delta package (see README "Delta sweeps"). Per mapped row: append what
  * the seed does not have; update what the seed has not changed since it was imported; leave a row
  * changed in both places and list it as a conflict; write nothing for a row already equal. Rows
- * of the legacy project, of erased contacts and held by the plan are journaled, never applied. */
+ * of the legacy project, of erased contacts, of mail the seed already took and held by the plan
+ * are journaled, never applied. */
 export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context:LegacyBundle;objectKeys?:Set<string>;checkOnly?:boolean;plan:DeltaPlan;projectId:string}){
  const plan=await planImport(bundle,options),{plan:delta,context}=options
  const existing=await env.DB.prepare('SELECT bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{bundle_digest:string;state:string}>()
@@ -49,6 +50,8 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
   if(prior)decision.target=prior
   if(source.table==='projects'||source.mapped.some(m=>projectTables.has(m.table))){decision.status='kept';continue}
   if(contactsOf(source.table,source.row,context).some(c=>delta.erased.has(c))){decision.status='erased';continue}
+  // Mail the seed's Amazon SES reader already took, and what goes with it, is journaled and never written.
+  if(skippedRow(source.table,source.row,context,delta)){decision.status='skipped';decision.target={table:null,key:null};continue}
   if(!source.mapped.length){
    decision.status='archived_only'
    // Legacy deleted a row the seed already holds; a delta never deletes it.
@@ -75,7 +78,7 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
   for(const entry of decision.state)states.set(stateKey(String(entry[0]),String(entry[1])),{columns:String(entry[2]),digest:String(entry[3]),source_digest:String(entry[4])} as ImportState)
  }
  conflicts.push(...decisions.flatMap(d=>d.conflicts))
- const counts={sourceRows:plan.rows.length,replayed,mapped:0,updated:0,unchanged:0,conflict:0,kept:0,erased:0,archived_only:0}
+ const counts={sourceRows:plan.rows.length,replayed,mapped:0,updated:0,unchanged:0,conflict:0,kept:0,erased:0,skipped:0,archived_only:0}
  for(const d of decisions)counts[d.status]++
  const summary={id:plan.id,...counts,mappedRows:plan.summary.mappedRows,holds:decisions.flatMap(d=>d.status==='mapped'||d.status==='updated'?d.mapped.filter(m=>m.hold).map(m=>`${d.source.table}:${d.source.sourceId}: ${m.hold}`):[]),conflicts}
  if(options.checkOnly)return {...summary,applied:0,d1Ms:0}

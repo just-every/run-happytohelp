@@ -174,5 +174,42 @@ export async function legacyMailS3Journey(){
   // The private copy is a transport buffer: none remains once every receipt is final.
   assert.equal((await (await app.files).list({prefix:'legacy-mail-s3/'})).objects.length,0)
   assert.equal(await count('SELECT count(*) n FROM legacy_mail_s3_receipts WHERE raw_key IS NOT NULL'),0)
+
+  // More SES keys arrive at once than one tick takes, with replay copies of the ones it does not reach. The replay prefix
+  // waits until SES's listing is taken in, so each message holds its id from its SES copy and is admitted; the replay
+  // copies are duplicates and nothing is held. A tick that leaves the replay prefix for later is not a list error.
+  const burst=Array.from({length:22},(_,i)=>`burstmessage${String(i+1).padStart(4,'0')}`)
+  const burstObject=(id,i)=>sesObject({id,from:`Sender ${i+1} <sender${i+1}@burst.example>`,text:`Question number ${i+1}.`})
+  burst.forEach((id,i)=>s3.put(SES+id,burstObject(id,i)))
+  burst.slice(-2).forEach(id=>s3.put(REPLAY+id,burstObject(id,burst.indexOf(id))))
+  const burstReceipts=source=>count(`SELECT count(*) n FROM legacy_mail_s3_receipts WHERE source='${source}' AND ses_message_id LIKE 'burstmessage%'`)
+  const [messagesBeforeBurst,,,suspendedBeforeBurst]=await tables()
+  await app.scheduled()
+  assert.deepEqual([await burstReceipts('ses'),await burstReceipts('replay')],[20,0])
+  assert.equal((await status(a)).lastListError,null)
+  await settle()
+  assert.equal(await count("SELECT count(*) n FROM legacy_mail_s3_receipts WHERE source='ses' AND state='complete' AND reason IS NULL AND ses_message_id LIKE 'burstmessage%'"),burst.length)
+  assert.deepEqual(await app.sql("SELECT state,count(*) n FROM legacy_mail_s3_receipts WHERE source='replay' AND ses_message_id LIKE 'burstmessage%' GROUP BY state"),[{state:'duplicate',n:2}])
+  const [messagesAfterBurst,,,suspendedAfterBurst]=await tables()
+  assert.deepEqual([messagesAfterBurst-messagesBeforeBurst,suspendedAfterBurst-suspendedBeforeBurst],[burst.length,0])
+  assert.equal((await status(a)).lastListError,null)
+
+  // A receipt in flight (sender read, private copy written, no workspace yet) is the workspace's that receives on the
+  // mailbox: erasing a contact with that address in another workspace leaves it; erasing one in that workspace clears
+  // its sender and private copy, and the receipt stays as the arrival record.
+  const files=await app.files,copy='legacy-mail-s3/in-flight/copy.eml',inFlight=SES+'inflightmessage0009'
+  await files.put(copy,'synthetic private copy')
+  await app.db.batch([
+   app.db.prepare("INSERT INTO legacy_mail_s3_receipts(object_key,ses_message_id,source,size,state,attempts,claimed_at,raw_key,sender_address,created_at,updated_at) VALUES(?,'inflightmessage0009','ses',22,'processing',1,?,?,'erin@in-flight.example',1,1)").bind(inFlight,Date.now(),copy),
+   app.db.prepare("INSERT INTO contacts(id,project_id,email,metadata_json,created_at) VALUES('erin-a',?,'erin@in-flight.example','{}',1)").bind(a.projectId),
+   app.db.prepare("INSERT INTO contacts(id,project_id,email,metadata_json,created_at) VALUES('erin-b',?,'erin@in-flight.example','{}',1)").bind(b.projectId),
+  ])
+  const receipt=()=>app.first('SELECT project_id,sender_address IS NOT NULL sender,raw_key IS NOT NULL copy FROM legacy_mail_s3_receipts WHERE object_key=?',inFlight)
+  await app.ok(`/api/management/projects/${b.projectId}/contacts/erin-b/erase`,{token:b.tokens.owner,body:{}});await app.drainJobs()
+  assert.deepEqual(await receipt(),{project_id:null,sender:1,copy:1})
+  assert.ok(await files.get(copy),'another workspace\'s erasure leaves the private copy')
+  await app.ok(`/api/management/projects/${a.projectId}/contacts/erin-a/erase`,{token:a.tokens.owner,body:{}});await app.drainJobs()
+  assert.deepEqual(await receipt(),{project_id:null,sender:0,copy:0})
+  assert.equal(await files.get(copy),null)
  }finally{await app.close()}
 }

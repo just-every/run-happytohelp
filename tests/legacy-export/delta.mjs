@@ -43,6 +43,20 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   await mkdir(join(objectDirectory,directory),{recursive:true});await writeFile(join(objectDirectory,directory,'refund.txt'),bytes);
   await admin.query("INSERT INTO media(id,disk,directory,filename,extension,filename_original,mime_type,aggregate_type,size,url,created_at,updated_at) VALUES(?,'s3',?,'refund','txt','refund.txt','text/plain','document',?,'https://storage.example.test/refund.txt',UTC_TIMESTAMP(),UTC_TIMESTAMP())",[newMedia,directory,bytes.length]);
   await admin.query("INSERT INTO mediables(media_id,mediable_type,mediable_id,tag,`order`) VALUES(?,'App\\\\Models\\\\Message',?,'attachment',0)",[newMedia,newMessage]);
+  // The seed's Amazon SES reader took two emails that legacy stored too, with the SES message id as delivery id: a reply in
+  // the conversation above, and a new conversation of an existing customer whose only message carries a file.
+  const sesReply=uuid('61',5),sesConversation=uuid('43',2),sesMessage=uuid('61',6),sesMedia=uuid('81',2),sesIds=['ses-message-id-0001','ses-message-id-0002'];
+  const receipts=new DatabaseSync(database);try{
+    const add=receipts.prepare("INSERT INTO legacy_mail_s3_receipts(object_key,ses_message_id,source,size,state,created_at,updated_at) VALUES(?,?,?,100,?,1,1)");
+    add.run(`ses/inbound/${sesIds[0]}`,sesIds[0],'ses','complete');add.run(`replay/inbound/${sesIds[1]}`,sesIds[1],'replay','duplicate');
+  }finally{receipts.close();}
+  await admin.query('INSERT INTO messages(id,project_id,conversation_id,contact_id,local_id,content,created_at,updated_at) VALUES(?,?,?,?,?,?,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))',[sesReply,projectId,conversation,uuid('30',1),sesIds[0],'An emailed follow-up the seed already took']);
+  await admin.query('INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES(?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP())',[sesConversation,projectId,uuid('30',1)]);
+  await admin.query('INSERT INTO messages(id,project_id,conversation_id,contact_id,local_id,content,created_at,updated_at) VALUES(?,?,?,?,?,?,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))',[sesMessage,projectId,sesConversation,uuid('30',1),sesIds[1],'A new email the seed already took']);
+  const sesBytes=Buffer.from('emailed attachment bytes\n'),sesDirectory=`${projectId}/${sesConversation}`;
+  await mkdir(join(objectDirectory,sesDirectory),{recursive:true});await writeFile(join(objectDirectory,sesDirectory,'receipt.txt'),sesBytes);
+  await admin.query("INSERT INTO media(id,disk,directory,filename,extension,filename_original,mime_type,aggregate_type,size,url,created_at,updated_at) VALUES(?,'s3',?,'receipt','txt','receipt.txt','text/plain','document',?,'https://storage.example.test/receipt.txt',UTC_TIMESTAMP(),UTC_TIMESTAMP())",[sesMedia,sesDirectory,sesBytes.length]);
+  await admin.query("INSERT INTO mediables(media_id,mediable_type,mediable_id,tag,`order`) VALUES(?,'App\\\\Models\\\\Message',?,'attachment',0)",[sesMedia,sesMessage]);
   await admin.query("UPDATE projects SET website='https://retired.example.test',deleted_at=UTC_TIMESTAMP(),updated_at=UTC_TIMESTAMP() WHERE id=?",[projectId]);
 
   // Export only what changed since the watermark; its attachments step copies only the new file.
@@ -52,11 +66,11 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   assert.equal(exported.since,watermark);assert.ok(exported.watermark>watermark,'the delta records the next watermark');
   await run('scripts/export-legacy.mjs',['attachments','--input',deltaSnapshot,'--objects-dir',objectDirectory,'--output',deltaImport]);
   const manifest=JSON.parse(await readFile(join(deltaImport,'manifest.json'),'utf8')),rows=manifest.source.rowCounts;
-  assert.equal(rows.messages,4,'only new messages are in the row chunks');assert.equal(rows.conversations,3,'changed conversations and the parents of new messages');
-  assert.equal(rows.contacts,2);assert.equal(rows.projects,1);assert.equal(rows.media,1);assert.equal(rows.mediables,1);
+  assert.equal(rows.messages,6,'only new messages are in the row chunks');assert.equal(rows.conversations,4,'changed conversations and the parents of new messages');
+  assert.equal(rows.contacts,2);assert.equal(rows.projects,1);assert.equal(rows.media,2);assert.equal(rows.mediables,2);
   for(const table of ['articles','categories','macros','events','buckets','datasets','insights','charges'])assert.equal(rows[table],0,`${table} rows untouched since the watermark are left out`);
-  assert.deepEqual(manifest.objects.map(o=>o.mediaId),[newMedia],'only the new file is copied');
-  assert.equal(manifest.source.scopedCounts.messages,9,'the whole scope is still read and counted');
+  assert.deepEqual(manifest.objects.map(o=>o.mediaId).sort(),[newMedia,sesMedia].sort(),'only the new files are copied');
+  assert.equal(manifest.source.scopedCounts.messages,11,'the whole scope is still read and counted');
 
   const before=business(),beforeWork=workCounts(),beforeObjects=await bucketSnapshot(join(persist,'v3/r2'));
   const check=args=>status('scripts/legacy-import/check.mjs',['delta','--package',deltaImport,'--persist-to',persist,...args]);
@@ -71,6 +85,13 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   assert.equal(applied.kept,1,'the legacy project row is kept as the seed has it');
   assert.deepEqual(applied.conflicts.map(c=>[c.sourceTable,c.sourceId]).sort(),[['conversations',resolved],['messages',held]].sort());
   for(const c of applied.conflicts)assert.deepEqual(Object.keys(c).sort(),['reason','sourceId','sourceTable','targetKey','targetTable']);
+  // Mail the seed's reader took is skipped with its file and its new conversation: counted, journaled, never written or listed.
+  assert.equal(applied.skipped,5);
+  assert.deepEqual(Object.fromEntries(Object.entries(applied.tables).filter(([,t])=>t.skipped).map(([table,t])=>[table,t.skipped])),{conversations:1,messages:2,media:1,mediables:1});
+  assert.deepEqual(sql('SELECT id FROM messages WHERE id IN (?,?)',sesReply,sesMessage),[]);assert.deepEqual(sql('SELECT id FROM conversations WHERE id=?',sesConversation),[]);
+  assert.deepEqual(sql('SELECT id FROM media WHERE id=?',sesMedia),[]);assert.equal(sql('SELECT COUNT(*) n FROM messages WHERE local_id IN (?,?)',...sesIds)[0].n,0);
+  assert.deepEqual(sql("SELECT source_table,CASE source_table WHEN 'mediables' THEN json_extract(source_json,'$.media_id') ELSE source_id END source FROM legacy_import_rows WHERE status='skipped' AND target_table IS NULL AND target_key IS NULL ORDER BY 1,2").map(r=>[r.source_table,r.source]),
+    [['conversations',sesConversation],['media',sesMedia],['mediables',sesMedia],['messages',sesReply],['messages',sesMessage]].sort((x,y)=>x[0].localeCompare(y[0])||x[1].localeCompare(y[1])));
   assert.equal(/A legacy message in|Accounts Payable|asks about refunds|delta-local/.test(JSON.stringify(applied.conflicts)),false,'conflicts carry ids and reasons, no content');
 
   // The transcript gains the legacy messages in order after the imported ones, and the conversation follows them.
@@ -104,9 +125,10 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   assert.equal(checked.code,0,checked.stdout);
   const result=JSON.parse(checked.stdout);
   assert.equal(result.projectSourceRows,previousTotal+result.newRows);assert.ok(result.newRows>=7);
-  assert.equal(result.attachments.identical,1);assert.equal(result.conflicts,2);
+  assert.equal(result.attachments.identical,1);assert.equal(result.attachments.withheld,1);assert.equal(result.attachments.mismatched,0);assert.equal(result.conflicts,2);
+  assert.equal(result.skipped,5);assert.deepEqual([result.tables.conversations.skipped,result.tables.messages.skipped,result.tables.media.skipped,result.tables.mediables.skipped],[1,2,1,1]);
   assert.equal((await check(['--previous-total',String(previousTotal+1)])).code,1,'a wrong previous total fails the check');
   // Then legacy is retired and the next sweep, since this delta's watermark, takes the retire's marker.
   const retire=await assertRetireSweep({admin,run,status,env,output,persist,objectDirectory,projectId,snapshotArgs,since:exported.watermark});
-  return {rows,applied:{appended:applied.appended,updated:applied.updated,conflicts:applied.conflicts.length},previousTotal,projectSourceRows:result.projectSourceRows,retire};
+  return {rows,applied:{appended:applied.appended,updated:applied.updated,skipped:applied.skipped,conflicts:applied.conflicts.length},checked:{skipped:result.skipped,code:checked.code},previousTotal,projectSourceRows:result.projectSourceRows,retire};
 }

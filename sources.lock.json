@@ -1709,7 +1709,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "4eda488db3f467903b686a7be0a06ac89d714d46ecfa9262c729ae10c339d90c",
+      "sha256": "bf5fdca833c4835a57c6c74c0ad05b6933c8bb81f69018fa5e58e07f7ae57fc5",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -1749,7 +1749,7 @@
       "executable": false
     },
     "docs/LEGACY-EXPORT.md": {
-      "sha256": "5a810b951195347af8c3ba3973d9a5906680e2b4398f9056d0e859b609bbf6fb",
+      "sha256": "742d829a93b93456ce5e3108873cbe87a2fd622bc6bdc16fbd49aef3fc06fae3",
       "executable": false
     },
     "docs/licenses/base-MIT.txt": {
@@ -4081,7 +4081,7 @@
       "executable": false
     },
     "scripts/legacy-import/checks/delta.mjs": {
-      "sha256": "291198accd16c85743997f7c33e1a09cfb7cb6c49a8418494d980149c9367828",
+      "sha256": "ed0838bc1b7c9cbbd081670aa60af9857bb46c09b2f56d52b848c4fb2dd6e833",
       "executable": false
     },
     "scripts/legacy-import/checks/mail.mjs": {
@@ -4097,7 +4097,7 @@
       "executable": false
     },
     "scripts/legacy-import/delta-package.mjs": {
-      "sha256": "3a6d868f892b389e8a6f563ba1add4cc31564549d381b68aaa369b19cc82b6d6",
+      "sha256": "8602bf7146a57a488d184ef45442e680816e99ed73f29349ca227ec3bc13ed0e",
       "executable": false
     },
     "scripts/legacy-import/import-package.mjs": {
@@ -6729,7 +6729,7 @@
       "executable": false
     },
     "src/modules/integrations/email-erasure.ts": {
-      "sha256": "0225374a8b2061d81d46eaf7c49420eea84bc0190c90fe0d2c02cf5e0dac41fd",
+      "sha256": "536102a73ccb4ba2267c0f8d98fbfe498c37033160b6ceaf3c8aaace98fb2d5e",
       "executable": false
     },
     "src/modules/integrations/email-file-links.ts": {
@@ -6877,7 +6877,7 @@
       "executable": false
     },
     "src/modules/integrations/legacy-mail-s3/list.ts": {
-      "sha256": "3617ba71d0606865bfdd66a4a12471ed4505d4804bd2fa59127278a8eaabd0ce",
+      "sha256": "3ac74d6e225f3514680fd6193f85a08c59d38a07a0dfaa5b5a08a9737fec6243",
       "executable": false
     },
     "src/modules/integrations/legacy-mail-s3/s3.ts": {
@@ -7517,7 +7517,7 @@
       "executable": false
     },
     "src/modules/legacy-import/delta-plan.ts": {
-      "sha256": "d7f9561318b698fe603db9863e1c9d781608e992f1c77726c0150529b18c0ac2",
+      "sha256": "98b36f61f7077a10621f03e2ee38de9f2943cd1a500dc1ccd0f070f2082aff62",
       "executable": false
     },
     "src/modules/legacy-import/delta-scope.ts": {
@@ -7525,7 +7525,7 @@
       "executable": false
     },
     "src/modules/legacy-import/delta.ts": {
-      "sha256": "f6adf6e232f5c22ba00e739c254cc938e11f77d6cf88bcbb866dc6f2b618df1b",
+      "sha256": "6b33dafc29051a9b522b5e815ced5d6aeb4a5e96d13e5c993dfbe24f6fcf6d66",
       "executable": false
     },
     "src/modules/legacy-import/importer.ts": {
@@ -7557,7 +7557,7 @@
       "executable": false
     },
     "src/modules/legacy-import/README.md": {
-      "sha256": "ca99251a35cc82266a807c09fcca55cdce7d5a1f7003bdf1fab610dc99991b34",
+      "sha256": "d5659a9c0fd8facf7e3a73d8f6b76353a5ecbef1bb7445a40e613674c2bdf4de",
       "executable": false
     },
     "src/modules/legacy-import/relationships.ts": {
@@ -15497,7 +15497,7 @@
       "executable": false
     },
     "tests/helpers/email/legacy-mail-s3.mjs": {
-      "sha256": "b2d8c49b134e6a7abcae21c9073313836fa3048174d5d8b326ca8ffde736b22d",
+      "sha256": "80f097fa2620578d800fae13678665dc905287ca8a32a32e2b52c85f2537c823",
       "executable": false
     },
     "tests/helpers/email/local-mail.mjs": {
@@ -16505,7 +16505,7 @@
       "executable": false
     },
     "tests/legacy-export/delta.mjs": {
-      "sha256": "f29257e44a098ce1daddd9f7c11b66f823c50a2b3dd03fcee88bdb351ea2b6c7",
+      "sha256": "10a4019fce3f9593e7269cd33a29f9c370d3c19d1cc6ae8895373d07069f198e",
       "executable": false
     },
     "tests/legacy-export/extended-fixture.mjs": {

@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "a94b99e27255f046c921f0e32fb3594118dab80585c457dccdf27aa7c8b0471b",
+      "sha256": "4fbaeb8e63a79bea2e05f482033bd8d8b29ed83045669f76d2cdb704fb44e1f1",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8272f0d50244b6cafacfdcc0d2b07c9390beb5c2488610bc411628f6ae6d07d0",
+      "sha256": "faa7d89e1973183ceb8afb836974931b73c719a7f2b2a002830c4ad474f7f815",
       "executable": false
     },
     "DEMO.md": {
@@ -8269,11 +8269,11 @@
       "executable": false
     },
     "src/modules/move-in/run-store.ts": {
-      "sha256": "5c58b526ab3b254e5e7104170476f9e7dd7a636bbf7a6887b99cb4a778434533",
+      "sha256": "99e7e867bfad325dcbba9fdf7ef9527a0adedb8920bd10f35e563152a0d0c2f8",
       "executable": false
     },
     "src/modules/move-in/service.ts": {
-      "sha256": "56bd8f9856d507eea0d21267853621ae7aaa5b422754e4388da17f0c4fdc588b",
+      "sha256": "3bdafd7a017732a6aa80aa0b1b70e025d3daeee408843261b608f2491a9df403",
       "executable": false
     },
     "src/modules/move-in/source-ownership.ts": {
@@ -8381,7 +8381,7 @@
       "executable": false
     },
     "src/modules/move-in/zendesk-source/takeover.ts": {
-      "sha256": "2045e08d7802ee3066d4ac5e0ad8dedee9ff01b8aa22e163c7fec8caf917dee4",
+      "sha256": "d010c0c522e657b9501600eb7ff200d3b8a2415b353dd67c021598c03c141d91",
       "executable": false
     },
     "src/modules/move-in/zendesk-source/view.ts": {

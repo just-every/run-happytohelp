@@ -17,7 +17,7 @@ export function largeComments(){return Array.from({length:300},(_,i)=>comment(40
  * starts like a link and whose chat transcript Zendesk itself wrote (author -1); ticket 110's
  * requester, person 9, is no longer in Zendesk. Once it has changed: person 6, whose email is
  * malformed, requests ticket 108, and agent 2 raises ticket 111 for themselves. */
-export function fakeZendesk({edgeCases=false}={}){
+export function fakeZendesk({edgeCases=false,credentialTicket=false}={}){
  const state={authorizations:new Map(),grants:new Map(),access:new Set(),refresh:new Set(),tokenRequests:[],requests:[],throttled:false,issued:0,repeat:false}
  const users=[user(1,'end-user',{organization_id:7}),user(2,'agent'),user(3,'end-user'),user(4,'end-user'),user(5,'end-user'),...(edgeCases?[user(8,'end-user',{email:null})]:[])]
  const tickets={
@@ -29,6 +29,7 @@ export function fakeZendesk({edgeCases=false}={}){
   105:{record:ticket(105,5,'pending','synthetic-hh screenshot attached'),comments:[comment(10501,5,2,`synthetic-hh see screenshot ${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,true,{attachments:[inline(70501)]})]},
   106:{record:ticket(106,1,'new','synthetic-hh follow-up after the move'),comments:[comment(10601,1,8,'synthetic-hh one more question'),comment(10602,2,8,'synthetic-hh answered',true)]},
   107:{record:ticket(107,3,'new','synthetic-hh question from a renamed person'),comments:[comment(10701,3,8,'synthetic-hh hello again')]},
+  ...(credentialTicket?{112:{record:ticket(112,1,'open','synthetic-hh credential in ticket text',{description:'?api_key=synthetic-hh-refused-secret'}),comments:[comment(11201,1,2,'synthetic-hh credential in ticket text')]}}:{}),
   ...(edgeCases?{
    109:{record:ticket(109,8,'open','synthetic-hh chat without an address',{description:'http:// see below',via:{channel:'chat',source:{from:{},to:{},rel:null}}}),comments:[comment(10901,8,2,'synthetic-hh no address on file'),comment(10902,-1,3,'synthetic-hh chat transcript',true,{via:{channel:'chat_transcript',source:{from:{},to:{},rel:null}}})]},
    110:{record:ticket(110,9,'open','synthetic-hh question from a person since removed'),comments:[comment(11001,9,2,'synthetic-hh hello from a removed person')]},
@@ -82,7 +83,7 @@ export function fakeZendesk({edgeCases=false}={}){
    assert.equal(url.searchParams.get('support_type_scope'),'all');assert.equal(url.searchParams.get('exclude_deleted'),null)
    const cursor=url.searchParams.get('cursor')
    if(url.searchParams.get('start_time')==='0')return json({tickets:[101,102,103].map(id=>current(id).record),after_cursor:'tickets-after-1',end_of_stream:false})
-   if(cursor==='tickets-after-1')return json({tickets:[104,105,...(state.repeat?[106,107]:[]),...(edgeCases?[109,110,...(state.repeat?[108,111]:[])]:[])].map(id=>current(id).record),after_cursor:'tickets-after-2',end_of_stream:true})
+   if(cursor==='tickets-after-1')return json({tickets:[104,105,...(state.repeat?[106,107]:[]),...(edgeCases?[109,110,...(state.repeat?[108,111]:[])]:[]),...(credentialTicket?[112]:[])].map(id=>current(id).record),after_cursor:'tickets-after-2',end_of_stream:true})
    assert.ok(['tickets-after-2','tickets-after-3'].includes(cursor),cursor);return json({tickets:state.repeat&&cursor==='tickets-after-2'?[101,102,106,107,...(edgeCases?[108,111]:[])].map(id=>current(id).record):[],after_cursor:'tickets-after-3',end_of_stream:true})
   }
   const comments=url.pathname.match(/^\/api\/v2\/tickets\/(\d+)\/comments\.json$/)

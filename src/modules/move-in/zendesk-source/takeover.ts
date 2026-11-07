@@ -9,20 +9,24 @@ const UNFINISHED=['uploaded','parsing','planning','applying','undoing'],BEFORE_A
 /** Resume hands every unfinished batch of a pull to the resuming session. A batch that
  * stopped, or whose session can no longer act, continues from its own checkpoint. One
  * still running under a live session is left to finish, so no batch is advanced twice
- * at once, unless nothing has moved it for longer than a pull step may hold its pull:
- * its queue message is then taken as lost and the batch is handed on again (a late
- * duplicate is harmless, since each step is fenced on the checkpoint it read).
+ * at once, unless no step has started or finished on it for longer than a pull step may
+ * hold its pull: its queue message is then taken as lost and the batch is handed on
+ * again (a late duplicate is harmless: it ends quietly once another delivery has started
+ * the step or moved the batch on, and never stops the batch).
  *
  * Before approval, a batch reviewed under an earlier mapping revision is planned again
  * from the records it already holds, with no read of Zendesk: its review, summary and
  * refusals then reflect what the deployed mapping imports, and the pull reaches ready
- * again with a new fingerprint. Approved and applied batches are never planned again.
- * Returns whether any batch went back to planning. */
+ * again with a new fingerprint. So is a ready batch whose run carries an error (a
+ * duplicate delivery once stopped a batch that another delivery then finished): it was
+ * never counted as reviewed, and the one approval covers it once it is planned again.
+ * Approved and applied batches are never planned again. Returns whether any batch went
+ * back to planning. */
 export async function resumeBatches(env:Env,pull:Pick<PullRow,'id'|'state'>,actor:ImportActor){
  const batches=await pullBatches(env,pull.id),now=Date.now(),replanned:{run:Run;refusals:string[]}[]=[]
- const stale=BEFORE_APPROVAL.includes(pull.state)?batches.filter(b=>b.state==='ready'&&!b.error):[]
+ const stale=BEFORE_APPROVAL.includes(pull.state)?batches.filter(b=>b.state==='ready'):[]
  for(const batch of stale){
-  const run=await getRun(env,batch.run_id);if(!run||reviewedRevision(run.plan_json)>=MAPPING_REVISION)continue
+  const run=await getRun(env,batch.run_id);if(!run||!run.error&&reviewedRevision(run.plan_json)>=MAPPING_REVISION)continue
   replanned.push({run,refusals:batch.summary_json?(await summarize(env,run)).refusals.map(r=>JSON.stringify([r.kind,r.sourceId])):[]})
  }
  // Refusals another reviewed batch still holds stay named; those only a replanned batch held go until its new review.
@@ -41,7 +45,7 @@ export async function resumeBatches(env:Env,pull:Pick<PullRow,'id'|'state'>,acto
   if(!UNFINISHED.includes(batch.state))continue
   const run=await getRun(env,batch.run_id);if(!run)continue
   if(!run.error&&now-run.updated_at<=HOLD_MS){const a=authority(run);if((await env.DB.prepare(`SELECT (${a.sql}) allowed`).bind(...a.params!).first<{allowed:number}>())?.allowed)continue}
-  await guarded(env,{...run,actor_id:actor.actor_id,session_hash:actor.session_hash},[env.DB.prepare('UPDATE move_in_runs SET error=NULL,session_hash=? WHERE id=? AND state=?').bind(actor.session_hash,run.id,run.state)])
+  await guarded(env,{...run,actor_id:actor.actor_id,session_hash:actor.session_hash},[env.DB.prepare('UPDATE move_in_runs SET error=NULL,session_hash=?,updated_at=MAX(?,updated_at+1) WHERE id=? AND state=?').bind(actor.session_hash,now,run.id,run.state)])
   await enqueue(env,run)
  }
  return replanned.length>0

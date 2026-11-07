@@ -17,9 +17,18 @@ import {queueStatements} from '../../platform/d1-budget'
  * kinds in three sets of five statements, then publish one write batch. Failed
  * set reads keep their charge before the kit falls back to individual reads.
  * Never exceed the existing kit allowance, even with no publication predicates. */
-const APPLY_STEP={batches:3,maxStatements:895,spare:20} as const
+const APPLY_STEP={batches:3,maxStatements:895,spare:20,nextBatchStatements:200} as const
 export function applyStep(context:D1ImportContext,predicates:number):D1ImportContext{
- const wrapper=predicates?(1+4*APPLY_STEP.batches)*(2*predicates+1):0
- const statements=Math.min(APPLY_STEP.maxStatements,queueStatements.limit-queueStatements.reserve-(15+predicates)-wrapper-APPLY_STEP.spare)
- return {...limitStatements(d1RequestContext(context),statements),maxBatches:APPLY_STEP.batches}
+ const allowance=(batches:number,readSets=3)=>{
+  const wrapper=predicates?(1+(1+readSets)*batches)*(2*predicates+1):0
+  return Math.min(APPLY_STEP.maxStatements,queueStatements.limit-queueStatements.reserve-(15+predicates)-wrapper-APPLY_STEP.spare)
+ }
+ // The kit starts another transaction only with 200 statements left. Do not
+ // reserve later transactions at the expense of the first one's progress.
+ let batches:number=APPLY_STEP.batches
+ while(batches>1&&allowance(batches)<APPLY_STEP.nextBatchStatements)batches--
+ // A mapped entry has one target effect. Its singleton native read uses all(),
+ // so only authorization and publication carry wrapper guards in this window.
+ const single=allowance(batches)<APPLY_STEP.nextBatchStatements
+ return {...limitStatements(d1RequestContext(context),allowance(batches,single?0:3)),maxBatches:batches,...(single?{batchSize:1}:{})}
 }

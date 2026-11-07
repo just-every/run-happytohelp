@@ -8,9 +8,9 @@ import {nativeHarness} from './harness.mjs'
 
 const root=resolve(fileURLToPath(new URL('../..',import.meta.url)))
 const fixture={runs:61,entries:14770,tickets:6214}
-const empty=()=>({d1RoundTrips:0,entryReads:{source:0,target:0,predecessor:0},setReads:{source:0,target:0,predecessor:0},r2:{get:0,head:0,put:0,delete:0,list:0},queueSends:0,wallMs:0,maxStepWallMs:0,maxStatements:0,steps:0})
+const empty=()=>({d1RoundTrips:0,entryReads:{source:0,target:0,predecessor:0},setReads:{source:0,target:0,predecessor:0},r2:{get:0,head:0,put:0,delete:0,list:0},queueSends:0,wallMs:0,maxStepWallMs:0,maxStatements:0,maxStepRoundTrips:0,steps:0})
 const trips=total=>total.d1RoundTrips+Object.values(total.r2).reduce((sum,n)=>sum+n,0)+total.queueSends
-function add(total,step){assert.ok(step.metrics,'binding metrics missing');total.d1RoundTrips+=step.metrics.d1RoundTrips;total.queueSends+=step.metrics.queueSends;for(const key of Object.keys(total.entryReads)){total.entryReads[key]+=step.metrics.entryReads[key];total.setReads[key]+=step.metrics.setReads[key]};for(const key of Object.keys(total.r2))total.r2[key]+=step.metrics.r2[key];total.wallMs+=step.wallMs;total.maxStepWallMs=Math.max(total.maxStepWallMs,step.wallMs);total.maxStatements=Math.max(total.maxStatements,step.statements||0);total.steps++}
+function add(total,step){assert.ok(step.metrics,'binding metrics missing');total.d1RoundTrips+=step.metrics.d1RoundTrips;total.queueSends+=step.metrics.queueSends;for(const key of Object.keys(total.entryReads)){total.entryReads[key]+=step.metrics.entryReads[key];total.setReads[key]+=step.metrics.setReads[key]};for(const key of Object.keys(total.r2))total.r2[key]+=step.metrics.r2[key];total.wallMs+=step.wallMs;total.maxStepWallMs=Math.max(total.maxStepWallMs,step.wallMs);total.maxStatements=Math.max(total.maxStatements,step.statements||0);total.maxStepRoundTrips=Math.max(total.maxStepRoundTrips,step.metrics.d1RoundTrips+Object.values(step.metrics.r2).reduce((sum,n)=>sum+n,0)+step.metrics.queueSends);total.steps++}
 async function archivedSource(ref){
  const directory=await mkdtemp(join(tmpdir(),'move-in-replay-source-'))
  try{

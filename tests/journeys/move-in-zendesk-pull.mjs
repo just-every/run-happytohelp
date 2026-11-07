@@ -228,14 +228,32 @@ test('a refused record never holds back a valid one and a stopped batch is never
   assert.equal(pull.state,'reviewing')
   const [again]=pull.batches.filter(b=>b.stopped)
   assert.equal(again.ordinal,0);assert.notEqual(again.runId,stopped[0].runId,'the next pull admits the stopped batch again as a new run')
+  const packedBeforeResume=pull.batches.map(b=>b.runId)
+  const credentialRefusal=pull.refusals.find(r=>r.kind==='ticket'&&r.sourceId==='110')
+  assert.ok(credentialRefusal?.reason,'the credential record is already refused by its Zendesk id before batch review resumes')
+  async function packedTickets(){
+   const records=[]
+   for(const batch of (await pullOf(h,second.id)).batches){
+    const [run]=await rows(h,'SELECT object_key FROM move_in_runs WHERE id=?',batch.runId)
+    const original=await (await h.files).get(run.object_key)
+    assert.ok(original)
+    records.push(...(await original.text()).split('\n').filter(line=>line.trim()).map(line=>JSON.parse(line)))
+   }
+   assert.ok(records.every(record=>record.ticket?.id!==110),'the credential-failing ticket never enters any packed original')
+   return records.filter(record=>record.ticket).map(record=>String(record.ticket.id)).sort()
+  }
+  assert.deepEqual(await packedTickets(),['101','102','104','105','109'],'the batch packs every other ticket')
   await h.call(`${api}/zendesk/pulls/${second.id}/resume`,post({}))
   await drain(h)
   pull=await pullOf(h,second.id)
   assert.equal(pull.state,'ready',JSON.stringify({error:pull.error}))
   assert.equal(pull.progress.batchesStopped,0)
+  assert.deepEqual(pull.batches.map(b=>b.runId),packedBeforeResume,'resume continues the same batches without packing the refused record again')
+  assert.deepEqual(pull.refusals.find(r=>r.kind==='ticket'&&r.sourceId==='110'),credentialRefusal)
+  assert.deepEqual(await packedTickets(),['101','102','104','105','109'])
 
   // Person 8 has no valid email and requests ticket 109, in the same batch as every valid ticket.
-  // The approval covers that batch: its valid records import and the two refusals are named.
+  // The approval covers that batch: its valid records import and all refusals are named.
   const ticketBatch=pull.batches.find(b=>b.summary.tickets)
   assert.deepEqual([ticketBatch.summary.tickets,ticketBatch.summary.ticketsNew,ticketBatch.summary.refused,ticketBatch.covered],[5,4,2,true],'a batch with refused records is covered by the one approval')
   await h.call(`${api}/zendesk/pulls/${second.id}/approve`,post({fingerprint:pull.fingerprint}))

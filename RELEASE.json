@@ -192,6 +192,10 @@
     {
       "id": "304_knowledge_import_origins.sql",
       "buyerSteps": "Back up D1 first; apply once after 303_teammate_teams.sql, before serving the updated Worker. Adds one small table recording which articles the Article import page's Intercom and Freshdesk import wrote, so a workspace whose published help is only imported is served with noindex until a member publishes. No backfill or replay: earlier API imports keep today's behaviour, and Move in and legacy imports are covered from their existing records. It holds no personal data and travels with exports."
+    },
+    {
+      "id": "305_mailgun_inbound_tokens.sql",
+      "buyerSteps": "Back up D1 first; apply once after 304_knowledge_import_origins.sql, before serving the updated Worker. Adds one table of hashed one-time Mailgun signature tokens and their receipt times, used only to refuse a replayed Mailgun route forward. No personal data, no backfill, no effect until MAILGUN_WEBHOOK_SIGNING_KEY is set. The table is pruned by email maintenance and excluded from exports."
     }
   ],
   "breaking": false,

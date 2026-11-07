@@ -8,11 +8,39 @@ Forwarding uses the installation's email provider. Connected mailboxes receive a
 
 An installation deployed with `MAIL_PROVIDER=none` sends nothing. Sign-in links, password resets, invitations, notifications, replies by email, the test send and surveys each report that outbound email is off, and **Settings → Email** and **Setup** say so. Receiving mail, importing and everything that does not send keep working. Owners get in with a one-time link from `node scripts/hosted-signin.mjs`, or their password.
 
-To turn sending on, run this from the checkout that deployed the installation, with the provider inputs in your private `--env-file` and `MAIL_PROVIDER=none` removed from it. Nothing else changes:
+### Turn Mailgun on
+
+Run this from the checkout that deployed the installation, with `EMAIL_PROVIDER=mailgun`, `EMAIL_FROM`, `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_REGION` (`us` or `eu`, written out), `MAILGUN_SENDING_KEY` (a domain-scoped sending key) and `MAILGUN_WEBHOOK_SIGNING_KEY` (Mailgun's HTTP webhook signing key, which verifies mail Mailgun forwards to you) in your private `--env-file` and `MAIL_PROVIDER=none` removed from it. Nothing else changes. A secret change makes one new Worker version from the live one without rebuilding, so the installation must already run this release first:
 
 ```sh
-rer deploy --environment production --env-file <file> --set-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY
+rer deploy --environment production --env-file <file> --set-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY,MAILGUN_WEBHOOK_SIGNING_KEY
 ```
+
+Resend, SendGrid and Cloudflare Email Sending take their own inputs, listed in the provider table of [Email and integrations](../src/modules/integrations/README.md#choose-a-provider); they are set the same way, one `--set-secret` run naming those inputs.
+
+### Turn sending off again
+
+Use this to stop all sending while keeping the installation. It removes the six sending inputs; Mailgun receiving continues. A plain redeploy keeps every secret the Worker holds, so redeploying with `MAIL_PROVIDER=none` alone does not stop sending. Run:
+
+```sh
+rer deploy --environment production --env-file <file> --unset-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY
+```
+
+Then remove the six sending inputs from your `--env-file` and put `MAIL_PROVIDER=none` back in it for later deploys. `MAILGUN_WEBHOOK_SIGNING_KEY` may stay in the file, because it binds no way to send.
+
+### Stop Mailgun receiving
+
+Use this to retire the signing key, for example when you leave Mailgun. First point the Mailgun route somewhere else, then run:
+
+```sh
+rer deploy --environment production --env-file <file> --unset-secret MAILGUN_WEBHOOK_SIGNING_KEY
+```
+
+Every forward is then refused. Mailgun retries a refused forward for 8 hours and then drops it, so move the route first. To rotate the key instead, put the new value in the file and run `--set-secret MAILGUN_WEBHOOK_SIGNING_KEY` alone.
+
+### Mail through a Mailgun route
+
+With `MAILGUN_WEBHOOK_SIGNING_KEY` set, a Mailgun route can forward your support mail to `POST /api/integrations/email/mailgun/inbound`. Mailgun signs each forward, so the route URL carries no secret and none shows in the Mailgun dashboard or its logs. A forward is accepted when its signature verifies under the key, its timestamp is within five minutes ahead or nine hours behind, and its token has not been used before; anything else is refused without writing a record. Received, repeated and Suspended mail is answered 200, which is all Mailgun accepts; an address no workspace receives is not, so Mailgun retries it. Route setup is in [Email and integrations](../src/modules/integrations/README.md#option-3-mailgun-route).
 
 ## Managed email
 
@@ -41,7 +69,7 @@ Set `APP_ORIGIN` to your HTTPS HappyToHelp origin and configure these installati
 | Gmail / Google Workspace | `GOOGLE_MAIL_CLIENT_ID`, `GOOGLE_MAIL_CLIENT_SECRET` | `https://<your-origin>/api/management/mailboxes/oauth/gmail/callback` |
 | Microsoft 365 / Outlook | `MICROSOFT_MAIL_CLIENT_ID`, `MICROSOFT_MAIL_CLIENT_SECRET` | `https://<your-origin>/api/management/mailboxes/oauth/microsoft/callback` |
 
-Keep the values in an owner-only private env file. The native deploy declaration accepts these names; install each with `rer deploy --environment YOUR-ENVIRONMENT --env-file private-mail.env --set-secret NAME`, replacing `NAME` with the setting to install. The same command accepts the IMAP settings below.
+Keep the values in an owner-only private env file. The native deploy declaration accepts these names; install each with `rer deploy --environment YOUR-ENVIRONMENT --env-file private-mail.env --set-secret <setting>`, replacing `<setting>` with the name of the setting to install. The same command accepts the IMAP settings below.
 
 Both use `INTEGRATION_ENCRYPTION_KEY`, the installation's base64-encoded 32-byte encryption key. Keep that key available for existing connections; replacing it without migrating the encrypted credentials makes those credentials unreadable. Never paste secrets into ticket notes or commit them to the repository.
 

@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "6b13f009001da844111c409bf9b2c238c4ee403f33fe7620f5ed28c8f2b52863",
+      "sha256": "2cfb0029781c14909bc9dc65900554509ccf90d033baeab34b3a0ba3b25e6983",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d612c779fc5528799028fcccb6b41612c6cef609e813d2ad6099852b55013bd0",
+      "sha256": "621738247ce58e189118a684dfcfeff0587ab29872659d505fe167338450418c",
       "executable": false
     },
     "DEMO.md": {
@@ -1633,7 +1633,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "e709b831da389aacf714f2b4c2e022f17ab68b1400246515531390f35213eccb",
+      "sha256": "f3039384eb0a3055bda186ff6dea3434eb7030858e4b05f830ef6d8689e98fc3",
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
@@ -1709,7 +1709,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "bbedea2494f54898dc892827f7613e32926c763b951dfb0ac30c4a2fcbf72849",
+      "sha256": "c492c4d98132a2a7155e6465cf9461a03fd07ba4f62ec92ab8523dec5f118b35",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -1745,7 +1745,7 @@
       "executable": false
     },
     "docs/legacy-entry-points.md": {
-      "sha256": "d59f4d223a4d26d1e6964984480faef142a28e72e250aafe15b1f84c1385a222",
+      "sha256": "b5d3f295812d16f9c4db066c5a56ee68882718bc33aee8cd406f67b3dcea8131",
       "executable": false
     },
     "docs/LEGACY-EXPORT.md": {
@@ -2053,7 +2053,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "f384afabaedba29fc31b4158938f9481085a853919a156ad03f8dab3dab12662",
+      "sha256": "85eea40837c0b12f1b33bd4883534ab1141d133364faeef7692ac9e987cb9b2b",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2065,7 +2065,7 @@
       "executable": false
     },
     "management/integration/managed-deploy.json": {
-      "sha256": "15c7cdbf71764bf229c660fbf87c783fd84146332762695d73ba75c101246144",
+      "sha256": "77551f99c3cc8f6c7bdb737c3b0ebcd6a51fc452bafb86462a67f18b6ae47443",
       "executable": false
     },
     "management/integration/native-setup.json": {
@@ -2781,7 +2781,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "5f38e7a3d47f7020547511de4a51f6943ac1e91a50b8b78facb5a4e1695a797d",
+      "sha256": "005e64daed2614cc89c975387385e875f778ac99e3717ea7f28144928cc9bf0d",
       "executable": false
     },
     "package.json": {
@@ -2861,7 +2861,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "ba1daa54c6e135af650f9288421a7ec9cd69b71be6b39f8c5f704044ce2ca211",
+      "sha256": "4bbff2a2933b763f817d959db920dc42221182116d5cc99cd7bdffddcfbdc2f9",
       "executable": false
     },
     "rer-project.json": {
@@ -3073,7 +3073,7 @@
       "executable": false
     },
     "scripts/deployment/environment.mjs": {
-      "sha256": "f848df093ae34ce98ffd9f4d63b840b9aa1fd796b60d5067e90f6d92ad407af7",
+      "sha256": "d60128c68059572d2b417f312a8324bdbdfa4f14bc2606ee12826a807cdf46f6",
       "executable": false
     },
     "scripts/deployment/mail-declaration.mjs": {
@@ -3897,7 +3897,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "4cd90d50710c374b97cf2120e250ba9e6e5f3f2baf55b5fb066e1ffc13c3478b",
+      "sha256": "9f47e105828b86551cee131861124066ca4d60c17c216e0fd578e307f3e6049d",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -4533,7 +4533,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "f711431a4c863acaec449b910e549b5ed9b0bed17509a1526588792bde7e2be6",
+      "sha256": "ec285f0c6fcd4a5c21882e987dcaeaeb765a767dc3b78f23c09c7c76ec0a2b87",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -5257,7 +5257,7 @@
       "executable": false
     },
     "src/modules/conversation-actions/partner-gateway.ts": {
-      "sha256": "77ed2db1f5737db7ac54567a180a6506a10d3e04d4bdd6f04cf491b5083f55cd",
+      "sha256": "04ef1026fdb48dfe78c806e7acee7907947b3136270cb40acfed4dd4e1e4e240",
       "executable": false
     },
     "src/modules/conversation-actions/partner-reply.ts": {
@@ -6713,7 +6713,7 @@
       "executable": false
     },
     "src/modules/integrations/email-maintenance.ts": {
-      "sha256": "7e8421b1f3f994af1822fa36f3fc1db87f32c17d1d92f70b069bf592d289886f",
+      "sha256": "6c6cb8a286e6920bcbcf870d67a0477bb3a2b87ae23e37578c5ec9d666864fd7",
       "executable": false
     },
     "src/modules/integrations/email-migration-reply.ts": {
@@ -6809,7 +6809,7 @@
       "executable": false
     },
     "src/modules/integrations/inbound-sender.ts": {
-      "sha256": "e9f6557a0b31f1e4907dd78d0547bd760dfbd38933c0dd2595bca6bd880900eb",
+      "sha256": "0dbf3cfc00c0ccd738889de7af807f7a3bde7a98e03a69fe5d471ed5ed02a920",
       "executable": false
     },
     "src/modules/integrations/inbound-service.ts": {
@@ -6957,7 +6957,7 @@
       "executable": false
     },
     "src/modules/integrations/README.md": {
-      "sha256": "4f9a19c2e03302f1ae4ee3245a05f3d06da85a8507797ebff42785c84ce39693",
+      "sha256": "01e064a0e48e60fc96aa57cbecaff10080b6143c63bcdfd428db03930fb41019",
       "executable": false
     },
     "src/modules/integrations/refused-email.ts": {
@@ -10185,7 +10185,7 @@
       "executable": false
     },
     "src/platform/env.ts": {
-      "sha256": "7c488282c08e0c2c4c0af9d740bbb89991ccb6806a2718d00416ba05bf913643",
+      "sha256": "91f0b98efbe9169d09fc3c79aed64dcddaea3914f84b54196637a6232103c5c1",
       "executable": false
     },
     "src/platform/integration-authority.ts": {
@@ -15333,7 +15333,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "4776a6ac184dd1700a20042741e687949364ab98232a14907d42ade903aabfd7",
+      "sha256": "fb5459de05fe46bd04aee2ad3fafdc63c0eeee811d075568eac04ec6092d0885",
       "executable": false
     },
     "tests/helpers/email/complete-mail-edge.mjs": {

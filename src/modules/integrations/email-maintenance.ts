@@ -5,6 +5,7 @@ import type {Env} from '../../platform/env'
 import {expireSuspendedEmails} from './suspended-store'
 import {syncConnectedMailboxes} from './mailboxes'
 import {receiveMailboxMessage} from './mailbox-ingress'
+import {MAILGUN_CLAIM_RETENTION_MS} from './mailgun-signature'
 
 /** The integrations module's existing scheduled recovery entry point calls this;
  * the runtime/queue remains owned by R5. Each sync is one durable bounded page. */
@@ -13,6 +14,7 @@ export async function maintainEmail(env:Env){
  // managed holds have their own refusal/expiry lifecycle and remain untouched.
  const now=Date.now()
  await env.DB.prepare("UPDATE email_deliveries SET state='uncertain',error=?,updated_at=? WHERE state='sending' AND (id GLOB 'message:*:notification' OR id GLOB 'message:*:notification:*') AND updated_at<? AND error IS NOT ?").bind(abandonedNotificationReason,now,now-abandonedNotificationMs,rerMailHeld).run()
+ await env.DB.prepare('DELETE FROM mailgun_inbound_tokens WHERE received_at<?').bind(now-MAILGUN_CLAIM_RETENTION_MS).run()
  await expireSuspendedEmails(inCron(env)?cronConsumer(env,6):env)
  await syncConnectedMailboxes(env,message=>receiveMailboxMessage(env,message))
 }

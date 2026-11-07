@@ -68,6 +68,23 @@ export function sendGridVerdict(input:{dkim:string;spf:string;envelopeFrom:strin
  return {verified,failed:!verified&&spf==='fail'}
 }
 
+/** Mailgun route forwards carry `X-Mailgun-Spf` (Pass, Neutral, Fail or SoftFail, for the
+ * MAIL FROM) and, for DKIM-signed mail, `X-Mailgun-Dkim-Check-Result` (Pass or Fail, with no
+ * domain), so DKIM verifies the From only when every DKIM-Signature names an aligned domain.
+ * A sender may plant either header, so a verdict that appears twice is ambiguous: not
+ * verified and failed. With no usable From nothing verifies, and an SPF fail still counts. */
+export function mailgunVerdict(input:{headers:Iterable<HeaderEntry>;envelopeFrom:string;from:string|null}):SenderVerdict{
+ const entries=[...input.headers].flatMap(header=>typeof header?.key==='string'?[{key:header.key.trim().toLowerCase(),value:String(header.value??'')}]:[])
+ const named=(key:string)=>entries.filter(entry=>entry.key===key).map(entry=>entry.value.trim().toLowerCase())
+ const spfs=named('x-mailgun-spf'),dkims=named('x-mailgun-dkim-check-result')
+ if(spfs.length>1||dkims.length>1)return {verified:false,failed:true}
+ const spf=spfs[0]||'',dkim=dkims[0]||'',fromDomain=domainOf(input.from)
+ if(!fromDomain)return {verified:false,failed:spf==='fail'}
+ const signed=entries.filter(entry=>entry.key==='dkim-signature').map(entry=>entry.value.match(/(?:^|[;\s])d\s*=\s*([^;\s]+)/i)?.[1])
+ const verified=dkim==='pass'&&signed.length>0&&signed.every(domain=>alignedDomain(domain,fromDomain))||spf==='pass'&&alignedDomain(domainOf(input.envelopeFrom),fromDomain)
+ return {verified,failed:!verified&&(spf==='fail'||dkim==='fail')}
+}
+
 // Addresses a forwarder or the receiving server recorded for the original recipient.
 const FORWARDING_HEADERS=['delivered-to','x-original-to','x-forwarded-to','x-gm-original-to']
 const addresses=(value:unknown)=>typeof value==='string'?value.split(',').map(entry=>emailAddress(entry)).filter((entry):entry is string=>Boolean(entry)):[]

@@ -221,7 +221,7 @@ and other reserved trial domains because they cannot receive sign-in mail. Suppl
 a real mailbox privately in `OWNER_EMAIL` or an owned 0600 `--env-file` for both
 dry run and deployment. Rer generates missing setup/encryption secrets. It also deploys
 the generated `INBOUND_EMAIL_TOKEN` for reply-mailbox authentication. Existing
-Worker secrets are retained; use `rer deploy --set-secret NAME` to change one
+Worker secrets are retained; use `rer deploy --set-secret <name>` to change one
 deliberately. Rer keeps the values it generates (`INBOUND_EMAIL_TOKEN`,
 `INTEGRATION_ENCRYPTION_KEY`, `H2H_OWNER_RECOVERY_KEY`) in the private 0600 file
 `.rer/deploy/<environment>.secrets.env` beside `.rer/deploy/<environment>.json`.
@@ -261,7 +261,8 @@ every declared secret not marked `optional` on a new Worker.
 A company's history can move into its own hosted installation before its mail is
 cut over, so a deploy can choose to send nothing. Put `MAIL_PROVIDER=none` and a
 real `OWNER_EMAIL` in the environment or the owned 0600 `--env-file`, with no
-other mail input (`EMAIL_*`, `MAIL_*`, `MAILGUN_*`, mailbox OAuth or socket
+other mail input (`EMAIL_*`, `MAIL_*`, the Mailgun sending inputs
+`MAILGUN_DOMAIN`, `MAILGUN_REGION` and `MAILGUN_SENDING_KEY`, mailbox OAuth or socket
 settings; supplying any of them with `none` refuses before anything is built):
 
 ```sh
@@ -279,12 +280,38 @@ replies by email, the Email settings test send and surveys each refuse or record
 **Setup** and **Email settings** say so with how to turn it on. Incoming mail,
 imports and everything that does not send keep working.
 
-To turn mail on later, set the provider inputs privately and run one command from
-the checkout that deployed the installation, then remove `MAIL_PROVIDER=none`
-from your `--env-file`:
+To turn Mailgun mail on later, put `EMAIL_PROVIDER=mailgun`, `EMAIL_FROM`, `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_REGION` (`us` or `eu`, written out), `MAILGUN_SENDING_KEY` (a domain-scoped sending key) and `MAILGUN_WEBHOOK_SIGNING_KEY` (Mailgun's HTTP webhook signing key, which verifies mail Mailgun forwards to you) in your `--env-file`, remove `MAIL_PROVIDER=none` from it,
+and run one command from the checkout that deployed the installation. The
+installation must already run this release, because a secret change makes one
+new Worker version from the live one without rebuilding:
 
 ```sh
-rer deploy --environment production --env-file ~/happytohelp-deploy.env --set-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY
+rer deploy --environment production --env-file ~/happytohelp-deploy.env --set-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY,MAILGUN_WEBHOOK_SIGNING_KEY
+```
+
+Resend, SendGrid and Cloudflare Email Sending take the inputs in the provider
+table of [Email and integrations](src/modules/integrations/README.md#choose-a-provider),
+set the same way in one `--set-secret` run.
+
+To turn sending off again, remove the six sending inputs. A plain redeploy keeps
+every secret the Worker holds, so a redeploy with `MAIL_PROVIDER=none` alone does
+not stop sending; the removal must be an `--unset-secret` run. Mailgun receiving
+continues, because the signing key binds no way to send:
+
+```sh
+rer deploy --environment production --env-file ~/happytohelp-deploy.env --unset-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY
+```
+
+Then take those six inputs out of the file and put `MAIL_PROVIDER=none` back in it
+for later deploys.
+
+To stop Mailgun receiving, first point the Mailgun route elsewhere, then remove the
+signing key. Every forward is then refused; Mailgun retries for 8 hours and then
+drops the message. A removed declared secret is retired, so later plain deploys
+omit it until it is set again:
+
+```sh
+rer deploy --environment production --env-file ~/happytohelp-deploy.env --unset-secret MAILGUN_WEBHOOK_SIGNING_KEY
 ```
 
 ### Sign in without mail
@@ -347,6 +374,32 @@ provider to satisfy preflight. No real sending key or live delivery has been
 tested here: automated coverage uses HTTP-edge fakes only. The owner supplies
 the sending key during the planned key configuration; live proof remains a
 separate authorized check.
+
+#### Receiving from a Mailgun route
+
+A Mailgun route can forward your support mail to HappyToHelp. Set
+`MAILGUN_WEBHOOK_SIGNING_KEY` to the account's **HTTP webhook signing key** (never the
+sending key or the Routes key; it is a runtime secret, never a plain variable), and
+point a route's `forward()` action at
+`https://<your HappyToHelp address>/api/integrations/email/mailgun/inbound`
+(`POST`; form-urlencoded, or multipart/form-data with attachments, up to 30 MB). The
+URL carries no secret: Mailgun posts `timestamp`, `token` and `signature`, the hex
+HMAC-SHA256 of `timestamp + token` under the key, and HappyToHelp compares it in
+constant time. A forward is refused with 403, writing no record, when the key is unset
+or empty, the signature is missing, malformed or wrong, the timestamp is more than five
+minutes ahead or older than nine hours (Mailgun retries for 8 hours and may keep its
+first timestamp), or the token was already used. Each token is used once, and is freed
+again when the forward is not answered 200, so Mailgun's retry of the same request can
+succeed. The key appears in no response, log line, stored row or export.
+
+The workspace that receives the recipient address gets the mail, with the same
+threading, attachment limits, automatic-mail classification, Suspended policy and
+Closed-ticket handling as the other inbound doors. Received, repeated, Suspended and
+Closed-ticket mail is answered 200, the only answer Mailgun accepts; an address no
+workspace receives is answered 404 and Mailgun retries it. Sending and receiving are
+independent: removing the six sending inputs leaves receiving on, and removing the
+signing key stops receiving only. The commands are above under Deploy with outbound
+email off.
 
 Protocol references: [message sending](https://documentation.mailgun.com/docs/mailgun/api-reference/send/mailgun/messages/post-v3--domain-name--messages),
 [domain sending keys](https://documentation.mailgun.com/docs/mailgun/user-manual/api-key-mgmt/rbac-mgmt)
@@ -492,7 +545,7 @@ platform administrators (see [the integrations guide](src/modules/integrations/R
 | AI replies, assist, profiles and monitoring (Ensemble) | The installer's `AI_PROVIDER` answer (`openai`, `anthropic`, `google`, `deepseek`, `xai`, `openrouter` or `later`, the default) chooses which key to store at setup; models are selected in workspace and AI configuration (the dashboard's **AI** page); `CONTEXT_MODEL` for widget-triggered context work. Every new workspace's starter assistant answers visitors by itself once any provider key is installed, within `AI_DAILY_CEILINGS`; with none, new conversations stay with the team | Selected `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`/`GEMINI_API_KEY`, `DEEPSEEK_API_KEY`, `XAI_API_KEY`, `OPENROUTER_API_KEY`; the key is optional at setup and never stored with `later` |
 | Knowledge crawl and semantic search | `APIFY_CRAWLER_ACTOR_ID` (`apify~website-content-crawler`), `QDRANT_URL`, `KNOWLEDGE_EMBEDDING_MODEL` | `APIFY_TOKEN`, `QDRANT_API_KEY`, `OPENAI_API_KEY`. Website sources need none of these: without the two Apify values HappyToHelp reads up to 40 pages of a public site itself ([Website knowledge](docs/website-knowledge.md)). Keyword search needs none of these providers. |
 | Help center import from another provider (Intercom or Freshdesk; Zendesk articles come through Move in's Zendesk connection) | Platform/subdomain and destination workspace chosen for each import | `INTERCOM_TOKEN` or `FRESHDESK_TOKEN` for the selected provider; Zendesk uses `INTEGRATION_ENCRYPTION_KEY` for its stored sign-in |
-| Email, sending and receiving | `EMAIL_PROVIDER` (`resend`, `cloudflare` or `sendgrid`), `EMAIL_ACCOUNT_ID` for Cloudflare, optional `INBOUND_EMAIL_DOMAIN` (the domain new workspaces' reply mailboxes are created under; default `in.` plus the workspace's website host), workspace email settings; built-in inbound endpoints | `EMAIL_API_KEY`, `EMAIL_FROM` (the installation sender every new workspace uses until its own domain is verified), `INBOUND_EMAIL_TOKEN` (generated by local setup and deployed for inbound authentication; with it every new workspace gets a reply-by-email mailbox; provider domain routing and a webhook still need configuration) |
+| Email, sending and receiving | `EMAIL_PROVIDER` (`resend`, `cloudflare`, `sendgrid` or `mailgun`), `EMAIL_ACCOUNT_ID` for Cloudflare, the Mailgun inputs (`MAILGUN_DOMAIN`, `MAILGUN_REGION`, `MAILGUN_SENDING_KEY`, and `MAILGUN_WEBHOOK_SIGNING_KEY` for receiving), optional `INBOUND_EMAIL_DOMAIN` (the domain new workspaces' reply mailboxes are created under; default `in.` plus the workspace's website host), workspace email settings; built-in inbound endpoints | `EMAIL_API_KEY`, `EMAIL_FROM` (the installation sender every new workspace uses until its own domain is verified), `INBOUND_EMAIL_TOKEN` (generated by local setup and deployed for inbound authentication; with it every new workspace gets a reply-by-email mailbox; provider domain routing and a webhook still need configuration) |
 | Lead research and reviewed outreach | `LEAD_MODEL`; each lead is saved and reviewed before sending | `OPENAI_API_KEY`, selected email configuration |
 | GitHub | `GITHUB_CLIENT_ID`, optionally `GITHUB_PROJECT_ID` for one fixed credential | `GITHUB_CLIENT_SECRET`, `INTEGRATION_ENCRYPTION_KEY`; optional `GITHUB_TOKEN` or JSON `GITHUB_TOKENS` map keyed by project ID |
 | Brand image generation | Explicit `BRAND_IMAGE_MODEL`, `BRAND_IMAGE_SIZE`, `BRAND_IMAGE_QUALITY` | `OPENAI_API_KEY` |

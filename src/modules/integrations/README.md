@@ -38,6 +38,7 @@ Email Sending needs the Workers Paid plan.
 | Resend | `resend` (the default when `EMAIL_PROVIDER` is not set) | `EMAIL_API_KEY`, `EMAIL_FROM` |
 | SendGrid | `sendgrid` | `EMAIL_API_KEY`, `EMAIL_FROM` |
 | Cloudflare Email Sending | `cloudflare` | `EMAIL_API_KEY`, `EMAIL_FROM` and `EMAIL_ACCOUNT_ID` (your 32-character Cloudflare account ID) |
+| Mailgun | `mailgun` | `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY`, `MAILGUN_SENDING_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_REGION` (`us` or `eu`), `EMAIL_FROM`; `MAILGUN_WEBHOOK_SIGNING_KEY` as well to receive mail from a Mailgun route |
 
 `EMAIL_FROM` is the default sender. Each workspace can set its own sender on its
 **Email** settings page (**Support Email From Address** and **Support Email From
@@ -114,7 +115,7 @@ land back in the same conversation.
    any email sent to that address creates a support conversation; the page shows
    whether it can yet. Use a plain address without a `+`; each address can belong
    to only one active workspace.
-2. Route mail for that address to HappyToHelp in one of the three ways below. Your
+2. Route mail for that address to HappyToHelp in one of the four ways below. Your
    email routing must deliver that mailbox, or a catch-all, to the Worker.
 3. Keep inbound mail on a dedicated subdomain, so your main domain's existing MX
    records stay unchanged.
@@ -224,7 +225,36 @@ both a conversation's reply address and your bare inbound address: the email is
 received once, in the conversation, and the second address counts as the same
 email already received.
 
-### Option 3: Your own JSON gateway
+### Option 3: Mailgun route
+
+Use this when your domain's MX records point to Mailgun. The URL carries no secret:
+Mailgun signs every forward, and HappyToHelp checks the signature.
+
+1. Set the `MAILGUN_WEBHOOK_SIGNING_KEY` secret to your Mailgun account's **HTTP
+   webhook signing key**. It is not the sending key and not the Routes key. Until it is
+   set, every forward is refused.
+2. In Mailgun, create a route that matches your support address, for example
+   `match_recipient("support@example.com")`, with the action
+   `forward("https://<your HappyToHelp address>/api/integrations/email/mailgun/inbound")`
+   (the route is `POST /api/integrations/email/mailgun/inbound`).
+3. Add a second route to the same URL that matches the address's reply form, for
+   example `match_recipient("support\+r\..*@example.com")`, so a customer's reply to a
+   notification, and a partner's reply to a forwarded ticket, come back into
+   HappyToHelp.
+
+The route takes Mailgun's `forward()` post, form-urlencoded or, with attachments,
+multipart/form-data, up to 30 MB. Message-ID, In-Reply-To, References, To, Cc and
+Reply-To are read from its `message-headers` field. A forward is refused with 403,
+and nothing is stored, when its signature is missing or wrong, its timestamp is more
+than five minutes ahead or older than nine hours, or its token was already used.
+
+Mailgun accepts only HTTP 200 and retries any other answer for 8 hours before it drops
+the message. A new email, a repeat of one already received and an email held in
+Suspended all get 200. An email to an address no workspace receives gets 404, so
+Mailgun retries it until you configure the address or the 8 hours pass. A member's
+reply to a Closed ticket is answered with a notice to them and gets 200.
+
+### Option 4: Your own JSON gateway
 
 If another service receives your mail, it can post each email as JSON to
 `POST /api/integrations/email/inbound` with the header
@@ -291,7 +321,7 @@ Cloudflare's list of allowed headers has been verified.
   saved evidence is bounded: the envelope sender, the header From, the subject and
   the `Auto-Submitted`, `Precedence`, `X-Auto-Response-Suppress`, `List-Id`,
   `List-Unsubscribe`, `X-Autoreply`/`X-Autorespond`, `Return-Path` and threading
-  headers. All three ways in (the Email Worker, the SendGrid route and the JSON
+  headers. All four ways in (the Email Worker, the SendGrid route, the Mailgun route and the JSON
   gateway) keep it.
 - The classification, its reasons and the evidence are written to the inbound
   claim before admission

@@ -96,6 +96,11 @@
       "optional": true
     },
     {
+      "binding": "MAILGUN_WEBHOOK_SIGNING_KEY",
+      "environment": "MAILGUN_WEBHOOK_SIGNING_KEY",
+      "optional": true
+    },
+    {
       "binding": "GOOGLE_MAIL_CLIENT_ID",
       "environment": "GOOGLE_MAIL_CLIENT_ID",
       "optional": true

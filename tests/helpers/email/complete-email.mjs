@@ -2,6 +2,7 @@ import {mailgunJourney} from './mailgun.mjs'
 import {outboundConfigurationJourney} from './outbound-configuration.mjs'
 import {senderDomainJourney} from './domain.mjs'
 import {sendgridInboundJourney} from './sendgrid-inbound.mjs'
+import {mailgunInboundJourney} from './mailgun-inbound.mjs'
 import {unreadableMailJourney} from './unreadable-mail.mjs'
 import {rerMailHoldJourney} from './rer-mail-hold.mjs'
 import assert from 'node:assert/strict'
@@ -101,7 +102,7 @@ export async function completeEmailJourney(){
   assert.equal((await app.first('SELECT count(*) n FROM email_reply_grants WHERE conversation_id=?',id)).n,0)
  }finally{await m.close()}
  // OAuth and TLS mailbox transports admit and send the same support-mail flow.
- for(const transport of [mailboxProviderJourney,imapSmtpJourney,rerMailJourney,sendgridInboundJourney,unreadableMailJourney,rerMailHoldJourney])await transport()
+ for(const transport of [mailboxProviderJourney,imapSmtpJourney,rerMailJourney,sendgridInboundJourney,mailgunInboundJourney,unreadableMailJourney,rerMailHoldJourney])await transport()
  await senderDomainJourney()
 }
 

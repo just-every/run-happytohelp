@@ -57,6 +57,8 @@ export const archivePolicy={
   // ik_door_settings is neutralized on export, import and staged validation.
   // Installation-private pull membership and replay custody never transfer.
   'agent_door_relay','agent_door_replay_aliases',
+  // Mailgun signature replay fences are short-lived and never travel.
+  'mailgun_inbound_tokens',
   'support_channel_attachment_grants','support_channel_link_codes',
   'crm_changes',
   'rer_mailbox_outbox',

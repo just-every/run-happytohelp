@@ -2776,6 +2776,10 @@
       "sha256": "49ce815e3d735266d35714d5db5d46b1d125f4cba9d504c370a377fa4a7d15a2",
       "executable": false
     },
+    "migrations/305_mailgun_inbound_tokens.sql": {
+      "sha256": "98745e57d55667b2966de82245ed13ed8489a6b6c72b46465dce67e92779e6cd",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -6894,6 +6898,14 @@
     },
     "src/modules/integrations/mailgun-configuration.mjs": {
       "sha256": "5b9f7143d88124e486a80898fb701f9cc304e33cb648acd5519519b9773f934c",
+      "executable": false
+    },
+    "src/modules/integrations/mailgun-inbound.ts": {
+      "sha256": "fd637f9ded7ac26cd3ff38d491b02dd44babba86ba65fc6ba5d9dc1ce60e9603",
+      "executable": false
+    },
+    "src/modules/integrations/mailgun-signature.ts": {
+      "sha256": "851f8a24a9e100809a5e3284ab03a01387fb17ea78a84a72190ba850ba03d002",
       "executable": false
     },
     "src/modules/integrations/message-mail-status.ts": {
@@ -15362,6 +15374,10 @@
     },
     "tests/helpers/email/mailbox-provider.mjs": {
       "sha256": "eed1ee5b61e04c903d0fc1d79ec2fa02a2e4cb13acb8325591704a040d2684a5",
+      "executable": false
+    },
+    "tests/helpers/email/mailgun-inbound.mjs": {
+      "sha256": "3f42d0036bb7f0901293ebacdd56c328ff566817793d361b3de13d999feb014a",
       "executable": false
     },
     "tests/helpers/email/mailgun.mjs": {

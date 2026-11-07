@@ -10,6 +10,7 @@ import {readReview,verifyGroupCustody,verifyApprovedCustody} from './review-cust
 import {reconcileContactKeys} from './contact-keys'
 import {publicationPredicates,publicationDatabase,reviewedContacts,checkPublication} from './publication'
 import {skipUnstartedUndo} from './partial-undo'
+import {applyStep} from './apply-step'
 interface Batch {run_id:string;ordinal:number;plan_key:string;fingerprint:string;total:number;kit_job_id:string|null;state:string;checkpoint:number}
 export async function approveReview(env:Env,run:Run,fingerprint:string){
  await assertAuthority(env,run);if(run.state!=='ready'||run.review_fingerprint!==fingerprint)throw new Error('review_fingerprint_mismatch')
@@ -44,5 +45,5 @@ export async function advanceBatch(env:Env,run:Run){
  // reverses that actual journal; completed children keep normal undo semantics.
  const jobState=undo?(await env.DB.prepare('SELECT state FROM ik_jobs WHERE id=?').bind(batch.kit_job_id).first<{state:string}>())?.state:null
  const reverse=jobState&&['completed','undoing','undone'].includes(jobState)?undoD1Import:rollbackD1Import
- const job=undo?await reverse(batch.kit_job_id,context):await applyD1ImportBatches(batch.kit_job_id,context);await publishCheckpoint(env,run,batch,job)
+ const job=undo?await reverse(batch.kit_job_id,context):await applyD1ImportBatches(batch.kit_job_id,applyStep(context));await publishCheckpoint(env,run,batch,job)
 }

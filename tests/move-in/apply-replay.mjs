@@ -55,6 +55,7 @@ export async function replayApply({label='CANDIDATE',sourceRoot=root,evidenceDir
   const counts=await h.db.prepare('SELECT (SELECT COUNT(*) FROM contacts) contacts,(SELECT COUNT(*) FROM conversations) tickets,(SELECT COUNT(*) FROM messages) messages,(SELECT COUNT(*) FROM move_in_notes) notes,(SELECT COUNT(*) FROM ik_sources) sources').first()
   assert.equal(counts.contacts,fixture.entries-fixture.tickets);assert.equal(counts.tickets,fixture.tickets);assert.equal(counts.messages,fixture.tickets*2);assert.equal(counts.notes,fixture.tickets);assert.equal(counts.sources,fixture.entries)
   assert.equal(h.outbound,0)
+  if(label==='CANDIDATE'){const reads=await h.call('/_test/apply-replay/compare-reads',{method:'POST'});console.log(`${label}_READ_MANY ${JSON.stringify(reads)}`);assert.equal(reads.mismatched,0);assert.ok(reads.present>=fixture.entries);assert.deepEqual(reads.failures,{malformedSingle:true,malformedSelected:true,malformedUnselected:true,unknownKind:true})}
   const receipt={label,fixture,counts,pull:{id:pull.pullId,state:finished.state,progress:finished.progress},...total,runs,steps}
   await mkdir(evidenceDir,{recursive:true});await writeFile(join(evidenceDir,`${label.toLowerCase()}.json`),JSON.stringify(receipt,null,2)+'\n')
   console.log(`${label} ${JSON.stringify({fixture,counts,...total,roundTrips:trips(total),evidence:join(evidenceDir,`${label.toLowerCase()}.json`)})}`)

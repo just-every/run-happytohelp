@@ -3,6 +3,9 @@ import {isReadOnlySql} from './sql-operation'
 /** UTF-8 byte length without encoding a copy. In Workers Buffer.byteLength
  * encodes the whole string, so metering every bound plan and row would copy it. */
 export function utf8Length(text:string){let bytes=text.length;for(let i=0;i<text.length;i++){const code=text.charCodeAt(i);if(code<0x80)continue;if(code<0x800){bytes++;continue}if(code>=0xd800&&code<=0xdbff&&i+1<text.length&&(text.charCodeAt(i+1)&0xfc00)===0xdc00)i++;bytes+=2}return bytes}
+/** A queue delivery's statement budget: Workers Paid D1 allows 1000 queries an invocation, and
+ * twenty stay back so a job that exhausts the rest can still record its failure. */
+export const queueStatements={limit:1000,reserve:20} as const
 /** Workers Paid D1 limits, shared by every operation in one invocation. Work stops
  * `reserve` statements short of the limit; the reserve opens once that happens, so the
  * handler can still record why it stopped instead of failing silently. */

@@ -123,10 +123,12 @@ async function readSelected(db:D1Database,destination:string,keys:readonly {kind
  const rows=new Map<string,any>()
  for(let i=0;i<queries.length;i+=READ_MANY_STATEMENTS){
   const part=queries.slice(i,i+READ_MANY_STATEMENTS)
-  const results=await db.batch(part.map(({kind,ids})=>{
+  const statements=part.map(({kind,ids})=>{
    const defs=definitions(kind),ref:Ref={project:'?1',id:'wanted.value'}
    return db.prepare(`SELECT wanted.value AS id,${defs.map((t,n)=>`${select(t,ref)} AS t${n}`).join(',')},(SELECT source_json FROM move_in_origins WHERE project_id=?1 AND target_kind=?3 AND target_id=wanted.value) AS source,(SELECT revision FROM move_in_origins WHERE project_id=?1 AND target_kind=?3 AND target_id=wanted.value) AS revision FROM json_each(?2) wanted`).bind(destination,JSON.stringify(ids),kind)
-  }))
+  })
+  // A lone statement needs no batch (a batch also carries the publication guards).
+  const results=statements.length===1?[await statements[0].all<any>()]:await db.batch<any>(statements)
   part.forEach(({kind},n)=>{for(const row of results[n].results as any[])rows.set(JSON.stringify([kind,row.id]),row)})
  }
  return keys.map(({kind,id})=>decodeRead(destination,kind,id,rows.get(JSON.stringify([kind,id]))))

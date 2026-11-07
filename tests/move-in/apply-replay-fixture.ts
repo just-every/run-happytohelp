@@ -33,3 +33,27 @@ export async function seedApplyReplay(request:Request,env:Env){
  const fingerprint=index===runs-1?pullFingerprint(await pullBatches(env,pullId)):undefined
  return Response.json({id,entries:rows.length,tickets:ticketCount,contacts:contactCount,pullId,fingerprint})
 }
+
+/** Test-edge comparison of the adapter's two read paths over the applied data:
+ * every selected key returns what a single read returns, in key order, with
+ * duplicates, absent keys and an erased contact included. A malformed row only
+ * fails the call that selects it. */
+export async function compareSelectedReads(env:Env){
+ const {nativeTargets}=await import('../../src/modules/move-in/targets'),read=nativeTargets.readMany!
+ const owned=async(kind:string)=>(await env.DB.prepare("SELECT target_id id FROM move_in_origins WHERE project_id='p' AND target_kind=? ORDER BY target_id").bind(kind).all<{id:string}>()).results.map(row=>({kind,id:row.id}))
+ const keys=[...await owned('contact'),...await owned('conversation')]
+ await env.DB.prepare("INSERT INTO contacts(id,project_id,name,email,external_id,created_at,is_verified,metadata_json) VALUES('synthetic-erased','p',NULL,NULL,NULL,1,0,'{\"is_erased\":1}')").run()
+ await env.DB.prepare("INSERT INTO contacts(id,project_id,name,email,external_id,created_at,is_verified,metadata_json) VALUES('synthetic-malformed','p',NULL,NULL,NULL,1,0,'not json')").run()
+ const selected=[...keys,{kind:'contact',id:'synthetic-erased'},{kind:'contact',id:'synthetic-absent'},{kind:'conversation',id:'synthetic-absent'},keys[0],keys.at(-1)!,{kind:'contact',id:'synthetic-erased'}]
+ const many=await read(env.DB,'p',selected),singles:unknown[]=[]
+ for(const key of selected)singles.push(await nativeTargets.read(env.DB,'p',key.kind,key.id))
+ const mismatched=selected.filter((_,i)=>JSON.stringify(many[i])!==JSON.stringify(singles[i])).length
+ const rejected=async(run:()=>Promise<unknown>)=>run().then(()=>false,()=>true)
+ const failures={
+  malformedSingle:await rejected(()=>nativeTargets.read(env.DB,'p','contact','synthetic-malformed')),
+  malformedSelected:await rejected(()=>read(env.DB,'p',[keys[0],{kind:'contact',id:'synthetic-malformed'}])),
+  malformedUnselected:!await rejected(()=>read(env.DB,'p',[keys[0]])),
+  unknownKind:await rejected(()=>read(env.DB,'p',[{kind:'synthetic-unknown',id:'x'}]))
+ }
+ return Response.json({compared:selected.length,present:many.filter(Boolean).length,mismatched,failures})
+}

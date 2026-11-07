@@ -42,6 +42,7 @@ export async function replayApply({label='CANDIDATE',sourceRoot=root,evidenceDir
    assert.deepEqual(result.retried,[]);assert.deepEqual(result.effects,{widget:0});assert.ok(result.statements<=980,'each delivery leaves the queue failure reserve intact');record(job.id,job.type,at,result.metrics,result.statements)
    if(steps.length%100===0)console.log(`${label}_PROGRESS ${JSON.stringify({steps:steps.length,d1RoundTrips:total.d1RoundTrips,wallMs:total.wallMs})}`)
   }
+  if(process.env.H2H_APPLY_TRACE){const sample=steps.find(step=>step.statements>300);console.log(`${label}_TRACE ${JSON.stringify({runId:sample?.runId,statements:sample?.statements,trace:sample?.metrics.trace})}`);const create=steps.find(step=>step.metrics.d1RoundTrips===18);console.log(`${label}_TRACE_CREATE ${JSON.stringify(create?.metrics.trace)}`)}
   const finished=(await h.call(`/api/move-in/projects/p/zendesk/pulls/${pull.pullId}`)).data
   assert.equal(finished.error,null);assert.equal(finished.state,'applied');assert.equal(finished.progress.batchesApplied,fixture.runs);assert.equal(finished.totals.tickets.imported,fixture.tickets)
   for(const run of seeded){

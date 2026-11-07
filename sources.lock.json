@@ -16237,7 +16237,7 @@
       "executable": false
     },
     "tests/helpers/widget/identity-switch-browser.mjs": {
-      "sha256": "adee0b27d39613a62a26f6187acc3fbaf8a8d48ef8cbd5fb7e69f2945e562029",
+      "sha256": "3b81854f0a8b6f0be9932b35dca5a325d8ad3b3a3567883d678a7c52ecf0562b",
       "executable": false
     },
     "tests/helpers/widget/mailbox-live.mjs": {

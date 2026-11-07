@@ -9,6 +9,8 @@ const file=value('--file'),pkg=value('--package'),remote=args.includes('--remote
 if(excludeTables.some(table=>!table||table.startsWith('--'))||(excludeTables.length&&!pkg))throw new Error(usage)
 if(!file===!pkg||(remote&&!apply)||(remote&&args.includes('--persist-to'))||(file&&remote))throw new Error(usage)
 const {planImport,importLegacy}=await import('../src/modules/legacy-import/importer.ts')
+const {importDelta}=await import('../src/modules/legacy-import/delta.ts')
+const {planDelta}=await import('../src/modules/legacy-import/delta-plan.ts')
 const {tableOrder}=await import('../src/modules/legacy-import/mapping.ts')
 const relationships=await import('../src/modules/legacy-import/relationships.ts')
 const types=await import('../src/modules/legacy-import/types.ts')
@@ -26,7 +28,7 @@ const {removeStaleDirectories}=await import('./legacy-import/scratch.mjs')
 const stale=await removeStaleDirectories();if(stale.length)progress({step:'removed-stale',directories:stale.length})
 let bundleProjects
 async function run(target){
- if(pkg)return importPackage(pkg,target,{planImport,importLegacy,tableOrder,relationships,types},{expectManifestSha256:value('--expect-manifest-sha256'),excludeTables,concurrency,progress})
+ if(pkg)return importPackage(pkg,target,{planImport,importLegacy,importDelta,planDelta,tableOrder,relationships,types},{expectManifestSha256:value('--expect-manifest-sha256'),excludeTables,concurrency,progress})
  const bundle=JSON.parse(await readFile(file,'utf8'));bundleProjects=bundle.tables?.projects;if(target)return importLegacy(target.env,bundle)
  const plan=await planImport(bundle);return {id:plan.id,...plan.summary}
 }

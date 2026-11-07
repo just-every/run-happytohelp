@@ -94,13 +94,63 @@ node scripts/import-legacy.mjs --file exports/company.import.json
 node scripts/import-legacy.mjs --file exports/company.import.json --apply --persist-to .wrangler/state
 ```
 
-The plan is read-only. Apply writes only local D1/R2. Bundle digest is the run identity; source rows and canonical writes commit together. Exact replay skips every completed row. A new artifact must match existing canonical bytes or stops without overwriting them. Earlier committed rows remain after a later conflict; resume the exact artifact. This is a migration/replay tool, not an incremental synchronizer or a cutover procedure.
+The plan is read-only. Apply writes only local D1/R2. Bundle digest is the run identity; source rows and canonical writes commit together. Exact replay skips every completed row. A new full artifact must match existing canonical bytes or stops without overwriting them. Earlier committed rows remain after a later conflict; resume the exact artifact. A full package is a migration and replay; what legacy takes after its export arrives through [delta sweeps](#delta-sweeps), which apply legacy changes only where the seed has not changed the row. Neither is a cutover procedure.
 
 Native mappings preserve conversation/message/note/contact/article/category/macro IDs. Local-agent identity JSON, media alt text and global inbox appearance have no corresponding persisted native field and remain archived. Refresh preferences and successful refresh time survive; pending claims, crawl webhook tokens and credentials are omitted, and scheduled paid work is held.
 
 Internal notes come from `events.type=INTERNAL_NOTE` and remain private. Draft categories use nullable `published_at`; deleted records are archive-only, including dependent transcripts. Preferred contact name/email and original file names survive. Invitees with no user stay archive-only. Old credentials are not native logins; recover/pair/reconnect through native flows separately.
 
 Project `website` supplies the allowed origin. Raw widget/availability settings, responder IDs, timezone, help-center HTTPS URL and logo URL are retained in project settings. Category order/nesting, crawl exclusions and limits, closed insight state, disabled sender/mailbox settings and project slug aliases map into native live fields; unsupported legacy widget defaults, proxy controls and billing fields remain archived. This does not configure DNS, sending domains, mail credentials, providers or legacy-widget compatibility.
+
+## Delta sweeps
+
+Legacy keeps taking chats and mail until the company's widget and mail move to the seed, and for a few quiet days after. Sweep everything it took since the last export into the seed, as often as needed, until the legacy project is retired.
+
+**Watermark.** Every export, full or delta, records `source.watermark` in its manifest: the legacy database's own clock (`UTC_TIMESTAMP`), read as the first statement inside its consistent snapshot, less a 300-second overlap (`source.watermarkOverlapSeconds`; the raw read is `source.snapshotClock`). A row a request stamped just before the snapshot began but committed after it is re-included by the next delta instead of missed, and the import makes a re-included row a no-op. The next delta passes the previous export's watermark as `--since`.
+
+```sh
+node scripts/export-legacy.mjs snapshot --project PROJECT_UUID --revision LEGACY_REVISION \
+  --ai-model gpt-5.6-luna --mail-from-domain LEGACY_MAIL_FROM_DOMAIN \
+  --chunk-bytes 4194304 --since PREVIOUS_WATERMARK --output /private/company/delta-1/snapshot
+node scripts/export-legacy.mjs attachments --input /private/company/delta-1/snapshot \
+  --bucket CONFIRMED_BUCKET --region us-east-1 --output /private/company/delta-1/import
+```
+
+**Delta export.** `--since` takes an ISO-8601 UTC time (`2026-11-08T09:30:00Z`) and writes only the chunked directory format, so it requires `--chunk-bytes`; `attachments` and `repass` take the delta package as `--input` and refuse `--since`. A delta reads the same whole project scope as a full export in the same kind of snapshot: the credential pre-scan, every classification, the count guards (`cloneCounts`, and `scopedCounts` for the whole scope) and the mapping context stay whole. Its row chunks carry only rows whose `created_at`, `updated_at` or `deleted_at` is at or after `--since` (`events` have only `created_at`), plus what the import needs to apply them: the parent conversation of every changed message, event, participant, bucket and message file, the users those rows name, and the `mediables` pivots of changed media. `source.rowCounts` counts the chunk rows and `source.since` marks the package as a delta. Context parts carry every row of the context tables, message delivery ids included, except media: a delta's media context, and so its `attachments` step, is its changed media alone.
+
+**The first delta's `--since`.** Use the full package's `source.watermark`. A package exported before watermarks were recorded has none: use a time at or before that package's snapshot, for a package exported from a database clone the clone's creation time, otherwise its `source.exportedAt` less the time the export ran. Earlier is always safe; a later time can miss rows.
+
+**Installations imported before delta state.** For every canonical row it writes or confirms, the importer records the digest of what it wrote and of the legacy row it came from (`legacy_import_state`, migration `307_legacy_import_delta.sql`). An installation imported before that has no record, so a delta would list every existing row it touches as a conflict. Once, before its first delta, apply the installation's original package again with the same command (`--persist-to` or `--remote` as before). It is an exact replay: every row is already journaled, no business row or file changes, and it records state for each row that still equals its import. A row the seed has changed since gets none and stays as the seed has it. The journal's index by source row comes from migration `306_cutover_steps.sql`.
+
+**Import.** `node scripts/import-legacy.mjs --package /private/company/delta-1/import --apply` with `--persist-to` or `--remote --database --bucket`, as for a full package, recognises a delta from `source.since`. Before its first write it plans across every chunk and checks every chunk and attachment read-only. Then, per mapped row:
+
+- a row the seed does not have is appended;
+- a row already equal to the new mapping writes nothing;
+- a row the seed has not changed since the importer wrote it takes the legacy change (only the differing columns);
+- a row changed in both places is left as the seed has it and listed as a conflict. A row only the seed changed keeps the seed's change.
+
+A conversation that gains legacy messages is refreshed: the new messages follow its existing messages in transcript order, a delivery id the widget repeated goes to `legacy:<message id>`, and the conversation's revision and last message follow them. The seed's transcript is never renumbered. In a conversation the seed has changed since import, or closed, legacy's new messages and files are held and listed with that conversation's conflict instead of inserted.
+
+**Boundaries.**
+
+- Project rows are the seed's. A delta never writes `projects`, `project_settings`, `email_settings` or `public_project_aliases` (`deleted_at`, website and allowed origin, widget key, every column). It disregards the legacy project's soft delete, so rows new or changed after legacy retires the project map as live rows, and the widget and workspace keep working after the sweep that follows the retire.
+- Identity and authority rows (users and their settings, memberships, devices, grants, delegations and their events) are appended when new and never updated: a legacy role change never raises a seed member's permissions. A differing one is listed.
+- Erased contacts stay erased. The rows of a contact with a `contact_erasures` row (the contact, the messages and files of their conversations, notes, participants, events) are not applied, their files are not uploaded, and their journal copy is stored redacted (`source_json='{}'`), as erasure leaves it.
+- A delta never deletes. A row legacy soft-deleted after its import is journaled archive-only and listed; a row the seed deleted after its import is not brought back. A row hard-deleted in legacy is not detected.
+- Applying a delta starts nothing the running app would: every conversation it writes to is fenced from the workflow journal's triggers, as Move in does, and a row a trigger adds to the outbox, mail, notification, integration, job, lead, brand, survey or workflow tables is removed in the same transaction.
+
+**Result and reruns.** The command exits 0 when the delta is applied, conflicts included. Its stdout summary adds `delta` (`since`, `watermark`), `appended`, `updated`, `unchanged`, `kept`, `erased`, `archivedOnly`, `withheldObjects`, per-table counts and `conflicts`: `{sourceTable, sourceId, targetTable, targetKey, reason}` entries, ids and reasons only. `legacy_import_conflicts` keeps them. Each chunk is its own journal run, so an interrupted delta resumes with the same plan; rerunning a complete one changes no business row, R2 object or journal row and lists the same conflicts.
+
+**Check.** `check.mjs delta` only reads and prints one JSON object of counts:
+
+```sh
+node scripts/legacy-import/check.mjs delta --package /private/company/delta-1/import --previous-total N --persist-to .wrangler/state
+node scripts/legacy-import/check.mjs delta --package /private/company/delta-1/import --previous-total N --database <installation>-db --bucket <installation>-files
+```
+
+It exits 0 only when every row of the delta is journaled by the delta's own runs; the project's journaled source rows (distinct table and id across all its runs, `projectSourceRows`) equal N plus the delta's rows that no earlier run journaled (`newRows`); and every attachment the delta applied is identical in R2 (size and SHA-256; files of erased contacts and held rows are withheld by design). N is `projectSourceRows` as the previous check printed it. Before the first sweep, run the check once before the import: it exits 1, as nothing of the delta is journaled yet, and prints the current `projectSourceRows`. `--exclude-table` works as for `rows`.
+
+Sweep again with `--since` set to the watermark of the delta just imported, until the legacy project is retired and a final sweep after its retire finds nothing new.
 
 ## Deliberate boundaries
 
@@ -112,4 +162,4 @@ Build before cutover: rewriting article inline media/avatar/background URLs to a
 
 ## Local integration
 
-`pnpm run test:legacy-export` requires an isolated local/CI MySQL admin supplied by `LEGACY_TEST_MYSQL_HOST`, `LEGACY_TEST_MYSQL_PORT`, `LEGACY_TEST_MYSQL_USER`, `LEGACY_TEST_MYSQL_PASSWORD`, optional `LEGACY_TEST_MYSQL_SOCKET`. It creates and deletes only its randomly named test database/user. It loads the complete migration-derived final schema (53 tables and 580 columns from the live shape, with synthetic rows only) and realistic ChargeDesk/12ui fixtures, grants a SELECT-only reader, runs both exporter commands, invokes the importer's public command twice per project and checks actual local D1/R2 content, privacy, publication, tenant separation and replay. `LEGACY_TEST_OUTPUT` keeps synthetic artifacts outside the checkout for local UI inspection. CI runs this single integration test against MySQL 8.4.
+`pnpm run test:legacy-export` requires an isolated local/CI MySQL admin supplied by `LEGACY_TEST_MYSQL_HOST`, `LEGACY_TEST_MYSQL_PORT`, `LEGACY_TEST_MYSQL_USER`, `LEGACY_TEST_MYSQL_PASSWORD`, optional `LEGACY_TEST_MYSQL_SOCKET`. It creates and deletes only its randomly named test database/user. It loads the complete migration-derived final schema (53 tables and 580 columns from the live shape, with synthetic rows only) and realistic ChargeDesk/12ui fixtures, grants a SELECT-only reader, runs both exporter commands, invokes the importer's public command twice per project and checks actual local D1/R2 content, privacy, publication, tenant separation and replay. It then changes one project in the legacy database (new and late messages, a new customer with a file, a renamed contact, the project retired) while the seed's team changes a conversation, exports a delta `--since` the recorded watermark, imports and reruns it, and runs `check.mjs delta --persist-to`. `LEGACY_TEST_OUTPUT` keeps synthetic artifacts outside the checkout for local UI inspection. CI runs this single integration test against MySQL 8.4.

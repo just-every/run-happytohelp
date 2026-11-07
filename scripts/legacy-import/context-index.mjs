@@ -12,7 +12,7 @@ const memoryTables=new Set(['projects','users','ais','ai_defaults','datasets','d
 
 /** Build the package's cross-table context in a private temporary directory and
  * return it as a mapping context. close() deletes the index. */
-export async function packageContext(root,manifest,{timestamp,contactIdentity,transcriptOrder,isMessageMedia,useRelationships}){
+export async function packageContext(root,manifest,{timestamp,contactIdentity,transcriptOrder,isMessageMedia,useRelationships},{delta=false}={}){
   const directory=await privateDirectory('context');
   const db=new DatabaseSync(path.join(directory,'context.sqlite'));
   try{
@@ -22,25 +22,28 @@ export async function packageContext(root,manifest,{timestamp,contactIdentity,tr
       CREATE TABLE local_ids(conversation_id TEXT NOT NULL,local_id TEXT NOT NULL,id TEXT NOT NULL,PRIMARY KEY(conversation_id,local_id)) WITHOUT ROWID;
       CREATE TABLE media_messages(media_id TEXT PRIMARY KEY,row TEXT NOT NULL) WITHOUT ROWID;
       CREATE TABLE identities(project_id TEXT NOT NULL,identity TEXT NOT NULL,created INTEGER NOT NULL,id TEXT NOT NULL,row TEXT NOT NULL);`);
-    const tables={},record=db.prepare('INSERT OR REPLACE INTO records VALUES(?,?,?)'),message=db.prepare('INSERT INTO messages(conversation_id,id,row) VALUES(?,?,?)'),join=db.prepare('INSERT OR REPLACE INTO media_messages VALUES(?,?)'),contact=db.prepare('INSERT INTO identities VALUES(?,?,?,?,?)');
+    const tables={},record=db.prepare('INSERT OR REPLACE INTO records VALUES(?,?,?)'),message=db.prepare('INSERT INTO messages(conversation_id,id,row,local_id) VALUES(?,?,?,?)'),join=db.prepare('INSERT OR REPLACE INTO media_messages VALUES(?,?)'),contact=db.prepare('INSERT INTO identities VALUES(?,?,?,?,?)');
     // Media rows carry the R2 key of their verified attachment, as the exporter assigned it.
     const objectKeys=new Map(manifest.objects.map(o=>[String(o.mediaId),o.key]));
     for(const part of manifest.context){
       const rows=await readPart(root,part);
       db.exec('BEGIN');
-      for(const row of rows){
+      for(let row of rows){
+        // A delta maps rows as live even after legacy soft-deleted the project: the seed keeps
+        // its workspace, so the archive-only cascade of a retired project never hides a sweep.
+        if(delta&&part.table==='projects'){const {deleted_at,...live}=row;row=live;}
         if(part.table==='media'){const key=objectKeys.get(String(row.id));if(!key)throw Error('Package media row has no exported attachment');row.object_key=key;}
         if(memoryTables.has(part.table))(tables[part.table]??=[]).push(row);
         const json=JSON.stringify(row);
         if(row.id!==undefined)record.run(part.table,String(row.id),json);
-        if(part.table==='messages'&&!row.deleted_at)message.run(String(row.conversation_id),String(row.id),json);
+        if(part.table==='messages'&&!row.deleted_at)message.run(String(row.conversation_id),String(row.id),json,row.local_id?String(row.local_id):null);
         if(part.table==='mediables'&&isMessageMedia(row))join.run(String(row.media_id),json);
         if(part.table==='contacts'){const identity=contactIdentity(row);if(identity!==null)contact.run(String(row.project_id),identity,timestamp(row.created_at),String(row.id),json);}
       }
       db.exec('COMMIT');
     }
     db.exec('CREATE INDEX messages_conversation ON messages(conversation_id);CREATE UNIQUE INDEX messages_id ON messages(id);CREATE INDEX identities_owner ON identities(project_id,identity,created,id)');
-    // The context omits message delivery IDs; read them from the message chunks.
+    // Packages exported before message context carried delivery IDs: read them from the message chunks.
     const localId=db.prepare('UPDATE messages SET local_id=? WHERE id=?');
     for(const part of manifest.chunks)if(part.table==='messages'){const rows=await readPart(root,part);db.exec('BEGIN');for(const row of rows)if(row.local_id)localId.run(String(row.local_id),String(row.id));db.exec('COMMIT');}
     // Revisions follow native transcript order, one conversation in memory at a time;

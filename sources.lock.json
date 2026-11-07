@@ -16653,7 +16653,7 @@
       "executable": false
     },
     "tests/move-in/apply-replay-worker.ts": {
-      "sha256": "fed85bc39ee464659a381d3a5bdbd3039b3877372edeeabf18e26ec01f01e21a",
+      "sha256": "672368f34e4e9c94c9b4c1c98b9c59b2b80b6b18aa9dc52886ef8c7af57c8ea3",
       "executable": false
     },
     "tests/move-in/apply-replay.mjs": {
@@ -16745,7 +16745,7 @@
       "executable": false
     },
     "tests/move-in/worker.ts": {
-      "sha256": "8a1bf46d8a6a31957968057ba0cee38cc4a4338168e57d055eb392019d3ce07c",
+      "sha256": "53a97035c600e8859654cfd4f995d7b63d9ebbae6b5835a9bf1bb5a0daca0c6e",
       "executable": false
     },
     "tests/move-in/zendesk-connect-browser.mjs": {

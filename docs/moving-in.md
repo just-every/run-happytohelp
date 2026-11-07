@@ -182,6 +182,24 @@ one ticket's conversation across independent imports. A complete ticket beyond
 shared M3 opt-in/Business grants/catch-up transport, signed real-export
 qualification, other vendors and final live cutover remain unproved.
 
+## Cutover
+
+**Settings → Cutover** (linked from Move in) is where a workspace records switching each source over: **Zendesk**, **Legacy HappyToHelp**, the **Email route** and the **Website widget**. The switch itself happens in your own tools, made by you or by your agent. Cutover only keeps the record, so nobody keeps notes anywhere else, and it calls nothing: reading it sends no request to any provider, queues no job and sends no mail. A workspace owner or admin can open it, and so can a custom role that holds the data import permission; the Agent role and collaborators cannot.
+
+Each source shows where it stands: **With the old tool** (before any step), **Switched here** (this workspace takes the work) or **Old tool retired** (the old tool takes no more of it). The state is the newest recorded step's. Under it are the live counts, read from this workspace's own records each time the page loads, and every recorded step, newest first: what changed, when and by whom, the check result with its detail, and how to undo it.
+
+- **Zendesk** counts the conversations Move in imported from Zendesk that are still in the workspace (uploads and pulls, so an undone import drops out), and names when the newest applied pull finished with the tickets and replies it imported.
+- **Legacy HappyToHelp** counts the conversations a legacy import mapped into the workspace and names when the newest completed legacy sweep that carried them finished.
+- **Email route** counts mail delivered into the workspace, and **Website widget** the conversations a visitor started through the widget and wrote in. Both count from the latest of the last Zendesk pull, the last legacy sweep and that source's own newest step. A source with none of these counts from the start. Mail and widget conversations that arrive after a switch are the sign that work is reaching this workspace; arrivals that keep landing at the old tool show there instead.
+
+**Record a step** opens a short form: the source, the state after the step, what changed, how to undo it, the check result (passed, failed or not run) and its detail. An agent records the same step with `POST /api/move-in/projects/PROJECT_ID/cutover/steps`, signed in as an owner or admin as it does for a Zendesk pull:
+
+```json
+{"source":"email","state":"seed","change":"Pointed the support address at this workspace.","undo":"Point it back at the old mailbox.","check":{"result":"passed","detail":"A test message arrived here."}}
+```
+
+`change` and `undo` are required text of at most 2,000 characters, and `check.detail` is optional. The server records the time and the signed-in member; the request cannot set them. A step is never edited or deleted. To undo a switch, record a newer step (for example `"state":"incumbent"` with what was restored): the source's state follows the newest step. Each recorded step also writes one event to the security log. `GET /api/move-in/projects/PROJECT_ID/cutover` returns the four sources exactly as the page shows them. See [the API guide](api.md#move-in-zendesk-connection-and-pull).
+
 ## Intercom
 
 The simplest route needs only an Intercom access token: **Settings → Project →
@@ -439,7 +457,7 @@ use this backend control. Closing the door returns grant requests to 404;
 subsequent claims and sign-ins never reopen it. Key revocations persist. Restored
 portable data starts with Business imports disabled and retains consumed grant nonces only as replay fences.
 The existing owner/admin Move in upload, review, apply and undo doors remain.
-There is no new UI or cutover route.
+The doors record nothing in Cutover: recording each switch of a source is a separate step by an owner or admin, in [Cutover](#cutover).
 
 Well-formed Zendesk articles with boolean `draft` and an explicit restricted
 `user_segment_id` or non-empty array `user_segment_ids` are **held back** with a

@@ -1038,6 +1038,12 @@
       "name": "305_mailgun_inbound_tokens.sql",
       "sha256": "98745e57d55667b2966de82245ed13ed8489a6b6c72b46465dce67e92779e6cd",
       "sql": "-- Mailgun route forwards are signed with a one-time token. A token is claimed when its\n-- signature verifies and freed if the forward is not answered 200, so a replay of an\n-- accepted forward is refused while Mailgun's retry of a failed one succeeds. Only a\n-- hash of the token and its receipt time are kept; no personal data. Pruned by email\n-- maintenance and never exported.\nCREATE TABLE mailgun_inbound_tokens(\n token_hash TEXT PRIMARY KEY,\n received_at INTEGER NOT NULL\n) WITHOUT ROWID;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "306_cutover_steps.sql",
+      "sha256": "f4a2bdbaaae1f02095e81a2e58e0919c7b78fa16a1de2dfcd21ac50d0fe48e86",
+      "sql": "-- Cutover steps: each switch of a move-in source (Zendesk, legacy HappyToHelp, the email route, the website\n-- widget) is recorded here, with its change, its undo and the check made after it. Additive only. A step is\n-- workspace history like the security log: never edited and never deleted, so an undo is a newer step. recorded_by\n-- names the member without a foreign key, so the member's name follows the account's anonymization.\nCREATE TABLE cutover_steps(\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id),\n source TEXT NOT NULL CHECK(source IN ('zendesk','legacy','email','widget')),\n state TEXT NOT NULL CHECK(state IN ('incumbent','seed','retired')),\n change TEXT NOT NULL,\n undo TEXT NOT NULL,\n check_result TEXT NOT NULL CHECK(check_result IN ('passed','failed','not_run')),\n check_detail TEXT NOT NULL DEFAULT '',\n recorded_by TEXT NOT NULL,\n recorded_at INTEGER NOT NULL);\nCREATE INDEX cutover_steps_source ON cutover_steps(project_id,source,recorded_at);\n-- The page's live counts read only this workspace's rows, and these indexes keep each count off a full scan.\nCREATE INDEX move_in_conversations_vendor ON move_in_conversations(project_id,vendor);\nCREATE INDEX legacy_import_rows_source ON legacy_import_rows(source_table,source_id,status,run_id);\nCREATE INDEX inbound_emails_arrivals ON inbound_emails(project_id,state,created_at);\nCREATE INDEX conversations_created ON conversations(project_id,created_at);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

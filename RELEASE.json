@@ -196,6 +196,10 @@
     {
       "id": "305_mailgun_inbound_tokens.sql",
       "buyerSteps": "Back up D1 first; apply once after 304_knowledge_import_origins.sql, before serving the updated Worker. Adds one table of hashed one-time Mailgun signature tokens and their receipt times, used only to refuse a replayed Mailgun route forward. No personal data, no backfill, no effect until MAILGUN_WEBHOOK_SIGNING_KEY is set. The table is pruned by email maintenance and excluded from exports."
+    },
+    {
+      "id": "306_cutover_steps.sql",
+      "buyerSteps": "Back up D1 first; apply once after 305_mailgun_inbound_tokens.sql, before serving the updated Worker. Additive only: one cutover_steps table for the steps an owner or admin records in Settings > Cutover, and five indexes that keep that page's live counts off full scans (conversations, Move in conversations, legacy import rows and inbound email). No backfill, no existing row changes, nothing is sent, queued or enabled. The table travels in exports with the rest of D1."
     }
   ],
   "breaking": false,

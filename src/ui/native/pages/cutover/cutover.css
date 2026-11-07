@@ -1,0 +1,20 @@
+/* Settings > Cutover (Cutover.jsx): one card per move-in source, its state as a label, then its steps newest first. */
+.cutover-page { max-width: 960px; min-width: 0; overflow-wrap: anywhere; }
+.cutover-page .settings-section.h2h-card { margin: 0 0 20px; }
+.cutover-state { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 14px; font-weight: 500; letter-spacing: 0; color: var(--ink); background: var(--hover); }
+.cutover-state--seed { background: var(--d-cyan-tint); }
+.cutover-state--retired { padding: 2px 11px; color: var(--ink-soft); background: transparent; border: 1px solid var(--rule-strong); }
+body.workspace-page .cutover-page .cutover-counts { margin: 0; }
+.cutover-steps { list-style: none; margin: 16px 0 0; padding: 0; }
+.cutover-step { padding: 16px 0 0; margin: 16px 0 0; border-top: 1px solid var(--rule); }
+.cutover-step:first-child { padding-top: 0; margin-top: 0; border-top: 0; }
+.cutover-step p { margin: 0 0 6px; }
+.cutover-step__change { white-space: pre-wrap; font-size: 16px; font-weight: 500; }
+.cutover-step__meta { color: var(--ink-soft); font-size: 14.5px; }
+.cutover-step__text { white-space: pre-wrap; font-size: 15px; }
+.cutover-step__label { color: var(--ink-soft); font-weight: 500; }
+.cutover-check--failed { color: var(--danger); font-weight: 500; }
+.cutover-dialog { width: min(560px, calc(100vw - 32px)); }
+.cutover-dialog__row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+.cutover-dialog textarea { resize: vertical; }
+@media (max-width: 575.98px) { .cutover-dialog__row { grid-template-columns: minmax(0, 1fr); } }

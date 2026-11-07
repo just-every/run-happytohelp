@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "2cfb0029781c14909bc9dc65900554509ccf90d033baeab34b3a0ba3b25e6983",
+      "sha256": "b96ed80718c8a6b24555929778f391d0fb2ab7956da056f8cb4f9ce87243ec82",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "621738247ce58e189118a684dfcfeff0587ab29872659d505fe167338450418c",
+      "sha256": "02d25ecf858dbdaea83897a72848c351efb5a6b3d065e7e14654d03645e91970",
       "executable": false
     },
     "DEMO.md": {
@@ -1653,7 +1653,7 @@
       "executable": false
     },
     "docs/api.md": {
-      "sha256": "0d991cda5f55b70396d1bf4ad9a5ccf20fb68d95acd909e3f71222b107ebee35",
+      "sha256": "bb56496e82afbe03a4b69773b1e5a6ea99bbaa36f64db0bdb210f635f837155b",
       "executable": false
     },
     "docs/AUTHORING.md": {
@@ -1789,7 +1789,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "bfcf8c22653a781bfec4025829b0747a3e74dce8b91ef586a4af49b5adaad711",
+      "sha256": "c118584fb8c95e9eced3ec2b30122cfb8be53cefe7ebc3d6c40c0e1cbc859eb9",
       "executable": false
     },
     "docs/NAVIGATION.md": {
@@ -2053,7 +2053,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "85eea40837c0b12f1b33bd4883534ab1141d133364faeef7692ac9e987cb9b2b",
+      "sha256": "98ad6475ff5bb744dc223abb9e1417590bd1e0c0f09898045407e4035c2772fb",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2865,7 +2865,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "4bbff2a2933b763f817d959db920dc42221182116d5cc99cd7bdffddcfbdc2f9",
+      "sha256": "688e6e0c47fb88d6339280d2892eb73029f5eae6afe45e364b5f95dcb38940c7",
       "executable": false
     },
     "rer-project.json": {
@@ -4537,7 +4537,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "ec285f0c6fcd4a5c21882e987dcaeaeb765a767dc3b78f23c09c7c76ec0a2b87",
+      "sha256": "053e8e14239c9a60bb8eb18386bd9bee6eb9c4ca71d06e027f8f571934a16676",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -8281,7 +8281,7 @@
       "executable": false
     },
     "src/modules/move-in/routes.ts": {
-      "sha256": "2445079575d35480a7c8371a912ceee4071ccf05352c58e2b5df4d6e08c1812f",
+      "sha256": "090cfd2b2943d0c6528c10ee266f6c46e41f24fdef9c854caede5e50ac9b81dc",
       "executable": false
     },
     "src/modules/move-in/run-store.ts": {
@@ -10185,7 +10185,7 @@
       "executable": false
     },
     "src/platform/dashboard-path.js": {
-      "sha256": "303b11201cc7580898ac235511ad13b5cb5617a36918391cd849b63da0670f7d",
+      "sha256": "8ea475b8017c85d311eb081708b6c6e1a2040274c4112819371010eafb0d3b62",
       "executable": false
     },
     "src/platform/db.ts": {
@@ -12693,7 +12693,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveIn.jsx": {
-      "sha256": "be20735f03a6af852bc3fe5eda12dd10640ea1e916cb82f7cec4abc2b1269ab1",
+      "sha256": "061f6b0827321a322f623f6af929b5e701482cf7ec1840bc6d0faba62b91030f",
       "executable": false
     },
     "src/ui/native/pages/MoveInGuide.jsx": {
@@ -13061,7 +13061,7 @@
       "executable": false
     },
     "src/ui/native/settings-destinations.js": {
-      "sha256": "dadca559f1cb426fa382c191613d109ec5897081c4ab1a8d2ff21a7df55f57bc",
+      "sha256": "1284f407b6f5b343adc9e3b7874d864eb9985c7559dc62f34f3519722adb5067",
       "executable": false
     },
     "src/ui/native/SettingsNavigation.jsx": {
@@ -13125,7 +13125,7 @@
       "executable": false
     },
     "src/ui/native/workspace-page-code.js": {
-      "sha256": "fdab8f6247ed9388a95e58c5ea2b7ac5d61bd9f526e4cbbba84627cef1382310",
+      "sha256": "a22e9426dba308f787ae239476b35525a4a2353e259e2f6a39d4fbae81f2cfc9",
       "executable": false
     },
     "src/ui/native/workspace-scope.ts": {
@@ -13137,7 +13137,7 @@
       "executable": false
     },
     "src/ui/native/WorkspacePages.jsx": {
-      "sha256": "70346437aa932f7f3d30c9323048d963837c4c0a1f55559d54273682d3d69728",
+      "sha256": "5a54d4ee2ddbaf98c136b0277537676701547666cb7d264afa88626a3e40d193",
       "executable": false
     },
     "src/ui/native/WorkspaceSidebarArtwork.jsx": {
@@ -16321,7 +16321,7 @@
       "executable": false
     },
     "tests/journeys/move-in-zendesk-pull.mjs": {
-      "sha256": "b47910ca42fad23b2542aacd0fa87422dcc369c91427688ee89a041e43aeb905",
+      "sha256": "9047af35a6c1c5d872961778dda84b53d7044e2ddfb496da14adfdafb62c00ce",
       "executable": false
     },
     "tests/journeys/public-browser.mjs": {

@@ -489,3 +489,53 @@ test('any owner or admin pulls and the next pull by any of them works; every own
   assert.deepEqual(stops.slice(-2).map(e=>[e.actor_id,e.target_id,JSON.parse(e.detail_json).startedBy,JSON.parse(e.detail_json).approved]),[['owner',seventh.id,'admin',true],['owner',ninth.id,'admin',true]],'each stop of an approved pull is in the security log')
  }finally{await h.close()}
 })
+
+test('an owner reads the Cutover sources with their live Zendesk counts after a pull applies, records steps that follow newest first with the source state, and an agent is refused',{timeout:600_000},async()=>{
+ const zendesk=fakeZendesk(),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
+ const cutover=`${api}/cutover`,sourcesOf=async(actor='owner')=>(await h.call(cutover,{actor})).data.sources
+ const tables=async()=>{const all=await h.snapshot();delete all._cf_METADATA;return JSON.stringify(all)}
+ const step={source:'zendesk',state:'seed',change:'Pointed new tickets at this workspace',undo:'Re-enable the Zendesk support address',check:{result:'passed',detail:'A test message arrived here'}}
+ try{
+  // Before any pull: always the four sources, in order, with the old tool holding each.
+  let sources=await sourcesOf()
+  assert.deepEqual(sources.map(s=>[s.id,s.state,s.steps.length]),[['zendesk','incumbent',0],['legacy','incumbent',0],['email','incumbent',0],['widget','incumbent',0]])
+  assert.deepEqual(sources[0].counts,{imported:0,lastPull:null})
+
+  // A pull applies; the count is what Move in imported from Zendesk and the last pull names its own totals.
+  await connect(h,zendesk)
+  const started=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+  await drain(h)
+  let pull=await pullOf(h,started.id)
+  await h.call(`${api}/zendesk/pulls/${started.id}/approve`,post({fingerprint:pull.fingerprint}))
+  await drain(h)
+  pull=await pullOf(h,started.id)
+  assert.equal(pull.state,'applied',JSON.stringify({error:pull.error}))
+  const [{n:importedRows}]=await rows(h,"SELECT COUNT(*) n FROM move_in_conversations m JOIN conversations c ON c.id=m.conversation_id WHERE m.vendor='zendesk'"),[{updated_at:finished}]=await rows(h,"SELECT updated_at FROM move_in_zendesk_pulls WHERE id=? AND state='applied'",started.id)
+  assert.ok(importedRows>0)
+
+  // Reads and refusals write nothing, send nothing and queue nothing.
+  const before=await tables(),outbound=h.outboundRequests.length
+  sources=await sourcesOf()
+  assert.deepEqual(sources[0].counts,{imported:importedRows,lastPull:{at:new Date(finished).toISOString(),tickets:pull.totals.tickets.imported,replies:pull.totals.replies.imported}})
+  for(const [method,path,body] of [['GET',cutover],['POST',`${cutover}/steps`,JSON.stringify(step)]]){
+   const refused=await h.raw(path,{method,body,actor:'operator',headers:{'Content-Type':'application/json'}})
+   assert.equal(refused.response.status,403,'the Agent role is refused');assert.doesNotMatch(JSON.stringify(refused.data),/sources|imported/)
+  }
+  assert.equal((await h.raw(cutover,{actor:'foreign'})).response.status,404,'another workspace does not see this one')
+  assert.equal((await h.raw(`${cutover}/steps`,{...post({...step,recordedBy:'someone'}),actor:'owner'})).response.status,400,'the server alone says who and when')
+  assert.equal((await h.raw(`${cutover}/steps`,{...post({...step,undo:'  '}),actor:'owner'})).response.status,400)
+  assert.equal(await tables(),before,'no table changed');assert.equal(h.outboundRequests.length,outbound);assert.deepEqual(h.queued,[])
+
+  // Recording: the step comes back as the read returns it; an undo is a newer step and the state follows the newest.
+  const recorded=await h.raw(`${cutover}/steps`,post(step))
+  assert.equal(recorded.response.status,201)
+  assert.deepEqual({...recorded.data.data,id:undefined,recordedAt:undefined},{...step,id:undefined,recordedAt:undefined,recordedBy:{id:'owner',name:'owner'}})
+  await new Promise(resolve=>setTimeout(resolve,5))
+  const restored=(await h.raw(`${cutover}/steps`,post({...step,state:'incumbent',change:'Re-enabled the Zendesk support address',undo:'Point new tickets here again',check:{result:'failed',detail:'Mail still arrives in Zendesk'}}))).data.data
+  sources=await sourcesOf()
+  assert.deepEqual(sources[0].steps.map(s=>s.id),[restored.id,recorded.data.data.id],'newest first')
+  assert.equal(sources[0].state,'incumbent');assert.equal(sources[1].steps.length+sources[2].steps.length+sources[3].steps.length,0)
+  assert.deepEqual(await rows(h,"SELECT action,actor_id,detail_json FROM audit_events WHERE action='cutover.step.recorded' ORDER BY at").then(events=>events.map(e=>[e.actor_id,JSON.parse(e.detail_json).source])),[['owner','zendesk'],['owner','zendesk']],'one security-log event per recorded step')
+  assert.equal(h.outboundRequests.length,outbound,'nothing was sent or fetched')
+ }finally{await h.close()}
+})

@@ -8,6 +8,7 @@ const pages = {
     Reports: lazyPageCode(() => import('./pages/surveys/ReportsWithSurveys')),
     Companies: lazyPageCode(() => import('./pages/Companies')),
     MoveIn: lazyPageCode(() => import('./pages/MoveIn')),
+    Cutover: lazyPageCode(() => import('./pages/cutover/Cutover')),
     ActivationPage: lazyPageCode(() => import('./activation/ActivationPage')),
     SetupTitle: lazyPageCode(() => import('./activation/SetupTitle')),
     GitHubSettings: lazyPageCode(() => import('./pages/GitHubSettings')),
@@ -55,6 +56,7 @@ export function preloadWorkspacePage(pathname, settings) {
     else if (section === 'assurance') name = 'AssurancePage';
     else if (section === 'companies') name = 'Companies';
     else if (section === 'move-in') name = 'MoveIn';
+    else if (section === 'cutover') name = 'Cutover';
     else if (section === 'activation') return Promise.all([pages.ActivationPage.preload(), pages.SetupTitle.preload()]);
     else if (section === 'articles' && recordId === 'import') name = 'ArticleImport';
     else if (section === 'articles' && recordId) return Promise.all([

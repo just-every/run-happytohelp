@@ -21,6 +21,7 @@ import type {Next} from 'hono'
 import {auditStatement,requestSource} from '../audit/record'
 import {zendeskConnectionRoutes} from './zendesk-connection/routes'
 import {zendeskPullRoutes} from './zendesk-source/routes'
+import {cutoverRoutes} from './cutover/routes'
 export async function importActor(c:Context<AppEnv>){const actor=await requireActor(c),project=c.req.param('projectId')!;if(actor.role==='contact')throw new HTTPException(403);const membership=await c.env.DB.prepare(`SELECT m.role FROM memberships m JOIN projects p ON p.id=m.project_id WHERE m.project_id=? AND m.user_id=? AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`).bind(project,actor.id).first<{role:string}>();if(!membership)throw new HTTPException(404);if(!['owner','admin'].includes(membership.role))throw new HTTPException(403,{message:'Workspace owner or admin required'});const token=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1];return {project_id:project,actor_id:actor.id,session_hash:await hashToken(token!),role:membership.role as 'owner'|'admin'}}
 async function owned(c:Context<AppEnv>){const actor=await importActor(c),run=await getRun(c.env,c.req.param('runId')!);if(!run||run.project_id!==actor.project_id||run.actor_id!==actor.actor_id)throw new HTTPException(404);return {run,actor}}
 /** One run with its full review report; the list returns summaries. */
@@ -32,6 +33,7 @@ moveInRoutes.route('/',importDoorSettings)
 moveInRoutes.use('*',async(c,next)=>{c.env={...c.env,DB:boundedDatabase(c.env.DB).database};await next()})
 moveInRoutes.route('/',zendeskConnectionRoutes)
 moveInRoutes.route('/',zendeskPullRoutes)
+moveInRoutes.route('/',cutoverRoutes)
 const root='/projects/:projectId/imports'
 // Starting, applying, resuming and undoing an import are recorded in the workspace's security log.
 moveInRoutes.use(`${root}/*`,recordImport)

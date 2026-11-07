@@ -8,8 +8,9 @@ import {nativeHarness} from './harness.mjs'
 
 const root=resolve(fileURLToPath(new URL('../..',import.meta.url)))
 const fixture={runs:61,entries:14770,tickets:6214}
-const empty=()=>({d1RoundTrips:0,r2:{get:0,head:0,put:0,delete:0,list:0},queueSends:0,wallMs:0,steps:0})
-function add(total,step){assert.ok(step.metrics,'binding metrics missing');total.d1RoundTrips+=step.metrics.d1RoundTrips;total.queueSends+=step.metrics.queueSends;for(const key of Object.keys(total.r2))total.r2[key]+=step.metrics.r2[key];total.wallMs+=step.wallMs;total.steps++}
+const empty=()=>({d1RoundTrips:0,entryReads:{source:0,target:0,predecessor:0},r2:{get:0,head:0,put:0,delete:0,list:0},queueSends:0,wallMs:0,maxStepWallMs:0,maxStatements:0,steps:0})
+const trips=total=>total.d1RoundTrips+Object.values(total.r2).reduce((sum,n)=>sum+n,0)+total.queueSends
+function add(total,step){assert.ok(step.metrics,'binding metrics missing');total.d1RoundTrips+=step.metrics.d1RoundTrips;total.queueSends+=step.metrics.queueSends;for(const key of Object.keys(total.entryReads))total.entryReads[key]+=step.metrics.entryReads[key];for(const key of Object.keys(total.r2))total.r2[key]+=step.metrics.r2[key];total.wallMs+=step.wallMs;total.maxStepWallMs=Math.max(total.maxStepWallMs,step.wallMs);total.maxStatements=Math.max(total.maxStatements,step.statements||0);total.steps++}
 async function archivedSource(ref){
  const directory=await mkdtemp(join(tmpdir(),'move-in-replay-source-'))
  try{
@@ -27,7 +28,7 @@ async function archivedSource(ref){
 
 export async function replayApply({label='CANDIDATE',sourceRoot=root,evidenceDir=process.env.H2H_EVIDENCE_DIR||join(root,'logs/apply-replay')}={}){
  const h=await nativeHarness({sourceRoot}),total=empty(),steps=[],runs=[]
- const record=(runId,phase,started,metrics)=>{const row={runId,phase,wallMs:performance.now()-started,metrics};steps.push(row);add(total,row)}
+ const record=(runId,phase,started,metrics,statements=0)=>{const row={runId,phase,wallMs:performance.now()-started,metrics,statements};steps.push(row);add(total,row)}
  try{
   const seeded=[]
   for(let index=0;index<fixture.runs;index++)seeded.push(await h.call('/_test/apply-replay/seed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...fixture,index})}))
@@ -38,7 +39,7 @@ export async function replayApply({label='CANDIDATE',sourceRoot=root,evidenceDir
   while(h.queued.length){
    assert.ok(steps.length<20000,'apply replay must make bounded progress')
    const job=h.queued[0],at=performance.now(),result=await h.step()
-   assert.deepEqual(result.retried,[]);assert.deepEqual(result.effects,{widget:0});record(job.id,job.type,at,result.metrics)
+   assert.deepEqual(result.retried,[]);assert.deepEqual(result.effects,{widget:0});assert.ok(result.statements<=980,'each delivery leaves the queue failure reserve intact');record(job.id,job.type,at,result.metrics,result.statements)
    if(steps.length%100===0)console.log(`${label}_PROGRESS ${JSON.stringify({steps:steps.length,d1RoundTrips:total.d1RoundTrips,wallMs:total.wallMs})}`)
   }
   const finished=(await h.call(`/api/move-in/projects/p/zendesk/pulls/${pull.pullId}`)).data
@@ -55,22 +56,22 @@ export async function replayApply({label='CANDIDATE',sourceRoot=root,evidenceDir
   assert.equal(h.outbound,0)
   const receipt={label,fixture,counts,pull:{id:pull.pullId,state:finished.state,progress:finished.progress},...total,runs,steps}
   await mkdir(evidenceDir,{recursive:true});await writeFile(join(evidenceDir,`${label.toLowerCase()}.json`),JSON.stringify(receipt,null,2)+'\n')
-  console.log(`${label} ${JSON.stringify({fixture,counts,...total,evidence:join(evidenceDir,`${label.toLowerCase()}.json`)})}`)
+  console.log(`${label} ${JSON.stringify({fixture,counts,...total,roundTrips:trips(total),evidence:join(evidenceDir,`${label.toLowerCase()}.json`)})}`)
   return receipt
  }finally{await h.close()}
 }
 
-/** This is folded into the existing nightly capacity journey, not registered as
- * another test. Baseline-only must run before editing application sources. */
+/** Standalone scale gate: baseline-only runs before editing application sources.
+ * A default comparison fails below 5x; report-only is explicitly diagnostic. */
 export async function applyPerformanceReplay({baselineRef=process.env.H2H_APPLY_BASELINE_REF,baselineOnly=false,reportOnly=false,evidenceDir}={}){
  assert.ok(baselineRef,'Set H2H_APPLY_BASELINE_REF to the unedited main commit')
  const baselineRoot=await archivedSource(baselineRef)
  let baseline
  try{baseline=await replayApply({label:'BASELINE',sourceRoot:baselineRoot,evidenceDir})}finally{await rm(baselineRoot,{recursive:true,force:true})}
  if(baselineOnly)return baseline
- const candidate=await replayApply({label:'CANDIDATE',evidenceDir}),reduction=baseline.d1RoundTrips/candidate.d1RoundTrips
- console.log(`APPLY_REDUCTION ${JSON.stringify({baselineRef,d1RoundTrips:reduction,baselineWallMs:baseline.wallMs,candidateWallMs:candidate.wallMs,reportOnly})}`)
- if(!reportOnly)assert.ok(reduction>=5,`D1 round trips reduced ${reduction.toFixed(2)}x; require at least 5x`)
+ const candidate=await replayApply({label:'CANDIDATE',evidenceDir}),reduction=trips(baseline)/trips(candidate),d1Reduction=baseline.d1RoundTrips/candidate.d1RoundTrips
+ console.log(`APPLY_REDUCTION ${JSON.stringify({baselineRef,roundTrips:reduction,d1RoundTrips:d1Reduction,baselineWallMs:baseline.wallMs,candidateWallMs:candidate.wallMs,reportOnly})}`)
+ if(!reportOnly)assert.ok(reduction>=5&&d1Reduction>=5,`Round trips reduced ${reduction.toFixed(2)}x (D1 ${d1Reduction.toFixed(2)}x); require at least 5x`)
  return {baseline,candidate,reduction}
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){

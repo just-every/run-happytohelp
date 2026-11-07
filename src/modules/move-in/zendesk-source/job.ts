@@ -17,7 +17,7 @@ export async function advancePull(env:Env,id:string,projectId:string){
  if(found.next_at>now){await enqueuePull(env,found,found.next_at-now);return}
  // A child can notify before its approving parent releases the lease. Retry
  // the wake promptly; the unchanged lease/version claim still owns all work.
- if(found.lease_until&&found.lease_until>now){await enqueuePull(env,found,Math.min(1000,found.lease_until-now+1000));return}
+ if(found.lease_until&&found.lease_until>now){const wait=found.lease_until-now+1000;await enqueuePull(env,found,found.state==='applying'?Math.min(1000,wait):wait);return}
  const pull=await claimPull(env,found,now,HOLD_MS);if(!pull)return
  if(!await pullAllowed(env,pull)){await stopPull(env,pull,'import_authority_revoked');return}
  const ctx:PullContext={env,pull,token:'',cursor:json(pull.cursor_json,{}),counts:{redacted:0,...json(pull.counts_json,{})},incremental:json(pull.incremental_json,[]),resume:json(pull.resume_json,{}),statements:[],phase:pull.phase,state:pull.state,patch:{},requests:0,more:false}

@@ -12693,7 +12693,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInZendesk.jsx": {
-      "sha256": "9fc9e57152f365f314f80d8cf0b757527597b1062498911869854f2c7c3752e3",
+      "sha256": "3ff2dfb9c5f95786bcb0309a7636dee3ad9c520ab47397bc9cc28816c690e166",
       "executable": false
     },
     "src/ui/native/pages/notifications/NotificationInbox.jsx": {
@@ -16521,7 +16521,7 @@
       "executable": false
     },
     "tests/move-in/zendesk-resume-browser.mjs": {
-      "sha256": "584c416d0457614e285f92c95b46a705d54ed4a64c8fdf7b72f4d04de8c5b88e",
+      "sha256": "78e64a393925d0b778dd27e1f2a695e4fa96072420abf26877a2c4137425d981",
       "executable": false
     },
     "tests/move-in/zip.mjs": {

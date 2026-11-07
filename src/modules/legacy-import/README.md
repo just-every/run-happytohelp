@@ -34,6 +34,29 @@ node scripts/import-legacy.mjs --package /absolute/company/import --apply \
 - **Knowledge index.** After the rows, the command indexes the imported workspace's knowledge (dataset documents and published articles) for copied-text detection, with the application's own indexer, 100 sources a pass, each committed as it goes. Without it the first workspace request after the import would rebuild the whole index inline, which a large knowledge base cannot finish within one request, and every workspace page and workspace creation would fail until it was done. A rerun continues the indexing; `knowledgeIndex` in the summary counts the sources indexed and ends with 0 pending.
 - **Progress.** One JSON line per step and chunk goes to stderr (ids, counts, timings). The final summary goes to stdout: rows applied and replayed per table, archive-only rows, holds, attachments and the knowledge index.
 
+## Delta sweeps
+
+A delta package (`scripts/export-legacy.mjs snapshot --since <watermark> --chunk-bytes ...`, see [Export legacy HappyToHelp](../../../docs/LEGACY-EXPORT.md#delta-sweeps)) carries only the rows legacy created, changed or deleted since an earlier export, with the whole project as context. The same command imports it; `source.since` in its manifest selects the update-aware path (`delta.ts`, `delta-plan.ts`, `delta-batch.ts`):
+
+```sh
+node scripts/import-legacy.mjs --package /absolute/company/delta-1/import --apply --persist-to .wrangler/state
+node scripts/import-legacy.mjs --package /absolute/company/delta-1/import --apply --remote --database <installation>-db --bucket <installation>-files
+```
+
+- **Import state.** Full and delta imports record, in `legacy_import_state`, the digest of the columns written to each canonical row and of the legacy row they came from, in the same D1 batch as the write; rows found already equal are recorded too. Replaying a package records it for rows journaled before this existed, where the canonical row still equals its mapping, and writes nothing else: that exact replay of the original package is the one step an installation imported earlier takes before its first delta.
+- **Plan, then preflight.** Before the first write the command plans across the delta's chunks: the transcript position of each new message (after the conversation's existing messages; the seed's transcript is never renumbered), the conversation's new revision and last message, the messages and files held in conversations the seed has changed or closed, and the files of erased contacts. Every chunk and attachment is then checked read-only, as for a full package.
+- **Decisions.** No canonical row: appended. Canonical row equal to the mapping: nothing written. Canonical row as the importer last recorded it: updated, only the differing columns. Changed in the seed and in legacy: left and listed as a conflict; changed only in the seed: left. A row the seed deleted after import is not restored. Rows mapped from the legacy `projects` row are kept, and the legacy project's soft delete is disregarded, so the archive-only cascade never hides a sweep. Users, settings, memberships, devices, grants and delegations are appended, never updated. Rows of a contact in `contact_erasures` are not applied and journaled with `source_json='{}'`. A row legacy deleted is journaled archive-only and listed when the seed holds it.
+- **No side effects.** Each batch fences the conversations it writes to in `move_in_native_fences` and removes any row a trigger added to the work tables `check.mjs work` counts, to `workflow_events` or to `conversation_resolutions`, before it commits (`delta-scope.ts` `batchRemovedTables`). A delta that resolves a conversation with a survey cycle therefore leaves no resolution row: the widget's resolution state offers no survey and the dispatcher discovers nothing; `conversation_tracking`'s cycle start stays. The batch marks each fence it inserts in `legacy_import_marks` (only where none existed) and deletes only those, so a fence another writer, such as Move in, held before the batch stays.
+- **After the legacy retire.** The retire soft-deletes the project and every live contact with one marker time `<T>` (UTC, to the second). Import every sweep after it with `--retire-marker "<T>"` (`YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS[.fff]Z`; refused when malformed, with `--file` or for a full package, before any D1/R2 read or write). The package's contact rows, in its chunks and its context, are read through `scripts/legacy-import/retire-marker.mjs`: `deleted_at` equal to the marker becomes null, so a marked contact is the row legacy exported before the retire (its own run, its source recording `retireMarker`), its customers' new messages and conversations import live, and one whose only change is the marker is `unchanged`. Contacts deleted at another time keep the usual handling. The summary's `ignoredRetireMarker` (top level and `tables.contacts`) counts the marked rows. Use the marker from the first import of such a sweep; a run without it lists the marked customers as conflicts.
+- **Journal and reruns.** Every delta row is journaled with its intended target and its outcome as `status` (`mapped` appended, `updated`, `unchanged`, `conflict`, `kept`, `erased`, `archived_only`); conflicts also go to `legacy_import_conflicts`. A rerun replays each chunk's run: nothing changes, and the summary lists the same `conflicts` (`{sourceTable, sourceId, targetTable, targetKey, reason}`, no content). The command exits 0 with conflicts.
+
+`check.mjs delta` reads a delta's outcome and exits 1 on any mismatch: every row journaled by the delta's runs, the project's distinct journaled source rows equal to `--previous-total` plus the delta's rows no earlier run journaled, and every applied attachment identical in R2.
+
+```sh
+node scripts/legacy-import/check.mjs delta --package /absolute/company/delta-1/import --previous-total N --persist-to .wrangler/state
+node scripts/legacy-import/check.mjs delta --package /absolute/company/delta-1/import --previous-total N --database <installation>-db --bucket <installation>-files
+```
+
 ## Checks after an import
 
 `scripts/legacy-import/check.mjs` reads an installation after a package import and writes nothing. Each check prints one JSON object of counts, ids, digests and sizes, never content. The deployed checks use the same deploy credentials and remote target as the import; `mail` reads SendGrid activity with `SENDGRID_API_KEY`.
@@ -45,6 +68,7 @@ node scripts/legacy-import/check.mjs work --database <installation>-db --bucket 
 node scripts/legacy-import/check.mjs queues --since <ISO> --until <ISO> --queue <installation>-jobs --queue <installation>-jobs-dead-letter
 node scripts/legacy-import/check.mjs mail --since <ISO> --until <ISO>
 node scripts/legacy-import/check.mjs size --database <installation>-db
+node scripts/legacy-import/check.mjs delta --package /absolute/company/delta-1/import --previous-total N --database <installation>-db --bucket <installation>-files
 ```
 
 - **rows**: per source table, the package's rows against the journal's (mapped and archive-only), with `journalEqualsPackage` and the tables that differ outside `--exclude-table`; the company's canonical rows per native table; attachments journaled; holds; the run's state.
@@ -53,6 +77,7 @@ node scripts/legacy-import/check.mjs size --database <installation>-db
 - **queues**: message operations on the named queues in the window (Cloudflare analytics); an import writes none.
 - **mail**: every message of every sender on the SendGrid account in the window, per sender and status, split into the fleet's own recipients and everyone else.
 - **size**: the D1 database's stored size.
+- **delta**: see [Delta sweeps](#delta-sweeps). The rows, attachments, work and delta checks also take `--persist-to <state>` for a local installation instead of `--database` and `--bucket`.
 
 Legacy widgets could deliver one local message ID twice in a conversation. Native delivery IDs are unique per conversation, so the first message in transcript order keeps the legacy ID and a repeat is imported with `legacy:<message id>`, the ID used for messages that never had one. Both messages and their content are imported; the original value stays in the source archive.
 

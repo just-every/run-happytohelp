@@ -26,7 +26,7 @@ export async function connectLegacy(env = process.env) {
 }
 // A table whose primary key is exactly `id` is read in id-ordered pages inside the open
 // snapshot, so only one page is ever in flight. Streaming a whole large table at once lets the
-// server outrun a slow link; an SSM port-forward then buffers it and wedges (ChargeDesk's dry run).
+// server outrun a slow link; an SSM port-forward then buffers it and wedges (seen on a production-sized dry run).
 export const pageRows=10000;
 export async function* selectRows(connection,{table,columns,where,args,orderBy,keyed}){
   const from=`SELECT ${columns.map(identifier).join(',')} FROM ${identifier(table)} WHERE `;

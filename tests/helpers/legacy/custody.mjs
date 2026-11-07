@@ -35,9 +35,9 @@ export async function legacyCustodyJourney(){
   const root=join(scratch,'package'),{bundle:exported}=await writeLegacyPackage(root,bundle,{rowsPerChunk:1})
   const file=join(scratch,'export.json');await writeFile(file,JSON.stringify(bundle))
   const networkLog=join(scratch,'network.jsonl');await writeFile(networkLog,'')
-  const command=async(persist,{fail,inline=false}={})=>{
+  const command=async(persist,{fail,inline=false,pkg=root}={})=>{
    try{
-    const {stdout}=await exec(process.execPath,['--import',resolve('tests/helpers/legacy/network-edge.mjs'),'scripts/import-legacy.mjs',...(inline?['--file',file]:['--package',root]),'--apply','--persist-to',persist],{
+    const {stdout}=await exec(process.execPath,['--import',resolve('tests/helpers/legacy/network-edge.mjs'),'scripts/import-legacy.mjs',...(inline?['--file',file]:['--package',pkg]),'--apply','--persist-to',persist],{
      env:{...process.env,H2H_LEGACY_NETWORK_LOG:networkLog,WRANGLER_SEND_METRICS:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false',CLOUDFLARE_CF_FETCH_ENABLED:'false'},timeout:180000,maxBuffer:4*1024*1024})
     assert.equal(fail,undefined,'the guarded command must refuse this input');return JSON.parse(stdout)
    }catch(error){if(!fail)throw error;assert.match(error.stderr||'',fail);return error}
@@ -159,6 +159,25 @@ export async function legacyCustodyJourney(){
   assert.deepEqual(await bucketSnapshot(join(state,'v3/r2')),erasedObjects,'replay restores no erased attachment')
   assert.deepEqual(await sql(state,'SELECT * FROM billing_ledger ORDER BY id'),financial,'erasure and replay leave historical money immutable')
   assert.deepEqual(await sql(state,'SELECT source_table,source_id,reason FROM legacy_import_holds ORDER BY source_table,source_id'),holds)
+
+  // Legacy kept taking the erased customer's chats; a delta sweep restores none of it, and journals it as erasure leaves it.
+  const later='2026-02-01T00:00:00.000Z',sent=Buffer.from('a file sent after the erasure')
+  const deltaRows={contacts:[{id:'c2',project_id:'p',name:'Second customer',identifier:'customer-2',created_at:later}],
+   conversations:[bundle.tables.conversations.find(row=>row.id==='conv'),{id:'conv2',project_id:'p',contact_id:'c2',created_at:later}],
+   messages:[{id:'m3',project_id:'p',conversation_id:'conv',contact_id:'c',content:'Written after the erasure',created_at:later},{id:'m4',project_id:'p',conversation_id:'conv2',contact_id:'c2',content:'A new customer writes',created_at:later}],
+   media:[{id:'file2',project_id:'p',conversation_id:'conv',message_id:'m3',object_key:'legacy/file2',filename:'later.txt',mime_type:'text/plain',size:sent.length,created_at:later}]}
+  const whole={...bundle,source:{...bundle.source,projectId:'p'},objects:[...bundle.objects,{key:'legacy/file2',dataBase64:sent.toString('base64'),sha256:sha(sent)}],
+   tables:{...bundle.tables,...Object.fromEntries(Object.entries(deltaRows).map(([table,rows])=>[table,[...bundle.tables[table].filter(row=>!rows.some(next=>next.id===row.id)),...rows]]))}}
+  const deltaRoot=join(scratch,'delta');await writeLegacyPackage(deltaRoot,whole,{delta:{since:'2026-01-31T00:00:00.000Z',tables:deltaRows}})
+  const swept=await command(state,{pkg:deltaRoot})
+  assert.equal(swept.erased,3,'the erased customer\'s conversation, message and file');assert.equal(swept.appended,3);assert.equal(swept.withheldObjects,1)
+  assert.deepEqual(await sql(state,"SELECT id FROM messages WHERE id IN ('m3','m4') ORDER BY id"),[{id:'m4'}])
+  assert.deepEqual(await sql(state,"SELECT name,email,external_id FROM contacts WHERE id='c'"),[{name:null,email:null,external_id:null}])
+  assert.deepEqual(await sql(state,"SELECT DISTINCT source_json FROM legacy_import_rows WHERE source_id IN ('m3','file2') OR (source_id='conv' AND status='erased')"),[{source_json:'{}'}])
+  assert.deepEqual((await bucketSnapshot(join(state,'v3/r2'))).objects.map(o=>JSON.parse(o).key),[],'the erased customer\'s new file is not uploaded')
+  assert.deepEqual(await sql(state,'SELECT * FROM contact_erasures'),tombstone)
+  const sweptState=await business(state),sweptReplay=await command(state,{pkg:deltaRoot})
+  assert.equal(sweptReplay.replayed,swept.sourceRows);assert.deepEqual(await business(state),sweptState,'a rerun of the delta changes nothing')
 
   // The other documented door has its own object-upload path and journal ID.
   const inline=join(scratch,'inline');await cp(base,inline,{recursive:true})

@@ -9,7 +9,7 @@ export function projectQueries(schema,projectId,authorIds) {
   for(const [table,[foreign,parent]] of Object.entries(childScopes))if(schema.has(table)&&scopes.has(parent)){
     const p=ids(parent);let where=`${identifier(foreign)} IN (${p.sql})`,args=[...p.args];
     // Scan events once against materialized conversation ids. The default plan probes
-    // events per conversation: ~5.5M random reads for ChargeDesk, which never finished.
+    // events per conversation: ~5.5M random reads for a production-sized project, which never finished.
     if(table==='events'){where=`${identifier(foreign)} IN (${p.sql.replace(/^SELECT /,'SELECT /*+ NO_SEMIJOIN() SUBQUERY(MATERIALIZATION) */ ')}) AND type IN (${supportEventTypes.map(()=>'?').join(',')})`;args.push(...supportEventTypes);}
     scopes.set(table,{where,args});
   }

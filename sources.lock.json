@@ -16408,6 +16408,18 @@
       "sha256": "c00b9c84998e8e1ee828f4130f7d4d735c673b916b028349bd336ab671c78ac4",
       "executable": false
     },
+    "tests/move-in/apply-metrics.ts": {
+      "sha256": "7013dca2c675bd1086cabe173a57077a331e8b589606d099044cae7fd1bed53b",
+      "executable": false
+    },
+    "tests/move-in/apply-replay-fixture.ts": {
+      "sha256": "ac24ee552f18bbb542316a8113b9b6bc0865808dd7152e6d4d61404364b38a88",
+      "executable": false
+    },
+    "tests/move-in/apply-replay.mjs": {
+      "sha256": "13ceb6bb5c6000cc6c70d17c90eb94930e6ecb9976b8bc6873be6b041f75eb9c",
+      "executable": false
+    },
     "tests/move-in/business-equality.mjs": {
       "sha256": "46ccb35680a53087acd45d60adcba62de8aecec0b430006adda05abb63f5a70f",
       "executable": false
@@ -16445,7 +16457,7 @@
       "executable": false
     },
     "tests/move-in/harness.mjs": {
-      "sha256": "4c9ec6fb2352397f5777d0f45f4819567d17bb10379670a186a497cf7f9d52d2",
+      "sha256": "b69f2f55a703936bf2a648e7848358d981debdb978735203c42cb8ac0fbd9cd9",
       "executable": false
     },
     "tests/move-in/helpscout-fixtures.mjs": {
@@ -16493,7 +16505,7 @@
       "executable": false
     },
     "tests/move-in/worker.ts": {
-      "sha256": "53a97035c600e8859654cfd4f995d7b63d9ebbae6b5835a9bf1bb5a0daca0c6e",
+      "sha256": "3002494456f1966c0129aa554275214b9648ebd466b74658cf6af8928e280a93",
       "executable": false
     },
     "tests/move-in/zendesk-connect-browser.mjs": {

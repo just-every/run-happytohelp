@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "2ee1e6369d39d6d5e6b1959b999a20d75759425660b5a48404e5ffc01d631d7f",
+      "sha256": "e2de0c756bccfe4dc694c62a59eda0142a1dcb98045b342bc765f83fc6e7928e",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "828d637a4e1c9ef134abd89becae4722c8c1ca4579732927c99286181caacb5a",
+      "sha256": "e58e17b4804fb21d9693dd0ad95f7693be51b435590b47071d5c4a25791fe7f7",
       "executable": false
     },
     "DEMO.md": {
@@ -1789,7 +1789,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "f63525767838f7a4b9a03846d5d9f16034a6341d6c816a91c00e67473796a675",
+      "sha256": "92a223222b5119e16c1c0cd28b66ea279d2c1a2c3d4a590e58b560cd23930b94",
       "executable": false
     },
     "docs/NAVIGATION.md": {
@@ -1885,7 +1885,7 @@
       "executable": false
     },
     "importers.json": {
-      "sha256": "098d67a40a57ebf9f645c8ee35c9a6223023e9ff8f264f895a9590000dec6e7f",
+      "sha256": "db9e6c2054e8e8ca22d94c9ee3965ce640783c2660a5faa34070452410116ccd",
       "executable": false
     },
     "LICENSE": {
@@ -8409,7 +8409,7 @@
       "executable": false
     },
     "src/modules/move-in/targets.ts": {
-      "sha256": "3655e6d6212d88b060fed032eaa109bb431d53a53f1f8135c83a45d351d2e541",
+      "sha256": "99b3f33dfa75c653622bc060facdeddf531b7a2a616003ba2577ed67b8269844",
       "executable": false
     },
     "src/modules/move-in/ticket-state.ts": {
@@ -16493,7 +16493,7 @@
       "executable": false
     },
     "tests/journeys/move-in-zendesk-pull.mjs": {
-      "sha256": "769843f0eb7f2434990212cdb7003141e461c4e093046a537ba9a78dab7107c0",
+      "sha256": "716229c7cf38d57d89ded0b22ac3227b58fcc740c58960ee979aa69bba375909",
       "executable": false
     },
     "tests/journeys/public-browser.mjs": {
@@ -16721,7 +16721,7 @@
       "executable": false
     },
     "tests/move-in/zendesk-pull-fixture.mjs": {
-      "sha256": "e269596f56e25311d6c28d3b1c7cdb02f0447fb39232a000e60bad104b198fe1",
+      "sha256": "18708ea63211093181f282c871cb1ee49d2d65a89ce67ac71404c2f0ef2acc90",
       "executable": false
     },
     "tests/move-in/zendesk-resume-browser.mjs": {

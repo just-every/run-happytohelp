@@ -24,12 +24,16 @@ const entities:Record<string,Table[]>={
  article:[table('knowledge_articles','id','id,project_id,category_id,slug,title,content,summary,status,updated_at,position,source_revision,source_incarnation,publication_version','id',['publication_version']),table('knowledge_article_categories','article_id','article_id,category_id','category_id')],
  // A reply imported onto a conversation an earlier import holds: its own message
  // (or private note) and source row. Its revision is the conversation's next one,
- // taken when it is written, so it is not part of its reviewed image.
+ // taken when it is written, so it is not part of its reviewed image. Files fetched
+ // here onto it later (a message's media, a note's move_in_note_media links) are
+ // native additions: they change its image, so undo keeps it as edited here.
  reply:[
   direct(table('messages','id','id,project_id,conversation_id,local_id,actor_id,actor_role,content,created_at,intent_hash,bucket_id,erased_at,citations_json')),
   direct(table('move_in_message_sources','message_id','message_id,project_id,author_json,source_id,source_time,time_provenance')),
   direct(table('move_in_notes','id','id,project_id,conversation_id,author_json,content,created_at,source_time')),
-  direct(table('message_authorship','message_id','message_id,project_id,kind,source_kind,source_id,source_part,recorded_at'),true)
+  direct(table('message_authorship','message_id','message_id,project_id,kind,source_kind,source_id,source_part,recorded_at'),true),
+  direct(table('media','message_id','id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at','id'),true),
+  {...table('move_in_note_media','note_id','note_id,media_id','media_id'),nativeOnly:true}
  ],
  conversation:[
   table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id,subject,status_id,status_category,channel,group_id'),
@@ -57,8 +61,11 @@ const entities:Record<string,Table[]>={
    table('conversation_buckets','conversation_id','id,conversation_id,created_at,metadata_json','id')
   ].map(t=>({...t,nativeOnly:true}))]
 }
+/** A reply with no fetched files keeps the image it was applied with, so replies
+ * applied before files could be fetched still undo as unchanged. */
+function withoutEmptyFiles(tables:NativeValue['tables']){for(const name of ['media','move_in_note_media'])if(!tables[name]?.length)delete tables[name]}
 function definitions(kind:string){const value=entities[kind];if(!value)throw new Error('unsupported_native_target');return value}
-function where(t:Table){if(t.direct)return `project_id=? AND ${t.key}=?`;if(t.name==='macro_heads')return 'macro_id=? AND macro_id IN (SELECT id FROM macros WHERE project_id=?)';if(t.name==='message_authorship')return 'message_id IN (SELECT id FROM messages WHERE conversation_id=? AND project_id=?)';if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return 'resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=? AND project_id=?)';if(t.nativeOnly)return 'conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)';if(t.name==='move_in_message_sources')return 'project_id=? AND message_id IN (SELECT id FROM messages WHERE project_id=? AND conversation_id=?)';if(t.name==='knowledge_article_categories')return 'article_id=? AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=?)';return `project_id=? AND ${t.key}=?`}
+function where(t:Table){if(t.direct)return `project_id=? AND ${t.key}=?`;if(t.name==='macro_heads')return 'macro_id=? AND macro_id IN (SELECT id FROM macros WHERE project_id=?)';if(t.name==='move_in_note_media')return 'note_id=? AND note_id IN (SELECT id FROM move_in_notes WHERE project_id=?)';if(t.name==='message_authorship')return 'message_id IN (SELECT id FROM messages WHERE conversation_id=? AND project_id=?)';if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return 'resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=? AND project_id=?)';if(t.nativeOnly)return 'conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)';if(t.name==='move_in_message_sources')return 'project_id=? AND message_id IN (SELECT id FROM messages WHERE project_id=? AND conversation_id=?)';if(t.name==='knowledge_article_categories')return 'article_id=? AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=?)';return `project_id=? AND ${t.key}=?`}
 function params(t:Table,destination:string,id:string){return t.direct?[destination,id]:t.nativeOnly?[id,destination]:t.name==='move_in_message_sources'?[destination,destination,id]:['knowledge_article_categories','macro_heads'].includes(t.name)?[id,destination]:[destination,id]}
 const realPolicyColumns=new Set(['first_response_minutes','next_response_minutes','resolution_minutes','approaching_minutes','unattended_minutes'])
 function select(t:Table){const columns=t.columns.map(c=>t.name==='sla_policies'&&realPolicyColumns.has(c)?`CASE WHEN ${c}=CAST(${c} AS INTEGER) THEN CAST(${c} AS INTEGER) ELSE ${c} END`:c);return `(SELECT COALESCE(json_group_array(json_array(${columns.join(',')})),'[]') FROM (SELECT ${t.columns.join(',')} FROM ${t.name} WHERE ${where(t)} ORDER BY ${t.order}))`}
@@ -90,6 +97,7 @@ export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
  // value of earlier contact imports so their existing repeat/undo custody holds.
  if(kind==='contact'&&!value.tables.contact_companies.length)delete value.tables.contact_companies
  if(kind==='conversation'&&!value.tables.move_in_attachment_bytes.length)delete value.tables.move_in_attachment_bytes
+ if(kind==='reply')withoutEmptyFiles(value.tables)
  return value
 }
 export const nativeTargets:D1TargetAdapter={
@@ -98,6 +106,7 @@ export const nativeTargets:D1TargetAdapter={
   const tables:NativeValue['tables']={};for(let i=0;i<defs.length;i++){const t=defs[i];tables[t.name]=JSON.parse(row[`t${i}`]).map((values:any[])=>Object.fromEntries(t.columns.map((column,index)=>[column,values[index]])))}
   if(kind==='contact'&&!tables.contact_companies.length)delete tables.contact_companies
   if(kind==='conversation'&&!tables.move_in_attachment_bytes.length)delete tables.move_in_attachment_bytes
+  if(kind==='reply')withoutEmptyFiles(tables)
   if(!row.source&&kind==='contact'&&tables.contacts[0]&&JSON.parse(tables.contacts[0].metadata_json||'{}').is_erased===1)return undefined
   if(!row.source&&!Object.values(tables).some(rows=>rows.length))return undefined
   // An unowned native collision is visible to the kit and cannot be overwritten without review.
@@ -149,6 +158,7 @@ function snapshotQuery(t:Table){
     t.name==='message_authorship'?`SELECT c.*,m.conversation_id AS bundle_id FROM ${ids} CROSS JOIN messages m ON m.project_id=?1 AND m.conversation_id=wanted.value CROSS JOIN message_authorship c ON c.message_id=m.id AND c.project_id=?1`:
     t.name==='conversation_ratings'||t.name==='conversation_rating_history'?`SELECT c.*,r.conversation_id AS bundle_id FROM ${ids} CROSS JOIN conversation_resolutions r ON r.project_id=?1 AND r.conversation_id=wanted.value CROSS JOIN ${t.name} c ON c.resolution_id=r.id`:
     t.name==='move_in_message_sources'?`SELECT c.*,m.conversation_id AS bundle_id FROM ${ids} CROSS JOIN messages m ON m.project_id=?1 AND m.conversation_id=wanted.value CROSS JOIN move_in_message_sources c ON c.message_id=m.id AND c.project_id=?1`:
+    t.name==='move_in_note_media'?`SELECT c.*,c.note_id AS bundle_id FROM ${ids} CROSS JOIN move_in_notes n ON n.id=wanted.value AND n.project_id=?1 CROSS JOIN move_in_note_media c ON c.note_id=n.id`:
     t.nativeOnly?`SELECT c.*,c.conversation_id AS bundle_id FROM ${ids} CROSS JOIN conversations v ON v.id=wanted.value AND v.project_id=?1 CROSS JOIN ${t.name} c ON c.conversation_id=v.id`:
     t.name==='knowledge_article_categories'?`SELECT c.*,c.article_id AS bundle_id FROM ${ids} CROSS JOIN knowledge_articles a ON a.id=wanted.value AND a.project_id=?1 CROSS JOIN knowledge_article_categories c ON c.article_id=a.id`:
     `SELECT c.*,c.${t.key} AS bundle_id FROM ${ids} CROSS JOIN ${t.name} c ON c.${t.key}=wanted.value AND c.project_id=?1`

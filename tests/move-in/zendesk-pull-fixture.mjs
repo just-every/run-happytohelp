@@ -9,7 +9,7 @@ export const PATH_TOKEN='synthetic-hh-path-token-9f8e7d',QUERY_TOKEN='synthetic-
 export const FILES_ORIGIN=`https://${SUBDOMAIN}.zdusercontent.com`,FOREIGN_ORIGIN='https://synthetic-elsewhere.example'
 const attachmentToken=id=>`synthetic-hh-attachment-token-${id}`,signedToken=id=>`synthetic-hh-signed-${id}`
 /** Invented bytes: a 60 KiB zip-typed file (over the old 48 KiB cap, outside the old six types) and a small CSV. */
-export const ATTACHMENT_BYTES={81001:Buffer.from(Array.from({length:60*1024},(_,i)=>(i*131+7)%256)),81002:Buffer.from('synthetic-hh,internal\n1,2\n'),70501:Buffer.from(Array.from({length:68},(_,i)=>(i*17)%256))}
+export const ATTACHMENT_BYTES={81001:Buffer.from(Array.from({length:60*1024},(_,i)=>(i*131+7)%256)),81002:Buffer.from('synthetic-hh,internal\n1,2\n'),70501:Buffer.from(Array.from({length:68},(_,i)=>(i*17)%256)),81006:Buffer.from('%PDF-synthetic-hh later reply\n'),81007:Buffer.from('synthetic-hh later internal note file\n')}
 const file=(id,name,type,size,extra={})=>({id,file_name:name,content_type:type,size,inline:false,deleted:false,malware_scan_result:'malware_not_found',malware_access_override:false,content_url:`${ORIGIN}/attachments/token/${attachmentToken(id)}/?name=${name}`,mapped_content_url:`${ORIGIN}/attachments/token/${attachmentToken(id)}/?name=${name}`,url:`${ORIGIN}/api/v2/attachments/${id}.json`,thumbnails:[],...extra})
 const at=day=>`2024-01-${String(day).padStart(2,'0')}T00:00:00Z`,stamp=(day,second)=>`2024-01-${String(day).padStart(2,'0')}T${String(Math.floor(second/3600)%24).padStart(2,'0')}:${String(Math.floor(second/60)%60).padStart(2,'0')}:${String(second%60).padStart(2,'0')}Z`
 const inline=id=>({id,file_name:'inline.png',content_type:'image/png',size:68,inline:true,content_url:`${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,mapped_content_url:`${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,url:`${ORIGIN}/api/v2/attachments/${id}.json`,thumbnails:[]})
@@ -26,8 +26,9 @@ export function largeComments(){return Array.from({length:300},(_,i)=>comment(40
 /** With attachments, comments on tickets 101 and 102 carry files: a public zip and a private
  * note's CSV whose downloads redirect to the account's own attachment host (the zip's first
  * download is throttled with Retry-After), a file on a host the account does not own, one
- * whose download redirects to such a host, and a deleted one. Tickets in state.gone are no
- * longer returned. Without it, the account is exactly as before. */
+ * whose download redirects to such a host, and a deleted one; once it has changed, 101's new
+ * reply and private note each carry a file too. Tickets in state.gone are no longer returned.
+ * Without it, the account is exactly as before. */
 export function fakeZendesk({edgeCases=false,credentialTicket=false,attachments=false}={}){
  const state={authorizations:new Map(),grants:new Map(),access:new Set(),refresh:new Set(),tokenRequests:[],requests:[],throttled:false,issued:0,repeat:false,downloads:[],downloadThrottled:false,gone:new Set()}
  const users=[user(1,'end-user',{organization_id:7}),user(2,'agent'),user(3,'end-user'),user(4,'end-user'),user(5,'end-user'),...(edgeCases?[user(8,'end-user',{email:null})]:[])]
@@ -50,7 +51,7 @@ export function fakeZendesk({edgeCases=false,credentialTicket=false,attachments=
  }
  // After the first pull: ticket 101 gets a new public reply and a private note, ticket 102 changes status,
  // person 3 is renamed, the organization changes, and tickets 106 and 107 are new.
- const changed={101:{record:{...tickets[101].record,updated_at:at(9)},comments:[...tickets[101].comments,comment(10103,1,9,'synthetic-hh a reply after the move'),comment(10104,2,9,'synthetic-hh internal follow-up',false)]},102:{record:{...tickets[102].record,status:'solved',updated_at:at(9)},comments:tickets[102].comments}}
+ const changed={101:{record:{...tickets[101].record,updated_at:at(9)},comments:[...tickets[101].comments,comment(10103,1,9,'synthetic-hh a reply after the move',true,attachments?{attachments:[file(81006,'synthetic-hh-later.pdf','application/pdf',ATTACHMENT_BYTES[81006].length)]}:{}),comment(10104,2,9,'synthetic-hh internal follow-up',false,attachments?{attachments:[file(81007,'synthetic-hh-later-internal.txt','text/plain',ATTACHMENT_BYTES[81007].length)]}:{})]},102:{record:{...tickets[102].record,status:'solved',updated_at:at(9)},comments:tickets[102].comments}}
  const renamed={...users[2],name:'synthetic-hh person 3 renamed',updated_at:at(9)},arrived=edgeCases?[user(6,'end-user',{email:'not-an-email',created_at:at(8),updated_at:at(8)})]:[]
  const current=id=>state.repeat&&changed[id]?changed[id]:tickets[id],people=()=>state.repeat?[...users.map(u=>u.id===3?renamed:u),...arrived]:users
  const field=(id,type,title,extra={})=>({url:`${ORIGIN}/api/v2/ticket_fields/${id}.json`,id,type,title,raw_title:title,description:'',raw_description:'',position:id,active:true,required:false,collapsed_for_agents:false,regexp_for_validation:null,title_in_portal:title,raw_title_in_portal:title,visible_in_portal:true,editable_in_portal:true,required_in_portal:false,tag:null,created_at:at(1),updated_at:at(1),removable:true,key:null,agent_description:null,agent_can_edit:true,...extra})

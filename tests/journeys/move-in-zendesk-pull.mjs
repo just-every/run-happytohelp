@@ -540,7 +540,7 @@ test('an owner reads the Cutover sources with their live Zendesk counts after a 
  }finally{await h.close()}
 })
 
-test('an owner fetches every imported comment\'s files over the Zendesk connection into private storage: shown in place, private notes stay private, refusals by id, Retry-After honoured, and a second run fetches nothing already stored',{timeout:900_000},async()=>{
+test('an owner fetches every imported comment\'s files over the Zendesk connection into private storage: shown in place, private notes stay private, refusals by id, Retry-After honoured, and a second run fetches nothing already stored; undoing a later pull keeps its replies and notes with files',{timeout:900_000},async()=>{
  const zendesk=fakeZendesk({attachments:true}),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
  const files=`${api}/zendesk/attachments`,tokenish=/synthetic-(?:access|refresh|code)-\d|synthetic-hh-(?:path|query|attachment)-token|synthetic-hh-signed|zdusercontent|synthetic-elsewhere/
  // Steps attachment and pull jobs alike, waiting out a persisted Retry-After.
@@ -627,5 +627,40 @@ test('an owner fetches every imported comment\'s files over the Zendesk connecti
   assert.ok(!view.refusals.some(r=>r.ticketId==='104'),'a ticket Zendesk returns again leaves the list')
   assert.deepEqual(zendesk.state.downloads.slice(fetched).filter(d=>[81001,81002,70501].includes(d.id)),[],'nothing already stored is downloaded again')
   assert.ok(zendesk.state.downloads.slice(fetched).some(d=>d.id===81004),'a refused file is tried again')
+
+  // A later pull imports a reply and a private note on 101, each with a file, and new tickets
+  // 106 and 107 with none, all in one batch; a third run fetches just the two new files.
+  zendesk.state.repeat=true
+  const later=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+  await drain(h);const laterReady=await pullOf(h,later.id)
+  await h.call(`${api}/zendesk/pulls/${later.id}/approve`,post({fingerprint:laterReady.fingerprint}));await drain(h)
+  const laterPull=await pullOf(h,later.id);assert.equal(laterPull.state,'applied',JSON.stringify(laterPull.error))
+  const fetchedBefore=zendesk.state.downloads.length,third=(await h.call(files,post({}))).data
+  await run()
+  view=(await h.call(`${files}/${third.id}`)).data
+  assert.equal(view.state,'done',JSON.stringify(view.error))
+  assert.deepEqual(view.totals,{attachments:8,stored:5,pending:0,refused:3})
+  assert.deepEqual(zendesk.state.downloads.slice(fetchedBefore).filter(d=>[81001,81002,70501].includes(d.id)),[],'nothing already stored is downloaded again')
+  const later101=async()=>({
+   replies:(await rows(h,"SELECT COUNT(*) n FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'"))[0].n,
+   notes:(await rows(h,"SELECT COUNT(*) n FROM move_in_notes m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'"))[0].n,
+   files:await rows(h,"SELECT a.attachment_id,m.id,m.message_id IS NULL private,(SELECT COUNT(*) FROM move_in_note_media l WHERE l.media_id=m.id AND l.note_id=a.message_id) linked FROM move_in_zendesk_attachments a JOIN media m ON m.id=a.media_id WHERE a.attachment_id IN ('81006','81007') ORDER BY a.attachment_id")})
+  const withFiles=await later101()
+  assert.deepEqual(withFiles.files.map(f=>[f.attachment_id,f.private,f.linked]),[['81006',0,0],['81007',1,1]],'the reply\'s file is on its message and the note\'s file on its note')
+  const laterTickets=async()=>(await rows(h,"SELECT COUNT(*) n FROM move_in_conversations WHERE source_id IN ('106','107')"))[0].n
+  assert.equal(await laterTickets(),2)
+
+  // Undoing that batch keeps the reply and the note with their files as edited here, as for a
+  // conversation with an agent's upload: undo stops with a conflict, not a database error, and
+  // removes nothing, so no file or note link is left without its message or note.
+  const laterBatch=laterPull.batches.find(b=>b.state==='completed'&&b.summary.replies)
+  await h.call(`${api}/imports/${laterBatch.runId}/undo`,post({}));await drain(h)
+  const stopped=(await h.call(`${api}/imports/${laterBatch.runId}`)).data
+  assert.deepEqual([stopped.state,stopped.error],['undoing','NATIVE_EDIT_CONFLICT'],'kept as edited here, never a database error')
+  assert.equal(await laterTickets(),2,'undo removes nothing from the batch')
+  assert.deepEqual(await later101(),withFiles,'the reply and the note with fetched files are kept, with their files and the note\'s link')
+  assert.deepEqual(await rows(h,'SELECT m.id FROM media m WHERE (m.message_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM messages x WHERE x.id=m.message_id)) OR (m.message_id IS NULL AND m.uploaded_by=\'import:zendesk\' AND NOT EXISTS(SELECT 1 FROM move_in_note_media l WHERE l.media_id=m.id))'),[],'no orphaned file')
+  const [kept]=withFiles.files,[reply]=await rows(h,'SELECT conversation_id FROM messages WHERE id=(SELECT message_id FROM media WHERE id=?)',kept.id)
+  assert.ok(Buffer.from((await h.download(`/api/conversations/${reply.conversation_id}/media/${kept.id}`)).bytes).equals(ATTACHMENT_BYTES[81006]),'the kept reply\'s file still downloads')
  }finally{await h.close()}
 })

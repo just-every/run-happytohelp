@@ -5,8 +5,11 @@ target?, settings?, theme?, text?, conversationSettings?})`. Build the standalon
 embed with `pnpm build:widget`; include `/widget.js` with `data-api-origin` and
 `data-widget-key`, or queue `['init', options]` in `window.h2hQueue`. The widget
 imports no dashboard code. The native Worker owns the public widget key and exact
-allowed embedding origin; the browser stores a contact bearer token under an
-API-origin + widget-key key. Never supply an operator token in embed configuration.
+allowed embedding origin; the browser stores a contact bearer token per API origin
+and widget key: one anonymous and one signed-in session, each used only for the
+visitor identity the host page supplies (`visitor-identity.js`; see
+`docs/legacy-entry-points.md`). `h2h('shutdown')` unmounts the widget and forgets
+those sessions. Never supply an operator token in embed configuration.
 
 This source ports the existing HappyToHelp React/Shadow DOM components, compiled
 styles, branded assets, screenshot/file input, resize/preview, transcript Markdown,
@@ -24,7 +27,7 @@ editor imports the same file, so what it shows is what the widget renders.
 
 | Original behavior | Native integration |
 | --- | --- |
-| Persisted visitor identity and transcript | Contact session token and conversation ID persist per API origin/widget key; transcript refresh and socket replay |
+| Persisted visitor identity and transcript | Contact session token and conversation ID persist per API origin/widget key and page-supplied visitor (one anonymous, one signed-in); sign-in carries the anonymous conversation over; transcript refresh and socket replay |
 | Optimistic send + local message identity | Existing bubble UI; native conditional admission and stable localId; failures remain visible |
 | Reconnect and missed delivery | Bounded socket backoff, outbox cursor, transcript refresh, ID deduplication |
 | Attachments, resize, preview and screenshot | Original controls; raw upload to scoped native media route; authenticated blob downloads |

@@ -1,5 +1,6 @@
 import {mountWidget, mountPreview} from './index';
 import {legacyUpdate, normalizeWidgetOptions, resolveWidgetOptions, scriptOptions} from './legacy-options';
+import {clearStoredSessions} from './visitor-identity';
 
 /** One installation and one ordered API, including calls queued before script load. */
 export function installWidgetEntry(script) {
@@ -31,6 +32,8 @@ export function installWidgetEntry(script) {
       if (!value.provided) {stop(); return Promise.resolve();}
       return initializing || start();
     }
+    // Sign-out: remove the widget in any state and forget this origin's widget sessions; a later init starts fresh.
+    if (action === 'shutdown') {stop(); options = null; clearStoredSessions(); return Promise.resolve();}
     if (!['open','close','update','settings','ask','sales','support','request','destroy'].includes(action)) throw new Error(`Unknown widget action: ${action}`);
     if (action === 'destroy') {stop(); options = null; return;}
     if (!widget && !initializing) {

@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "afda2883b2ea9258ad69c85e13db6de2160919d8a36fe8593c7abfb1c3743e36",
+      "sha256": "761b6363e79bc60831a473be66eccf0e23527619690549f7820aafc7adc05c48",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "50877f60131fa83e0139b604b63fb7ff5f2b343a0536a97718fbb20bb28dc1e2",
+      "sha256": "ff38b54f7e284afb4a2abf03a5b50dd29e0316966f41c2c6b206bfe29d37c068",
       "executable": false
     },
     "DEMO.md": {
@@ -1745,7 +1745,7 @@
       "executable": false
     },
     "docs/legacy-entry-points.md": {
-      "sha256": "b5d3f295812d16f9c4db066c5a56ee68882718bc33aee8cd406f67b3dcea8131",
+      "sha256": "7b7d94783ee01753f6add1dac6aec8c991032a7c736cf2cc16709c0cf4fc51a2",
       "executable": false
     },
     "docs/LEGACY-EXPORT.md": {
@@ -9877,7 +9877,7 @@
       "executable": false
     },
     "src/modules/widget/js/context/ConnectContext.jsx": {
-      "sha256": "36149aae265b0f7e456a061390fe9ccbf06b4e28a6dcba4369a8009c4ddd10b4",
+      "sha256": "458715836c6434b63db4aa7988491e6c66854621b81c5a3b74e5baaa1bc48367",
       "executable": false
     },
     "src/modules/widget/js/context/defaults.js": {
@@ -9997,7 +9997,7 @@
       "executable": false
     },
     "src/modules/widget/legacy-entry.js": {
-      "sha256": "3e99e156e94b7816c83a1029c541a69f4d57593e892c01552a265b04e4f495a2",
+      "sha256": "dd3eea373f8222d569fb2e8e40a9947a59b55ff8834056c35a34a6876614f846",
       "executable": false
     },
     "src/modules/widget/legacy-options.js": {
@@ -10013,11 +10013,15 @@
       "executable": false
     },
     "src/modules/widget/README.md": {
-      "sha256": "2c3227b028b304827c5b7305635d4ead78620b58e41825d3b503cf4cfce153b4",
+      "sha256": "2ff6d109bde278f83f6d135c998e1cee2a757b4cb0703417f2f0e18e6516f700",
       "executable": false
     },
     "src/modules/widget/transport.js": {
-      "sha256": "a056b47bf7b0972c8dff073abcc7f9057e214af4571e104f41eff8925fff6f38",
+      "sha256": "2e3f35fe8f36b9b520971e6e5ffa691bdd14f5f3b4c8bf825e19236ed933755b",
+      "executable": false
+    },
+    "src/modules/widget/visitor-identity.js": {
+      "sha256": "5ef9ad963d1926142d92643b956b7539368abbaa83fe0f818c7527de53d3e600",
       "executable": false
     },
     "src/modules/workflows/actions-validation.ts": {
@@ -16252,6 +16256,10 @@
       "sha256": "1e03d8b17cc04e507d17d655fadc7a7314744c5d332a2c796ef57b838ad8b2ad",
       "executable": false
     },
+    "tests/helpers/widget/identity-switch-browser.mjs": {
+      "sha256": "adee0b27d39613a62a26f6187acc3fbaf8a8d48ef8cbd5fb7e69f2945e562029",
+      "executable": false
+    },
     "tests/helpers/widget/mailbox-live.mjs": {
       "sha256": "1e03e92792c056521a2410f438f3846a636ffe9502d81111283c0f8e2a455c79",
       "executable": false
@@ -16353,7 +16361,7 @@
       "executable": false
     },
     "tests/journeys/identity-browser.mjs": {
-      "sha256": "b96a926b1155a5e60ddcb0bf38514d685550c01d74e41ef9b58183f51fc56700",
+      "sha256": "e4e4d4c9f24c1ae28e9400699bc045ee23e50a21c0cc1039e0b1569e30451285",
       "executable": false
     },
     "tests/journeys/identity.mjs": {

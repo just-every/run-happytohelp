@@ -204,6 +204,10 @@
     {
       "id": "307_legacy_import_delta.sql",
       "buyerSteps": "Back up D1 first; apply once after 306_cutover_steps.sql, before serving the updated Worker. MIGRATION-001 legacy delta sweeps: adds legacy-import bookkeeping only (import state per imported row, delta conflicts, a transient batch mark table); a delta finds journal rows by source row through the index 306_cutover_steps.sql adds. No business table, trigger or row changes and nothing runs. An installation imported from legacy before this migration replays its original package once with the existing import command before its first delta sweep; that exact replay changes no business row or file."
+    },
+    {
+      "id": "308_legacy_mail_s3.sql",
+      "buyerSteps": "Back up D1 first; apply once after 307_legacy_import_delta.sql, before serving the updated Worker. Additive only: a receipts table with one row per object the optional Amazon SES S3 reader lists (and an index of the few that still hold a private copy), and a one-row table of its last list. No backfill, no existing row changes, nothing is read, sent, queued or enabled: the reader stays off until LEGACY_MAIL_S3_BUCKET, LEGACY_MAIL_S3_PREFIX, LEGACY_MAIL_S3_MAILBOX, LEGACY_AWS_REGION, LEGACY_AWS_ACCESS_KEY_ID and LEGACY_AWS_SECRET_ACCESS_KEY are all set. The receipts travel in exports with the sender address and private copy reference cleared; the list state stays with the installation."
     }
   ],
   "breaking": false,

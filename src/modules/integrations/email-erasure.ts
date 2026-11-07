@@ -14,10 +14,13 @@ const managedReceipt=`i.project_id=?1 AND (lower(i.sender_address) IN (${address
  OR EXISTS(SELECT 1 FROM suspended_emails s WHERE s.project_id=i.project_id AND json_extract(s.input_json,'$.custody.deliveryId')=i.delivery_id AND ${identifiedHeld}))`
 const held=`s.project_id=?1 AND (${identifiedHeld}
  OR EXISTS(SELECT 1 FROM rer_mail_ingress i WHERE i.project_id=s.project_id AND i.delivery_id=json_extract(s.input_json,'$.custody.deliveryId') AND (i.state='erased' OR ${managedReceipt})))`
+// The Amazon SES reader's receipt names a private transport copy and the sender while it is read. A receipt still in
+// flight has no workspace yet, and the reader's mailbox belongs to one workspace, so it counts as this one's.
+const legacyReceipt=`(l.project_id=?1 OR l.project_id IS NULL) AND (lower(l.sender_address) IN (${addresses}) OR l.conversation_id IN (SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2))`
 /** Enter suspended objects into the existing resumable erasure delete stage;
  * every object is removed before its identifying D1 row can disappear. */
 export function emailErasureObjectStatements(env:Env,projectId:string,contactId:string,emails:readonly string[]){
- return [env.DB.prepare(`INSERT OR IGNORE INTO contact_erasure_objects(project_id,contact_id,kind,source_id,object_key) SELECT ?1,?2,'media','rer-mail:'||r.delivery_id||':'||r.body_sha256,r.object_key FROM rer_mail_raw_objects r JOIN rer_mail_ingress i ON i.delivery_id=r.delivery_id AND i.project_id=r.project_id WHERE ${managedReceipt}`).bind(projectId,contactId,JSON.stringify(emails)),env.DB.prepare(`INSERT OR IGNORE INTO contact_erasure_objects(project_id,contact_id,kind,source_id,object_key)
+ return [env.DB.prepare(`INSERT OR IGNORE INTO contact_erasure_objects(project_id,contact_id,kind,source_id,object_key) SELECT ?1,?2,'media','legacy-mail-s3:'||l.object_key,l.raw_key FROM legacy_mail_s3_receipts l WHERE l.raw_key IS NOT NULL AND ${legacyReceipt}`).bind(projectId,contactId,JSON.stringify(emails)),env.DB.prepare(`INSERT OR IGNORE INTO contact_erasure_objects(project_id,contact_id,kind,source_id,object_key) SELECT ?1,?2,'media','rer-mail:'||r.delivery_id||':'||r.body_sha256,r.object_key FROM rer_mail_raw_objects r JOIN rer_mail_ingress i ON i.delivery_id=r.delivery_id AND i.project_id=r.project_id WHERE ${managedReceipt}`).bind(projectId,contactId,JSON.stringify(emails)),env.DB.prepare(`INSERT OR IGNORE INTO contact_erasure_objects(project_id,contact_id,kind,source_id,object_key)
   SELECT ?1,?2,'media','suspended:'||s.id||':'||file.key,json_extract(file.value,'$.objectKey') FROM suspended_emails s CROSS JOIN json_each(s.input_json,'$.attachments') file
   WHERE ${held} AND json_extract(file.value,'$.objectKey') IS NOT NULL`).bind(projectId,contactId,JSON.stringify(emails))]
 }
@@ -26,6 +29,8 @@ export function emailErasureStatements(env:Env,projectId:string,contactId:string
  return [
   env.DB.prepare(`DELETE FROM rer_mail_raw_objects WHERE project_id=?1 AND delivery_id IN (SELECT delivery_id FROM rer_mail_ingress i WHERE ${managedReceipt})`).bind(projectId,contactId,values),
   env.DB.prepare(`UPDATE rer_mail_ingress AS i SET sender_address=NULL,metadata_json='{}',result_json='{"state":"erased"}',state='erased',error=NULL WHERE ${managedReceipt}`).bind(projectId,contactId,values),
+  // The receipt stays, as the arrival record a later legacy delta reads; what names a person goes.
+  env.DB.prepare(`UPDATE legacy_mail_s3_receipts AS l SET raw_key=NULL,sender_address=NULL WHERE ${legacyReceipt}`).bind(projectId,contactId,values),
   ...emailThreadErasureStatements(env,projectId,contactId,emails),
   env.DB.prepare('DELETE FROM email_followup_links WHERE project_id=? AND (conversation_id IN (SELECT id FROM conversations WHERE project_id=? AND contact_id=?) OR parent_id IN (SELECT id FROM conversations WHERE project_id=? AND contact_id=?))').bind(projectId,projectId,contactId,projectId,contactId),
   env.DB.prepare(`DELETE FROM suspended_emails AS s WHERE ${held}`).bind(projectId,contactId,values),

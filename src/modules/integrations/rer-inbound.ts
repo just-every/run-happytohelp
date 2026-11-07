@@ -5,15 +5,10 @@ import type {AppEnv,Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
 import {boundedMailBody,canonical} from './rer-mail-contract'
 import {authenticateRerInbound} from './rer-inbound-signature'
-import {parseInboundMime,holdRawEmail} from './unreadable-email'
-import {headerFromAddress} from './inbound-sender'
+import {holdRawEmail} from './unreadable-email'
 import {emailAddress} from './inbound-routing'
-import {plainEmail} from './email-reply'
-import {emailEvidence} from './email-classification'
-import {receiveEmail} from './inbound-service'
+import {admitRawMime} from './raw-mime-admission'
 import {scheduleInboundEffects} from './inbound-effects'
-import {ClosedTicketRefusal,noticeMember} from './closed-ticket-mail'
-const addresses=(list:any[]|undefined):string[]=>(list||[]).flatMap(value=>value.group?addresses(value.group):value.address?[value.address]:[])
 type Receipt={body_sha256:string;metadata_json:string;sender_address:string|null;state:string;result_json:string|null;updated_at:number}
 export const rerInbound=new Hono<AppEnv>()
 rerInbound.post('/email/rer/v1/inbound',async c=>{
@@ -45,23 +40,9 @@ rerInbound.post('/email/rer/v1/inbound',async c=>{
  const claim=await c.env.DB.prepare("UPDATE rer_mail_ingress SET state='processing',updated_at=? WHERE delivery_id=? AND (state IN ('stored','failed') OR state='processing' AND updated_at<?)").bind(now,m.deliveryId,now-120000).run()
  if(!claim.meta.changes)throw new HTTPException(503,{message:'Inbound mail is processing; retry later'})
  try{
-  const parsed=await parseInboundMime(c.env,raw,{reviewRaw:redactedMime(raw),description:'This review copy has private reply recipients redacted. The exact original MIME is retained in encrypted storage.',projectId:m.workspaceId,recipients:[m.envelopeTo],identity:m.deliveryId,custody,senderAddress:custody.headerFrom||custody.envelopeFrom||undefined})
-  let result:any={state:'held',reason:'message_unreadable'}
-  if(parsed){
-   const fromHeader=headerFromAddress(parsed.headers),from=fromHeader||emailAddress(m.envelopeFrom)
-   const text=plainEmail(parsed.text||'',parsed.html||'').trim()||(parsed.attachments.length?'':String(parsed.subject||'').trim())
-   if(!from||!text&&!parsed.attachments.length){
-    await holdRawEmail(c.env,redactedMime(raw),{description:'This review copy has private reply recipients redacted. The exact original MIME is retained in encrypted storage.',projectId:m.workspaceId,recipients:[m.envelopeTo],identity:m.deliveryId,custody,senderAddress:custody.headerFrom||custody.envelopeFrom||undefined})
-   }else{
-    await c.env.DB.prepare('UPDATE rer_mail_ingress SET sender_address=? WHERE delivery_id=?').bind(from,m.deliveryId).run()
-    const rawId=parsed.messageId||m.bodySha256,messageId=rawId.length>200?await hashToken(rawId):rawId
-    result=await receiveEmail(c.env,{messageId,to:[m.envelopeTo],from,text,cc:addresses(parsed.cc),replyTo:addresses(parsed.replyTo)[0],senderAuthenticated:m.verdict==='verified',senderFailed:m.verdict==='failed',fromUnusable:!fromHeader,evidence:emailEvidence({envelopeFrom:m.envelopeFrom,headerFrom:parsed.from?.address,subject:parsed.subject,headers:parsed.headers}),attachments:parsed.attachments.map(file=>({filename:file.filename||'attachment',contentType:file.mimeType,content:file.content as ArrayBuffer}))}).catch(async error=>{
-     if(error instanceof ClosedTicketRefusal){await noticeMember(c.env,error);return {state:'refused',reason:'closed_ticket'}}
-     if(error instanceof HTTPException&&error.status===409)return {state:'held',reason:'message_identity_conflict'}
-     throw error
-    })
-   }
-  }
+  const result=await admitRawMime(c.env,{raw,to:[m.envelopeTo],verdict:{verified:m.verdict==='verified',failed:m.verdict==='failed'},envelopeFrom:m.envelopeFrom,fallbackMessageId:m.bodySha256,
+   hold:{description:'This review copy has private reply recipients redacted. The exact original MIME is retained in encrypted storage.',projectId:m.workspaceId,recipients:[m.envelopeTo],identity:m.deliveryId,custody,senderAddress:custody.headerFrom||custody.envelopeFrom||undefined},
+   onSender:async from=>{await c.env.DB.prepare('UPDATE rer_mail_ingress SET sender_address=? WHERE delivery_id=?').bind(from,m.deliveryId).run()}})
   const receipt={state:result.state,conversationId:result.conversationId||null,duplicate:Boolean(result.duplicate)}
   await c.env.DB.batch([
    c.env.DB.prepare("UPDATE rer_mail_ingress SET state='complete',result_json=?,error=NULL,updated_at=? WHERE delivery_id=?").bind(JSON.stringify(receipt),Date.now(),m.deliveryId),

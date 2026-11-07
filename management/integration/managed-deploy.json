@@ -101,6 +101,41 @@
       "optional": true
     },
     {
+      "binding": "LEGACY_MAIL_S3_BUCKET",
+      "environment": "LEGACY_MAIL_S3_BUCKET",
+      "optional": true
+    },
+    {
+      "binding": "LEGACY_MAIL_S3_PREFIX",
+      "environment": "LEGACY_MAIL_S3_PREFIX",
+      "optional": true
+    },
+    {
+      "binding": "LEGACY_MAIL_S3_REPLAY_PREFIX",
+      "environment": "LEGACY_MAIL_S3_REPLAY_PREFIX",
+      "optional": true
+    },
+    {
+      "binding": "LEGACY_MAIL_S3_MAILBOX",
+      "environment": "LEGACY_MAIL_S3_MAILBOX",
+      "optional": true
+    },
+    {
+      "binding": "LEGACY_AWS_REGION",
+      "environment": "LEGACY_AWS_REGION",
+      "optional": true
+    },
+    {
+      "binding": "LEGACY_AWS_ACCESS_KEY_ID",
+      "environment": "LEGACY_AWS_ACCESS_KEY_ID",
+      "optional": true
+    },
+    {
+      "binding": "LEGACY_AWS_SECRET_ACCESS_KEY",
+      "environment": "LEGACY_AWS_SECRET_ACCESS_KEY",
+      "optional": true
+    },
+    {
       "binding": "GOOGLE_MAIL_CLIENT_ID",
       "environment": "GOOGLE_MAIL_CLIENT_ID",
       "optional": true

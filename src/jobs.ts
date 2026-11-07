@@ -4,6 +4,7 @@ import {canonicaliseExistingProject} from './modules/knowledge/upgrade'
 import {dispatchKnowledgeUpgrades} from './modules/knowledge/upgrade-progress'
 import {sweepUploads} from './modules/api-integrations/upload-lifecycle'
 import {processRerMailbox,recoverRerMailboxes,refreshRerMailbox} from './modules/integrations/rer-mailbox'
+import {LEGACY_MAIL_S3_JOB,processLegacyMailS3,recoverLegacyMailS3} from './modules/integrations/legacy-mail-s3'
 import {consumeTriage,dispatchTriage} from './modules/triage/worker'
 import {dispatchScheduledReports} from './modules/reports/schedule-dispatch'
 import {recoverTicketContinuations} from './modules/tickets/continuation'
@@ -38,6 +39,8 @@ export async function consumeJob(job:Job,env:Env) {
  if(job.type==='knowledge.upgrade'){await canonicaliseExistingProject(env,job.projectId);await dispatchKnowledgeUpgrades(env);return}
  if(job.type==='rer.mailbox.status'){await refreshRerMailbox(env,job.projectId);return}
  if(job.type==='rer.mailbox'){await processRerMailbox(env,job.projectId);return}
+ // Queued before any workspace is known: the receipt names the object, and the reader finds the workspace from its mailbox.
+ if(job.type===LEGACY_MAIL_S3_JOB){await processLegacyMailS3(env,job.id);return}
  if(job.type==='reports.schedule'){await dispatchScheduledReports(env);return}
  if(job.type==='outbox.page'){if(!Number.isSafeInteger(job.lastId))throw new Error('Invalid persisted outbox page');await recoverOutboxPage(env,{project_id:job.projectId,conversation_id:job.id,last_id:Number(job.lastId)});return}
  if(job.type==='local.effects'){await recoverLocalResultEffects(env,localComputerIntegration,job.id);return}
@@ -75,7 +78,7 @@ export async function runScheduled(env:Env) {
  }
  await visit('Workflow',720,runWorkflows)
  await visit('Survey',70,dispatchSurveys)
- await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env)})
+ await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env);await recoverLegacyMailS3(env)})
  await visit('Voice media',2,expireVoiceMedia)
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.

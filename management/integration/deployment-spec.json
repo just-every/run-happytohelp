@@ -1050,6 +1050,12 @@
       "name": "307_legacy_import_delta.sql",
       "sha256": "ad89ea783392de5bdc44edd56bf5f566866b851e9dce13df9f2247d9eb3fe557",
       "sql": "-- MIGRATION-001 legacy delta sweeps. Importer bookkeeping only: no business table, trigger\n-- or existing row changes. legacy_import_state holds, per canonical row the legacy importer\n-- wrote or confirmed, the digest of the columns it wrote and of the legacy row they came\n-- from, so a later delta applies a legacy change only where the seed has not changed the\n-- row since. An installation imported before this migration records it by replaying its\n-- original package once. legacy_import_conflicts lists the rows a delta left as the seed has\n-- them. legacy_import_marks exists only inside a delta's own D1 batch. A delta and its check\n-- find a source row across runs through 306_cutover_steps.sql's legacy_import_rows_source\n-- index, which leads with (source_table,source_id).\nCREATE TABLE legacy_import_state(target_table TEXT NOT NULL,target_key TEXT NOT NULL,columns TEXT NOT NULL,digest TEXT NOT NULL,source_digest TEXT NOT NULL,run_id TEXT NOT NULL,source_table TEXT NOT NULL,source_id TEXT NOT NULL,PRIMARY KEY(target_table,target_key)) WITHOUT ROWID;\nCREATE TABLE legacy_import_conflicts(run_id TEXT NOT NULL REFERENCES legacy_import_runs(id),source_table TEXT NOT NULL,source_id TEXT NOT NULL,target_table TEXT NOT NULL,target_key TEXT NOT NULL,reason TEXT NOT NULL,PRIMARY KEY(run_id,source_table,source_id,target_table,target_key));\nCREATE TABLE legacy_import_marks(name TEXT PRIMARY KEY,high INTEGER NOT NULL);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "308_legacy_mail_s3.sql",
+      "sha256": "69acc3a9ec147cb9a828fe5c1f71092a1c5ccdff437e8c2c011c12cd16efb92f",
+      "sql": "-- Receipts for the Amazon SES S3 reader (src/modules/integrations/legacy-mail-s3). One row per listed object key,\n-- whatever happens to the object, so a later legacy delta can skip every message whose SES message id is held here and\n-- the reader never admits an object twice. ses_message_id is the key's last path segment. source is the prefix the key\n-- was listed under: 'ses' objects were written by SES, 'replay' objects by an operator and are never authenticated.\n-- States: pending, processing, retry, pending_mailbox, complete, held (with reason), failed, setup_notice, duplicate.\n-- raw_key names the encrypted private transport copy while it exists; error holds a short fixed phrase, never message\n-- text or an address. Additive only; the reader stays off until its inputs are set.\nCREATE TABLE legacy_mail_s3_receipts(\n object_key TEXT PRIMARY KEY,\n ses_message_id TEXT NOT NULL,\n source TEXT NOT NULL CHECK(source IN ('ses','replay')),\n size INTEGER NOT NULL,\n state TEXT NOT NULL,\n reason TEXT,\n attempts INTEGER NOT NULL DEFAULT 0,\n next_at INTEGER NOT NULL DEFAULT 0,\n claimed_at INTEGER,\n project_id TEXT,\n conversation_id TEXT,\n raw_key TEXT,\n body_sha256 TEXT,\n sender_address TEXT,\n error TEXT,\n created_at INTEGER NOT NULL,\n updated_at INTEGER NOT NULL\n) WITHOUT ROWID;\nCREATE INDEX legacy_mail_s3_receipts_message ON legacy_mail_s3_receipts(ses_message_id);\nCREATE INDEX legacy_mail_s3_receipts_due ON legacy_mail_s3_receipts(state,next_at);\n-- The retention sweep finds the few receipts that still hold a private transport copy without reading the rest.\nCREATE INDEX legacy_mail_s3_receipts_copy ON legacy_mail_s3_receipts(updated_at) WHERE raw_key IS NOT NULL;\n-- The reader's own list bookkeeping: the last successful list and the last list failure. Installation-private.\nCREATE TABLE legacy_mail_s3_state(\n id INTEGER PRIMARY KEY CHECK(id=1),\n last_listed_at INTEGER,\n last_list_error TEXT\n);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
@@ -1098,6 +1104,8 @@
     "ZENDESK_EMAIL",
     "EMAIL_API_KEY",
     "MAILGUN_SENDING_KEY",
+    "LEGACY_AWS_ACCESS_KEY_ID",
+    "LEGACY_AWS_SECRET_ACCESS_KEY",
     "EMAIL_FROM",
     "INBOUND_EMAIL_TOKEN",
     "INTEGRATION_ENCRYPTION_KEY",

@@ -1,5 +1,6 @@
 import {rerMailRoutes} from './rer-mail-routes'
 import {rerMailboxRoutes,rerMailboxStatus} from './rer-mailbox'
+import {legacyMailS3Status} from './legacy-mail-s3'
 import {rerMail,managedMailAddress} from './rer-mail-contract'
 import {senderDomainRoutes} from './sender-domain-routes'
 import {Hono} from 'hono'
@@ -33,7 +34,7 @@ integrations.get('/projects/:projectId/email-settings',async c=>{const a=await s
  if(managed&&row){row.from_address=managedMailAddress(row.from_address);row.inbound_address=managedMailAddress(row.inbound_address)}
  return c.json({managed,data:row?{...row,email_to_address:row.inbound_address||null}:{email_to_address:null},configured,
   sending:{mode:emailMode(c.env),provider:configured?(emailMode(c.env)==='local'?'development':selectedEmailProvider(c.env)):null,from:configured?mailbox(rerMail(c.env)?row?.from_address||c.env.MAIL_FROM:c.env.EMAIL_FROM):null},
-  receiving:await receivingState(c.env,row?.inbound_address),installation:installation(c.env,c.req.url)})})
+  receiving:await receivingState(c.env,row?.inbound_address),legacyMailS3:await legacyMailS3Status(c.env,row?.inbound_address),installation:installation(c.env,c.req.url)})})
 integrations.put('/projects/:projectId/email-settings',async c=>{
  const a=await scope(c,true),b=await c.req.json()
  const managed=await rerMailboxStatus(c.env,a.projectId)

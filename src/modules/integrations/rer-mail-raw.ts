@@ -7,14 +7,17 @@ import type {RerInboundMetadata} from './rer-inbound-signature'
 
 /** Original MIME can contain a live reply recipient. Keep it encrypted with the
  * installation's stable data key; archives carry ciphertext, never that key.
- * Relay/ingress credential rotation does not change this data key. */
-export async function privateRerMime(env:Env,raw:Uint8Array,m:RerInboundMetadata){
+ * Relay/ingress credential rotation does not change this data key. `associated`
+ * is bound into the ciphertext, so a copy is only readable for the receipt it
+ * was written for. */
+export async function privateMime(env:Env,raw:Uint8Array,associated:readonly unknown[]){
  let secret:Uint8Array
  try{secret=Uint8Array.from(atob(String(env.INTEGRATION_ENCRYPTION_KEY||'')),c=>c.charCodeAt(0));if(secret.length!==32)throw new Error()}catch{throw new HTTPException(503,{message:'Private email storage is unavailable'})}
  const key=await crypto.subtle.importKey('raw',Uint8Array.from(secret).buffer,'AES-GCM',false,['encrypt']),iv=crypto.getRandomValues(new Uint8Array(12))
- const encrypted=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode(canonical([m.workspaceId,m.mailboxId,m.deliveryId,m.bodySha256]))},key,Uint8Array.from(raw).buffer)
+ const encrypted=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode(canonical(associated))},key,Uint8Array.from(raw).buffer)
  const stored=new Uint8Array(12+encrypted.byteLength);stored.set(iv);stored.set(new Uint8Array(encrypted),12);return stored
 }
+export const privateRerMime=(env:Env,raw:Uint8Array,m:RerInboundMetadata)=>privateMime(env,raw,[m.workspaceId,m.mailboxId,m.deliveryId,m.bodySha256])
 /** A suspended review copy never exposes a live reply grant. Preserve all other
  * bytes, including non-UTF8 MIME, and retain the exact original privately above. */
 export function redactedMime(raw:Uint8Array){

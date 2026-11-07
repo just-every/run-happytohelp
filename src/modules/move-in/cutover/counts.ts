@@ -22,12 +22,25 @@ async function lastPull(env:Env,projectId:string){
 
 /** Legacy conversations are journaled by source table and source id, and keep that id natively. A run's journal has no workspace
  * column, so the workspace's own conversations select the journal rows (CROSS JOIN keeps that order, a probe per conversation
- * into the covering index, never a pass over the whole journal), and a sweep counts only when it completed. */
+ * into the covering index, never a pass over the whole journal), and those rows name the runs that touched the workspace.
+ * A chunked package journals each chunk as its own run, and its tables after conversations (messages, events, media and the
+ * rest) land after the conversations chunk; the package's own run `legacy-package:<digest>` completes only after every chunk.
+ * So a chunk run sweeps when its package run completes, and a one-file import when its own run does; a sweep still running
+ * counts for nothing. A chunk names its package in its source as `"package":"<digest>"`. The source is written by `stable()`,
+ * which is not always valid JSON (an absent field is written as `undefined`), so the digest is read by position, not by
+ * json_extract; a quote inside a value is escaped, so `"package":"` only ever starts that key. */
 async function legacy(env:Env,projectId:string){
- const row=await env.DB.prepare(`SELECT COUNT(DISTINCT c.id) imported,MAX(run.completed_at) swept FROM conversations c
-  CROSS JOIN legacy_import_rows r ON r.source_table='conversations' AND r.source_id=c.id AND r.status='mapped'
-  LEFT JOIN legacy_import_runs run ON run.id=r.run_id AND run.state='complete'
-  WHERE c.project_id=?`).bind(projectId).first<{imported:number;swept:number|null}>()
+ const marker='"package":"'
+ const row=await env.DB.prepare(`WITH journal AS (SELECT c.id conversation,r.run_id run FROM conversations c
+   CROSS JOIN legacy_import_rows r ON r.source_table='conversations' AND r.source_id=c.id AND r.status='mapped'
+   WHERE c.project_id=?1),
+  runs AS (SELECT run.state,run.completed_at,CASE WHEN instr(run.source_json,?2)>0
+    THEN 'legacy-package:'||substr(run.source_json,instr(run.source_json,?2)+length(?2),64) END package
+   FROM legacy_import_runs run WHERE run.id IN (SELECT run FROM journal))
+  SELECT (SELECT COUNT(DISTINCT conversation) FROM journal) imported,
+   (SELECT MAX(CASE WHEN p.id IS NULL THEN CASE WHEN runs.state='complete' THEN runs.completed_at END
+     WHEN p.state='complete' THEN p.completed_at END) FROM runs LEFT JOIN legacy_import_runs p ON p.id=runs.package) swept`)
+  .bind(projectId,marker).first<{imported:number;swept:number|null}>()
  return {imported:row?.imported??0,swept:row?.swept??null}
 }
 

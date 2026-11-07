@@ -2780,6 +2780,10 @@
       "sha256": "98745e57d55667b2966de82245ed13ed8489a6b6c72b46465dce67e92779e6cd",
       "executable": false
     },
+    "migrations/306_cutover_steps.sql": {
+      "sha256": "f4a2bdbaaae1f02095e81a2e58e0919c7b78fa16a1de2dfcd21ac50d0fe48e86",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -8100,6 +8104,18 @@
       "sha256": "8081150345fa0c1a734278a9734fd1a82904235baec5d8391dd26d755f55a7c2",
       "executable": false
     },
+    "src/modules/move-in/cutover/counts.ts": {
+      "sha256": "0eb4cdd48b4f3c78551b5108d504384e63a287c35ed411ca3de1b210e2ac402f",
+      "executable": false
+    },
+    "src/modules/move-in/cutover/routes.ts": {
+      "sha256": "92db32791365d71f45a51e3a9b1b1d1cbfd715900f5b9a7b983af32e0fd86820",
+      "executable": false
+    },
+    "src/modules/move-in/cutover/steps.ts": {
+      "sha256": "c15e94956568a2929d9166cbaba508e98c28707599d23164e89242f3080f15b9",
+      "executable": false
+    },
     "src/modules/move-in/door/authority.ts": {
       "sha256": "121429f9645ccea1a5c0d0e0a6e07f0cb2d53b89011067261d6e2fa52311fc47",
       "executable": false
@@ -12438,6 +12454,26 @@
     },
     "src/ui/native/pages/ContactErasure.jsx": {
       "sha256": "26cae4ec622937b3a2d00daeea18fe68caea19121c3c867d951c00b3b1176224",
+      "executable": false
+    },
+    "src/ui/native/pages/cutover/cutover-presentation.js": {
+      "sha256": "2c8f8637ce8bdb3268e6a36a95611ccf667c5493fe27b00945fc16ba105eefb7",
+      "executable": false
+    },
+    "src/ui/native/pages/cutover/cutover.css": {
+      "sha256": "43c8e1ad0d706f18eac013a07227219cbe8c0709144dbe8b3567004f89c12f5f",
+      "executable": false
+    },
+    "src/ui/native/pages/cutover/Cutover.jsx": {
+      "sha256": "d1e1f6f722ede2f4e4f0147f42d0d6af6283a5d81210a39b944d1a1ebcebc9af",
+      "executable": false
+    },
+    "src/ui/native/pages/cutover/CutoverForm.jsx": {
+      "sha256": "75d16221d0dd15c1e0123b61221df748ad659d7dd323d13b1faee1ddeadb99e4",
+      "executable": false
+    },
+    "src/ui/native/pages/cutover/CutoverSource.jsx": {
+      "sha256": "69c1dfed4a10d155cced45b4567e3b7a5801fcd5700b5ed2a6175186da552924",
       "executable": false
     },
     "src/ui/native/pages/delegation-shared.js": {

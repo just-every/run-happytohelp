@@ -307,7 +307,7 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 **Acceptance.**
 1. Import representative legacy IDs, permissions, exact historical financial values and media hashes through local D1/R2; resume safely and refuse conflicts without external work.
 2. Erase an imported contact and prove archive redaction plus tombstone/digest fencing prevents restoration of erased personal data.
-3. Export a delta since the full export's watermark and import it into the imported seed: new and seed-unchanged rows apply, a conversation gains its new messages in order, project rows stay the seed's after legacy retires the project, a row changed in both places is listed as a conflict without content, an erased contact's new data is not restored, no work starts, a rerun changes nothing and the delta check passes.
+3. Export a delta since the full export's watermark and import it into the imported seed: new and seed-unchanged rows apply, a conversation gains its new messages in order, project rows stay the seed's after legacy retires the project, a row changed in both places is listed as a conflict without content, an erased contact's new data is not restored, no work starts, a rerun changes nothing and the delta check passes. The sweep after legacy's retire, imported with the retire's marker, imports a marked customer's new messages and conversations as live rows and lists no marked customer as a conflict, while a customer deleted at another time stays archive-only; a delta resolution offers no survey, and another writer's conversation fence stays.
 
 #### SOURCE-001 — Author-owned capability graph
 

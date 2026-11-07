@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "5416217e35b1df5e95ec9bf5e7f6fa674662cd846234a806a884ee080223bbbb",
+      "sha256": "afda2883b2ea9258ad69c85e13db6de2160919d8a36fe8593c7abfb1c3743e36",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "91c6e55b365d7a66e8d9d537ac14a2011cfbf5fd111118139489c46e6ac30207",
+      "sha256": "50877f60131fa83e0139b604b63fb7ff5f2b343a0536a97718fbb20bb28dc1e2",
       "executable": false
     },
     "DEMO.md": {
@@ -1749,7 +1749,7 @@
       "executable": false
     },
     "docs/LEGACY-EXPORT.md": {
-      "sha256": "a26e2756977e6be68155f2d80755f9d51c4b4c7b82e5368448da0e153337ed64",
+      "sha256": "5a810b951195347af8c3ba3973d9a5906680e2b4398f9056d0e859b609bbf6fb",
       "executable": false
     },
     "docs/licenses/base-MIT.txt": {
@@ -3825,7 +3825,7 @@
       "executable": false
     },
     "scripts/import-legacy.mjs": {
-      "sha256": "73415cc74fd0a0d8bcc3d9a0d6de2a1e6a869c244189a8ed61f902d00f487f24",
+      "sha256": "69f3a0432617dd48d0db5d7186fb8179eee42d2272483c39c7d894a47f9c8d6e",
       "executable": false
     },
     "scripts/independent/delegation-backup.py": {
@@ -4089,7 +4089,7 @@
       "executable": false
     },
     "scripts/legacy-import/context-index.mjs": {
-      "sha256": "c21e358e5f3f0807d58d2ce2ab924bccbe60715b0cf4f68898895cb19ffcc6a1",
+      "sha256": "c34f3aa5db99c8fcc6138d65a2b7f40cfba2663d99324b44a72d72ca11f1c6b6",
       "executable": false
     },
     "scripts/legacy-import/delta-package.mjs": {
@@ -4097,7 +4097,7 @@
       "executable": false
     },
     "scripts/legacy-import/import-package.mjs": {
-      "sha256": "99e8544c425323c4692859d68b9b04de25f933fe0a1c03f842ee60fd4a9f1974",
+      "sha256": "04ca6871a7c299d70ae0aa9f6af4e8f33aae2077aabce3f729e806678bb38088",
       "executable": false
     },
     "scripts/legacy-import/knowledge-index.mjs": {
@@ -4110,6 +4110,10 @@
     },
     "scripts/legacy-import/package.mjs": {
       "sha256": "5f361ecc9a7374c792c871ca4f8593ebd958b6e579abece29ede74de6147b587",
+      "executable": false
+    },
+    "scripts/legacy-import/retire-marker.mjs": {
+      "sha256": "7992593257e16f551d98d1f5120565fd690fcf93689337a52150bca2cd03db98",
       "executable": false
     },
     "scripts/legacy-import/scratch.mjs": {
@@ -7465,7 +7469,7 @@
       "executable": false
     },
     "src/modules/legacy-import/delta-batch.ts": {
-      "sha256": "360e0461affc47c166ee41082c9b9f5bc9c3af0a9ffcc938d46c68233965de9a",
+      "sha256": "1f2b4f14bf6bd3355f577817c1a4ff29f9967ba2a28cbd1d6f52716bf79636eb",
       "executable": false
     },
     "src/modules/legacy-import/delta-plan.ts": {
@@ -7473,7 +7477,7 @@
       "executable": false
     },
     "src/modules/legacy-import/delta-scope.ts": {
-      "sha256": "dbdf7ed6a7b91ea3886190c5abb3347c323fff0b0f5dfd888ea455e32dda25b4",
+      "sha256": "2f34ff7312004b36012643a74b1f75dafdd5188a344324470c18fb13af6ea29a",
       "executable": false
     },
     "src/modules/legacy-import/delta.ts": {
@@ -7509,7 +7513,7 @@
       "executable": false
     },
     "src/modules/legacy-import/README.md": {
-      "sha256": "855f7499f3c2d5f4eb744015a98d08ae77d17dae22a5a5e3f70eaae84d8ddd13",
+      "sha256": "ca99251a35cc82266a807c09fcca55cdce7d5a1f7003bdf1fab610dc99991b34",
       "executable": false
     },
     "src/modules/legacy-import/relationships.ts": {
@@ -16445,7 +16449,7 @@
       "executable": false
     },
     "tests/legacy-export/delta.mjs": {
-      "sha256": "3c68753497172c338656a00f803cbb0b2549213356f54f4fbe063c91217e74de",
+      "sha256": "f29257e44a098ce1daddd9f7c11b66f823c50a2b3dd03fcee88bdb351ea2b6c7",
       "executable": false
     },
     "tests/legacy-export/extended-fixture.mjs": {
@@ -16466,6 +16470,10 @@
     },
     "tests/legacy-export/refusals.mjs": {
       "sha256": "bc3e9a1360d130b2e5b85c2123f36c9f4ff3a61e986a1f83b43aec254a84dca5",
+      "executable": false
+    },
+    "tests/legacy-export/retire.mjs": {
+      "sha256": "50ee782ee32b467fab59015ee356ae7797c7056d59f5efae128c6708eaa104fe",
       "executable": false
     },
     "tests/legacy-export/schema.sql": {

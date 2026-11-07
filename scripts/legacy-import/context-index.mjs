@@ -3,6 +3,7 @@ import {rm} from 'node:fs/promises';
 import path from 'node:path';
 import {readPart} from './package.mjs';
 import {privateDirectory} from './scratch.mjs';
+import {unmarkRetired} from './retire-marker.mjs';
 
 // Tables that stay small whatever the company's volume (one project, its team,
 // assistants and knowledge sources) are held in memory, as native mapping reads
@@ -11,8 +12,9 @@ import {privateDirectory} from './scratch.mjs';
 const memoryTables=new Set(['projects','users','ais','ai_defaults','datasets','dataset_files']);
 
 /** Build the package's cross-table context in a private temporary directory and
- * return it as a mapping context. close() deletes the index. */
-export async function packageContext(root,manifest,{timestamp,contactIdentity,transcriptOrder,isMessageMedia,useRelationships},{delta=false}={}){
+ * return it as a mapping context. close() deletes the index. A delta swept after the legacy
+ * retire reads the context's contacts through the retire marker, as its row chunks are. */
+export async function packageContext(root,manifest,{timestamp,contactIdentity,transcriptOrder,isMessageMedia,useRelationships},{delta=false,retireMarker}={}){
   const directory=await privateDirectory('context');
   const db=new DatabaseSync(path.join(directory,'context.sqlite'));
   try{
@@ -26,11 +28,13 @@ export async function packageContext(root,manifest,{timestamp,contactIdentity,tr
     // Media rows carry the R2 key of their verified attachment, as the exporter assigned it.
     const objectKeys=new Map(manifest.objects.map(o=>[String(o.mediaId),o.key]));
     for(const part of manifest.context){
-      const rows=await readPart(root,part);
+      const {rows}=unmarkRetired(part.table,await readPart(root,part),retireMarker);
       db.exec('BEGIN');
       for(let row of rows){
         // A delta maps rows as live even after legacy soft-deleted the project: the seed keeps
         // its workspace, so the archive-only cascade of a retired project never hides a sweep.
+        // Contacts the retire marked are live too (above); archive-only follows each row's own
+        // deleted_at and its conversation's and contact's, never the project's.
         if(delta&&part.table==='projects'){const {deleted_at,...live}=row;row=live;}
         if(part.table==='media'){const key=objectKeys.get(String(row.id));if(!key)throw Error('Package media row has no exported attachment');row.object_key=key;}
         if(memoryTables.has(part.table))(tables[part.table]??=[]).push(row);

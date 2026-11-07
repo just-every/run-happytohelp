@@ -13,6 +13,14 @@ export const identityTables=new Set(['users','user_settings','memberships','loca
  * starts nothing. Each referencing table precedes the table it references, so the removal
  * deletes children before their parents and never trips a foreign key. */
 export const workTables=['rer_mail_commands','conversation_outbox','email_deliveries','magic_signins','operator_notification_activity','operator_notifications','native_integration_intents','native_integration_events','integration_deliveries','context_job_events','context_jobs','lead_jobs','leads','brand_generations','csat_surveys','workflow_events']
+/** Every table a delta batch removes trigger-added rows from: the work tables, then
+ * `conversation_resolutions`. A delta that sets resolved_at on a conversation with a survey cycle
+ * (`conversation_tracking`) makes `conversation_record_resolution` add a resolution, which the
+ * widget's resolution state offers a survey for and the survey dispatcher discovers; the batch
+ * removes it, after `csat_surveys` and `native_integration_events` that can reference it, so a
+ * sweep makes no survey or email possible. The trigger's cycle-start update of
+ * `conversation_tracking` stays. A member resolving in the seed is untouched. */
+export const batchRemovedTables=[...workTables,'conversation_resolutions']
 
 /** The conversation a legacy row belongs to, through the package context. */
 export function conversationOf(table:string,row:Row,context:LegacyBundle):string|undefined{

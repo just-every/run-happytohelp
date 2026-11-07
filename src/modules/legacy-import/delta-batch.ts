@@ -1,14 +1,16 @@
 import { type Row,type MappedRow,stable } from './types'
 import {insertJson,sqlName,parameterBytes,jsonBytes} from './d1'
 import {stateStatement} from './state'
-import {workTables} from './delta-scope'
+import {batchRemovedTables} from './delta-scope'
 import type {Decision} from './delta'
 
 /** One D1 batch (one transaction) for a group of delta decisions: canonical appends and updates,
  * their holds, reporting rows and import state, conflicts and journal entries commit together.
  * Every conversation the batch writes to is fenced from the workflow journal's triggers, as Move
- * in does, and any row a trigger adds to the app's work tables is removed before it commits, so
- * applying a delta sends, notifies, dispatches and schedules nothing. */
+ * in does, and any row a trigger adds to the app's work tables or resolutions is removed before it
+ * commits, so applying a delta sends, notifies, dispatches, schedules and offers nothing. The batch
+ * removes only the fences it inserted itself: a fence another writer (a Move in on the same
+ * conversation) held before the batch stays. */
 export function deltaBatch(db:D1Database,projectId:string,runId:string,group:Decision[],columnsOf:(m:MappedRow)=>Row){
  const statements:D1PreparedStatement[]=[],inserts=new Map<string,Map<string,unknown[][]>>(),updates:D1PreparedStatement[]=[]
  const holds:unknown[][]=[],reporting:unknown[][]=[],state:unknown[][]=[],conflicts:unknown[][]=[],journal:unknown[][]=[],fenced=new Set<string>(),appended=new Set<string>()
@@ -31,17 +33,19 @@ export function deltaBatch(db:D1Database,projectId:string,runId:string,group:Dec
   // An erased contact's rows are journaled as erasure leaves them: digest kept, verbatim copy cleared.
   journal.push([runId,d.source.table,d.source.sourceId,d.source.rowDigest,d.status==='erased'?'{}':stable(d.source.row),d.target.table,d.target.key,d.status])
  }
- const fences=JSON.stringify([...fenced].map(id=>[projectId,id]))
- const fenceStatement=(ids:string[])=>db.prepare("INSERT OR IGNORE INTO move_in_native_fences(project_id,conversation_id) SELECT json_extract(value,'$[0]'),json_extract(value,'$[1]') FROM json_each(?)").bind(JSON.stringify(ids.map(id=>[projectId,id])))
- for(const t of workTables)statements.push(db.prepare(`INSERT INTO legacy_import_marks(name,high) SELECT '${t}',COALESCE(MAX(rowid),0) FROM ${sqlName(t)}`))
+ // Each fence the batch inserts is marked first, only where no fence exists yet; cleanup deletes the marked ones alone.
+ const fenceStatements=(ids:string[])=>[
+  db.prepare("INSERT OR IGNORE INTO legacy_import_marks(name,high) SELECT 'fence:'||value,0 FROM json_each(?2) WHERE NOT EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=?1 AND f.conversation_id=value)").bind(projectId,JSON.stringify(ids)),
+  db.prepare("INSERT OR IGNORE INTO move_in_native_fences(project_id,conversation_id) SELECT ?1,value FROM json_each(?2)").bind(projectId,JSON.stringify(ids))]
+ for(const t of batchRemovedTables)statements.push(db.prepare(`INSERT INTO legacy_import_marks(name,high) SELECT '${t}',COALESCE(MAX(rowid),0) FROM ${sqlName(t)}`))
  // A conversation the delta appends is fenced only after its own INSERT, so the insert trigger
  // derives its lifecycle status from resolved_at exactly as a full import does.
  const existing=[...fenced].filter(id=>!appended.has(id)),late=[...fenced].filter(id=>appended.has(id))
- if(existing.length)statements.push(fenceStatement(existing))
+ if(existing.length)statements.push(...fenceStatements(existing))
  // Tables keep their first-mapped order, so a parent row precedes the rows that reference it.
  for(const [table,byColumns] of inserts){
   for(const [names,values] of byColumns)statements.push(insertJson(db,`INSERT INTO ${sqlName(table)} (${names.split(',').map(sqlName).join(',')})`,names.split(',').length,values))
-  if(table==='conversations'&&late.length)statements.push(fenceStatement(late))
+  if(table==='conversations'&&late.length)statements.push(...fenceStatements(late))
  }
  statements.push(...updates)
  if(holds.length)statements.push(insertJson(db,'INSERT OR IGNORE INTO legacy_import_holds(id,run_id,source_table,source_id,reason)',5,holds))
@@ -49,8 +53,8 @@ export function deltaBatch(db:D1Database,projectId:string,runId:string,group:Dec
  if(state.length)statements.push(stateStatement(db,state))
  if(conflicts.length)statements.push(insertJson(db,'INSERT OR IGNORE INTO legacy_import_conflicts(run_id,source_table,source_id,target_table,target_key,reason)',6,conflicts))
  statements.push(insertJson(db,'INSERT INTO legacy_import_rows(run_id,source_table,source_id,row_digest,source_json,target_table,target_key,status)',8,journal))
- if(fenced.size)statements.push(db.prepare("DELETE FROM move_in_native_fences WHERE (project_id,conversation_id) IN (SELECT json_extract(value,'$[0]'),json_extract(value,'$[1]') FROM json_each(?))").bind(fences))
- for(const t of workTables)statements.push(db.prepare(`DELETE FROM ${sqlName(t)} WHERE rowid>(SELECT high FROM legacy_import_marks WHERE name='${t}')`))
+ if(fenced.size)statements.push(db.prepare("DELETE FROM move_in_native_fences WHERE project_id=? AND 'fence:'||conversation_id IN (SELECT name FROM legacy_import_marks WHERE name LIKE 'fence:%')").bind(projectId))
+ for(const t of batchRemovedTables)statements.push(db.prepare(`DELETE FROM ${sqlName(t)} WHERE rowid>(SELECT high FROM legacy_import_marks WHERE name='${t}')`))
  statements.push(db.prepare('DELETE FROM legacy_import_marks'))
  return statements
 }

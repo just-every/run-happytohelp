@@ -137,9 +137,10 @@ A conversation that gains legacy messages is refreshed: the new messages follow 
 - Identity and authority rows (users and their settings, memberships, devices, grants, delegations and their events) are appended when new and never updated: a legacy role change never raises a seed member's permissions. A differing one is listed.
 - Erased contacts stay erased. The rows of a contact with a `contact_erasures` row (the contact, the messages and files of their conversations, notes, participants, events) are not applied, their files are not uploaded, and their journal copy is stored redacted (`source_json='{}'`), as erasure leaves it.
 - A delta never deletes. A row legacy soft-deleted after its import is journaled archive-only and listed; a row the seed deleted after its import is not brought back. A row hard-deleted in legacy is not detected.
-- Applying a delta starts nothing the running app would: every conversation it writes to is fenced from the workflow journal's triggers, as Move in does, and a row a trigger adds to the outbox, mail, notification, integration, job, lead, brand, survey or workflow tables is removed in the same transaction.
+- Applying a delta starts nothing the running app would: every conversation it writes to is fenced from the workflow journal's triggers, as Move in does, and a row a trigger adds to the outbox, mail, notification, integration, job, lead, brand, survey or workflow tables is removed in the same transaction. The batch removes only the fences it inserted: a fence another writer held before the batch (a Move in writing the same conversation id) stays, and the batch's own are gone when it commits.
+- A delta never offers a survey. When it sets `resolved_at` on a seed conversation that has a survey cycle (`conversation_tracking`, which the widget's hand-off and other native doors open), the resolution row the seed's trigger adds is removed in the same transaction, so the widget's resolution state offers the customer nothing and the survey dispatcher has nothing to discover. The conversation stays resolved, and the trigger's start of the next cycle in `conversation_tracking` stays. A member resolving a conversation in the seed records its resolution and survey as before.
 
-**Result and reruns.** The command exits 0 when the delta is applied, conflicts included. Its stdout summary adds `delta` (`since`, `watermark`), `appended`, `updated`, `unchanged`, `kept`, `erased`, `archivedOnly`, `withheldObjects`, per-table counts and `conflicts`: `{sourceTable, sourceId, targetTable, targetKey, reason}` entries, ids and reasons only. `legacy_import_conflicts` keeps them. Each chunk is its own journal run, so an interrupted delta resumes with the same plan; rerunning a complete one changes no business row, R2 object or journal row and lists the same conflicts.
+**Result and reruns.** The command exits 0 when the delta is applied, conflicts included. Its stdout summary adds `delta` (`since`, `watermark`), `appended`, `updated`, `unchanged`, `kept`, `erased`, `archivedOnly`, `withheldObjects`, `ignoredRetireMarker` with `--retire-marker` ([after the retire](#delta-sweeps)), per-table counts and `conflicts`: `{sourceTable, sourceId, targetTable, targetKey, reason}` entries, ids and reasons only. `legacy_import_conflicts` keeps them. Each chunk is its own journal run, so an interrupted delta resumes with the same plan; rerunning a complete one changes no business row, R2 object or journal row and lists the same conflicts.
 
 **Check.** `check.mjs delta` only reads and prints one JSON object of counts:
 
@@ -151,6 +152,24 @@ node scripts/legacy-import/check.mjs delta --package /private/company/delta-1/im
 It exits 0 only when every row of the delta is journaled by the delta's own runs; the project's journaled source rows (distinct table and id across all its runs, `projectSourceRows`) equal N plus the delta's rows that no earlier run journaled (`newRows`); and every attachment the delta applied is identical in R2 (size and SHA-256; files of erased contacts and held rows are withheld by design). N is `projectSourceRows` as the previous check printed it. Before the first sweep, run the check once before the import: it exits 1, as nothing of the delta is journaled yet, and prints the current `projectSourceRows`. `--exclude-table` works as for `rows`.
 
 Sweep again with `--since` set to the watermark of the delta just imported, until the legacy project is retired and a final sweep after its retire finds nothing new.
+
+**The sweep after the retire.** The legacy retire soft-deletes the company's project and, in the same transaction, every live contact of it with one marker time, to the second in UTC, without touching `updated_at`:
+
+```sql
+UPDATE projects SET deleted_at='<T>' WHERE id=? AND deleted_at IS NULL;
+UPDATE contacts SET deleted_at='<T>' WHERE project_id=? AND deleted_at IS NULL;
+```
+
+The operator records `<T>` (for example `2026-11-25 09:30:00`). Every sweep exported after the retire carries every marked contact (their `deleted_at` is new), so import it with the marker:
+
+```sh
+node scripts/import-legacy.mjs --package /private/company/delta-9/import --apply --persist-to .wrangler/state \
+  --retire-marker "2026-11-25 09:30:00"
+```
+
+`--retire-marker` takes `YYYY-MM-DD HH:MM:SS` (UTC, as the retire records it) or ISO-8601 UTC (`2026-11-25T09:30:00Z`, optionally with `.fff` milliseconds), with `--persist-to` or `--remote` alike. Any other value, the flag with `--file`, or the flag with a full package is refused before anything is read from or written to D1/R2. In that delta a contact whose `deleted_at` is the same instant as the marker is read as the same row with `deleted_at` null: it updates nothing in the seed and makes nothing archive-only, so a marked customer's new message in an existing conversation and a new conversation with its messages import as live rows, and a marked contact whose only legacy change is the marker is `unchanged`, even when the seed changed it. A marked contact with other legacy changes gets the usual decision for those. A contact deleted at any other time keeps the usual handling (archive-only, listed when the seed holds it, its conversations and messages archive-only), and a row's own `deleted_at` still makes it archive-only. Archive-only never follows the project's soft delete, so the workspace, its settings and the widget stay live. The summary counts the marked contact rows as `ignoredRetireMarker`, top level and in `tables.contacts`, whatever else is decided for them; without the flag it is absent.
+
+Import every sweep after the retire with the marker from the start. A run without it lists the marked customers as conflicts and leaves their new messages out, and the marker makes each contacts chunk its own journal run (its run row records `retireMarker`), so a later run of the same package with it adds runs that `check.mjs delta` counts twice. If that happened, export a fresh delta with the same `--since` and import it with the marker. Without the flag nothing here changes: a delta imports exactly as before.
 
 ## Deliberate boundaries
 

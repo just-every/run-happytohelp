@@ -3,13 +3,14 @@ import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {DatabaseSync} from 'node:sqlite';
 import {findDatabase,snapshot,bucketSnapshot} from '../helpers/upgrade-snapshot.mjs';
+import {assertRetireSweep} from './retire.mjs';
 
 const uuid=(group,number)=>`${group}000000-0000-4000-8000-${String(number).padStart(12,'0')}`;
 const work=['conversation_outbox','email_deliveries','magic_signins','operator_notifications','operator_notification_activity','native_integration_events','native_integration_intents','integration_deliveries','context_jobs','lead_jobs','leads','brand_generations','csat_surveys','workflow_events'];
 
 /** After project 1's full import: legacy keeps taking chats, the seed team changes a conversation,
  * legacy retires the project; the operator sweeps everything since the full export's watermark
- * through the public commands, reruns the sweep, and checks it. */
+ * through the public commands, reruns the sweep, and checks it; then the sweep after legacy's retire. */
 export async function assertDeltaSweep({admin,run,status,env,output,persist,objectDirectory,projectId,snapshotArgs,fullSnapshot,fullImport}){
   const watermark=JSON.parse(await readFile(join(fullSnapshot,'manifest.json'),'utf8')).source.watermark;
   assert.match(watermark,/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/,'every export records the legacy clock as its watermark');
@@ -105,5 +106,7 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   assert.equal(result.projectSourceRows,previousTotal+result.newRows);assert.ok(result.newRows>=7);
   assert.equal(result.attachments.identical,1);assert.equal(result.conflicts,2);
   assert.equal((await check(['--previous-total',String(previousTotal+1)])).code,1,'a wrong previous total fails the check');
-  return {rows,applied:{appended:applied.appended,updated:applied.updated,conflicts:applied.conflicts.length},previousTotal,projectSourceRows:result.projectSourceRows};
+  // Then legacy is retired and the next sweep, since this delta's watermark, takes the retire's marker.
+  const retire=await assertRetireSweep({admin,run,status,env,output,persist,objectDirectory,projectId,snapshotArgs,since:exported.watermark});
+  return {rows,applied:{appended:applied.appended,updated:applied.updated,conflicts:applied.conflicts.length},previousTotal,projectSourceRows:result.projectSourceRows,retire};
 }

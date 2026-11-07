@@ -1749,7 +1749,7 @@
       "executable": false
     },
     "docs/LEGACY-EXPORT.md": {
-      "sha256": "742d829a93b93456ce5e3108873cbe87a2fd622bc6bdc16fbd49aef3fc06fae3",
+      "sha256": "3717fd1cd252d530706e63348247c4666b6de16447b1e6aeb8394639161ea637",
       "executable": false
     },
     "docs/licenses/base-MIT.txt": {
@@ -4073,7 +4073,7 @@
       "executable": false
     },
     "scripts/legacy-import/check.mjs": {
-      "sha256": "caee16a44db519cb4ff552a3cfe8ed6a9fdc90b541566acf859e7261a87e0d08",
+      "sha256": "e73f275115cf6ce16aea921e6201e1d8c134761ce4a7bf2bedbb0126a5fec339",
       "executable": false
     },
     "scripts/legacy-import/checks/attachments.mjs": {
@@ -4085,7 +4085,7 @@
       "executable": false
     },
     "scripts/legacy-import/checks/delta.mjs": {
-      "sha256": "ed0838bc1b7c9cbbd081670aa60af9857bb46c09b2f56d52b848c4fb2dd6e833",
+      "sha256": "e23894612d952752954d969f7b2ea0fad10a596894e3bec0f4d33cb7520de3b2",
       "executable": false
     },
     "scripts/legacy-import/checks/mail.mjs": {
@@ -7529,7 +7529,11 @@
       "executable": false
     },
     "src/modules/legacy-import/delta-batch.ts": {
-      "sha256": "1f2b4f14bf6bd3355f577817c1a4ff29f9967ba2a28cbd1d6f52716bf79636eb",
+      "sha256": "c8376bfd68d1727598d5670bc64de37f4be2b1c5bf360286223571ca50b41766",
+      "executable": false
+    },
+    "src/modules/legacy-import/delta-guard.ts": {
+      "sha256": "b60027382c3b0711194be09acac4e2b2860944667cb83bcc24458fa74e4a89fc",
       "executable": false
     },
     "src/modules/legacy-import/delta-plan.ts": {
@@ -7541,7 +7545,7 @@
       "executable": false
     },
     "src/modules/legacy-import/delta.ts": {
-      "sha256": "6b33dafc29051a9b522b5e815ced5d6aeb4a5e96d13e5c993dfbe24f6fcf6d66",
+      "sha256": "6cfc4092bba60a4f09ba97d15027457b872088bc0b462fbed9631ab441fff8bc",
       "executable": false
     },
     "src/modules/legacy-import/importer.ts": {
@@ -7573,7 +7577,7 @@
       "executable": false
     },
     "src/modules/legacy-import/README.md": {
-      "sha256": "d5659a9c0fd8facf7e3a73d8f6b76353a5ecbef1bb7445a40e613674c2bdf4de",
+      "sha256": "b0342af3a2256a6265252aaeae680ecefa278a52732382198ab87028cbc0f1ec",
       "executable": false
     },
     "src/modules/legacy-import/relationships.ts": {
@@ -16561,7 +16565,7 @@
       "executable": false
     },
     "tests/legacy-export/delta.mjs": {
-      "sha256": "10a4019fce3f9593e7269cd33a29f9c370d3c19d1cc6ae8895373d07069f198e",
+      "sha256": "e71572c3bb8775c2298a64d6f808c0ea12d052399c3d081ef15e8157eb239c84",
       "executable": false
     },
     "tests/legacy-export/extended-fixture.mjs": {
@@ -16582,6 +16586,10 @@
     },
     "tests/legacy-export/refusals.mjs": {
       "sha256": "bc3e9a1360d130b2e5b85c2123f36c9f4ff3a61e986a1f83b43aec254a84dca5",
+      "executable": false
+    },
+    "tests/legacy-export/resume.mjs": {
+      "sha256": "0c74ef95b39dc85b8c3d6c8fdf5d11196354b785294fa77979ac3ffec51170a2",
       "executable": false
     },
     "tests/legacy-export/retire.mjs": {

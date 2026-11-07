@@ -15,7 +15,8 @@ const usage=`Usage: node scripts/legacy-import/check.mjs CHECK [options]
   rows --package DIR --database D1 --bucket R2 [--exclude-table TABLE ...]   journal and canonical counts against the package
   attachments --package DIR --database D1 --bucket R2                      every attachment's R2 bytes against the package
   delta --package DIR --previous-total N (--database D1 --bucket R2 | --persist-to DIR) [--exclude-table TABLE ...]
-                                                                           a delta's journal, the project's source rows and R2 bytes; exits 1 on a mismatch
+                                                                           a delta's journal, the project's source rows, R2 bytes and conflicts;
+                                                                           waits out D1 overload; exits 1 on a mismatch
   work --database D1 --bucket R2                                           side-effect tables (outbox, mail, notifications, jobs, leads)
   queues --since ISO --until ISO --queue NAME [--queue NAME ...]           queue message operations in a window
   mail --since ISO --until ISO [--fleet-domain DOMAIN]                     SendGrid activity of every sender in a window

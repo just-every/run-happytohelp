@@ -6,11 +6,14 @@ import {readStates,stateEntry,stateKey,targetKeyOf,unchangedSinceImport,type Imp
 import {projectTables,identityTables,contactsOf} from './delta-scope'
 import {skippedRow,type DeltaPlan} from './delta-plan'
 import {deltaBatch} from './delta-batch'
+import {readGuard} from './delta-guard'
 
 export interface DeltaConflict {sourceTable:string;sourceId:string;targetTable:string;targetKey:string;reason:string}
 export type DeltaStatus='mapped'|'updated'|'unchanged'|'conflict'|'kept'|'erased'|'skipped'|'archived_only'
 type Planned=Awaited<ReturnType<typeof planImport>>['rows'][number]
-export interface Decision {source:Planned;status:DeltaStatus;mapped:MappedRow[];appends:MappedRow[];updates:{mapped:MappedRow;changed:string[]}[];state:unknown[][];conflicts:DeltaConflict[];target:{table:string|null;key:string|null}}
+/** `listed`: rows applied otherwise than legacy has them (a contact appended without the identity another seed
+ * contact holds), recorded and listed with the conflicts. */
+export interface Decision {source:Planned;status:DeltaStatus;mapped:MappedRow[];appends:MappedRow[];updates:{mapped:MappedRow;changed:string[]}[];state:unknown[][];conflicts:DeltaConflict[];listed:DeltaConflict[];target:{table:string|null;key:string|null}}
 
 /** Seed-derived transcript positions replace the ones mapping computes from legacy alone. */
 function positioned(mapped:MappedRow,plan:DeltaPlan):MappedRow{
@@ -24,7 +27,10 @@ function positioned(mapped:MappedRow,plan:DeltaPlan):MappedRow{
  * the seed does not have; update what the seed has not changed since it was imported; leave a row
  * changed in both places and list it as a conflict; write nothing for a row already equal. Rows
  * of the legacy project, of erased contacts, of mail the seed already took and held by the plan
- * are journaled, never applied. */
+ * are journaled, never applied. A write that would take a unique value a different seed row holds,
+ * or reference a row the seed does not hold, is a conflict instead; a new contact is appended
+ * without the identity another seed contact holds (delta-guard.ts). Every decision reads the seed
+ * as it is, so a stopped import resumes with the same decisions. */
 export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context:LegacyBundle;objectKeys?:Set<string>;checkOnly?:boolean;plan:DeltaPlan;projectId:string}){
  const plan=await planImport(bundle,options),{plan:delta,context}=options
  const existing=await env.DB.prepare('SELECT bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{bundle_digest:string;state:string}>()
@@ -39,10 +45,12 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
  const columnsOf=writtenColumns(schemas)
  const proposed=await canonicalRows(env.DB,pending.flatMap(source=>source.mapped),columnsOf)
  const states=await readStates(env.DB,pending.flatMap(source=>source.mapped.map(m=>[m.table,targetKeyOf(m)] as [string,string])))
+ // Each written row as it would stand after the write: the mapping alone when appended, over the seed's row when updated.
+ const guard=await readGuard(env.DB,pending.flatMap(source=>source.mapped.map(m=>{const row=columnsOf(m);return {table:m.table,key:m.key,row:{...(proposed.get(identity(m.table,m.key.map(k=>row[k])))??{}),...row}}})))
  const earlier=await earlierTargets(env.DB,pending.filter(source=>!source.mapped.length).map(source=>[source.table,source.sourceId]))
  const decisions:Decision[]=[]
  for(const source of pending){
-  const decision:Decision={source,status:'unchanged',mapped:source.mapped,appends:[],updates:[],state:[],conflicts:[],target:{table:source.mapped.map(m=>m.table).join(',')||null,key:source.mapped.map(targetKeyOf).join(',')||null}}
+  const decision:Decision={source,status:'unchanged',mapped:source.mapped,appends:[],updates:[],state:[],conflicts:[],listed:[],target:{table:source.mapped.map(m=>m.table).join(',')||null,key:source.mapped.map(targetKeyOf).join(',')||null}}
   decisions.push(decision)
   const conflict=(m:{table:string;key:string},reason:string)=>decision.conflicts.push({sourceTable:source.table,sourceId:source.sourceId,targetTable:m.table,targetKey:m.key,reason})
   // A row that maps to nothing now (legacy deleted it) is journaled against where an earlier run mapped it.
@@ -64,20 +72,40 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
    const row=columnsOf(m),key=targetKeyOf(m),id=identity(m.table,m.key.map(k=>row[k])),canonical=proposed.get(id),state=states.get(stateKey(m.table,key))
    // A row the importer wrote that is gone now was deleted in the seed: a delta never brings it back.
    if(!canonical&&state){if(state.source_digest!==source.rowDigest)conflict({table:m.table,key},'deleted in the seed since import');continue}
-   if(!canonical){decision.appends.push(m);decision.state.push(await stateEntry(m.table,key,row,source.rowDigest,plan.id,source.table,source.sourceId));continue}
+   if(!canonical){
+    let appended=m,written=row
+    const clash=guard.clash(m.table,m.key,row)
+    if(clash){
+     // A new contact keeps its conversations: it is appended without the identity, as the full import appends a later holder.
+     if(m.table!=='contacts'||!clash.columns.includes('external_id')){conflict({table:m.table,key},clash.reason);continue}
+     appended={...m,row:{...m.row,external_id:null}};written=columnsOf(appended)
+     const still=guard.clash(m.table,m.key,written)
+     if(still){conflict({table:m.table,key},still.reason);continue}
+     decision.listed.push({sourceTable:source.table,sourceId:source.sourceId,targetTable:m.table,targetKey:key,reason:`${clash.reason}; appended without its identity`})
+    }
+    decision.appends.push(appended);decision.state.push(await stateEntry(m.table,key,written,source.rowDigest,plan.id,source.table,source.sourceId));continue
+   }
    const changed=Object.keys(row).filter(column=>canonical[column]!==row[column])
    if(!changed.length){if(!await recorded(state,row,source.rowDigest))decision.state.push(await stateEntry(m.table,key,row,source.rowDigest,plan.id,source.table,source.sourceId));continue}
    const reason=await conflictReason(m,canonical,state,source.rowDigest,delta)
    if(reason===null)continue
-   if(reason)conflict({table:m.table,key},reason)
-   else{decision.updates.push({mapped:m,changed});decision.state.push(await stateEntry(m.table,key,row,source.rowDigest,plan.id,source.table,source.sourceId))}
+   if(reason){conflict({table:m.table,key},reason);continue}
+   const clash=guard.clash(m.table,m.key,{...canonical,...row})
+   if(clash){conflict({table:m.table,key},clash.reason);continue}
+   decision.updates.push({mapped:m,changed});decision.state.push(await stateEntry(m.table,key,row,source.rowDigest,plan.id,source.table,source.sourceId))
   }
-  if(decision.conflicts.length){decision.status='conflict';decision.appends=[];decision.updates=[];decision.state=[];continue}
+  // A row whose parent the seed does not hold (withheld above, or deleted) would break a foreign key: it is a conflict too.
+  if(!decision.conflicts.length){
+   const own=new Set(decision.appends.map(m=>identity(m.table,m.key.map(k=>m.row[k]))))
+   for(const m of decision.appends){const why=guard.missing(m.table,columnsOf(m),own);if(why)conflict({table:m.table,key:targetKeyOf(m)},why)}
+   for(const {mapped:m,changed} of decision.updates){const why=guard.missing(m.table,columnsOf(m),own,changed);if(why)conflict({table:m.table,key:targetKeyOf(m)},why)}
+  }
+  if(decision.conflicts.length){decision.status='conflict';decision.appends=[];decision.updates=[];decision.state=[];decision.listed=[];continue}
   decision.status=decision.updates.length?'updated':decision.appends.length?'mapped':'unchanged'
-  for(const m of [...decision.appends,...decision.updates.map(u=>u.mapped)]){const row=columnsOf(m);proposed.set(identity(m.table,m.key.map(k=>row[k])),{...(proposed.get(identity(m.table,m.key.map(k=>row[k])))??{}),...row})}
+  for(const m of [...decision.appends,...decision.updates.map(u=>u.mapped)]){const row=columnsOf(m),id=identity(m.table,m.key.map(k=>row[k])),merged={...(proposed.get(id)??{}),...row};proposed.set(id,merged);guard.take(m.table,m.key,merged)}
   for(const entry of decision.state)states.set(stateKey(String(entry[0]),String(entry[1])),{columns:String(entry[2]),digest:String(entry[3]),source_digest:String(entry[4])} as ImportState)
  }
- conflicts.push(...decisions.flatMap(d=>d.conflicts))
+ conflicts.push(...decisions.flatMap(d=>[...d.conflicts,...d.listed]))
  const counts={sourceRows:plan.rows.length,replayed,mapped:0,updated:0,unchanged:0,conflict:0,kept:0,erased:0,skipped:0,archived_only:0}
  for(const d of decisions)counts[d.status]++
  const summary={id:plan.id,...counts,mappedRows:plan.summary.mappedRows,holds:decisions.flatMap(d=>d.status==='mapped'||d.status==='updated'?d.mapped.filter(m=>m.hold).map(m=>`${d.source.table}:${d.source.sourceId}: ${m.hold}`):[]),conflicts}

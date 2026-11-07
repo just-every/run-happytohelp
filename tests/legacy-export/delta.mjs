@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import {readFile,mkdir,writeFile} from 'node:fs/promises';
+import {readFile,mkdir,writeFile,cp} from 'node:fs/promises';
 import {join} from 'node:path';
 import {DatabaseSync} from 'node:sqlite';
 import {findDatabase,snapshot,bucketSnapshot} from '../helpers/upgrade-snapshot.mjs';
 import {assertRetireSweep} from './retire.mjs';
+import {assertResumedSweep,assertCheckRetry} from './resume.mjs';
 
 const uuid=(group,number)=>`${group}000000-0000-4000-8000-${String(number).padStart(12,'0')}`;
 const work=['conversation_outbox','email_deliveries','magic_signins','operator_notifications','operator_notification_activity','native_integration_events','native_integration_intents','integration_deliveries','context_jobs','lead_jobs','leads','brand_generations','csat_surveys','workflow_events'];
@@ -22,8 +23,15 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   const conversation=uuid('40',1),resolved=uuid('41',1),owner=uuid('20',1),participant=uuid('31',1);
   const project=sql('SELECT * FROM projects WHERE id=?',projectId)[0],settings=sql('SELECT * FROM project_settings WHERE project_id=?',projectId)[0];
 
-  // The seed's team assigns the resolved conversation after the import.
-  const seedEdit=new DatabaseSync(database);try{seedEdit.prepare('UPDATE conversations SET assigned_to=? WHERE id=?').run(owner,resolved);}finally{seedEdit.close();}
+  // The seed's team assigns the resolved conversation after the import. Its own widget identifies two customers itself:
+  // one with the identifier legacy later gives an imported customer, one with the identifier of a customer new in legacy.
+  const customer=uuid('30',1),seedHolder=uuid('34',1),seedNewHolder=uuid('34',2),identities=['seed-widget-identity','delta-new-customer'];
+  const seedEdit=new DatabaseSync(database);try{
+    seedEdit.prepare('UPDATE conversations SET assigned_to=? WHERE id=?').run(owner,resolved);
+    const add=seedEdit.prepare('INSERT INTO contacts(id,project_id,name,external_id,created_at) VALUES(?,?,?,?,1)');
+    add.run(seedHolder,projectId,'Seed widget visitor',identities[0]);add.run(seedNewHolder,projectId,'Seed widget customer',identities[1]);
+  }finally{seedEdit.close();}
+  const customerBefore=sql('SELECT * FROM contacts WHERE id=?',customer);
 
   // Legacy keeps taking chats and mail, then the project is retired.
   await admin.query("SET time_zone='+00:00'");
@@ -35,7 +43,10 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   await admin.query("INSERT INTO messages(id,project_id,conversation_id,agent_id,local_id,content,created_at,updated_at) VALUES(?,?,?,?,?,?,'2026-01-01 00:00:00.000',UTC_TIMESTAMP(3))",[late,projectId,conversation,owner,first.local_id,'A late-committed legacy answer']);
   await admin.query('UPDATE conversations SET last_message_id=?,updated_at=UTC_TIMESTAMP() WHERE id=?',[reply,conversation]);
   await admin.query('INSERT INTO messages(id,project_id,conversation_id,contact_id,local_id,content,created_at,updated_at) VALUES(?,?,?,?,?,?,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))',[held,projectId,resolved,participant,'delta-local-held','A legacy message in a conversation the seed changed']);
-  await admin.query("UPDATE contacts SET name='Taylor Accounts Payable',updated_at=UTC_TIMESTAMP() WHERE id=?",[participant]);
+  await admin.query("UPDATE contacts SET name='Taylor Accounts Payable',identifier='delta-accounts-renewed',updated_at=UTC_TIMESTAMP() WHERE id=?",[participant]);
+  // Legacy gives an imported customer the identifier the seed's own contact holds (restored before the next sweep).
+  const [[original]]=await admin.query("SELECT identifier,DATE_FORMAT(updated_at,'%Y-%m-%d %H:%i:%s') updated_at FROM contacts WHERE id=?",[customer]);
+  await admin.query('UPDATE contacts SET identifier=?,updated_at=UTC_TIMESTAMP() WHERE id=?',[identities[0],customer]);
   await admin.query("INSERT INTO contacts(id,project_id,name,email,identifier,created_at,updated_at) VALUES(?,?,'Riley Newcustomer','riley@delta.example.test','delta-new-customer',UTC_TIMESTAMP(),UTC_TIMESTAMP())",[newContact,projectId]);
   await admin.query('INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES(?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP())',[newConversation,projectId,newContact]);
   await admin.query('INSERT INTO messages(id,project_id,conversation_id,contact_id,local_id,content,created_at,updated_at) VALUES(?,?,?,?,?,?,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))',[newMessage,projectId,newConversation,newContact,'delta-local-new','A new customer asks about refunds']);
@@ -67,12 +78,13 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   await run('scripts/export-legacy.mjs',['attachments','--input',deltaSnapshot,'--objects-dir',objectDirectory,'--output',deltaImport]);
   const manifest=JSON.parse(await readFile(join(deltaImport,'manifest.json'),'utf8')),rows=manifest.source.rowCounts;
   assert.equal(rows.messages,6,'only new messages are in the row chunks');assert.equal(rows.conversations,4,'changed conversations and the parents of new messages');
-  assert.equal(rows.contacts,2);assert.equal(rows.projects,1);assert.equal(rows.media,2);assert.equal(rows.mediables,2);
+  assert.equal(rows.contacts,3);assert.equal(rows.projects,1);assert.equal(rows.media,2);assert.equal(rows.mediables,2);
   for(const table of ['articles','categories','macros','events','buckets','datasets','insights','charges'])assert.equal(rows[table],0,`${table} rows untouched since the watermark are left out`);
   assert.deepEqual(manifest.objects.map(o=>o.mediaId).sort(),[newMedia,sesMedia].sort(),'only the new files are copied');
   assert.equal(manifest.source.scopedCounts.messages,11,'the whole scope is still read and counted');
 
-  const before=business(),beforeWork=workCounts(),beforeObjects=await bucketSnapshot(join(persist,'v3/r2'));
+  const before=business(),beforeWork=workCounts(),beforeObjects=await bucketSnapshot(join(persist,'v3/r2')),resumeFrom=join(output,'delta-1-before');
+  await cp(persist,resumeFrom,{recursive:true});
   const check=args=>status('scripts/legacy-import/check.mjs',['delta','--package',deltaImport,'--persist-to',persist,...args]);
   const pre=await check(['--previous-total','0']);
   assert.equal(pre.code,1,'nothing of the delta is journaled before its import');
@@ -83,7 +95,19 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   assert.ok(applied.appended>=5,'new contact, conversation, messages and file are appended');
   assert.ok(applied.updated>=2,'the changed contact and the refreshed conversation are updated');
   assert.equal(applied.kept,1,'the legacy project row is kept as the seed has it');
-  assert.deepEqual(applied.conflicts.map(c=>[c.sourceTable,c.sourceId]).sort(),[['conversations',resolved],['messages',held]].sort());
+  assert.deepEqual(applied.conflicts.map(c=>[c.sourceTable,c.sourceId]).sort(),[['contacts',customer],['contacts',newContact],['conversations',resolved],['messages',held]].sort());
+  // An identity another seed contact holds is never applied: the imported customer stays as it is; the new customer
+  // arrives without it, with its conversation, message and file; the holders keep theirs; a fresh identity applies.
+  const clashOf=id=>applied.conflicts.find(c=>c.sourceId===id).reason;
+  assert.match(clashOf(customer),new RegExp(`^unique contacts\\(project_id,external_id\\): held by contacts ${seedHolder}$`));
+  assert.match(clashOf(newContact),new RegExp(`^unique contacts\\(project_id,external_id\\): held by contacts ${seedNewHolder}; appended without its identity$`));
+  assert.deepEqual(sql('SELECT * FROM contacts WHERE id=?',customer),customerBefore);
+  assert.deepEqual(sql('SELECT id,external_id FROM contacts WHERE id IN (?,?,?,?) ORDER BY id',seedHolder,seedNewHolder,newContact,participant),
+    [{id:participant,external_id:'delta-accounts-renewed'},{id:newContact,external_id:null},{id:seedHolder,external_id:identities[0]},{id:seedNewHolder,external_id:identities[1]}]);
+  assert.deepEqual(sql("SELECT j.status FROM legacy_import_rows j JOIN legacy_import_runs u ON u.id=j.run_id WHERE json_extract(u.source_json,'$.delta')=1 AND j.source_table='contacts' AND j.source_id IN (?,?) ORDER BY j.source_id",customer,newContact).map(r=>r.status),['conflict','mapped']);
+  assert.deepEqual(sql("SELECT source_id FROM legacy_import_conflicts WHERE source_table='contacts' ORDER BY 1").map(r=>r.source_id),[customer,newContact]);
+  const identityFree=text=>assert.equal(identities.some(value=>text.includes(value)),false,'no identifier value is printed or recorded');
+  identityFree(JSON.stringify(applied));identityFree(JSON.stringify(sql('SELECT reason FROM legacy_import_conflicts')));
   for(const c of applied.conflicts)assert.deepEqual(Object.keys(c).sort(),['reason','sourceId','sourceTable','targetKey','targetTable']);
   // Mail the seed's reader took is skipped with its file and its new conversation: counted, journaled, never written or listed.
   assert.equal(applied.skipped,5);
@@ -125,10 +149,19 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   assert.equal(checked.code,0,checked.stdout);
   const result=JSON.parse(checked.stdout);
   assert.equal(result.projectSourceRows,previousTotal+result.newRows);assert.ok(result.newRows>=7);
-  assert.equal(result.attachments.identical,1);assert.equal(result.attachments.withheld,1);assert.equal(result.attachments.mismatched,0);assert.equal(result.conflicts,2);
+  assert.equal(result.attachments.identical,1);assert.equal(result.attachments.withheld,1);assert.equal(result.attachments.mismatched,0);assert.equal(result.conflicts,4);
+  assert.deepEqual(result.conflictRows.map(c=>`${c.sourceTable}:${c.sourceId}:${c.reason}`).sort(),applied.conflicts.map(c=>`${c.sourceTable}:${c.sourceId}:${c.reason}`).sort());
+  for(const c of result.conflictRows)assert.deepEqual(Object.keys(c).sort(),['reason','sourceId','sourceTable','targetKey','targetTable']);
+  identityFree(checked.stdout);assert.equal(result.retries,0);
   assert.equal(result.skipped,5);assert.deepEqual([result.tables.conversations.skipped,result.tables.messages.skipped,result.tables.media.skipped,result.tables.mediables.skipped],[1,2,1,1]);
   assert.equal((await check(['--previous-total',String(previousTotal+1)])).code,1,'a wrong previous total fails the check');
+  // D1 answering "overloaded" is waited out; any other error fails the check at once.
+  {const {check:_,at:__,...printed}=result;await assertCheckRetry({persist,deltaImport,previousTotal,expected:printed});}
+  // The same sweep, stopped partway from the state before it, resumes with the same command to the same outcome.
+  const resumed=await assertResumedSweep({admin,run,status,env,output,objectDirectory,from:resumeFrom,projectId,snapshotArgs,since:watermark});
+  // Legacy's customer goes back to how the retire will find it.
+  await admin.query('UPDATE contacts SET identifier=?,updated_at=? WHERE id=?',[original.identifier,original.updated_at,customer]);
   // Then legacy is retired and the next sweep, since this delta's watermark, takes the retire's marker.
   const retire=await assertRetireSweep({admin,run,status,env,output,persist,objectDirectory,projectId,snapshotArgs,since:exported.watermark});
-  return {rows,applied:{appended:applied.appended,updated:applied.updated,skipped:applied.skipped,conflicts:applied.conflicts.length},checked:{skipped:result.skipped,code:checked.code},previousTotal,projectSourceRows:result.projectSourceRows,retire};
+  return {rows,applied:{appended:applied.appended,updated:applied.updated,skipped:applied.skipped,conflicts:applied.conflicts.length},checked:{skipped:result.skipped,code:checked.code},resumed,previousTotal,projectSourceRows:result.projectSourceRows,retire};
 }

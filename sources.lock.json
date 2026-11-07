@@ -2772,6 +2772,10 @@
       "sha256": "e7f0dca0639171f13c0d69406d8d04df20752cccfe14076a800c0d8776e8a6c5",
       "executable": false
     },
+    "migrations/304_knowledge_import_origins.sql": {
+      "sha256": "49ce815e3d735266d35714d5db5d46b1d125f4cba9d504c370a377fa4a7d15a2",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -8878,6 +8882,10 @@
     },
     "src/modules/public-site/html.ts": {
       "sha256": "d720d3cedf55e378fac0a20446125b3bb9c7879ab81f4d59e02c1935b79b6896",
+      "executable": false
+    },
+    "src/modules/public-site/import-noindex.ts": {
+      "sha256": "7ae0f137bcc64347b8967af4f28067b9a7d8b0e4171596c00b4fdcfde9a69316",
       "executable": false
     },
     "src/modules/public-site/index.ts": {

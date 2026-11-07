@@ -60,8 +60,35 @@ export async function replayApply({label='CANDIDATE',sourceRoot=root,fixture=rep
   const receipt={label,fixture,counts,pull:{id:pull.pullId,state:finished.state,progress:finished.progress},...total,runs,steps}
   await mkdir(evidenceDir,{recursive:true});await writeFile(join(evidenceDir,`${label.toLowerCase()}.json`),JSON.stringify(receipt,null,2)+'\n')
   console.log(`${label} ${JSON.stringify({fixture,counts,...total,roundTrips:trips(total),statementMargin:980-total.maxStatements,evidence:join(evidenceDir,`${label.toLowerCase()}.json`)})}`)
+  if(label==='HIGH_PREDICATES')await replayRetainedApply(h,seeded[0])
   return receipt
  }finally{await h.close()}
+}
+
+/** A real delta review keeps native edits under their original source claims.
+ * Thousands of retained claims must leave room for the new records to progress. */
+async function replayRetainedApply(h,seeded){
+ const base='/api/move-in/projects/p/imports',files=await h.files,original=await files.get(`move-in/p/${seeded.id}/original`)
+ const users=(await original.text()).trim().split('\n').map(JSON.parse).filter(row=>row.user)
+ await h.db.prepare("UPDATE contacts SET name='Native edit' WHERE project_id='p'").run()
+ const added=20,stamp='2024-01-01T00:00:00Z'
+ const rows=[...users,...Array.from({length:added},(_,i)=>({user:{id:900001+i,role:'end-user',name:`synthetic-hh delta ${i}`,email:`synthetic-hh-delta-${i}@example.test`,created_at:stamp}}))]
+ const uploaded=await h.call(`${base}?vendor=zendesk`,{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Import-Filename':'synthetic-hh-delta.jsonl'},body:rows.map(JSON.stringify).join('\n')+'\n'})
+ const id=uploaded.data.id
+ let peak=0,steps=0
+ const drain=async()=>{while(h.queued.length){assert.ok(++steps<4000,'retained delta makes bounded progress');const step=await h.step();assert.deepEqual(step.retried,[]);assert.deepEqual(step.effects,{widget:0});assert.ok(step.statements<=980);peak=Math.max(peak,step.statements)}}
+ await drain()
+ const ready=(await h.call(`${base}/${id}`)).data
+ assert.equal(ready.state,'ready');assert.equal(ready.error,null)
+ const review=await (await files.get(`move-in/p/${id}/review/${ready.plan.fingerprint}`)).json()
+ assert.equal(review.retainedSources.length,users.length);assert.equal(review.contacts.length,added)
+ await h.call(`${base}/${id}/apply`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fingerprint:ready.plan.fingerprint})})
+ await drain()
+ const finished=(await h.call(`${base}/${id}`)).data
+ assert.equal(finished.error,null);assert.equal(finished.state,'completed');assert.equal(finished.cursor,added)
+ assert.equal((await h.db.prepare("SELECT COUNT(*) n FROM contacts WHERE project_id='p' AND name='Native edit'").first()).n,users.length)
+ assert.equal((await h.db.prepare("SELECT COUNT(*) n FROM contacts WHERE project_id='p'").first()).n,users.length+added)
+ console.log(`RETAINED_DELTA ${JSON.stringify({retained:users.length,added,predicates:1+Math.ceil(review.contacts.length/500)+Math.ceil(review.retainedSources.length/100),maxStatements:peak,statementMargin:980-peak,steps})}`)
 }
 
 /** Round trips (D1 calls and batches, R2 calls, queue sends) the replay of 61 batches and 14,770

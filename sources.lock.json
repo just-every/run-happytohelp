@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "4fbaeb8e63a79bea2e05f482033bd8d8b29ed83045669f76d2cdb704fb44e1f1",
+      "sha256": "6b13f009001da844111c409bf9b2c238c4ee403f33fe7620f5ed28c8f2b52863",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "faa7d89e1973183ceb8afb836974931b73c719a7f2b2a002830c4ad474f7f815",
+      "sha256": "d612c779fc5528799028fcccb6b41612c6cef609e813d2ad6099852b55013bd0",
       "executable": false
     },
     "DEMO.md": {
@@ -2053,7 +2053,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "37d0f63f809c5000c91e789233b3ff86e18bf3fcb78af171b2e12a3dee4449f0",
+      "sha256": "f384afabaedba29fc31b4158938f9481085a853919a156ad03f8dab3dab12662",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2857,7 +2857,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "061a71758774ced0abf8eb956d0cc3aa89641170567bb050ac48a33a3d84ffb3",
+      "sha256": "ba1daa54c6e135af650f9288421a7ec9cd69b71be6b39f8c5f704044ce2ca211",
       "executable": false
     },
     "rer-project.json": {
@@ -7257,7 +7257,7 @@
       "executable": false
     },
     "src/modules/knowledge/import-jobs.ts": {
-      "sha256": "21f6e108b64200e3b7cfc1a1b75701eb4762ccdef996faf388dbacb9a4e1eca7",
+      "sha256": "8ac366636089a9cec730c9ecf664bcd244c2f5ee080530cb64dd171e4e6e9191",
       "executable": false
     },
     "src/modules/knowledge/import-requirements.ts": {
@@ -8861,7 +8861,7 @@
       "executable": false
     },
     "src/modules/public-site/help-center.tsx": {
-      "sha256": "cd757815771ec2fbacf044227cf1edf5498498a75e5d988daeb441ad816b6f6f",
+      "sha256": "d0fa54578588b4a463eb5a3995b31880c1b99911c303b5161cf52a44875cd87d",
       "executable": false
     },
     "src/modules/public-site/help-controls.ts": {
@@ -8909,7 +8909,7 @@
       "executable": false
     },
     "src/modules/public-site/README.md": {
-      "sha256": "c59e4a2f88a5521282fe20bee9312423f56158c4beebe87c72ce779502e9706c",
+      "sha256": "e93e1596cf6b6d59380166556018a077653b19825e818640871c6a2ffa08afcc",
       "executable": false
     },
     "src/modules/public-site/request-pages.ts": {
@@ -16305,7 +16305,7 @@
       "executable": false
     },
     "tests/journeys/public.mjs": {
-      "sha256": "dcc46d60abee59bbb1d813a95d0370b29c6b4c927e8e3a91f1d910eb20aa74ba",
+      "sha256": "7ff0ef888f3d99cf4e5119306d0a63c5d4e96df6ca0b6f3364ed02cd407583b6",
       "executable": false
     },
     "tests/journeys/reports.mjs": {

@@ -12,6 +12,7 @@ import { escapeHtml as e } from './html'
 import { categoryTree } from './category-tree'
 import { missingArticlePage,missingHelpCenterPage } from './not-found'
 import { shell } from './shell'
+import {importedHelpOnly} from './import-noindex'
 import {hasRestrictedCollections,resolveHelpAccess} from '../knowledge/access'
 import {getKnowledgeExperience,selectKnowledgeLocale,listAccessibleCategories,listAccessibleArticles,lookupAccessibleArticle} from '../knowledge/experience'
 import {knowledgeVisitorHash,recordKnowledgeEvent} from '../knowledge/feedback'
@@ -31,6 +32,8 @@ export async function renderHelpCenter(c:any,key:string,base:string,tail?:string
  if(!project)return c.html(missingHelpCenterPage(),404)
  // Personalized help and feedback never enter shared caches.
  c.header('Cache-Control','private, no-store');c.header('Vary','Cookie, Authorization');c.header('Referrer-Policy','same-origin')
+ // Help filled only by an import stays out of search indexes until a member publishes.
+ const noindex=await importedHelpOnly(c.env,project.id);if(noindex)c.header('X-Robots-Tag','noindex')
  const access=await resolveHelpAccess(c.env,project.id,c.req.raw)
  const settings=await getKnowledgeExperience(c.env,project.id)
  if(settings.linkColor&&project.brand)Object.assign(project.brand,{linkColor:settings.linkColor})
@@ -73,7 +76,7 @@ export async function renderHelpCenter(c:any,key:string,base:string,tail?:string
   content=categoryTree(categories,articles,base,suffix,settings.templates)||'<h1>How can we help?</h1><p class="help-center-notice">There are no published articles yet. Please contact the support team through the website chat.</p>'
   content=helpTemplate(settings.templates.home,content,project.name)
  }
- return c.html(await renderPublicKnowledgeHtml(c.env,project.id,c.req.raw,shell(project,base,content,{keyword,greeting:!tail,locale,defaultLocale:settings.defaultLocale,tools})))
+ return c.html(await renderPublicKnowledgeHtml(c.env,project.id,c.req.raw,shell(project,base,content,{noindex,keyword,greeting:!tail,locale,defaultLocale:settings.defaultLocale,tools})))
 }
 function render(c:any){const key=c.req.param('project'),base=c.req.path.startsWith('/help/')?`/help/${encodeURIComponent(key)}`:`/${encodeURIComponent(key)}`;return renderHelpCenter(c,key,base,c.req.param('article'))}
 helpCenterRoutes.get('/help/:project',render)

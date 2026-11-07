@@ -28,6 +28,17 @@ their native session. This writes `public_project_aliases`; there is currently n
 dashboard control for aliases. Legacy `/{slug}/` links resolve only after that
 alias exists.
 
+Help that only an import filled stays out of search indexes. A workspace is
+import-only when it has published articles, every one of them came from an import (Move in,
+the legacy importer or the Article import page's Intercom and Freshdesk import, which records
+`knowledge_import_origins` from this release; earlier API imports keep no per-article record and
+stay indexable) and no member has published in it. Every public help page of such a workspace, on
+every path, alias and configured host, carries `X-Robots-Tag: noindex` and a robots `noindex` meta
+tag, with the same status, body and caching. When a member publishes or republishes an article
+(editor, proposal or rollback) the workspace is indexable again and a later import does not
+reverse that. `import-noindex.ts` holds the one query. There is no sitemap or `robots.txt` rule
+for help paths, because a Disallow would hide the `noindex` from crawlers.
+
 `help-host.ts` also serves the legacy host-root forms `/`, `/search?keyword=...`
 and `/{article_slug}` when deployment explicitly supplies `PUBLIC_HELP_HOSTS` as
 JSON mapping exact lowercase hostnames to retained project slugs or native IDs.

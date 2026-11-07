@@ -188,6 +188,10 @@
     {
       "id": "303_teammate_teams.sql",
       "buyerSteps": "Back up D1 first; apply once after 302_move_in_zendesk_pull.sql, before serving the updated Worker. Adds only personal Teams consent, session-bound single-use link codes, verified personal conversations, preferences and outcomes. Off by default; no backfill or replay. All five tables are excluded from exports; reconnect and link explicitly after restore."
+    },
+    {
+      "id": "304_knowledge_import_origins.sql",
+      "buyerSteps": "Back up D1 first; apply once after 303_teammate_teams.sql, before serving the updated Worker. Adds one small table recording which articles the Article import page's Intercom and Freshdesk import wrote, so a workspace whose published help is only imported is served with noindex until a member publishes. No backfill or replay: earlier API imports keep today's behaviour, and Move in and legacy imports are covered from their existing records. It holds no personal data and travels with exports."
     }
   ],
   "breaking": false,

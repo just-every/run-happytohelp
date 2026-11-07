@@ -9,6 +9,7 @@ import {fileURLToPath} from 'node:url'
 import {createServer} from 'vite'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
 import {client} from './kit/http.mjs'
+import {generate} from '../move-in/generator.mjs'
 
 const root=fileURLToPath(new URL('../..',import.meta.url))
 async function withRuntime(options,body){const runtime=await createRuntime(options);let success=false;try{await body(runtime,client(runtime.origin));success=true}finally{await runtime.close(success)}}
@@ -121,5 +122,32 @@ test('a published help center: Markdown rendered safely, complete summary search
    console.log('PUBLIC_PROOF PUBLIC-005 docs 200/200/404 with unavailable alias lookup; help control=500')
   }finally{await runtime.execute('ALTER TABLE unavailable_public_aliases RENAME TO public_project_aliases')}
 
+ })
+})
+
+test('help filled by a Move in import stays noindex on every public page until a member publishes, then is indexable for good',{timeout:300_000},async()=>{
+ const slug='imported-help-slug',robotsMeta='<meta name="robots" content="noindex">'
+ await withRuntime({queueConsumers:true,vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:slug})}},async(runtime,{request})=>{
+  const tenant=await runtime.seedTenant({name:'Imported support',email:'imported-help@example.test',allowedOrigin:runtime.origin}),native=await runtime.seedTenant({name:'Native support',email:'native-help@example.test',allowedOrigin:runtime.origin})
+  await runtime.execute(`INSERT INTO public_project_aliases(slug,project_id) VALUES('${slug}','${tenant.projectId}')`)
+  const helpOrigin=new URL(runtime.origin);helpOrigin.hostname='localhost'
+  const move=(path,options={})=>request(`/api/move-in/projects/${tenant.projectId}/imports${path}`,{token:tenant.token,...options})
+  // Move in: upload, review, apply.
+  const upload=await move('?vendor=zendesk',{method:'POST',raw:true,body:generate('zendesk',6),headers:{'X-Import-Filename':'help.jsonl','Content-Type':'application/octet-stream'}});assert.equal(upload.status,201,await upload.clone().text())
+  const {id}=(await upload.json()).data,poll=async state=>{for(let i=0;i<240;i++){const run=(await (await move(`/${id}`)).json()).data;if(run.state===state)return run;assert.notEqual(run.state,'failed',String(run.error));await new Promise(r=>setTimeout(r,500))}throw new Error('Move in did not reach '+state)}
+  const ready=await poll('ready');const applied=await move(`/${id}/apply`,{body:{fingerprint:ready.plan.fingerprint}});assert.ok(applied.ok,await applied.clone().text());await poll('completed')
+  const home=await (await request(`/help/${tenant.projectId}`)).text(),published=home.match(new RegExp(`href="/help/${tenant.projectId}/(?!requests)([^"?/]+)`))?.[1]
+  assert.ok(published,'the import published an article on the help center')
+  // Every public page form, on every path, alias and configured host.
+  const signals=async()=>{
+   const urls=[`/help/${tenant.projectId}`,`/${tenant.projectId}`,`/${slug}`,`/help/${slug}`].flatMap(base=>['','/search?keyword=guide',`/${published}`,'?access=signin'].map(tail=>base+tail))
+   const seen=[];for(const url of urls){const response=await request(url);assert.equal(response.status,200,url);seen.push({header:response.headers.get('x-robots-tag'),meta:(await response.text()).includes(robotsMeta)})}
+   for(const tail of ['/','/search?keyword=guide',`/${published}`]){const response=await fetch(new URL(tail,helpOrigin));assert.equal(response.status,200,'host '+tail);seen.push({header:response.headers.get('x-robots-tag'),meta:(await response.text()).includes(robotsMeta)})}
+   return seen}
+  const before=await signals();assert.ok(before.every(s=>/noindex/.test(s.header??'')&&s.meta),'imported-only help is noindex on every page')
+  // A member publishes: indexable, with neither signal.
+  const written=await request(`/api/knowledge/${tenant.projectId}/articles`,{token:tenant.token,body:{title:'Written by a member',slug:'member-guide',content:'Member instructions.',summary:'member',status:'published'}});assert.equal(written.status,201,await written.text())
+  const after=await signals();assert.ok(after.every(s=>s.header===null&&!s.meta),'member-published help carries neither signal')
+  const own=await request(`/api/knowledge/${native.projectId}/articles`,{token:native.token,body:{title:'Native guide',slug:'native-guide',content:'Native.',summary:'native',status:'published'}});assert.equal(own.status,201);const never=await request(`/help/${native.projectId}`);assert.equal(never.status,200);assert.equal(never.headers.get('x-robots-tag'),null)
  })
 })

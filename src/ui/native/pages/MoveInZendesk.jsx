@@ -3,6 +3,7 @@ import {nativeRequest} from '../transport';
 import {Feedback,Field} from './forms';
 import CopyCommand from '../setup-help/CopyCommand';
 import {reasonLabel} from './move-in-presentation';
+import MoveInZendeskFiles from './MoveInZendeskFiles';
 
 const returned={connected:'Zendesk is connected.',denied:'Zendesk sign-in was cancelled. Choose Connect to try again.',expired:'The Zendesk sign-in took too long. Choose Connect again.',failed:'Zendesk did not accept the sign-in. Check the client Identifier and its redirect URL, then connect again.',conflict:'This workspace already holds history from another Zendesk account.'};
 const working=['pulling','reviewing','applying'];
@@ -44,6 +45,7 @@ export default function MoveInZendesk({projectId,onOpenRun}){
    {!pull||['applied','abandoned'].includes(pull.state)?<button type="button" className="btn btn-primary" disabled={busy} onClick={start}>{pull?.state==='applied'?'Pull new and changed history':'Pull everything'}</button>:null}
   </>}
   {pull&&<PullStatus pull={pull} busy={busy} onStep={step} onOpenRun={onOpenRun}/>}
+  {connection.state!=='none'&&<MoveInZendeskFiles base={base} connected={connection.connected} ready={pull?.state==='applied'}/>}
  </div>;
 }
 

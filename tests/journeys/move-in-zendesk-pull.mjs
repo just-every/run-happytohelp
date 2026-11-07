@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {createHash,randomBytes} from 'node:crypto'
 import {nativeHarness} from '../move-in/harness.mjs'
 import {rows} from '../move-in/journey-kit.mjs'
-import {fakeZendesk,largeComments,SUBDOMAIN,CLIENT_ID,PATH_TOKEN,QUERY_TOKEN} from '../move-in/zendesk-pull-fixture.mjs'
+import {fakeZendesk,largeComments,SUBDOMAIN,CLIENT_ID,PATH_TOKEN,QUERY_TOKEN,ATTACHMENT_BYTES} from '../move-in/zendesk-pull-fixture.mjs'
 
 const api='/api/move-in/projects/p',post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
 const secretish=/synthetic-(?:access|refresh|code)-\d|synthetic-hh-(?:path|query)-token/
@@ -537,5 +537,250 @@ test('an owner reads the Cutover sources with their live Zendesk counts after a 
   assert.equal(sources[0].state,'incumbent');assert.equal(sources[1].steps.length+sources[2].steps.length+sources[3].steps.length,0)
   assert.deepEqual(await rows(h,"SELECT action,actor_id,detail_json FROM audit_events WHERE action='cutover.step.recorded' ORDER BY at").then(events=>events.map(e=>[e.actor_id,JSON.parse(e.detail_json).source])),[['owner','zendesk'],['owner','zendesk']],'one security-log event per recorded step')
   assert.equal(h.outboundRequests.length,outbound,'nothing was sent or fetched')
+ }finally{await h.close()}
+})
+
+test('an owner fetches every imported comment\'s files over the Zendesk connection into private storage: shown in place, private notes stay private, refusals by id, Retry-After honoured, and a second run fetches nothing already stored; undoing a later pull keeps its replies and notes with files',{timeout:900_000},async()=>{
+ const zendesk=fakeZendesk({attachments:true}),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
+ const files=`${api}/zendesk/attachments`,tokenish=/synthetic-(?:access|refresh|code)-\d|synthetic-hh-(?:path|query|attachment)-token|synthetic-hh-signed|zdusercontent|synthetic-elsewhere/
+ // Steps attachment and pull jobs alike, waiting out a persisted Retry-After.
+ async function run(){
+  let steps=0
+  while(h.queued.length){
+   assert.ok(steps++<500,'the run finishes in bounded steps')
+   const job=h.queued[0],[row]=job.type==='move-in.zendesk.attachments'?await rows(h,'SELECT next_at FROM move_in_zendesk_attachment_pulls WHERE id=?',job.id):[]
+   const wait=(row?.next_at??0)-Date.now();if(wait>0)await new Promise(resolve=>setTimeout(resolve,wait+20))
+   const result=await h.step();assert.deepEqual(result.retried,[],'a step never throws to the queue');assert.ok(result.statements<=980,'each step stays inside the D1 budget')
+  }
+ }
+ try{
+  await connect(h,zendesk)
+  assert.equal((await h.raw(files,post({}))).response.status,409,'nothing imported yet: nothing to fetch for')
+  const started=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+  await drain(h);const ready=await pullOf(h,started.id)
+  await h.call(`${api}/zendesk/pulls/${ready.id}/approve`,post({fingerprint:ready.fingerprint}));await drain(h)
+  assert.equal((await pullOf(h,started.id)).state,'applied')
+  assert.equal(zendesk.state.downloads.length,0,'the pull itself stays metadata-only')
+
+  // Only an owner or admin of this workspace starts it; one run at a time.
+  await addMember(h,'admin','admin')
+  for(const actor of ['operator','foreign'])assert.ok([403,404].includes((await h.raw(files,{...post({}),actor})).response.status),actor)
+  assert.equal((await h.raw(files,{...post({}),headers:{'Content-Type':'application/json',Authorization:''}})).response.status,401)
+  zendesk.state.gone.add('104')
+  const first=(await h.call(files,{...post({}),actor:'admin'})).data
+  assert.deepEqual([first.state,first.error],['running',null])
+  assert.equal((await h.raw(files,post({}))).response.status,409,'one run at a time per workspace')
+  await run()
+  let view=(await h.call(`${files}/${first.id}`)).data
+  assert.equal(view.state,'done',JSON.stringify(view.error))
+  assert.deepEqual(view.totals,{attachments:6,stored:3,pending:0,refused:3})
+  assert.deepEqual(view.refusals,[{attachmentId:null,ticketId:'104',reason:'zendesk_ticket_not_found'},{attachmentId:'81003',ticketId:'101',reason:'attachment_host_not_owned'},{attachmentId:'81004',ticketId:'102',reason:'attachment_host_not_owned'},{attachmentId:'81005',ticketId:'102',reason:'attachment_deleted'}])
+  assert.equal(view.refusalsTotal,4)
+  assert.deepEqual((await h.call(files)).data.id,first.id,'the workspace\'s latest run')
+  assert.ok(zendesk.state.downloads.filter(d=>d.id===81001&&d.host==='account').length>=2,'the throttled download is retried after Retry-After')
+  assert.deepEqual([...new Set(h.outboundRequests.map(r=>r.hostname))].sort(),[`${SUBDOMAIN}.zdusercontent.com`,`${SUBDOMAIN}.zendesk.com`],'only the account\'s own two hosts are ever requested')
+
+  // Shown in place and downloaded byte-exact; a private note's file reaches the team only.
+  const [ticket]=await rows(h,"SELECT c.id,c.contact_id FROM conversations c JOIN move_in_conversations s ON s.conversation_id=c.id WHERE s.source_id='101'")
+  const media=await rows(h,'SELECT id,filename,content_type,size,message_id,uploaded_by FROM media WHERE conversation_id=? ORDER BY filename',ticket.id)
+  assert.deepEqual(media.map(m=>[m.filename,m.content_type,m.size,m.message_id===null,m.uploaded_by]),[['synthetic-hh-internal.csv','text/csv',ATTACHMENT_BYTES[81002].length,true,'import:zendesk'],['synthetic-hh-report.zip','application/zip',ATTACHMENT_BYTES[81001].length,false,'import:zendesk']])
+  const [note,zip]=media,url=m=>`/api/conversations/${ticket.id}/media/${m.id}`
+  const shown=await h.call(`/api/conversations/${ticket.id}/messages`)
+  assert.deepEqual(shown.messages.flatMap(m=>m.media.map(f=>f.filename)),['synthetic-hh-report.zip'],'the public file shows on its message')
+  assert.ok(Buffer.from((await h.download(url(zip))).bytes).equals(ATTACHMENT_BYTES[81001]),'byte-exact over 48 KiB')
+  assert.ok(Buffer.from((await h.download(url(note))).bytes).equals(ATTACHMENT_BYTES[81002]),'the team downloads the private note\'s file')
+  const transcript=JSON.stringify(await h.call(`/api/dashboard/projects/p/conversations/${ticket.id}/buckets`))
+  assert.ok(transcript.includes('synthetic-hh-internal.csv'),'the private file shows on its private note')
+  await h.contactSession('customer','p',ticket.contact_id)
+  const seen=await h.call(`/api/conversations/${ticket.id}/messages`,{actor:'customer'})
+  assert.deepEqual(seen.messages.flatMap(m=>m.media.map(f=>f.filename)),['synthetic-hh-report.zip'])
+  assert.ok(Buffer.from((await h.download(url(zip),'customer')).bytes).equals(ATTACHMENT_BYTES[81001]),'the customer downloads the public file')
+  assert.equal((await h.download(url(note),'customer')).status,404,'a private note\'s file never reaches the customer')
+  assert.equal((await h.download(url(zip),'foreign')).status,404,'another workspace cannot download it')
+  const signedOut=await h.raw(url(zip),{headers:{Authorization:''}});assert.ok([401,403,404].includes(signedOut.response.status))
+  const [inline]=await rows(h,"SELECT m.id,m.conversation_id FROM media m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='105'")
+  assert.ok(Buffer.from((await h.download(`/api/conversations/${inline.conversation_id}/media/${inline.id}`)).bytes).equals(ATTACHMENT_BYTES[70501]),'an inline image is fetched too')
+
+  // No token, signed link, Location or file URL is kept anywhere.
+  assert.doesNotMatch(JSON.stringify(await h.snapshot()),tokenish)
+  const objects=(await (await h.files).list({include:['httpMetadata','customMetadata']})).objects.filter(o=>o.key.startsWith('import-bytes/'))
+  assert.equal(objects.length,3);assert.doesNotMatch(JSON.stringify(objects.map(o=>[o.key,o.httpMetadata,o.customMetadata])),tokenish)
+  assert.equal((await rows(h,"SELECT COUNT(*) n FROM audit_events WHERE action='import.attachments.started'"))[0].n,1)
+
+  // A second run fetches nothing already stored. Its member's session ends mid-run: the run
+  // stops with its reason, and Resume by a new session continues it from its checkpoint.
+  const fetched=zendesk.state.downloads.length
+  zendesk.state.gone.delete('104')
+  const second=(await h.call(files,post({}))).data
+  await endSession(h)
+  await run()
+  await signIn(h)
+  view=(await h.call(`${files}/${second.id}`)).data
+  assert.deepEqual([view.state,view.error],['running','import_authority_revoked'])
+  assert.equal((await h.raw(`${files}/${second.id}/resume`,{...post({}),actor:'operator'})).response.status,403)
+  assert.equal((await h.call(`${files}/${second.id}/resume`,post({}))).data.error,null)
+  assert.equal((await h.raw(`${files}/${second.id}/resume`,post({}))).response.status,409,'only a stopped run resumes')
+  await run()
+  view=(await h.call(`${files}/${second.id}`)).data
+  assert.equal(view.state,'done',JSON.stringify(view.error))
+  assert.deepEqual(view.totals,{attachments:6,stored:3,pending:0,refused:3})
+  assert.ok(!view.refusals.some(r=>r.ticketId==='104'),'a ticket Zendesk returns again leaves the list')
+  assert.deepEqual(zendesk.state.downloads.slice(fetched).filter(d=>[81001,81002,70501].includes(d.id)),[],'nothing already stored is downloaded again')
+  assert.ok(zendesk.state.downloads.slice(fetched).some(d=>d.id===81004),'a refused file is tried again')
+
+  // A later pull imports a reply and a private note on 101, each with a file, and new tickets
+  // 106 and 107 with none, all in one batch; a third run fetches just the two new files.
+  zendesk.state.repeat=true
+  const later=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+  await drain(h);const laterReady=await pullOf(h,later.id)
+  await h.call(`${api}/zendesk/pulls/${later.id}/approve`,post({fingerprint:laterReady.fingerprint}));await drain(h)
+  const laterPull=await pullOf(h,later.id);assert.equal(laterPull.state,'applied',JSON.stringify(laterPull.error))
+  const fetchedBefore=zendesk.state.downloads.length,third=(await h.call(files,post({}))).data
+  await run()
+  view=(await h.call(`${files}/${third.id}`)).data
+  assert.equal(view.state,'done',JSON.stringify(view.error))
+  assert.deepEqual(view.totals,{attachments:8,stored:5,pending:0,refused:3})
+  assert.deepEqual(zendesk.state.downloads.slice(fetchedBefore).filter(d=>[81001,81002,70501].includes(d.id)),[],'nothing already stored is downloaded again')
+  const later101=async()=>({
+   replies:(await rows(h,"SELECT COUNT(*) n FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'"))[0].n,
+   notes:(await rows(h,"SELECT COUNT(*) n FROM move_in_notes m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='101'"))[0].n,
+   files:await rows(h,"SELECT a.attachment_id,m.id,m.message_id IS NULL private,(SELECT COUNT(*) FROM move_in_note_media l WHERE l.media_id=m.id AND l.note_id=a.message_id) linked FROM move_in_zendesk_attachments a JOIN media m ON m.id=a.media_id WHERE a.attachment_id IN ('81006','81007') ORDER BY a.attachment_id")})
+  const withFiles=await later101()
+  assert.deepEqual(withFiles.files.map(f=>[f.attachment_id,f.private,f.linked]),[['81006',0,0],['81007',1,1]],'the reply\'s file is on its message and the note\'s file on its note')
+  const laterTickets=async()=>(await rows(h,"SELECT COUNT(*) n FROM move_in_conversations WHERE source_id IN ('106','107')"))[0].n
+  assert.equal(await laterTickets(),2)
+
+  // Undoing that batch keeps the reply and the note with their files as edited here, as for a
+  // conversation with an agent's upload: undo stops with a conflict, not a database error, and
+  // removes nothing, so no file or note link is left without its message or note.
+  const laterBatch=laterPull.batches.find(b=>b.state==='completed'&&b.summary.replies)
+  await h.call(`${api}/imports/${laterBatch.runId}/undo`,post({}));await drain(h)
+  const stopped=(await h.call(`${api}/imports/${laterBatch.runId}`)).data
+  assert.deepEqual([stopped.state,stopped.error],['undoing','NATIVE_EDIT_CONFLICT'],'kept as edited here, never a database error')
+  assert.equal(await laterTickets(),2,'undo removes nothing from the batch')
+  assert.deepEqual(await later101(),withFiles,'the reply and the note with fetched files are kept, with their files and the note\'s link')
+  assert.deepEqual(await rows(h,'SELECT m.id FROM media m WHERE (m.message_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM messages x WHERE x.id=m.message_id)) OR (m.message_id IS NULL AND m.uploaded_by=\'import:zendesk\' AND NOT EXISTS(SELECT 1 FROM move_in_note_media l WHERE l.media_id=m.id))'),[],'no orphaned file')
+  const [kept]=withFiles.files,[reply]=await rows(h,'SELECT conversation_id FROM messages WHERE id=(SELECT message_id FROM media WHERE id=?)',kept.id)
+  assert.ok(Buffer.from((await h.download(`/api/conversations/${reply.conversation_id}/media/${kept.id}`)).bytes).equals(ATTACHMENT_BYTES[81006]),'the kept reply\'s file still downloads')
+  // The account changes again: new tickets 113-115 each bring a file, 113's served without
+  // Content-Length. A step that dies, and a queue message that never arrives, each stop the
+  // run with a named reason once a step's hold has passed, never before; Resume continues
+  // from the checkpoint and a new run starts after a stop. No file is downloaded twice.
+  zendesk.state.again=1
+  const arriving=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+  await drain(h);const arrivingReady=await pullOf(h,arriving.id)
+  await h.call(`${api}/zendesk/pulls/${arriving.id}/approve`,post({fingerprint:arrivingReady.fingerprint}));await drain(h)
+  assert.equal((await pullOf(h,arriving.id)).state,'applied')
+  assert.equal(await laterTickets(),2)
+  const pending=(await h.call(files)).data.totals;assert.deepEqual(pending,{attachments:8,stored:5,pending:0,refused:3})
+  const step=async()=>{
+   const job=h.queued[0],[row]=await rows(h,'SELECT next_at FROM move_in_zendesk_attachment_pulls WHERE id=?',job.id)
+   const wait=(row?.next_at??0)-Date.now();if(wait>0)await new Promise(resolve=>setTimeout(resolve,wait+20))
+   const result=await h.step();assert.deepEqual(result.retried,[],'a step never throws to the queue');assert.ok(result.statements<=980,'each step stays inside the D1 budget')
+  }
+  const runRow=async id=>(await rows(h,'SELECT state,error,cursor_json,lease_until FROM move_in_zendesk_attachment_pulls WHERE id=?',id))[0]
+  // Moves a run's clock back past a step's hold, as if that long had passed.
+  const elapse=(id,column)=>h.db.prepare(`UPDATE move_in_zendesk_attachment_pulls SET ${column}=${column}-420000 WHERE id=?`).bind(id).run()
+  const lost='attachments_step_lost'
+  async function live(id){
+   for(const data of [(await h.call(files)).data,(await h.call(`${files}/${id}`)).data])assert.deepEqual([data.id,data.state,data.error],[id,'running',null],'a run that may still be going is not stopped early')
+   assert.equal((await h.raw(files,post({}))).response.status,409,'it still holds the workspace')
+  }
+  async function stopsLost(id){
+   for(const data of [(await h.call(files)).data,(await h.call(`${files}/${id}`)).data])assert.deepEqual([data.id,data.state,data.error],[id,'running',lost],'every read shows the lost step')
+  }
+  const readsSince=from=>zendesk.state.requests.slice(from).flatMap(r=>r.path.match(/^\/api\/v2\/tickets\/(\d+)\/comments\.json$/)?.[1]??[]).map(Number)
+  const completed=id=>zendesk.state.downloads.filter(d=>d.host==='files'&&d.id===id&&!d.held).length
+  // Steps until a step blocks on the held download, then kills it mid-download.
+  async function crashOnHeld(arrived){
+   for(;;){
+    assert.ok(h.queued.length,'the held download is reached')
+    const stepping=h.step().catch(()=>null)
+    if(await Promise.race([stepping.then(()=>false),arrived.then(()=>true)])){await h.crashDuringStep();await stepping;zendesk.release();return}
+   }
+  }
+  const sixth=(await h.call(files,post({}))).data
+  await step()
+  let row=await runRow(sixth.id),checkpoint=JSON.parse(row.cursor_json)
+  assert.ok(checkpoint.after&&!row.error&&h.queued.length===1,'the first step checkpoints past finished tickets')
+  h.queued.length=0
+  await live(sixth.id)
+  await elapse(sixth.id,'updated_at')
+  await stopsLost(sixth.id)
+  let readFrom=zendesk.state.requests.length
+  assert.equal((await h.call(`${files}/${sixth.id}/resume`,post({}))).data.error,null)
+  await crashOnHeld(zendesk.holdDownload(81013,'files'))
+  assert.ok(readsSince(readFrom).every(t=>t>Number(checkpoint.after)),'Resume continues from the checkpoint: a ticket finished before it is not read again')
+  row=await runRow(sixth.id);assert.ok(row.lease_until&&!row.error)
+  assert.equal((await (await h.files).list({prefix:'import-bytes/'})).objects.length,6,'the killed download left no bytes')
+  await live(sixth.id)
+  await elapse(sixth.id,'lease_until')
+  await stopsLost(sixth.id)
+  checkpoint=JSON.parse((await runRow(sixth.id)).cursor_json);readFrom=zendesk.state.requests.length
+  assert.equal((await h.call(`${files}/${sixth.id}/resume`,post({}))).data.error,null)
+  await run()
+  assert.ok(readsSince(readFrom).every(t=>t>Number(checkpoint.after)),'Resume after the killed step continues from its checkpoint')
+  view=(await h.call(`${files}/${sixth.id}`)).data
+  assert.deepEqual([view.state,view.error,view.totals],['done',null,{attachments:11,stored:8,pending:0,refused:3}])
+  assert.deepEqual([81008,81013,81014].map(completed),[1,1,1],'each new file is downloaded once')
+  assert.equal(zendesk.state.downloads.filter(d=>d.held).length,1)
+  const [unsized]=await rows(h,"SELECT m.id,m.conversation_id,m.size FROM move_in_zendesk_attachments a JOIN media m ON m.id=a.media_id WHERE a.attachment_id='81008'")
+  assert.equal(unsized.size,ATTACHMENT_BYTES[81008].length)
+  assert.ok(Buffer.from((await h.download(`/api/conversations/${unsized.conversation_id}/media/${unsized.id}`)).bytes).equals(ATTACHMENT_BYTES[81008]),'a file served without Content-Length is stored byte-exact')
+
+  // A new run starts after each kind of stop and closes the stopped run, which keeps its
+  // reason and no longer resumes; it downloads nothing already stored.
+  const storedIds=[81001,81002,70501,81006,81007,81008,81013,81014],fetchedThen=zendesk.state.downloads.length
+  const seventh=(await h.call(files,post({}))).data
+  await step();h.queued.length=0
+  await live(seventh.id)
+  await elapse(seventh.id,'updated_at')
+  await stopsLost(seventh.id)
+  const eighth=(await h.call(files,post({}))).data
+  assert.deepEqual([eighth.state,eighth.error],['running',null],'a new run starts after a lost message')
+  view=(await h.call(`${files}/${seventh.id}`)).data
+  assert.deepEqual([view.state,view.error],['done',lost],'the stopped run is closed with its reason')
+  assert.equal((await h.raw(`${files}/${seventh.id}/resume`,post({}))).response.status,409)
+  await crashOnHeld(zendesk.holdDownload(81004,'account'))
+  await live(eighth.id)
+  await elapse(eighth.id,'lease_until')
+  await stopsLost(eighth.id)
+  const ninth=(await h.call(files,post({}))).data
+  assert.deepEqual([ninth.state,ninth.error],['running',null],'a new run starts after a killed step')
+  assert.deepEqual(((await h.call(`${files}/${eighth.id}`)).data).error,lost)
+  assert.equal((await h.raw(`${files}/${eighth.id}/resume`,post({}))).response.status,409)
+  await run()
+  view=(await h.call(`${files}/${ninth.id}`)).data
+  assert.deepEqual([view.state,view.error,view.totals],['done',null,{attachments:11,stored:8,pending:0,refused:3}])
+  assert.deepEqual(zendesk.state.downloads.slice(fetchedThen).filter(d=>storedIds.includes(d.id)),[],'nothing already stored is downloaded again')
+
+  // A later pull brings a reply on 102 whose file runs past its size and a private note whose
+  // file is over 50 MB by its size: both are refused by id and nothing is kept. Once that
+  // batch is undone, they leave the totals and the list at once, and the next run agrees.
+  zendesk.state.again=2
+  const refusing=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+  await drain(h);const refusingReady=await pullOf(h,refusing.id)
+  await h.call(`${api}/zendesk/pulls/${refusing.id}/approve`,post({fingerprint:refusingReady.fingerprint}));await drain(h)
+  const refusingPull=await pullOf(h,refusing.id);assert.equal(refusingPull.state,'applied',JSON.stringify(refusingPull.error))
+  const replies102=async()=>(await rows(h,"SELECT (SELECT COUNT(*) FROM messages m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='102') messages,(SELECT COUNT(*) FROM move_in_notes m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.source_id='102') notes"))[0]
+  const tenth=(await h.call(files,post({}))).data
+  await run()
+  view=(await h.call(`${files}/${tenth.id}`)).data
+  assert.deepEqual([view.state,view.error,view.totals],['done',null,{attachments:13,stored:8,pending:0,refused:5}])
+  assert.deepEqual(view.refusals.filter(r=>['81009','81010'].includes(r.attachmentId)),[{attachmentId:'81009',ticketId:'102',reason:'attachment_transfer_overrun'},{attachmentId:'81010',ticketId:'102',reason:'attachment_too_large'}],'a body past its size and a file over 50 MB are refused by id')
+  assert.equal((await (await h.files).list({prefix:'import-bytes/'})).objects.length,8,'nothing is kept from a refused file')
+  const withRefused=await replies102(),refusingBatch=refusingPull.batches.find(b=>b.state==='completed'&&b.summary.replies)
+  await h.call(`${api}/imports/${refusingBatch.runId}/undo`,post({}));await drain(h)
+  assert.equal((await h.call(`${api}/imports/${refusingBatch.runId}`)).data.state,'undone')
+  assert.deepEqual(await replies102(),{messages:withRefused.messages-1,notes:withRefused.notes-1},'undo removes the reply and the note, which have no fetched file')
+  for(const data of [(await h.call(files)).data,(await h.call(`${files}/${tenth.id}`)).data]){
+   assert.deepEqual(data.totals,{attachments:11,stored:8,pending:0,refused:3},'files on comments the workspace no longer holds leave the totals')
+   assert.ok(!data.refusals.some(r=>['81009','81010'].includes(r.attachmentId)),'and the list');assert.equal(data.refusalsTotal,3)
+  }
+  const fetchedNow=zendesk.state.downloads.length,eleventh=(await h.call(files,post({}))).data
+  await run()
+  view=(await h.call(`${files}/${eleventh.id}`)).data
+  assert.deepEqual([view.state,view.error,view.totals],['done',null,{attachments:11,stored:8,pending:0,refused:3}],'the next run agrees')
+  assert.deepEqual(zendesk.state.downloads.slice(fetchedNow).filter(d=>[81009,81010,...storedIds].includes(d.id)),[],'and fetches nothing for them')
  }finally{await h.close()}
 })

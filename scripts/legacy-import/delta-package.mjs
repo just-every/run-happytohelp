@@ -19,12 +19,12 @@ export async function deltaPlan(root,manifest,target,{planDelta,context,chunks,c
   return planDelta(target.env.DB,{projectId:String(manifest.source.projectId),context,conversations,messages,media,ours});
 }
 
-const counters=['sourceRows','replayed','mapped','updated','unchanged','conflict','kept','erased','archived_only'];
+const counters=['sourceRows','replayed','mapped','updated','unchanged','conflict','kept','erased','skipped','archived_only'];
 export const emptyDeltaTotals=()=>Object.fromEntries(counters.map(key=>[key,0]));
 export function addDeltaTotals(total,result){for(const key of counters)total[key]+=result[key]||0;}
 /** The delta's part of the command summary: per table and overall counts, and every conflict
  * by table, id and reason (no content). */
 export function deltaSummary(manifest,tables,conflicts,withheld){
   const sum=key=>Object.values(tables).reduce((n,t)=>n+t[key],0);
-  return {delta:{since:manifest.source.since,watermark:manifest.source.watermark},appended:sum('mapped'),updated:sum('updated'),unchanged:sum('unchanged'),kept:sum('kept'),erased:sum('erased'),archivedOnly:sum('archived_only'),withheldObjects:withheld,conflictCount:conflicts.length,conflicts};
+  return {delta:{since:manifest.source.since,watermark:manifest.source.watermark},appended:sum('mapped'),updated:sum('updated'),unchanged:sum('unchanged'),kept:sum('kept'),erased:sum('erased'),skipped:sum('skipped'),archivedOnly:sum('archived_only'),withheldObjects:withheld,conflictCount:conflicts.length,conflicts};
 }

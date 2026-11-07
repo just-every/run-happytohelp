@@ -1,5 +1,5 @@
 import type { Row,LegacyBundle } from './types'
-import {transcriptOrder} from './relationships'
+import {transcriptOrder,relationships,isMessageMedia} from './relationships'
 import {archiveOnly} from './archive-only'
 import {lookupRows,identity,byteSlices,jsonBytes} from './d1'
 import {readStates,stateKey,unchangedSinceImport} from './state'
@@ -20,8 +20,23 @@ export interface DeltaPlan {
  heldIn:Map<string,number>
  /** Conversations that gain legacy messages in this delta. */
  gaining:Set<string>
- /** Media whose bytes this delta must not upload: held, or of an erased contact. */
+ /** Media whose bytes this delta must not upload: held, skipped, or of an erased contact. */
  withheldMedia:Set<string>
+ /** Messages whose delivery id is the message id of mail the seed's Amazon SES reader recorded: the seed took that mail
+  * itself, so legacy's copy is skipped. */
+ skippedMessages:Set<string>
+ /** New conversations whose every message in this delta is skipped. */
+ skippedConversations:Set<string>
+}
+
+/** A row that goes with mail the seed already took: a skipped message or conversation, a file or file link of a skipped
+ * message, or any row of a skipped conversation. */
+export function skippedRow(table:string,row:Row,context:LegacyBundle,plan:DeltaPlan){
+ if(table==='messages'&&plan.skippedMessages.has(String(row.id)))return true
+ if(table==='mediables'&&isMessageMedia(row)&&plan.skippedMessages.has(String(row.mediable_id)))return true
+ if(table==='media'){const message=row.message_id||relationships(context).mediaMessages.get(String(row.id))?.mediable_id;if(message!=null&&plan.skippedMessages.has(String(message)))return true}
+ const conversation=conversationOf(table,row,context)
+ return conversation!==undefined&&plan.skippedConversations.has(conversation)
 }
 
 interface SeedMessage {id:string;conversation_id:string;revision:number;local_id:string}
@@ -31,16 +46,24 @@ interface SeedMessage {id:string;conversation_id:string;revision:number;local_id
 export async function planDelta(db:D1Database,{projectId,context,conversations,messages,media,ours}:{projectId:string;context:LegacyBundle;conversations:Iterable<string>;messages:Row[];media:Row[];ours:Set<string>}):Promise<DeltaPlan>{
  const erased=new Set((await db.prepare('SELECT contact_id FROM contact_erasures WHERE project_id=?').bind(projectId).all<{contact_id:string}>()).results.map(r=>String(r.contact_id)))
  const isErased=(table:string,row:Row)=>contactsOf(table,row,context).some(contact=>erased.has(contact))
- const live=messages.filter(row=>!row.deleted_at&&!archiveOnly('messages',row,context)&&!isErased('messages',row))
+ // Mail the Amazon SES reader recorded holds its SES message id; legacy stores the same mail with that id as its delivery id.
+ const localIds=[...new Set(messages.map(row=>row.local_id).filter(id=>id!==undefined&&id!==null&&id!=='').map(String))],received=new Set<string>()
+ for(const part of byteSlices(localIds,jsonBytes,100))for(const row of (await db.prepare('SELECT DISTINCT ses_message_id FROM legacy_mail_s3_receipts WHERE ses_message_id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(part)).all<{ses_message_id:string}>()).results)received.add(String(row.ses_message_id))
+ const skippedMessages=new Set(messages.filter(row=>row.local_id!==undefined&&row.local_id!==null&&received.has(String(row.local_id))).map(row=>String(row.id)))
+ const live=messages.filter(row=>!skippedMessages.has(String(row.id))&&!row.deleted_at&&!archiveOnly('messages',row,context)&&!isErased('messages',row))
  const ids=[...new Set([...conversations,...live.map(row=>String(row.conversation_id))])]
  const canonical=await lookupRows(db,'conversations',['id'],ids.map(id=>[id]))
+ // A conversation the seed does not hold yet, whose every message in the delta is skipped, goes with them.
+ const inDelta=new Map<string,Row[]>();for(const row of messages){const list=inDelta.get(String(row.conversation_id))??[];list.push(row);inDelta.set(String(row.conversation_id),list)}
+ const skippedConversations=new Set(ids.filter(id=>{const rows=inDelta.get(id)??[];return rows.length>0&&rows.every(row=>skippedMessages.has(String(row.id)))&&!canonical.get(identity('conversations',[id]))}))
  const states=await readStates(db,ids.map(id=>['conversations',id]))
  const seed=new Map<string,SeedMessage[]>()
  for(const part of byteSlices(ids,jsonBytes,100))for(const row of (await db.prepare('SELECT id,conversation_id,revision,local_id FROM messages WHERE conversation_id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(part)).all<SeedMessage>()).results){const list=seed.get(String(row.conversation_id))??[];list.push(row);seed.set(String(row.conversation_id),list)}
  const delta=new Map<string,Row[]>();for(const row of live){const list=delta.get(String(row.conversation_id))??[];list.push(row);delta.set(String(row.conversation_id),list)}
- const plan:DeltaPlan={erased,messages:new Map(),conversations:new Map(),held:new Map(),heldIn:new Map(),gaining:new Set(),withheldMedia:new Set()}
+ const plan:DeltaPlan={erased,messages:new Map(),conversations:new Map(),held:new Map(),heldIn:new Map(),gaining:new Set(),withheldMedia:new Set(),skippedMessages,skippedConversations}
  const changed=new Set<string>()
  for(const id of ids){
+  if(skippedConversations.has(id))continue
   const row=canonical.get(identity('conversations',[id]))
   if(row&&(row.status_category==='closed'||!await unchangedSinceImport(row,states.get(stateKey('conversations',id)))))changed.add(id)
   const seedRows=seed.get(id)??[],seedIds=new Map(seedRows.map(r=>[String(r.id),r])),prior=seedRows.filter(r=>!ours.has(String(r.id)))
@@ -60,7 +83,7 @@ export async function planDelta(db:D1Database,{projectId,context,conversations,m
  const mediaIds=media.map(row=>String(row.id)),present=await lookupRows(db,'media',['id'],mediaIds.map(id=>[id])),mediaStates=await readStates(db,mediaIds.map(id=>['media',id]))
  for(const row of media){
   const id=String(row.id),conversation=conversationOf('media',row,context)
-  if(isErased('media',row)||(!present.get(identity('media',[id]))&&mediaStates.has(stateKey('media',id)))){plan.withheldMedia.add(id);continue}
+  if(isErased('media',row)||skippedRow('media',row,context,plan)||(!present.get(identity('media',[id]))&&mediaStates.has(stateKey('media',id)))){plan.withheldMedia.add(id);continue}
   if(conversation!==undefined&&changed.has(conversation)){plan.withheldMedia.add(id);plan.held.set(`media:${id}`,conversation)}
  }
  return plan

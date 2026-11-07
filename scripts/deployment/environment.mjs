@@ -5,12 +5,13 @@ export const secretNames = [
  'OPENAI_API_KEY','ANTHROPIC_API_KEY','GOOGLE_API_KEY','GEMINI_API_KEY',
  'DEEPSEEK_API_KEY','XAI_API_KEY','OPENROUTER_API_KEY','APIFY_TOKEN','QDRANT_API_KEY',
  'INTERCOM_TOKEN','FRESHDESK_TOKEN',
- 'EMAIL_API_KEY','MAILGUN_SENDING_KEY','MAILGUN_WEBHOOK_SIGNING_KEY','EMAIL_FROM','INBOUND_EMAIL_TOKEN','MAIL_API_KEY','RER_MAIL_INGRESS_KEY',
+ 'EMAIL_API_KEY','MAILGUN_SENDING_KEY','MAILGUN_WEBHOOK_SIGNING_KEY','LEGACY_AWS_ACCESS_KEY_ID','LEGACY_AWS_SECRET_ACCESS_KEY','EMAIL_FROM','INBOUND_EMAIL_TOKEN','MAIL_API_KEY','RER_MAIL_INGRESS_KEY',
  'INTEGRATION_ENCRYPTION_KEY','H2H_SETUP_TOKEN','OWNER_EMAIL',
  'GITHUB_CLIENT_SECRET','GITHUB_TOKEN','GITHUB_TOKENS','TURNSTILE_SECRET','FORMS_TURNSTILE_SECRET_KEY',
 ]
 export const variableNames = [
  'EMAIL_PROVIDER','EMAIL_API_KEY_NAME','MAILGUN_DOMAIN','MAILGUN_REGION','EMAIL_ACCOUNT_ID','INBOUND_EMAIL_DOMAIN',
+ 'LEGACY_MAIL_S3_BUCKET','LEGACY_MAIL_S3_PREFIX','LEGACY_MAIL_S3_REPLAY_PREFIX','LEGACY_MAIL_S3_MAILBOX','LEGACY_AWS_REGION',
  'MAIL_PROVIDER','MAIL_FROM','MAIL_RELAY_URL','H2H_RER_MAIL_VERSION','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL',
  'RER_OWNER_CLAIM_ISSUER','RER_OWNER_CLAIM_INSTALLATION_ID','RER_OWNER_CLAIM_APP_ORIGIN','RER_OWNER_CLAIM_PUBLIC_KEYS','RER_BUSINESS_TRUST','RER_IMPORT_DOOR',
  'RER_INSTALLATION_ID','RER_MANAGEMENT_ORIGIN','H2H_SETUP_OWNER_EMAIL','WIDGET_ORIGIN','REGISTRATION_ENABLED','LEAD_MODEL','CONTEXT_MODEL','KNOWLEDGE_EMBEDDING_MODEL','QDRANT_URL',
@@ -91,9 +92,26 @@ export function validateLocalSetupEnvironment(env){
  const origin=runtimeUrl(env.APP_ORIGIN||'','Development mail origin');
  if(origin.origin!==env.APP_ORIGIN||origin.protocol!=='http:'||origin.hostname!=='127.0.0.1')throw new Error('Development mail requires an exact loopback HTTP origin')
 }
+/** The Amazon SES reader is off unless its required inputs are all set; a partial set or a malformed value is refused,
+ * so a typo is caught at deploy time rather than leaving the reader quietly off or reading the wrong place. */
+const legacyMailS3Required=['LEGACY_MAIL_S3_BUCKET','LEGACY_MAIL_S3_PREFIX','LEGACY_MAIL_S3_MAILBOX','LEGACY_AWS_REGION','LEGACY_AWS_ACCESS_KEY_ID','LEGACY_AWS_SECRET_ACCESS_KEY']
+const legacyMailS3Names=[...legacyMailS3Required,'LEGACY_MAIL_S3_REPLAY_PREFIX']
+function validateLegacyMailS3(env){
+ const set=legacyMailS3Names.filter(name=>configured(env,name))
+ if(!set.length)return
+ const missing=legacyMailS3Required.filter(name=>!configured(env,name))
+ if(missing.length)throw new Error(`The Amazon SES S3 reader needs ${legacyMailS3Required.join(', ')} together; missing ${missing.join(', ')}`)
+ if(!/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(env.LEGACY_MAIL_S3_BUCKET.trim()))throw new Error('LEGACY_MAIL_S3_BUCKET must be an S3 bucket name')
+ if(!/^[a-z]{2}(?:-[a-z]+)+-\d$/.test(env.LEGACY_AWS_REGION.trim()))throw new Error('LEGACY_AWS_REGION must be an AWS region such as us-east-1')
+ if(!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(env.LEGACY_MAIL_S3_MAILBOX.trim())||/\+/.test(env.LEGACY_MAIL_S3_MAILBOX))throw new Error('LEGACY_MAIL_S3_MAILBOX must be one mail address without a +label')
+ const prefixes=['LEGACY_MAIL_S3_PREFIX','LEGACY_MAIL_S3_REPLAY_PREFIX'].filter(name=>configured(env,name)).map(name=>[name,env[name].trim()])
+ for(const [name,value] of prefixes)if(!value.endsWith('/')||value.startsWith('/')||value.split('/').some(part=>part==='.'||part==='..')||/[\u0000-\u001f\u007f]/.test(value))throw new Error(`${name} must be a key prefix that ends with / and does not start with it`)
+ if(prefixes.length===2&&(prefixes[0][1].startsWith(prefixes[1][1])||prefixes[1][1].startsWith(prefixes[0][1])))throw new Error('LEGACY_MAIL_S3_PREFIX and LEGACY_MAIL_S3_REPLAY_PREFIX must not contain each other')
+}
 export function validateRuntimeEnvironment(env){
  if(env.H2H_LOCAL==='true')throw new Error('Local development mail configuration cannot be deployed')
  validateRemoteMailSelection(env)
+ validateLegacyMailS3(env)
  if(configured(env,'PUBLIC_HELP_HOSTS')){
   const hosts=JSON.parse(env.PUBLIC_HELP_HOSTS)
   if(!hosts||Array.isArray(hosts)||typeof hosts!=='object')throw new Error('PUBLIC_HELP_HOSTS must be an exact hostname/project map')

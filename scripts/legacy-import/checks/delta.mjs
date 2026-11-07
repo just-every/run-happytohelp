@@ -1,7 +1,7 @@
 import {readManifest} from '../package.mjs';
 import {verifyAttachments} from './attachments.mjs';
 
-const statuses={mapped:'added',updated:'changed',unchanged:'unchanged',conflict:'conflicts',kept:'kept',erased:'erased',archived_only:'archivedOnly'};
+const statuses={mapped:'added',updated:'changed',unchanged:'unchanged',conflict:'conflicts',kept:'kept',erased:'erased',skipped:'skipped',archived_only:'archivedOnly'};
 
 /** After a delta import: every row of the delta is journaled by the delta's own runs; the project's
  * journaled source rows (distinct table and id across all its runs) equal the previous total plus
@@ -27,15 +27,15 @@ export async function checkDelta(target,root,{previousTotal,excludeTables=[]}){
     projectSourceRows+=(await q("SELECT COUNT(*) n FROM legacy_import_rows r WHERE r.run_id=? AND NOT EXISTS(SELECT 1 FROM legacy_import_rows e WHERE e.source_table=r.source_table AND e.source_id=r.source_id AND e.rowid<r.rowid AND e.run_id IN (SELECT value FROM json_each(?)))",run,allRuns))[0].n;
     await target.renew?.();
   }
-  const tables=Object.fromEntries(Object.entries(manifest.source.rowCounts).map(([table,rows])=>[table,{delta:rows,journaled:0,added:0,changed:0,unchanged:0,conflicts:0,kept:0,erased:0,archivedOnly:0,...journal[table]}]));
+  const tables=Object.fromEntries(Object.entries(manifest.source.rowCounts).map(([table,rows])=>[table,{delta:rows,journaled:0,added:0,changed:0,unchanged:0,conflicts:0,kept:0,erased:0,skipped:0,archivedOnly:0,...journal[table]}]));
   const unjournaled=Object.entries(tables).filter(([table,t])=>!excludeTables.includes(table)&&t.journaled!==t.delta).map(([table])=>table);
   const conflicts=deltaRuns.length?(await Promise.all(deltaRuns.map(run=>q('SELECT COUNT(*) n FROM legacy_import_conflicts WHERE run_id=?',run)))).reduce((n,[r])=>n+r.n,0):0;
-  // Files of erased contacts and of held rows are withheld by design; every other one must be in R2.
+  // Files of erased contacts, of held rows and of mail the seed already took are withheld by design; every other one must be in R2.
   const withheld=new Set();
-  for(const run of deltaRuns)for(const r of await q("SELECT source_id FROM legacy_import_rows WHERE run_id=? AND source_table='media' AND status IN ('erased','conflict')",run))withheld.add(String(r.source_id));
+  for(const run of deltaRuns)for(const r of await q("SELECT source_id FROM legacy_import_rows WHERE run_id=? AND source_table='media' AND status IN ('erased','conflict','skipped')",run))withheld.add(String(r.source_id));
   const attachments=await verifyAttachments(target,root,{skip:withheld});
   const expectedTotal=previousTotal+newRows;
   const ok=deltaRuns.length>0&&!unjournaled.length&&projectSourceRows===expectedTotal&&attachments.mismatched===0;
   return {ok,projectId:project,manifestSha256:digest,since:manifest.source.since,watermark:manifest.source.watermark??null,deltaRuns:deltaRuns.length,projectRuns:projectRuns.length,
-    journalEqualsDelta:!unjournaled.length,unjournaled,previousTotal,newRows,expectedTotal,projectSourceRows,conflicts,tables,attachments:{...attachments,withheld:withheld.size}};
+    journalEqualsDelta:!unjournaled.length,unjournaled,previousTotal,newRows,expectedTotal,projectSourceRows,conflicts,skipped:Object.values(tables).reduce((n,t)=>n+t.skipped,0),tables,attachments:{...attachments,withheld:withheld.size}};
 }

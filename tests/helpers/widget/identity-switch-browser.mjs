@@ -28,7 +28,9 @@ export async function widgetIdentitySwitchBrowser(browser){
 
   // Every API request and socket of the current page load, with the bearer it carried.
   let requests=[],sockets=[],server=null,load=0
-  page.on('request',request=>{if(request.url().startsWith(runtime.origin+'/api/'))requests.push(request.allHeaders().then(headers=>({method:request.method(),path:new URL(request.url()).pathname,auth:headers.authorization||''})))})
+  page.on('request',request=>{if(request.url().startsWith(runtime.origin+'/api/'))requests.push(request.allHeaders().then(headers=>({method:request.method(),path:new URL(request.url()).pathname,auth:headers.authorization||''}),error=>{if(/Target page, context or browser has been closed/.test(error?.message))return null;throw error}))})
+  // The requests of the current page load; a read cut off by a navigation or close has no headers and is skipped.
+  const seenRequests=async()=>(await Promise.all(requests)).filter(Boolean)
   await page.routeWebSocket(/\/api\/conversations\/[^/]+\/socket/,ws=>{const url=new URL(ws.url());sockets.push({token:url.searchParams.get('token'),conversationId:url.pathname.split('/')[3]});server=ws.connectToServer()})
   const legacy=contact=>({projectId:alias,apiOrigin:runtime.origin,open:true,settings:{collector:{enabled:false}},...(contact?{contact}:{})})
   const native=contact=>({widgetKey,apiOrigin:runtime.origin,open:true,settings:{collector:{enabled:false}},...(contact?{contact}:{})})
@@ -43,14 +45,14 @@ export async function widgetIdentitySwitchBrowser(browser){
   const visitor=async({ui=true}={})=>{
    await until(()=>sockets.length,'the conversation socket');if(ui)await page.locator('textarea[name=content]').waitFor()
    // Settled once the session's presence ping and consent check have gone out.
-   await until(async()=>(await Promise.all(requests)).filter(request=>request.path.endsWith('/widget-events')).length>=2,'the visitor\'s presence and consent')
+   await until(async()=>(await seenRequests()).filter(request=>request.path.endsWith('/widget-events')).length>=2,'the visitor\'s presence and consent')
    const {token,conversationId}=sockets.at(-1)
    return {token,conversationId,contact:(await call('/api/identity/widget/profile',{token})).contact}
   }
-  const created=async()=>(await Promise.all(requests)).filter(request=>request.method==='POST'&&request.path==='/api/identity/widget/session').length
+  const created=async()=>(await seenRequests()).filter(request=>request.method==='POST'&&request.path==='/api/identity/widget/session').length
   // No request of this page load carries another visitor's bearer token (HTTP or socket) or touches its conversation.
   const isolated=async(...others)=>{
-   const seen=await Promise.all(requests)
+   const seen=await seenRequests()
    for(const other of others){
     assert.ok(!seen.some(request=>request.auth==='Bearer '+other.token)&&!sockets.some(socket=>socket.token===other.token),'no request carries another visitor\'s token')
     assert.ok(!seen.some(request=>request.path.includes(other.conversationId))&&!sockets.some(socket=>socket.conversationId===other.conversationId),'no request touches another visitor\'s conversation')
@@ -154,7 +156,7 @@ export async function widgetIdentitySwitchBrowser(browser){
   let release;const held=new Promise(resolve=>release=resolve)
   await page.route('**/api/identity/widget/session',async route=>{await held;await route.continue().catch(()=>{})})
   await visit(null);await page.evaluate(options=>{window.h2h('init',options).catch(()=>{})},native(signed('wren')))
-  await until(async()=>(await Promise.all(requests)).some(request=>request.path==='/api/identity/widget/session'),'a session request in flight')
+  await until(async()=>(await seenRequests()).some(request=>request.path==='/api/identity/widget/session'),'a session request in flight')
   await page.evaluate(()=>window.h2h('shutdown'));release();await page.unroute('**/api/identity/widget/session')
   await page.waitForTimeout(1000);assert.equal(sockets.length,0);assert.equal(await page.locator('textarea[name=content]').count(),0)
   await visit(native());const interrupted=await visitor();assert.equal(await created(),1);await isolated(queued)

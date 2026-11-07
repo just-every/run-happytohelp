@@ -4,6 +4,7 @@ import {canonicaliseExistingProject} from './modules/knowledge/upgrade'
 import {dispatchKnowledgeUpgrades} from './modules/knowledge/upgrade-progress'
 import {sweepUploads} from './modules/api-integrations/upload-lifecycle'
 import {processRerMailbox,recoverRerMailboxes,refreshRerMailbox} from './modules/integrations/rer-mailbox'
+import {LEGACY_MAIL_S3_JOB,processLegacyMailS3,recoverLegacyMailS3} from './modules/integrations/legacy-mail-s3'
 import {consumeTriage,dispatchTriage} from './modules/triage/worker'
 import {dispatchScheduledReports} from './modules/reports/schedule-dispatch'
 import {recoverTicketContinuations} from './modules/tickets/continuation'
@@ -17,6 +18,8 @@ import {dispatchIntegrations} from './modules/api-integrations/dispatch'
 import {advanceImport,getWorkRun} from './modules/move-in/service'
 import {advancePull} from './modules/move-in/zendesk-source/job'
 import {PULL_JOB} from './modules/move-in/zendesk-source/notify'
+import {advanceAttachments} from './modules/move-in/zendesk-attachments/job'
+import {ATTACHMENTS_JOB} from './modules/move-in/zendesk-attachments/store'
 import {generationEffects} from './edition/ai/generation-effects'
 import {requestContextModel} from './edition/ai/customer-context-provider'
 import {isProjectActive} from './platform/project-status'
@@ -38,6 +41,8 @@ export async function consumeJob(job:Job,env:Env) {
  if(job.type==='knowledge.upgrade'){await canonicaliseExistingProject(env,job.projectId);await dispatchKnowledgeUpgrades(env);return}
  if(job.type==='rer.mailbox.status'){await refreshRerMailbox(env,job.projectId);return}
  if(job.type==='rer.mailbox'){await processRerMailbox(env,job.projectId);return}
+ // Queued before any workspace is known: the receipt names the object, and the reader finds the workspace from its mailbox.
+ if(job.type===LEGACY_MAIL_S3_JOB){await processLegacyMailS3(env,job.id);return}
  if(job.type==='reports.schedule'){await dispatchScheduledReports(env);return}
  if(job.type==='outbox.page'){if(!Number.isSafeInteger(job.lastId))throw new Error('Invalid persisted outbox page');await recoverOutboxPage(env,{project_id:job.projectId,conversation_id:job.id,last_id:Number(job.lastId)});return}
  if(job.type==='local.effects'){await recoverLocalResultEffects(env,localComputerIntegration,job.id);return}
@@ -46,6 +51,7 @@ export async function consumeJob(job:Job,env:Env) {
  if(job.type==='integrations'){await dispatchIntegrations(env,job.projectId);return}
  if(job.type==='move-in'){const run=await getWorkRun(env,job.id);if(run&&run.project_id===job.projectId)await advanceImport(env,run);return}
  if(job.type===PULL_JOB){await advancePull(env,job.id,job.projectId);return}
+ if(job.type===ATTACHMENTS_JOB){await advanceAttachments(env,job.id,job.projectId);return}
  if(await consumeTriage(job,env))return
  if(await handleGeneration(env,job,generationEffects))return
  if(await consumeKnowledge(job,env))return
@@ -75,7 +81,7 @@ export async function runScheduled(env:Env) {
  }
  await visit('Workflow',720,runWorkflows)
  await visit('Survey',70,dispatchSurveys)
- await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env)})
+ await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env);await recoverLegacyMailS3(env)})
  await visit('Voice media',2,expireVoiceMedia)
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.

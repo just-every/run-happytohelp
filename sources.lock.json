@@ -16373,11 +16373,11 @@
       "executable": false
     },
     "tests/helpers/upgrade-data-expectations.mjs": {
-      "sha256": "ac86535a1087877b2971a84d68efca96aa5030b9b695aa6c2841f34dd7ba2a45",
+      "sha256": "97dc20ded71c2592df5f2898900e4f1c9819bfab8ec5b3c6e79374360c846789",
       "executable": false
     },
     "tests/helpers/upgrade-exceptions.mjs": {
-      "sha256": "9850d4c386185ae0fa9ffa828d4ccf05645b3dce461b99d540d90beb68237c3a",
+      "sha256": "1afeeef97ae481e70c17f8dd5479b36565baa3367db38556e32a53ec59bfbc25",
       "executable": false
     },
     "tests/helpers/upgrade-interrupted-erasure.mjs": {

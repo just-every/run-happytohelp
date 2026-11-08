@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {expectedDataMigrations, relayBackfillCount} from './upgrade-data-expectations.mjs';
+import {expectedDataMigrations, expectedInboxSearch, relayBackfillCount} from './upgrade-data-expectations.mjs';
 export {expectedSchema, schemaExceptions} from './upgrade-schema-expectations.mjs';
 
 const text = value => ['text', Buffer.from(value).toString('hex')];
@@ -14,13 +14,17 @@ const key = value => JSON.stringify([value.project_id, value.subject_id]);
 // migrations (0110-119) rewrite no pre-existing row. Wrangler appends
 // d1_migrations; only its prior sqlite_sequence row may advance. Migration 298
 // initializes the new relay sequence from its exact audit backfill. Migrations
-// 125 and 129 change only the named columns under their exact predicates.
+// 125 and 129 change only the named columns under their exact predicates. 310
+// creates a new contact index, so no prior row needs an exception. 311 changes
+// only secure-delete configuration and the message index's structure record.
 export const migrationExceptions = [
   {migration: '0106_project_verification_secret.sql', table: 'projects', columns: ['verification_secret'], rows: 'pre-existing projects whose secret is NULL or empty'},
   {migration: '0108_public_answer_citations.sql', table: 'context_subjects', columns: ['revision'], rows: 'existing subjects: revision + 1; missing contact subjects: exact defaults and revision 1'},
   {migration: '125_contact_email_proof.sql', table: 'contacts', columns: ['metadata_json'], rows: 'eligible unsigned email-bearing widget contacts with a matching visitor session: json_set email_unproven = 1; all other keys and rows retained'},
   {migration: '129_owner_unassigned_alerts.sql', table: 'user_project_preferences', columns: ['is_notified_on_unassigned_activity'], rows: 'owners of active non-demo workspaces with no alerted member: set 1; insert missing owner preference with is_primary default 0; retain existing is_primary and every other preference'},
   {migration: '298_agent_door_relay.sql', table: 'sqlite_sequence', columns: ['name', 'seq'], rows: 'initialize agent_door_relay to the exact eligible audit backfill count, including zero; preserve every prior sequence row'},
+  {migration: '311_inbox_message_secure_delete.sql', table: 'inbox_message_search_config', columns: ['k', 'v'], rows: 'set secure-delete = 1 by the exact FTS5 command at SQL line 4; retain every other configuration row'},
+  {migration: '311_inbox_message_secure_delete.sql', table: 'inbox_message_search_data', columns: ['block'], rows: 'apply only the structure-record update from the secure-delete FTS5 command at SQL line 4; retain every indexed document, segment payload and other block byte'},
   {migration: 'Wrangler migration ledger', table: 'sqlite_sequence', columns: ['seq'], rows: 'name = d1_migrations only, advances by the number of newly applied migrations'},
 ];
 export function expectedMigrationRows(before, after, migrationNames, beforeSchema) {
@@ -32,6 +36,7 @@ export function expectedMigrationRows(before, after, migrationNames, beforeSchem
   const added = migrationNames.filter(name => !applied.has(name));
   assert.equal(after.d1_migrations.rowCount, migrationNames.length);
   const expected = expectedDataMigrations(before, beforeSchema, added);
+  expectedInboxSearch(before, after, beforeSchema, added, expected);
 
   if (added.includes('0106_project_verification_secret.sql')) {
     const projects = records(before.projects), projectById = new Map(records(after.projects).map(row => [JSON.stringify(row.id), row]));
@@ -71,7 +76,8 @@ export function expectedMigrationRows(before, after, migrationNames, beforeSchem
   if (added.includes('298_agent_door_relay.sql')) sequence.push({name: text('agent_door_relay'), seq: integer(relayBackfillCount(before, beforeSchema))});
   expected.sqlite_sequence = rows(before.sqlite_sequence, sequence);
 
-  const used = migrationExceptions.filter(exception => exception.migration === 'Wrangler migration ledger' || added.includes(exception.migration));
+  const used = migrationExceptions.filter(exception => (exception.migration === 'Wrangler migration ledger' || added.includes(exception.migration))
+    && (exception.migration !== '311_inbox_message_secure_delete.sql' || before[exception.table]));
   assert.deepEqual(Object.keys(expected).sort(), [...new Set(used.map(exception => exception.table))].sort());
   // Full encoded rows still assert every non-excepted column, identity and count.
   for (const [table, expectedRows] of Object.entries(expected)) assert.deepEqual(after[table].rows, expectedRows, `Unexpected transformation in ${table}`);

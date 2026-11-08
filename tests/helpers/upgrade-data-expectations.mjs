@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
 import {snapshotTable} from './upgrade-snapshot.mjs';
 
@@ -10,13 +11,70 @@ function decode([type, value]) {
   return type === 'text' ? bytes.toString() : bytes;
 }
 
-function loadTables(db, before, beforeSchema, names) {
+function loadTables(db, before, beforeSchema, names, replace = false) {
   for (const name of names) {
-    db.exec(beforeSchema[name].sql);
+    if (replace) db.exec(`DELETE FROM ${quote(name)}`);
+    else db.exec(beforeSchema[name].sql);
     const {columns, rows} = before[name];
     const insert = db.prepare(`INSERT INTO ${quote(name)}(${columns.map(quote).join(',')}) VALUES(${columns.map(() => '?').join(',')})`);
     for (const row of rows) insert.run(...JSON.parse(row).map(decode));
   }
+}
+
+const contactIndex = "CREATE VIRTUAL TABLE inbox_contact_search USING fts5(name,email,provided_name,provided_email,content='inbox_contact_identity',content_rowid='rowid',tokenize='trigram case_sensitive 1')";
+const contactShadows = ['inbox_contact_search_data', 'inbox_contact_search_idx', 'inbox_contact_search_docsize', 'inbox_contact_search_config'];
+function indexedContactDocuments(db) {
+  db.exec("CREATE VIRTUAL TABLE contact_terms USING fts5vocab(inbox_contact_search,'instance')");
+  const documents = new Map(db.prepare('SELECT CAST(id AS TEXT) AS id FROM inbox_contact_search_docsize').all().map(row => [row.id, []]));
+  for (const row of db.prepare('SELECT CAST(doc AS TEXT) AS doc,term,col,CAST(offset AS TEXT) AS offset FROM contact_terms ORDER BY term,col,offset').all()) {
+    assert.ok(documents.has(row.doc), '310 index term belongs to an indexed contact');
+    documents.get(row.doc).push([row.term, row.col, row.offset]);
+  }
+  return [...documents.values()].map(tokens => JSON.stringify(tokens)).sort();
+}
+
+// 310 creates a new derived contact index; it never rewrites contacts. The
+// snapshot has no source rowids, so compare the exact identity projection and
+// multiset of per-document indexed tokens, including empty identities. Do not
+// invent rowid-to-contact associations that this snapshot cannot represent.
+// 311 changes only the existing message index's secure-delete configuration
+// and structure record. Restore its exact shadow bytes, then let SQLite compute
+// that command's result without rebuilding or retokenizing any prior message.
+export function expectedInboxSearch(before, after, beforeSchema, added, expected) {
+  const db = new DatabaseSync(':memory:', {enableForeignKeyConstraints: false});
+  try {
+    if (added.includes('310_inbox_contact_search.sql')) {
+      assert.deepEqual(after.contacts.rows, expected.contacts ?? before.contacts.rows, '310 preserves every contact outside earlier exact transformations');
+      assert.deepEqual(after.messages.rows, before.messages.rows, '310 preserves every message');
+      loadTables(db, after, beforeSchema, ['contacts']);
+      db.exec(`CREATE VIEW inbox_contact_identity AS SELECT rowid AS rowid,
+        lower(coalesce(name,'')) AS name,lower(coalesce(email,'')) AS email,
+        lower(coalesce(iif(json_valid(metadata_json),json_extract(metadata_json,'$.provided_name'),NULL),'')) AS provided_name,
+        lower(coalesce(iif(json_valid(metadata_json),json_extract(metadata_json,'$.provided_email'),NULL),'')) AS provided_email FROM contacts;
+        ${contactIndex};
+        INSERT INTO inbox_contact_search(inbox_contact_search,rank) VALUES('secure-delete',1);
+        INSERT INTO inbox_contact_search(inbox_contact_search) VALUES('rebuild');`);
+      for (const name of ['inbox_contact_search', 'inbox_contact_search_config']) {
+        assert.deepEqual(after[name].rows, snapshotTable(db, name, after[name].columns).rows, `310 derives ${name} from every retained contact`);
+      }
+      assert.equal(after.inbox_contact_search_docsize.rowCount, after.contacts.rowCount, '310 indexes every retained contact, including empty identities');
+      const index = new DatabaseSync(':memory:');
+      try {
+        index.exec(contactIndex);
+        loadTables(index, after, beforeSchema, contactShadows, true);
+        assert.deepEqual(indexedContactDocuments(index), indexedContactDocuments(db), '310 indexes the exact tokens of every retained contact');
+      } finally { index.close(); }
+    }
+    if (added.includes('311_inbox_message_secure_delete.sql') && before.inbox_message_search) {
+      db.exec(beforeSchema.inbox_message_search.sql);
+      loadTables(db, before, beforeSchema, ['inbox_message_search_data', 'inbox_message_search_idx', 'inbox_message_search_docsize', 'inbox_message_search_config'], true);
+      db.exec("INSERT INTO inbox_message_search(inbox_message_search,rank) VALUES('secure-delete',1)");
+      for (const name of ['inbox_message_search_config', 'inbox_message_search_data']) {
+        expected[name] = snapshotTable(db, name, before[name].columns).rows;
+      }
+      assert.deepEqual(after.messages.rows, before.messages.rows, '311 preserves every message');
+    }
+  } finally { db.close(); }
 }
 
 // Migration 298 inserts one relay row per eligible prior audit row. Earlier

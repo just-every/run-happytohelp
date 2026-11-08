@@ -3,7 +3,7 @@ import {requireAuditedCustody} from './legacy-identities'
 import {putPrivate} from './private-custody'
 import { sha256 } from '../import-kit/src/d1/index'
 import { archiveChunk } from './readers/archive'
-import { parseFile,indexFile } from './readers/records'
+import { parseFile,indexFile,type RecordPosition } from './readers/records'
 import { assertAuthority } from './context'
 import {approveReview,advanceBatch} from './batches'
 import { LIMITS,runLimits,type Run } from './types'
@@ -16,12 +16,18 @@ async function unpack(env:Env,run:Run){const original=await env.FILES.get(run.ob
  for(let i=0;i<files.length;i++){const file=files[i],key=objectKey(run,`files/${run.cursor+i}`);await putPrivate(env,run,key,file.bytes,{httpMetadata:{contentType:'application/octet-stream'},customMetadata:{projectId:run.project_id,runId:run.id}});written.push(key);const index=indexFile(file,run.vendor);if(index.length+descriptors.reduce((n:number,f:any)=>n+(f.index?.length||0),0)>LIMITS.records)throw new Error('export_record_limit');descriptors.push({name:file.name,key,sha256:sha256(file.bytes),size:file.bytes.length,index})}
  try{await updateRun(env,run,{state:chunk.done?'parsing':'uploaded',files_json:JSON.stringify(descriptors),file_index:0,cursor:chunk.done?0:chunk.next})}catch(error){const current=await getRun(env,run.id),retained=new Set((JSON.parse(current?.files_json||'[]') as {key:string}[]).map(file=>file.key));for(const key of written)if(!retained.has(key))await env.FILES.delete(key);throw error}
 }
-async function parseChunk(env:Env,run:Run){const files=JSON.parse(run.files_json),file=files[run.file_index];if(!file){await updateRun(env,run,{state:'planning',cursor:0});return}
+/** Exhaust the parser into durable bindings before the awaited write. The full
+ * file buffer and parsed payloads have no owner in the checkpoint operation. */
+async function parsedStatements(env:Env,run:Run,file:{key:string;name:string;sha256:string;index:RecordPosition[]}){
  const object=await env.FILES.get(file.key);if(!object)throw new Error('source_file_missing');const bytes=new Uint8Array(await object.arrayBuffer());if(sha256(bytes)!==file.sha256)throw new Error('source_file_changed')
- const chunk=[...parseFile({name:file.name,bytes},run.vendor,run.cursor,LIMITS.parseBatch,file.index,runLimits(run).recordBytes)],statements:D1PreparedStatement[]=[],diagnostics=JSON.parse(run.diagnostics_json)
- for(const item of chunk){if(item.diagnostic)diagnostics.push(item.record?item.diagnostic:{...item.diagnostic,kind:'invalid-record'});if(item.record)statements.push(env.DB.prepare('INSERT INTO move_in_records(run_id,ordinal,record_json,serialized) VALUES(?,?,?,?)').bind(run.id,run.parsed_total+statements.length,JSON.stringify(item.record),(item as any).serialized))}
+ const statements:D1PreparedStatement[]=[],diagnostics=JSON.parse(run.diagnostics_json);let consumed=0
+ for(const item of parseFile({name:file.name,bytes},run.vendor,run.cursor,LIMITS.parseBatch,file.index,runLimits(run).recordBytes)){consumed++;if(item.diagnostic)diagnostics.push(item.record?item.diagnostic:{...item.diagnostic,kind:'invalid-record'});if(item.record)statements.push(env.DB.prepare('INSERT INTO move_in_records(run_id,ordinal,record_json,serialized) VALUES(?,?,?,?)').bind(run.id,run.parsed_total+statements.length,JSON.stringify(item.record),item.serialized))}
+ return {statements,diagnostics,consumed}
+}
+async function parseChunk(env:Env,run:Run){const files=JSON.parse(run.files_json),file=files[run.file_index];if(!file){await updateRun(env,run,{state:'planning',cursor:0});return}
+ const {statements,diagnostics,consumed}=await parsedStatements(env,run,file)
  if(run.parsed_total+statements.length>LIMITS.records)throw new Error('export_record_limit')
- await updateRun(env,run,{cursor:chunk.length===LIMITS.parseBatch?run.cursor+chunk.length:0,file_index:chunk.length===LIMITS.parseBatch?run.file_index:run.file_index+1,parsed_total:run.parsed_total+statements.length,diagnostics_json:JSON.stringify(diagnostics)},statements)
+ await updateRun(env,run,{cursor:consumed===LIMITS.parseBatch?run.cursor+consumed:0,file_index:consumed===LIMITS.parseBatch?run.file_index:run.file_index+1,parsed_total:run.parsed_total+statements.length,diagnostics_json:JSON.stringify(diagnostics)},statements)
 }
 export async function approve(env:Env,run:Run,fingerprint:string){await requireAuditedCustody(env,run);await approveReview(env,run,fingerprint);await enqueue(env,run)}
 /** A pulled batch whose step cannot run at all (its reviewer's session ended, say)

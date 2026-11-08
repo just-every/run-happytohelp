@@ -24,9 +24,12 @@ export async function listResources(c:Context<AppEnv>,projectId:string,kind:'con
  const where=`project_id=? ${contact?`AND coalesce(${meta('is_deleted')},0)!=1`:''} AND (${fields.map(field=>`coalesce(${field},'') LIKE ? ESCAPE '\\'`).join(' OR ')})`
  const term=`%${search.replace(/[\\%_]/g,'\\$&')}%`,params=[projectId,...fields.map(()=>term)]
  const selected=contact?'NULL created_by_name':"(SELECT name FROM users WHERE id=macros.created_by) created_by_name"
+ const rows=(size:number)=>c.env.DB.prepare(`SELECT *,${selected} FROM ${kind} WHERE ${where} ORDER BY ${sorts[sort]} ${direction},id ASC LIMIT ? OFFSET ?`).bind(...params,size,(page-1)*limit).all()
+ // A picker that pages by hasMore alone (total=none) reads one row past its page instead of counting them all.
+ if(c.req.query('total')==='none'){const result=await rows(limit+1);return {data:result.results.slice(0,limit),pagination:{page,limit,hasMore:result.results.length>limit},sort,direction}}
  const [count,result]=await Promise.all([
   c.env.DB.prepare(`SELECT count(*) total FROM ${kind} WHERE ${where}`).bind(...params).first<{total:number}>(),
-  c.env.DB.prepare(`SELECT *,${selected} FROM ${kind} WHERE ${where} ORDER BY ${sorts[sort]} ${direction},id ASC LIMIT ? OFFSET ?`).bind(...params,limit,(page-1)*limit).all(),
+  rows(limit),
  ])
  const total=count?.total||0
  return {data:result.results,pagination:{page,limit,total,hasMore:page*limit<total},sort,direction}
@@ -37,7 +40,8 @@ export async function contactConversations(c:Context<AppEnv>,projectId:string){
  const contact=await c.env.DB.prepare('SELECT id FROM contacts WHERE id=? AND project_id=?').bind(contactId,projectId).first()
  if(!contact)throw new HTTPException(404)
  const actor=await requireActor(c)
- const where=`${ticketScopeSql('?')} AND c.project_id=? AND (c.contact_id=? OR EXISTS(SELECT 1 FROM conversation_participants p WHERE p.conversation_id=c.id AND p.contact_id=?))`,params=[actor.id,projectId,contactId,contactId]
+ // The contact's own conversations and the ones it takes part in, each through its own key, never every conversation.
+ const where=`c.id IN (SELECT own.id FROM conversations own WHERE own.project_id=? AND own.contact_id=? UNION SELECT p.conversation_id FROM conversation_participants p WHERE p.contact_id=?) AND ${ticketScopeSql('?')} AND +c.project_id=?`,params=[projectId,contactId,contactId,actor.id,projectId]
  const [count,result]=await Promise.all([
   c.env.DB.prepare(`SELECT count(*) total FROM conversations c WHERE ${where}`).bind(...params).first<{total:number}>(),
   c.env.DB.prepare(`SELECT c.id,c.updated_at,c.created_at,c.resolved_at,(SELECT substr(m.content,1,240) FROM messages m WHERE m.project_id=c.project_id AND m.conversation_id=c.id ORDER BY m.revision DESC LIMIT 1) preview FROM conversations c WHERE ${where} ORDER BY c.updated_at DESC,c.id ASC LIMIT ? OFFSET ?`).bind(...params,limit,(page-1)*limit).all(),

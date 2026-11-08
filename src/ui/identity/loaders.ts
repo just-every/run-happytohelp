@@ -24,6 +24,8 @@ export const checkNativeSession = createServerFn({ method: 'GET' }).handler(asyn
  const { nativeLoaderResponse, nativeLoaderError } = await import('../../platform/native-loader.server')
  const response = await nativeLoaderResponse('/api/identity/session')
  if (response.status === 401) { await response.body?.cancel(); return false }
+ // A busy database is neither signed out nor a failure: the workspace's own reads decide, and retry.
+ if (response.status === 503) { await response.body?.cancel(); return {busy: true} as const }
  if (!response.ok) throw await nativeLoaderError(response)
  const actor = await response.json() as {projectId?: string; role: string; twoFactor?: 'verify'|'enrol'}
  return {projectId:actor.projectId,editorAuthorized: Boolean(!actor.twoFactor && actor.projectId && ['owner','admin'].includes(actor.role)),twoFactor:actor.twoFactor}

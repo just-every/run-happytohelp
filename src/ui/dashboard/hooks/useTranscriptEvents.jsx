@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { mergeMessage, mergeBucketMessage } from '../utils/transcriptMessages';
+import { busyWait, isBusy } from '../utils/busy';
 
 export default function useTranscriptEvents({
     buckets, setBuckets, activeConversationId, activeConversationIdRef, fetchBucket, updateBucket,
@@ -74,6 +75,12 @@ export default function useTranscriptEvents({
             request.failed = true;
             request.error = error;
             request.controller = null;
+            // A busy database: say so and read the same messages again after Retry-After while this conversation is open.
+            if (isBusy(error)) {
+                setTranscriptError({ conversationId: request.conversationId, error, busy: true });
+                setTimeout(() => { if (request.failed && !request.loading && isCurrentRequest(request)) loadPendingMessages(request); }, busyWait(error));
+                return;
+            }
             console.error('Unable to load updated conversation messages', error);
             setTranscriptError({ conversationId: request.conversationId, error });
         });

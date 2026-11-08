@@ -1,0 +1,77 @@
+{
+  "label": "head",
+  "head": "9b238cf006b53e22ca124e013a027dbb4b7a47e7",
+  "commands": [
+    {
+      "name": "views-write-final",
+      "command": [
+        "node",
+        "src/site/base/contract-docs.mjs",
+        "write"
+      ],
+      "exit": 0,
+      "seconds": 0.351
+    },
+    {
+      "name": "views-check-final",
+      "command": [
+        "node",
+        "src/site/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "seconds": 0.532
+    },
+    {
+      "name": "views-restore-main",
+      "command": [
+        "git",
+        "checkout",
+        "origin/main",
+        "--",
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ],
+      "exit": 0,
+      "seconds": 0.023
+    },
+    {
+      "name": "lock-write-final",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit": 0,
+      "seconds": 2.347
+    },
+    {
+      "name": "lock-check-final",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "seconds": 1.617
+    },
+    {
+      "name": "views-restore-candidate",
+      "command": [
+        "git",
+        "checkout",
+        "9b238cf006b53e22ca124e013a027dbb4b7a47e7",
+        "--",
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ],
+      "exit": 0,
+      "seconds": 0.025
+    }
+  ],
+  "lock_before_sha256": "b5cee1f423baad7c50406ebf2b97cc8c6ca422715ac93b6da0d6d66b8fcff8a8",
+  "lock_after_sha256": "8c1fee478cd25aa3da91630ddf8ab5b01f60981c369d4ac77c04e37b734a867b",
+  "lock_bytes_unchanged": false,
+  "ledger": "not applicable: no migration in candidate-owned diff",
+  "exit": 0
+}

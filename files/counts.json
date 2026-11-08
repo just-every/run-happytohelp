@@ -1,0 +1,34 @@
+{
+  "e8703857": {
+    "contract_status_rows": {
+      "done": 4,
+      "missing": 16,
+      "partial": 71
+    },
+    "journey_top_level_test_registrations": 94
+  },
+  "d1d77817": {
+    "contract_status_rows": {
+      "done": 4,
+      "missing": 16,
+      "partial": 71
+    },
+    "journey_top_level_test_registrations": 94
+  },
+  "HEAD": {
+    "contract_status_rows": {
+      "done": 4,
+      "missing": 16,
+      "partial": 71
+    },
+    "journey_top_level_test_registrations": 94
+  },
+  "origin/main": {
+    "contract_status_rows": {
+      "done": 4,
+      "missing": 16,
+      "partial": 71
+    },
+    "journey_top_level_test_registrations": 94
+  }
+}

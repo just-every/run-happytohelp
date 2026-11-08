@@ -1,0 +1,5 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> happytohelp@0.4.13 typecheck /home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/merged
+> node scripts/generate-routes.mjs && tsc --noEmit
+

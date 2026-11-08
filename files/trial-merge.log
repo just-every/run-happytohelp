@@ -1,0 +1,16 @@
+Auto-merging sources.lock.json
+CONFLICT (content): Merge conflict in sources.lock.json
+Auto-merging src/modules/integrations/rer-mail-hold.ts
+CONFLICT (content): Merge conflict in src/modules/integrations/rer-mail-hold.ts
+Auto-merging src/modules/management/policy.ts
+CONFLICT (content): Merge conflict in src/modules/management/policy.ts
+Auto-merging src/modules/management/projects.ts
+CONFLICT (content): Merge conflict in src/modules/management/projects.ts
+Auto-merging src/modules/management/reply-mode-change.ts
+CONFLICT (content): Merge conflict in src/modules/management/reply-mode-change.ts
+Auto-merging src/modules/management/widget-settings.ts
+CONFLICT (content): Merge conflict in src/modules/management/widget-settings.ts
+Auto-merging src/ui/native/pages/AiReplyMode.jsx
+CONFLICT (content): Merge conflict in src/ui/native/pages/AiReplyMode.jsx
+Auto-merging tests/helpers/ai/configured-execution.mjs
+Automatic merge failed; fix conflicts and then commit the result.

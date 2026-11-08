@@ -1,0 +1,12 @@
+M	sources.lock.json
+M	src/modules/integrations/rer-mail-hold.ts
+M	src/modules/management/policy.ts
+M	src/modules/management/projects.ts
+M	src/modules/management/reply-mode-change.ts
+A	src/modules/management/settings-save.ts
+M	src/modules/management/widget-settings.ts
+M	src/ui/native/pages/AiReplyMode.jsx
+M	tests/helpers/ai/configured-execution.mjs
+A	tests/helpers/ai/reply-mode-browser.mjs
+A	tests/helpers/ai/reply-mode-followups.mjs
+M	tests/journeys/workflows-browser.mjs

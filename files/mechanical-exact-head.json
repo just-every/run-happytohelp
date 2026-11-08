@@ -1,0 +1,58 @@
+{
+  "head": "9b238cf006b53e22ca124e013a027dbb4b7a47e7",
+  "steps": [
+    {
+      "name": "lock-original-check",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "seconds": 1.671
+    },
+    {
+      "name": "views-exact-write",
+      "command": [
+        "node",
+        "src/site/base/contract-docs.mjs",
+        "write"
+      ],
+      "exit": 0,
+      "seconds": 0.235
+    },
+    {
+      "name": "views-exact-check",
+      "command": [
+        "node",
+        "src/site/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "seconds": 0.409
+    },
+    {
+      "name": "lock-exact-write",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit": 0,
+      "seconds": 2.692
+    },
+    {
+      "name": "lock-exact-check",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "seconds": 1.466
+    }
+  ],
+  "exact_head_unchanged": true,
+  "lock_sha256": "b5cee1f423baad7c50406ebf2b97cc8c6ca422715ac93b6da0d6d66b8fcff8a8",
+  "note": "The prior main-view restoration changed only ACCEPTANCE.md hash in the scratch lock. This fresh pass checks the original exact candidate lock before regeneration and proves exact candidate regeneration is unchanged."
+}

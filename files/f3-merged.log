@@ -1,0 +1,3 @@
+PROBE F3 {"label":"merged","mode":"auto","enabled":true,"providerCalls":3,"offers":1,"visitorAiMessages":1,"status":"MET"}
+PROBE F3 {"label":"merged","mode":"draft","enabled":false,"providerCalls":0,"offers":0,"visitorAiMessages":0,"status":"MET"}
+PROBE F3 {"label":"merged","mode":"off","enabled":false,"providerCalls":0,"offers":0,"visitorAiMessages":0,"status":"MET"}

@@ -1,0 +1,624 @@
+diff --git a/CONTRACT.md b/CONTRACT.md
+index 01fa6fb..a735970 100644
+--- a/CONTRACT.md
++++ b/CONTRACT.md
+@@ -211,7 +211,7 @@ The primary journey: Set up the workspace, bring in support history, connect cus
+ 
+ #### AI-001 — Configured model execution
+ 
+-**Requirement.** Retain Ensemble model selection, context/tools, streamed events, normalization, raw per-round provider usage, attribution, bounded suggestions and reply lifecycle. Missing providers fail explicitly when AI is asked for, and a default assistant whose provider has no key is simply not assigned to new conversations; uncertain provider attempts remain uncertain and are not replayed automatically. Usage is diagnostic/provider accounting data, not an active payment, balance or debit system. Visitor-caused model work carries the classes of its eventual action, and the company’s policy sets its project and installation AI spending limits; a skipped reply is recorded as terminal and never replayed. Each workspace's AI reply mode is auto (the default), draft or off: in draft AI writes only drafts its team sends themselves, in off AI generates nothing, no AI-authored message reaches a customer in draft or off by any path, and switching back to auto releases nothing queued, written or due during that time.
++**Requirement.** Retain Ensemble model selection, context/tools, streamed events, normalization, raw per-round provider usage, attribution, bounded suggestions and reply lifecycle. Missing providers fail explicitly when AI is asked for, and a default assistant whose provider has no key is simply not assigned to new conversations; uncertain provider attempts remain uncertain and are not replayed automatically. Usage is diagnostic/provider accounting data, not an active payment, balance or debit system. Visitor-caused model work carries the classes of its eventual action, and the company’s policy sets its project and installation AI spending limits; a skipped reply is recorded as terminal and never replayed. Each workspace's AI reply mode is auto (the default), draft or off: in draft AI writes only drafts its team sends themselves, in off AI generates nothing, no AI-authored message reaches a customer in draft or off by any path (a local computer agent's reply becomes a draft its operator sends themselves, and a visitor whose assistant will not answer is handled as one without an assistant), and switching back to auto releases nothing queued, written or due during that time.
+ 
+ **Acceptance.**
+ 1. Request configured suggestions/replies through native routes; inspect normalized streaming events, per-round usage, context/tool and budget bounds, explicit missing-provider errors and durable daily-cap skips; crash/ambiguous attempts must not automatically replay.
+diff --git a/README.md b/README.md
+index b3636c0..9dcbfe5 100644
+--- a/README.md
++++ b/README.md
+@@ -279,6 +279,9 @@ and Setup say a key is missing.
+    keep it **Enabled**. Then, under **Responder defaults**, choose which assistant
+    answers visitors, and with **AI replies** whether its replies are sent
+    automatically, kept as drafts for your team to send, or turned off.
++   In draft, a reply your local computer agent prepares waits in its report for
++   you to use and send, and a visitor who writes while your team is away gets
++   your away message, as if no assistant were assigned.
+ 
+ Keep key values out of chat messages and the browser. To cap what visitors can
+ spend, see [Limits and AI ceilings](docs/PUBLIC-LIMITS.md).
+diff --git a/src/edition/local-computer-draft.ts b/src/edition/local-computer-draft.ts
+index 4078028..297375b 100644
+--- a/src/edition/local-computer-draft.ts
++++ b/src/edition/local-computer-draft.ts
+@@ -1,5 +1,5 @@
+ import {ticketScopeSql} from '../modules/access/ticket-scope';
+-import { requireValue, type DraftInput, type LocalEnv } from '../modules/local-computer/contracts';
++import { HELD_FOR_OPERATOR, requireValue, type DraftInput, type LocalEnv } from '../modules/local-computer/contracts';
+ import { copyLocalAttachments, type LocalAttachment } from './local-computer-media';
+ 
+ export async function prepareLocalDraft(env: LocalEnv, input: DraftInput) {
+@@ -22,7 +22,8 @@ export async function prepareLocalDraft(env: LocalEnv, input: DraftInput) {
+     const job = await env.DB.prepare(sql).bind(...args).first<any>();
+     requireValue(job, 'Draft unavailable or conversation changed; review again', 409);
+     const result = JSON.parse(job.result);
+-    const proposal = proposalId === null ? (job.mode !== 'resolve_reply' && result.reply_draft
++    // A `resolve_reply` report offers its legacy draft only when the AI reply mode held its automatic delivery.
++    const proposal = proposalId === null ? ((job.mode !== 'resolve_reply' || job.delivery_state === HELD_FOR_OPERATOR) && result.reply_draft
+         ? { body: result.reply_draft, attachment_ids: result.attachment_ids } : null)
+         : result.replies?.find((reply: any) => reply.id === proposalId);
+     requireValue(proposal, 'Reply proposal not found', 404);
+diff --git a/src/edition/local-computer.ts b/src/edition/local-computer.ts
+index d1695ef..d6ce6f8 100644
+--- a/src/edition/local-computer.ts
++++ b/src/edition/local-computer.ts
+@@ -1,7 +1,7 @@
+ import {requireTicketScope,ticketScopeSql} from '../modules/access/ticket-scope';
+ import type { Env, Actor } from '../platform/env';
+ import { requireProject } from '../platform/auth';
+-import { admitMessage } from '../modules/conversations/admission';
++import { admitMessage, messageAuthority, messageCommitStatements } from '../modules/conversations/admission';
+ import type { Integration } from '../modules/local-computer/contracts';
+ import { requireValue } from '../modules/local-computer/contracts';
+ import { copyLocalAttachments, type LocalAttachment } from './local-computer-media';
+@@ -22,5 +22,5 @@ export const localComputerIntegration: Integration = {
+  async recordResult(env,job,result){await env.DB.prepare(`INSERT OR IGNORE INTO conversation_notes(id,conversation_id,user_id,content,created_at) SELECT ?,c.id,?,?,? FROM conversations c WHERE c.id=? AND c.project_id=? AND ${ticketScopeSql('?','c','c.group_id',false)}`).bind('delegation:'+job.id,job.operator_id,result.summary+'\n'+result.actions.map((a:any)=>a.description+': '+a.evidence).join('\n'),Date.now(),job.conversation_id,job.project_id,job.operator_id).run();},
+  async deliveryRevision(env,projectId,conversationId){const row:any=await env.DB.prepare('SELECT revision FROM conversations WHERE id=? AND project_id=?').bind(conversationId,projectId).first();requireValue(row,'Conversation missing',404);return row.revision;},
+  prepareDraft:prepareLocalDraft,
+- async deliver(env,input){const membership:any=await env.DB.prepare('SELECT role FROM memberships WHERE project_id=? AND user_id=?').bind(input.projectId,input.operatorId).first();requireValue(membership,'Operator membership lost',403);requireValue((await memberAccess(env.DB,input.projectId,input.operatorId))?.permissions.has('conversations.reply'),'Reply permission lost',403);await requireTicketScope(env as Env,input.operatorId,input.projectId,input.conversationId,'api',false);const attachments:LocalAttachment[]=[];for(const attachmentId of input.attachmentIds){const attachment=await env.DB.prepare('SELECT a.* FROM local_attachments a JOIN local_jobs j ON j.id=a.job_id WHERE a.id=? AND j.project_id=? AND j.conversation_id=?').bind(attachmentId,input.projectId,input.conversationId).first<LocalAttachment>();requireValue(attachment,'Attachment unavailable',409);attachments.push(attachment);}const mediaIds=(await copyLocalAttachments(env,input,attachments)).map(media=>media.id);const result=await admitMessage(env as Env,{projectId:input.projectId,conversationId:input.conversationId,actor:{id:input.operatorId,projectId:input.projectId,role:membership.role as Actor['role']},localId:input.requestId,content:input.body,expectedRevision:input.expectedRevision,expectedLastMessageId:input.expectedLastMessageId,mediaIds,resolve:input.resolve,authoring:input.source?{kind:'local',...input.source}:undefined});requireValue(result.accepted&&result.message,'Conversation changed; review before sending',409);await auditStatement(env.DB,{projectId:input.projectId,category:'approval',action:'delegation.reply_sent',actor:{type:'user',id:input.operatorId},source:'dashboard',target:{type:'conversation',id:input.conversationId},detail:{message:String(result.message.id)}}).run();return {messageId:String(result.message.id)};},
++ async deliver(env,input){const membership:any=await env.DB.prepare('SELECT role FROM memberships WHERE project_id=? AND user_id=?').bind(input.projectId,input.operatorId).first();requireValue(membership,'Operator membership lost',403);requireValue((await memberAccess(env.DB,input.projectId,input.operatorId))?.permissions.has('conversations.reply'),'Reply permission lost',403);await requireTicketScope(env as Env,input.operatorId,input.projectId,input.conversationId,'api',false);const attachments:LocalAttachment[]=[];for(const attachmentId of input.attachmentIds){const attachment=await env.DB.prepare('SELECT a.* FROM local_attachments a JOIN local_jobs j ON j.id=a.job_id WHERE a.id=? AND j.project_id=? AND j.conversation_id=?').bind(attachmentId,input.projectId,input.conversationId).first<LocalAttachment>();requireValue(attachment,'Attachment unavailable',409);attachments.push(attachment);}const mediaIds=(await copyLocalAttachments(env,input,attachments)).map(media=>media.id);const result=await admitMessage(env as Env,{projectId:input.projectId,conversationId:input.conversationId,actor:{id:input.operatorId,projectId:input.projectId,role:membership.role as Actor['role']},localId:input.requestId,content:input.body,expectedRevision:input.expectedRevision,expectedLastMessageId:input.expectedLastMessageId,mediaIds,resolve:input.resolve,authoring:input.source?{kind:'local',...input.source}:undefined,...(input.admission?{[messageAuthority]:{sql:input.admission.sql,args:input.admission.args},[messageCommitStatements]:input.admission.refused}:{})});requireValue(result.accepted&&result.message,'Conversation changed; review before sending',409);await auditStatement(env.DB,{projectId:input.projectId,category:'approval',action:'delegation.reply_sent',actor:{type:'user',id:input.operatorId},source:'dashboard',target:{type:'conversation',id:input.conversationId},detail:{message:String(result.message.id)}}).run();return {messageId:String(result.message.id)};},
+ };
+diff --git a/src/modules/customer-context/widget-policy.ts b/src/modules/customer-context/widget-policy.ts
+index 09665d1..2be1a58 100644
+--- a/src/modules/customer-context/widget-policy.ts
++++ b/src/modules/customer-context/widget-policy.ts
+@@ -2,12 +2,15 @@ import type {Env} from '../../platform/env'
+ import {modelReadiness} from '../management/provisioning/index'
+ import {replyMode} from '../ai-support/reply-mode'
+ 
+-/** Workspace policy enables an offer; only the visitor may grant their consent. Proactive help writes to
+- * the visitor, so it is offered only while AI replies are automatic. */
++/** Whether a workspace settings object offers proactive help: contact tracking and proactive help on, the
++ * workspace not deleted, and AI replies automatic, since proactive help writes to the visitor. */
++export const proactiveHelpOn=(settings:any)=>settings?.is_contact_tracking_enabled===true&&settings?.proactive_help_enabled===true&&!settings?.deleted_at&&replyMode(settings)==='auto'
++
++/** Workspace policy enables an offer; only the visitor may grant their consent. */
+ export async function widgetMonitoringPolicy(env:Env,projectId:string){
+  const row=await env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(projectId).first<{settings_json:string}>()
+  const settings=JSON.parse(row?.settings_json||'{}')
+- const enabled=settings.is_contact_tracking_enabled===true&&settings.proactive_help_enabled===true&&!settings.deleted_at&&replyMode(settings)==='auto'
++ const enabled=proactiveHelpOn(settings)
+  const assistant=await env.DB.prepare('SELECT id,name,role,model FROM ai_profiles WHERE project_id=? AND id=? AND is_enabled=1').bind(projectId,settings.default_visitor_ai_id||settings.default_responder||'').first<{id:string;name:string;role:string;model:string}>()
+  const model=typeof env.CONTEXT_MODEL==='string'&&env.CONTEXT_MODEL.trim()?env.CONTEXT_MODEL:assistant?.model
+  const ready=!!assistant&&!!model&&modelReadiness(env,model).ready&&modelReadiness(env,assistant.model).ready
+diff --git a/src/modules/integrations/notifications.ts b/src/modules/integrations/notifications.ts
+index 2a31e0c..13e8c1d 100644
+--- a/src/modules/integrations/notifications.ts
++++ b/src/modules/integrations/notifications.ts
+@@ -4,6 +4,7 @@ import type {Actor,Env} from '../../platform/env'
+ import {sendEmails,resendHeldEmails,emailConfigured,type EmailInput,type EmailOutcome,type DeferEmailDelivery} from './email'
+ import {openRerMailHolds,endRerMailHolds} from './rer-mail-hold'
+ import {workspaceReplyMode} from '../ai-support/reply-mode'
++import {auditStatement} from '../audit/record'
+ import {settleHeldSchedule,resendHeldSchedule} from '../workflows/schedule-mail'
+ import {renderConversationEmail} from './email-content'
+ import {recipientReplyAddress} from './email-reply-address'
+@@ -18,6 +19,8 @@ export {assignmentNotificationStatement,dispatchOperatorNotifications} from './o
+ 
+ type Recorded={state:string;provider_id:string|null;recipient:string}
+ const aiMailWithheld='AI-written messages are not emailed to customers while AI replies are drafts or off'
++/** The security-log event of one AI email withheld because of the reply mode: a reason only, never text or an address. */
++const aiMailWithheldEvent={action:'email.ai_withheld',outcome:'refused' as const,detail:{reason:'ai_reply_mode'}}
+ function outcome(deliveries:EmailOutcome[]){
+  const first=deliveries[0]
+  const state=['uncertain','sending','failed'].find(state=>deliveries.some(delivery=>delivery.state===state))||first.state
+@@ -57,7 +60,7 @@ export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:Defer
+  // automatic. Otherwise its customer email ends for good, a held send included, so neither outbox
+  // replay nor a later switch back to auto sends it. Teammates' notices are unaffected.
+  const withheld=message.actor_role==='ai'&&await workspaceReplyMode(env.DB,actor.projectId)!=='auto'
+- if(withheld&&prior){await endRerMailHolds(env,deliveryId,aiMailWithheld);return recorded(env,deliveryId)}
++ if(withheld&&prior){await endRerMailHolds(env,deliveryId,aiMailWithheld,aiMailWithheldEvent);return recorded(env,deliveryId)}
+  if(!data[1].results[0])return {state:'project_deleted'}
+  const operatorActivity=!prior&&message.actor_role==='contact'?await queueOperatorActivity(env,message,actor.projectId):null
+  if(operatorActivity?.state==='automatic')return operatorActivity
+@@ -66,7 +69,11 @@ export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:Defer
+   await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'customer_updated',eventId:String(message.id),actorId:senderId})
+  }
+  if(!prior&&message.actor_role!=='contact')await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'ticket_updated',eventId:String(message.id),actorId:senderId})
+- if(withheld){const now=Date.now();await env.DB.prepare("INSERT OR IGNORE INTO email_deliveries VALUES(?,?,'','','ai-reply-mode','failed',NULL,?,?,?)").bind(deliveryId,actor.projectId,aiMailWithheld,now,now).run();return recorded(env,deliveryId)}
++ if(withheld){const now=Date.now();await env.DB.batch([
++  // Audited only when this send is the one that withholds it: a replay of an already withheld delivery stays silent.
++  auditStatement(env.DB,{...aiMailWithheldEvent,projectId:actor.projectId,category:'integration',actor:{type:'system'},source:'system',target:{type:'email_delivery',id:deliveryId}},now,{sql:'NOT EXISTS(SELECT 1 FROM email_deliveries WHERE id=?)',params:[deliveryId]}),
++  env.DB.prepare("INSERT OR IGNORE INTO email_deliveries VALUES(?,?,'','','ai-reply-mode','failed',NULL,?,?,?)").bind(deliveryId,actor.projectId,aiMailWithheld,now,now),
++ ]);return recorded(env,deliveryId)}
+  if(!configured)return {state:'not_configured'}
+  const conversation=data[2].results[0]
+  if(!conversation)return {state:'not_found'}
+diff --git a/src/modules/integrations/operator-activity.ts b/src/modules/integrations/operator-activity.ts
+index ae598d3..b9e44d5 100644
+--- a/src/modules/integrations/operator-activity.ts
++++ b/src/modules/integrations/operator-activity.ts
+@@ -3,6 +3,7 @@ import type {Env} from '../../platform/env'
+ import {cronRoom} from '../../platform/cron-budget'
+ import {contactAvailableSql} from '../conversations/contact-privacy'
+ import {isAutomaticInboundEmail} from './inbound-origin'
++import {customerAiSql} from '../ai-support/reply-mode'
+ 
+ /** Operator activity is grouped after 60 seconds without transcript activity.
+  * Reads are revision frontiers per recipient. Assignment-mail preferences do not
+@@ -44,7 +45,7 @@ export async function batchOperatorActivity(env:Env,now:number,projectId?:string
+     WHERE c.id=? AND c.project_id=? AND c.resolved_at IS NULL AND ${contactAvailableSql()} AND ${ticketScopeSql('m.user_id')}
+     AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)
+     AND (c.assigned_to=m.user_id OR (c.assigned_to IS NULL AND p.is_notified_on_unassigned_activity=1
+-     AND NOT EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL)))
++     AND NOT (EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL) AND ${customerAiSql('c.project_id')})))
+     AND a.revision>coalesce(r.revision,0) GROUP BY c.id,m.user_id`)
+     .bind(batch,batch,now,batch,row.conversation_id,row.project_id)
+   ])
+diff --git a/src/modules/integrations/operator-notifications.ts b/src/modules/integrations/operator-notifications.ts
+index 1fc3420..7900688 100644
+--- a/src/modules/integrations/operator-notifications.ts
++++ b/src/modules/integrations/operator-notifications.ts
+@@ -13,6 +13,7 @@ import {recipientReplyAddress} from './email-reply-address'
+ import {renderConversationDigest} from './email-content'
+ import {batchOperatorActivity} from './operator-activity'
+ import {deliverNotification,loopSuppressionHeaders,recordedNotification} from './notification-delivery'
++import {customerAiSql} from '../ai-support/reply-mode'
+ 
+ export interface AssignmentNotification {
+  id:string;projectId:string;conversationId:string;actorId:string;previousAssignee:string|null;assignee:string|null
+@@ -43,7 +44,7 @@ async function recipient(env:Env,row:Notification){
+  WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND ${ticketScopeSql('m.user_id')} AND (?='assignment' OR c.resolved_at IS NULL)
+  AND NOT EXISTS(SELECT 1 FROM notification_preferences np WHERE np.project_id=c.project_id AND np.user_id=u.id AND np.kind='customer_updated' AND np.email=0)
+  AND (c.assigned_to=u.id OR (?='unread' AND c.assigned_to IS NULL AND p.is_notified_on_unassigned_activity=1
+- AND NOT EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL)))`)
++ AND NOT (EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL) AND ${customerAiSql('c.project_id')})))`)
+  .bind(row.user_id,row.conversation_id,row.project_id,row.kind,row.kind).first<Recipient>()
+ }
+ async function sendNotification(env:Env,row:Notification){
+diff --git a/src/modules/integrations/rer-mail-hold.ts b/src/modules/integrations/rer-mail-hold.ts
+index 25c6bb9..61dbcc8 100644
+--- a/src/modules/integrations/rer-mail-hold.ts
++++ b/src/modules/integrations/rer-mail-hold.ts
+@@ -1,7 +1,7 @@
+ import {mailClaimSql} from '../knowledge/mail-door'
+ import type {Env} from '../../platform/env'
+ import type {EmailInput} from './email'
+-import {auditStatement} from '../audit/record'
++import {auditStatement,type AuditEvent} from '../audit/record'
+ import {settleHeldSchedule} from '../workflows/schedule-mail'
+ 
+ /** A MAIL_API_KEY rotation stops the old key at once and rebuilds the app with the
+@@ -43,13 +43,14 @@ export async function claimRerMailHold(env:Env,input:EmailInput){
+  return claimed.meta.changes?row.updated_at:null
+ }
+ 
+-/** Ends every open hold of one notification's fan-out for good, whatever its age: replay never resends it. */
+-export async function endRerMailHolds(env:Env,deliveryId:string,reason:string){
++/** Ends every open hold of one notification's fan-out for good, whatever its age: replay never resends it.
++ * Each hold it ends writes one audit event, `event`, batched with the end and written only while that hold is still open. */
++export async function endRerMailHolds(env:Env,deliveryId:string,reason:string,event:Pick<AuditEvent,'action'|'outcome'|'detail'>){
+  const now=Date.now(),held=(await env.DB.prepare("SELECT id,project_id,updated_at FROM email_deliveries WHERE id>=? AND id<? AND state='sending' AND error=?").bind(deliveryId,deliveryId+';',rerMailHeld).all<{id:string;project_id:string;updated_at:number}>()).results
+  for(const row of held){
+   const guard={sql:"EXISTS(SELECT 1 FROM email_deliveries WHERE id=? AND state='sending' AND error=? AND updated_at=?)",params:[row.id,rerMailHeld,row.updated_at]}
+   await env.DB.batch([
+-   auditStatement(env.DB,{projectId:row.project_id,category:'integration',action:'managed_mail.send_rejected',outcome:'failed',actor:{type:'system'},source:'system',target:{type:'email_delivery',id:row.id},detail:{reason}},now,guard),
++   auditStatement(env.DB,{...event,projectId:row.project_id,category:'integration',actor:{type:'system'},source:'system',target:{type:'email_delivery',id:row.id}},now,guard),
+    env.DB.prepare("UPDATE email_deliveries SET state='failed',error=?,updated_at=? WHERE id=? AND state='sending' AND error=? AND updated_at=?").bind(reason,now,row.id,rerMailHeld,row.updated_at),
+   ])
+  }
+diff --git a/src/modules/local-computer/README.md b/src/modules/local-computer/README.md
+index f472e28..ca37bf5 100644
+--- a/src/modules/local-computer/README.md
++++ b/src/modules/local-computer/README.md
+@@ -58,7 +58,9 @@ resumes notes and exact-ID reply admission after a crash. When authority is gone
+ membership lost) the effect is blocked and `delivery_state='authorization_lost'` is recorded while the report
+ stays terminal; it is never reopened for input that nobody could act on. A reply that fails delivery reopens the
+ report as `needs_input` with `delivery_state='review'` only while no replacement delegation holds the
+-conversation. Each effect is swept independently, so one failing row cannot abort the sweep or the scheduled
++conversation. Outside AI reply mode `auto` a verified `resolve_reply` reply is never delivered automatically: its
++receipt and admission are gated by the mode in the same statements, the report stays `completed` with
++`delivery_state='held_for_operator'`, and it offers the reply as its operator's draft to send. Each effect is swept independently, so one failing row cannot abort the sweep or the scheduled
+ recoveries after it. Legacy imports use the same vocabulary: started delegations arrive
+ `revoked`/`authority_revoked`, queued ones `cancelled`/`held`. Tests inject a post-delivery/pre-note failure and
+ prove one message plus one note after recovery. Verification: node tests/journeys/delegation-computers.mjs.
+diff --git a/src/modules/local-computer/contracts.ts b/src/modules/local-computer/contracts.ts
+index 8e84a30..3fe9f97 100644
+--- a/src/modules/local-computer/contracts.ts
++++ b/src/modules/local-computer/contracts.ts
+@@ -3,6 +3,8 @@ import { HTTPException } from 'hono/http-exception';
+ export type LocalEnv = { DB: D1Database; FILES: R2Bucket };
+ export type Principal = { userId: string; projectId: string };
+ export type Mode = 'investigate' | 'resolve' | 'resolve_reply';
++/** `local_jobs.delivery_state` of a verified `resolve_reply` whose automatic delivery the AI reply mode held: the operator may send it themselves. */
++export const HELD_FOR_OPERATOR = 'held_for_operator';
+ export type DraftInput = { projectId: string; conversationId: string; operatorId: string; jobId: string;
+   proposalId: string | null; expectedRevision: number; expectedLastMessageId: string | null; guard?: {sql:string;args:unknown[]} };
+ export interface Integration {
+@@ -18,7 +20,9 @@ export interface Integration {
+   followUpGuard(): string;
+   deliveryRevision(env:LocalEnv,projectId:string,conversationId:string):Promise<number>;
+   prepareDraft(env: LocalEnv, input: DraftInput): Promise<{ body: string; attachments: Record<string, unknown>[] }>;
+-  deliver(env: LocalEnv, input: { projectId: string; conversationId: string; operatorId: string; requestId: string; expectedRevision:number; expectedLastMessageId: string | null; body: string; attachmentIds: string[]; resolve: boolean; source?: {jobId:string;proposalId:string|null} }): Promise<{ messageId: string }>;
++  deliver(env: LocalEnv, input: { projectId: string; conversationId: string; operatorId: string; requestId: string; expectedRevision:number; expectedLastMessageId: string | null; body: string; attachmentIds: string[]; resolve: boolean; source?: {jobId:string;proposalId:string|null};
++    /** An automatic delivery's predicate (no `c` alias), required by the admitting statement and its replay lookup; `refused` statements run in that same transaction. */
++    admission?: {sql:string;args:unknown[];refused:(messageId:string)=>D1PreparedStatement[]} }): Promise<{ messageId: string }>;
+ }
+ export type App = Hono<any>;
+ export const now = () => new Date().toISOString();
+diff --git a/src/modules/local-computer/results.ts b/src/modules/local-computer/results.ts
+index 2783b99..f6507ff 100644
+--- a/src/modules/local-computer/results.ts
++++ b/src/modules/local-computer/results.ts
+@@ -1,25 +1,32 @@
+ import {protectLocalModelResult,discloseLocalModelFields} from '../knowledge/local-model-door';
+ import {inCron,cronRoom} from '../../platform/cron-budget';
+-import {type App,type Integration,jobAccessSql,id,now,present,requireValue,text} from './contracts';
++import {type App,type Integration,HELD_FOR_OPERATOR,jobAccessSql,id,now,present,requireValue,text} from './contracts';
++import {customerAiSql} from '../ai-support/reply-mode';
+ import {ownedJob} from './jobs';
+ import {approveFollowUp} from './follow-up';
+ import {admitFailureResult} from './provider-errors';
+ import {validateResult} from './result-validation';
+ export {validateResult} from './result-validation';
+-async function deliver(c:any,integration:Integration,j:any,body:string,attachments:string[],proposal:string,resolve:boolean){
+- const db=c.env.DB;let receipt:any=await db.prepare("SELECT * FROM local_receipts WHERE job_id=? AND proposal_id=? AND kind='reply'").bind(j.id,proposal).first();
++/** Sends one reply as the delegating operator. An automatic delivery (the legacy `resolve_reply` draft, sent without a
++ * person) happens only while the workspace's AI replies are automatic: its receipt is created, and its admission
++ * commits, only under `customerAiSql`; a refusal by that predicate removes the receipt in the admitting transaction.
++ * It then returns null: the reply is held for the operator, who may adopt it as a draft. */
++async function deliver(c:any,integration:Integration,j:any,body:string,attachments:string[],proposal:string,resolve:boolean,automatic=false){
++ const db=c.env.DB,requestId='delegation:'+j.id+':'+proposal,select=()=>db.prepare("SELECT * FROM local_receipts WHERE job_id=? AND proposal_id=? AND kind='reply'").bind(j.id,proposal).first();let receipt:any=await select();
+  if(receipt&&receipt.status!=='sending')return receipt;
+- if(!receipt){const revision=await integration.deliveryRevision(c.env,j.project_id,j.conversation_id);await db.prepare("INSERT OR IGNORE INTO local_receipts(job_id,proposal_id,kind,status,expected_revision,expected_last_message_id) VALUES(?,?,'reply','sending',?,?)").bind(j.id,proposal,revision,j.expected_last_message_id).run();receipt=await db.prepare("SELECT * FROM local_receipts WHERE job_id=? AND proposal_id=? AND kind='reply'").bind(j.id,proposal).first();}
++ if(!receipt){const revision=await integration.deliveryRevision(c.env,j.project_id,j.conversation_id);await db.prepare(`INSERT OR IGNORE INTO local_receipts(job_id,proposal_id,kind,status,expected_revision,expected_last_message_id) SELECT ?,?,'reply','sending',?,?${automatic?` WHERE ${customerAiSql('?')}`:''}`).bind(j.id,proposal,revision,j.expected_last_message_id,...(automatic?[j.project_id]:[])).run();receipt=await select();if(!receipt&&automatic)return null;}
+  requireValue(Number.isInteger(receipt.expected_revision),'Delivery receipt has no immutable command revision',409);
+- try{const sent=await integration.deliver(c.env,{projectId:j.project_id,conversationId:j.conversation_id,operatorId:j.operator_id,requestId:'delegation:'+j.id+':'+proposal,expectedRevision:receipt.expected_revision,expectedLastMessageId:receipt.expected_last_message_id,body,attachmentIds:attachments,resolve,source:{jobId:j.id,proposalId:proposal==='legacy'?null:proposal}});await db.batch([db.prepare("UPDATE local_receipts SET status='sent',message_id=? WHERE job_id=? AND proposal_id=? AND kind='reply'").bind(sent.messageId,j.id,proposal),db.prepare('UPDATE local_jobs SET expected_last_message_id=? WHERE id=?').bind(sent.messageId,j.id)]);}catch(error){await db.prepare("UPDATE local_receipts SET status='needs_review',review_message=? WHERE job_id=? AND proposal_id=? AND kind='reply'").bind(error instanceof Error?error.message:'Delivery uncertain; inspect before retry',j.id,proposal).run();}
+- return await db.prepare("SELECT * FROM local_receipts WHERE job_id=? AND proposal_id=? AND kind='reply'").bind(j.id,proposal).first();
++ const admission=automatic?{sql:customerAiSql('?'),args:[j.project_id],refused:(messageId:string)=>[db.prepare(`DELETE FROM local_receipts WHERE job_id=? AND proposal_id=? AND kind='reply' AND status='sending' AND NOT EXISTS(SELECT 1 FROM messages WHERE id=?) AND NOT EXISTS(SELECT 1 FROM messages WHERE project_id=? AND local_id=?) AND NOT (${customerAiSql('?')})`).bind(j.id,proposal,messageId,j.project_id,requestId,j.project_id)]}:undefined;
++ try{const sent=await integration.deliver(c.env,{projectId:j.project_id,conversationId:j.conversation_id,operatorId:j.operator_id,requestId,expectedRevision:receipt.expected_revision,expectedLastMessageId:receipt.expected_last_message_id,body,attachmentIds:attachments,resolve,source:{jobId:j.id,proposalId:proposal==='legacy'?null:proposal},admission});await db.batch([db.prepare("UPDATE local_receipts SET status='sent',message_id=? WHERE job_id=? AND proposal_id=? AND kind='reply'").bind(sent.messageId,j.id,proposal),db.prepare('UPDATE local_jobs SET expected_last_message_id=? WHERE id=?').bind(sent.messageId,j.id)]);}catch(error){await db.prepare("UPDATE local_receipts SET status='needs_review',review_message=? WHERE job_id=? AND proposal_id=? AND kind='reply' AND status='sending'").bind(error instanceof Error?error.message:'Delivery uncertain; inspect before retry',j.id,proposal).run();}
++ return await select();
+ }
+ // A report reopens for operator review only while no replacement delegation holds the conversation (local_one_active_conversation).
+ const reopenUnlessReplaced="CASE WHEN status='completed' AND NOT EXISTS(SELECT 1 FROM local_jobs o WHERE o.project_id=local_jobs.project_id AND o.conversation_id=local_jobs.conversation_id AND o.id!=local_jobs.id AND o.status IN ('queued','running','needs_input')) THEN 'needs_input' ELSE status END";
+ export async function resumeResultEffects(c:any,integration:Integration,jobId:string){
+  const effect:any=await c.env.DB.prepare("SELECT * FROM local_result_effects WHERE job_id=? AND state='pending'").bind(jobId).first();if(!effect)return;
+  const j:any=await c.env.DB.prepare('SELECT * FROM local_jobs WHERE id=?').bind(jobId).first(),result=JSON.parse(effect.payload);
+- if(j.mode==='resolve_reply'&&result.verified&&!Object.hasOwn(result,'replies')&&result.reply_draft){const receipt:any=await deliver(c,integration,j,text(result.reply_draft),result.attachment_ids||[],'legacy',true);if(receipt.status!=='sent')await c.env.DB.prepare("UPDATE local_jobs SET status="+reopenUnlessReplaced+",delivery_state='review' WHERE id=?").bind(j.id).run();}
++ // Outside auto the verified reply is held for the operator: the report stays completed and offers it as a draft.
++ if(j.mode==='resolve_reply'&&result.verified&&!Object.hasOwn(result,'replies')&&result.reply_draft){const receipt:any=await deliver(c,integration,j,text(result.reply_draft),result.attachment_ids||[],'legacy',true,true);if(!receipt)await c.env.DB.prepare(`UPDATE local_jobs SET delivery_state='${HELD_FOR_OPERATOR}' WHERE id=?`).bind(j.id).run();else if(receipt.status!=='sent')await c.env.DB.prepare("UPDATE local_jobs SET status="+reopenUnlessReplaced+",delivery_state='review' WHERE id=?").bind(j.id).run();}
+  await integration.recordResult(c.env,j,result);
+  await c.env.DB.prepare("UPDATE local_result_effects SET state='completed' WHERE job_id=?").bind(jobId).run();
+ }
+diff --git a/src/modules/management/away-reply.ts b/src/modules/management/away-reply.ts
+index 833b178..f3909ce 100644
+--- a/src/modules/management/away-reply.ts
++++ b/src/modules/management/away-reply.ts
+@@ -5,13 +5,15 @@ import {emailMode} from '../integrations/email-provider'
+ import {publicAppearance} from '../widget/appearance.js'
+ import {backAt,humanResponseTime} from '../widget/availability-text.js'
+ import {workflowNow} from '../workflows/clock'
++import {customerAiSql} from '../ai-support/reply-mode'
+ 
+ /** The away reply's author, and its local id: one per conversation, since a conversation's local ids are unique,
+  * even when the outbox replays the visitor's message. Clients may not mint `away:` ids (admission.ts). */
+ export const AWAY_AUTHOR='away',AWAY_REPLY='away:reply'
+ 
+ /** Outside the workspace's hours, with "Accept new conversations" off, or with no teammate online while no assistant
+- * answers the workspace's visitors (presence-based away), a visitor's chat message that no assistant will answer earns
++ * answers the workspace's visitors (presence-based away), a visitor's chat message that no assistant will answer (none
++ * assigned, or AI replies are drafts or off) earns
+  * the workspace's away message, once per conversation (legacy chat sendMessage.js behaviour). It is the workspace
+  * speaking, not a teammate or the AI: it is not emailed, earns no AI reply, and does not count as a reply in reports,
+  * outcomes or automations (migration 241, workflows/time-rules.ts and rule-model.ts).
+@@ -20,7 +22,7 @@ export const AWAY_AUTHOR='away',AWAY_REPLY='away:reply'
+ export async function postAwayReply(env:Env,message:Record<string,unknown>,actor:Actor){
+  if(actor.role!=='contact'||String(message.local_id||'').startsWith('email:'))return null
+  const row=await env.DB.prepare(`SELECT c.revision,c.last_message_id,p.name,s.settings_json,ct.email,json_extract(ct.metadata_json,'$.provided_email') provided_email,
+-  (c.assigned_to IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 WHERE ca.conversation_id=c.id)) assistant
++  (c.assigned_to IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 WHERE ca.conversation_id=c.id) AND ${customerAiSql('c.project_id')}) assistant
+   FROM conversations c JOIN projects p ON p.id=c.project_id JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id LEFT JOIN project_settings s ON s.project_id=c.project_id
+   WHERE c.id=? AND c.project_id=?`).bind(message.conversation_id,actor.projectId).first<any>()
+  if(!row||row.assistant||row.last_message_id!==message.id)return null
+diff --git a/src/modules/management/settings-write.ts b/src/modules/management/settings-write.ts
+new file mode 100644
+index 0000000..1589155
+--- /dev/null
++++ b/src/modules/management/settings-write.ts
+@@ -0,0 +1,18 @@
++/** Workspace settings writes. Only a mode change through `PUT .../ai` writes the AI reply mode: every other
++ * whole-object save keeps the stored row's `ai_reply_mode` and `ai_reply_mode_since` inside its own statement,
++ * so a save whose read fell before a mode change can never restore the earlier mode. */
++const MODE_KEYS="'$.ai_reply_mode','$.ai_reply_mode_since'"
++
++/** Upserts a computed settings object without its two mode keys; the stored row's keys stay as they are
++ * (`json_patch` drops a NULL member, so an absent key stays absent). */
++export function settingsUpsert(db:D1Database,projectId:string,settings:Record<string,unknown>,updatedAt=Date.now()){
++ return db.prepare(`INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES(?,json_remove(?,${MODE_KEYS}),?)
++  ON CONFLICT(project_id) DO UPDATE SET settings_json=json_patch(json_remove(excluded.settings_json,${MODE_KEYS}),
++  json_object('ai_reply_mode',json_extract(project_settings.settings_json,'$.ai_reply_mode'),'ai_reply_mode_since',json_extract(project_settings.settings_json,'$.ai_reply_mode_since'))),
++  updated_at=excluded.updated_at`).bind(projectId,JSON.stringify(settings),updatedAt)
++}
++
++/** Sets the two mode keys on the stored row; batched after `settingsUpsert` by a real mode change only. */
++export function replyModeWrite(db:D1Database,projectId:string,mode:string,since:number){
++ return db.prepare("UPDATE project_settings SET settings_json=json_set(settings_json,'$.ai_reply_mode',?,'$.ai_reply_mode_since',?) WHERE project_id=?").bind(mode,since,projectId)
++}
+diff --git a/src/modules/management/widget-settings.ts b/src/modules/management/widget-settings.ts
+index dd10071..261ba06 100644
+--- a/src/modules/management/widget-settings.ts
++++ b/src/modules/management/widget-settings.ts
+@@ -10,11 +10,11 @@ import {websiteAddress} from './website-address'
+ import {person} from './dashboard-data'
+ import {publicAppearance} from '../widget/appearance.js'
+ import {saveSettings} from './settings-save'
+-import {allowsGeneration,replyMode} from '../ai-support/reply-mode'
++import {proactiveHelpOn} from '../customer-context/widget-policy'
+ export const widgetSettings=new Hono<AppEnv>()
+ widgetSettings.route('/',campaignRoutes)
+ export const publicWidget=new Hono<AppEnv>()
+-export async function settingsFor(env:AppEnv['Bindings'],projectId:string){const project=await env.DB.prepare('SELECT p.id,p.name,p.allowed_origin,s.settings_json FROM projects p LEFT JOIN project_settings s ON s.project_id=p.id WHERE p.id=?').bind(projectId).first<any>();if(!project)throw new HTTPException(404);const settings=JSON.parse(project.settings_json||'{}');if(settings.deleted_at)throw new HTTPException(404);const agents=(await env.DB.prepare("SELECT u.id,u.name,s.avatar_url FROM users u JOIN memberships m ON m.user_id=u.id LEFT JOIN user_settings s ON s.user_id=u.id WHERE m.project_id=? ORDER BY CASE m.role WHEN 'owner' THEN 0 ELSE 1 END,u.id").bind(projectId).all()).results.map(person),ais=(await env.DB.prepare('SELECT id,name,role,avatar_url,is_animated FROM ai_profiles WHERE project_id=? AND is_enabled=1').bind(projectId).all()).results;const campaignTiming=await env.DB.prepare("SELECT min(max(json_extract(config_json,'$.delaySeconds'),CASE WHEN json_extract(config_json,'$.trigger.type')='time' THEN json_extract(config_json,'$.trigger.seconds') ELSE 0 END)) delay FROM widget_campaigns WHERE project_id=? AND json_extract(config_json,'$.enabled')=1").bind(projectId).first<{delay:number|null}>();return {campaignsEnabled:campaignTiming?.delay!=null,campaignsStartAfter:campaignTiming?.delay??0,mailMode:emailMode(env),availability:await teamAvailability(env,projectId,settings),projectId,project:{id:project.id,name:project.name},settings:settings.widget_settings||{},brand:publicAppearance(settings,project.name),agents,ais,currentAgent:agents[0]||null,is_human_response_enabled:settings.is_human_response_enabled!==false,collectorEnabled:settings.is_contact_tracking_enabled===true,proactiveHelpEnabled:allowsGeneration(replyMode(settings),'reply')&&settings.proactive_help_enabled===true&&settings.is_contact_tracking_enabled===true,allowedOrigin:project.allowed_origin}}
++export async function settingsFor(env:AppEnv['Bindings'],projectId:string){const project=await env.DB.prepare('SELECT p.id,p.name,p.allowed_origin,s.settings_json FROM projects p LEFT JOIN project_settings s ON s.project_id=p.id WHERE p.id=?').bind(projectId).first<any>();if(!project)throw new HTTPException(404);const settings=JSON.parse(project.settings_json||'{}');if(settings.deleted_at)throw new HTTPException(404);const agents=(await env.DB.prepare("SELECT u.id,u.name,s.avatar_url FROM users u JOIN memberships m ON m.user_id=u.id LEFT JOIN user_settings s ON s.user_id=u.id WHERE m.project_id=? ORDER BY CASE m.role WHEN 'owner' THEN 0 ELSE 1 END,u.id").bind(projectId).all()).results.map(person),ais=(await env.DB.prepare('SELECT id,name,role,avatar_url,is_animated FROM ai_profiles WHERE project_id=? AND is_enabled=1').bind(projectId).all()).results;const campaignTiming=await env.DB.prepare("SELECT min(max(json_extract(config_json,'$.delaySeconds'),CASE WHEN json_extract(config_json,'$.trigger.type')='time' THEN json_extract(config_json,'$.trigger.seconds') ELSE 0 END)) delay FROM widget_campaigns WHERE project_id=? AND json_extract(config_json,'$.enabled')=1").bind(projectId).first<{delay:number|null}>();return {campaignsEnabled:campaignTiming?.delay!=null,campaignsStartAfter:campaignTiming?.delay??0,mailMode:emailMode(env),availability:await teamAvailability(env,projectId,settings),projectId,project:{id:project.id,name:project.name},settings:settings.widget_settings||{},brand:publicAppearance(settings,project.name),agents,ais,currentAgent:agents[0]||null,is_human_response_enabled:settings.is_human_response_enabled!==false,collectorEnabled:settings.is_contact_tracking_enabled===true,proactiveHelpEnabled:proactiveHelpOn(settings),allowedOrigin:project.allowed_origin}}
+ widgetSettings.get('/projects/:projectId/widget-settings',async c=>{const a=await scope(c),value=await settingsFor(c.env,a.projectId);const secret=await c.env.DB.prepare('SELECT verification_secret,widget_key FROM projects WHERE id=?').bind(a.projectId).first<{verification_secret:string;widget_key:string}>();return c.json({...value,appOrigin:String(c.env.APP_ORIGIN||new URL(c.req.url).origin),previewAgent:value.currentAgent,previewBrand:value.brand,widgetKey:secret?.widget_key,verificationSecret:['owner','admin'].includes(a.role)?secret?.verification_secret:undefined})})
+ widgetSettings.put('/projects/:projectId/widget-settings',async c=>{
+  const a=await scope(c,true),input=await c.req.json()
+diff --git a/src/modules/widget/conversation-state.ts b/src/modules/widget/conversation-state.ts
+index 8543eef..ff39e3e 100644
+--- a/src/modules/widget/conversation-state.ts
++++ b/src/modules/widget/conversation-state.ts
+@@ -1,6 +1,8 @@
+ import type {Env} from '../../platform/env'
+-/** Only the public responder identity for this visitor's conversation; never operator state or private prompts. */
++import {customerAiSql} from '../ai-support/reply-mode'
++/** Only the public responder identity for this visitor's conversation; never operator state or private prompts.
++ * An assigned AI is the responder only while AI replies are automatic; otherwise the widget shows the team. */
+ export async function widgetConversationState(env:Env,projectId:string,conversationId:string,contactId:string){
+- const row=await env.DB.prepare(`SELECT CASE WHEN c.assigned_to IS NULL AND a.is_enabled=1 THEN a.id ELSE NULL END ai_id FROM conversations c LEFT JOIN conversation_ai ca ON ca.conversation_id=c.id LEFT JOIN ai_profiles a ON a.id=ca.ai_id AND a.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND c.contact_id=?`).bind(conversationId,projectId,contactId).first<{ai_id:string|null}>()
++ const row=await env.DB.prepare(`SELECT CASE WHEN c.assigned_to IS NULL AND a.is_enabled=1 AND ${customerAiSql('c.project_id')} THEN a.id ELSE NULL END ai_id FROM conversations c LEFT JOIN conversation_ai ca ON ca.conversation_id=c.id LEFT JOIN ai_profiles a ON a.id=ca.ai_id AND a.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND c.contact_id=?`).bind(conversationId,projectId,contactId).first<{ai_id:string|null}>()
+  return {ai_id:row?.ai_id??null}
+ }
+diff --git a/src/ui/dashboard/components/DelegationJob.jsx b/src/ui/dashboard/components/DelegationJob.jsx
+index 1801f54..a15dcf4 100644
+--- a/src/ui/dashboard/components/DelegationJob.jsx
++++ b/src/ui/dashboard/components/DelegationJob.jsx
+@@ -24,6 +24,7 @@ const statusNames = {
+ const completionNotices = {
+     authorization_lost: 'Authority was withdrawn before this report’s note or reply was recorded.',
+     review: 'The reply was not delivered. Review the conversation before replying yourself.',
++    held_for_operator: 'AI replies are drafts in this workspace, so this reply was not sent. Use it and send it yourself.',
+ };
+ 
+ const isActive = job => [ 'queued', 'running', 'needs_input' ].includes(job.status);
+@@ -40,7 +41,8 @@ export default function DelegationJob({ job, isDraftDisabled, onCancel, onInsert
+     const active = isActive(job);
+     const completed = job.status === 'completed';
+     const replyWasSent = job.mode === 'resolve_reply' && job.delivery_state === 'delivered';
+-    const canInsertDraft = Boolean(result?.reply_draft) && job.mode !== 'resolve_reply';
++    // A Resolve & reply report offers its reply as a draft only when the workspace's AI reply mode held it.
++    const canInsertDraft = Boolean(result?.reply_draft) && (job.mode !== 'resolve_reply' || job.delivery_state === 'held_for_operator');
+     const freshnessReview = job.freshness_review?.required ? job.freshness_review : null;
+     const freshnessReviewId = freshnessReview?.latest_last_message_id || null;
+     const statusLabel = job.status === 'revoked' && job.delivery_state === 'membership_lost'
+diff --git a/src/ui/native/pages/AiReplyMode.jsx b/src/ui/native/pages/AiReplyMode.jsx
+index 2d4b2eb..1adf7be 100644
+--- a/src/ui/native/pages/AiReplyMode.jsx
++++ b/src/ui/native/pages/AiReplyMode.jsx
+@@ -1,23 +1,32 @@
+-import React, { useEffect, useState } from 'react';
++import React, { useRef, useState } from 'react';
+ import { nativeRequest } from '../transport';
+ 
+ const modes = [['auto', 'Send automatically'], ['draft', 'Draft for my team'], ['off', 'Off']];
++const labelOf = mode => modes.find(([option]) => option === mode)?.[1] || mode;
++const sentence = text => /[.!?]$/.test(text) ? text : `${text}.`;
+ 
+-/** The workspace's AI reply mode, saved as it changes. A failed save restores the
+- * stored mode and shows the error beside the control. */
++/** The workspace's AI reply mode, saved as it changes. Only `ai_reply_mode` is sent. The select shows the mode in
++ *  effect (`mode`, updated through `onSaved`); while a change saves it shows that choice, busy. A failed save
++ *  returns it to the saved mode, and the error beside it names the choice that was not saved, so choosing it
++ *  again retries. */
+ export default function AiReplyMode({ base, mode, onSaved }) {
+-    const [value, setValue] = useState(mode || 'auto'), [busy, setBusy] = useState(false), [error, setError] = useState('');
+-    useEffect(() => { setValue(mode || 'auto'); }, [mode]);
++    const saved = mode || 'auto';
++    const [pending, setPending] = useState(null), [error, setError] = useState('');
++    const latest = useRef(0);
+     const change = async next => {
+-        setValue(next); setError(''); setBusy(true);
++        const request = ++latest.current;
++        setPending(next); setError('');
+         try {
+             await nativeRequest(`${base}/ai`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ai_reply_mode: next }) });
+             onSaved(next);
+-        } catch (e) { setValue(mode || 'auto'); setError(e.message); } finally { setBusy(false); }
++        } catch (e) {
++            const reason = e.status ? sentence(e.message) : 'Check your connection.';
++            if (request === latest.current) setError(`“${labelOf(next)}” was not saved. ${reason} Choose it again to retry.`);
++        } finally { if (request === latest.current) setPending(null); }
+     };
+     return <div className="form-group mb-4">
+         <label htmlFor="ai_reply_mode" className="form-label">AI replies</label>
+-        <select id="ai_reply_mode" name="ai_reply_mode" className={`form-select${error ? ' is-invalid' : ''}`} value={value} disabled={busy} aria-busy={busy || undefined} aria-invalid={error ? 'true' : undefined} aria-describedby={error ? 'ai_reply_mode-error' : undefined} onChange={event => change(event.target.value)}>
++        <select id="ai_reply_mode" name="ai_reply_mode" className={`form-select${error ? ' is-invalid' : ''}`} value={pending || saved} aria-busy={pending !== null || undefined} aria-invalid={error ? 'true' : undefined} aria-describedby={error ? 'ai_reply_mode-error' : undefined} onChange={event => change(event.target.value)}>
+             {modes.map(([option, label]) => <option key={option} value={option}>{label}</option>)}
+         </select>
+         {error && <div id="ai_reply_mode-error" className="invalid-feedback d-block" role="alert">{error}</div>}
+diff --git a/tests/helpers/ai/configured-execution.mjs b/tests/helpers/ai/configured-execution.mjs
+index 44d0da9..2116e43 100644
+--- a/tests/helpers/ai/configured-execution.mjs
++++ b/tests/helpers/ai/configured-execution.mjs
+@@ -272,5 +272,34 @@ export async function replyModes(){
+   await setMode('off');const calls=a.providerCalls()
+   const refused=await a.action(v.conversationId,'agentAssist',{options:{request_id:crypto.randomUUID()}});assert.equal(refused.status,409)
+   await v.say('Written while off');await a.run();assert.equal(a.providerCalls(),calls);assert.equal((await replies(v)).length,1)
++  // Only the mode route writes the mode: a mode change fired together with concurrent whole-settings saves
++  // (workspace settings, widget settings, availability and a defaults-only AI save) is never undone.
++  const widget=(await app.call(`${base}/widget-settings`,{token:owner,status:200})).data.settings
++  const since=async()=>(await app.first("SELECT json_extract(settings_json,'$.ai_reply_mode_since') since FROM project_settings WHERE project_id=?",p)).since
++  const newestChange=async()=>(await app.call(`${base}/audit?category=data&limit=50`,{token:owner,status:200})).data.data.find(e=>e.action==='ai.reply_mode_changed').detail
++  let previousSince=0
++  for(let round=0;round<8;round++){
++   const target=round%2?'auto':'draft',saves=[]
++   for(let k=0;k<4;k++)saves.push(
++    ()=>app.call(`${base}/settings`,{token:owner,method:'PUT',body:{unavailable_message:`Away ${round}.${k}`},status:200}),
++    ()=>app.call(`${base}/widget-settings`,{token:owner,method:'PUT',body:widget,status:200}),
++    ()=>app.call(`${base}/availability`,{token:owner,method:'PUT',body:{is_availability_schedule_enabled:false},status:200}),
++    ()=>app.call(route,{token:owner,method:'PUT',body:{default_visitor_ai_id:'ai'},status:200}))
++   const changed=Math.floor(saves.length/2),calls=saves.map(save=>save());calls.splice(changed,0,setMode(target))
++   await Promise.all(calls)
++   const stamp=await since()
++   assert.equal(await mode(),target,`round ${round}: a concurrent save never restores the earlier mode`)
++   assert.deepEqual(await newestChange(),{from:round?(round%2?'draft':'auto'):'off',to:target},`round ${round}: the security log's newest mode change is the mode in effect`)
++   assert.ok(Number.isFinite(stamp)&&stamp>previousSince,`round ${round}: the switch time is the new switch's own`);previousSince=stamp
++  }
++  // Every save still stores its own values, and leaves the mode and its switch time as they are.
++  const stamp=await since()
++  assert.equal((await app.call(`${base}/settings`,{token:owner,method:'PUT',body:{unavailable_message:'Back soon'},status:200})).data.data.unavailable_message,'Back soon')
++  await app.call(`${base}/widget-settings`,{token:owner,method:'PUT',body:{...widget,greeting:'Hello'},status:200})
++  await app.call(`${base}/availability`,{token:owner,method:'PUT',body:{is_availability_schedule_enabled:false,presence_idle_minutes:30},status:200})
++  await app.call(route,{token:owner,method:'PUT',body:{ai_reply_mode:'auto',default_visitor_ai_id:'ai'},status:200})
++  const stored=JSON.parse((await app.first('SELECT settings_json FROM project_settings WHERE project_id=?',p)).settings_json)
++  assert.equal(stored.unavailable_message,'Back soon');assert.equal(stored.widget_settings.greeting,'Hello');assert.equal(stored.presence_idle_minutes,30);assert.equal(stored.default_visitor_ai_id,'ai')
++  assert.equal(stored.ai_reply_mode,'auto');assert.equal(stored.ai_reply_mode_since,stamp,'saving the mode in effect keeps its switch time')
+  }finally{await a.close()}
+ }
+diff --git a/tests/helpers/ai/reply-mode-followups.mjs b/tests/helpers/ai/reply-mode-followups.mjs
+index 6a25209..e87887f 100644
+--- a/tests/helpers/ai/reply-mode-followups.mjs
++++ b/tests/helpers/ai/reply-mode-followups.mjs
+@@ -60,15 +60,15 @@ export async function replyModeMailHolds(){
+   assert.ok(answer?.id,'a real auto-mode generation admitted the AI message')
+   const id=`message:${answer.id}:notification`
+   await app.until(async()=>{const row=await app.first('SELECT state,error FROM email_deliveries WHERE id=?',id);return row?.state==='sending'&&row.error},{message:'AI notification held'})
+-  const audit=async()=>(await app.ok(base+'/audit?category=integration&limit=200',{token:owner.token})).data.filter(row=>row.target_id===id&&row.action==='managed_mail.send_rejected')
++  const audit=async()=>(await app.ok(base+'/audit?category=integration&limit=200',{token:owner.token})).data.filter(row=>row.target_id===id&&row.action==='email.ai_withheld')
+   assert.equal((await audit()).length,0)
+   await app.ok(base+'/ai',{token:owner.token,method:'PUT',body:{ai_reply_mode:'draft'}})
+   await app.scheduled()
+   const delivery=await app.first('SELECT state,error FROM email_deliveries WHERE id=?',id)
+   assert.equal(delivery.state,'failed');assert.match(delivery.error,/drafts or off/)
+   const events=await audit();assert.equal(events.length,1)
+-  assert.equal(events[0].actor_type,'system');assert.equal(events[0].source,'system');assert.equal(events[0].outcome,'failed')
+-  assert.deepEqual(events[0].detail,{reason:delivery.error})
++  assert.equal(events[0].actor_type,'system');assert.equal(events[0].source,'system');assert.equal(events[0].outcome,'refused')
++  assert.deepEqual(events[0].detail,{reason:'ai_reply_mode'})
+   const safe=JSON.stringify(events)
+   for(const forbidden of [app.bindings.MAIL_API_KEY,'customer@example.test','Your refund is being reviewed.'])assert.ok(!safe.includes(forbidden),'audit contains no credentials, recipient or message content')
+   await app.scheduled();assert.equal((await audit()).length,1,'replay does not duplicate the terminal audit event')
+diff --git a/tests/helpers/delegation/adoption.mjs b/tests/helpers/delegation/adoption.mjs
+index d947b91..fa88648 100644
+--- a/tests/helpers/delegation/adoption.mjs
++++ b/tests/helpers/delegation/adoption.mjs
+@@ -11,7 +11,7 @@ export const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0
+ async function draftRuntime(){
+  const app=await startApp({captureQueue:true}),db=app.db,bucket=await app.files
+  const request=async(path,body,token,headers={},method=body===undefined?'GET':'POST')=>{const response=await app.request(path,{body,token,headers,method});return {status:response.status,body:await response.json()}}
+- const fixture=async({count=1,verified=true,mode='resolve',legacyOnly=false,followUpMode}={})=>{
++ const fixture=async({count=1,verified=true,mode='resolve',legacyOnly=false,followUpMode,replyMode}={})=>{
+   const projectId=randomUUID(),userId=randomUUID(),conversationId=randomUUID(),contactId=randomUUID(),token=randomUUID()
+   await db.batch([
+    db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,?,?,?,1)').bind(projectId,'Draft test',randomUUID(),'http://localhost'),
+@@ -24,6 +24,8 @@ async function draftRuntime(){
+   const post=async(path,body,auth=token)=>{const response=await request(path,body,auth);assert.equal(response.status,200,JSON.stringify(response.body));return response.body.data}
+   const pairing=await post(`/api/projects/${projectId}/local-agents/pairings`,{}),paired=await post('/api/local-agents/pair',{code:pairing.code,name:'Native draft fixture',provider:'codex',capabilities:[]})
+   const base=`/api/projects/${projectId}/conversations/${conversationId}/delegations`
++  // The owner chooses the workspace's AI reply mode through the AI route before the computer reports.
++  if(replyMode){const response=await request(`/api/management/projects/${projectId}/ai`,{ai_reply_mode:replyMode},token,{},'PUT');assert.equal(response.status,200,JSON.stringify(response.body))}
+   const job=await post(base,{request_id:randomUUID(),device_id:paired.device.id,mode,instructions:'Test fixture, no model execution.'}),claim=await post('/api/local-agents/claim',{claim_id:randomUUID()},paired.token)
+   assert.equal(claim.id,job.id)
+   const localAttachmentIds=[]
+@@ -171,6 +173,23 @@ export async function adoptionJourney(){
+   const l=await fixture({mode:'resolve_reply',legacyOnly:true})
+   assert.equal((await one("SELECT status FROM local_receipts WHERE job_id=? AND proposal_id='legacy'",l.jobId)).status,'sent')
+   const delivered=await l.media();assert.equal(delivered.length,1);assert.equal(delivered[0].uploaded_by,l.userId);assert.equal((await l.messages()).length,1);assert.deepEqual(await bytes(delivered[0].object_key),png)
++
++  // In draft (and off) the verified Resolve & reply is held for its operator: nothing reaches the customer, also not
++  // after a switch back to auto and the scheduled recovery; the operator adopts it and an ordinary Send admits it once.
++  for(const replyMode of ['draft','off']){
++   const h=await fixture({mode:'resolve_reply',legacyOnly:true,replyMode}),job=async()=>(await request(`/api/projects/${h.projectId}/conversations/${h.conversationId}/delegations`,undefined,h.token)).body.data.find(row=>row.id===h.jobId)
++   assert.deepEqual(await h.messages(),[],replyMode+': the held reply is not sent');assert.equal(await one('SELECT 1 FROM local_receipts WHERE job_id=?',h.jobId),null,'no delivery was started')
++   assert.equal((await job()).status,'completed');assert.equal((await job()).delivery_state,'held_for_operator')
++   assert.ok(await one("SELECT 1 FROM conversation_notes WHERE id=?",'delegation:'+h.jobId),'the report still records its note')
++   assert.equal((await request(`/api/management/projects/${h.projectId}/ai`,{ai_reply_mode:'auto'},h.token,{},'PUT')).status,200)
++   await runtime.app.scheduled();assert.deepEqual(await h.messages(),[],'switching back to auto sends nothing held')
++   const adopted=await h.adopt({proposal_id:null});assert.equal(adopted.status,200,JSON.stringify(adopted.body));assert.equal(adopted.body.data.body,h.result.reply_draft)
++   assert.deepEqual(await h.messages(),[],'Use never sends')
++   const send={localId:randomUUID(),content:adopted.body.data.body,expectedRevision:0,expectedLastMessageId:null,mediaIds:adopted.body.data.attachments.map(a=>a.id),authoring:adopted.body.data.authoring},path=`/api/conversations/${h.conversationId}/messages`
++   const sent=await request(path,send,h.token);assert.equal(sent.status,200,JSON.stringify(sent.body));assert.equal(sent.body.accepted,true)
++   assert.equal((await request(path,send,h.token)).body.duplicate,true)
++   const [message]=await h.messages();assert.equal((await h.messages()).length,1);assert.equal(message.actor_id,h.userId);assert.equal(message.actor_role,'owner');assert.deepEqual(await bytes((await h.media())[0].object_key),png)
++  }
+  }finally{await runtime.close()}
+  await delegatedTicketScopeAssertions()
+ }
+diff --git a/tests/helpers/email/rer-mail-hold.mjs b/tests/helpers/email/rer-mail-hold.mjs
+index 2a33cb1..3b24813 100644
+--- a/tests/helpers/email/rer-mail-hold.mjs
++++ b/tests/helpers/email/rer-mail-hold.mjs
+@@ -1,6 +1,7 @@
+ import assert from 'node:assert/strict'
+ import {managedEdge,mime} from './rer-edge.mjs'
+ import {managedInstallation} from './rer-mail.mjs'
++import {openaiStream} from '../openai-stream.mjs'
+ 
+ // A MAIL_API_KEY rotation stops the old key at once; the platform rebuilds the app
+ // with the new one. A conversation, problem or scheduled reply refused at
+@@ -10,7 +11,7 @@ import {managedInstallation} from './rer-mail.mjs'
+ // faked: queued `answers` replace its next sends.
+ export async function rerMailHoldJourney(){
+  const edge=managedEdge(),relay=edge.outbound,answers=[]
+- edge.outbound=async(request,entry)=>request.method==='POST'&&new URL(entry.url).pathname.endsWith('/send')&&answers.length?answers.shift()():relay(request,entry)
++ edge.outbound=async(request,entry)=>new URL(entry.url).hostname==='api.openai.com'?openaiStream('Your parcel left our warehouse today.'):request.method==='POST'&&new URL(entry.url).pathname.endsWith('/send')&&answers.length?answers.shift()():relay(request,entry)
+  const i=await managedInstallation('hold',{edge}),{app,owner}=i
+  const scheduledDoor=app.scheduled.bind(app);let scheduledPass=0
+  app.scheduled=async(...args)=>{const result=await scheduledDoor(...args);console.log('MAIL_HOLD_BUDGET',JSON.stringify({pass:++scheduledPass,statements:result.statements,calls:result.calls,refused:result.refused}));assert.equal(result.refused,0);assert.ok(result.statements<=1000&&result.calls<=1000);return result}
+@@ -160,5 +161,27 @@ export async function rerMailHoldJourney(){
+    assert.equal(edge.sends.filter(send=>send.payload.messageKey===entry.key).length,entry.accepted,'never sent twice')
+    if(entry.accepted){assert.equal(row.reason,null);assert.equal((await delivery(entry.id)).state,'sent')}
+   }
++
++  // An AI answer held by the running release's revoked key is ended, never resent, once the workspace's AI replies
++  // become drafts; the withholding writes one audit event for that email, and later passes stay silent.
++  const aiTicket=await open('ai-answer@example.test')
++  await app.configure({OPENAI_API_KEY:'synthetic-hold-model'})
++  await app.db.batch([
++   app.db.prepare("INSERT INTO ai_profiles(id,project_id,name,role,prompt,model,created_at) VALUES('hold-ai',?,'Mail assistant','support','Answer customers','gpt-5-mini',1)").bind(owner.projectId),
++   app.db.prepare("INSERT INTO conversation_ai VALUES(?,'hold-ai')").bind(aiTicket),
++  ])
++  const aiKey='synthetic-relay-authority-ai-answer';edge.installations.set(aiKey,edge.installations.get(app.bindings.MAIL_API_KEY));edge.installations.delete(app.bindings.MAIL_API_KEY)
++  const followUp='synthetic-hold-ai-follow-up',asked=await i.ingress(mime({id:followUp,from:'ai-answer@example.test',text:'Where is my parcel?',headers:`In-Reply-To: <synthetic-hold-intake-${intake}@example.test>\r\n`}),{deliveryId:followUp,envelopeFrom:'ai-answer@example.test'})
++  assert.equal(asked.status,200,JSON.stringify(asked.data));assert.equal(asked.data.conversationId,aiTicket)
++  await app.drainJobs()
++  const answer=await app.first("SELECT id FROM messages WHERE conversation_id=? AND actor_role='ai'",aiTicket);assert.ok(answer,'the assistant answered in auto')
++  const aiMail=`message:${answer.id}:notification`,withheldAudit=()=>app.sql("SELECT action,outcome,actor_type,source,target_type,detail_json FROM audit_events WHERE target_id=? AND action='email.ai_withheld'",aiMail)
++  await app.until(async()=>(await delivery(aiMail))?.error,{message:'AI answer held'})
++  assert.equal((await delivery(aiMail)).state,'sending','the AI answer is held');const aiSends=sends('Your parcel left our warehouse today.').length
++  assert.equal((await app.call(`/api/management/projects/${owner.projectId}/ai`,{token:owner.token,method:'PUT',body:{ai_reply_mode:'draft'}})).status,200)
++  await app.configure({MAIL_API_KEY:aiKey});await app.scheduled()
++  assert.equal((await delivery(aiMail)).state,'failed','draft ends the held AI answer');assert.equal(sends('Your parcel left our warehouse today.').length,aiSends,'it is never resent')
++  assert.deepEqual(await withheldAudit(),[{action:'email.ai_withheld',outcome:'refused',actor_type:'system',source:'system',target_type:'email_delivery',detail_json:JSON.stringify({reason:'ai_reply_mode'})}])
++  await app.scheduled();assert.equal((await withheldAudit()).length,1,'a replay of the ended delivery writes nothing')
+  }finally{await i.close()}
+ }
+diff --git a/tests/helpers/widget/outcomes.mjs b/tests/helpers/widget/outcomes.mjs
+index 3de1d2d..ca5c0b8 100644
+--- a/tests/helpers/widget/outcomes.mjs
++++ b/tests/helpers/widget/outcomes.mjs
+@@ -142,6 +142,18 @@ export async function availabilityOutcomes(f){
+   await ui.page.getByText('Your checkout is saved. A teammate can help you finish.',{exact:true}).waitFor()
+   assert.deepEqual(ui.errors,[])
+  }finally{await ui.close()}
++ // In draft the assigned assistant never answers, so a visitor writing while the team is away gets the away
++ // reply, as one without an assistant does; the assistant stays assigned for a switch back to auto.
++ await ok(manage+'/ai',{ai_reply_mode:'draft'})
++ assert.equal((await configuration()).availability.available,false,'a drafting assistant does not keep the team available')
++ const drafted=await app.ok('/api/identity/widget/session',{headers:f.headers,body:{widgetKey:w.widgetKey}})
++ const draftedConversation=await app.ok('/api/conversations',{token:drafted.token,body:{projectId:p}})
++ assert.ok(await app.first('SELECT 1 FROM conversation_ai WHERE conversation_id=? AND ai_id=?',draftedConversation.id,'widget-assistant'),'the assistant is assigned in draft')
++ await app.ok(`/api/conversations/${draftedConversation.id}/messages`,{token:drafted.token,body:{localId:'drafted',content:'Is anyone there?',expectedRevision:0}})
++ await app.drainJobs()
++ const draftedMessages=(await transcript({...drafted,conversationId:draftedConversation.id})).messages
++ assert.equal(draftedMessages.filter(m=>m.actor_id==='away').length,1,'draft: the away reply answers a visitor the assistant will not');assert.equal(draftedMessages.filter(m=>m.actor_role==='ai').length,0)
++ await ok(manage+'/ai',{ai_reply_mode:'auto'})
+  await ok(manage+'/ai',{default_visitor_ai_id:null})
+  await app.configure({H2H_WORKFLOW_NOW:undefined})
+  await availability({is_presence_away_enabled:false,is_availability_schedule_enabled:false,is_available:true})

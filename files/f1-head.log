@@ -1,0 +1,10 @@
+PROBE F1 {"label":"head","case":"two general fields","status":"MET","statuses":[200,200],"stored":{"brand_name":"Synthetic gate brand","timezone":"Europe/Paris"},"mode":"auto","clockPreserved":true}
+PROBE F1 {"label":"head","case":"AI mode and general settings","status":"MET","statuses":[200,200],"stored":{"ai_reply_mode":"off","welcome_message":"Synthetic gate greeting"},"mode":"off"}
+PROBE F1 {"label":"head","case":"AI mode and widget settings with origin companion","status":"MET","statuses":[200,200],"stored":{"ai_reply_mode":"draft","widget_settings":{"theme":{"color":"#169988"}}},"mode":"draft"}
+PROBE F1 {"label":"head","case":"AI mode and availability presence","status":"MET","statuses":[200,200],"stored":{"ai_reply_mode":"off","is_presence_away_enabled":true,"presence_idle_minutes":10},"mode":"off"}
+PROBE F1 {"label":"head","case":"two AI fields","status":"MET","statuses":[200,200],"stored":{"ai_reply_mode":"draft","is_human_response_enabled":false},"mode":"draft"}
+PROBE F1 {"label":"head","case":"widget and general name companion","status":"MET","statuses":[200,200],"stored":{"widget_settings":{"theme":{"color":"#445566"}},"brand_name":"Synthetic second brand"},"mode":"auto","clockPreserved":true}
+PROBE F1 {"label":"head","case":"availability and general setting","status":"MET","statuses":[200,200],"stored":{"presence_away_message":"Synthetic away note","unavailable_message":"Synthetic closed note"},"mode":"auto","clockPreserved":true}
+F1_AUDIT {"label":"head","modeTransitions":8,"validActorsAndDetails":true}
+PROBE F1 {"label":"head","case":"concurrent first writes","status":"MET","statuses":[200,200],"mode":"off","timezone":"Asia/Tokyo"}
+F1_RESULT {"label":"head","checks":8,"failed":0}

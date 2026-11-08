@@ -1,0 +1,114 @@
+{
+  "tag": "hh-ai-mode-followups-2-gate-1",
+  "repository": "just-every/run-happytohelp",
+  "reviewed_branch": "cloud/hh-ai-mode-followups-2",
+  "reviewed_head": "9b238cf006b53e22ca124e013a027dbb4b7a47e7",
+  "reviewed_tree": "8889d8d769c62097cd1bb64212afcb7da081dac9",
+  "integration_baseline": "df2868c5d292ec7c5567cd4c1c1151ab28ae65b8",
+  "trial_tree": "902c8a2891866141834f90982ef4133957bf13d4",
+  "trial_is_uncommitted": true,
+  "product_commits_created": 0,
+  "product_pushes": 0,
+  "pr": null,
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "9b238cf006b53e22ca124e013a027dbb4b7a47e7",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/42475134770",
+    "id": 42475134770,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "gh_invocations": 2,
+  "ci_dispatches_or_reruns": 0,
+  "counts": {
+    "e8703857": {
+      "contract_status_rows": {
+        "done": 4,
+        "missing": 16,
+        "partial": 71
+      },
+      "journey_top_level_test_registrations": 94
+    },
+    "d1d77817": {
+      "contract_status_rows": {
+        "done": 4,
+        "missing": 16,
+        "partial": 71
+      },
+      "journey_top_level_test_registrations": 94
+    },
+    "HEAD": {
+      "contract_status_rows": {
+        "done": 4,
+        "missing": 16,
+        "partial": 71
+      },
+      "journey_top_level_test_registrations": 94
+    },
+    "origin/main": {
+      "contract_status_rows": {
+        "done": 4,
+        "missing": 16,
+        "partial": 71
+      },
+      "journey_top_level_test_registrations": 94
+    }
+  },
+  "rows": {
+    "F1": "MET",
+    "F2": "MET",
+    "F3": "NOT MET single-decision-point subcheck; behavior MET; FOLLOW-UP C resolved in trial",
+    "F4": "MET",
+    "F5": "MET"
+  },
+  "blocking_findings": 0,
+  "followups_c": 1,
+  "verdict": "GATE PASS WITH FOLLOW-UPS 1",
+  "actual_logs": {
+    "builds": {
+      "head": {
+        "file": "build-head.log",
+        "exit": 0
+      },
+      "main": {
+        "file": "build-main.log",
+        "exit": 0
+      },
+      "merged": {
+        "file": "build-merged.log",
+        "exit": 0
+      }
+    },
+    "helper_checks": {
+      "head": "touched-ai-head.log",
+      "trial": "touched-ai-merged-final.log"
+    },
+    "touched_registration": {
+      "file": "touched-registration-head.log",
+      "exit": 0,
+      "tests": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "first_party": {
+      "head": {
+        "file": "rer-check-head.log",
+        "exit": 0
+      },
+      "trial": {
+        "file": "rer-check-merged.log",
+        "exit": 0
+      }
+    }
+  },
+  "typecheck_receipt": "typecheck-receipt.json",
+  "mechanical_receipts": [
+    "mechanical-exact-head.json",
+    "mechanical-head.json",
+    "mechanical-merged.json"
+  ],
+  "supplemental": "supplemental-receipt.json",
+  "clause_status_changes": [],
+  "claim": "AI-001 PARTIAL; points=none; named follow-ups only",
+  "no_required_check_unrun": true
+}

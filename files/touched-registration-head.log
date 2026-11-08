@@ -1,0 +1,222 @@
+PROBE ACCESS-001 P1: POST generations; narrow scope before generation INSERT -> {"status":409,"rows":0,"providerCalls":0}
+PROBE ACCESS-001 P1: POST suggestions; narrow scope before generation INSERT -> {"status":409,"rows":0,"providerCalls":0}
+PROBE ACCESS-001 P2: none -> {"reason":"No erasure or retention path changes; existing erasure journey is run separately"}
+PROBE ACCESS-001 P3: none -> {"reason":"AI spend and automatic reply ceilings retain their existing journeys"}
+PROBE ACCESS-001 P4: POST hidden generations -> {"status":404,"rows":0,"providerCalls":0}
+PROBE ACCESS-001 P4: POST hidden suggestions -> {"status":404,"rows":0,"providerCalls":0}
+PROBE ACCESS-001 P5: GET and cancel hidden generation -> {"readStatus":404,"read":{"error":"Not found"},"cancel":{"cancelled":false},"state":"queued"}
+PROBE ACCESS-001 P8: out-of-scope populated procedure report GET fields -> {"status":200,"fields":{"procedureKey":"string","attributionReviews":"object","productionVersions":["committedAnswers","failures","generationDenominator","handoffRate","handoffs","versionId"],"failureClusters":"object","generations":["conversationId","customerMessageCommitted","failureCategory","generationId","handedOff","state","version","versionId"],"productionScope":"string","attribution":"string","versions":["denominator","excluded","negativeCsat","negativeCsatRate","originalDenominator","rated","reopenRate","reopened","version","versionId"],"cases":["conversationId","included","negativeCsat","outcome","procedureVersionId","reopenedAt","resolutionId","resolvedAt","score","version","versionId"],"totalCases":"number","nextOffset":"object","evaluationCoverage":["cases","passed","uncertain","version","versionId"],"accounting":["attemptId","conversationId","cost","generationId","inputTokens","observed","outputTokens","requestId","state","version","versionId"],"providerCostEstimateUsd":"object","priceData":"string","accountingScope":"string","toolOutcomes":"object"}}
+PROBE ACCESS-001 P8: out-of-scope procedure review POST fields -> {"status":200,"fields":["decision","id","originalEvidencePreserved"]}
+PROBE ACCESS-001 P9: NULL, owner, empty and other tenant across generation doors -> {"null":"202/200/true","owner":"202/200/true","empty":404,"otherTenant":403}
+PROBE ACCESS-001 P6 AFTER: public AI admission -> captured real queue -> actual provider request -> {"phase":"AFTER","door":"generations","actor":"operator","case":"restricted","providerRequests":1,"contextEvidence":[]}
+PROBE ACCESS-001 P6 AFTER: public AI admission -> captured real queue -> actual provider request -> {"phase":"AFTER","door":"suggestions","actor":"operator","case":"restricted","providerRequests":2,"contextEvidence":[]}
+PROBE ACCESS-001 P6 AFTER: public AI admission -> captured real queue -> actual provider request -> {"phase":"AFTER","door":"generations","actor":"operator","case":"all-in-scope","providerRequests":1,"contextEvidence":["synthetic-hh-500-3-context","synthetic-hh-500-4-context"]}
+PROBE ACCESS-001 P6 AFTER: public AI admission -> captured real queue -> actual provider request -> {"phase":"AFTER","door":"suggestions","actor":"operator","case":"all-in-scope","providerRequests":2,"contextEvidence":["synthetic-hh-500-3-context","synthetic-hh-500-4-context"]}
+PROBE ACCESS-001 P6 AFTER: public AI admission -> captured real queue -> actual provider request -> {"phase":"AFTER","door":"generations","actor":"operator","case":"NULL","providerRequests":1,"contextEvidence":["synthetic-hh-500-3-context","synthetic-hh-500-4-context"]}
+PROBE ACCESS-001 P6 AFTER: public AI admission -> captured real queue -> actual provider request -> {"phase":"AFTER","door":"suggestions","actor":"operator","case":"NULL","providerRequests":2,"contextEvidence":["synthetic-hh-500-3-context","synthetic-hh-500-4-context"]}
+PROBE ACCESS-001 P6 AFTER: public AI admission -> captured real queue -> actual provider request -> {"phase":"AFTER","door":"generations","actor":"owner","case":"owner","providerRequests":1,"contextEvidence":["synthetic-hh-500-3-context","synthetic-hh-500-4-context"]}
+PROBE ACCESS-001 P6 AFTER: public AI admission -> captured real queue -> actual provider request -> {"phase":"AFTER","door":"suggestions","actor":"owner","case":"owner","providerRequests":2,"contextEvidence":["synthetic-hh-500-3-context","synthetic-hh-500-4-context"]}
+PROBE ACCESS-001 P6 AFTER: public AI admission -> captured real queue -> actual provider request -> {"phase":"AFTER","door":"generations","actor":"contact","case":"contact-initiated","providerRequests":1,"contextEvidence":["synthetic-hh-500-3-context","synthetic-hh-500-4-context"]}
+Error in Claude streaming completion setup: InternalServerError: 503 {"error":{"message":"fixture rejected","type":"server_error"}}
+    at _APIError.generate (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:47221:18)
+    at Anthropic.makeStatusError (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:58779:25)
+    at Anthropic.makeRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:58973:28)
+    at async ClaudeProvider.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:69843:27)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:47082:9)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:46997:5)
+    at async streamWithAbortAndTimeout (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:64313:35)
+    at async executeRound (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:68406:20)
+    at async ensembleRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:67992:21)
+    at async runStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:172391:22) {
+  status: 503,
+  headers: Headers(4) {
+    'connection' => 'keep-alive',
+    'content-type' => 'application/json',
+    'date' => 'Sun, 08 Nov 2026 11:58:36 GMT',
+    'transfer-encoding' => 'chunked',
+    [immutable]: true
+  },
+  requestID: null,
+  error: { error: { message: 'fixture rejected', type: 'server_error' } },
+  type: 'server_error'
+}
+Unsupported parameter type 'string,null'. Defaulting to STRING.
+Unsupported parameter type 'string,null'. Defaulting to STRING.
+
+=== Gemini error ===
+
+=== JSON dump of error ===
+{
+  "stack": "Error: Retryable HTTP Error: \n    at runFetch (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:86891:19)\n    at async RetryOperation._fn (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:70423:20)",
+  "message": "Retryable HTTP Error: ",
+  "attemptNumber": 1,
+  "retriesLeft": 0
+}
+
+=== Manual property walk ===
+stack: Error: Retryable HTTP Error: 
+    at runFetch (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:86891:19)
+    at async RetryOperation._fn (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:70423:20)
+message: Retryable HTTP Error: 
+attemptNumber: 1
+retriesLeft: 0
+Error running deepseek chat completions stream: InternalServerError3: 503 fixture rejected
+    at _APIError.generate (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:93960:18)
+    at OpenAI.makeStatusError (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:104929:26)
+    at OpenAI.makeRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:105114:28)
+    at async DeepSeekProvider.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:106038:27)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:47071:11)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:46997:5)
+    at async streamWithAbortAndTimeout (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:64313:35)
+    at async executeRound (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:68406:20)
+    at async ensembleRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:67992:21)
+    at async runStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:172391:22) {
+  status: 503,
+  headers: Headers(4) {
+    'connection' => 'keep-alive',
+    'content-type' => 'application/json',
+    'date' => 'Sun, 08 Nov 2026 11:58:38 GMT',
+    'transfer-encoding' => 'chunked',
+    [immutable]: true
+  },
+  requestID: null,
+  error: { message: 'fixture rejected', type: 'server_error' },
+  code: undefined,
+  param: undefined,
+  type: 'server_error'
+}
+Error running xai chat completions stream: InternalServerError3: 503 fixture rejected
+    at _APIError.generate (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:93960:18)
+    at OpenAI.makeStatusError (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:104929:26)
+    at OpenAI.makeRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:105114:28)
+    at async GrokProvider.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:106038:27)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:47071:11)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:46997:5)
+    at async streamWithAbortAndTimeout (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:64313:35)
+    at async executeRound (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:68406:20)
+    at async ensembleRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:67992:21)
+    at async runStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:172391:22) {
+  status: 503,
+  headers: Headers(4) {
+    'connection' => 'keep-alive',
+    'content-type' => 'application/json',
+    'date' => 'Sun, 08 Nov 2026 11:58:38 GMT',
+    'transfer-encoding' => 'chunked',
+    [immutable]: true
+  },
+  requestID: null,
+  error: { message: 'fixture rejected', type: 'server_error' },
+  code: undefined,
+  param: undefined,
+  type: 'server_error'
+}
+Error running openrouter chat completions stream: InternalServerError3: 503 fixture rejected
+    at _APIError.generate (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:93960:18)
+    at OpenAI.makeStatusError (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:104929:26)
+    at OpenAI.makeRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:105114:28)
+    at async OpenRouterProvider.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:106038:27)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:47071:11)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:46997:5)
+    at async streamWithAbortAndTimeout (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:64313:35)
+    at async executeRound (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:68406:20)
+    at async ensembleRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:67992:21)
+    at async runStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:172391:22) {
+  status: 503,
+  headers: Headers(4) {
+    'connection' => 'keep-alive',
+    'content-type' => 'application/json',
+    'date' => 'Sun, 08 Nov 2026 11:58:39 GMT',
+    'transfer-encoding' => 'chunked',
+    [immutable]: true
+  },
+  requestID: null,
+  error: { message: 'fixture rejected', type: 'server_error' },
+  code: undefined,
+  param: undefined,
+  type: 'server_error'
+}
+Stream ended with 1 incomplete tool call(s).
+Stream ended with 1 incomplete tool call(s).
+Stream ended with 1 incomplete tool call(s).
+Stream ended with 1 incomplete tool call(s).
+Error in OpenAI streaming response: InternalServerError3: 500 TimeoutError: Provider connection lost between tools
+    at new DOMException (node:internal/per_context/domexception:76:18)
+    at ai.respond (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/tests/helpers/ai/agent001-outcomes.mjs:107:38)
+    at outbound (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/tests/helpers/ai/app.mjs:20:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async #handleLoopbackCustomFetchService (/home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/index.js:81753:22)
+    at async #handleLoopback (/home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/index.js:82140:20)
+    at _APIError.generate (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:93960:18)
+    at OpenAI.makeStatusError (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:104929:26)
+    at OpenAI.makeRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:105114:28)
+    at async OpenAIProvider.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:111878:27)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:47082:9)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:46997:5)
+    at async streamWithAbortAndTimeout (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:64313:35)
+    at async executeRound (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:68406:20)
+    at async ensembleRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:67992:21)
+    at async runStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:172391:22) {
+  status: 500,
+  headers: Headers(4) {
+    'connection' => 'keep-alive',
+    'content-type' => 'text/plain;charset=UTF-8',
+    'date' => 'Sun, 08 Nov 2026 11:58:43 GMT',
+    'transfer-encoding' => 'chunked',
+    [immutable]: true
+  },
+  requestID: null,
+  error: undefined,
+  code: undefined,
+  param: undefined,
+  type: undefined
+}
+Error in OpenAI streaming response: InternalServerError3: 500 TimeoutError: Connection lost at the provider
+    at new DOMException (node:internal/per_context/domexception:76:18)
+    at ai.respond (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/tests/helpers/ai/answers.mjs:227:25)
+    at outbound (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/tests/helpers/ai/app.mjs:20:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async #handleLoopbackCustomFetchService (/home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/index.js:81753:22)
+    at async #handleLoopback (/home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/index.js:82140:20)
+    at _APIError.generate (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:93960:18)
+    at OpenAI.makeStatusError (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:104929:26)
+    at OpenAI.makeRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:105114:28)
+    at async OpenAIProvider.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:111878:27)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:47082:9)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:46997:5)
+    at async streamWithAbortAndTimeout (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:64313:35)
+    at async executeRound (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:68406:20)
+    at async ensembleRequest (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:67992:21)
+    at async runStream (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/script-0.mjs:172391:22) {
+  status: 500,
+  headers: Headers(4) {
+    'connection' => 'keep-alive',
+    'content-type' => 'text/plain;charset=UTF-8',
+    'date' => 'Sun, 08 Nov 2026 11:58:58 GMT',
+    'transfer-encoding' => 'chunked',
+    [immutable]: true
+  },
+  requestID: null,
+  error: undefined,
+  code: undefined,
+  param: undefined,
+  type: undefined
+}
+Schema validation failed for 'agent_suggestion_primary' (task='agent_suggestions') [
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "null",
+    "path": [],
+    "message": "Expected object, received null"
+  }
+]
+Tool call limit reached (8). Skipping tool calls.
+✔ a visitor gets a source-linked answer from published knowledge, durable replay and a human handoff under current authority (198751.650716ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 199381.263906

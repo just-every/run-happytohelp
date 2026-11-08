@@ -1,0 +1,232 @@
+diff --cc src/modules/integrations/rer-mail-hold.ts
+index 25c6bb9,61dbcc8..0000000
+--- a/src/modules/integrations/rer-mail-hold.ts
++++ b/src/modules/integrations/rer-mail-hold.ts
+@@@ -43,13 -43,14 +43,23 @@@ export async function claimRerMailHold(
+   return claimed.meta.changes?row.updated_at:null
+  }
+  
+++<<<<<<< HEAD
+ +/** Ends every open hold of one notification's fan-out for good, whatever its age: replay never resends it. */
+ +export async function endRerMailHolds(env:Env,deliveryId:string,reason:string){
+++=======
++ /** Ends every open hold of one notification's fan-out for good, whatever its age: replay never resends it.
++  * Each hold it ends writes one audit event, `event`, batched with the end and written only while that hold is still open. */
++ export async function endRerMailHolds(env:Env,deliveryId:string,reason:string,event:Pick<AuditEvent,'action'|'outcome'|'detail'>){
+++>>>>>>> df2868c5
+   const now=Date.now(),held=(await env.DB.prepare("SELECT id,project_id,updated_at FROM email_deliveries WHERE id>=? AND id<? AND state='sending' AND error=?").bind(deliveryId,deliveryId+';',rerMailHeld).all<{id:string;project_id:string;updated_at:number}>()).results
+   for(const row of held){
+    const guard={sql:"EXISTS(SELECT 1 FROM email_deliveries WHERE id=? AND state='sending' AND error=? AND updated_at=?)",params:[row.id,rerMailHeld,row.updated_at]}
+    await env.DB.batch([
+++<<<<<<< HEAD
+ +   auditStatement(env.DB,{projectId:row.project_id,category:'integration',action:'managed_mail.send_rejected',outcome:'failed',actor:{type:'system'},source:'system',target:{type:'email_delivery',id:row.id},detail:{reason}},now,guard),
+++=======
++    auditStatement(env.DB,{...event,projectId:row.project_id,category:'integration',actor:{type:'system'},source:'system',target:{type:'email_delivery',id:row.id}},now,guard),
+++>>>>>>> df2868c5
+     env.DB.prepare("UPDATE email_deliveries SET state='failed',error=?,updated_at=? WHERE id=? AND state='sending' AND error=? AND updated_at=?").bind(reason,now,row.id,rerMailHeld,row.updated_at),
+    ])
+   }
+diff --cc src/modules/management/policy.ts
+index d37731b,5c994f6..0000000
+--- a/src/modules/management/policy.ts
++++ b/src/modules/management/policy.ts
+@@@ -10,8 -10,11 +10,16 @@@ import {auditStatement,requestSource} f
+  import {parseReplyMode,replyMode} from '../ai-support/reply-mode'
+  import {replyModeChange,withReplyModeSince} from './reply-mode-change'
+  import {workflowNow} from '../workflows/clock'
+++<<<<<<< HEAD
+ +import {saveSettings as save} from './settings-save'
+ +export const projectPolicy=new Hono<AppEnv>()
+++=======
++ import {settingsUpsert} from './settings-write'
++ export const projectPolicy=new Hono<AppEnv>()
++ /** Merges `patch` (or the patch it derives from the old values) into the workspace settings, batched with the statements `also` derives from the old and new values.
++  * The write never changes the AI reply mode; only `replyModeChange` (in `also`) does. */
++ async function save(env:Env,projectId:string,patch:Record<string,unknown>|((old:any)=>Record<string,unknown>),also:(old:any,value:any)=>D1PreparedStatement[]=()=>[]){const row=await env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(projectId).first<{settings_json:string}>(),old=JSON.parse(row?.settings_json||'{}'),value={...old,...(typeof patch==='function'?patch(old):patch)};await env.DB.batch([settingsUpsert(env.DB,projectId,value),...also(old,value)]);return value}
+++>>>>>>> df2868c5
+  const presenceSummary=(settings:any)=>{const presence=presenceSettings(settings);return `${presence.enabled?'On':'Off'}, ${presence.idleMinutes} min idle`}
+  projectPolicy.put('/projects/:projectId/availability',async c=>{
+   const a=await scope(c,true),b=await c.req.json(),schedule=b.availability_schedule||{}
+@@@ -40,5 -43,5 +48,9 @@@ projectPolicy.get('/projects/:projectId
+   return c.json({data:{online,availability,assistant:assistant&&replyMode(settings)==='auto'&&modelReadiness(c.env,assistant.model).ready?{id:assistant.id,name:assistant.name}:null}})
+  })
+  // The responder defaults and the AI reply mode; a mode change is audited and ends AI work the new mode refuses.
+++<<<<<<< HEAD
+ +projectPolicy.put('/projects/:projectId/ai',async c=>{const a=await scope(c,true),b=await c.req.json(),patch:Record<string,unknown>={};if('ai_reply_mode' in b)patch.ai_reply_mode=parseReplyMode(b.ai_reply_mode);for(const key of ['default_visitor_ai_id','default_verified_user_ai_id'])if(key in b){const ai=b[key]==='-'?null:b[key];if(ai&&!await c.env.DB.prepare('SELECT id FROM ai_profiles WHERE id=? AND project_id=? AND is_enabled=1').bind(ai,a.projectId).first())throw new HTTPException(400);patch[key]=ai}if('is_human_response_enabled' in b)patch.is_human_response_enabled=Boolean(b.is_human_response_enabled);if('default_visitor_ai_id' in patch)patch.default_responder=patch.default_visitor_ai_id;return c.json({data:await save(c.env,a.projectId,old=>withReplyModeSince(old,patch,workflowNow(c.env)),(old,value,guard)=>replyModeChange(c.env.DB,{projectId:a.projectId,actorId:a.id,source:requestSource(c)},replyMode(old),replyMode(value),guard))})})
+++=======
++ projectPolicy.put('/projects/:projectId/ai',async c=>{const a=await scope(c,true),b=await c.req.json(),patch:Record<string,unknown>={};if('ai_reply_mode' in b)patch.ai_reply_mode=parseReplyMode(b.ai_reply_mode);for(const key of ['default_visitor_ai_id','default_verified_user_ai_id'])if(key in b){const ai=b[key]==='-'?null:b[key];if(ai&&!await c.env.DB.prepare('SELECT id FROM ai_profiles WHERE id=? AND project_id=? AND is_enabled=1').bind(ai,a.projectId).first())throw new HTTPException(400);patch[key]=ai}if('is_human_response_enabled' in b)patch.is_human_response_enabled=Boolean(b.is_human_response_enabled);if('default_visitor_ai_id' in patch)patch.default_responder=patch.default_visitor_ai_id;return c.json({data:await save(c.env,a.projectId,old=>withReplyModeSince(old,patch,workflowNow(c.env)),(old,value)=>replyModeChange(c.env.DB,{projectId:a.projectId,actorId:a.id,source:requestSource(c)},replyMode(old),replyMode(value),value.ai_reply_mode_since))})})
+++>>>>>>> df2868c5
+  projectPolicy.put('/projects/:projectId/agents/:userId/primary',async c=>{const a=await scope(c);if(c.req.param('userId')!==a.id)throw new HTTPException(403);const b=await c.req.json();await c.env.DB.batch([c.env.DB.prepare('UPDATE user_project_preferences SET is_primary=0 WHERE user_id=?').bind(a.id),c.env.DB.prepare('INSERT INTO user_project_preferences(project_id,user_id,is_primary) VALUES(?,?,?) ON CONFLICT(project_id,user_id) DO UPDATE SET is_primary=excluded.is_primary').bind(a.projectId,a.id,b.is_primary?1:0)]);return c.json({updated:true})})
+diff --cc src/modules/management/projects.ts
+index fb8cff4,848c656..0000000
+--- a/src/modules/management/projects.ts
++++ b/src/modules/management/projects.ts
+@@@ -25,7 -25,7 +25,11 @@@ import {accountAudit} from '../identity
+  import {readNativeSettings} from './native-settings-read'
+  import {memberAccess} from '../access/gate'
+  import {projectAccess} from '../access/catalogue'
+++<<<<<<< HEAD
+ +import {saveSettings} from './settings-save'
+++=======
++ import {settingsUpsert} from './settings-write'
+++>>>>>>> df2868c5
+  export const projects=new Hono<AppEnv>()
+  projects.route('/',brandReports).route('/',brands)
+  projects.get('/bootstrap',async c=>{
+@@@ -93,12 -94,11 +97,20 @@@ projects.put('/projects/:projectId/sett
+    settings.api_abuse_terms=[...new Set(b.api_abuse_terms.map((term:string)=>term.trim().toLowerCase()))]
+   }
+   if('api_requester_hourly_cap' in b){const cap=b.api_requester_hourly_cap;if(!Number.isInteger(cap)||cap<1||cap>100)throw new HTTPException(400,{message:'Requester hourly cap must be between 1 and 100'});settings.api_requester_hourly_cap=cap}
+++<<<<<<< HEAD
+ + const name=b.name?requiredString(b.name,'name',200):undefined,origin=b.allowed_origin?websiteAddress(b.allowed_origin,'Widget website origin',true):undefined
+ + const value=await saveSettings(c.env,a.projectId,settings,(_old,_value,guard)=>[
+ +  ...(name?[c.env.DB.prepare(`UPDATE projects SET name=? WHERE id=? AND ${guard.sql}`).bind(name,a.projectId,...guard.params)]:[]),
+ +  ...(origin?[c.env.DB.prepare(`UPDATE projects SET allowed_origin=? WHERE id=? AND ${guard.sql}`).bind(origin,a.projectId,...guard.params)]:[]),
+ + ])
+ + return c.json({data:value})
+++=======
++  const statements=[settingsUpsert(c.env.DB,a.projectId,settings)]
++  if(b.name)statements.push(c.env.DB.prepare('UPDATE projects SET name=? WHERE id=?').bind(requiredString(b.name,'name',200),a.projectId))
++  if(b.allowed_origin)statements.push(c.env.DB.prepare('UPDATE projects SET allowed_origin=? WHERE id=?').bind(websiteAddress(b.allowed_origin,'Widget website origin',true),a.projectId))
++  await c.env.DB.batch(statements)
++  return c.json({data:settings})
+++>>>>>>> df2868c5
+  })
+  projects.get('/profile',async c=>{const a=await scope(c);return c.json({data:{...await c.env.DB.prepare('SELECT u.id,u.name,u.email,u.created_at,EXISTS(SELECT 1 FROM credentials cr WHERE cr.user_id=u.id) has_password,s.timezone,s.avatar_url,s.is_notifiable_on_conversation_assignment,coalesce(pref.is_notified_on_unassigned_activity,0) is_notified_on_unassigned_activity FROM users u LEFT JOIN user_settings s ON s.user_id=u.id LEFT JOIN user_project_preferences pref ON pref.user_id=u.id AND pref.project_id=? WHERE u.id=?').bind(a.projectId,a.id).first<Record<string,unknown>>(),mailbox_confirmed:recentMailboxProof(a.security!),has_second_factor:Boolean(a.security?.hasFactor)}})})
+  projects.put('/profile',async c=>{const a=await scope(c),b=await c.req.json(),old=await c.env.DB.prepare('SELECT * FROM user_settings WHERE user_id=?').bind(a.id).first<any>();const name=requiredString(b.name,'name',200),timezone=b.timezone?text(b.timezone,100):old?.timezone||'UTC';try{new Intl.DateTimeFormat('en',{timeZone:timezone})}catch{throw new HTTPException(400,{message:'Invalid timezone'})}const email=b.email?requiredString(b.email,'email',320).toLowerCase():null;if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new HTTPException(400,{message:'Invalid email'});if(email&&await c.env.DB.prepare('SELECT id FROM users WHERE lower(email)=? AND id<>?').bind(email,a.id).first())throw new HTTPException(409,{message:'Email is already registered'});
+diff --cc src/modules/management/reply-mode-change.ts
+index 45f0b8f,0b4da0c..0000000
+--- a/src/modules/management/reply-mode-change.ts
++++ b/src/modules/management/reply-mode-change.ts
+@@@ -1,7 -1,7 +1,11 @@@
+  import type {AuditSource} from '../audit/record'
+  import {auditStatement} from '../audit/record'
+  import {replyMode,type AiReplyMode} from '../ai-support/reply-mode'
+++<<<<<<< HEAD
+ +import type {SettingsGuard} from './settings-save'
+++=======
++ import {replyModeWrite} from './settings-write'
+++>>>>>>> df2868c5
+  
+  /** A mode change also records when it happened (`ai_reply_mode_since`, the message clock), so automatic
+   * replies answer only visitor turns written after the latest switch: a turn from a draft or off period is
+@@@ -10,13 -10,15 +14,26 @@@ export function withReplyModeSince(old:
+   return 'ai_reply_mode' in patch&&patch.ai_reply_mode!==replyMode(old)?{...patch,ai_reply_mode_since:now}:patch
+  }
+  
+++<<<<<<< HEAD
+ +/** Batched with the settings write that changes a workspace's AI reply mode: one security-log
+ + * event, and every queued or running generation the new mode refuses becomes cancelled (terminal:
+ + * never claimed, never re-sent by recovery, never admitted), so a later switch back releases nothing. */
+ +export function replyModeChange(db:D1Database,input:{projectId:string;actorId:string;source:AuditSource},from:AiReplyMode,to:AiReplyMode,guard?:SettingsGuard):D1PreparedStatement[]{
+ + if(from===to)return []
+ + return [
+ +  auditStatement(db,{projectId:input.projectId,category:'data',action:'ai.reply_mode_changed',actor:{type:'user',id:input.actorId},source:input.source,target:{type:'project',id:input.projectId},detail:{from,to}},Date.now(),guard),
+ +  ...(to==='auto'?[]:[db.prepare(`UPDATE ai_generations SET state='cancelled',error=?,updated_at=? WHERE project_id=? AND state IN ('queued','running') AND (kind='reply' OR ?)${guard?` AND ${guard.sql}`:''}`).bind(`AI reply mode changed to ${to}`,new Date().toISOString(),input.projectId,to==='off'?1:0,...(guard?.params??[]))]),
+++=======
++ /** Batched after the settings write of a real mode change: the only write of the mode keys (`since`, from
++  * `withReplyModeSince`), one security-log event, and every queued or running generation the new mode refuses
++  * becomes cancelled (terminal: never claimed, never re-sent by recovery, never admitted), so a later switch back
++  * releases nothing. */
++ export function replyModeChange(db:D1Database,input:{projectId:string;actorId:string;source:AuditSource},from:AiReplyMode,to:AiReplyMode,since:number):D1PreparedStatement[]{
++  if(from===to)return []
++  return [
++   replyModeWrite(db,input.projectId,to,since),
++   auditStatement(db,{projectId:input.projectId,category:'data',action:'ai.reply_mode_changed',actor:{type:'user',id:input.actorId},source:input.source,target:{type:'project',id:input.projectId},detail:{from,to}}),
++   ...(to==='auto'?[]:[db.prepare("UPDATE ai_generations SET state='cancelled',error=?,updated_at=? WHERE project_id=? AND state IN ('queued','running') AND (kind='reply' OR ?)").bind(`AI reply mode changed to ${to}`,new Date().toISOString(),input.projectId,to==='off'?1:0)]),
+++>>>>>>> df2868c5
+   ]
+  }
+diff --cc src/modules/management/widget-settings.ts
+index dd10071,0d7e761..0000000
+--- a/src/modules/management/widget-settings.ts
++++ b/src/modules/management/widget-settings.ts
+@@@ -9,19 -9,23 +9,36 @@@ import {scope} from './common
+  import {websiteAddress} from './website-address'
+  import {person} from './dashboard-data'
+  import {publicAppearance} from '../widget/appearance.js'
+++<<<<<<< HEAD
+ +import {saveSettings} from './settings-save'
+ +import {allowsGeneration,replyMode} from '../ai-support/reply-mode'
+ +export const widgetSettings=new Hono<AppEnv>()
+ +widgetSettings.route('/',campaignRoutes)
+ +export const publicWidget=new Hono<AppEnv>()
+ +export async function settingsFor(env:AppEnv['Bindings'],projectId:string){const project=await env.DB.prepare('SELECT p.id,p.name,p.allowed_origin,s.settings_json FROM projects p LEFT JOIN project_settings s ON s.project_id=p.id WHERE p.id=?').bind(projectId).first<any>();if(!project)throw new HTTPException(404);const settings=JSON.parse(project.settings_json||'{}');if(settings.deleted_at)throw new HTTPException(404);const agents=(await env.DB.prepare("SELECT u.id,u.name,s.avatar_url FROM users u JOIN memberships m ON m.user_id=u.id LEFT JOIN user_settings s ON s.user_id=u.id WHERE m.project_id=? ORDER BY CASE m.role WHEN 'owner' THEN 0 ELSE 1 END,u.id").bind(projectId).all()).results.map(person),ais=(await env.DB.prepare('SELECT id,name,role,avatar_url,is_animated FROM ai_profiles WHERE project_id=? AND is_enabled=1').bind(projectId).all()).results;const campaignTiming=await env.DB.prepare("SELECT min(max(json_extract(config_json,'$.delaySeconds'),CASE WHEN json_extract(config_json,'$.trigger.type')='time' THEN json_extract(config_json,'$.trigger.seconds') ELSE 0 END)) delay FROM widget_campaigns WHERE project_id=? AND json_extract(config_json,'$.enabled')=1").bind(projectId).first<{delay:number|null}>();return {campaignsEnabled:campaignTiming?.delay!=null,campaignsStartAfter:campaignTiming?.delay??0,mailMode:emailMode(env),availability:await teamAvailability(env,projectId,settings),projectId,project:{id:project.id,name:project.name},settings:settings.widget_settings||{},brand:publicAppearance(settings,project.name),agents,ais,currentAgent:agents[0]||null,is_human_response_enabled:settings.is_human_response_enabled!==false,collectorEnabled:settings.is_contact_tracking_enabled===true,proactiveHelpEnabled:allowsGeneration(replyMode(settings),'reply')&&settings.proactive_help_enabled===true&&settings.is_contact_tracking_enabled===true,allowedOrigin:project.allowed_origin}}
+++=======
++ import {settingsUpsert} from './settings-write'
++ import {proactiveHelpOn} from '../customer-context/widget-policy'
++ export const widgetSettings=new Hono<AppEnv>()
++ widgetSettings.route('/',campaignRoutes)
++ export const publicWidget=new Hono<AppEnv>()
++ export async function settingsFor(env:AppEnv['Bindings'],projectId:string){const project=await env.DB.prepare('SELECT p.id,p.name,p.allowed_origin,s.settings_json FROM projects p LEFT JOIN project_settings s ON s.project_id=p.id WHERE p.id=?').bind(projectId).first<any>();if(!project)throw new HTTPException(404);const settings=JSON.parse(project.settings_json||'{}');if(settings.deleted_at)throw new HTTPException(404);const agents=(await env.DB.prepare("SELECT u.id,u.name,s.avatar_url FROM users u JOIN memberships m ON m.user_id=u.id LEFT JOIN user_settings s ON s.user_id=u.id WHERE m.project_id=? ORDER BY CASE m.role WHEN 'owner' THEN 0 ELSE 1 END,u.id").bind(projectId).all()).results.map(person),ais=(await env.DB.prepare('SELECT id,name,role,avatar_url,is_animated FROM ai_profiles WHERE project_id=? AND is_enabled=1').bind(projectId).all()).results;const campaignTiming=await env.DB.prepare("SELECT min(max(json_extract(config_json,'$.delaySeconds'),CASE WHEN json_extract(config_json,'$.trigger.type')='time' THEN json_extract(config_json,'$.trigger.seconds') ELSE 0 END)) delay FROM widget_campaigns WHERE project_id=? AND json_extract(config_json,'$.enabled')=1").bind(projectId).first<{delay:number|null}>();return {campaignsEnabled:campaignTiming?.delay!=null,campaignsStartAfter:campaignTiming?.delay??0,mailMode:emailMode(env),availability:await teamAvailability(env,projectId,settings),projectId,project:{id:project.id,name:project.name},settings:settings.widget_settings||{},brand:publicAppearance(settings,project.name),agents,ais,currentAgent:agents[0]||null,is_human_response_enabled:settings.is_human_response_enabled!==false,collectorEnabled:settings.is_contact_tracking_enabled===true,proactiveHelpEnabled:proactiveHelpOn(settings),allowedOrigin:project.allowed_origin}}
+++>>>>>>> df2868c5
+  widgetSettings.get('/projects/:projectId/widget-settings',async c=>{const a=await scope(c),value=await settingsFor(c.env,a.projectId);const secret=await c.env.DB.prepare('SELECT verification_secret,widget_key FROM projects WHERE id=?').bind(a.projectId).first<{verification_secret:string;widget_key:string}>();return c.json({...value,appOrigin:String(c.env.APP_ORIGIN||new URL(c.req.url).origin),previewAgent:value.currentAgent,previewBrand:value.brand,widgetKey:secret?.widget_key,verificationSecret:['owner','admin'].includes(a.role)?secret?.verification_secret:undefined})})
+  widgetSettings.put('/projects/:projectId/widget-settings',async c=>{
+   const a=await scope(c,true),input=await c.req.json()
+   if(!input||Array.isArray(input)||typeof input!=='object'||JSON.stringify(input).length>30000)throw new HTTPException(400)
+   const {allowed_origin,...settings}=input
+   const origin=allowed_origin===undefined?undefined:websiteAddress(allowed_origin,'Widget website origin',true)
+++<<<<<<< HEAD
+ + await saveSettings(c.env,a.projectId,{widget_settings:settings},(_old,_value,guard)=>origin?[c.env.DB.prepare(`UPDATE projects SET allowed_origin=? WHERE id=? AND ${guard.sql}`).bind(origin,a.projectId,...guard.params)]:[])
+++=======
++  const old=await c.env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(a.projectId).first<{settings_json:string}>(),value=JSON.parse(old?.settings_json||'{}')
++  value.widget_settings=settings
++  const statements=[settingsUpsert(c.env.DB,a.projectId,value)]
++  if(origin)statements.push(c.env.DB.prepare('UPDATE projects SET allowed_origin=? WHERE id=?').bind(origin,a.projectId))
++  await c.env.DB.batch(statements)
+++>>>>>>> df2868c5
+   return c.json({settings,...(origin?{allowedOrigin:origin}:{})})
+  })
+  publicWidget.get('/settings',async c=>{const project=await c.env.DB.prepare('SELECT id,allowed_origin FROM projects WHERE widget_key=?').bind(c.req.query('widgetKey')||'').first<{id:string;allowed_origin:string}>();if(!project)throw new HTTPException(403);const origin=c.req.header('Origin')||new URL(c.req.url).origin;if(origin!==project.allowed_origin&&origin!==new URL(c.req.url).origin){if(origin!==c.env.PREVIEW_ORIGIN||!await c.env.DB.prepare('SELECT token_hash FROM preview_grants WHERE project_id=? AND token_hash=? AND expires_at>? AND remaining_requests>0').bind(project.id,await hashToken(c.req.query('previewToken')||''),Date.now()).first())throw new HTTPException(403)}return c.json(await settingsFor(c.env,project.id))})
+diff --cc src/ui/native/pages/AiReplyMode.jsx
+index 2d4b2eb,1adf7be..0000000
+--- a/src/ui/native/pages/AiReplyMode.jsx
++++ b/src/ui/native/pages/AiReplyMode.jsx
+@@@ -2,22 -2,31 +2,44 @@@ import React, { useRef, useState } fro
+  import { nativeRequest } from '../transport';
+  
+  const modes = [['auto', 'Send automatically'], ['draft', 'Draft for my team'], ['off', 'Off']];
++ const labelOf = mode => modes.find(([option]) => option === mode)?.[1] || mode;
++ const sentence = text => /[.!?]$/.test(text) ? text : `${text}.`;
+  
+++<<<<<<< HEAD
+ +/** The workspace's AI reply mode, saved as it changes. A failed save restores the
+ + * stored mode and shows the error beside the control. */
+++=======
++ /** The workspace's AI reply mode, saved as it changes. Only `ai_reply_mode` is sent. The select shows the mode in
++  *  effect (`mode`, updated through `onSaved`); while a change saves it shows that choice, busy. A failed save
++  *  returns it to the saved mode, and the error beside it names the choice that was not saved, so choosing it
++  *  again retries. */
+++>>>>>>> df2868c5
+  export default function AiReplyMode({ base, mode, onSaved }) {
+-     const [value, setValue] = useState(mode || 'auto'), [busy, setBusy] = useState(false), [error, setError] = useState('');
+-     useEffect(() => { setValue(mode || 'auto'); }, [mode]);
++     const saved = mode || 'auto';
++     const [pending, setPending] = useState(null), [error, setError] = useState('');
++     const latest = useRef(0);
+      const change = async next => {
+-         setValue(next); setError(''); setBusy(true);
++         const request = ++latest.current;
++         setPending(next); setError('');
+          try {
+              await nativeRequest(`${base}/ai`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ai_reply_mode: next }) });
+              onSaved(next);
+++<<<<<<< HEAD
+ +        } catch (e) { setValue(mode || 'auto'); setError(e.message); } finally { setBusy(false); }
+ +    };
+ +    return <div className="form-group mb-4">
+ +        <label htmlFor="ai_reply_mode" className="form-label">AI replies</label>
+ +        <select id="ai_reply_mode" name="ai_reply_mode" className={`form-select${error ? ' is-invalid' : ''}`} value={value} disabled={busy} aria-busy={busy || undefined} aria-invalid={error ? 'true' : undefined} aria-describedby={error ? 'ai_reply_mode-error' : undefined} onChange={event => change(event.target.value)}>
+++=======
++         } catch (e) {
++             const reason = e.status ? sentence(e.message) : 'Check your connection.';
++             if (request === latest.current) setError(`“${labelOf(next)}” was not saved. ${reason} Choose it again to retry.`);
++         } finally { if (request === latest.current) setPending(null); }
++     };
++     return <div className="form-group mb-4">
++         <label htmlFor="ai_reply_mode" className="form-label">AI replies</label>
++         <select id="ai_reply_mode" name="ai_reply_mode" className={`form-select${error ? ' is-invalid' : ''}`} value={pending || saved} aria-busy={pending !== null || undefined} aria-invalid={error ? 'true' : undefined} aria-describedby={error ? 'ai_reply_mode-error' : undefined} onChange={event => change(event.target.value)}>
+++>>>>>>> df2868c5
+              {modes.map(([option, label]) => <option key={option} value={option}>{label}</option>)}
+          </select>
+          {error && <div id="ai_reply_mode-error" className="invalid-feedback d-block" role="alert">{error}</div>}

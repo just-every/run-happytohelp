@@ -1,0 +1,14 @@
+PROBE F3 {"label":"head","mode":"auto","enabled":true,"providerCalls":3,"offers":1,"visitorAiMessages":1,"status":"MET"}
+PROBE F3 {"label":"head","mode":"draft","enabled":false,"providerCalls":0,"offers":0,"visitorAiMessages":0,"status":"MET"}
+PROBE F3 {"label":"head","mode":"off","enabled":false,"providerCalls":0,"offers":0,"visitorAiMessages":0,"status":"MET"}
+F4_DIAGNOSTIC {"label":"head","states":[{"state":"sent","error":null}],"sendRequests":1,"answerMatchesProvider":true,"aiRequestCount":1,"aiMessages":1}
+file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/tests/journeys/kit/app.mjs:66
+  async until(check,{timeout=10000,interval=25,message='condition'}={}){const deadline=Date.now()+timeout;for(;;){const value=await check();if(value)return value;if(Date.now()>deadline)throw new Error('Timed out waiting for '+message);await new Promise(done=>setTimeout(done,interval))}},
+                                                                                                                                                                                               ^
+
+Error: Timed out waiting for synthetic notification hold
+    at Object.until (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/repo/tests/journeys/kit/app.mjs:66:192)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/packet/f3-f4-probes.mjs:49:2
+
+Node.js v24.19.0

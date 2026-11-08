@@ -1,0 +1,1 @@
+PROBE F4 {"label":"head","door":"native assignment -> configured synthetic model -> held mail -> PUT /ai draft -> scheduled outbox -> GET /audit","assertions":["one terminal event","system actor and source","reason","no credentials recipient or message content","no event duplication on replay"],"status":"MET"}

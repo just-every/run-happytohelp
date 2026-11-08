@@ -1,0 +1,64 @@
+{
+  "label": "merged",
+  "head": "9b238cf006b53e22ca124e013a027dbb4b7a47e7",
+  "commands": [
+    {
+      "name": "views-write-final",
+      "command": [
+        "node",
+        "src/site/base/contract-docs.mjs",
+        "write"
+      ],
+      "exit": 0,
+      "seconds": 0.97
+    },
+    {
+      "name": "views-check-final",
+      "command": [
+        "node",
+        "src/site/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "seconds": 0.821
+    },
+    {
+      "name": "views-restore-main",
+      "command": [
+        "git",
+        "checkout",
+        "origin/main",
+        "--",
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ],
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "name": "lock-write-final",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit": 0,
+      "seconds": 3.473
+    },
+    {
+      "name": "lock-check-final",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "seconds": 2.713
+    }
+  ],
+  "lock_before_sha256": "96ae90db52d9cfe1aec94a4db178e0df668867ed49f2281f5a3349ceda6597be",
+  "lock_after_sha256": "05e3d16af27875a0382bce8d59226d3e801344c6393590cc51812cedadfbc2f6",
+  "lock_bytes_unchanged": false,
+  "ledger": "not applicable: no migration in candidate-owned diff",
+  "exit": 0
+}

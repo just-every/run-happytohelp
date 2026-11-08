@@ -1,0 +1,14 @@
+[
+  {
+    "label": "head",
+    "command": "pnpm run typecheck",
+    "exit": 0,
+    "seconds": 29.26
+  },
+  {
+    "label": "merged",
+    "command": "pnpm run typecheck",
+    "exit": 0,
+    "seconds": 28.63
+  }
+]

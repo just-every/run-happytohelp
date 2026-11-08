@@ -1,0 +1,22 @@
+TOUCHED {"name":"replyModes","status":"passed","durationMs":20747}
+TOUCHED {"name":"proactiveReplyModes","status":"passed","durationMs":11022}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+0 !== 1
+
+    at replyModeMailHolds (file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/merged/tests/helpers/ai/reply-mode-followups.mjs:69:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/packet/touched-ai.mjs:7:25 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

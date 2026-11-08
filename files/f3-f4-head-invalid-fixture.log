@@ -1,0 +1,28 @@
+Schema validation failed for 'context_insight' (task='insight') [
+  {
+    "code": "custom",
+    "message": "An insight needs one close button and at most two send buttons.",
+    "path": [
+      "buttons"
+    ]
+  }
+]
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok(offers.length>0)
+
+    at file:///home/agent/rer-consolidation/work/hh-ai-mode-followups-2-gate-1/packet/f3-f4-probes.mjs:23:59
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

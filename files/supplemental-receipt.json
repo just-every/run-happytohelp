@@ -1,0 +1,38 @@
+{
+  "invalid_readback": {
+    "file": "f1-head-invalid-readback.log",
+    "scored": false,
+    "reason": "wrong sanitized read door"
+  },
+  "invalid_provider_fixture": {
+    "file": "f3-f4-head-invalid-fixture.log",
+    "scored": false,
+    "reason": "schema requires close button"
+  },
+  "supplemental_mail_precondition": {
+    "files": [
+      "f3-f4-head-edge-fixed.log",
+      "f3-f4-merged-final.log"
+    ],
+    "result": "NOT RUN audit; held-send precondition not reached",
+    "scored": false
+  },
+  "trial_initial_parse": {
+    "file": "touched-ai-merged.log",
+    "result": "duplicate const base",
+    "resolved": true
+  },
+  "trial_old_event_filter": {
+    "file": "touched-ai-merged-resolved.log",
+    "result": "obsolete audit action filter matched zero events",
+    "resolved": true
+  },
+  "authoritative_hold_proof": [
+    "f4-head.log",
+    "f4-merged.log"
+  ],
+  "authoritative_touched_helpers": [
+    "touched-ai-head.log",
+    "touched-ai-merged-final.log"
+  ]
+}

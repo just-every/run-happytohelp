@@ -1,0 +1,1063 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Heavy job admitted: HappyToHelp build:workflow [18cf004d9d89]
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+Checking pinned pnpm
+10.12.4
+Building your application
+
+> happytohelp@0.4.13 build:app [REDACTED]
+> node scripts/build.mjs
+
+Building application
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./scripts/widget-dev-asset" without a file extension (vite.config.ts:11:30). Add the file extension
+  - import "../src/modules/widget/asset-origin" without a file extension (scripts/widget-dev-asset.ts:4:33). Add the file extension
+  - import "../../../site/base/run-site" without a file extension (src/ui/docs/build/run-guide.ts:1:34). Add the file extension
+  - import "../../../site/run" without a file extension (src/ui/docs/build/run-guide.ts:2:21). Add the file extension
+  - import "./base/run-site" without a file extension (src/site/run.ts:1:30). Add the file extension
+  - import "./icon-head" without a file extension (src/site/base/run-site.ts:1:26). Add the file extension
+  - import "./base/run-pricing" without a file extension (src/site/run.ts:2:28). Add the file extension
+  - JSON import "./run.json" without import attributes (src/site/run.ts:3:18). Add `with { type: 'json' }`
+  - import "./run-chooser-style" without a file extension (src/site/base/run-site.ts:2:29). Add the file extension
+  - import "./identity" without a file extension (src/site/base/run-site.ts:11:53). Add the file extension
+  - import "./theme-frame" without a file extension (src/site/base/run-site.ts:12:21). Add the file extension
+  - import "./hosting-page" without a file extension (src/site/base/run-site.ts:13:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./scripts/widget-dev-asset" without a file extension (vite.config.ts:11:30). Add the file extension
+  - import "../src/modules/widget/asset-origin" without a file extension (scripts/widget-dev-asset.ts:4:33). Add the file extension
+  - import "../../../site/base/run-site" without a file extension (src/ui/docs/build/run-guide.ts:1:34). Add the file extension
+  - import "../../../site/run" without a file extension (src/ui/docs/build/run-guide.ts:2:21). Add the file extension
+  - import "./base/run-site" without a file extension (src/site/run.ts:1:30). Add the file extension
+  - import "./icon-head" without a file extension (src/site/base/run-site.ts:1:26). Add the file extension
+  - import "./base/run-pricing" without a file extension (src/site/run.ts:2:28). Add the file extension
+  - JSON import "./run.json" without import attributes (src/site/run.ts:3:18). Add `with { type: 'json' }`
+  - import "./run-chooser-style" without a file extension (src/site/base/run-site.ts:2:29). Add the file extension
+  - import "./identity" without a file extension (src/site/base/run-site.ts:11:53). Add the file extension
+  - import "./theme-frame" without a file extension (src/site/base/run-site.ts:12:21). Add the file extension
+  - import "./hosting-page" without a file extension (src/site/base/run-site.ts:13:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./scripts/widget-dev-asset" without a file extension (vite.config.ts:11:30). Add the file extension
+  - import "../src/modules/widget/asset-origin" without a file extension (scripts/widget-dev-asset.ts:4:33). Add the file extension
+  - import "../../../site/base/run-site" without a file extension (src/ui/docs/build/run-guide.ts:1:34). Add the file extension
+  - import "../../../site/run" without a file extension (src/ui/docs/build/run-guide.ts:2:21). Add the file extension
+  - import "./base/run-site" without a file extension (src/site/run.ts:1:30). Add the file extension
+  - import "./icon-head" without a file extension (src/site/base/run-site.ts:1:26). Add the file extension
+  - import "./base/run-pricing" without a file extension (src/site/run.ts:2:28). Add the file extension
+  - JSON import "./run.json" without import attributes (src/site/run.ts:3:18). Add `with { type: 'json' }`
+  - import "./run-chooser-style" without a file extension (src/site/base/run-site.ts:2:29). Add the file extension
+  - import "./identity" without a file extension (src/site/base/run-site.ts:11:53). Add the file extension
+  - import "./theme-frame" without a file extension (src/site/base/run-site.ts:12:21). Add the file extension
+  - import "./hosting-page" without a file extension (src/site/base/run-site.ts:13:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.2.4 building client environment for production...
+Built local connector download (37071 bytes).
+vite v8.2.4 building client environment for production...
+transforming...
+✓ 713 modules transformed.
+rendering chunks...
+computing gzip size...
+public/widget.js  968.65 kB │ gzip: 284.64 kB
+
+✓ built in 426ms
+transforming...
+[plugin tanstack-start-core::server-fn:client] [REDACTED]/src/ui/native/dashboard-bootstrap.ts:58:40 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+6 │ @import "bootstrap/scss/functions";
+  │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ╵
+    src/ui/dashboard/styles/dashboard.scss 6:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+8 │ @import "./foundation/tokens";
+  │         ^^^^^^^^^^^^^^^^^^^^^
+  ╵
+    src/ui/dashboard/styles/dashboard.scss 8:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+10 │ @import "bootstrap/scss/variables";
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/ui/dashboard/styles/dashboard.scss 10:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │ @import "bootstrap/scss/variables-dark";
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/ui/dashboard/styles/dashboard.scss 11:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+12 │ @import "bootstrap/scss/maps";
+   │         ^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/ui/dashboard/styles/dashboard.scss 12:9  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 58:55  @import
+    src/ui/dashboard/styles/dashboard.scss 6:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 58:30  @import
+    src/ui/dashboard/styles/dashboard.scss 6:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 177:11  @import
+    src/ui/dashboard/styles/dashboard.scss 6:9                                                                                                                                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 191:13  @import
+    src/ui/dashboard/styles/dashboard.scss 6:9                                                                                                                                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 217:11  @import
+    src/ui/dashboard/styles/dashboard.scss 6:9                                                                                                                                  root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 207:11  tint-color()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 79:12   @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 212:11  shade-color()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 84:12   @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 342:27  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 11:30  -assert-ascending()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 11:51  -assert-ascending()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 185:10  luminance()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 186:10  luminance()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 187:10  luminance()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 37:11   to-rgb()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 37:24   to-rgb()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+WARNING: 368 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+✓ 2120 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                                                              0.02 kB
+dist/client/assets/reply-icons-494748d6.svg                                          448.82 kB │ gzip:  85.59 kB
+dist/client/assets/Settings-B7pd8nvg.css                                               0.23 kB │ gzip:   0.15 kB
+dist/client/assets/MoveIn-DScb-ssJ.css                                                 0.48 kB │ gzip:   0.28 kB
+dist/client/assets/voice-COXzD2KK.css                                                  0.53 kB │ gzip:   0.29 kB
+dist/client/assets/AssurancePage-BDYgPpyd.css                                          0.57 kB │ gzip:   0.31 kB
+dist/client/assets/surveys-Bp2eBMeX.css                                                1.01 kB │ gzip:   0.42 kB
+dist/client/assets/setup-help-Cv6gyeg3.css                                             1.23 kB │ gzip:   0.55 kB
+dist/client/assets/Cutover-D67Jxa2i.css                                                1.31 kB │ gzip:   0.55 kB
+dist/client/assets/TicketIdentityPicker-CpZ9zLl_.css                                   1.43 kB │ gzip:   0.58 kB
+dist/client/assets/InboxStart-B17_Q1CI.css                                             1.53 kB │ gzip:   0.54 kB
+dist/client/assets/crm-Br3Wa2IU.css                                                    1.56 kB │ gzip:   0.66 kB
+dist/client/assets/connections-BngmX2tM.css                                            1.84 kB │ gzip:   0.67 kB
+dist/client/assets/email-ken-E1JJ.css                                                  2.10 kB │ gzip:   0.70 kB
+dist/client/assets/ProcedureSettings-CCvL89Pb.css                                      2.46 kB │ gzip:   0.80 kB
+dist/client/assets/security-DExzzCmp.css                                               2.72 kB │ gzip:   0.94 kB
+dist/client/assets/reference-text-D8mTltsU.css                                         3.04 kB │ gzip:   0.92 kB
+dist/client/assets/NotificationTriggerSettings-7aX4mnL5.css                            3.23 kB │ gzip:   0.86 kB
+dist/client/assets/drawings-4V2hU32d.css                                               3.36 kB │ gzip:   1.13 kB
+dist/client/assets/tickets-BBaled3x.css                                                3.36 kB │ gzip:   0.96 kB
+dist/client/assets/management-parity-Bs3heTEK.css                                      3.41 kB │ gzip:   1.08 kB
+dist/client/assets/ArticleMarkdownEditor-BByhkjHw.css                                  3.71 kB │ gzip:   1.05 kB
+dist/client/assets/project-parity-Ca3GtAl2.css                                         4.02 kB │ gzip:   1.19 kB
+dist/client/assets/WorkflowSettings-96NhHpPh.css                                       4.74 kB │ gzip:   1.19 kB
+dist/client/assets/setup-DPN8urOQ.css                                                  5.31 kB │ gzip:   1.89 kB
+dist/client/assets/management-validation-DYoF29QU.css                                  5.49 kB │ gzip:   1.32 kB
+dist/client/assets/ActivationPage-7sgGoIPw.css                                         5.72 kB │ gzip:   1.62 kB
+dist/client/assets/DocsPage-BTsC8rA5.css                                               8.69 kB │ gzip:   2.41 kB
+dist/client/assets/ReportsWithSurveys-CunBC90B.css                                     9.63 kB │ gzip:   2.38 kB
+dist/client/assets/knowledge-CFAF_PCH.css                                              9.85 kB │ gzip:   2.33 kB
+dist/client/assets/Companies-jpHK-Y7z.css                                             13.40 kB │ gzip:   2.63 kB
+dist/client/assets/TicketActionDialogs-7ngpY56K.css                                   13.79 kB │ gzip:   3.14 kB
+dist/client/assets/workspace-core-XtaFkZyB.css                                        14.11 kB │ gzip:   3.40 kB
+dist/client/assets/routes-C6WEzXCC.css                                                15.36 kB │ gzip:   3.43 kB
+dist/client/assets/runtime-DntGnAWC.css                                              664.08 kB │ gzip:  86.58 kB
+dist/client/assets/connections-A1G4QIUX.js                                             0.09 kB │ gzip:   0.11 kB
+dist/client/assets/drawings-Cfq9iVV-.js                                                0.09 kB │ gzip:   0.11 kB
+dist/client/assets/management-parity-tqALcouG.js                                       0.09 kB │ gzip:   0.11 kB
+dist/client/assets/project-parity-CQ7ZWLm_.js                                          0.09 kB │ gzip:   0.11 kB
+dist/client/assets/security-DIBpzMb6.js                                                0.09 kB │ gzip:   0.11 kB
+dist/client/assets/setup-help-BQcE1FXD.js                                              0.09 kB │ gzip:   0.11 kB
+dist/client/assets/surveys-2IufR5cx.js                                                 0.09 kB │ gzip:   0.11 kB
+dist/client/assets/tickets-BIayFWUN.js                                                 0.09 kB │ gzip:   0.11 kB
+dist/client/assets/ProjectSettings-B65xegxN.js                                         0.11 kB │ gzip:   0.11 kB
+dist/client/assets/KnowledgePage-BwMGQLT8.js                                           0.14 kB │ gzip:   0.13 kB
+dist/client/assets/ManagementPage-BO_GG1DU.js                                          0.14 kB │ gzip:   0.12 kB
+dist/client/assets/docs._slug-igvADYnO.js                                              0.29 kB │ gzip:   0.22 kB
+dist/client/assets/docs.index-CwH-7q38.js                                              0.29 kB │ gzip:   0.22 kB
+dist/client/assets/useSetup-CWhWD2p_.js                                                0.33 kB │ gzip:   0.24 kB
+dist/client/assets/_dashboard._workspace.projects_._projectId.companies-B808ovSU.js    0.42 kB │ gzip:   0.27 kB
+dist/client/assets/terminal-prompts-DZiTFy3P.js                                        0.44 kB │ gzip:   0.31 kB
+dist/client/assets/SetupTitle-Y4tPM28P.js                                              0.45 kB │ gzip:   0.30 kB
+dist/client/assets/crawl-limits-BaM7okKK.js                                            0.61 kB │ gzip:   0.36 kB
+dist/client/assets/sign-in-destination-DdXp8FsF.js                                     0.61 kB │ gzip:   0.36 kB
+dist/client/assets/Flourish-CQSTLmO5.js                                                0.62 kB │ gzip:   0.43 kB
+dist/client/assets/email-BVJh0rny.js                                                   0.65 kB │ gzip:   0.44 kB
+dist/client/assets/ReportsTabs-gZIh50sG.js                                             0.71 kB │ gzip:   0.41 kB
+dist/client/assets/CopyCommand-Bk8XZJ3E.js                                             0.72 kB │ gzip:   0.45 kB
+dist/client/assets/LinkProblem-DUMuODiV.js                                             0.87 kB │ gzip:   0.47 kB
+dist/client/assets/company-api-gL9znlD8.js                                             0.91 kB │ gzip:   0.61 kB
+dist/client/assets/workflow-model-D9wSf8AH.js                                          0.91 kB │ gzip:   0.54 kB
+dist/client/assets/RowMenu-_QaCK1po.js                                                 0.95 kB │ gzip:   0.55 kB
+dist/client/assets/ProjectControls-DI0L-JJq.js                                         0.97 kB │ gzip:   0.57 kB
+dist/client/assets/index-C5KEusnj.js                                                   1.06 kB │ gzip:   0.68 kB
+dist/client/assets/hooks-CXqDxo4F.js                                                   1.21 kB │ gzip:   0.56 kB
+dist/client/assets/rolldown-runtime-C0FnF6B9.js                                        1.29 kB │ gzip:   0.71 kB
+dist/client/assets/anonymousEmbedCode-QNvo639H.js                                      1.45 kB │ gzip:   0.73 kB
+dist/client/assets/fields-DcogDSrj.js                                                  1.52 kB │ gzip:   0.69 kB
+dist/client/assets/TicketField-DBJe5MQq.js                                             1.61 kB │ gzip:   0.75 kB
+dist/client/assets/owner-recovery-D8p1s01a.js                                          1.91 kB │ gzip:   0.97 kB
+dist/client/assets/crm-BRu5Isgc.js                                                     1.93 kB │ gzip:   0.95 kB
+dist/client/assets/getting-started-BBKDm7j5.js                                         1.96 kB │ gzip:   1.01 kB
+dist/client/assets/SignInDrawing-B6clekyN.js                                           2.01 kB │ gzip:   0.88 kB
+dist/client/assets/reset-password-CVbCjYHJ.js                                          2.05 kB │ gzip:   0.90 kB
+dist/client/assets/delegation-shared-Do5ofKEs.js                                       2.11 kB │ gzip:   1.19 kB
+dist/client/assets/voice-DQz1QNug.js                                                   2.17 kB │ gzip:   0.97 kB
+dist/client/assets/verify-email-QjM7JJsj.js                                            2.24 kB │ gzip:   0.86 kB
+dist/client/assets/ConfirmDialog-Dn4ZC4Uv.js                                           2.36 kB │ gzip:   1.08 kB
+dist/client/assets/two-factor-hSx4ihId.js                                              2.45 kB │ gzip:   1.09 kB
+dist/client/assets/forgot-password-ozGVP9Vi.js                                         2.47 kB │ gzip:   1.05 kB
+dist/client/assets/InsightsPage-B3_Z6k7d.js                                            2.51 kB │ gzip:   1.01 kB
+dist/client/assets/reference-text-BZV-kkqP.js                                          2.73 kB │ gzip:   1.17 kB
+dist/client/assets/login_.magic-BkwS2WNk.js                                            2.94 kB │ gzip:   1.36 kB
+dist/client/assets/register-BRcF5rye.js                                                3.29 kB │ gzip:   1.29 kB
+dist/client/assets/projects-BWmrhIWd.js                                                3.35 kB │ gzip:   1.34 kB
+dist/client/assets/managed-conversation-mail-K61bmYVo.js                               3.35 kB │ gzip:   1.64 kB
+dist/client/assets/SecretSteps-FKLtlRwn.js                                             3.36 kB │ gzip:   1.41 kB
+dist/client/assets/AdminPage-XKawbJgg.js                                               3.46 kB │ gzip:   1.47 kB
+dist/client/assets/DelegationAuthorize-CJue3kgE.js                                     3.49 kB │ gzip:   1.47 kB
+dist/client/assets/login-B2NH7fHn.js                                                   3.65 kB │ gzip:   1.70 kB
+dist/client/assets/triage-DWLr1b4h.js                                                  3.68 kB │ gzip:   1.65 kB
+dist/client/assets/security-fmj8S9v3.js                                                3.72 kB │ gzip:   1.58 kB
+dist/client/assets/companies-and-csv-PCJWfq1n.js                                       4.08 kB │ gzip:   1.71 kB
+dist/client/assets/notifications-c4OI4VAV.js                                           4.18 kB │ gzip:   1.83 kB
+dist/client/assets/ArticleImport-DntAyzKO.js                                           4.22 kB │ gzip:   1.78 kB
+dist/client/assets/ComputersPage-DXv5H5XX.js                                           4.88 kB │ gzip:   2.19 kB
+dist/client/assets/accept-invitation-BtO4r-Bg.js                                       5.10 kB │ gzip:   1.59 kB
+dist/client/assets/connected-applications-Iii0aYzT.js                                  5.16 kB │ gzip:   1.98 kB
+dist/client/assets/macros-and-teamwork-CvqcZFlw.js                                     5.19 kB │ gzip:   2.15 kB
+dist/client/assets/GitHubSettings-B-Xn1RaW.js                                          5.22 kB │ gzip:   2.16 kB
+dist/client/assets/ArticleMarkdownEditor-DJqXX09U.js                                   5.25 kB │ gzip:   2.11 kB
+dist/client/assets/agent-fix-DyZWK6UZ.js                                               5.41 kB │ gzip:   2.30 kB
+dist/client/assets/SecurityPage-BNtomuJT.js                                            5.71 kB │ gzip:   2.31 kB
+dist/client/assets/help-center-pnN3kCmI.js                                             6.13 kB │ gzip:   2.34 kB
+dist/client/assets/customer-satisfaction-CdHiANur.js                                   6.38 kB │ gzip:   2.57 kB
+dist/client/assets/project-settings-D4VfUCi8.js                                        6.59 kB │ gzip:   2.62 kB
+dist/client/assets/management-3Wp-cKgU.js                                              6.63 kB │ gzip:   2.84 kB
+dist/client/assets/help-before-they-ask-B8LTu3Bc.js                                    7.10 kB │ gzip:   3.01 kB
+dist/client/assets/Cutover-DnhfSa1e.js                                                 7.20 kB │ gzip:   2.84 kB
+dist/client/assets/setup-DoekX0qL.js                                                   7.70 kB │ gzip:   3.39 kB
+dist/client/assets/TicketSettings-BfB7MglO.js                                          7.82 kB │ gzip:   2.99 kB
+dist/client/assets/AssurancePage-Cwc9q-XI.js                                           7.96 kB │ gzip:   2.93 kB
+dist/client/assets/Settings-JQQ5r8TM.js                                                7.97 kB │ gzip:   2.93 kB
+dist/client/assets/RolesPage-Ds8eG3ky.js                                               8.11 kB │ gzip:   2.87 kB
+dist/client/assets/DocsPage-BH644qEX.js                                                8.19 kB │ gzip:   3.04 kB
+dist/client/assets/customer-portal-CPrfx75w.js                                         8.34 kB │ gzip:   3.12 kB
+dist/client/assets/away-DQcNhgkV.js                                                    8.42 kB │ gzip:   2.95 kB
+dist/client/assets/feedback-and-assurance-C0hIcRXt.js                                  8.43 kB │ gzip:   3.38 kB
+dist/client/assets/inbound-email-recovery-8hoLPthZ.js                                  8.83 kB │ gzip:   3.17 kB
+dist/client/assets/reports-35fC7fk8.js                                                 9.18 kB │ gzip:   3.19 kB
+dist/client/assets/_virtual_happytohelp-docs-DxfV8WFg.js                               9.35 kB │ gzip:   2.47 kB
+dist/client/assets/agent-door-BcEM7ztk.js                                              9.35 kB │ gzip:   3.80 kB
+dist/client/assets/DelegationSettings-C53_vIFm.js                                      9.86 kB │ gzip:   3.34 kB
+dist/client/assets/setup-BUv_NnWv.js                                                  10.08 kB │ gzip:   4.13 kB
+dist/client/assets/plugins-B_ix69Tx.js                                                10.15 kB │ gzip:   2.91 kB
+dist/client/assets/account-security-DpS1bEyA.js                                       10.37 kB │ gzip:   3.98 kB
+dist/client/assets/run-locally-BRgQPp4K.js                                            10.40 kB │ gzip:   4.38 kB
+dist/client/assets/request-forms-CdiMbn4v.js                                          10.50 kB │ gzip:   4.06 kB
+dist/client/assets/support-channels-BJpU1RZE.js                                       11.50 kB │ gzip:   4.70 kB
+dist/client/assets/SecurityLog-BLiML7Fj.js                                            12.27 kB │ gzip:   4.05 kB
+dist/client/assets/tickets-U0pIVeev.js                                                12.95 kB │ gzip:   4.83 kB
+dist/client/assets/SuspendedMail-CYbDYMZf.js                                          13.83 kB │ gzip:   4.40 kB
+dist/client/assets/identity-link-api-Beazk-cw.js                                      14.06 kB │ gzip:   5.24 kB
+dist/client/assets/workflows-mAinP6P_.js                                              14.28 kB │ gzip:   5.52 kB
+dist/client/assets/ActivationPage-DEnQzfkI.js                                         15.46 kB │ gzip:   5.25 kB
+dist/client/assets/ProcedureSettings-QfM6OZUp.js                                      15.59 kB │ gzip:   5.41 kB
+dist/client/assets/reports-CInsBm_d.js                                                16.17 kB │ gzip:   6.04 kB
+dist/client/assets/AccountPage-C02-piVn.js                                            16.24 kB │ gzip:   5.06 kB
+dist/client/assets/install-UZTsv4VR.js                                                17.96 kB │ gzip:   6.55 kB
+dist/client/assets/limits-B6Z5XtcA.js                                                 18.09 kB │ gzip:   5.97 kB
+dist/client/assets/TrainingRuns-DhX0CryG.js                                           19.13 kB │ gzip:   6.77 kB
+dist/client/assets/routes-CaAIbwe2.js                                                 19.16 kB │ gzip:   5.99 kB
+dist/client/assets/website-knowledge-Hhi6uHmB.js                                      20.85 kB │ gzip:   7.71 kB
+dist/client/assets/privacy-KGm1tFIG.js                                                21.63 kB │ gzip:   7.17 kB
+dist/client/assets/updates-and-recovery-KLerzSCB.js                                   26.06 kB │ gzip:   8.82 kB
+dist/client/assets/Connections-DYCaMvam.js                                            27.05 kB │ gzip:   8.28 kB
+dist/client/assets/local-agent-L2x8fKOj.js                                            27.99 kB │ gzip:   8.55 kB
+dist/client/assets/index.esm-D0fjvoN6.js                                              29.80 kB │ gzip:  11.02 kB
+dist/client/assets/reply-icons-3royMWLP.js                                            30.24 kB │ gzip:   9.57 kB
+dist/client/assets/ReportsWithSurveys-BR0LVUgB.js                                     31.65 kB │ gzip:   8.95 kB
+dist/client/assets/page-HKq2s_1h.js                                                   32.04 kB │ gzip:  11.78 kB
+dist/client/assets/integrations-CxfGmkno.js                                           37.73 kB │ gzip:  12.94 kB
+dist/client/assets/legacy-entry-points-DF5LlVeF.js                                    40.78 kB │ gzip:  13.21 kB
+dist/client/assets/email-D-IbaklH.js                                                  41.11 kB │ gzip:  12.58 kB
+dist/client/assets/Companies-DUiX9Zz1.js                                              41.86 kB │ gzip:  10.94 kB
+dist/client/assets/WorkflowSettings-Duli0Ik3.js                                       42.95 kB │ gzip:  12.34 kB
+dist/client/assets/InboxStart-I6n80yUW.js                                             57.24 kB │ gzip:  16.85 kB
+dist/client/assets/management-validation-Ce09yJh1.js                                  63.35 kB │ gzip:  18.65 kB
+dist/client/assets/knowledge-Cwzqsb78.js                                              65.62 kB │ gzip:  18.86 kB
+dist/client/assets/controls-DHZV3Ykj.js                                               68.91 kB │ gzip:  24.38 kB
+dist/client/assets/MoveIn-DE69qm52.js                                                 70.17 kB │ gzip:  21.56 kB
+dist/client/assets/NotificationTriggerSettings-a58qhLDU.js                            79.31 kB │ gzip:  23.05 kB
+dist/client/assets/operations-Du-Ih257.js                                             83.42 kB │ gzip:  27.95 kB
+dist/client/assets/moving-in-R-YG03Zo.js                                              83.86 kB │ gzip:  25.18 kB
+dist/client/assets/conversation-Dno35m2r.js                                           84.93 kB │ gzip:  25.84 kB
+dist/client/assets/changelog-Cw6l0Xnj.js                                             264.79 kB │ gzip:  82.84 kB
+dist/client/assets/TicketActionDialogs-DD1G8YwB.js                                   354.64 kB │ gzip: 117.93 kB
+dist/client/assets/workspace-core-Pe-Kcqt0.js                                        448.94 kB │ gzip: 147.41 kB
+dist/client/assets/runtime-jZuzuwtA.js                                               508.36 kB │ gzip: 167.16 kB
+dist/client/assets/TicketIdentityPicker-BW0zyvoP.js                                  745.37 kB │ gzip:  45.85 kB
+dist/client/assets/WidgetSettingsPage-DAVBgzCy.js                                    904.94 kB │ gzip: 296.43 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 12.42s
+[PLUGIN_TIMINGS] Plugin hooks ran for 11.8s of this 12.4s build (95%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - happytohelp:docs-site load (28%, 3.5s, 2117 calls)
+Additional hook time came from the hooks below and from hooks under 1s.
+3 hooks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+  - tanstack-start-core:import-protection resolveId (6239 calls)
+  - vite:css transform (75 calls)
+  - tanstack-start-core::server-fn:client transform (16 calls)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+vite v8.2.4 building ssr environment for production...
+transforming...
+[plugin tanstack-start-core::server-fn:ssr] [REDACTED]/src/ui/native/dashboard-bootstrap.ts?tss-serverfn-split:58:40 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[plugin tanstack-start-core::server-fn:ssr] [REDACTED]/src/ui/native/dashboard-bootstrap.ts:58:40 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+6 │ @import "bootstrap/scss/functions";
+  │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ╵
+    src/ui/dashboard/styles/dashboard.scss 6:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+8 │ @import "./foundation/tokens";
+  │         ^^^^^^^^^^^^^^^^^^^^^
+  ╵
+    src/ui/dashboard/styles/dashboard.scss 8:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+10 │ @import "bootstrap/scss/variables";
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/ui/dashboard/styles/dashboard.scss 10:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │ @import "bootstrap/scss/variables-dark";
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/ui/dashboard/styles/dashboard.scss 11:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+12 │ @import "bootstrap/scss/maps";
+   │         ^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/ui/dashboard/styles/dashboard.scss 12:9  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 58:55  @import
+    src/ui/dashboard/styles/dashboard.scss 6:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 58:30  @import
+    src/ui/dashboard/styles/dashboard.scss 6:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 177:11  @import
+    src/ui/dashboard/styles/dashboard.scss 6:9                                                                                                                                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 191:13  @import
+    src/ui/dashboard/styles/dashboard.scss 6:9                                                                                                                                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 217:11  @import
+    src/ui/dashboard/styles/dashboard.scss 6:9                                                                                                                                  root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 207:11  tint-color()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 79:12   @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 212:11  shade-color()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 84:12   @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 342:27  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 11:30  -assert-ascending()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 11:51  -assert-ascending()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 494:1  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 185:10  luminance()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 186:10  luminance()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 187:10  luminance()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 174:8   contrast-ratio()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 159:22  color-contrast()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 846:42  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 37:11   to-rgb()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_functions.scss 37:24   to-rgb()
+    /home/agent/rer-consolidation/work/hh-ai-mode-followups-1/repo/node_modules/.pnpm/bootstrap@5.3.8_@popperjs+core@2.11.8/node_modules/bootstrap/scss/_variables.scss 846:31  @import
+    src/ui/dashboard/styles/dashboard.scss 10:9                                                                                                                                 root stylesheet
+
+WARNING: 368 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+✓ 4508 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/server/wrangler.json                                                                                     2.00 kB │ gzip:     0.95 kB
+dist/server/.vite/manifest.json                                                                              85.37 kB │ gzip:    10.62 kB
+dist/server/assets/Settings-B7pd8nvg.css                                                                      0.23 kB │ gzip:     0.15 kB
+dist/server/assets/MoveIn-DScb-ssJ.css                                                                        0.48 kB │ gzip:     0.28 kB
+dist/server/assets/voice-COXzD2KK.css                                                                         0.53 kB │ gzip:     0.29 kB
+dist/server/assets/AssurancePage-BDYgPpyd.css                                                                 0.57 kB │ gzip:     0.31 kB
+dist/server/assets/ProviderSetupNotice-jLVs15dg.css                                                           0.62 kB │ gzip:     0.29 kB
+dist/server/assets/surveys-Bp2eBMeX.css                                                                       1.01 kB │ gzip:     0.42 kB
+dist/server/assets/setup-help-Cv6gyeg3.css                                                                    1.23 kB │ gzip:     0.55 kB
+dist/server/assets/Cutover-D67Jxa2i.css                                                                       1.31 kB │ gzip:     0.55 kB
+dist/server/assets/parts-D148gM0I.css                                                                         1.37 kB │ gzip:     0.60 kB
+dist/server/assets/crm-Br3Wa2IU.css                                                                           1.56 kB │ gzip:     0.66 kB
+dist/server/assets/stack-table-DTuupB5v.css                                                                   1.63 kB │ gzip:     0.69 kB
+dist/server/assets/useScrollEdge-BM87aAs-.css                                                                 1.78 kB │ gzip:     0.71 kB
+dist/server/assets/connections-BngmX2tM.css                                                                   1.84 kB │ gzip:     0.67 kB
+dist/server/assets/email-ken-E1JJ.css                                                                         2.10 kB │ gzip:     0.70 kB
+dist/server/assets/ProcedureSettings-CCvL89Pb.css                                                             2.46 kB │ gzip:     0.80 kB
+dist/server/assets/Drawing-DzEIyq_n.css                                                                       2.47 kB │ gzip:     0.74 kB
+dist/server/assets/InboxPage-DRUA6XNV.css                                                                     2.67 kB │ gzip:     0.77 kB
+dist/server/assets/security-DExzzCmp.css                                                                      2.72 kB │ gzip:     0.94 kB
+dist/server/assets/reference-text-D8mTltsU.css                                                                3.04 kB │ gzip:     0.92 kB
+dist/server/assets/ProjectSettings-7aX4mnL5.css                                                               3.23 kB │ gzip:     0.86 kB
+dist/server/assets/drawings-4V2hU32d.css                                                                      3.36 kB │ gzip:     1.13 kB
+dist/server/assets/tickets-BBaled3x.css                                                                       3.36 kB │ gzip:     0.96 kB
+dist/server/assets/management-parity-Bs3heTEK.css                                                             3.41 kB │ gzip:     1.08 kB
+dist/server/assets/brand-tokens-p6ryA--I.css                                                                  3.59 kB │ gzip:     1.34 kB
+dist/server/assets/ArticleMarkdownEditor-BByhkjHw.css                                                         3.71 kB │ gzip:     1.05 kB
+dist/server/assets/project-parity-Ca3GtAl2.css                                                                4.02 kB │ gzip:     1.19 kB
+dist/server/assets/WorkflowSettings-96NhHpPh.css                                                              4.74 kB │ gzip:     1.19 kB
+dist/server/assets/setup-DPN8urOQ.css                                                                         5.31 kB │ gzip:     1.89 kB
+dist/server/assets/ManagementPage-DYoF29QU.css                                                                5.49 kB │ gzip:     1.32 kB
+dist/server/assets/ActivationPage-7sgGoIPw.css                                                                5.72 kB │ gzip:     1.62 kB
+dist/server/assets/DocsPage-BTsC8rA5.css                                                                      8.69 kB │ gzip:     2.41 kB
+dist/server/assets/ReportsWithSurveys-CunBC90B.css                                                            9.63 kB │ gzip:     2.38 kB
+dist/server/assets/knowledge-CFAF_PCH.css                                                                     9.85 kB │ gzip:     2.33 kB
+dist/server/assets/Companies-jpHK-Y7z.css                                                                    13.40 kB │ gzip:     2.63 kB
+dist/server/assets/routes-C6WEzXCC.css                                                                       15.36 kB │ gzip:     3.43 kB
+dist/server/assets/Conversation-6PeYn3z_.css                                                                 24.16 kB │ gzip:     5.39 kB
+dist/server/assets/router-C3_GPb4b.css                                                                      656.63 kB │ gzip:    84.50 kB
+dist/server/assets/workspace-colour-RFFBRKEJ.js                                                               0.15 kB │ gzip:     0.14 kB
+dist/server/assets/agent-5Kzp-9KY.js                                                                          0.30 kB │ gzip:     0.21 kB
+dist/server/assets/empty-plugin-adapters-D5bXobQD.js                                                          0.35 kB │ gzip:     0.22 kB
+dist/server/assets/start-DijWzyrV.js                                                                          0.35 kB │ gzip:     0.25 kB
+dist/server/assets/docs.index-pUGAeF-a.js                                                                     0.44 kB │ gzip:     0.28 kB
+dist/server/assets/docs._slug-BH1mHiAl.js                                                                     0.45 kB │ gzip:     0.28 kB
+dist/server/assets/objectWithoutPropertiesLoose-BPSqQhjs.js                                                   0.46 kB │ gzip:     0.30 kB
+dist/server/assets/browser-Dr7NdEFF.js                                                                        0.47 kB │ gzip:     0.33 kB
+dist/server/assets/_dashboard._workspace.conversations-DsiPYRDz.js                                            0.48 kB │ gzip:     0.29 kB
+dist/server/assets/extends-78qIPNA-.js                                                                        0.49 kB │ gzip:     0.33 kB
+dist/server/assets/_dashboard._workspace.projects_._projectId.conversations-NgceC0SA.js                       0.51 kB │ gzip:     0.31 kB
+dist/server/assets/createServerRpc-BoMdQoO7.js                                                                0.52 kB │ gzip:     0.34 kB
+dist/server/assets/unit-DrvJ-uv-.js                                                                           0.54 kB │ gzip:     0.31 kB
+dist/server/assets/_dashboard._workspace.conversations_._conversationId-CQ4oUyf2.js                           0.58 kB │ gzip:     0.32 kB
+dist/server/assets/_dashboard._workspace.projects_._projectId.conversations_._conversationId-C-B3F2bJ.js      0.62 kB │ gzip:     0.34 kB
+dist/server/assets/article-editor-code-2h52Dx0g.js                                                            0.62 kB │ gzip:     0.32 kB
+dist/server/assets/Sparks-DRC0PyJ6.js                                                                         0.65 kB │ gzip:     0.40 kB
+dist/server/assets/_dashboard._workspace.projects-mdWUgLu7.js                                                 0.67 kB │ gzip:     0.34 kB
+dist/server/assets/useSetup-C6alUX3Y.js                                                                       0.67 kB │ gzip:     0.41 kB
+dist/server/assets/_dashboard._workspace.projects_._projectId.agents-CZrcVXFo.js                              0.69 kB │ gzip:     0.36 kB
+dist/server/assets/errors-D1cPeZGq.js                                                                         0.70 kB │ gzip:     0.32 kB
+dist/server/assets/_dashboard._workspace.projects_._projectId.articles-DNDPXs2x.js                            0.70 kB │ gzip:     0.36 kB
+dist/server/assets/_dashboard._workspace.projects_._projectId.companies-Bu3QQLnu.js                           0.70 kB │ gzip:     0.35 kB
+dist/server/assets/_dashboard._workspace.projects_._projectId.contacts-B8XYLT1b.js                            0.70 kB │ gzip:     0.36 kB
+dist/server/assets/_dashboard._workspace.projects_._projectId.settings-vxzcxXAI.js                            0.70 kB │ gzip:     0.35 kB
+dist/server/assets/_dashboard._workspace.projects_._projectId.macros-XMy_5iut.js                              0.71 kB │ gzip:     0.36 kB
+dist/server/assets/createSsrRpc-CscpMYuO.js                                                                   0.73 kB │ gzip:     0.43 kB
+dist/server/assets/_dashboard._workspace.projects_._projectId.reports-Hbg_HpLF.js                             0.73 kB │ gzip:     0.37 kB
+dist/server/assets/lazy-page-code-B2nJfOYZ.js                                                                 0.77 kB │ gzip:     0.46 kB
+dist/server/assets/terminal-prompts-pSfUt9Hj.js                                                               0.81 kB │ gzip:     0.45 kB
+dist/server/assets/Flourish-CyMVTFKD.js                                                                       0.82 kB │ gzip:     0.50 kB
+dist/server/assets/native-loader.server-DJfj5uW-.js                                                           0.85 kB │ gzip:     0.48 kB
+dist/server/assets/email-DjqKIoE8.js                                                                          0.89 kB │ gzip:     0.53 kB
+dist/server/assets/SetupTitle-BXSwLDb2.js                                                                     0.91 kB │ gzip:     0.50 kB
+dist/server/assets/utils-CocgQrXX.js                                                                          0.99 kB │ gzip:     0.50 kB
+dist/server/assets/Blob-ChrGy4YI.js                                                                           1.01 kB │ gzip:     0.61 kB
+dist/server/assets/not-found-CmqAl4op.js                                                                      1.01 kB │ gzip:     0.55 kB
+dist/server/assets/PageHeader-13il0NCM.js                                                                     1.02 kB │ gzip:     0.41 kB
+dist/server/assets/useLocation-B418dd2R.js                                                                    1.02 kB │ gzip:     0.57 kB
+dist/server/assets/sign-in-destination-CnE-YBeN.js                                                            1.02 kB │ gzip:     0.52 kB
+dist/server/assets/useSearch-BlBNSef4.js                                                                      1.15 kB │ gzip:     0.63 kB
+dist/server/assets/__23tanstack-start-server-fn-resolver-C98tEyHn.js                                          1.16 kB │ gzip:     0.57 kB
+dist/server/assets/load-DfKhngb4.js                                                                           1.16 kB │ gzip:     0.66 kB
+dist/server/assets/worker-runtime-C7Uy30HM.js                                                                 1.23 kB │ gzip:     0.61 kB
+dist/server/assets/useRouter-CYtUVR-V.js                                                                      1.28 kB │ gzip:     0.59 kB
+dist/server/assets/useNavigate-BKePvZmC.js                                                                    1.28 kB │ gzip:     0.70 kB
+dist/server/assets/LinkProblem-CcuRRzzd.js                                                                    1.31 kB │ gzip:     0.61 kB
+dist/server/assets/KnowledgeTabs-CHBbDgFv.js                                                                  1.33 kB │ gzip:     0.59 kB
+dist/server/assets/ReportsTabs-Cxakjy9L.js                                                                    1.33 kB │ gzip:     0.59 kB
+dist/server/assets/dialogTabBoundary-j18HboFH.js                                                              1.34 kB │ gzip:     0.66 kB
+dist/server/assets/brand-mark-C1j5dpdv.js                                                                     1.37 kB │ gzip:     0.77 kB
+dist/server/assets/CopyCommand-2IPdtmGt.js                                                                    1.42 kB │ gzip:     0.66 kB
+dist/server/assets/cooldown-DA4cshdI.js                                                                       1.56 kB │ gzip:     0.84 kB
+dist/server/assets/ProjectControls-D0MhjmGH.js                                                                1.56 kB │ gzip:     0.73 kB
+dist/server/assets/jsx-runtime-BLfnCCT2.js                                                                    1.61 kB │ gzip:     0.71 kB
+dist/server/assets/dashboard-path-BlAtBVDZ.js                                                                 1.63 kB │ gzip:     0.76 kB
+dist/server/assets/citations-DLpXJFoc.js                                                                      1.74 kB │ gzip:     0.82 kB
+dist/server/assets/formatCompactCount-CvnfouNw.js                                                             1.78 kB │ gzip:     0.76 kB
+dist/server/assets/company-api-u-TyMtKf.js                                                                    1.80 kB │ gzip:     0.86 kB
+dist/server/assets/redirect-D5N4qufu.js                                                                       1.82 kB │ gzip:     0.89 kB
+dist/server/assets/http-exception-CT36PZ1V.js                                                                 1.83 kB │ gzip:     0.78 kB
+dist/server/assets/workflow-model-Uh83xzL_.js                                                                 1.89 kB │ gzip:     0.86 kB
+dist/server/assets/v4-Cih6R7Zu.js                                                                             1.93 kB │ gzip:     0.70 kB
+dist/server/assets/useMatch-DUVePKUI.js                                                                       1.95 kB │ gzip:     0.83 kB
+dist/server/assets/crawl-limits-BzW4R4Yo.js                                                                   2.00 kB │ gzip:     0.82 kB
+dist/server/assets/manifest-D8t4vXRu.js                                                                       2.03 kB │ gzip:     0.77 kB
+dist/server/assets/ProviderSetupNotice-CwGYosNg.js                                                            2.04 kB │ gzip:     1.00 kB
+dist/server/assets/getting-started-CInQ87iS.js                                                                2.10 kB │ gzip:     1.02 kB
+dist/server/assets/AvatarUpload-Col36Lcb.js                                                                   2.13 kB │ gzip:     0.90 kB
+dist/server/assets/loaders-Xk4-97oX.js                                                                        2.17 kB │ gzip:     0.82 kB
+dist/server/assets/anonymousEmbedCode-DyvX8714.js                                                             2.22 kB │ gzip:     0.94 kB
+dist/server/assets/rolldown-runtime-CEgmsyvS.js                                                               2.30 kB │ gzip:     1.03 kB
+dist/server/assets/pause_controller-B_0-L7vS.js                                                               2.36 kB │ gzip:     0.83 kB
+dist/server/assets/dashboard-bootstrap-fP2ySgJr.js                                                            2.56 kB │ gzip:     0.94 kB
+dist/server/assets/prop-types-CqtAOYzw.js                                                                     2.60 kB │ gzip:     0.91 kB
+dist/server/assets/extend-Dc5rNTmT.js                                                                         2.72 kB │ gzip:     1.04 kB
+dist/server/assets/hooks-BN2p0gBo.js                                                                          2.73 kB │ gzip:     1.01 kB
+dist/server/assets/TicketField-D80vi1aj.js                                                                    2.83 kB │ gzip:     1.04 kB
+dist/server/assets/Drawing-DCgEgzM8.js                                                                        3.03 kB │ gzip:     1.33 kB
+dist/server/assets/brand-word-BZegL-4L.js                                                                     3.03 kB │ gzip:     1.22 kB
+dist/server/assets/defaults-BxFxWb0G.js                                                                       3.13 kB │ gzip:     1.18 kB
+dist/server/assets/fields-BxlzBaOK.js                                                                         3.14 kB │ gzip:     1.08 kB
+dist/server/assets/brand-tokens-CPoWfF7l.js                                                                   3.17 kB │ gzip:     1.07 kB
+dist/server/assets/inbox-navigation-state-D26XFOK4.js                                                         3.29 kB │ gzip:     1.09 kB
+dist/server/assets/crm-Bbm38ely.js                                                                            3.44 kB │ gzip:     1.39 kB
+dist/server/assets/owner-recovery-c1ky6v7g.js                                                                 3.44 kB │ gzip:     1.27 kB
+dist/server/assets/ticket-model-RiuDJLXm.js                                                                   3.44 kB │ gzip:     1.22 kB
+dist/server/assets/managed-conversation-mail-CPHjRzLN.js                                                      3.45 kB │ gzip:     1.64 kB
+dist/server/assets/appearance-Dem-IgCE.js                                                                     3.49 kB │ gzip:     1.47 kB
+dist/server/assets/voice-KN7yvlAg.js                                                                          3.52 kB │ gzip:     1.28 kB
+dist/server/assets/triage-DWhK91IQ.js                                                                         3.75 kB │ gzip:     1.65 kB
+dist/server/assets/delegation-shared-Bl6m-GdW.js                                                              3.79 kB │ gzip:     1.74 kB
+dist/server/assets/workspace-defaults-B5nbbG4L.js                                                             3.83 kB │ gzip:     1.61 kB
+dist/server/assets/delete-copy-C3foprVV.js                                                                    3.84 kB │ gzip:     1.50 kB
+dist/server/assets/SignInDrawing-CruPxEIi.js                                                                  3.87 kB │ gzip:     1.27 kB
+dist/server/assets/security-BEPEKPkd.js                                                                       3.98 kB │ gzip:     1.60 kB
+dist/server/assets/forms-BYwBRhyd.js                                                                          3.99 kB │ gzip:     1.21 kB
+dist/server/assets/reset-password-B6AXAama.js                                                                 4.01 kB │ gzip:     1.23 kB
+dist/server/assets/dashboard-loader.server-ChluBWYI.js                                                        4.22 kB │ gzip:     1.51 kB
+dist/server/assets/notifications-BO2PWPdk.js                                                                  4.24 kB │ gzip:     1.82 kB
+dist/server/assets/companies-and-csv-CEkkL7p-.js                                                              4.28 kB │ gzip:     1.73 kB
+dist/server/assets/AdminRecords-NCkhUiL_.js                                                                   4.34 kB │ gzip:     1.33 kB
+dist/server/assets/forgot-password-pP5PT0d9.js                                                                4.40 kB │ gzip:     1.37 kB
+dist/server/assets/verify-email-CslRNw4a.js                                                                   4.45 kB │ gzip:     1.18 kB
+dist/server/assets/InsightsPage-JsEtUdfS.js                                                                   4.80 kB │ gzip:     1.36 kB
+dist/server/assets/login_.magic-B1juJca9.js                                                                   4.80 kB │ gzip:     1.72 kB
+dist/server/assets/two-factor-wgpnJPKi.js                                                                     4.91 kB │ gzip:     1.52 kB
+dist/server/assets/initial-inbox-list-5n6gSGVq.js                                                             5.13 kB │ gzip:     1.97 kB
+dist/server/assets/NavigationGuard-BTzTbUkv.js                                                                5.28 kB │ gzip:     1.74 kB
+dist/server/assets/reference-text-BldVaKC7.js                                                                 5.28 kB │ gzip:     1.70 kB
+dist/server/assets/macros-and-teamwork-Wr-xaFqk.js                                                            5.32 kB │ gzip:     2.16 kB
+dist/server/assets/connected-applications-B_U1INsu.js                                                         5.40 kB │ gzip:     2.00 kB
+dist/server/assets/agent-fix-ZvCZZ253.js                                                                      5.52 kB │ gzip:     2.31 kB
+dist/server/assets/ConfirmDialog-6Ck6aW7h.js                                                                  5.56 kB │ gzip:     1.89 kB
+dist/server/assets/availability-text-D8fmT42R.js                                                              5.68 kB │ gzip:     2.06 kB
+dist/server/assets/DelegationAuthorize-5MGNU41x.js                                                            6.06 kB │ gzip:     1.86 kB
+dist/server/assets/register-D4wTNH19.js                                                                       6.13 kB │ gzip:     1.69 kB
+dist/server/assets/ProjectsPage-BSi8S8y4.js                                                                   6.14 kB │ gzip:     1.71 kB
+dist/server/assets/SecretSteps-Cyy-S8Yo.js                                                                    6.21 kB │ gzip:     1.84 kB
+dist/server/assets/link-BgDnhuff.js                                                                           6.30 kB │ gzip:     2.36 kB
+dist/server/assets/help-center-D9TYMgDa.js                                                                    6.40 kB │ gzip:     2.37 kB
+dist/server/assets/ClientOnly-Bjq3Jy3G.js                                                                     6.45 kB │ gzip:     2.49 kB
+dist/server/assets/customer-satisfaction-e8hlgn2q.js                                                          6.63 kB │ gzip:     2.62 kB
+dist/server/assets/login-vWxl0A1i.js                                                                          6.65 kB │ gzip:     2.26 kB
+dist/server/assets/react-dom-BlxDHX2U.js                                                                      6.80 kB │ gzip:     2.01 kB
+dist/server/assets/AdminPage-BjoxNZqa.js                                                                      6.93 kB │ gzip:     2.03 kB
+dist/server/assets/auth-jpz5WhLy.js                                                                           7.35 kB │ gzip:     2.85 kB
+dist/server/assets/help-before-they-ask-DGwPaE7E.js                                                           7.42 kB │ gzip:     3.06 kB
+dist/server/assets/warning-D8Q5n-Qw.js                                                                        7.91 kB │ gzip:     2.70 kB
+dist/server/assets/_virtual_happytohelp-docs-wvdVPWiv.js                                                      8.44 kB │ gzip:     2.10 kB
+dist/server/assets/customer-portal-DPRkAQcg.js                                                                8.64 kB │ gzip:     3.17 kB
+dist/server/assets/away-Cel4V3vH.js                                                                           8.74 kB │ gzip:     3.01 kB
+dist/server/assets/feedback-and-assurance-BuYQRKnq.js                                                         8.74 kB │ gzip:     3.43 kB
+dist/server/assets/ComputersPage-AkesZ_82.js                                                                  8.92 kB │ gzip:     2.85 kB
+dist/server/assets/quota_tracker-PqL0dRgL.js                                                                  9.12 kB │ gzip:     1.92 kB
+dist/server/assets/summary_utils-CELKaKgM.js                                                                  9.16 kB │ gzip:     2.72 kB
+dist/server/assets/inbound-email-recovery-DJpqA1iy.js                                                         9.20 kB │ gzip:     3.20 kB
+dist/server/assets/agent-door-CesVb67m.js                                                                     9.53 kB │ gzip:     3.83 kB
+dist/server/assets/GitHubSettings-DX60kjQ5.js                                                                 9.72 kB │ gzip:     2.75 kB
+dist/server/assets/accept-invitation-cv3Qnpa7.js                                                              9.75 kB │ gzip:     2.09 kB
+dist/server/assets/SecurityPage-Dh5hQqk1.js                                                                  10.24 kB │ gzip:     2.94 kB
+dist/server/assets/setup-BzAMb4Ip.js                                                                         10.39 kB │ gzip:     4.17 kB
+dist/server/assets/ArticleImport-BSvogkw7.js                                                                 10.41 kB │ gzip:     3.10 kB
+dist/server/assets/plugins-XGzpUGr-.js                                                                       10.51 kB │ gzip:     2.94 kB
+dist/server/assets/transport-qWzc0DJO.js                                                                     10.63 kB │ gzip:     3.63 kB
+dist/server/assets/run-locally-mF3iXyoZ.js                                                                   10.68 kB │ gzip:     4.43 kB
+dist/server/assets/request-forms-Do9Yi0tU.js                                                                 10.79 kB │ gzip:     4.11 kB
+dist/server/assets/account-security-BBkGr4Ql.js                                                              10.86 kB │ gzip:     4.03 kB
+dist/server/assets/tooltip-CqM5NPCh.js                                                                       10.96 kB │ gzip:     3.35 kB
+dist/server/assets/cost_tracker-C_8T88oa.js                                                                  11.32 kB │ gzip:     2.86 kB
+dist/server/assets/ArticleMarkdownEditor-DDRsWrZS.js                                                         11.36 kB │ gzip:     2.99 kB
+dist/server/assets/setup-DlwfLZYF.js                                                                         11.66 kB │ gzip:     3.63 kB
+dist/server/assets/support-channels-BObz-0vv.js                                                              11.85 kB │ gzip:     4.75 kB
+dist/server/assets/lazyRouteComponent-BgXqxqUF.js                                                            12.13 kB │ gzip:     3.05 kB
+dist/server/assets/tool_result_processor-BVKZ_LYS.js                                                         12.40 kB │ gzip:     3.74 kB
+dist/server/assets/_tanstack-start-manifest_v-W6c5yjX7.js                                                    12.62 kB │ gzip:     1.86 kB
+dist/server/assets/createServerFn-Du7OHYZR.js                                                                12.91 kB │ gzip:     3.70 kB
+dist/server/assets/tickets-D6T_gyhv.js                                                                       13.32 kB │ gzip:     4.85 kB
+dist/server/assets/Settings-DdF-Rk5O.js                                                                      13.36 kB │ gzip:     3.55 kB
+dist/server/assets/AssurancePage-DqnPHtGx.js                                                                 13.38 kB │ gzip:     3.62 kB
+dist/server/assets/WorkspacePages-B_E9jZ5w.js                                                                13.84 kB │ gzip:     3.27 kB
+dist/server/assets/Cutover-Bfl1JF-Q.js                                                                       14.09 kB │ gzip:     4.10 kB
+dist/server/assets/TicketSettings-DoL7-IgJ.js                                                                14.23 kB │ gzip:     3.88 kB
+dist/server/assets/workflows-Di190Qtt.js                                                                     14.76 kB │ gzip:     5.59 kB
+dist/server/assets/RolesPage-amWXMX8D.js                                                                     15.09 kB │ gzip:     3.71 kB
+dist/server/assets/useSelector-CGogJ-aW.js                                                                   15.52 kB │ gzip:     5.27 kB
+dist/server/assets/DocsPage-BUyVD_di.js                                                                      15.84 kB │ gzip:     4.40 kB
+dist/server/assets/react-Cl-dLMi0.js                                                                         15.88 kB │ gzip:     4.35 kB
+dist/server/assets/reports-B1pPMc9W.js                                                                       16.43 kB │ gzip:     6.07 kB
+dist/server/assets/DelegationSettings-jh6MklgQ.js                                                            16.99 kB │ gzip:     4.17 kB
+dist/server/assets/VisualEditBoundary-DtxaDNAI.js                                                            17.00 kB │ gzip:     5.45 kB
+dist/server/assets/install-DtUlz-tU.js                                                                       18.51 kB │ gzip:     6.64 kB
+dist/server/assets/limits-CeS_nqU7.js                                                                        18.90 kB │ gzip:     6.05 kB
+dist/server/assets/identity-link-api-DW-CckEZ.js                                                             20.44 kB │ gzip:     5.36 kB
+dist/server/assets/SecurityLog-BZ-bpqtS.js                                                                   21.23 kB │ gzip:     5.00 kB
+dist/server/assets/website-knowledge-DPfZgBFV.js                                                             21.41 kB │ gzip:     7.80 kB
+dist/server/assets/privacy-Bo4nXLu_.js                                                                       22.46 kB │ gzip:     7.26 kB
+dist/server/assets/SuspendedMail-B9x4LsaK.js                                                                 24.78 kB │ gzip:     5.44 kB
+dist/server/assets/identity-wxMfzLgI.js                                                                      26.64 kB │ gzip:     8.98 kB
+dist/server/assets/ActivationPage-BMRHMkUb.js                                                                26.82 kB │ gzip:     6.55 kB
+dist/server/assets/updates-and-recovery-BCzjfni7.js                                                          26.95 kB │ gzip:     8.94 kB
+dist/server/assets/ProcedureSettings-BcDcbzq8.js                                                             27.02 kB │ gzip:     6.76 kB
+dist/server/assets/local-agent-t-VENW-N.js                                                                   29.02 kB │ gzip:     8.66 kB
+dist/server/assets/AccountPage-Cgna3ZvO.js                                                                   30.04 kB │ gzip:     6.27 kB
+dist/server/assets/page-Oa4x_SZw.js                                                                          32.88 kB │ gzip:    11.90 kB
+dist/server/assets/DelegationDeviceSettings-CbtXTxoq.js                                                      33.29 kB │ gzip:     7.50 kB
+dist/server/assets/TrainingRuns-yx-wjsOQ.js                                                                  33.78 kB │ gzip:     8.60 kB
+dist/server/assets/routes-DEOHGlOB.js                                                                        34.12 kB │ gzip:     7.10 kB
+dist/server/assets/ReplyIcon-DWv84ZXy.js                                                                     35.08 kB │ gzip:    10.01 kB
+dist/server/assets/parts-DX9Lt09u.js                                                                         35.10 kB │ gzip:     9.37 kB
+dist/server/assets/NoopTransition-D4ZEIXHD.js                                                                35.36 kB │ gzip:     8.77 kB
+dist/server/assets/node-CIoxozek.js                                                                          38.50 kB │ gzip:    11.97 kB
+dist/server/assets/integrations-DkV9xfhj.js                                                                  39.09 kB │ gzip:    13.11 kB
+dist/server/assets/legacy-entry-points-CgbEJkAI.js                                                           41.62 kB │ gzip:    13.34 kB
+dist/server/assets/DialogHeader-BBrIgYpO.js                                                                  41.64 kB │ gzip:     9.20 kB
+dist/server/assets/email-DV_uk4zl.js                                                                         42.00 kB │ gzip:    12.63 kB
+dist/server/assets/gate-wwm15n3J.js                                                                          43.67 kB │ gzip:    10.39 kB
+dist/server/assets/Connections-9IAeaRxL.js                                                                   46.89 kB │ gzip:     9.86 kB
+dist/server/assets/ReportsWithSurveys-DvldymaM.js                                                            70.68 kB │ gzip:    13.01 kB
+dist/server/assets/Companies-BdDQDOjH.js                                                                     76.79 kB │ gzip:    13.51 kB
+dist/server/assets/WorkflowSettings-Cljneaml.js                                                              78.17 kB │ gzip:    15.58 kB
+dist/server/assets/moving-in-zWPGeKFW.js                                                                     85.19 kB │ gzip:    25.34 kB
+dist/server/assets/operations-D9Rxu7Ey.js                                                                    85.70 kB │ gzip:    28.23 kB
+dist/server/assets/MoveIn-DUWHaTiG.js                                                                        99.37 kB │ gzip:    24.59 kB
+dist/server/assets/index.esm-CIHKCu8Q.js                                                                    101.29 kB │ gzip:    22.52 kB
+dist/server/assets/model_data-CiUzQ8g5.js                                                                   113.28 kB │ gzip:    14.73 kB
+dist/server/assets/KnowledgePage-l1mTdkU-.js                                                                114.50 kB │ gzip:    22.15 kB
+dist/server/assets/context-BcDP_OJV.js                                                                      119.42 kB │ gzip:    31.27 kB
+dist/server/assets/Moment-BfIylSmn.js                                                                       120.12 kB │ gzip:    28.97 kB
+dist/server/assets/Matches-FWdTt1u5.js                                                                      122.96 kB │ gzip:    29.36 kB
+dist/server/assets/ManagementPage-DUMYcRN-.js                                                               125.09 kB │ gzip:    25.87 kB
+dist/server/assets/InboxPage-XgfYK5VK.js                                                                    145.98 kB │ gzip:    31.93 kB
+dist/server/assets/ProjectSettings-BYpTBHMR.js                                                              147.51 kB │ gzip:    30.30 kB
+dist/server/assets/router-DpIsjb3d.js                                                                       179.65 kB │ gzip:    45.81 kB
+dist/server/assets/changelog-53D-KR_7.js                                                                    267.27 kB │ gzip:    83.13 kB
+dist/server/assets/client-CJXN5gm8.js                                                                       380.45 kB │ gzip:    83.27 kB
+dist/server/assets/undo-snapshot-3NPLVcak.js                                                                398.37 kB │ gzip:    98.96 kB
+dist/server/assets/remark-gfm-BkN7VJTw.js                                                                   418.81 kB │ gzip:    90.52 kB
+dist/server/index.js                                                                                        504.41 kB │ gzip:   126.09 kB
+dist/server/assets/useScrollEdge-uZT2mer7.js                                                              1,101.21 kB │ gzip:   130.79 kB
+dist/server/assets/WidgetSettingsPage-DQqZJny1.js                                                         1,249.62 kB │ gzip:   343.18 kB
+dist/server/assets/Conversation-DBvam1Y1.js                                                               1,640.96 kB │ gzip:   368.93 kB
+dist/server/assets/ensemble_request-Bem0zeIp.js                                                           1,814.69 kB │ gzip:   344.70 kB
+dist/server/assets/app-Bc2om60Q.js                                                                        5,386.82 kB │ gzip: 1,298.32 kB
+
+✓ built in 9.84s
+[PLUGIN_TIMINGS] Plugin hooks ran for 8.6s of this 9.8s build (87%).
+4 hooks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+  - tanstack-start-core:import-protection resolveId (14500 calls)
+  - vite:css transform (75 calls)
+  - vite-plugin-cloudflare:additional-modules resolveId (5 calls)
+  … and 1 more
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+[REDACTED]/delivery-artifact/happytohelp-worker-artifact.json
+[REDACTED]/management/integration/deployment-spec.json
+Your application is built
+build: complete (exit 0)

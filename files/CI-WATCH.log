@@ -1,0 +1,8 @@
+CI_WATCH run=42467504208 next_poll_in_seconds=264
+{"conclusion":null,"head_sha":"ccb7197677aeeeb7fe37b9dbab06c936b56e8008","html_url":"https://github.com/just-every/run-happytohelp/actions/runs/42467504208","status":"in_progress"}
+CI_WATCH run=42467504208 next_poll_in_seconds=299
+{"conclusion":null,"head_sha":"ccb7197677aeeeb7fe37b9dbab06c936b56e8008","html_url":"https://github.com/just-every/run-happytohelp/actions/runs/42467504208","status":"in_progress"}
+CI_WATCH run=42467504208 next_poll_in_seconds=299
+{"conclusion":null,"head_sha":"ccb7197677aeeeb7fe37b9dbab06c936b56e8008","html_url":"https://github.com/just-every/run-happytohelp/actions/runs/42467504208","status":"in_progress"}
+CI_WATCH run=42467504208 next_poll_in_seconds=299
+{"conclusion":"failure","head_sha":"ccb7197677aeeeb7fe37b9dbab06c936b56e8008","html_url":"https://github.com/just-every/run-happytohelp/actions/runs/42467504208","status":"completed"}

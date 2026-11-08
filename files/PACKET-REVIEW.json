@@ -1,0 +1,126 @@
+{
+  "selected": [
+    {
+      "file": "REPORT.md",
+      "bytes": 10240,
+      "sha256": "6c59fc8729e595b1b19bddffd8938734c345113656e8b8f9ee797047d5bb6d92"
+    },
+    {
+      "file": "RECEIPT.json",
+      "bytes": 5101,
+      "sha256": "123777cc88e0d2de828de2625a1e92b82ba60e70249b0271a43478ac2f7de83b"
+    },
+    {
+      "file": "CI.json",
+      "bytes": 226,
+      "sha256": "b381041abd18d673c2736cdeb1a0c5fdefde3178785ba03890b4d31e5b32a5ba"
+    },
+    {
+      "file": "github-calls.json",
+      "bytes": 6723,
+      "sha256": "58cfd194a81fc56bc2f7f37ae5446244223f35fb66b46a752855e46f7786d77e"
+    },
+    {
+      "file": "github-call-7.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "CI-FAILED-SHARD.log",
+      "bytes": 6988,
+      "sha256": "df0aca34faa0eb6ade7d5eeb24acdb762474810508c4dc09013c23e3af90b778"
+    },
+    {
+      "file": "CI-WATCH.log",
+      "bytes": 927,
+      "sha256": "32510ebff407fc372ff9cbd513337b35c1f16b221b3210dcda2464387befa77a"
+    },
+    {
+      "file": "MAIN-NEW-TICKET-REPRO.log",
+      "bytes": 580,
+      "sha256": "a05ed556b50590c19c0a93d076828bb967391ae336aca1cdd9c1d9021b92fe86"
+    },
+    {
+      "file": "MAIN-REPRO-BUILD.log",
+      "bytes": 95964,
+      "sha256": "0a72fd3f92a2edd65be30f978074c02d96e9c955dffd04285f813ea36bddcf22"
+    },
+    {
+      "file": "CANDIDATE-NEW-TICKET-REPRO.log",
+      "bytes": 585,
+      "sha256": "727b775ea67a2b52046598c492b54001d94d20bf3170ff0f621c5278fb53e6c3"
+    },
+    {
+      "file": "AI-JOURNEY.log",
+      "bytes": 18980,
+      "sha256": "d12ac072658dc9b48bb90905595b73ebd1630b5b2d2c8f31b8eb0e5f3e75f9e7"
+    },
+    {
+      "file": "BROWSER-REGISTRATION.log",
+      "bytes": 659,
+      "sha256": "d6aa9bb332cc6245d806ea580bbb5f6c21ab1eb782a6bc6bf94eb993b6d7efd3"
+    },
+    {
+      "file": "BROWSER.log",
+      "bytes": 68,
+      "sha256": "e273927fee6c389e72acd6110eaa70de6b6f6c9c0f0bdeaaa1c7f691322c6a14"
+    },
+    {
+      "file": "BUILD.log",
+      "bytes": 90356,
+      "sha256": "98e6698b969b9eaf747da3ee1e8e36ae6794923c585a3a7296432d95742ed501"
+    },
+    {
+      "file": "CONCURRENCY.log",
+      "bytes": 97,
+      "sha256": "9b5a434b5c47e96e760051ef68cd7fecd2fc80e01c52159d5ee5b1e0df14ae68"
+    },
+    {
+      "file": "CONTRACT-CHECK.log",
+      "bytes": 70,
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "file": "FIRST-PARTY.log",
+      "bytes": 136,
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "file": "MAIL-HOLDS.log",
+      "bytes": 24,
+      "sha256": "908abdf0c91d3c50d3697ee8f9d9c1190a884bff7bf4f295fc20913f50b2cab7"
+    },
+    {
+      "file": "PUSH.log",
+      "bytes": 948,
+      "sha256": "6dbaa553a1b7d627e9ec0dd5e7920164b1f4d878e801d6d5946de6245634ab79"
+    },
+    {
+      "file": "TYPECHECK.log",
+      "bytes": 147,
+      "sha256": "c2bdfd6bbf9e9aebc0bdad04d6b923d058189338ea171c24c91d9d887f38b3c8"
+    },
+    {
+      "file": "SOURCE-CHECK.log",
+      "bytes": 714594,
+      "sha256": "876f62fb228e33afe87fbcfd68c7e59468442fc32572cc26f8b383ea63dc7f58"
+    },
+    {
+      "file": "SOURCE-LOCK.log",
+      "bytes": 714580,
+      "sha256": "db4e10a9c1286ce94ffe0b7cceb49a34b1d982dcb46e40be2852b9a94d594144"
+    },
+    {
+      "file": "ai-reply-mode-failed-1440.png",
+      "bytes": 135222,
+      "sha256": "0cb01a52dcf08c70e4b19ea3364d37080f232b9d8bf6aeaa213d90d7d3e0895f"
+    },
+    {
+      "file": "ai-reply-mode-failed-390.png",
+      "bytes": 97217,
+      "sha256": "989c0138997882c56d7171f447c994bb0a9718affeb8ef07611c20df351d3e84"
+    }
+  ],
+  "injected_secret_scan": "passed",
+  "scope": "Explicit public reports, receipts and relevant logs/screenshots only; runner environment preamble omitted from CI test output; no archive, setup state, environment dump, held-out material or symlink"
+}

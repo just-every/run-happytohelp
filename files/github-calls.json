@@ -1,0 +1,244 @@
+[
+  {
+    "epoch": 1794130286.2090163,
+    "at": "2026-11-08T09:31:27.643405+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs?head_sha=ccb7197677aeeeb7fe37b9dbab06c936b56e8008&per_page=100",
+      "--jq",
+      "{workflow_runs: [.workflow_runs[] | {id,name,status,conclusion,head_sha,html_url,event,head_branch}]}"
+    ],
+    "exit": 0,
+    "run": null,
+    "response": {
+      "workflow_runs": [
+        {
+          "conclusion": null,
+          "event": "push",
+          "head_branch": "cloud/hh-ai-mode-followups-1",
+          "head_sha": "ccb7197677aeeeb7fe37b9dbab06c936b56e8008",
+          "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/42467504208",
+          "id": 42467504208,
+          "name": "Verify",
+          "status": "in_progress"
+        }
+      ]
+    },
+    "discovered_runs": [
+      "42467504208"
+    ]
+  },
+  {
+    "epoch": 1794130587.2451482,
+    "at": "2026-11-08T09:36:28.688442+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/42467504208",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0,
+    "run": "42467504208",
+    "response": {
+      "conclusion": null,
+      "head_sha": "ccb7197677aeeeb7fe37b9dbab06c936b56e8008",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/42467504208",
+      "status": "in_progress"
+    }
+  },
+  {
+    "epoch": 1794130888.2901134,
+    "at": "2026-11-08T09:41:30.000123+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/42467504208",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0,
+    "run": "42467504208",
+    "response": {
+      "conclusion": null,
+      "head_sha": "ccb7197677aeeeb7fe37b9dbab06c936b56e8008",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/42467504208",
+      "status": "in_progress"
+    }
+  },
+  {
+    "epoch": 1794131189.327187,
+    "at": "2026-11-08T09:46:30.910527+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/42467504208",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0,
+    "run": "42467504208",
+    "response": {
+      "conclusion": null,
+      "head_sha": "ccb7197677aeeeb7fe37b9dbab06c936b56e8008",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/42467504208",
+      "status": "in_progress"
+    }
+  },
+  {
+    "epoch": 1794131490.3696892,
+    "at": "2026-11-08T09:51:31.974827+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/42467504208",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0,
+    "run": "42467504208",
+    "response": {
+      "conclusion": "failure",
+      "head_sha": "ccb7197677aeeeb7fe37b9dbab06c936b56e8008",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/42467504208",
+      "status": "completed"
+    }
+  },
+  {
+    "epoch": 1794131503.1217754,
+    "at": "2026-11-08T09:51:44.200263+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/42467504208/jobs?filter=latest&per_page=100",
+      "--jq",
+      "{jobs: [.jobs[] | {id,name,status,conclusion,failed_steps: [.steps[] | select(.conclusion == \"failure\") | {name,conclusion}]}]}"
+    ],
+    "exit": 0,
+    "run": null,
+    "response": {
+      "jobs": [
+        {
+          "conclusion": "success",
+          "failed_steps": [],
+          "id": 128690315719,
+          "name": "plan",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed_steps": [],
+          "id": 128690376075,
+          "name": "build",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "failed_steps": [],
+          "id": 128690377154,
+          "name": "slow",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "failed_steps": [],
+          "id": 128690377371,
+          "name": "nightly-proof",
+          "status": "completed"
+        },
+        {
+          "conclusion": "failure",
+          "failed_steps": [
+            {
+              "conclusion": "failure",
+              "name": "Run shard checks"
+            }
+          ],
+          "id": 128690790101,
+          "name": "Verify / support-and-recovery",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed_steps": [],
+          "id": 128690790103,
+          "name": "Verify / identity-and-desk",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed_steps": [],
+          "id": 128690790105,
+          "name": "Verify / public-and-import-browser",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed_steps": [],
+          "id": 128690790109,
+          "name": "Verify / assistant-and-knowledge",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed_steps": [],
+          "id": 128690790110,
+          "name": "Verify / identity-and-repair-browser",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed_steps": [],
+          "id": 128690790156,
+          "name": "Verify / support-workflow-browser",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed_steps": [],
+          "id": 128690790175,
+          "name": "Verify / import-and-reports",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "failed_steps": [],
+          "id": 128690790230,
+          "name": "Verify / connections-and-computers",
+          "status": "completed"
+        },
+        {
+          "conclusion": "failure",
+          "failed_steps": [
+            {
+              "conclusion": "failure",
+              "name": "Require the plan and every selected check"
+            }
+          ],
+          "id": 128694326471,
+          "name": "verify",
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "failed_steps": [],
+          "id": 128694327108,
+          "name": "full-push-proof",
+          "status": "completed"
+        }
+      ]
+    }
+  },
+  {
+    "epoch": 1794131512.0500834,
+    "at": "2026-11-08T09:51:59.516964+00:00",
+    "args": [
+      "run",
+      "view",
+      "42467504208",
+      "--repo",
+      "just-every/run-happytohelp",
+      "--job",
+      "128690790101",
+      "--log-failed"
+    ],
+    "exit": 0,
+    "run": null,
+    "stdout_log": "github-call-7.log"
+  }
+]

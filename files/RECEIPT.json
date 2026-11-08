@@ -1,0 +1,187 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "tag": "hh-ai-mode-followups-1",
+  "branch": "cloud/hh-ai-mode-followups-1",
+  "head": "ccb7197677aeeeb7fe37b9dbab06c936b56e8008",
+  "main": "e87038576b94d58d3a5804bae4081558994d6b76",
+  "product_push": "succeeded",
+  "push_attempts": 1,
+  "identity_and_trailers": "all candidate commits checked including side parents; fleet author/committer; no trailers",
+  "pr": null,
+  "checks": [
+    {
+      "check": "lock",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit": 0
+    },
+    {
+      "check": "source-check",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0
+    },
+    {
+      "check": "first-party",
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "exit": 0
+    },
+    {
+      "check": "typecheck",
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0
+    },
+    {
+      "check": "build",
+      "command": [
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "build"
+      ],
+      "exit": 0
+    },
+    {
+      "check": "extended AI journey",
+      "command": [
+        "node",
+        "--test",
+        "--test-name-pattern=a visitor gets a source-linked answer",
+        "tests/journeys/ai.mjs"
+      ],
+      "exit": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "duration_ms": 102451.153059
+    },
+    {
+      "check": "exact audit concurrency helper",
+      "exit": 0
+    },
+    {
+      "check": "browser failed-save helper",
+      "exit": 0,
+      "assertion_width": 1440,
+      "screenshot_widths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "check": "existing governed-advice browser registration",
+      "command": [
+        "node",
+        "--test",
+        "--test-name-pattern=governed advice retains",
+        "tests/journeys/workflows-browser.mjs"
+      ],
+      "exit": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "duration_ms": 194446.929339
+    },
+    {
+      "check": "contract documents",
+      "exit": 0
+    }
+  ],
+  "counts": {
+    "before": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91,
+      "direct_journey_registrations": 94
+    },
+    "after": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91,
+      "direct_journey_registrations": 94
+    }
+  },
+  "clause_status_changes": [],
+  "claim_points": [],
+  "migrations": [],
+  "source_lock_sha256": "25299e2872ceb3989ec7a686646cec6406a47a2718968cd12a90325fad545b54",
+  "ci": {
+    "conclusion": "failure",
+    "head_sha": "ccb7197677aeeeb7fe37b9dbab06c936b56e8008",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/42467504208",
+    "status": "completed",
+    "run_id": 42467504208,
+    "failed_job": {
+      "id": 128690790101,
+      "name": "Verify / support-and-recovery",
+      "test": "two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening",
+      "failure": "Timeout 20000ms waiting for New ticket / Request form",
+      "location": "tests/helpers/inbox/new-ticket-configuration.mjs:80",
+      "file_unchanged": true
+    },
+    "successful_shards": [
+      "identity-and-desk",
+      "public-and-import-browser",
+      "assistant-and-knowledge",
+      "identity-and-repair-browser",
+      "support-workflow-browser",
+      "import-and-reports",
+      "connections-and-computers"
+    ],
+    "failed_log_command": [
+      "gh",
+      "run",
+      "view",
+      "42467504208",
+      "--repo",
+      "just-every/run-happytohelp",
+      "--job",
+      "128690790101",
+      "--log-failed"
+    ],
+    "log_read_note": "Command exited 0 with empty stdout. Its already-downloaded local gh archive contained the complete failed step; read that cached step without another GitHub request."
+  },
+  "publication_scan": "not available in this cloud; fleet lane action",
+  "blockers": [
+    "Required exact-SHA Verify 42467504208 failed: unchanged New ticket browser journey timed out waiting for Request form at tests/helpers/inbox/new-ticket-configuration.mjs:80. Targeted reproductions pass on both fresh origin/main and the candidate. No scoped fix identified; CI rerun and no-op commits are forbidden by the brief."
+  ],
+  "diagnosis": {
+    "main_reproduction": {
+      "head": "e87038576b94d58d3a5804bae4081558994d6b76",
+      "target": "newTicketConfigurationBrowser",
+      "build_exit": 0,
+      "test_exit": 0,
+      "result": "passed; CI timeout did not reproduce"
+    },
+    "candidate_reproduction": {
+      "head": "ccb7197677aeeeb7fe37b9dbab06c936b56e8008",
+      "target": "newTicketConfigurationBrowser",
+      "test_exit": 0,
+      "result": "passed; CI timeout did not reproduce"
+    },
+    "no_ci_rerun": true,
+    "no_unrelated_edits": true
+  },
+  "terminal_status": "BLOCKED",
+  "github_calls_used": 7,
+  "product_checkout_clean": true
+}

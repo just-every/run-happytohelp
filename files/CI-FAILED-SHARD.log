@@ -1,0 +1,82 @@
+2026-11-08T09:34:08.2594854Z TAP version 13
+2026-11-08T09:34:08.9199760Z # (node:3439) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+2026-11-08T09:34:08.9222227Z # (Use `node --trace-warnings ...` to show where the warning was created)
+2026-11-08T09:36:32.5858201Z # PROBE AGENT-001 W1: built /widget.js -> visitor message -> queued model-edge fixture -> admitted AI answer; visible author and AI disclosure survive reload
+2026-11-08T09:36:33.0800871Z # PROBE AGENT-001 W2: ordinary operator reply -> human takeover -> widget reload -> distinct AI history author and visible Human responder; human message carries no AI label
+2026-11-08T09:36:33.0820917Z # PROBE AGENT-001 W3: existing brand/widget browser registration -> rendered disclosure and fetched-history assertions; no additional test registration
+2026-11-08T09:36:38.5443741Z # PROBE browser ACCESS-001: owner/admin load and save General, Appearance and Availability; collaborator/operator/custom-admin refused
+2026-11-08T09:38:46.0777603Z # BRAND_ORDERING {"ordering":"old-during-switch","status":201,"mailbox":"new","error":null}
+2026-11-08T09:38:49.1379554Z # BRAND_ORDERING {"ordering":"old-after-switch","status":201,"mailbox":"new","error":null}
+2026-11-08T09:38:52.0878586Z # BRAND_ORDERING {"ordering":"new-before-old","status":201,"mailbox":"new","error":null}
+2026-11-08T09:38:54.8467937Z # BRAND_ORDERING {"ordering":"no-switch","status":201,"mailbox":"current","error":null}
+2026-11-08T09:39:16.7019399Z # Native runtime failure artifacts retained: /tmp/h2h-native-runtime-KZkorW
+2026-11-08T09:39:16.7069548Z # Subtest: two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening
+2026-11-08T09:39:16.7082367Z not ok 1 - two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening
+2026-11-08T09:39:16.7084003Z   ---
+2026-11-08T09:39:16.7084587Z   duration_ms: 307785.874433
+2026-11-08T09:39:16.7085008Z   type: 'test'
+2026-11-08T09:39:16.7085808Z   location: '/home/runner/work/run-happytohelp/run-happytohelp/tests/journeys/inbox-browser.mjs:9:1'
+2026-11-08T09:39:16.7086697Z   failureType: 'testCodeFailure'
+2026-11-08T09:39:16.7087146Z   error: |-
+2026-11-08T09:39:16.7087561Z     locator.waitFor: Timeout 20000ms exceeded.
+2026-11-08T09:39:16.7088018Z     Call log:
+2026-11-08T09:39:16.7088930Z       - waiting for getByRole('dialog', { name: 'New ticket', exact: true }).getByLabel('Request form', { exact: true }) to be visible
+2026-11-08T09:39:16.7089806Z     
+2026-11-08T09:39:16.7090110Z   code: 'ERR_TEST_FAILURE'
+2026-11-08T09:39:16.7090501Z   name: 'TimeoutError'
+2026-11-08T09:39:16.7091131Z   stack: |-
+2026-11-08T09:39:16.7092261Z     newTicketConfigurationBrowser (/home/runner/work/run-happytohelp/run-happytohelp/tests/helpers/inbox/new-ticket-configuration.mjs:80:57)
+2026-11-08T09:39:16.7093956Z     async TestContext.<anonymous> (/home/runner/work/run-happytohelp/run-happytohelp/tests/journeys/inbox-browser.mjs:9:222)
+2026-11-08T09:39:16.7094904Z   ...
+2026-11-08T09:41:27.4917732Z # Subtest: an operator replies from the phone inbox, opens a company customer and reviews and reverses a labelled identity link without changing customer authority
+2026-11-08T09:41:27.4921004Z ok 2 - an operator replies from the phone inbox, opens a company customer and reviews and reverses a labelled identity link without changing customer authority
+2026-11-08T09:41:27.4922453Z   ---
+2026-11-08T09:41:27.4922912Z   duration_ms: 130786.302743
+2026-11-08T09:41:27.4923396Z   type: 'test'
+2026-11-08T09:41:27.4923790Z   ...
+2026-11-08T09:42:38.5118781Z # Subtest: two signed-in operators see viewing, typing and unsent draft warnings before replying and after reload
+2026-11-08T09:42:38.5121366Z ok 3 - two signed-in operators see viewing, typing and unsent draft warnings before replying and after reload
+2026-11-08T09:42:38.5122576Z   ---
+2026-11-08T09:42:38.5123142Z   duration_ms: 71020.759485
+2026-11-08T09:42:38.5123754Z   type: 'test'
+2026-11-08T09:42:38.5124259Z   ...
+2026-11-08T09:45:15.0673743Z # Subtest: installed widget availability, provider-edge answers and consent-aware proactive outcomes
+2026-11-08T09:45:15.0675668Z ok 4 - installed widget availability, provider-edge answers and consent-aware proactive outcomes
+2026-11-08T09:45:15.0676745Z   ---
+2026-11-08T09:45:15.0677199Z   duration_ms: 156552.516921
+2026-11-08T09:45:15.0677648Z   type: 'test'
+2026-11-08T09:45:15.0677928Z   ...
+2026-11-08T09:46:39.8631348Z # Subtest: knowledge references remain reviewable in saved replies, ticket insertion, recipient refusals and collection grants at 1440 and 390
+2026-11-08T09:46:39.8633359Z ok 5 - knowledge references remain reviewable in saved replies, ticket insertion, recipient refusals and collection grants at 1440 and 390
+2026-11-08T09:46:39.8634649Z   ---
+2026-11-08T09:46:39.8635002Z   duration_ms: 84798.003999
+2026-11-08T09:46:39.8635317Z   type: 'test'
+2026-11-08T09:46:39.8635574Z   ...
+2026-11-08T09:48:46.0357934Z # {"profile":"first-run","sourceSha":"ccb7197677aeeeb7fe37b9dbab06c936b56e8008","tables":484,"migrations":175,"objects":6,"result":"PASS"}
+2026-11-08T09:48:46.1408739Z # Subtest: a populated packaged install restores from its documented credential-free backup into a fresh destination with every row, object and metadata equal, sessions and password sign-in working, setup closed and delegated credentials gone
+2026-11-08T09:48:46.1413322Z ok 6 - a populated packaged install restores from its documented credential-free backup into a fresh destination with every row, object and metadata equal, sessions and password sign-in working, setup closed and delegated credentials gone
+2026-11-08T09:48:46.1415986Z   ---
+2026-11-08T09:48:46.1416600Z   duration_ms: 122271.925731
+2026-11-08T09:48:46.1417287Z   type: 'test'
+2026-11-08T09:48:46.1417863Z   ...
+2026-11-08T09:48:46.1841648Z 1..6
+2026-11-08T09:48:46.1842492Z # tests 6
+2026-11-08T09:48:46.1843370Z # suites 0
+2026-11-08T09:48:46.1844031Z # pass 5
+2026-11-08T09:48:46.1844512Z # fail 1
+2026-11-08T09:48:46.1844993Z # cancelled 0
+2026-11-08T09:48:46.1845595Z # skipped 0
+2026-11-08T09:48:46.1846108Z # todo 0
+2026-11-08T09:48:46.1847080Z # duration_ms 877937.814562
+2026-11-08T09:48:46.1901110Z ##[endgroup]
+2026-11-08T09:48:46.1901854Z {
+2026-11-08T09:48:46.1903970Z   "failures": [
+2026-11-08T09:48:46.1904356Z     {
+2026-11-08T09:48:46.1905310Z       "command": "node --test --test-concurrency=1 tests/journeys/inbox-browser.mjs tests/journeys/restore.mjs",
+2026-11-08T09:48:46.1906329Z       "code": 1,
+2026-11-08T09:48:46.1906750Z       "signal": null
+2026-11-08T09:48:46.1907149Z     }
+2026-11-08T09:48:46.1907482Z   ],
+2026-11-08T09:48:46.1907852Z   "interrupted": false
+2026-11-08T09:48:46.1908149Z }
+2026-11-08T09:48:46.1955085Z ##[error]Process completed with exit code 1.

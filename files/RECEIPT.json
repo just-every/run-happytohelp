@@ -1,0 +1,73 @@
+{
+  "tag": "hh-rer-pin-0102-3",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-rer-pin-0102-3",
+  "product_head": "07d279f71b1f694e211253e8ecf11eb454f0a902",
+  "origin_main": "07d279f71b1f694e211253e8ecf11eb454f0a902",
+  "product_commit_created": false,
+  "product_pushed": false,
+  "ready": false,
+  "pr_url": null,
+  "ci_runs": [],
+  "github_rest_calls_used": 0,
+  "rer_before": "0.2.101",
+  "rer_after_worktree": "0.2.102",
+  "base_target": "bb81810f74ae5cbad9cd786ac84ee738306f63de",
+  "base_refresh_applied": false,
+  "base_files_changed": [],
+  "nativeTargets_readMany": "already adopted; src/modules/move-in/targets.ts:150; untouched",
+  "local_tests_changed": false,
+  "migrations_added": [],
+  "contract_status_changes": [],
+  "counts_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "counts_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "commands": [
+    {
+      "command": "pnpm add -D -E @runeditrun/rer@0.2.102",
+      "exit": 0,
+      "log": "pnpm-add.log"
+    },
+    {
+      "command": "pnpm exec rer refresh-base --offline --ref bb81810f74ae5cbad9cd786ac84ee738306f63de",
+      "exit": 4,
+      "log": "refresh-base.log"
+    },
+    {
+      "command": "pnpm exec rer verify",
+      "exit": 1,
+      "log": "rer-verify.log",
+      "typecheck_passed": true,
+      "first_party_check_passed": true,
+      "last_failure": "Stale lock or source/tool integrity mismatch; run changes to inspect intentional edits before lock"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "source_lock_regenerated": false,
+  "contract_views_regenerated": false,
+  "touched_move_in_tests_run": false,
+  "blocker": "Full-history Base checkout required; cloud scope forbids cloning Base and the prior archive/API routes do not satisfy history/budget.",
+  "prior_evidence_head": "ca9641c139edf20e5d72e6b91f56fe97f09739d6",
+  "preservation": {
+    "PIN-ONLY.patch": {
+      "path": "/home/agent/rer-consolidation/work/hh-rer-pin-0102-3/packet/PIN-ONLY.patch",
+      "sha256": "70fe1a3e0bdc6d14b9fc1d18bf7eea109bf1cbf25bcb11855c3c0e08973b1f8e"
+    },
+    "ACTUAL-PIN.patch": {
+      "path": "/home/agent/rer-consolidation/work/hh-rer-pin-0102-3/packet/ACTUAL-PIN.patch",
+      "sha256": "70fe1a3e0bdc6d14b9fc1d18bf7eea109bf1cbf25bcb11855c3c0e08973b1f8e"
+    }
+  }
+}

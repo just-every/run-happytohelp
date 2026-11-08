@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "blob": "8920cdb579782220c05ba4c8735106567346d00b",
+      "bytes": 1647,
+      "path": "ACTUAL-PIN.patch",
+      "sha256": "70fe1a3e0bdc6d14b9fc1d18bf7eea109bf1cbf25bcb11855c3c0e08973b1f8e"
+    },
+    {
+      "blob": "8920cdb579782220c05ba4c8735106567346d00b",
+      "bytes": 1647,
+      "path": "PIN-ONLY.patch",
+      "sha256": "70fe1a3e0bdc6d14b9fc1d18bf7eea109bf1cbf25bcb11855c3c0e08973b1f8e"
+    },
+    {
+      "blob": "48a4c23333dcf511275b67b860b51c817c0f112e",
+      "bytes": 2207,
+      "path": "PLAN.md",
+      "sha256": "e2ff3616bca23a304c6a9a474e9bfa4c325948dbdd531237ba9efd8ceefc40db"
+    },
+    {
+      "blob": "4eaf2146a44ddea3a2bad6abd78130a45631592a",
+      "bytes": 2383,
+      "path": "RECEIPT.json",
+      "sha256": "00dfead1de73ec77d20f2458c8f79fe2ffecca60a284b8fd0d46ea36cb4c5f48"
+    },
+    {
+      "blob": "8aa83db0b71d457f9edb69453f8eb6681c1e56e9",
+      "bytes": 6043,
+      "path": "REPORT.md",
+      "sha256": "d8ab4dca82709d858b7955c666150160edfd9684a7da9d7b2662bb6703abb16c"
+    },
+    {
+      "blob": "b5ebaf46c3b5f725b9eb2c9f4722759f3cc2a078",
+      "bytes": 4877,
+      "path": "pnpm-add.log",
+      "sha256": "83ce3f6ab1ae121cfe43d55cfad2082eb9537d667de25824782d267f00e227ee"
+    },
+    {
+      "blob": "f89c35eb05562b1de9bfc3d8131e53fa08b8ec78",
+      "bytes": 1088,
+      "path": "refresh-base-help.log",
+      "sha256": "2a2e77ae72b2e9b42fadee5c81a76f62b30fd0020d54db072f9fc35128a5f6b1"
+    },
+    {
+      "blob": "4fc246451d516cb57eb7427630c6aae5c26238a5",
+      "bytes": 206,
+      "path": "refresh-base.log",
+      "sha256": "b0e23f51751d5e6f827cc5a0a5c80c966a3739246d394334e4a9150814435d22"
+    },
+    {
+      "blob": "f1296b41b14e5f333d4c60d013c5c3ee8a46f7a9",
+      "bytes": 139953,
+      "path": "rer-verify.log",
+      "sha256": "cc66354878bde526129cbea0ec7666a210c4e6365f1d3e1d231834a40761606b"
+    }
+  ],
+  "product_branch": "cloud/hh-rer-pin-0102-3",
+  "product_head": "07d279f71b1f694e211253e8ecf11eb454f0a902",
+  "ref": "refs/heads/evidence/hh-rer-pin-0102-3",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-rer-pin-0102-3"
+}

@@ -1,0 +1,2 @@
+Offline refresh needs a Base checkout or archive. Repeat rer refresh-base --ref <commit> --offline --base <checkout> containing that commit, or use --base-archive <directory>.
+refresh-base: failed (exit 4)

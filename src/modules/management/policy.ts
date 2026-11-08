@@ -1,6 +1,6 @@
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
-import type {AppEnv,Env} from '../../platform/env'
+import type {AppEnv} from '../../platform/env'
 import {scope,text} from './common'
 import {modelReadiness} from './provisioning/index'
 import {PRESENCE_IDLE_MINUTES,presenceSettings} from './availability'
@@ -10,9 +10,8 @@ import {auditStatement,requestSource} from '../audit/record'
 import {parseReplyMode,replyMode} from '../ai-support/reply-mode'
 import {replyModeChange,withReplyModeSince} from './reply-mode-change'
 import {workflowNow} from '../workflows/clock'
+import {saveSettings as save} from './settings-save'
 export const projectPolicy=new Hono<AppEnv>()
-/** Merges `patch` (or the patch it derives from the old values) into the workspace settings, batched with the statements `also` derives from the old and new values. */
-async function save(env:Env,projectId:string,patch:Record<string,unknown>|((old:any)=>Record<string,unknown>),also:(old:any,value:any)=>D1PreparedStatement[]=()=>[]){const row=await env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(projectId).first<{settings_json:string}>(),old=JSON.parse(row?.settings_json||'{}'),value={...old,...(typeof patch==='function'?patch(old):patch)};await env.DB.batch([env.DB.prepare('INSERT INTO project_settings VALUES(?,?,?) ON CONFLICT(project_id) DO UPDATE SET settings_json=excluded.settings_json,updated_at=excluded.updated_at').bind(projectId,JSON.stringify(value),Date.now()),...also(old,value)]);return value}
 const presenceSummary=(settings:any)=>{const presence=presenceSettings(settings);return `${presence.enabled?'On':'Off'}, ${presence.idleMinutes} min idle`}
 projectPolicy.put('/projects/:projectId/availability',async c=>{
  const a=await scope(c,true),b=await c.req.json(),schedule=b.availability_schedule||{}
@@ -23,7 +22,7 @@ projectPolicy.put('/projects/:projectId/availability',async c=>{
  if('presence_idle_minutes' in b){const minutes=Number(b.presence_idle_minutes);if(!PRESENCE_IDLE_MINUTES.includes(minutes))throw new HTTPException(400,{message:`Choose an idle time of ${PRESENCE_IDLE_MINUTES.join(', ')} minutes`});patch.presence_idle_minutes=minutes}
  if('presence_away_message' in b)patch.presence_away_message=b.presence_away_message?text(b.presence_away_message,2000):''
  // Turning presence-based away on or off, or changing when a teammate counts as idle, is recorded in the security log.
- return c.json({data:await save(c.env,a.projectId,patch,(old,value)=>presenceSummary(old)===presenceSummary(value)?[]:[auditStatement(c.env.DB,{projectId:a.projectId,category:'data',action:'availability.presence_changed',actor:{type:'user',id:a.id},source:requestSource(c),target:{type:'project',id:a.projectId},detail:{from:presenceSummary(old),to:presenceSummary(value)}})])})
+ return c.json({data:await save(c.env,a.projectId,patch,(old,value,guard)=>presenceSummary(old)===presenceSummary(value)?[]:[auditStatement(c.env.DB,{projectId:a.projectId,category:'data',action:'availability.presence_changed',actor:{type:'user',id:a.id},source:requestSource(c),target:{type:'project',id:a.projectId},detail:{from:presenceSummary(old),to:presenceSummary(value)}},Date.now(),guard)])})
 })
 // Whether the default visitor assistant can answer: its provider and the installation secret it needs, never key material.
 projectPolicy.get('/projects/:projectId/ai',async c=>{
@@ -41,5 +40,5 @@ projectPolicy.get('/projects/:projectId/presence',async c=>{
  return c.json({data:{online,availability,assistant:assistant&&replyMode(settings)==='auto'&&modelReadiness(c.env,assistant.model).ready?{id:assistant.id,name:assistant.name}:null}})
 })
 // The responder defaults and the AI reply mode; a mode change is audited and ends AI work the new mode refuses.
-projectPolicy.put('/projects/:projectId/ai',async c=>{const a=await scope(c,true),b=await c.req.json(),patch:Record<string,unknown>={};if('ai_reply_mode' in b)patch.ai_reply_mode=parseReplyMode(b.ai_reply_mode);for(const key of ['default_visitor_ai_id','default_verified_user_ai_id'])if(key in b){const ai=b[key]==='-'?null:b[key];if(ai&&!await c.env.DB.prepare('SELECT id FROM ai_profiles WHERE id=? AND project_id=? AND is_enabled=1').bind(ai,a.projectId).first())throw new HTTPException(400);patch[key]=ai}if('is_human_response_enabled' in b)patch.is_human_response_enabled=Boolean(b.is_human_response_enabled);if('default_visitor_ai_id' in patch)patch.default_responder=patch.default_visitor_ai_id;return c.json({data:await save(c.env,a.projectId,old=>withReplyModeSince(old,patch,workflowNow(c.env)),(old,value)=>replyModeChange(c.env.DB,{projectId:a.projectId,actorId:a.id,source:requestSource(c)},replyMode(old),replyMode(value)))})})
+projectPolicy.put('/projects/:projectId/ai',async c=>{const a=await scope(c,true),b=await c.req.json(),patch:Record<string,unknown>={};if('ai_reply_mode' in b)patch.ai_reply_mode=parseReplyMode(b.ai_reply_mode);for(const key of ['default_visitor_ai_id','default_verified_user_ai_id'])if(key in b){const ai=b[key]==='-'?null:b[key];if(ai&&!await c.env.DB.prepare('SELECT id FROM ai_profiles WHERE id=? AND project_id=? AND is_enabled=1').bind(ai,a.projectId).first())throw new HTTPException(400);patch[key]=ai}if('is_human_response_enabled' in b)patch.is_human_response_enabled=Boolean(b.is_human_response_enabled);if('default_visitor_ai_id' in patch)patch.default_responder=patch.default_visitor_ai_id;return c.json({data:await save(c.env,a.projectId,old=>withReplyModeSince(old,patch,workflowNow(c.env)),(old,value,guard)=>replyModeChange(c.env.DB,{projectId:a.projectId,actorId:a.id,source:requestSource(c)},replyMode(old),replyMode(value),guard))})})
 projectPolicy.put('/projects/:projectId/agents/:userId/primary',async c=>{const a=await scope(c);if(c.req.param('userId')!==a.id)throw new HTTPException(403);const b=await c.req.json();await c.env.DB.batch([c.env.DB.prepare('UPDATE user_project_preferences SET is_primary=0 WHERE user_id=?').bind(a.id),c.env.DB.prepare('INSERT INTO user_project_preferences(project_id,user_id,is_primary) VALUES(?,?,?) ON CONFLICT(project_id,user_id) DO UPDATE SET is_primary=excluded.is_primary').bind(a.projectId,a.id,b.is_primary?1:0)]);return c.json({updated:true})})

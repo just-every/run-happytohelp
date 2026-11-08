@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {assistantApp,model} from './app.mjs'
 import {openaiStream,openaiToolCall} from '../openai-stream.mjs'
+import {proactiveReplyModes,replyModeMailHolds} from './reply-mode-followups.mjs'
 
 const trace=async(a,v)=>(await a.app.call(`/api/ai-support/projects/${a.p}/conversations/${v.conversationId}/trace`,{token:a.owner,status:200})).data
 const generation=(a,id)=>a.app.call(`/api/ai-support/projects/${a.p}/generations/${id}`,{token:a.owner,status:200}).then(r=>r.data)
@@ -24,6 +25,8 @@ export async function configuredExecutionJourney(){
  await interruptedAttempt()
  await privateNoteFrontier()
  await replyModes()
+ await proactiveReplyModes()
+ await replyModeMailHolds()
 }
 
 // The pre-existing supported-provider cases call this after their native reply.
@@ -208,7 +211,7 @@ async function privateNoteFrontier(){
 // The workspace's AI reply mode, set by the owner through the AI route: draft keeps every AI word
 // with the team (operator drafts still work), off makes no model call, and switching back to auto
 // releases nothing from the draft period while the visitor's next message is answered again.
-async function replyModes(){
+export async function replyModes(){
  const a=await assistantApp(),{app,ai,p,owner,workspace}=a,route=`/api/management/projects/${p}/ai`
  const mode=async()=>(await app.call(route,{token:owner,status:200})).data.data.ai_reply_mode
  const setMode=value=>app.call(route,{token:owner,method:'PUT',body:{ai_reply_mode:value},status:200})
@@ -217,14 +220,38 @@ async function replyModes(){
   for(const value of ['Draft','',' draft','manual',1,null,true])await app.call(route,{token:owner,method:'PUT',body:{ai_reply_mode:value,default_visitor_ai_id:'-'},status:400})
   await app.call(route,{token:workspace.tokens.operator,method:'PUT',body:{ai_reply_mode:'draft'},status:403})
   assert.equal(await mode(),'auto');assert.equal((await app.call(route,{token:owner,status:200})).data.data.assistant?.id,'ai','a refused body writes none of its keys')
+  // Real concurrent PUTs across every settings writer preserve both owners' fields,
+  // including JSON booleans, null defaults and the nested widget object.
+  const base=`/api/management/projects/${p}`
+  for(const [path,body,key,expected] of [
+   ['settings',{timezone:'Pacific/Auckland',proactive_help_enabled:true},'timezone','Pacific/Auckland'],
+   ['widget-settings',{theme:{color:'#123456'}},'widget_settings',{theme:{color:'#123456'}}],
+   ['availability',{is_availability_schedule_enabled:false,is_presence_away_enabled:true,presence_idle_minutes:10},'is_presence_away_enabled',true],
+   ['ai',{default_verified_user_ai_id:'-'},'default_verified_user_ai_id',null],
+  ]){
+   await Promise.all([setMode('off'),app.call(`${base}/${path}`,{token:owner,method:'PUT',body,status:200})])
+   assert.equal(await mode(),'off',path+' cannot restore the earlier mode')
+   const saved=(await app.call(base+'/settings',{token:owner,status:200})).data.data
+   const field=key==='widget_settings'?(await app.call(base+'/widget-settings',{token:owner,status:200})).data.settings:saved[key]
+   assert.deepEqual(field,expected,path+' survives the concurrent mode write')
+   assert.equal((await app.call(route,{token:owner,status:200})).data.data.assistant?.id,'ai','unrelated defaults survive')
+   await setMode('auto')
+  }
+  // Independently saved general fields also survive each other.
+  await Promise.all(['brand_name','welcome_message'].map(key=>app.call(base+'/settings',{token:owner,method:'PUT',body:{[key]:'Concurrent '+key},status:200})))
+  const saved=(await app.call(base+'/settings',{token:owner,status:200})).data.data
+  assert.equal(saved.brand_name,'Concurrent brand_name');assert.equal(saved.welcome_message,'Concurrent welcome_message')
+  const modeEvents=async()=>(await app.call(base+'/audit?category=data&limit=50',{token:owner,status:200})).data.data.filter(e=>e.action==='ai.reply_mode_changed')
+  const previousEvents=(await modeEvents()).length
+  assert.equal(previousEvents,8,'each concurrent off/auto transition is audited once, including retries')
   // A reply queued in auto, then the switch: it never reaches the provider.
   const v=await a.visitor();await v.say('Queued before the switch');const queued=await app.takeJobs()
   await setMode('draft');assert.equal(await mode(),'draft')
   const before=a.providerCalls();await a.run(queued)
   assert.equal(a.providerCalls(),before);assert.deepEqual((await a.generations(v.conversationId)).map(g=>g.state),['cancelled'])
   const events=(await app.call(`/api/management/projects/${p}/audit?category=data&limit=50`,{token:owner,status:200})).data.data.filter(e=>e.action==='ai.reply_mode_changed')
-  assert.deepEqual(events.map(e=>e.detail),[{from:'auto',to:'draft'}]);await setMode('draft')
-  assert.equal((await app.call(`/api/management/projects/${p}/audit?category=data&limit=50`,{token:owner,status:200})).data.data.filter(e=>e.action==='ai.reply_mode_changed').length,1,'saving the same mode records nothing')
+  assert.equal(events.length,previousEvents+1);assert.deepEqual(events[0].detail,{from:'auto',to:'draft'});await setMode('draft')
+  assert.equal((await modeEvents()).length,previousEvents+1,'saving the same mode records nothing')
   // In draft a visitor's message to the assistant earns no generation, no provider call and no AI message.
   await v.say('Written in draft');await a.run();await app.scheduled();await a.run()
   assert.equal(a.providerCalls(),before);assert.equal((await a.generations(v.conversationId)).length,1);assert.equal((await replies(v)).length,0)

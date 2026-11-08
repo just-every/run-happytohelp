@@ -39,10 +39,11 @@ test('an owner maps and refreshes HubSpot context while unsaved edits and revoke
 import {trainingBrowserJourney} from '../helpers/ai/training-browser.mjs'
 import {proceduresBrowserJourney as adviceProceduresBrowserJourney} from '../helpers/ai/advice-procedures-browser.mjs'
 import {obligationsBrowserJourney} from '../helpers/ai/obligations-browser.mjs'
+import {replyModeBrowserJourney} from '../helpers/ai/reply-mode-browser.mjs'
 test('governed advice retains evaluation state, refuses failed releases, links bounded production traces and stops; human promises remain unsent drafts',async()=>{
  const runtime=await createRuntime({queueConsumers:true,vars:{APP_ORIGIN:'http://127.0.0.1',OPENAI_API_KEY:'synthetic-hh-1',TRAINING_PRICE_CEILINGS:JSON.stringify({'gpt-5.6-luna':{inputPerMillion:5,outputPerMillion:20}})},outboundFixture:new URL('../helpers/ai/suggestion-network.mjs',import.meta.url).href}),browser=await launchBrowser()
  let passed=false
- try{const shot=await evidence('advice');await trainingBrowserJourney({runtime,browser,shot});await adviceProceduresBrowserJourney({runtime,browser,shot});await obligationsBrowserJourney({runtime,browser,shot});passed=true}
+ try{const shot=await evidence('advice');await trainingBrowserJourney({runtime,browser,shot});await adviceProceduresBrowserJourney({runtime,browser,shot});await obligationsBrowserJourney({runtime,browser,shot});await replyModeBrowserJourney({runtime,browser,shot});passed=true}
  finally{await browser.close();await runtime.close(passed)}
 })
 

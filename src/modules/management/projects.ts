@@ -25,6 +25,7 @@ import {accountAudit} from '../identity/two-factor/factors'
 import {readNativeSettings} from './native-settings-read'
 import {memberAccess} from '../access/gate'
 import {projectAccess} from '../access/catalogue'
+import {saveSettings} from './settings-save'
 export const projects=new Hono<AppEnv>()
 projects.route('/',brandReports).route('/',brands)
 projects.get('/bootstrap',async c=>{
@@ -81,8 +82,7 @@ projects.get('/projects/:projectId/settings',async c=>{
 projects.put('/projects/:projectId/settings',async c=>{
  const a=await scope(c,true),b=await c.req.json(),appearance=appearanceSettings(b)
  if('timezone' in b&&!validTimezone(b.timezone))throw new HTTPException(400,{message:'Choose a valid IANA timezone'})
- const existing=await c.env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(a.projectId).first<{settings_json:string}>()
- const settings={...JSON.parse(existing?.settings_json||'{}'),...appearance}
+ const settings:Record<string,unknown>={...appearance}
  if('display_mode' in b){if(!['balanced','light','dark'].includes(b.display_mode))throw new HTTPException(400,{message:'Invalid display mode'});settings.display_mode=b.display_mode}
  for(const key of ['language','timezone','widget_position','default_responder','website','notification_email','unavailable_message'])if(key in b)settings[key]=text(b[key])
  if('help_center_domain' in b)settings.help_center_domain=b.help_center_domain===''?'':websiteAddress(b.help_center_domain,'Custom Help Center URL')
@@ -93,11 +93,12 @@ projects.put('/projects/:projectId/settings',async c=>{
   settings.api_abuse_terms=[...new Set(b.api_abuse_terms.map((term:string)=>term.trim().toLowerCase()))]
  }
  if('api_requester_hourly_cap' in b){const cap=b.api_requester_hourly_cap;if(!Number.isInteger(cap)||cap<1||cap>100)throw new HTTPException(400,{message:'Requester hourly cap must be between 1 and 100'});settings.api_requester_hourly_cap=cap}
- const statements=[c.env.DB.prepare('INSERT INTO project_settings VALUES(?,?,?) ON CONFLICT(project_id) DO UPDATE SET settings_json=excluded.settings_json,updated_at=excluded.updated_at').bind(a.projectId,JSON.stringify(settings),Date.now())]
- if(b.name)statements.push(c.env.DB.prepare('UPDATE projects SET name=? WHERE id=?').bind(requiredString(b.name,'name',200),a.projectId))
- if(b.allowed_origin)statements.push(c.env.DB.prepare('UPDATE projects SET allowed_origin=? WHERE id=?').bind(websiteAddress(b.allowed_origin,'Widget website origin',true),a.projectId))
- await c.env.DB.batch(statements)
- return c.json({data:settings})
+ const name=b.name?requiredString(b.name,'name',200):undefined,origin=b.allowed_origin?websiteAddress(b.allowed_origin,'Widget website origin',true):undefined
+ const value=await saveSettings(c.env,a.projectId,settings,(_old,_value,guard)=>[
+  ...(name?[c.env.DB.prepare(`UPDATE projects SET name=? WHERE id=? AND ${guard.sql}`).bind(name,a.projectId,...guard.params)]:[]),
+  ...(origin?[c.env.DB.prepare(`UPDATE projects SET allowed_origin=? WHERE id=? AND ${guard.sql}`).bind(origin,a.projectId,...guard.params)]:[]),
+ ])
+ return c.json({data:value})
 })
 projects.get('/profile',async c=>{const a=await scope(c);return c.json({data:{...await c.env.DB.prepare('SELECT u.id,u.name,u.email,u.created_at,EXISTS(SELECT 1 FROM credentials cr WHERE cr.user_id=u.id) has_password,s.timezone,s.avatar_url,s.is_notifiable_on_conversation_assignment,coalesce(pref.is_notified_on_unassigned_activity,0) is_notified_on_unassigned_activity FROM users u LEFT JOIN user_settings s ON s.user_id=u.id LEFT JOIN user_project_preferences pref ON pref.user_id=u.id AND pref.project_id=? WHERE u.id=?').bind(a.projectId,a.id).first<Record<string,unknown>>(),mailbox_confirmed:recentMailboxProof(a.security!),has_second_factor:Boolean(a.security?.hasFactor)}})})
 projects.put('/profile',async c=>{const a=await scope(c),b=await c.req.json(),old=await c.env.DB.prepare('SELECT * FROM user_settings WHERE user_id=?').bind(a.id).first<any>();const name=requiredString(b.name,'name',200),timezone=b.timezone?text(b.timezone,100):old?.timezone||'UTC';try{new Intl.DateTimeFormat('en',{timeZone:timezone})}catch{throw new HTTPException(400,{message:'Invalid timezone'})}const email=b.email?requiredString(b.email,'email',320).toLowerCase():null;if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new HTTPException(400,{message:'Invalid email'});if(email&&await c.env.DB.prepare('SELECT id FROM users WHERE lower(email)=? AND id<>?').bind(email,a.id).first())throw new HTTPException(409,{message:'Email is already registered'});

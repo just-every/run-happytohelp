@@ -1,0 +1,6 @@
+9b238cf006b53e22ca124e013a027dbb4b7a47e7
+Merge fresh main for AI reply-mode follow-up handover
+
+ccb7197677aeeeb7fe37b9dbab06c936b56e8008
+Save workspace AI reply settings without losing concurrent changes
+

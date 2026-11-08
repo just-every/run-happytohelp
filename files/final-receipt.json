@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-happytohelp",
+  "tag": "hh-ai-mode-followups-2",
+  "branch": "cloud/hh-ai-mode-followups-2",
+  "head": "9b238cf006b53e22ca124e013a027dbb4b7a47e7",
+  "main": "d1d77817b9562eb3f2e42e04ae0b9e518cd89c13",
+  "prior_head": "ccb7197677aeeeb7fe37b9dbab06c936b56e8008",
+  "integration": "merge; published history preserved",
+  "conflicts": [],
+  "push": {
+    "status": "success",
+    "attempts": 1,
+    "log": "push.log"
+  },
+  "checks": {
+    "typecheck": {
+      "exit_code": 0,
+      "log": "typecheck.log"
+    },
+    "ai_touched_journey": {
+      "exit_code": 0,
+      "log": "ai-touched.log"
+    },
+    "browser_touched_journey": {
+      "exit_code": 0,
+      "log": "browser-touched.log"
+    },
+    "build": {
+      "exit_code": 0,
+      "log": "build.log"
+    },
+    "source_lock": {
+      "exit_code": 0,
+      "log": "source-lock.log"
+    },
+    "source_check": {
+      "exit_code": 0,
+      "log": "source-check.log"
+    },
+    "first_party": {
+      "exit_code": 0,
+      "log": "first-party.log"
+    },
+    "contract_check": {
+      "exit_code": 0,
+      "log": "contract-check.log"
+    }
+  },
+  "counts_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "counts_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "clause_status_changes": [],
+  "claim_points": "none",
+  "default": null,
+  "gap": "Existing contract gaps unchanged; no live-provider, hosted or publication qualification",
+  "pr": null,
+  "ci": {
+    "id": 42475134770,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "9b238cf006b53e22ca124e013a027dbb4b7a47e7",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/42475134770"
+  },
+  "custody": "READY",
+  "runtime": {
+    "touched_journeys_node": "24.19.0 (provided cloud toolchain default)",
+    "final_typecheck_and_setup_node": "22.20.0",
+    "pnpm": "10.12.4",
+    "chromium": "/usr/bin/chromium"
+  },
+  "browser_proof": [
+    "browser/advice/ai-reply-mode-failed-1440.png",
+    "browser/advice/ai-reply-mode-failed-390.png"
+  ],
+  "source_continuity": {
+    "product_and_test_files_identical_to_previous_candidate": 11,
+    "previous_followup_product_diff": {
+      "files": 12,
+      "insertions": 215,
+      "deletions": 38
+    },
+    "contract_views_unchanged": true,
+    "main_migration_highest": 311,
+    "candidate_migrations_added": 0
+  },
+  "setup": {
+    "status": "success",
+    "receipt": "setup-receipt.txt"
+  },
+  "github_calls_used": 5,
+  "local_check_provenance": {
+    "execution": "merged working tree before merge commit",
+    "recorded_head_in_browser_helper": "ccb7197677aeeeb7fe37b9dbab06c936b56e8008",
+    "actual_helper_receipt_preserved": true,
+    "final_commit_tree": "8889d8d769c62097cd1bb64212afcb7da081dac9",
+    "exact_final_sha_proof": "GitHub Verify ci-receipt.json"
+  },
+  "blockers": [],
+  "publication_and_landing": "independent lane actions; not performed"
+}

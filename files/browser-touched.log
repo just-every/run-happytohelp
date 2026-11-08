@@ -1,0 +1,9 @@
+✔ governed advice retains evaluation state, refuses failed releases, links bounded production traces and stops; human promises remain unsent drafts (179383.646081ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 183034.97503

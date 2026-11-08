@@ -1,0 +1,6 @@
+{
+  "scope": "explicit public report packet",
+  "injected_secret_value_scan": "passed",
+  "symlinks": "none",
+  "private_setup_answers_and_logs": "excluded"
+}

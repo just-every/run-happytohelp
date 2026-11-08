@@ -1,0 +1,14 @@
+{
+  "setup": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --answers .local-evidence/setup-answers.json --non-interactive",
+  "build": "cloud_run npx -y @runeditrun/rer build",
+  "typecheck": "cloud_run pnpm run typecheck",
+  "ai_touched": "cloud_run node --test --test-concurrency=1 --test-name-pattern='a visitor gets a source-linked answer' tests/journeys/ai.mjs",
+  "browser_touched": "H2H_CHROMIUM_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 --test-name-pattern='governed advice retains' tests/journeys/workflows-browser.mjs",
+  "source_lock": "node scripts/edition-authoring/cli.mjs lock",
+  "source_check": "node scripts/edition-authoring/cli.mjs check",
+  "first_party": "cloud_run pnpm exec rer check --profile first-party",
+  "contract_check": "node src/site/base/contract-docs.mjs check",
+  "assertion_viewport": 1440,
+  "proof_viewports": [1440, 390],
+  "browser_flags": ["--no-sandbox", "--use-mock-keychain", "--password-store=basic"]
+}

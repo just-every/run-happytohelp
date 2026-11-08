@@ -1,0 +1,13 @@
+ sources.lock.json                           | 28 ++++++++---
+ src/modules/integrations/rer-mail-hold.ts   |  9 +++-
+ src/modules/management/policy.ts            |  9 ++--
+ src/modules/management/projects.ts          | 15 +++---
+ src/modules/management/reply-mode-change.ts |  7 +--
+ src/modules/management/settings-save.ts     | 21 ++++++++
+ src/modules/management/widget-settings.ts   | 10 ++--
+ src/ui/native/pages/AiReplyMode.jsx         |  8 +--
+ tests/helpers/ai/configured-execution.mjs   | 33 +++++++++++--
+ tests/helpers/ai/reply-mode-browser.mjs     | 34 +++++++++++++
+ tests/helpers/ai/reply-mode-followups.mjs   | 76 +++++++++++++++++++++++++++++
+ tests/journeys/workflows-browser.mjs        |  3 +-
+ 12 files changed, 215 insertions(+), 38 deletions(-)

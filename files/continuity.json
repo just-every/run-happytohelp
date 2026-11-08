@@ -1,0 +1,51 @@
+{
+  "previous_head": "ccb7197677aeeeb7fe37b9dbab06c936b56e8008",
+  "main": "d1d77817b9562eb3f2e42e04ae0b9e518cd89c13",
+  "conflicts": [],
+  "product_and_test_files": [
+    {
+      "path": "src/modules/integrations/rer-mail-hold.ts",
+      "unchanged_from_followups_1": true
+    },
+    {
+      "path": "src/modules/management/policy.ts",
+      "unchanged_from_followups_1": true
+    },
+    {
+      "path": "src/modules/management/projects.ts",
+      "unchanged_from_followups_1": true
+    },
+    {
+      "path": "src/modules/management/reply-mode-change.ts",
+      "unchanged_from_followups_1": true
+    },
+    {
+      "path": "src/modules/management/settings-save.ts",
+      "unchanged_from_followups_1": true
+    },
+    {
+      "path": "src/modules/management/widget-settings.ts",
+      "unchanged_from_followups_1": true
+    },
+    {
+      "path": "src/ui/native/pages/AiReplyMode.jsx",
+      "unchanged_from_followups_1": true
+    },
+    {
+      "path": "tests/helpers/ai/configured-execution.mjs",
+      "unchanged_from_followups_1": true
+    },
+    {
+      "path": "tests/helpers/ai/reply-mode-browser.mjs",
+      "unchanged_from_followups_1": true
+    },
+    {
+      "path": "tests/helpers/ai/reply-mode-followups.mjs",
+      "unchanged_from_followups_1": true
+    },
+    {
+      "path": "tests/journeys/workflows-browser.mjs",
+      "unchanged_from_followups_1": true
+    }
+  ]
+}

@@ -96,6 +96,23 @@
   @include media-breakpoint-up(xl) { display: none; }
 }
 
+// The workspace's own read is waiting out a busy database (Dashboard.tsx): one quiet line over the page.
+.dashboard-busy {
+  position: fixed;
+  z-index: 1080;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--paper, #fff);
+  box-shadow: 0 2px 12px rgb(0 0 0 / 12%);
+  font-size: 15px;
+}
+
 // A page's code still loading inside the shell (Dashboard.tsx).
 .dashboard-content-pending {
   padding: 40px 48px;

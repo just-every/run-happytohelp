@@ -28,7 +28,7 @@ function ContactPicker({ id, label, projectId, value, onChange, currentContact, 
         if (disabled) return;
         const controller = new AbortController(); setLoading(true); setSearchError('');
         const timer = setTimeout(() => {
-            const search = new URLSearchParams({ search: query, page: String(page), limit: '20', sort: 'name', direction: 'asc' });
+            const search = new URLSearchParams({ search: query, page: String(page), limit: '20', sort: 'name', direction: 'asc', total: 'none' });
             nativeRequest(`${base}?${search}`, { signal: controller.signal }).then(response => {
                 if (!controller.signal.aborted) setResult({ ...response, data: response.data.map(contactData) });
             }).catch(failure => { if (!controller.signal.aborted) setSearchError(failure.message); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });

@@ -9,6 +9,7 @@ import { dashboardBootstrapInput, fetchDashboardBootstrap, type DashboardBootstr
 import { createInitialInboxReads } from './initial-inbox-reads';
 import {createInitialInboxList,type InitialInboxListData} from './initial-inbox-list';
 import {installInitialWorkspaceReads,expireInitialWorkspaceReads} from './initial-workspace-reads';
+import {busyWait} from '../dashboard/utils/busy';
 
 export const DashboardSettingsContext = createContext<any>(null);
 export function useDashboardSettings() {
@@ -31,6 +32,38 @@ export function useDashboardSessionVersion() {
         listeners.add(listener);
         return () => { listeners.delete(listener); };
     }, () => sessionVersion, () => 0);
+}
+
+// While the workspace's own read waits out a busy database (503), the shell keeps what it shows and says so.
+let workspaceBusy = false;
+const busyListeners = new Set<() => void>();
+function setWorkspaceBusy(value: boolean) {
+    if (workspaceBusy === value) return;
+    workspaceBusy = value;
+    busyListeners.forEach(listener => listener());
+}
+export function useWorkspaceBusy() {
+    return useSyncExternalStore(listener => {
+        busyListeners.add(listener);
+        return () => { busyListeners.delete(listener); };
+    }, () => workspaceBusy, () => false);
+}
+const pause = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(resolve, ms);
+    signal.addEventListener('abort', () => { clearTimeout(timer); reject(signal.reason); }, { once: true });
+});
+/** Read the bootstrap again after each Retry-After while the database is busy and this navigation is current. */
+async function untilFree(result: DashboardBootstrapResult, read: () => Promise<DashboardBootstrapResult>, signal: AbortSignal) {
+    try {
+        while ('status' in result && result.status === 503) {
+            setWorkspaceBusy(true);
+            await pause(busyWait(result), signal);
+            result = await read();
+        }
+        return result;
+    } finally {
+        setWorkspaceBusy(false);
+    }
 }
 
 /** Retire authenticated state before loading the new session's workspace. */
@@ -68,7 +101,7 @@ export async function loadDashboard({ location, abortController, parentMatchProm
         throw error;
     };
     const requireBootstrap = (result: DashboardBootstrapResult) => {
-        if ('status' in result) return fail(Object.assign(new Error(result.message), { status: result.status }));
+        if ('status' in result) return fail(Object.assign(new Error(result.message), { status: result.status, retryAfter: result.retryAfter }));
         return result;
     };
     let settings: any;
@@ -85,7 +118,8 @@ export async function loadDashboard({ location, abortController, parentMatchProm
             }), code,
         ]);
         signal.throwIfAborted();
-        ({ settings, projectUnavailable, initialConversation, initialInboxList, initialTags, initialManagement } = requireBootstrap(result));
+        const current = await untilFree(result, () => fetchDashboardBootstrap({ data: dashboardBootstrapInput(location), signal }), signal);
+        ({ settings, projectUnavailable, initialConversation, initialInboxList, initialTags, initialManagement } = requireBootstrap(current));
         // The URL names the workspace: bind the session to it before any page reads its data.
         if (urlProjectId && !projectUnavailable && settings.sessionProjectId !== urlProjectId) {
             await activateProject(urlProjectId, signal);
@@ -102,9 +136,8 @@ export async function loadDashboard({ location, abortController, parentMatchProm
         // Membership can change between the server read and client activation.
         // Re-read the remaining account exactly as for an unavailable project.
         const input = dashboardBootstrapInput(location);
-        const fallback = requireBootstrap(await fetchDashboardBootstrap({
-            data: { inbox: input.inbox ? 'global' : undefined }, signal,
-        }));
+        const account = () => fetchDashboardBootstrap({ data: { inbox: input.inbox ? 'global' : undefined }, signal });
+        const fallback = requireBootstrap(await untilFree(await account(), account, signal));
         settings = fallback.settings;
     }
     // A direct inbox route can become a workspace notice, and an account with no

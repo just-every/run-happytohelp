@@ -6,7 +6,7 @@ export function useInboxCompanies(projectId){
     const [companies,setCompanies]=useState([]),[error,setError]=useState('');
     useEffect(()=>{
         const controller=new AbortController();setCompanies([]);setError('');
-        if(projectId)nativeRequest(`/api/management/projects/${encodeURIComponent(projectId)}/companies`,{signal:controller.signal})
+        if(projectId)nativeRequest(`/api/management/projects/${encodeURIComponent(projectId)}/companies?view=names`,{signal:controller.signal})
             .then(result=>setCompanies(result.companies)).catch(error=>{if(!controller.signal.aborted)setError(error.message);});
         return ()=>controller.abort();
     },[projectId]);

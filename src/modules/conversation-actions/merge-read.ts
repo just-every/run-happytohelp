@@ -25,7 +25,9 @@ export async function customerMergeTarget(env:Env,projectId:string,id:string,con
  * customer attachment reads, notifications or customer transcript exports. */
 export async function operatorThreadIds(env:Env,projectId:string,id:string,userId:string){
  const alias=await mergedAlias(env,projectId,id),target=alias?.target_id??id
- const rows=await env.DB.prepare(`SELECT c.id FROM conversations c LEFT JOIN conversation_merges m ON m.project_id=c.project_id AND m.source_id=c.id AND m.target_id=? AND m.undone_at IS NULL WHERE c.project_id=? AND (c.id=? OR m.source_id IS NOT NULL) AND ${ticketScopeSql('?')} ORDER BY CASE WHEN c.id=? THEN 0 ELSE 1 END,m.created_at,m.id`).bind(target,projectId,target,userId,target).all<{id:string}>()
+ // The survivor, then the sources merged into it, each read through its own key.
+ const rows=await env.DB.prepare(`SELECT id FROM (SELECT c.id,0 source,NULL merged_at,NULL merge_id FROM conversations c WHERE c.id=? AND c.project_id=? AND ${ticketScopeSql('?')}
+  UNION ALL SELECT c.id,1,m.created_at,m.id FROM conversation_merges m CROSS JOIN conversations c ON c.id=m.source_id AND c.project_id=m.project_id WHERE m.project_id=? AND m.target_id=? AND m.undone_at IS NULL AND ${ticketScopeSql('?')}) ORDER BY source,merged_at,merge_id`).bind(target,projectId,userId,projectId,target,userId).all<{id:string}>()
  return rows.results.map(row=>row.id)
 }
 export async function mergeHistory(env:Env,projectId:string,id:string,userId:string){

@@ -7,8 +7,11 @@ import {hashToken} from '../../platform/auth'
 import {rateLimits} from '../../platform/limit-config'
 import {enforceRateLimits} from '../../platform/rate-limits'
 import {tokens,verifiedToken,type ApiScope,type TokenAuthority} from '../../platform/integration-authority'
+import {overloadAnswer,overloadedRequest} from '../../platform/d1-overload'
 export type ApiEnv={Bindings:AppEnv['Bindings'];Variables:{authority:TokenAuthority}}
 export function apiRouter(){const app=new Hono<ApiEnv>();app.onError((e,c)=>{
+ // D1's overload is the shared rule (platform/d1-overload.ts): a read is retried by app.fetch, then 503 with Retry-After.
+ if(overloadedRequest(c.req.raw,e)){const answer=overloadAnswer(c.req.raw);for(const [key,value] of Object.entries(answer.headers))c.header(key,value);return c.json({error:{code:'unavailable',message:answer.body.error}},answer.status)}
  if(e instanceof ApiError){for(const [key,value] of Object.entries(e.headers))c.header(key,value);return c.json({error:{code:e.code,message:e.message,...e.details}},e.status)}
  const status=e instanceof HTTPException?e.status:500
  const codes:Record<number,string>={400:'invalid_request',401:'unauthorized',403:'insufficient_scope',404:'not_found',409:'conflict',429:'rate_limited',503:'unavailable'}

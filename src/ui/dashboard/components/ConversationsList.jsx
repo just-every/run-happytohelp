@@ -127,7 +127,7 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
                     <button type="button" onClick={ retryRefresh }>Retry</button>
                 </p> }
                 { isLoadingMore && !isBusy && <p className="text-center" role="status">Loading more conversations...</p> }
-                { isBusy && <p className="conversation-search-notice" role="status">Search is busy. Trying again in a few seconds…</p> }
+                { isBusy && <p className="conversation-search-notice" role="status">{ searchQuery.trim() ? 'Search is busy.' : 'The inbox is busy.' } Trying again in a few seconds…</p> }
                 { loadMoreError && conversations.length > 0 && <p className="conversation-list-error" role="alert">
                     Couldn’t load more conversations. <button type="button" onClick={ loadMore }>Retry</button>
                 </p> }

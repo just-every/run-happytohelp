@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import type { AppEnv, Env } from '../../platform/env'
 import { renderHelpCenter, reserved, resolvePublicProject } from './help-center'
+import { answerOverloads } from '../../platform/d1-overload'
 
 /** Deployment configuration only: no suffix inference, workspace domain setting or forwarded header lookup. */
 function configuredProject(request: Request, env: Env): string | null {
@@ -24,6 +25,7 @@ const applicationPaths = new Set(['auth','admin','users','register','verify-emai
 const hostRoutes = new Hono<AppEnv>()
 hostRoutes.get('/', c => renderHelpCenter(c, configuredProject(c.req.raw, c.env)!, ''))
 hostRoutes.get('/:article', c => renderHelpCenter(c, configuredProject(c.req.raw, c.env)!, '', c.req.param('article')))
+answerOverloads(hostRoutes)
 
 /** Call after static assets, before application routing. Null leaves the ordinary application route in charge. */
 export async function publicHelpHostResponse(request: Request, env: Env): Promise<Response | null> {

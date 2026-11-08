@@ -4,6 +4,7 @@ import {startApp,sha as hashToken} from './kit/app.mjs'
 import {erasedTranscript} from '../helpers/conversation/erased-transcript.mjs'
 import {rerMailErasureJourney} from '../helpers/email/rer-erasure.mjs'
 import {erasureOutcomes} from '../helpers/erasure/outcomes.mjs'
+import {assertInboxDerived} from '../helpers/inbox/derived.mjs'
 
 // Contact erasure through the real application router on real D1 and R2 with every migration applied.
 let app,DB,FILES,env
@@ -255,6 +256,7 @@ let first,opAfter
  // The contact search index follows the erasure: nothing finds the identity, the index still agrees
  // with contacts, and no term of the erased contact's row remains in it.
  for(const term of identityTerms)assert.deepEqual(await searched(tokens.operator,term),[[],[]],term+' finds nothing after erasure')
+ await assertInboxDerived(all,'after erasure')
  await DB.prepare("INSERT INTO inbox_contact_search(inbox_contact_search,rank) VALUES('integrity-check',1)").run()
  await DB.prepare("CREATE VIRTUAL TABLE erasure_contact_terms USING fts5vocab(inbox_contact_search,'instance')").run()
  try{assert.deepEqual(await all("SELECT term FROM erasure_contact_terms WHERE doc=(SELECT rowid FROM contacts WHERE id='ct')"),[],'the erased identity leaves no indexed term')}

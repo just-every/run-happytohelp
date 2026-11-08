@@ -77,3 +77,5 @@ BEGIN
   DELETE FROM agent_door_relay WHERE decision_id=json_extract(NEW.saved,'$.decision_id')
     AND sequence<(SELECT MAX(sequence) FROM agent_door_relay WHERE decision_id=json_extract(NEW.saved,'$.decision_id'));
 END;
+
+CREATE TABLE agent_door_retired_refs (digest TEXT PRIMARY KEY, marker TEXT NOT NULL);

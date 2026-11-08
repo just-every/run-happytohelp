@@ -1,5 +1,6 @@
 import type { CallResult, Runtime, ToolContext } from './types.ts'
 import { ToolRefusal } from './errors.ts'
+import { retiredDigest } from './retired-refs.ts'
 
 // The fixed replay window also bounds installation-private erasure aliases.
 export const REPLAY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000
@@ -18,6 +19,7 @@ export interface AgentArtifact {
   columns: readonly string[]
   match?: { sql: string; params: readonly string[] }
   unrelated?: string
+  retire?: { refs: string }
 }
 export interface AgentArtifactMap { artifacts: readonly AgentArtifact[] }
 export interface AgentErasureOptions {
@@ -58,7 +60,7 @@ export async function checkAgentArtifacts(db: D1Database, map: AgentArtifactMap)
   if (declared.size !== map.artifacts.length) throw new Error('agent_erasure_duplicate_table')
   for (const { name } of tables) {
     const item = declared.get(name)
-    if (!item || (!!item.match === !!item.unrelated)) throw new Error('agent_erasure_undeclared_table:' + name)
+    if (!item || [item.match, item.unrelated, item.retire].filter(Boolean).length !== 1 || item.retire && name !== 'agent_door_state') throw new Error('agent_erasure_undeclared_table:' + name)
     const columns = (await db.prepare('PRAGMA table_info(' + quote(name) + ')').all<{ name: string }>()).results.map(column => column.name)
     if (JSON.stringify([...columns].sort()) !== JSON.stringify([...item.columns].sort())) throw new Error('agent_erasure_undeclared_column:' + name)
   }
@@ -115,6 +117,15 @@ export async function agentErasureStatements(input: {
 }): Promise<D1PreparedStatement[]> {
   const { db, map, subject, secret, tombstone } = input
   await checkAgentArtifacts(db, map)
+  const refs: string[] = []
+  for (const item of map.artifacts.filter(item => item.retire)) {
+    const key = item.retire!.refs
+    if (!(key in subject)) throw new Error('agent_erasure_subject_value:' + key)
+    let values: unknown
+    try { values = typeof subject[key] === 'string' ? JSON.parse(subject[key] as string) : null } catch { throw new Error('agent_erasure_policy_ref') }
+    if (!Array.isArray(values) || values.length > 200 || values.some(ref => typeof ref !== 'string' || !/^person:[^\s:]{1,200}$/.test(ref))) throw new Error('agent_erasure_policy_ref')
+    refs.push(...values)
+  }
   const out: D1PreparedStatement[] = []
   // Materialize every selection before changing a table another selection joins.
   const selections = await Promise.all(map.artifacts.filter(item => item.match).map(async item => {
@@ -135,7 +146,7 @@ export async function agentErasureStatements(input: {
         .bind(row._rowid!, ...item.columns.map(column => row[column]!)))
     }
   }
-  if (selections.some(selection => selection.rows.length)) out.push(...await input.checkpoint())
+  if (refs.length || selections.some(selection => selection.rows.length)) out.push(...await input.checkpoint())
   for (const { item, rows } of selections) for (const row of rows) {
     const oldMarker = item.table === 'agent_door_calls' ? parse(row.outcome)?.fields?.tombstone
       : parse(row.row ?? row.saved ?? row.event ?? row.tombstone)?.tombstone ?? (item.table === 'agent_door_agents' ? parse(row.tombstone) : null)
@@ -146,6 +157,16 @@ export async function agentErasureStatements(input: {
     out.push(db.prepare('UPDATE ' + quote(item.table) + ' SET ' + Object.keys(set).map(column => quote(column) + '=?').join(',') + ' WHERE rowid=?')
       .bind(...Object.values(set), row._rowid!))
     if (item.table === 'agent_door_calls') out.push(db.prepare('DELETE FROM agent_door_calls WHERE rowid=? AND expires_at<=?').bind(row._rowid!, Date.parse(tombstone.at)))
+  }
+  for (const ref of new Set(refs)) {
+    const digest = await retiredDigest(ref)
+    out.push(db.prepare('INSERT INTO agent_door_retired_refs(digest,marker) VALUES(?,?) ON CONFLICT(digest) DO NOTHING').bind(digest, 'person:erased:' + tombstone.erasure_id))
+    for (const [table, columns] of [
+      ['agent_door_state', ['local_document']], ['agent_door_audit', ['row', 'evidence']],
+      ['agent_door_approvals', ['saved', 'approvals', 'result']], ['agent_door_reviews', ['saved']],
+      ['agent_door_calls', ['outcome']], ['agent_door_events', ['event']],
+    ] as const) for (const column of columns) out.push(db.prepare('UPDATE ' + quote(table) + ' SET ' + quote(column) + '=replace(' + quote(column) + ',?,(SELECT json_quote(marker) FROM agent_door_retired_refs WHERE digest=?)) WHERE instr(' + quote(column) + ',?)>0')
+      .bind(JSON.stringify(ref), digest, JSON.stringify(ref)))
   }
   return out
 }

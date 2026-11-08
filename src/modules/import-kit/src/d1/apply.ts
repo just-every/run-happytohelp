@@ -15,7 +15,7 @@ import { custodyGuards, validatedProvenance, inventoryGuards, reusedSourceGuards
 import { supersedeTarget } from './history.ts';
 import { readOriginals } from './originals.ts';
 import { changed, putRow, updateRows } from './expected-state.ts';
-import { applyReads, targetReadKey, type ApplyReads } from './apply-reads.ts';
+import { applyReads, readEnd, targetReadKey, type ApplyReads } from './apply-reads.ts';
 
 export async function applyD1ImportBatches(jobOrId: ImportJob | string, context: D1ImportContext): Promise<ImportJob> {
   context = requestContext(context);
@@ -37,15 +37,25 @@ export async function applyD1ImportBatches(jobOrId: ImportJob | string, context:
       let prefix = atomicPrefix(context, 'apply', statements, scope);
       let planned = prefix ? prefix.count(progress(job, 0), returnReads) : cost(context, publication(job, 0, statements, scope), returnReads);
       const pending = plan.entries.slice(job.checkpoint, job.checkpoint + batchSize);
-      let reads: ApplyReads | undefined, loaded = false;
-      for (const entry of pending) {
+      let reads: ApplyReads | undefined, covered = 0, bulk = true;
+      for (let index = 0; index < pending.length; index++) {
+        const entry = pending[index];
         if (entries.length && effects + entry.effects.length > 1000) break;
         if (entry.effects.length > 1000) throw new Error('SOURCE_EFFECT_LIMIT');
         // Stop before an entry's own reads could exhaust the request. The exact
         // request, as atomic will send it, is counted again once the entry is built.
         const reserve = 40 + entry.effects.length * 16;
-        if (remaining(context) - planned < reserve) { if (!entries.length) { if (count > 0) return job; throw new D1RequestLimitError(); } break; }
-        if (!loaded) { reads = await applyReads(pending, context); loaded = true; }
+        let starved = remaining(context) - planned < reserve;
+        if (!starved && index >= covered) {
+          // Read only the next entries that can still publish; a budget exhaustion
+          // inside the bulk read stops the gather exactly like the reserve above.
+          try {
+            const end: number = bulk ? readEnd(pending, index, effects, remaining(context) - planned, reads) : pending.length;
+            reads = bulk ? await applyReads(pending.slice(index, end), context, reads) : undefined;
+            bulk = !!reads; covered = end;
+          } catch (error) { if (!(error instanceof D1RequestLimitError)) throw error; starved = true; }
+        }
+        if (starved) { if (!entries.length) { if (count > 0) return job; throw new D1RequestLimitError(); } break; }
         const candidate: D1Sql[] = [], nextScope = { ...scope, nativeGuards:[...scope.nativeGuards], postGuards:[...scope.postGuards], targets:[...scope.targets] };
         const candidateUndo: D1UndoEffect[] | undefined = undoEffects && [];
         await publishEntry(id, entry, job.checkpoint + entries.length, context, candidate, nextScope, candidateUndo, reads);

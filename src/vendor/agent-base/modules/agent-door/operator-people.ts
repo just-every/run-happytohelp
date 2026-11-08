@@ -41,3 +41,9 @@ export function operatorAuthPeople(options: { db: D1Database; allowList?: string
     },
   }
 }
+
+/** Native operator subjects only. The installation/Business owner follows the owner role. */
+export async function operatorPolicyRefs(db: D1Database, operatorId: string): Promise<string[]> {
+  const rows = (await db.prepare('SELECT business_id FROM bs_team WHERE operator_id=? AND business_id IS NOT NULL AND business_id NOT IN (SELECT owner_id FROM bs_settings WHERE singleton=1 AND owner_id IS NOT NULL)').bind(operatorId).all<{ business_id: string }>()).results
+  return [...new Set(['person:' + operatorId, ...rows.map(row => 'person:' + row.business_id)])]
+}

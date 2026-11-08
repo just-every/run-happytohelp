@@ -555,7 +555,7 @@ const covId = new RegExp(`^${clauseIdSource}$`);
 const covHeading = /^(#{1,6})\s+(.+?)\s*#*\s*$/;
 const covDefinition = new RegExp(`^(?:#{1,6}\\s+|(?:[-*+]\\s+)?\\*\\*)(${clauseIdSource})\\s+[—–-]\\s+`);
 const covSplit = text => text.replace(/\r\n?/g, '\n').split('\n');
-const covGenerated = text => /^\uFEFF?<!-- Generated from CONTRACT\.md by contract-docs\./.test(covSplit(text)[0]);
+const covGenerated = text => /^\uFEFF?<!-- Generated from CONTRACT\.md by (?:scripts\/)?contract-docs\./.test(covSplit(text)[0]);
 const covNormalize = text => typeof text === 'string' ? withoutQuoteMarkers(text).replace(/^\s*(?:[-*+]\s+|\d+[.)]\s+)/, '').replace(/[`*_]/g, '').replace(/\s+/gu, '') : '';
 const covKey = entry => JSON.stringify([entry.file, entry.line, entry.cell ?? '']);
 const covLabel = entry => `${entry.file}:${entry.line}${entry.cell ? ` (${entry.cell})` : ''}`;

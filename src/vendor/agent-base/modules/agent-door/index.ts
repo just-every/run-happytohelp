@@ -18,7 +18,7 @@ export { CORE_CAPABILITIES, OPTIONAL_CAPABILITIES } from './capabilities.mjs'
 export type { Capability } from './capabilities.mjs'
 export { defineTool } from './registry.ts'
 export { ToolRefusal } from './errors.ts'
-export { operatorAuthPeople } from './operator-people.ts'
+export { operatorAuthPeople, operatorPolicyRefs } from './operator-people.ts'
 export type * from './types.ts'
 export type { ClassId, ClassFacts } from './policy/catalogue.ts'
 

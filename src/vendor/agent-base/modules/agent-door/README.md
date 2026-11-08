@@ -120,7 +120,16 @@ where `revision` can be null. Resources also contribute declared classes. A
 Business rule with `max_per_day` must name a `seed`; unscoped daily limits are
 refused as `policy_document_invalid` with the rule's `.seed` path, because this
 installation cannot reserve company-wide usage. A named `person:` ref must
-resolve to an active mapped Business person at adoption. Paired approver and
+resolve to an active mapped Business person at adoption or have a recorded retirement.
+Retired references match nobody and never remove a required approval. The signed
+envelope remains verbatim until Business delivers a policy without the reference;
+only the value-free suppression digest/marker persists across archive restore.
+Unsigned local policy and stored copies use the erasure marker, including late
+writes. Operator erasure uses `retire: { refs }` and `operatorPolicyRefs` in the
+native batch; see ADOPTING.md for selectors and retention reporting.
+`GET /agents/api/state` reports `policy.pending_retirement`, the number of
+distinct retired approver/reviewer references still in force. The Agents page
+shows a replacement notice with the Business policy link or local editor. Paired approver and
 reviewer refs use Business member ids and roles, independent of native roles. Invalid input leaves the last valid state intact.
 Expired adopted policy refuses agent work; unpairing uses the retained local
 document, or leaves policy unset. Adoption delivery and the paired computer's
@@ -172,12 +181,17 @@ its first Business. Audit, approval and review changes replace its sequence,
 including native erasure. Erased projections contain exactly
 `{id,seq,at,erased:true,tool,classes,disposition,agent}`. The feed retains no
 subject payload. Re-pairing cannot expose an old Business's feed to a new one.
-The Business-held projection is an external store: a tombstone replaces its
-whole live row; stop, unpairing, authority loss, an unsupported route, a rewind
-or 30 days without a successful pull purge that installation's copy. The seed
-feed is never trimmed and can rebuild that copy from cursor zero. This is
-seed-side support for BASE-AGENT-009; platform readers and seed adoption need
-their own evidence.
+The Business holds only the public projection for each relayed decision: the
+17 keys above, including raw resource URIs for records the decision touched.
+Only the owner of the Business can read this external copy. Record erasure
+purges the live projection through a tombstone pull, replacing its whole row
+with the erased form. Unpairing, re-pairing or stopping the seed, authority loss,
+an unsupported route, a rewind or 30 days without a successful pull purge that
+installation's Business copy. The seed keeps no additional copy beyond its own
+audit and the bounded relay feed (one row per decision). The feed is never
+trimmed and can rebuild the Business copy from cursor zero. This is seed-side
+support for BASE-AGENT-009; platform readers and seed adoption need their own
+evidence.
 
 Approval produces `resultType:"input_required"`, opaque `requestState`, and,
 when the client advertises URL elicitation, an `inputRequests` map whose

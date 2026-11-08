@@ -216,6 +216,10 @@
     {
       "id": "311_inbox_message_secure_delete.sql",
       "buyerSteps": "Back up D1 first; apply once after 310_inbox_contact_search.sql, before serving the updated Worker. Additive only: turns on FTS5 secure-delete for the message search index, so a message's deleted or rewritten words (an erased contact's messages) leave the index's storage instead of staying until its segments merge. One configuration row; no rebuild, no existing row or indexed text changes, nothing is read, sent or queued. Words deleted before this migration stay until FTS5 merges their segments. Exports and backups carry the setting with the index."
+    },
+    {
+      "id": "312_agent_door_retired_refs.sql",
+      "buyerSteps": "Back up D1 first; apply after 311_inbox_message_secure_delete.sql and before serving the updated Worker. Adds only the agent-door retired-reference suppression table from Base bb81810f74ae5cbad9cd786ac84ee738306f63de, without changing existing rows or applied migrations. Nothing is sent or replayed. Retain its value-free digests and erasure markers in installation archives so retirement survives restore."
     }
   ],
   "breaking": false,

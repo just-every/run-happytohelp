@@ -30,7 +30,7 @@ export async function startExecution(rt: Runtime, row: AuditRow, principal: Prin
     SELECT ?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM agent_door_state WHERE id=1 AND decision_lock=? AND decision_until>? AND local_paused=0 AND ${rt.options.trust ? "json_extract(envelope,'$.revision') IS ? AND json_extract(envelope,'$.paused')=0 AND json_extract(envelope,'$.exp')*1000>? AND NOT EXISTS (SELECT 1 FROM json_each(envelope,'$.revoked.consents') WHERE value=?)" : 'local_revision IS ?'}) AND NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id IN (?,?) AND json_extract(row,'$.tombstone') IS NOT NULL)`)
     .bind(row.id, rt.now(), rt.options.seed, principal.agent.specialist ?? null, principal.agent.id, JSON.stringify(classes), row.id, rt.now(), state.revision, ...(rt.options.trust ? [rt.now(), principal.consent ?? null] : []), row.operation_id, row.decision_id)
   row.outcome = 'running'
-  const statements = [reserve, auditInsert(rt, row, evidence, row.id)]
+  const statements = [reserve, await auditInsert(rt, row, evidence, row.id)]
   if (claim) statements.push(callClaim(rt, row, principal, claim, true))
   const result = await rt.options.db.batch(statements)
   return !!result[0]!.meta.changes
@@ -41,7 +41,7 @@ function callClaim(rt: Runtime, row: AuditRow, principal: Principal, claim: Clai
 }
 export async function startPending(rt: Runtime, row: AuditRow, principal: Principal, evidence: Evidence, claim?: Claim) {
   row.outcome = 'running'
-  const result = await rt.options.db.batch([auditInsert(rt, row, evidence), ...(claim ? [callClaim(rt, row, principal, claim)] : [])])
+  const result = await rt.options.db.batch([await auditInsert(rt, row, evidence), ...(claim ? [callClaim(rt, row, principal, claim)] : [])])
   return !!result[0]!.meta.changes
 }
 export async function removeUsage(rt: Runtime, id: string) {

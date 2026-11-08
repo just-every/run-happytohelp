@@ -1,3 +1,4 @@
+import { retire } from './retired-refs.ts'
 import { restrictDecision } from './company-policy.ts'
 import { canonical } from './policy/document.ts'
 import { decide, scopeMatches } from './policy/decide.ts'
@@ -35,13 +36,15 @@ export function recordDecision(row: AuditRow, decision: DecisionMeta) {
   row.classes = decision.classes.map(item => ({ class: item.class as ClassId, facts: item.facts as ClassAndFacts['facts'] }))
   row.rules = decision.classes.map(({ class: cls, rule, do: action }) => ({ class: cls, rule, do: action }))
 }
-export function auditInsert(rt: Runtime, row: AuditRow, evidence?: Evidence, guard?: string) {
-  return rt.options.db.prepare(`INSERT INTO agent_door_audit(id,at,agent,classes,row,evidence) SELECT ?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id IN (?,?) AND json_extract(row,'$.tombstone') IS NOT NULL)${guard ? ' AND EXISTS(SELECT 1 FROM agent_door_usage WHERE decision_id=?)' : ''}`)
-    .bind(row.id, row.at, row.agent.id, JSON.stringify(row.classes.map(item => item.class)), JSON.stringify(row), evidence ? JSON.stringify(evidence) : null, row.operation_id, row.decision_id, ...(guard ? [guard] : []))
+export async function auditInsert(rt: Runtime, row: AuditRow, evidence?: Evidence, guard?: string) {
+  const [storedRow, storedEvidence] = await Promise.all([retire(rt.options.db, row), evidence ? retire(rt.options.db, evidence) : { sql: '?', value: null }])
+  return rt.options.db.prepare(`INSERT INTO agent_door_audit(id,at,agent,classes,row,evidence) SELECT ?,?,?,?,${storedRow.sql},${storedEvidence.sql} WHERE NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id IN (?,?) AND json_extract(row,'$.tombstone') IS NOT NULL)${guard ? ' AND EXISTS(SELECT 1 FROM agent_door_usage WHERE decision_id=?)' : ''}`)
+    .bind(row.id, row.at, row.agent.id, JSON.stringify(row.classes.map(item => item.class)), storedRow.value, storedEvidence.value, row.operation_id, row.decision_id, ...(guard ? [guard] : []))
 }
 export async function audit(rt: Runtime, row: AuditRow, evidence?: Evidence) {
-  await rt.options.db.prepare(`INSERT INTO agent_door_audit(id,at,agent,classes,row,evidence) SELECT ?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id IN (?,?) AND json_extract(row,'$.tombstone') IS NOT NULL) ON CONFLICT(id) DO UPDATE SET classes=excluded.classes,row=excluded.row,evidence=excluded.evidence WHERE json_extract(agent_door_audit.row,'$.tombstone') IS NULL`)
-    .bind(row.id, row.at, row.agent.id, JSON.stringify(row.classes.map(item => item.class)), JSON.stringify(row), evidence ? JSON.stringify(evidence) : null, row.operation_id, row.decision_id).run()
+  const [storedRow, storedEvidence] = await Promise.all([retire(rt.options.db, row), evidence ? retire(rt.options.db, evidence) : { sql: '?', value: null }])
+  await rt.options.db.prepare(`INSERT INTO agent_door_audit(id,at,agent,classes,row,evidence) SELECT ?,?,?,?,${storedRow.sql},${storedEvidence.sql} WHERE NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id IN (?,?) AND json_extract(row,'$.tombstone') IS NOT NULL) ON CONFLICT(id) DO UPDATE SET classes=excluded.classes,row=excluded.row,evidence=excluded.evidence WHERE json_extract(agent_door_audit.row,'$.tombstone') IS NULL`)
+    .bind(row.id, row.at, row.agent.id, JSON.stringify(row.classes.map(item => item.class)), storedRow.value, storedEvidence.value, row.operation_id, row.decision_id).run()
 }
 export function outcomeRow(row: AuditRow, result: import('./types.ts').CallResult) {
   if (result.decision) recordDecision(row, result.decision)

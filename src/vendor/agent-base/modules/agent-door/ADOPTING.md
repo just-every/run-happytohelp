@@ -99,6 +99,67 @@ with its existing authoring command after staging intentional changes. See the
 [edition authoring guide](../../export/EDITION-AUTHORING.md) for offline refresh,
 adaptations and copy verification.
 
+## Refreshing a copy older than 0.2.96
+
+The tagged schemas in `rer-v0.2.93` and `rer-v0.2.94` are identical.
+`rer-v0.2.95` adds erasure/replay custody (reference migrations `0038` and
+`0039`); `rer-v0.2.96` adds the relay (`0040`). The current source additionally needs policy-reference suppression (`0041`).
+These are the additive upgrades to the current schema:
+
+| Starting Base release | Additive SQL needed for current source |
+| --- | --- |
+| 0.2.93 | The older-schema SQL below, then the relay SQL and retirement SQL below. |
+| 0.2.94 | The same older-schema SQL below, then the relay SQL and retirement SQL below. |
+| 0.2.95 | The relay SQL and retirement SQL below; both columns, the expiry index and replay-alias objects already exist. |
+| 0.2.96 | Only the retirement SQL below; relay and replay custody already exist. |
+
+Write only the deltas the seed's applied schema lacks. SQLite has no
+`ADD COLUMN IF NOT EXISTS`: check `PRAGMA table_info(agent_door_agents)` and
+`PRAGMA table_info(agent_door_calls)` first (and `sqlite_schema` for indexes,
+tables and triggers). Put the missing deltas in **ONE new numbered migration**
+ahead of the relay DDL in that migration; never edit an applied migration.
+The older-schema SQL is:
+
+<!-- schema-upgrade:0.2.93:begin -->
+```sql
+ALTER TABLE agent_door_agents ADD COLUMN tombstone TEXT;
+ALTER TABLE agent_door_calls ADD COLUMN expires_at INTEGER;
+-- Backfill only legacy completed calls, using their start, never upgrade time.
+UPDATE agent_door_calls SET expires_at=created_at + 30*24*60*60*1000
+WHERE state NOT IN ('running','pending') AND expires_at IS NULL;
+CREATE INDEX IF NOT EXISTS agent_door_calls_expiry ON agent_door_calls(expires_at);
+CREATE TABLE IF NOT EXISTS agent_door_replay_aliases (
+  agent TEXT NOT NULL, alias TEXT NOT NULL, call_id TEXT NOT NULL, tombstone TEXT NOT NULL,
+  PRIMARY KEY(agent,alias)
+);
+CREATE TRIGGER IF NOT EXISTS agent_door_delete_replay_aliases AFTER DELETE ON agent_door_calls
+BEGIN
+  DELETE FROM agent_door_replay_aliases WHERE agent=OLD.agent AND call_id=OLD.decision_id;
+END;
+CREATE INDEX IF NOT EXISTS agent_door_replay_aliases_call ON agent_door_replay_aliases(agent,call_id);
+```
+<!-- schema-upgrade:0.2.93:end -->
+
+The replay-alias objects above are exactly [schema/replay-aliases.sql](schema/replay-aliases.sql).
+For the relay SQL, append the exact contents of
+[`0040_agent_door_relay.sql`](../../default-seed/migrations/core/0040_agent_door_relay.sql):
+the table, two indexes, four triggers and one-time audit backfill. Do not replay
+the seed's existing migrations. Relay DDL alone does not add the older columns:
+current tool admission reads `agent_door_calls.expires_at`, so an older schema
+returns 500 before producing decisions and fails `BASE-AGENT-009.relay.count`.
+Append the retirement SQL below for every starting release in the table. It is
+also the complete upgrade from 0.2.96 (reference migration `0041_agent_retired_refs.sql`):
+
+<!-- schema-upgrade:retired-refs:begin -->
+```sql
+CREATE TABLE agent_door_retired_refs (digest TEXT PRIMARY KEY, marker TEXT NOT NULL);
+```
+<!-- schema-upgrade:retired-refs:end -->
+
+The frozen-schema upgrade test executes these SQL blocks and the relay file,
+comparing all objects against the schema applied fresh. The suppression table
+travels in installation archives; do not add it to portability exclusions.
+
 ## Wire the edition
 
 Use explicit `.ts` extensions in runtime imports so the copied source can also
@@ -117,16 +178,23 @@ internal implementation file or the test-only conformance signer. Route its
 signed policy adoption reach their own checks. Also route
 `POST /api/rer/agent-decisions` to the same `handle` before app authentication.
 The relay migration, route and erasure-map declaration must land in the same
-seed commit. Copy the relay DDL from `schema/agent-door.sql` into a new numbered
-migration and backfill existing MCP audits with consent to the current
+seed commit. For an older applied schema, first follow
+[Refreshing a copy older than 0.2.96](#refreshing-a-copy-older-than-0296).
+Copy the relay DDL from `schema/agent-door.sql` into a new numbered migration and backfill existing MCP audits with consent to the current
 envelope Business, as in `default-seed/migrations/core/0040_agent_door_relay.sql`.
 Do not alter an applied migration. The Business drops pre-join history; this
 backfill cannot reconstruct older pairing authority. Declare
 `agent_door_relay(sequence,decision_id,business)` as `unrelated` in each native
 artifact map: it holds only decision ids and the installation Business id.
-Record the Business-held projections as an external custody store, purged by
-tombstone pulls and the authority/stop/unreachable rules in the
-[relay wire](README.md#business-decision-relay-w-r1w-r5).
+Record an external custody store for the Business: per relayed decision it
+holds only the 17-key public projection, including raw resource URIs for records
+the decision touched, readable only by the owner of the Business. Record erasure
+purges the live projection through a tombstone pull; unpairing, re-pairing or
+stopping the seed purges that installation's Business copy. Apply the remaining
+authority and unreachable purge rules in the
+[relay wire](README.md#business-decision-relay-w-r1w-r5). The seed keeps no
+additional copy beyond its own audit and the bounded relay feed (one row per
+decision).
 `BASE-AGENT-009.relay` runs after the audit phase against the hosted build and
 refuses a missing route or one accepting a foreign signature. Retain the edition's native
 person session and Origin and CSRF controls. The [route and capacity reference](README.md)
@@ -1279,8 +1347,13 @@ honestly refused execution does not satisfy its journey's completion or receipt
 checks. Native continuations are checked separately from ordered harness calls:
 an `embedded` row must carry a nonempty `continuation_item_id` and the
 `operation_id` of an earlier harness row with the same agent, sponsor, consent
-and client. It must retain a recorded policy decision, matching rules, a `done`
-or coded `refused` outcome, and zero `differs_from_policy`. Other extra rows
+and client. It must retain a recorded policy decision, matching rules, a `done`,
+linked `replayed` or coded `refused` outcome, and zero `differs_from_policy`.
+A completed replay must link an earlier completed original with the same agent,
+sponsor, consent, client, operation, tool, native item, public key, classes/facts
+and target. Its current policy is checked independently; it records no new
+resource-effect list or count. Erased evidence still requires the verifier's
+pre-erasure snapshot; a tombstone alone cannot establish a replay link. Other extra rows
 still fail the audit count; a continuation marker alone cannot hide one.
 Harness rows match their recorded decision identities in native order, so an
 unexpected row remains a distinct failure without shifting later comparisons.
@@ -1509,11 +1582,36 @@ non-personal agent scope dimensions so erasure does not reset policy allowances.
 A native erasure notification keeps its event type and time without reintroducing
 the subject identifier after the transactional hook.
 Native subject IDs, exact addresses and the imported `sourceUserId` select their
-linked decision, approval, review and event rows. Operators and installation
-policy are separate from the reference's customer subjects; a seed that erases operators must also map sponsor
-identity columns and policy person references. Do not select by a common name
-alone. Resolve native target IDs before admitting pending execution, including
-tools that return only a child row ID.
+linked decision, approval, review and event rows. Do not select by a common
+name alone. Resolve native target IDs before admitting pending execution,
+including tools that return only a child row ID.
+
+**Operator subjects.** Select the operator's own rows by native id and exact
+contacts, never by a policy reference or Business id: those appear in every
+decision's policy evidence. Boundary-checked mentions must skip `person:`
+references. Map sponsor identity columns separately, and declare
+`agent_door_state` with `retire: { refs: 'policyRefs' }`, supplying
+`subject.policyRefs = JSON.stringify(await operatorPolicyRefs(db, operatorId))`.
+Import `operatorPolicyRefs` from the module's `index.ts`; it returns native and
+mapped Business references, excluding the owner's Business identity. Owner
+erasure is outside this recipe. Put `agentErasureStatements` inside the same
+native erasure batch, including its portability checkpoint even for retirement
+alone. Retirement replaces exact references in unsigned local policy and stored
+copies with `person:erased:<erasure_id>`, which matches nobody. Required approvals
+stay pending until expiry; retirement never drops an approver or changes the
+local revision. Later writes apply the same suppression.
+
+Report two retained items under BASE-DATA-006: the verbatim signed envelope,
+which the seed cannot edit or re-sign, until the Business delivers a policy
+without the reference; and the value-free, domain-separated SHA-256 suppression
+digest and erasure marker, retained to honour erasure across later delivery and
+archive restore. Never store a raw retired reference outside
+`agent_door_state.envelope`. Equal-sequence refreshes and later revisions can
+still name the retired person without darkening the door. The state field
+`policy.pending_retirement` counts distinct retired approver/reviewer references;
+the Agents page links to Business policy when paired, or the local editor.
+The count clears when policy no longer names the reference or marker. In local
+policy the marker remains until the owner chooses a replacement.
 
 Append `await agentErasureStatements({db,map,subject,secret,tombstone,checkpoint})`
 inside the existing erasure transaction. `tombstone` is
@@ -1539,7 +1637,7 @@ timestamps and `{erasure_id,at}`. Empty structural fields support existing reade
 Audit integrity is its existing sequence and tombstone; no hash chain is added.
 
 The personal replay key is replaced by an opaque key derived from the call's
-decision ID. The sole retention exception is an installation-private
+decision ID. For replay custody, the retention exception is an installation-private
 HMAC-SHA-256 alias of the legacy key, scoped to its agent, under that existing
 private setting. `REPLAY_WINDOW_MS` in `erasure.ts` fixes one replay window of
 30 days after call completion, with no knob or per-seed override. `expires_at`
@@ -1571,5 +1669,5 @@ and triggers in a new seed migration once custody is integrated; do not disable
 them with flags. Preserve independent legal/regulator holds, identity protections
 and restore checks. Prove each subject type through its public erasure/restore
 doors, scan every mapped column, replay the old key at now, 24 hours plus 1 ms
-and the replay horizon plus 1 ms (a new request), and compare a peer's records byte for byte. Generic module tests
+and the replay horizon plus 1 ms (a new request), and compare a peer's records byte for byte except references retired to the erasure's marker. Generic module tests
 alone do not qualify an adopting seed.

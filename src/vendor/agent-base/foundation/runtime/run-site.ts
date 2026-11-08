@@ -70,7 +70,7 @@ export const PATHS = {
   heading: (n: string) => `Run ${n}.`,
   meta: (n: string) => `Three ways to run ${n}: on your own computer, Assisted or Managed.`,
   self: {
-    badge: '100% free', title: 'Run it yourself',
+    badge: 'On your computer', title: 'Run it yourself',
     body: (n: string) => `One line in your terminal gets ${n} running on your computer, with you as its owner.`,
     command: (repo: string) => `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev ${shellArgument(repo)}`,
     copy: { idle: 'Copy', done: 'Copied', ms: 1600 },

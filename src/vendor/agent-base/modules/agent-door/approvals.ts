@@ -1,3 +1,4 @@
+import { retire } from './retired-refs.ts'
 import { erasedResult } from './erasure.ts'
 import type { Evidence } from './audit.ts'
 import { recoverAudit } from './audit.ts'
@@ -20,7 +21,8 @@ export async function openApproval(rt: Runtime, saved: SavedApproval) {
   const id = crypto.randomUUID(), requestState = crypto.randomUUID()
   const approval = { id, url: `${rt.options.origin}/agents/approvals/${id}`, expires_at: saved.expires_at }
   saved.result = { ...saved.result, outcome: 'pending', approval, requestState }
-  await rt.options.db.prepare("INSERT INTO agent_door_approvals(id,state,saved) SELECT ?,?,? WHERE NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id=? AND json_extract(row,'$.tombstone') IS NOT NULL)").bind(id, 'pending', JSON.stringify(saved), saved.decision_id).run()
+  const stored = await retire(rt.options.db, saved)
+  await rt.options.db.prepare(`INSERT INTO agent_door_approvals(id,state,saved) SELECT ?,?,${stored.sql} WHERE NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id=? AND json_extract(row,'$.tombstone') IS NOT NULL)`).bind(id, 'pending', stored.value, saved.decision_id).run()
   return saved.result
 }
 export async function approvalReplay(rt: Runtime, result: CallResult): Promise<CallResult> {
@@ -79,8 +81,9 @@ export async function approvalDoor(rt: Runtime, request: Request, person: Person
   if (action === 'approve') approvals.push(...unsatisfied.map(ref => ({ ref, person: person.id, name: person.name, at: new Date(rt.now()).toISOString() })))
   const complete = action === 'approve' && saved.approvers.every(ref => approvals.some(mark => mark.ref === ref))
   const nextState = action === 'reject' ? 'rejected' : complete ? 'executing' : 'pending'
-  const changed = await rt.options.db.prepare('UPDATE agent_door_approvals SET state=?,approvals=?,version=version+1 WHERE id=? AND version=? AND state=?')
-    .bind(nextState, JSON.stringify(approvals), id, row.version, 'pending').run()
+  const stored = await retire(rt.options.db, approvals)
+  const changed = await rt.options.db.prepare(`UPDATE agent_door_approvals SET state=?,approvals=${stored.sql},version=version+1 WHERE id=? AND version=? AND state=?`)
+    .bind(nextState, stored.value, id, row.version, 'pending').run()
   if (!changed.meta.changes) return error('approval_conflict', 409)
   const final = complete ? await executeApproval(rt, id, saved, approvals) : { state: nextState, code: undefined }
   await appendEvents(rt, [{ type: 'approval.decided', uri: `${rt.options.origin}/agents/approvals/${id}`, actor: { kind: 'person', person: { id: person.id, name: person.name } }, data: { decision_id: saved.decision_id, classes: saved.classes, decision: 'approval', state: final.state, ...(final.code ? { code: final.code } : {}) } }], saved.decision_id)

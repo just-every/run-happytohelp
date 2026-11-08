@@ -1,3 +1,5 @@
+import { pendingRetirement } from './retired-refs.ts'
+import { retirementNotice } from './page-words.ts'
 import type { AuditRow } from './audit.ts'
 import { approvalDoor, type approvalView } from './approvals.ts'
 import { businessRole, matchingRefs } from './people.ts'
@@ -139,6 +141,7 @@ async function dashboard(rt: Runtime, request: Request, person: Person): Promise
   const paused = state.paused || state.localPaused, complete = publicState(rt, state).policy.complete
   const policy = canAudit ? setup(rt, state, role === 'owner') : ''
   let content = `<div class="heading"><div><h1>Agents</h1><p data-agents-state>${paused ? 'Agents are paused.' : 'Agents are on.'}</p>${state.paused ? '<p>Paused in Business.</p>' : ''}</div>${role === 'owner' ? `<div class="actions">${action('/agents/api/pause', state.localPaused ? 'Resume agents' : 'Pause agents', 'data-agents-pause', `<input type="hidden" name="paused" value="${!state.localPaused}">`)}</div>` : ''}</div>`
+  if (canAudit && await pendingRetirement(rt.options.db, state.document)) content += `<p data-policy-retirement>${escape(retirementNotice)} <a href="${escape(rt.options.trust ? setupUrl(rt, state) : '#policy-title')}">${rt.options.trust ? 'Manage policy in Business' : 'Edit policy'}</a></p>`
   if (!complete) content += policy
   content += approvalFeed(rt, approvals.approvals) + reviewFeed(rt, reviews.reviews) || '<section aria-label="Waiting for you"><p>Nothing is waiting for you.</p></section>'
   if (recent) content += activity(rt, recent.results.map(record => JSON.parse(record.row) as AuditRow))

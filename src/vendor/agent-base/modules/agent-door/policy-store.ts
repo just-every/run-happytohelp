@@ -1,3 +1,4 @@
+import { retiredMarker, retire } from './retired-refs.ts'
 import { verifyJws } from './credentials.ts'
 import { offers } from './capabilities.mjs'
 import { answered, canonical, completeness, document_sha256, validateDocument, DocumentInvalid } from './policy/document.ts'
@@ -55,7 +56,7 @@ export async function adoptPolicy(rt: Runtime, request: Request): Promise<Respon
     const unscoped = document.rules.findIndex(rule => rule.max_per_day !== undefined && rule.seed === undefined)
     if (unscoped !== -1) return error('policy_document_invalid', 400, { path: `$.rules[${unscoped}].seed` })
     const refs = [...new Set([...document.rules.flatMap(rule => rule.approver ?? []), ...document.reviewers ?? []].filter(ref => ref.startsWith('person:')))]
-    const unresolved = (await Promise.all(refs.map(async ref => (await rt.options.people.sponsor({ sub: ref.slice(7) }))?.active ? null : ref))).filter(ref => ref !== null)
+    const unresolved = (await Promise.all(refs.map(async ref => (await rt.options.people.sponsor({ sub: ref.slice(7) }))?.active || await retiredMarker(db, ref) ? null : ref))).filter(ref => ref !== null)
     if (unresolved.length) return error('policy_refs_unresolved', 400, { refs: unresolved })
     const revision = typeof value.revision_signature === 'string' ? await verifyJws(value.revision_signature, 'rer-agent-policy-revision+jwt', trust.publicKeys) : null
     if (!revision || revision.business !== value.business || revision.revision !== value.revision || value.revision === null || revision.document_sha256 !== await document_sha256(validateDocument(value.document))) return error('policy_revision_invalid')
@@ -88,6 +89,7 @@ export async function localPolicy(rt: Runtime, request: Request): Promise<Respon
   if (document.spend && 'caps' in document.spend) return error('spend_caps_not_enforced', 409)
   const problems = completeness(document, declaredClasses(rt))
   if (problems.length) return error('policy_incomplete', 409, { problems })
-  const row = await rt.options.db.prepare('INSERT INTO agent_door_state(id,local_document,local_revision) VALUES(1,?,1) ON CONFLICT(id) DO UPDATE SET local_document=excluded.local_document,local_revision=agent_door_state.local_revision+1 RETURNING local_revision').bind(JSON.stringify(document)).first<{ local_revision: number }>()
+  const stored = await retire(rt.options.db, document)
+  const row = await rt.options.db.prepare(`INSERT INTO agent_door_state(id,local_document,local_revision) VALUES(1,${stored.sql},1) ON CONFLICT(id) DO UPDATE SET local_document=excluded.local_document,local_revision=agent_door_state.local_revision+1 RETURNING local_revision`).bind(stored.value).first<{ local_revision: number }>()
   return json({ revision: row!.local_revision, complete: true })
 }

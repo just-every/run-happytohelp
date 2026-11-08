@@ -38,7 +38,7 @@ export function toolResult(result: CallResult, version: string, clientCapabiliti
   }
   const code = result.outcome === 'pending' ? 'approval_required' : result.code
   if (code) meta['com.runeditrun/error'] = { code, ...result.fields, ...(result.outcome === 'pending' ? { approval: result.approval } : {}) }
-  return { resultType: 'complete', content: [{ type: 'text', text: JSON.stringify(code ? { code, ...result.fields } : result.result ?? null) },
+  return { resultType: 'complete', ...(result.outcome === 'pending' ? { requestState: result.requestState } : {}), content: [{ type: 'text', text: JSON.stringify(code ? { code, ...result.fields } : result.result ?? null) },
     ...(!code ? (result.resources ?? []).map(resource => ({ type: 'resource_link', ...resource })) : [])],
     ...(!code ? { structuredContent: result.result } : {}), isError: !!code, _meta: meta }
 }

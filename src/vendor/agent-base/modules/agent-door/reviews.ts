@@ -1,3 +1,4 @@
+import { retire } from './retired-refs.ts'
 import type { Evidence } from './audit.ts'
 import type { ClassAndFacts, Principal, Runtime, Person, ToolContext, ApprovalDisplaySummary } from './types.ts'
 import { undoContext, type Effect } from './execution.ts'
@@ -10,7 +11,8 @@ interface ReviewRecord { id: string; state: string; saved: string; marked_by: st
 export async function openReview(rt: Runtime, tool: string, principal: Principal, decision_id: string, evidence: Evidence, undo: unknown, door: ToolContext['door'], summary?: ApprovalDisplaySummary) {
   const id = crypto.randomUUID()
   const saved: SavedReview = { decision_id, tool, classes: evidence.classes, principal, reviewers: evidence.document.reviewers ?? [], undo, door, summary }
-  await rt.options.db.prepare("INSERT INTO agent_door_reviews(id,state,saved) SELECT ?,?,? WHERE NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id=? AND json_extract(row,'$.tombstone') IS NOT NULL)").bind(id, 'open', JSON.stringify(saved), decision_id).run()
+  const stored = await retire(rt.options.db, saved)
+  await rt.options.db.prepare(`INSERT INTO agent_door_reviews(id,state,saved) SELECT ?,?,${stored.sql} WHERE NOT EXISTS(SELECT 1 FROM agent_door_audit WHERE id=? AND json_extract(row,'$.tombstone') IS NOT NULL)`).bind(id, 'open', stored.value, decision_id).run()
   return { id }
 }
 export function reviewView(rt: Runtime, row: ReviewRecord) {

@@ -36,7 +36,7 @@ export function checkModulePackages(root, modules, roots, tree) {
     if (!manifests.has(reference)) manifests.set(reference, JSON.parse(tree.read(reference)));
     return version(manifests.get(reference), name);
   }
-  for (const [target, module] of modules) for (const request of dependencies(module.bytes, module.source)) {
+  for (const [target, module] of modules) for (const request of module.packageRequests ?? dependencies(module.bytes, module.source)) {
     const name = packageName(request.specifier);
     if (!name) continue;
     const scope = {};
@@ -47,7 +47,10 @@ export function checkModulePackages(root, modules, roots, tree) {
     if (!packages.has(key)) packages.set(key, {package: name, version: declared ?? null, baseVersion: pinned ?? null,
       conflict: Boolean(declared && pinned && declared !== pinned), files: []});
     packages.get(key).files.push(target);
-    if (!declared) missing.set(target, {package: name, baseVersion: pinned ?? null});
+    if (!declared) {
+      if (!missing.has(target)) missing.set(target, new Map());
+      missing.get(target).set(name, {package: name, baseVersion: pinned ?? null});
+    }
   }
   const required = new Set();
   function retain(target) {
@@ -56,9 +59,13 @@ export function checkModulePackages(root, modules, roots, tree) {
     for (const dependency of modules.get(target).dependencies) retain(dependency);
   }
   roots.forEach(retain);
-  for (const [target, item] of missing) if (required.has(target)) {
-    throw Error(`Cannot refresh module ${target}: package ${item.package} is not declared in the seed's package.json${item.baseVersion ? ` (Base uses ${item.baseVersion})` : ''}. This module is required by retained source. Review its adoption, declare and install the dependency with the seed's package manager, then repeat refresh-base; no files were refreshed.`);
+  const refusals = [];
+  for (const [target, items] of missing) if (required.has(target)) for (const item of items.values()) {
+    refusals.push(`Cannot refresh module ${target}: package ${item.package} is not declared in the seed's package.json${item.baseVersion ? ` (Base uses ${item.baseVersion})` : ''}. This module is required by retained source.`);
   }
+  if (refusals.length) throw Error([...refusals,
+    "Review their adoption, declare and install all named dependencies at Base's listed versions with the seed's package manager, then repeat refresh-base; no files were refreshed.",
+  ].join('\n'));
   // Withhold the whole connected optional addition, including its importers
   // and exclusive siblings, rather than leaving half of a feature behind.
   const neighbours = new Map([...modules.keys()].map(target => [target, new Set()]));
@@ -71,6 +78,6 @@ export function checkModulePackages(root, modules, roots, tree) {
     withheld.set(target, {...reason, path: target, originPath: modules.get(target).source, reason: 'undeclared-package'});
     for (const neighbour of neighbours.get(target)) hold(neighbour, reason);
   }
-  for (const [target, reason] of missing) hold(target, reason);
+  for (const [target, items] of missing) hold(target, items.values().next().value);
   return {withheld, packageDependencies: [...packages.values()].map(item => ({...item, files: [...new Set(item.files)].sort()}))};
 }

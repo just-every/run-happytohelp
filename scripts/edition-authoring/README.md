@@ -238,8 +238,18 @@ from an archive, first refresh using `--base <checkout>` containing the recorded
 and target commits. A same-pin archive refresh can retain membership directly.
 Archive workflow matching uses only the supplied revision: exact current
 template bytes can be recorded; unmatched workflow bytes remain seed-owned.
-Migration ancestry and historical source reads still refuse before writing and
-require a checkout. Use
+Plain directory archives cannot prove migration ancestry or older source reads;
+those requests still refuse before writing. For an online GitHub source, use
+`rer refresh-base --ref FULL_40_HEX_COMMIT --from-api` instead. This shares
+`record-base --from-api`'s authenticated `gh api` reader: commit/tree/blob reads
+use immutable IDs, incomplete recursive trees are completed by child tree ID,
+and blobs are checked against their Git object IDs. GitHub compare
+`INTRODUCED...REVISION` proves ancestry only with `ahead` or `identical`;
+`behind` and `diverged` do not prove it. Provider errors, unknown comparisons
+and invalid objects refuse before writes. There are no retries or offline API
+mode; choose one of `--from-api`, `--base` or `--base-archive`. API workflow
+matching remains snapshot-only. Named edition-migration consent is still required
+for each owed edit; refresh leaves that edition edit owed. Use
 `verify-base --offline` to check local recorded bytes after an archive refresh,
 or `verify-base --base <checkout>` to also check Git provenance.
 
@@ -290,8 +300,11 @@ Every recorded code module is closed over relative imports and re-exports,
 including delivered workflow helpers and adapted modules (read from local bytes).
 A delivered `.mjs` also brings its Base declaration sibling. A dependency keeps
 its relative destination only when an existing copy mapping witnesses that
-namespace. Tracked unrecorded dependencies stay seed-owned and stop traversal;
-new imports from refreshed files must find their named, type and default exports.
+namespace. Tracked unrecorded dependencies stay seed-owned, and their local
+bytes are traversed as closure roots alongside acknowledged adaptations.
+Their Base dependencies must resolve at witnessed destinations or refresh
+refuses before writes; imports without a Base counterpart stay seed-owned.
+New imports from refreshed files must find their named, type and default exports.
 A JavaScript/TypeScript AST discovers imports, re-exports and literal runtime
 calls, including optional calls, templates and JSX. Runtime imports of every
 form resolve independently of declaration-only files;

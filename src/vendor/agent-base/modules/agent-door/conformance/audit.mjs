@@ -36,11 +36,24 @@ function reviewProblem(c, calls, index, row, reviews) {
  if (!reviews.some(review => review.id === row.review.id && review.decision_id === (row.replay_of ?? row.id))) return 'the review row is not linked to the completed call';
 }
 
+function continuationReplay(row, original) {
+ // The public key is scoped internally by agent, operation, tool and native
+ // item. Replaying a completed mutation returns its saved result, but records
+ // a new decision and a replay_of link rather than another completed effect.
+ return original?.outcome === 'done' && original.code === null && original.replay_of === null
+  && typeof row.idempotency_key === 'string' && row.idempotency_key.length > 0 && row.idempotency_key.length <= 200 && !row.idempotency_key.includes('\0')
+  && ['operation_id', 'tool', 'continuation_item_id', 'idempotency_key', 'consent', 'client_id'].every(key => row[key] === original[key])
+  && isDeepStrictEqual(row.agent, original.agent) && isDeepStrictEqual(row.sponsor, original.sponsor)
+  && isDeepStrictEqual(row.classes, original.classes) && isDeepStrictEqual(row.resource, original.resource)
+  && row.decision_id === null && row.approval?.id === original.approval?.id && row.review?.id === original.review?.id
+  && !Object.hasOwn(row, 'resources') && !Object.hasOwn(row, 'resource_count');
+}
+
 // Only an earlier harness row can establish the origin of native work. A
 // marker alone never exempts an embedded call from the ordered expectations.
 function continuationRows(c, rows, differs, report = () => {}) {
  const recorded = new Map(c.calls.filter(call => call.kind !== 'approval/execute' && call.decision?.id).map(call => [call.decision.id, call]));
- const origins = new Map(), accepted = new Set(); let index = 0;
+ const origins = new Map(), earlier = new Map(), accepted = new Set(); let index = 0;
  for (const row of rows) {
   const call = recorded.get(row.id);
   if (call) {
@@ -48,6 +61,7 @@ function continuationRows(c, rows, differs, report = () => {}) {
    if (row.tool === call.name && row.agent?.id === principal.agent.id && row.agent?.name === principal.agent.name && row.agent?.specialist === principal.agent.specialist && row.sponsor?.id === principal.sponsor && row.consent === principal.consent && row.client_id === principal.clientId && typeof row.operation_id === 'string' && row.operation_id) {
     if (!origins.has(row.operation_id)) origins.set(row.operation_id, []);
     origins.get(row.operation_id).push(row);
+    earlier.set(row.id, row);
    }
    continue;
   }
@@ -56,12 +70,15 @@ function continuationRows(c, rows, differs, report = () => {}) {
   const dispositions = ['autonomous', 'review', 'approval', 'blocked', 'unset', 'unavailable', 'paused'];
   const classes = Array.isArray(row.classes) && row.classes.length > 0 && new Set(classIds(row.classes)).size === row.classes.length && row.classes.every(item => AGENT_CLASSES.includes(item.class) && item.facts && typeof item.facts === 'object');
   const rules = classes && Array.isArray(row.rules) && isDeepStrictEqual(classIds(row.rules), classIds(row.classes)) && row.rules.every(rule => dispositions.includes(rule.do) && (['unset', 'unavailable', 'paused'].includes(rule.do) ? rule.rule === null : typeof rule.rule === 'string' && rule.rule.length > 0));
+  const completed = (row.outcome === 'done' && row.replay_of === null || row.outcome === 'replayed' && continuationReplay(row, earlier.get(row.replay_of)))
+   && ['autonomous', 'review', 'approval'].includes(row.decision) && row.code === null;
+  const refused = row.outcome === 'refused' && row.replay_of === null && typeof row.code === 'string' && row.code.length > 0;
   const valid = Boolean(origin) && row.door === 'embedded' && typeof row.continuation_item_id === 'string' && row.continuation_item_id.trim().length > 0
    && typeof row.label === 'string' && row.label.includes(' for ') && Number.isFinite(Date.parse(row.at))
    && Number.isSafeInteger(row.revision) && row.revision > 0 && rules && row.decision === dispositions[Math.max(...row.rules.map(rule => dispositions.indexOf(rule.do)))]
-   && (row.outcome === 'done' && ['autonomous', 'review', 'approval'].includes(row.decision) && row.code === null || row.outcome === 'refused' && typeof row.code === 'string' && row.code.length > 0) && differs === 0;
-  report(`BASE-AGENT-009.1.continuation.${index++}`, valid, 'Native continuation must link an earlier harness operation with the same agent, sponsor, consent and client, a recorded policy decision and a completed or coded refused outcome.');
-  if (valid) accepted.add(row);
+   && (completed || refused) && differs === 0;
+  report(`BASE-AGENT-009.1.continuation.${index++}`, valid, 'Native continuation must link an earlier harness operation with the same agent, sponsor, consent and client, a recorded policy decision and a completed, linked replayed or coded refused outcome.');
+  if (valid) { accepted.add(row); earlier.set(row.id, row); }
  }
  return accepted;
 }

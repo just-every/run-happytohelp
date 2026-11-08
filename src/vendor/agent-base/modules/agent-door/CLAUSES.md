@@ -17,6 +17,12 @@ completion where no horizon exists. Delete aliases with their call at expiry.
 An old key after expiry is a new request under current authorization and cannot
 recover the erased value. Aliases never enter archives, exports or restore.
 The adoption guide defines the map, native transaction and restore custody.
+When an operator is erased, each reference to them in the owner's policy and
+in every stored copy is retired to an erasure marker that matches nobody; the
+one signed envelope as delivered, and a one-way digest of the opaque person
+reference alone (never a name, email or phone), are kept only until the
+Business delivers a policy that no longer names the reference, so the door
+stays live and the retirement survives a restore.
 This clarification does not promote any clause judgment.
 
 ## Target clauses

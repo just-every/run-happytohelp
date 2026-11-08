@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "c23108e0bc2d6cd50672b6a9008df688d01e5d08",
+      "bytes": 5470,
+      "path": "PLANNING-RECEIPT.json",
+      "sha256": "d9e6009026e1fca2991c47c438dc9e8e6abef0f2ad192cc0632a855d8dba0164"
+    },
+    {
+      "blob": "5a7a524be8d4f5458d9663480b5fb128675c2be4",
+      "bytes": 11687,
+      "path": "REPORT.md",
+      "sha256": "c57cfc32f8005d4d2e6b366207f939cd1d630c0073558f6582e97af27d825ffc"
+    },
+    {
+      "blob": "30f6dc6bde740260f5c62bc10da04433321439fe",
+      "bytes": 17895,
+      "path": "SOURCE-OBSERVATIONS.md",
+      "sha256": "a74fb1ff1f3201a886136bdc67b0321c4d5bb72afc4e1d291b88e24e2cacc3f7"
+    }
+  ],
+  "product_branch": "main",
+  "product_head": "9c123887be64e57e612ae5da22a49447d284e81a",
+  "ref": "refs/heads/evidence/hh-plan-next-12",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-plan-next-12"
+}

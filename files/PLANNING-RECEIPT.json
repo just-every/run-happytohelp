@@ -1,0 +1,155 @@
+{
+  "advertised_refs": [
+    "9c123887be64e57e612ae5da22a49447d284e81a\trefs/heads/main"
+  ],
+  "clone_cleanup": "required after evidence publication; terminal cleanup is recorded separately",
+  "clone_mode": "--depth 1 --filter=blob:none --single-branch --branch main",
+  "dispatch": false,
+  "evidence_publication": "performed separately after freezing these inspection files",
+  "evidence_ref": "refs/heads/evidence/hh-plan-next-12",
+  "fleet_duplicate_custody": "NOT VERIFIED; feeder clearance required before dispatch",
+  "lifetime_fix_history": "NOT VERIFIED; clause-wide and aliases must clear two-FIX cap before dispatch",
+  "observed_utc": "2026-11-08T07:53:11.181865+00:00",
+  "origin_main": "9c123887be64e57e612ae5da22a49447d284e81a",
+  "packet_files": [
+    "REPORT.md",
+    "PLANNING-RECEIPT.json",
+    "SOURCE-OBSERVATIONS.md"
+  ],
+  "product_candidate_commits": [],
+  "product_changes": false,
+  "product_commits": false,
+  "product_pushes": false,
+  "product_status_porcelain": "",
+  "proposed_tags": [
+    "hh-outbound001-email-note-n1"
+  ],
+  "prs": false,
+  "repository": "just-every/run-happytohelp",
+  "role": "planner",
+  "schema": 1,
+  "source_branch": "main",
+  "source_files": [
+    {
+      "bytes": 5019,
+      "path": "AGENTS.md",
+      "sha256": "40710644b2bb1b4fdde10b609c7c5b83f2180fc401018e2de42edfe7fe98693c"
+    },
+    {
+      "bytes": 7643,
+      "path": "HANDOVER.md",
+      "sha256": "45a2ba8500c48bdeab1349c299a626bf83b1c62f7f0a6ee529eb18c5b26453fc"
+    },
+    {
+      "bytes": 357807,
+      "path": "CONTRACT.md",
+      "sha256": "01bdd3e1a9e02e80a19407d3d603bb9ca817e95f50ba01ff9609c2f1250459d9"
+    },
+    {
+      "bytes": 63679,
+      "path": "docs/moving-in.md",
+      "sha256": "44158d01074d608df0245d3239c52e899cee18382d6509973c1915ef90f9b44f"
+    },
+    {
+      "bytes": 29501,
+      "path": "docs/email.md",
+      "sha256": "db7a5a6cd686cee096f35ac6273e9f80d5a0fac0c986e391ce72c4f6b3535c42"
+    },
+    {
+      "bytes": 6096,
+      "path": "src/modules/management/outbound-ticket-input.ts",
+      "sha256": "1d3bfd534de666614a9a47e1558e5a2aba0c2d2db2ef51d17a8bc20f666d3495"
+    },
+    {
+      "bytes": 9692,
+      "path": "src/modules/management/outbound-tickets.ts",
+      "sha256": "e60ccb640042568facf54cade2da5512ecf2b51df1f80953720c6e9b523eced6"
+    },
+    {
+      "bytes": 11567,
+      "path": "src/modules/management/outbound-ticket-store.ts",
+      "sha256": "65fbd880709970ccc5819c481422d1eae38e1e893ef1b7125a6d8588b4bc1668"
+    },
+    {
+      "bytes": 6582,
+      "path": "src/modules/management/outbound-configuration.ts",
+      "sha256": "00b147848ce795936e771b28b6f393d05acf4f035259f0c3afd78491ee37d965"
+    },
+    {
+      "bytes": 3579,
+      "path": "src/modules/management/outbound-options.ts",
+      "sha256": "a91f385895a844bf0f9001c355d9967d0dbe7285bdb06e14b36d6acf61e9010b"
+    },
+    {
+      "bytes": 15519,
+      "path": "src/ui/dashboard/components/CreateEmailTicket.jsx",
+      "sha256": "2352b31d78fd536ed8bc3ff794e7de691d879d41e3dd3985512a61abe5883741"
+    },
+    {
+      "bytes": 4157,
+      "path": "src/ui/dashboard/components/NewTicketConfiguration.jsx",
+      "sha256": "67f7b8ad2d99aabe3a840cb0a95c493957e79c77d07b9bf7d6000b3043823d4a"
+    },
+    {
+      "bytes": 21940,
+      "path": "src/modules/move-in/readers/normalise.ts",
+      "sha256": "45cbcb6a4e9c9c82297d7ee089af2b0f551310efcb285aa2cd05f62fda4a8e38"
+    },
+    {
+      "bytes": 2560,
+      "path": "src/modules/move-in/readers/staff-requesters.ts",
+      "sha256": "d92821f183802cb1a4e0cbc1c1e9d305a74251f3548aa27e5b145974f66781f5"
+    },
+    {
+      "bytes": 5381,
+      "path": "src/modules/move-in/readers/records.ts",
+      "sha256": "b218eed33eaaddfd235e35da6d659fcbbfa5c3cb86f280954abd0657f6f2d2b6"
+    },
+    {
+      "bytes": 6309,
+      "path": "src/modules/move-in/service.ts",
+      "sha256": "4272b2a2e4be7ab131bd831f7461b35b2e2b5303dbaafd27ac1372f0eec3207a"
+    },
+    {
+      "bytes": 2494,
+      "path": "src/modules/macros/schema.ts",
+      "sha256": "fa2af906af2a1800ddcbcfeeec7aea9a3ea21840ad476ddd74352feed6c17f0d"
+    },
+    {
+      "bytes": 1808,
+      "path": "src/modules/macros/placeholders.ts",
+      "sha256": "4bb9adff89b5b9eb674b88b1198b4eabd5ac8168001177d520b632b415b0580c"
+    },
+    {
+      "bytes": 14791,
+      "path": "tests/helpers/email/outbound-configuration.mjs",
+      "sha256": "fa76a2800773b2b7626fc844e28c89e88a26c7ee2a402c4cde7daa450b48ba5d"
+    },
+    {
+      "bytes": 22278,
+      "path": "tests/helpers/inbox/new-ticket-configuration.mjs",
+      "sha256": "4dbc64ff99d7831f2c3e839945f9ceb9ad06cb659a7b27cff5bb1325bba89b5f"
+    },
+    {
+      "bytes": 1116,
+      "path": "tests/journeys/email.mjs",
+      "sha256": "67096c52087c9ce4782e7a7758947725afae9df7f674f74687f40eba2badf6f3"
+    },
+    {
+      "bytes": 1533,
+      "path": "tests/journeys/inbox-browser.mjs",
+      "sha256": "c419254c07ae3841647aae16442306d1b42cd11cf547d4d5242f3314d5a97626"
+    }
+  ],
+  "source_head": "9c123887be64e57e612ae5da22a49447d284e81a",
+  "tag": "hh-plan-next-12",
+  "validation": {
+    "CI": "NOT RUN: source-inspection-only planner",
+    "browser": "NOT RUN: source-inspection-only planner",
+    "build": "NOT RUN: source-inspection-only planner",
+    "install": "NOT RUN: source-inspection-only planner",
+    "provider_qualification": "NOT RUN: source-inspection-only planner",
+    "tests": "NOT RUN: source-inspection-only planner",
+    "typecheck": "NOT RUN: source-inspection-only planner"
+  }
+}

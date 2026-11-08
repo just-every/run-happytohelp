@@ -2804,6 +2804,10 @@
       "sha256": "452eff9cd48f852d6aad178fdc983657f6e27338c731d9851d59c229ad66d2b3",
       "executable": false
     },
+    "migrations/312_agent_door_retired_refs.sql": {
+      "sha256": "508ee03f99af16e57cfce045e7430015be220bff72975a3fbf78c6dce67e09cb",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -4341,7 +4345,7 @@
       "executable": false
     },
     "src/edition/agent-door/artifacts.ts": {
-      "sha256": "f4db8b695de9d364dfd130b7369513e4614da1c5d23ab01a810479838f197527",
+      "sha256": "f709579b8d669f6d1b3f9e20e555301b61285eeb381c7bde6ba0f11ea5799fe4",
       "executable": false
     },
     "src/edition/agent-door/erasure.ts": {
@@ -6384,6 +6388,10 @@
       "sha256": "684734c78e7704d1eac0ea006b2c4e10122f4f7bea2e24780ba4224f4ceb2dd1",
       "executable": false
     },
+    "src/modules/import-kit/src/d1/snapshot-text.ts": {
+      "sha256": "897102ef7d40325dba49573c2b53be45a19d18d0c81d07244015f2bb87d6e84c",
+      "executable": false
+    },
     "src/modules/import-kit/src/d1/staged-creation.ts": {
       "sha256": "4bdca5668ea08f7c275498fcdd272e979307343623b638aa909b5267e216bf2a",
       "executable": false
@@ -6530,6 +6538,14 @@
     },
     "src/modules/import-kit/src/d1/verified-plan.ts": {
       "sha256": "182e14d710ad7aeb869d7c437023c5481d665165b4f632570f364646f7e52e9c",
+      "executable": false
+    },
+    "src/modules/import-kit/src/d1/wave-boundary.ts": {
+      "sha256": "b0b11ba2c810376bcd2b2c66134f2ff40a80077318c37b945d2d5efdc54421d9",
+      "executable": false
+    },
+    "src/modules/import-kit/src/d1/wave-retirement.ts": {
+      "sha256": "2fba86ac00a73f02be7470e003d8eb4593922088dee7d0d9c37e5307341ab98b",
       "executable": false
     },
     "src/modules/import-kit/src/door/admission.ts": {
@@ -13834,6 +13850,10 @@
     },
     "src/vendor/agent-base/modules/agent-door/resource-tool.ts": {
       "sha256": "6d70880fc5d58cfdb1c3ad10a5085eac684ed85639bbbf4a7ee4be307e538e5d",
+      "executable": false
+    },
+    "src/vendor/agent-base/modules/agent-door/retired-refs.ts": {
+      "sha256": "a4d189941dc10e66f8dd61e7271ec2f8b357efe45a5481c0661bfac469ca056e",
       "executable": false
     },
     "src/vendor/agent-base/modules/agent-door/reviews.ts": {

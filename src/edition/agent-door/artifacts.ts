@@ -48,6 +48,7 @@ const decisions=`SELECT decision_id FROM agent_door_calls WHERE ${calls}
  UNION SELECT id FROM agent_door_audit WHERE ${audits}`
 const match=(sql:string)=>({sql,params:['values']})
 const shared:AgentArtifactMap['artifacts']=[
+ {table:'agent_door_retired_refs',columns:['digest','marker'],unrelated:'Value-free suppression digests and erasure markers preserve retirement across restore.'},
  {table:'agent_door_relay',columns:['sequence','decision_id','business'],unrelated:'Value-free decision ids and installation Business id; projections are computed from erasure-aware audit. Installation-private, never portable.'},
  {table:'agent_door_state',columns:['id','envelope','local_document','local_revision','local_paused','decision_lock','decision_until'],unrelated:'Signed installation policy and admission leases. Opaque native person refs retain authority; customer records are never policy principals.'},
  {table:'agent_door_calls',columns:['agent','key','digest','decision_id','created_at','state','outcome','expires_at'],match:match(`decision_id IN (${decisions})`)},

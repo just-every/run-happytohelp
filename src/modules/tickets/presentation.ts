@@ -8,7 +8,8 @@ export async function ticketPresentation(env:Env,rows:any[],userId?:string){
  const projects=[...new Set<string>(rows.map(r=>r.project_id))],ids=JSON.stringify(rows.map(r=>r.id))
  const access=new Map(await Promise.all(projects.map(async project=>[project,userId?await memberAccess(env.DB,project,userId):null] as const)))
  const results=await env.DB.batch<any>([
-  env.DB.prepare('SELECT f.*,v.conversation_id,v.value_json FROM ticket_field_values v JOIN ticket_fields f ON f.project_id=v.project_id AND f.id=v.field_id WHERE v.conversation_id IN (SELECT value FROM json_each(?))').bind(ids),
+  // Each page conversation's own values through their primary key (its workspace, then it), never every value.
+  env.DB.prepare('SELECT f.*,v.conversation_id,v.value_json FROM json_each(?) page CROSS JOIN conversations pc ON pc.id=page.value CROSS JOIN ticket_field_values v ON v.project_id=pc.project_id AND v.conversation_id=pc.id JOIN ticket_fields f ON f.project_id=v.project_id AND f.id=v.field_id').bind(ids),
   env.DB.prepare('SELECT c.id,s.name,s.category FROM conversations c JOIN ticket_statuses s ON s.project_id=c.project_id AND s.id=c.status_id WHERE c.id IN (SELECT value FROM json_each(?))').bind(ids),
   env.DB.prepare('SELECT c.id,g.id group_id,g.name FROM conversations c JOIN ticket_groups g ON g.project_id=c.project_id AND g.id=c.group_id WHERE c.id IN (SELECT value FROM json_each(?))').bind(ids),
   env.DB.prepare('SELECT ct.conversation_id,t.id,t.name FROM conversation_tags ct JOIN workspace_tags t ON t.project_id=ct.project_id AND t.id=ct.tag_id WHERE ct.conversation_id IN (SELECT value FROM json_each(?)) ORDER BY t.name,t.id').bind(ids),

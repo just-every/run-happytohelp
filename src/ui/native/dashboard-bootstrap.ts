@@ -28,7 +28,7 @@ export type DashboardBootstrapResult = {
     initialInboxList?: InitialInboxListData;
     initialTags?: { path: string; outcome: Promise<InitialReadOutcome> };
     initialManagement?: { path: string; outcome: Promise<InitialReadOutcome> };
-} | { status: number; message: string };
+} | { status: number; message: string; retryAfter?: number };
 export type WorkspaceBootstrap = { bootstrap: Promise<DashboardBootstrapResult> };
 
 function validateBootstrapInput(input: DashboardBootstrapInput): DashboardBootstrapInput {

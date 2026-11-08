@@ -1,16 +1,31 @@
 import {knowledgeRefusalMessage} from './knowledge-references/refusal-message';
 import {takeInitialWorkspaceRead} from './initial-workspace-reads.js';
+// A busy read is tried again for about a minute; an open view's own signal ends it sooner.
+const BUSY_READ_ATTEMPTS = 6;
+const busyPause = (ms, signal) => new Promise((resolve, reject) => {
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener('abort', () => { clearTimeout(timer); reject(signal.reason || new DOMException('Request aborted', 'AbortError')); }, { once: true });
+});
 /** Native command transport. Commands are persisted by the server before UI acknowledgement. */
 export async function nativeRequest(path, init = {}) {
     const initial = await takeInitialWorkspaceRead(path, init);
-    if (initial) {
+    // A busy database (503) on the document's own read is read again live, as any other busy read.
+    if (initial && initial.error?.status !== 503) {
         if ('error' in initial) {
             notifyExpiredSession(path, initial.error.status, initial.error.data);
             throw Object.assign(new Error(initial.error.message), {status: initial.error.status, data: initial.error.data});
         }
         return initial.result;
     }
-    const response = await fetch(path, { credentials: 'same-origin', ...init });
+    let response = await fetch(path, { credentials: 'same-origin', ...init });
+    // A read the server answered 503 waits for its Retry-After (at most 10 s) and runs again, so a panel
+    // keeps loading through a busy moment instead of failing; a write is never repeated.
+    for (let attempt = 0; response.status === 503 && (init.method || 'GET').toUpperCase() === 'GET' && attempt < BUSY_READ_ATTEMPTS && !init.signal?.aborted; attempt++) {
+        const seconds = Number(response.headers.get('Retry-After'));
+        await response.body?.cancel();
+        await busyPause(1000 * Math.min(10, seconds > 0 ? seconds : 3), init.signal);
+        response = await fetch(path, { credentials: 'same-origin', ...init });
+    }
     const body = response.status === 204 ? null : await response.json();
     // A sensitive action asks for a recent step-up; once confirmed, the same request runs once more.
     if (response.status === 403 && body.code === 'step_up_required' && !init.stepUpRetried && await confirmStepUp(body)) return nativeRequest(path, { ...init, stepUpRetried: true });

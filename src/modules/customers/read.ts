@@ -11,6 +11,10 @@ export async function companyList(env:Env,projectId:string){
  ])
  return {companies:rows.results.map(row=>{const {domains_json,member_count,...company}=row;return {...companyData({company,domains:JSON.parse(domains_json),members:[]}),memberCount:member_count}}),fields:definitions.map(fieldData)}
 }
+/** The workspace's companies by name, for a filter that shows only names: one row per company. */
+export async function companyNames(env:Env,projectId:string){
+ return {companies:(await env.DB.prepare('SELECT id,name FROM companies WHERE project_id=? AND merged_into IS NULL ORDER BY name,id').bind(projectId).all<{id:string;name:string}>()).results}
+}
 export async function companyDetail(env:Env,projectId:string,id:string,userId:string){
  const [current,definitions,members,tickets,history]=await Promise.all([
   snapshot(env,projectId,id),fields(env,projectId),

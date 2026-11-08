@@ -21,6 +21,7 @@ import {fileRecords} from '@runeditrun/rer/modules/portability/files';
 import {checkArchiveSnapshot,readDurableObjects,snapshotSql} from './durable-objects.mjs';
 import {nativeMigrationDecision} from './migration-ledger.mjs';
 import {derivedSearchIndexes} from './search-index-sql.mjs';
+import {inboxRebuildSql} from './inbox-entries-sql.mjs';
 import * as model from './ui/seed.mjs';
 
 const environment=context=>({...process.env,...context.vars,APP_ORIGIN:context.origin,WRANGLER_SEND_METRICS:'false',CLOUDFLARE_INCLUDE_PROCESS_ENV:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false',X_LOCAL_EXPLORER:'false'});
@@ -104,6 +105,7 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
   await d1(context,'Fencing restored evaluations',trainingRestoreSql);
   await d1(context,'Fencing restored background work',asyncWorkRestoreSql);
   for(const {table} of derivedSearchIndexes)await d1(context,'Rebuilding conversation search',`INSERT INTO ${table}(${table}) VALUES('rebuild')`);
+  await d1(context,'Rebuilding the inbox',inboxRebuildSql);
  }
  // The receipt names the Durable Object storage the archive carries (exported) or carried (restored).
  return {...result,durableObjects:snapshots.map(({namespace,className,records,digest})=>({namespace,className,records:Array.isArray(records)?records.length:records,digest}))};

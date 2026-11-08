@@ -7,12 +7,7 @@ import {
     isAbortedConversationRequest,
     refreshConversationPages,
 } from '../components/conversationListPagination';
-
-// A search the server answered 503 (its database was busy) is retried after Retry-After, at most this long.
-const BUSY_RETRY_CAP_SECONDS = 10;
-const BUSY_RETRY_DEFAULT_SECONDS = 3;
-const busySearch = (filter, error) => error?.status === 503 && Boolean(filter?.q);
-const busyWait = error => 1000 * Math.min(BUSY_RETRY_CAP_SECONDS, error.retryAfter > 0 ? error.retryAfter : BUSY_RETRY_DEFAULT_SECONDS);
+import { busyWait, isBusy as busyError } from '../utils/busy';
 
 function useConversationList({
     conversationLists,
@@ -114,7 +109,7 @@ function useConversationList({
                     return;
                 }
 
-                if (busySearch(filter, error)) {
+                if (busyError(error)) {
                     retryWhenFree(scope, error, retryScope => startRefreshRef.current(retryScope));
                     return;
                 }
@@ -209,7 +204,7 @@ function useConversationList({
                     return;
                 }
 
-                if (busySearch(filter, error)) {
+                if (busyError(error)) {
                     retryWhenFree(scope, error, () => loadMoreRef.current());
                     return;
                 }

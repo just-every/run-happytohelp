@@ -8,6 +8,11 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## Unreleased
+
+- **Dashboard and inbox reads at scale:** the dashboard, inbox lists, counts and filters read from derived inbox tables that stay current by trigger, so their cost follows the page size and not the size of a large imported workspace. An overloaded D1 answers 503 busy instead of timing out.
+- **Migrations:** `313_inbox_entries.sql` (not part of 0.4.14). Apply once after `312_agent_door_retired_refs.sql` and before serving the updated Worker; it is additive and fills the derived tables from existing rows.
+
 ## 0.4.14 — 2026-11-09
 
 K17 inbox_entries migration 313 is not included; it ships in v0.4.15.

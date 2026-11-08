@@ -205,6 +205,10 @@
     {
       "id": "302_move_in_zendesk_pull.sql",
       "buyerSteps": "Back up D1 and R2 first. Apply once after 301_import_door.sql and before serving the updated Worker. Adds a source column to Move in runs (existing runs stay uploads) and new tables for the Zendesk OAuth connection, its single-use authorizations, pulls, staged source records (including replies on already imported tickets), refusals, pulled batches and a hash of each pulled ticket's own fields. Tokens and verifiers are stored only as ciphertext under INTEGRATION_ENCRYPTION_KEY; keep that key with the deployment, since a restored connection without it must be reconnected. No connection or pull starts by migration, and Zendesk is never contacted until an owner or admin connects. The Knowledge import's Zendesk API-token path is removed: unset ZENDESK_EMAIL and ZENDESK_TOKEN, and import Zendesk articles through Move in."
+    },
+    {
+      "id": "313_inbox_entries.sql",
+      "buyerSteps": "Back up D1 first; apply once after 312_agent_door_retired_refs.sql, before serving the updated Worker. Additive only: derived inbox tables (inbox_entries, inbox_tallies, inbox_field_tallies, inbox_tag_tallies, inbox_unread) with their indexes, an index of snooze schedules by conversation and one of contacts by name, and triggers that keep the derived tables current from messages, notes, merges, conversations, AI rows and profiles, snooze schedules, imported-message sources, tag and company links, reads and memberships. The migration fills them once from the existing rows; no existing row changes and nothing is sent, queued or enabled. Every value is derived: each import or restore rebuilds them from the restored rows."
     }
   ]
 }

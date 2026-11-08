@@ -5,6 +5,7 @@ import {
     hasNextPage as hasNextResponsePage,
     isAbortedRequest,
 } from '../components/conversationRequestLifecycle';
+import { busyWait, isBusy } from '../utils/busy';
 
 function useConversationLoading({
     conversationId,
@@ -26,6 +27,9 @@ function useConversationLoading({
     const [ readyConversationId, setReadyConversationId ] = useState(null);
     const [ loadError, setLoadError ] = useState(null);
     const [ loadMoreError, setLoadMoreError ] = useState(null);
+    // A busy database (503): the conversation keeps what it shows and reads again after Retry-After.
+    const [ busy, setBusy ] = useState(null);
+    const busyRetry = useRef(null);
     const activeConversationIdRef = useRef(conversationId);
     const bucketsRef = useRef(buckets);
     const fetchConversationRef = useRef(fetchConversation);
@@ -45,6 +49,15 @@ function useConversationLoading({
         && request.generation === requestGeneration.current
         && request.conversationId === activeConversationIdRef.current
     );
+
+    const retryWhenFree = (request, error, retry) => {
+        clearTimeout(busyRetry.current);
+        setBusy({ conversationId: request.conversationId });
+        busyRetry.current = setTimeout(() => {
+            busyRetry.current = null;
+            if (request.conversationId === activeConversationIdRef.current && request.generation === requestGeneration.current) retry();
+        }, busyWait(error));
+    };
 
     const finishRequest = request => {
         if (!requestIsCurrent(request)) {
@@ -82,11 +95,17 @@ function useConversationLoading({
         )
             .then(result => {
                 if (requestIsCurrent(request)) {
+                    setBusy(null);
                     setHasNextPage(hasNextResponsePage(result, 'Conversation buckets'));
                 }
             })
             .catch(error => {
                 if (!requestIsCurrent(request) || isAbortedRequest(error)) {
+                    return;
+                }
+
+                if (isBusy(error)) {
+                    retryWhenFree(request, error, () => loadOlderBucketsRef.current());
                     return;
                 }
 
@@ -106,6 +125,8 @@ function useConversationLoading({
                 finishRequest(request);
             });
     }, [ conversationId, conversationProjectId, hasNextPage ]);
+    const loadOlderBucketsRef = useRef(loadOlderBuckets);
+    loadOlderBucketsRef.current = loadOlderBuckets;
 
     const loadConversation = (quietly = false, initialNavigation = false) => {
         if (activeRequest.current) {
@@ -163,6 +184,7 @@ function useConversationLoading({
             },
         })
             .then(result => {
+                if (result && requestIsCurrent(request)) setBusy(null);
                 if (result && requestIsCurrent(request) && initialLoad) {
                     setHasNextPage(result.hasNextPage);
                     setReadyConversationId(conversationId);
@@ -171,6 +193,11 @@ function useConversationLoading({
             .catch(error => {
                 initialFailed = true;
                 if (!requestIsCurrent(request) || isAbortedRequest(error)) {
+                    return;
+                }
+
+                if (isBusy(error)) {
+                    retryWhenFree(request, error, () => loadConversationRef.current(quietly));
                     return;
                 }
 
@@ -205,6 +232,9 @@ function useConversationLoading({
             activeRequest.current?.controller.abort();
             activeRequest.current = null;
             queuedQuietRefresh.current = false;
+            clearTimeout(busyRetry.current);
+            busyRetry.current = null;
+            setBusy(null);
             // StrictMode immediately installs a replacement request for this same
             // envelope. A real unmount/navigation has no such committed setup.
             queueMicrotask(() => {
@@ -244,6 +274,7 @@ function useConversationLoading({
         isLoadingMore,
         isRefreshing,
         hasNextPage,
+        isBusy: busy?.conversationId === conversationId,
         loadError: loadError?.conversationId === conversationId ? loadError.error : null,
         loadMoreError,
         loadOlderBuckets,

@@ -114,8 +114,12 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   assert.deepEqual(Object.fromEntries(Object.entries(applied.tables).filter(([,t])=>t.skipped).map(([table,t])=>[table,t.skipped])),{conversations:1,messages:2,media:1,mediables:1});
   assert.deepEqual(sql('SELECT id FROM messages WHERE id IN (?,?)',sesReply,sesMessage),[]);assert.deepEqual(sql('SELECT id FROM conversations WHERE id=?',sesConversation),[]);
   assert.deepEqual(sql('SELECT id FROM media WHERE id=?',sesMedia),[]);assert.equal(sql('SELECT COUNT(*) n FROM messages WHERE local_id IN (?,?)',...sesIds)[0].n,0);
-  assert.deepEqual(sql("SELECT source_table,CASE source_table WHEN 'mediables' THEN json_extract(source_json,'$.media_id') ELSE source_id END source FROM legacy_import_rows WHERE status='skipped' AND target_table IS NULL AND target_key IS NULL ORDER BY 1,2").map(r=>[r.source_table,r.source]),
-    [['conversations',sesConversation],['media',sesMedia],['mediables',sesMedia],['messages',sesReply],['messages',sesMessage]].sort((x,y)=>x[0].localeCompare(y[0])||x[1].localeCompare(y[1])));
+  // Skipped rows keep their digest and no source copy; the one file link is known by its table and status alone.
+  const skippedRows=sql("SELECT source_table,source_id,source_json FROM legacy_import_rows WHERE status='skipped' AND target_table IS NULL AND target_key IS NULL ORDER BY 1,2");
+  assert.deepEqual(skippedRows.map(r=>r.source_json),skippedRows.map(()=>'{}'),'skipped rows carry no source copy');
+  assert.deepEqual(skippedRows.filter(r=>r.source_table!=='mediables').map(r=>[r.source_table,r.source_id]),
+    [['conversations',sesConversation],['media',sesMedia],['messages',sesReply],['messages',sesMessage]].sort((x,y)=>x[0].localeCompare(y[0])||x[1].localeCompare(y[1])));
+  assert.equal(skippedRows.filter(r=>r.source_table==='mediables').length,1);
   assert.equal(/A legacy message in|Accounts Payable|asks about refunds|delta-local/.test(JSON.stringify(applied.conflicts)),false,'conflicts carry ids and reasons, no content');
 
   // The transcript gains the legacy messages in order after the imported ones, and the conversation follows them.

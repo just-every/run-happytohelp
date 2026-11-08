@@ -1709,7 +1709,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "bf5fdca833c4835a57c6c74c0ad05b6933c8bb81f69018fa5e58e07f7ae57fc5",
+      "sha256": "db7a5a6cd686cee096f35ac6273e9f80d5a0fac0c986e391ce72c4f6b3535c42",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -1749,7 +1749,7 @@
       "executable": false
     },
     "docs/LEGACY-EXPORT.md": {
-      "sha256": "3717fd1cd252d530706e63348247c4666b6de16447b1e6aeb8394639161ea637",
+      "sha256": "fafcedbbde998374616c4056a7b297476b2722b1f587d9a69a4d265982c93a12",
       "executable": false
     },
     "docs/licenses/base-MIT.txt": {
@@ -4533,7 +4533,7 @@
       "executable": false
     },
     "src/jobs.ts": {
-      "sha256": "f50d371d0d7a9d8978984ce8887ede4bce52b3a308b98ae75ad0d3370311f635",
+      "sha256": "da87f5c7f021735d2a993e9cb2eafff696f0dd8bda7cc1bca9af480230767474",
       "executable": false
     },
     "src/message-effects.ts": {
@@ -6749,7 +6749,7 @@
       "executable": false
     },
     "src/modules/integrations/email-erasure.ts": {
-      "sha256": "536102a73ccb4ba2267c0f8d98fbfe498c37033160b6ceaf3c8aaace98fb2d5e",
+      "sha256": "c9d7199beab342d5360dc961376696af82ad5ce9684906fce16e80328700956f",
       "executable": false
     },
     "src/modules/integrations/email-file-links.ts": {
@@ -6881,7 +6881,7 @@
       "executable": false
     },
     "src/modules/integrations/legacy-mail-s3/admit.ts": {
-      "sha256": "279424702049c92e99fa01d647c49e5394e6e13839c7a43361d000f792887110",
+      "sha256": "3484115b191eb0a7f757eb702936057c04053bfa8d55381d5072e74e4d61bdc7",
       "executable": false
     },
     "src/modules/integrations/legacy-mail-s3/config.ts": {
@@ -6897,7 +6897,7 @@
       "executable": false
     },
     "src/modules/integrations/legacy-mail-s3/list.ts": {
-      "sha256": "3ac74d6e225f3514680fd6193f85a08c59d38a07a0dfaa5b5a08a9737fec6243",
+      "sha256": "273809d48c4770094b3b0a0f1467870d75e8ff96518c73e7f64cd51526074eb6",
       "executable": false
     },
     "src/modules/integrations/legacy-mail-s3/s3.ts": {
@@ -7093,7 +7093,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mail-retention.ts": {
-      "sha256": "8ba99af697d5d0a36a5c67d963c38c5ca01af849cce8b4b5116e4c51d2222a2a",
+      "sha256": "13ff8f79cb40e6160974bafee333ac03cfe339ccc01b24e208e7b5d141596e4c",
       "executable": false
     },
     "src/modules/integrations/rer-mail-routes.ts": {
@@ -7533,7 +7533,7 @@
       "executable": false
     },
     "src/modules/legacy-import/delta-batch.ts": {
-      "sha256": "c8376bfd68d1727598d5670bc64de37f4be2b1c5bf360286223571ca50b41766",
+      "sha256": "87a1d0538eb515b836d37ec5d97acda9f3667256e884a8767e443373aa18103f",
       "executable": false
     },
     "src/modules/legacy-import/delta-guard.ts": {
@@ -7581,7 +7581,7 @@
       "executable": false
     },
     "src/modules/legacy-import/README.md": {
-      "sha256": "b0342af3a2256a6265252aaeae680ecefa278a52732382198ab87028cbc0f1ec",
+      "sha256": "9c9d50fbe9e8fd66ae008aa023478acd0a3881afff84815314c8249fed32c5d9",
       "executable": false
     },
     "src/modules/legacy-import/relationships.ts": {
@@ -7841,7 +7841,7 @@
       "executable": false
     },
     "src/modules/management/contact-erasure/archive.ts": {
-      "sha256": "ae7ef5b43c3566282b78a66317d6547a7d01fcf0219bbe4d70741de2e8da8ac1",
+      "sha256": "bf7ea7f517492c86b275e59851d3d56acf2928f8f81d10948eff06c2c301463d",
       "executable": false
     },
     "src/modules/management/contact-erasure/authority.ts": {
@@ -15565,7 +15565,7 @@
       "executable": false
     },
     "tests/helpers/email/legacy-mail-s3.mjs": {
-      "sha256": "80f097fa2620578d800fae13678665dc905287ca8a32a32e2b52c85f2537c823",
+      "sha256": "02d5b078e7065e0c320aea3c78544bce9371db27ab8b6a08a256f8c9324ebfa4",
       "executable": false
     },
     "tests/helpers/email/local-mail.mjs": {
@@ -16449,7 +16449,7 @@
       "executable": false
     },
     "tests/journeys/erasure.mjs": {
-      "sha256": "b9cc343d3fb1abb49c062b83c2b7a003947bfe20fc817a35891e4305b345c5b2",
+      "sha256": "5e2f24e6fc9b31250029f13a9448ffb96a806c1006926423c4be1caa675dbc81",
       "executable": false
     },
     "tests/journeys/first-run.mjs": {
@@ -16573,7 +16573,7 @@
       "executable": false
     },
     "tests/legacy-export/delta.mjs": {
-      "sha256": "e71572c3bb8775c2298a64d6f808c0ea12d052399c3d081ef15e8157eb239c84",
+      "sha256": "16fb0c01ccdbf5026f2679be046ec689cd4428f0b27faa652be5abe53a2ac409",
       "executable": false
     },
     "tests/legacy-export/extended-fixture.mjs": {

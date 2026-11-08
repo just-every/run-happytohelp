@@ -211,5 +211,51 @@ export async function legacyMailS3Journey(){
   await app.ok(`/api/management/projects/${a.projectId}/contacts/erin-a/erase`,{token:a.tokens.owner,body:{}});await app.drainJobs()
   assert.deepEqual(await receipt(),{project_id:null,sender:0,copy:0})
   assert.equal(await files.get(copy),null)
+
+  // A receipt now records the workspace it is read for with its private copy, so the reader's inputs no longer decide
+  // who may erase it. The reader's own job leaves one customer's mail unsettled: a job that dies after recording the
+  // sender (in flight), an admission that fails once (retry) and one that fails its last attempt (failed); another
+  // sender's job dies too. A receipt read before this records its workspace on the reader's next run.
+  const stuck={failed:SES+'stuckfailed0012',inFlight:SES+'stuckinflight0010',retry:SES+'stuckretry0011'},swept=SES+'stuckswept0013',older=SES+'stuckolder0014'
+  for(const key of [...Object.values(stuck),swept]){const id=key.slice(SES.length);s3.put(key,sesObject({id,from:key===swept?'Hal <hal@other.example>':'Gale <gale@stuck.example>',text:'Please call me back.'}))}
+  await files.put('legacy-mail-s3/older/copy.eml','synthetic private copy')
+  await app.db.batch([
+   app.db.prepare("INSERT INTO legacy_mail_s3_receipts(object_key,ses_message_id,source,size,state,attempts,claimed_at,raw_key,sender_address,created_at,updated_at) VALUES(?,'stuckolder0014','ses',22,'failed',12,1,'legacy-mail-s3/older/copy.eml','gale@stuck.example',1,?)").bind(older,Date.now()),
+   app.db.prepare("INSERT INTO contacts(id,project_id,email,metadata_json,created_at) VALUES('gale-a',?,'gale@stuck.example','{}',1)").bind(a.projectId),
+   app.db.prepare("INSERT INTO contacts(id,project_id,email,metadata_json,created_at) VALUES('gale-b',?,'gale@stuck.example','{}',1)").bind(b.projectId),
+  ])
+  await app.scheduled()
+  const queued=await app.takeJobs(),job=key=>queued.filter(entry=>entry.id===key)
+  await app.runJobs(queued.filter(entry=>![...Object.values(stuck),swept].includes(entry.id)))
+  const dies={'x-test-fault':'db-interrupt','x-test-statement':'SET sender_address=','x-test-statement-at':'1'}
+  // The third mailbox lookup is admission's own, after the sender is recorded.
+  const failsOnce={'x-test-fault':'db-once','x-test-statement':'NULL mailbox_id FROM email_settings','x-test-statement-at':'3'}
+  await app.runJobs(job(stuck.inFlight),dies);await app.runJobs(job(swept),dies);await app.runJobs(job(stuck.retry),failsOnce)
+  await app.db.prepare('UPDATE legacy_mail_s3_receipts SET attempts=11 WHERE object_key=?').bind(stuck.failed).run()
+  await app.runJobs(job(stuck.failed),failsOnce)
+  const unsettled=()=>app.sql(`SELECT object_key,state,project_id,sender_address IS NOT NULL sender,raw_key IS NOT NULL copy FROM legacy_mail_s3_receipts WHERE object_key IN (?,?,?,?) ORDER BY object_key`,...Object.values(stuck),older)
+  const unsettledAs=(state,project_id,sender,copy)=>[[stuck.failed,'failed'],[stuck.inFlight,'processing'],[older,'failed'],[stuck.retry,'retry']].map(([object_key,receiptState])=>({object_key,state:receiptState,project_id,sender,copy}))
+  assert.deepEqual(await unsettled(),unsettledAs(null,a.projectId,1,1))
+  const copies=(await app.sql('SELECT raw_key FROM legacy_mail_s3_receipts WHERE object_key IN (?,?,?,?)',...Object.values(stuck),older)).map(row=>row.raw_key)
+  // The reader is turned off. Another workspace's erasure of the same address leaves every receipt; the receiving
+  // workspace's erasure clears each one's sender and private copy, and every receipt stays as the arrival record.
+  await app.configure({LEGACY_AWS_SECRET_ACCESS_KEY:'  '})
+  const bucket=await app.files,s3Requests=app.requests.filter(request=>request.url.includes('amazonaws.com')).length
+  await app.ok(`/api/management/projects/${b.projectId}/contacts/gale-b/erase`,{token:b.tokens.owner,body:{}});await app.drainJobs()
+  assert.deepEqual(await unsettled(),unsettledAs(null,a.projectId,1,1))
+  for(const key of copies)assert.ok(await bucket.get(key),'another workspace\'s erasure leaves the private copy')
+  await app.ok(`/api/management/projects/${a.projectId}/contacts/gale-a/erase`,{token:a.tokens.owner,body:{}});await app.drainJobs()
+  assert.deepEqual(await unsettled(),unsettledAs(null,a.projectId,0,0))
+  for(const key of copies)assert.equal(await bucket.get(key),null)
+  // With the reader off, a copy an unsettled receipt left behind still expires after seven days, and no tick reads S3.
+  const sweptCopy=()=>app.first('SELECT state,sender_address IS NOT NULL sender,raw_key FROM legacy_mail_s3_receipts WHERE object_key=?',swept)
+  const left=(await sweptCopy()).raw_key
+  assert.ok(left&&await bucket.get(left))
+  await app.scheduled()
+  assert.equal((await sweptCopy()).raw_key,left,'a copy younger than seven days stays')
+  await app.scheduled({'x-test-clock':'advance'},{after:8*86400000})
+  assert.deepEqual(await sweptCopy(),{state:'processing',sender:1,raw_key:null})
+  assert.equal(await bucket.get(left),null)
+  assert.equal(app.requests.filter(request=>request.url.includes('amazonaws.com')).length,s3Requests)
  }finally{await app.close()}
 }

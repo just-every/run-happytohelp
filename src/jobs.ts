@@ -5,6 +5,7 @@ import {dispatchKnowledgeUpgrades} from './modules/knowledge/upgrade-progress'
 import {sweepUploads} from './modules/api-integrations/upload-lifecycle'
 import {processRerMailbox,recoverRerMailboxes,refreshRerMailbox} from './modules/integrations/rer-mailbox'
 import {LEGACY_MAIL_S3_JOB,processLegacyMailS3,recoverLegacyMailS3} from './modules/integrations/legacy-mail-s3'
+import {expireLegacyMailS3Raw} from './modules/integrations/rer-mail-retention'
 import {consumeTriage,dispatchTriage} from './modules/triage/worker'
 import {dispatchScheduledReports} from './modules/reports/schedule-dispatch'
 import {recoverTicketContinuations} from './modules/tickets/continuation'
@@ -81,7 +82,8 @@ export async function runScheduled(env:Env) {
  }
  await visit('Workflow',720,runWorkflows)
  await visit('Survey',70,dispatchSurveys)
- await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env);await recoverLegacyMailS3(env)})
+ // The Amazon SES reader's private copies expire every tick, whether or not the reader is configured.
+ await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env);await recoverLegacyMailS3(env);await expireLegacyMailS3Raw(env)})
  await visit('Voice media',2,expireVoiceMedia)
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.

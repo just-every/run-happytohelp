@@ -1,7 +1,6 @@
 import type {Env} from '../../../platform/env'
 import {cronRoom} from '../../../platform/cron-budget'
 import {receivingMailbox} from '../inbound-receiving'
-import {expireLegacyMailS3Raw} from '../rer-mail-retention'
 import {legacyMailS3Config,type LegacyMailS3Config} from './config'
 import {listObjects,S3Error} from './s3'
 
@@ -16,13 +15,16 @@ const LEASE_MS=120_000
 const STALE_CLAIM_MS=120_000
 const sesMessageId=(key:string)=>key.slice(key.lastIndexOf('/')+1)
 
-/** The cron step. With any required input missing it does nothing at all: no request, no row, no statement. Every
- * failure is recorded or logged here, never thrown, so another consumer's turn is never taken away. */
+/** The cron step. With any required input missing it does nothing at all: no request, no row, no statement. The private
+ * copies' expiry is not part of it: the Integration step sweeps them every tick, reader on or off
+ * (rer-mail-retention.ts). Every failure is recorded or logged here, never thrown, so another consumer's turn is never
+ * taken away. */
 export async function recoverLegacyMailS3(env:Env){
  const config=legacyMailS3Config(env)
  if(!config||!cronRoom(env,6))return
  const introduced=new Set<string>()
  try{await wakePendingMailbox(env,config)}catch(error){console.error('Amazon SES reader wake failed',error instanceof Error?error.name:'error')}
+ try{await recordWorkspace(env,config)}catch(error){console.error('Amazon SES reader workspace record failed',error instanceof Error?error.name:'error')}
  try{
   // SES's prefix first, and the replay prefix only in a tick that took in SES's whole listing: when one message sits under
   // both, the copy SES wrote is always the one that holds its id. A tick that leaves the replay prefix for later, because
@@ -35,13 +37,22 @@ export async function recoverLegacyMailS3(env:Env){
   try{await recordList(env,{ok:false,error:phrase})}catch(inner){console.error('Amazon SES reader list state failed',inner instanceof Error?inner.name:'error')}
  }
  try{await enqueueDue(env)}catch(error){console.error('Amazon SES reader enqueue failed',error instanceof Error?error.name:'error')}
- try{await expireLegacyMailS3Raw(env)}catch(error){console.error('Amazon SES reader copy sweep failed',error instanceof Error?error.name:'error')}
 }
 /** Receipts waiting for a workspace to receive on the mailbox are made due again the tick one does. */
 async function wakePendingMailbox(env:Env,config:LegacyMailS3Config){
  if(!cronRoom(env,3)||!await env.DB.prepare("SELECT 1 FROM legacy_mail_s3_receipts WHERE state='pending_mailbox' LIMIT 1").first())return
  if(!await receivingMailbox(env,[config.mailbox]))return
  await env.DB.prepare("UPDATE legacy_mail_s3_receipts SET state='pending',next_at=0,updated_at=? WHERE state='pending_mailbox'").bind(Date.now()).run()
+}
+/** A receipt the reader read before it recorded the workspace with the private copy (admit.ts) holds a copy or a sender
+ * and no workspace while it is in flight, in retry or failed. It is the workspace's that receives on the mailbox, as
+ * erasure has decided it while the reader is on (email-erasure.ts); recording that here keeps it erasable in that
+ * workspace once the reader is turned off. */
+const unrecorded="state IN ('processing','retry','failed') AND project_id IS NULL AND (raw_key IS NOT NULL OR sender_address IS NOT NULL)"
+async function recordWorkspace(env:Env,config:LegacyMailS3Config){
+ if(!cronRoom(env,3)||!await env.DB.prepare(`SELECT 1 FROM legacy_mail_s3_receipts WHERE ${unrecorded} LIMIT 1`).first())return
+ const workspace=await receivingMailbox(env,[config.mailbox])
+ if(workspace)await env.DB.prepare(`UPDATE legacy_mail_s3_receipts SET project_id=? WHERE ${unrecorded}`).bind(workspace.project.project_id).run()
 }
 /** How one prefix's list ended: `end`, its last page was read; `capped`, it gave this tick's share of new keys a receipt;
  * `stopped`, it ran out of statement room or pages first. */

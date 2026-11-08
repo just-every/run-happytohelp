@@ -24,7 +24,9 @@ export async function expireRerMailRaw(env:Env){
  if(orphaned.length)await env.FILES.delete(orphaned)
 }
 /** The Amazon SES reader's private transport copy is deleted by its own job once the receipt is final. This sweep takes
- * the copy a job left behind (it died between the receipt and the delete), and any copy older than seven days. */
+ * the copy a job left behind (it died between the receipt and the delete), and any copy older than seven days. It reads
+ * only D1 and R2 and runs every tick whether or not the reader is configured, so turning the reader off never keeps a
+ * copy longer. */
 export async function expireLegacyMailS3Raw(env:Env){
  if(!cronRoom(env,3))return
  const now=Date.now()

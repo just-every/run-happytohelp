@@ -72,6 +72,18 @@ async function seed(){
    ('seed-in-other','p','convOther','hash-seed-other','completed',31,0,'{"envelope_from":"bob@example.com","header_from":"Bob <bob@example.com>","subject":"Bob question","headers":{},"reasons":["precedence-bulk"]}','email:seed-3','mo1'),
    ('seed-in-q','q',NULL,'hash-seed-q','completed',41,0,'{"envelope_from":"alice@example.com","header_from":"Alice <alice@example.com>","subject":"Other project mail","headers":{},"reasons":[]}','email:seed-4',NULL)`,
   `INSERT INTO legacy_import_rows VALUES('run','contacts','ct','d-ct','{"name":"Alice Example","email":"alice@example.com"}','contacts','ct','mapped'),('run','messages','m1a','d-m1a','{"content":"${secret}"}','messages','m1a','mapped'),('run','contacts','other','d-other','{"name":"Bob Other"}','contacts','other','mapped'),('run','profiles','old-p','d-prof','{"profile":"Alice lives in Sydney"}','context_profiles','p:ct:contact','mapped'),('run','buckets','bucket1','d-bucket1','{"id":"bucket1","summary":"Alice asked about a refund for order 4471"}','conversation_buckets','bucket1','mapped'),('run','buckets','bucketOther','d-bucketOther','{"id":"bucketOther","summary":"Bob asked about shipping"}','conversation_buckets','bucketOther','mapped')`,
+  // Rows with no target or a target the seed never held: legacy's copy of mail the seed's reader took (skipped), a message
+  // legacy deleted (archive-only), a held message, and a legacy conversation the seed never held with its message, file
+  // link and file; then a row of another customer and one of another workspace naming the same id.
+  `INSERT INTO legacy_import_rows VALUES('run','messages','m-skipped','d-m-skipped','{"conversation_id":"conv1","contact_id":"ct","content":"Alice copy of order 4471"}',NULL,NULL,'skipped'),
+   ('run','messages','m-deleted','d-m-deleted','{"project_id":"p","conversation_id":"conv2","content":"Alice deleted this"}',NULL,NULL,'archived_only'),
+   ('run','messages','m-held','d-m-held','{"project_id":"p","conversation_id":"conv1","content":"Alice held reply"}','messages','m-held','conflict'),
+   ('run','conversations','conv-legacy','d-conv-legacy','{"id":"conv-legacy","project_id":"p","contact_id":"ct","subject":"Alice old chat"}',NULL,NULL,'skipped'),
+   ('run','messages','m-legacy','d-m-legacy','{"id":"m-legacy","project_id":"p","conversation_id":"conv-legacy","content":"Ship to 12 Private Lane"}',NULL,NULL,'skipped'),
+   ('run','mediables','link-legacy','d-link-legacy','{"media_id":"file-legacy","mediable_id":"m-legacy","mediable_type":"Message"}',NULL,NULL,'skipped'),
+   ('run','media','file-legacy','d-file-legacy','{"id":"file-legacy","filename":"alice-passport.png"}',NULL,NULL,'skipped'),
+   ('run','messages','mo-deleted','d-mo-deleted','{"project_id":"p","conversation_id":"convOther","contact_id":"other","content":"Bob deleted this"}',NULL,NULL,'archived_only'),
+   ('run','messages','mq-deleted','d-mq-deleted','{"project_id":"q","conversation_id":"convQ","contact_id":"ct","content":"Quinn deleted this"}',NULL,NULL,'archived_only')`,
  ]
  await DB.batch(rows.map(sql=>DB.prepare(sql)))
  const tokens={}
@@ -101,7 +113,7 @@ async function outsideScope(){
   localEvents:await all("SELECT * FROM local_events WHERE job_id<>'job1'"),
   replyGrants:await all("SELECT * FROM email_reply_grants WHERE token_hash IN ('reply-bob','reply-q') ORDER BY token_hash"),
   email:await all("SELECT * FROM email_deliveries WHERE id='message:mo1:x'"),
-  legacy:await all("SELECT * FROM legacy_import_rows WHERE source_id IN ('other','bucketOther') ORDER BY source_id"),
+  legacy:await all("SELECT * FROM legacy_import_rows WHERE source_id IN ('other','bucketOther','mo-deleted','mq-deleted') ORDER BY source_id"),
   buckets:await all("SELECT * FROM conversation_buckets WHERE conversation_id NOT IN ('conv1','conv2') ORDER BY id"),
   inbound:await all("SELECT * FROM inbound_emails WHERE id IN ('seed-in-other','seed-in-q') ORDER BY id"),
   objects:Object.fromEntries(await Promise.all(['p/convOther/other-upload','q/convQ/q-upload','q/convQ/q-by-ct'].map(async key=>[key,await objectText(key)]))),
@@ -135,6 +147,7 @@ async function erasedScope(){
   localReceipt:await one("SELECT review_message FROM local_receipts WHERE job_id='job1'"),
   email:await all("SELECT id,recipient FROM email_deliveries WHERE id IN ('message:m1b:notification','transcript-key') ORDER BY id"),
   legacy:await all("SELECT source_id,row_digest,source_json FROM legacy_import_rows WHERE source_id IN ('bucket1','ct','m1a','old-p') ORDER BY source_id"),
+  unheld:await all("SELECT source_table,source_id,row_digest,source_json,target_table,target_key,status FROM legacy_import_rows WHERE source_id IN ('m-skipped','m-deleted','m-held','conv-legacy','m-legacy','link-legacy','file-legacy') ORDER BY source_id"),
   inbound:await all("SELECT id,automatic,evidence_json,local_id,message_id FROM inbound_emails WHERE id IN ('seed-in-conv','seed-in-sender') ORDER BY id"),
   staged:await all('SELECT * FROM contact_erasure_objects'),
  }
@@ -197,6 +210,11 @@ let first,opAfter
  assert.deepEqual(erased.localEffect,{payload:'{}',state:'cancelled'});assert.equal(erased.localReceipt.review_message,null)
  assert.deepEqual(erased.email,[{id:'message:m1b:notification',recipient:''},{id:'transcript-key',recipient:''}])
  assert.deepEqual(erased.legacy,[{source_id:'bucket1',row_digest:'d-bucket1',source_json:'{}'},{source_id:'ct',row_digest:'d-ct',source_json:'{}'},{source_id:'m1a',row_digest:'d-m1a',source_json:'{}'},{source_id:'old-p',row_digest:'d-prof',source_json:'{}'}])
+ // Found by source, whatever the status or target: only the copy goes; digest, target and status stay.
+ assert.deepEqual(erased.unheld,[
+  ['conversations','conv-legacy',null,null,'skipped'],['media','file-legacy',null,null,'skipped'],['mediables','link-legacy',null,null,'skipped'],
+  ['messages','m-deleted',null,null,'archived_only'],['messages','m-held','messages','m-held','conflict'],['messages','m-legacy',null,null,'skipped'],['messages','m-skipped',null,null,'skipped'],
+ ].map(([source_table,source_id,target_table,target_key,status])=>({source_table,source_id,row_digest:'d-'+source_id,source_json:'{}',target_table,target_key,status})).sort((a,b)=>a.source_id<b.source_id?-1:1))
  assert.deepEqual(erased.inbound,[
   {id:'seed-in-conv',automatic:1,evidence_json:'{"reasons":["auto-submitted","list-header"]}',local_id:'email:seed-1',message_id:'m1a'},
   {id:'seed-in-sender',automatic:0,evidence_json:'{"reasons":[]}',local_id:'email:seed-2',message_id:null},

@@ -63,9 +63,10 @@ async function admit(env:Env,config:LegacyMailS3Config,receipt:Receipt):Promise<
  // Bytes that changed under a key this reader already read are held, never admitted over the first read.
  if(receipt.body_sha256&&receipt.body_sha256!==sha)return hold('message_identity_conflict',redactedMime(raw))
  // The private transport copy is written before admission, encrypted with the installation's data key: raw MIME can
- // carry a live reply grant. Its key is recorded first, so no crash leaves an object nothing refers to.
+ // carry a live reply grant. Its key is recorded first, so no crash leaves an object nothing refers to, and with the
+ // workspace it is read for, so the copy and the sender recorded next are that workspace's to erase, reader on or off.
  const rawKey=`legacy-mail-s3/${await hashToken(key)}/${sha}.eml`
- await env.DB.prepare("UPDATE legacy_mail_s3_receipts SET raw_key=?,body_sha256=? WHERE object_key=? AND state='processing'").bind(rawKey,sha,key).run()
+ await env.DB.prepare("UPDATE legacy_mail_s3_receipts SET raw_key=?,body_sha256=?,project_id=? WHERE object_key=? AND state='processing'").bind(rawKey,sha,projectId,key).run()
  await env.FILES.put(rawKey,await privateMime(env,raw,[key,receipt.ses_message_id,sha]),{httpMetadata:{contentType:'application/octet-stream'}})
  // The envelope recipient is SES's own record of who it received the message for, and the only routing there is.
  const bound=boundRecipient(lines,config),routed=bound?await receivingMailbox(env,[bound.address]):null

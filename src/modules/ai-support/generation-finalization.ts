@@ -4,6 +4,7 @@ import type { Generation } from './repository';
 import { transition } from './repository';
 import { assistanceProfileSql } from './selection';
 import { admitMessage } from '../conversations/admission';
+import { aiGenerationSql } from './reply-mode';
 
 /** Commit only while the captured conversation and policy frontier still match. */
 export async function finalizeGeneration(env: Env, row: Generation, attemptId: string, result: any, usage: unknown) {
@@ -18,6 +19,7 @@ export async function finalizeGeneration(env: Env, row: Generation, attemptId: s
           AND c.resolved_at IS NULL AND a.id=ai_generations.ai_id AND a.is_enabled=1
           AND a.model=json_extract(ai_profile_json,'$.model')
           AND a.prompt=json_extract(ai_profile_json,'$.prompt')
+          AND ${aiGenerationSql('c.project_id')}
       )
     `).bind(JSON.stringify({ result:await knowledgeAnswerFields(env,row.project_id,row.id,result), usage }), new Date().toISOString(), row.id).run();
     if (!completed.meta.changes) await transition(env, row.id, 'superseded', 'Conversation or AI policy changed');

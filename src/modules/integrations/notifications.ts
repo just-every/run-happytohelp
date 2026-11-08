@@ -2,7 +2,8 @@ import {problemMessageDelivery} from '../tickets/problem-delivery'
 import {notifyTicketEvent} from './triggers'
 import type {Actor,Env} from '../../platform/env'
 import {sendEmails,resendHeldEmails,emailConfigured,type EmailInput,type EmailOutcome,type DeferEmailDelivery} from './email'
-import {openRerMailHolds} from './rer-mail-hold'
+import {openRerMailHolds,endRerMailHolds} from './rer-mail-hold'
+import {workspaceReplyMode} from '../ai-support/reply-mode'
 import {settleHeldSchedule,resendHeldSchedule} from '../workflows/schedule-mail'
 import {renderConversationEmail} from './email-content'
 import {recipientReplyAddress} from './email-reply-address'
@@ -16,6 +17,7 @@ export {loopSuppressionHeaders} from './notification-delivery'
 export {assignmentNotificationStatement,dispatchOperatorNotifications} from './operator-notifications'
 
 type Recorded={state:string;provider_id:string|null;recipient:string}
+const aiMailWithheld='AI-written messages are not emailed to customers while AI replies are drafts or off'
 function outcome(deliveries:EmailOutcome[]){
  const first=deliveries[0]
  const state=['uncertain','sending','failed'].find(state=>deliveries.some(delivery=>delivery.state===state))||first.state
@@ -51,6 +53,11 @@ export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:Defer
  ])
  const prior=data[0].results[0]
  if(prior&&!await openRerMailHolds(env,deliveryId)){await settleHeldSchedule(env,message.id).run();return recorded(env,deliveryId,prior)}
+ // An AI-authored message is emailed to a customer only while the workspace's AI replies are
+ // automatic. Otherwise its customer email ends for good, a held send included, so neither outbox
+ // replay nor a later switch back to auto sends it. Teammates' notices are unaffected.
+ const withheld=message.actor_role==='ai'&&await workspaceReplyMode(env.DB,actor.projectId)!=='auto'
+ if(withheld&&prior){await endRerMailHolds(env,deliveryId,aiMailWithheld);return recorded(env,deliveryId)}
  if(!data[1].results[0])return {state:'project_deleted'}
  const operatorActivity=!prior&&message.actor_role==='contact'?await queueOperatorActivity(env,message,actor.projectId):null
  if(operatorActivity?.state==='automatic')return operatorActivity
@@ -59,6 +66,7 @@ export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:Defer
   await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'customer_updated',eventId:String(message.id),actorId:senderId})
  }
  if(!prior&&message.actor_role!=='contact')await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'ticket_updated',eventId:String(message.id),actorId:senderId})
+ if(withheld){const now=Date.now();await env.DB.prepare("INSERT OR IGNORE INTO email_deliveries VALUES(?,?,'','','ai-reply-mode','failed',NULL,?,?,?)").bind(deliveryId,actor.projectId,aiMailWithheld,now,now).run();return recorded(env,deliveryId)}
  if(!configured)return {state:'not_configured'}
  const conversation=data[2].results[0]
  if(!conversation)return {state:'not_found'}

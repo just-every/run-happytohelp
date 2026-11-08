@@ -43,6 +43,11 @@ export async function claimRerMailHold(env:Env,input:EmailInput){
  return claimed.meta.changes?row.updated_at:null
 }
 
+/** Ends every open hold of one notification's fan-out for good, whatever its age: replay never resends it. */
+export async function endRerMailHolds(env:Env,deliveryId:string,reason:string){
+ await env.DB.prepare("UPDATE email_deliveries SET state='failed',error=?,updated_at=? WHERE id>=? AND id<? AND state='sending' AND error=?").bind(reason,Date.now(),deliveryId,deliveryId+';',rerMailHeld).run()
+}
+
 /** Fails the holds of one notification's fan-out that outlived the bound, settling a
  * scheduled reply of that message with them, then reports whether a hold is still
  * open for replay to resend. */

@@ -3,6 +3,8 @@ import type {Env,Job} from '../../platform/env'
 import {cronRoom} from '../../platform/cron-budget'
 import {analysisInterval} from './collector'
 import {admitContextRun} from './run-ceiling'
+import {AiReplyModeRefused,workspaceReplyMode} from '../ai-support/reply-mode'
+import {contextJobAllowedSql,contextJobAllowed} from './reply-mode-gate'
 import {readContextSource,profilePacket,monitoringPacket} from './packets'
 // @ts-ignore Retained count/cooldown semantics.
 import * as profileCooldown from './profiles/cooldown.js'
@@ -13,6 +15,9 @@ export async function enqueueContextJob(env:Env,projectId:string,subjectId:strin
  await requireActiveProject(env,projectId)
  if(![...PROFILE_TASKS,'monitoring'].includes(kind as any))throw new Error('Unknown context task')
  if(typeof model!=='string'||!model.trim()||model.length>120)throw new Error('Explicit context model required')
+ // Proactive help (monitoring) runs only in auto; operator profiles unless AI is off.
+ const mode=await workspaceReplyMode(env.DB,projectId)
+ if(!contextJobAllowed(mode,kind)){if(kind==='monitoring')return {reason:'ai_reply_mode'};throw new AiReplyModeRefused(mode)}
  const source=await readContextSource(env,projectId,subjectId),now=Date.now(),id=crypto.randomUUID()
  if(['monitoring','contact','optimizeContact'].includes(kind)&&(!source.subject.consent||!source.subject.bot_enabled))return {reason:'consent_or_bot_disabled'}
  const packet=kind==='monitoring'?monitoringPacket(source):profilePacket(kind,source)
@@ -20,7 +25,7 @@ export async function enqueueContextJob(env:Env,projectId:string,subjectId:strin
  if(kind==='optimizeContact'&&!packet.approved_broad_personalization.length)return {reason:'no_public_signals'}
  if(kind!=='monitoring'&&kind!=='optimizeContact'&&!packet.evidence.length&&!packet.trusted_evidence.length)return {reason:'no_eligible_evidence'}
  const payload=JSON.stringify({visitorMonitoring,packet,summaryPacket:source.summaryPacket,context:{project:source.context.project,contact:source.context.contact,agent:source.context.agent,projectOptimize:source.context.projectOptimize},existing:source.saved[kind]||{}})
- const insert=env.DB.prepare(`INSERT INTO context_jobs(id,project_id,subject_id,kind,state,source_revision,packet_json,model,created_at) SELECT ?,?,?,?,'queued',?,?,?,? WHERE EXISTS(SELECT 1 FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=p.id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)) AND EXISTS(SELECT 1 FROM context_subjects WHERE project_id=? AND subject_id=? AND revision=?) AND NOT EXISTS(SELECT 1 FROM context_jobs WHERE project_id=? AND subject_id=? AND kind=? AND state IN ('queued','running','uncertain'))`).bind(id,projectId,subjectId,kind,source.subject.revision,payload,model,now,projectId,projectId,subjectId,source.subject.revision,projectId,subjectId,kind)
+ const insert=env.DB.prepare(`INSERT INTO context_jobs(id,project_id,subject_id,kind,state,source_revision,packet_json,model,created_at) SELECT ?,?,?,?,'queued',?,?,?,? WHERE EXISTS(SELECT 1 FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=p.id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) AND ${contextJobAllowedSql('p.id',kind)}) AND EXISTS(SELECT 1 FROM context_subjects WHERE project_id=? AND subject_id=? AND revision=?) AND NOT EXISTS(SELECT 1 FROM context_jobs WHERE project_id=? AND subject_id=? AND kind=? AND state IN ('queued','running','uncertain'))`).bind(id,projectId,subjectId,kind,source.subject.revision,payload,model,now,projectId,projectId,subjectId,source.subject.revision,projectId,subjectId,kind)
  let admitted=false
  if(kind==='monitoring'){
   await env.DB.prepare('INSERT INTO context_collectors(project_id,subject_id) VALUES(?,?) ON CONFLICT DO NOTHING').bind(projectId,subjectId).run()

@@ -18,6 +18,9 @@ function useSetupFacts(projectId, status) {
     return facts;
 }
 
+/** What the installed key lets the assistant do under the workspace's AI reply mode. */
+const modeEffect = {auto: 'answers new visitor conversations by itself, within your daily limits.', draft: 'writes drafts for your team; it sends nothing to visitors.', off: 'stays idle while AI is off.'};
+
 /** Whether the default visitor assistant can answer: the key it is waiting for, or that it is installed. Read from
  *  `GET .../ai` (presence only; no key material ever reaches the browser). */
 export default function AssistantReadiness({projectId, status}) {
@@ -25,7 +28,7 @@ export default function AssistantReadiness({projectId, status}) {
     if (!status) return null;
     const {assistant, ready, secretName, providerLabel} = status;
     if (!assistant) return <ProviderSetupNotice projectId={projectId}/>;
-    if (ready) return <p className="settings-note" role="status" data-testid="ai-key-status" data-state="present"><i className="fe fe-check" aria-hidden="true"/> {secretName ? <code>{secretName}</code> : `The ${providerLabel} key`} is installed, so {assistant.name} answers new visitor conversations by itself, within your daily limits.{checkable === true && ' The Setup page checks it with the provider and shows the result.'}{checkable === false && ` ${providerLabel} offers no automatic key check, so the Setup page lists it as installed but not confirmed.`}</p>;
+    if (ready) return <p className="settings-note" role="status" data-testid="ai-key-status" data-state="present"><i className="fe fe-check" aria-hidden="true"/> {secretName ? <code>{secretName}</code> : `The ${providerLabel} key`} is installed, so {assistant.name} {modeEffect[status.ai_reply_mode] ?? modeEffect.auto}{checkable === true && ' The Setup page checks it with the provider and shows the result.'}{checkable === false && ` ${providerLabel} offers no automatic key check, so the Setup page lists it as installed but not confirmed.`}</p>;
     return <div data-testid="ai-key-status" data-state="missing">
         <p role="status"><strong>{secretName ? <><code>{secretName}</code> isn’t installed.</> : `The ${providerLabel} key isn’t installed.`}</strong> {facts?.starterId && facts.starterId === assistant.id ? 'Your starter assistant' : 'Your default assistant'}, {assistant.name}, can’t answer visitors until it is. Add it as an installation secret. Until then, new conversations stay with your team.</p>
         <ProviderSetupNotice projectId={projectId} secretName={secretName}/>

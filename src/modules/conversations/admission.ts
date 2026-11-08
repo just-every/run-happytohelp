@@ -23,6 +23,7 @@ import {resolvePublicCitations,readKnowledgeSource,knowledgeRetrievalAdmissionGu
 import type { Actor,Env } from '../../platform/env'
 import {assertPublicReplyPlaceholders} from '../macros/placeholders'
 import {writableConversationSql} from '../conversation-actions/merge-read'
+import {customerAiSql} from '../ai-support/reply-mode'
 /** Local ids the server mints: `email:` identifies an inbound email claim, `erased:`
  * replaces a client-supplied id when its contact is erased (contact-erasure/statements.ts)
  * and `away:` is the workspace's away reply (management/away-reply.ts). Clients may use none. */
@@ -153,7 +154,7 @@ export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput
  if(authority){predicates.push(`(${authority.sql})`);args.push(...authority.args)}
  if(input.expectedLastMessageId!==undefined){predicates.push('c.last_message_id IS ?');args.push(input.expectedLastMessageId)}
  if(mediaIds.length){predicates.push(`(SELECT COUNT(*) FROM media WHERE id IN (${mediaIds.map(()=>'?').join(',')}) AND project_id=c.project_id AND conversation_id=c.id AND message_id IS NULL AND NOT EXISTS(SELECT 1 FROM conversation_note_media nm WHERE nm.media_id=media.id) AND uploaded_by=?)=?`);args.push(...mediaIds,actor.id,mediaIds.length)}
- if(input.generationId){predicates.push("EXISTS(SELECT 1 FROM ai_generations g WHERE g.id=? AND g.project_id=c.project_id AND g.conversation_id=c.id AND g.state='running' AND g.source_revision=c.revision AND (SELECT revision FROM context_subjects WHERE project_id=c.project_id AND subject_id=c.contact_id)=g.source_context_revision AND c.resolved_at IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id WHERE ca.conversation_id=c.id AND a.id=g.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 AND a.model=json_extract(g.ai_profile_json,'$.model') AND a.prompt=json_extract(g.ai_profile_json,'$.prompt')))");args.push(input.generationId)}
+ if(input.generationId){predicates.push(`EXISTS(SELECT 1 FROM ai_generations g WHERE g.id=? AND g.project_id=c.project_id AND g.conversation_id=c.id AND g.state='running' AND g.source_revision=c.revision AND (SELECT revision FROM context_subjects WHERE project_id=c.project_id AND subject_id=c.contact_id)=g.source_context_revision AND c.resolved_at IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id WHERE ca.conversation_id=c.id AND a.id=g.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 AND a.model=json_extract(g.ai_profile_json,'$.model') AND a.prompt=json_extract(g.ai_profile_json,'$.prompt')) AND ${customerAiSql('c.project_id')})`);args.push(input.generationId)}
  if(input.generationId){const guard=knowledgeRetrievalAdmissionGuard(input.generationId);predicates.push(guard.sql);args.push(...guard.args)}
  if(authorship.guard){predicates.push(authorship.guard.sql);args.push(...authorship.guard.params)}
  const indexedContent=knowledgeWords(content.replace(tokenPattern,'')).length>=12

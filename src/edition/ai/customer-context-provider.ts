@@ -1,5 +1,7 @@
 import {requireActiveProject} from '../../platform/project-status'
 import {assertModelConfigured} from '../../modules/ai-support/configuration'
+import {AiReplyModeRefused,workspaceReplyMode} from '../../modules/ai-support/reply-mode'
+import {contextJobAllowed} from '../../modules/customer-context/reply-mode-gate'
 import type { Env } from '../../platform/env'
 import {referenceResult} from '../../modules/knowledge/result-fields'
 import {canonicaliseFields} from '../../modules/knowledge/canonicaliser'
@@ -10,6 +12,9 @@ import { runStream } from '../../modules/ai-support/llm/orchestrator.js'
 import { withWorkerRuntime } from '../../modules/ai-support/vendor/ensemble/worker-runtime.js'
 export async function requestContextModel(env:Env,job:any,task:string,request:any){
  await requireActiveProject(env,job.project_id)
+ // A job queued before a mode change never reaches the provider once the mode refuses it.
+ const mode=await workspaceReplyMode(env.DB,job.project_id)
+ if(!contextJobAllowed(mode,job.kind))throw new AiReplyModeRefused(mode)
  assertModelConfigured(env,job.model)
  const record=async(kind:string,payload:unknown)=>env.DB.prepare('INSERT INTO context_job_events(job_id,kind,payload,created_at) VALUES(?,?,?,?)').bind(job.id,kind,JSON.stringify(await referenceResult(env,job.project_id,'context:'+job.id,await canonicaliseFields(env,job.project_id,payload),'trace')),Date.now()).run()
  const tools=await modelReadTools(env,job.project_id,'context',job.id,request.packet)

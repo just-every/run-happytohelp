@@ -277,7 +277,8 @@ and Setup say a key is missing.
    the provider. To use a different assistant, open **Settings → AI**, add one
    (or choose **Customize** on an existing one), enter the **Model** it uses and
    keep it **Enabled**. Then, under **Responder defaults**, choose which assistant
-   answers visitors.
+   answers visitors, and with **AI replies** whether its replies are sent
+   automatically, kept as drafts for your team to send, or turned off.
 
 Keep key values out of chat messages and the browser. To cap what visitors can
 spend, see [Limits and AI ceilings](docs/PUBLIC-LIMITS.md).

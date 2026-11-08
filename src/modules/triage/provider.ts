@@ -4,6 +4,7 @@ import {assertModelConfigured} from '../ai-support/configuration'
 import {admitAutomaticReply,replySpendWindow} from '../ai-support/reply-ceiling'
 import {addToCounter} from '../../platform/usage-counters'
 import {assistanceProfileSql} from '../ai-support/selection'
+import {workspaceReplyMode} from '../ai-support/reply-mode'
 import {modelKnowledgeInput} from '../knowledge/model-door'
 import {currentTicketReaders} from '../knowledge/readers'
 import {referenceResult} from '../knowledge/result-fields'
@@ -13,7 +14,10 @@ import {runStream} from '../ai-support/llm/orchestrator.js'
 import {withWorkerRuntime} from '../ai-support/vendor/ensemble/worker-runtime.js'
 const prediction=z.object({value:stringMax(lengthBounds(z.string(),{min:1}),80),confidence:boundedNumber(0,1),quote:stringMax(lengthBounds(z.string(),{min:1}),1000)}).strict()
 const schema=z.object({intent:prediction,sentiment:prediction,language:prediction}).strict()
+/** The unavailable-triage reason while the workspace has AI off; no provider call is made. */
+export const triageAiOff='AI is off for this workspace; ticket kept in the default queue'
 export async function classify(env:Env,job:any,taxonomy:any[]){
+ if(await workspaceReplyMode(env.DB,job.project_id)==='off')throw new Error(triageAiOff)
  const profile=await env.DB.prepare(`SELECT a.model FROM conversations c JOIN ai_profiles a ON a.project_id=c.project_id AND a.id=${assistanceProfileSql} AND a.is_enabled=1 WHERE c.id=? AND c.project_id=?`).bind(job.conversation_id,job.project_id).first<{model:string}>()
  if(!profile)throw new Error('No enabled workspace AI model is configured')
  assertModelConfigured(env,profile.model)

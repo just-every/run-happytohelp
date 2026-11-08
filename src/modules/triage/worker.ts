@@ -26,7 +26,7 @@ export async function consumeTriage(job:Job,env:Env){
    ...dimensions.flatMap(field=>[{id:`triage_${field}`,value:predictions[field].value},{id:`triage_${field}_confidence`,value:predictions[field].confidence},{id:`triage_${field}_quote`,value:predictions[field].quote}]).map(f=>env.DB.prepare(`INSERT INTO ticket_field_values(project_id,conversation_id,field_id,value_json) SELECT ?,?,?,? WHERE ${ok} AND EXISTS(SELECT 1 FROM ticket_fields WHERE project_id=? AND id=?) ON CONFLICT(project_id,conversation_id,field_id) DO UPDATE SET value_json=excluded.value_json`).bind(row.project_id,row.conversation_id,f.id,JSON.stringify(f.value),receipt,row.project_id,f.id)),
   ])
   if(!result[0].meta.changes)await unavailable(env,row,'A newer customer message, erasure or settings change superseded this result')
- }catch(error){const reason=error instanceof Error&&/^(CONFIGURATION_REQUIRED: [A-Z_]+$|No enabled workspace AI model|AI_REPLY_CEILING:|Model returned|Model evidence)/.test(error.message)?error.message:'The configured model was unavailable, refused the request or returned invalid evidence. Ticket kept in the default queue.';await unavailable(env,row,reason)}
+ }catch(error){const reason=error instanceof Error&&/^(CONFIGURATION_REQUIRED: [A-Z_]+$|No enabled workspace AI model|AI is off for this workspace|AI_REPLY_CEILING:|Model returned|Model evidence)/.test(error.message)?error.message:'The configured model was unavailable, refused the request or returned invalid evidence. Ticket kept in the default queue.';await unavailable(env,row,reason)}
  await placeUnsureTicket(env,row.project_id,row.conversation_id,row.id)
  await processWorkflowEvents(env,row.conversation_id,20)
  return true

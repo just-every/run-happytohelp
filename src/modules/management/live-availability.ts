@@ -6,6 +6,7 @@ import {calendarData} from '../workflows/calendars'
 import {businessWindow} from '../workflows/calendars-time'
 import {policyData,policyMatches} from '../workflows/sla-policy'
 import {workflowNow} from '../workflows/clock'
+import {replyMode} from '../ai-support/reply-mode'
 
 // Before the visitor has a ticket, select the first active SLA policy matching
 // ordinary widget intake. Ticket-specific plan/form/field policies do not apply.
@@ -28,11 +29,11 @@ export function visitorAssistant(env:Env,projectId:string){
 
 /** Whether the team is available, from the schedule and switch (judged `at`), then live presence (judged now): while
  * they say open and presence-based away is on, the team is away when no teammate who may reply is online, unless the
- * workspace's visitor assistant answers visitors (enabled, its provider key installed). */
+ * workspace's visitor assistant answers visitors (enabled, its provider key installed, AI replies automatic). */
 export async function teamAvailability(env:Env,projectId:string,settings:any,at=workflowNow(env)):Promise<Availability>{
  const base=await businessHours(env,projectId,settings,at),presence=presenceSettings(settings)
  if(!base.available||!presence.enabled)return base
- const assistant=await visitorAssistant(env,projectId)
+ const assistant=replyMode(settings)==='auto'?await visitorAssistant(env,projectId):null
  if(assistant&&modelReady(env,assistant.model))return base
  return withPresence(base,settings,{online:(await onlineTeammates(env,projectId,presence.idleMinutes)).length})
 }

@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { Link } from '@tanstack/react-router';
 import React, { useEffect, useState } from 'react';
 import AssistantReadiness from './AssistantReadiness';
+import AiReplyMode from './AiReplyMode';
 import AiSpendCard from '../activation-spend/AiSpendCard';
 import AvatarUpload from './AvatarUpload';
 import { PageHeaderTabs } from '../PageHeader';
@@ -81,11 +82,14 @@ export default function AssistantsPage({ projectId, recordId }) {
                 {!items.length && <p className="settings-note">No assistants have been added to this project.</p>}
                 <Link className="btn btn-sm btn-white" to={`${href}/create`}>Add assistant</Link>
             </Section>
-            <form onSubmit={saveDefaults}><Section title="Responder defaults" description="Set the default responder for each visitor type. A default assistant answers new conversations by itself once its AI key is installed; until then they stay with your team.">
+            <Section title="Responder defaults" description="Choose whether AI replies reach visitors and who answers each visitor type; anything AI does not send stays with your team.">
+                <AiReplyMode base={base} mode={readiness?.ai_reply_mode} onSaved={mode => { setReadiness(current => ({ ...current, ai_reply_mode: mode })); setError(''); setSaved(true); }}/>
+                <form onSubmit={saveDefaults}>
                 <Field name="is_human_response_enabled" label="Allow human responders" type="checkbox" value={settings.is_human_response_enabled !== false} onChange={(key, value) => { markDirty();setSettings(current => ({ ...current, [key]: value })); setSaved(false); }}/>
                 <div className="settings-grid mt-4">{[['default_visitor_ai_id', 'Default responder for non-logged in users'], ['default_verified_user_ai_id', 'Default responder for logged in users']].map(([name, label]) => <div className="form-group" key={name}><label htmlFor={name} className="form-label">{label}</label><select id={name} name={name} className="form-select" value={settings[name] || '-'} onChange={event => { markDirty();setSettings(current => ({ ...current, [name]: event.target.value })); setSaved(false); }}>{settings[name] && settings[name] !== '-' && !responders.some(option => option.value === settings[name]) && <option value={settings[name]} disabled>{items.find(item => item.id === settings[name])?.name || 'Previous assistant'} (unavailable — choose a responder)</option>}{responders.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>)}</div>
                 {invalidDefaults && <p role="alert" className="text-danger">Choose an enabled assistant or None for each default responder before saving.</p>}<div className="settings-actions"><button className="btn btn-primary" disabled={busy || invalidDefaults}>{busy ? 'Saving…' : 'Save'}</button></div>
-            </Section></form>
+                </form>
+            </Section>
         </>}
         {dialog}
     </div>;

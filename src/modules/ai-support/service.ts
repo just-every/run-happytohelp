@@ -8,6 +8,7 @@ import { transition } from './repository';
 import { generationCurrentness } from './generation-currentness';
 import { executeGenerationProvider } from './generation-provider';
 import { requireGenerationEffects, type GenerationEffects } from './generation-effects';
+import { generationKindSql } from './reply-mode';
 export { onCustomerMessage } from './customer-message';
 export { recoverQueuedGenerations } from './generation-queue';
 export async function handleGeneration(env: Env, job: Job, effects: GenerationEffects) {
@@ -29,6 +30,14 @@ export async function handleGeneration(env: Env, job: Job, effects: GenerationEf
         // marks abandoned executions uncertain; it never replays the provider.
         return true;
     }
+    // Queued work the workspace's AI reply mode no longer allows ends here for good, with no provider
+    // call: cron re-sends every queued row, so leaving it queued would release it after a switch back.
+    const refused = await env.DB.prepare(`UPDATE ai_generations SET state='cancelled',error='AI reply mode does not allow this generation',updated_at=? WHERE id=? AND state='queued' AND NOT (${generationKindSql('ai_generations.project_id', 'ai_generations.kind')})`).bind(new Date().toISOString(), row.id).run();
+    if (refused.meta.changes) {
+        if (row.kind === 'suggestions')
+            await effects.publishSuggestions(env, row.project_id, row.conversation_id);
+        return true;
+    }
     try {
         assertModelConfigured(env, row.model);
     }
@@ -38,7 +47,7 @@ export async function handleGeneration(env: Env, job: Job, effects: GenerationEf
             await effects.publishSuggestions(env, row.project_id, row.conversation_id);
         return true;
     }
-    const claimed = await env.DB.prepare("UPDATE ai_generations SET state='running',updated_at=? WHERE id=? AND state='queued'").bind(new Date().toISOString(), row.id).run();
+    const claimed = await env.DB.prepare(`UPDATE ai_generations SET state='running',updated_at=? WHERE id=? AND state='queued' AND ${generationKindSql('ai_generations.project_id', 'ai_generations.kind')}`).bind(new Date().toISOString(), row.id).run();
     if (!claimed.meta.changes)
         return true;
     const attemptId = crypto.randomUUID(), abort = new AbortController();

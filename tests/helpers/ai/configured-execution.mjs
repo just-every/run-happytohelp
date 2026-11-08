@@ -23,6 +23,7 @@ export async function configuredExecutionJourney(){
  await dailyBounds()
  await interruptedAttempt()
  await privateNoteFrontier()
+ await replyModes()
 }
 
 // The pre-existing supported-provider cases call this after their native reply.
@@ -201,5 +202,48 @@ async function privateNoteFrontier(){
   const rows=await a.generations(visitor.conversationId)
   assert.equal(rows.at(-1).state,'superseded','a private note supersedes the old captured context')
   assert.equal((await replies(visitor)).length,0,'the superseded private-note frontier admits no customer answer')
+ }finally{await a.close()}
+}
+
+// The workspace's AI reply mode, set by the owner through the AI route: draft keeps every AI word
+// with the team (operator drafts still work), off makes no model call, and switching back to auto
+// releases nothing from the draft period while the visitor's next message is answered again.
+async function replyModes(){
+ const a=await assistantApp(),{app,ai,p,owner,workspace}=a,route=`/api/management/projects/${p}/ai`
+ const mode=async()=>(await app.call(route,{token:owner,status:200})).data.data.ai_reply_mode
+ const setMode=value=>app.call(route,{token:owner,method:'PUT',body:{ai_reply_mode:value},status:200})
+ try{
+  assert.equal(await mode(),'auto','a workspace that never chose a mode replies automatically')
+  for(const value of ['Draft','',' draft','manual',1,null,true])await app.call(route,{token:owner,method:'PUT',body:{ai_reply_mode:value,default_visitor_ai_id:'-'},status:400})
+  await app.call(route,{token:workspace.tokens.operator,method:'PUT',body:{ai_reply_mode:'draft'},status:403})
+  assert.equal(await mode(),'auto');assert.equal((await app.call(route,{token:owner,status:200})).data.data.assistant?.id,'ai','a refused body writes none of its keys')
+  // A reply queued in auto, then the switch: it never reaches the provider.
+  const v=await a.visitor();await v.say('Queued before the switch');const queued=await app.takeJobs()
+  await setMode('draft');assert.equal(await mode(),'draft')
+  const before=a.providerCalls();await a.run(queued)
+  assert.equal(a.providerCalls(),before);assert.deepEqual((await a.generations(v.conversationId)).map(g=>g.state),['cancelled'])
+  const events=(await app.call(`/api/management/projects/${p}/audit?category=data&limit=50`,{token:owner,status:200})).data.data.filter(e=>e.action==='ai.reply_mode_changed')
+  assert.deepEqual(events.map(e=>e.detail),[{from:'auto',to:'draft'}]);await setMode('draft')
+  assert.equal((await app.call(`/api/management/projects/${p}/audit?category=data&limit=50`,{token:owner,status:200})).data.data.filter(e=>e.action==='ai.reply_mode_changed').length,1,'saving the same mode records nothing')
+  // In draft a visitor's message to the assistant earns no generation, no provider call and no AI message.
+  await v.say('Written in draft');await a.run();await app.scheduled();await a.run()
+  assert.equal(a.providerCalls(),before);assert.equal((await a.generations(v.conversationId)).length,1);assert.equal((await replies(v)).length,0)
+  await app.call(`/api/conversations/${v.conversationId}/widget-events`,{token:v.token,headers:{Origin:'https://widget.example'},body:{action:'request',data:{requestId:crypto.randomUUID()}},status:409})
+  // Operator drafts keep working and stay drafts.
+  const evidence='message:'+(await v.transcript()).messages.at(-1).id
+  ai.respond=body=>openaiStream(body.text?.format?.name==='agent_suggestion_alternatives'?{alternatives:[],missing_information:[]}:{user_goal:'Answer',responses:[{button:'Answer',icon:'circle-question-mark',response:'A draft for the team.',use_when:'',evidence_ids:[evidence]}],missing_information:[]},{input_tokens:5,output_tokens:2})
+  const draft=await a.action(v.conversationId,'agentAssist',{options:{request_id:crypto.randomUUID()}});assert.equal(draft.status,202,JSON.stringify(draft.data));await a.run()
+  const drafted=await generation(a,draft.data.id);assert.equal(drafted.state,'completed',drafted.error);assert.equal(JSON.parse(drafted.output_json).result.responses[0].response,'A draft for the team.');assert.ok(a.providerCalls()>before)
+  assert.equal((await replies(v)).length,0,'a draft never reaches the visitor')
+  // Back to auto: nothing from before or during draft is answered, even by recovery; the next message is.
+  await setMode('auto');ai.respond=()=>'Answered after the switch back'
+  const afterDraft=a.providerCalls();await a.run(queued);await app.scheduled();await a.run()
+  assert.equal(a.providerCalls(),afterDraft);assert.equal((await replies(v)).length,0)
+  await v.say('Written after the switch back');await a.run()
+  assert.deepEqual((await replies(v)).map(m=>m.content),['Answered after the switch back'])
+  // Off: no drafts either.
+  await setMode('off');const calls=a.providerCalls()
+  const refused=await a.action(v.conversationId,'agentAssist',{options:{request_id:crypto.randomUUID()}});assert.equal(refused.status,409)
+  await v.say('Written while off');await a.run();assert.equal(a.providerCalls(),calls);assert.equal((await replies(v)).length,1)
  }finally{await a.close()}
 }

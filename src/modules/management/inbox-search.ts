@@ -24,16 +24,30 @@ export async function attachMatchedMessages(env:Env,term:string,rows:{id:string;
  const byConversation=new Map(matched.results.map(row=>[String(row.conversation_id),row]))
  for(const row of rows){const message=byConversation.get(String(row.id));if(message)row.matched_message=message}
 }
+/** One search, as SQL over the outer conversation `c`. Identity is a literal, ASCII case-insensitive
+ * substring of a contact's name, email, provided name or provided email. A needle of three or more
+ * code points is a phrase of the contact trigram index (migration 310), which every character
+ * enters literally, so the phrase match is exactly that substring match; the source id and message
+ * words read their own indexes too. `indexed` searches name their candidate conversations, so the
+ * caller keeps the project's conversation index from driving the query. Shorter needles (and a
+ * NUL, which FTS cannot take) keep the per-conversation substring test the index cannot answer.
+ */
 export function inboxSearchCondition(term:string){
  const needle=term.replace(/[A-Z]/g,letter=>letter.toLowerCase())
- const fields=["t.name","t.email","json_extract(t.metadata_json,'$.provided_name')","json_extract(t.metadata_json,'$.provided_email')"]
- const source=`EXISTS(SELECT 1 FROM move_in_conversations imported WHERE imported.project_id=c.project_id AND imported.conversation_id=c.id AND imported.source_id=? AND imported.source_id<>'')`
  const sourceId=term.startsWith('#')?term.slice(1):term
- const identity=`EXISTS(SELECT 1 FROM contacts t WHERE t.id=c.contact_id AND t.project_id=c.project_id AND (${fields.map(field=>`instr(lower(coalesce(${field},'')),?)>0`).join(' OR ')}))`
  // Quotes group a phrase; other whitespace-separated terms may occur in any order.
  // Every part is quoted before joining, so user text can never introduce FTS syntax.
  const words=searchWords(term)
+ if(Array.from(needle).length>=3&&!needle.includes('\0')){
+  const identity=`SELECT conversation.id FROM contacts t JOIN conversations conversation ON conversation.project_id=t.project_id AND conversation.contact_id=t.id WHERE t.rowid IN (SELECT rowid FROM inbox_contact_search WHERE inbox_contact_search MATCH ?)`
+  const source=`SELECT imported.conversation_id FROM move_in_conversations imported JOIN conversations conversation ON conversation.id=imported.conversation_id AND conversation.project_id=imported.project_id WHERE imported.source_id=? AND imported.source_id<>''`
+  const candidates=[identity,source,...(words?['SELECT conversation_id FROM inbox_message_search WHERE inbox_message_search MATCH ?']:[])]
+  return {sql:`c.id IN (${candidates.join(' UNION ALL ')})`,params:['"'+needle.replace(/"/g,'""')+'"',sourceId,...(words?[words]:[])],indexed:true}
+ }
+ const fields=["t.name","t.email","json_extract(t.metadata_json,'$.provided_name')","json_extract(t.metadata_json,'$.provided_email')"]
+ const source=`EXISTS(SELECT 1 FROM move_in_conversations imported WHERE imported.project_id=c.project_id AND imported.conversation_id=c.id AND imported.source_id=? AND imported.source_id<>'')`
+ const identity=`EXISTS(SELECT 1 FROM contacts t WHERE t.id=c.contact_id AND t.project_id=c.project_id AND (${fields.map(field=>`instr(lower(coalesce(${field},'')),?)>0`).join(' OR ')}))`
  // Punctuation-only queries have no indexed words; they can still match identity.
- if(!words)return {sql:`(${identity} OR ${source})`,params:[...fields.map(()=>needle),sourceId]}
- return {sql:`(${identity} OR ${source} OR c.id IN (SELECT conversation_id FROM inbox_message_search WHERE inbox_message_search MATCH ?))`,params:[...fields.map(()=>needle),sourceId,words]}
+ if(!words)return {sql:`(${identity} OR ${source})`,params:[...fields.map(()=>needle),sourceId],indexed:false}
+ return {sql:`(${identity} OR ${source} OR c.id IN (SELECT conversation_id FROM inbox_message_search WHERE inbox_message_search MATCH ?))`,params:[...fields.map(()=>needle),sourceId,words],indexed:false}
 }

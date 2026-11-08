@@ -26,17 +26,27 @@ def punctuated_end(statement):
     tokens = re.sub(r"'(?:[^']|'')*'|\"(?:[^\"]|\"\")*\"|--[^\n]*|/\*[\s\S]*?\*/", ' ', statement)
     return bool(re.search(r'\bEND[^;\s\w]', tokens, re.I))
 
-def search_definition(db):
-    row = db.execute("SELECT type,sql FROM sqlite_master WHERE name='inbox_message_search'").fetchone()
+# Derived full-text indexes and their external content (a table or a view), rebuilt after a restore.
+SEARCH_INDEXES = (('inbox_message_search', 'messages'), ('inbox_contact_search', 'inbox_contact_identity'))
+
+def search_definition(db, table, content):
+    row = db.execute("SELECT type,sql FROM sqlite_master WHERE name=?", (table,)).fetchone()
     if row is None:
         return None
     kind, sql = row
     if (kind != 'table' or not isinstance(sql, str)
             or not re.match(r'CREATE\s+VIRTUAL\s+TABLE\s', sql, re.I)
             or not re.search(r'\bUSING\s+fts5\s*\(', sql, re.I)
-            or not re.search(r'''\bcontent\s*=\s*(['"])messages\1''', sql, re.I)):
-        raise ValueError('Refusing to replace an unrecognized inbox_message_search schema.')
-    return sql + ('' if sql.rstrip().endswith(';') else ';')
+            or not re.search(r'''\bcontent\s*=\s*(['"])''' + re.escape(content) + r'''\1''', sql, re.I)):
+        raise ValueError(f'Refusing to replace an unrecognized {table} schema.')
+    # FTS5 options set after creation (such as secure-delete) are restored with the index.
+    settings = ''.join(f'\nINSERT INTO "{table}"("{table}",rank) VALUES({sql_literal(key)},{sql_literal(value)});'
+                       for key, value in db.execute(f'SELECT k,v FROM "{table}_config" WHERE k<>\'version\' ORDER BY k'))
+    return (sql + ('' if sql.rstrip().endswith(';') else ';') + settings
+            + f'\nINSERT INTO "{table}"("{table}") VALUES(\'rebuild\');\n')
+
+def sql_literal(value):
+    return str(value) if isinstance(value, int) else "'" + str(value).replace("'", "''") + "'"
 
 def sanitize(sql):
     db = sqlite3.connect(':memory:')
@@ -95,11 +105,14 @@ def sanitize(sql):
         for table in ('integration_deliveries', 'native_integration_intents', 'native_integration_destinations', 'api_uploads', 'api_upload_disposals'):
             if table in tables:
                 db.execute(f'DELETE FROM "{table}"')
-        search = search_definition(db)
-        if search:
-            # iterdump represents virtual tables with writable_schema and raw
-            # shadow rows. Recreate this derived cache from messages instead.
-            db.execute('DROP TABLE "inbox_message_search"')
+        searches = []
+        for table, content in SEARCH_INDEXES:
+            search = search_definition(db, table, content)
+            if search:
+                # iterdump represents virtual tables with writable_schema and raw
+                # shadow rows. Recreate each derived cache from its content instead.
+                db.execute(f'DROP TABLE "{table}"')
+                searches.append(search)
         db.commit()
         # D1 cannot disable foreign keys or insert before a referenced table
         # exists. Create the schema first, then defer row checks during import.
@@ -114,8 +127,7 @@ def sanitize(sql):
             target.append(statement)
         triggers.sort(key=lambda statement: (punctuated_end(statement), statement))
         dump = 'PRAGMA defer_foreign_keys=ON;\n' + '\n'.join(schema + data + triggers) + '\n'
-        if search:
-            dump += search + '\nINSERT INTO "inbox_message_search"("inbox_message_search") VALUES(\'rebuild\');\n'
+        dump += ''.join(searches)
         return dump + 'PRAGMA defer_foreign_keys=OFF;\n'
     finally:
         db.close()

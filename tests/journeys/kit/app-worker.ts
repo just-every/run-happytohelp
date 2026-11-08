@@ -33,6 +33,8 @@ function scheduledMeter(db:D1Database){
 // db-once throws before the Kth matching D1 statement; db-interrupt commits
 // that statement, then denies all further storage/queue work for this invocation.
 // x-test-statement-at supplies K, with optional x-test-statement SQL matching.
+// d1-overloaded answers D1's overload error from the Kth matching statement on, for
+// x-test-overloads statements (every one when absent), across the whole invocation.
 const faulted=(request:Request,env:Env):Env=>{
  const before=request.headers.get('x-test-before-batch'),after=request.headers.get('x-test-after-batch'),fault=request.headers.get('x-test-fault')
  // x-test-before-statement runs a real D1 write once, just before the first statement (alone or in a batch)
@@ -41,12 +43,16 @@ const faulted=(request:Request,env:Env):Env=>{
  if(!before&&!after&&!fault&&!beforeStatement)return env
  if(fault==='no-database')return {...env,DB:{prepare(){throw new Error('Database access forbidden')},batch(){throw new Error('Database access forbidden')},exec(){throw new Error('Database access forbidden')}} as unknown as D1Database}
  const DB=env.DB,FILES=env.FILES;let puts=0,fired=false,seen=0,faultFired=false,interrupted=false
- const counted=fault==='db-once'||fault==='db-interrupt',at=Number(request.headers.get('x-test-statement-at')??1),pattern=statementPattern?new RegExp(statementPattern,'i'):undefined
+ const counted=fault==='db-once'||fault==='db-interrupt'||fault==='d1-overloaded',at=Number(request.headers.get('x-test-statement-at')??1),pattern=statementPattern?new RegExp(statementPattern,'i'):undefined
+ let overloads=Number(request.headers.get('x-test-overloads')??Infinity)
  const alive=()=>{if(interrupted)throw new Error('Injected invocation termination')}
  const checkpoint=(sqls:string[])=>{
   alive()
   if(!counted||faultFired)return false
-  for(const sql of sqls)if(!pattern||pattern.test(sql)){if(++seen===at){faultFired=true;if(fault==='db-once')throw new Error('Injected transient D1 failure');return true}}
+  for(const sql of sqls)if(!pattern||pattern.test(sql)){
+   if(fault==='d1-overloaded'){if(++seen>=at&&overloads-->0)throw new Error('D1_ERROR: D1 DB is overloaded. Too many resources consumed within a 10 second window.');continue}
+   if(++seen===at){faultFired=true;if(fault==='db-once')throw new Error('Injected transient D1 failure');return true}
+  }
   return false
  }
  const committed=(stop:boolean)=>{if(stop){interrupted=true;alive()}}

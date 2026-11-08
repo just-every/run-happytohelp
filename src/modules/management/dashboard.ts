@@ -22,10 +22,11 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  if(a.role==='contact')throw new HTTPException(403)
  const project=c.req.param('projectId')
  if(project)await scope(c)
- const page=Math.max(1,parseInt(c.req.query('page')||'1')||1),search=inboxSearchTerm(c)
+ const page=Math.max(1,parseInt(c.req.query('page')||'1')||1),search=inboxSearchTerm(c),match=search?inboxSearchCondition(search):undefined
  const conditions=["EXISTS(SELECT 1 FROM memberships m WHERE m.project_id=c.project_id AND m.user_id=?)",hasMessages,"NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)"],params:any[]=[a.id,a.id]
  conditions.push(ticketScopeSql('?'))
- if(project){conditions.push('c.project_id=?');params.push(project)}
+ // An indexed search names its candidate conversations; the project's own index must not drive it.
+ if(project){conditions.push(match?.indexed?'+c.project_id=?':'c.project_id=?');params.push(project)}
  const saved=await savedQueue(c.env,a,project,c.req.query('saved_view'))
  const requestedFilters=queryJSON(c.req.query('filters'),'filters'),requestedSort=queryJSON(c.req.query('sort'),'sort')
  const structured=saved!==undefined||requestedFilters!==undefined
@@ -39,7 +40,7 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
   if(!project||!await c.env.DB.prepare('SELECT id FROM workspace_tags WHERE id=? AND project_id=?').bind(tag,project).first())throw new HTTPException(404)
   conditions.push('EXISTS(SELECT 1 FROM conversation_tags ct WHERE ct.conversation_id=c.id AND ct.project_id=c.project_id AND ct.tag_id=?)');params.push(tag)
  }
- if(search){const match=inboxSearchCondition(search);conditions.push(match.sql);params.push(...match.params)}
+ if(match){conditions.push(match.sql);params.push(...match.params)}
  const before=c.req.query('last_message_before'),beforeId=c.req.query('last_conversation_before')
  if(before&&beforeId){
   if(saved?.sort.length||requestedSort!==undefined)throw new HTTPException(400,{message:'Use page pagination with a custom sort'})
@@ -49,12 +50,21 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  const snoozed=c.req.query('snoozed'),sleeping="EXISTS(SELECT 1 FROM workflow_schedules ws WHERE ws.conversation_id=c.id AND ws.kind='snooze' AND ws.state='pending')"
  if(snoozed==='only')conditions.push(sleeping)
  else if(snoozed!=='include'&&(!search||c.req.query('search_scope')==='view'))conditions.push('NOT '+sleeping)
- const where=conditions.join(' AND '),listing=await c.env.DB.batch<any>([
-  c.env.DB.prepare(`SELECT count(*) total FROM conversations c WHERE ${where}`).bind(...params),
-  c.env.DB.prepare(`SELECT c.* FROM conversations c WHERE ${where} ORDER BY ${sort.sql} LIMIT 30 OFFSET ?`).bind(...params,...sort.params,(page-1)*30)
- ]),count=listing[0].results[0],rows=listing[1].results,data=await conversationsData(c.env,rows,a.id)
+ const where=conditions.join(' AND '),total=()=>c.env.DB.prepare(`SELECT count(*) total FROM conversations c WHERE ${where}`).bind(...params)
+ let rows:any[],count:number
+ if(search){
+  // A search evaluates its condition once: the page carries the total. An empty first page
+  // (or cursor page) has none to carry; only a later page past the end counts alone.
+  rows=(await c.env.DB.prepare(`SELECT c.*,count(*) OVER () inbox_search_total FROM conversations c WHERE ${where} ORDER BY ${sort.sql} LIMIT 30 OFFSET ?`).bind(...params,...sort.params,(page-1)*30).all<any>()).results
+  count=rows.length?rows[0].inbox_search_total:page===1?0:(await total().first<{total:number}>())!.total
+  for(const row of rows)delete row.inbox_search_total
+ }else{
+  const listing=await c.env.DB.batch<any>([total(),c.env.DB.prepare(`SELECT c.* FROM conversations c WHERE ${where} ORDER BY ${sort.sql} LIMIT 30 OFFSET ?`).bind(...params,...sort.params,(page-1)*30)])
+  count=listing[0].results[0].total;rows=listing[1].results
+ }
+ const data=await conversationsData(c.env,rows,a.id)
  if(search)await attachMatchedMessages(c.env,search,data)
- return c.json({data,meta:{pagination:{total:count!.total,current_page:page,total_pages:Math.max(1,Math.ceil(count!.total/30))}}})
+ return c.json({data,meta:{pagination:{total:count,current_page:page,total_pages:Math.max(1,Math.ceil(count/30))}}})
  })
  dashboard.get(`${prefix}/counts`,async c=>{const a=await requireActor(c);if(a.role==='contact')throw new HTTPException(403);const project=c.req.param('projectId');if(project)await scope(c);const counts=await inboxCounts(c.env,a.id,project);return c.json({data:counts})})
  dashboard.get(`${prefix}/:conversationId`,async c=>{const {actor,conversation}=await dashboardAccess(c);const data=await conversationData(c.env,conversation,actor.id,true);if(data.merged_into)data.merged_into=await operatorMergeTarget(c.env,actor.projectId,conversation.id,actor.id);return c.json({data})})

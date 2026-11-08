@@ -20,6 +20,7 @@ import {workflowLegacyRestoreSql} from './workflow-archive-defaults.mjs';
 import {fileRecords} from '@runeditrun/rer/modules/portability/files';
 import {checkArchiveSnapshot,readDurableObjects,snapshotSql} from './durable-objects.mjs';
 import {nativeMigrationDecision} from './migration-ledger.mjs';
+import {derivedSearchIndexes} from './search-index-sql.mjs';
 import * as model from './ui/seed.mjs';
 
 const environment=context=>({...process.env,...context.vars,APP_ORIGIN:context.origin,WRANGLER_SEND_METRICS:'false',CLOUDFLARE_INCLUDE_PROCESS_ENV:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false',X_LOCAL_EXPLORER:'false'});
@@ -102,7 +103,7 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
   await d1(context,'Fencing restored report schedules and bulk replies',reportRestoreSql);
   await d1(context,'Fencing restored evaluations',trainingRestoreSql);
   await d1(context,'Fencing restored background work',asyncWorkRestoreSql);
-  await d1(context,'Rebuilding conversation search',"INSERT INTO inbox_message_search(inbox_message_search) VALUES('rebuild')");
+  for(const {table} of derivedSearchIndexes)await d1(context,'Rebuilding conversation search',`INSERT INTO ${table}(${table}) VALUES('rebuild')`);
  }
  // The receipt names the Durable Object storage the archive carries (exported) or carried (restored).
  return {...result,durableObjects:snapshots.map(({namespace,className,records,digest})=>({namespace,className,records:Array.isArray(records)?records.length:records,digest}))};

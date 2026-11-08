@@ -8,6 +8,12 @@ import {
     refreshConversationPages,
 } from '../components/conversationListPagination';
 
+// A search the server answered 503 (its database was busy) is retried after Retry-After, at most this long.
+const BUSY_RETRY_CAP_SECONDS = 10;
+const BUSY_RETRY_DEFAULT_SECONDS = 3;
+const busySearch = (filter, error) => error?.status === 503 && Boolean(filter?.q);
+const busyWait = error => 1000 * Math.min(BUSY_RETRY_CAP_SECONDS, error.retryAfter > 0 ? error.retryAfter : BUSY_RETRY_DEFAULT_SECONDS);
+
 function useConversationList({
     conversationLists,
     setConversationLists,
@@ -23,6 +29,9 @@ function useConversationList({
     const [ hasNextPage, setHasNextPage ] = useState(false);
     const [ refreshError, setRefreshError ] = useState(null);
     const [ loadMoreError, setLoadMoreError ] = useState(null);
+    const [ isBusy, setIsBusy ] = useState(false);
+    const busyRetry = useRef(null);
+    const loadMoreRef = useRef(null);
     const fetchConversationListRef = useRef(fetchConversationList);
     const conversationListsRef = useRef(conversationLists);
     const listRequestScope = useRef(0);
@@ -40,6 +49,21 @@ function useConversationList({
         activeRequest.current = null;
     }, []);
 
+    const cancelBusyRetry = useCallback(() => {
+        clearTimeout(busyRetry.current);
+        busyRetry.current = null;
+    }, []);
+
+    // Keep what is on screen and try the same read again while this list is still current.
+    const retryWhenFree = useCallback((scope, error, retry) => {
+        cancelBusyRetry();
+        setIsBusy(true);
+        busyRetry.current = setTimeout(() => {
+            busyRetry.current = null;
+            if (scope === listRequestScope.current) retry(scope);
+        }, busyWait(error));
+    }, [ cancelBusyRetry ]);
+
     const startRefresh = useCallback((scope, initialInboxListRead = false) => {
         if (scope !== listRequestScope.current) {
             return;
@@ -54,6 +78,7 @@ function useConversationList({
         const controller = new AbortController();
         const request = { controller, scope };
         activeRequest.current = request;
+        cancelBusyRetry();
         setRefreshError(null);
         setLoadMoreError(null);
 
@@ -77,6 +102,7 @@ function useConversationList({
                 }
 
                 nextPage.current = refreshed.nextPage;
+                setIsBusy(false);
                 setHasNextPage(refreshed.hasNextPage);
                 setConversationLists(lists => ({
                     ...lists,
@@ -88,7 +114,13 @@ function useConversationList({
                     return;
                 }
 
+                if (busySearch(filter, error)) {
+                    retryWhenFree(scope, error, retryScope => startRefreshRef.current(retryScope));
+                    return;
+                }
+
                 console.error('Unable to load conversations', error);
+                setIsBusy(false);
                 setRefreshError(error);
             })
             .finally(() => {
@@ -105,7 +137,7 @@ function useConversationList({
                     startRefreshRef.current(scope);
                 }
             });
-    }, [ filter, listKey, setConversationLists ]);
+    }, [ cancelBusyRetry, filter, listKey, retryWhenFree, setConversationLists ]);
 
     startRefreshRef.current = startRefresh;
 
@@ -119,6 +151,8 @@ function useConversationList({
         setHasNextPage(false);
         setRefreshError(null);
         setLoadMoreError(null);
+        cancelBusyRetry();
+        setIsBusy(false);
         startRefresh(scope, true);
 
         return () => {
@@ -126,9 +160,10 @@ function useConversationList({
                 listRequestScope.current += 1;
                 queuedRefreshScope.current = null;
                 abortActiveRequest();
+                cancelBusyRetry();
             }
         };
-    }, [ abortActiveRequest, listKey, startRefresh, initialInboxListId ]);
+    }, [ abortActiveRequest, cancelBusyRetry, listKey, startRefresh, initialInboxListId ]);
 
     useEffect(() => {
         if (refreshVersion.current === inboxDataVersion) {
@@ -151,6 +186,7 @@ function useConversationList({
         const controller = new AbortController();
         const request = { controller, scope };
         activeRequest.current = request;
+        cancelBusyRetry();
         setLoadMoreError(null);
         setIsLoadingMore(true);
 
@@ -161,6 +197,7 @@ function useConversationList({
                 }
 
                 nextPage.current = Number(result.meta.pagination.current_page) + 1;
+                setIsBusy(false);
                 setHasNextPage(hasNextConversationPage(result));
                 setConversationLists(lists => ({
                     ...lists,
@@ -172,7 +209,13 @@ function useConversationList({
                     return;
                 }
 
+                if (busySearch(filter, error)) {
+                    retryWhenFree(scope, error, () => loadMoreRef.current());
+                    return;
+                }
+
                 console.error('Unable to load more conversations', error);
+                setIsBusy(false);
                 setLoadMoreError(error);
             })
             .finally(() => {
@@ -188,11 +231,14 @@ function useConversationList({
                     startRefreshRef.current(scope);
                 }
             });
-    }, [ filter, hasNextPage, listKey, setConversationLists ]);
+    }, [ cancelBusyRetry, filter, hasNextPage, listKey, retryWhenFree, setConversationLists ]);
+
+    loadMoreRef.current = loadMore;
 
     return {
         conversations: conversationLists[listKey] || [],
         hasNextPage,
+        isBusy,
         isInitialLoading,
         isLoadingMore,
         isRefreshing,

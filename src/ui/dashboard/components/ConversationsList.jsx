@@ -50,6 +50,7 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
     const {
         conversations,
         hasNextPage,
+        isBusy,
         isInitialLoading,
         isLoadingMore,
         isRefreshing,
@@ -67,7 +68,7 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
     });
     const [ sentryRef, { rootRef } ] = useInfiniteScroll({
         loading: isInitialLoading || isRefreshing || isLoadingMore,
-        hasNextPage: hasNextPage && !refreshError && !loadMoreError && conversations.length > 0,
+        hasNextPage: hasNextPage && !isBusy && !refreshError && !loadMoreError && conversations.length > 0,
         onLoadMore: loadMore,
     });
     const { ref: scrollEdgeRef, isScrolled } = useScrollEdge();
@@ -110,8 +111,8 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
             {ticketQueue && selecting && <TicketBulkActions key={projectId} projectId={projectId} loaded={conversations} selected={selected} onSelect={setSelected} onDone={() => { setSelecting(false); setSelected({}); }} onApplied={refreshInboxData}/>}
             <div className="conversation-list-items" ref={ setListRefs }>
                 { conversations.map(conversation => selecting && ticketQueue ? <div className="ticket-bulk-row" key={conversation.id}><input className="form-check-input" type="checkbox" {...tooltip('Select ticket', {describedBy: conversationNameId(conversation.id)})} checked={Boolean(selected[conversation.id])} disabled={!selected[conversation.id] && Object.keys(selected).length >= 100} onChange={event => { const checked = event.target.checked; setSelected(current => { const next = { ...current }; if (checked) next[conversation.id] = { id: conversation.id, subject: conversation.subject, ticket_version: conversation.ticket_version }; else delete next[conversation.id]; return next; }); }}/><ConversationItem conversation={conversation}/></div> : <ConversationItem key={conversation.id} conversation={conversation}/>) }
-                { isInitialLoading && conversations.length === 0 && <p className="text-center" role="status">Loading conversations...</p> }
-                { !isInitialLoading && !refreshError && !hasNextPage && conversations.length === 0 && (
+                { isInitialLoading && !isBusy && conversations.length === 0 && <p className="text-center" role="status">Loading conversations...</p> }
+                { !isInitialLoading && !isBusy && !refreshError && !hasNextPage && conversations.length === 0 && (
                     searchQuery.trim()
                         ? <p className="conversation-empty-state" role="status">No results for “{ searchQuery.trim() }” in { filter.search_scope === 'view' ? inboxViewPhrase(selectedView) : 'all history' }. Search matches message phrases, customer names and email addresses.</p>
                         : <>
@@ -125,11 +126,12 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
                     {conversations.length ? 'Couldn’t refresh conversations.' : 'Couldn’t load conversations.'}
                     <button type="button" onClick={ retryRefresh }>Retry</button>
                 </p> }
-                { isLoadingMore && <p className="text-center" role="status">Loading more conversations...</p> }
+                { isLoadingMore && !isBusy && <p className="text-center" role="status">Loading more conversations...</p> }
+                { isBusy && <p className="conversation-search-notice" role="status">Search is busy. Trying again in a few seconds…</p> }
                 { loadMoreError && conversations.length > 0 && <p className="conversation-list-error" role="alert">
                     Couldn’t load more conversations. <button type="button" onClick={ loadMore }>Retry</button>
                 </p> }
-                { hasNextPage && !isInitialLoading && !isRefreshing && !isLoadingMore && !refreshError && !loadMoreError && conversations.length > 0 && (
+                { hasNextPage && !isBusy && !isInitialLoading && !isRefreshing && !isLoadingMore && !refreshError && !loadMoreError && conversations.length > 0 && (
                     <div className="conversation-list-sentinel" ref={ sentryRef } aria-hidden="true" />
                 ) }
             </div>

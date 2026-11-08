@@ -26,11 +26,13 @@ export function assertEqualityPolicy(raw,business,excluded){
   }else assert.deepEqual(business[name],raw[name],`all columns and rows participate: ${name}`)
  }
  // Physical SQLite FTS segment pages are validated against authoritative content
- // by snapshotDatabase; the virtual index and source messages remain in equality.
+ // by snapshotDatabase; each virtual index and its source rows remain in equality.
+ const sources={inbox_message_search:'messages',inbox_contact_search:'contacts'}
  for(const [name,rows] of Object.entries(raw))if(isSearchShadow(rows)){
-  assert.match(name,/^inbox_message_search_(data|idx|content|docsize|config)$/)
-  assert.ok(Object.hasOwn(business,'inbox_message_search'))
-  assert.ok(Object.hasOwn(business,'messages'))
+  const index=name.match(/^(inbox_message_search|inbox_contact_search)_(data|idx|content|docsize|config)$/)?.[1]
+  assert.ok(index,name+' is a known search index shadow')
+  assert.ok(Object.hasOwn(business,index))
+  assert.ok(Object.hasOwn(business,sources[index]))
  }
 }
 

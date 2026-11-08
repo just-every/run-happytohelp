@@ -1,17 +1,25 @@
 import assert from 'node:assert/strict';
+import {derivedSearchIndexes} from '../../scripts/installer/search-index-sql.mjs';
 
 // Keep physical FTS pages in raw snapshots. Their segment/merge layout is not
-// business state; validate the actual index against its external message rows.
+// business state; validate each actual index against its external content rows.
 const shadowRows=new WeakSet();
 export const isSearchShadow=rows=>Array.isArray(rows)&&shadowRows.has(rows);
+const definitionSql=table=>`SELECT sql FROM sqlite_master WHERE name='${table}' AND type='table'`;
+// rank=1 checks missing/stale terms and rowids against the content too,
+// rather than merely checking the index's internal B-tree consistency.
+const integritySql=table=>`INSERT INTO ${table}(${table},rank) VALUES('integrity-check',1)`;
+const shadowsOf=(tables,table)=>tables.filter(row=>row.schema==='main'&&row.type==='shadow'&&row.name.startsWith(table+'_')).map(row=>row.name);
 export function validateSearchIndex(native){
- const definition=native.prepare("SELECT sql FROM sqlite_master WHERE name='inbox_message_search' AND type='table'").get();
- if(!definition)return [];
- assert.match(definition.sql,/\bUSING\s+fts5\s*\(/i,'search storage is SQLite FTS5');
- // rank=1 checks missing/stale terms and rowids against the content table too,
- // rather than merely checking the index's internal B-tree consistency.
- native.prepare("INSERT INTO inbox_message_search(inbox_message_search,rank) VALUES('integrity-check',1)").run();
- return native.prepare('PRAGMA table_list').all().filter(row=>row.schema==='main'&&row.type==='shadow'&&row.name.startsWith('inbox_message_search_')).map(row=>row.name);
+ const shadows=[];
+ for(const {table} of derivedSearchIndexes){
+  const definition=native.prepare(definitionSql(table)).get();
+  if(!definition)continue;
+  assert.match(definition.sql,/\bUSING\s+fts5\s*\(/i,'search storage is SQLite FTS5');
+  native.prepare(integritySql(table)).run();
+  shadows.push(...shadowsOf(native.prepare('PRAGMA table_list').all(),table));
+ }
+ return shadows;
 }
 export function markSearchShadows(snapshot,names){
  for(const name of names){assert.ok(Array.isArray(snapshot[name]),'raw search storage is retained');shadowRows.add(snapshot[name]);}
@@ -24,10 +32,14 @@ export function assertSearchShadowEquality(before,after){
 
 /** D1-backed observers use the same content check before retaining raw rows. */
 export async function validateStoredSearch(inspect){
- const definition=(await inspect({sql:"SELECT sql FROM sqlite_master WHERE name='inbox_message_search' AND type='table'"})).results[0];
- if(!definition)return null;
- assert.match(definition.sql,/\bUSING\s+fts5\s*\(/i,'search storage is SQLite FTS5');
- await inspect({sql:"INSERT INTO inbox_message_search(inbox_message_search,rank) VALUES('integrity-check',1)"});
- const tables=(await inspect({sql:'PRAGMA table_list'})).results;
- return {table:'inbox_message_search',shadows:tables.filter(row=>row.schema==='main'&&row.type==='shadow'&&row.name.startsWith('inbox_message_search_')).map(row=>row.name)};
+ const shadows=[],tables=[];
+ for(const {table} of derivedSearchIndexes){
+  const definition=(await inspect({sql:definitionSql(table)})).results[0];
+  if(!definition)continue;
+  assert.match(definition.sql,/\bUSING\s+fts5\s*\(/i,'search storage is SQLite FTS5');
+  await inspect({sql:integritySql(table)});
+  tables.push(table);
+  shadows.push(...shadowsOf((await inspect({sql:'PRAGMA table_list'})).results,table));
+ }
+ return tables.length?{tables,shadows}:null;
 }

@@ -25,7 +25,27 @@ async function searched(token,term){
 }
 
 const secret='Order 4471 for Alice Example, 12 Private Lane'
-const objects={'p/conv1/contact-upload':'passport scan','p/conv2/operator-upload':'invoice for alice@example.com','delegation/p/job1/shot':'screenshot of alice account','p/convOther/other-upload':'other customer file','q/convQ/q-upload':'other project file','q/convQ/q-by-ct':'other project file uploaded by the same id'}
+// Legacy delegation and internal-note files, at the keys the legacy exporter writes; Alice's and Bob's.
+const legacyFiles={alice:['file-deleg','file-deleg-preview','file-note'],bob:['file-bob-deleg','file-bob-deleg-preview','file-bob-note']}
+const legacyKey=id=>`legacy/projects/p/media/${id}`
+const objects={'p/conv1/contact-upload':'passport scan','p/conv2/operator-upload':'invoice for alice@example.com','delegation/p/job1/shot':'screenshot of alice account','p/convOther/other-upload':'other customer file','q/convQ/q-upload':'other project file','q/convQ/q-by-ct':'other project file uploaded by the same id',
+ ...Object.fromEntries(Object.values(legacyFiles).flat().map(id=>[legacyKey(id),`legacy bytes of ${id}`]))}
+// A delegated run's upload (with its image preview) is linked to the delegation and to the run's internal note; a file can
+// be linked to the note only. Journaled as the importer does: the delegation mapped, the note event, files and links archive-only.
+const delegationRows=(who,conversation,job,note,[file,preview,noteFile])=>[
+ ['support_delegations',job,`{"id":"${job}","project_id":"p","conversation_id":"${conversation}","instructions":"Look up ${who} order"}`,'local_jobs',job,'mapped'],
+ ['events',note,`{"id":"${note}","conversation_id":"${conversation}","type":"INTERNAL_NOTE","payload":"${who} delegation result note"}`,null,null,'archived_only'],
+ ['media',file,`{"id":"${file}","filename_original":"${who.toLowerCase()}-delegation-shot.png","mime_type":"image/png"}`,null,null,'archived_only'],
+ ['media',preview,`{"id":"${preview}","original_media_id":"${file}","variant_name":"preview","filename_original":"${who.toLowerCase()}-delegation-shot.png"}`,null,null,'archived_only'],
+ ['media',noteFile,`{"id":"${noteFile}","filename_original":"${who.toLowerCase()}-note-receipt.pdf","mime_type":"application/pdf"}`,null,null,'archived_only'],
+ ['mediables',`link-${file}-job`,`{"media_id":"${file}","mediable_type":"App\\\\Models\\\\SupportDelegation","mediable_id":"${job}","tag":"attachment"}`,null,null,'archived_only'],
+ ['mediables',`link-${file}-note`,`{"media_id":"${file}","mediable_type":"App\\\\Models\\\\Event","mediable_id":"${note}","tag":"attachment"}`,null,null,'archived_only'],
+ ['mediables',`link-${noteFile}-note`,`{"media_id":"${noteFile}","mediable_type":"App\\\\Models\\\\Event","mediable_id":"${note}","tag":"attachment"}`,null,null,'archived_only'],
+]
+const legacyDelegations={alice:delegationRows('Alice','conv1','job1','note-ct',legacyFiles.alice),bob:delegationRows('Bob','convOther','jobo','note-other',legacyFiles.bob)}
+const sqlValue=value=>value===null?'NULL':`'${value}'`
+const journalValues=rows=>rows.map(([table,id,json,targetTable,targetKey,status])=>`('run','${table}','${id}','d-${id}','${json}',${sqlValue(targetTable)},${sqlValue(targetKey)},'${status}')`).join(',')
+const journalIds=rows=>rows.map(([,id])=>`'${id}'`).join(',')
 async function seed(){
  const now=1_700_000_000_000,rows=[
   "INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES('p','Project','widget-p','https://p.example',1),('q','Other project','widget-q','https://q.example',1)",
@@ -84,6 +104,8 @@ async function seed(){
    ('run','media','file-legacy','d-file-legacy','{"id":"file-legacy","filename":"alice-passport.png"}',NULL,NULL,'skipped'),
    ('run','messages','mo-deleted','d-mo-deleted','{"project_id":"p","conversation_id":"convOther","contact_id":"other","content":"Bob deleted this"}',NULL,NULL,'archived_only'),
    ('run','messages','mq-deleted','d-mq-deleted','{"project_id":"q","conversation_id":"convQ","contact_id":"ct","content":"Quinn deleted this"}',NULL,NULL,'archived_only')`,
+  `INSERT INTO legacy_import_rows VALUES${journalValues([...legacyDelegations.alice,...legacyDelegations.bob])}`,
+  `INSERT INTO legacy_import_objects VALUES${Object.values(legacyFiles).flat().map(id=>`('run','${legacyKey(id)}','sha-${id}',${`legacy bytes of ${id}`.length})`).join(',')}`,
  ]
  await DB.batch(rows.map(sql=>DB.prepare(sql)))
  const tokens={}
@@ -113,10 +135,11 @@ async function outsideScope(){
   localEvents:await all("SELECT * FROM local_events WHERE job_id<>'job1'"),
   replyGrants:await all("SELECT * FROM email_reply_grants WHERE token_hash IN ('reply-bob','reply-q') ORDER BY token_hash"),
   email:await all("SELECT * FROM email_deliveries WHERE id='message:mo1:x'"),
-  legacy:await all("SELECT * FROM legacy_import_rows WHERE source_id IN ('other','bucketOther','mo-deleted','mq-deleted') ORDER BY source_id"),
+  legacy:await all(`SELECT * FROM legacy_import_rows WHERE source_id IN ('other','bucketOther','mo-deleted','mq-deleted',${journalIds(legacyDelegations.bob)}) ORDER BY source_id`),
+  legacyObjects:await all('SELECT * FROM legacy_import_objects ORDER BY object_key'),
   buckets:await all("SELECT * FROM conversation_buckets WHERE conversation_id NOT IN ('conv1','conv2') ORDER BY id"),
   inbound:await all("SELECT * FROM inbound_emails WHERE id IN ('seed-in-other','seed-in-q') ORDER BY id"),
-  objects:Object.fromEntries(await Promise.all(['p/convOther/other-upload','q/convQ/q-upload','q/convQ/q-by-ct'].map(async key=>[key,await objectText(key)]))),
+  objects:Object.fromEntries(await Promise.all(['p/convOther/other-upload','q/convQ/q-upload','q/convQ/q-by-ct',...legacyFiles.bob.map(legacyKey)].map(async key=>[key,await objectText(key)]))),
  }
  for(const table of ['context_evidence','context_profiles','context_insights','context_summaries','context_collectors','context_actions','context_tracked_events','context_jobs'])snapshot[table]=await all(`SELECT * FROM ${table} WHERE NOT (project_id='p' AND subject_id='ct') ORDER BY 1,2,3`)
  snapshot.contextJobEvents=await all("SELECT * FROM context_job_events WHERE job_id<>'cj1'")
@@ -130,7 +153,7 @@ async function erasedScope(){
   sessions:await all("SELECT * FROM sessions WHERE contact_id='ct'"),
   messages:await all("SELECT id,local_id,actor_id,actor_role,content,revision,intent_hash,erased_at IS NOT NULL erased FROM messages WHERE conversation_id IN ('conv1','conv2') ORDER BY id"),
   media:await all("SELECT * FROM media WHERE id IN ('md1','md2')"),
-  objects:await Promise.all(['p/conv1/contact-upload','p/conv2/operator-upload','delegation/p/job1/shot'].map(objectText)),
+  objects:await Promise.all(['p/conv1/contact-upload','p/conv2/operator-upload','delegation/p/job1/shot',...legacyFiles.alice.map(legacyKey)].map(objectText)),
   notes:await all("SELECT * FROM conversation_notes WHERE conversation_id IN ('conv1','conv2')"),
   participants:await all("SELECT * FROM conversation_participants WHERE contact_id='ct'"),
   reads:await all("SELECT * FROM conversation_reads WHERE user_id='ct'"),
@@ -148,6 +171,7 @@ async function erasedScope(){
   email:await all("SELECT id,recipient FROM email_deliveries WHERE id IN ('message:m1b:notification','transcript-key') ORDER BY id"),
   legacy:await all("SELECT source_id,row_digest,source_json FROM legacy_import_rows WHERE source_id IN ('bucket1','ct','m1a','old-p') ORDER BY source_id"),
   unheld:await all("SELECT source_table,source_id,row_digest,source_json,target_table,target_key,status FROM legacy_import_rows WHERE source_id IN ('m-skipped','m-deleted','m-held','conv-legacy','m-legacy','link-legacy','file-legacy') ORDER BY source_id"),
+  delegationFiles:await all(`SELECT source_table,source_id,row_digest,source_json,target_table,target_key,status FROM legacy_import_rows WHERE source_id IN (${journalIds(legacyDelegations.alice)}) ORDER BY source_id`),
   inbound:await all("SELECT id,automatic,evidence_json,local_id,message_id FROM inbound_emails WHERE id IN ('seed-in-conv','seed-in-sender') ORDER BY id"),
   staged:await all('SELECT * FROM contact_erasure_objects'),
  }
@@ -176,6 +200,10 @@ let tokens,before
  assert.deepEqual(await outsideScope(),before)
 }
 
+// Words of Alice's messages, each stored in full in the message index's pages (no shorter indexed word shares its start).
+const erasedWords=['lane','4242']
+const indexedPages=word=>one("SELECT count(*) n FROM inbox_message_search_data WHERE instr(block,CAST(? AS BLOB))>0",word).then(row=>row.n)
+for(const word of erasedWords)assert.ok(await indexedPages(word)>0,word+' is in the message index before erasure')
 let first,opAfter
 {
  const hook=await call(routes,'/projects/p/connections/webhooks',tokens.owner,'POST',{name:'CRM',url:'https://hooks.crm-example.com/erasure',events:['conversation.created']});assert.equal(hook.status,201)
@@ -191,7 +219,7 @@ let first,opAfter
  assert.deepEqual(settled.counts,{completed:1,pending:0,failed:0,unsupported:2})
  assert.equal((await one("SELECT count(*) n FROM audit_events WHERE action='contact.erased' AND target_id='ct'")).n,1)
  assert.equal(first.erased_by,'admin');assert.equal(first.runs,1);assert.equal(first.erased_at,first.last_erased_at)
- assert.deepEqual({conversations:first.conversations,messages:first.messages,attachments:first.attachments,tracked_events:first.tracked_events,context_records:first.context_records,sessions:first.sessions},{conversations:2,messages:4,attachments:3,tracked_events:2,context_records:7,sessions:2})
+ assert.deepEqual({conversations:first.conversations,messages:first.messages,attachments:first.attachments,tracked_events:first.tracked_events,context_records:first.context_records,sessions:first.sessions},{conversations:2,messages:4,attachments:3+legacyFiles.alice.length,tracked_events:2,context_records:7,sessions:2})
  const erased=await erasedScope()
  assert.deepEqual(await all("SELECT * FROM email_reply_grants WHERE token_hash IN ('reply-alice','reply-alias')"),[])
  assert.ok((await all("SELECT content_raw FROM messages WHERE conversation_id IN ('conv1','conv2')")).every(message=>message.content_raw===null))
@@ -199,7 +227,7 @@ let first,opAfter
  assert.deepEqual(JSON.parse(erased.contact.metadata_json),{is_deleted:1,is_blocked:1,is_erased:1,erased_at:first.erased_at})
  assert.deepEqual(erased.sessions,[])
  assert.deepEqual(erased.messages.map(m=>[m.id,m.local_id,m.actor_id,m.revision,m.content,m.intent_hash,m.erased]),[['m1a','erased:m1a','ct',1,'',null,1],['m1b','erased:m1b','operator',2,'',null,1],['m1c','erased:m1c','ct',3,'',null,1],['m2a','erased:m2a','ct',1,'',null,1]])
- assert.deepEqual(erased.media,[]);assert.deepEqual(erased.objects,[null,null,null])
+ assert.deepEqual(erased.media,[]);assert.deepEqual(erased.objects,Array(3+legacyFiles.alice.length).fill(null))
  assert.deepEqual(erased.notes,[]);assert.deepEqual(erased.participants,[]);assert.deepEqual(erased.reads,[])
  assert.deepEqual(Object.values(erased.context),Array(9).fill(0));assert.deepEqual(erased.contextJobEvents,[])
  assert.deepEqual(erased.generations,[{id:'gen-done',state:'completed',instruction:'',output_json:'{"usage":{"input_tokens":7}}',options_json:'{"tool":"improve","client_request_id":"req-done","display_request_version":3}'},{id:'gen-run',state:'cancelled',instruction:'',output_json:null,options_json:'{"client_request_id":"req-run","display_request_version":4}'}])
@@ -215,6 +243,8 @@ let first,opAfter
   ['conversations','conv-legacy',null,null,'skipped'],['media','file-legacy',null,null,'skipped'],['mediables','link-legacy',null,null,'skipped'],
   ['messages','m-deleted',null,null,'archived_only'],['messages','m-held','messages','m-held','conflict'],['messages','m-legacy',null,null,'skipped'],['messages','m-skipped',null,null,'skipped'],
  ].map(([source_table,source_id,target_table,target_key,status])=>({source_table,source_id,row_digest:'d-'+source_id,source_json:'{}',target_table,target_key,status})).sort((a,b)=>a.source_id<b.source_id?-1:1))
+ // Her legacy delegation, its internal note, their files (a preview variant and a note-only file) and every link: the copy goes.
+ assert.deepEqual(erased.delegationFiles,legacyDelegations.alice.map(([source_table,source_id,,target_table,target_key,status])=>({source_table,source_id,row_digest:'d-'+source_id,source_json:'{}',target_table,target_key,status})).sort((a,b)=>a.source_id<b.source_id?-1:1))
  assert.deepEqual(erased.inbound,[
   {id:'seed-in-conv',automatic:1,evidence_json:'{"reasons":["auto-submitted","list-header"]}',local_id:'email:seed-1',message_id:'m1a'},
   {id:'seed-in-sender',automatic:0,evidence_json:'{"reasons":[]}',local_id:'email:seed-2',message_id:null},
@@ -229,6 +259,9 @@ let first,opAfter
  await DB.prepare("CREATE VIRTUAL TABLE erasure_contact_terms USING fts5vocab(inbox_contact_search,'instance')").run()
  try{assert.deepEqual(await all("SELECT term FROM erasure_contact_terms WHERE doc=(SELECT rowid FROM contacts WHERE id='ct')"),[],'the erased identity leaves no indexed term')}
  finally{await DB.prepare('DROP TABLE erasure_contact_terms').run()}
+ // The message index removes the erased messages' words from its storage, and still agrees with messages.
+ for(const word of erasedWords)assert.equal(await indexedPages(word),0,word+' leaves the message index storage')
+ await DB.prepare("INSERT INTO inbox_message_search(inbox_message_search,rank) VALUES('integrity-check',1)").run()
  // Another project's claim from the same address is not the erased contact's data.
  const inbound=JSON.stringify(await all("SELECT * FROM inbound_emails WHERE project_id='p'"))
  for(const fragment of ['Alice','alice','4471','Sydney','Private Client'])assert.equal(inbound.includes(fragment),false,`${fragment} remains in inbound email evidence`)

@@ -32,6 +32,13 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
     add.run(seedHolder,projectId,'Seed widget visitor',identities[0]);add.run(seedNewHolder,projectId,'Seed widget customer',identities[1]);
   }finally{seedEdit.close();}
   const customerBefore=sql('SELECT * FROM contacts WHERE id=?',customer);
+  // A customer legacy holds from before the full export (deleted there too, so the retire leaves her) was erased in the
+  // seed: the seed keeps her erased contact and its erasure record, which a delta reads.
+  const erased=uuid('36',1),erasedConversation=uuid('45',1),erasedDelegation=uuid('b9',1),erasedNote=uuid('54',1);
+  const erasedSeed=new DatabaseSync(database);try{
+    erasedSeed.prepare('INSERT INTO contacts(id,project_id,metadata_json,created_at) VALUES(?,?,?,1)').run(erased,projectId,JSON.stringify({is_deleted:1,is_blocked:1,is_erased:1}));
+    erasedSeed.prepare('INSERT INTO contact_erasures(project_id,contact_id,erased_by,erased_at,last_erased_at) VALUES(?,?,?,1,1)').run(projectId,erased,owner);
+  }finally{erasedSeed.close();}
 
   // Legacy keeps taking chats and mail, then the project is retired.
   await admin.query("SET time_zone='+00:00'");
@@ -68,6 +75,22 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   await mkdir(join(objectDirectory,sesDirectory),{recursive:true});await writeFile(join(objectDirectory,sesDirectory,'receipt.txt'),sesBytes);
   await admin.query("INSERT INTO media(id,disk,directory,filename,extension,filename_original,mime_type,aggregate_type,size,url,created_at,updated_at) VALUES(?,'s3',?,'receipt','txt','receipt.txt','text/plain','document',?,'https://storage.example.test/receipt.txt',UTC_TIMESTAMP(),UTC_TIMESTAMP())",[sesMedia,sesDirectory,sesBytes.length]);
   await admin.query("INSERT INTO mediables(media_id,mediable_type,mediable_id,tag,`order`) VALUES(?,'App\\\\Models\\\\Message',?,'attachment',0)",[sesMedia,sesMessage]);
+  // Her delegated run (before the watermark: its conversation, delegation and internal note are not carried) gains an
+  // uploaded image with its preview, linked to the delegation and to the note; the customer's delegation gains a file too.
+  const old='2026-01-15 09:30:00',erasedFile=uuid('82',1),erasedPreview=uuid('82',2),otherFile=uuid('82',3),bucket=uuid('53',1),device=uuid('b2',1);
+  await admin.query('INSERT INTO contacts(id,project_id,name,email,identifier,created_at,updated_at,deleted_at) VALUES(?,?,?,?,?,?,?,?)',[erased,projectId,'Erin Erased','erin@delta.example.test','delta-erased-customer',old,old,old]);
+  await admin.query('INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES(?,?,?,?,?)',[erasedConversation,projectId,erased,old,old]);
+  await admin.query('INSERT INTO buckets(id,project_id,conversation_id,is_vectorized,created_at,updated_at) VALUES(?,?,?,0,?,?)',[bucket,projectId,erasedConversation,old,old]);
+  await admin.query("INSERT INTO support_delegations(id,project_id,conversation_id,local_agent_device_id,created_by_user_id,request_id,mode,instructions,status,created_at,updated_at) VALUES(?,?,?,?,?,?,'investigate','Check Erin passport upload','completed',?,?)",[erasedDelegation,projectId,erasedConversation,device,owner,uuid('b5',9),old,old]);
+  await admin.query("INSERT INTO events(id,conversation_id,bucket_id,agent_id,type,payload,created_at) VALUES(?,?,?,?,'INTERNAL_NOTE',?,?)",[erasedNote,erasedConversation,bucket,owner,JSON.stringify('Delegation result for Erin'),old]);
+  const delegationFiles=[[erasedFile,`${projectId}/${erasedConversation}`,'shot','png','erin-passport.png','image/png','image',null,null],[erasedPreview,`${projectId}/${erasedConversation}`,'shot-preview','png','erin-passport.png','image/png','image','preview',erasedFile],
+    [otherFile,`${projectId}/${conversation}`,'delegation-notes','txt','morgan-delegation-notes.txt','text/plain','document',null,null]];
+  for(const [id,folder,name,extension,original,mime,aggregate,variant,source] of delegationFiles){
+    const fileBytes=Buffer.from(`delegation file ${name}\n`);await mkdir(join(objectDirectory,folder),{recursive:true});await writeFile(join(objectDirectory,folder,`${name}.${extension}`),fileBytes);
+    await admin.query('INSERT INTO media(id,disk,directory,filename,extension,filename_original,mime_type,aggregate_type,size,variant_name,original_media_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP())',[id,'s3',folder,name,extension,original,mime,aggregate,fileBytes.length,variant,source]);
+  }
+  for(const [file,type,parent] of [[erasedFile,'SupportDelegation',erasedDelegation],[erasedFile,'Event',erasedNote],[otherFile,'SupportDelegation',uuid('b3',1)]])
+    await admin.query("INSERT INTO mediables(media_id,mediable_type,mediable_id,tag,`order`) VALUES(?,?,?,'attachment',0)",[file,`App\\Models\\${type}`,parent]);
   await admin.query("UPDATE projects SET website='https://retired.example.test',deleted_at=UTC_TIMESTAMP(),updated_at=UTC_TIMESTAMP() WHERE id=?",[projectId]);
 
   // Export only what changed since the watermark; its attachments step copies only the new file.
@@ -78,9 +101,9 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   await run('scripts/export-legacy.mjs',['attachments','--input',deltaSnapshot,'--objects-dir',objectDirectory,'--output',deltaImport]);
   const manifest=JSON.parse(await readFile(join(deltaImport,'manifest.json'),'utf8')),rows=manifest.source.rowCounts;
   assert.equal(rows.messages,6,'only new messages are in the row chunks');assert.equal(rows.conversations,4,'changed conversations and the parents of new messages');
-  assert.equal(rows.contacts,3);assert.equal(rows.projects,1);assert.equal(rows.media,2);assert.equal(rows.mediables,2);
+  assert.equal(rows.contacts,3);assert.equal(rows.projects,1);assert.equal(rows.media,5);assert.equal(rows.mediables,5);
   for(const table of ['articles','categories','macros','events','buckets','datasets','insights','charges'])assert.equal(rows[table],0,`${table} rows untouched since the watermark are left out`);
-  assert.deepEqual(manifest.objects.map(o=>o.mediaId).sort(),[newMedia,sesMedia].sort(),'only the new files are copied');
+  assert.deepEqual(manifest.objects.map(o=>o.mediaId).sort(),[newMedia,sesMedia,erasedFile,erasedPreview,otherFile].sort(),'only the new files are copied');
   assert.equal(manifest.source.scopedCounts.messages,11,'the whole scope is still read and counted');
 
   const before=business(),beforeWork=workCounts(),beforeObjects=await bucketSnapshot(join(persist,'v3/r2')),resumeFrom=join(output,'delta-1-before');
@@ -121,6 +144,15 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
     [['conversations',sesConversation],['media',sesMedia],['messages',sesReply],['messages',sesMessage]].sort((x,y)=>x[0].localeCompare(y[0])||x[1].localeCompare(y[1])));
   assert.equal(skippedRows.filter(r=>r.source_table==='mediables').length,1);
   assert.equal(/A legacy message in|Accounts Payable|asks about refunds|delta-local/.test(JSON.stringify(applied.conflicts)),false,'conflicts carry ids and reasons, no content');
+  // The erased customer's delegation image, its preview and both its links (to the delegation and to the note) are journaled
+  // erased with no copy and their bytes are never uploaded; the other customer's delegation file is archived and uploaded.
+  const deltaRows=where=>sql(`SELECT j.source_table,j.source_id,j.source_json,j.status FROM legacy_import_rows j JOIN legacy_import_runs u ON u.id=j.run_id WHERE json_extract(u.source_json,'$.delta')=1 AND ${where} ORDER BY 1,2`);
+  const erasedRows=deltaRows("j.status='erased'");
+  assert.deepEqual(erasedRows.filter(r=>r.source_table==='media').map(r=>r.source_id),[erasedFile,erasedPreview].sort());
+  assert.equal(erasedRows.filter(r=>r.source_table==='mediables').length,2);assert.equal(erasedRows.length,4);
+  assert.deepEqual(erasedRows.map(r=>r.source_json),erasedRows.map(()=>'{}'));
+  assert.equal(sql("SELECT COUNT(*) n FROM legacy_import_rows WHERE instr(source_json,'erin-passport')>0")[0].n,0,'her file name is journaled nowhere');
+  assert.deepEqual(deltaRows(`j.source_table='media' AND j.source_id='${otherFile}'`).map(r=>[r.status,JSON.parse(r.source_json).filename_original]),[['archived_only','morgan-delegation-notes.txt']]);
 
   // The transcript gains the legacy messages in order after the imported ones, and the conversation follows them.
   const transcript=sql('SELECT id,revision,local_id FROM messages WHERE conversation_id=? ORDER BY revision',conversation);
@@ -137,7 +169,9 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   assert.deepEqual(sql('SELECT * FROM projects WHERE id=?',projectId),[project]);
   assert.deepEqual(sql('SELECT * FROM project_settings WHERE project_id=?',projectId),[settings]);
   assert.deepEqual(workCounts(),beforeWork,'applying a delta sends, notifies, dispatches and schedules nothing');
-  const objects=await bucketSnapshot(join(persist,'v3/r2'));assert.equal(objects.objects.length,beforeObjects.objects.length+1);
+  const objects=await bucketSnapshot(join(persist,'v3/r2'));assert.equal(objects.objects.length,beforeObjects.objects.length+2);
+  const stored=new Set(objects.objects.map(o=>JSON.parse(o).key)),fileKey=id=>`legacy/projects/${projectId}/media/${id}`;
+  assert.deepEqual([erasedFile,erasedPreview,otherFile].map(id=>stored.has(fileKey(id))),[false,false,true],'her files are withheld; the other customer\'s is uploaded');
 
   // Rerunning the same delta changes nothing and lists the same conflicts.
   const after=business(),journal=sql('SELECT COUNT(*) n FROM legacy_import_rows')[0].n;
@@ -153,7 +187,7 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   assert.equal(checked.code,0,checked.stdout);
   const result=JSON.parse(checked.stdout);
   assert.equal(result.projectSourceRows,previousTotal+result.newRows);assert.ok(result.newRows>=7);
-  assert.equal(result.attachments.identical,1);assert.equal(result.attachments.withheld,1);assert.equal(result.attachments.mismatched,0);assert.equal(result.conflicts,4);
+  assert.equal(result.attachments.identical,2);assert.equal(result.attachments.withheld,3);assert.equal(result.attachments.mismatched,0);assert.equal(result.conflicts,4);
   assert.deepEqual(result.conflictRows.map(c=>`${c.sourceTable}:${c.sourceId}:${c.reason}`).sort(),applied.conflicts.map(c=>`${c.sourceTable}:${c.sourceId}:${c.reason}`).sort());
   for(const c of result.conflictRows)assert.deepEqual(Object.keys(c).sort(),['reason','sourceId','sourceTable','targetKey','targetTable']);
   identityFree(checked.stdout);assert.equal(result.retries,0);

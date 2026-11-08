@@ -75,7 +75,7 @@ history unless `search_scope=view`) finds a conversation by its contact's name, 
 name or provided email as a literal, ASCII case-insensitive substring (`%`, `_`, `\`, quotes and
 FTS operators are ordinary characters), by its imported `#source` or bare source id, or by
 message words through `inbox_message_search` (unquoted words in any order, quoted phrases in
-order); a result previews its newest matching message. A term longer than 200 characters is a 400
+order; migration 311 turns on its secure-delete, so an erased or rewritten message's words leave the index's storage); a result previews its newest matching message. A term longer than 200 characters is a 400
 whose message the inbox shows. Terms of three or more characters read the contact trigram index
 `inbox_contact_search` (migration 310: an FTS5 index over the `inbox_contact_identity` view, kept by
 triggers on contacts, with secure-delete so a changed or erased identity leaves no trigrams), the
@@ -93,10 +93,14 @@ runs it on local D1.
 
 Owners and admins can permanently erase a contact's personal data
 (`contact-erasure.ts`, `contact-erasure/`): R2 objects are staged in
-`contact_erasure_objects` and deleted first, then one D1 batch removes or redacts
+`contact_erasure_objects` and deleted first, including the legacy files of the contact's
+messages, delegations and internal notes and their variants, found through the legacy journal
+(`contact-erasure/archive.ts`) and counted in `attachments`; then the legacy journal's copies of
+the contact's rows are cleared in bounded D1 calls (rowid slices, then the rows the contact's
+legacy sets are read from, by id), and one D1 batch removes or redacts
 the contact's identity, sessions, message content, attachments, customer context,
 notes, AI assist options and output, imported bucket summaries, delegated-work
-output, delivery addresses and legacy archive copies,
+output and delivery addresses,
 and records a non-identifying `contact_erasures` audit row. Message identity,
 revision and frontier are kept (`messages.erased_at`); a client-supplied
 `local_id` becomes `erased:<message id>`, a prefix admission reserves, while the

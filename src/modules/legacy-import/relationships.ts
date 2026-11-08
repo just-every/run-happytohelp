@@ -6,6 +6,8 @@ export interface Relationships {
  messages:{get(conversationId:string):Row[]|undefined}
  revisions:{get(messageId:string):number|undefined}
  mediaMessages:{get(mediaId:string):Row|undefined}
+ /** Every link (`mediables` row) of a file, whatever its parent. */
+ mediaLinks:{get(mediaId:string):Row[]|undefined}
  identityOwner(project:unknown,identity:string):Row|undefined
  localIdOwner(conversationId:string,localId:string):string|undefined
 }
@@ -23,11 +25,13 @@ function build(bundle:LegacyBundle):Relationships{
  const revisions=new Map<string,number>(),localIds=new Map<string,string>()
  for(const [conversation,rows] of messages){rows.sort(transcriptOrder);rows.forEach((r,i)=>{revisions.set(String(r.id),i+1);if(r.local_id&&!localIds.has(`${conversation}\u0000${r.local_id}`))localIds.set(`${conversation}\u0000${r.local_id}`,String(r.id))})}
  const mediaMessages=new Map((bundle.tables.mediables||[]).filter(isMessageMedia).map(r=>[String(r.media_id),r]))
+ const mediaLinks=new Map<string,Row[]>()
+ for(const row of bundle.tables.mediables||[]){const id=String(row.media_id);if(!mediaLinks.has(id))mediaLinks.set(id,[]);mediaLinks.get(id)!.push(row)}
  // Legacy allowed several contacts per identifier; native keeps it on the earliest one.
  const identityOwners=new Map<string,Row>()
  const earlier=(a:Row,b:Row)=>timestamp(a.created_at)-timestamp(b.created_at)||(String(a.id)<String(b.id)?-1:1)
  for(const row of bundle.tables.contacts||[]){const identity=contactIdentity(row);if(identity===null)continue;const key=`${row.project_id}\u0000${identity}`,owner=identityOwners.get(key);if(!owner||earlier(row,owner)<0)identityOwners.set(key,row)}
- return {find:(table:string,id:unknown)=>ids.get(table)?.get(String(id)),messages,revisions,mediaMessages,identityOwner:(project:unknown,identity:string)=>identityOwners.get(`${project}\u0000${identity}`),localIdOwner:(conversationId:string,localId:string)=>localIds.get(`${conversationId}\u0000${localId}`)}
+ return {find:(table:string,id:unknown)=>ids.get(table)?.get(String(id)),messages,revisions,mediaMessages,mediaLinks,identityOwner:(project:unknown,identity:string)=>identityOwners.get(`${project}\u0000${identity}`),localIdOwner:(conversationId:string,localId:string)=>localIds.get(`${conversationId}\u0000${localId}`)}
 }
 // Legacy stores "no identifier" as an empty string.
 export function contactIdentity(row:Row):string|null{const value=row.identifier??row.external_id;return value===undefined||value===null||String(value)===''?null:String(value)}

@@ -38,6 +38,24 @@ export async function fenceAndStage(env: Env, projectId: string, contactId: stri
   return fenceImportErasure(env,projectId,contactId)
 }
 
+/** The R2 key the legacy exporter gives a file (scripts/legacy-export/attachments.mjs `keySegment`). */
+const keySegment = (value: string) => encodeURIComponent(value).replace(/\./g, '%2E')
+const legacyObjectKey = (projectId: string, mediaId: string) => `legacy/projects/${keySegment(projectId)}/media/${keySegment(mediaId)}`
+
+/**
+ * Stage the R2 objects of the person's legacy files (contact-erasure/archive-person.ts `own_files`: files of their messages,
+ * delegations and internal notes, and their variants) at the keys the exporter wrote and the import recorded. Staged
+ * before the journal copies naming them are cleared, so a retried erasure deletes the same objects again. A file the seed
+ * holds as a media row is staged with the seed's media only when it is the contact's, so another person's stays.
+ */
+export async function stageLegacyObjects(env: Env, projectId: string, contactId: string, files: string[]) {
+  if (!files.length) return
+  await env.DB.prepare(`INSERT OR IGNORE INTO contact_erasure_objects(project_id,contact_id,kind,source_id,object_key)
+   SELECT ?1,?2,'media',json_extract(value,'$[0]'),json_extract(value,'$[1]') FROM json_each(?3)
+   WHERE json_extract(value,'$[1]') IN (SELECT object_key FROM legacy_import_objects) AND json_extract(value,'$[0]') NOT IN (SELECT id FROM media WHERE project_id=?1)`)
+    .bind(projectId, contactId, JSON.stringify(files.map(id => [id, legacyObjectKey(projectId, id)]))).run()
+}
+
 /** Delete staged objects from R2. Deleting an absent key succeeds, so retries are safe. */
 export async function deleteStagedObjects(env: Env, projectId: string, contactId: string) {
   let after='',total=0

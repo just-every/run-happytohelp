@@ -33,13 +33,31 @@ export function conversationOf(table:string,row:Row,context:LegacyBundle):string
  return undefined
 }
 
+/** The parent tables a file link can name, by the model its `mediable_type` ends with. */
+const linkParents:[string,string][]=[['SupportDelegation','support_delegations'],['Message','messages'],['Event','events']]
+/** The conversation a file link's parent is in: a message, a delegation or an event, as far as the context holds it. */
+function linkConversation(link:Row,context:LegacyBundle):string|undefined{
+ const table=linkParents.find(([model])=>String(link.mediable_type).endsWith(model))?.[1]
+ const parent=table?relationships(context).find(table,link.mediable_id):undefined
+ return parent?.conversation_id==null?undefined:String(parent.conversation_id)
+}
+/** The conversations a file is linked into, through any of its links: the file's own, or its original's for a variant. */
+function fileConversations(media:Row|undefined,mediaId:unknown,context:LegacyBundle):string[]{
+ const {mediaLinks}=relationships(context),ids=[mediaId,media?.original_media_id].filter(id=>id!=null).map(String)
+ return ids.flatMap(id=>mediaLinks.get(id)??[]).map(link=>linkConversation(link,context)).filter((id):id is string=>id!==undefined)
+}
+
 /** Every contact whose personal data a legacy row carries: the contact itself, the customer
- * of the conversation it belongs to, and a contact it names directly. */
+ * of the conversation it belongs to, a contact it names directly, and for a file or file link
+ * the customer of every conversation the file is linked into (by a message, a delegation or an
+ * event; a variant through its original), so a file goes with each person it was shared with. */
 export function contactsOf(table:string,row:Row,context:LegacyBundle):string[]{
  const {find}=relationships(context),contacts=new Set<string>()
  if(table==='contacts')contacts.add(String(row.id))
  if(row.contact_id!=null&&table!=='projects')contacts.add(String(row.contact_id))
- const conversation=conversationOf(table,row,context)
- if(conversation!==undefined){const owner=find('conversations',conversation)?.contact_id;if(owner!=null)contacts.add(String(owner))}
+ const conversations=[conversationOf(table,row,context)]
+ if(table==='media')conversations.push(...fileConversations(row,row.id,context))
+ if(table==='mediables')conversations.push(linkConversation(row,context),...fileConversations(find('media',row.media_id),row.media_id,context))
+ for(const conversation of new Set(conversations)){if(conversation===undefined)continue;const owner=find('conversations',conversation)?.contact_id;if(owner!=null)contacts.add(String(owner))}
  return [...contacts]
 }

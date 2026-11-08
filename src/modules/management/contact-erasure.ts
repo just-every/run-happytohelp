@@ -7,7 +7,9 @@ import type {AppEnv,Env} from '../../platform/env'
 import {scope} from './common'
 import {hashToken} from '../../platform/auth'
 import {erasureEnvironment} from './contact-erasure/authority'
-import {deleteStagedObjects,fenceAndStage} from './contact-erasure/objects'
+import {deleteStagedObjects,fenceAndStage,stageLegacyObjects} from './contact-erasure/objects'
+import {redactLegacyArchive} from './contact-erasure/archive'
+import {legacyPerson} from './contact-erasure/archive-person'
 import {erasureStatements} from './contact-erasure/statements'
 import {contactEmails} from './contact-erasure/identity'
 import {generations,localJobs} from './contact-erasure/scope'
@@ -20,8 +22,10 @@ export interface ContactErasure {project_id: string; contact_id: string; erased_
 
 /**
  * Permanently erase one contact's personal data inside its project. Steps are ordered
- * so an interrupted request is completed by repeating it: fence and stage objects,
- * delete R2 objects, then commit every D1 change and the audit row atomically.
+ * so an interrupted request is completed by repeating it: fence and stage objects (the
+ * legacy files found through the legacy journal too), delete R2 objects, clear the
+ * legacy journal's copies in bounded calls, then commit every other D1 change and the
+ * audit row atomically.
  */
 export async function eraseContact(env: Env, projectId: string, contactId: string, actorId: string, sessionHash?:string) {
   if(sessionHash)env=erasureEnvironment(env,projectId,actorId,sessionHash)
@@ -30,7 +34,10 @@ export async function eraseContact(env: Env, projectId: string, contactId: strin
   const csvBeforeFence=await csvErasureIdentities(env,projectId,contactId,contactEmails(contact))
   const now = Date.now()
   const fenced=await fenceAndStage(env, projectId, contactId, now, contact)
+  const legacy=await legacyPerson(env, projectId, contactId)
+  await stageLegacyObjects(env, projectId, contactId, legacy.own_files)
   await deleteStagedObjects(env, projectId, contactId)
+  await redactLegacyArchive(env, projectId, contactId, legacy)
   const emails=[...new Set([...contactEmails(contact),...contactEmails(fenced??{})])]
   const csvIdentities=[...new Set([...csvBeforeFence,...await csvErasureIdentities(env,projectId,contactId,emails)])]
   await eraseDoorContact(env,projectId,contactId,actorId,emails,sessionHash,async scoped=>({

@@ -1,4 +1,6 @@
+import type {Env} from '../../../platform/env'
 import {conversations,generations,localJobs,media,messages,notes,projectConversations,subject} from './scope'
+import {anchorTables,anchors,bindSets,given,inWorkspace,journalSlices,namesPerson,paced,type LegacyPerson} from './archive-sql'
 
 const first = (column: string) => `CASE WHEN instr(${column},',')>0 THEN substr(${column},1,instr(${column},',')-1) ELSE ${column} END`
 const ids = (table: string, where: string) => `SELECT id FROM ${table} WHERE ${where}`
@@ -21,64 +23,34 @@ const erasedTargets: [string, string][] = [
   ['local_events', `key IN (SELECT job_id||':'||event_id FROM local_events WHERE job_id IN (${localJobs}))`],
 ]
 
-/** A legacy id the source row names, as text: legacy exports write ids as numbers or strings, and the seed keeps them as
- * text (mapping.ts maps every id with String()). */
-const named = (field: string) => `CAST(json_extract(source_json,'$.${field}') AS TEXT)`
-/** A legacy row of this workspace: one with no project of its own is reached only through the ids below, which are. */
-const inWorkspace = `coalesce(${named('project_id')},?1)=?1`
-/** A source row still holding its verbatim copy, of one legacy table. Each is a range of legacy_import_rows_source. */
-const journaled = (tables: string) => `FROM legacy_import_rows WHERE source_table IN (${tables}) AND source_json<>'{}' AND ${inWorkspace}`
-
 /**
- * Who a legacy row belongs to, by its source (legacy-import/delta-scope.ts `contactsOf`): the contact and the mailbox
- * aliases erased with it, their conversations as the seed holds them and as legacy journaled them (including ones the
- * seed never held: skipped and archive-only ones), the messages of those conversations and the ones the people wrote
- * (the seed's and every journaled one: held, skipped or deleted in legacy), their delegations, and the files linked to
- * those messages. Each journal part reads one table's range of legacy_import_rows_source.
+ * One slice of the journal, by rowid: a row is the person's by its recorded target (the seed rows the erasure covers), or,
+ * outside the tables the person's sets come from, by its source (it names one of the people, their conversations,
+ * messages or delegations: contact-erasure/archive-person.ts), whatever its status: rows journaled with no target (skipped,
+ * archive-only) or with a target the seed never held (held conflicts) included. Binds ?1 project, ?2 contact, ?3-?6 the
+ * first four sets, ?7-?8 the rowid range.
  */
-const people = `SELECT ?2 UNION SELECT contact_id FROM mailbox_contact_aliases WHERE project_id=?1 AND canonical_id=?2`
-const ownConversations = `SELECT id FROM conversations WHERE project_id=?1 AND contact_id IN people
- UNION SELECT source_id ${journaled("'conversations'")} AND ${named('contact_id')} IN people`
-const ownMessages = `SELECT id FROM messages WHERE project_id=?1 AND conversation_id IN own_conversations
- UNION SELECT source_id ${journaled("'messages'")} AND (${named('conversation_id')} IN own_conversations OR ${named('contact_id')} IN people)`
-const delegationTables = "'support_delegations','local_jobs'"
-const ownDelegations = `SELECT id FROM local_jobs WHERE project_id=?1 AND conversation_id IN own_conversations
- UNION SELECT source_id ${journaled(delegationTables)} AND ${named('conversation_id')} IN own_conversations`
-const messageLink = `json_extract(source_json,'$.mediable_type') LIKE '%Message' AND ${named('mediable_id')} IN own_messages`
-const ownFiles = `SELECT ${named('media_id')} ${journaled("'mediables'")} AND ${messageLink}`
-
-/** A journal row is the person's by source: it is one of the rows above, names one of them, or belongs to one, in this
- * workspace. A message or conversation row is decided by the sets above, so the pass reads its JSON only when it is one. */
-const bySource = `CASE source_table
-  WHEN 'messages' THEN source_id IN own_messages AND ${inWorkspace}
-  WHEN 'conversations' THEN source_id IN own_conversations AND ${inWorkspace}
-  WHEN 'projects' THEN 0
-  ELSE ${inWorkspace} AND (
+export const legacyArchiveSlice = `${given(4)}UPDATE legacy_import_rows SET source_json='{}' WHERE rowid IN (
+ SELECT legacy_rowid FROM (SELECT rowid legacy_rowid,${first('target_table')} target,${first('target_key')} key,source_table,source_id,source_json FROM legacy_import_rows
+  WHERE rowid BETWEEN ?7 AND ?8 AND source_json<>'{}')
+ WHERE ${erasedTargets.map(([table, match]) => `(target='${table}' AND ${match})`).join('\n  OR ')}
+  OR (source_table NOT IN (${anchorTables},'projects') AND ${inWorkspace} AND (
    (source_table='contacts' AND source_id IN people)
-   OR (source_table IN (${delegationTables}) AND source_id IN own_delegations)
-   OR (source_table='media' AND source_id IN own_files)
-   OR (source_table='mediables' AND ${messageLink})
-   OR ${named('contact_id')} IN people
-   OR ${named('conversation_id')} IN own_conversations
-   OR ${named('message_id')} IN own_messages
-   OR coalesce(${named('support_delegation_id')},${named('job_id')}) IN own_delegations)
-  END`
+   OR ${namesPerson})))`
+
+/** The person's rows of one table the sets come from, by id through legacy_import_rows_source. Binds ?1 project, ?2 the ids. */
+const anchorRedaction = (tables: string) => `UPDATE legacy_import_rows SET source_json='{}' WHERE source_table IN (${tables}) AND source_id IN (SELECT value FROM json_each(?2)) AND source_json<>'{}' AND ${inWorkspace}`
 
 /**
  * Legacy import keeps each imported source row verbatim for replay custody. Replay compares row_digest only, so erasure
  * clears the verbatim copy of every row of this contact while keeping the digest, target and status: replaying the same
- * bundle still skips those rows instead of restoring them. A row is the contact's by its recorded target (the seed rows
- * the erasure covers) or by its source (above), whatever its status: rows journaled with no target (skipped, archive-only)
- * or with a target the seed never held (held conflicts) included. One pass over the journal, plus the per-table ranges the
- * sets read; each set is computed once (MATERIALIZED), however often the pass reads it. Must run before rows are deleted.
+ * bundle still skips those rows instead of restoring them. Bounded D1 calls, each idempotent: the journal in rowid slices,
+ * then the rows the sets come from, by id, dependants first. All of it completes before the erasure's atomic batch, which
+ * still holds the seed rows the slices match by target.
  */
-export const legacyArchiveRedaction = `WITH people(id) AS MATERIALIZED (${people}),
- own_conversations(id) AS MATERIALIZED (${ownConversations}),
- own_messages(id) AS MATERIALIZED (${ownMessages}),
- own_delegations(id) AS MATERIALIZED (${ownDelegations}),
- own_files(id) AS MATERIALIZED (${ownFiles})
-UPDATE legacy_import_rows SET source_json='{}' WHERE rowid IN (
- SELECT legacy_rowid FROM (SELECT rowid legacy_rowid,${first('target_table')} target,${first('target_key')} key,source_table,source_id,source_json FROM legacy_import_rows
-  WHERE source_json<>'{}')
- WHERE ${erasedTargets.map(([table, match]) => `(target='${table}' AND ${match})`).join('\n  OR ')}
-  OR (${bySource}))`
+export async function redactLegacyArchive(env: Pick<Env, 'DB'>, projectId: string, contactId: string, person: LegacyPerson) {
+  let calls = 0
+  for (const [low, high] of await journalSlices(env)) {await paced(() => env.DB.prepare(legacyArchiveSlice).bind(projectId, contactId, ...bindSets(person, 4), low, high).run()); calls++}
+  for (const [tables, set] of anchors) if (person[set].length) {await env.DB.prepare(anchorRedaction(tables)).bind(projectId, JSON.stringify(person[set])).run(); calls++}
+  return calls
+}

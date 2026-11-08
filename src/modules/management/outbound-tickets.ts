@@ -13,7 +13,7 @@ import {outboundOptionsRoutes} from './outbound-options'
 import {admitMessage,messageAuthority,messageCommitStatements,preserveAssignment} from '../conversations/admission'
 import {noticeCommand,outboundTicketInput,type OutboundTicketInput} from './outbound-ticket-input'
 import {previewOutboundNotices,confirmOutboundNotices} from './outbound-notices'
-import {logOutboundCall,reserveOutboundTicket} from './outbound-ticket-store'
+import {logOutboundNote,reserveOutboundTicket} from './outbound-ticket-store'
 export type OutboundTicketCommitted=(env:Env,message:Record<string,unknown>,actor:Actor,defer?:DeferEmailDelivery)=>Promise<unknown>
 /** Mounted under the native management router. Caller identities never become
  * requester authority: only the current operator can create an outbound ticket. */
@@ -23,12 +23,12 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
  async function create(c:Context<AppEnv>,actor:Actor,input:OutboundTicketInput,notice=false){
   await requireDestinationScope(c.env,actor,input.groupId??null)
   const sessionHash=c.get('sessionHash')
-  if(input.kind==='email'&&!onCommittedMessage)throw new HTTPException(503,{message:'Outbound email delivery is unavailable'})
+  if(input.kind==='email'&&input.firstComment!=='internal'&&!onCommittedMessage)throw new HTTPException(503,{message:'Outbound email delivery is unavailable'})
   const channel=await outboundChannel(c.env,actor,input)
   const reservation=await reserveOutboundTicket(c.env,actor,sessionHash,input,channel),conversation=await c.env.DB.prepare(`SELECT c.* FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1`).bind(reservation.conversationId,actor.projectId).first()
   if(!conversation)throw new HTTPException(409,{message:'Requester is unavailable'})
-  if(input.kind==='call'){
-   const note=await logOutboundCall(c.env,actor,sessionHash,reservation.conversationId,input.content)
+  if(input.kind==='call'||input.firstComment==='internal'){
+   const note=await logOutboundNote(c.env,actor,sessionHash,reservation.conversationId,input.content,input.kind as 'email'|'call')
    return {accepted:true,duplicate:reservation.duplicate,conversation,note}
   }
   const result=await admitMessage(c.env,{[preserveAssignment]:true,requireAvailableRequester:true,projectId:actor.projectId,conversationId:reservation.conversationId,actor,sessionHash,localId:input.localId,content:channel?.content??input.content,...(channel?{[messageAuthority]:{sql:channel.sql,args:channel.args}}:{}),expectedRevision:0,expectedLastMessageId:null,...(input[noticeCommand]?{[messageCommitStatements]:(messageId:string)=>[c.env.DB.prepare(`UPDATE outbound_notice_commands SET receipts_json=json_set(receipts_json,?,?) WHERE project_id=? AND id=? AND outcome='succeeded' AND EXISTS(SELECT 1 FROM conversation_outbox WHERE project_id=? AND conversation_id=? AND message_id=?)`).bind(`$."${input.localId}".messageId`,messageId,actor.projectId,input[noticeCommand],actor.projectId,reservation.conversationId,messageId)]}:{})})

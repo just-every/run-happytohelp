@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict'
+import {message} from './app.mjs'
 import {startApp} from '../../journeys/kit/app.mjs'
 
 /** Configuration extends the existing operator creation journey through its actual public door. */
 export async function outboundConfigurationJourney(){
- const sent=[],mail=[],app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-fixture',EMAIL_FROM:'support@example.test'},outbound:async request=>{if(new URL(request.url).hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]});assert.equal(new URL(request.url).hostname,'api.resend.com');const copy=await request.json();mail.push(copy);if(copy.headers?.['Message-ID'])sent.push(copy);return Response.json({id:'synthetic-config-'+mail.length})}})
+ const sent=[],mail=[],app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-fixture',INBOUND_EMAIL_TOKEN:'synthetic-fixture-inbound',EMAIL_FROM:'support@example.test'},outbound:async request=>{if(new URL(request.url).hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]});assert.equal(new URL(request.url).hostname,'api.resend.com');const copy=await request.json();mail.push(copy);if(copy.headers?.['Message-ID'])sent.push(copy);return Response.json({id:'synthetic-config-'+mail.length})}})
  try{
   const workspace=await app.seedWorkspace('synthetic-hh-1'),foreign=await app.seedWorkspace('synthetic-hh-2'),p=workspace.projectId,owner={token:workspace.tokens.owner},operator={token:workspace.tokens.operator},management=`/api/management/projects/${p}`,base=`/api/dashboard/projects/${p}/tickets`
   const field=async body=>(await app.ok(management+'/ticket-fields',{...owner,body})).data
@@ -51,7 +52,8 @@ export async function outboundConfigurationJourney(){
   // Verify this actual customer mailbox through its public sign-in door; only mail delivery is faked.
   await app.call(`/api/portal/${p}/access/request`,{body:{email:contact.email},headers:{Origin:'https://app.example'},status:202})
   const delivered=mail.find(copy=>copy.text?.includes('/api/portal/')),url=new URL(delivered.text.match(/https:\/\/app\.example\/api\/portal\/\S+/)[0])
-  assert.equal((await app.request(url.pathname+url.search)).status,303)
+  const portal=await app.request(url.pathname+url.search);assert.equal(portal.status,303)
+  const customer={token:portal.headers.get('Set-Cookie').match(/h2h_portal=([^;]+)/)[1]}
   contact=await app.first('SELECT ct.* FROM contacts ct JOIN portal_identities identity ON identity.contact_id=ct.id AND identity.project_id=ct.project_id WHERE ct.project_id=? AND identity.email=?',p,contact.email)
   command.requesterId=contact.id
   await app.ok(management+`/companies/${company.id}/members/${contact.id}`,{...owner,method:'PUT',body:{}})
@@ -104,6 +106,68 @@ export async function outboundConfigurationJourney(){
   const resumed=await app.ok(base,{...operator,body:interrupted});assert.equal(resumed.conversation.id,reserved.id)
   await app.until(()=>sent.length===3,{message:'one recovered configured email'})
   assert.equal((await app.ok(base,{...operator,body:interrupted})).conversation.id,reserved.id);assert.equal(sent.length,3)
+  // The new email choice shares the real reservation, note store and later Send
+  // door. No public-message or mail work may exist until that explicit reply.
+  assert.equal((await app.ok(base,{...operator,body:{...command,firstComment:'public'}})).conversation.id,id,'explicit public preserves the old admitted command identity')
+  const privateCommand={...command,localId:'configured-private-email',firstComment:'internal',content:'Private parcel investigation. Do not disclose the warehouse code.'}
+  await app.drainJobs()
+  const beforePrivate={tickets:await before(),mail:mail.length}
+  for(const patch of [{firstComment:'unknown'},{firstComment:null},{firstComment:['internal']},{cc:['copy@customer.example']},{bcc:['hidden@customer.example']}])assert.equal((await app.call(base,{...operator,body:{...privateCommand,...patch}})).status,400)
+  assert.equal((await app.call(base+'/notices/preview',{...operator,body:{...privateCommand,requesterId:undefined,requesters:['a@customer.example','b@customer.example']}})).status,400,'private-first choice is single-ticket only')
+  assert.equal((await app.call(base,{...operator,body:{...callCommand,firstComment:'internal'}})).status,400,'call input semantics are unchanged')
+  assert.equal((await app.call(`/api/dashboard/projects/${foreign.projectId}/tickets`,{...operator,body:privateCommand})).status,403)
+  await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(p,workspace.users.operator,Date.now()).run()
+  assert.equal((await app.call(base,{...operator,body:privateCommand})).status,403)
+  await app.db.prepare('DELETE FROM member_roles WHERE project_id=? AND user_id=?').bind(p,workspace.users.operator).run()
+  assert.equal(await before(),beforePrivate.tickets,'invalid/unauthorized private creation makes no ticket')
+  // Lose the response after the guarded note insert actually committed, then
+  // restart the same native store. Replaying must recover that exact one note.
+  assert.equal((await app.call(base,{...operator,body:privateCommand,headers:{'x-test-fault':'db-interrupt','x-test-statement':'INSERT OR IGNORE INTO conversation_notes'}})).status,500)
+  await app.configure({})
+  const privateTicket=await app.ok(base,{...operator,body:privateCommand}),privateId=privateTicket.conversation.id,privatePath=`/api/dashboard/projects/${p}/conversations/${privateId}`,messagesPath=`/api/conversations/${privateId}/messages`
+  assert.equal(privateTicket.duplicate,true);assert.equal(privateTicket.message,undefined);assert.equal(privateTicket.note.content,privateCommand.content);assert.equal(privateTicket.note.user_id,workspace.users.operator)
+  assert.equal(privateTicket.conversation.channel,'email');assert.equal(privateTicket.conversation.mailbox_id,mailbox.id);assert.equal(privateTicket.conversation.requester_id,contact.id);assert.equal(privateTicket.conversation.submitter_id,workspace.users.operator)
+  assert.equal(privateTicket.conversation.group_id,group.id);assert.equal(privateTicket.conversation.assigned_to,workspace.users.admin)
+  assert.deepEqual((await app.ok(privatePath+'/ticket',operator)).data.fields,command.fields)
+  assert.equal((await app.ok(privatePath,operator)).data.id,privateId)
+  assert.ok((await app.ok(`/api/dashboard/projects/${p}/conversations`,operator)).data.some(ticket=>ticket.id===privateId),'note-only email appears in the native inbox')
+  const privateBucket=(await app.ok(privatePath+`/buckets/${privateId}`,operator)).data
+  assert.deepEqual(privateBucket.messages,[]);assert.equal(privateBucket.events.filter(event=>event.type==='INTERNAL_NOTE'&&event.content===privateCommand.content).length,1)
+  assert.equal((await app.ok(messagesPath,customer)).messages.length,0,'customer transcript excludes the initial private note')
+  const duplicateNotes=await Promise.all([1,2].map(()=>app.ok(base,{...operator,body:privateCommand})))
+  assert.ok(duplicateNotes.every(result=>result.conversation.id===privateId&&result.note.id===privateTicket.note.id))
+  for(const firstComment of ['public',undefined])assert.equal((await app.call(base,{...operator,body:{...privateCommand,firstComment}})).status,409,'reusing private command as public must never send')
+  assert.equal((await app.call(base,{...operator,body:{...privateCommand,content:'Changed note'}})).status,409)
+  for(const table of ['messages','conversation_outbox','email_message_options'])assert.equal((await app.first(`SELECT count(*) n FROM ${table} WHERE conversation_id=?`,privateId)).n,0,table+' is empty before Send')
+  assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',privateId)).n,1)
+  await app.scheduled();await app.drainJobs();assert.equal(mail.length,beforePrivate.mail,'private creation/replay/restart/scheduled recovery never contacts the customer')
+  // Route and commit-time current authority still fence the new private path.
+  const role=(await app.ok(management+'/roles',{...owner,body:{name:'Private ticket scope',base:'operator',permissions:['conversations.reply']}})).data
+  await app.db.prepare('INSERT INTO member_roles VALUES(?,?,?,?)').bind(p,workspace.users.operator,role.id,Date.now()).run()
+  await app.db.prepare('UPDATE project_roles SET ticket_scope_json=? WHERE id=?').bind(JSON.stringify({groupIds:[],includeUngrouped:true}),role.id).run()
+  assert.equal((await app.call(base,{...operator,body:privateCommand})).status,403,'destination outside selected scope refuses private replay')
+  assert.equal((await app.call(privatePath,operator)).status,404,'current ticket scope hides private readback')
+  await app.db.prepare('DELETE FROM member_roles WHERE project_id=? AND user_id=?').bind(p,workspace.users.operator).run()
+  const raced={...privateCommand,localId:'private-note-current-role'}
+  assert.equal((await app.call(base,{...operator,body:raced,headers:{'x-test-statement':'INSERT OR IGNORE INTO conversation_notes','x-test-before-statement':`INSERT INTO member_roles VALUES('${p}','${workspace.users.operator}','collaborator',1)`}})).status,409)
+  const raceTicket=await app.first('SELECT conversation_id FROM operator_ticket_commands WHERE project_id=? AND local_id=?',p,raced.localId)
+  assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',raceTicket.conversation_id)).n,0,'current-role loss before note commit admits no note')
+  await app.db.prepare('DELETE FROM member_roles WHERE project_id=? AND user_id=?').bind(p,workspace.users.operator).run()
+  assert.equal((await app.ok(base,{...operator,body:raced})).note.content,raced.content,'same reserved command resumes after authority is restored')
+  assert.equal((await app.call(privatePath,{token:foreign.tokens.owner})).status,404)
+  // The ordinary explicit public reply is the first and only public content.
+  const head=await app.ok(messagesPath,operator),publicReply='Your parcel is ready for collection.',sendCommand={localId:'private-email-later-human-send',content:publicReply,mailboxId:mailbox.id,expectedRevision:head.revision,expectedLastMessageId:head.lastMessageId}
+  const reply=await app.ok(messagesPath,{...operator,body:sendCommand});assert.equal(reply.accepted,true)
+  await app.until(()=>sent.some(copy=>copy.text?.includes(publicReply)),{message:'later explicit public reply sent'})
+  const copy=sent.find(copy=>copy.text?.includes(publicReply));assert.ok(copy.headers['Message-ID']);assert.ok(copy.reply_to);assert.ok(!JSON.stringify(copy).includes(privateCommand.content))
+  assert.deepEqual((await app.ok(messagesPath,customer)).messages.map(message=>message.content),[publicReply])
+  await app.ok(messagesPath,{...operator,body:sendCommand});await app.drainJobs();assert.equal(sent.filter(copy=>copy.text?.includes(publicReply)).length,1,'explicit Send replay sends once')
+  const inbound=message({id:'private-email-customer-reply@customer.example',from:contact.email,to:copy.reply_to,subject:copy.subject,headers:`In-Reply-To: ${copy.headers['Message-ID']}\r\nReferences: ${copy.headers['Message-ID']}\r\n`,text:'Thank you for the update.'})
+  assert.equal((await app.email(inbound,{from:contact.email,to:copy.reply_to,direct:true})).rejected,undefined)
+  await app.drainJobs()
+  const customerMessages=(await app.ok(messagesPath,customer)).messages
+  assert.equal(customerMessages.length,2);assert.equal(customerMessages[1].content,'Thank you for the update.');assert.ok(customerMessages.every(message=>message.conversation_id===privateId));assert.ok(!JSON.stringify(customerMessages).includes(privateCommand.content))
+  console.log('PROBE OUTBOUND-001-NOTE N1/N2/N3/N4: private email + restart/replay -> 1 note, 0 public messages/outbox/email before human Send; 1 public reply + 1 threaded customer reply; public default/call/configuration retained; no migrations')
   // Erasure uses the existing native contact door and removes both answers and
   // historical values, including reservation-time form provenance.
   await app.ok(management+`/contacts/${contact.id}/erase`,{...owner,body:{}})

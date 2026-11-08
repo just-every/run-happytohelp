@@ -1709,7 +1709,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "db7a5a6cd686cee096f35ac6273e9f80d5a0fac0c986e391ce72c4f6b3535c42",
+      "sha256": "d0f1cf2062e9bbbd824bb6caf223686f5be4186e4adfc2430844ac5688b42515",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -1749,7 +1749,7 @@
       "executable": false
     },
     "docs/LEGACY-EXPORT.md": {
-      "sha256": "fafcedbbde998374616c4056a7b297476b2722b1f587d9a69a4d265982c93a12",
+      "sha256": "b26828e40a2f67ba3f0ad423fb1fc206956859155576a28edac26c15a0241d1e",
       "executable": false
     },
     "docs/licenses/base-MIT.txt": {
@@ -2053,7 +2053,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "761acbaebfc49ab3d8fe703568d11c2eb68b30596be8d1dfcf0a602e57b31080",
+      "sha256": "be9689f771085cbb24415fd4473c60ea02323ca8c186c68c174412050e425091",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2800,6 +2800,10 @@
       "sha256": "52b57f209b0db5ed99b84e03ac3d345590bd3140e06978d70f47a452412b6e74",
       "executable": false
     },
+    "migrations/311_inbox_message_secure_delete.sql": {
+      "sha256": "452eff9cd48f852d6aad178fdc983657f6e27338c731d9851d59c229ad66d2b3",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2885,7 +2889,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "3b1179bbcb408659ce647eef7e8704f0ac8a5d15d69b634aa95784540460c188",
+      "sha256": "c571d6a44268ee4d35905657595ddcb4d8ad9cfc99d07712fe3731f74e89fc88",
       "executable": false
     },
     "rer-project.json": {
@@ -4101,7 +4105,7 @@
       "executable": false
     },
     "scripts/legacy-import/context-index.mjs": {
-      "sha256": "c34f3aa5db99c8fcc6138d65a2b7f40cfba2663d99324b44a72d72ca11f1c6b6",
+      "sha256": "b61443e78f987e284f9ce6f6ef793fe80f75bb92b4397503453e99eb237fcc6d",
       "executable": false
     },
     "scripts/legacy-import/delta-package.mjs": {
@@ -7553,7 +7557,7 @@
       "executable": false
     },
     "src/modules/legacy-import/delta-scope.ts": {
-      "sha256": "2f34ff7312004b36012643a74b1f75dafdd5188a344324470c18fb13af6ea29a",
+      "sha256": "b96a744c9dfc9210ebd2a31181827c97fb7bdf327aed236ce3fc5e9b2400a510",
       "executable": false
     },
     "src/modules/legacy-import/delta.ts": {
@@ -7589,11 +7593,11 @@
       "executable": false
     },
     "src/modules/legacy-import/README.md": {
-      "sha256": "9c9d50fbe9e8fd66ae008aa023478acd0a3881afff84815314c8249fed32c5d9",
+      "sha256": "ea45c0330dc0a304b4bb613f8b87fd9c23b2a15e189df3d7eec798369975d215",
       "executable": false
     },
     "src/modules/legacy-import/relationships.ts": {
-      "sha256": "d5d6db42f801b7b95a8729b08a42d3f4e6e28fe12abf3351090ab4a8bf651970",
+      "sha256": "c67619d2673fbb2bba064459b0c4b22ce7e67625396a1448ce1f53ad84fbf337",
       "executable": false
     },
     "src/modules/legacy-import/state.ts": {
@@ -7841,15 +7845,23 @@
       "executable": false
     },
     "src/modules/management/contact-erasure.ts": {
-      "sha256": "f876686768b0581a9d035480331a93334456469e5d98f3be436a5a4d13f684af",
+      "sha256": "bb67f1a0f6323530213419b051701f1894ac727065cfb351c413910e97fe5721",
       "executable": false
     },
     "src/modules/management/contact-erasure/admitted-identity.ts": {
       "sha256": "3ba1065f665c29b6014b5bc66c9eb6190bc804bb810e69082072dd07e7394ef9",
       "executable": false
     },
+    "src/modules/management/contact-erasure/archive-person.ts": {
+      "sha256": "6026fec865127bd8829d35e272b2a0a66217cd89c9f1588622847fcc636e591d",
+      "executable": false
+    },
+    "src/modules/management/contact-erasure/archive-sql.ts": {
+      "sha256": "63596c7d35583788e52649d76227a5da31c6063386bef9585a09060430146e6c",
+      "executable": false
+    },
     "src/modules/management/contact-erasure/archive.ts": {
-      "sha256": "bf7ea7f517492c86b275e59851d3d56acf2928f8f81d10948eff06c2c301463d",
+      "sha256": "fd2dd5b6f18f3771ee3302a5e0fb227da7be5ef902eed16b470cd020e8aebe07",
       "executable": false
     },
     "src/modules/management/contact-erasure/authority.ts": {
@@ -7869,7 +7881,7 @@
       "executable": false
     },
     "src/modules/management/contact-erasure/objects.ts": {
-      "sha256": "9101ec51ab41d7ece3620fbbf31aaac1db0fe3733000a3d9ef7c0e0103a2556c",
+      "sha256": "50ea91a4bebca84bfdeb816865ba019e7c9b0ba7e1b3576f635ca08886de05a9",
       "executable": false
     },
     "src/modules/management/contact-erasure/portability.d.ts": {
@@ -7885,7 +7897,7 @@
       "executable": false
     },
     "src/modules/management/contact-erasure/statements.ts": {
-      "sha256": "8dc1d198a7bc8658d44277ad93c9a0b20a74f27f90acd71de9992177701030d4",
+      "sha256": "ad20e5a4a03254de517fccfd2f6ce3c7bc9b7a27f34c89dec688265cf5a1a8f7",
       "executable": false
     },
     "src/modules/management/contact-identity.ts": {
@@ -8017,15 +8029,15 @@
       "executable": false
     },
     "src/modules/management/outbound-ticket-input.ts": {
-      "sha256": "1d3bfd534de666614a9a47e1558e5a2aba0c2d2db2ef51d17a8bc20f666d3495",
+      "sha256": "ac263513fc0719d4d2c252df99c2835f9a7f094840e73c4147a2f3385aab1862",
       "executable": false
     },
     "src/modules/management/outbound-ticket-store.ts": {
-      "sha256": "65fbd880709970ccc5819c481422d1eae38e1e893ef1b7125a6d8588b4bc1668",
+      "sha256": "c1f2c2ef4876c5fd0a290933023998a2b57a193497f524f42a57bafb6f77b3d0",
       "executable": false
     },
     "src/modules/management/outbound-tickets.ts": {
-      "sha256": "e60ccb640042568facf54cade2da5512ecf2b51df1f80953720c6e9b523eced6",
+      "sha256": "86e7ee834b66f36a20a9915df371c89bf02be502f5a48ceaca949501cb24c534",
       "executable": false
     },
     "src/modules/management/policy.ts": {
@@ -8069,7 +8081,7 @@
       "executable": false
     },
     "src/modules/management/README.md": {
-      "sha256": "8b2b86e52524a7a50c7e2113094afc7583bdc6d18928d0e986d3adfd687776ec",
+      "sha256": "fbdbf5649bf91f1c3e2d59232dacedcbd34d413a24d77b27fb236fcf5565f509",
       "executable": false
     },
     "src/modules/management/reply-mode-change.ts": {
@@ -10961,7 +10973,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.jsx": {
-      "sha256": "2352b31d78fd536ed8bc3ff794e7de691d879d41e3dd3985512a61abe5883741",
+      "sha256": "1524b263dab59ff96e391af4e165f312be1bd20b757a5ca009bf82f2504759c9",
       "executable": false
     },
     "src/ui/dashboard/components/DelegationAttachments.jsx": {
@@ -15617,7 +15629,7 @@
       "executable": false
     },
     "tests/helpers/email/outbound-configuration.mjs": {
-      "sha256": "fa76a2800773b2b7626fc844e28c89e88a26c7ee2a402c4cde7daa450b48ba5d",
+      "sha256": "da6bd6c78812bbdcea1f80db76c8f11169f808a51e39cca66a410daf86f6aa5b",
       "executable": false
     },
     "tests/helpers/email/rer-edge.mjs": {
@@ -15905,7 +15917,7 @@
       "executable": false
     },
     "tests/helpers/inbox/new-ticket-configuration.mjs": {
-      "sha256": "4dbc64ff99d7831f2c3e839945f9ceb9ad06cb659a7b27cff5bb1325bba89b5f",
+      "sha256": "dbf50e31b181c6b3aef56bb46e084caf6f6cdfad2b54fdbbaeaa8d3a8d83e49a",
       "executable": false
     },
     "tests/helpers/inbox/problems.mjs": {
@@ -16481,7 +16493,7 @@
       "executable": false
     },
     "tests/journeys/erasure.mjs": {
-      "sha256": "5e2f24e6fc9b31250029f13a9448ffb96a806c1006926423c4be1caa675dbc81",
+      "sha256": "509e94003ce3046715e28447103eeed9c0b1722d039f2f6eaf4ed28617a35f2b",
       "executable": false
     },
     "tests/journeys/first-run.mjs": {
@@ -16605,7 +16617,7 @@
       "executable": false
     },
     "tests/legacy-export/delta.mjs": {
-      "sha256": "16fb0c01ccdbf5026f2679be046ec689cd4428f0b27faa652be5abe53a2ac409",
+      "sha256": "dd9d85189b9ad9d62dac2365bb76e1bcffa448b4daafaeccb99b266a46b0702e",
       "executable": false
     },
     "tests/legacy-export/extended-fixture.mjs": {

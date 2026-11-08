@@ -138,6 +138,42 @@ export async function newTicketConfigurationBrowser(){
    await page.goto(`${runtime.origin}/projects/${projectId}/conversations/${api.body.conversation.id}`)
    await page.locator('.transcript-message-content').getByText(apiCommand.content,{exact:true}).waitFor()
    await capture('api-email')
+   // Start an email ticket privately in the same dialog, recover a lost response,
+   // then contact its requester only through the existing human Send control.
+   const beforePrivate=copies().length,privateContent=`Private parcel investigation (${width}).`,laterReply=`Your parcel is ready after review (${width}).`
+   await open()
+   assert.equal(await dialog.getByLabel('First comment',{exact:true}).inputValue(),'public','email default remains public')
+   await dialog.getByLabel('First comment',{exact:true}).selectOption('internal')
+   await dialog.getByLabel('Requester email',{exact:true}).fill(requester);await dialog.getByLabel('Subject',{exact:true}).fill(`Private parcel review ${width}`);await dialog.getByLabel('Internal note',{exact:true}).fill(privateContent)
+   assert.equal(await dialog.getByLabel('CC',{exact:true}).count(),0);assert.equal(await dialog.getByLabel('BCC',{exact:true}).count(),0)
+   const choice=dialog.getByLabel('First comment',{exact:true});await choice.focus();assert.equal(await choice.evaluate(node=>node===document.activeElement),true);assert.ok((await choice.boundingBox()).height>=44)
+   await page.keyboard.press('Tab');assert.equal(await choice.evaluate(node=>node===document.activeElement),false,'keyboard moves from the comment choice to the next control')
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1))
+   await capture('new-private-email',choice)
+   let lostPrivate,privateIntent
+   await page.route('**'+base+'/tickets',async route=>{privateIntent=route.request().postDataJSON();const response=await route.fetch();assert.equal(response.status(),201);lostPrivate=await response.json();await route.abort('failed')},{times:1})
+   await dialog.getByRole('button',{name:'Create ticket',exact:true}).click()
+   await dialog.getByRole('button',{name:'Check same request',exact:true}).waitFor()
+   assert.equal(await choice.isDisabled(),true,'unknown private result keeps its immutable choice')
+   assert.equal(copies().length,beforePrivate)
+   const privateRecovered=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
+   await dialog.getByRole('button',{name:'Check same request',exact:true}).click()
+   const recovered=await privateRecovered;assert.equal(recovered.status(),200);const privateTicket=await recovered.json(),privateId=privateTicket.conversation.id
+   assert.equal(privateId,lostPrivate.conversation.id);assert.equal(privateTicket.note.id,lostPrivate.note.id);assert.equal(privateTicket.message,undefined)
+   assert.equal(privateTicket.conversation.channel,'email');assert.equal(privateTicket.conversation.mailbox_id,mailbox.id);assert.equal(privateTicket.conversation.submitter_id,owner.actor.id)
+   await page.waitForURL(`**/conversations/${privateId}`);await page.locator('.transcript-note-content').getByText(privateContent,{exact:true}).waitFor()
+   await page.reload();await page.locator('.transcript-note-content').getByText(privateContent,{exact:true}).waitFor()
+   const bucket=(await call(`${base}/conversations/${privateId}/buckets/${privateId}`,undefined,owner.token)).data
+   assert.equal(bucket.messages.length,0);assert.equal(bucket.events.filter(event=>event.type==='INTERNAL_NOTE'&&event.content===privateContent).length,1)
+   assert.equal((await call(`/api/conversations/${privateId}/messages`,undefined,owner.token)).messages.length,0)
+   assert.equal((await request({...privateIntent,firstComment:'public'})).status,409);assert.equal(copies().length,beforePrivate,'private creation and changed-intent retry send no mail')
+   await page.getByRole('textbox',{name:'Reply to conversation',exact:true}).fill(laterReply)
+   await page.getByRole('button',{name:'Send',exact:true}).click();await page.locator('.transcript-message-content').getByText(laterReply,{exact:true}).waitFor()
+   await delivered(base,privateId,laterReply)
+   const publicCopy=copies().find(copy=>copy.text?.includes(laterReply));assert.ok(!JSON.stringify(publicCopy).includes(privateContent));assert.equal(copies().length,beforePrivate+1)
+   assert.deepEqual((await call(`/api/conversations/${privateId}/messages`,undefined,owner.token)).messages.map(message=>message.content),[laterReply])
+   await capture('private-email-thread',page.locator('.transcript-note-content').getByText(privateContent,{exact:true}))
+   console.log('PROBE OUTBOUND-001-NOTE browser N1/N2/N3: First comment -> internal email note, lost-response replay/reload -> one private note, no mail; explicit Send -> one public mail without note; assertions 1440, dialog/thread captures 1440/390')
    // The dialog's call path records a private note; the API call path is the
    // same durable command with the existing requester and no mailbox/copies.
    const beforeCalls=copies().length

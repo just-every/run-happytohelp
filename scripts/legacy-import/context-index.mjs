@@ -23,8 +23,9 @@ export async function packageContext(root,manifest,{timestamp,contactIdentity,tr
       CREATE TABLE messages(conversation_id TEXT NOT NULL,id TEXT NOT NULL,row TEXT NOT NULL,revision INTEGER,local_id TEXT);
       CREATE TABLE local_ids(conversation_id TEXT NOT NULL,local_id TEXT NOT NULL,id TEXT NOT NULL,PRIMARY KEY(conversation_id,local_id)) WITHOUT ROWID;
       CREATE TABLE media_messages(media_id TEXT PRIMARY KEY,row TEXT NOT NULL) WITHOUT ROWID;
+      CREATE TABLE media_links(media_id TEXT NOT NULL,row TEXT NOT NULL);
       CREATE TABLE identities(project_id TEXT NOT NULL,identity TEXT NOT NULL,created INTEGER NOT NULL,id TEXT NOT NULL,row TEXT NOT NULL);`);
-    const tables={},record=db.prepare('INSERT OR REPLACE INTO records VALUES(?,?,?)'),message=db.prepare('INSERT INTO messages(conversation_id,id,row,local_id) VALUES(?,?,?,?)'),join=db.prepare('INSERT OR REPLACE INTO media_messages VALUES(?,?)'),contact=db.prepare('INSERT INTO identities VALUES(?,?,?,?,?)');
+    const tables={},record=db.prepare('INSERT OR REPLACE INTO records VALUES(?,?,?)'),message=db.prepare('INSERT INTO messages(conversation_id,id,row,local_id) VALUES(?,?,?,?)'),join=db.prepare('INSERT OR REPLACE INTO media_messages VALUES(?,?)'),link=db.prepare('INSERT INTO media_links VALUES(?,?)'),contact=db.prepare('INSERT INTO identities VALUES(?,?,?,?,?)');
     // Media rows carry the R2 key of their verified attachment, as the exporter assigned it.
     const objectKeys=new Map(manifest.objects.map(o=>[String(o.mediaId),o.key]));
     for(const part of manifest.context){
@@ -42,11 +43,12 @@ export async function packageContext(root,manifest,{timestamp,contactIdentity,tr
         if(row.id!==undefined)record.run(part.table,String(row.id),json);
         if(part.table==='messages'&&!row.deleted_at)message.run(String(row.conversation_id),String(row.id),json,row.local_id?String(row.local_id):null);
         if(part.table==='mediables'&&isMessageMedia(row))join.run(String(row.media_id),json);
+        if(part.table==='mediables')link.run(String(row.media_id),json);
         if(part.table==='contacts'){const identity=contactIdentity(row);if(identity!==null)contact.run(String(row.project_id),identity,timestamp(row.created_at),String(row.id),json);}
       }
       db.exec('COMMIT');
     }
-    db.exec('CREATE INDEX messages_conversation ON messages(conversation_id);CREATE UNIQUE INDEX messages_id ON messages(id);CREATE INDEX identities_owner ON identities(project_id,identity,created,id)');
+    db.exec('CREATE INDEX messages_conversation ON messages(conversation_id);CREATE UNIQUE INDEX messages_id ON messages(id);CREATE INDEX media_links_media ON media_links(media_id);CREATE INDEX identities_owner ON identities(project_id,identity,created,id)');
     // Packages exported before message context carried delivery IDs: read them from the message chunks.
     const localId=db.prepare('UPDATE messages SET local_id=? WHERE id=?');
     for(const part of manifest.chunks)if(part.table==='messages'){const rows=await readPart(root,part);db.exec('BEGIN');for(const row of rows)if(row.local_id)localId.run(String(row.local_id),String(row.id));db.exec('COMMIT');}
@@ -57,13 +59,14 @@ export async function packageContext(root,manifest,{timestamp,contactIdentity,tr
     db.exec('BEGIN');
     for(const row of db.prepare('SELECT conversation_id,local_id,row FROM messages ORDER BY conversation_id').iterate()){if(row.conversation_id!==conversation){flush();conversation=row.conversation_id;}transcript.push({...JSON.parse(row.row),local_id:row.local_id});}
     flush();db.exec('COMMIT');
-    const find=db.prepare('SELECT row FROM records WHERE tbl=? AND id=?'),transcriptOf=db.prepare('SELECT row FROM messages WHERE conversation_id=? ORDER BY revision'),revisionOf=db.prepare('SELECT revision FROM messages WHERE id=?'),mediaOf=db.prepare('SELECT row FROM media_messages WHERE media_id=?'),ownerOf=db.prepare('SELECT row FROM identities WHERE project_id=? AND identity=? ORDER BY created,id LIMIT 1'),localOwnerOf=db.prepare('SELECT id FROM local_ids WHERE conversation_id=? AND local_id=?');
+    const find=db.prepare('SELECT row FROM records WHERE tbl=? AND id=?'),transcriptOf=db.prepare('SELECT row FROM messages WHERE conversation_id=? ORDER BY revision'),revisionOf=db.prepare('SELECT revision FROM messages WHERE id=?'),mediaOf=db.prepare('SELECT row FROM media_messages WHERE media_id=?'),linksOf=db.prepare('SELECT row FROM media_links WHERE media_id=? ORDER BY rowid'),ownerOf=db.prepare('SELECT row FROM identities WHERE project_id=? AND identity=? ORDER BY created,id LIMIT 1'),localOwnerOf=db.prepare('SELECT id FROM local_ids WHERE conversation_id=? AND local_id=?');
     const parsed=result=>result?JSON.parse(result.row):undefined;
     const context=useRelationships({format:'happytohelp-legacy-v1',source:manifest.source,tables},{
       find:(table,id)=>parsed(find.get(table,String(id))),
       messages:{get:id=>{const rows=transcriptOf.all(String(id));return rows.length?rows.map(parsed):undefined;}},
       revisions:{get:id=>revisionOf.get(String(id))?.revision??undefined},
       mediaMessages:{get:id=>parsed(mediaOf.get(String(id)))},
+      mediaLinks:{get:id=>{const rows=linksOf.all(String(id));return rows.length?rows.map(parsed):undefined;}},
       identityOwner:(project,identity)=>parsed(ownerOf.get(String(project),identity)),
       localIdOwner:(conversationId,id)=>localOwnerOf.get(conversationId,id)?.id,
     });

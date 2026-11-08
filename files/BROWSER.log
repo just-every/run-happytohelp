@@ -1,0 +1,28 @@
+TAP version 13
+# (node:25026) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# PROBE AGENT-001 W1: built /widget.js -> visitor message -> queued model-edge fixture -> admitted AI answer; visible author and AI disclosure survive reload
+# PROBE AGENT-001 W2: ordinary operator reply -> human takeover -> widget reload -> distinct AI history author and visible Human responder; human message carries no AI label
+# PROBE AGENT-001 W3: existing brand/widget browser registration -> rendered disclosure and fetched-history assertions; no additional test registration
+# PROBE browser ACCESS-001: owner/admin load and save General, Appearance and Availability; collaborator/operator/custom-admin refused
+# BRAND_ORDERING {"ordering":"old-during-switch","status":201,"mailbox":"new","error":null}
+# BRAND_ORDERING {"ordering":"old-after-switch","status":201,"mailbox":"new","error":null}
+# BRAND_ORDERING {"ordering":"new-before-old","status":201,"mailbox":"new","error":null}
+# BRAND_ORDERING {"ordering":"no-switch","status":201,"mailbox":"current","error":null}
+# PROBE OUTBOUND-001-NOTE browser N1/N2/N3: First comment -> internal email note, lost-response replay/reload -> one private note, no mail; explicit Send -> one public mail without note; assertions 1440, dialog/thread captures 1440/390
+# PROBE OUTBOUND-001 4: New ticket WhatsApp form at 1440 -> consent refusal retains draft; correction sends approved template; captures at 1440/390, 44px targets, one focused control, no overflow
+# Subtest: two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening
+ok 1 - two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening
+  ---
+  duration_ms: 628947.615359
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 632543.458685

@@ -1,0 +1,28 @@
+{
+  "head": "4f0783c02f3420e257f355deca04e0724c3ea355",
+  "assertion_width": 1440,
+  "captures": [
+    {
+      "file": "1440-new-private-email.png",
+      "width": 1440,
+      "sha256": "871907b71c89cf797036e04fa3a25fec3eb41536c3628583fca22a60d02a4a6e"
+    },
+    {
+      "file": "1440-private-email-thread.png",
+      "width": 1440,
+      "sha256": "774fccf96e2f5a8129abfcd504080227876d0af57fb9d99fbadaf4cffc8fa457"
+    },
+    {
+      "file": "390-new-private-email.png",
+      "width": 390,
+      "sha256": "e88945f86db0ac2f175765f9745124fb24f9a575d668606a163f05a95711b614"
+    },
+    {
+      "file": "390-private-email-thread.png",
+      "width": 390,
+      "sha256": "a747985caa8feb2c106b2344341e0f21ef12b56793235c55d8b0f5a3050ca4b2"
+    }
+  ],
+  "result": "passed",
+  "registration": "two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening"
+}

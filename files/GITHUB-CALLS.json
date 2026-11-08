@@ -1,0 +1,62 @@
+[
+  {
+    "number": 1,
+    "time": 1794128733.0401525,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs?head_sha=4f0783c02f3420e257f355deca04e0724c3ea355&per_page=100",
+      "--jq",
+      ".workflow_runs | map({id,name,status,conclusion,head_sha,html_url})"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 2,
+    "time": 1794129073.7141082,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/42465620406",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 3,
+    "time": 1794129395.1720643,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/42465620406",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 4,
+    "time": 1794129695.2457287,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/42465620406",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 5,
+    "time": 1794129995.2933962,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/42465620406",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  }
+]

@@ -1,0 +1,35 @@
+TAP version 13
+# Request failed Error
+# Request failed Error
+# Subtest: a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome
+not ok 1 - a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome
+  ---
+  duration_ms: 286786.719527
+  type: 'test'
+  location: '/workspace/run-happytohelp/tests/journeys/email.mjs:9:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(copy.reply_to)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    outboundConfigurationJourney (file:///workspace/run-happytohelp/tests/helpers/email/outbound-configuration.mjs:162:109)
+    async completeEmailJourney (file:///workspace/run-happytohelp/tests/helpers/email/complete-email.mjs:20:2)
+    async TestContext.<anonymous> (file:///workspace/run-happytohelp/tests/journeys/email.mjs:11:2)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 287186.574525

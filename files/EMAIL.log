@@ -1,0 +1,78 @@
+TAP version 13
+# Request failed Error
+# Request failed Error
+# PROBE OUTBOUND-001-NOTE N1/N2/N3/N4: private email + restart/replay -> 1 note, 0 public messages/outbox/email before human Send; 1 public reply + 1 threaded customer reply; public default/call/configuration retained; no migrations
+# PROBE Mailgun: native workspace and forwarding mailbox ready
+# PROBE POINT2: missing/unknown key names, unavailable key, domain and region errors refused before sending
+# PROBE POINT1: owner inbox reply reaches Mailgun EU multipart HTTP edge with named key, support From, recipients, thread headers and attachment
+# PROBE POINT3: reviewed Zendesk history imported through the native door with no sends or notices
+# PROBE POINT2: rejected, rate-limited, server-error, lost-response, missing-receipt and redirect outcomes visible; retries never replay
+# PROBE POINT3: anonymous and foreign-tenant sends refused; native reply threading and duplicate protection retained
+# Held managed mail remains pending
+# Inbound email already received Inbound email identity conflict
+# Inbound email already received Inbound email identity conflict
+# MAIL_HOLD_BUDGET {"pass":1,"statements":153,"calls":138,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":2,"statements":132,"calls":107,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":3,"statements":422,"calls":367,"refused":0}
+# Held managed mail remains pending
+# Held managed mail remains pending
+# Held managed mail remains pending
+# MAIL_HOLD_BUDGET {"pass":4,"statements":297,"calls":255,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":5,"statements":205,"calls":178,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":6,"statements":82,"calls":77,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":7,"statements":124,"calls":110,"refused":0}
+# Held managed mail remains pending
+# Held managed mail remains pending
+# Held managed mail remains pending
+# MAIL_HOLD_BUDGET {"pass":8,"statements":277,"calls":236,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":9,"statements":276,"calls":238,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":10,"statements":289,"calls":254,"refused":0}
+# Held managed mail remains pending
+# Held managed mail remains pending
+# Held managed mail remains pending
+# MAIL_HOLD_BUDGET {"pass":11,"statements":383,"calls":302,"refused":0}
+# Persisted job handler failed outbox.recover 5404c61a-96ef-44d4-b7a9-8678b5cef989
+# Held managed mail remains pending
+# Persisted job handler failed outbox.recover b2f4d2ed-fd2c-44a4-bf9b-ee9734b5551a
+# Held managed mail remains pending
+# Persisted job handler failed outbox.recover b18e9a79-7453-454c-b426-9fd1d5ee9041
+# MAIL_HOLD_BUDGET {"pass":12,"statements":85,"calls":80,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":13,"statements":85,"calls":80,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":14,"statements":85,"calls":80,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":15,"statements":175,"calls":152,"refused":0}
+# Request failed Error
+# Request failed Error
+# PROBE ACCESS-001 P1: assign visible ticket; narrow before assignment dispatch -> {"status":200,"email":0,"inbox":0,"state":"complete"}
+# PROBE ACCESS-001 P6: assign scoped-out operator -> {"status":200,"assigned":"operator-synthetic-hh-200","notices":0,"inbox":0,"email":0}
+# PROBE ACCESS-001 P7: hidden assigned activity -> {"newNotices":0,"email":0}
+# PROBE ACCESS-001 P7: hidden unassigned activity, opted-in operator -> {"newNotices":0,"email":0}
+# PROBE ACCESS-001 P7: narrow scope during unread rendering -> {"email":0,"pending":0}
+# PROBE ACCESS-001 P9: notification compatibility -> {"null":"assignment email retained","otherTenant":"foreign recipients are refused by existing teammate journey","ownerRecovery":"shared S1 term defaults true"}
+# PROBE NOTIFY-001 slack P1 audiences: {"assignment":1,"customer_updated":1,"mention":1,"follower":1,"group":1}
+# PROBE NOTIFY-001 slack P1 outcomes: ["accepted","accepted","accepted","accepted","accepted","accepted","accepted","accepted"]
+# PROBE NOTIFY-001 slack P2b relation: {"unfollowed":0,"reassigned":0}
+# PROBE NOTIFY-001 slack P2 sources: {"blocked":4}
+# PROBE NOTIFY-001 slack P3 scope: {"noticeRowsMadeByFrozenLeg":2,"slack":0}
+# PROBE NOTIFY-001 slack P4 outcomes: {"retry":"rate-limit only, 5 max","lost":"uncertain, not replayed after restart"}
+# PROBE NOTIFY-001 slack P5 authority: {"consent":"revoked","installer":"removed","destination":"disabled"}
+# PROBE NOTIFY-001 slack P6 erasure: {"deliveriesBeforeContactErasure":22,"afterContactErasure":0,"memberRowsAfter":0}
+# PROBE NOTIFY-001 teams link: {"authenticated":true,"hashed":true,"singleUse":true,"expires":true,"sessionBound":true,"noIntake":true}
+# PROBE NOTIFY-001 teams audiences: {"assignment":1,"customer_updated":1,"mention":1,"follower":1,"group":1}
+# PROBE NOTIFY-001 teams guards: {"preference":true,"relation":true,"source":true,"scope":true,"revokedMember":true,"foreignWorkspace":true}
+# PROBE NOTIFY-001 teams outcomes: {"rateAttempts":5,"retryAfter":true,"unknown":"terminal across restart","beforeSendFailure":"failed","preSendRecheck":true}
+# PROBE NOTIFY-001 teams authority-erasure: {"consentRevoked":true,"missingInstallerUnavailable":true,"installerRevoked":true,"connectionRevoked":true,"memberRows":0}
+# Subtest: a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome
+ok 1 - a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome
+  ---
+  duration_ms: 467902.908503
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 468244.062609

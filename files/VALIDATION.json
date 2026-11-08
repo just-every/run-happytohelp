@@ -1,0 +1,92 @@
+{
+  "tag": "hh-outbound001-email-note-n1",
+  "repository": "just-every/run-happytohelp",
+  "base": "9c123887be64e57e612ae5da22a49447d284e81a",
+  "recorded_at": "2026-11-08T08:57:16.109284+00:00",
+  "status": "local_checks_and_exact_sha_Verify_passed",
+  "checks": {
+    "rer setup": {
+      "exit": 0,
+      "notes": "contained private answers; no setup secrets selected for evidence"
+    },
+    "pnpm run typecheck (Node 22.20.0)": {
+      "exit": 0,
+      "log": "TYPECHECK.log"
+    },
+    "rer build (Node 22.20.0)": {
+      "exit": 0,
+      "log": "BUILD.log"
+    },
+    "source lock/check after rebase": {
+      "exit": 0,
+      "working_tree_changed": false,
+      "log": "SOURCE-CHECK.json"
+    },
+    "rer check --profile first-party after rebase": {
+      "exit": 0,
+      "log": "FIRST-PARTY.log"
+    },
+    "verify-base --offline after rebase": {
+      "exit": 0,
+      "log": "BASE-CHECK.json"
+    },
+    "contract-docs check after rebase": {
+      "exit": 0,
+      "log": "CONTRACT-CHECK.log"
+    },
+    "touched email registration on merged head": {
+      "status": "passed",
+      "log": "EMAIL.log",
+      "exit": 0,
+      "duration_ms": 467902.908503
+    },
+    "touched browser registration on merged head": {
+      "status": "passed",
+      "log": "BROWSER.log",
+      "exit": 0,
+      "duration_ms": 628947.615359
+    },
+    "exact-SHA Verify": {
+      "conclusion": "success",
+      "head_sha": "4f0783c02f3420e257f355deca04e0724c3ea355",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/42465620406",
+      "status": "completed",
+      "run_id": 42465620406,
+      "repository": "just-every/run-happytohelp"
+    }
+  },
+  "product_head": "4f0783c02f3420e257f355deca04e0724c3ea355",
+  "merged_main": "e87038576b94d58d3a5804bae4081558994d6b76",
+  "counts": {
+    "contract_before": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    },
+    "contract_after": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    },
+    "new_test_registrations": 0,
+    "new_migrations": 0,
+    "frozen_implementation_edits": 0,
+    "private_ticket_before_Send": {
+      "tickets": 1,
+      "notes": 1,
+      "public_messages": 0,
+      "outbox": 0,
+      "email_message_options": 0,
+      "customer_mail": 0
+    },
+    "after_Send_and_customer_reply": {
+      "public_operator_replies": 1,
+      "provider_copies_for_Send": 1,
+      "threaded_customer_replies": 1
+    }
+  },
+  "custody": "READY branch=cloud/hh-outbound001-email-note-n1 head=4f0783c02f3420e257f355deca04e0724c3ea355",
+  "blockers": []
+}

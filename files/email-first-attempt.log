@@ -1,0 +1,21 @@
+✖ a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome (137387.876672ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 137680.459088
+
+✖ failing tests:
+
+test at tests/journeys/email.mjs:9:1
+✖ a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome (137387.876672ms)
+  Error: Journey server PID has no owned control socket
+      at stopOwnedServer (file:///workspace/run-happytohelp/tests/helpers/rer-command.mjs:17:19)
+      at async devEntry (file:///workspace/run-happytohelp/tests/helpers/email/local-mail.mjs:136:18)
+      at async localMailJourney (file:///workspace/run-happytohelp/tests/helpers/email/local-mail.mjs:18:2)
+      at async TestContext.<anonymous> (file:///workspace/run-happytohelp/tests/journeys/email.mjs:10:2)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)

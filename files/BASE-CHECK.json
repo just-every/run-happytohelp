@@ -1,0 +1,2643 @@
+{
+  "ok": true,
+  "record": "base-copies.json",
+  "origin": "not checked (--offline): local bytes against recorded SHA-256 only",
+  "copies": [
+    {
+      "path": ".github/workflows/run-demo.yml",
+      "originPath": "export/run-demo.yml",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": ".github/workflows/verify.yml",
+      "originPath": "export/verify.yml",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "DEMO.md",
+      "originPath": "export/DEMO.md",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "live-proofs/git.mjs",
+      "originPath": "live-proofs/git.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "migrations/114_integrations_core.sql",
+      "originPath": "modules/integrations/core/schema.sql",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "migrations/117_development_outbox.sql",
+      "originPath": "modules/mail/src/development/schema.sql",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "migrations/119_local_portability.sql",
+      "originPath": "modules/portability/schema/portability.sql",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "migrations/277_agent_door.sql",
+      "originPath": "modules/agent-door/schema/agent-door.sql",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "migrations/278_business_settings.sql",
+      "originPath": "modules/business-settings/schema/0001_business_settings.sql",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "migrations/279_business_people.sql",
+      "originPath": "modules/business-settings/schema/0002_business_people.sql",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "public/fonts/outfit",
+      "originPath": "default-seed/public/fonts/outfit",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 3
+    },
+    {
+      "path": "scripts/ci/verify-evidence.mjs",
+      "originPath": "export/verify-evidence.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/ci/verify-light.mjs",
+      "originPath": "export/verify-light.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/ci/verify-plan.mjs",
+      "originPath": "export/verify-plan.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/artifact.mjs",
+      "originPath": "modules/delivery-producer/artifact.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/bindings.mjs",
+      "originPath": "modules/delivery-producer/bindings.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/capabilities.mjs",
+      "originPath": "modules/delivery-producer/capabilities.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/cli.mjs",
+      "originPath": "modules/delivery-producer/cli.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/declarations.mjs",
+      "originPath": "modules/delivery-producer/declarations.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/export.mjs",
+      "originPath": "modules/delivery-producer/export.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/integration.mjs",
+      "originPath": "modules/delivery-producer/generators/integration.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/managed.mjs",
+      "originPath": "modules/delivery-producer/generators/managed.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/project.mjs",
+      "originPath": "modules/delivery-producer/generators/project.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/validation.mjs",
+      "originPath": "modules/delivery-producer/generators/validation.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/mail.mjs",
+      "originPath": "modules/delivery-producer/mail.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/migrations.mjs",
+      "originPath": "modules/delivery-producer/migrations.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/native-export.mjs",
+      "originPath": "modules/delivery-producer/native-export.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/package.mjs",
+      "originPath": "modules/delivery-producer/package.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/paths.mjs",
+      "originPath": "modules/delivery-producer/paths.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/payloads.mjs",
+      "originPath": "modules/delivery-producer/payloads.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/schema",
+      "originPath": "schema",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 6
+    },
+    {
+      "path": "scripts/delivery/base/sign-in.mjs",
+      "originPath": "modules/delivery-producer/sign-in.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/spec.mjs",
+      "originPath": "modules/delivery-producer/spec.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/sql-statements.mjs",
+      "originPath": "modules/delivery-producer/sql-statements.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "scripts/edition-authoring",
+      "originPath": "edition-authoring",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 150
+    },
+    {
+      "path": "src/base",
+      "originPath": "foundation/runtime",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 25
+    },
+    {
+      "path": "src/editor/editor-surface.ts",
+      "originPath": "modules/editor/src/widget/editor-surface.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/editor/live-edit-contracts.ts",
+      "originPath": "modules/editor/src/widget/live-edit-contracts.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/editor/live-edit-dom.ts",
+      "originPath": "modules/editor/src/widget/live-edit-dom.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/editor/visual-style.ts",
+      "originPath": "modules/editor/src/widget/visual-style.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/d1-transport",
+      "originPath": "modules/d1-transport",
+      "revision": "c51d0ed40f64d44ba4c4c9ae2c7728ef60a4dd84",
+      "files": 4
+    },
+    {
+      "path": "src/modules/demo/effects.mjs",
+      "originPath": "modules/demo/effects.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/demo/responses.mjs",
+      "originPath": "modules/demo/responses.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/dependencies/approval.mjs",
+      "originPath": "modules/dependencies/approval.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/dependencies/auth.mjs",
+      "originPath": "modules/dependencies/auth.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/dependencies/authority.mjs",
+      "originPath": "modules/dependencies/authority.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/dependencies/crypto.mjs",
+      "originPath": "modules/dependencies/crypto.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/dependencies/index.d.mts",
+      "originPath": "modules/dependencies/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/dependencies/index.mjs",
+      "originPath": "modules/dependencies/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/dependencies/logout.mjs",
+      "originPath": "modules/dependencies/logout.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/dependencies/native.mjs",
+      "originPath": "modules/dependencies/native.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/dependencies/protocol.mjs",
+      "originPath": "modules/dependencies/protocol.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/dependencies/sealing.mjs",
+      "originPath": "modules/dependencies/sealing.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/dependencies/store.mjs",
+      "originPath": "modules/dependencies/store.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/CONTRACT.md",
+      "originPath": "modules/import-kit/CONTRACT.md",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/FIXTURES.md",
+      "originPath": "modules/import-kit/FIXTURES.md",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/README.md",
+      "originPath": "modules/import-kit/README.md",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/schema/importer-verification-receipt.schema.json",
+      "originPath": "modules/import-kit/schema/importer-verification-receipt.schema.json",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/schema/importers.schema.json",
+      "originPath": "modules/import-kit/schema/importers.schema.json",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/apply-effects.ts",
+      "originPath": "modules/import-kit/src/d1/apply-effects.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/apply-reads.ts",
+      "originPath": "modules/import-kit/src/d1/apply-reads.ts",
+      "revision": "c51d0ed40f64d44ba4c4c9ae2c7728ef60a4dd84",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/apply.ts",
+      "originPath": "modules/import-kit/src/d1/apply.ts",
+      "revision": "c51d0ed40f64d44ba4c4c9ae2c7728ef60a4dd84",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/atomic-prefix.ts",
+      "originPath": "modules/import-kit/src/d1/atomic-prefix.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/budget.ts",
+      "originPath": "modules/import-kit/src/d1/budget.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/column-layout.ts",
+      "originPath": "modules/import-kit/src/d1/column-layout.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/compressed-plan.ts",
+      "originPath": "modules/import-kit/src/d1/compressed-plan.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/creation.ts",
+      "originPath": "modules/import-kit/src/d1/creation.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/custody-fence.ts",
+      "originPath": "modules/import-kit/src/d1/custody-fence.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/custody-state-schema.ts",
+      "originPath": "modules/import-kit/src/d1/custody-state-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/database.ts",
+      "originPath": "modules/import-kit/src/d1/database.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/entry-locator.ts",
+      "originPath": "modules/import-kit/src/d1/entry-locator.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erased-artifacts.ts",
+      "originPath": "modules/import-kit/src/d1/erased-artifacts.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erased-custody.ts",
+      "originPath": "modules/import-kit/src/d1/erased-custody.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erased-plan.ts",
+      "originPath": "modules/import-kit/src/d1/erased-plan.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erased-reversal.ts",
+      "originPath": "modules/import-kit/src/d1/erased-reversal.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-bounded.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-bounded.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-claims.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-claims.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-compiler.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-compiler.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-disposition.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-disposition.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-fragments.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-fragments.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-index.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-index.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-pages.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-pages.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-progress-schema.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-progress-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-progress.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-progress.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-related.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-related.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-report.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-report.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-schema.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-selection.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-selection.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-snapshot.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-stage.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-stage.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-step.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-step.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-superseded.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-superseded.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-values.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-values.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure-writes.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-writes.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/erasure.ts",
+      "originPath": "modules/import-kit/src/d1/erasure.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/evolutions/0001-preserved-undo.ts",
+      "originPath": "modules/import-kit/src/d1/evolutions/0001-preserved-undo.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/expected-state.ts",
+      "originPath": "modules/import-kit/src/d1/expected-state.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/field-redaction.ts",
+      "originPath": "modules/import-kit/src/d1/field-redaction.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/guards.ts",
+      "originPath": "modules/import-kit/src/d1/guards.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/history.ts",
+      "originPath": "modules/import-kit/src/d1/history.ts",
+      "revision": "c51d0ed40f64d44ba4c4c9ae2c7728ef60a4dd84",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/index.ts",
+      "originPath": "modules/import-kit/src/d1/index.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/integrity.ts",
+      "originPath": "modules/import-kit/src/d1/integrity.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/inventory-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/inventory-snapshot.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/jobs.ts",
+      "originPath": "modules/import-kit/src/d1/jobs.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/native-set.ts",
+      "originPath": "modules/import-kit/src/d1/native-set.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/native-staging-admission.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-admission.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/native-staging-context.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-context.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/native-staging-lifecycle.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-lifecycle.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/native-staging-offset.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-offset.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/native-staging-publication.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-publication.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/native-staging-rows.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-rows.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/native-staging-schema.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/native-staging-state.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-state.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/native-staging.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/original-copies.ts",
+      "originPath": "modules/import-kit/src/d1/original-copies.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/original-storage.ts",
+      "originPath": "modules/import-kit/src/d1/original-storage.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/originals.ts",
+      "originPath": "modules/import-kit/src/d1/originals.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/plan-dictionary.ts",
+      "originPath": "modules/import-kit/src/d1/plan-dictionary.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/plans.ts",
+      "originPath": "modules/import-kit/src/d1/plans.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparation-fingerprint.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-fingerprint.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparation-header.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-header.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparation-reader.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-reader.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparation-schema.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparation-state.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-state.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparation-step-combine.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-combine.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparation-step-control.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-control.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparation-step-hash.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-hash.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparation-step-pages.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-pages.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparation-steps-schema.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-steps-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparation-steps.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-steps.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preparations.ts",
+      "originPath": "modules/import-kit/src/d1/preparations.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preserved-preview.ts",
+      "originPath": "modules/import-kit/src/d1/preserved-preview.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/preserved-reverse.ts",
+      "originPath": "modules/import-kit/src/d1/preserved-reverse.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/provenance-set.ts",
+      "originPath": "modules/import-kit/src/d1/provenance-set.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/publication-fence.ts",
+      "originPath": "modules/import-kit/src/d1/publication-fence.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/publication-receipt-schema.ts",
+      "originPath": "modules/import-kit/src/d1/publication-receipt-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/published-stream.ts",
+      "originPath": "modules/import-kit/src/d1/published-stream.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/read-fence.ts",
+      "originPath": "modules/import-kit/src/d1/read-fence.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/read-results.ts",
+      "originPath": "modules/import-kit/src/d1/read-results.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/README.md",
+      "originPath": "modules/import-kit/src/d1/README.md",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/redacted-custody.ts",
+      "originPath": "modules/import-kit/src/d1/redacted-custody.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/redaction-step.ts",
+      "originPath": "modules/import-kit/src/d1/redaction-step.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/referenced-plans.ts",
+      "originPath": "modules/import-kit/src/d1/referenced-plans.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/retained-values.ts",
+      "originPath": "modules/import-kit/src/d1/retained-values.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/retirement-bounded.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-bounded.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/retirement-door.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-door.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/retirement-schema.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/retirement-scope.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-scope.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/retirement-steps.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-steps.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/retirement-tally.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-tally.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/retirement.ts",
+      "originPath": "modules/import-kit/src/d1/retirement.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/reversal-conversion-record.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-conversion-record.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/reversal-conversion-schema.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-conversion-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/reversal-conversion.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-conversion.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/reversal-fence-schema.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-fence-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/reversal-fence.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-fence.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/reversal-journal.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-journal.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/reverse.ts",
+      "originPath": "modules/import-kit/src/d1/reverse.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/reviewed-source.ts",
+      "originPath": "modules/import-kit/src/d1/reviewed-source.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/sets.ts",
+      "originPath": "modules/import-kit/src/d1/sets.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staged-creation.ts",
+      "originPath": "modules/import-kit/src/d1/staged-creation.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staging-admission.ts",
+      "originPath": "modules/import-kit/src/d1/staging-admission.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staging-control.ts",
+      "originPath": "modules/import-kit/src/d1/staging-control.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staging-erasure.ts",
+      "originPath": "modules/import-kit/src/d1/staging-erasure.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staging-lifecycle.ts",
+      "originPath": "modules/import-kit/src/d1/staging-lifecycle.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staging-plan.ts",
+      "originPath": "modules/import-kit/src/d1/staging-plan.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staging-privacy.ts",
+      "originPath": "modules/import-kit/src/d1/staging-privacy.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staging-publication.ts",
+      "originPath": "modules/import-kit/src/d1/staging-publication.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staging-schema.ts",
+      "originPath": "modules/import-kit/src/d1/staging-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staging-statements.ts",
+      "originPath": "modules/import-kit/src/d1/staging-statements.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staging-transport.ts",
+      "originPath": "modules/import-kit/src/d1/staging-transport.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-boundary.ts",
+      "originPath": "modules/import-kit/src/d1/stream-boundary.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-create.ts",
+      "originPath": "modules/import-kit/src/d1/stream-create.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-identity-admission.ts",
+      "originPath": "modules/import-kit/src/d1/stream-identity-admission.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-input.ts",
+      "originPath": "modules/import-kit/src/d1/stream-input.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-layout.ts",
+      "originPath": "modules/import-kit/src/d1/stream-layout.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-origin.ts",
+      "originPath": "modules/import-kit/src/d1/stream-origin.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-page-integrity.ts",
+      "originPath": "modules/import-kit/src/d1/stream-page-integrity.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-partition.ts",
+      "originPath": "modules/import-kit/src/d1/stream-partition.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-plan.ts",
+      "originPath": "modules/import-kit/src/d1/stream-plan.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-receipt.ts",
+      "originPath": "modules/import-kit/src/d1/stream-receipt.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-revision-schema.ts",
+      "originPath": "modules/import-kit/src/d1/stream-revision-schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/stream-snapshot.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-stage.ts",
+      "originPath": "modules/import-kit/src/d1/stream-stage.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-state.ts",
+      "originPath": "modules/import-kit/src/d1/stream-state.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/stream-working-set.ts",
+      "originPath": "modules/import-kit/src/d1/stream-working-set.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/streams.ts",
+      "originPath": "modules/import-kit/src/d1/streams.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/target-guards.ts",
+      "originPath": "modules/import-kit/src/d1/target-guards.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/target-identities.ts",
+      "originPath": "modules/import-kit/src/d1/target-identities.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/transport.ts",
+      "originPath": "modules/import-kit/src/d1/transport.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/types.ts",
+      "originPath": "modules/import-kit/src/d1/types.ts",
+      "revision": "c51d0ed40f64d44ba4c4c9ae2c7728ef60a4dd84",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/undo-observations.ts",
+      "originPath": "modules/import-kit/src/d1/undo-observations.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/undo-report.ts",
+      "originPath": "modules/import-kit/src/d1/undo-report.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/undo-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/undo-snapshot.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/undo-state.ts",
+      "originPath": "modules/import-kit/src/d1/undo-state.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/undo-types.ts",
+      "originPath": "modules/import-kit/src/d1/undo-types.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/verified-plan.ts",
+      "originPath": "modules/import-kit/src/d1/verified-plan.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/door",
+      "originPath": "modules/import-kit/src/door",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 27
+    },
+    {
+      "path": "src/modules/import-kit/src/journal/authority.ts",
+      "originPath": "modules/import-kit/src/journal/authority.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/plan/budget.ts",
+      "originPath": "modules/import-kit/src/plan/budget.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/plan/index.ts",
+      "originPath": "modules/import-kit/src/plan/index.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/plan/size.ts",
+      "originPath": "modules/import-kit/src/plan/size.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/provenance/canonical-hash.ts",
+      "originPath": "modules/import-kit/src/provenance/canonical-hash.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/provenance/canonical-stream.ts",
+      "originPath": "modules/import-kit/src/provenance/canonical-stream.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/provenance/credential-names.ts",
+      "originPath": "modules/import-kit/src/provenance/credential-names.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/provenance/credentials.ts",
+      "originPath": "modules/import-kit/src/provenance/credentials.ts",
+      "revision": "ff1bbbd6e3b8f3e8195f059673a26cc5cb9b7557",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/provenance/identity.ts",
+      "originPath": "modules/import-kit/src/provenance/identity.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/provenance/json-snapshot.ts",
+      "originPath": "modules/import-kit/src/provenance/json-snapshot.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/provenance/numeric-credentials.ts",
+      "originPath": "modules/import-kit/src/provenance/numeric-credentials.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/provenance/resumable-sha256.ts",
+      "originPath": "modules/import-kit/src/provenance/resumable-sha256.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/provenance/validate-json.ts",
+      "originPath": "modules/import-kit/src/provenance/validate-json.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/readers/bytes.ts",
+      "originPath": "modules/import-kit/src/readers/bytes.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/readers/errors.ts",
+      "originPath": "modules/import-kit/src/readers/errors.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/readers/file.ts",
+      "originPath": "modules/import-kit/src/readers/file.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/readers/json.ts",
+      "originPath": "modules/import-kit/src/readers/json.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/readers/original.ts",
+      "originPath": "modules/import-kit/src/readers/original.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/readers/README.md",
+      "originPath": "modules/import-kit/src/readers/README.md",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/readers/records.ts",
+      "originPath": "modules/import-kit/src/readers/records.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/storage/originals.ts",
+      "originPath": "modules/import-kit/src/storage/originals.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/storage/provenance.ts",
+      "originPath": "modules/import-kit/src/storage/provenance.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/storage/schema.ts",
+      "originPath": "modules/import-kit/src/storage/schema.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/import-kit/src/types.ts",
+      "originPath": "modules/import-kit/src/types.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/adapter.mjs",
+      "originPath": "modules/operator-auth/accounts/adapter.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/admin.mjs",
+      "originPath": "modules/operator-auth/accounts/admin.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/audit.mjs",
+      "originPath": "modules/operator-auth/accounts/audit.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/business-team.mjs",
+      "originPath": "modules/operator-auth/accounts/business-team.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/credentials.mjs",
+      "originPath": "modules/operator-auth/accounts/credentials.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/delegated.mjs",
+      "originPath": "modules/operator-auth/accounts/delegated.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/display-name.mjs",
+      "originPath": "modules/operator-auth/accounts/display-name.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/domain-audit.mjs",
+      "originPath": "modules/operator-auth/accounts/domain-audit.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/editor-owner.mjs",
+      "originPath": "modules/operator-auth/accounts/editor-owner.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/email-change.mjs",
+      "originPath": "modules/operator-auth/accounts/email-change.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/native.d.mts",
+      "originPath": "modules/operator-auth/accounts/native.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/native.mjs",
+      "originPath": "modules/operator-auth/accounts/native.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/oa.mjs",
+      "originPath": "modules/operator-auth/accounts/oa.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/one-click.mjs",
+      "originPath": "modules/operator-auth/accounts/one-click.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/owner-signin.mjs",
+      "originPath": "modules/operator-auth/accounts/owner-signin.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/provider-control.mjs",
+      "originPath": "modules/operator-auth/accounts/provider-control.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/provider-pin.mjs",
+      "originPath": "modules/operator-auth/accounts/provider-pin.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/provider-setup.mjs",
+      "originPath": "modules/operator-auth/accounts/provider-setup.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/roles.mjs",
+      "originPath": "modules/operator-auth/accounts/roles.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/settings-page.mjs",
+      "originPath": "modules/operator-auth/accounts/settings-page.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/status.mjs",
+      "originPath": "modules/operator-auth/accounts/status.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/accounts/store.mjs",
+      "originPath": "modules/operator-auth/accounts/store.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/branding.mjs",
+      "originPath": "modules/operator-auth/branding.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/business-settings.mjs",
+      "originPath": "modules/operator-auth/business-settings.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/config.mjs",
+      "originPath": "modules/operator-auth/config.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/crypto.mjs",
+      "originPath": "modules/operator-auth/crypto.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/dev-admission.d.mts",
+      "originPath": "modules/operator-auth/dev-admission.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/dev-admission.mjs",
+      "originPath": "modules/operator-auth/dev-admission.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/dev-gate.mjs",
+      "originPath": "modules/operator-auth/dev-gate.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/errors.mjs",
+      "originPath": "modules/operator-auth/errors.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/http.mjs",
+      "originPath": "modules/operator-auth/http.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/icon-head.d.mts",
+      "originPath": "modules/operator-auth/icon-head.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/icon-head.mjs",
+      "originPath": "modules/operator-auth/icon-head.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/admission.mjs",
+      "originPath": "modules/operator-auth/identity/admission.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/after-confirm.mjs",
+      "originPath": "modules/operator-auth/identity/after-confirm.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/email-link/confirmation.mjs",
+      "originPath": "modules/operator-auth/identity/email-link/confirmation.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/email-link/expiry.mjs",
+      "originPath": "modules/operator-auth/identity/email-link/expiry.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/email-link/index.d.mts",
+      "originPath": "modules/operator-auth/identity/email-link/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/email-link/index.mjs",
+      "originPath": "modules/operator-auth/identity/email-link/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/email-link/message.mjs",
+      "originPath": "modules/operator-auth/identity/email-link/message.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/admin-audit.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/admin-audit.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/aes-gcm.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/aes-gcm.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/client-auth.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/client-auth.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/config.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/config.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/crypto.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/crypto.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/errors.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/errors.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/index.d.mts",
+      "originPath": "modules/operator-auth/identity/oidc/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/index.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/jwt.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/jwt.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/network.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/network.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/presets.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/presets.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/oidc/store.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/store.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/identity/principal.mjs",
+      "originPath": "modules/operator-auth/identity/principal.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/index.d.mts",
+      "originPath": "modules/operator-auth/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/index.mjs",
+      "originPath": "modules/operator-auth/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/input.mjs",
+      "originPath": "modules/operator-auth/input.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/local-cli.mjs",
+      "originPath": "modules/operator-auth/local-cli.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/loopback.mjs",
+      "originPath": "modules/operator-auth/loopback.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/owner-signin-grant.mjs",
+      "originPath": "modules/operator-auth/owner-signin-grant.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/page.mjs",
+      "originPath": "modules/operator-auth/page.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/policy.d.mts",
+      "originPath": "modules/operator-auth/policy.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/policy.mjs",
+      "originPath": "modules/operator-auth/policy.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/rejected-response.mjs",
+      "originPath": "modules/operator-auth/rejected-response.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/representation.mjs",
+      "originPath": "modules/operator-auth/representation.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/routes.mjs",
+      "originPath": "modules/operator-auth/routes.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/scheduled/definition.mjs",
+      "originPath": "modules/operator-auth/scheduled/definition.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/scheduled/expiry.mjs",
+      "originPath": "modules/operator-auth/scheduled/expiry.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/scheduled/fence.mjs",
+      "originPath": "modules/operator-auth/scheduled/fence.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/scheduled/history.mjs",
+      "originPath": "modules/operator-auth/scheduled/history.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/scheduled/index.d.mts",
+      "originPath": "modules/operator-auth/scheduled/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/scheduled/index.mjs",
+      "originPath": "modules/operator-auth/scheduled/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/scheduled/runner.mjs",
+      "originPath": "modules/operator-auth/scheduled/runner.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/service.mjs",
+      "originPath": "modules/operator-auth/service.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/signin/index.d.mts",
+      "originPath": "modules/operator-auth/signin/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/signin/index.mjs",
+      "originPath": "modules/operator-auth/signin/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/operator-auth/signin/one-click.mjs",
+      "originPath": "modules/operator-auth/signin/one-click.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/owner-claim/idp.mjs",
+      "originPath": "modules/owner-claim/idp.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/owner-claim/index.d.mts",
+      "originPath": "modules/owner-claim/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/owner-claim/index.mjs",
+      "originPath": "modules/owner-claim/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/owner-claim/page.mjs",
+      "originPath": "modules/owner-claim/page.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/owner-claim/transaction.mjs",
+      "originPath": "modules/owner-claim/transaction.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/owner-claim/verify.d.mts",
+      "originPath": "modules/owner-claim/verify.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/modules/owner-claim/verify.mjs",
+      "originPath": "modules/owner-claim/verify.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/contract-anchor.mjs",
+      "originPath": "foundation/runtime/contract-anchor.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/contract-docs.mjs",
+      "originPath": "foundation/runtime/contract-docs.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/contract-filter.ts",
+      "originPath": "foundation/runtime/contract-filter.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/contract-page.ts",
+      "originPath": "foundation/runtime/contract-page.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/contract-prose-patterns.mjs",
+      "originPath": "foundation/runtime/contract-prose-patterns.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/contract-prose.mjs",
+      "originPath": "foundation/runtime/contract-prose.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/contract-style.ts",
+      "originPath": "foundation/runtime/contract-style.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/hosting-page.ts",
+      "originPath": "foundation/runtime/hosting-page.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/icon-head.ts",
+      "originPath": "foundation/runtime/icon-head.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/identity.ts",
+      "originPath": "foundation/runtime/identity.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/run-chooser-style.ts",
+      "originPath": "foundation/runtime/run-chooser-style.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/run-data.d.mts",
+      "originPath": "foundation/runtime/run-data.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/run-data.mjs",
+      "originPath": "foundation/runtime/run-data.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/run-pricing.ts",
+      "originPath": "foundation/runtime/run-pricing.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/run-site.ts",
+      "originPath": "foundation/runtime/run-site.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/seed-contract.d.mts",
+      "originPath": "foundation/runtime/seed-contract.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/seed-contract.mjs",
+      "originPath": "foundation/runtime/seed-contract.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/select-style.ts",
+      "originPath": "foundation/runtime/select-style.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/site/base/theme-frame.ts",
+      "originPath": "foundation/runtime/theme-frame.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/agent-base/foundation/runtime",
+      "originPath": "foundation/runtime",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 37
+    },
+    {
+      "path": "src/vendor/agent-base/modules/agent-door",
+      "originPath": "modules/agent-door",
+      "revision": "8b925fa5ffaa577df9f2e4ebab6ede8af5155baa",
+      "files": 84
+    },
+    {
+      "path": "src/vendor/agent-base/modules/business-settings",
+      "originPath": "modules/business-settings",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 16
+    },
+    {
+      "path": "src/vendor/agent-base/modules/demo",
+      "originPath": "modules/demo",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 14
+    },
+    {
+      "path": "src/vendor/agent-base/modules/dependencies",
+      "originPath": "modules/dependencies",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 16
+    },
+    {
+      "path": "src/vendor/agent-base/modules/operator-auth",
+      "originPath": "modules/operator-auth",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 111
+    },
+    {
+      "path": "src/vendor/agent-base/modules/owner-claim",
+      "originPath": "modules/owner-claim",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 10
+    },
+    {
+      "path": "src/vendor/base/hydration",
+      "originPath": "foundation/runtime/hydration",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 4
+    },
+    {
+      "path": "src/vendor/base/modules/business-settings/role-domain.d.mts",
+      "originPath": "modules/business-settings/role-domain.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/business-settings/role-domain.mjs",
+      "originPath": "modules/business-settings/role-domain.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/demo",
+      "originPath": "modules/demo",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 14
+    },
+    {
+      "path": "src/vendor/base/modules/dependencies/approval.mjs",
+      "originPath": "modules/dependencies/approval.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/dependencies/auth.mjs",
+      "originPath": "modules/dependencies/auth.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/dependencies/authority.mjs",
+      "originPath": "modules/dependencies/authority.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/dependencies/crypto.mjs",
+      "originPath": "modules/dependencies/crypto.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/dependencies/index.d.mts",
+      "originPath": "modules/dependencies/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/dependencies/index.mjs",
+      "originPath": "modules/dependencies/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/dependencies/logout.mjs",
+      "originPath": "modules/dependencies/logout.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/dependencies/native.mjs",
+      "originPath": "modules/dependencies/native.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/dependencies/protocol.mjs",
+      "originPath": "modules/dependencies/protocol.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/dependencies/sealing.mjs",
+      "originPath": "modules/dependencies/sealing.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/dependencies/store.mjs",
+      "originPath": "modules/dependencies/store.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/integrations",
+      "originPath": "modules/integrations",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 30
+    },
+    {
+      "path": "src/vendor/base/modules/mail",
+      "originPath": "modules/mail",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 12
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/adapter.mjs",
+      "originPath": "modules/operator-auth/accounts/adapter.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/admin.mjs",
+      "originPath": "modules/operator-auth/accounts/admin.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/audit.mjs",
+      "originPath": "modules/operator-auth/accounts/audit.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/business-team.mjs",
+      "originPath": "modules/operator-auth/accounts/business-team.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/credentials.mjs",
+      "originPath": "modules/operator-auth/accounts/credentials.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/delegated.mjs",
+      "originPath": "modules/operator-auth/accounts/delegated.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/display-name.mjs",
+      "originPath": "modules/operator-auth/accounts/display-name.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/domain-audit.mjs",
+      "originPath": "modules/operator-auth/accounts/domain-audit.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/editor-owner.mjs",
+      "originPath": "modules/operator-auth/accounts/editor-owner.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/email-change.mjs",
+      "originPath": "modules/operator-auth/accounts/email-change.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/native.d.mts",
+      "originPath": "modules/operator-auth/accounts/native.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/native.mjs",
+      "originPath": "modules/operator-auth/accounts/native.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/oa.mjs",
+      "originPath": "modules/operator-auth/accounts/oa.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/one-click.mjs",
+      "originPath": "modules/operator-auth/accounts/one-click.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/owner-signin.mjs",
+      "originPath": "modules/operator-auth/accounts/owner-signin.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/provider-control.mjs",
+      "originPath": "modules/operator-auth/accounts/provider-control.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/provider-pin.mjs",
+      "originPath": "modules/operator-auth/accounts/provider-pin.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/provider-setup.mjs",
+      "originPath": "modules/operator-auth/accounts/provider-setup.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/roles.mjs",
+      "originPath": "modules/operator-auth/accounts/roles.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/settings-page.mjs",
+      "originPath": "modules/operator-auth/accounts/settings-page.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/status.mjs",
+      "originPath": "modules/operator-auth/accounts/status.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/accounts/store.mjs",
+      "originPath": "modules/operator-auth/accounts/store.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/branding.mjs",
+      "originPath": "modules/operator-auth/branding.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/business-settings.mjs",
+      "originPath": "modules/operator-auth/business-settings.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/config.mjs",
+      "originPath": "modules/operator-auth/config.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/crypto.mjs",
+      "originPath": "modules/operator-auth/crypto.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/csp.mjs",
+      "originPath": "modules/operator-auth/csp.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/dev-admission.d.mts",
+      "originPath": "modules/operator-auth/dev-admission.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/dev-admission.mjs",
+      "originPath": "modules/operator-auth/dev-admission.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/dev-gate.mjs",
+      "originPath": "modules/operator-auth/dev-gate.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/errors.mjs",
+      "originPath": "modules/operator-auth/errors.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/http.mjs",
+      "originPath": "modules/operator-auth/http.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/icon-head.d.mts",
+      "originPath": "modules/operator-auth/icon-head.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/icon-head.mjs",
+      "originPath": "modules/operator-auth/icon-head.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/admission.mjs",
+      "originPath": "modules/operator-auth/identity/admission.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/after-confirm.mjs",
+      "originPath": "modules/operator-auth/identity/after-confirm.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/email-link/confirmation.mjs",
+      "originPath": "modules/operator-auth/identity/email-link/confirmation.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/email-link/expiry.mjs",
+      "originPath": "modules/operator-auth/identity/email-link/expiry.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/email-link/index.d.mts",
+      "originPath": "modules/operator-auth/identity/email-link/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/email-link/index.mjs",
+      "originPath": "modules/operator-auth/identity/email-link/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/email-link/message.mjs",
+      "originPath": "modules/operator-auth/identity/email-link/message.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/admin-audit.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/admin-audit.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/aes-gcm.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/aes-gcm.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/client-auth.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/client-auth.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/config.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/config.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/crypto.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/crypto.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/errors.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/errors.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/index.d.mts",
+      "originPath": "modules/operator-auth/identity/oidc/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/index.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/jwt.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/jwt.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/network.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/network.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/presets.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/presets.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/oidc/store.mjs",
+      "originPath": "modules/operator-auth/identity/oidc/store.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/identity/principal.mjs",
+      "originPath": "modules/operator-auth/identity/principal.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/index.d.mts",
+      "originPath": "modules/operator-auth/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/index.mjs",
+      "originPath": "modules/operator-auth/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/input.mjs",
+      "originPath": "modules/operator-auth/input.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/local-cli.mjs",
+      "originPath": "modules/operator-auth/local-cli.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/loopback.mjs",
+      "originPath": "modules/operator-auth/loopback.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/owner-signin-grant.mjs",
+      "originPath": "modules/operator-auth/owner-signin-grant.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/page.mjs",
+      "originPath": "modules/operator-auth/page.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/policy.d.mts",
+      "originPath": "modules/operator-auth/policy.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/policy.mjs",
+      "originPath": "modules/operator-auth/policy.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/rejected-response.mjs",
+      "originPath": "modules/operator-auth/rejected-response.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/representation.mjs",
+      "originPath": "modules/operator-auth/representation.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/routes.mjs",
+      "originPath": "modules/operator-auth/routes.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/scheduled/definition.mjs",
+      "originPath": "modules/operator-auth/scheduled/definition.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/scheduled/expiry.mjs",
+      "originPath": "modules/operator-auth/scheduled/expiry.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/scheduled/fence.mjs",
+      "originPath": "modules/operator-auth/scheduled/fence.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/scheduled/history.mjs",
+      "originPath": "modules/operator-auth/scheduled/history.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/scheduled/index.d.mts",
+      "originPath": "modules/operator-auth/scheduled/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/scheduled/index.mjs",
+      "originPath": "modules/operator-auth/scheduled/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/scheduled/runner.mjs",
+      "originPath": "modules/operator-auth/scheduled/runner.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/service.mjs",
+      "originPath": "modules/operator-auth/service.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/signin/index.d.mts",
+      "originPath": "modules/operator-auth/signin/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/signin/index.mjs",
+      "originPath": "modules/operator-auth/signin/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/operator-auth/signin/one-click.mjs",
+      "originPath": "modules/operator-auth/signin/one-click.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/owner-claim/idp.mjs",
+      "originPath": "modules/owner-claim/idp.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/owner-claim/index.d.mts",
+      "originPath": "modules/owner-claim/index.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/owner-claim/index.mjs",
+      "originPath": "modules/owner-claim/index.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/owner-claim/page.mjs",
+      "originPath": "modules/owner-claim/page.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/owner-claim/transaction.mjs",
+      "originPath": "modules/owner-claim/transaction.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/owner-claim/verify.d.mts",
+      "originPath": "modules/owner-claim/verify.d.mts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/owner-claim/verify.mjs",
+      "originPath": "modules/owner-claim/verify.mjs",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/sendgrid-email/LICENSE",
+      "originPath": "modules/sendgrid-email/LICENSE",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/sendgrid-email/README.md",
+      "originPath": "modules/sendgrid-email/README.md",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    },
+    {
+      "path": "src/vendor/base/modules/sendgrid-email/src/sender.ts",
+      "originPath": "modules/sendgrid-email/src/sender.ts",
+      "revision": "e881e6f66ce7cd737d17dbeb945995aab83c30d8",
+      "files": 1
+    }
+  ],
+  "drift": [],
+  "unrecordedCopies": [],
+  "adapted": [
+    {
+      "path": ".github/workflows/verify.yml",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891"
+    },
+    {
+      "path": "scripts/ci/verify-evidence.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891"
+    },
+    {
+      "path": "scripts/ci/verify-light.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891"
+    },
+    {
+      "path": "scripts/ci/verify-plan.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891"
+    },
+    {
+      "path": "scripts/delivery/base/schema/generate-business-role.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891"
+    }
+  ],
+  "meaning": "Undeclared copies claim Base byte equality. Declared adaptations must match their acknowledged local bytes and mode; their recorded Base bytes and revision remain comparison baselines."
+}
+

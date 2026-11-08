@@ -1,0 +1,19 @@
+{
+  "head": "4f0783c02f3420e257f355deca04e0724c3ea355",
+  "base": "e87038576b94d58d3a5804bae4081558994d6b76",
+  "changed_paths": [
+    "docs/email.md",
+    "sources.lock.json",
+    "src/modules/management/outbound-ticket-input.ts",
+    "src/modules/management/outbound-ticket-store.ts",
+    "src/modules/management/outbound-tickets.ts",
+    "src/ui/dashboard/components/CreateEmailTicket.jsx",
+    "tests/helpers/email/outbound-configuration.mjs",
+    "tests/helpers/inbox/new-ticket-configuration.mjs"
+  ],
+  "path_count": 8,
+  "contract_changed": false,
+  "generated_views_changed": false,
+  "migration_count": 0,
+  "working_tree_clean": true
+}

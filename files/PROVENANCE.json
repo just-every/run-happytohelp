@@ -1,0 +1,25 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-outbound001-email-note-n1",
+  "source_head": "9c123887be64e57e612ae5da22a49447d284e81a",
+  "merged_main": "e87038576b94d58d3a5804bae4081558994d6b76",
+  "product_head": "4f0783c02f3420e257f355deca04e0724c3ea355",
+  "publication": "product branch pushed; all merged-head local checks and exact-SHA Verify passed",
+  "ci_run_id": 42465620406,
+  "history": "One unpublished commit rebased cleanly onto new main before the first push. The shell continued into the save push after a guard failure; no READY claim. Checking merged head without rewriting published history.",
+  "local_registrations": {
+    "email": {
+      "passed": 1,
+      "failed": 0,
+      "duration_ms": 467902.908503
+    },
+    "inbox_browser": {
+      "passed": 1,
+      "failed": 0,
+      "duration_ms": 628947.615359
+    }
+  },
+  "custody": "READY branch=cloud/hh-outbound001-email-note-n1 head=4f0783c02f3420e257f355deca04e0724c3ea355",
+  "ci_conclusion": "success",
+  "landing": "not performed"
+}

@@ -1,0 +1,7 @@
+TAP version 13
+# (node:17121) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# PROBE AGENT-001 W1: built /widget.js -> visitor message -> queued model-edge fixture -> admitted AI answer; visible author and AI disclosure survive reload
+# PROBE AGENT-001 W2: ordinary operator reply -> human takeover -> widget reload -> distinct AI history author and visible Human responder; human message carries no AI label
+# PROBE AGENT-001 W3: existing brand/widget browser registration -> rendered disclosure and fetched-history assertions; no additional test registration
+# PROBE browser ACCESS-001: owner/admin load and save General, Appearance and Availability; collaborator/operator/custom-admin refused

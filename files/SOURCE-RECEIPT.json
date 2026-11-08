@@ -1,0 +1,40 @@
+{
+  "head": "4f0783c02f3420e257f355deca04e0724c3ea355",
+  "files": [
+    {
+      "path": "src/modules/management/outbound-ticket-input.ts",
+      "sha256": "ac263513fc0719d4d2c252df99c2835f9a7f094840e73c4147a2f3385aab1862",
+      "purpose": "input normalization and immutable private intent"
+    },
+    {
+      "path": "src/modules/management/outbound-ticket-store.ts",
+      "sha256": "c1f2c2ef4876c5fd0a290933023998a2b57a193497f524f42a57bafb6f77b3d0",
+      "purpose": "guarded initial-note persistence; public options excluded"
+    },
+    {
+      "path": "src/modules/management/outbound-tickets.ts",
+      "sha256": "86e7ee834b66f36a20a9915df371c89bf02be502f5a48ceaca949501cb24c534",
+      "purpose": "private return before public admission/delivery"
+    },
+    {
+      "path": "src/ui/dashboard/components/CreateEmailTicket.jsx",
+      "sha256": "1524b263dab59ff96e391af4e165f312be1bd20b757a5ca009bf82f2504759c9",
+      "purpose": "explicit public/internal choice and lost-response identity"
+    },
+    {
+      "path": "tests/helpers/email/outbound-configuration.mjs",
+      "sha256": "da6bd6c78812bbdcea1f80db76c8f11169f808a51e39cca66a410daf86f6aa5b",
+      "purpose": "native route/replay/privacy/authority/thread proof"
+    },
+    {
+      "path": "tests/helpers/inbox/new-ticket-configuration.mjs",
+      "sha256": "dbf50e31b181c6b3aef56bb46e084caf6f6cdfad2b54fdbbaeaa8d3a8d83e49a",
+      "purpose": "dialog/reload/human-Send browser proof"
+    },
+    {
+      "path": "docs/email.md",
+      "sha256": "d0f1cf2062e9bbbd824bb6caf223686f5be4186e4adfc2430844ac5688b42515",
+      "purpose": "email usage instructions"
+    }
+  ]
+}

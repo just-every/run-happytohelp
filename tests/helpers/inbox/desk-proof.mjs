@@ -37,6 +37,7 @@ export async function deskQueueProof(f,{second,tag,foreignVisitor,foreignTicket}
   assert.deepEqual(selected(await list({view:'mine'},project,w.tokens.owner)),[])
   assert.deepEqual(selected(await list({view:'unassigned'},project)),[second])
  }
+ assert.deepEqual(selected(await list({view:'open',tag:tag.id})),[id])
  assert.deepEqual(ids(await list({q:'personal+boots'},false,foreign.tokens.operator)),[foreignTicket.id],'the foreign operator finds only their own contact')
  await app.ok(contactPath(w.projectId,contact),{token:w.tokens.owner,method:'PUT',body:{name:'Dana Fairweather'}})
  for(const project of [true,false])assert.deepEqual(selected(await list({q:'fairweath'},project)),[id,second].sort(),'a renamed contact is found by its new name')

@@ -2796,6 +2796,10 @@
       "sha256": "3e4570372178fa141d7a2cef766ce53a0e259a05be8ed489f03416a085fb7d0e",
       "executable": false
     },
+    "migrations/310_inbox_contact_search.sql": {
+      "sha256": "52b57f209b0db5ed99b84e03ac3d345590bd3140e06978d70f47a452412b6e74",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -10340,6 +10344,10 @@
       "sha256": "a3a3a5caf156f89702002a649575e076e173df13f679d1a330f950f995280069",
       "executable": false
     },
+    "src/platform/d1-overload.ts": {
+      "sha256": "715bdec1158cc9d545e5b254e290f4dc584f686a30087745cecc2376157f5571",
+      "executable": false
+    },
     "src/platform/dashboard-loader.server.ts": {
       "sha256": "b8225e5283c6898097022753503624c209bd31d5b2ec277bc5753c093e869f1b",
       "executable": false
@@ -15853,7 +15861,7 @@
       "executable": false
     },
     "tests/helpers/inbox/desk-proof.mjs": {
-      "sha256": "113d83d24c742600bf675fe2de07ada0460b17176cc3fbb233d53ecd2e02362c",
+      "sha256": "1239faf1197ed784aa416d1016b7a13d7600b75943c266a8ccf77fb75a6a3dd2",
       "executable": false
     },
     "tests/helpers/inbox/mobile-inbox-browser.mjs": {

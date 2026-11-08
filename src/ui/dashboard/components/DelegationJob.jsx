@@ -24,6 +24,7 @@ const statusNames = {
 const completionNotices = {
     authorization_lost: 'Authority was withdrawn before this report’s note or reply was recorded.',
     review: 'The reply was not delivered. Review the conversation before replying yourself.',
+    held_for_operator: 'AI replies are drafts in this workspace, so this reply was not sent. Use it and send it yourself.',
 };
 
 const isActive = job => [ 'queued', 'running', 'needs_input' ].includes(job.status);
@@ -40,7 +41,8 @@ export default function DelegationJob({ job, isDraftDisabled, onCancel, onInsert
     const active = isActive(job);
     const completed = job.status === 'completed';
     const replyWasSent = job.mode === 'resolve_reply' && job.delivery_state === 'delivered';
-    const canInsertDraft = Boolean(result?.reply_draft) && job.mode !== 'resolve_reply';
+    // A Resolve & reply report offers its reply as a draft only when the workspace's AI reply mode held it.
+    const canInsertDraft = Boolean(result?.reply_draft) && (job.mode !== 'resolve_reply' || job.delivery_state === 'held_for_operator');
     const freshnessReview = job.freshness_review?.required ? job.freshness_review : null;
     const freshnessReviewId = freshnessReview?.latest_last_message_id || null;
     const statusLabel = job.status === 'revoked' && job.delivery_state === 'membership_lost'

@@ -1,5 +1,5 @@
 import {ticketScopeSql} from '../modules/access/ticket-scope';
-import { requireValue, type DraftInput, type LocalEnv } from '../modules/local-computer/contracts';
+import { HELD_FOR_OPERATOR, requireValue, type DraftInput, type LocalEnv } from '../modules/local-computer/contracts';
 import { copyLocalAttachments, type LocalAttachment } from './local-computer-media';
 
 export async function prepareLocalDraft(env: LocalEnv, input: DraftInput) {
@@ -22,7 +22,8 @@ export async function prepareLocalDraft(env: LocalEnv, input: DraftInput) {
     const job = await env.DB.prepare(sql).bind(...args).first<any>();
     requireValue(job, 'Draft unavailable or conversation changed; review again', 409);
     const result = JSON.parse(job.result);
-    const proposal = proposalId === null ? (job.mode !== 'resolve_reply' && result.reply_draft
+    // A `resolve_reply` report offers its legacy draft only when the AI reply mode held its automatic delivery.
+    const proposal = proposalId === null ? ((job.mode !== 'resolve_reply' || job.delivery_state === HELD_FOR_OPERATOR) && result.reply_draft
         ? { body: result.reply_draft, attachment_ids: result.attachment_ids } : null)
         : result.replies?.find((reply: any) => reply.id === proposalId);
     requireValue(proposal, 'Reply proposal not found', 404);

@@ -58,7 +58,9 @@ resumes notes and exact-ID reply admission after a crash. When authority is gone
 membership lost) the effect is blocked and `delivery_state='authorization_lost'` is recorded while the report
 stays terminal; it is never reopened for input that nobody could act on. A reply that fails delivery reopens the
 report as `needs_input` with `delivery_state='review'` only while no replacement delegation holds the
-conversation. Each effect is swept independently, so one failing row cannot abort the sweep or the scheduled
+conversation. Outside AI reply mode `auto` a verified `resolve_reply` reply is never delivered automatically: its
+receipt and admission are gated by the mode in the same statements, the report stays `completed` with
+`delivery_state='held_for_operator'`, and it offers the reply as its operator's draft to send. Each effect is swept independently, so one failing row cannot abort the sweep or the scheduled
 recoveries after it. Legacy imports use the same vocabulary: started delegations arrive
 `revoked`/`authority_revoked`, queued ones `cancelled`/`held`. Tests inject a post-delivery/pre-note failure and
 prove one message plus one note after recovery. Verification: node tests/journeys/delegation-computers.mjs.

@@ -3,6 +3,7 @@ import type {Env} from '../../platform/env'
 import {cronRoom} from '../../platform/cron-budget'
 import {contactAvailableSql} from '../conversations/contact-privacy'
 import {isAutomaticInboundEmail} from './inbound-origin'
+import {customerAiSql} from '../ai-support/reply-mode'
 
 /** Operator activity is grouped after 60 seconds without transcript activity.
  * Reads are revision frontiers per recipient. Assignment-mail preferences do not
@@ -44,7 +45,7 @@ export async function batchOperatorActivity(env:Env,now:number,projectId?:string
     WHERE c.id=? AND c.project_id=? AND c.resolved_at IS NULL AND ${contactAvailableSql()} AND ${ticketScopeSql('m.user_id')}
     AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)
     AND (c.assigned_to=m.user_id OR (c.assigned_to IS NULL AND p.is_notified_on_unassigned_activity=1
-     AND NOT EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL)))
+     AND NOT (EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL) AND ${customerAiSql('c.project_id')})))
     AND a.revision>coalesce(r.revision,0) GROUP BY c.id,m.user_id`)
     .bind(batch,batch,now,batch,row.conversation_id,row.project_id)
   ])

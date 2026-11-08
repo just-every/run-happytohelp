@@ -12,7 +12,7 @@ export type DashboardBootstrapInput = {
     managementKind?: 'contacts' | 'macros' | 'agents';
 };
 export type InitialReadOutcome = { result: any } | {
-    error: { status?: number; message: string; data?: any };
+    error: { status?: number; message: string; data?: any; retryAfter?: number };
 };
 export type InitialConversation = {
     projectId: string;

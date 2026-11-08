@@ -15,6 +15,7 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from './platform/env'
 import { projectCors } from './platform/cors'
+import { overloadRetryAfter,overloadedInboxSearch,retryOverloadedSearch,inboxSearchRead } from './platform/d1-overload'
 import { ownerClaim } from './modules/identity/owner-claim'
 import { signout } from './modules/identity/signout'
 import { demoOwnerClaim } from './demo/owner-claim'
@@ -74,6 +75,7 @@ app.route('/api/v1',scopedApi)
 app.route('/api/helpscout',helpscoutWebhooks)
 app.use('/api/*',async(c,next)=>{if(c.req.path==='/api/v1'||c.req.path.startsWith('/api/v1/'))return next();return projectCors(c,next)})
 app.onError((error,c) => {
+ if(overloadedInboxSearch(c.req.raw,error))return rejectedResponse(c.req.raw,c.json({error:'Search is busy. Try again in a few seconds.'},503,{'Retry-After':String(overloadRetryAfter)}))
  if(error instanceof AiConfigurationError)return rejectedResponse(c.req.raw,c.json({error:error.message,code:error.code},error.status))
  // An exception carrying its own response (e.g. 429 with Retry-After) keeps its headers and JSON body.
  if(error instanceof HTTPException) return rejectedResponse(c.req.raw,error.res?error.getResponse():c.json({error:error.message},error.status))
@@ -130,3 +132,7 @@ registerLocalComputerRoutes(app,localComputerIntegration)
 
 // Drain small rejected uploads so the Worker proxy preserves the HTTP response.
 app.notFound(c => notFoundResponse(c.req.raw))
+// Every caller (the Worker entry and the dashboard bootstrap's first inbox page) dispatches here,
+// so an overloaded inbox search is retried as a whole, middleware and authentication included.
+const dispatchOnce=app.fetch
+app.fetch=(request,env,executionCtx)=>inboxSearchRead(request)?retryOverloadedSearch(request,()=>dispatchOnce(request,env,executionCtx)):dispatchOnce(request,env,executionCtx)

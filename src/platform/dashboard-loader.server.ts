@@ -22,10 +22,12 @@ export async function dashboardBootstrap(input: DashboardBootstrapInput): Promis
             }), bindings);
             const body = await response.json() as any;
             if (response.ok) return { result: body };
+            const retryAfter = Number(response.headers.get('Retry-After'));
             return { error: {
                 status: response.status,
                 message: body.error?.message || body.error || `Request failed (${response.status})`,
                 data: body,
+                ...(retryAfter > 0 ? { retryAfter } : {}),
             } };
         } catch (error) {
             return { error: { message: error instanceof Error ? error.message : String(error) } };

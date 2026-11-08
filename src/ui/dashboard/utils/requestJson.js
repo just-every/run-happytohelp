@@ -26,6 +26,8 @@ async function requestJson(url, options = {}, { signal, timeoutMs = DEFAULT_READ
             const payload = await response.json().catch(() => null);
             const error = new Error(payload?.message || (typeof payload?.error === 'string' ? payload.error : payload?.error?.message) || `Request failed (${response.status}). Please try again.`);
             error.status = response.status;
+            const retryAfter = Number(response.headers.get('Retry-After'));
+            if (retryAfter > 0) error.retryAfter = retryAfter;
             if (payload && typeof payload === 'object') Object.assign(error, payload);
             throw error;
         }

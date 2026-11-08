@@ -19,8 +19,10 @@ const held=`s.project_id=?1 AND (${identifiedHeld}
 // receivingMailbox does: an enabled inbound address, or a connected mailbox's address, of a workspace not deleted.
 const readerWorkspace=`?1 IN (SELECT e.project_id FROM email_settings e WHERE lower(e.inbound_address)=lower(?4) AND e.is_enabled=1 AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=e.project_id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)
  UNION ALL SELECT a.project_id FROM mailbox_addresses a JOIN mailbox_connections m ON m.id=a.mailbox_id AND m.project_id=a.project_id WHERE lower(a.address)=lower(?4) AND m.status='connected' AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=a.project_id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL))`
-// The Amazon SES reader's receipt names a private transport copy and the sender while it is read. A receipt still in
-// flight has no workspace yet; it is this workspace's only when this workspace receives on the reader's mailbox.
+// The Amazon SES reader's receipt names a private transport copy and the sender while it is read. The reader records
+// the workspace it reads a receipt for with its private copy (legacy-mail-s3/admit.ts), so the receipt is that
+// workspace's whether or not the reader is still configured. One read before that has no workspace until the reader
+// records it (legacy-mail-s3/list.ts); until then it is this workspace's when this workspace receives on the mailbox.
 const legacyReceipt=`(l.project_id=?1 OR l.project_id IS NULL AND ${readerWorkspace}) AND (lower(l.sender_address) IN (${addresses}) OR l.conversation_id IN (SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2))`
 const readerMailbox=(env:Env)=>legacyMailS3Config(env)?.mailbox??null
 /** Enter suspended objects into the existing resumable erasure delete stage;

@@ -116,32 +116,38 @@ and recommends dropping them, exporting, then recreating them. It also says a
 running export blocks database requests. Use the helper rather than plain
 `wrangler d1 export` for this installation.
 
-The helper reads the original `inbox_message_search` definition from
-`sqlite_master` and checks that it is an FTS5 table backed by `messages`. Before
-changing it, it writes the private recovery file described below. It then runs:
+The installation has two derived search indexes: `inbox_message_search`, an FTS5
+table backed by `messages`, and `inbox_contact_search`, an FTS5 table backed by the
+`inbox_contact_identity` view of `contacts`. The helper reads each original
+definition from `sqlite_master`, checks that it is FTS5 over that content, and
+reads its FTS5 settings (such as `secure-delete`). Before changing them, it writes
+the private recovery file described below. It then runs:
 
 ```sql
 DROP TABLE IF EXISTS "inbox_message_search";
+DROP TABLE IF EXISTS "inbox_contact_search";
 ```
 
-This removes only the derived search table and its FTS shadow tables. Message
-rows, business tables and message-maintenance triggers stay in place. Search is
-unavailable during the gap, and message writes can fail because those triggers
-still reference the missing search table. The entire drop/export/rebuild
-sequence spans separate requests; it is not an atomic transaction.
+This removes only the derived search tables and their FTS shadow tables. Message
+and contact rows, the view, business tables and the maintenance triggers stay in
+place. Search is unavailable during the gap, and message or contact writes can fail
+because those triggers still reference the missing search tables. The entire
+drop/export/rebuild sequence spans separate requests; it is not an atomic transaction.
 
-After Wrangler exports the remaining database, the helper recreates the search
-table with its saved original `CREATE VIRTUAL TABLE` statement and runs:
+After Wrangler exports the remaining database, the helper recreates each search
+table with its saved original `CREATE VIRTUAL TABLE` statement and settings, and runs:
 
 ```sql
 INSERT INTO "inbox_message_search"("inbox_message_search") VALUES('rebuild');
+INSERT INTO "inbox_contact_search"("inbox_contact_search") VALUES('rebuild');
 ```
 
-The rebuild indexes the retained messages, including historical rows. The helper
-attempts this restoration even when export fails. After successful restoration
-it removes the recovery file, then appends the same original definition and
-rebuild to the SQL backup, after the authoritative data. Accept the backup only
-when the command exits successfully and prints **Private SQL backup written**.
+The rebuild indexes the retained messages and contacts, including historical rows.
+The helper attempts this restoration even when export fails. After successful
+restoration it removes the recovery file, then appends the same original
+definitions, settings and rebuilds to the SQL backup, after the authoritative data.
+Accept the backup only when the command exits successfully and prints **Private SQL
+backup written**.
 
 For a local backup, first stop dev/preview with `rer dev --stop` or
 `rer preview --stop`, then use `--local` in place of `--remote`. The helper
@@ -159,13 +165,15 @@ execute it against the same database and configuration, for example:
 pnpm exec wrangler d1 execute <prefix>-db --config wrangler.jsonc --remote --file private-backup.sql.search-index-recovery.sql
 ```
 
-The recovery file drops any partially recreated search table, recreates its
-original definition and rebuilds it from `messages`. It is safe to rerun while
-writers remain stopped. Use `--local` and the same `--persist-to` for local
-recovery. After it succeeds, check index consistency against message content:
+The recovery file drops any partially recreated search tables, recreates their
+original definitions and settings and rebuilds them from `messages` and `contacts`.
+It is safe to rerun while writers remain stopped. Use `--local` and the same
+`--persist-to` for local recovery. After it succeeds, check each index's
+consistency against its content:
 
 ```sh
 pnpm exec wrangler d1 execute <prefix>-db --config wrangler.jsonc --remote --command "INSERT INTO inbox_message_search(inbox_message_search,rank) VALUES('integrity-check',1);"
+pnpm exec wrangler d1 execute <prefix>-db --config wrangler.jsonc --remote --command "INSERT INTO inbox_contact_search(inbox_contact_search,rank) VALUES('integrity-check',1);"
 ```
 
 Then remove the recovery file and discard the interrupted SQL backup; export
@@ -220,10 +228,11 @@ complete export of your Cloudflare account.
    Keep traffic and writers stopped on the destination. Import the cleaned SQL
    with `pnpm exec wrangler d1 execute <restore-db> --config <restore-config> --remote --file restore.sql`
    into an empty database, then restore the matching R2 bytes and metadata.
-   Search is derived: the restore must recreate `inbox_message_search` with its
-   saved definition and run the `rebuild` statement above after loading messages.
-   Check search integrity with the command above against the destination; do
-   not restore FTS shadow tables as ordinary application data. Reapplying an
+   Search is derived: the restore must recreate `inbox_message_search` and
+   `inbox_contact_search` with their saved definitions and settings and run the
+   `rebuild` statements above after loading messages and contacts (the cleaned SQL
+   ends with them). Check search integrity with the commands above against the
+   destination; do not restore FTS shadow tables as ordinary application data. Reapplying an
    already recorded migration does not rebuild a missing index.
 
 3. Export the restored data again with `node scripts/export-d1.mjs`, selecting

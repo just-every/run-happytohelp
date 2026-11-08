@@ -30,8 +30,9 @@ export function deltaBatch(db:D1Database,projectId:string,runId:string,group:Dec
   if(d.status==='mapped'||d.status==='updated')for(const m of d.mapped)if(m.hold)holds.push([`${runId}:${d.source.table}:${d.source.sourceId}`,runId,d.source.table,d.source.sourceId,m.hold])
   state.push(...d.state)
   for(const c of [...d.conflicts,...d.listed])conflicts.push([runId,c.sourceTable,c.sourceId,c.targetTable,c.targetKey,c.reason])
-  // An erased contact's rows are journaled as erasure leaves them: digest kept, verbatim copy cleared.
-  journal.push([runId,d.source.table,d.source.sourceId,d.source.rowDigest,d.status==='erased'?'{}':stable(d.source.row),d.target.table,d.target.key,d.status])
+  // An erased contact's rows are journaled as erasure leaves them: digest kept, verbatim copy cleared. Skipped rows are
+  // legacy's copies of mail the seed's reader already holds: replay reads only the digest, so they keep no copy either.
+  journal.push([runId,d.source.table,d.source.sourceId,d.source.rowDigest,d.status==='erased'||d.status==='skipped'?'{}':stable(d.source.row),d.target.table,d.target.key,d.status])
  }
  // Each fence the batch inserts is marked first, only where no fence exists yet; cleanup deletes the marked ones alone.
  const fenceStatements=(ids:string[])=>[

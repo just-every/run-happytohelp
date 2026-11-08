@@ -1,0 +1,2 @@
+Base archive has no Git history. Repeat with --base <checkout> containing the recorded and target commits; no files were refreshed.
+refresh-base: failed (exit 4)

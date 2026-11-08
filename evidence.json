@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "8920cdb579782220c05ba4c8735106567346d00b",
+      "bytes": 1647,
+      "path": "PIN-ONLY.patch",
+      "sha256": "70fe1a3e0bdc6d14b9fc1d18bf7eea109bf1cbf25bcb11855c3c0e08973b1f8e"
+    },
+    {
+      "blob": "07bb8cdbf7f5810ccd98357098563390f3d94db9",
+      "bytes": 2074,
+      "path": "PLAN.md",
+      "sha256": "4330c9dadef381a90a23eacffbf6b86755edc1a44a42c21757ce02ae2fcbc644"
+    },
+    {
+      "blob": "1b6b1e7169d5e6fcdc0b3b373ca75e60d9123c3d",
+      "bytes": 2800,
+      "path": "RECEIPT.json",
+      "sha256": "f1dde2a1ce6552fab7b94cbe7674161962e120213116607394ee97df5982769e"
+    },
+    {
+      "blob": "95287aa355e505a9ffa415cd2b631fe1582eab03",
+      "bytes": 5623,
+      "path": "REPORT.md",
+      "sha256": "4596ff8a0bfc805bdd425d796477d6dce87f1a1993345b2d9c423e43874adb93"
+    },
+    {
+      "blob": "6d258bb067c96504bde39aee78ede1955d1c6d77",
+      "bytes": 4879,
+      "path": "pnpm-add.log",
+      "sha256": "db6f11e016d5a1aba23d9827e3deea6c5599194c649952fe20675761fe9c0baf"
+    },
+    {
+      "blob": "53f301f822e877a8233bb6df3082e68d31903093",
+      "bytes": 162,
+      "path": "refresh-base-archive.log",
+      "sha256": "5cfe4c2e11084b9550f01dca665cb8b839b01df4c357749a7f2d2a0c49609cb9"
+    },
+    {
+      "blob": "b8221b3be2b18315bca91df95ba80b32488f3f53",
+      "bytes": 225,
+      "path": "refresh-base.log",
+      "sha256": "4fbb7145511b09785db804b7e170949090c036bb72d5bca2d04e9e121dad0c3f"
+    },
+    {
+      "blob": "9070eee2a235e5a02501e713bf8fba1ea91c9aaf",
+      "bytes": 139953,
+      "path": "rer-verify.log",
+      "sha256": "8865f6969793dedac6e1db5d3bddef3c06075d158e6fbc4cdab4320418adbebf"
+    }
+  ],
+  "product_branch": "cloud/hh-rer-pin-0102-1",
+  "product_head": "07d279f71b1f694e211253e8ecf11eb454f0a902",
+  "ref": "refs/heads/evidence/hh-rer-pin-0102-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-rer-pin-0102-1"
+}

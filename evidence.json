@@ -1,0 +1,88 @@
+{
+  "files": [
+    {
+      "blob": "8920cdb579782220c05ba4c8735106567346d00b",
+      "bytes": 1647,
+      "path": "PIN-ONLY.patch",
+      "sha256": "70fe1a3e0bdc6d14b9fc1d18bf7eea109bf1cbf25bcb11855c3c0e08973b1f8e"
+    },
+    {
+      "blob": "75b664577bffd8e384ce8f0f36d6e5aa295827e6",
+      "bytes": 2353,
+      "path": "PLAN.md",
+      "sha256": "352d9b56b5ba1b11262a22d2d437a7c2f5d4563dba4b94e027881be74516f2e3"
+    },
+    {
+      "blob": "8920cdb579782220c05ba4c8735106567346d00b",
+      "bytes": 1647,
+      "path": "PRIOR-PIN-ONLY.patch",
+      "sha256": "70fe1a3e0bdc6d14b9fc1d18bf7eea109bf1cbf25bcb11855c3c0e08973b1f8e"
+    },
+    {
+      "blob": "1b6b1e7169d5e6fcdc0b3b373ca75e60d9123c3d",
+      "bytes": 2800,
+      "path": "PRIOR-RECEIPT.json",
+      "sha256": "f1dde2a1ce6552fab7b94cbe7674161962e120213116607394ee97df5982769e"
+    },
+    {
+      "blob": "95287aa355e505a9ffa415cd2b631fe1582eab03",
+      "bytes": 5623,
+      "path": "PRIOR-REPORT.md",
+      "sha256": "4596ff8a0bfc805bdd425d796477d6dce87f1a1993345b2d9c423e43874adb93"
+    },
+    {
+      "blob": "53f301f822e877a8233bb6df3082e68d31903093",
+      "bytes": 162,
+      "path": "PRIOR-refresh-base-archive.log",
+      "sha256": "5cfe4c2e11084b9550f01dca665cb8b839b01df4c357749a7f2d2a0c49609cb9"
+    },
+    {
+      "blob": "b8221b3be2b18315bca91df95ba80b32488f3f53",
+      "bytes": 225,
+      "path": "PRIOR-refresh-base.log",
+      "sha256": "4fbb7145511b09785db804b7e170949090c036bb72d5bca2d04e9e121dad0c3f"
+    },
+    {
+      "blob": "9c3ed34a0886080d19c1672c49079f5a358f8c97",
+      "bytes": 2591,
+      "path": "RECEIPT.json",
+      "sha256": "313a1c0dba6a7d606c0f875ed35d45018926a2ec8375cb3628888211a65c53f0"
+    },
+    {
+      "blob": "e5774fe78417ba540980c08f71f211219b865418",
+      "bytes": 6586,
+      "path": "REPORT.md",
+      "sha256": "cc9782897a0cfcb3a0dcf19ddc9c61fa7815830745ad3949fa45971a017d81d4"
+    },
+    {
+      "blob": "3e825221adf8dc7cccdef655d96ed9e31b146e80",
+      "bytes": 272,
+      "path": "bundle-verify.log",
+      "sha256": "7ddc2143871d2dda0b126f96e517b7e6a668ca1026830be84b30ade2f7ab84d9"
+    },
+    {
+      "blob": "f4e3e853bce006e449de74d2fe6d1bded5564bbc",
+      "bytes": 24,
+      "path": "node-toolchain-install.log",
+      "sha256": "f6b3015540a8faaeab0d34bc590d69ab23310b3000fe44bf48780dbb883292f1"
+    },
+    {
+      "blob": "c2b769ee47edbb04111482999a0de1b91c1eb301",
+      "bytes": 4995,
+      "path": "pin-install.log",
+      "sha256": "aa4e344c72ab3baa20a9cdbbe3099906980409fe6b978dd45c4db65a992cd874"
+    },
+    {
+      "blob": "f383ffeba6e182ed0d8da1860a70fa070bc20c80",
+      "bytes": 153,
+      "path": "typecheck.log",
+      "sha256": "b6a98b89460eb473368aa377553226c67ed438e91a0e246c24c13835bbecc386"
+    }
+  ],
+  "product_branch": "cloud/hh-rer-pin-0102-2",
+  "product_head": "07d279f71b1f694e211253e8ecf11eb454f0a902",
+  "ref": "refs/heads/evidence/hh-rer-pin-0102-2",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-rer-pin-0102-2"
+}

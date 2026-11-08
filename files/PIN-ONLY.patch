@@ -1,0 +1,48 @@
+diff --git a/package.json b/package.json
+index e5c35af6..6ae528e2 100644
+--- a/package.json
++++ b/package.json
+@@ -132,7 +132,7 @@
+   "devDependencies": {
+     "@cloudflare/vite-plugin": "1.54.5",
+     "@cloudflare/workers-types": "5.20260908.1",
+-    "@runeditrun/rer": "0.2.101",
++    "@runeditrun/rer": "0.2.102",
+     "@tanstack/router-generator": "1.167.40",
+     "@types/react": "19.2.18",
+     "@types/react-dom": "19.2.7",
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index 4b388850..3ccc38ff 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -178,8 +178,8 @@ importers:
+         specifier: 5.20260908.1
+         version: 5.20260908.1
+       '@runeditrun/rer':
+-        specifier: 0.2.101
+-        version: 0.2.101
++        specifier: 0.2.102
++        version: 0.2.102
+       '@tanstack/router-generator':
+         specifier: 1.167.40
+         version: 1.167.40
+@@ -1038,8 +1038,8 @@ packages:
+   '@rolldown/pluginutils@1.0.1':
+     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
+ 
+-  '@runeditrun/rer@0.2.101':
+-    resolution: {integrity: sha512-nQqhcPDayywNy2bVjO78tbRoTPERP45kcVkehs0/7jUFk/myz70IuqlIVvMnJioWTvU/FNBOU4MfjOTs26Yc6A==}
++  '@runeditrun/rer@0.2.102':
++    resolution: {integrity: sha512-ktmnlwPifit2JGRZzuC7gFeKcHCKLbYl2lCkdgN/1jA8wJw9IziFUiFKNrUiiYgm6Km2/9zOJYPPxZg62FuErQ==}
+     engines: {node: '>=22'}
+     hasBin: true
+ 
+@@ -3545,7 +3545,7 @@ snapshots:
+ 
+   '@rolldown/pluginutils@1.0.1': {}
+ 
+-  '@runeditrun/rer@0.2.101': {}
++  '@runeditrun/rer@0.2.102': {}
+ 
+   '@selderee/plugin-htmlparser2@0.12.0(selderee@0.12.0)':
+     dependencies:

@@ -1,0 +1,11 @@
+# Plan for hh-rer-pin-0102-2
+
+1. Configure fleet identity before work. Refresh the supplied launcher, install decrypted-bundle Git authentication and the product push guard, and read launcher/repository rules. Complete.
+2. Fresh blobless clone of the sole declared repository, create cloud/hh-rer-pin-0102-2 from origin/main, set local identity and install fleet commit hooks. Complete at 07d279f71b1f694e211253e8ecf11eb454f0a902, newer than required df2868c5.
+3. Retrieve prior report and exact-pin patch from the declared repository's evidence/hh-rer-pin-0102-1 ref. Run pnpm add -D -E @runeditrun/rer@0.2.102 and compare the patch. Complete; byte-identical.
+4. Obtain history-bearing Base source and verify rer-v0.2.102 -> bb81810f74ae5cbad9cd786ac84ee738306f63de and ancestry of c51d0ed40f64d44ba4c4c9ae2c7728ef60a4dd84. BLOCKED: the cloud adaptation forbids cloning every repository other than just-every/run-happytohelp and permits other repository reads only through gh api. The local-only brief requires a full-history Base clone. No provided ruling permits it. Prior archive/API findings are preserved, not re-executed.
+5. After permitted source acquisition, run rer refresh-base with --base and the immutable target SHA; generate door clauses only if diagnosed stale; review machine-produced Base diff; run rer verify. Not reached.
+6. Run only touched move-in apply/door tests and move-in-admission journey, plus typecheck, one heavy command at a time. Typecheck completed; refreshed-source tests deferred because no refreshed candidate exists.
+7. Contract generator write/check with generated views left uncommitted, source lock last and checks, preserving every CONTRACT Status/Gap/Evidence. Deferred pending refresh; no incomplete source lock was sealed.
+8. Audit all candidate identities and trailers, commit with explicit fleet environment and active hooks, push a single complete candidate through cloud-push.py, then observe exact-SHA Verify via REST within the ten-call budget. Deferred; no product candidate exists. No PR, dispatch, rerun or main push.
+9. Preserve actual pin patch, full report, actual receipt and logs outside the clone; verify baseline bundle; explicitly select only non-secret regular packet files for evidence publication. Complete locally; evidence transport result is printed separately in the terminal return.

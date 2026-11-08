@@ -1,0 +1,2 @@
+Refresh requires an immutable full 40-character Base commit. Resolve the release tag with git -C <base-checkout> rev-parse <tag>^{commit}, then repeat with --ref <commit> --base <base-checkout>.
+refresh-base: failed (exit 4)

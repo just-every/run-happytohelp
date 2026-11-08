@@ -1,0 +1,4 @@
+
+> happytohelp@0.4.13 typecheck /home/agent/rer-consolidation/work/hh-rer-pin-0102-2/run-happytohelp
+> node scripts/generate-routes.mjs && tsc --noEmit
+

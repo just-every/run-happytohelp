@@ -1,0 +1,120 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 10.12.4 → 12.18.0.   │
+   │   Changelog: https://pnpm.io/v/12.18.0   │
+   │     To update, run: pnpm add -g pnpm     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+
+Progress: resolved 0, reused 0, downloaded 1, added 0
+ WARN  deprecated @fortawesome/react-fontawesome@0.2.6: v0.2.x is no longer supported. Unless you are still using FontAwesome 5, please update to v3.1.1 or greater.
+Progress: resolved 41, reused 0, downloaded 40, added 0
+Progress: resolved 84, reused 0, downloaded 69, added 0
+Progress: resolved 139, reused 0, downloaded 124, added 0
+Progress: resolved 205, reused 0, downloaded 190, added 0
+Progress: resolved 258, reused 0, downloaded 243, added 0
+Progress: resolved 324, reused 0, downloaded 309, added 0
+Progress: resolved 380, reused 0, downloaded 351, added 0
+Progress: resolved 438, reused 0, downloaded 377, added 0
+Progress: resolved 485, reused 0, downloaded 398, added 0
+Progress: resolved 540, reused 0, downloaded 455, added 0
+Progress: resolved 599, reused 0, downloaded 515, added 0
+Progress: resolved 609, reused 0, downloaded 526, added 0
+ WARN  2 deprecated subdependencies found: core-js@3.18.3, node-domexception@1.0.0
+Packages: +524
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 609, reused 0, downloaded 526, added 523
+Progress: resolved 609, reused 0, downloaded 526, added 524, done
+.../esbuild@0.28.1/node_modules/esbuild postinstall$ node install.js
+.../node_modules/workerd postinstall$ node install.js
+.../esbuild@0.28.1/node_modules/esbuild postinstall: Done
+.../node_modules/workerd postinstall: Done
+ WARN  Issues with peer dependencies found
+.
+└─┬ react-timeago 7.2.0
+  └── ✕ unmet peer react@"^16.0.0 || ^17.0.0 || ^18.0.0": found 19.2.8
+
+dependencies:
++ @anthropic-ai/sdk 0.111.0
++ @floating-ui/react 0.26.28
++ @fortawesome/fontawesome-svg-core 6.7.2
++ @fortawesome/free-solid-svg-icons 6.7.2
++ @fortawesome/react-fontawesome 0.2.6 deprecated
++ @google/genai 2.11.0
++ @tanstack/react-router 1.170.41
++ @tanstack/react-start 1.168.60
++ autosize 6.0.1
++ bootstrap 5.3.8
++ classnames 2.5.1
++ css-color-names 1.0.1
++ date-fns 2.30.0
++ feather-icons 4.29.2
++ h2h-widget-external-links <- remark-external-links 9.0.1
++ h2h-widget-gfm <- remark-gfm 4.0.1
++ h2h-widget-markdown <- react-markdown 9.1.0
++ highlight.js 10.7.3
++ hono 4.13.11
++ html-to-text 10.0.1
++ i18n-iso-countries 6.8.0
++ initials 3.1.2
++ khroma 1.4.1
++ moment 2.31.0
++ moment-timezone 0.5.48
++ object-merge-advanced 14.2.4
++ openai 6.46.0
++ postal-mime 4.0.8
++ pretty-bytes 5.6.0
++ prop-types 15.8.1
++ react 19.2.8
++ react-bootstrap 2.10.10
++ react-cool-onclickoutside 1.7.0
++ react-dom 19.2.8
++ react-dropzone 14.4.1
++ react-hook-form 7.88.0
++ react-infinite-scroll-hook 4.1.1
++ react-markdown 6.0.3
++ react-scroll-to-bottom 4.2.0
++ react-shadow 20.6.0
++ react-textarea-autosize 8.5.9
++ react-timeago 7.2.0
++ remark-external-links 8.0.0
++ remark-gfm 1.0.0
++ turndown 7.2.4
++ ua-parser-js 1.0.41
++ uqr 0.1.2
++ use-file-input 1.0.0
++ use-window-focus 1.5.0
++ uuid 14.0.1
++ ws 8.21.0
++ zod 4.6.6
+
+devDependencies:
++ @cloudflare/vite-plugin 1.54.5
++ @cloudflare/workers-types 5.20260908.1
++ @runeditrun/rer 0.2.102
++ @tanstack/router-generator 1.167.40
++ @types/react 19.2.18
++ @types/react-dom 19.2.7
++ @vitejs/plugin-react 6.1.1
++ axe-core 4.13.0
++ esbuild 0.28.1
++ miniflare 5.20260907.0-alpha
++ mysql2 3.24.6
++ playwright 1.63.0-alpha-2026-08-31
++ sass 1.104.1
++ typescript 5.9.3
++ vite 8.2.4
++ wrangler 4.129.1
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: @google/genai, @parcel/watcher, core-js,            │
+│   core-js-pure, protobufjs.                                                  │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Done in 20.3s using pnpm v10.12.4

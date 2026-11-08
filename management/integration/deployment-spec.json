@@ -1074,6 +1074,12 @@
       "name": "311_inbox_message_secure_delete.sql",
       "sha256": "452eff9cd48f852d6aad178fdc983657f6e27338c731d9851d59c229ad66d2b3",
       "sql": "-- Message search removes the terms of a deleted or rewritten message (an erased message's content)\n-- from the index's storage rather than masking them until segments merge, as the contact index does\n-- (310_inbox_contact_search.sql). It applies to deletes from now on; nothing is rebuilt or rewritten.\nINSERT INTO inbox_message_search(inbox_message_search,rank) VALUES('secure-delete',1);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "312_agent_door_retired_refs.sql",
+      "sha256": "508ee03f99af16e57cfce045e7430015be220bff72975a3fbf78c6dce67e09cb",
+      "sql": "-- Base bb81810f74ae5cbad9cd786ac84ee738306f63de: agent-door retirement suppression.\n-- Earlier door columns and relay objects are already added by migration 298.\nCREATE TABLE IF NOT EXISTS agent_door_retired_refs (digest TEXT PRIMARY KEY, marker TEXT NOT NULL);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

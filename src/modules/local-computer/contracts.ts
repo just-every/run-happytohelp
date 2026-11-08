@@ -3,6 +3,8 @@ import { HTTPException } from 'hono/http-exception';
 export type LocalEnv = { DB: D1Database; FILES: R2Bucket };
 export type Principal = { userId: string; projectId: string };
 export type Mode = 'investigate' | 'resolve' | 'resolve_reply';
+/** `local_jobs.delivery_state` of a verified `resolve_reply` whose automatic delivery the AI reply mode held: the operator may send it themselves. */
+export const HELD_FOR_OPERATOR = 'held_for_operator';
 export type DraftInput = { projectId: string; conversationId: string; operatorId: string; jobId: string;
   proposalId: string | null; expectedRevision: number; expectedLastMessageId: string | null; guard?: {sql:string;args:unknown[]} };
 export interface Integration {
@@ -18,7 +20,9 @@ export interface Integration {
   followUpGuard(): string;
   deliveryRevision(env:LocalEnv,projectId:string,conversationId:string):Promise<number>;
   prepareDraft(env: LocalEnv, input: DraftInput): Promise<{ body: string; attachments: Record<string, unknown>[] }>;
-  deliver(env: LocalEnv, input: { projectId: string; conversationId: string; operatorId: string; requestId: string; expectedRevision:number; expectedLastMessageId: string | null; body: string; attachmentIds: string[]; resolve: boolean; source?: {jobId:string;proposalId:string|null} }): Promise<{ messageId: string }>;
+  deliver(env: LocalEnv, input: { projectId: string; conversationId: string; operatorId: string; requestId: string; expectedRevision:number; expectedLastMessageId: string | null; body: string; attachmentIds: string[]; resolve: boolean; source?: {jobId:string;proposalId:string|null};
+    /** An automatic delivery's predicate (no `c` alias), required by the admitting statement and its replay lookup; `refused` statements run in that same transaction. */
+    admission?: {sql:string;args:unknown[];refused:(messageId:string)=>D1PreparedStatement[]} }): Promise<{ messageId: string }>;
 }
 export type App = Hono<any>;
 export const now = () => new Date().toISOString();

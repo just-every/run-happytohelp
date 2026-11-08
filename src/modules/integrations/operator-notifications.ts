@@ -13,6 +13,7 @@ import {recipientReplyAddress} from './email-reply-address'
 import {renderConversationDigest} from './email-content'
 import {batchOperatorActivity} from './operator-activity'
 import {deliverNotification,loopSuppressionHeaders,recordedNotification} from './notification-delivery'
+import {customerAiSql} from '../ai-support/reply-mode'
 
 export interface AssignmentNotification {
  id:string;projectId:string;conversationId:string;actorId:string;previousAssignee:string|null;assignee:string|null
@@ -43,7 +44,7 @@ async function recipient(env:Env,row:Notification){
  WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND ${ticketScopeSql('m.user_id')} AND (?='assignment' OR c.resolved_at IS NULL)
  AND NOT EXISTS(SELECT 1 FROM notification_preferences np WHERE np.project_id=c.project_id AND np.user_id=u.id AND np.kind='customer_updated' AND np.email=0)
  AND (c.assigned_to=u.id OR (?='unread' AND c.assigned_to IS NULL AND p.is_notified_on_unassigned_activity=1
- AND NOT EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL)))`)
+ AND NOT (EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL) AND ${customerAiSql('c.project_id')})))`)
  .bind(row.user_id,row.conversation_id,row.project_id,row.kind,row.kind).first<Recipient>()
 }
 async function sendNotification(env:Env,row:Notification){

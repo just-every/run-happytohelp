@@ -11,7 +11,7 @@ export const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0
 async function draftRuntime(){
  const app=await startApp({captureQueue:true}),db=app.db,bucket=await app.files
  const request=async(path,body,token,headers={},method=body===undefined?'GET':'POST')=>{const response=await app.request(path,{body,token,headers,method});return {status:response.status,body:await response.json()}}
- const fixture=async({count=1,verified=true,mode='resolve',legacyOnly=false,followUpMode}={})=>{
+ const fixture=async({count=1,verified=true,mode='resolve',legacyOnly=false,followUpMode,replyMode}={})=>{
   const projectId=randomUUID(),userId=randomUUID(),conversationId=randomUUID(),contactId=randomUUID(),token=randomUUID()
   await db.batch([
    db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,?,?,?,1)').bind(projectId,'Draft test',randomUUID(),'http://localhost'),
@@ -24,6 +24,8 @@ async function draftRuntime(){
   const post=async(path,body,auth=token)=>{const response=await request(path,body,auth);assert.equal(response.status,200,JSON.stringify(response.body));return response.body.data}
   const pairing=await post(`/api/projects/${projectId}/local-agents/pairings`,{}),paired=await post('/api/local-agents/pair',{code:pairing.code,name:'Native draft fixture',provider:'codex',capabilities:[]})
   const base=`/api/projects/${projectId}/conversations/${conversationId}/delegations`
+  // The owner chooses the workspace's AI reply mode through the AI route before the computer reports.
+  if(replyMode){const response=await request(`/api/management/projects/${projectId}/ai`,{ai_reply_mode:replyMode},token,{},'PUT');assert.equal(response.status,200,JSON.stringify(response.body))}
   const job=await post(base,{request_id:randomUUID(),device_id:paired.device.id,mode,instructions:'Test fixture, no model execution.'}),claim=await post('/api/local-agents/claim',{claim_id:randomUUID()},paired.token)
   assert.equal(claim.id,job.id)
   const localAttachmentIds=[]
@@ -171,6 +173,23 @@ export async function adoptionJourney(){
   const l=await fixture({mode:'resolve_reply',legacyOnly:true})
   assert.equal((await one("SELECT status FROM local_receipts WHERE job_id=? AND proposal_id='legacy'",l.jobId)).status,'sent')
   const delivered=await l.media();assert.equal(delivered.length,1);assert.equal(delivered[0].uploaded_by,l.userId);assert.equal((await l.messages()).length,1);assert.deepEqual(await bytes(delivered[0].object_key),png)
+
+  // In draft (and off) the verified Resolve & reply is held for its operator: nothing reaches the customer, also not
+  // after a switch back to auto and the scheduled recovery; the operator adopts it and an ordinary Send admits it once.
+  for(const replyMode of ['draft','off']){
+   const h=await fixture({mode:'resolve_reply',legacyOnly:true,replyMode}),job=async()=>(await request(`/api/projects/${h.projectId}/conversations/${h.conversationId}/delegations`,undefined,h.token)).body.data.find(row=>row.id===h.jobId)
+   assert.deepEqual(await h.messages(),[],replyMode+': the held reply is not sent');assert.equal(await one('SELECT 1 FROM local_receipts WHERE job_id=?',h.jobId),null,'no delivery was started')
+   assert.equal((await job()).status,'completed');assert.equal((await job()).delivery_state,'held_for_operator')
+   assert.ok(await one("SELECT 1 FROM conversation_notes WHERE id=?",'delegation:'+h.jobId),'the report still records its note')
+   assert.equal((await request(`/api/management/projects/${h.projectId}/ai`,{ai_reply_mode:'auto'},h.token,{},'PUT')).status,200)
+   await runtime.app.scheduled();assert.deepEqual(await h.messages(),[],'switching back to auto sends nothing held')
+   const adopted=await h.adopt({proposal_id:null});assert.equal(adopted.status,200,JSON.stringify(adopted.body));assert.equal(adopted.body.data.body,h.result.reply_draft)
+   assert.deepEqual(await h.messages(),[],'Use never sends')
+   const send={localId:randomUUID(),content:adopted.body.data.body,expectedRevision:0,expectedLastMessageId:null,mediaIds:adopted.body.data.attachments.map(a=>a.id),authoring:adopted.body.data.authoring},path=`/api/conversations/${h.conversationId}/messages`
+   const sent=await request(path,send,h.token);assert.equal(sent.status,200,JSON.stringify(sent.body));assert.equal(sent.body.accepted,true)
+   assert.equal((await request(path,send,h.token)).body.duplicate,true)
+   const [message]=await h.messages();assert.equal((await h.messages()).length,1);assert.equal(message.actor_id,h.userId);assert.equal(message.actor_role,'owner');assert.deepEqual(await bytes((await h.media())[0].object_key),png)
+  }
  }finally{await runtime.close()}
  await delegatedTicketScopeAssertions()
 }

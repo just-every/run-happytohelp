@@ -1,7 +1,7 @@
 import {mailClaimSql} from '../knowledge/mail-door'
 import type {Env} from '../../platform/env'
 import type {EmailInput} from './email'
-import {auditStatement} from '../audit/record'
+import {auditStatement,type AuditEvent} from '../audit/record'
 import {settleHeldSchedule} from '../workflows/schedule-mail'
 
 /** A MAIL_API_KEY rotation stops the old key at once and rebuilds the app with the
@@ -43,9 +43,17 @@ export async function claimRerMailHold(env:Env,input:EmailInput){
  return claimed.meta.changes?row.updated_at:null
 }
 
-/** Ends every open hold of one notification's fan-out for good, whatever its age: replay never resends it. */
-export async function endRerMailHolds(env:Env,deliveryId:string,reason:string){
- await env.DB.prepare("UPDATE email_deliveries SET state='failed',error=?,updated_at=? WHERE id>=? AND id<? AND state='sending' AND error=?").bind(reason,Date.now(),deliveryId,deliveryId+';',rerMailHeld).run()
+/** Ends every open hold of one notification's fan-out for good, whatever its age: replay never resends it.
+ * Each hold it ends writes one audit event, `event`, batched with the end and written only while that hold is still open. */
+export async function endRerMailHolds(env:Env,deliveryId:string,reason:string,event:Pick<AuditEvent,'action'|'outcome'|'detail'>){
+ const now=Date.now(),held=(await env.DB.prepare("SELECT id,project_id,updated_at FROM email_deliveries WHERE id>=? AND id<? AND state='sending' AND error=?").bind(deliveryId,deliveryId+';',rerMailHeld).all<{id:string;project_id:string;updated_at:number}>()).results
+ for(const row of held){
+  const guard={sql:"EXISTS(SELECT 1 FROM email_deliveries WHERE id=? AND state='sending' AND error=? AND updated_at=?)",params:[row.id,rerMailHeld,row.updated_at]}
+  await env.DB.batch([
+   auditStatement(env.DB,{...event,projectId:row.project_id,category:'integration',actor:{type:'system'},source:'system',target:{type:'email_delivery',id:row.id}},now,guard),
+   env.DB.prepare("UPDATE email_deliveries SET state='failed',error=?,updated_at=? WHERE id=? AND state='sending' AND error=? AND updated_at=?").bind(reason,now,row.id,rerMailHeld,row.updated_at),
+  ])
+ }
 }
 
 /** Fails the holds of one notification's fan-out that outlived the bound, settling a

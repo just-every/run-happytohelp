@@ -279,6 +279,9 @@ and Setup say a key is missing.
    keep it **Enabled**. Then, under **Responder defaults**, choose which assistant
    answers visitors, and with **AI replies** whether its replies are sent
    automatically, kept as drafts for your team to send, or turned off.
+   In draft, a reply your local computer agent prepares waits in its report for
+   you to use and send, and a visitor who writes while your team is away gets
+   your away message, as if no assistant were assigned.
 
 Keep key values out of chat messages and the browser. To cap what visitors can
 spend, see [Limits and AI ceilings](docs/PUBLIC-LIMITS.md).

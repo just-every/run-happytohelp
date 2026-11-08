@@ -25,6 +25,7 @@ import {accountAudit} from '../identity/two-factor/factors'
 import {readNativeSettings} from './native-settings-read'
 import {memberAccess} from '../access/gate'
 import {projectAccess} from '../access/catalogue'
+import {settingsUpsert} from './settings-write'
 export const projects=new Hono<AppEnv>()
 projects.route('/',brandReports).route('/',brands)
 projects.get('/bootstrap',async c=>{
@@ -93,7 +94,7 @@ projects.put('/projects/:projectId/settings',async c=>{
   settings.api_abuse_terms=[...new Set(b.api_abuse_terms.map((term:string)=>term.trim().toLowerCase()))]
  }
  if('api_requester_hourly_cap' in b){const cap=b.api_requester_hourly_cap;if(!Number.isInteger(cap)||cap<1||cap>100)throw new HTTPException(400,{message:'Requester hourly cap must be between 1 and 100'});settings.api_requester_hourly_cap=cap}
- const statements=[c.env.DB.prepare('INSERT INTO project_settings VALUES(?,?,?) ON CONFLICT(project_id) DO UPDATE SET settings_json=excluded.settings_json,updated_at=excluded.updated_at').bind(a.projectId,JSON.stringify(settings),Date.now())]
+ const statements=[settingsUpsert(c.env.DB,a.projectId,settings)]
  if(b.name)statements.push(c.env.DB.prepare('UPDATE projects SET name=? WHERE id=?').bind(requiredString(b.name,'name',200),a.projectId))
  if(b.allowed_origin)statements.push(c.env.DB.prepare('UPDATE projects SET allowed_origin=? WHERE id=?').bind(websiteAddress(b.allowed_origin,'Widget website origin',true),a.projectId))
  await c.env.DB.batch(statements)

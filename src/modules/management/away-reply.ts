@@ -5,13 +5,15 @@ import {emailMode} from '../integrations/email-provider'
 import {publicAppearance} from '../widget/appearance.js'
 import {backAt,humanResponseTime} from '../widget/availability-text.js'
 import {workflowNow} from '../workflows/clock'
+import {customerAiSql} from '../ai-support/reply-mode'
 
 /** The away reply's author, and its local id: one per conversation, since a conversation's local ids are unique,
  * even when the outbox replays the visitor's message. Clients may not mint `away:` ids (admission.ts). */
 export const AWAY_AUTHOR='away',AWAY_REPLY='away:reply'
 
 /** Outside the workspace's hours, with "Accept new conversations" off, or with no teammate online while no assistant
- * answers the workspace's visitors (presence-based away), a visitor's chat message that no assistant will answer earns
+ * answers the workspace's visitors (presence-based away), a visitor's chat message that no assistant will answer (none
+ * assigned, or AI replies are drafts or off) earns
  * the workspace's away message, once per conversation (legacy chat sendMessage.js behaviour). It is the workspace
  * speaking, not a teammate or the AI: it is not emailed, earns no AI reply, and does not count as a reply in reports,
  * outcomes or automations (migration 241, workflows/time-rules.ts and rule-model.ts).
@@ -20,7 +22,7 @@ export const AWAY_AUTHOR='away',AWAY_REPLY='away:reply'
 export async function postAwayReply(env:Env,message:Record<string,unknown>,actor:Actor){
  if(actor.role!=='contact'||String(message.local_id||'').startsWith('email:'))return null
  const row=await env.DB.prepare(`SELECT c.revision,c.last_message_id,p.name,s.settings_json,ct.email,json_extract(ct.metadata_json,'$.provided_email') provided_email,
-  (c.assigned_to IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 WHERE ca.conversation_id=c.id)) assistant
+  (c.assigned_to IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 WHERE ca.conversation_id=c.id) AND ${customerAiSql('c.project_id')}) assistant
   FROM conversations c JOIN projects p ON p.id=c.project_id JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id LEFT JOIN project_settings s ON s.project_id=c.project_id
   WHERE c.id=? AND c.project_id=?`).bind(message.conversation_id,actor.projectId).first<any>()
  if(!row||row.assistant||row.last_message_id!==message.id)return null

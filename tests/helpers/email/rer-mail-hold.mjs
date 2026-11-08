@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {managedEdge,mime} from './rer-edge.mjs'
 import {managedInstallation} from './rer-mail.mjs'
+import {openaiStream} from '../openai-stream.mjs'
 
 // A MAIL_API_KEY rotation stops the old key at once; the platform rebuilds the app
 // with the new one. A conversation, problem or scheduled reply refused at
@@ -10,7 +11,7 @@ import {managedInstallation} from './rer-mail.mjs'
 // faked: queued `answers` replace its next sends.
 export async function rerMailHoldJourney(){
  const edge=managedEdge(),relay=edge.outbound,answers=[]
- edge.outbound=async(request,entry)=>request.method==='POST'&&new URL(entry.url).pathname.endsWith('/send')&&answers.length?answers.shift()():relay(request,entry)
+ edge.outbound=async(request,entry)=>new URL(entry.url).hostname==='api.openai.com'?openaiStream('Your parcel left our warehouse today.'):request.method==='POST'&&new URL(entry.url).pathname.endsWith('/send')&&answers.length?answers.shift()():relay(request,entry)
  const i=await managedInstallation('hold',{edge}),{app,owner}=i
  const scheduledDoor=app.scheduled.bind(app);let scheduledPass=0
  app.scheduled=async(...args)=>{const result=await scheduledDoor(...args);console.log('MAIL_HOLD_BUDGET',JSON.stringify({pass:++scheduledPass,statements:result.statements,calls:result.calls,refused:result.refused}));assert.equal(result.refused,0);assert.ok(result.statements<=1000&&result.calls<=1000);return result}
@@ -160,5 +161,27 @@ export async function rerMailHoldJourney(){
    assert.equal(edge.sends.filter(send=>send.payload.messageKey===entry.key).length,entry.accepted,'never sent twice')
    if(entry.accepted){assert.equal(row.reason,null);assert.equal((await delivery(entry.id)).state,'sent')}
   }
+
+  // An AI answer held by the running release's revoked key is ended, never resent, once the workspace's AI replies
+  // become drafts; the withholding writes one audit event for that email, and later passes stay silent.
+  const aiTicket=await open('ai-answer@example.test')
+  await app.configure({OPENAI_API_KEY:'synthetic-hold-model'})
+  await app.db.batch([
+   app.db.prepare("INSERT INTO ai_profiles(id,project_id,name,role,prompt,model,created_at) VALUES('hold-ai',?,'Mail assistant','support','Answer customers','gpt-5-mini',1)").bind(owner.projectId),
+   app.db.prepare("INSERT INTO conversation_ai VALUES(?,'hold-ai')").bind(aiTicket),
+  ])
+  const aiKey='synthetic-relay-authority-ai-answer';edge.installations.set(aiKey,edge.installations.get(app.bindings.MAIL_API_KEY));edge.installations.delete(app.bindings.MAIL_API_KEY)
+  const followUp='synthetic-hold-ai-follow-up',asked=await i.ingress(mime({id:followUp,from:'ai-answer@example.test',text:'Where is my parcel?',headers:`In-Reply-To: <synthetic-hold-intake-${intake}@example.test>\r\n`}),{deliveryId:followUp,envelopeFrom:'ai-answer@example.test'})
+  assert.equal(asked.status,200,JSON.stringify(asked.data));assert.equal(asked.data.conversationId,aiTicket)
+  await app.drainJobs()
+  const answer=await app.first("SELECT id FROM messages WHERE conversation_id=? AND actor_role='ai'",aiTicket);assert.ok(answer,'the assistant answered in auto')
+  const aiMail=`message:${answer.id}:notification`,withheldAudit=()=>app.sql("SELECT action,outcome,actor_type,source,target_type,detail_json FROM audit_events WHERE target_id=? AND action='email.ai_withheld'",aiMail)
+  await app.until(async()=>(await delivery(aiMail))?.error,{message:'AI answer held'})
+  assert.equal((await delivery(aiMail)).state,'sending','the AI answer is held');const aiSends=sends('Your parcel left our warehouse today.').length
+  assert.equal((await app.call(`/api/management/projects/${owner.projectId}/ai`,{token:owner.token,method:'PUT',body:{ai_reply_mode:'draft'}})).status,200)
+  await app.configure({MAIL_API_KEY:aiKey});await app.scheduled()
+  assert.equal((await delivery(aiMail)).state,'failed','draft ends the held AI answer');assert.equal(sends('Your parcel left our warehouse today.').length,aiSends,'it is never resent')
+  assert.deepEqual(await withheldAudit(),[{action:'email.ai_withheld',outcome:'refused',actor_type:'system',source:'system',target_type:'email_delivery',detail_json:JSON.stringify({reason:'ai_reply_mode'})}])
+  await app.scheduled();assert.equal((await withheldAudit()).length,1,'a replay of the ended delivery writes nothing')
  }finally{await i.close()}
 }

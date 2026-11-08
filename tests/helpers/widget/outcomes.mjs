@@ -142,6 +142,18 @@ export async function availabilityOutcomes(f){
   await ui.page.getByText('Your checkout is saved. A teammate can help you finish.',{exact:true}).waitFor()
   assert.deepEqual(ui.errors,[])
  }finally{await ui.close()}
+ // In draft the assigned assistant never answers, so a visitor writing while the team is away gets the away
+ // reply, as one without an assistant does; the assistant stays assigned for a switch back to auto.
+ await ok(manage+'/ai',{ai_reply_mode:'draft'})
+ assert.equal((await configuration()).availability.available,false,'a drafting assistant does not keep the team available')
+ const drafted=await app.ok('/api/identity/widget/session',{headers:f.headers,body:{widgetKey:w.widgetKey}})
+ const draftedConversation=await app.ok('/api/conversations',{token:drafted.token,body:{projectId:p}})
+ assert.ok(await app.first('SELECT 1 FROM conversation_ai WHERE conversation_id=? AND ai_id=?',draftedConversation.id,'widget-assistant'),'the assistant is assigned in draft')
+ await app.ok(`/api/conversations/${draftedConversation.id}/messages`,{token:drafted.token,body:{localId:'drafted',content:'Is anyone there?',expectedRevision:0}})
+ await app.drainJobs()
+ const draftedMessages=(await transcript({...drafted,conversationId:draftedConversation.id})).messages
+ assert.equal(draftedMessages.filter(m=>m.actor_id==='away').length,1,'draft: the away reply answers a visitor the assistant will not');assert.equal(draftedMessages.filter(m=>m.actor_role==='ai').length,0)
+ await ok(manage+'/ai',{ai_reply_mode:'auto'})
  await ok(manage+'/ai',{default_visitor_ai_id:null})
  await app.configure({H2H_WORKFLOW_NOW:undefined})
  await availability({is_presence_away_enabled:false,is_availability_schedule_enabled:false,is_available:true})

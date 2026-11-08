@@ -245,5 +245,34 @@ async function replyModes(){
   await setMode('off');const calls=a.providerCalls()
   const refused=await a.action(v.conversationId,'agentAssist',{options:{request_id:crypto.randomUUID()}});assert.equal(refused.status,409)
   await v.say('Written while off');await a.run();assert.equal(a.providerCalls(),calls);assert.equal((await replies(v)).length,1)
+  // Only the mode route writes the mode: a mode change fired together with concurrent whole-settings saves
+  // (workspace settings, widget settings, availability and a defaults-only AI save) is never undone.
+  const base=`/api/management/projects/${p}`,widget=(await app.call(`${base}/widget-settings`,{token:owner,status:200})).data.settings
+  const since=async()=>(await app.first("SELECT json_extract(settings_json,'$.ai_reply_mode_since') since FROM project_settings WHERE project_id=?",p)).since
+  const newestChange=async()=>(await app.call(`${base}/audit?category=data&limit=50`,{token:owner,status:200})).data.data.find(e=>e.action==='ai.reply_mode_changed').detail
+  let previousSince=0
+  for(let round=0;round<8;round++){
+   const target=round%2?'auto':'draft',saves=[]
+   for(let k=0;k<4;k++)saves.push(
+    ()=>app.call(`${base}/settings`,{token:owner,method:'PUT',body:{unavailable_message:`Away ${round}.${k}`},status:200}),
+    ()=>app.call(`${base}/widget-settings`,{token:owner,method:'PUT',body:widget,status:200}),
+    ()=>app.call(`${base}/availability`,{token:owner,method:'PUT',body:{is_availability_schedule_enabled:false},status:200}),
+    ()=>app.call(route,{token:owner,method:'PUT',body:{default_visitor_ai_id:'ai'},status:200}))
+   const changed=Math.floor(saves.length/2),calls=saves.map(save=>save());calls.splice(changed,0,setMode(target))
+   await Promise.all(calls)
+   const stamp=await since()
+   assert.equal(await mode(),target,`round ${round}: a concurrent save never restores the earlier mode`)
+   assert.deepEqual(await newestChange(),{from:round?(round%2?'draft':'auto'):'off',to:target},`round ${round}: the security log's newest mode change is the mode in effect`)
+   assert.ok(Number.isFinite(stamp)&&stamp>previousSince,`round ${round}: the switch time is the new switch's own`);previousSince=stamp
+  }
+  // Every save still stores its own values, and leaves the mode and its switch time as they are.
+  const stamp=await since()
+  assert.equal((await app.call(`${base}/settings`,{token:owner,method:'PUT',body:{unavailable_message:'Back soon'},status:200})).data.data.unavailable_message,'Back soon')
+  await app.call(`${base}/widget-settings`,{token:owner,method:'PUT',body:{...widget,greeting:'Hello'},status:200})
+  await app.call(`${base}/availability`,{token:owner,method:'PUT',body:{is_availability_schedule_enabled:false,presence_idle_minutes:30},status:200})
+  await app.call(route,{token:owner,method:'PUT',body:{ai_reply_mode:'auto',default_visitor_ai_id:'ai'},status:200})
+  const stored=JSON.parse((await app.first('SELECT settings_json FROM project_settings WHERE project_id=?',p)).settings_json)
+  assert.equal(stored.unavailable_message,'Back soon');assert.equal(stored.widget_settings.greeting,'Hello');assert.equal(stored.presence_idle_minutes,30);assert.equal(stored.default_visitor_ai_id,'ai')
+  assert.equal(stored.ai_reply_mode,'auto');assert.equal(stored.ai_reply_mode_since,stamp,'saving the mode in effect keeps its switch time')
  }finally{await a.close()}
 }

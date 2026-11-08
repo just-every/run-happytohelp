@@ -70,13 +70,26 @@ configured, and `DELETE .../invitations/:invitationId` removes every unused link
 the path's workspace and refuses what they may not manage. Using one link retires the others issued for the same email
 (`identity/accounts.ts`). `tests/journeys/identity.mjs` covers the routes and role refusals on real local D1.
 
-Inbox search (`inbox-search.ts`) matches a contact's name or email address as a literal,
-ASCII case-insensitive substring: `%`, `_` and `\` are ordinary characters and the match
-does not use `LIKE`, so the database's pattern-length limit cannot turn a long term into
-a 500. A term longer than 200 characters is a 400 whose message the inbox shows. Message
-text is deliberately not searched: the schema has no full-text index, and an unindexed scan
-of every message per keystroke is not acceptable, so the inbox says it searches names and
-email addresses. `tests/journeys/inbox.mjs` runs it on local D1.
+Inbox search (`inbox-search.ts`, both `GET /conversations` doors with `q=` or `search=`, all
+history unless `search_scope=view`) finds a conversation by its contact's name, email, provided
+name or provided email as a literal, ASCII case-insensitive substring (`%`, `_`, `\`, quotes and
+FTS operators are ordinary characters), by its imported `#source` or bare source id, or by
+message words through `inbox_message_search` (unquoted words in any order, quoted phrases in
+order); a result previews its newest matching message. A term longer than 200 characters is a 400
+whose message the inbox shows. Terms of three or more characters read the contact trigram index
+`inbox_contact_search` (migration 310: an FTS5 index over the `inbox_contact_identity` view, kept by
+triggers on contacts, with secure-delete so a changed or erased identity leaves no trigrams), the
+source-id index and the message index, so the query reads only candidate conversations; one- and
+two-character terms keep the per-conversation substring test. The total comes with the page in
+one statement. At a ChargeDesk-sized workspace (about 162,000 contacts and conversations, 54,000
+messages, 6,000 imported tickets) a selective term (an email, a name fragment matching a handful
+of contacts, an order number, a source id) reads under 5,000 D1 rows per request, first page,
+page-number page or cursor page alike; broad terms (one or two characters, `@`, a mailbox domain,
+words in most messages) read more but at most 650,000. When D1 answers "D1 DB is overloaded",
+the whole search is dispatched again after 250 ms, 500 ms and 1 s (`platform/d1-overload.ts`,
+wrapped around `app.fetch` so the dashboard bootstrap's first page is covered too), then answers
+503 with `Retry-After`; the inbox shows a busy line and retries by itself. `tests/journeys/inbox.mjs`
+runs it on local D1.
 
 Owners and admins can permanently erase a contact's personal data
 (`contact-erasure.ts`, `contact-erasure/`): R2 objects are staged in

@@ -11,7 +11,8 @@ import {knowledgeWriteEnvironment} from './write-boundary'
 import {dispatchKnowledgeUpgrades} from './upgrade-progress'
 import {requireActor} from '../../platform/auth'
 const schemas=new WeakMap<object,Promise<boolean>>()
-export const knowledgeSchemaReady=(env:Env)=>{let ready=schemas.get(env.DB);if(!ready){ready=env.DB.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='knowledge_reply_blocks'").first().then(Boolean);schemas.set(env.DB,ready)}return ready}
+// A failed probe (for example D1 answering "overloaded") is not cached: the next request asks again.
+export const knowledgeSchemaReady=(env:Env)=>{let ready=schemas.get(env.DB);if(!ready){const db=env.DB;ready=db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='knowledge_reply_blocks'").first().then(Boolean,error=>{schemas.delete(db);throw error});schemas.set(db,ready)}return ready}
 /** HTTP's shared door covers all text-bearing fields, including JSON columns and
  * nested list/preview responses. Controller authorization still owns ticket access. */
 export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>){

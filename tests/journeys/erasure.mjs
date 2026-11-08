@@ -16,6 +16,13 @@ const one=(sql,...args)=>DB.prepare(sql).bind(...args).first()
 const call=(prefix,path,token,method='GET',body)=>app.request(prefix+path,{method,token,body,headers:{'Content-Type':'application/json'}})
 const erase=(token,project='p',contact='ct')=>call(routes,`/projects/${project}/contacts/${contact}/erase`,token,'POST')
 const objectText=async key=>{const object=await FILES.get(key);return object?object.text():null}
+// Inbox search on both doors, by name, email and provided email fragments of the erased contact.
+const identityTerms=['Alice Ex','ALICE@EXAMPLE','alice.personal','ce Exa']
+async function searched(token,term){
+ const found=[]
+ for(const path of ['/projects/p/conversations','/conversations']){const response=await call(dashboardRoutes,path+'?'+new URLSearchParams({q:term}),token);assert.equal(response.status,200);found.push((await response.json()).data.map(row=>row.id).sort())}
+ return found
+}
 
 const secret='Order 4471 for Alice Example, 12 Private Lane'
 const objects={'p/conv1/contact-upload':'passport scan','p/conv2/operator-upload':'invoice for alice@example.com','delegation/p/job1/shot':'screenshot of alice account','p/convOther/other-upload':'other customer file','q/convQ/q-upload':'other project file','q/convQ/q-by-ct':'other project file uploaded by the same id'}
@@ -152,6 +159,7 @@ let tokens,before
  assert.equal((await erase(tokens.owner,'p','missing')).status,404)
  const unchanged=await erasedScope()
  assert.equal(unchanged.contact.name,'Alice Example');assert.equal(unchanged.messages[0].content,secret);assert.equal(unchanged.sessions.length,2);assert.equal(unchanged.staged.length,0)
+ for(const term of identityTerms)assert.deepEqual(await searched(tokens.operator,term),[['conv1','conv2'],['conv1','conv2']],term+' finds the contact before erasure')
  assert.deepEqual(await outsideScope(),before)
 }
 
@@ -196,6 +204,13 @@ let first,opAfter
  assert.deepEqual(erased.staged,[])
  const dump=JSON.stringify(await Promise.all(['contacts','conversation_buckets','messages','media','conversation_notes','context_evidence','context_profiles','context_insights','context_summaries','context_tracked_events','context_jobs','context_job_events','ai_generations','ai_attempt_events','local_jobs','local_events','local_result_effects','local_receipts','email_deliveries','legacy_import_rows'].map(table=>all(`SELECT * FROM ${table}`))))
  for(const fragment of ['Alice','alice','4471','4242','Sydney','crm-alice','203.0.113.9','Private Lane','Second conversation secret'])assert.equal(dump.includes(fragment),false,`${fragment} remains in D1`)
+ // The contact search index follows the erasure: nothing finds the identity, the index still agrees
+ // with contacts, and no term of the erased contact's row remains in it.
+ for(const term of identityTerms)assert.deepEqual(await searched(tokens.operator,term),[[],[]],term+' finds nothing after erasure')
+ await DB.prepare("INSERT INTO inbox_contact_search(inbox_contact_search,rank) VALUES('integrity-check',1)").run()
+ await DB.prepare("CREATE VIRTUAL TABLE erasure_contact_terms USING fts5vocab(inbox_contact_search,'instance')").run()
+ try{assert.deepEqual(await all("SELECT term FROM erasure_contact_terms WHERE doc=(SELECT rowid FROM contacts WHERE id='ct')"),[],'the erased identity leaves no indexed term')}
+ finally{await DB.prepare('DROP TABLE erasure_contact_terms').run()}
  // Another project's claim from the same address is not the erased contact's data.
  const inbound=JSON.stringify(await all("SELECT * FROM inbound_emails WHERE project_id='p'"))
  for(const fragment of ['Alice','alice','4471','Sydney','Private Client'])assert.equal(inbound.includes(fragment),false,`${fragment} remains in inbound email evidence`)

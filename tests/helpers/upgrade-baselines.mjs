@@ -80,12 +80,41 @@ async function populate03(origin) {
   const attachment = Buffer.from('%PDF-1.4\n% HappyToHelp 0.3 upgrade attachment\n');
   const media = await call(`/api/conversations/${conversation.id}/media`, {body: attachment, raw: true, token: visitor.token, headers: {'Content-Type': 'application/pdf', 'X-Filename': 'receipt-03.pdf'}});
   const transcript = ['My order arrived damaged; receipt attached.', 'Sorry about that. A replacement is on its way.', 'Thank you!', 'Glad to help. Closing this for now.'];
-  let revision = 0;
+  const authored = [];
   for (const [index, content] of transcript.entries()) {
     const fromVisitor = index % 2 === 0;
-    const sent = await call(`/api/conversations/${conversation.id}/messages`, {body: {localId: `upgrade-03-${index}`, content, expectedRevision: revision, ...(index === 0 ? {mediaIds: [media.id]} : {})}, token: fromVisitor ? visitor.token : token});
-    revision = sent.message.revision;
+    const actorToken = fromVisitor ? visitor.token : token;
+    const frontier = await call(`/api/conversations/${conversation.id}/messages`, {token: actorToken});
+    const sent = await call(`/api/conversations/${conversation.id}/messages`, {body: {localId: `upgrade-03-${index}`, content, expectedRevision: frontier.revision, ...(index === 0 ? {mediaIds: [media.id]} : {})}, token: actorToken});
+    assert.equal(sent.accepted, true);
+    assert.notEqual(sent.duplicate, true);
+    const expected = {local_id: `upgrade-03-${index}`, content, actor_role: fromVisitor ? 'contact' : 'owner', actor_id: fromVisitor ? visitor.contactId : setup.userId, project_id: projectId, conversation_id: conversation.id, revision: frontier.revision + 1};
+    assert.ok(sent.message.id);
+    for (const [field, value] of Object.entries(expected)) assert.equal(sent.message[field], value, `authored acknowledgement ${index}: ${field}`);
+    authored.push({id: sent.message.id, ...expected});
   }
+  const {messages} = await call(`/api/conversations/${conversation.id}/messages`, {token});
+  assert.ok(messages.length === authored.length || messages.length === authored.length + 1, 'complete predecessor transcript has only the authored messages and optional away reply');
+  assert.equal(new Set(messages.map(message => message.id)).size, messages.length, 'distinct predecessor message identities');
+  assert.equal(new Set(messages.map(message => message.local_id)).size, messages.length, 'distinct predecessor command identities');
+  const hasAway = messages.length === authored.length + 1;
+  if (hasAway) {
+    // The unchanged no-presence fixture earns this standard notice in releases
+    // with presence-based away; older releases retain the four authored rows.
+    const away = messages[1];
+    const expected = {local_id: 'away:reply', actor_role: 'system', actor_id: 'away', project_id: projectId, conversation_id: conversation.id, revision: authored[0].revision + 1, content: "Thanks for your message. Upgrade Desk is away right now. We'll reply here. Responds within 24 hours"};
+    assert.ok(away.id);
+    for (const [field, value] of Object.entries(expected)) assert.equal(away[field], value, `predecessor away reply: ${field}`);
+    if ('media' in away) assert.deepEqual(away.media, []);
+    transcript.splice(1, 0, expected.content);
+  }
+  for (const [index, expected] of authored.entries()) {
+    const message = messages[index + (hasAway && index > 0 ? 1 : 0)];
+    for (const [field, value] of Object.entries(expected)) assert.equal(message[field], value, `predecessor authored message ${index}: ${field}`);
+    if ('media' in message) assert.deepEqual(message.media.map(item => item.id), index === 0 ? [media.id] : []);
+  }
+  assert.deepEqual(messages.map(message => message.content), transcript);
+  console.log('Validated predecessor transcript:', JSON.stringify(messages.map(({id, local_id, actor_role, actor_id, content, revision, media}) => ({id, local_id, actor_role, actor_id, content, revision, ...(media ? {mediaIds: media.map(item => item.id)} : {})}))));
   const category = await call(`/api/knowledge/${projectId}/categories`, {body: {name: 'Orders', slug: 'orders'}, token});
   const article = {title: 'Returning a damaged order', slug: 'damaged-order', content: 'Reply in chat with a photo and we send a replacement.'};
   await call(`/api/knowledge/${projectId}/articles`, {body: {...article, status: 'published', categoryIds: [category.id]}, token});

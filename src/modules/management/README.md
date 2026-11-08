@@ -81,7 +81,7 @@ whose message the inbox shows. Terms of three or more characters read the contac
 triggers on contacts, with secure-delete so a changed or erased identity leaves no trigrams), the
 source-id index and the message index, so the query reads only candidate conversations; one- and
 two-character terms keep the per-conversation substring test. The total comes with the page in
-one statement. At a ChargeDesk-sized workspace (about 162,000 contacts and conversations, 54,000
+one statement. At a workspace of about 162,000 contacts and conversations (54,000
 messages, 6,000 imported tickets) a selective term (an email, a name fragment matching a handful
 of contacts, an order number, a source id) reads under 5,000 D1 rows per request, first page,
 page-number page or cursor page alike; broad terms (one or two characters, `@`, a mailbox domain,
@@ -90,6 +90,90 @@ the whole search is dispatched again after 250 ms, 500 ms and 1 s (`platform/d1-
 wrapped around `app.fetch` so the dashboard bootstrap's first page is covered too), then answers
 503 with `Retry-After`; the inbox shows a busy line and retries by itself. `tests/journeys/inbox.mjs`
 runs it on local D1.
+
+Inbox reads at scale. The unsearched inbox list (both doors, `inbox-list.ts`), its counts
+(`inbox-counts.ts`, carried by `/conversations/counts`, the bootstrap and mark-as-read) and the reads a
+conversation open fires never read every conversation of a workspace. Migration 313 keeps derived tables,
+filled by the migration and kept by triggers on every table they derive from (messages, notes, merges,
+conversations, AI rows and profiles, snooze schedules, imported-message sources, tag links, company links,
+reads and memberships), so plain-`INSERT` imports, restores and erasure keep them true. `inbox_entries`
+holds one row per inbox conversation (one with a message or a note that is not merged away, exactly
+`inbox-visible.ts`) with the inbox sort key, the flags the views filter on, the contact's company, the
+unread revision, every ticket column a filter, view field or sort names and its tags (`tags_key`, the
+`tags` field of `tickets/filters.ts`), so a list request reads entries alone. `inbox_tallies` counts those
+entries by workspace, group, assignee and flags; `inbox_field_tallies` also by priority, status category,
+channel and status; `inbox_tag_tallies` by tag as well. `inbox_unread` holds each member's unread entries
+(a contact message that was not imported, above the member's read revision) with their flags and sort key.
+Totals (`inbox-conditions.ts` classifies a request's conditions):
+- a standard view, the counts other than unread, and any view, saved view or structured `filters` whose
+  conditions name only status, status category, priority, channel, assignee and group, alone or with one
+  tags condition (any of its tags, or none of them; that is what a Zendesk view import writes), are tally
+  sums. A tags condition naming several tags adds each tag's tally and subtracts, through the links of all
+  but the largest tag, the matches an earlier tag already counted (about 3 rows per such link);
+- otherwise the total counts the matches within the smallest candidate set an index gives: a company's
+  entries, the links of a tags condition, or the entries a ticket column's own index holds for an
+  equality, list or range condition (id, requester, submitter, subject, brand, created, updated, version,
+  status, group, assignee, priority, status category, channel, submitter type), one row per candidate; with
+  no such condition, every inbox entry of the workspace (one row each);
+- a cursor page's tally total is the tally less the matching entries before the cursor.
+A page walks an entry index that leads with the workspace and what the request pins (the view's flags, the
+assignee, a company, or a single status category, priority or channel) in the inbox order, or the member's
+unread rows, and stops after its rows; a custom sort led by a ticket column or tags walks that column's own
+index (sorting only within its equal values). It sorts the candidate set instead when the walk would read
+more. A tags condition's links and a time condition before a moment (its matches lie at the far end of the
+inbox order, which follows activity) are read once, in order, for the total and the page together. A page
+past the total reads nothing.
+Membership, deleted workspaces and the role's ticket scope (`access/ticket-scope.ts`) are evaluated once
+per request as sets (`inbox-entries.ts`). Hidden widget drafts are never read. At a large workspace's shape
+(about 162,000 conversations, 18,000 in the inbox, 54,000 messages) a standard view, filter control (teammate,
+tag, a company of 2,700 contacts), `status=`/`priority=`/`channel=`, cursor page or page by number reads
+under 5,000 D1 rows (about 1,500 to 3,400, most of it the page's hydration). Measured on a local workspace
+of that shape (18,163 inbox entries, owner, workspace door), saved views and structured `filters`/`sort`:
+under the target, one tag (999 matches) 3,783, a tag with priorities 3,167, none of a tag 2,622, a tag
+with a status 2,815, a status 2,664, a requester, subject or ids about 220 to 330, created after a moment
+3,756; within the ceiling (5,000 + 1.5 x the total), a brand 5,668 (3,000 matches), priority sorted by
+tags 5,536 (830), two tags 6,616 (5,178), every submitter type but one 20,558 (17,247), updated before a
+moment 5,962 (1,773), updated after one 11,223 (8,375), a sort led by a custom field 6,002 (830). Each read
+of a conversation open reads under 2,000; the inbox's company filter reads
+`GET /projects/:id/companies?view=names`, one row per company (14 rows for one company), where the full list
+counts each company's members, two rows per linked contact (362 for one company of 180 contacts; 1,904 to
+7,307 at that shape). Stated ceilings (D1 counts one row per record counted): the
+unread view reads one row per unread conversation (5,000 + 1.5 x its total; about 7,300 for 5,151 unread),
+and the counts, the bootstrap with counts and mark-as-read read up to 5,000 + 1.5 x the counts' sum (about
+5,500) and the workspace navigation read (document or server function) 12,000 + 1.5 x (the counts plus the
+shown view's total) (about 7,900), because the unread count is per member (a per-member tally would bring
+them under the target). Over the ceiling, measured at the same shape and never growing with widget drafts
+(80,000 more read the same rows), each because no index or tally narrows it:
+- a condition no index narrows (text `contains`, `ne`/`not_in` on a ticket column, `is_empty`/`is_not_empty`,
+  `eq` null, a custom field) reads every inbox entry for its total, one row each (two for a custom field,
+  whose value is looked up per entry), then walks the order for its page: subject contains 18,181 rows at
+  total 0 and 27,541 at 1,166; brand empty, submitter null and submitter type ne about 18,200 at total 0;
+  none of a tag with subject contains 25,303 (7,214); a custom field 34,072 (7,200); tags empty 20,413 and
+  not empty 20,795 stay within their ceilings. A trigram index over the subject (as `inbox_contact_search`
+  does for contacts) and an entry column per custom field with its own index would bound them;
+- a tags condition with a condition the tallies do not count, or two tags conditions, reads the links of
+  its tags (about 3 rows per link) and its matches in order: a tag with a brand 6,050 (176 matches), two
+  tags both present 7,715 (261), four tags 21,889 (8,678); a tags condition naming several tags subtracts
+  through the links of all but its largest tag. A role that sees few groups reads every link of the tag
+  (links carry no group): VIP or Billing for a teammate scoped to one group, page 3, 6,962 (473 matches).
+  A tally of tag pairs or a per-tag entry table would bound them;
+- a time condition before a moment reads its candidates and sorts its matches, about 2 rows per match, so
+  it passes the ceiling above about 5,000 matches: created before a moment 9,620 (3,548 matches, within),
+  35,052 (15,968, over). Its matches lie at the far end of the inbox order, so a walk would read the whole
+  order instead; an inbox-order index led by a time bucket would bound it.
+
+D1's "D1 DB is overloaded" (`platform/d1-overload.ts`) is one rule for every request: a read (GET, HEAD)
+that meets it at any D1 call, middleware and authentication included, is dispatched again as a whole after
+250 ms, 500 ms and 1 s (the `app.fetch` wrapper, which the Worker entry and the dashboard's server
+functions use), then answers 503 with `Retry-After: 3` and a JSON `{error}`; a write answers 503 at once and
+is never re-run. The integration API (`/api/v1`) has its own error handler and answers an overload the same
+way, in its own error shape (`{error:{code:'unavailable',message}}`). The Worker entry retries the same way for an overload thrown before routing (public site
+and help host lookups; server-function paths are reserved so they do no such lookup). The bootstrap server
+function carries 503 with its Retry-After; the session check treats 503 as neither signed out nor failed.
+The dashboard shows a `role="status"` busy line and reads again after Retry-After (at most 10 s) while the
+view is current, keeping what is on screen: the inbox list and its pages, the workspace shell
+(`dashboard-state.tsx`), the conversation and its messages; other reads (`ui/native/transport.js`) wait
+through a busy read instead of alerting.
 
 Owners and admins can permanently erase a contact's personal data
 (`contact-erasure.ts`, `contact-erasure/`): R2 objects are staged in

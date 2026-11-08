@@ -309,6 +309,7 @@ body.conversation-workspace #chat {
 
     // A rejected search term is feedback about the input, not a failed load: it offers no Retry.
     .conversation-search-notice,
+    .conversation-busy-notice,
     .conversation-list-error,
     .conversation-load-error {
         margin: 12px 0;

@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict'
+import {inboxExactness} from './inbox-exact.mjs'
 
 // Extend the same replacement request's public-door proof, without another test leaf.
 export async function deskQueueProof(f,{second,tag,foreignVisitor,foreignTicket}){
- const {app,w,foreign,id,ok,get,patch,visitor}=f
+ const {app,w,foreign,id,ok,call,get,patch,visitor}=f
  const original=await get(id),originalSecond=await get(second),ids=rows=>rows.map(row=>row.id).sort()
+ const companies=`/api/management/projects/${w.projectId}/companies`,company=(await app.ok(companies,{token:w.tokens.owner,body:{name:'Ridgeline buyers'}})).company.id
+ const exact=inboxExactness(app,w,{tag,company})
  await ok(`/conversations/${id}`,{agent_id:w.users.operator},'owner','PUT')
  await ok(`/conversations/${second}`,{agent_id:null},'owner','PUT')
+ await exact('assigned')
  const list=async(query,project=true,token=w.tokens.operator)=>(await app.ok((project?`/api/dashboard/projects/${w.projectId}`:'/api/dashboard')+'/conversations?'+new URLSearchParams(query),{token})).data
  const selected=rows=>ids(rows).filter(key=>[id,second].includes(key))
  const opening='Order TO-48200: the Ridgeline boot has a torn seam. Can you arrange a replacement?'
@@ -48,31 +52,89 @@ export async function deskQueueProof(f,{second,tag,foreignVisitor,foreignTicket}
   assert.deepEqual(selected(await list({q:'personal+boots'},project)),[],'a cleared provided email is no longer found')
   assert.deepEqual(selected(await list({q:'Dana Whit'},project)),[id,second].sort())
  }
- // D1's overload answer: a search is retried as a whole, then answers 503 with Retry-After, never 500.
+ // D1's overload answer: any read is retried as a whole, then answers 503 with Retry-After, never 500.
+ const overloaded=(path,headers)=>app.call(path,{token:w.tokens.operator,headers:{'x-test-fault':'d1-overloaded',...headers}})
+ const busy=async(path,at)=>{
+  const answer=await overloaded(path,at)
+  assert.equal(answer.status,503,path+' '+JSON.stringify(answer.data));assert.equal(typeof answer.data.error,'string')
+  const wait=Number(answer.headers.get('retry-after'));assert.ok(Number.isInteger(wait)&&wait>=1&&wait<=30,'Retry-After is whole seconds within D1\'s window')
+ }
  const searchPath=`/api/dashboard/projects/${w.projectId}/conversations?`+new URLSearchParams({q:'TO-48200'})
- const overloaded=headers=>app.call(searchPath,{token:w.tokens.operator,headers:{'x-test-fault':'d1-overloaded',...headers}})
- const recovered=await overloaded({'x-test-overloads':'2'})
+ const recovered=await overloaded(searchPath,{'x-test-overloads':'2'})
  assert.equal(recovered.status,200);assert.deepEqual(ids(recovered.data.data),[id],'a passing overload is retried to the same result')
- for(const at of [{},{'x-test-statement':'inbox_search_total'}]){
-  const busy=await overloaded(at)
-  assert.equal(busy.status,503,JSON.stringify(busy.data));assert.equal(typeof busy.data.error,'string')
-  const wait=Number(busy.headers.get('retry-after'));assert.ok(Number.isInteger(wait)&&wait>=1&&wait<=30,'Retry-After is whole seconds within D1\'s window')
+ for(const at of [{},{'x-test-statement':'inbox_search_total'}])await busy(searchPath,at)
+ // An unsearched page, the counts and a conversation, at the first D1 call and a later one.
+ for(const path of [`/api/dashboard/projects/${w.projectId}/conversations?view=open`,'/api/dashboard/conversations?view=all',`/api/dashboard/projects/${w.projectId}/conversations/counts`,`/api/dashboard/projects/${w.projectId}/conversations/${id}`]){
+  const calm=await app.call(path,{token:w.tokens.operator})
+  for(const at of ['1','4']){
+   const passing=await overloaded(path,{'x-test-statement-at':at,'x-test-overloads':'2'})
+   assert.equal(passing.status,200,path);assert.deepEqual(passing.data,calm.data,path+' answers the same after a passing overload')
+   await busy(path,{'x-test-statement-at':at})
+  }
+ }
+ // The integration API has its own error handler; an overload there follows the same rule, in its own error shape.
+ const reader=(await app.ok(`/api/management/projects/${w.projectId}/connections/tokens`,{token:w.tokens.owner,body:{name:'Overload reader',scopes:['conversations:read']}})).token
+ const apiPath=`/api/v1/conversations/${id}`,apiCalm=await app.call(apiPath,{token:reader})
+ assert.equal(apiCalm.status,200,JSON.stringify(apiCalm.data))
+ // The first D1 call is the application's own middleware; the token lookup is inside the API's router.
+ for(const at of [{'x-test-statement-at':'1'},{'x-test-statement':'integration_tokens'}]){
+  const fault={'x-test-fault':'d1-overloaded',...at}
+  const passing=await app.call(apiPath,{token:reader,headers:{...fault,'x-test-overloads':'2'}})
+  assert.equal(passing.status,200);assert.deepEqual(passing.data,apiCalm.data,'the API answers the same after a passing overload')
+  const refused=await app.call(apiPath,{token:reader,headers:fault})
+  assert.equal(refused.status,503,JSON.stringify(refused.data));assert.ok(refused.data.error)
+  if(at['x-test-statement'])assert.equal(refused.data.error.code,'unavailable','the API answers in its own error shape')
+  const wait=Number(refused.headers.get('retry-after'));assert.ok(Number.isInteger(wait)&&wait>=1&&wait<=30)
  }
  await patch(id,{status_id:'solved'})
+ await exact('resolved')
  assert.deepEqual(selected(await list({view:'closed'})),[id])
  assert.deepEqual(selected(await list({view:'open'})),[second])
  assert.deepEqual(ids(await list({view:'open',search:'TO-48200'})),[id],'search defaults to retained history, including solved tickets')
  assert.deepEqual(ids(await list({view:'open',search_scope:'view',search:'TO-48200'})),[],'explicit current-view search respects status')
  await patch(id,{status_id:original.status_id})
+ await exact('reopened')
  const ai=(await app.ok(`/api/management/projects/${w.projectId}/ais`,{token:w.tokens.owner,body:{name:'Replacement assistant',role:'support',prompt:'Review replacements',model:'gpt-5.6-luna'}})).data
  await app.configure({OPENAI_API_KEY:'synthetic-desk-provider-key'})
  await ok(`/conversations/${second}/actions`,{action:'assignAi',data:{ai_id:ai.id}})
  assert.deepEqual(selected(await list({view:'ai'})),[second])
  assert.deepEqual(selected(await list({view:'open'})),[id],'AI work is separate from the human queue')
+ await exact('given an AI')
  await ok(`/conversations/${second}/actions`,{action:'assignAi',data:{ai_id:null}})
  assert.deepEqual(selected(await list({view:'ai'})),[])
+ await exact('AI removed')
  await app.configure({OPENAI_API_KEY:undefined})
  await app.ok(`/api/management/projects/${w.projectId}/ais/${ai.id}`,{token:w.tokens.owner,method:'DELETE'})
+ // Tags, a snooze and its wake, a merge and its undo, a note on a widget draft and reads keep every view exact.
+ await patch(second,{tags_add:[tag.id]});await exact('tagged')
+ await patch(second,{tags_remove:[tag.id]});await exact('untagged')
+ // The customer's company link follows into the company filter, and its removal out of it.
+ const member=`${companies}/${company}/members/${visitor.contactId}`
+ await app.ok(member,{token:w.tokens.owner,method:'PUT',body:{}})
+ assert.deepEqual(selected(await list({view:'all',company})),[id,second].sort());await exact('linked to a company')
+ await app.ok(member,{token:w.tokens.owner,method:'DELETE'})
+ assert.deepEqual(selected(await list({view:'all',company})),[]);await exact('unlinked from the company')
+ const current=await get(second)
+ const snooze=await ok('/workflow-schedules',{conversation_id:second,kind:'snooze',due_at:Date.now()+86400000,timezone:'UTC',owner_id:w.users.owner,expected_revision:current.revision,expected_last_message_id:current.last_message_id,expected_ticket_version:current.ticket_version})
+ await exact('snoozed')
+ await ok(`/workflow-schedules/${snooze.id}`,{action:'cancel'},'owner','PATCH')
+ await exact('snooze cancelled')
+ // Two more of the customer's widget drafts carry the rest, so this request's own history stays as it is.
+ const draft=async()=>(await app.ok('/api/conversations',{body:{projectId:w.projectId,contactId:visitor.contactId},token:w.tokens.owner})).id
+ const write=async(ticket,localId,content)=>app.ok(`/api/conversations/${ticket}/messages`,{token:visitor.token,body:{localId,content,expectedRevision:(await app.ok(`/api/conversations/${ticket}`,{token:visitor.token})).revision}})
+ const noted=await draft(),other=await draft()
+ const note=await ok(`/conversations/${noted}/notes`,{content:'Called the customer about a second boot.'})
+ await exact('a widget draft with a note')
+ assert.equal((await call(`/conversations/${noted}/notes/${note.id}`,undefined,'owner','DELETE')).status,200)
+ await exact('the note removed')
+ await write(noted,'draft-question','One more boot arrived with a torn seam.');await write(other,'draft-follow-up','And the laces are missing.')
+ await exact('the customer writes on two drafts')
+ for(const role of ['owner','operator'])await ok(`/conversations/${noted}/actions`,{action:'markAsRead',data:{}},role)
+ await exact('read')
+ const merged=await ok(`/conversations/${noted}/merge`,{source_id:other,source_version:(await get(other)).ticket_version,target_version:(await get(noted)).ticket_version})
+ await exact('merged')
+ assert.equal((await ok(`/conversations/${noted}/merges/${merged.id}/undo`,{})).undone,true)
+ await exact('merge undone')
  await ok(`/conversations/${id}`,{agent_id:original.assigned_to||null},'owner','PUT')
  await ok(`/conversations/${second}`,{agent_id:originalSecond.assigned_to||null},'owner','PUT')
  const transcript=await app.ok(`/api/conversations/${id}/messages`,{token:visitor.token})

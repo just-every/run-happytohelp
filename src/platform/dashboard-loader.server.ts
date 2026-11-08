@@ -73,7 +73,8 @@ export async function dashboardBootstrap(input: DashboardBootstrapInput): Promis
         projectUnavailable = input.projectId;
         result = await bootstrap();
     }
-    if ('error' in result) return { status: result.error.status ?? 500, message: result.error.message };
+    if ('error' in result) return { status: result.error.status ?? 500, message: result.error.message,
+        ...(result.error.retryAfter ? { retryAfter: result.error.retryAfter } : {}) };
     // Start the selected first page as soon as fresh counts choose its view.
     // Keep the outcome nested so streaming settings never waits for this read.
     const initialInboxList = input.inbox && !projectUnavailable && !result.result.accountOnly ? (() => {

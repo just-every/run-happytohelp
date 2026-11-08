@@ -10,6 +10,7 @@ import {createServer} from 'vite'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
 import {client} from './kit/http.mjs'
 import {generate} from '../move-in/generator.mjs'
+import {publicSiteOverloadProof} from '../helpers/public-site/overload.mjs'
 
 const root=fileURLToPath(new URL('../..',import.meta.url))
 async function withRuntime(options,body){const runtime=await createRuntime(options);let success=false;try{await body(runtime,client(runtime.origin));success=true}finally{await runtime.close(success)}}
@@ -151,3 +152,5 @@ test('help filled by a Move in import stays noindex on every public page until a
   const own=await request(`/api/knowledge/${native.projectId}/articles`,{token:native.token,body:{title:'Native guide',slug:'native-guide',content:'Native.',summary:'native',status:'published'}});assert.equal(own.status,201);const never=await request(`/help/${native.projectId}`);assert.equal(never.status,200);assert.equal(never.headers.get('x-robots-tag'),null)
  })
 })
+
+test('the public site and a configured help host answer D1\'s overload as the application does: a read is retried, then 503 with Retry-After, never 500, and a write is never re-run',{timeout:240_000},()=>publicSiteOverloadProof())

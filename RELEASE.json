@@ -220,6 +220,10 @@
     {
       "id": "312_agent_door_retired_refs.sql",
       "buyerSteps": "Back up D1 first; apply after 311_inbox_message_secure_delete.sql and before serving the updated Worker. Adds only the agent-door retired-reference suppression table from Base bb81810f74ae5cbad9cd786ac84ee738306f63de, without changing existing rows or applied migrations. Nothing is sent or replayed. Retain its value-free digests and erasure markers in installation archives so retirement survives restore."
+    },
+    {
+      "id": "313_inbox_entries.sql",
+      "buyerSteps": "Back up D1 first; apply once after 312_agent_door_retired_refs.sql, before serving the updated Worker. Additive only: derived inbox tables (inbox_entries, inbox_tallies, inbox_field_tallies, inbox_tag_tallies, inbox_unread) with their indexes, an index of snooze schedules by conversation and one of contacts by name, and triggers that keep the derived tables current from messages, notes, merges, conversations, AI rows and profiles, snooze schedules, imported-message sources, tag and company links, reads and memberships. The migration fills them once from the existing rows; no existing row changes and nothing is sent, queued or enabled. Every value is derived: each import or restore rebuilds them from the restored rows."
     }
   ],
   "breaking": false,

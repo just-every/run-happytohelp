@@ -10,6 +10,7 @@ import {bucketData,bucketsData} from './buckets'
 import {conversationData,conversationsData} from './dashboard-data'
 import {inboxSearchTerm,inboxSearchCondition,attachMatchedMessages} from './inbox-search'
 import {inboxFilters} from './inbox-filters'
+import {inboxList} from './inbox-list'
 import {hasMessages} from './inbox-visible'
 import {compileFilters,parseFilters,queryJSON} from '../tickets/filters'
 import {compileSort,parseSort} from '../tickets/sort'
@@ -23,6 +24,7 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  const project=c.req.param('projectId')
  if(project)await scope(c)
  const page=Math.max(1,parseInt(c.req.query('page')||'1')||1),search=inboxSearchTerm(c),match=search?inboxSearchCondition(search):undefined
+ if(!search)return c.json(await inboxList(c,a,project,page))
  const conditions=["EXISTS(SELECT 1 FROM memberships m WHERE m.project_id=c.project_id AND m.user_id=?)",hasMessages,"NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)"],params:any[]=[a.id,a.id]
  conditions.push(ticketScopeSql('?'))
  // An indexed search names its candidate conversations; the project's own index must not drive it.
@@ -49,21 +51,15 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  }
  const snoozed=c.req.query('snoozed'),sleeping="EXISTS(SELECT 1 FROM workflow_schedules ws WHERE ws.conversation_id=c.id AND ws.kind='snooze' AND ws.state='pending')"
  if(snoozed==='only')conditions.push(sleeping)
- else if(snoozed!=='include'&&(!search||c.req.query('search_scope')==='view'))conditions.push('NOT '+sleeping)
+ else if(snoozed!=='include'&&c.req.query('search_scope')==='view')conditions.push('NOT '+sleeping)
  const where=conditions.join(' AND '),total=()=>c.env.DB.prepare(`SELECT count(*) total FROM conversations c WHERE ${where}`).bind(...params)
- let rows:any[],count:number
- if(search){
-  // A search evaluates its condition once: the page carries the total. An empty first page
-  // (or cursor page) has none to carry; only a later page past the end counts alone.
-  rows=(await c.env.DB.prepare(`SELECT c.*,count(*) OVER () inbox_search_total FROM conversations c WHERE ${where} ORDER BY ${sort.sql} LIMIT 30 OFFSET ?`).bind(...params,...sort.params,(page-1)*30).all<any>()).results
-  count=rows.length?rows[0].inbox_search_total:page===1?0:(await total().first<{total:number}>())!.total
-  for(const row of rows)delete row.inbox_search_total
- }else{
-  const listing=await c.env.DB.batch<any>([total(),c.env.DB.prepare(`SELECT c.* FROM conversations c WHERE ${where} ORDER BY ${sort.sql} LIMIT 30 OFFSET ?`).bind(...params,...sort.params,(page-1)*30)])
-  count=listing[0].results[0].total;rows=listing[1].results
- }
+ // A search evaluates its condition once: the page carries the total. An empty first page
+ // (or cursor page) has none to carry; only a later page past the end counts alone.
+ const rows=(await c.env.DB.prepare(`SELECT c.*,count(*) OVER () inbox_search_total FROM conversations c WHERE ${where} ORDER BY ${sort.sql} LIMIT 30 OFFSET ?`).bind(...params,...sort.params,(page-1)*30).all<any>()).results
+ const count=rows.length?rows[0].inbox_search_total:page===1?0:(await total().first<{total:number}>())!.total
+ for(const row of rows)delete row.inbox_search_total
  const data=await conversationsData(c.env,rows,a.id)
- if(search)await attachMatchedMessages(c.env,search,data)
+ await attachMatchedMessages(c.env,search,data)
  return c.json({data,meta:{pagination:{total:count,current_page:page,total_pages:Math.max(1,Math.ceil(count/30))}}})
  })
  dashboard.get(`${prefix}/counts`,async c=>{const a=await requireActor(c);if(a.role==='contact')throw new HTTPException(403);const project=c.req.param('projectId');if(project)await scope(c);const counts=await inboxCounts(c.env,a.id,project);return c.json({data:counts})})

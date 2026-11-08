@@ -7,6 +7,7 @@ import type { AppEnv, Env } from '../../platform/env'
 import { notFoundResponse, rejectedResponse } from '../../base/rejected-response'
 import { helpCenterRoutes, reserved, resolvePublicProject } from './help-center'
 import { missingHelpCenterPage } from './not-found'
+import { answerOverloads } from '../../platform/d1-overload'
 export { publicHelpHostResponse } from './help-host'
 
 export async function isPublicSitePath(path: string, env: Env) {
@@ -36,3 +37,5 @@ publicSiteRoutes.route('/', helpCenterRoutes)
 publicSiteRoutes.notFound(c => c.req.path.startsWith('/api/')
  ? notFoundResponse(c.req.raw)
  : rejectedResponse(c.req.raw, c.html(missingHelpCenterPage(), 404)))
+// The Worker entry dispatches here directly, so D1's overload follows the application's rule: a read is retried, then 503.
+answerOverloads(publicSiteRoutes)

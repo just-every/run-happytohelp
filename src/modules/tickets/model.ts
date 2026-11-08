@@ -59,7 +59,8 @@ export async function getTicket(env:Env,actor:Actor,id:string,tokenAuthority?:To
   env.DB.prepare('SELECT f.*,v.value_json FROM ticket_fields f LEFT JOIN ticket_field_values v ON v.project_id=f.project_id AND v.field_id=f.id AND v.conversation_id=? WHERE f.project_id=?').bind(id,actor.projectId).all<any>(),
   env.DB.prepare("SELECT h.*,op.agent_name,op.sponsor_name,op.approvers_json FROM ticket_history h LEFT JOIN h2h_agent_operations op ON op.project_id=h.project_id AND json_extract(op.result_json,'$.history_id')=h.id WHERE h.project_id=? AND h.conversation_id=? ORDER BY h.at DESC,h.id DESC LIMIT 200").bind(actor.projectId,id).all<any>(),
   env.DB.prepare('SELECT id,name,category FROM ticket_statuses WHERE project_id=? AND id=?').bind(actor.projectId,row.status_id).first(),
-  env.DB.prepare('SELECT t.id,t.name FROM conversation_tags ct JOIN workspace_tags t ON t.project_id=ct.project_id AND t.id=ct.tag_id WHERE ct.project_id=? AND ct.conversation_id=? ORDER BY t.name').bind(actor.projectId,id).all<any>(),
+  // The ticket's own links (the primary key), never the workspace's.
+  env.DB.prepare('SELECT t.id,t.name FROM conversation_tags ct JOIN workspace_tags t ON t.project_id=ct.project_id AND t.id=ct.tag_id WHERE +ct.project_id=? AND ct.conversation_id=? ORDER BY t.name').bind(actor.projectId,id).all<any>(),
   env.DB.prepare('SELECT credential_name,source_product,source_ref,source_url FROM api_conversations WHERE project_id=? AND conversation_id=?').bind(actor.projectId,id).first(),
  ])
  const visible=new Set(fields.results.filter(f=>fieldAllowed(f,access)).map(f=>f.id))

@@ -90,6 +90,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const {
         hasNextPage,
         isConversationReady,
+        isBusy,
         isLoading,
         isLoadingMore,
         isRefreshing,
@@ -126,7 +127,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         }
         refreshConversation();
     };
-    const visibleTranscriptError = transcriptError?.conversationId === conversationId;
+    const visibleTranscriptError = transcriptError?.conversationId === conversationId && !transcriptError.busy;
+    const isTranscriptBusy = transcriptError?.conversationId === conversationId && Boolean(transcriptError.busy);
     const isComposerEnabled = isConversationReady && buckets.length > 0 && !isLoading && !isSending && !conversation?.merged_into;
     const cancelDraftAdoption = () => {
         if (draftAdoptionRef.current) {
@@ -340,7 +342,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             <div className="container-xxl">
                 { loadError ? <p className="conversation-load-error" role="alert">
                     {[401,403,404].includes(loadError.status)?'This ticket is unavailable. Your access or its group may have changed.':'Couldn’t load this conversation.'} <button type="button" onClick={ retryConversationLoad }>Retry</button>
-                </p> : <div className="spinner-border text-primary" role="status">
+                </p> : isBusy ? <p className="conversation-busy-notice" role="status">The workspace is busy. Trying again in a few seconds…</p> : <div className="spinner-border text-primary" role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div> }
             </div>
@@ -385,6 +387,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                         { loadError && <p className="conversation-load-error px-2 py-2" role="alert">
                             Couldn’t refresh this conversation. <button type="button" onClick={ retryConversationLoad }>Retry</button>
                         </p> }
+                        { (isBusy || isTranscriptBusy) && <p className="conversation-busy-notice px-2 py-2" role="status">The workspace is busy. Trying again in a few seconds…</p> }
                         { visibleTranscriptError && <p className="conversation-load-error px-2 py-2" role="alert">
                             Couldn’t load newer messages. <button type="button" onClick={ () => retryTranscriptMessages() }>Retry</button>
                         </p> }

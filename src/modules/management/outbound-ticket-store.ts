@@ -49,7 +49,7 @@ export async function reserveOutboundTicket(env:Env,actor:Actor,sessionHash:stri
  statements.push(env.DB.prepare(`INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json)
   SELECT 'outbound-ticket:'||conversation_id,project_id,created_at,'data','ticket.created','succeeded','user',actor_id,'dashboard','conversation',conversation_id,json_object('kind',kind)
   FROM operator_ticket_commands WHERE project_id=? AND conversation_id=? AND intent_hash=?`).bind(actor.projectId,conversationId,intentHash))
- if(input.kind==='email')statements.push(env.DB.prepare(`INSERT OR IGNORE INTO email_message_options(project_id,conversation_id,local_id,mailbox_id,agent_id,from_address,to_address,cc_json,bcc_json,created_at) SELECT project_id,conversation_id,?,?,?,?,?,?,?,? FROM operator_ticket_commands WHERE project_id=? AND conversation_id=? AND intent_hash=?`).bind(input.localId,input.mailboxId,actor.id,input.fromAddress,toAddress,JSON.stringify(input.cc),JSON.stringify(input.bcc),now,actor.projectId,conversationId,intentHash))
+ if(input.kind==='email'&&input.firstComment!=='internal')statements.push(env.DB.prepare(`INSERT OR IGNORE INTO email_message_options(project_id,conversation_id,local_id,mailbox_id,agent_id,from_address,to_address,cc_json,bcc_json,created_at) SELECT project_id,conversation_id,?,?,?,?,?,?,?,? FROM operator_ticket_commands WHERE project_id=? AND conversation_id=? AND intent_hash=?`).bind(input.localId,input.mailboxId,actor.id,input.fromAddress,toAddress,JSON.stringify(input.cc),JSON.stringify(input.bcc),now,actor.projectId,conversationId,intentHash))
  statements.push(trackingStatement(env,conversationId,true))
  if(input.kind==='email')statements.push(...emailThreadingStatements(env,{projectId:actor.projectId,conversationId,createdAt:now,keys:[{kind:'subject_token',value:`h2h:${conversationId}`,source:'native',sourceRef:'operator_ticket'}]}))
  if(input[noticeCommand])statements.push(env.DB.prepare(`UPDATE outbound_notice_commands SET receipts_json=json_insert(receipts_json,?,json_object('conversationId',?)) WHERE project_id=? AND id=? AND outcome='succeeded' AND EXISTS(SELECT 1 FROM operator_ticket_commands WHERE project_id=? AND conversation_id=? AND intent_hash=?)`).bind(`$."${input.localId}"`,conversationId,actor.projectId,input[noticeCommand],actor.projectId,conversationId,intentHash))
@@ -60,10 +60,10 @@ export async function reserveOutboundTicket(env:Env,actor:Actor,sessionHash:stri
  if(command.intent_hash!==intentHash)throw new HTTPException(409,{message:'Ticket command conflicts with an earlier request'})
  return {conversationId,duplicate:results[selected?0:1].meta.changes===0}
 }
-export async function logOutboundCall(env:Env,actor:Actor,sessionHash:string,conversationId:string,content:string){
- const noteId=`call-${conversationId}`,now=Date.now(),authority=await outboundTicketAuthority(env,actor,sessionHash)
+export async function logOutboundNote(env:Env,actor:Actor,sessionHash:string,conversationId:string,content:string,kind:'email'|'call'){
+ const noteId=`${kind==='call'?'call':'initial-note'}-${conversationId}`,now=Date.now(),authority=await outboundTicketAuthority(env,actor,sessionHash)
  await env.DB.prepare(`INSERT OR IGNORE INTO conversation_notes(id,conversation_id,user_id,content,created_at) SELECT ?,c.id,?,?,? FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND ${writableContact} AND ${ticketScopeSql('?')} AND EXISTS(${authority.sql})`).bind(noteId,actor.id,content,now,conversationId,actor.projectId,actor.id,...authority.params).run()
  const note=await env.DB.prepare(`SELECT n.* FROM conversation_notes n JOIN conversations c ON c.id=n.conversation_id JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE n.id=? AND c.project_id=? AND ${writableContact} AND ${ticketScopeSql('?')} AND EXISTS(${authority.sql})`).bind(noteId,actor.projectId,actor.id,...authority.params).first()
- if(!note)throw new HTTPException(409,{message:'Call log admission denied'})
+ if(!note)throw new HTTPException(409,{message:kind==='call'?'Call log admission denied':'Initial note admission denied'})
  return note
 }

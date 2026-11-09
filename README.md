@@ -37,11 +37,11 @@ work delegated to your own Codex or Claude. It works with human replies without
 an AI provider. The editable React application runs on Cloudflare Workers with
 Hono, D1, R2, Queues and Durable Objects.
 
-## Release 0.4.14
+## Release 0.4.15
 
-K17 inbox_entries migration 313 is not included; it ships in v0.4.15.
+v0.4.14 remains unpublished. The last published release and upgrade baseline is v0.4.13.
 
-Deploy version 0.4.14, tagged **`v0.4.14`** once published, using the commands below. Forty-four migrations since v0.4.13.
+Deploy version 0.4.15, tagged **`v0.4.15`** once published, using the commands below. 47 migrations since v0.4.13.
 
 - **Move in:** connect Zendesk over OAuth, review delta sweeps and import supplied or fetched attachment bytes into private storage. The apply replay measured 4.74x fewer round trips (130,525 to 27,533); bounded-capacity qualification uses synthetic data, not a live-customer import guarantee.
 - **AI and widget:** each workspace selects auto, draft (prepare replies for a teammate) or off; the follow-ups preserve concurrent settings saves, human Send and answers when the assistant cannot reply. Widget sessions stay with their visitor and support an explicit identity switch and `h2h('shutdown')`.
@@ -49,6 +49,11 @@ Deploy version 0.4.14, tagged **`v0.4.14`** once published, using the commands b
 - **Search and erasure:** indexed contact and message search avoids whole-inbox scans; overloaded D1 returns 503. Person and teammate erasure covers retained legacy journal copies, reader receipts, delegation/note files and search terms. Retired agent-door references join the declared erasure inventory.
 - **Knowledge and earlier accepted work:** imported-only help stays noindex until a member publishes. Includes knowledge entitlement, publication history and restore rescan boundaries; procedures and attribution reviews; follow-up obligations; support-channel consent, voice and mobile notices; the shared agent door/relay and personal Slack/Teams notices. Existing partial and live-provider qualification boundaries remain.
 - **Installer:** pinned `@runeditrun/rer` 0.2.102, with the project descriptor bound to the exact current setup-manifest bytes.
+
+- **Dashboard and inbox reads at scale:** dashboard lists, counts and filters use derived inbox tables maintained by triggers, so reads follow page size rather than the size of a large imported workspace. An overloaded D1 returns 503 busy instead of timing out.
+- **Restored native sign-in:** session admission and password login remain available while restored Knowledge content is being upgraded; the native checkout gate still applies.
+- **AI reply modes:** draft mode completes before the widget card, held replies are never auto-sent after a lost process, and AI-assigned conversations remain visible in draft and off modes.
+- **Erasure under concurrency (K15c):** a per-contact lease prevents overlapping erasures; legacy delta writes are blocked during an erasure, and object collection uses bounded batches. Apply `315_erasure_leases.sql` before the new Worker.
 
 **Migrations from v0.4.13:**
 
@@ -96,8 +101,17 @@ Deploy version 0.4.14, tagged **`v0.4.14`** once published, using the commands b
 - `310_inbox_contact_search.sql`
 - `311_inbox_message_secure_delete.sql`
 - `312_agent_door_retired_refs.sql`
+- `313_inbox_entries.sql`
+- `314_inbox_visitor_waiting.sql`
+- `315_erasure_leases.sql`
 
-Update from v0.4.13 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and locked @runeditrun/rer 0.2.102. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity; never edit, delete or reorder ledger rows. Apply all 44 migration files added since v0.4.13 once, in filename order, through pinned rer before the updated Worker serves traffic: 263_followup_obligations.sql, 264_procedure_versions.sql, 265_reviewed_knowledge_proposals.sql, 266_procedure_regression_stop.sql, 267_translated_ai_publications.sql, 268_help_domain_publication.sql, 269_ai_tool_trace.sql, 270_procedure_attribution_reviews.sql, 271_support_channels.sql, 272_support_channel_media.sql, 273_shared_channel_actions.sql, 274_channel_consent.sql, 275_voice.sql, 276_voice_media.sql, 277_agent_door.sql, 278_business_settings.sql, 279_business_people.sql, 280_agent_native.sql, 281_managed_connectors.sql, 282_messaging_surveys.sql, 283_mobile_devices.sql, 290_native_reply_drafts.sql, 291_native_ticket_scope.sql, 292_knowledge_entitlements.sql, 293_knowledge_references.sql, 294_knowledge_publication_history.sql, 295_knowledge_source_identity.sql, 296_knowledge_upgrade_progress.sql, 297_knowledge_indexable_sources.sql, 298_agent_door_relay.sql, 299_outbound_channel_tickets.sql, 300_teammate_slack.sql, 301_import_door.sql, 302_move_in_zendesk_pull.sql, 303_teammate_teams.sql, 304_knowledge_import_origins.sql, 305_mailgun_inbound_tokens.sql, 306_cutover_steps.sql, 307_legacy_import_delta.sql, 308_legacy_mail_s3.sql, 309_move_in_zendesk_attachments.sql, 310_inbox_contact_search.sql, 311_inbox_message_secure_delete.sql, 312_agent_door_retired_refs.sql. Apply migrations 304–312 before the new Worker. Once table 312 exists, the previous Worker refuses person and teammate erasure with agent_erasure_undeclared_table; this is fail-closed, and retry succeeds after the Worker updates. Earlier installations also apply their other missing published migrations. Keep each migration's additional buyer steps, including restored-connection reauthorization and knowledge rescan requirements. Run rer deploy --dry-run against the retained installation before any separately authorized deployment. Held secrets remain private; Mailgun intake requires MAILGUN_WEBHOOK_SIGNING_KEY. Unset the retired ZENDESK_EMAIL and ZENDESK_TOKEN inputs; connect Zendesk through Move in. No migration starts a pull, sends a message, enables consent or replays an uncertain external action. The v0.4.12 Platform multiple-ledger recovery caveat remains: stop before writes and use a separately scoped recovery procedure, never delete either ledger. Live-provider qualification, independent stranger review and owner cutover remain separate.
+Update from v0.4.13 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and locked @runeditrun/rer 0.2.102. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity; never edit, delete or reorder ledger rows. Apply all 47 migration files added since v0.4.13 once, in filename order, through pinned rer before the updated Worker serves traffic, using the filenames listed above.
+
+Apply migrations 304–315 before the new Worker. While the migrations apply, a v0.4.13 Worker refuses teammate erasure with 503 "Member erasure schema requires review", and person erasure continues through the new erasure triggers. An installation already running the agent door (an unreleased main build) refuses person and teammate erasure with agent_erasure_undeclared_table once table 312 exists; this is fail-closed. Retry succeeds after the new Worker serves traffic.
+
+Earlier installations also apply their other missing published migrations. Keep each migration's additional buyer steps, including restored-connection reauthorization and knowledge rescan requirements.
+
+Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. Held secrets remain private; Mailgun intake requires MAILGUN_WEBHOOK_SIGNING_KEY. Unset the retired ZENDESK_EMAIL and ZENDESK_TOKEN inputs; connect Zendesk through Move in. No migration starts a pull, sends a message, enables consent or replays an uncertain external action. The v0.4.12 Platform multiple-ledger recovery caveat remains: stop before writes and use a separately scoped recovery procedure, never delete either ledger. Live-provider qualification, independent stranger review and owner cutover remain separate.
 
 See [RELEASE.json](RELEASE.json), [Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
 
@@ -167,11 +181,11 @@ own operating contract; this seed's CLI is not a platform admission requirement.
 
 ## Deploy to your own Cloudflare account
 
-For a new installation, acquire the latest tagged release **`v0.4.14`**,
+For a new installation, acquire **`v0.4.15` once published**,
 after installing `rer` as shown above:
 
 ```sh
-git clone --branch v0.4.14 https://github.com/just-every/run-happytohelp
+git clone --branch v0.4.15 https://github.com/just-every/run-happytohelp
 cd run-happytohelp
 ```
 

@@ -3,6 +3,7 @@ import {createHmac} from 'node:crypto'
 import {sha} from '../journeys/kit/app.mjs'
 import {selfServiceFixture} from './self-service-fixture.mjs'
 import {customerEdgeOutcomes} from './customer-outcomes-edges.mjs'
+import {assertContactTally,contactPagesProof} from './contact-pages.mjs'
 
 // CUSTOMER-001: extend the existing account journey, without another registration.
 // Writes go through native doors; SQL only observes state or injects a commit race.
@@ -154,10 +155,12 @@ export async function customerOutcomes(){
   assert.equal((await record(chat.contactId)).name,'Imported name')
   assert.equal((await app.ok(B+'/contacts?search=invalid-row',owner)).data.length,0)
   const applied=await business();await unchanged()
+  await assertContactTally(app.sql,'after a contact import')
   await app.ok(`${I}/${run.id}/apply`,{...owner,body:{}})
   assert.deepEqual(await business(),applied,'repeating apply changes nothing');await unchanged()
   await app.ok(`${I}/${run.id}/undo`,{...owner,body:{}})
   assert.deepEqual(await business(),businessBefore,'whole contact import restores exact pre-import business state');await unchanged()
+  await assertContactTally(app.sql,'after a contact import is undone')
   const external=await app.ok(I+'/preview',{...owner,body:{kind:'contacts',csv:`Display,External\nMatched by external ID,${email}`,mapping:{name:'Display',externalId:'External'}}})
   assert.equal(external.rows[0].entityId,chat.contactId);assert.equal(external.rows[0].action,'update');await unchanged()
   const companies=await app.ok(I+'/preview',{...owner,body:{kind:'companies',csv:'Account,Seats\nOutcome account,12\nNew company,2\nInvalid company,not-a-number',mapping:{name:'Account',['attribute:'+field.id]:'Seats'}}})
@@ -167,6 +170,7 @@ export async function customerOutcomes(){
   assert.equal((await detail()).company.attributes[field.id],12);await unchanged()
   await app.ok(`${I}/${companies.id}/undo`,{...owner,body:{}})
   assert.deepEqual(await business(),businessBefore,'whole company import restores exact pre-import business state');await unchanged()
+  await contactPagesProof(app)
  }finally{await app.close()}
  await customerEdgeOutcomes()
 }

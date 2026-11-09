@@ -5,6 +5,7 @@ import {erasedTranscript} from '../helpers/conversation/erased-transcript.mjs'
 import {rerMailErasureJourney} from '../helpers/email/rer-erasure.mjs'
 import {erasureOutcomes} from '../helpers/erasure/outcomes.mjs'
 import {assertInboxDerived} from '../helpers/inbox/derived.mjs'
+import {assertContactSearch,assertContactTally} from '../helpers/contact-pages.mjs'
 
 // Contact erasure through the real application router on real D1 and R2 with every migration applied.
 let app,DB,FILES,env
@@ -257,10 +258,16 @@ let first,opAfter
  // with contacts, and no term of the erased contact's row remains in it.
  for(const term of identityTerms)assert.deepEqual(await searched(tokens.operator,term),[[],[]],term+' finds nothing after erasure')
  await assertInboxDerived(all,'after erasure')
+ await assertContactTally(all,'after erasure')
  await DB.prepare("INSERT INTO inbox_contact_search(inbox_contact_search,rank) VALUES('integrity-check',1)").run()
  await DB.prepare("CREATE VIRTUAL TABLE erasure_contact_terms USING fts5vocab(inbox_contact_search,'instance')").run()
  try{assert.deepEqual(await all("SELECT term FROM erasure_contact_terms WHERE doc=(SELECT rowid FROM contacts WHERE id='ct')"),[],'the erased identity leaves no indexed term')}
  finally{await DB.prepare('DROP TABLE erasure_contact_terms').run()}
+ // The workspace-scoped contact index follows it too.
+ await assertContactSearch(all,'after erasure',identityTerms.filter(term=>Array.from(term).length>=3))
+ await DB.prepare("CREATE VIRTUAL TABLE erasure_scoped_terms USING fts5vocab(contact_search,'instance')").run()
+ try{assert.deepEqual(await all("SELECT term FROM erasure_scoped_terms WHERE doc=(SELECT rowid FROM contacts WHERE id='ct')"),[],'the erased identity leaves no term in the workspace-scoped index')}
+ finally{await DB.prepare('DROP TABLE erasure_scoped_terms').run()}
  // The message index removes the erased messages' words from its storage, and still agrees with messages.
  for(const word of erasedWords)assert.equal(await indexedPages(word),0,word+' leaves the message index storage')
  await DB.prepare("INSERT INTO inbox_message_search(inbox_message_search,rank) VALUES('integrity-check',1)").run()

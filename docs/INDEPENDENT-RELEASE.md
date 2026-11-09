@@ -116,9 +116,10 @@ and recommends dropping them, exporting, then recreating them. It also says a
 running export blocks database requests. Use the helper rather than plain
 `wrangler d1 export` for this installation.
 
-The installation has two derived search indexes: `inbox_message_search`, an FTS5
-table backed by `messages`, and `inbox_contact_search`, an FTS5 table backed by the
-`inbox_contact_identity` view of `contacts`. The helper reads each original
+The installation has three derived search indexes: `inbox_message_search`, an FTS5
+table backed by `messages`, `inbox_contact_search`, an FTS5 table backed by the
+`inbox_contact_identity` view of `contacts`, and `contact_search`, an FTS5 table
+backed by the `contact_search_identity` view of `contacts`. The helper reads each original
 definition from `sqlite_master`, checks that it is FTS5 over that content, and
 reads its FTS5 settings (such as `secure-delete`). Before changing them, it writes
 the private recovery file described below. It then runs:
@@ -126,6 +127,7 @@ the private recovery file described below. It then runs:
 ```sql
 DROP TABLE IF EXISTS "inbox_message_search";
 DROP TABLE IF EXISTS "inbox_contact_search";
+DROP TABLE IF EXISTS "contact_search";
 ```
 
 This removes only the derived search tables and their FTS shadow tables. Message
@@ -140,6 +142,7 @@ table with its saved original `CREATE VIRTUAL TABLE` statement and settings, and
 ```sql
 INSERT INTO "inbox_message_search"("inbox_message_search") VALUES('rebuild');
 INSERT INTO "inbox_contact_search"("inbox_contact_search") VALUES('rebuild');
+INSERT INTO "contact_search"("contact_search") VALUES('rebuild');
 ```
 
 The rebuild indexes the retained messages and contacts, including historical rows.

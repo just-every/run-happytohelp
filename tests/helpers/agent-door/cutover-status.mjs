@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {randomUUID,webcrypto} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
+import {assertCutoverCounts,assertCutoverDerived} from '../cutover/oracle.mjs'
 import {signJws,seconds} from '../../../src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs'
 
 /** The signed read uses the real router, native claim and committed widget messages. */
@@ -47,6 +48,23 @@ export async function cutoverStatusJourney(){
   const after=await pureRead();assert.equal(after.status,200)
   assert.deepEqual(after.data,{created_since:{conversations:1,messages:1},events_since:1,last_event_at:new Date(event.created_at).toISOString()})
   assert.deepEqual((await pureRead()).data,after.data,'a read grant can be repeated without a nonce write')
+  // The owner's Cutover page counts the visitor's widget conversation from migration 318's derived sets, equal to
+  // every row recomputed; D1's overload at any of its calls is retried to the same answer, or answers 503, never 500.
+  const cutover=`/api/move-in/projects/${owner.projectId}/cutover`,calm=await app.call(cutover,{token:owner.token})
+  assert.equal(calm.status,200,JSON.stringify(calm.data))
+  await assertCutoverDerived(app.sql,'after a visitor message')
+  assert.equal((await assertCutoverCounts(app.sql,owner.projectId,calm.data.data.sources,'after a visitor message')).widget.arrivals,1,'the visitor\'s conversation is a widget arrival')
+  let positions=0
+  for(let at=1;at<100;at++){
+   const fault={'x-test-fault':'d1-overloaded','x-test-statement-at':String(at)},refused=await app.call(cutover,{token:owner.token,headers:fault})
+   if(refused.status===200){assert.deepEqual(refused.data,calm.data);break}
+   positions++
+   assert.equal(refused.status,503,JSON.stringify(refused.data));assert.equal(typeof refused.data.error,'string')
+   const wait=Number(refused.headers.get('retry-after'));assert.ok(Number.isInteger(wait)&&wait>=1&&wait<=30,'Retry-After is whole seconds within D1\'s window')
+   const passing=await app.call(cutover,{token:owner.token,headers:{...fault,'x-test-overloads':'2'}})
+   assert.equal(passing.status,200,`call ${at}`);assert.deepEqual(passing.data,calm.data,`call ${at} answers the same after a passing overload`)
+  }
+  assert.ok(positions>=5,'every D1 call of the cutover read was refused once')
   const boundary=await pureRead({since:new Date(event.created_at).toISOString()})
   assert.deepEqual(boundary.data.created_since,{conversations:0,messages:0});assert.equal(boundary.data.events_since,0,'since is exclusive')
   assert.equal((await pureRead({since:new Date(event.created_at+60_000).toISOString()})).data.events_since,0)

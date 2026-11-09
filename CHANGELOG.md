@@ -14,6 +14,8 @@ updating and backing up an installation, see
 
 - **Business relay privacy:** pinned `@runeditrun/rer` 0.2.104. Business tokens, references, held calls and signed relay pulls require durable running state; stopped or missing state refuses access. Apply `316_agent_door_relay_privacy.sql` once after `315_erasure_leases.sql` and before serving the updated Worker. It replaces relay triggers, removes only provable cross-Business memberships and preserves audits. Native owner access remains available after stopping.
 - **Overload recovery:** a dashboard read that fails at the transport level waits as busy and recovers, a dashboard document cut mid-stream recovers by itself, busy public pages are HTML pages, a native form post refused by an overload keeps its input (same-origin posts only), and a read's side effects happen once. No migration.
+- **Contacts, companies and Cutover at scale:** the contacts page, its pickers and the contacts API page by the boundary contact and read per page, not per workspace, including a broad search wherever its matches fall in the order; the company page reads in proportion to the company; the Cutover counts read derived tallies. While D1 is busy, these pages say so and read again by themselves instead of showing an error.
+- **Migrations:** `318_contacts_cutover_bounds.sql`. Apply once after `317_agent_door_legacy_principals.sql` and before serving the updated Worker; it is additive and fills its indexes, tallies, search index and derived sets from existing rows.
 
 ## 0.4.15 — 2026-11-09
 

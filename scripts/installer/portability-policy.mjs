@@ -54,7 +54,7 @@ export const archivePolicy={
   :table==='knowledge_upgrade_reports'?{...row,completed_at:null}
   :table==='mailbox_sends'&&row.state==='sending'?{...row,state:'uncertain',error_code:'restored_pending_send'}:row))))))));},
  // Reconstruct the full-text indexes from retained messages and contacts after restore.
- derivedTables:['inbox_message_search','inbox_contact_search'],
+ derivedTables:['inbox_message_search','inbox_contact_search','contact_search'],
  excludeTables:[
   // Consumed ik_door_grants are portable replay fences, never authority.
   // ik_door_settings is neutralized on export, import and staged validation.

@@ -166,6 +166,97 @@ them under the target). Over the ceiling, measured at the same shape and never g
   35,052 (15,968, over). Its matches lie at the far end of the inbox order, so a walk would read the whole
   order instead; an inbox-order index led by a time bucket would bound it.
 
+Companies at scale. The company page (`GET /projects/:id/companies/:companyId`, `customers/read.ts`) still
+answers every member and every ticket, unpaged and exactly as before, but reads in proportion to the company,
+never the workspace: the company is looked up first, so a merged-away or unknown company's 404 reads nothing
+more (about 10 rows); each membership is read once with its contact through `contact_companies_company` (the
+members are the writable contacts, the member count is every membership, and a ticket is listed when its
+contact is, `contactAvailableSql()`'s predicate on that same row); tickets are each member's conversations
+through `conversations_contact_history`, sorted after, under the role's ticket scope evaluated once as sets
+(`inboxAccess`); history comes through both of its company indexes; undo availability reuses this company's
+state and reads only the other companies its entries changed. Its ceiling is 5,000 + 1.5 x (members +
+tickets), about 3 rows per member and 4 per ticket: at a large imported workspace's shape (162,000 contacts and
+conversations) a company of 946 members and 946 tickets reads 6,651 (6,231 for a teammate scoped to one group,
+who sees 473 of them), a small company 50 to 90 and a company with no members 17, and 80,000 more hidden widget
+drafts read the same rows. Its other reads stay as they were, under 5,000 at that shape and unchanged by the
+drafts: the list 3,118 (it counts each company's members, two rows per membership), `?view=names` 96, ticket
+settings and request forms with an account field (one row per company) about 100 to 120, a merge preview
+2,235. Over the target and left as they were: linking, moving or unlinking a member of that 946-member company
+reads about 11,700 (the change claims and rewrites the company's whole membership), and knowledge
+entitlements read about 325,000 for their contact account pickers (their company pickers read under 1,000).
+While D1 is overloaded the company list and an opened company keep what they show, say the workspace is busy
+(`role="status"`) and read again after Retry-After; any other failure stays an alert.
+
+Cutover. Settings > Cutover reads one request, `GET /api/move-in/projects/:projectId/cutover`
+(`move-in/cutover/counts.ts`), whose answer is what the counts were when each walked the workspace's
+conversations: the legacy journal has no workspace column, and a widget arrival differs from a hidden draft
+only by its messages (926,699 rows at a large imported workspace's shape). Migration 318 keeps each counted
+set, filled by the migration and kept by triggers on every table it derives from (conversations, messages,
+`inbound_emails`, `move_in_conversations`, `legacy_import_rows`, `ticket_followups`), so plain-`INSERT`
+imports, an undone import and a restore keep it true: `cutover_zendesk_conversations` (a Zendesk import still
+in its workspace), `cutover_legacy_conversations` (a workspace conversation and each run whose journal maps it,
+counted per workspace and run in `cutover_legacy_runs`), `cutover_widget_arrivals` (a widget conversation a
+visitor wrote in, with its creation time) and `cutover_tallies` (per workspace, the three of all time). The
+Zendesk and legacy counts are a tally; the last sweep reads the runs that touched the workspace and their state,
+live (a chunk run sweeps when its package run completes); widget arrivals since a moment are one index range,
+one row per arrival counted (with no moment, the tally); mail arrivals were already a covering-index range.
+At that shape (162,000 conversations, 144,445 journaled, 5,997 imported from Zendesk) the read takes 977 rows,
+960 of them the arrivals since the last sweep, and 80,000 more hidden drafts add none. Stated ceiling: 5,000 +
+1 row per widget or mail arrival since the latest pull, sweep or step. Recording a step reloads through the same
+read. A restore rebuilds the sets (`scripts/installer/cutover-bounds-sql.mjs`).
+
+Contacts at scale. The contacts list (`GET /projects/:id/contacts`, both doors, `contact-list.ts`), which the
+contacts page, its first page preloaded by the workspace navigation read, the ticket panel's and the company
+member pickers and the identity link search ask, answers every request exactly as before and never reads every
+contact of a workspace. Migration 318 adds, all filled by the migration, kept by triggers on contacts (so
+plain-`INSERT` imports, the widget's `json_patch`, edits, soft deletes, erasure and plain `DELETE` keep them true)
+and rebuilt from the restored rows after every import:
+- an index per sort and direction in the list's own order (the sort key verbatim, then id ascending in either
+  direction; `contacts_name_order` in 313 holds name ascending), and the same orders over only the contacts a term
+  can match (`contacts_searchable_*`: live, with a name, email, provided name or provided email; hidden widget
+  drafts have none);
+- `contact_tallies`, each workspace's live contacts (`scripts/installer/contact-bounds-sql.mjs` rebuilds it);
+- `contact_search`, an FTS5 trigram index like 310's over the same four values through `lower()`, holding each
+  searchable live contact with its workspace in a scope column, so a phrase scoped to the workspace is a term's
+  matches there, one row each. Each entry also carries the contact's id and its four sort keys (unindexed columns
+  read through the `contact_search_identity` view, at no extra row), and each sort's band text, indexed: a text
+  key's whole lowercased value through `lower()`, or a last seen's first ten hex digits (2^24 ms, about 4.7 hours),
+  so a band, a prefix of that text, is one stretch of its order (`derivedSearchIndexes` and the portability
+  policy's derived tables rebuild it).
+A total without a term is the tally (one row). A page walks its order's index and stops after its rows
+(`contact-walk.ts`); Next and Previous ask for the page after the last contact shown (`after=<id>`) or before the
+first (`before=<id>`), with `page` the number it shows, so any page reads about its own rows: the rows tied with
+the boundary on the key past its id, then the rows past its key, each from its own index position. A boundary that
+is gone from the workspace, and a page before the first, answer the first page. A term of three or more characters
+reads its matches with their keys from `contact_search` (`contact-matches.ts`), one row each, and orders them here
+exactly as SQLite orders the keys (`contact-key-order.ts`: NOCASE text, integer last seen, then BINARY ids). With
+a total it reads them all, so its cost is the total plus the page, wherever the matches fall in the order. Without
+one a page seeks its rows past its boundary (`contact-seek.ts`, bands in `contact-bands.ts`): a walk of the
+searchable contacts finds them where they are dense, starting at twice the rows the page needs and going on while
+the matches it meets say the rest is within reach; where they are sparse, the term's bands past the walk take over.
+A band is a stretch of the order whose order text (a text key through `lower()`, or a last seen's leading hex
+digits) starts alike: for a text key at three characters, then six, nine and so on; for a last seen at eight hex
+digits, then ten. Each band is found with one index step and
+asked of `contact_search` for a match, so a stretch without matches costs about two rows a band whatever its
+contacts; a band holding up to 150 matches is read whole with their keys; one holding more is walked while it is
+dense and otherwise split into its finer bands. A seek may read 2,000 rows; past that a term with as many matches as
+the rest of 4,900 leaves reads them whole, and a broader one seeks on. `instr` over `lower()` decides
+each match exactly as the former `LIKE` did, without D1's 50-byte `LIKE` pattern limit (a term of 49 or more
+bytes answered 500; it now answers its matches). One- and two-character terms keep the substring test, and their
+count and page read the searchable contacts only. At a large imported workspace's shape (161,919 live contacts,
+53,489 of them searchable; measured on local D1, every answer equal to the former list's) every first, Next and
+Previous page of every sort and direction reads under 120 rows and the plain list 61; a term with a total reads
+its matches plus about 160 (a mailbox domain matching 19,422 contacts 19,583, within 5,000 + 1.5 x the total);
+without a total, 21 terms from one match to 40,588 (mailbox domains, names, `com`) on every sort and direction read
+at most 3,800 on the first, a Next and a Previous page (half of them under 860), and every page that Next and
+Previous reach through 17 such lists end to end (3,946 pages, among them the ticket picker's) at most 4,150; a two-character term 54,000 to 68,000 with its count (under
+the 328,000 it read before); 80,000 more widget drafts read the same rows. Over the target, measured at the same
+shape: a two-character term's pages without a total walk up to 12,300 where its matches are sparse (it read 166,000
+before); a term whose matches are sparse inside one band that cannot split (one key value; most contacts tie on
+last seen 0 and an empty country) reads that band's matches. A page by number deep in
+the list steps over every earlier row with `OFFSET` (page 1,620 of 3,239 about 81,000), which the dashboard never
+asks.
+
 D1's "D1 DB is overloaded" (`platform/d1-overload.ts`) is one rule for every request: a read (GET, HEAD)
 that meets it at any D1 call, middleware and authentication included, is dispatched again as a whole after
 250 ms, 500 ms and 1 s (the `app.fetch` wrapper, which the Worker entry and the dashboard's server

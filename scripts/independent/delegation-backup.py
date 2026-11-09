@@ -27,7 +27,7 @@ def punctuated_end(statement):
     return bool(re.search(r'\bEND[^;\s\w]', tokens, re.I))
 
 # Derived full-text indexes and their external content (a table or a view), rebuilt after a restore.
-SEARCH_INDEXES = (('inbox_message_search', 'messages'), ('inbox_contact_search', 'inbox_contact_identity'))
+SEARCH_INDEXES = (('inbox_message_search', 'messages'), ('inbox_contact_search', 'inbox_contact_identity'), ('contact_search', 'contact_search_identity'))
 
 def search_definition(db, table, content):
     row = db.execute("SELECT type,sql FROM sqlite_master WHERE name=?", (table,)).fetchone()

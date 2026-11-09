@@ -27,9 +27,9 @@ export function assertEqualityPolicy(raw,business,excluded){
  }
  // Physical SQLite FTS segment pages are validated against authoritative content
  // by snapshotDatabase; each virtual index and its source rows remain in equality.
- const sources={inbox_message_search:'messages',inbox_contact_search:'contacts'}
+ const sources={inbox_message_search:'messages',inbox_contact_search:'contacts',contact_search:'contacts'}
  for(const [name,rows] of Object.entries(raw))if(isSearchShadow(rows)){
-  const index=name.match(/^(inbox_message_search|inbox_contact_search)_(data|idx|content|docsize|config)$/)?.[1]
+  const index=name.match(/^(inbox_message_search|inbox_contact_search|contact_search)_(data|idx|content|docsize|config)$/)?.[1]
   assert.ok(index,name+' is a known search index shadow')
   assert.ok(Object.hasOwn(business,index))
   assert.ok(Object.hasOwn(business,sources[index]))

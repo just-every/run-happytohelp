@@ -221,6 +221,10 @@
     {
       "id": "316_agent_door_relay_privacy.sql",
       "buyerSteps": "Back up D1 first; apply once after 315_erasure_leases.sql and before serving the updated Worker. Replaces the agent relay audit triggers so held executions inherit only their original decision\u2019s Business membership. Removes only provable cross-Business relay memberships; preserves every audit and does not infer missing historical membership. Business tokens, references, held calls and signed relay pulls now require durable bs_settings.stopped=0; missing state refuses access. Native owner access and signed policy adoption remain available after stopping. Do not reset or edit prior migration ledger rows."
+    },
+    {
+      "id": "317_contacts_cutover_bounds.sql",
+      "buyerSteps": "Back up D1 first; apply once after 316_agent_door_relay_privacy.sql, before serving the updated Worker. Additive only: indexes of contacts in each contacts-list order (and the same orders over live contacts with an identity value), a per-workspace tally of live contacts, a workspace-scoped contact trigram search index (contact_search), the Cutover page's derived sets and tallies (cutover_zendesk_conversations, cutover_legacy_conversations, cutover_legacy_runs, cutover_widget_arrivals, cutover_tallies), and triggers that keep them current from contacts, conversations, messages, inbound mail, Move in records, the legacy import journal and follow-ups. The migration fills them once from the existing rows; no existing row changes and nothing is sent, queued or enabled. Every value is derived: each import or restore rebuilds them from the restored rows."
     }
   ]
 }

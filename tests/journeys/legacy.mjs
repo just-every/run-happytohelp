@@ -11,6 +11,7 @@ import {legacyBundle} from '../helpers/legacy-bundle.mjs'
 import {writeLegacyPackage} from '../helpers/legacy-package.mjs'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
 import {client} from './kit/http.mjs'
+import {legacyMarker,legacySql} from '../helpers/cutover/oracle.mjs'
 const exec=promisify(execFile)
 
 // A migration operator uses the documented command, then the native application.
@@ -49,6 +50,12 @@ test('a legacy package is reviewed, imported and replayed through its command; t
   const attachment=transcript.messages[0].media[0],download=await request(`/api/conversations/conv/media/${attachment.id}`,{token})
   assert.equal(download.status,200);assert.equal(await download.text(),media.toString())
   const inbox=(await call('/api/dashboard/projects/p/conversations?view=all',{token,status:200})).data.data
+  // The Cutover page's legacy count and last sweep (migration 317's derived sets) equal the journal recomputed after the real import.
+  const sweep=(await call('/api/move-in/projects/p/cutover',{token,status:200})).data.data.sources.find(source=>source.id==='legacy').counts
+  const recomputed=await runtime.execute(`SELECT 'cutover-oracle:'||imported||':'||coalesce(swept,'') v FROM (${legacySql.replaceAll('?1',"'p'").replaceAll('?2',`'${legacyMarker}'`)})`)
+  const [,imported,swept]=/cutover-oracle:(\d+):(\d*)/.exec(recomputed)
+  assert.ok(Number(imported)>0&&swept,'the import journaled its conversations and completed')
+  assert.deepEqual(sweep,{imported:Number(imported),lastSweep:{at:new Date(Number(swept)).toISOString()}})
   assert.ok(inbox.some(row=>row.id==='conv'))
   const state=await runtime.execute("SELECT state FROM ai_generations WHERE id='gen'; SELECT status FROM training_runs WHERE id='run'; SELECT state FROM billing_operations WHERE id='bill-op'; SELECT status FROM local_jobs WHERE id='job'; SELECT amount_minor FROM billing_ledger WHERE id='charge';")
   assert.match(state,/uncertain/);assert.match(state,/revoked/);assert.match(state,/123/)

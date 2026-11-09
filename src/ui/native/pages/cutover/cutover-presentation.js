@@ -6,6 +6,8 @@ export const stateLabels = { incumbent: 'With the old tool', seed: 'Switched her
 export const checkLabels = { passed: 'Check passed', failed: 'Check failed', not_run: 'Not checked' };
 export const sourceOptions = Object.entries(sourceNames).map(([value, label]) => ({ value, label }));
 export const stateOptions = Object.entries(stateLabels).map(([value, label]) => ({ value, label }));
+/** While the database is briefly busy (503) the page keeps what it shows and says it will read again by itself. */
+export const busyNotice = 'The workspace is busy. Trying again in a few seconds…';
 export const checkOptions = [{ value: 'passed', label: 'Passed' }, { value: 'failed', label: 'Failed' }, { value: 'not_run', label: 'Not run' }];
 
 /** The time as the dashboard shows it elsewhere: the day and the minute, with the year only when it is not this one. */

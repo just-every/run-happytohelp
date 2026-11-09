@@ -3,6 +3,7 @@ import { useUnsavedChanges } from '../NavigationGuard';
 import { useNavigate } from '@tanstack/react-router';
 import React, {useCallback,useEffect,useRef,useState} from 'react';
 import {nativeRequest} from '../transport';
+import {busyWait,isBusy} from '../../dashboard/utils/busy';
 import {Feedback} from './forms';
 import ManagementLists from './ManagementLists';
 import ManagementEditor from './ManagementEditor';
@@ -31,7 +32,11 @@ function ResourcePage({projectId,section,recordId}) {
  const requestId=useRef(0),savedContact=useRef(null);
  const listPath=path+(paged?'?'+new URLSearchParams(listQuery):'');
  const load=useCallback(async()=>{const id=++requestId.current;const response=await nativeRequest(listPath);if(id!==requestId.current)return;setItems(response.data||response);setPagination(response.pagination||null);if(section==='agents')setEmailConfigured(response.emailConfigured);},[listPath,section]);
- useEffect(()=>{let active=true;setItems(null);setListFailed(false);setError('');const timer=setTimeout(()=>load().catch(e=>{if(active){setError(e.message);setListFailed(true);}}),paged&&listQuery.search?200:0);return()=>{active=false;clearTimeout(timer);requestId.current++};},[load]);
+ // A busy database (503) keeps what the list shows, says so and reads again after Retry-After while this list is current.
+ const [listBusy,setListBusy]=useState(false);
+ useEffect(()=>{let active=true,retry;setItems(null);setListFailed(false);setListBusy(false);setError('');
+  const run=()=>load().then(()=>{if(active)setListBusy(false);},e=>{if(!active)return;if(isBusy(e)){setListBusy(true);retry=setTimeout(run,busyWait(e));return;}setError(e.message);setListFailed(true);});
+  const timer=setTimeout(run,paged&&listQuery.search?200:0);return()=>{active=false;clearTimeout(timer);clearTimeout(retry);requestId.current++};},[load]);
  useEffect(()=>{
   let active=true;savedContact.current=null;setDraft(null);setInvitation(null);setNotice(null);setError('');setSaved(false);setFieldErrors({});
   if(recordId==='create'){
@@ -83,7 +88,7 @@ function ResourcePage({projectId,section,recordId}) {
   });
  };
  return <><Feedback {...{error,saved}}/>{invitation&&<InvitationCreated invitation={invitation}/>}<InvitationNotice notice={notice}/>
-  {!recordId&&<ManagementLists {...{section,items,base,projectId,emailConfigured,pagination}} query={paged?listQuery:null} onQuery={setListQuery} onMove={move} onChanged={load} onNotice={setNotice} onError={setError}/>} {recordId&&!draft&&!error&&<p>Loading…</p>}
+  {!recordId&&<ManagementLists {...{section,items,base,projectId,emailConfigured,pagination}} busy={listBusy} query={paged?listQuery:null} onQuery={setListQuery} onMove={move} onChanged={load} onNotice={setNotice} onError={setError}/>} {recordId&&!draft&&!error&&<p>Loading…</p>}
   {draft&&section==='contacts'&&draft.is_erased&&<div className="workspace-settings"><ContactErased projectId={projectId} contact={draft}/></div>}
   {draft&&!(section==='contacts'&&draft.is_erased)&&<div className="workspace-settings">{section==='contacts'&&draft.id&&<ContactDetails projectId={projectId} contact={draft}/>}
    <form onSubmit={save} noValidate={section==='contacts'||section==='plugins'}><ManagementEditor {...{section,draft,change,emailConfigured,fieldErrors,customRoles}}/>

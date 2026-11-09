@@ -7,6 +7,7 @@ import {spawnSync} from 'node:child_process';
 import {readFile, writeFile, mkdir, rm, copyFile} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {recoveryRuntime} from './runtime.mjs';
+import {assertCutoverDerived} from '../cutover/oracle.mjs';
 import {restoredKnowledgeReady} from './knowledge-ready.mjs';
 import {snapshot, compareSnapshots, summarize, sha256} from './snapshot.mjs';
 import {seedJourney, verifyAccess, verifyFreshLogin, verifyRestoredApi, eraseRecoveryIssuer, setupToken, call} from './journey.mjs';
@@ -123,6 +124,8 @@ try {
     for (const object of before.objects) await storage.inspect({key: object.key, bytes: object.bytes, options: {httpMetadata: object.httpMetadata, customMetadata: object.customMetadata}});
     after = await snapshot(storage);
     compareSnapshots(before, after);
+    // Migration 317's cutover sets and tallies come back equal to a fresh computation from the restored rows.
+    await assertCutoverDerived((sql, ...values) => storage.inspect({sql, values}).then(result => result.results), 'restored');
   });
   const repeatExport = join(output, 'restored-export.sql');
   await exportD1Sql({inspect:input=>restored.withStorage(storage=>storage.inspect(input)),runExport:()=>restored.run(['d1','export','DB','--local','--output',repeatExport]),output:repeatExport});

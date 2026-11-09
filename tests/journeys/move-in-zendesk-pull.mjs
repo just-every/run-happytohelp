@@ -3,6 +3,8 @@ import assert from 'node:assert/strict'
 import {createHash,randomBytes} from 'node:crypto'
 import {nativeHarness} from '../move-in/harness.mjs'
 import {rows} from '../move-in/journey-kit.mjs'
+import {assertCutoverCounts,assertCutoverDerived} from '../helpers/cutover/oracle.mjs'
+import {cutoverRebuildSql} from '../../scripts/installer/cutover-bounds-sql.mjs'
 import {fakeZendesk,largeComments,SUBDOMAIN,CLIENT_ID,PATH_TOKEN,QUERY_TOKEN,ATTACHMENT_BYTES} from '../move-in/zendesk-pull-fixture.mjs'
 
 const api='/api/move-in/projects/p',post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
@@ -537,6 +539,61 @@ test('an owner reads the Cutover sources with their live Zendesk counts after a 
   assert.equal(sources[0].state,'incumbent');assert.equal(sources[1].steps.length+sources[2].steps.length+sources[3].steps.length,0)
   assert.deepEqual(await rows(h,"SELECT action,actor_id,detail_json FROM audit_events WHERE action='cutover.step.recorded' ORDER BY at").then(events=>events.map(e=>[e.actor_id,JSON.parse(e.detail_json).source])),[['owner','zendesk'],['owner','zendesk']],'one security-log event per recorded step')
   assert.equal(h.outboundRequests.length,outbound,'nothing was sent or fetched')
+
+  // The counts read derived sets and tallies (migration 317): after an import, an undone import and a legacy sweep
+  // they equal every row recomputed, and the sets equal a fresh computation.
+  const all=(sql,...args)=>rows(h,sql,...args),exact=async label=>{await assertCutoverDerived(all,label);return assertCutoverCounts(all,'p',await sourcesOf(),label)}
+  assert.equal((await exact('after the pull')).zendesk.imported,importedRows)
+  for(const batch of pull.batches.filter(b=>b.state==='completed'&&b.summary.ticketsNew))await h.call(`${api}/imports/${batch.runId}/undo`,post({}))
+  await drain(h)
+  assert.equal((await exact('after the undo')).zendesk.imported,0,'an undone import drops out')
+  // A legacy sweep written as the importer writes it: plain INSERTs, a chunk run whose package run completes after every
+  // chunk, one journal row before its conversation, one archived-only row and one conversation journaled by two runs.
+  const at=Date.now(),digest='d'.repeat(64),chunk=`legacy:${'c'.repeat(64)}`,single=`legacy:${'e'.repeat(64)}`,write=(sql,...args)=>h.db.prepare(sql).bind(...args).run()
+  await write("INSERT INTO contacts(id,project_id,name,email,external_id,created_at) VALUES('cut-ct','p','Legacy visitor',NULL,'import:legacy:cut-ct',?)",at)
+  const conversation=(id,created=at)=>write("INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES(?,'p','cut-ct',?,?)",id,created,created)
+  const journal=(run,id,status='mapped')=>write("INSERT INTO legacy_import_rows(run_id,source_table,source_id,row_digest,source_json,target_table,target_key,status) VALUES(?,'conversations',?,'x','{}','conversations',?,?)",run,id,id,status)
+  const message=(id,conversationId,role='contact',created=at+1)=>write("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,'p',?,?,'cut-ct',?,'Synthetic legacy text',(SELECT count(*)+1 FROM messages WHERE conversation_id=?),?)",id,conversationId,id,role,conversationId,created)
+  await write("INSERT INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)",`legacy-package:${digest}`,`{"format":"happytohelp-legacy-v1","package":"${digest}"}`,digest,at)
+  await write("INSERT INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)",chunk,`{"chunk":0,"package":"${digest}","revision":undefined}`,'c'.repeat(64),at)
+  for(const id of ['cut-l1','cut-l2','cut-l3']){await conversation(id,at-60_000);await message(`${id}-m`,id,'contact',at-59_000)}
+  await journal(chunk,'cut-l1');await journal(chunk,'cut-l2');await journal(chunk,'cut-l3','archived_only');await journal(chunk,'cut-l4')
+  await conversation('cut-l4',at-60_000)
+  await write("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=?",at+1000,chunk)
+  let counts=await exact('a chunk imported, its package still running')
+  assert.deepEqual([counts.legacy.imported,counts.legacy.lastSweep],[3,null],'a sweep still running counts for nothing')
+  await write("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=?",at+2000,`legacy-package:${digest}`)
+  counts=await exact('the package complete')
+  assert.deepEqual([counts.legacy.imported,counts.legacy.lastSweep],[3,{at:new Date(at+2000).toISOString()}])
+  await write("INSERT INTO legacy_import_runs VALUES(?,'{}',?,'complete',?,?)",single,'e'.repeat(64),at,at+3000);await journal(single,'cut-l1')
+  counts=await exact('a second run journals a swept conversation')
+  assert.deepEqual([counts.legacy.imported,counts.legacy.lastSweep],[3,{at:new Date(at+3000).toISOString()}],'a conversation counts once however many runs map it')
+  // Widget arrivals after the sweep: a visitor's message counts; mail, a follow-up and a removed conversation do not.
+  for(const id of ['cut-w1','cut-w2','cut-w3','cut-w4'])await conversation(id,at+5000)
+  assert.equal((await exact('widget drafts')).widget.arrivals,0,'a draft without a visitor message is no arrival')
+  for(const id of ['cut-w1','cut-w2','cut-w3','cut-w4'])await message(`${id}-m`,id,'contact',at+6000)
+  await message('cut-w1-reply','cut-w1','operator',at+7000)
+  assert.equal((await exact('visitor messages')).widget.arrivals,4)
+  await write("INSERT INTO inbound_emails(id,project_id,conversation_id,intent_hash,state,created_at) VALUES('cut-e1','p','cut-w2','cut-e1','delivered',?)",at+8000)
+  await write("INSERT INTO inbound_emails(id,project_id,conversation_id,intent_hash,state,created_at,message_id) VALUES('cut-e2','p',NULL,'cut-e2','delivered',?,'cut-w3-m')",at+8000)
+  await write("INSERT INTO ticket_followups(id,project_id,original_id,conversation_id,command_key,created_at) VALUES('cut-f1','p','cut-w1','cut-w4','cut-f1',?)",at+8000)
+  counts=await exact('mail and a follow-up')
+  assert.deepEqual([counts.widget.arrivals,counts.email.arrivals],[1,2],'a receipt, an emailed reply and a follow-up are no widget arrivals')
+  await write("DELETE FROM inbound_emails WHERE id='cut-e2'");await write("DELETE FROM ticket_followups WHERE id='cut-f1'")
+  assert.equal((await exact('the mail and follow-up removed')).widget.arrivals,3)
+  await write("UPDATE conversations SET channel='email' WHERE id='cut-w3'")
+  assert.equal((await exact('a channel changed')).widget.arrivals,2)
+  for(const table of ['messages','inbound_emails'])await write(`DELETE FROM ${table} WHERE conversation_id IN ('cut-w1','cut-l2')`)
+  await write("DELETE FROM conversations WHERE id IN ('cut-w1','cut-l2')")
+  counts=await exact('conversations removed')
+  assert.deepEqual([counts.legacy.imported,counts.widget.arrivals],[2,1],'a removed conversation drops out of every count')
+  await write("DELETE FROM legacy_import_rows WHERE run_id=? AND source_id='cut-l1'",chunk)
+  assert.equal((await exact('a journal row removed')).legacy.imported,2,'the other run still maps it')
+  // A restore rebuilds the sets from the restored rows (scripts/installer/local.mjs runs this after every import).
+  const kept=await assertCutoverCounts(all,'p',await sourcesOf(),'before a rebuild')
+  await h.db.prepare('DELETE FROM cutover_tallies').run()
+  await h.db.batch(cutoverRebuildSql.split('; ').map(sql=>h.db.prepare(sql)))
+  assert.deepEqual(await exact('rebuilt'),kept)
  }finally{await h.close()}
 })
 

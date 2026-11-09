@@ -40,6 +40,11 @@ function omittedSchemaChange(sql,omitted,omittedTriggers,migration){
  }
  // Migrations 313 and 314 fill the inbox's derived tables; every import rebuilds them from the restored rows instead.
  if(words[0]==='insert'&&words[1]==='into'&&['inbox_entries','inbox_tallies','inbox_tag_tallies','inbox_field_tallies','inbox_unread','inbox_visitor_waiting'].includes(folded(identifier(list[2]))))return true;
+ // Migration 317 fills the cutover page's derived sets the same way.
+ if(words[0]==='insert'&&words[1]==='into'&&['cutover_zendesk_conversations','cutover_legacy_conversations','cutover_widget_arrivals','cutover_legacy_runs','cutover_tallies'].includes(folded(identifier(list[2]))))return true;
+ // Migration 317 fills the contacts' live tally and rebuilds contact_search; every import rebuilds both from the restored rows instead.
+ if(words[0]==='insert'&&words[1]==='into'&&folded(identifier(list[2]))==='contact_tallies')return true;
+ if(words[0]==='insert'&&words[1]==='into'&&folded(identifier(list[2]))==='contact_search'&&/'rebuild'/.test(sql))return true;
  let target;
  if(words[0]==='alter'&&words[1]==='table'&&words[3]==='add')target=list[2];
  else if(words[0]==='create'&&(words[1]==='index'||words[1]==='unique'&&words[2]==='index'))target=list[words.indexOf('on')+1];

@@ -11,7 +11,8 @@ const available = contact => !['is_deleted', 'is_erased', 'is_erasing', 'is_bloc
 
 function ContactPicker({ id, label, projectId, value, onChange, currentContact, disabled }) {
     const [selected, setSelected] = useState(currentContact?.id === value ? contactData(currentContact) : null);
-    const [query, setQuery] = useState(''), [page, setPage] = useState(1), [result, setResult] = useState(null);
+    // Previous and Next ask for the page before the first contact shown or after the last one, with the page number it shows.
+    const [query, setQuery] = useState(''), [cursor, setCursor] = useState({ page: 1 }), [result, setResult] = useState(null);
     const [loadError, setLoadError] = useState(''), [searchError, setSearchError] = useState(''), [loading, setLoading] = useState(false);
     const base = `/api/management/projects/${encodeURIComponent(projectId)}/contacts`;
     useEffect(() => {
@@ -28,15 +29,17 @@ function ContactPicker({ id, label, projectId, value, onChange, currentContact, 
         if (disabled) return;
         const controller = new AbortController(); setLoading(true); setSearchError('');
         const timer = setTimeout(() => {
-            const search = new URLSearchParams({ search: query, page: String(page), limit: '20', sort: 'name', direction: 'asc', total: 'none' });
+            const { page, ...boundary } = cursor;
+            const search = new URLSearchParams({ search: query, page: String(page), limit: '20', sort: 'name', direction: 'asc', total: 'none', ...boundary });
             nativeRequest(`${base}?${search}`, { signal: controller.signal }).then(response => {
                 if (!controller.signal.aborted) setResult({ ...response, data: response.data.map(contactData) });
             }).catch(failure => { if (!controller.signal.aborted) setSearchError(failure.message); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
         }, query ? 200 : 0);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [base, query, page, disabled]);
+    }, [base, query, cursor, disabled]);
     const current = selected?.id === value ? selected : null;
     const contacts = (result?.data || []).filter(contact => contact.id !== value && available(contact));
+    const page = result?.pagination.page || cursor.page, shown = result?.data || [];
     return <div className="form-group ticket-field">
         <label className="form-label" htmlFor={id}>{label}</label>
         <select id={id} className="form-select" value={value || ''} required disabled={disabled} onChange={event => {
@@ -51,13 +54,13 @@ function ContactPicker({ id, label, projectId, value, onChange, currentContact, 
         </select>
         {!disabled && <>
             <label className="form-label mt-2" htmlFor={`${id}-search`}>Find a contact</label>
-            <input id={`${id}-search`} className="form-control" aria-label={`Search ${label.toLowerCase()} contacts`} type="search" placeholder="Search name or email" maxLength={500} value={query} onKeyDown={event => { if (event.key === 'Enter') event.preventDefault(); }} onChange={event => { setQuery(event.target.value); setPage(1); }}/>
+            <input id={`${id}-search`} className="form-control" aria-label={`Search ${label.toLowerCase()} contacts`} type="search" placeholder="Search name or email" maxLength={500} value={query} onKeyDown={event => { if (event.key === 'Enter') event.preventDefault(); }} onChange={event => { setQuery(event.target.value); setCursor({ page: 1 }); }}/>
             {loading && <p role="status" className="form-text">Searching contacts…</p>}
             {!loading && result && !contacts.length && <p className="form-text">No other available contacts match.</p>}
             {result && (page > 1 || result.pagination.hasMore) && <nav className="d-flex align-items-center gap-2" aria-label={`${label} contact pages`}>
-                <button type="button" className="btn btn-link btn-sm" disabled={loading || page === 1} onClick={() => setPage(currentPage => currentPage - 1)}>Previous</button>
+                <button type="button" className="btn btn-link btn-sm" disabled={loading || page === 1} onClick={() => setCursor(shown.length ? { page: page - 1, before: shown[0].id } : { page: page - 1 })}>Previous</button>
                 <span className="form-text">Page {page}</span>
-                <button type="button" className="btn btn-link btn-sm" disabled={loading || !result.pagination.hasMore} onClick={() => setPage(currentPage => currentPage + 1)}>Next</button>
+                <button type="button" className="btn btn-link btn-sm" disabled={loading || !result.pagination.hasMore} onClick={() => setCursor({ page: page + 1, after: shown[shown.length - 1].id })}>Next</button>
             </nav>}
         </>}
         {(loadError || searchError) && <p role="alert" className="text-danger">{loadError || searchError}</p>}

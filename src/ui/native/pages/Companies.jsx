@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { busyWait, isBusy } from '../../dashboard/utils/busy';
 import { PageHeaderActions } from '../PageHeader';
 import { useNavigationGuard } from '../NavigationGuard';
 import { useDashboardSettings } from '../dashboard-state';
@@ -21,17 +22,25 @@ export default function Companies({ projectId }) {
     const { confirmNavigation } = useNavigationGuard();
     const settings = useDashboardSettings(), permissions = settings.projects?.[projectId]?.access?.permissions || [];
     const canManage = permissions.includes('contacts.manage'), canConfigure = permissions.includes('settings.manage'), canImport = permissions.includes('data.import');
-    const load = useCallback(async () => { const result = await companyRequest(projectId); setData(result); }, [projectId]);
+    const [busy, setBusy] = useState(false), workspace = useRef(0), retry = useRef(null);
+    const load = useCallback(async () => { const result = await companyRequest(projectId); setData(result); setBusy(false); }, [projectId]);
+    // A busy database (503) is a wait: keep what is shown, say so, and read the companies again after Retry-After while this workspace is open.
+    const failed = failure => {
+        if (!isBusy(failure)) { setBusy(false); setError(failure.message); return; }
+        const current = workspace.current; setBusy(true); clearTimeout(retry.current);
+        retry.current = setTimeout(() => { retry.current = null; if (workspace.current === current) load().catch(failed); }, busyWait(failure));
+    };
     useEffect(() => {
-        let active = true;
-        setData(null); setSelected(null); setView('list'); setError('');
-        companyRequest(projectId).then(result => { if (active) setData(result); }).catch(failure => { if (active) setError(failure.message); });
-        return () => { active = false; };
+        const current = ++workspace.current;
+        setData(null); setSelected(null); setView('list'); setError(''); setBusy(false);
+        const read = () => companyRequest(projectId).then(result => { if (workspace.current === current) { setData(result); setBusy(false); } }).catch(failure => { if (workspace.current === current) failed(failure); });
+        read();
+        return () => { workspace.current++; clearTimeout(retry.current); retry.current = null; };
     }, [projectId]);
     const go = next => { if (confirmNavigation()) { setView(next); setError(''); setNotice(''); } };
     const open = company => { setSelected(company.id); go('detail'); };
-    const saved = async company => { setSelected(company.id); setView('detail'); setNotice('Company saved.'); try { await load(); } catch (failure) { setError(failure.message); } };
-    return <div className="companies-workspace">
+    const saved = async company => { setSelected(company.id); setView('detail'); setNotice('Company saved.'); try { await load(); } catch (failure) { failed(failure); } };
+    return <div className="companies-workspace" aria-busy={busy || undefined}>
         <PageHeaderActions><div className="management-toolbar companies-header-actions">
             {view === 'list' && <div className="input-group"><input className="form-control" type="search" aria-label="Search companies" placeholder="Search companies" value={search} onChange={event => setSearch(event.target.value)}/><span className="input-group-text"><i className="fe fe-search"/></span></div>}
             {canManage && <button className="btn btn-primary" onClick={() => { if (confirmNavigation()) { setSelected(null); setView('create'); setNotice(''); } }}>Add company</button>}
@@ -39,9 +48,10 @@ export default function Companies({ projectId }) {
         <nav className="companies-tabs" aria-label="Customer management">
             {[['list', 'Companies'], ...(canImport ? [['import', 'CSV imports']] : []), ...(canConfigure ? [['fields', 'Company attributes']] : [])].map(([key, label]) => <button key={key} type="button" aria-current={view === key || key === 'list' && ['detail', 'edit', 'create'].includes(view) ? 'page' : undefined} onClick={() => go(key)}>{label}</button>)}
         </nav>
-        {error && <div className="alert alert-danger" role="alert">{error}<button className="btn btn-link" onClick={() => { setError(''); load().catch(failure => setError(failure.message)); }}>Try again</button></div>}
+        {error && <div className="alert alert-danger" role="alert">{error}<button className="btn btn-link" onClick={() => { setError(''); load().catch(failed); }}>Try again</button></div>}
         {notice && <p role="status" className="alert alert-success">{notice}</p>}
-        {!data && !error && <p role="status">Loading companies…</p>}
+        {busy && (!data || view === 'list') && <p className="settings-note" role="status">The workspace is busy. Trying again in a few seconds…</p>}
+        {!data && !error && !busy && <p role="status">Loading companies…</p>}
         {data && view === 'list' && <CompanyList companies={data.companies} search={search} onOpen={open} onCreate={canManage ? () => go('create') : null}/>}
         {data && canManage && ['create', 'edit'].includes(view) && <CompanyEditor key={view === 'create' ? 'new' : selected} projectId={projectId} companyId={view === 'edit' ? selected : null} fields={data.fields} onSaved={saved} onCancel={() => go(view === 'edit' ? 'detail' : 'list')}/>}
         {data && view === 'detail' && <CompanyDetail projectId={projectId} companyId={selected} companies={data.companies} canManage={canManage} onBack={() => go('list')} onEdit={() => go('edit')} onChanged={load}/>}

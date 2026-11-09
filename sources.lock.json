@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "7966b47783bad96f976fa6467ab5d8ef51bbb6e31441a03bbaf772d6d2900752",
+      "sha256": "4b741b057b0b41b8f14cacfb8ce92cb33a0f927d848a7e4c1060c194546b608f",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2824,6 +2824,10 @@
       "sha256": "fb9e276013234f2f3afbd10dc654e93edc361b2165fd4cb2c0273ce44ab70a7a",
       "executable": false
     },
+    "migrations/317_agent_door_legacy_principals.sql": {
+      "sha256": "0da8d20461f749f396e5312d4b8b810c029ebde71e3872f8496b909f9c357371",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2913,7 +2917,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "e4dbcdd975bab705e762dccee8d3346faa7e3361a5b36b0eb2b6cd5f1b4ea6d2",
+      "sha256": "5a4a71a2daf72aee219d14e35e94c812bb9745930508eb7a275bb959436dcfdd",
       "executable": false
     },
     "rer-project.json": {
@@ -15392,6 +15396,10 @@
       "sha256": "f2a334ffde6e7465664536d887db0ef5f54c0aa4b228bbdc9983058dab939137",
       "executable": false
     },
+    "tests/helpers/agent-door/legacy-upgrade.mjs": {
+      "sha256": "4b0aa2b24340f7b54508ae0b6cb7deb3df0c0a866688d2212a852d0aebc7bbc3",
+      "executable": false
+    },
     "tests/helpers/agent-door/member-copies.mjs": {
       "sha256": "e1c88b18126376fe9f713ededebdef952c03d4f8f99ea33b711046124784cf52",
       "executable": false
@@ -16609,7 +16617,7 @@
       "executable": false
     },
     "tests/journeys/delegation.mjs": {
-      "sha256": "7b17bb70b104ee0b0a6c98756f6cc76bfe1e817a7c0c71a9f1741f373938ca3a",
+      "sha256": "d38b14b810dbfe37b723e73af3985022a06b9be96f088d24b84ffd2f88839566",
       "executable": false
     },
     "tests/journeys/deploy-nightly.mjs": {

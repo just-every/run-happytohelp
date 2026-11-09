@@ -25,7 +25,9 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  c.env=knowledgeWriteEnvironment(c.env,context)
  const requestedProject=context().projectId
  const pending=await rawEnv.DB.prepare('SELECT project_id FROM knowledge_upgrade_reports WHERE completed_at IS NULL AND (?1 IS NULL OR project_id=?1) ORDER BY project_id LIMIT 1').bind(requestedProject||null).first<{project_id:string}>()
- if(pending){
+ // Native session admission and password sign-in remain available during content upgrades.
+ const identityEntry=c.req.path==='/api/identity/session'||c.req.path==='/api/identity/login'
+ if(pending&&!identityEntry){
   let member=false
   const credential=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]
   if(credential&&!/^int_[a-f0-9]{64}$/.test(credential))try{const actor=await requireActor(c);member=actor.role!=='contact'&&Boolean(await rawEnv.DB.prepare('SELECT 1 FROM memberships WHERE user_id=? AND project_id=?').bind(actor.id,requestedProject||actor.projectId).first())}catch{}

@@ -56,6 +56,12 @@ export const archivePolicy={
  // Reconstruct the full-text indexes from retained messages and contacts after restore.
  derivedTables:['inbox_message_search','inbox_contact_search','contact_search'],
  excludeTables:[
+  // Derived by triggers and rebuilt from the restored rows after every import (inbox-entries-sql, cutover-bounds-sql,
+  // contact-bounds-sql): the inbox's entries, tallies, unread and waiting rows (313, 314), the contacts' tally and the
+  // cutover sets (318). Their tallies and entries have no declared key, so an archive orders them by rowid, which is
+  // write history a rebuild cannot reproduce: a restored export would carry the same rows in another order.
+  'inbox_entries','inbox_tallies','inbox_tag_tallies','inbox_field_tallies','inbox_unread','inbox_visitor_waiting',
+  'contact_tallies','cutover_tallies','cutover_zendesk_conversations','cutover_legacy_conversations','cutover_legacy_runs','cutover_widget_arrivals',
   // Consumed ik_door_grants are portable replay fences, never authority.
   // ik_door_settings is neutralized on export, import and staged validation.
   // Installation-private pull membership and replay custody never transfer.

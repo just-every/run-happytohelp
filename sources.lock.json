@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "5d3d8898af45f9364184eb1af9b7c929f8598473deb0de542c7123e905d6a436",
+      "sha256": "e422ab77bc6b00d5055a61ef9e523791f8655d937184baa5642f1748438ea5c4",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2837,7 +2837,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "f70709b45e302ef9d2f09bf9c3b8f130ceaf93beec1680a8b799d23d9cb57cd9",
+      "sha256": "7a2851cd2bce553a6cdd4d907d4505fa1c18fb506f079291897158a2bbe6fb55",
       "executable": false
     },
     "package.json": {
@@ -3969,7 +3969,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "fe873673d96ea40f574e07485ea74bd51aa007642883cea1d26307853608f03a",
+      "sha256": "6e1e0db22826368ff088c031574078eae80f98d3b5bedec5b6d68909baec1932",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -16773,7 +16773,7 @@
       "executable": false
     },
     "tests/journeys/restore.mjs": {
-      "sha256": "9b23459afc7ce1c0ee29ca7e99978b3dcff353a9f6891d2f2ddb7efca86e339a",
+      "sha256": "17b7b04848952941959c4896fff6e85b87c92eb776d60aad3748d63780b0f481",
       "executable": false
     },
     "tests/journeys/runtime.mjs": {

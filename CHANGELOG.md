@@ -10,6 +10,7 @@ updating and backing up an installation, see
 
 ## Unreleased
 
+- **Archive round trip:** `rer export` no longer carries the inbox's derived entries, tallies, unread and waiting rows (migrations 313, 314), the contacts' tally or the Cutover sets (318). Import already rebuilt all of them from the restored rows; carrying them made a restored installation's export differ from its source, because tallies and entries order by write history. No migration. Archives are made from published releases (v0.4.13 and earlier) or from this change on; an archive exported by an unreleased main build between migration 313 and this change carries those tables and is not a supported source.
 - **Legacy Business approvals:** pinned `@runeditrun/rer` 0.2.105 and refreshed the Base copy so Business-sponsored approvals saved before rer 0.2.96 refuse with `sponsor_unavailable` after the Business stops or its stop state is unreadable. The existing 317 migration remains valid and idempotent; no new migration.
 
 ## 0.4.15 — 2026-11-09

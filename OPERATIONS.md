@@ -82,6 +82,10 @@ apps keep working; with a different key, sign in with a passkey or recovery code
 (or use [owner recovery](docs/account-security.md#owner-recovery)) and set the app
 up again. Sessions and their step-up proofs are not exported.
 
+The inbox's entries, tallies, unread and waiting rows, the contacts' tally and the Cutover page's sets are derived
+from the conversations, messages and contacts the archive carries. They are not exported; every import rebuilds them
+from the restored rows, so a restored installation's counts and lists equal a freshly computed result.
+
 Import validates integrity and resource coverage before atomic restore into an
 empty destination. It preserves native owners; setup does not claim a new owner
 over them. Re-enter private configuration and external integration credentials.

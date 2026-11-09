@@ -7393,7 +7393,7 @@
       "executable": false
     },
     "src/modules/knowledge/http-door.ts": {
-      "sha256": "d4d0263fe3f221f8d9df501fa353fdaaa47f4d49f08111136da928b7253ba277",
+      "sha256": "13dcd4f2da8be00e40748fb7a050bbd110eaa10391ac4242b425af3198852872",
       "executable": false
     },
     "src/modules/knowledge/import-jobs.ts": {

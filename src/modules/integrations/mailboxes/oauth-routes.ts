@@ -10,6 +10,7 @@ import {base64url} from './http'
 import {assertOAuthConfig,exchangeToken,providerIdentity,type OAuthProvider} from './oauth-provider'
 import {getMailbox,saveConnection} from './store'
 import {auditStatement,requestSource} from '../../audit/record'
+import {oncePerRequest} from '../../../platform/read-effects'
 
 export const oauthProvider=(value:unknown):OAuthProvider=>{if(value!=='gmail'&&value!=='microsoft')throw new HTTPException(400,{message:'Choose Gmail or Microsoft'});return value}
 export function callbackUrl(c:Context<AppEnv>,provider:OAuthProvider){
@@ -38,21 +39,30 @@ export const mailboxOAuthRoutes=new Hono<AppEnv>()
 mailboxOAuthRoutes.post('/projects/:projectId/mailboxes/connect',async c=>{
  const body=await c.req.json();return beginOAuth(c,oauthProvider(body.provider))
 })
+/** The provider returns the browser here. The state's consumption, and the code's exchange with the identity read
+ * after it, each run once per request: a dispatch again after a refused D1 read (platform/d1-overload.ts) continues
+ * with the first dispatch's state and credential, so it answers what the first would have answered. */
 mailboxOAuthRoutes.get('/mailboxes/oauth/:provider/callback',async c=>{
  const actor=await requireActor(c),provider=oauthProvider(c.req.param('provider')),state=await hashToken(c.req.query('state')||'')
- const row=await c.env.DB.prepare(`SELECT s.* FROM mailbox_oauth_states s JOIN memberships m ON m.project_id=s.project_id AND m.user_id=s.user_id
- WHERE s.state_hash=? AND s.provider=? AND s.user_id=? AND s.expires_at>? AND s.consumed_at IS NULL AND m.role IN ('owner','admin')
- AND s.authority_revision=(SELECT revision FROM integration_authority_epoch WHERE id=1)
- AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=s.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`)
- .bind(state,provider,actor.id,Date.now()).first<any>()
- if(!row)throw new HTTPException(403,{message:'Mailbox authorization expired or authority changed'})
- await requireStepUp(c,{...actor,projectId:row.project_id},'integration.install')
- const claim=await c.env.DB.prepare('UPDATE mailbox_oauth_states SET consumed_at=? WHERE state_hash=? AND consumed_at IS NULL').bind(Date.now(),state).run()
- if(!claim.meta.changes)throw new HTTPException(409)
+ const row=await oncePerRequest(c.req.raw,'mailbox-callback-state',async()=>{
+  const row=await c.env.DB.prepare(`SELECT s.* FROM mailbox_oauth_states s JOIN memberships m ON m.project_id=s.project_id AND m.user_id=s.user_id
+  WHERE s.state_hash=? AND s.provider=? AND s.user_id=? AND s.expires_at>? AND s.consumed_at IS NULL AND m.role IN ('owner','admin')
+  AND s.authority_revision=(SELECT revision FROM integration_authority_epoch WHERE id=1)
+  AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=s.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`)
+  .bind(state,provider,actor.id,Date.now()).first<any>()
+  if(!row)throw new HTTPException(403,{message:'Mailbox authorization expired or authority changed'})
+  await requireStepUp(c,{...actor,projectId:row.project_id},'integration.install')
+  const claim=await c.env.DB.prepare('UPDATE mailbox_oauth_states SET consumed_at=? WHERE state_hash=? AND consumed_at IS NULL').bind(Date.now(),state).run()
+  if(!claim.meta.changes)throw new HTTPException(409)
+  return row
+ })
  if(c.req.query('error'))return c.redirect(`/projects/${encodeURIComponent(row.project_id)}/settings?mailbox=cancelled`)
  const code=c.req.query('code');if(!code||code.length>8192)throw new HTTPException(400)
- const verifier=await decryptToken(c.env,`${row.project_id}:oauth:${state}`,row.verifier_cipher)
- const credential=await exchangeToken(c.env,provider,{grant_type:'authorization_code',code,redirect_uri:row.redirect_uri,code_verifier:verifier}),identity=await providerIdentity(provider,credential.accessToken)
+ const {credential,identity}=await oncePerRequest(c.req.raw,'mailbox-callback-exchange',async()=>{
+  const verifier=await decryptToken(c.env,`${row.project_id}:oauth:${state}`,row.verifier_cipher)
+  const credential=await exchangeToken(c.env,provider,{grant_type:'authorization_code',code,redirect_uri:row.redirect_uri,code_verifier:verifier})
+  return {credential,identity:await providerIdentity(provider,credential.accessToken)}
+ })
  const existing=row.mailbox_id?await getMailbox(c.env,row.project_id,row.mailbox_id):null
  if(existing&&(existing.provider!==provider||existing.address!==identity.address))throw new HTTPException(409,{message:'Reconnect using the original mailbox account'})
  // Receiving aliases are operator configuration. Refresh send-as authority from

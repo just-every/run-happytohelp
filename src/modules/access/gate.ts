@@ -7,6 +7,7 @@ import {BASE_PERMISSIONS,PERMISSIONS,ROLE_LABELS,customPermissions,type Permissi
 import {routeRule} from './route-permissions'
 import {auditStatement,requestSource} from '../audit/record'
 import {jsonResponse} from '../../platform/json-response'
+import {afterReads} from '../../platform/read-effects'
 
 export interface MemberAccess {key:string;name:string;base:'owner'|'admin'|'operator'|'collaborator';permissions:Set<Permission>;custom:boolean;knowledgeArticleIds:string[]|null;ticketScope:TicketScope}
 
@@ -64,7 +65,8 @@ export async function enforceRole(c:Context<AppEnv>,actor:Actor,requiredPermissi
  if(rule==='self'||rule==='none')return
  if(rule===undefined){if(route.method==='GET'||access.base!=='collaborator')return}
  else if((access.permissions.has(rule)||(rule==='knowledge.read'&&access.permissions.has('knowledge.edit')))&&!(rule==='knowledge.read'&&access.knowledgeArticleIds!==null&&articleId!==undefined&&!access.knowledgeArticleIds.includes(articleId))){
-  if(rule==='knowledge.read')await auditStatement(c.env.DB,{projectId,category:'access',action:'knowledge.read',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'route',id:`${route.method} ${route.path}`},detail:{role:access.name,permission:rule}}).run()
+  // Recorded once, after the read's own D1 reads (platform/read-effects.ts).
+  if(rule==='knowledge.read')await afterReads(c,auditStatement(c.env.DB,{projectId,category:'access',action:'knowledge.read',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'route',id:`${route.method} ${route.path}`},detail:{role:access.name,permission:rule}}))
   return
  }
  await auditStatement(c.env.DB,{projectId,category:'access',action:'permission.denied',outcome:'refused',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'route',id:`${route.method} ${route.path}`},detail:{role:access.name,...(rule?{permission:rule}:{})}}).run()

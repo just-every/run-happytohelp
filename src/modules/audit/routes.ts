@@ -7,6 +7,7 @@ import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement,requestSource} from './record'
 import {auditPage,parseCursor,type AuditFilter} from './read'
 import {RETENTION_LIMITS} from './retention'
+import {afterReads} from '../../platform/read-effects'
 
 /** Settings → Security log: read, export, retention and legal holds. Owners and admins read it. */
 export const auditRoutes=new Hono<AppEnv>()
@@ -33,7 +34,7 @@ auditRoutes.get(`${P}/export`,async c=>{
  await requireStepUp(c,actor,'audit.export')
  const rows=[],query=filter(c,500)
  for(;;){const page=await auditPage(c.env,actor.projectId,query);rows.push(...page.rows);if(!page.next||rows.length>=50000)break;query.before=parseCursor(page.next)}
- await auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'audit.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{format,rows:rows.length}}).run()
+ await afterReads(c,auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'audit.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{format,rows:rows.length}}))
  const stamp=new Date().toISOString().slice(0,10)
  c.header('Cache-Control','no-store')
  c.header('Content-Disposition',`attachment; filename="security-log-${stamp}.${format}"`)

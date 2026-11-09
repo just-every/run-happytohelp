@@ -12,14 +12,16 @@ import {dispatchIntegrations} from './dispatch'
 import {iso,jsonBody} from './http'
 import {resendDelivery} from './resend'
 import {requireStepUp} from '../identity/two-factor/step-up'
+import {afterReads} from '../../platform/read-effects'
 export const integrationSettings=new Hono<AppEnv>()
 integrationSettings.route('/',helpscoutSettings)
 const root='/projects/:projectId/connections'
 integrationSettings.get(root+'/connectors',async c=>{const who=await issuer(c);return c.json({data:await connectorCatalog(c.env,who.actor.projectId)})})
 async function issuer(c:any):Promise<Issuer>{const actor=await scope(c,true);if(actor.role!=='owner'&&actor.role!=='admin')throw new HTTPException(403);return {actor:{...actor,role:actor.role},sessionHash:c.get('sessionHash')}}
+/** A settings read is recorded once, after its own D1 reads (platform/read-effects.ts). */
 async function audit(c:any,who:Issuer,action:string,resource='settings'){
  const guard=await issuerGuard(c.env,who)
- await c.env.DB.prepare(`INSERT INTO native_integration_audit SELECT ?,?,?,?,?,? WHERE EXISTS(${guard.sql})`).bind(crypto.randomUUID(),who.actor.projectId,who.actor.id,action,resource,Date.now(),...guard.params).run()
+ await afterReads(c,c.env.DB.prepare(`INSERT INTO native_integration_audit SELECT ?,?,?,?,?,? WHERE EXISTS(${guard.sql})`).bind(crypto.randomUUID(),who.actor.projectId,who.actor.id,action,resource,Date.now(),...guard.params))
 }
 integrationSettings.get(root+'/tokens',async c=>{
  const who=await issuer(c),p=who.actor.projectId;await audit(c,who,'token.list','tokens')

@@ -9,6 +9,7 @@ import {teamReportCSV} from './team-csv'
 import {requireReportPermission} from './permission'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement,requestSource} from '../audit/record'
+import {afterReads} from '../../platform/read-effects'
 
 export const teamReports=new Hono<AppEnv>()
 teamReports.get('/projects/:projectId/reports/team',async c=>{
@@ -25,7 +26,7 @@ teamReports.get('/projects/:projectId/reports/team',async c=>{
  const report=await readTeamReport(c.env,actor.projectId,range,filters,Date.now(),access.key)
  c.header('Cache-Control','no-store')
  if(query.format){
-  await auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'reports.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{format:'team-summary.csv',start:range.start,end:range.end,timezone,...filters}}).run()
+  await afterReads(c,auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'reports.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{format:'team-summary.csv',start:range.start,end:range.end,timezone,...filters}}))
   return c.body(teamReportCSV(report),200,{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="team-summary.csv"'})
  }
  return c.json({...report,permissions:{view:true,export:access.permissions.has('data.export'),schedule:access.permissions.has('data.export')}})

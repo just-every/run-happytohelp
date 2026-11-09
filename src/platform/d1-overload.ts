@@ -1,8 +1,10 @@
 import type {ErrorHandler,Hono} from 'hono'
+import {busyPage,busyPageHeaders} from '../modules/public-site/busy-page'
 /** D1 refuses work with "D1 DB is overloaded" (too many resources consumed within its 10 s window, or
  * requests queued too long). Any request may meet it on a large workspace, at any of its D1 calls. A read
  * (GET, HEAD) is dispatched again as a whole after a short wait, middleware and authentication included; a
- * read still refused, and a write (never re-run), answers 503 with Retry-After and a JSON error, never 500. */
+ * read still refused, and a write (never re-run), answers 503 with Retry-After and a JSON error, never 500
+ * (a browser's own page load or native form post gets a busy page instead, never a JSON body). */
 const waits=[250,500,1000]
 /** Seconds the client waits after the retries above were also refused. */
 export const overloadRetryAfter=3
@@ -36,9 +38,14 @@ export function overloadedRequest(request:Request,error:unknown){
  return true
 }
 
+const redispatched=new WeakSet<Request>()
+/** A read whose dispatch may run again as a whole: its side effects follow platform/read-effects.ts. */
+export const mayDispatchAgain=(request:Request)=>redispatched.has(request)
+
 /** A read has no body, so dispatching it again re-runs every D1 call it makes on the same bindings (their
  * per-binding caches stay warm). A dispatch answers, never throws, an overload: callers never nest this. */
 export async function retryOverloaded(request:Request,dispatch:()=>Response|Promise<Response>){
+ if(read(request))redispatched.add(request)
  for(let attempt=0;;attempt++){
   overloaded.delete(request)
   const response=await dispatch()
@@ -48,7 +55,16 @@ export async function retryOverloaded(request:Request,dispatch:()=>Response|Prom
  }
 }
 
-const busyResponse=(request:Request)=>{const answer=overloadAnswer(request);return Response.json(answer.body,{status:answer.status,headers:{...answer.headers,'Cache-Control':'no-store'}})}
+/** A browser's own page load: a read that accepts HTML, other than a script's fetch (the Help Center's progressive
+ * navigation sends Accept: text/html from fetch, Sec-Fetch-Mode: cors, and keeps the cheap JSON answer). */
+function pageLoad(request:Request){
+ const mode=request.headers.get('Sec-Fetch-Mode')
+ return read(request)&&Boolean(request.headers.get('Accept')?.includes('text/html'))&&(!mode||mode==='navigate')
+}
+const busyResponse=(request:Request)=>{
+ if(pageLoad(request)){const url=new URL(request.url);return new Response(busyPage(overloadRetryAfter,url.pathname+url.search),{status:503,headers:busyPageHeaders(overloadRetryAfter)})}
+ const answer=overloadAnswer(request);return Response.json(answer.body,{status:answer.status,headers:{...answer.headers,'Cache-Control':'no-store'}})
+}
 
 /** A Hono app the Worker entry dispatches to directly (the public site, the help host) follows the same rule as
  * the application: its error handler marks a request that met an overload and answers busy (any other error

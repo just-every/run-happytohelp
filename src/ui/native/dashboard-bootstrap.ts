@@ -3,6 +3,7 @@ import type { ParsedLocation } from '@tanstack/react-router';
 import { delegationAccount } from './delegation-loader';
 import { isInboxPath, projectIdFromPath } from './workspace-scope';
 import type {InboxListSearch,InitialInboxListData} from './initial-inbox-list';
+import { transportFailure, transportFetch } from '../dashboard/utils/busy';
 
 export type DashboardBootstrapInput = {
     projectId?: string;
@@ -87,10 +88,35 @@ export function dashboardBootstrapInput(location: ParsedLocation): DashboardBoot
         inboxSearch: inbox ? inboxSearch : undefined };
 }
 
+/** A nested outcome streams after the answer's first part. Once that answer's body has ended or been cut, one
+ * still pending would wait forever: it settles as a transport failure (busy) instead. */
+function settledBy<T>(outcome: Promise<T>, ended: Promise<void>): Promise<T> {
+    const settled = Promise.race([outcome, ended.then(() => new Promise<never>((_, reject) => {
+        // Frames that arrived with the body's end are decoded within the same turn; a later macrotask sees them.
+        setTimeout(() => reject(transportFailure(new Error('The answer ended before this read arrived.'))), 0);
+    }))]);
+    // A navigation that never takes this read leaves it unobserved; its consumer still sees the rejection.
+    settled.catch(() => {});
+    return settled;
+}
+
+/** The workspace read from the browser. A transport failure rejects with the busy marker, and every nested
+ * outcome settles even when the answer is cut mid-stream. */
+export async function readDashboardBootstrap(data: DashboardBootstrapInput, signal: AbortSignal): Promise<DashboardBootstrapResult> {
+    let end!: () => void;
+    const ended = new Promise<void>(resolve => { end = resolve; });
+    const result = await fetchDashboardBootstrap({ data, signal, fetch: (input, init) => transportFetch(input, init, end) });
+    if ('status' in result) return result;
+    const nested = <R extends { outcome: Promise<any> }>(read: R | undefined) => read && { ...read, outcome: settledBy(read.outcome, ended) };
+    return { ...result, initialInboxList: nested(result.initialInboxList), initialTags: nested(result.initialTags),
+        initialManagement: nested(result.initialManagement) };
+}
+
 /** Return the promise as data so Start can stream the document and page assets
  * while native authentication and workspace reads are still in progress. */
 export function loadWorkspaceBootstrap({ location, abortController }: {
     location: ParsedLocation; abortController: AbortController;
 }): WorkspaceBootstrap {
-    return { bootstrap: fetchDashboardBootstrap({ data: dashboardBootstrapInput(location), signal: abortController.signal }) };
+    const data = dashboardBootstrapInput(location), signal = abortController.signal;
+    return { bootstrap: import.meta.env.SSR ? fetchDashboardBootstrap({ data, signal }) : readDashboardBootstrap(data, signal) };
 }

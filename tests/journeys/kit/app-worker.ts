@@ -115,8 +115,9 @@ const worker={
    const meter=scheduledMeter(env.DB)
    try{await runScheduledInvocation({...env,DB:meter.database('invocation')},{now:Date.now()+(moved?0:after),consumerEnv:(name,input)=>({...input,DB:meter.database(name,input.DB)})});for(const consumer of Object.values(meter.consumers))consumer.completed=true;delete meter.consumers.invocation;return Response.json({ran:true,...meter.counts,consumers:meter.consumers})}finally{Date.now=originalNow}}
   // x-test-door: public reaches the Worker entry's public doors (src/server.ts) in its order, under its overload
-  // guard: a configured help host, then a public site path (help center, portal, request forms, alias API).
-  if(request.headers.get('x-test-door')==='public')return guardOverload(request,async()=>await publicHelpHostResponse(request,env)??(await isPublicSitePath(path,env)?publicSiteRoutes.fetch(request,env,context):new Response('Not a public site path',{status:404})))
+  // guard: a configured help host, then a public site path (help center, portal, request forms, alias API), then the
+  // application (the native form posts those pages make).
+  if(request.headers.get('x-test-door')==='public')return guardOverload(request,async()=>await publicHelpHostResponse(request,env)??(await isPublicSitePath(path,env)?publicSiteRoutes.fetch(request,env,context):app.fetch(request,env,context)))
   return app.fetch(request,env,context)
  },
  async queue(batch:MessageBatch<any>,env:Env){await consumeQueue(batch,env)},

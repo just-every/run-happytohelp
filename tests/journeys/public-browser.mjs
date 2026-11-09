@@ -15,6 +15,7 @@ test('a new owner finds the source and installation guide from the public produc
 
 import assert from 'node:assert/strict'
 import {portalBrowser} from '../helpers/portal-browser.mjs'
+import {busyFormBrowser} from '../helpers/public-site/busy-form-browser.mjs'
 import {domainsBrowserJourney} from '../helpers/knowledge/domains-browser.mjs'
 import {proposalsBrowserJourney} from '../helpers/knowledge/proposals-browser.mjs'
 test('a lead publishes two approved help hosts, scoped reviewed translations and a cited editorial proposal, with an attributed request template',async()=>{
@@ -40,6 +41,7 @@ test('a lead publishes two approved help hosts, scoped reviewed translations and
    for(const width of [1440,390]){await page.setViewportSize({width,height:900});await page.screenshot({path:shot(`request-template-${width}.png`),fullPage:true})}
   }finally{await context.close()}
   await portalBrowser({browser,shot})
+  await busyFormBrowser({browser,shot})
   await domainsBrowserJourney({runtime,browser,fixture,viewport:viewports.desktop,shot});await proposalsBrowserJourney({runtime,browser,shot});passed=true
  }finally{await browser.close();await runtime.close(passed)}
 })

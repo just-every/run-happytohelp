@@ -7,6 +7,7 @@ import {tokenGuard,type ApiScope} from '../../platform/integration-authority'
 import {EVENTS} from './destinations'
 import {authorized,bearerScopes} from './managed'
 import {jsonBody,type ApiEnv} from './http'
+import {oncePerRequest} from '../../platform/read-effects'
 export const eventScope=(event:string):ApiScope=>event.startsWith('contact.')?'contacts:read':event.startsWith('article.')?'articles:read':'conversations:read'
 export function zapierApi(app:Hono<ApiEnv>){
  app.post('/zapier/hooks',async c=>{
@@ -39,6 +40,8 @@ export function zapierApi(app:Hono<ApiEnv>){
   const event=c.req.query('event')??'conversation.created'
   if(!(EVENTS as readonly string[]).includes(event))throw new HTTPException(400)
   const resource=event.startsWith('contact.')?'contacts':event.startsWith('article.')?'articles':'conversations'
-  return apiSampleResponse(c.env,await app.fetch(new Request('https://managed.internal/'+resource+'?limit=5',{headers:{Authorization:c.req.header('Authorization')??''}}),c.env,c.executionCtx),resource)
+  // The inner read takes its rate counter and authorization receipt once per outer request (platform/read-effects.ts).
+  const sample=await oncePerRequest(c.req.raw,'zapier-sample',async()=>app.fetch(new Request('https://managed.internal/'+resource+'?limit=5',{headers:{Authorization:c.req.header('Authorization')??''}}),c.env,c.executionCtx))
+  return apiSampleResponse(c.env,sample.clone(),resource)
  })
 }

@@ -14,6 +14,7 @@ import {requireReportPermission} from './permission'
 import {teamReports} from './team-routes'
 import {timerRoutes} from './timers'
 import {scheduleRoutes} from './schedule-routes'
+import {afterReads} from '../../platform/read-effects'
 export const reports=new Hono<AppEnv>()
 reports.route('/',timerRoutes).route('/',scheduleRoutes)
 reports.route('/',teamReports)
@@ -29,7 +30,7 @@ reports.get('/projects/:projectId/reports',async c=>{
   await requireReportPermission(c,actor,'data.export')
   await requireStepUp(c,actor,'reports.export')
   const transcripts=query.format==='transcripts.json'
-  await auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'reports.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{format:query.format,...(transcripts?{scope:'all_workspace_conversations'}:{start:range.start,end:range.end})}}).run()
+  await afterReads(c,auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'reports.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{format:query.format,...(transcripts?{scope:'all_workspace_conversations'}:{start:range.start,end:range.end})}}))
   const body=transcripts?exportTranscripts(c.env,actor.projectId,actor.id,check):query.format==='summary.csv'?summaryCSV(await readReport(c.env,actor.projectId,range,actor.id)):exportCSV(c.env,actor.projectId,range,actor.id,check)
   await check()
   return new Response(body,{status:200,headers:{'Content-Type':`${transcripts?'application/json':'text/csv'}; charset=utf-8`,'Content-Disposition':`attachment; filename="${query.format}"`,'Cache-Control':'no-store'}})

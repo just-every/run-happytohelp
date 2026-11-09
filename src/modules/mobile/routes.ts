@@ -17,6 +17,7 @@ import {frontierGuard,issueFrontier,loadFrontier} from './frontier'
 import {mobileChange,mobileReply,objectBody} from './commands'
 import {mobilePushRoutes} from './push-routes'
 import {mobileApprovalRoutes} from './approval-routes'
+import {oncePerRequest} from '../../platform/read-effects'
 
 export const offlinePolicy={customerCache:'memory-only',draftStorage:'memory-only',backgroundSend:false,purgeOn:['signout','revocation','authority-change','workspace-change','process-exit'],reconnect:'refresh-role-ticket-and-schedules-before-explicit-send'} as const
 export const mobileRoutes=new Hono<AppEnv>()
@@ -58,7 +59,8 @@ mobileRoutes.get('/tickets/:ticketId',async c=>{
   c.env.DB.prepare('SELECT id,user_id,content,created_at FROM conversation_notes WHERE conversation_id=? ORDER BY created_at DESC LIMIT 100').bind(id),
   c.env.DB.prepare(`SELECT m.id,m.message_id,m.filename,m.content_type,m.size,nm.note_id FROM media m LEFT JOIN conversation_note_media nm ON nm.media_id=m.id WHERE m.conversation_id=? AND m.project_id=? AND (m.message_id IS NOT NULL OR nm.note_id IS NOT NULL) LIMIT 300`).bind(id,a.actor.projectId),
  ])
- const frontier=await issueFrontier(c.env,a,id)
+ // One frontier per request: a dispatch again keeps the first (platform/read-effects.ts).
+ const frontier=await oncePerRequest(c.req.raw,'mobile-frontier',()=>issueFrontier(c.env,a,id))
  // Never issue a frontier for a newer state than the transcript just read.
  if(frontier.revision!==ticket.revision||frontier.ticket_version!==ticket.ticket_version||frontier.last_message_id!==ticket.last_message_id)throw new HTTPException(409,{message:'Ticket changed while loading. Refresh it.'})
  await stillAuthorized(c.env,a)

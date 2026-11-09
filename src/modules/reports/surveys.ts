@@ -7,6 +7,7 @@ import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement,requestSource} from '../audit/record'
 import {csv} from './csv'
 import {ordinaryReportGuard} from './read'
+import {afterReads} from '../../platform/read-effects'
 const positive="(v.scale='thumbs' AND v.score=1 OR v.scale='five' AND v.score>=4)"
 const low="(v.scale='thumbs' AND v.score=-1 OR v.scale='five' AND v.score<=3)"
 const joins=`FROM conversation_resolutions r LEFT JOIN csat_responses v ON v.resolution_id=r.id AND v.project_id=r.project_id LEFT JOIN csat_surveys s ON s.resolution_id=r.id AND s.project_id=r.project_id LEFT JOIN contacts ct ON ct.id=r.contact_id AND ct.project_id=r.project_id`
@@ -35,7 +36,7 @@ surveyReports.get('/projects/:projectId/results',async c=>{
  if(c.req.query('format')){
   if(c.req.query('format')!=='csv')throw new HTTPException(400)
   await requireStepUp(c,actor,'reports.export')
-  await auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'csat.results.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{lowScore:lowOnly}}).run()
+  await afterReads(c,auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'csat.results.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{lowScore:lowOnly}}))
   const env=c.env,encoder=new TextEncoder();let current:Cursor|null=null,started=false
   return new Response(new ReadableStream({async pull(controller){try{
    await guard.check()

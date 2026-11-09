@@ -170,14 +170,32 @@ D1's "D1 DB is overloaded" (`platform/d1-overload.ts`) is one rule for every req
 that meets it at any D1 call, middleware and authentication included, is dispatched again as a whole after
 250 ms, 500 ms and 1 s (the `app.fetch` wrapper, which the Worker entry and the dashboard's server
 functions use), then answers 503 with `Retry-After: 3` and a JSON `{error}`; a write answers 503 at once and
-is never re-run. The integration API (`/api/v1`) has its own error handler and answers an overload the same
+is never re-run. Browsers get a page instead of the JSON: a page load (a GET or HEAD that accepts `text/html`,
+other than a script's fetch) gets the busy page, which loads itself again after Retry-After, and a native form
+post gets its form back to send again (see `modules/public-site/README.md`); every other caller keeps the JSON. The integration API (`/api/v1`) has its own error handler and answers an overload the same
 way, in its own error shape (`{error:{code:'unavailable',message}}`). The Worker entry retries the same way for an overload thrown before routing (public site
 and help host lookups; server-function paths are reserved so they do no such lookup). The bootstrap server
 function carries 503 with its Retry-After; the session check treats 503 as neither signed out nor failed.
 The dashboard shows a `role="status"` busy line and reads again after Retry-After (at most 10 s) while the
 view is current, keeping what is on screen: the inbox list and its pages, the workspace shell
 (`dashboard-state.tsx`), the conversation and its messages; other reads (`ui/native/transport.js`) wait
-through a busy read instead of alerting.
+through a busy read instead of alerting. A read that got no complete answer (a dropped connection or a
+restarting runtime: `fetch()` rejecting, or the body cut before its end, `ui/dashboard/utils/busy.js`) is busy
+too and is read again the same way; the bootstrap's streamed nested reads settle busy when their answer is cut;
+a write is never repeated. A dashboard document cut mid-stream recovers by itself (`platform/document-recovery.ts`):
+the Worker sends it uncompressed with a small recovery script first and an end marker last, and a document that
+stops arriving shows the busy look, waits for `/health` and reloads once.
+
+Because a read can be dispatched more than once, and a 503 is asked again, a read's side effects follow
+`platform/read-effects.ts`. A record a read makes (the help center's view and search events and read receipt,
+the public search event, settings, export, step-up refusal and `knowledge.read` audit rows) is held on the
+request and written by the outermost middleware (`app.ts`, the public site and the help host) as the
+dispatch's last D1 statement, all in one atomic batch: an answer of 503 records nothing, and an overload of that
+batch re-dispatches the read. Work that cannot wait for the answer runs once per request (`oncePerRequest`): the
+OAuth callbacks' state consumption and provider exchange (Zendesk, GitHub, mailbox), the scoped API's rate
+counter and authorization receipt, the mobile ticket frontier and the knowledge search budget. The help and
+portal sign-in links are spent by their request's last D1 statement, their audit row in the same transaction.
+`tests/helpers/public-site/overload.mjs` proves the view, search and sign-in links at every D1 position.
 
 Owners and admins can permanently erase a contact's personal data
 (`contact-erasure.ts`, `contact-erasure/`): R2 objects are staged in

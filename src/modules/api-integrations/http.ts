@@ -8,6 +8,7 @@ import {rateLimits} from '../../platform/limit-config'
 import {enforceRateLimits} from '../../platform/rate-limits'
 import {tokens,verifiedToken,type ApiScope,type TokenAuthority} from '../../platform/integration-authority'
 import {overloadAnswer,overloadedRequest} from '../../platform/d1-overload'
+import {oncePerRequest} from '../../platform/read-effects'
 export type ApiEnv={Bindings:AppEnv['Bindings'];Variables:{authority:TokenAuthority}}
 export function apiRouter(){const app=new Hono<ApiEnv>();app.onError((e,c)=>{
  // D1's overload is the shared rule (platform/d1-overload.ts): a read is retried by app.fetch, then 503 with Retry-After.
@@ -28,11 +29,12 @@ export const requireScope=(scope:ApiScope)=>async(c:any,next:()=>Promise<void>)=
  const active=await c.env.DB.prepare("SELECT p.id FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND (json_extract(s.settings_json,'$.deleted_at') IS NOT NULL OR json_extract(s.settings_json,'$.suspended_at') IS NOT NULL))").bind(row.namespace).first()
  if(!active)throw new HTTPException(401,{message:'Invalid or expired bearer token'})
  const denied=()=>c.env.DB.prepare('INSERT INTO integration_token_usage(namespace,id,token_id,at,required_scopes,request_id,resource,allowed) VALUES(?,?,?,?,?,?,?,0)').bind(row.namespace,crypto.randomUUID(),row.id,Date.now(),JSON.stringify([scope]),crypto.randomUUID(),scope).run()
- try{await enforceRateLimits(c.env,[['apiRequestsPerTokenMinute',row.credential_id]])}catch(error){await denied();if(row.source_product&&error instanceof HTTPException&&error.status===429)throw new ApiError(429,'credential','Credential request quota exceeded',{}, {'Retry-After':error.getResponse().headers.get('Retry-After')??'60','RateLimit-Limit':String(rateLimits(c.env).apiRequestsPerTokenMinute),'RateLimit-Remaining':'0','RateLimit-Reset':String((Math.floor(Date.now()/60000)+1)*60)});throw error}
+ // The rate counter and the authorization receipt are taken once per request, however often a read is dispatched (platform/read-effects.ts).
+ try{await oncePerRequest(c.req.raw,'api-rate',()=>enforceRateLimits(c.env,[['apiRequestsPerTokenMinute',row.credential_id]]))}catch(error){await denied();if(row.source_product&&error instanceof HTTPException&&error.status===429)throw new ApiError(429,'credential','Credential request quota exceeded',{}, {'Retry-After':error.getResponse().headers.get('Retry-After')??'60','RateLimit-Limit':String(rateLimits(c.env).apiRequestsPerTokenMinute),'RateLimit-Remaining':'0','RateLimit-Reset':String((Math.floor(Date.now()/60000)+1)*60)});throw error}
  const conversationId=c.req.param('id')
  if(conversationId&&c.req.path.includes('/conversations/')&&!await c.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.project_id=? AND c.id=? AND ${conversationReach()}`).bind(row.namespace,conversationId,row.credential_id).first()){await denied();throw new ApiError(404,'not_found')}
  const service=tokens(c.env,row.namespace),context={requestId:crypto.randomUUID(),resource:scope}
- const credential=await service.authorize(match[1],[scope],context)
+ const credential=await oncePerRequest(c.req.raw,'api-authorize:'+scope,()=>service.authorize(match[1],[scope],context))
  if(!credential){const live=await c.env.DB.prepare('SELECT 1 FROM integration_tokens WHERE token_hash=? AND revoked_at IS NULL AND (expires_at IS NULL OR expires_at>?)').bind(hash,Date.now()).first();throw new HTTPException(live?403:401,{message:live?'Token does not grant this scope':'Invalid or expired bearer token'})}
  c.set('authority',verifiedToken(row.namespace,credential.id,scope,row.credential_id,row.policy_revision,c.req.path.includes('/conversations/')?conversationId:undefined));c.header('Cache-Control','no-store');await next()
 }

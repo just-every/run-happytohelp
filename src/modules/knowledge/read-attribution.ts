@@ -1,17 +1,20 @@
 import {visibleArticleSql,accessReaders} from './door'
-import type {Env} from '../../platform/env'
+import type {Context} from 'hono'
+import {HTTPException} from 'hono/http-exception'
+import type {AppEnv,Env} from '../../platform/env'
+import {afterReads} from '../../platform/read-effects'
 import {helpAccessWriteGuard,type HelpAccess} from './access'
 import {activeSourceProjectSql} from './public-sources'
 import {portalSessionGuard,type PortalIdentity} from '../portal/identity'
 
-/** Only the deliberate article request link connects a read to one admitted ticket. */
-export async function createReadReceipt(env:Env,projectId:string,articleId:string,locale:string,brand:string,access?:HelpAccess){
- const token=crypto.randomUUID()+crypto.randomUUID(),now=Date.now(),proof=helpAccessWriteGuard(projectId,access)
- const results=await env.DB.batch([
-  env.DB.prepare('DELETE FROM knowledge_read_receipts WHERE expires_at<? AND conversation_id IS NULL').bind(now),
-  env.DB.prepare(`INSERT INTO knowledge_read_receipts SELECT ?,?,?,?,?,?,?,NULL WHERE ${proof.sql} AND EXISTS(SELECT 1 FROM knowledge_articles a WHERE a.project_id=? AND a.id=? AND a.status='published' AND ${activeSourceProjectSql('a.project_id')} AND ${visibleArticleSql('a',accessReaders(access))}) RETURNING token`).bind(token,projectId,articleId,locale,brand,access?.contactId||null,now+1800000,...proof.args,projectId,articleId)
- ])
- return results[1].results.length?token:null
+/** Only the deliberate article request link connects a read to one admitted ticket. The article page is a read:
+ * its receipt is written after the page has answered, once (platform/read-effects.ts), and the token it links is
+ * the receipt written; a receipt refused by access that changed meanwhile refuses the page as the view event does. */
+export async function createReadReceipt(c:Context<AppEnv>,projectId:string,articleId:string,locale:string,brand:string,access?:HelpAccess){
+ const env=c.env,token=crypto.randomUUID()+crypto.randomUUID(),now=Date.now(),proof=helpAccessWriteGuard(projectId,access)
+ await afterReads(c,env.DB.prepare('DELETE FROM knowledge_read_receipts WHERE expires_at<? AND conversation_id IS NULL').bind(now))
+ await afterReads(c,env.DB.prepare(`INSERT INTO knowledge_read_receipts SELECT ?,?,?,?,?,?,?,NULL WHERE ${proof.sql} AND EXISTS(SELECT 1 FROM knowledge_articles a WHERE a.project_id=? AND a.id=? AND a.status='published' AND ${activeSourceProjectSql('a.project_id')} AND ${visibleArticleSql('a',accessReaders(access))}) RETURNING token`).bind(token,projectId,articleId,locale,brand,access?.contactId||null,now+1800000,...proof.args,projectId,articleId),result=>{if(!result.results.length)throw new HTTPException(409,{message:'Knowledge access changed'})})
+ return token
 }
 export async function attributeReadTicket(env:Env,projectId:string,conversationId:string,messageId:string,token:unknown,identity:PortalIdentity,context:{brand:string;locale:string}){
  if(typeof token!=='string'||token.length!==72)return

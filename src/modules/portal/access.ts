@@ -40,7 +40,10 @@ portalAccess.get('/:projectId/access/verify',async c=>{
  if(!/^[a-f0-9]{64}$/.test(token))throw new HTTPException(400,{message:'Invalid or expired sign-in link'})
  const hash=await hashToken(token),session=serverSecret(),sessionHash=await hashToken(session),now=Date.now(),newContact=crypto.randomUUID()
  const eligibleLink=`t.token_hash=? AND t.project_id=? AND t.consumed_at IS NULL AND t.expires_at>? AND ${activeSourceProjectSql('t.project_id')}`
- // All steps run in one D1 transaction. Consumption follows the guarded session
+ // The return path's aliases are read first: the link is spent by this request's last D1 statement, so a refusal
+ // of any statement leaves it unspent for the dispatch again (platform/d1-overload.ts).
+ const aliases=(await c.env.DB.prepare('SELECT slug FROM public_project_aliases WHERE project_id=?').bind(projectId).all<{slug:string}>()).results.map(row=>row.slug)
+ // All steps, and the audit row, run in one D1 transaction. Consumption follows the guarded session
  // insert, so concurrent clicks cannot mint a second session or revive history.
  const results=await c.env.DB.batch<any>([
   // The verified mailbox binding survives operator edits to contact text.
@@ -51,13 +54,12 @@ portalAccess.get('/:projectId/access/verify',async c=>{
   ...reconcileMailboxStatements(c.env,projectId,hash,now),
   c.env.DB.prepare(`INSERT INTO sessions(token_hash,actor_id,project_id,role,contact_id,expires_at) SELECT ?,i.contact_id,i.project_id,'contact',i.contact_id,? FROM portal_links t JOIN portal_identities i ON i.project_id=t.project_id AND i.email=t.email JOIN contacts ct ON ct.id=i.contact_id AND ct.project_id=i.project_id WHERE ${eligibleLink} AND ${livePortalContact()}`).bind(sessionHash,now+86400000,hash,projectId,now),
   c.env.DB.prepare(`INSERT INTO portal_session_proofs SELECT s.token_hash,s.project_id,s.contact_id,i.email,s.expires_at FROM sessions s JOIN portal_identities i ON i.project_id=s.project_id AND i.contact_id=s.contact_id WHERE s.token_hash=?`).bind(sessionHash),
-  c.env.DB.prepare('UPDATE portal_links SET consumed_at=? WHERE token_hash=? AND consumed_at IS NULL AND EXISTS(SELECT 1 FROM portal_session_proofs WHERE token_hash=?) RETURNING return_path').bind(now,hash,sessionHash)
+  c.env.DB.prepare('UPDATE portal_links SET consumed_at=? WHERE token_hash=? AND consumed_at IS NULL AND EXISTS(SELECT 1 FROM portal_session_proofs WHERE token_hash=?) RETURNING return_path').bind(now,hash,sessionHash),
+  auditStatement(c.env.DB,{projectId,category:'auth',action:'portal.access.verified',actor:{type:'system'},source:'api',detail:{method:'email_link'}},now,{sql:'EXISTS(SELECT 1 FROM portal_session_proofs WHERE token_hash=?)',params:[sessionHash]}),
  ])
- const link=results[results.length-1].results[0]
+ const link=results[results.length-2].results[0]
  if(!link)throw new HTTPException(400,{message:'Invalid or expired sign-in link'})
- await auditStatement(c.env.DB,{projectId,category:'auth',action:'portal.access.verified',actor:{type:'system'},source:'api',detail:{method:'email_link'}}).run()
  c.header('Set-Cookie',portalCookie(session,c.req.url))
- const aliases=(await c.env.DB.prepare('SELECT slug FROM public_project_aliases WHERE project_id=?').bind(projectId).all<{slug:string}>()).results.map(row=>row.slug)
  return c.redirect(portalReturnPath(link.return_path,projectId,aliases),303)
 })
 portalAccess.post('/:projectId/access/logout',async c=>{

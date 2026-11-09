@@ -19,8 +19,9 @@ const abortError = signal => signal?.reason || new DOMException('Request aborted
  * its initial child effects; live refresh, retry and pagination never adopt it. */
 export function createInitialInboxList(raw, location) {
     if (!raw) return undefined;
+    // A first page cut off in transit is busy (the list waits and reads it live), never a real error.
     let remaining = Promise.resolve(raw.outcome).catch(error => ({error: {
-        message: error instanceof Error ? error.message : String(error),
+        message: error instanceof Error ? error.message : String(error), ...(error?.transport ? {transport: true} : {}),
     }}));
     const key = filterKey(raw.filter), path = location.pathname, search = location.searchStr;
     return {

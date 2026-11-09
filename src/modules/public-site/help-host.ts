@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import type { AppEnv, Env } from '../../platform/env'
 import { renderHelpCenter, reserved, resolvePublicProject } from './help-center'
 import { answerOverloads } from '../../platform/d1-overload'
+import { readEffects } from '../../platform/read-effects'
 
 /** Deployment configuration only: no suffix inference, workspace domain setting or forwarded header lookup. */
 function configuredProject(request: Request, env: Env): string | null {
@@ -23,6 +24,7 @@ function configuredProject(request: Request, env: Env): string | null {
 const applicationPaths = new Set(['auth','admin','users','register','verify-email','accept-invitation','forgot-password','reset-password','two-factor','owner-recovery','delegation','preview','activation','articles','datasets','categories','ais','agents','macros','plugins','edit','email-settings','api-settings','webhook-settings','hubspot-settings','slack-settings','support-channels','delivery-log','github-settings','widget-settings','local-agent','training-runs','reports','move-in','insights'])
 
 const hostRoutes = new Hono<AppEnv>()
+hostRoutes.use('*', readEffects)
 hostRoutes.get('/', c => renderHelpCenter(c, configuredProject(c.req.raw, c.env)!, ''))
 hostRoutes.get('/:article', c => renderHelpCenter(c, configuredProject(c.req.raw, c.env)!, '', c.req.param('article')))
 answerOverloads(hostRoutes)

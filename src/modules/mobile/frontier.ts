@@ -13,9 +13,12 @@ export async function issueFrontier(env:Env,a:MobileAuthority,ticketId:string){
    SELECT ?,?,c.id,c.revision,c.last_message_id,c.ticket_version,${scheduleSnapshotSql()},? FROM conversations c
    WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND ${a.guard.sql}
    AND (SELECT count(*) FROM mobile_frontiers WHERE device_id=?)<100`).bind(id,a.device.id,expiresAt,ticketId,a.actor.projectId,...a.guard.params,a.device.id),
+  // Read back in the same transaction: the frontier is written and returned by one D1 call, so a refused read
+  // can never follow a written frontier inside this function (platform/read-effects.ts keeps it once per request).
+  env.DB.prepare('SELECT * FROM mobile_frontiers WHERE id=?').bind(id),
  ])
  if(!result[1].meta.changes)throw new HTTPException(409,{message:'Refresh this ticket before continuing'})
- return (await env.DB.prepare('SELECT * FROM mobile_frontiers WHERE id=?').bind(id).first<Frontier>())!
+ return (result[2] as D1Result<Frontier>).results[0]
 }
 export async function loadFrontier(env:Env,a:MobileAuthority,ticketId:string,value:unknown){
  if(typeof value!=='string')throw new HTTPException(400,{message:'A reconnect frontier is required'})

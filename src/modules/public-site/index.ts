@@ -8,6 +8,7 @@ import { notFoundResponse, rejectedResponse } from '../../base/rejected-response
 import { helpCenterRoutes, reserved, resolvePublicProject } from './help-center'
 import { missingHelpCenterPage } from './not-found'
 import { answerOverloads } from '../../platform/d1-overload'
+import { readEffects } from '../../platform/read-effects'
 export { publicHelpHostResponse } from './help-host'
 
 export async function isPublicSitePath(path: string, env: Env) {
@@ -20,9 +21,12 @@ export async function isPublicSitePath(path: string, env: Env) {
 }
 
 export const publicSiteRoutes = new Hono<AppEnv>()
+// Outermost, so a page's view and search records follow the HTML step's reads below (platform/read-effects.ts).
+publicSiteRoutes.use('*',readEffects)
 publicSiteRoutes.use('*',async(c,next)=>{
  await next()
- if(!c.res.headers.get('Content-Type')?.includes('text/html'))return
+ // The busy page (D1 overloaded, platform/d1-overload.ts) reads no D1 and carries no workspace's knowledge to render.
+ if(c.res.status===503||!c.res.headers.get('Content-Type')?.includes('text/html'))return
  const parts=c.req.path.split('/').filter(Boolean),key=['help','portal'].includes(parts[0])?parts[1]:parts[0]
  if(!key)return
  const project=await resolvePublicProject(c.env,decodeURIComponent(key))

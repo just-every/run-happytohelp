@@ -7,6 +7,7 @@ import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement,requestSource} from '../audit/record'
 import {text,link} from '../feedback/access'
 import {kinds,agreements,qualification,type EvidenceKind} from './model'
+import {afterReads} from '../../platform/read-effects'
 const root='/projects/:projectId'
 async function administrator(c:any){const actor=await scope(c,true) as Actor,access=await memberAccess(c.env.DB,actor.projectId,actor.id);if(!access?.permissions.has('settings.manage'))throw new HTTPException(403);return actor}
 const stamp=(value:unknown)=>{const n=typeof value==='string'?Date.parse(value):NaN;if(!Number.isSafeInteger(n))throw new HTTPException(400,{message:'Use a valid ISO date and time'});return n}
@@ -42,4 +43,4 @@ assuranceRoutes.post(root+'/evidence/:id/revoke',async c=>{
  return c.json({data:await qualification(c.env,actor.projectId)})
 })
 assuranceRoutes.post(root+'/activate',async c=>{const actor=await administrator(c);await requireStepUp(c,actor,'assurance.activate');const data=await qualification(c.env,actor.projectId);await auditStatement(c.env.DB,{projectId:actor.projectId,category:'approval',action:'assurance.activation_refused',outcome:'refused',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{blockers:data.blockers.length,independentReviewPending:true}}).run();return c.json({error:data.activation_blocker,data},409)})
-assuranceRoutes.get(root+'/report',async c=>{const actor=await administrator(c),permissions=await memberAccess(c.env.DB,actor.projectId,actor.id);if(!permissions?.permissions.has('data.export'))throw new HTTPException(403);const data=await qualification(c.env,actor.projectId);await auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'assurance.report_exported',actor:{type:'user',id:actor.id},source:requestSource(c)}).run();c.header('Content-Disposition','attachment; filename="regulated-deployment-qualification.json"');c.header('Cache-Control','no-store');return c.json({data})})
+assuranceRoutes.get(root+'/report',async c=>{const actor=await administrator(c),permissions=await memberAccess(c.env.DB,actor.projectId,actor.id);if(!permissions?.permissions.has('data.export'))throw new HTTPException(403);const data=await qualification(c.env,actor.projectId);await afterReads(c,auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'assurance.report_exported',actor:{type:'user',id:actor.id},source:requestSource(c)}));c.header('Content-Disposition','attachment; filename="regulated-deployment-qualification.json"');c.header('Cache-Control','no-store');return c.json({data})})

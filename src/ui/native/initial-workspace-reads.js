@@ -20,8 +20,10 @@ export function installInitialWorkspaceReads(entries, location, sessionVersion) 
         pathname: location.pathname, search: location.searchStr, sessionVersion,
         live: true, accepting: true,
         reads: new Map(Object.entries(entries || {}).map(([path, outcome]) => [path,
+            // A read cut off in transit is busy (nativeRequest reads it live), never a real error.
             Promise.resolve(outcome).catch(error => ({error: {
                 status: error?.status, message: error instanceof Error ? error.message : String(error), data: error?.data,
+                ...(error?.transport ? {transport: true} : {}),
             }})),
         ])),
     };

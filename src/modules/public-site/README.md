@@ -66,6 +66,22 @@ never carry HappyToHelp's brand; they show the project's own name, logo and colo
 `/api/public-site/` keep the plain 404. Unknown application paths outside the Help Center
 render the branded application 404 described in `docs/NAVIGATION.md`.
 
+When D1 is overloaded (`platform/d1-overload.ts`), a browser gets a page, never a raw JSON body. A page load of
+the public site or a help host (a GET or HEAD that accepts `text/html`, other than a script's fetch such as the
+progressive navigation) answers 503 with `Retry-After` and the busy page (`busy-page.ts`): HappyToHelp's frame
+with neutral wording (the entry's alias lookup also answers for application addresses such as `/register`), no
+D1 read and no script, and a `<meta http-equiv="refresh">` that loads the same address again after Retry-After.
+The public-site HTML middleware leaves it alone. A native form post (help and portal sign-in, "Was this
+helpful?", portal reply and preferences, the satisfaction survey) answered by an overload gets its form back
+(`busy-form.ts`, from `app.onError`): the same action, method and encoding, the typed text editable, every other
+posted field and the chosen button carried unchanged, and a note that an attachment must be chosen again. It
+never posts by itself and records nothing; its same-origin referrer policy keeps the Origin the form handlers
+check. Only a post proven same-origin (this site's Origin, or no Origin and this site's Referer, and no
+Sec-Fetch-Site other than same-origin, the strictest of the form handlers' own checks) gets its form back: an
+overload can refuse a cross-origin post before its handler's check runs, so any other post gets the busy page
+without a form or any posted field. JSON callers, including the script-driven request form, keep the JSON `{error}`; any other error keeps
+each handler's own answer.
+
 Knowledge provider imports (Intercom, Freshdesk and Zendesk) remain in the
 knowledge capability and write only through its scoped, durable import jobs.
 They are independent of the public homepage. Authenticated owner/admin site

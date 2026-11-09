@@ -1,5 +1,6 @@
 import {knowledgeRefusalMessage} from './knowledge-references/refusal-message';
 import {takeInitialWorkspaceRead} from './initial-workspace-reads.js';
+import {busyWait, isBusy, transportFetch} from '../dashboard/utils/busy';
 // A busy read is tried again for about a minute; an open view's own signal ends it sooner.
 const BUSY_READ_ATTEMPTS = 6;
 const busyPause = (ms, signal) => new Promise((resolve, reject) => {
@@ -9,24 +10,42 @@ const busyPause = (ms, signal) => new Promise((resolve, reject) => {
 /** Native command transport. Commands are persisted by the server before UI acknowledgement. */
 export async function nativeRequest(path, init = {}) {
     const initial = await takeInitialWorkspaceRead(path, init);
-    // A busy database (503) on the document's own read is read again live, as any other busy read.
-    if (initial && initial.error?.status !== 503) {
+    // A busy database (503) or a cut answer on the document's own read is read again live, as any other busy read.
+    if (initial && !isBusy(initial.error)) {
         if ('error' in initial) {
             notifyExpiredSession(path, initial.error.status, initial.error.data);
             throw Object.assign(new Error(initial.error.message), {status: initial.error.status, data: initial.error.data});
         }
         return initial.result;
     }
-    let response = await fetch(path, { credentials: 'same-origin', ...init });
-    // A read the server answered 503 waits for its Retry-After (at most 10 s) and runs again, so a panel
-    // keeps loading through a busy moment instead of failing; a write is never repeated.
-    for (let attempt = 0; response.status === 503 && (init.method || 'GET').toUpperCase() === 'GET' && attempt < BUSY_READ_ATTEMPTS && !init.signal?.aborted; attempt++) {
-        const seconds = Number(response.headers.get('Retry-After'));
-        await response.body?.cancel();
-        await busyPause(1000 * Math.min(10, seconds > 0 ? seconds : 3), init.signal);
-        response = await fetch(path, { credentials: 'same-origin', ...init });
+    const read = (init.method || 'GET').toUpperCase() === 'GET';
+    let response, body;
+    // A read the server answered 503 waits for its Retry-After (at most 10 s) and runs again, and a read that got
+    // no complete answer waits the default; so a panel keeps loading through a busy moment instead of failing.
+    // A write is never repeated: its outcome is unknown, and it throws what it threw before.
+    for (let attempt = 0; ; attempt++) {
+        const again = read && attempt < BUSY_READ_ATTEMPTS && !init.signal?.aborted;
+        let busy;
+        try {
+            response = await transportFetch(path, { credentials: 'same-origin', ...init });
+            if (response.status === 503 && again) {
+                const seconds = Number(response.headers.get('Retry-After'));
+                await response.body?.cancel();
+                busy = {retryAfter: seconds};
+            } else {
+                // A complete answer that is not JSON is a real error, as before.
+                const text = response.status === 204 ? null : await response.text();
+                body = text === null ? null : JSON.parse(text);
+                break;
+            }
+        } catch (error) {
+            if (!error?.transport) throw error;
+            if (!read) throw error.cause;
+            if (!again) throw error;
+            busy = error;
+        }
+        await busyPause(busyWait(busy), init.signal);
     }
-    const body = response.status === 204 ? null : await response.json();
     // A sensitive action asks for a recent step-up; once confirmed, the same request runs once more.
     if (response.status === 403 && body.code === 'step_up_required' && !init.stepUpRetried && await confirmStepUp(body)) return nativeRequest(path, { ...init, stepUpRetried: true });
     notifyExpiredSession(path, response.status, body);

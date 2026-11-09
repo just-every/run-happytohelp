@@ -3,7 +3,8 @@ import type {AppEnv} from '../../platform/env'
 import {requiredString} from '../../platform/db'
 import {resolveHelpAccess} from './access'
 import {listAccessibleArticles,listAccessibleCategories,lookupAccessibleArticle,getKnowledgeExperience} from './experience'
-import {knowledgeRateLimit,knowledgeVisitorHash,recordKnowledgeEvent,recordHelpfulVote} from './feedback'
+import {knowledgeRateLimit,knowledgeVisitorHash,recordKnowledgeEvent,recordReadEvent,recordHelpfulVote} from './feedback'
+import {oncePerRequest} from '../../platform/read-effects'
 import {safeHelpReturn,helpSameOrigin} from './help-auth'
 export const publicKnowledgeRoutes=new Hono<AppEnv>()
 publicKnowledgeRoutes.use('/public/:projectId/*',async(c,next)=>{c.header('Cache-Control','private, no-store');c.header('Vary','Cookie, Authorization');await next()})
@@ -16,8 +17,9 @@ publicKnowledgeRoutes.get('/public/:projectId/articles/:slug',async c=>{
 })
 publicKnowledgeRoutes.get('/public/:projectId/search',async c=>{
  const pid=c.req.param('projectId'),query=requiredString(c.req.query('q'),'query',200),access=await resolveHelpAccess(c.env,pid,c.req.raw),locale=c.req.query('locale'),articles=await listAccessibleArticles(c.env,pid,{access,locale,query})
- await knowledgeRateLimit(c.env,`search:${pid}:${c.req.header('CF-Connecting-IP')||'unknown'}`,300)
- await recordKnowledgeEvent(c.env,pid,{kind:'search',query,resultCount:articles.length,access,locale,visitorHash:await knowledgeVisitorHash(pid,c.req.raw,access)})
+ // One search counts once against the visitor's budget and records one event, however often it is dispatched (platform/read-effects.ts).
+ await oncePerRequest(c.req.raw,'knowledge-search-limit',()=>knowledgeRateLimit(c.env,`search:${pid}:${c.req.header('CF-Connecting-IP')||'unknown'}`,300))
+ await recordReadEvent(c,pid,{kind:'search',query,resultCount:articles.length,access,locale,visitorHash:await knowledgeVisitorHash(pid,c.req.raw,access)})
  return c.json(articles)
 })
 publicKnowledgeRoutes.post('/public/:projectId/articles/:slug/helpful',async c=>{

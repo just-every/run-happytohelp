@@ -50,7 +50,9 @@ export async function trainingBrowserJourney({runtime,browser,shot}){
         await page.route('**' + path, fail);
         await page.reload(); await page.getByRole('alert').waitFor();
         await assertUnavailable(page, posts);
-        await settleFrames(page); assert.equal(failedReads, 1, 'failed GET is not retried automatically');
+        // A read that got no answer is busy: the first try and the view's six bounded waits, and then it stops.
+        await settleFrames(page); assert.equal(failedReads, 7, 'failed GET is retried through its bounded busy waits, once each');
+        await page.waitForTimeout(4000); assert.equal(failedReads, 7, 'failed GET is not retried again once the error shows');
         await captureTraining(page, shot, `training-${width}-load-error.png`);
         await page.unroute('**' + path, fail);
         const recovery = await hold(path);

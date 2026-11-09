@@ -29,11 +29,13 @@ helpAuth.get('/public/:projectId/access/verify',async c=>{
  c.header('Cache-Control','no-store');c.header('Referrer-Policy','no-referrer')
  const projectId=c.req.param('projectId'),token=c.req.query('token')||'';if(!/^[a-f0-9]{64}$/.test(token))throw new HTTPException(400,{message:'Invalid or expired sign-in link'})
  const hash=await hashToken(token),session=serverSecret(),sessionHash=await hashToken(session),now=Date.now()
+ // The link is spent by this request's last D1 statement, with its audit row in the same transaction: a refusal of
+ // any statement leaves the link unspent for the dispatch again (platform/d1-overload.ts), and nothing reads after it.
  const result=await c.env.DB.batch([
  c.env.DB.prepare(`INSERT INTO knowledge_help_sessions SELECT ?,t.project_id,(SELECT c.id FROM contacts c WHERE c.project_id=t.project_id AND lower(trim(c.email))=t.email AND c.is_verified=1 AND lower(trim(c.external_id))=t.email AND coalesce(json_extract(c.metadata_json,'$.email_unproven'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_deleted'),0)<>1 AND NOT EXISTS(SELECT 1 FROM contact_erasures e WHERE e.project_id=c.project_id AND e.contact_id=c.id) ORDER BY c.is_verified DESC,c.created_at LIMIT 1),t.email,? FROM knowledge_help_links t WHERE t.token_hash=? AND t.project_id=? AND t.consumed_at IS NULL AND t.expires_at>? AND ${activeSourceProjectSql('t.project_id')} AND NOT EXISTS(SELECT 1 FROM contacts c WHERE c.project_id=t.project_id AND lower(trim(c.email))=t.email AND (coalesce(json_extract(c.metadata_json,'$.is_blocked'),0)=1 OR coalesce(json_extract(c.metadata_json,'$.is_deleted'),0)=1 OR EXISTS(SELECT 1 FROM contact_erasures e WHERE e.project_id=c.project_id AND e.contact_id=c.id))) RETURNING token_hash`).bind(sessionHash,now+86400000,hash,projectId,now),
- c.env.DB.prepare('UPDATE knowledge_help_links SET consumed_at=? WHERE token_hash=? AND consumed_at IS NULL AND EXISTS(SELECT 1 FROM knowledge_help_sessions WHERE token_hash=?) RETURNING token_hash').bind(now,hash,sessionHash)])
+ c.env.DB.prepare('UPDATE knowledge_help_links SET consumed_at=? WHERE token_hash=? AND consumed_at IS NULL AND EXISTS(SELECT 1 FROM knowledge_help_sessions WHERE token_hash=?) RETURNING token_hash').bind(now,hash,sessionHash),
+ auditStatement(c.env.DB,{projectId,category:'auth',action:'knowledge.access.verified',actor:{type:'system'},source:'api',detail:{method:'email_link'}},now,{sql:'EXISTS(SELECT 1 FROM knowledge_help_sessions WHERE token_hash=?)',params:[sessionHash]})])
  if(!result[0].results.length||!result[1].results.length)throw new HTTPException(400,{message:'Invalid or expired sign-in link'})
- await auditStatement(c.env.DB,{projectId,category:'auth',action:'knowledge.access.verified',actor:{type:'system'},source:'api',detail:{method:'email_link'}}).run()
  c.header('Set-Cookie',`h2h_help=${session}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400${new URL(c.req.url).protocol==='https:'?'; Secure':''}`)
  return c.redirect(`/help/${encodeURIComponent(projectId)}`,303)
 })

@@ -36,6 +36,20 @@ export async function mobileInbox(){
   await auditPage(page,shot('phone-reply.png'))
   await page.goto(runtime.origin+`/projects/${owner.projectId}/conversations?view=open`)
   await page.locator('.conversation-list-items').getByText('Phone customer',{exact:true}).waitFor()
+  // A view switch whose workspace read is reset in transit waits as busy and then shows the view, never the alert:
+  // the reply assigned the conversation to its sender, so Yours lists it.
+  let resets=0,alerted=false
+  await page.route(url=>url.pathname.startsWith('/_serverFn/'),route=>{resets++;return route.abort('connectionreset')},{times:1})
+  await page.getByRole('button',{name:'Toggle navigation',exact:true}).click()
+  await page.getByRole('navigation',{name:'Inbox views',exact:true}).getByRole('link',{name:/^Yours/}).click()
+  const busy=page.locator('.dashboard-busy[role="status"]'),watch=async()=>{alerted||=await page.locator('[role="alert"]:visible').count()>0;await page.waitForTimeout(100)}
+  for(const until=Date.now()+20000;Date.now()<until&&!await busy.isVisible();)await watch()
+  assert.ok(await busy.isVisible(),'the reset read shows the workspace busy state')
+  for(const until=Date.now()+30000;Date.now()<until&&await busy.isVisible();)await watch()
+  assert.equal(await busy.isVisible(),false,'the busy state ends once the read answers')
+  await page.waitForURL(url=>url.searchParams.get('view')==='mine')
+  await page.locator('.conversation-list-items').getByText('Phone customer',{exact:true}).waitFor()
+  assert.equal(resets,1);await watch();assert.equal(alerted,false,'a transport failure never shows the error alert')
   await page.getByRole('button',{name:'Toggle navigation',exact:true}).click()
   await page.getByRole('navigation',{name:'Main navigation',exact:true}).getByRole('link',{name:'Contacts',exact:true}).click()
   await page.getByRole('heading',{name:'Contacts',exact:true}).waitFor()

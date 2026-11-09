@@ -11,6 +11,7 @@ import {CLIENT_ID,SUBDOMAIN} from './http'
 import {authorizationUrl,exchangeCode,revokeRemote} from './oauth'
 import {codeChallenge,randomToken} from './pkce'
 import {getConnection,publicConnection,sealedGrant,subdomainConflict} from './store'
+import {oncePerRequest} from '../../../platform/read-effects'
 
 export const CALLBACK_PATH='/api/move-in/zendesk/callback'
 const AUTHORIZATION_MS=10*60*1000
@@ -32,29 +33,38 @@ zendeskConnectionRoutes.post('/projects/:projectId/zendesk/connect',async c=>{
 })
 
 /** Zendesk returns the browser here. The state is single use and bound to the
- * session and workspace that chose Connect; the code is exchanged with its verifier. */
+ * session and workspace that chose Connect; the code is exchanged with its verifier.
+ * The state's consumption and the code's exchange each run once per request: a dispatch
+ * again after a refused D1 read (platform/d1-overload.ts) continues with the first
+ * dispatch's state and grant, so it answers what the first would have answered. */
 zendeskConnectionRoutes.get('/zendesk/callback',async c=>{
  const state=c.req.query('state');if(!state)throw new HTTPException(400,{message:'This Zendesk sign-in is missing its state. Choose Connect again.'})
- const stateHash=await hashToken(state),row=await c.env.DB.prepare('SELECT * FROM move_in_zendesk_authorizations WHERE state_hash=?').bind(stateHash).first<any>()
- if(!row)throw new HTTPException(403,{message:'This Zendesk sign-in is not valid or was already used. Choose Connect again.'})
- const actor=await requireActor(c),token=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]
- const member=await c.env.DB.prepare("SELECT 1 FROM memberships WHERE project_id=? AND user_id=? AND role IN ('owner','admin')").bind(row.project_id,actor.id).first()
- if(actor.id!==row.actor_id||!token||await hashToken(token)!==row.session_hash||!member)throw new HTTPException(403,{message:'Finish connecting Zendesk in the same signed-in session that chose Connect.'})
- const consumed=await c.env.DB.prepare('DELETE FROM move_in_zendesk_authorizations WHERE state_hash=?').bind(stateHash).run()
- if(!consumed.meta.changes)throw new HTTPException(409,{message:'This Zendesk sign-in was already used. Choose Connect again.'})
+ const {row,actorId,expired}=await oncePerRequest(c.req.raw,'zendesk-callback-state',async()=>{
+  const stateHash=await hashToken(state),row=await c.env.DB.prepare('SELECT * FROM move_in_zendesk_authorizations WHERE state_hash=?').bind(stateHash).first<any>()
+  if(!row)throw new HTTPException(403,{message:'This Zendesk sign-in is not valid or was already used. Choose Connect again.'})
+  const actor=await requireActor(c),token=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]
+  const member=await c.env.DB.prepare("SELECT 1 FROM memberships WHERE project_id=? AND user_id=? AND role IN ('owner','admin')").bind(row.project_id,actor.id).first()
+  if(actor.id!==row.actor_id||!token||await hashToken(token)!==row.session_hash||!member)throw new HTTPException(403,{message:'Finish connecting Zendesk in the same signed-in session that chose Connect.'})
+  const consumed=await c.env.DB.prepare('DELETE FROM move_in_zendesk_authorizations WHERE state_hash=?').bind(stateHash).run()
+  if(!consumed.meta.changes)throw new HTTPException(409,{message:'This Zendesk sign-in was already used. Choose Connect again.'})
+  return {row,actorId:actor.id,expired:row.expires_at<Date.now()}
+ })
  const done=(outcome:string)=>c.redirect(`/projects/${encodeURIComponent(row.project_id)}/move-in?zendesk=${outcome}`)
- if(row.expires_at<Date.now())return done('expired')
+ if(expired)return done('expired')
  if(c.req.query('error'))return done('denied')
  const code=c.req.query('code');if(!code)return done('failed')
- const record=(outcome:'succeeded'|'refused'|'failed',detail:Record<string,unknown>)=>auditStatement(c.env.DB,{projectId:row.project_id,category:'integration',action:'move_in.zendesk.connected',outcome,actor:{type:'user',id:actor.id},source:requestSource(c),detail:{subdomain:row.subdomain,...detail}}).run()
- let grant
- try{grant=await exchangeCode(row.subdomain,row.client_id,code,row.redirect_uri,await decryptToken(c.env,row.project_id,row.verifier_ciphertext))}
- catch(error){if(!(error instanceof ZendeskError))throw error;await record('failed',{reason:error.code,status:error.status??null});return done('failed')}
+ const record=(outcome:'succeeded'|'refused'|'failed',detail:Record<string,unknown>)=>auditStatement(c.env.DB,{projectId:row.project_id,category:'integration',action:'move_in.zendesk.connected',outcome,actor:{type:'user',id:actorId},source:requestSource(c),detail:{subdomain:row.subdomain,...detail}}).run()
+ const exchanged=await oncePerRequest(c.req.raw,'zendesk-callback-exchange',async()=>{
+  try{return {ok:true as const,grant:await exchangeCode(row.subdomain,row.client_id,code,row.redirect_uri,await decryptToken(c.env,row.project_id,row.verifier_ciphertext))}}
+  catch(error){if(!(error instanceof ZendeskError))throw error;return {ok:false as const,error}}
+ })
+ if(!exchanged.ok){await record('failed',{reason:exchanged.error.code,status:exchanged.error.status??null});return done('failed')}
+ const grant=exchanged.grant
  if(await subdomainConflict(c.env,row.project_id,row.subdomain)){await record('refused',{reason:'zendesk_subdomain_bound'});return done('conflict')}
  const now=Date.now(),sealed=await sealedGrant(c.env,row.project_id,grant,now),scopes=typeof grant.scope==='string'&&grant.scope.trim()?grant.scope.trim():'read hc:read'
  await c.env.DB.batch([
-  c.env.DB.prepare("INSERT INTO move_in_zendesk_connections(project_id,subdomain,client_id,scopes,state,access_ciphertext,refresh_ciphertext,access_expires_at,refresh_expires_at,generation,connected_by,connected_at,updated_at) VALUES(?,?,?,?,'connected',?,?,?,?,1,?,?,?) ON CONFLICT(project_id) DO UPDATE SET subdomain=excluded.subdomain,client_id=excluded.client_id,scopes=excluded.scopes,state='connected',access_ciphertext=excluded.access_ciphertext,refresh_ciphertext=excluded.refresh_ciphertext,access_expires_at=excluded.access_expires_at,refresh_expires_at=excluded.refresh_expires_at,generation=move_in_zendesk_connections.generation+1,connected_by=excluded.connected_by,connected_at=excluded.connected_at,updated_at=excluded.updated_at").bind(row.project_id,row.subdomain,row.client_id,scopes,sealed.access,sealed.refresh,sealed.accessExpiresAt,sealed.refreshExpiresAt,actor.id,now,now),
-  auditStatement(c.env.DB,{projectId:row.project_id,category:'integration',action:'move_in.zendesk.connected',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{subdomain:row.subdomain,scopes}})])
+  c.env.DB.prepare("INSERT INTO move_in_zendesk_connections(project_id,subdomain,client_id,scopes,state,access_ciphertext,refresh_ciphertext,access_expires_at,refresh_expires_at,generation,connected_by,connected_at,updated_at) VALUES(?,?,?,?,'connected',?,?,?,?,1,?,?,?) ON CONFLICT(project_id) DO UPDATE SET subdomain=excluded.subdomain,client_id=excluded.client_id,scopes=excluded.scopes,state='connected',access_ciphertext=excluded.access_ciphertext,refresh_ciphertext=excluded.refresh_ciphertext,access_expires_at=excluded.access_expires_at,refresh_expires_at=excluded.refresh_expires_at,generation=move_in_zendesk_connections.generation+1,connected_by=excluded.connected_by,connected_at=excluded.connected_at,updated_at=excluded.updated_at").bind(row.project_id,row.subdomain,row.client_id,scopes,sealed.access,sealed.refresh,sealed.accessExpiresAt,sealed.refreshExpiresAt,actorId,now,now),
+  auditStatement(c.env.DB,{projectId:row.project_id,category:'integration',action:'move_in.zendesk.connected',actor:{type:'user',id:actorId},source:requestSource(c),detail:{subdomain:row.subdomain,scopes}})])
  return done('connected')
 })
 

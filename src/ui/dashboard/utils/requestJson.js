@@ -1,3 +1,5 @@
+import { transportFetch } from './busy';
+
 const DEFAULT_READ_TIMEOUT_MS = 15000;
 
 async function requestJson(url, options = {}, { signal, timeoutMs = DEFAULT_READ_TIMEOUT_MS } = {}) {
@@ -13,7 +15,8 @@ async function requestJson(url, options = {}, { signal, timeoutMs = DEFAULT_READ
     }, timeoutMs) : null;
 
     try {
-        const response = await fetch(url, { ...options, signal: controller.signal });
+        // A read that gets no complete answer rejects with the busy marker, so its view waits and reads again.
+        const response = await transportFetch(url, { ...options, signal: controller.signal });
         if (response.status === 204) return {};
 
         if (!response.ok) {
@@ -32,11 +35,14 @@ async function requestJson(url, options = {}, { signal, timeoutMs = DEFAULT_READ
             throw error;
         }
 
-        return await response.json();
+        // A complete answer that is not JSON is a real error.
+        return JSON.parse(await response.text());
     } catch (error) {
         // Fetch may report a generic AbortError while consuming a timed-out body.
         // Preserve the timeout reason so the UI offers Retry instead of hiding it.
         if (controller.signal.aborted) throw controller.signal.reason || error;
+        // A write is never repeated: its outcome is unknown, and it throws what it threw before.
+        if (error?.transport && (options.method || 'GET').toUpperCase() !== 'GET') throw error.cause;
         throw error;
     } finally {
         clearTimeout(timer);

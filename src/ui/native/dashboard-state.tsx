@@ -5,11 +5,11 @@ import { preloadDashboardPage } from './dashboard-page-code';
 import { actsOnSessionProject, projectIdFromPath } from './workspace-scope';
 import { announceSessionProject } from './session-project-sync';
 import { delegationAccount, loadConsent } from './delegation-loader';
-import { dashboardBootstrapInput, fetchDashboardBootstrap, type DashboardBootstrapResult, type InitialConversation, type WorkspaceBootstrap } from './dashboard-bootstrap';
+import { dashboardBootstrapInput, readDashboardBootstrap, type DashboardBootstrapResult, type InitialConversation, type WorkspaceBootstrap } from './dashboard-bootstrap';
 import { createInitialInboxReads } from './initial-inbox-reads';
 import {createInitialInboxList,type InitialInboxListData} from './initial-inbox-list';
 import {installInitialWorkspaceReads,expireInitialWorkspaceReads} from './initial-workspace-reads';
-import {busyWait} from '../dashboard/utils/busy';
+import {busyWait,isBusy} from '../dashboard/utils/busy';
 
 export const DashboardSettingsContext = createContext<any>(null);
 export function useDashboardSettings() {
@@ -34,7 +34,7 @@ export function useDashboardSessionVersion() {
     }, () => sessionVersion, () => 0);
 }
 
-// While the workspace's own read waits out a busy database (503), the shell keeps what it shows and says so.
+// While the workspace's own read waits out a busy database (503) or a dropped answer, the shell keeps what it shows and says so.
 let workspaceBusy = false;
 const busyListeners = new Set<() => void>();
 function setWorkspaceBusy(value: boolean) {
@@ -52,15 +52,21 @@ const pause = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, r
     const timer = setTimeout(resolve, ms);
     signal.addEventListener('abort', () => { clearTimeout(timer); reject(signal.reason); }, { once: true });
 });
-/** Read the bootstrap again after each Retry-After while the database is busy and this navigation is current. */
-async function untilFree(result: DashboardBootstrapResult, read: () => Promise<DashboardBootstrapResult>, signal: AbortSignal) {
+/** A workspace read that failed at the transport level (busy marker) is a busy answer, never a real error. */
+type BusyRead = DashboardBootstrapResult | { transport: true; message: string };
+const busyWhenCut = (pending: Promise<DashboardBootstrapResult>, signal: AbortSignal): Promise<BusyRead> =>
+    pending.catch(error => { if (isBusy(error) && !signal.aborted) return error; throw error; });
+/** Read the bootstrap again after each Retry-After (or the default wait, after a dropped answer) while the
+ * database is busy and this navigation is current. */
+async function untilFree(first: BusyRead, read: () => Promise<DashboardBootstrapResult>, signal: AbortSignal) {
     try {
-        while ('status' in result && result.status === 503) {
+        let result = first;
+        while (isBusy(result)) {
             setWorkspaceBusy(true);
             await pause(busyWait(result), signal);
-            result = await read();
+            result = await busyWhenCut(read(), signal);
         }
-        return result;
+        return result as DashboardBootstrapResult;
     } finally {
         setWorkspaceBusy(false);
     }
@@ -111,14 +117,13 @@ export async function loadDashboard({ location, abortController, parentMatchProm
     let initialTags: {path: string; outcome: Promise<any>} | undefined;
     let initialManagement: {path: string; outcome: Promise<any>} | undefined;
     try {
-        const [result] = await Promise.all([
-            parentMatchPromise.then(parent => {
-                if (!parent.loaderData) throw new Error('The workspace could not be loaded.');
-                return parent.loaderData.bootstrap;
-            }), code,
-        ]);
+        const bootstrap = parentMatchPromise.then(parent => {
+            if (!parent.loaderData) throw new Error('The workspace could not be loaded.');
+            return parent.loaderData.bootstrap;
+        });
+        const [result] = await Promise.all([busyWhenCut(bootstrap, signal), code]);
         signal.throwIfAborted();
-        const current = await untilFree(result, () => fetchDashboardBootstrap({ data: dashboardBootstrapInput(location), signal }), signal);
+        const current = await untilFree(result, () => readDashboardBootstrap(dashboardBootstrapInput(location), signal), signal);
         ({ settings, projectUnavailable, initialConversation, initialInboxList, initialTags, initialManagement } = requireBootstrap(current));
         // The URL names the workspace: bind the session to it before any page reads its data.
         if (urlProjectId && !projectUnavailable && settings.sessionProjectId !== urlProjectId) {
@@ -136,8 +141,8 @@ export async function loadDashboard({ location, abortController, parentMatchProm
         // Membership can change between the server read and client activation.
         // Re-read the remaining account exactly as for an unavailable project.
         const input = dashboardBootstrapInput(location);
-        const account = () => fetchDashboardBootstrap({ data: { inbox: input.inbox ? 'global' : undefined }, signal });
-        const fallback = requireBootstrap(await untilFree(await account(), account, signal));
+        const account = () => readDashboardBootstrap({ inbox: input.inbox ? 'global' : undefined }, signal);
+        const fallback = requireBootstrap(await untilFree(await busyWhenCut(account(), signal), account, signal));
         settings = fallback.settings;
     }
     // A direct inbox route can become a workspace notice, and an account with no

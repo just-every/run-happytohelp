@@ -15,7 +15,7 @@ import { shell } from './shell'
 import {importedHelpOnly} from './import-noindex'
 import {hasRestrictedCollections,resolveHelpAccess} from '../knowledge/access'
 import {getKnowledgeExperience,selectKnowledgeLocale,listAccessibleCategories,listAccessibleArticles,lookupAccessibleArticle} from '../knowledge/experience'
-import {knowledgeVisitorHash,recordKnowledgeEvent} from '../knowledge/feedback'
+import {knowledgeVisitorHash,recordReadEvent} from '../knowledge/feedback'
 import {helpControls,signInContent,helpfulContent,localeQuery} from './help-controls'
 import {helpTemplate} from './help-template'
 import {publicAppearance} from '../widget/appearance.js'
@@ -51,7 +51,7 @@ export async function renderHelpCenter(c:any,key:string,base:string,tail?:string
    const page=Math.max(1,Math.min(100000,Number.parseInt(c.req.query('page')||'1',10)||1))
    const matches=await listAccessibleArticles(c.env,project.id,{access,locale,query:keyword})
    const rows=matches.slice((page-1)*15,page*15)
-   await recordKnowledgeEvent(c.env,project.id,{kind:'search',locale,query:keyword,resultCount:matches.length,visitorHash,access})
+   await recordReadEvent(c,project.id,{kind:'search',locale,query:keyword,resultCount:matches.length,visitorHash,access})
    content=`<h1>Search results</h1><p>${matches.length} results found</p>`+(matches.length===0?`<p class="help-center-notice">Try a shorter phrase or different words, or <a href="${base || '/'}${suffix}">browse all articles</a>.</p>`:'')+rows.map((a:any)=>`<h4><a href="${base}/${encodeURIComponent(a.slug)}${suffix}">${e(a.title)}</a></h4><p>${e(a.summary)}</p>`).join('')
    const query=`keyword=${encodeURIComponent(keyword)}${locale===settings.defaultLocale?'':`&amp;locale=${encodeURIComponent(locale)}`}`
    content+=`<nav aria-label="Search pages">${page>1?`<a href="${base}/search?${query}&amp;page=${page-1}">Previous</a>`:''} ${matches.length>page*15?`<a href="${base}/search?${query}&amp;page=${page+1}">Next</a>`:''}</nav>`
@@ -62,13 +62,13 @@ export async function renderHelpCenter(c:any,key:string,base:string,tail?:string
   if(!found)return c.html(await renderPublicKnowledgeHtml(c.env,project.id,c.req.raw,missingArticlePage(project,base)),404)
   if(found.redirectSlug)return c.redirect(`${base}/${encodeURIComponent(found.redirectSlug)}${suffix}`,308)
   const article=found.article
-  const view=await recordKnowledgeEvent(c.env,project.id,{kind:'view',slug:article.slug,locale,visitorHash,access})
+  const view=await recordReadEvent(c,project.id,{kind:'view',slug:article.slug,locale,visitorHash,access})
   tools=tools.replace('/requests\"',`/requests?afterReading=${encodeURIComponent(view.eventId)}&amp;locale=${encodeURIComponent(locale)}\"`)
   content=(article.locale!==locale?`<p class="help-center-translation-note">This article is available in ${e(article.locale)} while its translation is being reviewed.</p>`:'')+`<article lang="${e(article.locale)}"><h1>${e(article.title)}</h1>`+renderToStaticMarkup(<Markdown remarkPlugins={[remarkGfm]} components={articleComponents}>{String(article.content)}</Markdown>)+'</article>'
   content=helpTemplate(settings.templates.article,content,article.title,article.summary)
   if((await listForms(c.env,project.id,article.locale)).length){
-   const read=await createReadReceipt(c.env,project.id,article.id,article.locale,new URL(c.req.url).hostname,access)
-   if(read)content+=`<p class="help-center-request-link"><a href="/help/${encodeURIComponent(project.id)}/requests?read=${encodeURIComponent(read)}&amp;locale=${encodeURIComponent(article.locale)}">Contact support about this article</a></p>`
+   const read=await createReadReceipt(c,project.id,article.id,article.locale,new URL(c.req.url).hostname,access)
+   content+=`<p class="help-center-request-link"><a href="/help/${encodeURIComponent(project.id)}/requests?read=${encodeURIComponent(read)}&amp;locale=${encodeURIComponent(article.locale)}">Contact support about this article</a></p>`
   }
   content+=helpfulContent(project.id,article.slug,article.locale,`${base}/${encodeURIComponent(article.slug)}${suffix}`,c.req.query('feedback')==='1')
  }else{

@@ -1,6 +1,8 @@
 import {visibleArticleSql,accessReaders} from './door'
 import {HTTPException} from 'hono/http-exception'
-import type {Env} from '../../platform/env'
+import type {Context} from 'hono'
+import type {AppEnv,Env} from '../../platform/env'
+import {afterReads} from '../../platform/read-effects'
 import {hashToken} from '../../platform/auth'
 import {type HelpAccess,helpAccessWriteGuard} from './access'
 import {activeSourceProjectSql} from './public-sources'
@@ -16,7 +18,8 @@ export async function knowledgeVisitorHash(projectId:string,request:Request,acce
  return hashToken(`${projectId}:${access?.contactId||access?.email||`${address}:${agent}`}`)
 }
 export interface KnowledgeEventInput {kind:'view'|'search'|'click'|'ticket';slug?:string;query?:string;resultCount?:number;locale?:string;brand?:string;visitorHash:string;access?:HelpAccess}
-export async function recordKnowledgeEvent(env:Env,projectId:string,input:KnowledgeEventInput){
+/** One event row, as a guarded statement; `id` names it before it is written. */
+async function knowledgeEventStatement(env:Env,projectId:string,input:KnowledgeEventInput){
  if((input.query!==undefined&&typeof input.query!=='string')||(input.brand!==undefined&&typeof input.brand!=='string'))throw new HTTPException(400,{message:'Invalid analytics metadata'})
  if(!['view','search','click','ticket'].includes(input.kind))throw new HTTPException(400,{message:'Invalid event'})
  const article=input.slug?await lookupAccessibleArticle(env,projectId,input.slug,{access:input.access,locale:input.locale}):null
@@ -24,9 +27,21 @@ export async function recordKnowledgeEvent(env:Env,projectId:string,input:Knowle
  if(input.kind!=='search'&&!article)throw new HTTPException(400,{message:'Article required'})
  const locale=await selectKnowledgeLocale(env,projectId,input.locale)
  const proof=helpAccessWriteGuard(projectId,input.access),articleGuard=article?`EXISTS(SELECT 1 FROM knowledge_articles a WHERE a.id=? AND a.project_id=? AND a.status='published' AND a.publication_version=? AND ${visibleArticleSql('a',accessReaders(input.access))})`:'1=1'
- const result=await env.DB.prepare(`INSERT INTO knowledge_events SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE ${activeSourceProjectSql('?')} AND ${proof.sql} AND ${articleGuard} RETURNING id`).bind(crypto.randomUUID(),projectId,article?.article.id||null,locale,(input.brand||'').slice(0,200),input.kind,(input.query||'').slice(0,200),Number.isInteger(input.resultCount)?Math.max(0,input.resultCount!):null,input.visitorHash,input.access?.contactId||null,Date.now(),projectId,...proof.args,...(article?[article.article.id,projectId,article.article.publication_version]:[])).all()
- if(!result.results.length)throw new HTTPException(409,{message:'Knowledge access changed'})
- return {recorded:true,eventId:String(result.results[0].id)}
+ const id=crypto.randomUUID()
+ return {id,statement:env.DB.prepare(`INSERT INTO knowledge_events SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE ${activeSourceProjectSql('?')} AND ${proof.sql} AND ${articleGuard} RETURNING id`).bind(id,projectId,article?.article.id||null,locale,(input.brand||'').slice(0,200),input.kind,(input.query||'').slice(0,200),Number.isInteger(input.resultCount)?Math.max(0,input.resultCount!):null,input.visitorHash,input.access?.contactId||null,Date.now(),projectId,...proof.args,...(article?[article.article.id,projectId,article.article.publication_version]:[]))}
+}
+const eventRecorded=(result:D1Result)=>{if(!result.results.length)throw new HTTPException(409,{message:'Knowledge access changed'})}
+export async function recordKnowledgeEvent(env:Env,projectId:string,input:KnowledgeEventInput){
+ const {id,statement}=await knowledgeEventStatement(env,projectId,input)
+ eventRecorded(await statement.all())
+ return {recorded:true,eventId:id}
+}
+/** A page read's own event (a help center view or search): written after the page has answered, once
+ * (platform/read-effects.ts). Its id is known now, so the page links the row that is written. */
+export async function recordReadEvent(c:Context<AppEnv>,projectId:string,input:KnowledgeEventInput){
+ const {id,statement}=await knowledgeEventStatement(c.env,projectId,input)
+ await afterReads(c,statement,eventRecorded)
+ return {eventId:id}
 }
 export async function recordHelpfulVote(env:Env,projectId:string,slug:string,input:{helpful:boolean;comment?:string;locale?:string;brand?:string;visitorHash:string;access?:HelpAccess}){
  if(typeof input.helpful!=='boolean'||typeof (input.comment||'')!=='string'||(input.comment||'').length>2000)throw new HTTPException(400,{message:'Invalid feedback'})

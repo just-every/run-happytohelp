@@ -1,6 +1,6 @@
 import { EditorLauncher } from '../../editor/EditorLauncher';
 import { Suspense, useEffect } from 'react';
-import { busyWait } from '../dashboard/utils/busy';
+import { busyWait, isBusy } from '../dashboard/utils/busy';
 import DashboardClient, { DashboardContent as PageContent, type DashboardContentProps } from './DashboardClient';
 import { withVisualEdits } from '../../editor/VisualEditBoundary';
 import { Link, useMatches, useRouter } from '@tanstack/react-router';
@@ -27,9 +27,9 @@ export function DashboardPending({ busy: waiting = false }: { busy?: boolean }) 
 }
 export function DashboardError({ error }: { error: unknown }) {
     const router = useRouter();
-    const busy = (error as { status?: number } | null)?.status === 503;
+    const busy = isBusy(error);
     useEffect(() => { delete (window as any).chatSettings; }, []);
-    // A busy database is a wait, not a failure: read the workspace again after its Retry-After.
+    // A busy database or a dropped answer is a wait, not a failure: read the workspace again after its Retry-After.
     useEffect(() => {
         if (!busy) return;
         const timer = setTimeout(() => { void router.invalidate(); }, busyWait(error));

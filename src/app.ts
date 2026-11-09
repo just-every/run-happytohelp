@@ -15,7 +15,9 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from './platform/env'
 import { projectCors } from './platform/cors'
-import { overloadAnswer,overloadedRequest,retryOverloaded } from './platform/d1-overload'
+import { overloadAnswer,overloadedRequest,overloadRetryAfter,retryOverloaded } from './platform/d1-overload'
+import { readEffects } from './platform/read-effects'
+import {busyFormResponse} from './modules/public-site/busy-form'
 import { ownerClaim } from './modules/identity/owner-claim'
 import { signout } from './modules/identity/signout'
 import { demoOwnerClaim } from './demo/owner-claim'
@@ -55,6 +57,8 @@ import {createEscalationRoutes} from './modules/escalations/routes'
 import {voiceRoutes} from './modules/voice/routes'
 
 export const app = new Hono<AppEnv>()
+// Outermost: a read's held records are written after every other D1 statement of its dispatch (platform/read-effects.ts).
+app.use('*',readEffects)
 app.use('*',async(c,next)=>{const response=await handleAgentRequest(c.req.raw,c.env);if(response)return response;await next()})
 app.use('/api/rer/import/*',async(c,next)=>{const response=await handleImportDoor(c.req.raw,c.env);if(response)return response;await next()})
 app.route('/api/rer/cutover-status',cutoverStatus)
@@ -74,9 +78,10 @@ app.route('/api/assurance',assuranceRoutes)
 app.route('/api/v1',scopedApi)
 app.route('/api/helpscout',helpscoutWebhooks)
 app.use('/api/*',async(c,next)=>{if(c.req.path==='/api/v1'||c.req.path.startsWith('/api/v1/'))return next();return projectCors(c,next)})
-app.onError((error,c) => {
+app.onError(async(error,c) => {
  // D1's overload, at any call of any route (middleware and authentication included): retried by app.fetch, then 503.
- if(overloadedRequest(c.req.raw,error)){const answer=overloadAnswer(c.req.raw);return rejectedResponse(c.req.raw,c.json(answer.body,answer.status,answer.headers))}
+ // A browser's native form post gets its form back to send again; every other caller the JSON answer.
+ if(overloadedRequest(c.req.raw,error)){const page=await busyFormResponse(c,overloadRetryAfter);if(page)return rejectedResponse(c.req.raw,page);const answer=overloadAnswer(c.req.raw);return rejectedResponse(c.req.raw,c.json(answer.body,answer.status,answer.headers))}
  if(error instanceof AiConfigurationError)return rejectedResponse(c.req.raw,c.json({error:error.message,code:error.code},error.status))
  // An exception carrying its own response (e.g. 429 with Retry-After) keeps its headers and JSON body.
  if(error instanceof HTTPException) return rejectedResponse(c.req.raw,error.res?error.getResponse():c.json({error:error.message},error.status))

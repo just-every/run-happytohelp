@@ -1,0 +1,14 @@
+/* The busy pages a browser gets while the database is overloaded (src/modules/public-site/busy-page.ts, busy-form.ts):
+   the Help Center's type and spacing, one border per field with focus on that border, the send button in the link colour. */
+.help-center-busy {max-width:40rem;}
+.help-center-busy-form {display:grid; gap:.5rem; margin-top:1.75rem;}
+.help-center-busy-form label {margin-top:.5rem; font-weight:600; color:var(--help-center-ink);}
+.help-center-busy-form input:not([type=hidden]),.help-center-busy-form textarea {display:block; width:100%; min-height:44px; box-sizing:border-box; border:1px solid #9ba6a2; border-radius:4px; background:#fff; color:var(--help-center-ink); padding:.5rem .75rem; font:inherit;}
+.help-center-busy-form textarea {min-height:8rem; resize:vertical;}
+.help-center-busy-form :is(input,textarea):focus-visible {outline:3px solid #337557; outline-offset:-1px;}
+.help-center-content .help-center-busy-hint {margin:0; font-size:.875rem;}
+.help-center-content .help-center-busy-choice {margin:.5rem 0 0; color:var(--help-center-ink);}
+.help-center-busy-form button {justify-self:start; min-height:44px; margin-top:1rem; border:0; border-radius:4px; padding:.625rem 1.5rem; background:var(--help-center-link); color:#fff; font:inherit; font-weight:600; cursor:pointer;}
+.help-center-busy-form button:hover {background:var(--help-center-link-hover);}
+.help-center-busy-form button:focus-visible {outline:3px solid #337557; outline-offset:3px;}
+@media (max-width:480px) {.help-center-busy-form button {justify-self:stretch;}}

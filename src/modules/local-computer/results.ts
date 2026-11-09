@@ -7,16 +7,21 @@ import {approveFollowUp} from './follow-up';
 import {admitFailureResult} from './provider-errors';
 import {validateResult} from './result-validation';
 export {validateResult} from './result-validation';
+// An automatic delivery of job ? may start: AI replies are automatic in project ? and the job is not held.
+const automaticSql=`${customerAiSql('?')} AND NOT EXISTS(SELECT 1 FROM local_jobs held WHERE held.id=? AND held.delivery_state='${HELD_FOR_OPERATOR}')`
 /** Sends one reply as the delegating operator. An automatic delivery (the legacy `resolve_reply` draft, sent without a
- * person) happens only while the workspace's AI replies are automatic: its receipt is created, and its admission
- * commits, only under `customerAiSql`; a refusal by that predicate removes the receipt in the admitting transaction.
- * It then returns null: the reply is held for the operator, who may adopt it as a draft. */
+ * person) starts only while the workspace's AI replies are automatic and its job is not held for the operator: its
+ * receipt is created, and its admission commits, only under `automaticSql` inside those statements, so a runner that read
+ * the job before another runner held it cannot deliver after the hold. A replay of the delivery's own earlier admission
+ * (same request id and operator; admission still checks writer and intent) is recognised in every mode, so a process
+ * lost between the admission and the receipt update recovers as the uncrashed delivery. A refusal removes the receipt in
+ * the admitting transaction; it then returns null: the reply is held for the operator, who may adopt it as a draft. */
 async function deliver(c:any,integration:Integration,j:any,body:string,attachments:string[],proposal:string,resolve:boolean,automatic=false){
  const db=c.env.DB,requestId='delegation:'+j.id+':'+proposal,select=()=>db.prepare("SELECT * FROM local_receipts WHERE job_id=? AND proposal_id=? AND kind='reply'").bind(j.id,proposal).first();let receipt:any=await select();
  if(receipt&&receipt.status!=='sending')return receipt;
- if(!receipt){const revision=await integration.deliveryRevision(c.env,j.project_id,j.conversation_id);await db.prepare(`INSERT OR IGNORE INTO local_receipts(job_id,proposal_id,kind,status,expected_revision,expected_last_message_id) SELECT ?,?,'reply','sending',?,?${automatic?` WHERE ${customerAiSql('?')}`:''}`).bind(j.id,proposal,revision,j.expected_last_message_id,...(automatic?[j.project_id]:[])).run();receipt=await select();if(!receipt&&automatic)return null;}
+ if(!receipt){const revision=await integration.deliveryRevision(c.env,j.project_id,j.conversation_id);await db.prepare(`INSERT OR IGNORE INTO local_receipts(job_id,proposal_id,kind,status,expected_revision,expected_last_message_id) SELECT ?,?,'reply','sending',?,?${automatic?` WHERE ${automaticSql}`:''}`).bind(j.id,proposal,revision,j.expected_last_message_id,...(automatic?[j.project_id,j.id]:[])).run();receipt=await select();if(!receipt&&automatic)return null;}
  requireValue(Number.isInteger(receipt.expected_revision),'Delivery receipt has no immutable command revision',409);
- const admission=automatic?{sql:customerAiSql('?'),args:[j.project_id],refused:(messageId:string)=>[db.prepare(`DELETE FROM local_receipts WHERE job_id=? AND proposal_id=? AND kind='reply' AND status='sending' AND NOT EXISTS(SELECT 1 FROM messages WHERE id=?) AND NOT EXISTS(SELECT 1 FROM messages WHERE project_id=? AND local_id=?) AND NOT (${customerAiSql('?')})`).bind(j.id,proposal,messageId,j.project_id,requestId,j.project_id)]}:undefined;
+ const admission=automatic?{sql:`(${automaticSql}) OR EXISTS(SELECT 1 FROM messages replay WHERE replay.project_id=? AND replay.conversation_id=? AND replay.local_id=? AND replay.actor_id=? AND replay.erased_at IS NULL)`,args:[j.project_id,j.id,j.project_id,j.conversation_id,requestId,j.operator_id],refused:(messageId:string)=>[db.prepare(`DELETE FROM local_receipts WHERE job_id=? AND proposal_id=? AND kind='reply' AND status='sending' AND NOT EXISTS(SELECT 1 FROM messages WHERE id=?) AND NOT EXISTS(SELECT 1 FROM messages WHERE project_id=? AND local_id=?) AND NOT (${automaticSql})`).bind(j.id,proposal,messageId,j.project_id,requestId,j.project_id,j.id)]}:undefined;
  try{const sent=await integration.deliver(c.env,{projectId:j.project_id,conversationId:j.conversation_id,operatorId:j.operator_id,requestId,expectedRevision:receipt.expected_revision,expectedLastMessageId:receipt.expected_last_message_id,body,attachmentIds:attachments,resolve,source:{jobId:j.id,proposalId:proposal==='legacy'?null:proposal},admission});await db.batch([db.prepare("UPDATE local_receipts SET status='sent',message_id=? WHERE job_id=? AND proposal_id=? AND kind='reply'").bind(sent.messageId,j.id,proposal),db.prepare('UPDATE local_jobs SET expected_last_message_id=? WHERE id=?').bind(sent.messageId,j.id)]);}catch(error){await db.prepare("UPDATE local_receipts SET status='needs_review',review_message=? WHERE job_id=? AND proposal_id=? AND kind='reply' AND status='sending'").bind(error instanceof Error?error.message:'Delivery uncertain; inspect before retry',j.id,proposal).run();}
  return await select();
 }
@@ -26,7 +31,9 @@ export async function resumeResultEffects(c:any,integration:Integration,jobId:st
  const effect:any=await c.env.DB.prepare("SELECT * FROM local_result_effects WHERE job_id=? AND state='pending'").bind(jobId).first();if(!effect)return;
  const j:any=await c.env.DB.prepare('SELECT * FROM local_jobs WHERE id=?').bind(jobId).first(),result=JSON.parse(effect.payload);
  // Outside auto the verified reply is held for the operator: the report stays completed and offers it as a draft.
- if(j.mode==='resolve_reply'&&result.verified&&!Object.hasOwn(result,'replies')&&result.reply_draft){const receipt:any=await deliver(c,integration,j,text(result.reply_draft),result.attachment_ids||[],'legacy',true,true);if(!receipt)await c.env.DB.prepare(`UPDATE local_jobs SET delivery_state='${HELD_FOR_OPERATOR}' WHERE id=?`).bind(j.id).run();else if(receipt.status!=='sent')await c.env.DB.prepare("UPDATE local_jobs SET status="+reopenUnlessReplaced+",delivery_state='review' WHERE id=?").bind(j.id).run();}
+ // Held is final for automatic delivery: a held job's pending effect settles without a delivery, whatever the mode now is.
+ // The held mark lands only while no legacy delivery was started, so a report is held or delivered, never both.
+ if(j.mode==='resolve_reply'&&j.delivery_state!==HELD_FOR_OPERATOR&&result.verified&&!Object.hasOwn(result,'replies')&&result.reply_draft){const receipt:any=await deliver(c,integration,j,text(result.reply_draft),result.attachment_ids||[],'legacy',true,true);if(!receipt)await c.env.DB.prepare(`UPDATE local_jobs SET delivery_state='${HELD_FOR_OPERATOR}' WHERE id=? AND NOT EXISTS(SELECT 1 FROM local_receipts WHERE job_id=? AND proposal_id='legacy' AND kind='reply')`).bind(j.id,j.id).run();else if(receipt.status!=='sent')await c.env.DB.prepare("UPDATE local_jobs SET status="+reopenUnlessReplaced+",delivery_state='review' WHERE id=?").bind(j.id).run();}
  await integration.recordResult(c.env,j,result);
  await c.env.DB.prepare("UPDATE local_result_effects SET state='completed' WHERE job_id=?").bind(jobId).run();
 }

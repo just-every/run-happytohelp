@@ -21,7 +21,7 @@ export interface Integration {
   deliveryRevision(env:LocalEnv,projectId:string,conversationId:string):Promise<number>;
   prepareDraft(env: LocalEnv, input: DraftInput): Promise<{ body: string; attachments: Record<string, unknown>[] }>;
   deliver(env: LocalEnv, input: { projectId: string; conversationId: string; operatorId: string; requestId: string; expectedRevision:number; expectedLastMessageId: string | null; body: string; attachmentIds: string[]; resolve: boolean; source?: {jobId:string;proposalId:string|null};
-    /** An automatic delivery's predicate (no `c` alias), required by the admitting statement and its replay lookup; `refused` statements run in that same transaction. */
+    /** An automatic delivery's predicate (no `c` alias), required by the admitting statement and its replay lookup: it admits a new message only while the delivery may start, and also holds for the delivery's own earlier admission (its request id and operator), which admission replays only for the same writer and intent. `refused` statements run in that same transaction. */
     admission?: {sql:string;args:unknown[];refused:(messageId:string)=>D1PreparedStatement[]} }): Promise<{ messageId: string }>;
 }
 export type App = Hono<any>;

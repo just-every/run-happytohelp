@@ -11,7 +11,8 @@ updating and backing up an installation, see
 ## Unreleased
 
 - **Dashboard and inbox reads at scale:** the dashboard, inbox lists, counts and filters read from derived inbox tables that stay current by trigger, so their cost follows the page size and not the size of a large imported workspace. An overloaded D1 answers 503 busy instead of timing out.
-- **Migrations:** `313_inbox_entries.sql` (not part of 0.4.14). Apply once after `312_agent_door_retired_refs.sql` and before serving the updated Worker; it is additive and fills the derived tables from existing rows.
+- **AI reply modes:** in draft or off, a visitor who writes in a conversation assigned to an assistant appears in the team's normal views (Yours, Open, Unassigned and the Global Inbox) and their counts, as a conversation without an assistant; a switch alone and imported history move nothing. A delegated reply held for its operator is never sent automatically afterwards, a recovered automatic delivery reads as delivered, and a held report shows Use beside its notice.
+- **Migrations:** `313_inbox_entries.sql` (not part of 0.4.14). Apply once after `312_agent_door_retired_refs.sql` and before serving the updated Worker; it is additive and fills the derived tables from existing rows. `314_inbox_visitor_waiting.sql` (after 313): additive, fills the waiting-visitor table and re-derives the inbox entries it releases.
 
 ## 0.4.14 — 2026-11-09
 

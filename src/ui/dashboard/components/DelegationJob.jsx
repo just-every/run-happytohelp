@@ -43,6 +43,11 @@ export default function DelegationJob({ job, isDraftDisabled, onCancel, onInsert
     const replyWasSent = job.mode === 'resolve_reply' && job.delivery_state === 'delivered';
     // A Resolve & reply report offers its reply as a draft only when the workspace's AI reply mode held it.
     const canInsertDraft = Boolean(result?.reply_draft) && (job.mode !== 'resolve_reply' || job.delivery_state === 'held_for_operator');
+    // A held reply's Use sits beside the notice that asks for it, outside the collapsed details.
+    const heldReply = canInsertDraft && job.delivery_state === 'held_for_operator';
+    const useDraft = <button type="button" className="btn btn-white" disabled={ isDraftDisabled } onClick={ () => onInsertDraft(result.reply_draft, result.attachments, { jobId: job.id, proposalId: null }) }>
+        <i className="fe fe-edit-3" aria-hidden="true" /> Use
+    </button>;
     const freshnessReview = job.freshness_review?.required ? job.freshness_review : null;
     const freshnessReviewId = freshnessReview?.latest_last_message_id || null;
     const statusLabel = job.status === 'revoked' && job.delivery_state === 'membership_lost'
@@ -109,9 +114,7 @@ export default function DelegationJob({ job, isDraftDisabled, onCancel, onInsert
                 <span>{ replyWasSent ? 'Reply sent' : 'Reply draft' }</span>
                 <p>{ result.reply_draft }</p>
             </div>
-            { canInsertDraft && <button type="button" className="btn btn-white" disabled={ isDraftDisabled } onClick={ () => onInsertDraft(result.reply_draft, result.attachments, { jobId: job.id, proposalId: null }) }>
-                <i className="fe fe-edit-3" aria-hidden="true" /> Use
-            </button> }
+            { canInsertDraft && !heldReply && useDraft }
             { replyWasSent && <span className="delegation-job__sent"><i className="fe fe-check-circle" aria-hidden="true" /> Reply sent</span> }
         </div> }
     </div>;
@@ -124,7 +127,12 @@ export default function DelegationJob({ job, isDraftDisabled, onCancel, onInsert
                     <h3 id={ 'delegation-job-' + job.id }>{ modeNames[job.mode] || 'Task' } completed</h3>
                     { result?.summary && <p className="delegation-job__summary">{ result.summary }</p> }
                     { authority }
-                    { completionNotices[job.delivery_state] && <p className="delegation-job__summary" role="status">{ completionNotices[job.delivery_state] }</p> }
+                    { heldReply
+                        ? <div className="delegation-job__held">
+                            <p className="delegation-job__summary" role="status">{ completionNotices.held_for_operator }</p>
+                            { useDraft }
+                        </div>
+                        : completionNotices[job.delivery_state] && <p className="delegation-job__summary" role="status">{ completionNotices[job.delivery_state] }</p> }
                 </div>
             </div>
             <DelegationAttachments attachments={ result?.attachments } />

@@ -303,6 +303,9 @@ body.conversation-workspace {
         .delegation-job__draft span { color: var(--ink); font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
         .delegation-job__draft p { margin: .3rem 0 0; color: var(--ink); font-size: 0.875rem; line-height: 1.45; white-space: pre-wrap; }
         .delegation-job__draft .btn { padding: .42rem .55rem; color: var(--ink); border-color: rgba(var(--ink-rgb), .22); font-size: 0.8125rem; white-space: nowrap; }
+        .delegation-job__held { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .75rem; margin-top: .42rem; }
+        .delegation-job__held .delegation-job__summary { flex: 1 1 14rem; margin: 0; }
+        .delegation-job__held .btn { flex: 0 0 auto; padding: .42rem .55rem; color: var(--ink); border-color: rgba(var(--ink-rgb), .22); font-size: 0.8125rem; white-space: nowrap; }
         .delegation-job__sent { display: inline-flex; align-items: center; align-self: center; gap: .3rem; color: var(--ink); font-size: 0.8125rem; font-weight: 650; white-space: nowrap; }
 
         @media (max-width: 575.98px) {

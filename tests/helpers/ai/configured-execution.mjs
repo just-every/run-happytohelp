@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import {assistantApp,model} from './app.mjs'
 import {openaiStream,openaiToolCall} from '../openai-stream.mjs'
 import {proactiveReplyModes,replyModeMailHolds} from './reply-mode-followups.mjs'
+import {assertInboxDerived} from '../inbox/derived.mjs'
 
 const trace=async(a,v)=>(await a.app.call(`/api/ai-support/projects/${a.p}/conversations/${v.conversationId}/trace`,{token:a.owner,status:200})).data
 const generation=(a,id)=>a.app.call(`/api/ai-support/projects/${a.p}/generations/${id}`,{token:a.owner,status:200}).then(r=>r.data)
@@ -301,5 +302,34 @@ export async function replyModes(){
   const stored=JSON.parse((await app.first('SELECT settings_json FROM project_settings WHERE project_id=?',p)).settings_json)
   assert.equal(stored.unavailable_message,'Back soon');assert.equal(stored.widget_settings.greeting,'Hello');assert.equal(stored.presence_idle_minutes,30);assert.equal(stored.default_visitor_ai_id,'ai')
   assert.equal(stored.ai_reply_mode,'auto');assert.equal(stored.ai_reply_mode_since,stamp,'saving the mode in effect keeps its switch time')
+  // In draft or off the assistant stays assigned but never answers, so a visitor who writes then is listed and counted in
+  // the team's normal views (here and in the Global Inbox) exactly as a conversation with no assistant. A switch alone
+  // moves nothing, nor does a teammate's reply or a draft->off switch hide it again; auto is unchanged.
+  const listed=async(view,global=false)=>(await app.call(`/api/dashboard${global?'':`/projects/${p}`}/conversations?view=${view}`,{token:owner,status:200})).data.data.map(row=>row.id)
+  const counts=async(global=false)=>(await app.call(`/api/dashboard${global?'':`/projects/${p}`}/conversations/counts`,{token:owner,status:200})).data.data
+  const placed=async id=>Object.fromEntries(await Promise.all(['mine','open','unassigned','ai'].map(async view=>[view,(await listed(view)).includes(id)&&(await listed(view,true)).includes(id)])))
+  const shift=(after,before)=>Object.fromEntries(['mine','open','unassigned','ai'].map(key=>[key,after[key]-before[key]]))
+  const answered=await a.visitor('Answered visitor');await answered.say('Answered in auto');await a.run()
+  assert.equal((await replies(answered)).length,1)
+  const aiOnly={mine:false,open:false,unassigned:false,ai:true},unassigned={mine:false,open:true,unassigned:true,ai:false},initial=await counts(),initialGlobal=await counts(true)
+  assert.deepEqual(await placed(answered.conversationId),aiOnly);assert.deepEqual(await placed(v.conversationId),aiOnly,'auto lists every assistant conversation under With AI')
+  // The switch moves no conversation whose visitor the assistant answered. `v`'s last turn, written while off, was
+  // never answered (nor will it be): outside auto it waits for the team, like a visitor who writes then.
+  for(const value of ['draft','off']){
+   await setMode(value);assert.deepEqual(await placed(answered.conversationId),aiOnly,value+': switching the mode alone moves an answered conversation nowhere')
+   assert.deepEqual(await placed(v.conversationId),unassigned,value+': an unanswered visitor turn waits for the team');assert.deepEqual(shift(await counts(),initial),{mine:0,open:1,unassigned:1,ai:-1})
+  }
+  await setMode('draft');await answered.say('Written in draft, waiting for the team');await a.run()
+  assert.deepEqual(await placed(answered.conversationId),unassigned,'the visitor appears in Open and Unassigned, not With AI')
+  assert.deepEqual(shift(await counts(),initial),{mine:0,open:2,unassigned:2,ai:-2});assert.deepEqual(shift(await counts(true),initialGlobal),{mine:0,open:2,unassigned:2,ai:-2})
+  await assertInboxDerived(app.sql,'a visitor waiting in draft')
+  await setMode('off');assert.deepEqual(await placed(answered.conversationId),unassigned,'draft->off does not hide the visitor again')
+  const frontier=await app.first('SELECT revision,last_message_id FROM conversations WHERE id=?',answered.conversationId)
+  await app.call(`/api/conversations/${answered.conversationId}/messages`,{token:owner,body:{localId:crypto.randomUUID(),content:'A teammate answers',expectedRevision:frontier.revision,expectedLastMessageId:frontier.last_message_id},status:200})
+  assert.deepEqual(await placed(answered.conversationId),{mine:true,open:true,unassigned:false,ai:false},'a teammate reply takes it, as any conversation, and does not hide it')
+  assert.deepEqual(shift(await counts(),initial),{mine:1,open:2,unassigned:1,ai:-2})
+  await setMode('auto')
+  for(const id of [answered.conversationId,v.conversationId])assert.deepEqual(await placed(id),aiOnly,'auto lists every assistant conversation under With AI, as before')
+  assert.deepEqual(shift(await counts(),initial),{mine:0,open:0,unassigned:0,ai:0});await assertInboxDerived(app.sql,'back in auto')
  }finally{await a.close()}
 }

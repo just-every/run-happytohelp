@@ -104,6 +104,10 @@ unread revision, every ticket column a filter, view field or sort names and its 
 entries by workspace, group, assignee and flags; `inbox_field_tallies` also by priority, status category,
 channel and status; `inbox_tag_tallies` by tag as well. `inbox_unread` holds each member's unread entries
 (a contact message that was not imported, above the member's read revision) with their flags and sort key.
+An entry's `ai` and `ai_profile` flags hold only while the conversation is not released to the team
+(`ai-held.ts`, migration 314): in draft or off, a conversation whose visitor has written since its assistant
+last did (`inbox_visitor_waiting`; imported history never counts) is listed and counted as one without an
+assistant. A waiting change or a switch into or out of auto re-derives only the conversations it affects.
 Totals (`inbox-conditions.ts` classifies a request's conditions):
 - a standard view, the counts other than unread, and any view, saved view or structured `filters` whose
   conditions name only status, status category, priority, channel, assignee and group, alone or with one

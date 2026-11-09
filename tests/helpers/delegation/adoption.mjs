@@ -11,7 +11,7 @@ export const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0
 async function draftRuntime(){
  const app=await startApp({captureQueue:true}),db=app.db,bucket=await app.files
  const request=async(path,body,token,headers={},method=body===undefined?'GET':'POST')=>{const response=await app.request(path,{body,token,headers,method});return {status:response.status,body:await response.json()}}
- const fixture=async({count=1,verified=true,mode='resolve',legacyOnly=false,followUpMode,replyMode}={})=>{
+ const fixture=async({count=1,verified=true,mode='resolve',legacyOnly=false,followUpMode,replyMode,reportStatus=200}={})=>{
   const projectId=randomUUID(),userId=randomUUID(),conversationId=randomUUID(),contactId=randomUUID(),token=randomUUID()
   await db.batch([
    db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,?,?,?,1)').bind(projectId,'Draft test',randomUUID(),'http://localhost'),
@@ -38,12 +38,14 @@ async function draftRuntime(){
   const result={summary:'Completed native upload fixture',actions:[],verified,reply_draft:'Legacy editable body',attachment_ids:localAttachmentIds,replies:[{id:'selected',title:'Reply',body:'Editable proposal body',attachment_ids:localAttachmentIds}],follow_up_actions:[]}
   if(followUpMode)result.follow_up_actions=[{id:'automatic-reply',title:'Prepared work',mode:followUpMode,instructions:'Prepared synthetic follow-up',attachment_ids:[]}]
   if(legacyOnly)delete result.replies
-  await post(`/api/local-agents/jobs/${job.id}/result`,{run_id:claim.run_id,event_id:randomUUID(),status:'completed',result},paired.token)
+  // The device's report; `replay` sends the same report again, as a device does when it never saw the answer.
+  const report={run_id:claim.run_id,event_id:randomUUID(),status:'completed',result},replay=()=>request(`/api/local-agents/jobs/${job.id}/result`,report,paired.token)
+  const reported=await replay();assert.equal(reported.status,reportStatus,JSON.stringify(reported.body))
   const draftPath=base+'/'+job.id+'/result/draft',command={proposal_id:'selected',expected_revision:0,expected_last_message_id:null}
   const adopt=(data={},headers={})=>request(draftPath,{...command,...data},token,headers)
   const media=async()=>(await db.prepare('SELECT * FROM media WHERE conversation_id=? ORDER BY id').bind(conversationId).all()).results
   const messages=async()=>(await db.prepare('SELECT * FROM messages WHERE conversation_id=?').bind(conversationId).all()).results
-  return {projectId,userId,conversationId,token,deviceId:paired.device.id,deviceToken:paired.token,jobId:job.id,result,localAttachmentIds,draftPath,command,adopt,media,messages}
+  return {projectId,userId,conversationId,token,deviceId:paired.device.id,deviceToken:paired.token,jobId:job.id,result,replay,localAttachmentIds,draftPath,command,adopt,media,messages}
  }
  const run=(sql,...args)=>db.prepare(sql).bind(...args).run(),one=(sql,...args)=>db.prepare(sql).bind(...args).first()
  const keys=async f=>(await bucket.list()).objects.filter(o=>o.key.startsWith(f.projectId+'/')).map(o=>o.key).sort()
@@ -181,14 +183,38 @@ export async function adoptionJourney(){
    assert.deepEqual(await h.messages(),[],replyMode+': the held reply is not sent');assert.equal(await one('SELECT 1 FROM local_receipts WHERE job_id=?',h.jobId),null,'no delivery was started')
    assert.equal((await job()).status,'completed');assert.equal((await job()).delivery_state,'held_for_operator')
    assert.ok(await one("SELECT 1 FROM conversation_notes WHERE id=?",'delegation:'+h.jobId),'the report still records its note')
+   // A process lost after the held mark leaves the result effect pending: held is final for automatic delivery,
+   // whatever the mode becomes and whichever runner settles the effect (queue, cron or the device's replay).
+   await run("UPDATE local_result_effects SET state='pending' WHERE job_id=?",h.jobId)
    assert.equal((await request(`/api/management/projects/${h.projectId}/ai`,{ai_reply_mode:'auto'},h.token,{},'PUT')).status,200)
-   await runtime.app.scheduled();assert.deepEqual(await h.messages(),[],'switching back to auto sends nothing held')
+   await runtime.app.runJobs([{type:'local.effects',id:h.jobId,projectId:h.projectId}])
+   await runtime.app.scheduled();assert.equal((await h.replay()).status,200)
+   assert.deepEqual(await h.messages(),[],'switching back to auto sends nothing held');assert.equal(await one('SELECT 1 FROM local_receipts WHERE job_id=?',h.jobId),null,'no delivery was started after the hold')
+   assert.equal(await one("SELECT state FROM local_result_effects WHERE job_id=?",h.jobId).then(row=>row.state),'completed','the pending effect settles without a delivery')
+   assert.equal((await job()).status,'completed');assert.equal((await job()).delivery_state,'held_for_operator')
    const adopted=await h.adopt({proposal_id:null});assert.equal(adopted.status,200,JSON.stringify(adopted.body));assert.equal(adopted.body.data.body,h.result.reply_draft)
    assert.deepEqual(await h.messages(),[],'Use never sends')
    const send={localId:randomUUID(),content:adopted.body.data.body,expectedRevision:0,expectedLastMessageId:null,mediaIds:adopted.body.data.attachments.map(a=>a.id),authoring:adopted.body.data.authoring},path=`/api/conversations/${h.conversationId}/messages`
    const sent=await request(path,send,h.token);assert.equal(sent.status,200,JSON.stringify(sent.body));assert.equal(sent.body.accepted,true)
    assert.equal((await request(path,send,h.token)).body.duplicate,true)
    const [message]=await h.messages();assert.equal((await h.messages()).length,1);assert.equal(message.actor_id,h.userId);assert.equal(message.actor_role,'owner');assert.deepEqual(await bytes((await h.media())[0].object_key),png)
+  }
+
+  // A process lost between an automatic admission and its receipt update, then a switch to draft or off: recovery
+  // recognises the delivery's own admission, so the report reads exactly as the uncrashed delivery `l` and nothing
+  // is sent twice.
+  const presented=async f=>{const row=(await request(`/api/projects/${f.projectId}/conversations/${f.conversationId}/delegations`,undefined,f.token)).body.data.find(item=>item.id===f.jobId);return {status:row.status,delivery_state:row.delivery_state}}
+  for(const replyMode of ['draft','off']){
+   await run("CREATE TRIGGER receipt_update_lost BEFORE UPDATE ON local_receipts WHEN NEW.proposal_id='legacy' BEGIN SELECT RAISE(ABORT,'Injected receipt_update_lost'); END")
+   const r=await fixture({mode:'resolve_reply',legacyOnly:true,reportStatus:500})
+   await run('DROP TRIGGER receipt_update_lost')
+   assert.equal((await r.messages()).length,1,'the admission committed');assert.equal((await one("SELECT status FROM local_receipts WHERE job_id=? AND proposal_id='legacy'",r.jobId)).status,'sending')
+   assert.equal(await one("SELECT state FROM local_result_effects WHERE job_id=?",r.jobId).then(row=>row.state),'pending')
+   assert.equal((await request(`/api/management/projects/${r.projectId}/ai`,{ai_reply_mode:replyMode},r.token,{},'PUT')).status,200)
+   await runtime.app.scheduled();assert.equal((await r.replay()).status,200)
+   const [message]=await r.messages();assert.equal((await r.messages()).length,1,replyMode+': no second reply');assert.equal(message.actor_id,r.userId)
+   const receipt=await one("SELECT status,message_id FROM local_receipts WHERE job_id=? AND proposal_id='legacy'",r.jobId);assert.equal(receipt.status,'sent');assert.equal(receipt.message_id,message.id)
+   assert.deepEqual(await presented(r),await presented(l),replyMode+': the report presents the reply as delivered')
   }
  }finally{await runtime.close()}
  await delegatedTicketScopeAssertions()

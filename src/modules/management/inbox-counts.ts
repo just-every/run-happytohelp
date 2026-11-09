@@ -1,7 +1,9 @@
 import type {Env} from '../../platform/env'
 import {memberAccess} from '../access/gate'
 import {inboxAccess,clauses} from './inbox-entries'
-/** The inbox counts read the tallies, never every conversation. Moved-in messages are history, never
+/** The inbox counts read the tallies, never every conversation. A tally's `ai` and `ai_profile` flags count a
+ * conversation as held by its assistant only while it is not released to the team (ai-held.ts; migration 314 derives
+ * them): in draft or off, a waiting visitor's conversation counts as one without an assistant. Moved-in messages are history, never
  * unread; unread is per member, so it counts the member's open unread rows (inbox_unread). `snoozed`
  * counts open conversations with a pending snooze. `suspended` is the workspace's held mail, present only
  * for a member who may review it (suspended.ts requires conversations.manage) and never in the Global Inbox. */

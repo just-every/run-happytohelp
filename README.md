@@ -294,7 +294,8 @@ and Setup say a key is missing.
    automatically, kept as drafts for your team to send, or turned off.
    In draft, a reply your local computer agent prepares waits in its report for
    you to use and send, and a visitor who writes while your team is away gets
-   your away message, as if no assistant were assigned.
+   your away message, as if no assistant were assigned. Such a visitor's
+   conversation also appears in **Open** and **Unassigned**.
 
 Keep key values out of chat messages and the browser. To cap what visitors can
 spend, see [Limits and AI ceilings](docs/PUBLIC-LIMITS.md).

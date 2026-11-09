@@ -1,3 +1,4 @@
+import {aiHeldSql} from './ai-held'
 /** Legacy view links remain useful shortcuts; explicit status and assignment compose. */
 export function inboxView(query:(name:string)=>string|undefined){
  const view=query('view')||query('filter')||'open'
@@ -13,7 +14,8 @@ export function inboxFilters(query:(name:string)=>string|undefined,search:string
  const conditions:string[]=[],params:any[]=[]
  // Search explicitly defaults to all history, independent of the previous queue.
  if(search&&query('search_scope')!=='view')return {conditions,params}
- const ai='EXISTS(SELECT 1 FROM conversation_ai ca WHERE ca.conversation_id=c.id AND ca.ai_id IS NOT NULL)'
+ // Held by its assistant (ai-held.ts): in draft or off a waiting visitor's conversation is listed as one without an assistant.
+ const ai=aiHeldSql('EXISTS(SELECT 1 FROM conversation_ai ca WHERE ca.conversation_id=c.id AND ca.ai_id IS NOT NULL)')
  if(status==='ai')conditions.push(ai)
  if(category){conditions.push('c.status_category=?');params.push(status)}
  for(const [field,value] of fields){conditions.push(`c.${field}=?`);params.push(value)}

@@ -8,6 +8,10 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## Unreleased
+
+- **Legacy Business approvals:** pinned `@runeditrun/rer` 0.2.105 and refreshed the Base copy so Business-sponsored approvals saved before rer 0.2.96 refuse with `sponsor_unavailable` after the Business stops or its stop state is unreadable. The existing 317 migration remains valid and idempotent; no new migration.
+
 ## 0.4.15 — 2026-11-09
 
 v0.4.14 remains unpublished. This release carries all accepted changes since v0.4.13, the last published release.

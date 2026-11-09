@@ -15,7 +15,7 @@ import { webhookPhase } from './webhooks.mjs';
 import { recordSecurityPhase } from './security.mjs';
 import { crossSponsorPhase } from './sponsors.mjs';
 import { auditPhase, auditRows } from './audit.mjs';
-import { relayPhase } from './relay.mjs';
+import { relayPhase, relayStoppedPhase } from './relay.mjs';
 import { invocationPhase } from './invocation.mjs';
 
 export { validateAgentSurface } from './surface.mjs';
@@ -59,6 +59,6 @@ export async function runAgentDoorConformance({ fetch, invoke, origin, surface, 
  await c.phase('BASE-AGENT-009.phase7', () => auditPhase(c));
  await c.phase('BASE-AGENT-009.relay', () => relayPhase(c));
  if (sponsors.length > 1) await c.phase('BASE-AGENT-004.cross-sponsor', () => crossSponsorPhase(c, sponsors, initializeAgent));
- if (unpair) await c.phase('BASE-AGENT-004.7', () => unpairPhase(c, unpair, sponsors));
+ if (unpair) await c.phase('BASE-AGENT-004.7', () => unpairPhase(c, unpair, sponsors, () => relayStoppedPhase(c)));
  return { ok: points.every(point => point.ok), points, capabilities };
 }

@@ -17,10 +17,9 @@ export interface PeopleAdapter {
   session(request: Request): Promise<Person | null>
   businessRole?(person: Person): 'owner' | 'editor' | null
   businessMember?(person: Person): Promise<{ id: string; role: 'owner' | 'editor' | null } | null>
-  /** True once Business is stopped or detached. Business tokens, and approver or reviewer refs that name Business people
-   * (`person:`, `role:`), then stop applying; `sponsor` refs, seed credentials and native sessions do not. `sponsor()`
-   * must keep resolving subjects, so a signed policy that names Business people can still be adopted. Omitted: never stopped. */
-  businessStopped?(): Promise<boolean>
+  /** Reads the durable Business stop state; see README.md, Wire and authority, for the stop contract.
+   * The subject mapping in sponsor() must survive a stop so signed policy remains adoptable. */
+  businessStopped(): Promise<boolean>
 }
 export interface Trust { issuer: string; installationId: string; appOrigin: string; publicKeys: Record<string, JsonWebKey> }
 export interface ClassAndFacts { class: ClassId; facts: ClassFacts }

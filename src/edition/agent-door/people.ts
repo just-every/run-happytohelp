@@ -32,7 +32,10 @@ export function happyPeople(env:Env):PeopleAdapter {
  const read=(id:string)=>nativePerson(env,id)
  return {
   person:read,
-  async businessStopped(){return !!await env.DB.prepare('SELECT 1 FROM bs_settings WHERE singleton=1 AND stopped=1').first()},
+  async businessStopped(){
+   const state=await env.DB.prepare('SELECT stopped FROM bs_settings WHERE singleton=1').first<{stopped:number}>()
+   return state?.stopped!==0
+  },
   async sponsor({sub}){
    const link=await linkedProject(env)
    if(!link)return null

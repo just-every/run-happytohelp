@@ -1,3 +1,4 @@
+import { businessRunning } from './business-state.ts'
 import type { AgentDoorOptions, Principal } from './types.ts'
 
 const encoder = new TextEncoder()
@@ -73,7 +74,7 @@ export async function authenticate(
     if (bearer && isBusinessCredential(bearer)) {
       if (!options.trust || !/^Bearer[ \t]+[^\s]+$/i.test(authorization!)) return null
       // A stopped Business admits no token, whoever its subject is.
-      if (await options.people.businessStopped?.()) return null
+      if (!await businessRunning(options.people)) return null
       const claims = await verifyJws(bearer, 'at+jwt', options.trust.publicKeys)
       const now = (options.now ?? Date.now)() / 1000
       if (!claims || claims.iss !== options.trust.issuer || claims.aud !== `${options.origin}/mcp` ||

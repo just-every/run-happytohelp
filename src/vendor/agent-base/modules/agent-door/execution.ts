@@ -1,3 +1,4 @@
+import { businessRunning } from './business-state.ts'
 import { retire } from './retired-refs.ts'
 import { REPLAY_WINDOW_MS, captureFence } from './erasure.ts'
 import type { ClassAndFacts, CallResult, NativeTarget, Principal, Runtime, ToolContext, ToolDefinition, UndoContext, ApprovalDisplaySummary } from './types.ts'
@@ -34,7 +35,7 @@ export async function classify(tool: ToolDefinition, args: Record<string, unknow
 export const digest = async (value: unknown) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical(value)))), byte => byte.toString(16).padStart(2, '0')).join('')
 export const sameFacts = (a: ClassAndFacts[], b: ClassAndFacts[]) => canonical([...a].sort((x, y) => x.class.localeCompare(y.class))) === canonical([...b].sort((x, y) => x.class.localeCompare(y.class)))
 /** A Business-admitted principal ends with the Business that admitted it, wherever its call was held. */
-export const businessEnded = async (rt: Runtime, principal: Pick<Principal, 'source'>) => principal.source === 'business' && !!await rt.options.people.businessStopped?.()
+export const businessEnded = async (rt: Runtime, principal: Pick<Principal, 'source'>) => principal.source === 'business' && !await businessRunning(rt.options.people)
 export async function livePrincipal(rt: Runtime, saved: Principal): Promise<Principal | null> {
   if (await businessEnded(rt, saved)) return null
   const person = await rt.options.people.person(saved.person.id)

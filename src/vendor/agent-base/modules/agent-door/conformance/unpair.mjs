@@ -7,7 +7,7 @@ const version = '2026-07-28';
 
 /** After the driver unpairs the installation, Business tokens end and native access stays.
  * Probes go straight to the origin: policy renewal is no longer possible once unpaired. */
-export async function unpairPhase(c, unpair, sponsors) {
+export async function unpairPhase(c, unpair, sponsors, afterRepair) {
  if (typeof unpair !== 'function') throw new TypeError('Unpair conformance requires the driver to provide unpair().');
  await c.adopt(autonomousPolicy());
  await c.prepare('unpair');
@@ -32,7 +32,7 @@ export async function unpairPhase(c, unpair, sponsors) {
   c.add(`BASE-AGENT-004.7.paired.${label}`, listed.response.status === 200 && Array.isArray(listed.body.result?.tools), 'A Business token must be admitted while the installation is paired.');
  }
  c.add('BASE-AGENT-004.7.paired.metadata', isDeepStrictEqual(await metadata(), [c.signer.issuer]), 'Paired metadata must name the Business issuer.');
- await unpair();
+ const repair = await unpair();
  for (const [label, token] of tokens) {
   const listed = await rpc('tools/list', token), called = await rpc('tools/call', token, witness);
   c.add(`BASE-AGENT-004.7.token.${label}`, challenged(listed.response) && challenged(called.response), 'After unpairing, a Business token from the same signer must receive 401 with a resource_metadata challenge on every method.');
@@ -44,4 +44,7 @@ export async function unpairPhase(c, unpair, sponsors) {
   const listed = await rpc('tools/list', client.token);
   c.add(`BASE-AGENT-004.7.native.${label}`, listed.response.status === 200 && Array.isArray(listed.body.result?.tools), 'After unpairing, a declared native fixture client must still be admitted.');
  }
+ // Keep unpair checks independent of a stop. Restore only the disposable host's
+ // trust, then exercise durable detachment while paired again.
+ if (afterRepair && typeof repair === 'function') { await repair(); await afterRepair(); }
 }

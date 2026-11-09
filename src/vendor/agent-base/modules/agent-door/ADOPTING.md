@@ -103,7 +103,7 @@ adaptations and copy verification.
 
 The tagged schemas in `rer-v0.2.93` and `rer-v0.2.94` are identical.
 `rer-v0.2.95` adds erasure/replay custody (reference migrations `0038` and
-`0039`); `rer-v0.2.96` adds the relay (`0040`). The current source additionally needs policy-reference suppression (`0041`).
+`0039`); `rer-v0.2.96` adds the relay (`0040`). The current source additionally needs policy-reference suppression (`0041`) and relay privacy (`0043`).
 These are the additive upgrades to the current schema:
 
 | Starting Base release | Additive SQL needed for current source |
@@ -111,7 +111,7 @@ These are the additive upgrades to the current schema:
 | 0.2.93 | The older-schema SQL below, then the relay SQL and retirement SQL below. |
 | 0.2.94 | The same older-schema SQL below, then the relay SQL and retirement SQL below. |
 | 0.2.95 | The relay SQL and retirement SQL below; both columns, the expiry index and replay-alias objects already exist. |
-| 0.2.96 | Only the retirement SQL below; relay and replay custody already exist. |
+| 0.2.96 | The retirement SQL below, then the relay privacy SQL below; relay and replay custody already exist. |
 
 Write only the deltas the seed's applied schema lacks. SQLite has no
 `ADD COLUMN IF NOT EXISTS`: check `PRAGMA table_info(agent_door_agents)` and
@@ -148,7 +148,7 @@ the seed's existing migrations. Relay DDL alone does not add the older columns:
 current tool admission reads `agent_door_calls.expires_at`, so an older schema
 returns 500 before producing decisions and fails `BASE-AGENT-009.relay.count`.
 Append the retirement SQL below for every starting release in the table. It is
-also the complete upgrade from 0.2.96 (reference migration `0041_agent_retired_refs.sql`):
+the policy-reference upgrade from 0.2.96 (reference migration `0041_agent_retired_refs.sql`):
 
 <!-- schema-upgrade:retired-refs:begin -->
 ```sql
@@ -156,7 +156,16 @@ CREATE TABLE agent_door_retired_refs (digest TEXT PRIMARY KEY, marker TEXT NOT N
 ```
 <!-- schema-upgrade:retired-refs:end -->
 
-The frozen-schema upgrade test executes these SQL blocks and the relay file,
+For **every** starting release above, append the exact contents of
+[`0043_agent_door_relay_privacy.sql`](../../default-seed/migrations/core/0043_agent_door_relay_privacy.sql)
+after the earlier SQL. For copies from 0.2.97 through 0.2.103 that already have
+retired refs, only this privacy migration is needed. It drops and recreates the
+audit membership triggers so linked executions inherit their decision’s Business,
+including no membership, and removes only provable cross-Business execution
+memberships produced by the old triggers. Audits are preserved. Its comment
+provides a count query before applying. Never edit a shipped migration.
+
+The frozen-schema upgrade test executes these SQL blocks and both relay files,
 comparing all objects against the schema applied fresh. The suppression table
 travels in installation archives; do not add it to portability exclusions.
 
@@ -212,12 +221,12 @@ email never selects a local account. Implement `people.person(id)` to re-read
 native ids for approval execution, Undo, embedded agents and subscriptions.
 Expose `businessMember(person)` from the same mapping for paired policy refs:
 Business owner is owner, Business team admin is editor, member has no policy
-role. The native role may differ. A custom adapter must also expose
-`businessStopped()`, true once Business is stopped or detached: the door then
-admits no Business token, refuses calls held or waiting from one, and matches no
-`person:` or `role:` ref, while `sponsor()` keeps resolving subjects so signed
-policy naming Business people is still adopted. An adapter without it keeps the
-earlier behavior and is never stopped. Local credentials return `sponsor: { id }`,
+role. The native role may differ. A custom adapter must expose `businessStopped()` according to the
+[Business stop contract](README.md#wire-and-authority): the shared runtime uses that one
+positive-false rule for token admission, Business references, held calls and relay pulls.
+Adopt the runtime update without a migration; `operatorAuthPeople` already supplies the reader.
+Keep `sponsor()` resolving subjects after a stop so signed policy naming Business people is still adopted.
+Local credentials return `sponsor: { id }`,
 read by `people.person`, rather than an address. Sponsorship is resolved from
 current native people on each request; an unknown or inactive sponsor cannot
 act. A saved token never replaces this account check. Keep native permissions,

@@ -9,6 +9,7 @@ import {client,newVisitor,runCase} from '../helpers/delegation-journey/case.mjs'
 import {refusals} from '../helpers/delegation-journey/refusals.mjs'
 import {push001Outcomes} from '../helpers/delegation/push-001-outcomes.mjs'
 import {consentJourney} from '../helpers/delegation/consent.mjs'
+import {relayStopJourney} from '../helpers/agent-door/relay-stop.mjs'
 
 // The agent-fix journey runs the real packaged connector, paired to the real
 // application on loopback; only the paid Codex CLI is scripted, against a
@@ -33,6 +34,8 @@ test('a visitor\'s report is investigated read-only, an approved resolve child c
 })
 
 test('a connected application gets selected access only through native consent with an exact callback, a single-use code and PKCE; it repairs and publishes an article atomically with exact replay, meets stale, category and audience revisions as conflicts, loses erased evidence, and ends with membership loss or revocation',consentJourney)
+
+test('Business relay pulls require durable running state and stop after signed detachment while the native owner retains access',relayStopJourney)
 
 // The production router, native owner/password and shared policy run over real D1.
 test('the support agent door binds Business ids to native people, preserves scoped reads and native transactions, enforces policy, replay, revision, Pause and consent, keeps agent ticket work off customer threads and erases its copies of erased people and customers',async()=>{

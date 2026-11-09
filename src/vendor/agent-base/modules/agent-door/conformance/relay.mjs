@@ -1,3 +1,4 @@
+import { prepareStoppedCalls, stoppedCallsPhase } from './business-stop.mjs';
 import { randomUUID, webcrypto } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { seconds, signJws } from './crypto.mjs';
@@ -14,7 +15,7 @@ export async function relayPhase(c) {
  const sign = value => signJws(c.signer.privateKey, c.signer.kid, 'rer-agent-decisions+jwt', value);
  const request = pull => c.request(path, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({pull}) });
  const pull = await sign(payload), first = await request(pull), raw = await first.text();
- c.add('BASE-AGENT-009.relay.route', first.status === 200, `Signed decision pull must return 200, got ${first.status}.`);
+ c.add('BASE-AGENT-009.relay.route', first.status === 200, `Signed decision pull must return 200, got ${first.status}; the people adapter must implement people.businessStopped() and positively return false while paired.`);
  if (first.status !== 200) return;
  let page = JSON.parse(raw), after = 0;
  const projections = [];
@@ -60,4 +61,36 @@ export async function relayPhase(c) {
  const foreign = await webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
  const refused = await request(await signJws(foreign.privateKey,c.signer.kid,'rer-agent-decisions+jwt',payload));
  c.add('BASE-AGENT-009.relay.foreign', refused.status === 401 && isDeepStrictEqual(await refused.json(),{code:'relay_unauthenticated'}), 'A foreign signature must return only 401 relay_unauthenticated.');
+}
+
+/** Detach while relay trust and the old policy remain, then probe without renewal. */
+export async function relayStoppedPhase(c) {
+ let held = [];
+ await c.phase('BASE-AGENT-004.stop.prepare', async () => { held = await prepareStoppedCalls(c); });
+ const iat = seconds(c.now);
+ const signed = (typ, payload) => signJws(c.signer.privateKey, c.signer.kid, typ, payload);
+ const request = (path, body) => c.fetch(new URL(path, c.origin).href, {
+  method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body), redirect:'manual',
+ });
+ const pull = await signed('rer-agent-decisions+jwt', {
+  v:1, iss:c.signer.issuer, aud:c.origin, sub:c.signer.installationId, business:c.business,
+  after:0, limit:200, iat, exp:iat+60, jti:randomUUID(),
+ });
+ const paired = await request('/api/rer/agent-decisions', {pull});
+ c.add('BASE-AGENT-009.relay.before-stop', paired.status === 200,
+  `Paired relay before detachment must return 200, got ${paired.status}; people.businessStopped() must positively return false.`);
+ await paired.body?.cancel();
+ const settingsIat = seconds();
+ const settings = await signed('rer-business-settings+jwt', {
+  v:1, iss:c.signer.issuer, aud:c.origin, sub:c.signer.installationId, business:c.business, email:c.person.email, owner_id:c.person.sub,
+  jti:randomUUID(), iat:settingsIat, exp:settingsIat+300, rev:2, values:{}, logo:null, team:null, detached:true,
+ });
+ const detached = await request('/api/rer/business-settings', {settings});
+ c.add('BASE-AGENT-009.relay.detach', detached.status === 200, `Signed Business detachment must be accepted before the stopped relay probe, got ${detached.status}.`);
+ await detached.body?.cancel();
+ if (detached.status !== 200) return;
+ await c.phase('BASE-AGENT-004.stop', () => stoppedCallsPhase(c, held));
+ const stopped = await request('/api/rer/agent-decisions', {pull});
+ c.add('BASE-AGENT-009.relay.stopped', stopped.status === 404 && await stopped.text() === '',
+  'A detached Business must receive empty 404 with its old policy and relay trust retained; people.businessStopped() must read the durable stop.');
 }

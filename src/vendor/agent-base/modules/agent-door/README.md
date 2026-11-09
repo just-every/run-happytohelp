@@ -96,8 +96,14 @@ with a Business token (`Principal.source: 'business'`) that was held for approva
 as `sponsor_unavailable` without a native effect, and `person:` and `role:` approver and reviewer refs match nobody.
 `sponsor` refs, seed credentials, native sessions and embedded invocations are unchanged, and the subject mapping
 stays, so a validly signed envelope that names Business people is still adopted and its Pause and revoked lists apply.
-`PeopleAdapter.businessStopped()` carries the stop; `operatorAuthPeople` reads `bs_settings.stopped`, and an adapter
-that omits it is never stopped. A signed envelope may include
+`PeopleAdapter.businessStopped()` is required; `operatorAuthPeople` reads `bs_settings.stopped`,
+including in Base's maintained seed. Business token admission, `person:`/`role:` reference resolution,
+held Business calls and signed decision-relay pulls require this reader to positively return `false`.
+A missing or non-function method, thrown or rejected read, `true`, `undefined` or any nonboolean answer
+uses the same refusal as a stopped Business: token admission returns 401, references match nobody,
+held calls refuse `sponsor_unavailable`, and the relay returns empty 404. Adoption conformance checks
+all four paths after signed detachment with the old policy and trust retained. This runtime correction
+needs no migration and leaves the default seed adapter's behavior unchanged. A signed envelope may include
 `revoked: { agents: string[], consents: string[] }`; these refuse the next call
 and expire affected pending approvals. Business delivery of those lists remains
 platform work.

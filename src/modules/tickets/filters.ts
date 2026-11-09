@@ -41,22 +41,23 @@ function scalar(value:unknown,kind:FilterColumn['kind']):string|number|boolean{
  if(typeof value!=='string'||value.length>2000)fail('A field filter needs text of at most 2000 characters')
  return value as string
 }
-/** One compiled condition: its field, operator, the values a list field is tested against, and its bound SQL. */
-export interface FilterPart {field:string;operator:string;values?:string[];sql:string;params:unknown[]}
+/** One compiled condition: its field, operator, the kind of value it compares, the values a list field is tested
+ * against, and its bound SQL. */
+export interface FilterPart {field:string;operator:string;kind:FilterColumn['kind'];values?:string[];sql:string;params:unknown[]}
 /** Bound SQL only: field names and operators never enter SQL without classification. */
 export async function compileFilters(env:Env,actor:Actor,projectId:string|undefined,filters:TicketFilter[]){
  const conditions:string[]=[],params:unknown[]=[],parts:FilterPart[]=[]
  for(const f of filters){
-  const before=params.length,values=await compileFilter(env,actor,projectId,f,conditions,params)
-  parts.push({field:f.field,operator:f.operator,...(values?{values}:{}),sql:conditions[conditions.length-1],params:params.slice(before)})
+  const before=params.length,{kind,values}=await compileFilter(env,actor,projectId,f,conditions,params)
+  parts.push({field:f.field,operator:f.operator,kind,...(values?{values}:{}),sql:conditions[conditions.length-1],params:params.slice(before)})
  }
  return {conditions,params,parts}
 }
-async function compileFilter(env:Env,actor:Actor,projectId:string|undefined,f:TicketFilter,conditions:string[],params:unknown[]):Promise<string[]|undefined>{
+async function compileFilter(env:Env,actor:Actor,projectId:string|undefined,f:TicketFilter,conditions:string[],params:unknown[]):Promise<{kind:FilterColumn['kind'];values?:string[]}>{
  const col=await filterColumn(env,actor,projectId,f.field),{sql,kind}=col,op=f.operator
  if(op==='is_empty'||op==='is_not_empty'){
   const empty=`(${sql} IS NULL OR ${sql}=''${kind==='array'?` OR ${sql}='[]'`:''})`
-  conditions.push(op==='is_empty'?empty:`NOT ${empty}`);params.push(...col.params,...col.params,...(kind==='array'?col.params:[]));return
+  conditions.push(op==='is_empty'?empty:`NOT ${empty}`);params.push(...col.params,...col.params,...(kind==='array'?col.params:[]));return {kind}
  }
  if(kind==='array'){
   if(!['contains','eq','ne','in','not_in'].includes(op))fail('Unsupported operator for a list field')
@@ -64,14 +65,14 @@ async function compileFilter(env:Env,actor:Actor,projectId:string|undefined,f:Ti
   if(!Array.isArray(values)||!values.length||values.length>100)fail('A list filter needs 1–100 values')
   const selected=(values as unknown[]).map(v=>scalar(v,'text')),negative=['ne','not_in'].includes(op)
   conditions.push(`${negative?'NOT ':''}EXISTS(SELECT 1 FROM json_each(coalesce(${sql},'[]')) f WHERE f.value IN (SELECT value FROM json_each(?)))`)
-  params.push(...col.params,JSON.stringify(selected));return selected as string[]
+  params.push(...col.params,JSON.stringify(selected));return {kind,values:selected as string[]}
  }
  if(op==='in'||op==='not_in'){
   if(!Array.isArray(f.value)||!f.value.length||f.value.length>100)fail('A list filter needs 1–100 values')
   const values=(f.value as unknown[]).map(v=>scalar(v,kind))
-  conditions.push(`${sql} ${op==='not_in'?'NOT IN':'IN'} (SELECT value FROM json_each(?))`);params.push(...col.params,JSON.stringify(values));return
+  conditions.push(`${sql} ${op==='not_in'?'NOT IN':'IN'} (SELECT value FROM json_each(?))`);params.push(...col.params,JSON.stringify(values));return {kind}
  }
- if(f.value===null&&['eq','ne'].includes(op)){conditions.push(`${sql} IS ${op==='ne'?'NOT ':''}NULL`);params.push(...col.params);return}
+ if(f.value===null&&['eq','ne'].includes(op)){conditions.push(`${sql} IS ${op==='ne'?'NOT ':''}NULL`);params.push(...col.params);return {kind}}
  const value=scalar(f.value,kind)
  if(op==='contains'){
   if(kind!=='text')fail('Contains is only available for text or list fields')
@@ -82,4 +83,5 @@ async function compileFilter(env:Env,actor:Actor,projectId:string|undefined,f:Ti
   conditions.push(`${kind==='number'?`CAST(${sql} AS REAL)`:sql}${operation[op]}?`)
  }
  params.push(...col.params,typeof value==='boolean'?Number(value):value)
+ return {kind}
 }

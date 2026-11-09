@@ -14,12 +14,14 @@ export async function messagesData(env:Env,rows:any[],channels?:ReadonlyMap<stri
  const channelStatus=await channelStatuses(env,rows,channels)
  const ids=JSON.stringify(rows.map(row=>row.id))
  const selected='SELECT value FROM json_each(?)'
+ const actors=(admitted:(row:any)=>boolean)=>JSON.stringify([...new Set(rows.filter(admitted).map(row=>row.actor_id).filter(id=>id!==null&&id!==undefined))])
  const mailRows=rows.filter(row=>!['contact','system'].includes(row.actor_role)&&!row.erased_at),mailIds=JSON.stringify(mailRows.map(row=>row.id))
  const suppressed=!!localMailOrigin(env),configured=emailConfigured(env),resolveRecipients=!!mailRows.length&&configured&&!suppressed
  const data=await env.DB.batch<any>([
-  env.DB.prepare(`SELECT s.* FROM move_in_message_sources s JOIN messages m ON m.id=s.message_id AND m.project_id=s.project_id WHERE m.id IN (${selected})`).bind(ids),
-  env.DB.prepare(`SELECT u.id,u.name,s.avatar_url FROM users u LEFT JOIN user_settings s ON s.user_id=u.id WHERE u.id IN (SELECT actor_id FROM messages WHERE id IN (${selected}) AND actor_role<>'contact')`).bind(ids),
-  env.DB.prepare(`SELECT id,name,email,json_extract(metadata_json,'$.is_erased') is_erased FROM contacts WHERE id IN (SELECT actor_id FROM messages WHERE id IN (${selected}) AND actor_role='contact')`).bind(ids),
+  // Read through the values the (whole `messages`) rows hold, never by reading the messages again.
+  env.DB.prepare('SELECT s.* FROM json_each(?) held CROSS JOIN move_in_message_sources s ON s.message_id=held.value->>0 AND s.project_id=held.value->>1').bind(JSON.stringify(rows.map(row=>[row.id,row.project_id]))),
+  env.DB.prepare('SELECT u.id,u.name,s.avatar_url FROM json_each(?) held CROSS JOIN users u ON u.id=held.value LEFT JOIN user_settings s ON s.user_id=u.id').bind(actors(row=>row.actor_role!=='contact')),
+  env.DB.prepare("SELECT c.id,c.name,c.email,json_extract(c.metadata_json,'$.is_erased') is_erased FROM json_each(?) held CROSS JOIN contacts c ON c.id=held.value").bind(actors(row=>row.actor_role==='contact')),
   env.DB.prepare(`SELECT id,message_id,filename,content_type,size FROM media WHERE message_id IN (${selected})`).bind(ids),
   env.DB.prepare(`SELECT m.id message_id,json_extract(e.payload,'$.reader_id') reader_id,json_extract(e.payload,'$.reader_role') reader_role,e.created_at read_at FROM messages m JOIN context_tracked_events e ON e.project_id=m.project_id AND json_valid(e.payload) AND json_extract(e.payload,'$.message_id')=m.id WHERE m.id IN (${selected}) AND e.type='MESSAGE_READ' ORDER BY e.rowid`).bind(ids),
   ...(mailRows.length?[

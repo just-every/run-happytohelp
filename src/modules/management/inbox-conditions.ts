@@ -2,7 +2,7 @@ import {tagsSql,type FilterPart} from '../tickets/filters'
 import type {TicketSort} from '../tickets/sort'
 
 /** A condition on conversation columns (alias `c`), with the field and operator it was compiled from. */
-export type Condition=Pick<FilterPart,'sql'|'params'>&Partial<Pick<FilterPart,'field'|'operator'|'values'>>
+export type Condition=Pick<FilterPart,'sql'|'params'>&Partial<Pick<FilterPart,'field'|'operator'|'kind'|'values'>>
 
 // The conversation columns an entry carries (the same values), by the entry's own name for them, and its tags.
 // Every filter, view field and sort names only these (tickets/filters.ts), so a request reads entries alone.

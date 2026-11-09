@@ -93,78 +93,107 @@ runs it on local D1.
 
 Inbox reads at scale. The unsearched inbox list (both doors, `inbox-list.ts`), its counts
 (`inbox-counts.ts`, carried by `/conversations/counts`, the bootstrap and mark-as-read) and the reads a
-conversation open fires never read every conversation of a workspace. Migration 313 keeps derived tables,
-filled by the migration and kept by triggers on every table they derive from (messages, notes, merges,
+conversation open fires never read every conversation of a workspace. Migrations 313, 314 and 319 keep derived
+tables, filled by the migration and kept by triggers on every table they derive from (messages, notes, merges,
 conversations, AI rows and profiles, snooze schedules, imported-message sources, tag links, company links,
-reads and memberships), so plain-`INSERT` imports, restores and erasure keep them true. `inbox_entries`
-holds one row per inbox conversation (one with a message or a note that is not merged away, exactly
-`inbox-visible.ts`) with the inbox sort key, the flags the views filter on, the contact's company, the
-unread revision, every ticket column a filter, view field or sort names and its tags (`tags_key`, the
-`tags` field of `tickets/filters.ts`), so a list request reads entries alone. `inbox_tallies` counts those
-entries by workspace, group, assignee and flags; `inbox_field_tallies` also by priority, status category,
-channel and status; `inbox_tag_tallies` by tag as well. `inbox_unread` holds each member's unread entries
-(a contact message that was not imported, above the member's read revision) with their flags and sort key.
-An entry's `ai` and `ai_profile` flags hold only while the conversation is not released to the team
-(`ai-held.ts`, migration 314): in draft or off, a conversation whose visitor has written since its assistant
-last did (`inbox_visitor_waiting`; imported history never counts) is listed and counted as one without an
-assistant. A waiting change or a switch into or out of auto re-derives only the conversations it affects.
-Totals (`inbox-conditions.ts` classifies a request's conditions):
-- a standard view, the counts other than unread, and any view, saved view or structured `filters` whose
-  conditions name only status, status category, priority, channel, assignee and group, alone or with one
-  tags condition (any of its tags, or none of them; that is what a Zendesk view import writes), are tally
-  sums. A tags condition naming several tags adds each tag's tally and subtracts, through the links of all
-  but the largest tag, the matches an earlier tag already counted (about 3 rows per such link);
-- otherwise the total counts the matches within the smallest candidate set an index gives: a company's
-  entries, the links of a tags condition, or the entries a ticket column's own index holds for an
-  equality, list or range condition (id, requester, submitter, subject, brand, created, updated, version,
-  status, group, assignee, priority, status category, channel, submitter type), one row per candidate; with
-  no such condition, every inbox entry of the workspace (one row each);
-- a cursor page's tally total is the tally less the matching entries before the cursor.
-A page walks an entry index that leads with the workspace and what the request pins (the view's flags, the
-assignee, a company, or a single status category, priority or channel) in the inbox order, or the member's
-unread rows, and stops after its rows; a custom sort led by a ticket column or tags walks that column's own
-index (sorting only within its equal values). It sorts the candidate set instead when the walk would read
-more. A tags condition's links and a time condition before a moment (its matches lie at the far end of the
-inbox order, which follows activity) are read once, in order, for the total and the page together. A page
-past the total reads nothing.
-Membership, deleted workspaces and the role's ticket scope (`access/ticket-scope.ts`) are evaluated once
-per request as sets (`inbox-entries.ts`). Hidden widget drafts are never read. At a large workspace's shape
-(about 162,000 conversations, 18,000 in the inbox, 54,000 messages) a standard view, filter control (teammate,
-tag, a company of 2,700 contacts), `status=`/`priority=`/`channel=`, cursor page or page by number reads
-under 5,000 D1 rows (about 1,500 to 3,400, most of it the page's hydration). Measured on a local workspace
-of that shape (18,163 inbox entries, owner, workspace door), saved views and structured `filters`/`sort`:
-under the target, one tag (999 matches) 3,783, a tag with priorities 3,167, none of a tag 2,622, a tag
-with a status 2,815, a status 2,664, a requester, subject or ids about 220 to 330, created after a moment
-3,756; within the ceiling (5,000 + 1.5 x the total), a brand 5,668 (3,000 matches), priority sorted by
-tags 5,536 (830), two tags 6,616 (5,178), every submitter type but one 20,558 (17,247), updated before a
-moment 5,962 (1,773), updated after one 11,223 (8,375), a sort led by a custom field 6,002 (830). Each read
-of a conversation open reads under 2,000; the inbox's company filter reads
-`GET /projects/:id/companies?view=names`, one row per company (14 rows for one company), where the full list
-counts each company's members, two rows per linked contact (362 for one company of 180 contacts; 1,904 to
-7,307 at that shape). Stated ceilings (D1 counts one row per record counted): the
-unread view reads one row per unread conversation (5,000 + 1.5 x its total; about 7,300 for 5,151 unread),
-and the counts, the bootstrap with counts and mark-as-read read up to 5,000 + 1.5 x the counts' sum (about
-5,500) and the workspace navigation read (document or server function) 12,000 + 1.5 x (the counts plus the
-shown view's total) (about 7,900), because the unread count is per member (a per-member tally would bring
-them under the target). Over the ceiling, measured at the same shape and never growing with widget drafts
-(80,000 more read the same rows), each because no index or tally narrows it:
-- a condition no index narrows (text `contains`, `ne`/`not_in` on a ticket column, `is_empty`/`is_not_empty`,
-  `eq` null, a custom field) reads every inbox entry for its total, one row each (two for a custom field,
-  whose value is looked up per entry), then walks the order for its page: subject contains 18,181 rows at
-  total 0 and 27,541 at 1,166; brand empty, submitter null and submitter type ne about 18,200 at total 0;
-  none of a tag with subject contains 25,303 (7,214); a custom field 34,072 (7,200); tags empty 20,413 and
-  not empty 20,795 stay within their ceilings. A trigram index over the subject (as `inbox_contact_search`
-  does for contacts) and an entry column per custom field with its own index would bound them;
-- a tags condition with a condition the tallies do not count, or two tags conditions, reads the links of
-  its tags (about 3 rows per link) and its matches in order: a tag with a brand 6,050 (176 matches), two
-  tags both present 7,715 (261), four tags 21,889 (8,678); a tags condition naming several tags subtracts
-  through the links of all but its largest tag. A role that sees few groups reads every link of the tag
-  (links carry no group): VIP or Billing for a teammate scoped to one group, page 3, 6,962 (473 matches).
-  A tally of tag pairs or a per-tag entry table would bound them;
-- a time condition before a moment reads its candidates and sorts its matches, about 2 rows per match, so
-  it passes the ceiling above about 5,000 matches: created before a moment 9,620 (3,548 matches, within),
-  35,052 (15,968, over). Its matches lie at the far end of the inbox order, so a walk would read the whole
-  order instead; an inbox-order index led by a time bucket would bound it.
+custom field values, reads and memberships), so plain-`INSERT` imports, restores and erasure keep them true; an
+import or restore rebuilds them (`scripts/installer/inbox-entries-sql.mjs`) and an export rebuilds the subject
+index after it (`scripts/installer/search-index-sql.mjs`). `tests/helpers/inbox/derived.mjs` checks each against a
+fresh computation from its source rows.
+- 313: `inbox_entries` holds one row per inbox conversation (one with a message or a note that is not merged away,
+  exactly `inbox-visible.ts`) with the inbox sort key, the flags the views filter on, the contact's company, the
+  unread revision, every ticket column a filter, view field or sort names and its tags (`tags_key`, the `tags`
+  field of `tickets/filters.ts`), so a list request reads entries alone. `inbox_tallies` counts them by workspace,
+  group, assignee and flags; `inbox_field_tallies` also by priority, status category, channel and status;
+  `inbox_tag_tallies` by tag as well. `inbox_unread` holds each member's unread entries (a contact message that was
+  not imported, above the member's read revision).
+  An entry's `ai` and `ai_profile` flags hold only while the conversation is not released to the team (`ai-held.ts`,
+  migration 314): in draft or off, a conversation whose visitor has written since its assistant last did
+  (`inbox_visitor_waiting`; imported history never counts) is listed and counted as one without an assistant. A waiting
+  change or a switch into or out of auto re-derives only the conversations it affects.
+- 319: `inbox_unread_tallies` counts each member's unread rows by workspace, group, assignee and flags, so the
+  counts' unread number, the bootstrap and mark-as-read sum a handful of rows. `inbox_counts` counts entries by
+  family key: every entry, each set of one to four of an entry's tags (entries with at most eight tags; an entry
+  with more is listed as a facet and counted one by one), each custom field value (`json_extract(value_json,'$')`,
+  the value a filter compares) and field with a non-null value, and the UTC year, month and day of `created_at` and
+  `updated_at` (integer times within 2^42 ms of 1970; others are counted one by one through a partial index). Each
+  key has slots: the workspace, group and flags with none, one or all five of status category, status, assignee,
+  priority and channel, the status category and assignee together (`sa`), or with the status too (`sia`); the status
+  and priority slots also keep the status category. A request naming the columns of one slot sums a few rows per key,
+  and a range of time buckets seeks the request's status and assignee before the bucket (`inbox_counts_range`). `inbox_facets` holds one row per tag and per custom field value of an entry,
+  one per field an entry holds a non-null value of (its value NULL, or `''` for the empty string, so "is set" and
+  "is not empty" are one range), carrying the entry's group, assignee, flags, status columns, times, tags and inbox
+  order. Facets and entries are indexed in the inbox order and in each custom sort led by `updated_at`,
+  `created_at` or priority, each also led by the group (a role that sees one group, or a group condition) or the
+  status category (a view of one status in a custom sort), facets also in the inbox order by status category,
+  assignee and the views' flags (resolved or not, AI, snoozed). `inbox_subject_search` is a trigram index
+  (case-sensitive, over SQLite's `lower()`) of the entries' subjects and workspaces, over a view carrying every entry
+  column, so a subject term's matches carry every column a condition or sort reads. Week indexes hold an order's
+  week and then a time, so a time bound's page reads only entries inside the bound. Block indexes hold each 30-day
+  block of `created_at` or `updated_at` (alone, or within a status category) in conversation id order.
+Totals and pages (`inbox-shapes.ts`, with `inbox-families.ts`, `inbox-weeks.ts` and `inbox-order.ts`) for pages 1 to
+10 of a request whose conditions are a subject term of three or more characters, tags, one custom field or one
+time bound, alone or with conditions on status, status category, priority, channel, assignee and group:
+- the role scope is read once per request (`resolvedInboxAccess`, the sets of `inboxAccess`) and bound as lists;
+- a subject term reads the trigram index's matches in the request's workspaces, one row each, with every other
+  condition and the sort keys read from the matches; the page is ordered as ORDER BY would order it
+  (`inbox-order.ts`: NULL, numbers, text by code point, blobs) without reading the rows again;
+- tags: any, all or none of up to four distinct tags (any combination of tags conditions) is a signed sum of the
+  counts of entries holding each subset of them (the matches whose tags among them are exactly X, summed over the X
+  the conditions admit); a custom field condition (`eq`, `in`, `ne`, `not_in`, `is_empty`, `is_not_empty`, `eq`/`ne`
+  null; a number compares `CAST(... AS REAL)` for `eq`/`ne` as the filter does) is a sum, or a difference, of value
+  and non-null counts; a time bound sums whole years, months and days on its side and counts its own day's entries;
+- the page takes the cheapest of: walking a facet in the page's order (pinned to a group, status category, assignee
+  or the view's flags when the request pins one), merging the first matches of each tag's (or each listed value's)
+  facet, walking the inbox order or the sort's own index (pinned likewise), walking a time bound's order a week at a
+  time, or reading once, in any order, every candidate of a facet, of every part of an any-of condition, of a time
+  range, or of the rows (of a facet, of every part, or of every entry) holding one pinned status category (or a list
+  of them), assignee or group, then ordering it. A read whole costs its exact size; a walk's cost is estimated as the
+  matches' share of the rows it walks. A page past the total reads nothing;
+- a sort an imported view carries (by status, status category or priority) counts the request's matches in each group
+  of the sort's key (each count also read by that column, `inbox-sort-groups.ts`), so a walk of the sort's own index
+  seeks to the page's first group and is costed by the groups it crosses (a view of unsolved tickets sorted by status
+  no longer walks every closed ticket first); a page sorted by status with a time bound may instead read the statuses
+  holding it, inside the bound, whole. A time bound's counts are read by group only where a status is involved;
+- a page sorted by conversation id merges the 30-day blocks (of the time bound, or every creation block; each status
+  category's apart when the request names some) walked in id order (`inbox-merge.ts`): every block's first match,
+  then the block with the earliest frontier reads what is missing and the others their share once a page's worth is
+  read, so whether ids follow creation or not, it reads about the page's matches. Conversation ids may follow
+  creation, so a walk in id order (alone, or within a status or priority) of a bound before a moment, descending, or
+  after one, ascending, is costed as if every non-matching row came first.
+Two families, or two conditions of one, read every candidate of the smallest facet or time range once. Pages beyond
+10, subject terms of one or two characters (and a NUL), a multiselect field, `contains`, `gt`/`lt` on a custom
+field, a condition on another ticket column, a company and the unread view keep 313's reads (and read no more than
+313 did). A subject term matching more than about 3,000 conversations in the request's workspaces reads one row
+per match (still fewer than 313, which read every entry). The counts and facets leave out a custom field value
+that is not valid JSON (the filter's own lookup raises on one).
+Membership, deleted workspaces and the role's ticket scope (`access/ticket-scope.ts`) apply as before. Hidden widget
+drafts are never read.
+A page's 30 conversations are hydrated (`dashboard-data.ts`, `dashboard-messages.ts`, `tickets/presentation.ts`)
+through the values the page's rows already hold (their contact, assignee, last message, status, group and workspace,
+one `json_each` row and the related row each), never by reading the conversations again, and each distinct tag and
+custom field of the page is read once rather than once per link or value; the list's tags are read once (the ticket
+presentation's own tag read is skipped where the page's replace them). A page of imported tickets with many tags
+and field values hydrates in about 1,300 to 1,500 rows (before: about 2,500 to 3,500).
+Known limit. A probe of 10,703 pages on a local workspace of a large imported workspace's shape took 33 view bases
+(subject, custom field, tag and time-bound shapes, alone and with conditions), crossed with six statuses and
+assignees and with the inbox order plus ten import sorts, at pages 1, 2, 3, 10 and the last. 353 of those pages
+read more than 5,000 D1 rows, at most 18,678, and every one of them read fewer rows than before this migration; the
+rest read at most 5,000. Most of the 353 are sorted by id, priority or status. The cause: the block merge's statements
+(`inbox-merge.ts`, over the block indexes `inbox_entries_created_block` and `inbox_entries_updated_block`) read every
+entry of the bound they are given instead of stopping at their LIMIT. Until they stop at it, a page sorted by id,
+priority or status on a large view can read more than 5,000 rows.
+The counts, the bootstrap with counts and mark-as-read read 82 to 237 rows (313: 6,221 to 10,644, one row per unread
+conversation). Migration 319 fills a workspace of that shape in 10.7 to 11.9 s (`wrangler d1 migrations apply`,
+about 2 s of it Wrangler's start).
+Writes. Every count row a trigger moves is found by its whole key (its keys and slots are joined before
+`inbox_counts`, and a year's bucket carries no type affinity, so `inbox_counts_key` seeks every column): a reply's
+single statement reads 1,168 rows (313: 6; before this, about 1.9 million at this size), and a ticket change reads
+1,000 to 6,000 rows more than 313 on top of the route's own 48,000 to 309,000. Rows written per change grow with the
+derived rows each entry keeps (a facet row per tag and field value, each with its indexes, and nine slots per count
+key): a reply 398 (313: 53), a status change 1,024 to 1,247 (153 to 164), an assignee 1,576 to 1,603 (216 to 242), a
+group 939 to 1,031 (140 to 154), a field value 448 to 563 (83), a subject edit 358 to 473 (82), a tag added 127 to 260
+(65), measured through the routes (rows written include index rows).
 
 Companies at scale. The company page (`GET /projects/:id/companies/:companyId`, `customers/read.ts`) still
 answers every member and every ticket, unpaged and exactly as before, but reads in proportion to the company,

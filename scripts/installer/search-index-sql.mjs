@@ -9,6 +9,7 @@ export const derivedSearchIndexes = [
   {table: 'inbox_message_search', content: 'messages'},
   {table: 'inbox_contact_search', content: 'inbox_contact_identity'},
   {table: 'contact_search', content: 'contact_search_identity'},
+  {table: 'inbox_subject_search', content: 'inbox_entry_subjects'},
 ];
 const quoted = name => '"' + name.replaceAll('"', '""') + '"';
 const literal = value => typeof value === 'number' ? String(value) : "'" + String(value).replaceAll("'", "''") + "'";

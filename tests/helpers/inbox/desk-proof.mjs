@@ -2,11 +2,13 @@ import assert from 'node:assert/strict'
 import {inboxExactness} from './inbox-exact.mjs'
 
 // Extend the same replacement request's public-door proof, without another test leaf.
-export async function deskQueueProof(f,{second,tag,foreignVisitor,foreignTicket}){
+export async function deskQueueProof(f,{second,tag,field,foreignVisitor,foreignTicket}){
  const {app,w,foreign,id,ok,call,get,patch,visitor}=f
  const original=await get(id),originalSecond=await get(second),ids=rows=>rows.map(row=>row.id).sort()
  const companies=`/api/management/projects/${w.projectId}/companies`,company=(await app.ok(companies,{token:w.tokens.owner,body:{name:'Ridgeline buyers'}})).company.id
- const exact=inboxExactness(app,w,{tag,company})
+ // A second tag on the second ticket, so any, all and none of two tags each have their own answers.
+ const pair=await ok(`/conversations/${second}/tags`,{name:'Seam'}),moment=(await app.first('SELECT created_at FROM conversations WHERE id=?',second)).created_at
+ const exact=inboxExactness(app,w,{tag,company,pair,field:field.id,moment})
  await ok(`/conversations/${id}`,{agent_id:w.users.operator},'owner','PUT')
  await ok(`/conversations/${second}`,{agent_id:null},'owner','PUT')
  await exact('assigned')
@@ -63,8 +65,10 @@ export async function deskQueueProof(f,{second,tag,foreignVisitor,foreignTicket}
  const recovered=await overloaded(searchPath,{'x-test-overloads':'2'})
  assert.equal(recovered.status,200);assert.deepEqual(ids(recovered.data.data),[id],'a passing overload is retried to the same result')
  for(const at of [{},{'x-test-statement':'inbox_search_total'}])await busy(searchPath,at)
- // An unsearched page, the counts and a conversation, at the first D1 call and a later one.
- for(const path of [`/api/dashboard/projects/${w.projectId}/conversations?view=open`,'/api/dashboard/conversations?view=all',`/api/dashboard/projects/${w.projectId}/conversations/counts`,`/api/dashboard/projects/${w.projectId}/conversations/${id}`]){
+ // An unsearched page (a view, and a subject and tags filter read from migration 319's index and counts), the counts
+ // and a conversation, at the first D1 call and a later one.
+ const shaped=`/api/dashboard/projects/${w.projectId}/conversations?`+new URLSearchParams({filters:JSON.stringify([{field:'subject',operator:'contains',value:'TO-48200'},{field:'tags',operator:'in',value:[tag.id,pair.id]}])})
+ for(const path of [`/api/dashboard/projects/${w.projectId}/conversations?view=open`,shaped,'/api/dashboard/conversations?view=all',`/api/dashboard/projects/${w.projectId}/conversations/counts`,`/api/dashboard/projects/${w.projectId}/conversations/${id}`]){
   const calm=await app.call(path,{token:w.tokens.operator})
   for(const at of ['1','4']){
    const passing=await overloaded(path,{'x-test-statement-at':at,'x-test-overloads':'2'})
@@ -135,6 +139,7 @@ export async function deskQueueProof(f,{second,tag,foreignVisitor,foreignTicket}
  await exact('merged')
  assert.equal((await ok(`/conversations/${noted}/merges/${merged.id}/undo`,{})).undone,true)
  await exact('merge undone')
+ await patch(second,{tags_remove:[pair.id]});await exact('the second tag removed')
  await ok(`/conversations/${id}`,{agent_id:original.assigned_to||null},'owner','PUT')
  await ok(`/conversations/${second}`,{agent_id:originalSecond.assigned_to||null},'owner','PUT')
  const transcript=await app.ok(`/api/conversations/${id}/messages`,{token:visitor.token})

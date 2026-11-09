@@ -38,8 +38,8 @@ function omittedSchemaChange(sql,omitted,omittedTriggers,migration){
    words[0]==='create'&&words[1]==='table'||words[0]==='insert'&&words[1]==='into'||words[0]==='alter'&&words[1]==='table'&&words[3]==='rename'
   )||target==='operator_ticket_commands'&&words[0]==='drop'&&words[1]==='table')return true;
  }
- // Migrations 313 and 314 fill the inbox's derived tables; every import rebuilds them from the restored rows instead.
- if(words[0]==='insert'&&words[1]==='into'&&['inbox_entries','inbox_tallies','inbox_tag_tallies','inbox_field_tallies','inbox_unread','inbox_visitor_waiting'].includes(folded(identifier(list[2]))))return true;
+ // Migrations 313, 314 and 319 fill the inbox's derived tables; every import rebuilds them from the restored rows instead.
+ if(words[0]==='insert'&&words[1]==='into'&&['inbox_entries','inbox_tallies','inbox_tag_tallies','inbox_field_tallies','inbox_unread','inbox_unread_tallies','inbox_facets','inbox_counts','inbox_visitor_waiting'].includes(folded(identifier(list[2]))))return true;
  // Migration 318 fills the cutover page's derived sets the same way.
  if(words[0]==='insert'&&words[1]==='into'&&['cutover_zendesk_conversations','cutover_legacy_conversations','cutover_widget_arrivals','cutover_legacy_runs','cutover_tallies'].includes(folded(identifier(list[2]))))return true;
  // Migration 318 fills the contacts' live tally and rebuilds contact_search; every import rebuilds both from the restored rows instead.

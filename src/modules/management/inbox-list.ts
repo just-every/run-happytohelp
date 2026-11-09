@@ -2,8 +2,9 @@ import {HTTPException} from 'hono/http-exception'
 import type {Actor} from '../../platform/env'
 import {conversationsData} from './dashboard-data'
 import {inboxView} from './inbox-filters'
-import {inboxAccess,clauses,type Clause} from './inbox-entries'
+import {inboxAccess,inboxWorkspaces,clauses,type Clause} from './inbox-entries'
 import {driver,onEntry,tagSet,talliedCondition,walkedSort,type Condition} from './inbox-conditions'
+import {shapedList} from './inbox-shapes'
 import {compileFilters,parseFilters,queryJSON} from '../tickets/filters'
 import {compileSort,parseSort} from '../tickets/sort'
 import {savedQueue} from '../tickets/views'
@@ -82,9 +83,18 @@ export async function inboxList(c:any,a:Actor,project:string|undefined,page:numb
  const linked=(values:string[]):Clause=>{const list=clauses([...members,{sql:'tagged.tag_id IN (SELECT value FROM json_each(?))',params:[JSON.stringify(values)]}]);return {sql:`e.conversation_id IN (SELECT tagged.conversation_id FROM conversation_tags tagged INDEXED BY conversation_tags_filter WHERE ${list.sql})`,params:list.params}}
  const byLinks='inbox_entries e INDEXED BY inbox_entries_conversation'
  const scoped=matching(tagClause)
+ // A subject term, tags, a custom field or a time bound (migration 319), on the pages the inbox loads.
+ const shaped=unread||company?undefined:await shapedList({db,userId:a.id,project,page,offset,access,workspace:x=>inboxWorkspaces(x,a.id,{project,deleted:true}),flags,conditions,tag,cursor,sortItems,sort,pinned})
+ if(shaped){
+  const found=shaped.ids.length?(await db.prepare('SELECT * FROM conversations WHERE id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(shaped.ids)).all()).results:[]
+  const byId=new Map(found.map((row:any)=>[String(row.id),row])),rows=shaped.ids.map(id=>byId.get(id)).filter(Boolean)
+  return {data:await conversationsData(c.env,rows,a.id),meta:{pagination:{total:shaped.total,current_page:page,total_pages:Math.max(1,Math.ceil(shaped.total/30))}}}
+ }
  // The candidate set a page may sort instead of walking: its source, the clause that bounds it and its size.
  let total:number,talliedTotal=false,drive:{source:string;clause:Clause[];size:number;perRow:number}|undefined,listedIds:string[]|undefined
- if(unread)total=await counted(from(pinned),matching([...tagClause,...after]))
+ // The unread view's total is the member's unread tally when nothing else narrows it.
+ if(unread&&!conditions.length&&!company&&!tag&&!cursor)total=(await sizes({matched:(()=>{const sum=clauses([{sql:'t.user_id=?',params:[a.id]},...access('t'),...flags.map(f=>f('t'))]);return {sql:`(SELECT COALESCE(SUM(t.total),0) FROM inbox_unread_tallies t WHERE ${sum.sql})`,params:sum.params}})()})).matched
+ else if(unread)total=await counted(from(pinned),matching([...tagClause,...after]))
  else if(!company&&tagSets.length<=1&&columns.every(talliedCondition)){
   // Tallies count it: workspace, group, assignee, flags, ticket status, priority, channel (and a tag's links).
   talliedTotal=true

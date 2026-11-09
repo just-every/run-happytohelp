@@ -42,7 +42,7 @@ export async function queueWork(f,{field,pending,tag}){
  const [second,reason]=await Promise.all([f.create(1),ok('/ticket-fields',{name:'Replacement reason',type:'dropdown',options:['damaged','wrong_size']})])
  const foreignVisitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:foreign.widgetKey},headers:{Origin:foreign.allowedOrigin}})
  const foreignTicket=await app.ok('/api/conversations',{token:foreignVisitor.token,body:{projectId:foreign.projectId}})
- await deskQueueProof(f,{second,tag,foreignVisitor,foreignTicket})
+ await deskQueueProof(f,{second,tag,field,foreignVisitor,foreignTicket})
  const definition=(await ok('/ticket-fields')).find(item=>item.id===reason.id)
  assert.equal(definition.type,'dropdown');assert.deepEqual(definition.options,['damaged','wrong_size'])
  const beforeInvalid=await get(second)

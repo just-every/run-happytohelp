@@ -4,14 +4,14 @@ import {inboxAccess,clauses} from './inbox-entries'
 /** The inbox counts read the tallies, never every conversation. A tally's `ai` and `ai_profile` flags count a
  * conversation as held by its assistant only while it is not released to the team (ai-held.ts; migration 314 derives
  * them): in draft or off, a waiting visitor's conversation counts as one without an assistant. Moved-in messages are history, never
- * unread; unread is per member, so it counts the member's open unread rows (inbox_unread). `snoozed`
+ * unread; unread is per member, so it sums the member's tally of open unread rows (inbox_unread_tallies). `snoozed`
  * counts open conversations with a pending snooze. `suspended` is the workspace's held mail, present only
  * for a member who may review it (suspended.ts requires conversations.manage) and never in the Global Inbox. */
 export async function inboxCounts(env:Env,userId:string,project?:string){
  const reviewsHeldMail=project?(await memberAccess(env.DB,project,userId))?.permissions.has('conversations.manage'):false
  const tallies=clauses(inboxAccess('t',userId,{project,deleted:false})),unread=clauses([{sql:'u.user_id=?',params:[userId]},...inboxAccess('u',userId,{project,deleted:false}),{sql:'u.counts_open=1',params:[]}])
  return env.DB.prepare(`SELECT counted.mine,counted.open,counted.unassigned,counted.ai,counted.closed,
- (SELECT count(*) FROM inbox_unread u INDEXED BY inbox_unread_counts WHERE ${unread.sql}) unread,
+ (SELECT COALESCE(SUM(u.total),0) FROM inbox_unread_tallies u WHERE ${unread.sql}) unread,
  counted.snoozed
  ${reviewsHeldMail?',(SELECT count(*) FROM suspended_emails held WHERE held.project_id=? AND held.expires_at>?) suspended':''}
  FROM (SELECT

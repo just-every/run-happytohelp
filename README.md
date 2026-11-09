@@ -41,7 +41,7 @@ Hono, D1, R2, Queues and Durable Objects.
 
 v0.4.14 remains unpublished. The last published release and upgrade baseline is v0.4.13.
 
-Deploy version 0.4.15, tagged **`v0.4.15`** once published, using the commands below. 48 migrations since v0.4.13.
+Deploy version 0.4.15, tagged **`v0.4.15`** once published, using the commands below. 49 migration files (263–317, with gaps) since v0.4.13.
 
 - **Move in:** connect Zendesk over OAuth, review delta sweeps and import supplied or fetched attachment bytes into private storage. The apply replay measured 4.74x fewer round trips (130,525 to 27,533); bounded-capacity qualification uses synthetic data, not a live-customer import guarantee.
 - **AI and widget:** each workspace selects auto, draft (prepare replies for a teammate) or off; the follow-ups preserve concurrent settings saves, human Send and answers when the assistant cannot reply. Widget sessions stay with their visitor and support an explicit identity switch and `h2h('shutdown')`.
@@ -49,6 +49,8 @@ Deploy version 0.4.15, tagged **`v0.4.15`** once published, using the commands b
 - **Search and erasure:** indexed contact and message search avoids whole-inbox scans; overloaded D1 returns 503. Person and teammate erasure covers retained legacy journal copies, reader receipts, delegation/note files and search terms. Retired agent-door references join the declared erasure inventory.
 - **Knowledge and earlier accepted work:** imported-only help stays noindex until a member publishes. Includes knowledge entitlement, publication history and restore rescan boundaries; procedures and attribution reviews; follow-up obligations; support-channel consent, voice and mobile notices; the shared agent door/relay and personal Slack/Teams notices. Existing partial and live-provider qualification boundaries remain.
 - **Business relay privacy:** stopped or missing Business state refuses tokens, policy references, held calls and signed relay pulls. Apply `316_agent_door_relay_privacy.sql` after 315 and before the updated Worker; it removes only provable cross-Business relay memberships and preserves audits.
+- **Legacy Business approvals:** apply `317_agent_door_legacy_principals.sql` after 316 and before the updated Worker. It tags only pending MCP principals with saved Business consent and no source, so approvals held before rer 0.2.104 also stop after Business detachment. Untagged legacy approvals are also refused after the Business stops. Audits, other saved fields and other rows are preserved; the update remains idempotent after 0.2.105. Back up D1 first.
+- **Overload recovery:** a dashboard read that fails at the transport level waits as busy and recovers, a dashboard document cut mid-stream recovers by itself, busy public pages are HTML pages, a native form post refused by an overload keeps its input (same-origin posts only), and a read's side effects happen once. No migration.
 - **Installer:** pinned `@runeditrun/rer` 0.2.104, with the project descriptor bound to the exact current setup-manifest bytes.
 
 - **Dashboard and inbox reads at scale:** dashboard lists, counts and filters use derived inbox tables maintained by triggers, so reads follow page size rather than the size of a large imported workspace. An overloaded D1 returns 503 busy instead of timing out.
@@ -106,10 +108,11 @@ Deploy version 0.4.15, tagged **`v0.4.15`** once published, using the commands b
 - `314_inbox_visitor_waiting.sql`
 - `315_erasure_leases.sql`
 - `316_agent_door_relay_privacy.sql`
+- `317_agent_door_legacy_principals.sql`
 
-Update from v0.4.13 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and locked @runeditrun/rer 0.2.104. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity; never edit, delete or reorder ledger rows. Apply all 48 migration files added since v0.4.13 once, in filename order, through pinned rer before the updated Worker serves traffic, using the filenames listed above.
+Update from v0.4.13 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and locked @runeditrun/rer 0.2.104. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity; never edit, delete or reorder ledger rows. Apply all 49 migration files (263–317, with gaps) added since v0.4.13 once, in filename order, through pinned rer before the updated Worker serves traffic, using the filenames listed above.
 
-Apply migrations 304–316 before the new Worker. While the migrations apply, a v0.4.13 Worker refuses teammate erasure with 503 "Member erasure schema requires review", and person erasure continues through the new erasure triggers. An installation already running the agent door (an unreleased main build) refuses person and teammate erasure with agent_erasure_undeclared_table once table 312 exists; this is fail-closed. Retry succeeds after the new Worker serves traffic.
+Apply migrations 304–317 before the new Worker. While the migrations apply, a v0.4.13 Worker refuses teammate erasure with 503 "Member erasure schema requires review", and person erasure continues through the new erasure triggers. An installation already running the agent door (an unreleased main build) refuses person and teammate erasure with agent_erasure_undeclared_table once table 312 exists; this is fail-closed. Retry succeeds after the new Worker serves traffic.
 
 Earlier installations also apply their other missing published migrations. Keep each migration's additional buyer steps, including restored-connection reauthorization and knowledge rescan requirements.
 

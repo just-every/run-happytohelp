@@ -373,6 +373,51 @@ let first,opAfter
  assert.deepEqual(await all("SELECT id,local_id,content FROM messages WHERE conversation_id='convLid' ORDER BY revision"),rows)
 
  }
+ {
+ // One erasure of a contact at a time: each takes the contact's lease (database clock, epoch ms) before any of its work.
+ const people=['busy','free','pair']
+ await DB.batch(people.flatMap((id,i)=>[
+  DB.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES(?1,'p',?2,?1||'@example.com',?3)").bind(id,`Lease ${id} person`,70+i),
+  DB.prepare("INSERT INTO conversations(id,project_id,contact_id,revision,last_message_id,created_at,updated_at) VALUES('conv-'||?1,'p',?1,1,'msg-'||?1,?2,?2)").bind(id,70+i),
+  DB.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES('msg-'||?1,'p','conv-'||?1,'local-'||?1,?1,'contact',?2,1,?3)").bind(id,`Private words of ${id}`,70+i),
+ ]))
+ const now="CAST(unixepoch('subsec')*1000 AS INTEGER)",untouched=async id=>{
+  assert.equal((await one('SELECT content FROM messages WHERE id=?',`msg-${id}`)).content,`Private words of ${id}`)
+  assert.equal(JSON.parse((await one('SELECT metadata_json FROM contacts WHERE id=?',id)).metadata_json??'{}').is_erasing,undefined,'not even fenced')
+  assert.equal(await one('SELECT * FROM contact_erasures WHERE contact_id=?',id),null)
+ }
+ // An erasure of `busy` is running (another request holds its live lease): a request for it waits, then answers 409 with
+ // Retry-After, having done none of the erasure's work; another contact's erasure meanwhile is not blocked.
+ await DB.prepare(`INSERT INTO contact_erasure_leases VALUES('p','busy','running-request',${now}+60000)`).run()
+ const started=Date.now(),waiting=erase(tokens.owner,'p','busy')
+ const other=await erase(tokens.owner,'p','free');assert.equal(other.status,200);assert.equal((await other.json()).data.runs,1)
+ assert.ok(Date.now()-started<25000,'another contact\'s erasure runs while that request waits')
+ const refused=await waiting
+ assert.equal(refused.status,409);assert.ok(Date.now()-started>=29000,'it waited for the running erasure first')
+ assert.ok(Number(refused.headers.get('Retry-After'))>=1);assert.match((await refused.json()).error,/already being erased/)
+ await untouched('busy')
+ assert.deepEqual(await all("SELECT contact_id,token FROM contact_erasure_leases WHERE contact_id='busy'"),[{contact_id:'busy',token:'running-request'}])
+ // That erasure was interrupted (its lease expired): the request sent again takes the lease over and completes it.
+ await DB.prepare(`UPDATE contact_erasure_leases SET expires_at=${now}-1 WHERE contact_id='busy'`).run()
+ const resumed=await erase(tokens.owner,'p','busy');assert.equal(resumed.status,200);assert.equal((await resumed.json()).data.runs,1)
+ assert.equal((await one("SELECT content FROM messages WHERE id='msg-busy'")).content,'')
+ assert.deepEqual(await all('SELECT * FROM contact_erasure_leases'),[],'each completed erasure removed its lease')
+ // Two requests for one contact at once: the second waits for the first, then completes as a repeat of the same erasure.
+ const pair=await Promise.all([erase(tokens.owner,'p','pair'),erase(tokens.owner,'p','pair')])
+ assert.deepEqual(pair.map(response=>response.status),[200,200])
+ const records=(await Promise.all(pair.map(response=>response.json()))).map(body=>body.data)
+ assert.deepEqual(records.map(record=>record.runs).sort(),[1,2]);assert.equal(records[0].erased_at,records[1].erased_at)
+ assert.equal((await one("SELECT runs FROM contact_erasures WHERE contact_id='pair'")).runs,2)
+ // A legacy delta is being applied to the workspace (its live delta lease): the erasure waits for it, then runs.
+ await DB.batch([DB.prepare("INSERT INTO contacts(id,project_id,name,created_at) VALUES('during-delta','p','Delta time person',80)"),DB.prepare(`INSERT INTO legacy_delta_leases VALUES('p','delta-run',${now}+60000)`)])
+ const delta=Date.now(),blocked=erase(tokens.owner,'p','during-delta')
+ await new Promise(resolve=>setTimeout(resolve,2500))
+ assert.equal((await one("SELECT name FROM contacts WHERE id='during-delta'")).name,'Delta time person','nothing is erased while the delta writes')
+ await DB.prepare("DELETE FROM legacy_delta_leases WHERE token='delta-run'").run()
+ assert.equal((await blocked).status,200);assert.ok(Date.now()-delta>=2500)
+ assert.equal((await one("SELECT name FROM contacts WHERE id='during-delta'")).name,null)
+ assert.deepEqual(await all('SELECT * FROM contact_erasure_leases'),[])
+ }
  }finally{await app.close()}
  await rerMailErasureJourney()
  await erasureOutcomes()

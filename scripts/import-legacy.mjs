@@ -17,6 +17,8 @@ if(retireMarker!==undefined){const {readManifest}=await import('./legacy-import/
 const {planImport,importLegacy}=await import('../src/modules/legacy-import/importer.ts')
 const {importDelta}=await import('../src/modules/legacy-import/delta.ts')
 const {planDelta}=await import('../src/modules/legacy-import/delta-plan.ts')
+// A delta writes only under its workspace's delta lease: never while an erasure there runs (lease.ts).
+const {takeDeltaLease}=await import('../src/modules/legacy-import/lease.ts')
 const {tableOrder}=await import('../src/modules/legacy-import/mapping.ts')
 const relationships=await import('../src/modules/legacy-import/relationships.ts')
 const types=await import('../src/modules/legacy-import/types.ts')
@@ -34,7 +36,7 @@ const {removeStaleDirectories}=await import('./legacy-import/scratch.mjs')
 const stale=await removeStaleDirectories();if(stale.length)progress({step:'removed-stale',directories:stale.length})
 let bundleProjects
 async function run(target){
- if(pkg)return importPackage(pkg,target,{planImport,importLegacy,importDelta,planDelta,tableOrder,relationships,types},{expectManifestSha256:value('--expect-manifest-sha256'),excludeTables,concurrency,progress,retireMarker})
+ if(pkg)return importPackage(pkg,target,{planImport,importLegacy,importDelta,planDelta,takeDeltaLease,tableOrder,relationships,types},{expectManifestSha256:value('--expect-manifest-sha256'),excludeTables,concurrency,progress,retireMarker})
  const bundle=JSON.parse(await readFile(file,'utf8'));bundleProjects=bundle.tables?.projects;if(target)return importLegacy(target.env,bundle)
  const plan=await planImport(bundle);return {id:plan.id,...plan.summary}
 }

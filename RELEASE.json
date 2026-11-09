@@ -213,6 +213,10 @@
     {
       "id": "314_inbox_visitor_waiting.sql",
       "buyerSteps": "Back up D1 first; apply once after 313_inbox_entries.sql, before serving the updated Worker. Adds the derived table inbox_visitor_waiting (each conversation where a visitor has written since its assistant last did; imported history never counts) with its triggers, and re-creates the inbox entry triggers of 313 so that, in a workspace whose AI replies are draft or off, a waiting visitor's conversation is listed and counted in the team's normal views as one without an assistant. The migration fills the table once from the existing rows and re-derives only the inbox entries it releases; no source row changes and nothing is sent, queued or enabled. Workspaces in auto see no change. Every value is derived: each import rebuilds it from the restored rows."
+    },
+    {
+      "id": "315_erasure_leases.sql",
+      "buyerSteps": "Back up D1 first; apply once after 314_inbox_visitor_waiting.sql, before serving the updated Worker. Additive only: two small lease tables, contact_erasure_leases (one row per contact while an erasure of that contact runs or was interrupted; ids and an expiry only) and legacy_delta_leases (one row per workspace while a legacy delta package is applied). No existing row changes and nothing is sent, queued or enabled. A lease row left by an interrupted erasure is completed by sending the erasure again; restore keeps the rows so an interrupted erasure stays pending for legacy deltas."
     }
   ]
 }

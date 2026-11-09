@@ -11,8 +11,9 @@ async function storedSha256(bucket,key){const object=await bucket.get(key);retur
  * upload against its SHA-256 and keeps that checksum, so an object is confirmed by
  * its stored checksum; one without it (multipart, or written by something else) is
  * read back whole and hashed. An existing object with other bytes stops the import.
- * Each object is recorded in legacy_import_objects for the package run. */
-export async function importObjects(target,root,manifest,runId,{concurrency=1,progress=()=>{},checkOnly=false,mediaRuns=[],withheld=new Set()}={}){
+ * Each object is recorded in legacy_import_objects for the package run. A delta confirms its workspace's
+ * delta lease (legacy-import/lease.ts) before each upload, so a delta whose lease lapsed uploads nothing more. */
+export async function importObjects(target,root,manifest,runId,{concurrency=1,progress=()=>{},checkOnly=false,mediaRuns=[],withheld=new Set(),lease}={}){
   let uploaded=0,present=0;
   // Contact erasure redacts the media source copy but keeps its journal identity. A repeat must not
   // recreate its file, even though the native media row is gone. The package's media rows sit in the
@@ -26,7 +27,7 @@ export async function importObjects(target,root,manifest,runId,{concurrency=1,pr
     if(erased.has(String(object.mediaId))||withheld.has(String(object.mediaId)))return;
     if(checkOnly){await confirm(object);return;}
     if(await confirm(object))present++;
-    else{await putObject(target.env.FILES,packageFile(root,object.file),object,runId);if(!await confirm(object))throw Error(`Imported R2 object missing: ${object.key}`);uploaded++;}
+    else{await lease?.confirm();await putObject(target.env.FILES,packageFile(root,object.file),object,runId);if(!await confirm(object))throw Error(`Imported R2 object missing: ${object.key}`);uploaded++;}
     await target.env.DB.prepare('INSERT OR IGNORE INTO legacy_import_objects VALUES(?,?,?,?)').bind(runId,object.key,object.sha256,object.size).run();
     if((uploaded+present)%250===0)progress({objects:uploaded+present,uploaded,present});
   },target);

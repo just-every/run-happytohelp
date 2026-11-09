@@ -1,7 +1,7 @@
 import {eraseDoorContact} from '../move-in/door/erasure'
 import {redactionStatements,invalidateTransfersStatements} from '@runeditrun/rer/modules/portability/journal'
 import {csvErasureIdentities} from '../import-kit/csv/erasure'
-import {Hono} from 'hono'
+import {Hono,type Context} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Env} from '../../platform/env'
 import {scope} from './common'
@@ -17,6 +17,7 @@ import {providerErasureStatements,providerRequests} from './contact-erasure/prov
 import {auditStatement,requestSource} from '../audit/record'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {knowledgeErasureStatements} from '../knowledge/feedback'
+import {ERASURE_LEASE_MS,ErasureInProgress,ErasureLeaseLost,takeErasureLease,type ErasureLease} from './contact-erasure/lease'
 
 export interface ContactErasure {project_id: string; contact_id: string; erased_by: string; erased_at: number; last_erased_at: number; runs: number; conversations: number; messages: number; attachments: number; tracked_events: number; context_records: number; sessions: number; ticket_records:number}
 
@@ -25,19 +26,22 @@ export interface ContactErasure {project_id: string; contact_id: string; erased_
  * so an interrupted request is completed by repeating it: fence and stage objects (the
  * legacy files found through the legacy journal too), delete R2 objects, clear the
  * legacy journal's copies in bounded calls, then commit every other D1 change and the
- * audit row atomically.
+ * audit row atomically. Runs under the contact's erasure lease (contact-erasure/lease.ts),
+ * renewed between stages and journal slices; the atomic batch deletes it.
  */
-export async function eraseContact(env: Env, projectId: string, contactId: string, actorId: string, sessionHash?:string) {
+export async function eraseContact(env: Env, projectId: string, contactId: string, actorId: string, lease: ErasureLease, sessionHash?:string) {
   if(sessionHash)env=erasureEnvironment(env,projectId,actorId,sessionHash)
   const contact = await env.DB.prepare('SELECT email,external_id,metadata_json FROM contacts WHERE project_id=? AND id=?').bind(projectId, contactId).first<{email: string | null; external_id:string|null; metadata_json: string | null}>()
   if (!contact) return null
   const csvBeforeFence=await csvErasureIdentities(env,projectId,contactId,contactEmails(contact))
   const now = Date.now()
   const fenced=await fenceAndStage(env, projectId, contactId, now, contact)
-  const legacy=await legacyPerson(env, projectId, contactId)
+  const legacy=await legacyPerson(env, projectId, contactId, lease)
+  await lease.renew()
   await stageLegacyObjects(env, projectId, contactId, legacy.own_files)
   await deleteStagedObjects(env, projectId, contactId)
-  await redactLegacyArchive(env, projectId, contactId, legacy)
+  await redactLegacyArchive(env, projectId, contactId, legacy, lease)
+  await lease.renew()
   const emails=[...new Set([...contactEmails(contact),...contactEmails(fenced??{})])]
   const csvIdentities=[...new Set([...csvBeforeFence,...await csvErasureIdentities(env,projectId,contactId,emails)])]
   await eraseDoorContact(env,projectId,contactId,actorId,emails,sessionHash,async scoped=>({
@@ -48,14 +52,36 @@ export async function eraseContact(env: Env, projectId: string, contactId: strin
 }
 
 export const contactErasure = new Hono<AppEnv>()
+/** A request that finds the contact being erased (or a legacy delta applying to the workspace) answers 409 with Retry-After. */
+const busy = (c: Context<AppEnv>, message: string, seconds: number) => c.json({error: message}, 409, {'Retry-After': String(seconds)})
+
+/**
+ * One erasure of a contact at a time: after scope, existence and step-up, the request takes the contact's lease (waiting up
+ * to 30 s for one in progress, then 409 with Retry-After), and only then reads or writes the person's data. A repeat after
+ * completion takes a fresh lease and completes as a repeat; an interrupted erasure's lease is taken over once it expires.
+ */
 contactErasure.post('/projects/:projectId/contacts/:contactId/erase', async c => {
   const actor = await scope(c, true), contactId = c.req.param('contactId')
   const token=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]
-  // What reached providers is read before local erasure removes the evidence of it.
-  const reach = await c.env.DB.prepare(`SELECT external_id,(EXISTS(${generations}) OR EXISTS(SELECT 1 FROM triage_jobs WHERE project_id=?1 AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2) AND provider_started=1)) ai,EXISTS(${localJobs}) computers FROM contacts WHERE project_id=?1 AND id=?2`).bind(actor.projectId, contactId).first<{external_id:string|null;ai:number;computers:number}>()
-  if (!reach) throw new HTTPException(404)
+  if (!await c.env.DB.prepare('SELECT 1 FROM contacts WHERE project_id=? AND id=?').bind(actor.projectId, contactId).first()) throw new HTTPException(404)
   await requireStepUp(c, actor, 'contact.erase')
-  const erasure = await eraseContact(c.env, actor.projectId, contactId, actor.id,await hashToken(token!))
+  let lease: ErasureLease
+  try {lease = await takeErasureLease(c.env.DB, actor.projectId, contactId)}
+  catch (error) {if (error instanceof ErasureInProgress) return busy(c, error.message, error.retryAfter); throw error}
+  let erasure: ContactErasure | null, reach: {external_id:string|null;ai:number;computers:number} | null, completed = false
+  try {
+    // What reached providers is read before local erasure removes the evidence of it.
+    reach = await c.env.DB.prepare(`SELECT external_id,(EXISTS(${generations}) OR EXISTS(SELECT 1 FROM triage_jobs WHERE project_id=?1 AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2) AND provider_started=1)) ai,EXISTS(${localJobs}) computers FROM contacts WHERE project_id=?1 AND id=?2`).bind(actor.projectId, contactId).first<{external_id:string|null;ai:number;computers:number}>()
+    if (!reach) throw new HTTPException(404)
+    erasure = await eraseContact(c.env, actor.projectId, contactId, actor.id, lease, await hashToken(token!))
+    completed = erasure != null
+  } catch (error) {
+    if (error instanceof ErasureLeaseLost) return busy(c, 'This contact is already being erased. Try again in a minute to confirm it completed.', ERASURE_LEASE_MS / 1000)
+    throw error
+  } finally {
+    // The final batch deleted the lease; otherwise any request may take it over now. A failed release expires in a minute.
+    if (!completed) await lease.release().catch(() => {})
+  }
   if (!erasure) throw new HTTPException(404)
   const now = Date.now()
   await c.env.DB.batch([

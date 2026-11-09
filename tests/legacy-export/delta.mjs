@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import {readFile,mkdir,writeFile,cp} from 'node:fs/promises';
+import {readFile,mkdir,writeFile,cp,rm} from 'node:fs/promises';
+import {spawn} from 'node:child_process';
 import {join} from 'node:path';
 import {DatabaseSync} from 'node:sqlite';
 import {findDatabase,snapshot,bucketSnapshot} from '../helpers/upgrade-snapshot.mjs';
@@ -108,6 +109,7 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
 
   const before=business(),beforeWork=workCounts(),beforeObjects=await bucketSnapshot(join(persist,'v3/r2')),resumeFrom=join(output,'delta-1-before');
   await cp(persist,resumeFrom,{recursive:true});
+  const leaseFrom=join(output,'delta-1-lease');await cp(persist,leaseFrom,{recursive:true});
   const check=args=>status('scripts/legacy-import/check.mjs',['delta','--package',deltaImport,'--persist-to',persist,...args]);
   const pre=await check(['--previous-total','0']);
   assert.equal(pre.code,1,'nothing of the delta is journaled before its import');
@@ -173,6 +175,9 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   const stored=new Set(objects.objects.map(o=>JSON.parse(o).key)),fileKey=id=>`legacy/projects/${projectId}/media/${id}`;
   assert.deepEqual([erasedFile,erasedPreview,otherFile].map(id=>stored.has(fileKey(id))),[false,false,true],'her files are withheld; the other customer\'s is uploaded');
 
+  // The same delta while an erasure runs, and with its own lease lapsing, each from the state before it.
+  await assertDeltaLeases({from:leaseFrom,output,deltaImport,projectId,customer,conversation,reply,late,newMessage,newMedia,otherFile,beforeObjects});
+
   // Rerunning the same delta changes nothing and lists the same conflicts.
   const after=business(),journal=sql('SELECT COUNT(*) n FROM legacy_import_rows')[0].n;
   const rerun=JSON.parse(await run('scripts/import-legacy.mjs',['--package',deltaImport,'--apply','--persist-to',persist]));
@@ -202,4 +207,56 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
   // Then legacy is retired and the next sweep, since this delta's watermark, takes the retire's marker.
   const retire=await assertRetireSweep({admin,run,status,env,output,persist,objectDirectory,projectId,snapshotArgs,since:exported.watermark});
   return {rows,applied:{appended:applied.appended,updated:applied.updated,skipped:applied.skipped,conflicts:applied.conflicts.length},checked:{skipped:result.skipped,code:checked.code},resumed,previousTotal,projectSourceRows:result.projectSourceRows,retire};
+}
+
+/** A delta never writes while an erasure of its workspace runs. On a copy of the state before the sweep, with the customer's
+ * erasure holding her live lease: the delta waits (a progress line, nothing written), and when that erasure is left
+ * interrupted (its lease expired, its row kept) the delta completes treating her as erased: every row of hers journaled
+ * erased with no copy, none of her words in the seed, her delegation file withheld; the new customer imported as before.
+ * On another copy, the delta's own lease lapses after its contacts batch (a temporary trigger, as a stalled process past its
+ * expiry): its next batch is refused, it stops non-zero, and the same command completes it. */
+async function assertDeltaLeases({from,output,deltaImport,projectId,customer,conversation,reply,late,newMessage,newMedia,otherFile,beforeObjects}){
+  const lapse=join(output,'delta-1-lapse');await cp(from,lapse,{recursive:true});
+  const now="CAST(unixepoch('subsec')*1000 AS INTEGER)";
+  const apply=state=>{
+    const child=spawn(process.execPath,['scripts/import-legacy.mjs','--package',deltaImport,'--apply','--persist-to',state],{env:{...process.env,WRANGLER_SEND_METRICS:'false',WRANGLER_LOG:'error',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false'},stdio:['ignore','pipe','pipe']});
+    const result={stdout:'',stderr:'',child};child.stdout.on('data',b=>result.stdout+=b);child.stderr.on('data',b=>result.stderr+=b);
+    result.exit=new Promise((resolve,reject)=>{child.once('error',reject);child.once('exit',resolve);});return result;
+  };
+  try{
+    const database=await findDatabase(join(from,'v3/d1'));
+    // The running delta holds the same database: these wait for its writes (busy_timeout) rather than fail.
+    const open=(file,readOnly=false)=>{const db=new DatabaseSync(file,{readOnly});db.exec('PRAGMA busy_timeout=10000');return db;};
+    const sql=(query,...args)=>{const db=open(database,true);try{return db.prepare(query).all(...args).map(row=>({...row}));}finally{db.close();}};
+    const write=query=>{const db=open(database);try{db.exec(query);}finally{db.close();}};
+    const runs=()=>sql('SELECT COUNT(*) n FROM legacy_import_runs')[0].n,startRuns=runs();
+    write(`INSERT INTO contact_erasure_leases VALUES('${projectId}','${customer}','erasure-request',${now}+600000)`);
+    const waiting=apply(from);
+    for(const started=Date.now();!/"step":"waiting","for":"erasure","erasures":1/.test(waiting.stderr);){assert.ok(Date.now()-started<60000,waiting.stderr);await new Promise(resolve=>setTimeout(resolve,200));}
+    await new Promise(resolve=>setTimeout(resolve,3000));
+    assert.equal(runs(),startRuns,'a delta waiting for an erasure writes nothing');assert.deepEqual(sql('SELECT * FROM legacy_delta_leases'),[]);
+    write(`UPDATE contact_erasure_leases SET expires_at=${now}-1`);
+    assert.equal(await waiting.exit,0,waiting.stderr);
+    const done=JSON.parse(waiting.stdout);assert.ok(done.erased>=8,'her rows are journaled erased');
+    const deltaRow=(table,id)=>sql("SELECT j.status,j.source_json FROM legacy_import_rows j JOIN legacy_import_runs u ON u.id=j.run_id WHERE json_extract(u.source_json,'$.delta')=1 AND j.source_table=? AND j.source_id=?",table,id);
+    for(const [table,id] of [['contacts',customer],['conversations',conversation],['messages',reply],['messages',late],['media',otherFile]])assert.deepEqual(deltaRow(table,id),[{status:'erased',source_json:'{}'}],`${table} ${id}`);
+    assert.equal(sql("SELECT COUNT(*) n FROM legacy_import_rows WHERE instr(source_json,'morgan-delegation-notes')>0 OR instr(source_json,'A legacy reply after the export')>0")[0].n,0);
+    assert.deepEqual(sql('SELECT id FROM messages WHERE id IN (?,?)',reply,late),[]);
+    assert.deepEqual(sql('SELECT conversation_id FROM messages WHERE id=?',newMessage).length,1,'the new customer is imported as before');
+    const stored=new Set((await bucketSnapshot(join(from,'v3/r2'))).objects.map(o=>JSON.parse(o).key)),fileKey=id=>`legacy/projects/${projectId}/media/${id}`;
+    assert.deepEqual([newMedia,otherFile].map(id=>stored.has(fileKey(id))),[true,false],'her delegation file is withheld');
+    assert.equal(stored.size,beforeObjects.objects.length+1);
+    assert.deepEqual(sql('SELECT * FROM legacy_delta_leases'),[],'the delta released its lease');
+    assert.equal(sql('SELECT COUNT(*) n FROM contact_erasure_leases')[0].n,1,'the interrupted erasure stays pending');
+
+    const lapsed=await findDatabase(join(lapse,'v3/d1')),lapseWrite=query=>{const db=open(lapsed);try{db.exec(query);}finally{db.close();}};
+    const journaled=table=>{const db=open(lapsed,true);try{return db.prepare("SELECT COUNT(*) n FROM legacy_import_rows j JOIN legacy_import_runs u ON u.id=j.run_id WHERE json_extract(u.source_json,'$.delta')=1 AND j.source_table=?").get(table).n;}finally{db.close();}};
+    lapseWrite("CREATE TRIGGER delta_lease_lapse AFTER INSERT ON legacy_import_rows WHEN NEW.source_table='contacts' BEGIN UPDATE legacy_delta_leases SET expires_at=0; END");
+    const stopped=apply(lapse);
+    assert.notEqual(await stopped.exit,0);assert.match(stopped.stderr,/delta lease lapsed/);
+    assert.ok(journaled('contacts')>0,'the batch before the lapse committed');assert.equal(journaled('messages'),0,'nothing more was written');
+    lapseWrite('DROP TRIGGER delta_lease_lapse');
+    const again=apply(lapse);assert.equal(await again.exit,0,again.stderr);
+    const completed=JSON.parse(again.stdout);assert.ok(completed.replayed>0);assert.ok(journaled('messages')>0);
+  }finally{await rm(from,{recursive:true,force:true});await rm(lapse,{recursive:true,force:true});}
 }

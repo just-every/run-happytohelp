@@ -10,11 +10,14 @@ import {unmarkRetired} from './retire-marker.mjs';
  * resumes at its first uncommitted group. The target is {env, renew?}; renew runs
  * between waves of work, when nothing is in flight. Without a target it plans
  * every chunk. A delta swept after the legacy retire takes the retire's marker
- * (retireMarker, epoch ms): every contact row is read through it (retire-marker.mjs). */
+ * (retireMarker, epoch ms): every contact row is read through it (retire-marker.mjs). A delta with a
+ * target takes its workspace's delta lease before it plans (takeDeltaLease, legacy-import/lease.ts):
+ * it waits while an erasure of the workspace runs, holds the lease (renewed on a timer) through its last
+ * write, uploads included, and releases it at the end, so no erasure runs while it writes. */
 // Tables other rows are mapped through can never be left out.
 const contextTables=new Set(['projects','users','ais','ai_defaults','contacts','conversations','messages','mediables','media','datasets','dataset_files']);
 export async function importPackage(root,target,modules,{expectManifestSha256,excludeTables=[],concurrency=1,progress=()=>{},retireMarker}={}){
-  const {planImport,importLegacy,importDelta,planDelta,tableOrder,relationships,types}=modules;
+  const {planImport,importLegacy,importDelta,planDelta,takeDeltaLease,tableOrder,relationships,types}=modules;
   const started=Date.now(),{manifest,digest}=await readManifest(root,expectManifestSha256),delta=isDelta(manifest);
   if(delta&&!manifest.source.projectId)throw Error('A delta package names its legacy project (source.projectId)');
   if(retireMarker!==undefined&&!delta)throw Error('--retire-marker applies only to a delta package (snapshot --since)');
@@ -24,7 +27,7 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
   const index=await packageContext(root,manifest,{timestamp:types.timestamp,...relationships},{delta,retireMarker});
   try{
     const runId=`legacy-package:${digest}`,options={context:index.context,objectKeys:index.objectKeys},tables={},conflicts=[];
-    let objects={uploaded:0,present:0};const env=()=>target?.env,workspaces=new Set(delta?[String(manifest.source.projectId)]:[]);
+    let objects={uploaded:0,present:0},lease;const env=()=>target?.env,workspaces=new Set(delta?[String(manifest.source.projectId)]:[]);
     const order=table=>{const i=tableOrder.indexOf(table);return i<0?1000:i};
     // A chunk is identified by its file and digest, never by its place in the order.
     const chunks=manifest.chunks.filter(part=>!Object.hasOwn(excluded,part.table)).sort((a,b)=>order(a.table)-order(b.table)).map(part=>({part,chunk:part.file}));
@@ -33,10 +36,14 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
     const bundleOf=(part,rows)=>chunkBundle(manifest,digest,part,rows,retireMarker);
     const chunkRun=async(part,rows)=>`legacy:${await types.digest(types.stable(bundleOf(part,rows)))}`;
     // A delta is applied update-aware (importDelta), from a plan made before the first write.
-    const apply=delta?(bundle,extra={})=>importDelta(env(),bundle,{...options,...extra,plan:options.plan,projectId:String(manifest.source.projectId)}):(bundle,extra={})=>importLegacy(env(),bundle,{...options,...extra});
+    const apply=delta?(bundle,extra={})=>importDelta(env(),bundle,{...options,...extra,plan:options.plan,lease,projectId:String(manifest.source.projectId)}):(bundle,extra={})=>importLegacy(env(),bundle,{...options,...extra});
 
+    // A delta holds its workspace's lease from before its plan through its last write.
+    try{
     if(target){
-      if(delta){options.plan=await deltaPlan(root,manifest,target,{planDelta,context:index.context,chunks,chunkRun});progress({step:'plan',seconds:seconds(started),heldConversations:options.plan.heldIn.size,withheldObjects:options.plan.withheldMedia.size});}
+      // The plan reads which contacts are erased or being erased; no erasure starts while the lease is held.
+      if(delta){lease=await takeDeltaLease(()=>target.env.DB,String(manifest.source.projectId),progress);progress({step:'lease',seconds:seconds(started)});
+        options.plan=await deltaPlan(root,manifest,target,{planDelta,context:index.context,chunks,chunkRun});progress({step:'plan',seconds:seconds(started),heldConversations:options.plan.heldIn.size,withheldObjects:options.plan.withheldMedia.size});}
       // Walk all chunks read-only first, including late-table conflicts. A
       // resumable outage can commit chunks; a known conflict commits none.
       for(const {part} of chunks){
@@ -50,10 +57,10 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
       // Media rows are journaled in their chunks' runs; erased attachments are read from those runs by key.
       const mediaRuns=await Promise.all(manifest.chunks.filter(part=>part.table==='media').map(async part=>chunkRun(part,(await read(part)).rows)));
       const withheld=options.plan?.withheldMedia;
-      await importObjects(target,root,manifest,runId,{concurrency,checkOnly:true,mediaRuns,withheld});
+      await importObjects(target,root,manifest,runId,{concurrency,checkOnly:true,mediaRuns,withheld,lease});
       await env().DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(runId,types.stable(manifest.source),digest,Date.now()).run();
       progress({step:'objects',seconds:seconds(started)});
-      objects=await importObjects(target,root,manifest,runId,{concurrency,progress,mediaRuns,withheld});
+      objects=await importObjects(target,root,manifest,runId,{concurrency,progress,mediaRuns,withheld,lease});
     }
     // Parent tables finish before their children start; chunks of one table are independent.
     for(const table of [...new Set(chunks.map(c=>c.part.table))]){
@@ -72,6 +79,7 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
     }
     // A delta's rerun changes nothing, its run row included.
     if(target)await env().DB.prepare(`UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=?${delta?" AND state<>'complete'":''}`).bind(Date.now(),runId).run();
+    }finally{await lease?.release();}
     const sum=key=>Object.values(tables).reduce((n,t)=>n+t[key],0);
     return {id:runId,manifestSha256:digest,projectId:manifest.source.projectId,workspaces:[...workspaces],sourceRows:sum('sourceRows'),packageRows:Object.values(sourceCounts).reduce((n,c)=>n+c,0),excluded,mappedRows:sum('mappedRows'),archivedOnly:sum('archivedOnly'),holds:sum('holds'),applied:sum('applied'),replayed:sum('replayed'),...(retireMarker!==undefined?{ignoredRetireMarker:Object.values(tables).reduce((n,t)=>n+(t.ignoredRetireMarker||0),0)}:{}),objects:manifest.objects.length,objectsUploaded:objects.uploaded,objectsPresent:objects.present,mediaBytes:manifest.mediaBytes,sessions:target?.sessions,seconds:seconds(started),tables,
       ...(delta&&target?deltaSummary(manifest,tables,conflicts,options.plan.withheldMedia.size):{})};

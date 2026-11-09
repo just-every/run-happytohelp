@@ -3,6 +3,7 @@ import {insertJson,sqlName,parameterBytes,jsonBytes} from './d1'
 import {stateStatement} from './state'
 import {batchRemovedTables} from './delta-scope'
 import type {Decision} from './delta'
+import type {DeltaLease} from './lease'
 
 /** One D1 batch (one transaction) for a group of delta decisions: canonical appends and updates,
  * their holds, reporting rows and import state, conflicts and journal entries commit together.
@@ -10,9 +11,11 @@ import type {Decision} from './delta'
  * in does, and any row a trigger adds to the app's work tables or resolutions is removed before it
  * commits, so applying a delta sends, notifies, dispatches, schedules and offers nothing. The batch
  * removes only the fences it inserted itself: a fence another writer (a Move in on the same
- * conversation) held before the batch stays. */
-export function deltaBatch(db:D1Database,projectId:string,runId:string,group:Decision[],columnsOf:(m:MappedRow)=>Row){
- const statements:D1PreparedStatement[]=[],inserts=new Map<string,Map<string,unknown[][]>>(),updates:D1PreparedStatement[]=[]
+ * conversation) held before the batch stays. The batch starts by asserting the run still holds its
+ * workspace's delta lease (lease.ts) and ends by clearing that assertion, so a delta whose lease lapsed
+ * while an erasure took the workspace commits nothing more. */
+export function deltaBatch(db:D1Database,projectId:string,runId:string,group:Decision[],columnsOf:(m:MappedRow)=>Row,lease:DeltaLease){
+ const statements:D1PreparedStatement[]=[lease.assertion(db)],inserts=new Map<string,Map<string,unknown[][]>>(),updates:D1PreparedStatement[]=[]
  const holds:unknown[][]=[],reporting:unknown[][]=[],state:unknown[][]=[],conflicts:unknown[][]=[],journal:unknown[][]=[],fenced=new Set<string>(),appended=new Set<string>()
  const fence=(m:MappedRow)=>{const id=m.table==='conversations'?m.row.id:m.row.conversation_id;if(id!=null&&['conversations','messages','media','conversation_notes','conversation_participants','conversation_buckets','conversation_ai'].includes(m.table))fenced.add(String(id))}
  for(const d of group){
@@ -56,6 +59,6 @@ export function deltaBatch(db:D1Database,projectId:string,runId:string,group:Dec
  statements.push(insertJson(db,'INSERT INTO legacy_import_rows(run_id,source_table,source_id,row_digest,source_json,target_table,target_key,status)',8,journal))
  if(fenced.size)statements.push(db.prepare("DELETE FROM move_in_native_fences WHERE project_id=? AND 'fence:'||conversation_id IN (SELECT name FROM legacy_import_marks WHERE name LIKE 'fence:%')").bind(projectId))
  for(const t of batchRemovedTables)statements.push(db.prepare(`DELETE FROM ${sqlName(t)} WHERE rowid>(SELECT high FROM legacy_import_marks WHERE name='${t}')`))
- statements.push(db.prepare('DELETE FROM legacy_import_marks'))
+ statements.push(db.prepare('DELETE FROM legacy_import_marks'),lease.cleared(db))
  return statements
 }

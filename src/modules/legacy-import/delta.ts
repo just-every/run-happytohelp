@@ -7,6 +7,7 @@ import {projectTables,identityTables,contactsOf} from './delta-scope'
 import {skippedRow,type DeltaPlan} from './delta-plan'
 import {deltaBatch} from './delta-batch'
 import {readGuard} from './delta-guard'
+import type {DeltaLease} from './lease'
 
 export interface DeltaConflict {sourceTable:string;sourceId:string;targetTable:string;targetKey:string;reason:string}
 export type DeltaStatus='mapped'|'updated'|'unchanged'|'conflict'|'kept'|'erased'|'skipped'|'archived_only'
@@ -30,8 +31,9 @@ function positioned(mapped:MappedRow,plan:DeltaPlan):MappedRow{
  * are journaled, never applied. A write that would take a unique value a different seed row holds,
  * or reference a row the seed does not hold, is a conflict instead; a new contact is appended
  * without the identity another seed contact holds (delta-guard.ts). Every decision reads the seed
- * as it is, so a stopped import resumes with the same decisions. */
-export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context:LegacyBundle;objectKeys?:Set<string>;checkOnly?:boolean;plan:DeltaPlan;projectId:string}){
+ * as it is, so a stopped import resumes with the same decisions. Writes only under the workspace's
+ * delta lease (`lease`, lease.ts): every batch asserts it, and a lapsed lease stops the delta. */
+export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context:LegacyBundle;objectKeys?:Set<string>;checkOnly?:boolean;plan:DeltaPlan;projectId:string;lease?:DeltaLease}){
  const plan=await planImport(bundle,options),{plan:delta,context}=options
  const existing=await env.DB.prepare('SELECT bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{bundle_digest:string;state:string}>()
  if(existing&&existing.bundle_digest!==plan.bundleDigest)throw new Error('Import digest conflict')
@@ -110,11 +112,14 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
  for(const d of decisions)counts[d.status]++
  const summary={id:plan.id,...counts,mappedRows:plan.summary.mappedRows,holds:decisions.flatMap(d=>d.status==='mapped'||d.status==='updated'?d.mapped.filter(m=>m.hold).map(m=>`${d.source.table}:${d.source.sourceId}: ${m.hold}`):[]),conflicts}
  if(options.checkOnly)return {...summary,applied:0,d1Ms:0}
+ const lease=options.lease
+ if(!lease)throw new Error('A legacy delta writes only under its workspace delta lease')
  await env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now()).run()
  let d1Ms=0
  const sized=decisions.map(d=>({d,bytes:Math.max(jsonBytes(d.source.row),...d.mapped.map(m=>jsonBytes(columnsOf(m))),jsonBytes(d.state))}))
  for(const group of byteSlices(sized,item=>item.bytes,100)){
-  const result=await env.DB.batch(deltaBatch(env.DB,options.projectId,plan.id,group.map(g=>g.d),columnsOf))
+  // A batch the lease assertion refused stops the delta with the lease's own message.
+  const result=await env.DB.batch(deltaBatch(env.DB,options.projectId,plan.id,group.map(g=>g.d),columnsOf,lease)).catch(async error=>{await lease.confirm();throw error})
   d1Ms+=result.reduce((ms,r)=>ms+Number(r.meta?.duration||0),0)
  }
  await env.DB.prepare("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=? AND state<>'complete'").bind(Date.now(),plan.id).run()

@@ -46,11 +46,12 @@ const anchorRedaction = (tables: string) => `UPDATE legacy_import_rows SET sourc
  * clears the verbatim copy of every row of this contact while keeping the digest, target and status: replaying the same
  * bundle still skips those rows instead of restoring them. Bounded D1 calls, each idempotent: the journal in rowid slices,
  * then the rows the sets come from, by id, dependants first. All of it completes before the erasure's atomic batch, which
- * still holds the seed rows the slices match by target.
+ * still holds the seed rows the slices match by target. `lease` is renewed before each slice (contact-erasure/lease.ts);
+ * the journal's range is read under it, so no legacy delta appends a row of the person's after that read.
  */
-export async function redactLegacyArchive(env: Pick<Env, 'DB'>, projectId: string, contactId: string, person: LegacyPerson) {
+export async function redactLegacyArchive(env: Pick<Env, 'DB'>, projectId: string, contactId: string, person: LegacyPerson, lease?: {renew(): Promise<void>}) {
   let calls = 0
-  for (const [low, high] of await journalSlices(env)) {await paced(() => env.DB.prepare(legacyArchiveSlice).bind(projectId, contactId, ...bindSets(person, 4), low, high).run()); calls++}
+  for (const [low, high] of await journalSlices(env)) {await lease?.renew(); await paced(() => env.DB.prepare(legacyArchiveSlice).bind(projectId, contactId, ...bindSets(person, 4), low, high).run()); calls++}
   for (const [tables, set] of anchors) if (person[set].length) {await env.DB.prepare(anchorRedaction(tables)).bind(projectId, JSON.stringify(person[set])).run(); calls++}
   return calls
 }

@@ -18,6 +18,7 @@ import type {Env} from '../../../platform/env'
 import {erasureInboundEvidenceStatements} from './inbound-evidence'
 import {attempts,contextJobs,contextTables,conversations,generations,localJobs,messages,projectConversations,staged,subject,trackedTables} from './scope'
 import {contactDoorErasure} from '../../../edition/agent-door/erasure'
+import {leaseCompletion} from './lease'
 
 export interface ErasureRequest {projectId: string; contactId: string; actorId: string; now: number; emails: string[];csvIdentities?:string[]}
 
@@ -140,5 +141,7 @@ export async function erasureStatements(env: Env, request: ErasureRequest) {
     bound(`UPDATE contacts SET name=NULL,email=NULL,external_id=NULL,is_verified=0,metadata_json=json_object('is_deleted',1,'is_blocked',1,'is_erased',1) WHERE project_id=?1 AND id IN (SELECT contact_id FROM mailbox_contact_aliases WHERE project_id=?1 AND canonical_id=?2)`),
     bound('DELETE FROM mailbox_contact_aliases WHERE project_id=?1 AND canonical_id=?2'),
     bound('DELETE FROM contact_erasure_objects WHERE project_id=?1 AND contact_id=?2'),
+    // The erasure's lease (contact-erasure/lease.ts) goes exactly when contact_erasures is written.
+    leaseCompletion(env.DB, projectId, contactId),
   ]
 }

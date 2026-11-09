@@ -3,8 +3,8 @@ import {transcriptOrder,relationships,isMessageMedia} from './relationships'
 import {archiveOnly} from './archive-only'
 import {lookupRows,identity,byteSlices,jsonBytes} from './d1'
 import {readStates,stateKey,unchangedSinceImport} from './state'
-import {contactsOf,conversationOf} from './delta-scope'
-import {erasedContacts} from './lease'
+import {conversationOf} from './delta-scope'
+import {readErased,ofErased} from './erased'
 
 /** Decisions a delta makes across its chunks before the first write.
  * A delta never renumbers the seed's transcript: legacy's new messages follow the
@@ -23,6 +23,9 @@ export interface DeltaPlan {
  gaining:Set<string>
  /** Media whose bytes this delta must not upload: held, skipped, or of an erased contact. */
  withheldMedia:Set<string>
+ /** The withheld media of an erased contact (or one being erased). A file of hers an earlier run left in R2 is removed
+  * (scripts/legacy-import/objects.mjs); the other withheld media are only left out. */
+ erasedMedia:Set<string>
  /** Messages whose delivery id is the message id of mail the seed's Amazon SES reader recorded: the seed took that mail
   * itself, so legacy's copy is skipped. */
  skippedMessages:Set<string>
@@ -47,8 +50,8 @@ interface SeedMessage {id:string;conversation_id:string;revision:number;local_id
  * contact_erasure_leases row (an erasure in progress or interrupted). */
 export async function planDelta(db:D1Database,{projectId,context,conversations,messages,media,ours}:{projectId:string;context:LegacyBundle;conversations:Iterable<string>;messages:Row[];media:Row[];ours:Set<string>}):Promise<DeltaPlan>{
  // Erased, being erased or left mid-erasure: the delta holds the workspace's lease (lease.ts), so no erasure starts after this read.
- const erased=new Set((await db.prepare(erasedContacts).bind(projectId).all<{contact_id:string}>()).results.map(r=>String(r.contact_id)))
- const isErased=(table:string,row:Row)=>contactsOf(table,row,context).some(contact=>erased.has(contact))
+ const erased=await readErased(db,projectId)
+ const isErased=(table:string,row:Row)=>ofErased(erased,table,row,context)
  // Mail the Amazon SES reader recorded holds its SES message id; legacy stores the same mail with that id as its delivery id.
  const localIds=[...new Set(messages.map(row=>row.local_id).filter(id=>id!==undefined&&id!==null&&id!=='').map(String))],received=new Set<string>()
  for(const part of byteSlices(localIds,jsonBytes,100))for(const row of (await db.prepare('SELECT DISTINCT ses_message_id FROM legacy_mail_s3_receipts WHERE ses_message_id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(part)).all<{ses_message_id:string}>()).results)received.add(String(row.ses_message_id))
@@ -63,7 +66,7 @@ export async function planDelta(db:D1Database,{projectId,context,conversations,m
  const seed=new Map<string,SeedMessage[]>()
  for(const part of byteSlices(ids,jsonBytes,100))for(const row of (await db.prepare('SELECT id,conversation_id,revision,local_id FROM messages WHERE conversation_id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(part)).all<SeedMessage>()).results){const list=seed.get(String(row.conversation_id))??[];list.push(row);seed.set(String(row.conversation_id),list)}
  const delta=new Map<string,Row[]>();for(const row of live){const list=delta.get(String(row.conversation_id))??[];list.push(row);delta.set(String(row.conversation_id),list)}
- const plan:DeltaPlan={erased,messages:new Map(),conversations:new Map(),held:new Map(),heldIn:new Map(),gaining:new Set(),withheldMedia:new Set(),skippedMessages,skippedConversations}
+ const plan:DeltaPlan={erased,messages:new Map(),conversations:new Map(),held:new Map(),heldIn:new Map(),gaining:new Set(),withheldMedia:new Set(),erasedMedia:new Set(),skippedMessages,skippedConversations}
  const changed=new Set<string>()
  for(const id of ids){
   if(skippedConversations.has(id))continue
@@ -86,7 +89,8 @@ export async function planDelta(db:D1Database,{projectId,context,conversations,m
  const mediaIds=media.map(row=>String(row.id)),present=await lookupRows(db,'media',['id'],mediaIds.map(id=>[id])),mediaStates=await readStates(db,mediaIds.map(id=>['media',id]))
  for(const row of media){
   const id=String(row.id),conversation=conversationOf('media',row,context)
-  if(isErased('media',row)||skippedRow('media',row,context,plan)||(!present.get(identity('media',[id]))&&mediaStates.has(stateKey('media',id)))){plan.withheldMedia.add(id);continue}
+  if(isErased('media',row)){plan.withheldMedia.add(id);plan.erasedMedia.add(id);continue}
+  if(skippedRow('media',row,context,plan)||(!present.get(identity('media',[id]))&&mediaStates.has(stateKey('media',id)))){plan.withheldMedia.add(id);continue}
   if(conversation!==undefined&&changed.has(conversation)){plan.withheldMedia.add(id);plan.held.set(`media:${id}`,conversation)}
  }
  return plan

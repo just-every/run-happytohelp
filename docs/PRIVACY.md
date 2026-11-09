@@ -174,14 +174,18 @@ or admin session. The response is the erasure record described in
 the request again while that contact's erasure is still running (for example after
 your connection dropped), the new request waits up to 30 seconds for it and then
 answers `409` with a `Retry-After` header; it changes nothing. Send it again after
-that many seconds: once the first erasure has completed, the request answers `200`
-with the same erasure record (the same `erased_at`; `runs` and `last_erased_at`
-advance) and changes nothing else but the security log and a repeated deletion request
-to connected services. The same `409` answers while a legacy import update (a delta
-sweep) is being applied to the workspace. Erasing different contacts never waits. If an
-erasure stops part-way (the request was cancelled or the server stopped), send it again:
+that many seconds: once the first erasure has completed, it runs the erasure again (the
+same `erased_at`; `runs` and `last_erased_at` advance), removing anything added since. A request that is still
+waiting when the first erasure completes answers `200` with that erasure's record
+exactly as the first request answered it (`runs` and `last_erased_at` do not advance)
+and does no erasure work: no second run is recorded and nothing changes. The same `409`
+answers while a legacy import (a full package or a delta sweep) is being applied to the
+workspace. Erasing different contacts never waits. If an erasure stops
+part-way (the request was cancelled, the server stopped, or it failed), send it again:
 it completes the erasure, at the latest once the stopped one's one-minute hold expires.
-Until a stopped erasure is completed, legacy import updates treat the contact as erased.
+Until a stopped erasure is completed, the contact's page shows that its erasure is
+pending, with **Erase personal data…** to send it again, and legacy imports treat the
+contact as erased.
 
 ### What is removed
 
@@ -233,9 +237,9 @@ Erasure works only inside the contact's own workspace. It removes:
 
 ### Running it again
 
-Erasing the same contact again is safe. It removes anything added since, for
-example an operator reply sent after the erasure, and adds to the counts in the
-erasure record.
+Erasing the same contact again is safe. A repeat (any request that did not wait for
+another erasure of the contact to finish) removes anything added since, for example an
+operator reply sent after the erasure, and adds to the counts in the erasure record.
 
 If an erasure stops partway through, run it again to finish it. Files waiting to be
 deleted are listed in `contact_erasure_objects` until the database changes are

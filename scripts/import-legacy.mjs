@@ -17,8 +17,10 @@ if(retireMarker!==undefined){const {readManifest}=await import('./legacy-import/
 const {planImport,importLegacy}=await import('../src/modules/legacy-import/importer.ts')
 const {importDelta}=await import('../src/modules/legacy-import/delta.ts')
 const {planDelta}=await import('../src/modules/legacy-import/delta-plan.ts')
-// A delta writes only under its workspace's delta lease: never while an erasure there runs (lease.ts).
+// Every import writes only under its workspace's lease: never while an erasure there runs (lease.ts). Under it, the
+// workspace's erased contacts are read (erased.ts): their rows are journaled as erasure leaves them, their files never uploaded.
 const {takeDeltaLease}=await import('../src/modules/legacy-import/lease.ts')
+const {readErased,erasedMediaOf,heldByNativeMedia}=await import('../src/modules/legacy-import/erased.ts')
 const {tableOrder}=await import('../src/modules/legacy-import/mapping.ts')
 const relationships=await import('../src/modules/legacy-import/relationships.ts')
 const types=await import('../src/modules/legacy-import/types.ts')
@@ -36,9 +38,17 @@ const {removeStaleDirectories}=await import('./legacy-import/scratch.mjs')
 const stale=await removeStaleDirectories();if(stale.length)progress({step:'removed-stale',directories:stale.length})
 let bundleProjects
 async function run(target){
- if(pkg)return importPackage(pkg,target,{planImport,importLegacy,importDelta,planDelta,takeDeltaLease,tableOrder,relationships,types},{expectManifestSha256:value('--expect-manifest-sha256'),excludeTables,concurrency,progress,retireMarker})
- const bundle=JSON.parse(await readFile(file,'utf8'));bundleProjects=bundle.tables?.projects;if(target)return importLegacy(target.env,bundle)
- const plan=await planImport(bundle);return {id:plan.id,...plan.summary}
+ if(pkg)return importPackage(pkg,target,{planImport,importLegacy,importDelta,planDelta,takeDeltaLease,readErased,erasedMediaOf,heldByNativeMedia,tableOrder,relationships,types},{expectManifestSha256:value('--expect-manifest-sha256'),excludeTables,concurrency,progress,retireMarker})
+ const bundle=JSON.parse(await readFile(file,'utf8'));bundleProjects=bundle.tables?.projects
+ if(!target){const plan=await planImport(bundle);return {id:plan.id,...plan.summary}}
+ // The bundle names its workspace as every export does (extract.mjs); refused before any write without it.
+ const projectId=bundle.source?.projectId;if(!projectId)throw new Error('A legacy export applied to a target names its legacy project (source.projectId)')
+ const lease=await takeDeltaLease(()=>target.env.DB,String(projectId),progress)
+ try{
+  const erased=await readErased(target.env.DB,String(projectId))
+  if(erased.size)progress({step:'erased',contacts:erased.size,objects:erasedMediaOf(erased,bundle.tables?.media??[],bundle).size})
+  return await importLegacy(target.env,bundle,{erased,lease})
+ }finally{await lease.release()}
 }
 if(!apply)console.log(JSON.stringify(await run(null),null,2))
 else{

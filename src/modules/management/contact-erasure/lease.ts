@@ -1,10 +1,17 @@
 /**
  * One erasure of a contact at a time (migrations/315_erasure_leases.sql). An erasure takes the contact's lease before it
- * reads or writes any of the person's data, renews it while it works and its final batch deletes it
- * (`leaseCompletion`, with contact_erasures). A request that finds the lease held polls it lightly and then answers 409
- * with Retry-After; one that finds it expired (an interrupted erasure) takes it over. No lease is taken while a legacy
- * delta holds its workspace's lease (legacy-import/lease.ts), so a delta never writes during an erasure. Every expiry and
- * comparison uses the database's clock.
+ * reads or writes any of the person's data and renews it while it works; the route deletes it (`leaseCompletion`) in the
+ * batch that records the erasure's provider requests and audit row, after the erasure's own final batch wrote
+ * contact_erasures. So "a contact_erasures row and no lease row" means the erasure, its provider requests and its audit
+ * row all committed. A request that finds the lease held polls it lightly and then answers 409 with Retry-After; one that
+ * finds it expired (an interrupted erasure) takes it over. No lease is taken while a legacy delta holds its workspace's
+ * lease (legacy-import/lease.ts), so a delta never writes during an erasure. Every expiry and comparison uses the
+ * database's clock.
+ *
+ * A resend: a request that found another erasure of the contact holding a live lease and waited for it answers that
+ * erasure's record ("completed") once it finds the erasure complete, instead of repeating it. Only the request that
+ * waited does: the answer is tied to that request, not to the contact, so any other request (one sent on its own, or sent
+ * again after a 409) repeats the erasure and erases what arrived since.
  */
 import {dbNow} from '../../legacy-import/lease'
 
@@ -42,13 +49,34 @@ const blocking = `SELECT (SELECT expires_at FROM contact_erasure_leases WHERE pr
 /** Only while still this request's and live: a lease that expired may already be another request's or a delta's turn. */
 const renewal = `UPDATE contact_erasure_leases SET expires_at=${dbNow}+${ERASURE_LEASE_MS} WHERE project_id=?1 AND contact_id=?2 AND token=?3 AND expires_at>${dbNow} RETURNING token`
 
+/** A live lease of another erasure of this contact holds it: this request is waiting for that erasure. */
+const erasing = `SELECT 1 ok FROM contact_erasure_leases WHERE project_id=?1 AND contact_id=?2 AND expires_at>${dbNow}`
+/** Primary-key reads only: the contact's erasure is complete (its record written and its lease gone). The lease is deleted
+ * only in the batch that completes an erasure (`leaseCompletion`), so once a waiting request saw it live, its absence means
+ * the erasure it waited for (or one that took it over) completed. */
+const completed = `SELECT 1 ok FROM contact_erasures WHERE project_id=?1 AND contact_id=?2
+ AND NOT EXISTS(SELECT 1 FROM contact_erasure_leases WHERE project_id=?1 AND contact_id=?2)`
+
+/** A request that waited for another erasure of the contact found it complete: the route answers that erasure's record,
+ * doing none of its work. */
+export const ERASURE_COMPLETED = 'completed'
+
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-/** Take the contact's lease, waiting up to 30 s for the erasure or delta holding it; then refuse with ErasureInProgress. */
-export async function takeErasureLease(db: D1Database, projectId: string, contactId: string): Promise<ErasureLease> {
+/**
+ * Take the contact's lease, waiting up to 30 s for the erasure or delta holding it; then refuse with ErasureInProgress.
+ * Once this request has seen another erasure of the contact holding a live lease, before each acquire it checks whether
+ * that erasure completed and then returns ERASURE_COMPLETED instead. A request that never waited for an erasure (the
+ * normal path, or one blocked only by a delta) makes no such read.
+ */
+export async function takeErasureLease(db: D1Database, projectId: string, contactId: string): Promise<ErasureLease | typeof ERASURE_COMPLETED> {
   const token = crypto.randomUUID(), started = Date.now()
+  let waited = false
   for (;;) {
+    if (waited && await db.prepare(completed).bind(projectId, contactId).first()) return ERASURE_COMPLETED
     if (await db.prepare(acquire).bind(projectId, contactId, token).first()) break
+    // Read until an erasure blocks it (a delta alone does not make it a resend).
+    if (!waited) waited = Boolean(await db.prepare(erasing).bind(projectId, contactId).first())
     if (Date.now() - started >= WAIT_MS) {
       const held = await db.prepare(blocking).bind(projectId, contactId).first<{erasure: number | null; delta: number | null}>()
       const ms = Math.max(held?.erasure ?? 0, held?.delta ?? 0)
@@ -69,6 +97,7 @@ export async function takeErasureLease(db: D1Database, projectId: string, contac
   }
 }
 
-/** In the erasure's atomic final batch: the lease goes exactly when contact_erasures is written. */
+/** In the route's provider-and-audit batch, after the erasure's final batch wrote contact_erasures: the lease goes
+ * exactly when the erasure's provider requests and audit row are written. */
 export const leaseCompletion = (db: D1Database, projectId: string, contactId: string) =>
   db.prepare('DELETE FROM contact_erasure_leases WHERE project_id=?1 AND contact_id=?2').bind(projectId, contactId)

@@ -6,7 +6,8 @@ import {useConfirmation} from './ConfirmDialog';
 
 const CONFIRMATION='ERASE';
 
-/** Owner/admin erasure of one contact's personal data, behind the shared dialog's exact typed confirmation. */
+/** Owner/admin erasure of one contact's personal data, behind the shared dialog's exact typed confirmation. While an
+ * erasure of the contact is pending (it failed and still holds its lease), a notice says so; erasing again completes it. */
 export default function ContactErasure({projectId,contact,onErased}) {
  const {ask,dialog}=useConfirmation();
  const begin=()=>ask({
@@ -18,7 +19,9 @@ export default function ContactErasure({projectId,contact,onErased}) {
   </>,
   run:async()=>{const response=await nativeRequest(`/api/management/projects/${encodeURIComponent(projectId)}/contacts/${encodeURIComponent(contact.id)}/erase`,{method:'POST'});await onErased(response.data);},
  });
- return <div className="contact-erasure"><Section title="Erase personal data" description="Permanently remove this contact's personal data at their request. Only owners and admins can erase a contact.">
+ const pending=Boolean(contact.erasure_pending);
+ return <div className={`contact-erasure${pending?' contact-erasure--pending':''}`}><Section title="Erase personal data" description="Permanently remove this contact's personal data at their request. Only owners and admins can erase a contact.">
+  {pending&&<div role="status" className="alert alert-warning">This contact's erasure did not finish. Erase again to complete it.</div>}
   <button type="button" className="btn btn-outline-danger" onClick={begin}>Erase personal data…</button>
  </Section>{dialog}</div>;
 }
@@ -27,10 +30,11 @@ const STORES=[['conversations','Conversations redacted'],['messages','Messages e
 const STATES={completed:'Deleted by provider',pending:'Request sent, waiting',failed:'Request failed',unsupported:'Provider cannot delete'};
 const PROVIDERS={webhook:'Webhook',slack:'Slack',email_provider:'Email provider',ai_provider:'AI provider',local_computers:'Paired computers'};
 
-/** What erasure removed here, store by store, and what each connected provider was asked to delete. */
+/** What erasure removed here, store by store, and what each connected provider was asked to delete. Read again once a
+ * pending erasure completes, so the record shows that run and its provider requests. */
 export function ContactErased({projectId,contact}) {
  const [record,setRecord]=useState(null);
- useEffect(()=>{if(projectId)nativeRequest(`/api/management/projects/${encodeURIComponent(projectId)}/contacts/${encodeURIComponent(contact.id)}/erasure`).then(r=>setRecord(r.data)).catch(()=>setRecord(null));},[projectId,contact.id]);
+ useEffect(()=>{if(projectId)nativeRequest(`/api/management/projects/${encodeURIComponent(projectId)}/contacts/${encodeURIComponent(contact.id)}/erasure`).then(r=>setRecord(r.data)).catch(()=>setRecord(null));},[projectId,contact.id,contact.erasure_pending]);
  const counts=record?.providers?.counts;
  return <div className="contact-profile"><div role="status" className="alert alert-secondary"><strong>Personal data erased.</strong> This contact was erased on {new Date(contact.erased_at).toLocaleString()}. Their conversations remain with message content and attachments removed.</div>
   {record&&<Section title="Erasure record" description={`Run ${record.runs} time${record.runs===1?'':'s'}. Counts are what this installation removed; nothing already sent can be recalled.`}>

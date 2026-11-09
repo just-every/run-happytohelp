@@ -55,6 +55,45 @@ test(`at 1440px an owner erases a contact only after typing ERASE; identity, con
  await page.goto(`${origin}/projects/${projectId}/conversations/${conversation.id}`);await page.getByText('Message erased',{exact:true}).waitFor();
  assert.equal(await page.getByText(secret).count(),0);assert.ok(await page.getByText('Erased contact').count()>0);await page.screenshot({path:shot(`${viewport.width}-transcript.png`),fullPage:true});
  checks.push('contact list hides the erased contact; transcript shows erased messages without content');
+
+ // An erasure that failed (a synthetic outage) is pending: on a fresh load, at 1440 and 390 wide, the contact's erasure
+ // section comes first with a status notice in the first screen; its erase action completes it. It fails at its final batch
+ // (nothing recorded yet), or at the provider-and-audit batch after that, when the erased record is already written.
+ const outages=[
+  {name:'Pending Visitor',email:'pending@example.test',shot:'pending',trigger:id=>`CREATE TRIGGER erasure_outage BEFORE INSERT ON contact_erasures WHEN NEW.contact_id='${id}' BEGIN SELECT RAISE(ABORT,'synthetic storage outage'); END`},
+  {name:'Recorded Visitor',email:'recorded@example.test',shot:'pending-recorded',trigger:()=>`CREATE TRIGGER erasure_outage BEFORE INSERT ON audit_events WHEN NEW.action='contact.erased' BEGIN SELECT RAISE(ABORT,'synthetic storage outage'); END`},
+ ];
+ const notice=page.locator('.contact-erasure [role="status"]'),phone=await browser.newPage({viewport:viewports.mobile});phone.on('pageerror',e=>errors.push(e.message));
+ for(const [index,outage] of outages.entries()){
+  const failing=await request('/api/identity/widget/session',{body:{widgetKey:project.widget_key,name:outage.name,email:outage.email},headers:{Origin:origin}});
+  const failingConversation=await request('/api/conversations',{token:failing.token,body:{projectId}});
+  assert.equal((await request(`/api/conversations/${failingConversation.id}/messages`,{token:failing.token,body:{localId:`pending-${index}`,content:'Erase this too',expectedRevision:0}})).accepted,true);
+  const contactPath=`/projects/${projectId}/contacts/${failing.contactId}`;
+  await page.goto(origin+contactPath);await page.getByRole('heading',{name:outage.name}).waitFor();
+  assert.equal(await notice.count(),0,'a contact never erased shows no pending notice');
+  await runtime.execute(outage.trigger(failing.contactId));
+  assert.equal((await request(`/api/management${contactPath}/erase`,{token:login.token,method:'POST',raw:true})).status,500);
+  await runtime.execute('DROP TRIGGER erasure_outage');
+  const pendingPage=async(target,size)=>{
+   await target.goto(origin+contactPath);const shown=target.locator('.contact-erasure [role="status"]');await shown.waitFor();
+   const box=await shown.boundingBox(),action=await target.locator('.contact-erasure').getByRole('button',{name:'Erase personal data…',exact:true}).boundingBox();
+   assert.ok(box&&box.y>=0&&box.y+box.height<=size.height,`the pending notice is in the first screen at ${size.width} (${outage.shot})`);
+   assert.ok(action&&action.y+action.height<=size.height,`its erase action is in the first screen at ${size.width} (${outage.shot})`);
+   assert.equal(await target.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,`no sideways scroll at ${size.width}`);
+   await target.screenshot({path:shot(`${size.width}-${outage.shot}.png`)});
+  };
+  if(!index){await phone.goto(origin+'/login?returnTo='+encodeURIComponent(contactPath));await phone.getByLabel('Email',{exact:true}).fill(owner.email);await phone.getByLabel('Password',{exact:true}).fill(owner.password);await phone.getByRole('button',{name:'Login',exact:true}).click();await phone.waitForURL('**'+contactPath);}
+  await pendingPage(phone,viewports.mobile);
+  await pendingPage(page,viewport);
+  await page.locator('.contact-erasure').getByRole('button',{name:'Erase personal data…',exact:true}).click();await typed.fill('ERASE');
+  const completed=page.waitForResponse(response=>new URL(response.url()).pathname===`/api/management${contactPath}/erase`);
+  await confirm.click();assert.equal((await completed).status(),200);
+  // The erased record may already show (a failure after it was recorded); completion is the notice going away.
+  await notice.waitFor({state:'detached'});await page.getByText('Personal data erased.',{exact:false}).waitFor();assert.equal(await notice.count(),0,'nothing is pending once it completed');
+  assert.equal((await request(`/api/conversations/${failingConversation.id}/messages`,{token:login.token})).messages[0].content,'');
+ }
+ await phone.close();
+ checks.push('a failed erasure, at its final batch or after recording it, shows a pending notice first on a fresh load at 1440 and 390, and its erase action completes it');
  assert.deepEqual(errors,[]);
  await writeFile(shot(`${viewport.width}-result.json`),JSON.stringify({checks},null,2));
  console.log(`Contact erasure browser passed: ${checks.length} checks.\n- ${checks.join('\n- ')}`);success=true;

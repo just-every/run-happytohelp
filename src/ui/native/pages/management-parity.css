@@ -30,6 +30,7 @@
 .contact-facts dt { color: var(--ink-soft); font-size: 14.5px; font-weight: 400; }
 .contact-facts dd { margin: 4px 0; overflow-wrap: anywhere; }
 .contact-erasure { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--rule); }
+.contact-erasure--pending { margin: 0 0 32px; padding: 0 0 24px; border-top: 0; border-bottom: 1px solid var(--rule); }
 .management-invite-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .management-invite-notice a { color: inherit; text-decoration: underline 2px var(--d-cyan-deep); text-underline-offset: 4px; overflow-wrap: anywhere; }
 .management-replacers code { color: var(--ink); }

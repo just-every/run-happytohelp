@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import {readFile,mkdir,writeFile,cp,rm} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
 import {join} from 'node:path';
+import {existsSync} from 'node:fs';
+import {registerHooks} from 'node:module';
 import {DatabaseSync} from 'node:sqlite';
+import {localTarget} from '../../scripts/legacy-import/target.mjs';
+import {importPackage} from '../../scripts/legacy-import/import-package.mjs';
 import {findDatabase,snapshot,bucketSnapshot} from '../helpers/upgrade-snapshot.mjs';
 import {assertRetireSweep} from './retire.mjs';
 import {assertResumedSweep,assertCheckRetry} from './resume.mjs';
@@ -214,9 +218,14 @@ export async function assertDeltaSweep({admin,run,status,env,output,persist,obje
  * interrupted (its lease expired, its row kept) the delta completes treating her as erased: every row of hers journaled
  * erased with no copy, none of her words in the seed, her delegation file withheld; the new customer imported as before.
  * On another copy, the delta's own lease lapses after its contacts batch (a temporary trigger, as a stalled process past its
- * expiry): its next batch is refused, it stops non-zero, and the same command completes it. */
+ * expiry): its next batch is refused, it stops non-zero, and the same command completes it. On two more copies the delta
+ * runs in process with its R2 binding wrapped at the edge: its lease lapses between its check and an upload, and that
+ * upload is removed and recorded nowhere; and the customer's file it uploaded under its live lease stays behind when the
+ * lease lapses right after its record, her erasure completes (it cannot see the file) and the rerun removes it. */
 async function assertDeltaLeases({from,output,deltaImport,projectId,customer,conversation,reply,late,newMessage,newMedia,otherFile,beforeObjects}){
   const lapse=join(output,'delta-1-lapse');await cp(from,lapse,{recursive:true});
+  const upload=join(output,'delta-1-upload'),leftover=join(output,'delta-1-leftover');
+  await cp(from,upload,{recursive:true});await cp(from,leftover,{recursive:true});
   const now="CAST(unixepoch('subsec')*1000 AS INTEGER)";
   const apply=state=>{
     const child=spawn(process.execPath,['scripts/import-legacy.mjs','--package',deltaImport,'--apply','--persist-to',state],{env:{...process.env,WRANGLER_SEND_METRICS:'false',WRANGLER_LOG:'error',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false'},stdio:['ignore','pipe','pipe']});
@@ -258,5 +267,51 @@ async function assertDeltaLeases({from,output,deltaImport,projectId,customer,con
     lapseWrite('DROP TRIGGER delta_lease_lapse');
     const again=apply(lapse);assert.equal(await again.exit,0,again.stderr);
     const completed=JSON.parse(again.stdout);assert.ok(completed.replayed>0);assert.ok(journaled('messages')>0);
-  }finally{await rm(from,{recursive:true,force:true});await rm(lapse,{recursive:true,force:true});}
+
+    // The command's own modules, with the delta's R2 and D1 bindings wrapped in this test only.
+    const modules=await importModules(),expire='UPDATE legacy_delta_leases SET expires_at=0';
+    const inProcess=async(state,hooks)=>{
+      const target=await localTarget(state),real=target.env;
+      const wrap=(binding,overrides)=>new Proxy(binding,{get:(object,key)=>overrides[key]??(typeof object[key]==='function'?object[key].bind(object):object[key])});
+      const env={DB:wrap(real.DB,{batch:hooks.batch?.(real.DB.batch.bind(real.DB),real)}),FILES:wrap(real.FILES,{put:hooks.put(real.FILES.put.bind(real.FILES),real)})};
+      try{return await importPackage(deltaImport,{env},modules);}finally{await target.close();}
+    };
+    const databases=new Map([[upload,await findDatabase(join(upload,'v3/d1'))],[leftover,await findDatabase(join(leftover,'v3/d1'))]]);
+    const recorded=(state,key)=>{const db=open(databases.get(state),true);try{return db.prepare('SELECT run_id FROM legacy_import_objects WHERE object_key=?').all(key).length;}finally{db.close();}};
+    const keys=async state=>new Set((await bucketSnapshot(join(state,'v3/r2'))).objects.map(o=>JSON.parse(o).key));
+
+    // Its lease lapses between its check and the upload of the new customer's file (the stall): the upload is removed again.
+    let lapses=0;
+    await assert.rejects(inProcess(upload,{put:(put,{DB})=>async(key,...rest)=>{if(key===fileKey(newMedia)&&!lapses++)await DB.prepare(expire).run();return put(key,...rest);}}),/delta lease lapsed/);
+    assert.equal(lapses,1);assert.equal((await keys(upload)).has(fileKey(newMedia)),false,'the upload after the lapse is removed');
+    assert.equal(recorded(upload,fileKey(newMedia)),0,'and recorded nowhere');
+    const uploadRerun=apply(upload);assert.equal(await uploadRerun.exit,0,uploadRerun.stderr);
+    assert.equal((await keys(upload)).has(fileKey(newMedia)),true);assert.equal(recorded(upload,fileKey(newMedia)),1,'the rerun completes it');
+
+    // Her file is uploaded and recorded under a live lease; the lease lapses right after (the stall) and her erasure completes
+    // without seeing it (no media row of hers is journaled yet). The delta stops at its next lease check; its rerun removes it.
+    let uploadedHers=false;
+    await assert.rejects(inProcess(leftover,{
+      put:put=>async(key,...rest)=>{const result=await put(key,...rest);if(key===fileKey(otherFile))uploadedHers=true;return result;},
+      batch:(batch,{DB})=>async statements=>{const result=await batch(statements);if(uploadedHers){uploadedHers=false;await DB.prepare(expire).run();}return result;}}),/delta lease lapsed/);
+    assert.equal((await keys(leftover)).has(fileKey(otherFile)),true);assert.equal(recorded(leftover,fileKey(otherFile)),1,'her file was uploaded and recorded before the lapse');
+    const leftoverDb=databases.get(leftover),leftoverSql=(query,...args)=>{const db=open(leftoverDb);try{return db.prepare(query).all(...args).map(row=>({...row}));}finally{db.close();}};
+    const deltaMedia="SELECT j.status,j.source_json FROM legacy_import_rows j JOIN legacy_import_runs u ON u.id=j.run_id WHERE json_extract(u.source_json,'$.delta')=1 AND j.source_table='media'";
+    assert.deepEqual(leftoverSql(deltaMedia),[],'no media row of the delta is journaled yet');
+    leftoverSql('INSERT INTO contact_erasures(project_id,contact_id,erased_by,erased_at,last_erased_at) VALUES(?,?,?,1,1) RETURNING contact_id',projectId,customer,uuid('20',1));
+    const leftoverRerun=apply(leftover);assert.equal(await leftoverRerun.exit,0,leftoverRerun.stderr);
+    const rerunKeys=await keys(leftover);
+    assert.equal(rerunKeys.has(fileKey(otherFile)),false,'the rerun removes her file');assert.equal(recorded(leftover,fileKey(otherFile)),0,'and its record');
+    assert.deepEqual(leftoverSql(`${deltaMedia} AND j.source_id=?`,otherFile),[{status:'erased',source_json:'{}'}]);
+    assert.equal(rerunKeys.has(fileKey(newMedia)),true);assert.equal(recorded(leftover,fileKey(newMedia)),1,'the new customer is imported as before');
+    assert.equal(rerunKeys.size,beforeObjects.objects.length+1);
+  }finally{for(const state of [from,lapse,upload,leftover])await rm(state,{recursive:true,force:true});}
+}
+
+/** The import command's modules, loaded as scripts/import-legacy.mjs loads them (TypeScript sources, extensionless imports). */
+async function importModules(){
+  registerHooks({resolve(specifier,context,next){if(specifier.startsWith('.')&&context.parentURL){const url=new URL(specifier+'.ts',context.parentURL);if(existsSync(url))return next(url.href,context);}return next(specifier,context);}});
+  const source=path=>import(new URL(`../../src/modules/legacy-import/${path}.ts`,import.meta.url).href);
+  const [importer,delta,plan,lease,erased,mapping,relationships,types]=await Promise.all(['importer','delta','delta-plan','lease','erased','mapping','relationships','types'].map(source));
+  return {planImport:importer.planImport,importLegacy:importer.importLegacy,importDelta:delta.importDelta,planDelta:plan.planDelta,takeDeltaLease:lease.takeDeltaLease,readErased:erased.readErased,erasedMediaOf:erased.erasedMediaOf,heldByNativeMedia:erased.heldByNativeMedia,tableOrder:mapping.tableOrder,relationships,types};
 }

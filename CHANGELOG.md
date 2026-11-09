@@ -8,6 +8,10 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## Unreleased
+
+- **Erasure follow-ups:** an erased person's files no longer outlive a stalled legacy import (an import whose lease lapsed keeps no file it uploaded, and an erased contact's leftover files are removed on the next run); a full legacy package import respects erasures as a delta does and imports nothing of an erased contact; an import keeps another customer's shared file in every order; an erasure request that waited for a running erasure of the same contact answers the completed record, while any other repeat erases what arrived since; and a contact whose erasure failed shows it as pending on its page, with the erase action to complete it. This change adds no migration.
+
 ## 0.4.16 — 2026-11-10
 
 v0.4.14 and v0.4.15 were prepared and tagged but not published. Their changes ship in v0.4.16, which supersedes both tags. The last published release and upgrade baseline remains v0.4.13.

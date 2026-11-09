@@ -60,11 +60,14 @@ function ResourcePage({projectId,section,recordId}) {
    const response=await nativeRequest(path+(draft.id?`/${draft.id}`:''),{method:draft.id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(changes)});
    markSaved();setSaved(true);
    if(section==='agents'&&!draft.id){setInvitation(response.data);await load();}
-   else if(response.data?.id){const value=section==='contacts'?parseContact(response.data):{...draft,...response.data};savedContact.current=value;setDraft(value);if(recordId==='create')await navigate({to:`${base}/${response.data.id}`,replace:true});}
+   else if(response.data?.id){const value=section==='contacts'?{...parseContact(response.data),erasure_pending:draft.erasure_pending}:{...draft,...response.data};savedContact.current=value;setDraft(value);if(recordId==='create')await navigate({to:`${base}/${response.data.id}`,replace:true});}
    await load();
   }catch(e){setError(e.message)}finally{setBusy(false)}
  };
  const erased=async()=>{markSaved();const r=await nativeRequest(`${path}/${draft.id}`);const value=parseContact(r.data);savedContact.current=value;setDraft(value);await load();};
+ // A pending erasure (one failed and still holds its lease) puts the erasure section first, so its notice and action are in
+ // the first screen; also above the erased record, when the erasure failed after recording it (at its provider-and-audit batch).
+ const erasure=section==='contacts'&&draft?.id&&<ContactErasure projectId={projectId} contact={draft} onErased={erased}/>,pendingErasure=Boolean(erasure&&draft.erasure_pending);
  const move=async(id,direction)=>{try{await nativeRequest(`${path}/${id}/${direction}`,{method:'POST'});await load()}catch(e){setError(e.message)}};
  // Deleting always goes through the shared confirmation. The last owner cannot be removed; removing yourself is called out.
  // Both are decided from the members list, which loads apart from the editor: until it has loaded, removal is neither
@@ -89,13 +92,13 @@ function ResourcePage({projectId,section,recordId}) {
  };
  return <><Feedback {...{error,saved}}/>{invitation&&<InvitationCreated invitation={invitation}/>}<InvitationNotice notice={notice}/>
   {!recordId&&<ManagementLists {...{section,items,base,projectId,emailConfigured,pagination}} busy={listBusy} query={paged?listQuery:null} onQuery={setListQuery} onMove={move} onChanged={load} onNotice={setNotice} onError={setError}/>} {recordId&&!draft&&!error&&<p>Loading…</p>}
-  {draft&&section==='contacts'&&draft.is_erased&&<div className="workspace-settings"><ContactErased projectId={projectId} contact={draft}/></div>}
-  {draft&&!(section==='contacts'&&draft.is_erased)&&<div className="workspace-settings">{section==='contacts'&&draft.id&&<ContactDetails projectId={projectId} contact={draft}/>}
+  {draft&&section==='contacts'&&draft.is_erased&&<div className="workspace-settings">{pendingErasure&&erasure}<ContactErased projectId={projectId} contact={draft}/></div>}
+  {draft&&!(section==='contacts'&&draft.is_erased)&&<div className="workspace-settings">{pendingErasure&&erasure}{section==='contacts'&&draft.id&&<ContactDetails projectId={projectId} contact={draft}/>}
    <form onSubmit={save} noValidate={section==='contacts'||section==='plugins'}><ManagementEditor {...{section,draft,change,emailConfigured,fieldErrors,customRoles}}/>
     <div className="settings-actions"><button className="btn btn-primary" disabled={busy||Boolean(invitation)}>{busy?'Saving…':draft.id?'Save':section==='agents'?'Invite':section==='plugins'?'Add':'Create'}</button>{draft.id&&ownersKnown&&<button type="button" className="btn btn-outline-danger ms-2" disabled={busy} onClick={requestRemoval}>Delete</button>}</div>
     {draft.id&&!ownersKnown&&<p className="settings-note mt-3" role="status">{listFailed?'Removal is unavailable: the project’s owners could not be checked. Reload the page to try again.':'Checking the project’s owners…'}</p>}
     {lastOwner&&<p className="settings-note mt-3">This is the project’s last owner, so it cannot be removed. Make another member an owner first.</p>}
    </form>
-   {section==='contacts'&&draft.id&&<ContactErasure projectId={projectId} contact={draft} onErased={erased}/>}</div>}
+   {!pendingErasure&&erasure}</div>}
   {dialog}</>;
 }

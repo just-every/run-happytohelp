@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {cp,rm} from 'node:fs/promises';
 import {join} from 'node:path';
+import {spawn} from 'node:child_process';
 import {DatabaseSync} from 'node:sqlite';
 import {findDatabase,snapshot,snapshotTable,bucketSnapshot} from '../helpers/upgrade-snapshot.mjs';
 import {checkDelta} from '../../scripts/legacy-import/checks/delta.mjs';
@@ -85,4 +86,83 @@ export async function assertResumedSweep({admin,run,status,env,output,objectDire
     assert.deepEqual({business:business(stoppedDb),objects:await objectsOf(stopped),journal:journal(stoppedDb)},settled,'a rerun after completion changes nothing');
     return {sourceRows:uninterrupted.sourceRows,runs:packageRuns(stoppedDb).length,runsAtStop:states.length,replayed:resumed.replayed};
   }finally{await rm(whole,{recursive:true,force:true});await rm(stopped,{recursive:true,force:true});await rm(from,{recursive:true,force:true});}
+}
+
+/** A full package and an erasure of a contact in its workspace. From the empty state, one copy imports the second company's
+ * package uninterrupted. On another its first run stops at the conversations chunk (a temporary trigger, as a lost
+ * connection stops it), after it uploaded every file and wrote the contacts; then the customer's erasure holds her live
+ * lease: the rerun waits and writes nothing. When that erasure is left interrupted (its lease expired, its row kept) the
+ * rerun completes treating her as erased: each pending row of hers journaled as erasure leaves it (no copy, status erased,
+ * the mapped target the uninterrupted import journaled), none of her canonical or search rows written, her file removed from
+ * R2 with its record; everything else as the uninterrupted import has it. A replay changes nothing. */
+export async function assertFullErasure({output,from,pkg,projectId}){
+  const contact=uuid('30',2),conversation=uuid('40',2),media=uuid('80',2),fileKey=`legacy/projects/${projectId}/media/${media}`;
+  const now="CAST(unixepoch('subsec')*1000 AS INTEGER)";
+  const whole=join(output,'full-whole'),stopped=join(output,'full-stopped');
+  await cp(from,whole,{recursive:true});await cp(from,stopped,{recursive:true});
+  const command=state=>{
+    const child=spawn(process.execPath,['scripts/import-legacy.mjs','--package',pkg,'--apply','--persist-to',state],{env:{...process.env,WRANGLER_SEND_METRICS:'false',WRANGLER_LOG:'error',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false'},stdio:['ignore','pipe','pipe']});
+    const result={stdout:'',stderr:''};child.stdout.on('data',b=>result.stdout+=b);child.stderr.on('data',b=>result.stderr+=b);
+    result.exit=new Promise((resolve,reject)=>{child.once('error',reject);child.once('exit',resolve);});return result;
+  };
+  try{
+    const done=command(whole);assert.equal(await done.exit,0,done.stderr);
+    const uninterrupted=JSON.parse(done.stdout);assert.equal(uninterrupted.erased,0);
+    const wholeDb=await findDatabase(join(whole,'v3/d1')),stoppedDb=await findDatabase(join(stopped,'v3/d1'));
+    const busy=(database,query,...args)=>{const db=new DatabaseSync(database,{readOnly:true});try{db.exec('PRAGMA busy_timeout=10000');return db.prepare(query).all(...args).map(row=>({...row}));}finally{db.close();}};
+    const journal=database=>busy(database,'SELECT source_table,source_id,row_digest,source_json,target_table,target_key,status FROM legacy_import_rows ORDER BY 1,2');
+    const keys=async state=>(await objectsOf(state)).objects.map(o=>o.key).sort();
+
+    write(stoppedDb,"CREATE TRIGGER full_fixture_stop BEFORE INSERT ON legacy_import_rows WHEN NEW.source_table='conversations' BEGIN SELECT RAISE(ABORT,'stopped by the full-package fixture'); END");
+    const first=command(stopped);assert.notEqual(await first.exit,0);assert.match(first.stderr,/stopped by the full-package fixture/);
+    write(stoppedDb,'DROP TRIGGER full_fixture_stop');
+    assert.deepEqual(read(stoppedDb,"SELECT status FROM legacy_import_rows WHERE source_table='contacts' AND source_id=?",contact),[{status:'mapped'}],'her contact was imported before the stop');
+    assert.deepEqual(await keys(stopped),[fileKey],'every file was uploaded before the stop');
+    const atStop=journal(stoppedDb);
+
+    write(stoppedDb,`INSERT INTO contact_erasure_leases VALUES('${projectId}','${contact}','erasure-request',${now}+600000)`);
+    const rerun=command(stopped);
+    for(const started=Date.now();!/"step":"waiting","for":"erasure","erasures":1/.test(rerun.stderr);){assert.ok(Date.now()-started<60000,rerun.stderr);await new Promise(resolve=>setTimeout(resolve,200));}
+    await new Promise(resolve=>setTimeout(resolve,3000));
+    assert.deepEqual(journal(stoppedDb),atStop,'a full import waiting for an erasure writes nothing');assert.deepEqual(busy(stoppedDb,'SELECT * FROM legacy_delta_leases'),[]);
+    write(stoppedDb,`UPDATE contact_erasure_leases SET expires_at=${now}-1`);
+    assert.equal(await rerun.exit,0,rerun.stderr);
+    const completed=JSON.parse(rerun.stdout);assert.equal(completed.objectsRemoved,1);assert.equal(completed.replayed,atStop.length);
+    assert.match(rerun.stderr,/"step":"erased","contacts":1,"objects":1/);
+
+    // Her pending rows: journaled as erasure leaves them, against the targets the uninterrupted import mapped them to.
+    const wholeRows=new Map(journal(wholeDb).map(row=>[`${row.source_table}:${row.source_id}`,row])),rows=journal(stoppedDb),erased=rows.filter(row=>row.status==='erased');
+    assert.equal(completed.erased,erased.length);assert.equal(rows.length,wholeRows.size);
+    for(const ids of [['conversations',conversation],['messages',uuid('60',20)],['media',media],['events',uuid('51',2)],['support_delegations',uuid('b3',2)],['conversation_participants',uuid('42',2)]])
+      assert.ok(erased.some(row=>row.source_table===ids[0]&&row.source_id===ids[1]),ids.join(':'));
+    for(const row of erased){
+      const original=wholeRows.get(`${row.source_table}:${row.source_id}`);assert.equal(row.source_json,'{}');
+      assert.deepEqual([row.row_digest,row.target_table,row.target_key],[original.row_digest,original.target_table,original.target_key],`${row.source_table}:${row.source_id}`);
+    }
+    // Everyone else's rows are journaled exactly as the uninterrupted import journaled them.
+    for(const row of rows.filter(row=>row.status!=='erased'))assert.deepEqual(row,wholeRows.get(`${row.source_table}:${row.source_id}`));
+    // None of her canonical or search rows, words or file names; every other canonical row as the uninterrupted import wrote it.
+    const theirs={conversations:'id=?1',messages:'conversation_id=?1',media:'conversation_id=?1',conversation_notes:'conversation_id=?1',conversation_buckets:'conversation_id=?1',conversation_participants:'conversation_id=?1',conversation_ai:'conversation_id=?1',local_jobs:'conversation_id=?1',local_events:'job_id IN (SELECT id FROM local_jobs WHERE conversation_id=?1)',context_tracked_events:"json_extract(payload,'$.conversation_id')=?1",reporting_legacy_conversations:'conversation_id=?1'};
+    for(const [table,where] of Object.entries(theirs)){
+      assert.ok(read(wholeDb,`SELECT COUNT(*) n FROM ${table} WHERE ${where}`,conversation)[0].n>0||['conversation_ai'].includes(table),`the uninterrupted import wrote ${table} of hers`);
+      assert.deepEqual(read(stoppedDb,`SELECT COUNT(*) n FROM ${table} WHERE ${where}`,conversation),[{n:0}],`none of her ${table}`);
+      assert.equal(read(stoppedDb,`SELECT COUNT(*) n FROM ${table}`)[0].n,read(wholeDb,`SELECT COUNT(*) n FROM ${table} WHERE NOT (${where})`,conversation)[0].n,`every other ${table} row`);
+    }
+    assert.deepEqual(read(stoppedDb,"SELECT COUNT(*) n FROM inbox_message_search WHERE inbox_message_search MATCH 'explain OR invoice'"),[{n:0}],'none of her words is searchable');
+    assert.ok(read(wholeDb,"SELECT COUNT(*) n FROM inbox_message_search WHERE inbox_message_search MATCH 'explain OR invoice'")[0].n>0);
+    assert.equal(read(stoppedDb,"SELECT COUNT(*) n FROM legacy_import_rows WHERE instr(source_json,'-invoice.txt')>0 OR instr(source_json,'Inspect this invoice')>0")[0].n,0,'her file name and words are journaled nowhere');
+    const others=business(wholeDb),settledBusiness=business(stoppedDb);
+    for(const table of ['projects','users','memberships','contacts','knowledge_categories','macros','project_settings','email_settings'])assert.deepEqual(settledBusiness[table],others[table],table);
+    // Each install mints its own knowledge incarnation; the imported columns agree.
+    const articles=database=>{const db=new DatabaseSync(database,{readOnly:true});try{return snapshotTable(db,'knowledge_articles',others.knowledge_articles.columns.filter(column=>column!=='source_incarnation'));}finally{db.close();}};
+    assert.deepEqual(articles(stoppedDb),articles(wholeDb),'knowledge_articles');
+    assert.deepEqual(await keys(stopped),[],'her file is removed from R2');assert.deepEqual(read(stoppedDb,'SELECT * FROM legacy_import_objects WHERE object_key=?',fileKey),[],'with its record');
+    assert.deepEqual(await keys(whole),[fileKey]);
+
+    const settled={business:settledBusiness,objects:await objectsOf(stopped),journal:journal(stoppedDb)};
+    const replay=command(stopped);assert.equal(await replay.exit,0,replay.stderr);
+    const replayed=JSON.parse(replay.stdout);assert.equal(replayed.applied,0);assert.equal(replayed.replayed,rows.length);assert.equal(replayed.objectsRemoved,0);
+    assert.deepEqual({business:business(stoppedDb),objects:await objectsOf(stopped),journal:journal(stoppedDb)},settled,'a replay changes nothing');
+    return {sourceRows:uninterrupted.sourceRows,erased:erased.length,replayed:completed.replayed};
+  }finally{for(const state of [whole,stopped,from])await rm(state,{recursive:true,force:true});}
 }

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import mysql from 'mysql2/promise';
 import {spawn} from 'node:child_process';
-import {mkdtemp,mkdir,writeFile,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,writeFile,rm,cp} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {randomBytes} from 'node:crypto';
@@ -10,6 +10,7 @@ import {seedLegacy} from './legacy-export/fixture.mjs';
 import {assertArtifact,assertAllNativeStores,assertMappedBusinessState} from './legacy-export/assertions.mjs';
 import {assertCredentialRefusals} from './legacy-export/refusals.mjs';
 import {assertDeltaSweep} from './legacy-export/delta.mjs';
+import {assertFullErasure} from './legacy-export/resume.mjs';
 
 // One public-command integration flow, using real MySQL and local D1/R2.
 test('project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark', {timeout:360000}, async () => {
@@ -42,6 +43,7 @@ test('project snapshot → attachment bytes → native import → safe replay �
     try{await assert.rejects(readonly.execute('DELETE FROM projects'),/denied/i);}finally{await readonly.end();}
     await run('scripts/migrations.mjs');
     await run('node_modules/wrangler/bin/wrangler.js',['d1','migrations','apply','DB','--local','--persist-to',persist]);
+    const empty=join(output,'empty-state');await cp(persist,empty,{recursive:true});
     const results=[],files=[],sources=[];
     for(const [index,projectId] of fixture.projectIds.entries()){
       const snapshot=join(output,`project-${index+1}.snapshot.json`),file=join(output,`project-${index+1}.import.json`);
@@ -104,10 +106,12 @@ test('project snapshot → attachment bytes → native import → safe replay �
       assert.equal((await proxy.env.DB.prepare("SELECT COUNT(*) n FROM local_events WHERE json_extract(payload,'$.message')='Reading invoice details'").first()).n,2,'delegation progress text is live');
       await assertAllNativeStores(proxy.env,fixture.secrets,persist);
     }finally{await proxy.dispose();}
+    // The second company's full package and an erasure of its customer, from the empty state.
+    const fullErasure=await assertFullErasure({output,from:empty,pkg:join(output,'project-2.import'),projectId:fixture.projectIds[1]});
     const delta=await assertDeltaSweep({admin,run,status,env,output,persist,objectDirectory,projectId:fixture.projectIds[0],
       snapshotArgs:['snapshot','--project',fixture.projectIds[0],'--revision','fixture-legacy-schema','--ai-model','gpt-5.6-luna','--mail-from-domain','example.test'],
       fullSnapshot:join(output,'project-1.snapshot'),fullImport:join(output,'project-1.import')});
-    await writeFile(join(output,'results.json'),JSON.stringify({fixture:fixture.counts,native,imports:results,files,persist,delta},null,2));
+    await writeFile(join(output,'results.json'),JSON.stringify({fixture:fixture.counts,native,imports:results,files,persist,fullErasure,delta},null,2));
     console.log(JSON.stringify({output,fixture:fixture.counts,native,replayApplied:results.map(r=>r.replay.applied)}));success=true;
   }finally{
     await admin.query(`DROP DATABASE IF EXISTS \`${database}\``);await admin.query(`DROP USER IF EXISTS '${reader}'@'%'`);await admin.end();

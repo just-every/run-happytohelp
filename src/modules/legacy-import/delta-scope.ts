@@ -47,16 +47,33 @@ function fileConversations(media:Row|undefined,mediaId:unknown,context:LegacyBun
  return ids.flatMap(id=>mediaLinks.get(id)??[]).map(link=>linkConversation(link,context)).filter((id):id is string=>id!==undefined)
 }
 
+/** Where the import puts a file (map-core.ts `media`): its own conversation, else the conversation of its message (its own
+ * message, else the message a link of it names); undefined when it has none and is journaled only. */
+function fileHome(row:Row,context:LegacyBundle){
+ const {find,mediaMessages}=relationships(context),message=find('messages',row.message_id||mediaMessages.get(String(row.id))?.mediable_id)
+ const conversation=row.conversation_id||message?.conversation_id
+ return {message,conversation:conversation==null?undefined:String(conversation)}
+}
+
 /** Every contact whose personal data a legacy row carries: the contact itself, the customer
- * of the conversation it belongs to, a contact it names directly, and for a file or file link
- * the customer of every conversation the file is linked into (by a message, a delegation or an
- * event; a variant through its original), so a file goes with each person it was shared with. */
+ * of the conversation it belongs to, and a contact it names directly. A file follows the
+ * erasure's rule (contact-erasure/objects.ts): one the import puts in a conversation belongs to
+ * that conversation's customer and to the person who uploaded it or wrote its message, so a file
+ * of another customer's conversation stays theirs however legacy also links it; a file with no
+ * conversation of its own goes with the customer of every conversation it is linked into (by a
+ * message, a delegation or an event; a variant through its original). A file link goes with the
+ * customer of its own conversation and with everyone its file is linked to, as the erasure clears
+ * every link of a file of the person's. */
 export function contactsOf(table:string,row:Row,context:LegacyBundle):string[]{
  const {find}=relationships(context),contacts=new Set<string>()
  if(table==='contacts')contacts.add(String(row.id))
  if(row.contact_id!=null&&table!=='projects')contacts.add(String(row.contact_id))
  const conversations=[conversationOf(table,row,context)]
- if(table==='media')conversations.push(...fileConversations(row,row.id,context))
+ if(table==='media'){
+  const home=fileHome(row,context)
+  if(home.conversation!==undefined){conversations[0]=home.conversation;for(const person of [row.uploaded_by,home.message?.contact_id])if(person!=null)contacts.add(String(person))}
+  else conversations.push(...fileConversations(row,row.id,context))
+ }
  if(table==='mediables')conversations.push(linkConversation(row,context),...fileConversations(find('media',row.media_id),row.media_id,context))
  for(const conversation of new Set(conversations)){if(conversation===undefined)continue;const owner=find('conversations',conversation)?.contact_id;if(owner!=null)contacts.add(String(owner))}
  return [...contacts]

@@ -69,7 +69,10 @@ test('project snapshot → attachment bytes → native import → safe replay �
       const chunked=JSON.parse(await run('scripts/import-legacy.mjs',['--package',chunkImport,'--apply','--persist-to',persist]));
       const first=JSON.parse(await run('scripts/import-legacy.mjs',['--file',file,'--apply','--persist-to',persist]));
       const replay=JSON.parse(await run('scripts/import-legacy.mjs',['--file',file,'--apply','--persist-to',persist]));
-      assert.equal(chunked.sourceRows,first.sourceRows);assert.equal(chunked.mappedRows,first.mappedRows);assert.equal(chunked.objects,1);
+      assert.equal(chunked.sourceRows,first.sourceRows);assert.equal(chunked.mappedRows,first.mappedRows);assert.equal(chunked.objects,index?1:2,'the first company also carries its guide\'s diagram');
+      // Each reply's storage URL naming the customer's carried attachment becomes its native URL (and the first company's
+      // guide's diagram); the URL of a file the export does not carry is left and counted, by either format.
+      for(const summary of [chunked,first])assert.deepEqual(summary.mediaUrls,{rewritten:index?1:2,left:1});
       assert.equal(first.applied,first.sourceRows);assert.equal(replay.applied,0);assert.equal(replay.replayed,first.sourceRows);
       const chunkReplay=JSON.parse(await run('scripts/import-legacy.mjs',['--package',chunkImport,'--apply','--persist-to',persist]));
       assert.equal(chunkReplay.applied,0);assert.equal(chunkReplay.replayed,first.sourceRows);
@@ -93,7 +96,7 @@ test('project snapshot → attachment bytes → native import → safe replay �
     const {getPlatformProxy}=await import('wrangler');const proxy=await getPlatformProxy({remoteBindings:false,persist:{path:join(persist,'v3')}});
     const native={};
     try{
-      const expected={projects:2,users:1,memberships:2,contacts:4,conversations:4,messages:8,conversation_notes:2,media:2,knowledge_categories:6,knowledge_articles:4,knowledge_article_categories:6,macros:2,project_settings:2,knowledge_datasets:4,knowledge_documents:2,context_insights:4,context_tracked_events:4,local_devices:2,local_grants:2,local_device_settings:2,local_jobs:2,local_events:2,email_settings:2,public_project_aliases:2};
+      const expected={projects:2,users:1,memberships:2,contacts:4,conversations:4,messages:8,conversation_notes:2,media:2,legacy_import_files:1,knowledge_categories:6,knowledge_articles:4,knowledge_article_categories:6,macros:2,project_settings:2,knowledge_datasets:4,knowledge_documents:2,context_insights:4,context_tracked_events:4,local_devices:2,local_grants:2,local_device_settings:2,local_jobs:2,local_events:2,email_settings:2,public_project_aliases:2};
       for(const [table,count] of Object.entries(expected)){const row=await proxy.env.DB.prepare(`SELECT COUNT(*) n FROM ${table}`).first();native[table]=row.n;assert.equal(row.n,count,table);}
       assert.equal((await proxy.env.DB.prepare('SELECT COUNT(*) n FROM knowledge_categories WHERE is_published=0').first()).n,2);
       assert.equal((await proxy.env.DB.prepare('SELECT COUNT(*) n FROM knowledge_articles WHERE status=\'draft\'').first()).n,2);
@@ -102,6 +105,12 @@ test('project snapshot → attachment bytes → native import → safe replay �
       assert.equal((await proxy.env.DB.prepare("SELECT COUNT(*) n FROM messages WHERE instr(content,'Reset password: https://')>0 AND instr(content,'.example.test/password/reset (never share <redacted>)')>0").first()).n,2,'public links stay; repeated credentials do not');
       assert.equal((await proxy.env.DB.prepare('SELECT COUNT(*) n FROM contacts WHERE email LIKE \'preferred@%\'').first()).n,2);
       await assertMappedBusinessState(proxy.env,sources,files);
+      assert.equal((await proxy.env.DB.prepare("SELECT COUNT(*) n FROM messages m JOIN media f ON f.conversation_id=m.conversation_id WHERE instr(m.content,'Your copy: /api/conversations/'||m.conversation_id||'/media/'||f.id||' (last year')>0").first()).n,2,'each reply links its conversation\'s native file');
+      assert.equal((await proxy.env.DB.prepare("SELECT COUNT(*) n FROM messages WHERE instr(content,'https://storage.happytohelp.com/')>0 AND instr(content,'/invoice-2025.txt')>0").first()).n,2,'a URL whose file is not carried is kept');
+      // The guide's diagram has the file door; the guide is in an unpublished collection, so nobody outside the workspace gets it.
+      const {importedFiles}=await import('../src/modules/legacy-import/file-door.ts'),diagram=await proxy.env.DB.prepare('SELECT project_id,media_id,audience FROM legacy_import_files').first();
+      assert.equal(diagram.audience,'article');assert.ok((await proxy.env.DB.prepare('SELECT 1 FROM knowledge_articles WHERE instr(content,?)>0').bind(`/api/imported-files/${diagram.project_id}/${diagram.media_id}`).first()));
+      assert.equal((await importedFiles.request(`http://localhost/${diagram.project_id}/${diagram.media_id}`,{},proxy.env)).status,404);
       assert.equal((await proxy.env.DB.prepare("SELECT COUNT(*) n FROM local_devices WHERE worker_ready_at IS NULL AND revoked_at IS NOT NULL").first()).n,2,'imported devices carry no authority');
       assert.equal((await proxy.env.DB.prepare("SELECT COUNT(*) n FROM local_events WHERE json_extract(payload,'$.message')='Reading invoice details'").first()).n,2,'delegation progress text is live');
       await assertAllNativeStores(proxy.env,fixture.secrets,persist);

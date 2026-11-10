@@ -46,6 +46,10 @@ export async function publicSiteOverloadProof(){
   }))
   proven.push(`PUT ${alias}:${count}`)
   proven.push(...await browserBusyProof({app,p,door,fault,positions,reads}))
+  // The app's own auth doors are reserved from the public site: with the alias lookup refused, a sign out is still answered by the app.
+  const signout=await door('/auth/signout',{method:'POST',token:w.tokens.owner,headers:{Origin:app.origin,'x-test-fault':'d1-overloaded','x-test-statement':'public_project_aliases'}})
+  assert.equal(signout.status,204,'POST /auth/signout never waits on the public site alias lookup: '+JSON.stringify(signout.data).slice(0,300))
+  proven.push('POST /auth/signout')
   console.log('PUBLIC_PROOF overload positions '+proven.join(' '))
  }finally{await app.close()}
 }

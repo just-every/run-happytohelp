@@ -253,12 +253,17 @@ remote resources, credential validity and existing secret bindings unchecked.
 The separately started owner-consented preflight and remote provisioning still
 need implementation or qualification, respectively.
 
-Cloudflare Email Sending additionally needs `EMAIL_ACCOUNT_ID`. Add
-`{"binding":"EMAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}` to the
-declaration's `secrets` array, plus
-`{"binding":"MAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}`, and supply that account ID privately before deploying
-with Cloudflare mail. It is not required for Resend or SendGrid; rer 0.2.77 requires
-every declared secret not marked `optional` on a new Worker.
+Cloudflare Email Sending additionally needs `EMAIL_ACCOUNT_ID`, the Cloudflare
+account ID the Worker reads as `env.EMAIL_ACCOUNT_ID`. The declaration already binds
+it (`{"binding":"EMAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID","optional":true}`),
+next to `MAIL_ACCOUNT_ID`, the same value under rer's shared mail name, which the
+Worker itself does not read. Supply the account ID privately before deploying with
+Cloudflare mail; with `EMAIL_PROVIDER=cloudflare` and no account ID the Worker
+reports outbound mail unavailable. It is optional, so Resend and SendGrid deploys
+and rer 0.2.77's rule that a new Worker needs every declared non-optional secret are
+unaffected. `node scripts/delivery/secret-declarations.mjs` (part of `verify:build`)
+fails when an `EMAIL_*` name the Worker reads is not bound in `deploy.json` or
+`management/integration/managed-deploy.json`.
 
 ### Deploy with outbound email off
 

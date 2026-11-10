@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "a2e3599313764913f60ded10ce57c082344b96f3d4fbee86f52ab0da81f35a49",
+      "sha256": "4e88f5a9df4ed057f68e5cce6de4056b4a2897b9b7ffca33555a06e2da63b227",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1633,7 +1633,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "f09260e5a877ba3ffd58b5b6b7af4359f0af55847581a206aea72cdc8a63f6c0",
+      "sha256": "ee91d2e267c3b5b94e36a7ef91c7fca22c922524d91cbf04c2de870716b1c407",
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
@@ -2065,7 +2065,7 @@
       "executable": false
     },
     "management/integration/managed-deploy.json": {
-      "sha256": "85ad91aec1d3363dbd47824e39a45d67ebd9fcb62a260ef02906282798606001",
+      "sha256": "c0616bd04ee330c20b9f5490632b951c7059b6f08ace8451fcb65832823db05f",
       "executable": false
     },
     "management/integration/native-setup.json": {
@@ -2849,7 +2849,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "7a2851cd2bce553a6cdd4d907d4505fa1c18fb506f079291897158a2bbe6fb55",
+      "sha256": "a47e09bce8f7efee488b779988fefd887cd618863c077466b937c14e757bfd3b",
       "executable": false
     },
     "package.json": {
@@ -3145,7 +3145,7 @@
       "executable": false
     },
     "scripts/delivery/secret-declarations.mjs": {
-      "sha256": "d3079f4d2a2276434e2d54cf733b30e601e418b48821ece658e5c015208fe40c",
+      "sha256": "b16072f9074b71c8a3277c52ab83bb2f91200f16ba02ec62e8151de26dfe0408",
       "executable": false
     },
     "scripts/deployment/environment.mjs": {

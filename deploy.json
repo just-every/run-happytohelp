@@ -186,6 +186,11 @@
       "optional": true
     },
     {
+      "binding": "EMAIL_ACCOUNT_ID",
+      "environment": "EMAIL_ACCOUNT_ID",
+      "optional": true
+    },
+    {
       "binding": "MAIL_ACCOUNT_ID",
       "environment": "EMAIL_ACCOUNT_ID",
       "optional": true

@@ -8,11 +8,15 @@ export const noticeParticipantProofSql=(ct:string,cp:string)=>`(((${provenAddres
  OR (json_extract(${ct}.metadata_json,'$.provided_email_source')='operator' AND nullif(trim(json_extract(${ct}.metadata_json,'$.provided_email')),'') IS NOT NULL))`
 
 /** All current recipients, with automatic eligibility kept separate so a human
- * reply can still address every participant at their collected preference. */
+ * reply can still address every participant at their collected preference.
+ * Recipients are found from the conversation itself: its own contact and its
+ * participants are two arms of ids, and each contact is then read by its key.
+ * The workspace filter is kept off the index (`+`), so a large imported
+ * workspace is never searched contact by contact for one conversation. */
 export const notificationContactsSql=`SELECT ct.*,c.id conversation_id,c.project_id notification_project_id,
  CASE WHEN c.channel='widget' THEN c.contact_id END widget_contact_id,
  ${consumedReplyGrantSql('ct','c.id')} notice_grant_proven,
  (ct.id=c.contact_id OR (coalesce(json_extract(ct.metadata_json,'$.unverified_sender'),0)!=1
  AND EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=c.id AND cp.contact_id=ct.id AND ${noticeParticipantProofSql('ct','cp')}))) notice_eligible
- FROM conversations c JOIN contacts ct ON ct.project_id=c.project_id
- AND (ct.id=c.contact_id OR EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=c.id AND cp.contact_id=ct.id))`
+ FROM conversations c CROSS JOIN contacts ct ON ct.id IN (SELECT c.contact_id UNION ALL SELECT cp.contact_id FROM conversation_participants cp WHERE cp.conversation_id=c.id)
+ AND +ct.project_id=c.project_id`

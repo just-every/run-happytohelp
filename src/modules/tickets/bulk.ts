@@ -60,7 +60,7 @@ for(const action of ['preview','apply'] as const)bulkRoutes.post(`/projects/:pro
   const applied=results.filter(r=>r.status==='applied').map(r=>String(r.id))
   await finishBatchWorkflows(c.env,actor.projectId,applied)
   await flushRequestAssignments(c.env)
-  try{const versions=await c.env.DB.prepare('SELECT id,ticket_version FROM conversations WHERE project_id=? AND id IN (SELECT value FROM json_each(?))').bind(actor.projectId,JSON.stringify(applied)).all<{id:string;ticket_version:number}>()
+  try{const versions=await c.env.DB.prepare('SELECT id,ticket_version FROM conversations WHERE +project_id=? AND id IN (SELECT value FROM json_each(?))').bind(actor.projectId,JSON.stringify(applied)).all<{id:string;ticket_version:number}>()
   const latest=new Map(versions.results.map(t=>[t.id,t.ticket_version]));for(const r of results)if(latest.has(String(r.id)))r.ticket_version=latest.get(String(r.id))
   }catch{for(const r of results)if(r.status==='applied')r.refresh_error=true}
  }

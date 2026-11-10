@@ -106,7 +106,14 @@ async function upgrade(label) {
     }
     assert.ok(receipt.files.identical, 'Stored files changed during upgrade');
     current = await createRuntime({persist: state, queueConsumers: true});
-    await restoredOwnerEntryReady(current);
+    // Projects created after the bounded-conversion migration already carry
+    // their completed conversion report. An in-place upgrade retains that proof;
+    // older releases must still exercise the maintenance fence and real queue.
+    if (applied.includes('296_knowledge_upgrade_progress.sql')) {
+      assert.equal((await fetch(`${current.origin}/api/identity/setup`)).status, 200, 'an in-place upgrade retains completed knowledge conversion');
+    } else {
+      await restoredOwnerEntryReady(current);
+    }
     receipt.readBack = await readBack(current.origin, database, data, prior);
     receipt.seconds = Math.round((Date.now() - started) / 1000);
     if (evidence) { await mkdir(evidence, {recursive: true}); await writeFile(join(evidence, `upgrade-${label}.json`), JSON.stringify(receipt, null, 2) + '\n'); }

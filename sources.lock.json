@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "4e88f5a9df4ed057f68e5cce6de4056b4a2897b9b7ffca33555a06e2da63b227",
+      "sha256": "0fa54402431dd2668c808200f26db31548768333a2b03dd3c9ab0ddeeef80e78",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1865,7 +1865,7 @@
       "executable": false
     },
     "docs/website-knowledge.md": {
-      "sha256": "e3b264c51bfa060f5f8ed91c98e807ead445bc4bee5fc7abced01587958eb892",
+      "sha256": "e9fce86eba8de8b1371f81257e0f3e0f94f15c6d094fda2f41754022fbc9e477",
       "executable": false
     },
     "docs/workflows.md": {
@@ -7445,7 +7445,7 @@
       "executable": false
     },
     "src/modules/knowledge/http-door.ts": {
-      "sha256": "13dcd4f2da8be00e40748fb7a050bbd110eaa10391ac4242b425af3198852872",
+      "sha256": "74e18eefdb43f334f66ae8d48fb6f7590c2fd6a9ac0ab5dc41d5705623e4bba7",
       "executable": false
     },
     "src/modules/knowledge/import-jobs.ts": {
@@ -16136,6 +16136,10 @@
       "sha256": "b44160bf8decd982893511194a10a932cb23fd26cf488fbf8afab0d8e32eb3d6",
       "executable": false
     },
+    "tests/helpers/identity/upgrade-fence.mjs": {
+      "sha256": "0f7dfc85e3a5854369fa2ad686ba7c024bb1abb743014c26f22038512c67b4c9",
+      "executable": false
+    },
     "tests/helpers/inbox/brand-support-browser.mjs": {
       "sha256": "55aa577ffd3f38255a664798ee60db1d783b01187c6502eb6e1418455b5b7141",
       "executable": false
@@ -16525,7 +16529,7 @@
       "executable": false
     },
     "tests/helpers/recovery/knowledge-ready.mjs": {
-      "sha256": "2535cd1c75c377b497f450624a5294bdf966c5f637e02ae6f4b0140584f13d90",
+      "sha256": "bd58a80213fa27bcb4b7aba460af6dafa0e60713234cf0a2827a90d4bcd3bd2c",
       "executable": false
     },
     "tests/helpers/recovery/r4-data.mjs": {
@@ -16793,7 +16797,7 @@
       "executable": false
     },
     "tests/journeys/identity.mjs": {
-      "sha256": "e6b56a588fb3542ac0c46063280ddaaecc944da9af7caab78f84817c4b7670c3",
+      "sha256": "2c51ee93aa062d9dbe86c3db66130d450f3fdc53222073e7a073771b60c6f373",
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {

@@ -11,6 +11,9 @@ import {knowledgeWriteEnvironment} from './write-boundary'
 import {dispatchKnowledgeUpgrades} from './upgrade-progress'
 import {requireActor} from '../../platform/auth'
 const schemas=new WeakMap<object,Promise<boolean>>()
+// Signing in reads and writes no knowledge row, so a pending content upgrade never holds it: an imported owner has no
+// password and enters by the emailed link. Every other route stays fenced; add a path here only after reading it touches no knowledge data.
+const identityEntry=new Set(['session','login','setup','setup-status','auth-options','sign-in-options','magic-link','magic-link/consume'].map(name=>'/api/identity/'+name))
 // A failed probe (for example D1 answering "overloaded") is not cached: the next request asks again.
 export const knowledgeSchemaReady=(env:Env)=>{let ready=schemas.get(env.DB);if(!ready){const db=env.DB;ready=db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='knowledge_reply_blocks'").first().then(Boolean,error=>{schemas.delete(db);throw error});schemas.set(db,ready)}return ready}
 /** HTTP's shared door covers all text-bearing fields, including JSON columns and
@@ -25,9 +28,7 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  c.env=knowledgeWriteEnvironment(c.env,context)
  const requestedProject=context().projectId
  const pending=await rawEnv.DB.prepare('SELECT project_id FROM knowledge_upgrade_reports WHERE completed_at IS NULL AND (?1 IS NULL OR project_id=?1) ORDER BY project_id LIMIT 1').bind(requestedProject||null).first<{project_id:string}>()
- // Native session admission and password sign-in remain available during content upgrades.
- const identityEntry=c.req.path==='/api/identity/session'||c.req.path==='/api/identity/login'
- if(pending&&!identityEntry){
+ if(pending&&!identityEntry.has(c.req.path)){
   let member=false
   const credential=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]
   if(credential&&!/^int_[a-f0-9]{64}$/.test(credential))try{const actor=await requireActor(c);member=actor.role!=='contact'&&Boolean(await rawEnv.DB.prepare('SELECT 1 FROM memberships WHERE user_id=? AND project_id=?').bind(actor.id,requestedProject||actor.projectId).first())}catch{}

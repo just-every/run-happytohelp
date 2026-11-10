@@ -188,6 +188,9 @@ unreleased migrations in file-name order, once through the existing ledger:
   counters and leases for bounded queue work. Existing incomplete reports stay
   pending; a new empty workspace starts with a completed empty report because
   subsequent writes already pass through the knowledge boundary.
+  While any report is pending, knowledge routes answer `503` to a caller without a
+  member session. Signing in reads no knowledge, so session, password login,
+  setup, sign-in options and the emailed sign-in link stay available.
 
 | Table | Responsibility |
 | --- | --- |

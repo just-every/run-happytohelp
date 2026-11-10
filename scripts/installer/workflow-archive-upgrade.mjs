@@ -45,6 +45,9 @@ function omittedSchemaChange(sql,omitted,omittedTriggers,migration){
  // Migration 318 fills the contacts' live tally and rebuilds contact_search; every import rebuilds both from the restored rows instead.
  if(words[0]==='insert'&&words[1]==='into'&&folded(identifier(list[2]))==='contact_tallies')return true;
  if(words[0]==='insert'&&words[1]==='into'&&folded(identifier(list[2]))==='contact_search'&&/'rebuild'/.test(sql))return true;
+ // Migration 320 only deletes the legacy import's trigger-written rows (the workflow journal among them) and changes no schema; an archive carries
+ // whatever rows remain, so a historical schema is not made unreadable by it.
+ if(migration==='320_legacy_import_work_repair.sql'&&words[0]==='delete')return true;
  let target;
  if(words[0]==='alter'&&words[1]==='table'&&words[3]==='add')target=list[2];
  else if(words[0]==='create'&&(words[1]==='index'||words[1]==='unique'&&words[2]==='index'))target=list[words.indexOf('on')+1];

@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "54d990c9bd5ea722c50e286b5de9ee213075e40166866e8390b1dc48bde5f154",
+      "sha256": "1270ffb42feb732abc635084e80bbf9ffceafcdb5bef89e7774a6bccac2f4689",
       "executable": false
     },
     "CLAUDE.md": {
@@ -9233,7 +9233,7 @@
       "executable": false
     },
     "src/modules/public-site/help-center.tsx": {
-      "sha256": "852d3bcabf5595221e93d42782790a3649e2d3c100f7b4e12f19687b85e0c132",
+      "sha256": "eb5e63dcc8b0f7ed2dd36bcc71baf2719d617ff160d1fecdc32fc56b8ba06c8f",
       "executable": false
     },
     "src/modules/public-site/help-controls.ts": {
@@ -16445,7 +16445,7 @@
       "executable": false
     },
     "tests/helpers/public-site/overload.mjs": {
-      "sha256": "30768c9f5ccba6f2dec78174a19054223b1ac5a29bed130a988fbee3ffe30c5c",
+      "sha256": "41250986a082d1ca49401cf5d7242791f94fd53a1a013d74683e1bba9223dfa0",
       "executable": false
     },
     "tests/helpers/r4/notifications.mjs": {

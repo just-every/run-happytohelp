@@ -10,6 +10,7 @@ updating and backing up an installation, see
 
 ## Unreleased
 
+- **Sign out under load:** `/auth/*` (sign out, bootstrap, owner claim) is reserved from the public site, so a busy database no longer makes a sign out wait on, or fail at, the Help Center alias lookup before the application answers it. A Help Center alias can no longer be named `auth`.
 - **Erasure follow-ups:** an erased person's files no longer outlive a stalled legacy import (an import whose lease lapsed keeps no file it uploaded, and an erased contact's leftover files are removed on the next run); a full legacy package import respects erasures as a delta does and imports nothing of an erased contact; an import keeps another customer's shared file in every order; an erasure request that waited for a running erasure of the same contact answers the completed record, while any other repeat erases what arrived since; and a contact whose erasure failed shows it as pending on its page, with the erase action to complete it. This change adds no migration.
 
 ## 0.4.16 — 2026-11-10

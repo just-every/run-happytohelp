@@ -2,7 +2,7 @@ import {readManifest} from '../package.mjs';
 
 // Canonical tables an imported company writes, each counted within its project.
 const canonical={projects:'id=?',project_settings:'project_id=?',email_settings:'project_id=?',public_project_aliases:'project_id=?',memberships:'project_id=?',
-  contacts:'project_id=?',conversations:'project_id=?',messages:'project_id=?',media:'project_id=?',context_tracked_events:'project_id=?',reporting_legacy_conversations:'project_id=?',
+  contacts:'project_id=?',conversations:'project_id=?',messages:'project_id=?',message_authorship:'project_id=?',media:'project_id=?',context_tracked_events:'project_id=?',reporting_legacy_conversations:'project_id=?',
   conversation_buckets:'conversation_id IN (SELECT id FROM conversations WHERE project_id=?)',conversation_notes:'conversation_id IN (SELECT id FROM conversations WHERE project_id=?)',
   conversation_participants:'conversation_id IN (SELECT id FROM conversations WHERE project_id=?)',conversation_ai:'conversation_id IN (SELECT id FROM conversations WHERE project_id=?)',
   ai_profiles:'project_id=?',knowledge_datasets:'project_id=?',knowledge_documents:'version_id IN (SELECT published_version FROM knowledge_datasets WHERE project_id=?)',
@@ -26,9 +26,9 @@ export async function countRows(target,root,{excludeTables=[]}={}){
   return {projectId:project,manifestSha256:digest,run:run?.state??null,chunkRuns:runs.length,excluded:excludeTables,journalEqualsPackage:!differing.length,differing,tables,native,objects:{journal:objects.n,bytes:objects.bytes,package:manifest.objects.length},holds};
 }
 
-// Tables only the running app writes when it mails, notifies, queues work, calls a provider or
-// collects leads. The importer writes none of them, so an import must leave each unchanged.
-const work=['conversation_outbox','email_deliveries','magic_signins','operator_notifications','operator_notification_activity','native_integration_events','native_integration_intents','integration_deliveries','context_jobs','lead_jobs','leads','brand_generations','csat_surveys'];
+// Tables only the running app writes when it mails, notifies, queues work, calls a provider, collects leads or
+// journals a conversation change for the workflow scheduler. The importer writes none of them, so an import must leave each unchanged.
+const work=['conversation_outbox','email_deliveries','magic_signins','operator_notifications','operator_notification_activity','native_integration_events','native_integration_intents','integration_deliveries','context_jobs','lead_jobs','leads','brand_generations','csat_surveys','workflow_events'];
 
 /** Whole-installation counts of the side-effect tables, plus datasets scheduled to refresh. */
 export async function countWork(target){

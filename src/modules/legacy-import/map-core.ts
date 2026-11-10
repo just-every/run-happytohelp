@@ -18,7 +18,12 @@ export function mapCore(table:string,r:Row,b:LegacyBundle):MappedRow[]|undefined
   // delivery IDs unique, so the first message in transcript order keeps it.
   const owner=r.local_id?related.localIdOwner(String(r.conversation_id),String(r.local_id)):id
   if(owner===undefined)throw new Error(`Legacy message missing from mapping context: ${id}`)
-  return one('messages',{id,project_id:project,conversation_id:String(r.conversation_id),local_id:r.local_id&&owner===id?r.local_id:`legacy:${id}`,actor_id:String(r.agent_id||r.contact_id||r.actor_id||'legacy-system'),actor_role:r.actor_role||(r.contact_id?'contact':r.ai_id||(b.tables.ais||b.tables.ai_profiles||[]).some(ai=>String(ai.id)===String(r.agent_id))?'ai':'operator'),content:r.content??'',revision:related.revisions.get(String(id))??0,created_at:created,bucket_id:r.bucket_id??null,intent_hash:null})}
+  // Who wrote it is what legacy recorded: a contact, an AI, an agent. A message with no author at all (ChargeDesk's automatic away
+  // text) is the workspace speaking, role 'system' as native away replies are, never an operator's reply. Authorship is
+  // written only where the kind follows from that (visitor, human, ai); anything else is 'unknown', never a guess.
+  const ai=Boolean(r.ai_id)||(b.tables.ais||b.tables.ai_profiles||[]).some(ai=>String(ai.id)===String(r.agent_id)),author=r.agent_id||r.contact_id||r.actor_id
+  const role=String(r.actor_role||(r.contact_id?'contact':ai?'ai':author?'operator':'system')),kind=role==='contact'?'visitor':role==='ai'?'ai':role==='operator'&&author?'human':'unknown'
+  return [...one('messages',{id,project_id:project,conversation_id:String(r.conversation_id),local_id:r.local_id&&owner===id?r.local_id:`legacy:${id}`,actor_id:String(author||'legacy-system'),actor_role:role,content:r.content??'',revision:related.revisions.get(String(id))??0,created_at:created,bucket_id:r.bucket_id??null,intent_hash:null}),...one('message_authorship',{message_id:id,project_id:project,kind,source_kind:'legacy_import',recorded_at:created},['message_id'])]}
  case 'events':{
   if(r.type==='INTERNAL_NOTE'){
    const content=r.payload

@@ -68,3 +68,52 @@ test('a legacy package is reviewed, imported and replayed through its command; t
  }finally{if(runtime)await runtime.close(true);await rm(scratch,{recursive:true,force:true})}
  await legacyCustodyJourney()
 })
+
+// A full import is history, not the team's work queue (hh-import-fidelity-1): it leaves no trigger-written work rows and no
+// published auto-close rule, its authorless messages are the workspace speaking, and its conversations open read.
+test('a full legacy import leaves the work counts unchanged and the default rule a draft, authorless texts are system, history opens read; each can be opted back in',async()=>{
+ const scratch=await mkdtemp(join(tmpdir(),'h2h-legacy-history-')),persist=join(scratch,'state'),optIn=join(scratch,'opt-in')
+ const config=JSON.parse(await readFile('wrangler.jsonc','utf8'))
+ const options={persist,databaseId:config.d1_databases[0].database_id,bucketName:config.r2_buckets[0].bucket_name}
+ let runtime
+ const command=async(script,args)=>JSON.parse((await exec(process.execPath,[script,...args],{env:{...process.env,WRANGLER_SEND_METRICS:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false'},timeout:120000,maxBuffer:2*1024*1024})).stdout)
+ const work=state=>command('scripts/legacy-import/check.mjs',['work','--persist-to',state])
+ const rule=async(call,token)=>(await call('/api/dashboard/projects/p/workflow-rules',{token,status:200})).data.rules.find(row=>row.name==='Close solved tickets after 4 days')
+ const owner=async(rt)=>{const token='synthetic-history-owner';await rt.execute(`INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES('${createHash('sha256').update(token).digest('hex')}','u','p','owner',${Date.now()+3600000});`);return token}
+ try{
+  runtime=await createRuntime(options);await runtime.close(true);runtime=undefined
+  await cp(persist,optIn,{recursive:true})
+  // Two members, a solved conversation with a visitor message and an automatic away text, and an open one a visitor is waiting in.
+  const {bundle}=await legacyBundle(),date='2026-01-01T00:00:00.000Z',t=bundle.tables
+  t.users.push({id:'u2',name:'Second member',email:'second@example.com',created_at:date});t.project_users.push({id:'membership2',project_id:'p',user_id:'u2',role:'agent'})
+  t.conversations.push({id:'solved-away',project_id:'p',contact_id:'c',created_at:date,resolved_at:date},{id:'open-waiting',project_id:'p',contact_id:'c',created_at:date})
+  t.messages.push({id:'away-visitor',project_id:'p',conversation_id:'solved-away',contact_id:'c',content:'Hello',created_at:date,local_id:'away-1'},{id:'away-text',project_id:'p',conversation_id:'solved-away',content:'We are away',created_at:date,local_id:'away-2'},
+   {id:'waiting-visitor',project_id:'p',conversation_id:'open-waiting',contact_id:'c',content:'Anyone there?',created_at:date,local_id:'waiting-1'},{id:'waiting-human',project_id:'p',conversation_id:'open-waiting',agent_id:'u',content:'Looking',created_at:date,local_id:'waiting-2'},{id:'waiting-visitor-2',project_id:'p',conversation_id:'open-waiting',contact_id:'c',content:'Thanks',created_at:date,local_id:'waiting-3'})
+  const file=join(scratch,'export.json');await writeFile(file,JSON.stringify(bundle))
+  const baseline=await work(persist);delete baseline.at
+  await command('scripts/import-legacy.mjs',['--file',file,'--apply','--persist-to',persist])
+  await command('scripts/import-legacy.mjs',['--file',file,'--apply','--persist-to',optIn,'--leave-unread','--publish-default-rules'])
+  // F1: the import's own triggers added integration events and workflow journal rows (contacts, solved conversations, a published article); none remain.
+  const after=await work(persist);delete after.at
+  assert.deepEqual(after,baseline,'a full import leaves every check work count unchanged')
+  assert.deepEqual(await work(optIn).then(row=>row.native_integration_events+row.workflow_events),0,'the opted-in import leaves no work rows either')
+  runtime=await createRuntime(options)
+  let {call}=client(runtime.origin),token=await owner(runtime)
+  // F4: history opens read for every member, the waiting conversation included.
+  assert.equal((await call('/api/dashboard/projects/p/conversations/counts',{token,status:200})).data.data.unread,0)
+  assert.match(await runtime.execute("SELECT count(*) unread FROM inbox_unread"),/"unread": 0/)
+  // F2: the authorless text is the workspace speaking, not an operator; authorship is written where it is known.
+  const messages=await runtime.execute("SELECT m.id,m.actor_role,a.kind FROM messages m LEFT JOIN message_authorship a ON a.message_id=m.id WHERE m.id IN ('away-visitor','away-text','waiting-human') ORDER BY m.id")
+  for(const [id,role,kind] of [['away-text','system','unknown'],['away-visitor','contact','visitor'],['waiting-human','operator','human']])assert.match(messages.replace(/\s+/g,' '),new RegExp(`"id": "${id}", "actor_role": "${role}", "kind": "${kind}"`))
+  // Imported visitors are history, not a visitor waiting for the team.
+  assert.match(await runtime.execute("SELECT count(*) waiting FROM inbox_visitor_waiting"),/"waiting": 0/)
+  // F1: the default rule is a draft, so no scheduler run closes the imported solved conversations; the owner publishes it when they choose.
+  const draft=await rule(call,token);assert.equal(draft.state,'draft');assert.equal(draft.version,0)
+  assert.equal((await call(`/api/dashboard/projects/p/workflow-rules/${draft.id}/publish`,{token,status:200,body:{}})).data.rule.state,'published')
+  await runtime.close(true)
+  // The switches: history left unread, and the default rule published, as a new workspace has it.
+  runtime=await createRuntime({...options,persist:optIn});({call}=client(runtime.origin));token=await owner(runtime)
+  assert.ok((await call('/api/dashboard/projects/p/conversations/counts',{token,status:200})).data.data.unread>0,'--leave-unread leaves the imported conversations unread')
+  assert.equal((await rule(call,token)).state,'published','--publish-default-rules keeps the default rule published')
+ }finally{if(runtime)await runtime.close(true);await rm(scratch,{recursive:true,force:true})}
+})

@@ -54,7 +54,8 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
  for(const source of pending){
   const decision:Decision={source,status:'unchanged',mapped:source.mapped,appends:[],updates:[],state:[],conflicts:[],listed:[],target:{table:source.mapped.map(m=>m.table).join(',')||null,key:source.mapped.map(targetKeyOf).join(',')||null}}
   decisions.push(decision)
-  const conflict=(m:{table:string;key:string},reason:string)=>decision.conflicts.push({sourceTable:source.table,sourceId:source.sourceId,targetTable:m.table,targetKey:m.key,reason})
+  // A message's authorship row (map-core.ts) is withheld with its message: the conflict is listed once, against the message.
+  const conflict=(m:{table:string;key:string},reason:string)=>{if(m.table==='message_authorship'&&decision.conflicts.some(c=>c.sourceTable===source.table&&c.sourceId===source.sourceId))return;decision.conflicts.push({sourceTable:source.table,sourceId:source.sourceId,targetTable:m.table,targetKey:m.key,reason})}
   // A row that maps to nothing now (legacy deleted it) is journaled against where an earlier run mapped it.
   const prior=source.mapped.length?undefined:earlier.get(identity(source.table,[source.sourceId]))
   if(prior)decision.target=prior

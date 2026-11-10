@@ -3,8 +3,9 @@ import {registerHooks} from 'node:module'
 import {existsSync} from 'node:fs'
 import {readFile} from 'node:fs/promises'
 registerHooks({resolve(specifier,context,next){if(specifier.startsWith('.')&&context.parentURL){const url=new URL(specifier+'.ts',context.parentURL);if(existsSync(url))return next(url.href,context)}return next(specifier,context)}})
-const usage='Usage: node scripts/import-legacy.mjs (--file export.json | --package package-directory) [--apply [--persist-to path | --remote --database D1-NAME --bucket R2-NAME]] [--expect-manifest-sha256 HEX] [--exclude-table TABLE ...] [--concurrency N] [--retire-marker "YYYY-MM-DD HH:MM:SS" (delta package only)]. Without --apply it validates and plans without writing.'
+const usage='Usage: node scripts/import-legacy.mjs (--file export.json | --package package-directory) [--apply [--persist-to path | --remote --database D1-NAME --bucket R2-NAME]] [--expect-manifest-sha256 HEX] [--exclude-table TABLE ...] [--concurrency N] [--leave-unread] [--publish-default-rules] [--retire-marker "YYYY-MM-DD HH:MM:SS" (delta package only)]. --leave-unread and --publish-default-rules apply to a full package or --file export. Without --apply it validates and plans without writing.'
 const args=process.argv.slice(2),value=name=>{const i=args.indexOf(name);if(i<0)return undefined;const v=args[i+1];if(!v||v.startsWith('--'))throw new Error(usage);return v}
+const history={leaveUnread:process.argv.includes('--leave-unread'),publishDefaultRules:process.argv.includes('--publish-default-rules')}
 const file=value('--file'),pkg=value('--package'),remote=args.includes('--remote'),apply=args.includes('--apply'),excludeTables=args.flatMap((arg,i)=>arg==='--exclude-table'?[args[i+1]]:[])
 if(excludeTables.some(table=>!table||table.startsWith('--'))||(excludeTables.length&&!pkg))throw new Error(usage)
 if(!file===!pkg||(remote&&!apply)||(remote&&args.includes('--persist-to'))||(file&&remote))throw new Error(usage)
@@ -38,7 +39,7 @@ const {removeStaleDirectories}=await import('./legacy-import/scratch.mjs')
 const stale=await removeStaleDirectories();if(stale.length)progress({step:'removed-stale',directories:stale.length})
 let bundleProjects
 async function run(target){
- if(pkg)return importPackage(pkg,target,{planImport,importLegacy,importDelta,planDelta,takeDeltaLease,readErased,erasedMediaOf,heldByNativeMedia,tableOrder,relationships,types},{expectManifestSha256:value('--expect-manifest-sha256'),excludeTables,concurrency,progress,retireMarker})
+ if(pkg)return importPackage(pkg,target,{planImport,importLegacy,importDelta,planDelta,takeDeltaLease,readErased,erasedMediaOf,heldByNativeMedia,tableOrder,relationships,types},{expectManifestSha256:value('--expect-manifest-sha256'),excludeTables,concurrency,progress,retireMarker,history})
  const bundle=JSON.parse(await readFile(file,'utf8'));bundleProjects=bundle.tables?.projects
  if(!target){const plan=await planImport(bundle);return {id:plan.id,...plan.summary}}
  // The bundle names its workspace as every export does (extract.mjs); refused before any write without it.
@@ -47,7 +48,7 @@ async function run(target){
  try{
   const erased=await readErased(target.env.DB,String(projectId))
   if(erased.size)progress({step:'erased',contacts:erased.size,objects:erasedMediaOf(erased,bundle.tables?.media??[],bundle).size})
-  return await importLegacy(target.env,bundle,{erased,lease})
+  return await importLegacy(target.env,bundle,{erased,lease,...history})
  }finally{await lease.release()}
 }
 if(!apply)console.log(JSON.stringify(await run(null),null,2))

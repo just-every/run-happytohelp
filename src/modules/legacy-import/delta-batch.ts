@@ -1,7 +1,7 @@
 import { type Row,type MappedRow,stable } from './types'
 import {insertJson,sqlName,parameterBytes,jsonBytes} from './d1'
 import {stateStatement} from './state'
-import {batchRemovedTables} from './delta-scope'
+import {markWorkRows,purgeWorkRows} from './work-rows'
 import type {Decision} from './delta'
 import type {DeltaLease} from './lease'
 
@@ -41,7 +41,7 @@ export function deltaBatch(db:D1Database,projectId:string,runId:string,group:Dec
  const fenceStatements=(ids:string[])=>[
   db.prepare("INSERT OR IGNORE INTO legacy_import_marks(name,high) SELECT 'fence:'||value,0 FROM json_each(?2) WHERE NOT EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=?1 AND f.conversation_id=value)").bind(projectId,JSON.stringify(ids)),
   db.prepare("INSERT OR IGNORE INTO move_in_native_fences(project_id,conversation_id) SELECT ?1,value FROM json_each(?2)").bind(projectId,JSON.stringify(ids))]
- for(const t of batchRemovedTables)statements.push(db.prepare(`INSERT INTO legacy_import_marks(name,high) SELECT '${t}',COALESCE(MAX(rowid),0) FROM ${sqlName(t)}`))
+ statements.push(...markWorkRows(db))
  // A conversation the delta appends is fenced only after its own INSERT, so the insert trigger
  // derives its lifecycle status from resolved_at exactly as a full import does.
  const existing=[...fenced].filter(id=>!appended.has(id)),late=[...fenced].filter(id=>appended.has(id))
@@ -58,7 +58,6 @@ export function deltaBatch(db:D1Database,projectId:string,runId:string,group:Dec
  if(conflicts.length)statements.push(insertJson(db,'INSERT OR IGNORE INTO legacy_import_conflicts(run_id,source_table,source_id,target_table,target_key,reason)',6,conflicts))
  statements.push(insertJson(db,'INSERT INTO legacy_import_rows(run_id,source_table,source_id,row_digest,source_json,target_table,target_key,status)',8,journal))
  if(fenced.size)statements.push(db.prepare("DELETE FROM move_in_native_fences WHERE project_id=? AND 'fence:'||conversation_id IN (SELECT name FROM legacy_import_marks WHERE name LIKE 'fence:%')").bind(projectId))
- for(const t of batchRemovedTables)statements.push(db.prepare(`DELETE FROM ${sqlName(t)} WHERE rowid>(SELECT high FROM legacy_import_marks WHERE name='${t}')`))
- statements.push(db.prepare('DELETE FROM legacy_import_marks'),lease.cleared(db))
+ statements.push(...purgeWorkRows(db),lease.cleared(db))
  return statements
 }

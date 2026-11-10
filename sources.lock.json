@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "1270ffb42feb732abc635084e80bbf9ffceafcdb5bef89e7774a6bccac2f4689",
+      "sha256": "5a4112ef202690240f5374818df99705bdc6ea6dd6b42cb4fd08e0ff25875fae",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1749,7 +1749,7 @@
       "executable": false
     },
     "docs/LEGACY-EXPORT.md": {
-      "sha256": "6dd61adff6eddaa1ce7e83c677dd587e43f6c6791a13e6b911e7d3506ec4b5e7",
+      "sha256": "84ee490b178bb78ae5ca17ca0cd6718c405994d4a4ba6dfb7f8dd49494aa3a25",
       "executable": false
     },
     "docs/licenses/base-MIT.txt": {
@@ -3877,7 +3877,7 @@
       "executable": false
     },
     "scripts/import-legacy.mjs": {
-      "sha256": "e7716dd62fee9b619e211b76c49b18e10ab677d2f239b16ef2efb97f322b22f2",
+      "sha256": "baafad9277346ef44fda4532bcd14c04d0c9c60960e016a544cd031187dbd756",
       "executable": false
     },
     "scripts/independent/delegation-backup.py": {
@@ -4149,7 +4149,7 @@
       "executable": false
     },
     "scripts/legacy-import/checks/rows.mjs": {
-      "sha256": "8c12662be359af51ddee57a358a211c360ece9682cf428a87b29c4c1395a5005",
+      "sha256": "a1b61aa5b14031cd43406c7055b77ee9b5e50cf2f2424cb9b1bd6fd55abb31e1",
       "executable": false
     },
     "scripts/legacy-import/context-index.mjs": {
@@ -4161,7 +4161,7 @@
       "executable": false
     },
     "scripts/legacy-import/import-package.mjs": {
-      "sha256": "5cf3ac57b103580f3c6ad5f4d0b109b725b9e741518285e6d8fabf13e6cf692b",
+      "sha256": "35a6d67ba5033ce72357cc1face71cb2193da0d138806d43ab07c4f8521af589",
       "executable": false
     },
     "scripts/legacy-import/knowledge-index.mjs": {
@@ -7605,7 +7605,7 @@
       "executable": false
     },
     "src/modules/legacy-import/delta-batch.ts": {
-      "sha256": "17f549f251d18f2f6732929c2db0636c395512ce9f000cdff18bf163d0d2ee29",
+      "sha256": "b4647234d7e01c474aa4c4ce599e95cd7f1e83ac593de45fa0eda1310f60496a",
       "executable": false
     },
     "src/modules/legacy-import/delta-guard.ts": {
@@ -7621,15 +7621,19 @@
       "executable": false
     },
     "src/modules/legacy-import/delta.ts": {
-      "sha256": "800eb30d62e8b9d19acae00856d1ca771ee20f55e3eb95050f86892170fd99d2",
+      "sha256": "5ab0a48f960f61d265b493fca769577099d97fcaf8f443f1e6a7be9240a75027",
       "executable": false
     },
     "src/modules/legacy-import/erased.ts": {
       "sha256": "4a59e0b34723b971e3c6859e788326651951374a0de8c6a7dadbe8f7d171142b",
       "executable": false
     },
+    "src/modules/legacy-import/imported-history.ts": {
+      "sha256": "b721c19755525524f37641b9f211dcd0cf5d5b2aa6b8acf85817e1893ad8944e",
+      "executable": false
+    },
     "src/modules/legacy-import/importer.ts": {
-      "sha256": "c3aab1bfa3edbf7e7fe225e6fc0f2e4880f74c41c84ba7644f7108c02dcfe53b",
+      "sha256": "ff33ea7e5fdabf02f1fb8f6fd8cf0338b3d2ea02bb0aa9a9075887a48d1c28be",
       "executable": false
     },
     "src/modules/legacy-import/lease.ts": {
@@ -7637,7 +7641,7 @@
       "executable": false
     },
     "src/modules/legacy-import/map-core.ts": {
-      "sha256": "1ef2a4cc335ab34d3d5fa1d30f2d5246e404cc8c78238a03cd90c9fc1c74deec",
+      "sha256": "bc506ca4ae1f80bb32645c96e34625681f2239bb1152967f4c0a1ecc12e407cd",
       "executable": false
     },
     "src/modules/legacy-import/map-knowledge.ts": {
@@ -7661,7 +7665,7 @@
       "executable": false
     },
     "src/modules/legacy-import/README.md": {
-      "sha256": "3f58c4d592aab20e7917807f374e84bddd4b09b1e7ff318923f6d0569d7be6f3",
+      "sha256": "51466bfe81d32e7805f627b3bf5f04cc180e117258772885a75a280f4424aa64",
       "executable": false
     },
     "src/modules/legacy-import/relationships.ts": {
@@ -7674,6 +7678,10 @@
     },
     "src/modules/legacy-import/types.ts": {
       "sha256": "205a472dee57c1498a9174838eede880d09b60852b8145d7d41d67b50667c1b6",
+      "executable": false
+    },
+    "src/modules/legacy-import/work-rows.ts": {
+      "sha256": "969c313fd047a7c96c4fe8e0f3a60dad6693a810e5f1a9373e2b6cb5974b46c3",
       "executable": false
     },
     "src/modules/local-computer/authorization.ts": {
@@ -16769,7 +16777,7 @@
       "executable": false
     },
     "tests/journeys/legacy.mjs": {
-      "sha256": "a0eacb4d3ca494e77b09829dffdc86f2d37e4afe511af0bab86b76391222b204",
+      "sha256": "71f5d3604a9c9bfaf77b928656185f80ed5cf8c042a6d90b046f96b40b2921d8",
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {

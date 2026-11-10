@@ -19,13 +19,14 @@ import {unmarkRetired} from './retire-marker.mjs';
  * removed (objects.mjs). */
 // Tables other rows are mapped through can never be left out.
 const contextTables=new Set(['projects','users','ais','ai_defaults','contacts','conversations','messages','mediables','media','datasets','dataset_files']);
-export async function importPackage(root,target,modules,{expectManifestSha256,excludeTables=[],concurrency=1,progress=()=>{},retireMarker}={}){
+export async function importPackage(root,target,modules,{expectManifestSha256,excludeTables=[],concurrency=1,progress=()=>{},retireMarker,history={}}={}){
   const {planImport,importLegacy,importDelta,planDelta,takeDeltaLease,readErased,erasedMediaOf,heldByNativeMedia,tableOrder,relationships,types}=modules;
   const started=Date.now(),{manifest,digest}=await readManifest(root,expectManifestSha256),delta=isDelta(manifest);
   if(delta&&!manifest.source.projectId)throw Error('A delta package names its legacy project (source.projectId)');
   // A full package is applied under its workspace's lease too; it names its workspace as every export does (extract.mjs).
   if(target&&!manifest.source.projectId)throw Error('A legacy package applied to a target names its legacy project (source.projectId)');
   if(retireMarker!==undefined&&!delta)throw Error('--retire-marker applies only to a delta package (snapshot --since)');
+  if(delta&&(history.leaveUnread||history.publishDefaultRules))throw Error('--leave-unread and --publish-default-rules apply only to a full package: a delta never marks anything read or touches a workspace rule');
   progress({step:'verify',manifestSha256:digest,chunks:manifest.chunks.length,objects:manifest.objects.length,...(delta?{since:manifest.source.since}:{})});
   const sourceCounts=await verifyPackage(root,manifest),excluded=Object.fromEntries(excludeTables.map(table=>{if(!Object.hasOwn(manifest.source.rowCounts,table)||contextTables.has(table))throw Error(`Cannot leave out table ${table}`);return [table,manifest.source.rowCounts[table]];}));
   progress({step:'context',seconds:seconds(started)});
@@ -41,7 +42,7 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
     const bundleOf=(part,rows)=>chunkBundle(manifest,digest,part,rows,retireMarker);
     const chunkRun=async(part,rows)=>`legacy:${await types.digest(types.stable(bundleOf(part,rows)))}`;
     // A delta is applied update-aware (importDelta), from a plan made before the first write.
-    const apply=delta?(bundle,extra={})=>importDelta(env(),bundle,{...options,...extra,plan:options.plan,lease,projectId:String(manifest.source.projectId)}):(bundle,extra={})=>importLegacy(env(),bundle,{...options,...extra,erased,lease});
+    const apply=delta?(bundle,extra={})=>importDelta(env(),bundle,{...options,...extra,plan:options.plan,lease,projectId:String(manifest.source.projectId)}):(bundle,extra={})=>importLegacy(env(),bundle,{...options,...history,...extra,erased,lease});
 
     // An import holds its workspace's lease from before its plan through its last write.
     try{

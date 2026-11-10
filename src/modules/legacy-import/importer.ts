@@ -6,6 +6,8 @@ import {sqlName,groupBy,byteSlices,insertJson,jsonBytes,identity,targetSchemas,l
 import {stateEntry,stateStatement,readStates,stateKey,targetKeyOf} from './state'
 import {ofErased,heldByNativeMedia} from './erased'
 import type {DeltaLease} from './lease'
+import {markWorkRows,purgeWorkRows} from './work-rows'
+import {importedHistoryStatements} from './imported-history'
 export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>}={}){
  if(bundle.format!=='happytohelp-legacy-v1'||!bundle.tables||!bundle.source?.revision||!bundle.source.repository||!Number.isFinite(Date.parse(bundle.source.exportedAt)))throw new Error('Invalid legacy bundle provenance')
  const bundleDigest=await digest(stable(bundle)),rows=[]
@@ -26,7 +28,7 @@ export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBun
  * erasure leaves it (digest kept, source copy '{}', status 'erased', its mapped target) and writes no canonical row, hold,
  * reporting row or import state; it takes no part in the conflict preflight; its file is not uploaded, and one an earlier
  * run left in R2 that no native media row holds is removed. Replayed rows are untouched. */
-export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;checkOnly?:boolean;erased?:Set<string>;lease?:DeltaLease}={}){
+export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;checkOnly?:boolean;erased?:Set<string>;lease?:DeltaLease;publishDefaultRules?:boolean;leaveUnread?:boolean}={}){
  if(bundle.source?.since!==undefined||bundle.source?.delta!==undefined)throw new Error('A delta export imports only as a package (--package), which applies it update-aware')
  const lease=options.lease
  if(!options.checkOnly&&!lease)throw new Error('A legacy import writes only under its workspace lease')
@@ -103,22 +105,25 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
   return {...write,bytes:Math.max(jsonBytes(write.journal),sum(write.holds),jsonBytes(write.reporting),sum(state),sum(source.mapped.map(m=>Object.values(columnsOf(m)))))}
  }))
  for(const group of byteSlices(writes,write=>write.bytes)){
-  const inserts=new Map<string,Map<string,unknown[][]>>(),holds:unknown[][]=[],reporting:unknown[][]=[],journal:unknown[][]=[],state:unknown[][]=[]
+  const inserts=new Map<string,Map<string,unknown[][]>>(),holds:unknown[][]=[],reporting:unknown[][]=[],journal:unknown[][]=[],state:unknown[][]=[],projects:string[]=[],conversations:string[]=[]
   for(const {mapped:written,journal:entry,holds:held,reporting:report,state:confirmed} of group){
    state.push(...confirmed)
    for(const mapped of written){
     const row=columnsOf(mapped),keyValues=mapped.key.map(k=>row[k]),id=identity(mapped.table,keyValues),existingRow=current.get(id)
     if(existingRow){for(const [key,value]of Object.entries(row))if(existingRow[key]!==value)throw new Error(`Existing data conflict ${mapped.table}:${keyValues.join(':')} column ${key}; no rows overwritten`)}
-    else{const names=Object.keys(row),byColumns=inserts.get(mapped.table)??new Map<string,unknown[][]>();inserts.set(mapped.table,byColumns);const values=byColumns.get(names.join(','))??[];byColumns.set(names.join(','),values);values.push(names.map(k=>row[k]));current.set(id,row)}
+    else{if(mapped.table==='projects')projects.push(String(row.id));if(mapped.table==='conversations')conversations.push(String(row.id))
+     const names=Object.keys(row),byColumns=inserts.get(mapped.table)??new Map<string,unknown[][]>();inserts.set(mapped.table,byColumns);const values=byColumns.get(names.join(','))??[];byColumns.set(names.join(','),values);values.push(names.map(k=>row[k]));current.set(id,row)}
    }
    holds.push(...held);if(report)reporting.push(report);journal.push(entry)
   }
   // Tables keep their first-mapped order, so a parent row precedes the rows that reference it.
-  const statements=[...inserts].flatMap(([table,byColumns])=>[...byColumns].map(([names,values])=>insertJson(env.DB,`INSERT INTO ${sqlName(table)} (${names.split(',').map(sqlName).join(',')})`,names.split(',').length,values)))
+  const statements:D1PreparedStatement[]=[...markWorkRows(env.DB),...[...inserts].flatMap(([table,byColumns])=>[...byColumns].map(([names,values])=>insertJson(env.DB,`INSERT INTO ${sqlName(table)} (${names.split(',').map(sqlName).join(',')})`,names.split(',').length,values)))]
   if(holds.length)statements.push(insertJson(env.DB,'INSERT OR IGNORE INTO legacy_import_holds(id,run_id,source_table,source_id,reason)',5,holds))
   if(reporting.length)statements.push(insertJson(env.DB,'INSERT OR IGNORE INTO reporting_legacy_conversations(project_id,conversation_id,run_id)',3,reporting))
   if(state.length)statements.push(stateStatement(env.DB,state))
   statements.push(insertJson(env.DB,'INSERT INTO legacy_import_rows(run_id,source_table,source_id,row_digest,source_json,target_table,target_key,status)',8,journal))
+  // What the import writes is history, not work (imported-history.ts): reads, the unpublished default rules, no trigger rows.
+  statements.push(...importedHistoryStatements(env.DB,{projects,conversations,publishDefaultRules:options.publishDefaultRules,leaveUnread:options.leaveUnread}),...purgeWorkRows(env.DB))
   // D1 reports each statement's server time; the batch's sum is its share of the database's CPU.
   const batch=(await leased(statements)).reduce((ms,result)=>ms+Number(result.meta?.duration||0),0);applied+=group.length;d1Ms+=batch;maxBatchMs=Math.max(maxBatchMs,batch)
  }

@@ -29,7 +29,7 @@
     "migrations:prepare": "node scripts/migrations.mjs",
     "source:verify-base-origin": "node scripts/edition-authoring/cli.mjs verify-base",
     "build:app": "node scripts/build.mjs",
-    "verify:build": "rer check --profile first-party && pnpm run typecheck && pnpm run source:check && node scripts/contract-docs.mjs check && node scripts/edition-authoring/cli.mjs verify-base --offline",
+    "verify:build": "rer check --profile first-party && pnpm run typecheck && pnpm run source:check && node scripts/delivery/secret-declarations.mjs && node scripts/contract-docs.mjs check && node scripts/edition-authoring/cli.mjs verify-base --offline",
     "verify:app": "pnpm run verify:build && pnpm run build && pnpm run test:routes && pnpm run test:browsers",
     "reset": "rer reset",
     "export": "rer export",

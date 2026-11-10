@@ -16429,7 +16429,7 @@
       "executable": false
     },
     "tests/helpers/public-docs-journey.mjs": {
-      "sha256": "d6d350192d4eb9e9afe47ebc52e274a8c531bc00955f3105bf4c322fa5d8e888",
+      "sha256": "2b68f1ffa0a2cd17a62fcfee1d4dbaa7d75c76de3e64878308811a25ae16d507",
       "executable": false
     },
     "tests/helpers/public-site-journey.mjs": {

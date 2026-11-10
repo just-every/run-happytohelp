@@ -117,10 +117,20 @@ async function temporaryBuild(){
    dev=await createServer({root:directory,configFile:false,plugins:[docsSite()],server:{middlewareMode:true,ws:false,host:'127.0.0.1'},appType:'custom'})
    const {loadDocsPage}=await dev.ssrLoadModule('/src/ui/docs/load.ts')
    assert.ok((await loadDocsPage('')).page.html.includes(marker))
+   // Vite can drop a watcher event while it re-optimizes dependencies. Each edit gets two bounded waits
+   // for the dev server's full-reload message: the edit is issued again once, then the journey fails by name.
+   const reloadBound=40_000
    const change=async edit=>{
     const hot=dev.environments.client.hot,send=hot.send
-    const reload=new Promise(resolve=>{hot.send=function(...args){send.apply(this,args);if(args[0]?.type==='full-reload'){hot.send=send;resolve()}}})
-    await edit();await reload
+    for(let attempt=1;attempt<=2;attempt++){
+     let timer
+     const reload=new Promise(resolve=>{hot.send=function(...args){send.apply(this,args);if(args[0]?.type==='full-reload'){hot.send=send;resolve(true)}}})
+     const bound=new Promise(resolve=>{timer=setTimeout(()=>{hot.send=send;resolve(false)},reloadBound)})
+     await edit()
+     const arrived=await Promise.race([reload,bound]);clearTimeout(timer)
+     if(arrived)return
+    }
+    assert.fail('the Vite dev server sent no full-reload message within '+reloadBound/1000+' s after the docs source edit, and none after the edit was issued again')
    }
    await change(()=>appendFile(join(directory,'README.md'),'\nCurrent source is served without a restart.\n'))
    assert.ok((await loadDocsPage('')).page.html.includes('Current source is served without a restart.'))
@@ -134,7 +144,7 @@ async function temporaryBuild(){
    manifest.sections[0].pages.push({slug:'public-dev-proof',source:'docs/public-dev-proof/page.md',label:'Public dev proof'})
    await change(()=>writeFile(manifestPath,JSON.stringify(manifest)))
    assert.equal((await loadDocsPage('public-dev-proof')).page.title,'Added current page')
-   await change(()=>rm(folder,{recursive:true}))
+   await change(()=>rm(folder,{recursive:true,force:true}))
    await assert.rejects(loadDocsPage('public-dev-proof'),/does not exist/,'removing a listed folder reports its absence')
    manifest.sections[0].pages.pop()
    await change(()=>writeFile(manifestPath,JSON.stringify(manifest)))

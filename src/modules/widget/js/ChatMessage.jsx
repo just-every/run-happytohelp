@@ -1,5 +1,5 @@
 import React, {useLayoutEffect, useRef, useState, useEffect, useContext} from 'react';
-import ReactMarkdown from "h2h-widget-markdown";
+import ReactMarkdown, {defaultUrlTransform} from "h2h-widget-markdown";
 import gfm from "h2h-widget-gfm";
 import externalLinks from "h2h-widget-external-links";
 
@@ -8,6 +8,8 @@ import {visibleMessageContent} from '../../conversations/citations.js';
 import AppContext from "./context/AppContext";
 
 const unavailableKnowledge = '[Knowledge unavailable]';
+// A file the transport fetched with the visitor's token is shown from its blob: URL (transport.js contentLinks).
+const messageUrl = url => url.startsWith('blob:') ? url : defaultUrlTransform(url);
 
 // Wrap text nodes after Markdown parsing so mixed paragraphs, emphasis and
 // links retain their existing structure. All inserted content stays text.
@@ -146,7 +148,7 @@ export default function ChatMessage({ children: media, message, moveHeight = 0 }
             { media }
             <div ref={messageRef} className={messageClasses.join(" ")} style={ messageStyle }>
                 {expand && <div className={fadeClasses.join(" ")}></div> }
-                <ReactMarkdown remarkPlugins={[gfm, externalLinks]} rehypePlugins={[mutedKnowledgeNotices]}>{visibleMessageContent(message.content)}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[gfm, externalLinks]} rehypePlugins={[mutedKnowledgeNotices]} urlTransform={messageUrl}>{visibleMessageContent(message.content)}</ReactMarkdown>
                 <MessageCitations message={message} />
             </div>
         </div>

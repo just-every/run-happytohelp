@@ -8,19 +8,23 @@ import {ofErased,heldByNativeMedia} from './erased'
 import type {DeltaLease} from './lease'
 import {markWorkRows,purgeWorkRows} from './work-rows'
 import {importedHistoryStatements} from './imported-history'
-export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>}={}){
+import {mediaRewrite} from './media-rewrite'
+import {bundleMediaIndex,type MediaIndex} from './media-index'
+/** `media`: the workspace's files by legacy key (media-index.ts), resolved before mapping; a `--file` export without one
+ * resolves its own. Legacy storage URLs in the mapped rows are rewritten to native URLs (media-rewrite.ts). */
+export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex}={}){
  if(bundle.format!=='happytohelp-legacy-v1'||!bundle.tables||!bundle.source?.revision||!bundle.source.repository||!Number.isFinite(Date.parse(bundle.source.exportedAt)))throw new Error('Invalid legacy bundle provenance')
- const bundleDigest=await digest(stable(bundle)),rows=[]
+ const bundleDigest=await digest(stable(bundle)),rows=[],rewrite=mediaRewrite(options.media??(options.context?undefined:bundleMediaIndex(bundle)),String(bundle.source.projectId??''))
  for(const table of Object.keys(bundle.tables).sort((a,b)=>{const ia=tableOrder.indexOf(a),ib=tableOrder.indexOf(b);return (ia<0?1000:ia)-(ib<0?1000:ib)||a.localeCompare(b)})){
  if(!Array.isArray(bundle.tables[table]))throw new Error(`Expected row array for ${table}`)
  let sourceRows=[...bundle.tables[table]]
  if(table==='categories'||table==='knowledge_categories'){const depth=(r:Row,seen=new Set<string>()):number=>{if(!r.parent_id)return 0;const key=String(r.id);if(seen.has(key))throw new Error('Category parent cycle');seen.add(key);const parent=sourceRows.find(p=>String(p.id)===String(r.parent_id));return parent?1+depth(parent,seen):1};sourceRows.sort((a,b)=>depth(a)-depth(b))}
- const seen=new Set<string>();for(const row of sourceRows){if(!row||Array.isArray(row)||typeof row!=='object')throw new Error(`Invalid ${table} row`);const rowDigest=await digest(stable(row)),sourceId=String(row.id??row.event_id??row.token_hash??rowDigest);if(seen.has(sourceId))throw new Error(`Duplicate source identity ${table}:${sourceId}`);seen.add(sourceId);rows.push({table,sourceId,row,rowDigest,mapped:mapLegacy(table,row,options.context??bundle)})}
+ const seen=new Set<string>();for(const row of sourceRows){if(!row||Array.isArray(row)||typeof row!=='object')throw new Error(`Invalid ${table} row`);const rowDigest=await digest(stable(row)),sourceId=String(row.id??row.event_id??row.token_hash??rowDigest);if(seen.has(sourceId))throw new Error(`Duplicate source identity ${table}:${sourceId}`);seen.add(sourceId);rows.push({table,sourceId,row,rowDigest,mapped:rewrite.map(table,row,mapLegacy(table,row,options.context??bundle))})}
  }
  const mappedRows=rows.flatMap(row=>row.mapped);const conversationScopes=new Map(mappedRows.filter(m=>m.table==='conversations').map(m=>[String(m.row.id),m.row]));const contacts=new Map(mappedRows.filter(m=>m.table==='contacts').map(m=>[String(m.row.id),m.row]));for(const mapped of mappedRows){const r=mapped.row;if(r.conversation_id&&r.project_id){const conv=conversationScopes.get(String(r.conversation_id))??(options.context?relationships(options.context).find('conversations',r.conversation_id):undefined);if(conv&&conv.project_id!==r.project_id)throw new Error(`Cross-project legacy reference in ${mapped.table}:${r.id}`)}if(mapped.table==='conversations'){const contact=contacts.get(String(r.contact_id))??(options.context?relationships(options.context).find('contacts',r.contact_id):undefined);if(contact&&contact.project_id!==r.project_id)throw new Error(`Cross-project legacy conversation contact: ${r.id}`)}}
  const keys=new Set<string>(options.objectKeys);for(const object of bundle.objects||[]){if(!object.key||object.key.startsWith('/')||object.key.split('/').includes('..')||keys.has(object.key))throw new Error('Invalid or duplicate object key');keys.add(object.key);const bytes=Uint8Array.from(atob(object.dataBase64),c=>c.charCodeAt(0));if(await digest(bytes)!==object.sha256)throw new Error(`Object digest mismatch: ${object.key}`)}
  const mediaRows=rows.flatMap(row=>row.mapped.filter(m=>m.table==='media'));for(const media of mediaRows){if(!keys.has(String(media.row.object_key)))throw new Error(`Media ${media.row.id} requires exported bytes for ${media.row.object_key}`)}
- return {id:`legacy:${bundleDigest}`,bundleDigest,source:bundle.source,rows,objects:bundle.objects||[],summary:{sourceRows:rows.length,mappedRows:rows.reduce((n,r)=>n+r.mapped.length,0),archivedOnly:rows.filter(r=>!r.mapped.length).map(r=>`${r.table}:${r.sourceId}`),holds:rows.flatMap(r=>r.mapped.filter(m=>m.hold).map(m=>`${r.table}:${r.sourceId}: ${m.hold}`)),objects:keys.size}}
+ return {id:`legacy:${bundleDigest}`,bundleDigest,source:bundle.source,rows,objects:bundle.objects||[],summary:{sourceRows:rows.length,mappedRows:rows.reduce((n,r)=>n+r.mapped.length,0),archivedOnly:rows.filter(r=>!r.mapped.length).map(r=>`${r.table}:${r.sourceId}`),holds:rows.flatMap(r=>r.mapped.filter(m=>m.hold).map(m=>`${r.table}:${r.sourceId}: ${m.hold}`)),objects:keys.size,...rewrite.summary()}}
 }
 /** Apply one full (non-delta) bundle: a chunk of a package, or a `--file` export with its inline objects. Writes only under
  * the workspace's lease (`lease`, lease.ts): every write batch asserts it, and each inline upload is confirmed under it.
@@ -28,7 +32,7 @@ export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBun
  * erasure leaves it (digest kept, source copy '{}', status 'erased', its mapped target) and writes no canonical row, hold,
  * reporting row or import state; it takes no part in the conflict preflight; its file is not uploaded, and one an earlier
  * run left in R2 that no native media row holds is removed. Replayed rows are untouched. */
-export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;checkOnly?:boolean;erased?:Set<string>;lease?:DeltaLease;publishDefaultRules?:boolean;leaveUnread?:boolean}={}){
+export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;checkOnly?:boolean;erased?:Set<string>;lease?:DeltaLease;publishDefaultRules?:boolean;leaveUnread?:boolean}={}){
  if(bundle.source?.since!==undefined||bundle.source?.delta!==undefined)throw new Error('A delta export imports only as a package (--package), which applies it update-aware')
  const lease=options.lease
  if(!options.checkOnly&&!lease)throw new Error('A legacy import writes only under its workspace lease')

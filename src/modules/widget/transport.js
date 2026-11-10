@@ -1,4 +1,5 @@
 import {sessionStorageKey, visitorIdentity} from './visitor-identity';
+import {nativeFilePaths} from '../legacy-import/file-links.js';
 
 /** Only preferences belong in JSON. Network and device context comes from the request. */
 const contactEnvironment = () => ({
@@ -181,9 +182,34 @@ export class WidgetTransport {
       }
       return {...item, url, preview_url: url, filename_original: item.filename || item.name, aggregate_type: (item.content_type || item.mime_type || '').startsWith('image/') ? 'image' : 'file'};
     }));
+    const content = await this.contentLinks(message.content);
     const ai = message.actor_role === 'ai' ? this.configuration?.ais?.find(person => person.id === message.actor_id) : null;
     const agent = ai ? {...ai, is_ai:true, ai} : message.actor_role === 'system' ? this.workspaceAuthor(message.actor_id) : message.actor_role !== 'contact' ? this.configuration?.agents?.find(person => person.id === message.actor_id) : undefined;
-    return {...message, ...(agent ? {agent} : {}), created_at: typeof message.created_at === 'number' ? new Date(message.created_at).toISOString() : message.created_at, local_id: message.local_id || message.localId, contact_id: message.actor_role === 'contact' ? this.session.contactId : message.contact_id, agent_id: message.actor_role && message.actor_role !== 'contact' ? message.actor_id : message.agent_id, media};
+    return {...message, ...(agent ? {agent} : {}), created_at: typeof message.created_at === 'number' ? new Date(message.created_at).toISOString() : message.created_at, local_id: message.local_id || message.localId, contact_id: message.actor_role === 'contact' ? this.session.contactId : message.contact_id, agent_id: message.actor_role && message.actor_role !== 'contact' ? message.actor_id : message.agent_id, media, ...(content === message.content ? {} : {content})};
+  }
+  // An imported legacy message names this installation's files root-relative, by the two native file paths an import
+  // writes (file-links.js). On the customer's site such a path would resolve against their page, so a file of this
+  // conversation is fetched with the visitor's token and shown from a blob: URL like an attachment, and an imported
+  // workspace file is made absolute on this installation; a bare one becomes a link showing its address here. Every
+  // other path, and text without one, is returned as it is.
+  async contentLinks(text) {
+    if (typeof text !== 'string' || !text.includes('/api/')) return text;
+    const own = `/api/conversations/${encodeURIComponent(this.conversationId)}/media/`, resolved = new Map();
+    for (const [, , path] of text.matchAll(nativeFilePaths())) {
+      if (resolved.has(path)) continue;
+      let url = `${this.origin}${path}`;
+      if (path.startsWith(own)) {
+        const id = decodeURIComponent(path.slice(own.length));
+        url = this.mediaURLs.get(id) || url;
+        if (!this.mediaURLs.has(id)) {
+          const response = await fetch(`${this.origin}${path}`, {signal: this.abort.signal, headers: {Authorization: `Bearer ${this.session.token}`}}).catch(() => null);
+          if (response?.ok) {url = URL.createObjectURL(new Blob([await response.arrayBuffer()], {type: response.headers.get('Content-Type') || 'application/octet-stream'})); this.mediaURLs.set(id, url);}
+        }
+      }
+      resolved.set(path, url);
+    }
+    // A link's label shows the file's address on this installation; its target opens the file.
+    return text.replace(nativeFilePaths(), (match, before, path) => before + (before === '[' ? `${this.origin}${path}` : before === '' || /\s/.test(before) ? `[${this.origin}${path}](${resolved.get(path)})` : resolved.get(path)));
   }
   // The workspace itself, as the author of its away reply.
   workspaceAuthor(id) {

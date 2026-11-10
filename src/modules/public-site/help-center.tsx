@@ -6,6 +6,7 @@ import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import {remarkNativeFileLinks} from '../legacy-import/file-links.js'
 import type { AppEnv,Env } from '../../platform/env'
 import { requireProject } from '../../platform/auth'
 import { escapeHtml as e } from './html'
@@ -64,7 +65,7 @@ export async function renderHelpCenter(c:any,key:string,base:string,tail?:string
   const article=found.article
   const view=await recordReadEvent(c,project.id,{kind:'view',slug:article.slug,locale,visitorHash,access})
   tools=tools.replace('/requests\"',`/requests?afterReading=${encodeURIComponent(view.eventId)}&amp;locale=${encodeURIComponent(locale)}\"`)
-  content=(article.locale!==locale?`<p class="help-center-translation-note">This article is available in ${e(article.locale)} while its translation is being reviewed.</p>`:'')+`<article lang="${e(article.locale)}"><h1>${e(article.title)}</h1>`+renderToStaticMarkup(<Markdown remarkPlugins={[remarkGfm]} components={articleComponents}>{String(article.content)}</Markdown>)+'</article>'
+  content=(article.locale!==locale?`<p class="help-center-translation-note">This article is available in ${e(article.locale)} while its translation is being reviewed.</p>`:'')+`<article lang="${e(article.locale)}"><h1>${e(article.title)}</h1>`+renderToStaticMarkup(<Markdown remarkPlugins={[remarkGfm,remarkNativeFileLinks]} components={articleComponents}>{String(article.content)}</Markdown>)+'</article>'
   content=helpTemplate(settings.templates.article,content,article.title,article.summary)
   if((await listForms(c.env,project.id,article.locale)).length){
    const read=await createReadReceipt(c,project.id,article.id,article.locale,new URL(c.req.url).hostname,access)

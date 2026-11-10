@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "0fa54402431dd2668c808200f26db31548768333a2b03dd3c9ab0ddeeef80e78",
+      "sha256": "6706f4ae585c26f55d1d45bf564e88ab6528f84c5b43bb6af0fdb60b0a6c09e2",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1733,7 +1733,7 @@
       "executable": false
     },
     "docs/INDEPENDENT-RELEASE.md": {
-      "sha256": "f5e633a0b2ae2b94bb5480fe9cfd8695d22ecf0d270e6bb05212631cc72199ee",
+      "sha256": "4e751d8764f93fcf91f8846a5a9f01162d8a721d7f9c6454d022f0ad39708214",
       "executable": false
     },
     "docs/INSTALLER.md": {
@@ -2853,7 +2853,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "5be792c73a0c1796f919c637ab5321aaa9cbef3c9e47e0e5b33154bb6d6ed7fd",
+      "sha256": "3efecba6c5cf9c65acc0f311c2d8314e8538453b8dfe3bddb690bb3468e3d548",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -2929,11 +2929,11 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "a7d7323c74b0ccb0d0c4df42b880108c891f685eda2e8f52cefe4ddfa3573516",
+      "sha256": "854a81efb892eeb5499de2ef8ed3299bb520abe9a3fb560093e1e486c855a162",
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "43b8bf28b5024a644c0515cd14304b2e679fe394069f969671d00da1ab61f0a3",
+      "sha256": "eb37a8d436d949c98f879cac9a9cbe5fe1fece35cc292a407240e90a4fedda31",
       "executable": false
     },
     "rer-project.json": {
@@ -4253,7 +4253,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "6c9ed2069587c8077a775c7141af35a3ad9467ddb26a14178b7733ea168326e3",
+      "sha256": "111aa3cb2c71ef96b952104f1c4cc0aee0896c84206fdce9daee47b6a1c2ee82",
       "executable": false
     },
     "src/app.ts": {
@@ -16637,7 +16637,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-baselines.mjs": {
-      "sha256": "d143797c21e058b7667722b0514a84b06c49facd0c13ef7c6ab42a5aab0304db",
+      "sha256": "463e52a2ab48c6b8897023ef031711f8bc7040c95065533659e2461748da3525",
       "executable": false
     },
     "tests/helpers/upgrade-data-expectations.mjs": {

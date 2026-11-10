@@ -6,13 +6,16 @@ export async function restoredKnowledgeReady(runtime,projectId,slug='recovery-fi
  await conversionReady(`${runtime.origin}/api/knowledge/public/${projectId}/articles/${encodeURIComponent(slug)}`);
 }
 
-// Password entry has no workspace authority yet. Its public setup status stays
-// fenced until conversion finishes for every restored workspace, not just one.
+// Owner entry has no workspace authority yet and reads no knowledge, so it answers while the queue still converts
+// every restored workspace. Knowledge for anyone without a session stays closed until that conversion ends.
 export async function restoredOwnerEntryReady(runtime){
- await conversionReady(`${runtime.origin}/api/identity/setup`);
+ const entry=await fetch(`${runtime.origin}/api/identity/setup`);
+ assert.equal(entry.status,200,'owner entry answers during knowledge conversion');
+ await entry.arrayBuffer();
+ await conversionReady(`${runtime.origin}/api/knowledge/public`,false);
 }
 
-async function conversionReady(url){
+async function conversionReady(url,expectOk=true){
  let response=await fetch(url);
  assert.equal(response.status,503,'restored knowledge stays closed before local conversion');
  const deadline=Date.now()+60000;
@@ -23,5 +26,6 @@ async function conversionReady(url){
   await new Promise(done=>setTimeout(done,100));
   response=await fetch(url);
  }
- assert.equal(response.status,200,await response.text());
+ if(expectOk)assert.equal(response.status,200,await response.text());
+ else await response.arrayBuffer();
 }

@@ -8,6 +8,11 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## Unreleased
+
+- **Legacy media and widget fidelity:** a legacy import now rewrites legacy storage URLs in imported message text, article bodies, the workspace logo, the widget background and teammate and assistant avatars to native URLs that serve the same bytes under native access rules: a conversation's file through its conversation, a logo, avatar or background to anyone (so the widget shows it on the customer's site), an article image to whoever may read an article that holds it. A URL whose file the package does not carry is left as written and counted (`mediaUrls` in the summary). The imported widget keeps legacy's look and behaviour: legacy's default colours under the saved overrides (the dashboard colour no longer recolours the launcher or send button), the schedule's days as numbers the dashboard reads and saves, no presence-based away, and the workspace shown as the team to an unassigned visitor; legacy keys the native widget does not read are listed (`widgetNotReproduced`). Apply `321_legacy_import_files.sql` after 320, then run `node scripts/legacy-import/upgrade.mjs --project <id>` once per workspace imported before this change. Documented in docs/LEGACY-EXPORT.md.
+- **Migrations:** `321_legacy_import_files.sql`. Apply once after `320_legacy_import_work_repair.sql` and before serving the updated Worker; it is additive and creates one empty table.
+
 ## 0.4.17 — 2026-11-10
 
 - **Notification recipients and bulk reads at scale:** notification recipients are read by contact id through two seekable arms, for the conversation contact and its participants, instead of walking every contact in a large imported workspace. Bulk preparation and version refresh also seek conversations by id. Recipient columns, aliases, workspace checks and results are unchanged. No migration.

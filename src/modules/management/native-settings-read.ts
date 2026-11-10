@@ -17,11 +17,16 @@ export async function readNativeSettings(env:Env,projectId:string){
   if(typeof source[key]==='boolean')data[key]=source[key]
  }
  if(typeof source.presence_idle_minutes==='number')data.presence_idle_minutes=source.presence_idle_minutes
+ // An imported legacy logo or avatar is a root-relative URL of this installation's file door (legacy-import/file-door.ts,
+ // media-index.ts nativeUrl); the settings form edits them as absolute URLs, so only those are read as this
+ // installation's absolute address. Every other value is returned as stored.
+ for(const key of ['logo_url','avatar_url'])if(typeof data[key]==='string'&&(data[key] as string).startsWith('/api/imported-files/')&&env.APP_ORIGIN)data[key]=new URL(String(env.APP_ORIGIN)).origin+data[key]
  const schedule=source.availability_schedule
  if(schedule&&typeof schedule==='object'&&!Array.isArray(schedule)){
   const safe:Record<string,unknown>={}
   for(const key of ['time_from','time_to','message'])if(typeof schedule[key]==='string'||schedule[key]===null)safe[key]=schedule[key]
-  if(Array.isArray(schedule.days))safe.days=schedule.days.filter((day:unknown)=>typeof day==='number')
+  // An imported legacy schedule may still hold its days as the strings "1"-"7" (Monday first): read as the numbers they name.
+  if(Array.isArray(schedule.days))safe.days=schedule.days.map((day:unknown)=>typeof day==='string'&&/^[1-7]$/.test(day)?Number(day):day).filter((day:unknown)=>typeof day==='number')
   data.availability_schedule=safe
  }
  return data

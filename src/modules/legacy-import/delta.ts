@@ -8,6 +8,7 @@ import {skippedRow,type DeltaPlan} from './delta-plan'
 import {deltaBatch} from './delta-batch'
 import {readGuard} from './delta-guard'
 import type {DeltaLease} from './lease'
+import type {MediaIndex} from './media-index'
 
 export interface DeltaConflict {sourceTable:string;sourceId:string;targetTable:string;targetKey:string;reason:string}
 export type DeltaStatus='mapped'|'updated'|'unchanged'|'conflict'|'kept'|'erased'|'skipped'|'archived_only'
@@ -33,7 +34,7 @@ function positioned(mapped:MappedRow,plan:DeltaPlan):MappedRow{
  * without the identity another seed contact holds (delta-guard.ts). Every decision reads the seed
  * as it is, so a stopped import resumes with the same decisions. Writes only under the workspace's
  * delta lease (`lease`, lease.ts): every batch asserts it, and a lapsed lease stops the delta. */
-export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context:LegacyBundle;objectKeys?:Set<string>;checkOnly?:boolean;plan:DeltaPlan;projectId:string;lease?:DeltaLease}){
+export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;checkOnly?:boolean;plan:DeltaPlan;projectId:string;lease?:DeltaLease}){
  const plan=await planImport(bundle,options),{plan:delta,context}=options
  const existing=await env.DB.prepare('SELECT bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{bundle_digest:string;state:string}>()
  if(existing&&existing.bundle_digest!==plan.bundleDigest)throw new Error('Import digest conflict')
@@ -111,7 +112,7 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
  conflicts.push(...decisions.flatMap(d=>[...d.conflicts,...d.listed]))
  const counts={sourceRows:plan.rows.length,replayed,mapped:0,updated:0,unchanged:0,conflict:0,kept:0,erased:0,skipped:0,archived_only:0}
  for(const d of decisions)counts[d.status]++
- const summary={id:plan.id,...counts,mappedRows:plan.summary.mappedRows,holds:decisions.flatMap(d=>d.status==='mapped'||d.status==='updated'?d.mapped.filter(m=>m.hold).map(m=>`${d.source.table}:${d.source.sourceId}: ${m.hold}`):[]),conflicts}
+ const summary={id:plan.id,...counts,mappedRows:plan.summary.mappedRows,mediaUrls:plan.summary.mediaUrls,holds:decisions.flatMap(d=>d.status==='mapped'||d.status==='updated'?d.mapped.filter(m=>m.hold).map(m=>`${d.source.table}:${d.source.sourceId}: ${m.hold}`):[]),conflicts}
  if(options.checkOnly)return {...summary,applied:0,d1Ms:0}
  const lease=options.lease
  if(!lease)throw new Error('A legacy delta writes only under its workspace delta lease')

@@ -41,6 +41,7 @@ import {tags} from './modules/management/tags'
 import { previewRoutes } from './modules/site-preview/proxy'
 import {AiConfigurationError} from './modules/ai-support/configuration'
 import {legacyWidget} from './modules/widget/legacy-project'
+import {importedFiles} from './modules/legacy-import/file-door'
 import {surveySettings,publicSurveys} from './modules/outcomes/survey-routes'
 import {formSettings,publicForms} from './modules/forms'
 import {portalApi} from './modules/portal/routes'
@@ -121,6 +122,7 @@ app.route('/api/management',integrationSettings)
 app.route('/api/management',management)
 app.route('/api/management',brandMediaRoutes)
 app.route('/api/site-preview',sitePreview)
+app.route('/api/imported-files',importedFiles)
 app.route('/preview',previewRoutes)
 app.route('/api/integrations',inboundEmail)
 app.route('/api/feedback',feedbackRoutes(applyMessageEffects))

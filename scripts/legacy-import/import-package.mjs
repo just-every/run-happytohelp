@@ -33,6 +33,10 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
   const index=await packageContext(root,manifest,{timestamp:types.timestamp,...relationships},{delta,retireMarker});
   try{
     const runId=`legacy-package:${digest}`,options={context:index.context,objectKeys:index.objectKeys},tables={},conflicts=[];
+    // The package's own files by legacy storage key (media-index.ts), resolved once before mapping.
+    const media=await import('../../src/modules/legacy-import/media-index.ts');
+    const packageMedia=media.packageMediaIndex(String(manifest.source.projectId??''),await contextMedia(root,manifest),index.objectKeys,index.context);options.media=packageMedia;
+    const urls={rewritten:0,left:0},widgetNotReproduced={};
     let objects={uploaded:0,present:0,removed:0},lease,erased,erasedMedia;const env=()=>target?.env,workspaces=new Set(delta?[String(manifest.source.projectId)]:[]);
     const order=table=>{const i=tableOrder.indexOf(table);return i<0?1000:i};
     // A chunk is identified by its file and digest, never by its place in the order.
@@ -51,6 +55,8 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
       // Which contacts are erased or being erased is read under the lease, so no erasure starts after it.
       if(delta){options.plan=await deltaPlan(root,manifest,target,{planDelta,context:index.context,chunks,chunkRun});erasedMedia=options.plan.erasedMedia;progress({step:'plan',seconds:seconds(started),heldConversations:options.plan.heldIn.size,withheldObjects:options.plan.withheldMedia.size});}
       else{({erased,erasedMedia}=await erasedScope(root,manifest,target,{readErased,erasedMediaOf,context:index.context}));if(erased.size)progress({step:'erased',contacts:erased.size,objects:erasedMedia.size});}
+      // Legacy storage URLs resolve to the files this package carries and those earlier imports left in the seed.
+      options.media=media.mergedIndex(await media.earlierMediaIndex(target.env,String(manifest.source.projectId)),packageMedia);
       // Walk all chunks read-only first, including late-table conflicts. A
       // resumable outage can commit chunks; a known conflict commits none.
       for(const {part} of chunks){
@@ -77,6 +83,7 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
         if(retireMarker!==undefined)total.ignoredRetireMarker+=ignored;
         const bundle=bundleOf(part,rows);
         const result=target?await apply(bundle):{...(await planImport(bundle,options)).summary,applied:0,replayed:0};
+        urls.rewritten+=result.mediaUrls?.rewritten??0;urls.left+=result.mediaUrls?.left??0;for(const [key,count] of Object.entries(result.widgetNotReproduced??{}))widgetNotReproduced[key]=(widgetNotReproduced[key]??0)+count;
         total.mappedRows+=result.mappedRows;total.holds+=result.holds.length;total.applied+=result.applied;
         if(delta&&target){addDeltaTotals(total,result);total.archivedOnly=total.archived_only;conflicts.push(...result.conflicts);}
         else{total.sourceRows+=result.sourceRows;total.archivedOnly+=result.archivedOnly.length;total.replayed+=result.replayed;total.erased+=result.erased||0;}
@@ -88,9 +95,15 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
     if(target)await env().DB.prepare(`UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=?${delta?" AND state<>'complete'":''}`).bind(Date.now(),runId).run();
     }finally{await lease?.release();}
     const sum=key=>Object.values(tables).reduce((n,t)=>n+t[key],0);
-    return {id:runId,manifestSha256:digest,projectId:manifest.source.projectId,workspaces:[...workspaces],sourceRows:sum('sourceRows'),packageRows:Object.values(sourceCounts).reduce((n,c)=>n+c,0),excluded,mappedRows:sum('mappedRows'),archivedOnly:sum('archivedOnly'),holds:sum('holds'),applied:sum('applied'),replayed:sum('replayed'),...(retireMarker!==undefined?{ignoredRetireMarker:Object.values(tables).reduce((n,t)=>n+(t.ignoredRetireMarker||0),0)}:{}),objects:manifest.objects.length,objectsUploaded:objects.uploaded,objectsPresent:objects.present,objectsRemoved:objects.removed,...(delta?{}:{erased:sum('erased')}),mediaBytes:manifest.mediaBytes,sessions:target?.sessions,seconds:seconds(started),tables,
+    return {id:runId,manifestSha256:digest,projectId:manifest.source.projectId,workspaces:[...workspaces],sourceRows:sum('sourceRows'),packageRows:Object.values(sourceCounts).reduce((n,c)=>n+c,0),excluded,mappedRows:sum('mappedRows'),archivedOnly:sum('archivedOnly'),holds:sum('holds'),applied:sum('applied'),replayed:sum('replayed'),...(retireMarker!==undefined?{ignoredRetireMarker:Object.values(tables).reduce((n,t)=>n+(t.ignoredRetireMarker||0),0)}:{}),objects:manifest.objects.length,objectsUploaded:objects.uploaded,objectsPresent:objects.present,objectsRemoved:objects.removed,...(delta?{}:{erased:sum('erased')}),mediaUrls:urls,...(delta?{}:{widgetNotReproduced}),mediaBytes:manifest.mediaBytes,sessions:target?.sessions,seconds:seconds(started),tables,
       ...(delta&&target?deltaSummary(manifest,tables,conflicts,options.plan.withheldMedia.size):{})};
   }finally{await index.close();}
+}
+/** The package's media rows (its media context), each with the R2 key the exporter gave its attachment. */
+async function contextMedia(root,manifest){
+  const keys=new Map(manifest.objects.map(object=>[String(object.mediaId),object.key])),rows=[];
+  for(const part of manifest.context.filter(part=>part.table==='media'))for(const row of await readPart(root,part))rows.push({...row,object_key:row.object_key??keys.get(String(row.id))});
+  return rows;
 }
 /** A full package's erased contacts, read under its lease, and their media in the package: with none, one query. Media
  * rows are read from the package's media chunks and assigned through the package context (delta-scope.ts `contactsOf`). */

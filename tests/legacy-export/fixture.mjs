@@ -97,7 +97,8 @@ export async function seedLegacy(connection, { objectDirectory }) {
     await insert('buckets', { id: bucketId, project_id: projectId, conversation_id: conversationId,
       is_vectorized:0, counts: json({ contact_messages: 1, agent_messages: 2, agent_events_internal_note: 1, contact_events_page_view: 1 }), ...times });
 
-    const bodies = [`Diagnostic: GPTCODEX_API_KEY=fixture-transcript-environment-value\nCan you explain this ${name} invoice?`, `The invoice covers your current billing period. Reset password: https://${slug}.example.test/password/reset (never share fixture-transcript-environment-value).`,
+    // The reply links the customer's attachment by its legacy storage URL, and an older file the export does not carry.
+    const bodies = [`Diagnostic: GPTCODEX_API_KEY=fixture-transcript-environment-value\nCan you explain this ${name} invoice?`, `The invoice covers your current billing period. Reset password: https://${slug}.example.test/password/reset (never share fixture-transcript-environment-value). Your copy: https://storage.happytohelp.com/${directory}/invoice.txt (last year's: https://storage.happytohelp.com/${directory}/invoice-2025.txt)`,
       'I can help you find the billing guide.', 'Our team will reply during business hours.', 'Removed duplicate message.'];
     for (let i = 0; i < bodies.length; i++) {
       await insert('messages', { id: messageIds[i], project_id: projectId, conversation_id: conversationId, bucket_id: bucketId,
@@ -132,6 +133,17 @@ export async function seedLegacy(connection, { objectDirectory }) {
     await insert('articles', { id: articleId, project_id: projectId, title: `${name} billing guide`, slug: `${slug}-billing-guide`,
       summary: 'Understand your first invoice.', content: '<h1>Billing guide</h1><p>Invoices cover the current billing period.</p>',
       created_by_id: ownerId, modified_by_id: ownerId, published_at: timestamp, ...times });
+    if (!index) {
+      // The first company's guide shows a diagram from legacy storage, joined to the article as legacy joins it.
+      const diagram = Buffer.from('fixture article diagram bytes');
+      await mkdir(join(objectDirectory, projectId, 'articles'), { recursive: true });
+      await writeFile(join(objectDirectory, projectId, 'articles', 'diagram.txt'), diagram);
+      await insert('media', { id: uuid('c4', n), disk: 's3', directory: `${projectId}/articles`, filename: 'diagram', extension: 'txt',
+        filename_original: 'diagram.txt', mime_type: 'text/plain', aggregate_type: 'document', size: diagram.length,
+        url: `https://storage.happytohelp.com/${projectId}/articles/diagram.txt`, ...times });
+      await insert('mediables', { media_id: uuid('c4', n), mediable_type: 'App\\Models\\Article', mediable_id: articleId, tag: 'media', order: 0 });
+      await connection.execute('UPDATE articles SET content = CONCAT(content, ?) WHERE id = ?', [`<p><a href="https://storage.happytohelp.com/${projectId}/articles/diagram.txt">Diagram</a></p>`, articleId]);
+    }
     await insert('articles', { id: uuid('73', n), project_id: projectId, title: `${name} unpublished checklist`,
       slug: `${slug}-unpublished-checklist`, content: '<p>Draft guidance awaiting review.</p>', created_by_id: ownerId, ...times });
     await insert('article_categories', { id: uuid('74', n), article_id: articleId, category_id: categoryId, ...times });

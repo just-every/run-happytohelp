@@ -33,5 +33,10 @@
       "buyerSteps": "Back up D1 first; apply once after 319_inbox_filter_shapes.sql, before serving the updated Worker. Only for an installation whose full legacy import ran before the import removed its own trigger-written rows: it deletes, by the import's own journal (legacy_import_rows and legacy_import_runs), the native_integration_events (contact.created, conversation.status_changed, article.published) and workflow_events rows stamped inside that full import's run window for the contacts, conversations and articles it wrote, and the inbox_visitor_waiting rows only the import's own visitor authorship derived. Rows written afterwards by members or customers, events an integration intent already names, delta-sweep rows and any package with an unfinished run are kept. Changes no workflow rule, read mark or conversation. Idempotent, and an installation that never imported is untouched. A scratch table exists only while it runs. No message is sent and no integration or job is started."
     }
   ],
-  "pendingMigrations": []
+  "pendingMigrations": [
+    {
+      "id": "321_legacy_import_files.sql",
+      "buyerSteps": "Back up D1 first; apply once after 320_legacy_import_work_repair.sql, before serving the updated Worker. Additive only: creates the empty legacy_import_files table (imported legacy files that have no conversation: logos, the widget background, avatars and article images, served by /api/imported-files/<workspace>/<file>); no existing row changes and nothing is read, sent or queued. Then run node scripts/legacy-import/upgrade.mjs --project <legacy project id> (--persist-to DIR | --database D1 --bucket R2) once per workspace imported from legacy: it rewrites that workspace's legacy storage URLs to native URLs and applies the legacy widget translation where its settings are unchanged since import, under the workspace's import lease, printing counts only; a second run changes nothing."
+    }
+  ]
 }

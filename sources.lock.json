@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "5a4112ef202690240f5374818df99705bdc6ea6dd6b42cb4fd08e0ff25875fae",
+      "sha256": "2ebd197b9a15100c0cc71c080bc3f9abfe4de06894bd2d5f551d5fdb23ca0297",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2053,7 +2053,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "40941708ad9827a34d7e6ff976d5a1c21e2e148b476266a92fb55c414aeae975",
+      "sha256": "2c9011baffb243883fbb74c0001052d5b5c0ef840e7f5f9cc835f97827b2ffda",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2845,7 +2845,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "ecf91d94d9bde7fa134047e745d11659403cc0c48a081ab2df3ed4bf8837c4ad",
+      "sha256": "082d5cb570fa5b24e35c4f347dd3f14c0311f1fb1c962a75e8a51f36d0b52e81",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -3057,7 +3057,7 @@
       "executable": false
     },
     "scripts/delivery/base/packaging.json": {
-      "sha256": "a9941cf23ed9d8a543506d76c0b1948e3eaa284a01f5ece69712e6c8d00eacc8",
+      "sha256": "4f160e87cefc62181aefb177b97f7eb5a46a593c5309595ad69a2f64ffb95a19",
       "executable": false
     },
     "scripts/delivery/base/paths.mjs": {
@@ -3117,7 +3117,7 @@
       "executable": false
     },
     "scripts/delivery/generate-spec.mjs": {
-      "sha256": "dbf664c6445d54f3091e307e8a063b525d5b079a8883f5902b5fc46a9093b66a",
+      "sha256": "d1213c45ded52ce32280357f60f11b2292fdd1a212b7ddc825e402e410fa18aa",
       "executable": false
     },
     "scripts/delivery/module-preloads.ts": {
@@ -3134,6 +3134,10 @@
     },
     "scripts/delivery/reproducible-output.ts": {
       "sha256": "24ffc7fdbbfbc65d3f73b09b4d2bcaeea4a695be3acb82628e08c78253fd50b8",
+      "executable": false
+    },
+    "scripts/delivery/secret-declarations.mjs": {
+      "sha256": "d3079f4d2a2276434e2d54cf733b30e601e418b48821ece658e5c015208fe40c",
       "executable": false
     },
     "scripts/deployment/environment.mjs": {

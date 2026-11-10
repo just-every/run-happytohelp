@@ -37,91 +37,19 @@ work delegated to your own Codex or Claude. It works with human replies without
 an AI provider. The editable React application runs on Cloudflare Workers with
 Hono, D1, R2, Queues and Durable Objects.
 
-## Release 0.4.16
+## Release 0.4.17
 
-v0.4.14 and v0.4.15 were prepared and tagged but not published. Their changes ship in v0.4.16, which supersedes both tags. The last published release and upgrade baseline remains v0.4.13.
+Deploy version 0.4.17, tagged **`v0.4.17`** once published. v0.4.16 is the last published release; upgrades are qualified from v0.4.16 and v0.4.13. The pinned installer remains rer 0.2.105.
 
-Deploy version 0.4.16, tagged **`v0.4.16`** once published, using the commands below. 51 migration files (263–319, with gaps) since v0.4.13.
+- **Notification recipients and bulk reads at scale:** notification recipients are read by contact id through two seekable arms, for the conversation contact and its participants, instead of walking every contact in a large imported workspace. Bulk preparation and version refresh also seek conversations by id. Recipient columns, aliases, workspace checks and results are unchanged. No migration.
+- **Fixes — Mailgun webhook signing key declaration:** the packaging recipe and the emitted deployment spec now declare `MAILGUN_WEBHOOK_SIGNING_KEY` as an optional secret, as `scripts/deployment/environment.mjs` already did, so the platform's release check no longer reports a secret-name mismatch. Installs without Mailgun are unaffected, and the build and `verify:build` now fail when packaging omits any runtime secret name. No migration.
+- **Legacy import fidelity:** a full legacy import no longer leaves trigger-written rows in the integration-event and workflow journals (so `check.mjs work` counts, now including `workflow_events`, stay unchanged) and leaves each imported workspace's default "Close solved tickets after 4 days" rule a draft instead of published (`--publish-default-rules` keeps it published); legacy messages with no author import as role `system` instead of an operator reply, with `message_authorship` written where the kind is known; and imported conversations open read for the workspace's members (`--leave-unread` keeps them unread). Documented in docs/LEGACY-EXPORT.md.
+- **Sign out under load:** `/auth/*` (sign out, bootstrap, owner claim) is reserved from the public site, so a busy database no longer makes a sign out wait on, or fail at, the Help Center alias lookup before the application answers it. A Help Center alias can no longer be named `auth`.
+- **Erasure follow-ups:** an erased person's files no longer outlive a stalled legacy import (an import whose lease lapsed keeps no file it uploaded, and an erased contact's leftover files are removed on the next run); a full legacy package import respects erasures as a delta does and imports nothing of an erased contact; an import keeps another customer's shared file in every order; an erasure request that waited for a running erasure of the same contact answers the completed record, while any other repeat erases what arrived since; and a contact whose erasure failed shows it as pending on its page, with the erase action to complete it. This change adds no migration.
+- **Legacy import repair:** an installation whose full legacy import ran before the fidelity round keeps the trigger-written rows that import left (`native_integration_events` `contact.created`, `conversation.status_changed` and `article.published`, and `workflow_events`, which `check.mjs work` counts). Migration 320 removes exactly those: it reads the import's own journal (`legacy_import_rows`, `legacy_import_runs`) for the contacts, conversations and articles a full import wrote and deletes only the events of those entities stamped inside that import's run window, plus the waiting-visitor rows only the import's own visitor authorship derived (the delete re-derives the inbox entry's flags). Whatever a member or customer did afterwards, an event an integration intent already names, a delta sweep's rows and any package with an unfinished run stay. It touches no workflow rule: the default "Close solved tickets after 4 days" rule stays as the workspace has it, and the scheduler never acts on imported conversations either way. Idempotent; an installation that never imported is untouched. See docs/LEGACY-EXPORT.md.
+- **Migrations:** `320_legacy_import_work_repair.sql`. Apply once after `319_inbox_filter_shapes.sql` and before serving the updated Worker; it only deletes the import's trigger-written event rows and leaves no table behind.
 
-- **Move in:** connect Zendesk over OAuth, review delta sweeps and import supplied or fetched attachment bytes into private storage. The apply replay measured 4.74x fewer round trips (130,525 to 27,533); bounded-capacity qualification uses synthetic data, not a live-customer import guarantee.
-- **AI and widget:** each workspace selects auto, draft (prepare replies for a teammate) or off; the follow-ups preserve concurrent settings saves, human Send and answers when the assistant cannot reply. Widget sessions stay with their visitor and support an explicit identity switch and `h2h('shutdown')`.
-- **Mail and cutover:** optional Mailgun inbound routing and SES S3 intake, a private initial note on a new email ticket, and Settings > Cutover for an owner or admin to record readiness. This release performs no cutover or production deployment.
-- **Search and erasure:** indexed contact and message search avoids whole-inbox scans; overloaded D1 returns 503. Person and teammate erasure covers retained legacy journal copies, reader receipts, delegation/note files and search terms. Retired agent-door references join the declared erasure inventory.
-- **Knowledge and earlier accepted work:** imported-only help stays noindex until a member publishes. Includes knowledge entitlement, publication history and restore rescan boundaries; procedures and attribution reviews; follow-up obligations; support-channel consent, voice and mobile notices; the shared agent door/relay and personal Slack/Teams notices. Existing partial and live-provider qualification boundaries remain.
-- **Business relay privacy:** stopped or missing Business state refuses tokens, policy references, held calls and signed relay pulls. Apply `316_agent_door_relay_privacy.sql` after 315 and before the updated Worker; it removes only provable cross-Business relay memberships and preserves audits.
-- **Legacy Business approvals:** apply `317_agent_door_legacy_principals.sql` after 316 and before the updated Worker. It tags only pending MCP principals with saved Business consent and no source. With pinned rer 0.2.105, held tool executions for Business-sponsored approvals saved before rer 0.2.96 also refuse with `sponsor_unavailable` after the Business stops or its stop state is unreadable, even when the saved principal has no source tag. Reading held approvals and resolving sponsor references are not covered by this execution stop guard. Audits, other saved fields and other rows are preserved; migration 317 remains idempotent. Back up D1 first.
-- **Overload recovery:** a dashboard read that fails at the transport level waits as busy and recovers, a dashboard document cut mid-stream recovers by itself, busy public pages are HTML pages, a native form post refused by an overload keeps its input (same-origin posts only), and a read's side effects happen once. No migration.
-- **Contacts, companies and Cutover at scale:** the contacts page, its pickers and the contacts API page by the boundary contact and read per page, not per workspace, including a broad search wherever its matches fall in the order; the company page reads in proportion to the company; the Cutover counts read derived tallies. While D1 is busy, these pages say so and read again by themselves instead of showing an error.
-- **Archive round trip:** `rer export` no longer carries the inbox's derived entries, tallies, unread and waiting rows and their facets and counts (migrations 313, 314, 319), the contacts' tally or the Cutover sets (318). Import already rebuilt all of them from the restored rows; carrying them made a restored installation's export differ from its source, because tallies and entries order by write history. No migration. Archives are made from published releases (v0.4.13 and earlier) or from this change on; an archive exported by an unreleased main build between migration 313 and this change carries those tables and is not a supported source.
-- **Inbox view shapes at scale (K17d):** every view shape the Zendesk view import writes (subject contains, custom field, tag any, all or none of up to four, created or updated before or after a moment, a group-scoped teammate's tag views, alone or with status, assignee, priority, channel and group), the counts, the bootstrap and mark-as-read give the same answers and read far fewer D1 rows on a large imported workspace; ticket writes seek their count rows. Known limit: a page of a large view sorted by id, priority or status can still read more than 5,000 rows (at most 18,678 in the probe, always fewer than before).
-- **Installer:** pinned `@runeditrun/rer` 0.2.105, with the project descriptor bound to the exact current setup-manifest bytes.
-
-- **Dashboard and inbox reads at scale:** dashboard lists, counts and filters use derived inbox tables maintained by triggers, so reads follow page size rather than the size of a large imported workspace. An overloaded D1 returns 503 busy instead of timing out.
-- **Restored native sign-in:** session admission and password login remain available while restored Knowledge content is being upgraded; the native checkout gate still applies.
-- **AI reply modes:** draft mode completes before the widget card, held replies are never auto-sent after a lost process, and AI-assigned conversations remain visible in draft and off modes.
-- **Erasure under concurrency (K15c):** a per-contact lease prevents overlapping erasures; legacy delta writes are blocked during an erasure, and object collection uses bounded batches. Apply `315_erasure_leases.sql` before the new Worker.
-
-**Migrations from v0.4.13:**
-
-- `263_followup_obligations.sql`
-- `264_procedure_versions.sql`
-- `265_reviewed_knowledge_proposals.sql`
-- `266_procedure_regression_stop.sql`
-- `267_translated_ai_publications.sql`
-- `268_help_domain_publication.sql`
-- `269_ai_tool_trace.sql`
-- `270_procedure_attribution_reviews.sql`
-- `271_support_channels.sql`
-- `272_support_channel_media.sql`
-- `273_shared_channel_actions.sql`
-- `274_channel_consent.sql`
-- `275_voice.sql`
-- `276_voice_media.sql`
-- `277_agent_door.sql`
-- `278_business_settings.sql`
-- `279_business_people.sql`
-- `280_agent_native.sql`
-- `281_managed_connectors.sql`
-- `282_messaging_surveys.sql`
-- `283_mobile_devices.sql`
-- `290_native_reply_drafts.sql`
-- `291_native_ticket_scope.sql`
-- `292_knowledge_entitlements.sql`
-- `293_knowledge_references.sql`
-- `294_knowledge_publication_history.sql`
-- `295_knowledge_source_identity.sql`
-- `296_knowledge_upgrade_progress.sql`
-- `297_knowledge_indexable_sources.sql`
-- `298_agent_door_relay.sql`
-- `299_outbound_channel_tickets.sql`
-- `300_teammate_slack.sql`
-- `301_import_door.sql`
-- `302_move_in_zendesk_pull.sql`
-- `303_teammate_teams.sql`
-- `304_knowledge_import_origins.sql`
-- `305_mailgun_inbound_tokens.sql`
-- `306_cutover_steps.sql`
-- `307_legacy_import_delta.sql`
-- `308_legacy_mail_s3.sql`
-- `309_move_in_zendesk_attachments.sql`
-- `310_inbox_contact_search.sql`
-- `311_inbox_message_secure_delete.sql`
-- `312_agent_door_retired_refs.sql`
-- `313_inbox_entries.sql`
-- `314_inbox_visitor_waiting.sql`
-- `315_erasure_leases.sql`
-- `316_agent_door_relay_privacy.sql`
-- `317_agent_door_legacy_principals.sql`
-- `318_contacts_cutover_bounds.sql`
-- `319_inbox_filter_shapes.sql`
-
-Update from v0.4.13 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and locked @runeditrun/rer 0.2.105. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity; never edit, delete or reorder ledger rows. Apply all 51 migration files (263–319, with gaps) added since v0.4.13 once, in filename order, through pinned rer before the updated Worker serves traffic, using the filenames listed above.
-
-Apply migrations 304–319 before the new Worker. `319_inbox_filter_shapes.sql` applies once after `318_contacts_cutover_bounds.sql` and before serving the updated Worker; it is additive and fills its derived tables and indexes from existing rows. `318_contacts_cutover_bounds.sql` applies once after `317_agent_door_legacy_principals.sql` and before serving the updated Worker; it is additive and fills its indexes, tallies, search index and derived sets from existing rows. While the migrations apply, a v0.4.13 Worker refuses teammate erasure with 503 "Member erasure schema requires review", and person erasure continues through the new erasure triggers. An installation already running the agent door (an unreleased main build) refuses person and teammate erasure with agent_erasure_undeclared_table once table 312 exists; this is fail-closed. Retry succeeds after the new Worker serves traffic.
-
-Earlier installations also apply their other missing published migrations. Keep each migration's additional buyer steps, including restored-connection reauthorization and knowledge rescan requirements.
-
-Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. Held secrets remain private; Mailgun intake requires MAILGUN_WEBHOOK_SIGNING_KEY. Unset the retired ZENDESK_EMAIL and ZENDESK_TOKEN inputs; connect Zendesk through Move in. No migration starts a pull, sends a message, enables consent or replays an uncertain external action. The v0.4.12 Platform multiple-ledger recovery caveat remains: stop before writes and use a separately scoped recovery procedure, never delete either ledger. Live-provider qualification, independent stranger review and owner cutover remain separate.
+Update from v0.4.16 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.105. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. Apply the missing migrations once, in filename order, BEFORE the new Worker serves traffic: 320_legacy_import_work_repair.sql. Earlier installations, including v0.4.13, also apply every intervening missing published migration in order; retain each migration's buyer steps. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. No reset, cutover or production deployment is part of this release. Live-provider qualification and owner cutover remain separate.
 
 See [RELEASE.json](RELEASE.json), [Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
 
@@ -191,11 +119,11 @@ own operating contract; this seed's CLI is not a platform admission requirement.
 
 ## Deploy to your own Cloudflare account
 
-For a new installation, acquire **`v0.4.16` once published**,
+For a new installation, acquire **`v0.4.17` once published**,
 after installing `rer` as shown above:
 
 ```sh
-git clone --branch v0.4.16 https://github.com/just-every/run-happytohelp
+git clone --branch v0.4.17 https://github.com/just-every/run-happytohelp
 cd run-happytohelp
 ```
 

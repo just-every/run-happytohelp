@@ -23,6 +23,14 @@ yours.
 
 ## Update your installation
 
+### Release 0.4.17
+
+Update from v0.4.16 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.105. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. Apply the missing migrations once, in filename order, BEFORE the new Worker serves traffic: 320_legacy_import_work_repair.sql. Earlier installations, including v0.4.13, also apply every intervening missing published migration in order; retain each migration's buyer steps. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. No reset, cutover or production deployment is part of this release. Live-provider qualification and owner cutover remain separate.
+
+See [the 0.4.17 release notes](../CHANGELOG.md#0417--2026-11-10) for the import fidelity flags and the repair of already-imported installations. Migration 320 changes no workflow rule or read mark; its full buyer steps are in [RELEASE.json](../RELEASE.json).
+
+### Keep your installation state
+
 Keep these, so you can always rebuild or roll back:
 
 - your fork of the source

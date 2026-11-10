@@ -233,6 +233,10 @@
     {
       "id": "319_inbox_filter_shapes.sql",
       "buyerSteps": "Back up D1 first; apply once after 318_contacts_cutover_bounds.sql, before serving the updated Worker. Additive only: derived inbox tables (inbox_unread_tallies, inbox_facets, inbox_counts) with their indexes, two partial indexes of inbox entries, the inbox_entry_subjects view and its trigram index inbox_subject_search, and triggers that keep them current from inbox entries, members' unread rows and custom field values. The migration fills them once from the existing rows (measured within 30 s at a large imported workspace's size); no existing row changes and nothing is sent, queued or enabled. Every value is derived: each import or restore rebuilds them from the restored rows, and an export rebuilds the subject index after it."
+    },
+    {
+      "id": "320_legacy_import_work_repair.sql",
+      "buyerSteps": "Back up D1 first; apply once after 319_inbox_filter_shapes.sql, before serving the updated Worker. Only for an installation whose full legacy import ran before the import removed its own trigger-written rows: it deletes, by the import's own journal (legacy_import_rows and legacy_import_runs), the native_integration_events (contact.created, conversation.status_changed, article.published) and workflow_events rows stamped inside that full import's run window for the contacts, conversations and articles it wrote, and the inbox_visitor_waiting rows only the import's own visitor authorship derived. Rows written afterwards by members or customers, events an integration intent already names, delta-sweep rows and any package with an unfinished run are kept. Changes no workflow rule, read mark or conversation. Idempotent, and an installation that never imported is untouched. A scratch table exists only while it runs. No message is sent and no integration or job is started."
     }
   ]
 }

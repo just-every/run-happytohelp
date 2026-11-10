@@ -7,6 +7,7 @@ import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 import {createHash} from 'node:crypto'
 import {legacyCustodyJourney} from '../helpers/legacy/custody.mjs'
+import {legacyImportRepairJourney} from '../helpers/legacy/repair.mjs'
 import {legacyBundle} from '../helpers/legacy-bundle.mjs'
 import {writeLegacyPackage} from '../helpers/legacy-package.mjs'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
@@ -117,3 +118,7 @@ test('a full legacy import leaves the work counts unchanged and the default rule
   assert.equal((await rule(call,token)).state,'published','--publish-default-rules keeps the default rule published')
  }finally{if(runtime)await runtime.close(true);await rm(scratch,{recursive:true,force:true})}
 })
+
+// An installation imported before the fidelity round keeps the import's trigger-written work rows; migration 320 removes exactly those
+// (by the import's journal and run windows) and leaves what the team did afterwards, and a second run changes nothing.
+test('migration 320 removes the work rows a pre-fidelity full import left and keeps the native activity after it',legacyImportRepairJourney)

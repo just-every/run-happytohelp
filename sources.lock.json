@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "5a4112ef202690240f5374818df99705bdc6ea6dd6b42cb4fd08e0ff25875fae",
+      "sha256": "0b812613245bb7fc5ff8118966097603e7d5210217c27ba3786ce85cb3f38bd7",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1749,7 +1749,7 @@
       "executable": false
     },
     "docs/LEGACY-EXPORT.md": {
-      "sha256": "84ee490b178bb78ae5ca17ca0cd6718c405994d4a4ba6dfb7f8dd49494aa3a25",
+      "sha256": "d17961842115b7091d7147beeefe9e6e6c79d626137416e46e1108aa12a2101f",
       "executable": false
     },
     "docs/licenses/base-MIT.txt": {
@@ -2053,7 +2053,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "40941708ad9827a34d7e6ff976d5a1c21e2e148b476266a92fb55c414aeae975",
+      "sha256": "adc095d6f3ee21df67eb49861ee773b3b2aea851ea57b49adfa1e7daac8f9313",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2836,6 +2836,10 @@
       "sha256": "a4f7e06b4b27b9f8dbe5af15b51763cbdbceafd2b885e5394e6cefac1ceb4c0f",
       "executable": false
     },
+    "migrations/320_legacy_import_work_repair.sql": {
+      "sha256": "b54438012f288a346042abe9a52c1e601fcb553dd3800214e6f9eaa77591d88a",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2925,7 +2929,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "10972a74d23752139a211864be31b53bbdce28dfe46f202b84ff43b21ecea573",
+      "sha256": "06e33a8563bbd9428313bad51f90c864b1aea1630600b1bb5f885ce3cc0883cb",
       "executable": false
     },
     "rer-project.json": {
@@ -7665,7 +7669,7 @@
       "executable": false
     },
     "src/modules/legacy-import/README.md": {
-      "sha256": "51466bfe81d32e7805f627b3bf5f04cc180e117258772885a75a280f4424aa64",
+      "sha256": "6c5e4aa7ecebecbe9dfe5baa996432218bf6914ef8a3804fb963fedd65353f91",
       "executable": false
     },
     "src/modules/legacy-import/relationships.ts": {
@@ -16344,6 +16348,10 @@
       "sha256": "292d9a1c03de5add3fe7a4ab530454a7bf4217368539862cd256eb3facd07d14",
       "executable": false
     },
+    "tests/helpers/legacy/repair.mjs": {
+      "sha256": "46fb64a26c8324c875e30b9e32e88b66a1e8a3efbc28b923431ca425cd4cfe36",
+      "executable": false
+    },
     "tests/helpers/mail-provider-network.mjs": {
       "sha256": "d8b08752fb172c6041ad9ba4327a79fbfc57a647ae6d7ceca4ef02e03f307d16",
       "executable": false
@@ -16777,7 +16785,7 @@
       "executable": false
     },
     "tests/journeys/legacy.mjs": {
-      "sha256": "71f5d3604a9c9bfaf77b928656185f80ed5cf8c042a6d90b046f96b40b2921d8",
+      "sha256": "a442dc7bd687604e207761dc04785269c586e2e9485e0ba49d339cf72db7e07e",
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {

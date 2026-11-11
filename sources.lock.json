@@ -9601,7 +9601,7 @@
       "executable": false
     },
     "src/modules/tickets/batch-workflows.ts": {
-      "sha256": "84c5e3a3417813383d6886c170467003e5080eff36f5b97a8154f02d5014fdf6",
+      "sha256": "b2451fb1b47395143121a001da929d62f3eefc0eafb7826cf276d3eb2360c172",
       "executable": false
     },
     "src/modules/tickets/bulk.ts": {
@@ -10413,7 +10413,7 @@
       "executable": false
     },
     "src/modules/workflows/events.ts": {
-      "sha256": "92eb124a5617887f75b9881af468cdcf7901347a8012e1cdb6f1823828e5f227",
+      "sha256": "bfb0d1bbe7cc6d6fb5e1938c5b7da4d940b5637de101c30101008ac0500e0d00",
       "executable": false
     },
     "src/modules/workflows/followups.ts": {

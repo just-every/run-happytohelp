@@ -6,6 +6,7 @@ import {auditStatement,requestSource} from '../../audit/record'
 import {sendEmail,emailConfigured} from '../../integrations/email'
 import {POLICY_ROLES,SECOND_FACTORS,policyRoles} from './state'
 import {requireStepUp} from './step-up'
+import {sharedAccountMessage,soleWorkspace,soleWorkspaceAccount} from '../sole-workspace'
 
 /** The workspace's two-factor policy and owner-assisted factor reset. */
 export const twoFactorPolicy=new Hono<AppEnv>()
@@ -45,7 +46,8 @@ twoFactorPolicy.put(`${P}/security`,async c=>{
  return c.json({data:{two_factor_roles:roles,sessionsEnded:results[1].results.length}})
 })
 
-/** The owner's own recent factor resets a teammate's: their factors and codes go, their sessions end, and they are told. */
+/** The owner's own recent factor resets a teammate's: their factors and codes go, their sessions end, and they are told.
+ * Factors are account-wide, so only an account whose sole workspace is this one is reset here. */
 twoFactorPolicy.post(`${P}/agents/:userId/two-factor/reset`,async c=>{
  const actor=await scope(c,true)
  if(actor.role!=='owner')throw new HTTPException(403,{message:'Only an owner can reset a teammate’s two-factor sign-in.'})
@@ -54,10 +56,11 @@ twoFactorPolicy.post(`${P}/agents/:userId/two-factor/reset`,async c=>{
  await requireStepUp(c,actor,'two_factor.reset',{factor:true})
  const member=await c.env.DB.prepare('SELECT u.id,u.email,u.name,p.name project FROM memberships m JOIN users u ON u.id=m.user_id JOIN projects p ON p.id=m.project_id WHERE m.project_id=? AND m.user_id=?').bind(actor.projectId,userId).first<{id:string;email:string;name:string;project:string}>()
  if(!member)throw new HTTPException(404)
- const now=Date.now(),removed=await c.env.DB.batch([
-  c.env.DB.prepare('DELETE FROM user_factors WHERE user_id=? RETURNING id').bind(userId),
-  c.env.DB.prepare('DELETE FROM recovery_codes WHERE user_id=?').bind(userId),
-  c.env.DB.prepare('UPDATE sessions SET revoked_at=? WHERE actor_id=? AND revoked_at IS NULL').bind(now,userId),
+ if(!await soleWorkspace(c.env.DB,userId,actor.projectId))throw new HTTPException(409,{message:sharedAccountMessage})
+ const sole=soleWorkspaceAccount('?1','?2'),now=Date.now(),removed=await c.env.DB.batch([
+  c.env.DB.prepare(`DELETE FROM user_factors WHERE user_id=?1 AND ${sole} RETURNING id`).bind(userId,actor.projectId),
+  c.env.DB.prepare(`DELETE FROM recovery_codes WHERE user_id=?1 AND ${sole}`).bind(userId,actor.projectId),
+  c.env.DB.prepare(`UPDATE sessions SET revoked_at=?3 WHERE actor_id=?1 AND revoked_at IS NULL AND ${sole}`).bind(userId,actor.projectId,now),
   auditStatement(c.env.DB,{projectId:actor.projectId,category:'auth',action:'two_factor.reset',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'member',id:userId}},now),
  ])
  let notice='not_configured'

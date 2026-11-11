@@ -5849,7 +5849,7 @@
       "executable": false
     },
     "src/modules/identity/accounts.ts": {
-      "sha256": "0623d6210bcd67147b0103fe97520d3bc1ce2b344437585225e93e99e84f9f11",
+      "sha256": "e19e675933779f12f20bccbfb57ad191956c189a847ad66c0cbad542f29c981d",
       "executable": false
     },
     "src/modules/identity/availability.ts": {
@@ -5865,7 +5865,7 @@
       "executable": false
     },
     "src/modules/identity/invitation-acceptance.ts": {
-      "sha256": "33ca61fe01eb2cb45aaf1fd81d30738cf90ed4395d912733ffe906d9523dbab2",
+      "sha256": "179a56cc1354a60a694d52050aecaaff6ba1706629860f2143aaa2843e30f83c",
       "executable": false
     },
     "src/modules/identity/link-status.ts": {
@@ -5897,7 +5897,7 @@
       "executable": false
     },
     "src/modules/identity/recovery.ts": {
-      "sha256": "6b72444b94091269b876d3a67776300565908737f9da0e96e1bd3bfab451360d",
+      "sha256": "e0f9aacf16b3bcdaaafb90e2a2c2089d71cc1ae62f2bbd3555d5793eb5474f4b",
       "executable": false
     },
     "src/modules/identity/registration.ts": {
@@ -5918,6 +5918,10 @@
     },
     "src/modules/identity/signout.ts": {
       "sha256": "442ca23e1064b3027fa65cb2ddea9a8735d1892ca928e4b8c3bc7493c6a8d06c",
+      "executable": false
+    },
+    "src/modules/identity/sole-workspace.ts": {
+      "sha256": "38a68d6a540e776e1b9b8f4f25d89a06da633e534304fbef7ea60f782e8ee66c",
       "executable": false
     },
     "src/modules/identity/two-factor/cbor.ts": {
@@ -5941,7 +5945,7 @@
       "executable": false
     },
     "src/modules/identity/two-factor/policy-routes.ts": {
-      "sha256": "a1411567560a8382f90352006a93da0a863467d63f4f318af689aaf38d33f982",
+      "sha256": "684da5fd77d1bf161145d3e519ee43306c6061ac8d5b1251e58a08599a902783",
       "executable": false
     },
     "src/modules/identity/two-factor/recovery-codes.ts": {

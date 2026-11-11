@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "44c152f6810944f8143eca33eb8a4526fe87af565cc91b0d388dfff08166b079",
+      "sha256": "89869ef600628f11de1fbf4229469fe3dc36f76716df958c7e47cbe517f52533",
       "executable": false
     },
     "CLAUDE.md": {
@@ -7553,7 +7553,7 @@
       "executable": false
     },
     "src/modules/knowledge/reference-policy.ts": {
-      "sha256": "4772346604d15715ca66ee13828e4181923940479f611069a7d2c9c527bfaeaa",
+      "sha256": "8a8ae695d3dd0a39ac71b8e9c9e48fa2925c23bda8abfad8ed056613de03562f",
       "executable": false
     },
     "src/modules/knowledge/reference-store.ts": {

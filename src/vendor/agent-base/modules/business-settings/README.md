@@ -26,9 +26,10 @@ the signed document path; `logo_ref` is not a setup Business-field hint.
 `createBusinessSettings({db, business, trust?, team?, mail?})` accepts the seed's D1
 binding, its manifest block, optional trust JSON/object, and optional team
 adapter. All reads use D1; constructing per request is supported. Apply
-`schema/0001_business_settings.sql`, then `schema/0002_business_people.sql`
-before invoking database methods. Existing installations add only the second
-migration; preserve the previously applied schema.
+`schema/0001_business_settings.sql`, `schema/0002_business_people.sql`, then
+`schema/0003_business_retired.sql` before invoking database methods. Existing
+installations add only the migrations they lack; preserve the previously
+applied schema.
 
 | Method | Result and behavior |
 | --- | --- |
@@ -132,6 +133,38 @@ owner and team mappings stay (`bs_team` is never deleted), so a signed policy th
 names Business people is still adopted. Detachment records the newer revision while keeping the previous
 content. There is no public restart/reset method. Removing trust also closes
 the door without deleting data.
+
+## Erasing a person
+
+Erasing an operator who is on the roster retires them from it, in the seed's own
+erasure transaction. A seed that already puts `agentErasureStatements` (with
+`retire: { refs }` and `operatorPolicyRefs`) in that transaction gets this
+automatically; a seed without the agent door appends
+`rosterRetirementStatements(db, refs, { erasure_id })` itself. The person's
+`bs_team` row is deleted, their entry is removed from the stored
+`bs_settings.document` (the verified payload, not the signed token: the signature is
+checked once, on receipt, and is neither stored nor re-checked, so nothing is
+re-signed and every other entry is untouched), and an editor identity in
+`bs_overrides.actor` and `bs_audit.actor` becomes `person:erased:<erasure_id>`.
+
+The Business keeps its own roster and will list the person again. `bs_retired`
+keeps only domain-separated SHA-256 digests of the roster address and the Business
+member id, with the invite number the person had; there is no name or address. A later
+signed revision that lists a retired person is **applied as retired**: every other
+value and member applies, the person gets no row, no native account and no
+invitation, the stored document omits them, and the ack carries `retired: [email]`.
+Erased means gone until the Business sends an explicit new invitation, a member
+`invite` larger than the one they had; that admits them again and drops the tombstone.
+A person whose native account was erased before the installation had `bs_retired` is
+retired the same way at runtime, in the apply batch of the first revision after the seed's
+team adapter reports the native identity gone (`gone` in the
+[adapter contract](ADOPTING.md#5-integrate-native-team-accounts)); until then the stored row
+and document entry stay where the older erasure left them. Nothing is read from or purged
+in a migration.
+Digests of addresses are guessable by anyone who already knows the address; they hold
+no value that is not in the Business's own roster.
+`checkRosterArtifacts` refuses an erasure when a `bs_*` table or column is not
+declared in `rosterArtifacts`.
 
 `testing/index.mjs` exports `fixtureKeys`, `testTrust`, `testDocument` and
 `signSettings` for tests. It loads a fixture signing key and Node APIs: import

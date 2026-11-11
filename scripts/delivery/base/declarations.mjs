@@ -11,8 +11,21 @@ const status = (value, label) => {
   if (!Number.isInteger(value) || value < 100 || value > 599) throw Error(`Invalid ${label}`);
 };
 
+/**
+ * The secret names a seed declares as its outbound mail credentials, `mail.credentialSecretNames`:
+ * optional, a non-empty list of binding names, no duplicates, never values. Whether each is a secret
+ * the deployment declares is checked where the deployment's secrets are known (`rer deploy`).
+ */
+export function mailCredentialSecretNames(mail) {
+  if (mail?.credentialSecretNames === undefined) return [];
+  const names = strings(mail.credentialSecretNames, 'mail credentialSecretNames', bindingPattern);
+  if (!names.length) throw Error('Invalid mail credentialSecretNames: name at least one secret or remove the list');
+  return names;
+}
+
 /** Preserve source-owned preview and setup declarations, without authorizing effects. */
 export function validateDeclarations(spec) {
+  mailCredentialSecretNames(spec.mail);
   if (spec.providerEffects !== undefined) {
     if (strings(spec.providerEffects, 'providerEffects', /^[a-z][a-z0-9-]{0,63}$/).length > 32) throw Error('Too many provider effects');
   }

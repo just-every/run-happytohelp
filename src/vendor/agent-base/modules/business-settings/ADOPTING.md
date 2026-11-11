@@ -21,18 +21,24 @@ history. The updated source supplies `auth.businessTeam` and the Business
 branding/stop integration. Native-account compositions need their own team
 adapter; passing `businessSettings` alone does not provide one.
 
-Copy `./modules/business-settings/schema/0001_business_settings.sql` and
-`./modules/business-settings/schema/0002_business_people.sql` into the
+Copy `./modules/business-settings/schema/0001_business_settings.sql`,
+`./modules/business-settings/schema/0002_business_people.sql` and
+`./modules/business-settings/schema/0003_business_retired.sql` into the
 seed's normal migration directory under consecutive unused migration numbers.
 The maintained reference uses `./default-seed/migrations/core/0033_business_settings.sql`.
 Do not replace an applied migration or assume 0033 is free in another seed.
-An installation that already applied the first schema adds only the second.
+An installation that already applied the first schema adds only the later ones.
 Apply it through the seed's existing local/deployment migration lifecycle,
 on the same D1 binding as the native accounts. The first creates settings storage and
 `bs_overrides`, `bs_logo`, `bs_team`, `bs_audit`, `bs_assert`. The second adds
 `bs_settings.owner_id`, `bs_team.business_id` and `bs_team.business_role`,
-including a unique index for non-null Business teammate IDs.
-Apply it before starting the runtime. The first document or owner stop creates
+including a unique index for non-null Business teammate IDs. The third adds
+`bs_retired`, the value-free tombstones that keep an erased person from being
+re-created by the Business's next revision (see
+[Erasing a person](README.md#erasing-a-person)). The reference migration
+`default-seed/migrations/core/0044_business_retired.sql` is that table and nothing
+else; no migration reads, moves or deletes roster rows, whatever the seed's account
+tables are. Apply it before starting the runtime. The first document or owner stop creates
 the singleton row; a fresh installation stays empty for archive restore.
 
 ## 2. Declare the slots the app actually renders
@@ -168,6 +174,7 @@ prepare(input: {
   statements: Statement[]
   rows: ManagedMember[]
   afterCommit(): Promise<void>
+  gone?: string[]
 }>
 ```
 
@@ -185,6 +192,19 @@ the row's native `operatorId` stays unchanged. Always use that operator ID for
 an established binding, even when its native email has changed. Retain IDs and
 inactive rows in the complete ledger. Legacy documents can omit IDs; adding an
 ID to an unlinked legacy row establishes its durable Business identity.
+
+`gone` is optional: the `operatorId`s of stored rows whose native identity no
+longer exists in the seed's own account store, decided by the adapter's own check
+in its own id space (`auth.businessTeam` reports a stored operator it can no longer
+find; a seed with another accounts table checks that table). Return no row for them.
+The module retires each one in that apply's batch: it writes value-free digests of the
+row's address(es) and Business id to `bs_retired` with the invite number the row had,
+purges the row and drops the person from the stored document, and the ack lists the
+address in `retired` if the revision named them. This is how a person whose native account was erased
+before the installation had `bs_retired` leaves the roster; the Business's next
+revision that still lists them applies as retired, not as a new invitation, until it
+sends a larger `invite`. A seed that never reports `gone` keeps every stored row exactly
+as it was.
 
 The module first places its settings compare-and-swap in the batch, then
 its logo writes, adapter statements, managed-ledger/audit writes and a final assertion.

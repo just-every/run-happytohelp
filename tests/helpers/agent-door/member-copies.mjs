@@ -2,25 +2,33 @@ import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
 import {accessToken,autonomousPolicy} from '../../../src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs'
 import {memberExport} from './member-export.mjs'
+import {emailDigest,idDigest} from '../../../src/vendor/agent-base/modules/business-settings/retire.ts'
+
+const sha256=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))),byte=>byte.toString(16).padStart(2,'0')).join('')
 
 /** Extend the existing member-erasure/signed-sync journey without registrations. */
 export async function memberCopies({app,owner,project,native,person,context,call,rpc,adopt,settings,conversation,taylor,taylorSession,sub,email}){
  const root=`/api/dashboard/projects/${project}/conversations/${conversation.id}`,erase=`/api/management/projects/${project}/agents/${taylor.id}/erase`,cookie='h2h_session='+owner.token
  const member={id:sub,email,name:'Taylor Support',role:'member',invite:1}
- // Earlier public-door steps erased a teammate. Their inactive hash binding is
- // an erasure fence, never an email to put back into a signed Business roster.
+ // Earlier public-door steps erased a teammate. Erasure retired them from the Business roster (no bs_team row, no
+ // entry in the stored document) and left only value-free bs_retired digests: never an email to put back.
  const other=(await app.sql("SELECT b.business_id id,b.email,b.business_role role,b.invite FROM bs_team b JOIN users u ON u.id=b.operator_id WHERE b.operator_id<>? AND u.email<>'erased:'||u.id",taylor.id)).map(row=>({...row,name:'Unrelated teammate'}))
- const priorErased=await app.sql("SELECT b.* FROM bs_team b JOIN users u ON u.id=b.operator_id WHERE u.email='erased:'||u.id ORDER BY b.email")
- assert.ok(priorErased.length,'the earlier member erasure left a durable Business fence')
+ const erasedRoster=()=>app.sql("SELECT b.* FROM bs_team b JOIN users u ON u.id=b.operator_id WHERE u.email='erased:'||u.id")
+ const priorTombstones=await app.sql('SELECT * FROM bs_retired ORDER BY digest')
+ assert.deepEqual(await erasedRoster(),[],'an erased teammate leaves the Business roster')
+ assert.ok(priorTombstones.length,'the earlier member erasure left value-free Business tombstones')
  // Preserve an unrelated active teammate in the managed roster.
  const survivor=(await native(`/api/management/projects/${project}/agents`,{body:{email:'synthetic-happytohelp-survivor@example.test'}})).data
  await app.ok('/api/identity/accept-token',{body:{token:new URL(survivor.invitationUrl).searchParams.get('token'),name:'Synthetic Survivor',password:'synthetic-happytohelp-survivor-password'}})
  const survivorSession=await app.ok('/api/identity/login',{body:{email:survivor.email,password:'synthetic-happytohelp-survivor-password'}})
  const live={id:randomUUID(),email:survivor.email,name:'Synthetic Survivor',role:'member',invite:1}
  assert.equal((await settings(5,[member,live,...other])).status,200)
- assert.deepEqual(await app.sql("SELECT b.* FROM bs_team b JOIN users u ON u.id=b.operator_id WHERE u.email='erased:'||u.id ORDER BY b.email"),priorErased,'signed roster omission preserves earlier erased bindings')
+ assert.deepEqual(await erasedRoster(),[],'a signed roster never brings an erased teammate back')
+ assert.deepEqual(await app.sql('SELECT * FROM bs_retired ORDER BY digest'),priorTombstones,'a revision that omits the erased leaves their tombstones as they were')
  const unrelatedBefore=await app.first('SELECT * FROM bs_team WHERE business_id=?',live.id)
  assert.equal(unrelatedBefore.state,'active')
+ const listed=async id=>({row:await app.first('SELECT operator_id,state FROM bs_team WHERE business_id=?',id),entry:JSON.parse((await app.first('SELECT document FROM bs_settings')).document).team?.some(item=>item.id===id)??false})
+ assert.equal((await listed(sub)).entry,true);assert.ok((await listed(sub)).row,'the teammate is on the Business roster before erasure')
  // A retained pre-upgrade receipt has only the legacy assignee-name copy;
  // generate it through the real native door, then stage that older stored shape.
  await native(root,{method:'PUT',body:{assigned_to:taylor.id}})
@@ -47,6 +55,7 @@ export async function memberCopies({app,owner,project,native,person,context,call
  assert.equal((await app.first('SELECT email FROM users WHERE id=?',taylor.id)).email,email,'denied erasures leave personal data unchanged')
  return async()=>{
   await app.configure({})
+  assert.deepEqual(await listed(sub),{row:null,entry:false},'erasing a teammate retires them from the Business roster and its stored document')
   const afterBuckets=await buckets(),afterReviews=await reviews(),review=afterReviews.find(row=>row.id===reviewId)
   const exported=await memberExport(app)
   // Capture all three observations before assertions, including the source regression.
@@ -73,18 +82,26 @@ export async function memberCopies({app,owner,project,native,person,context,call
   // Omitting the erased person does not discard their durable frontier.
   assert.equal((await settings(6,[live,...other])).status,200)
   assert.equal((await settings(7,null)).status,200,'a values-only sync leaves the erasure frontier intact')
-  const erasedRoster=await app.sql('SELECT * FROM bs_team'),document=(await app.first('SELECT document FROM bs_settings')).document
-  assert.doesNotMatch(JSON.stringify([erasedRoster,document]),/Taylor Support|taylor@example.test/,'E3 stored roster and document copies are anonymized')
-  // Same revision, higher revision and changed address under the old Business id
-  // all retain the erasure fence. A restart cannot turn it into an invitation.
-  for(const [rev,entry] of [[7,member],[8,member],[9,{...member,email:'synthetic-happytohelp-renamed@example.test'}],[10,{...member,id:undefined}]]){
-   const sync=await settings(rev,[entry,live,...other]);assert.equal(sync.status,409,'E3 stale signed sync cannot re-invite an erased identity')
+  const roster=await app.sql('SELECT * FROM bs_team ORDER BY email'),document=(await app.first('SELECT document FROM bs_settings')).document
+  assert.doesNotMatch(JSON.stringify([roster,document]),/Taylor Support|taylor@example.test/,'E3 stored roster and document copies hold nothing of the erased teammate')
+  // Erasure retired the teammate from the Business roster: no row, no document entry, and a value-free tombstone
+  // (the address and Business id digests with the invite number they had) in bs_retired.
+  const tombstones=await app.sql('SELECT digest,invite FROM bs_retired WHERE digest IN (?,?)',await emailDigest(email),await idDigest(sub))
+  assert.deepEqual(tombstones.map(row=>row.invite),[1,1],'the tombstone keeps the invite number the teammate had')
+  assert.doesNotMatch(JSON.stringify(await app.sql('SELECT * FROM bs_retired')),/taylor|Taylor/)
+  // The Business keeps listing the erased teammate: same invite, a later revision, a changed address under the old
+  // Business id and a listing without the id all apply as retired. Everyone else applies, nothing of the
+  // teammate is created, and a restart cannot turn the listing into an invitation.
+  for(const [rev,entry] of [[8,member],[9,{...member,email:'synthetic-happytohelp-renamed@example.test'}],[10,{...member,id:undefined}]]){
+   const sync=await settings(rev,[entry,live,...other]);assert.equal(sync.status,200,JSON.stringify(sync.data))
+   assert.deepEqual(sync.data.retired,[entry.email],'E3 a signed roster that still lists an erased teammate applies them as retired')
    assert.equal(await app.first('SELECT 1 FROM memberships WHERE project_id=? AND user_id=?',project,taylor.id),null)
    assert.equal(await app.first('SELECT 1 FROM identity_tokens WHERE user_id=?',taylor.id),null)
+   assert.equal(await app.first('SELECT 1 FROM users WHERE lower(email)=?',entry.email),null,'no native account is created for a retired listing')
    await app.configure({})
   }
-  assert.deepEqual(await app.sql('SELECT * FROM bs_team'),erasedRoster,'E3 rejected sync cannot write a roster or personal copies')
-  assert.equal((await app.first('SELECT document FROM bs_settings')).document,document)
+  assert.deepEqual(await app.sql('SELECT * FROM bs_team ORDER BY email'),roster,'E3 retired listings write no roster row and no personal copy')
+  assert.doesNotMatch((await app.first('SELECT document FROM bs_settings')).document,/Taylor Support|taylor@example.test|renamed@example.test/)
   // Existing Business authority explicitly permits a larger invite counter.
   // It creates a fresh native account, never reanimates the anonymized one.
   const fresh=await settings(11,[{...member,invite:2},live,...other]);assert.equal(fresh.status,200,JSON.stringify(fresh.data))
@@ -97,7 +114,28 @@ export async function memberCopies({app,owner,project,native,person,context,call
   // incumbent custody journey checks all stores for the removed identity.
   assert.equal((await app.call(`/api/management/projects/${project}/agents/${invited.operator_id}/erase`,{token:owner.token,body:{}})).status,200)
   await app.configure({})
-  assert.equal((await settings(12,[{...member,invite:2},live,...other])).status,409,'restart preserves the new erasure frontier too')
+  const relisted=await settings(12,[{...member,invite:2},live,...other])
+  assert.equal(relisted.status,200,JSON.stringify(relisted.data));assert.deepEqual(relisted.data.retired,[email],'restart preserves the new erasure frontier too')
+  assert.equal(await app.first('SELECT 1 FROM bs_team WHERE business_id=?',sub),null)
+  // A teammate erased by a release before bs_retired left a hash-named, inactive roster row and no tombstone. The
+  // Business's next revision retires them, listed or not; a larger invite admits them as someone new.
+  const olderErasure=async(operatorId,invite)=>{
+   await app.db.prepare('DELETE FROM bs_retired WHERE digest IN (?,?)').bind(await emailDigest(email),await idDigest(sub)).run()
+   await app.db.prepare("INSERT INTO bs_team(email,operator_id,invite,state,business_id,business_role) VALUES(?,?,?,'inactive',?,'member')").bind('erased:'+await sha256(email),operatorId,invite,sub).run()
+  }
+  await olderErasure(invited.operator_id,2)
+  const upgraded=await settings(13,[live,...other]);assert.equal(upgraded.status,200,JSON.stringify(upgraded.data))
+  assert.equal(await app.first('SELECT 1 FROM bs_team WHERE operator_id=?',invited.operator_id),null,'the next Business revision retires a teammate an older release erased')
+  assert.deepEqual((await app.sql('SELECT invite FROM bs_retired WHERE digest=?',await idDigest(sub))).map(row=>row.invite),[2],'the older erasure is tombstoned with the invite it had')
+  const stillRetired=await settings(14,[{...member,invite:2},live,...other]);assert.equal(stillRetired.status,200)
+  assert.deepEqual(stillRetired.data.retired,[email],'a retired teammate stays retired at the invite they had')
+  await olderErasure(invited.operator_id,2)
+  const readmitted=await settings(15,[{...member,invite:3},live,...other]);assert.equal(readmitted.status,200,JSON.stringify(readmitted.data))
+  const again=await app.first('SELECT operator_id,state FROM bs_team WHERE business_id=?',sub)
+  assert.equal(again.state,'invited');assert.notEqual(again.operator_id,invited.operator_id,'a larger invite creates a new account for a teammate an older release erased')
+  assert.equal(readmitted.data.retired,undefined)
+  assert.equal((await app.call(`/api/management/projects/${project}/agents/${again.operator_id}/erase`,{token:owner.token,body:{}})).status,200)
+  await app.configure({})
   assert.doesNotMatch(await memberExport(app),/Taylor Support|taylor@example.test/,'retry and restarted stale sync cannot restore exported identity')
   await adopt()
  }

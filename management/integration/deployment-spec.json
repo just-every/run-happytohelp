@@ -1143,6 +1143,12 @@
     },
     {
       "binding": "DB",
+      "name": "323_business_retired.sql",
+      "sha256": "3973b0702a096c8f71de37559bd142ed981a0b7b337e11c707885866493b4193",
+      "sql": "-- Business roster erasure (rer 0.2.107, Base default-seed/migrations/core/0044_business_retired.sql).\n-- Value-free tombstones of people erased from the installation: domain-separated SHA-256 digests of the roster\n-- address and the Business member id, with the invite number they had. Never a name, address or id.\n-- Additive only: the table starts empty; no roster row is read, moved or deleted here. Erasing a team member\n-- writes it, and the Business's next signed revision that still lists that person applies them as retired.\nCREATE TABLE bs_retired (\n  digest TEXT PRIMARY KEY,\n  invite INTEGER NOT NULL CHECK(invite >= 0),\n  erasure_id TEXT NOT NULL\n);\n"
+    },
+    {
+      "binding": "DB",
       "name": "324_knowledge_documents_version_url.sql",
       "sha256": "96b2b538fb64602a54939bdfcaa450b44c04dfbd8ec195479fb8b109d610343b",
       "sql": "-- The knowledge reference policy (src/modules/knowledge/reference-policy.ts, documentCurrent) decides whether a cited\n-- crawled page is still current. A page of the published version is current; a page of an older crawl version is\n-- current only if the published version holds a page at the same URL. That second lookup is\n-- `SELECT 1 FROM knowledge_documents WHERE version_id=<published version> AND url=<the older page's url>`, and the only\n-- index on knowledge_documents holding version_id was knowledge_documents_version(version_id), so it walked every\n-- page of the published version for each cited source whose URL is no longer published: 644 rows per source, about\n-- 2.6 million rows to evaluate 16 copied passages of 255 older-version sources on a large imported workspace.\n-- This index holds both columns, so the lookup searches (version_id,url) and reads only the pages at that URL.\n-- Additive: no row, column or statement changes; the lookup's matches are unchanged.\nCREATE INDEX IF NOT EXISTS knowledge_documents_version_url ON knowledge_documents(version_id,url);\n"
@@ -1270,6 +1276,15 @@
   "mail": {
     "providers": [
       "rer"
+    ],
+    "credentialSecretNames": [
+      "EMAIL_PROVIDER",
+      "EMAIL_FROM",
+      "EMAIL_API_KEY_NAME",
+      "MAILGUN_DOMAIN",
+      "MAILGUN_REGION",
+      "MAILGUN_SENDING_KEY",
+      "MAILGUN_WEBHOOK_SIGNING_KEY"
     ]
   }
 }

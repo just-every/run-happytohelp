@@ -7425,7 +7425,7 @@
       "executable": false
     },
     "src/modules/knowledge/generation-sources.ts": {
-      "sha256": "12b6492b509597fc6171f8c97b5e9a68a33a9c3eeb0bb4b6cd981ba807fee085",
+      "sha256": "32bdf5840619197123078da4f017f27970a2916e4f02bc426b5d3e70323c86f5",
       "executable": false
     },
     "src/modules/knowledge/help-auth.ts": {
@@ -7537,7 +7537,7 @@
       "executable": false
     },
     "src/modules/knowledge/readers.ts": {
-      "sha256": "8ba1d5789fd31a7b694a330f9c6cc243a680ca8eaefbf1249182c4af7e2b750e",
+      "sha256": "ab436119d6fa136ab742d285037ccbbc7bf84b30ab5f7abd5a9a3f866b09fd84",
       "executable": false
     },
     "src/modules/knowledge/README.md": {
@@ -7549,7 +7549,7 @@
       "executable": false
     },
     "src/modules/knowledge/reference-policy.ts": {
-      "sha256": "2d29d42edce61b1272ac7166792009ce7bfda4c6733b98a7bd0c7f3a3519ad11",
+      "sha256": "4772346604d15715ca66ee13828e4181923940479f611069a7d2c9c527bfaeaa",
       "executable": false
     },
     "src/modules/knowledge/reference-store.ts": {

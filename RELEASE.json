@@ -32,6 +32,10 @@
     {
       "id": "324_scheduler_outbox_reads.sql",
       "buyerSteps": "Back up D1 first; apply once after 323_business_retired.sql, before serving the updated Worker. Additive and index-only: creates seven indexes (conversation_tags_conversation on conversation_tags (conversation_id, project_id, tag_id); conversation_outbox_undelivered on conversation_outbox (conversation_id, project_id) for undelivered rows only; conversation_outbox_conversation on conversation_outbox (conversation_id); conversation_outbox_project on conversation_outbox (project_id); workflow_events_due on workflow_events (state, coalesce(next_attempt_at, 0)); workflow_events_pending_ids on workflow_events (state, id); workflow_events_lease on workflow_events (state, lease_token)), so the every-minute scheduler, outbox delivery, a live connection's replay and a conversation's tag reads search the work that is due instead of walking every outbox row, pending workflow event or tag of the database; no row changes, no trigger is recreated, and nothing is read, sent or queued. On a large imported workspace each index builds in under a second."
+    },
+    {
+      "id": "325_knowledge_documents_version_url.sql",
+      "buyerSteps": "Back up D1 first; apply once after 324_scheduler_outbox_reads.sql, before serving the updated Worker. Additive only: creates one index on knowledge_documents (knowledge_documents_version_url on (version_id, url)), so the knowledge reference policy's check that an older crawl version's page still has a current twin at the same URL searches an index instead of walking every page of the published version; no row changes and nothing is read, sent or queued. On a crawled site of a few thousand pages it applies in under a second."
     }
   ]
 }

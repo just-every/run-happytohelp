@@ -8,6 +8,11 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## Unreleased
+
+- **Fixes — a re-crawled help site no longer makes conversations that cite its older pages walk the site:** deciding whether a cited page of an older crawl version is still current looks for a page of the published version at the same URL, and with no index holding that URL it read every page of the published version for each cited page whose URL is no longer published (about 2.6 million rows to open a conversation with 16 copied passages of 255 such pages on a large imported workspace). An index on a page's version and URL makes that lookup read only the pages at that URL. The decisions are unchanged. The same index would have made three lists that carry no explicit order come back in URL order instead of the order the pages were crawled: a dataset's pages list, which pages lexical search and the AI knowledge tool return among pages tied on score, and which 12 pages the customer-context catalog holds. They now state the crawl order (dataset, then the order its pages were stored) and read the same rows as before.
+- **Migrations:** `324_knowledge_documents_version_url.sql`. Apply once after `323_business_retired.sql` and before serving the updated Worker; it is additive and creates one index on knowledge_documents.
+
 ## 0.4.20 — 2026-11-11
 
 - **Inbound mail contact lookups at scale:** an inbound mail's contact lookups by address (the blocked-sender check, the sender's and each Cc's contact, the new-contact guard, and a reply's sender through a reply address or from a preferred notification address) search an index of the address instead of walking every contact of a large imported workspace, and a member reply's send issues each recipient's reply address by reading the conversation's own contact and participants by key. An ordinary inbound mail on a workspace of about 160,000 contacts reads about 1,400 rows instead of about 490,000, and the send of a reply about 180 instead of about 320,000. Every lookup matches exactly the contacts it matched before. Apply `322_contact_address_lookup.sql` after 321.

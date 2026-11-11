@@ -37,5 +37,10 @@
       "buyerSteps": "Back up D1 first; apply once after 322_contact_address_lookup.sql, before serving the updated Worker. Additive only: creates the empty bs_retired table (value-free tombstones of team members erased from the installation: domain-separated SHA-256 digests of the roster address and the Business member id, with the invite number each had; never a name or address); no existing row changes and nothing is read, sent or queued. Without it, erasing a team member refuses with business_roster_missing_table:bs_retired. Nothing else to do: a team member erased by an earlier release leaves the Business roster at the Business's next signed revision."
     }
   ],
-  "pendingMigrations": []
+  "pendingMigrations": [
+    {
+      "id": "324_knowledge_documents_version_url.sql",
+      "buyerSteps": "Back up D1 first; apply once after 323_business_retired.sql, before serving the updated Worker. Additive only: creates one index on knowledge_documents (knowledge_documents_version_url on (version_id, url)), so the knowledge reference policy's check that an older crawl version's page still has a current twin at the same URL searches an index instead of walking every page of the published version; no row changes and nothing is read, sent or queued. On a crawled site of a few thousand pages it applies in under a second."
+    }
+  ]
 }

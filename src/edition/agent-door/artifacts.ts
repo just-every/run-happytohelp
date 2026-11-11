@@ -50,7 +50,6 @@ const match=(sql:string)=>({sql,params:['values']})
 const shared:AgentArtifactMap['artifacts']=[
  {table:'agent_door_retired_refs',columns:['digest','marker'],unrelated:'Value-free suppression digests and erasure markers preserve retirement across restore.'},
  {table:'agent_door_relay',columns:['sequence','decision_id','business'],unrelated:'Value-free decision ids and installation Business id; projections are computed from erasure-aware audit. Installation-private, never portable.'},
- {table:'agent_door_state',columns:['id','envelope','local_document','local_revision','local_paused','decision_lock','decision_until'],unrelated:'Signed installation policy and admission leases. Opaque native person refs retain authority; customer records are never policy principals.'},
  {table:'agent_door_calls',columns:['agent','key','digest','decision_id','created_at','state','outcome','expires_at'],match:match(`decision_id IN (${decisions})`)},
  {table:'agent_door_audit',columns:['sequence','id','at','agent','classes','row','evidence'],match:match(`id IN (${decisions}) OR json_extract(row,'$.decision_id') IN (${decisions}) OR json_extract(row,'$.replay_of') IN (${decisions})`)},
  {table:'agent_door_approvals',columns:['id','state','saved','approvals','result','version'],match:match(`json_extract(saved,'$.decision_id') IN (${decisions}) OR ${approvals}`)},
@@ -60,5 +59,14 @@ const shared:AgentArtifactMap['artifacts']=[
  {table:'agent_door_replay_aliases',columns:['agent','alias','call_id','tombstone'],unrelated:'Installation-private HMAC replay aliases, bounded by the original call expiry; excluded from all archives and exports.'},
 ]
 const agents=['id','name','specialist','sponsor','sponsor_name','revoked','window','requests','tombstone']
-export const contactAgentArtifacts:AgentArtifactMap={artifacts:[...shared,{table:'agent_door_agents',columns:agents,unrelated:'Non-person agent identities and native teammate sponsors; customers are not operators.'}]}
-export const memberAgentArtifacts:AgentArtifactMap={artifacts:[...shared,{table:'agent_door_agents',columns:agents,match:match("sponsor IN (SELECT value FROM json_each(?1))")}]}
+const stateColumns=['id','envelope','local_document','local_revision','local_paused','decision_lock','decision_until']
+// A customer is never a policy principal, so contact erasure leaves signed policy and admission leases alone.
+export const contactAgentArtifacts:AgentArtifactMap={artifacts:[...shared,
+ {table:'agent_door_state',columns:stateColumns,unrelated:'Signed installation policy and admission leases. Customer records are never policy principals.'},
+ {table:'agent_door_agents',columns:agents,unrelated:'Non-person agent identities and native teammate sponsors; customers are not operators.'}]}
+// An erased teammate is an operator: the same erasure batch retires their policy references (native id and mapped Business
+// member ids, from operatorPolicyRefs) from local policy and retires them from the Business-signed roster (bs_team, the stored
+// settings document and bs_retired tombstones; rer 0.2.107, migration 322_business_retired.sql).
+export const memberAgentArtifacts:AgentArtifactMap={artifacts:[...shared,
+ {table:'agent_door_state',columns:stateColumns,retire:{refs:'operatorPolicyRefs'}},
+ {table:'agent_door_agents',columns:agents,match:match("sponsor IN (SELECT value FROM json_each(?1))")}]}

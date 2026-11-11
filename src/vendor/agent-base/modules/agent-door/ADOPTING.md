@@ -1622,6 +1622,15 @@ the Agents page links to Business policy when paired, or the local editor.
 The count clears when policy no longer names the reference or marker. In local
 policy the marker remains until the owner chooses a replacement.
 
+When the seed has a Business roster, the same `agentErasureStatements` call also
+retires the erased operator from it: their `bs_team` row, their entry in
+`bs_settings.document` and any editor identity in `bs_overrides`/`bs_audit` go in that
+batch, and `bs_retired` (reference migration `0044_business_retired.sql`, source
+`modules/business-settings/schema/0003_business_retired.sql`) keeps value-free digests so
+the Business's next revision cannot re-create them. A seed with a roster must land that
+migration (the table only; it changes no row); without it person erasure refuses with `business_roster_missing_table:bs_retired`.
+The seed must not delete `bs_team` itself.
+
 Append `await agentErasureStatements({db,map,subject,secret,tombstone,checkpoint})`
 inside the existing erasure transaction. `tombstone` is
 `{erasure_id: nativeOperation.id, at: nativeOperation.requestedAt}`.

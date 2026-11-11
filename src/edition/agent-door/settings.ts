@@ -13,18 +13,24 @@ export function nativeTeam(env:Env):TeamAdapter {
    const statements:D1PreparedStatement[]=[],rows:ManagedMember[]=[],desired=new Set(members.map(m=>m.email))
    // Read the durable anonymized account, not an in-memory denial list. The
    // module has already projected Business IDs onto the incoming email keys.
-   const renewed=new Set<string>()
+   const erased=new Set<string>()
+   for(const row of managed)if(row.operatorId&&row.operatorId!==link.owner_user_id){
+    const account=await env.DB.prepare('SELECT email FROM users WHERE id=?').bind(row.operatorId).first<{email:string}>()
+    if(account?.email==='erased:'+row.operatorId)erased.add(row.operatorId)
+   }
+   // A larger invite is the Business's explicit new invitation. Any other listing of an erased person applies as
+   // retired, and so does an erased row nobody lists: both are reported gone, so the module tombstones and purges them.
+   const renewed=new Set<string>(),listedErased=new Set<string>()
    for(const member of members){
     const marker='erased:'+await hashToken(member.email.toLowerCase())
     const previous=managed.find(row=>row.email===member.email||row.email===marker)
-    if(!previous?.operatorId)continue
-    const account=await env.DB.prepare('SELECT email FROM users WHERE id=?').bind(previous.operatorId).first<{email:string}>()
-    if(account?.email!=='erased:'+previous.operatorId)continue
-    if(member.invite<=previous.invite)throw new SettingsError('member_erased',409)
-    renewed.add(previous.operatorId)
+    if(!previous?.operatorId||!erased.has(previous.operatorId))continue
+    if(member.invite>previous.invite)renewed.add(previous.operatorId)
+    else listedErased.add(member.email)
    }
+   for(const id of renewed)erased.delete(id)
    for(const previous of managed)if(!desired.has(previous.email)){
-    if(previous.operatorId&&renewed.has(previous.operatorId))continue
+    if(previous.operatorId&&(renewed.has(previous.operatorId)||erased.has(previous.operatorId)))continue
     rows.push({...previous,state:'inactive'})
     if(previous.operatorId&&previous.operatorId!==link.owner_user_id){
      statements.push(env.DB.prepare(`DELETE FROM memberships WHERE project_id=? AND user_id=? AND role<>'owner' AND ${guard.sql}`).bind(link.project_id,previous.operatorId,...guard.args))
@@ -32,6 +38,7 @@ export function nativeTeam(env:Env):TeamAdapter {
     }
    }
    for(const member of members){
+    if(listedErased.has(member.email))continue
     const prior=managed.find(m=>m.email===member.email)
     const previous=prior?.operatorId&&renewed.has(prior.operatorId)?undefined:prior
     // An applied Business id retains its native id across an email change/reassignment.
@@ -52,7 +59,7 @@ export function nativeTeam(env:Env):TeamAdapter {
     const admitted=existing&&await env.DB.prepare('SELECT 1 FROM credentials WHERE user_id=? UNION SELECT 1 FROM sessions WHERE actor_id=? AND revoked_at IS NULL AND expires_at>?').bind(id,id,now).first()
     rows.push({email:member.email,operatorId:id,invite:member.invite,state:admitted?'active':'invited'})
    }
-   return {statements,rows,async afterCommit(){}}
+   return {statements,rows,gone:[...erased],async afterCommit(){}}
   },
  }
 }

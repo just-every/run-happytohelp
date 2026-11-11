@@ -29,9 +29,16 @@ export interface TeamAdapter {
   prepare(input: {
     members: Member[]; managed: ManagedMember[]; ownerEmail: string;
     roles: { admin: string; member: string }; guard: Guard;
-  }): Promise<{ statements: Statement[]; rows: ManagedMember[]; afterCommit(): Promise<void> }>;
+  }): Promise<{
+    statements: Statement[]; rows: ManagedMember[]; afterCommit(): Promise<void>;
+    /** `operatorId`s of stored rows whose native identity no longer exists in the seed's own account store (the
+     * adapter's own check, in its own id space). Return no row for them: the module retires each person in this
+     * apply's batch, so the Business listing them again changes nothing until it sends a larger `invite`. */
+    gone?: string[];
+  }>;
 }
-export interface Ack { rev: number; applied: Field[]; overrides: Field[]; logo: string | null; team: TeamState[] }
+/** `retired` appears only when the revision listed people this installation erased; they were not applied. */
+export interface Ack { rev: number; applied: Field[]; overrides: Field[]; logo: string | null; team: TeamState[]; retired?: string[] }
 export interface Snapshot {
   document: SettingsDocument | null; rev: number; appliedAt: string | null;
   stopped: boolean; overrides: Field[]; logo: string | null; team: TeamState[];

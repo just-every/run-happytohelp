@@ -33,5 +33,10 @@
       "buyerSteps": "Back up D1 first; apply once after 320_legacy_import_work_repair.sql, before serving the updated Worker. Additive only: creates the empty legacy_import_files table (imported legacy files that have no conversation: logos, the widget background, avatars and article images, served by /api/imported-files/<workspace>/<file>); no existing row changes and nothing is read, sent or queued. Then run node scripts/legacy-import/upgrade.mjs --project <legacy project id> (--persist-to DIR | --database D1 --bucket R2) once per workspace imported from legacy: it rewrites that workspace's legacy storage URLs to native URLs and applies the legacy widget translation where its settings are unchanged since import, under the workspace's import lease, printing counts only; a second run changes nothing."
     }
   ],
-  "pendingMigrations": []
+  "pendingMigrations": [
+    {
+      "id": "322_business_retired.sql",
+      "buyerSteps": "Back up D1 first; apply once after 321_legacy_import_files.sql, before serving the updated Worker. Additive only: creates the empty bs_retired table (value-free tombstones of team members erased from the installation: domain-separated SHA-256 digests of the roster address and the Business member id, with the invite number each had; never a name or address); no existing row changes and nothing is read, sent or queued. Without it, erasing a team member refuses with business_roster_missing_table:bs_retired. Nothing else to do: a team member erased by an earlier release leaves the Business roster at the Business's next signed revision."
+    }
+  ]
 }

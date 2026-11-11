@@ -1,6 +1,7 @@
 import type { CallResult, Runtime, ToolContext } from './types.ts'
 import { ToolRefusal } from './errors.ts'
 import { retiredDigest } from './retired-refs.ts'
+import { rosterRetirementStatements } from '../business-settings/retire.ts'
 
 // The fixed replay window also bounds installation-private erasure aliases.
 export const REPLAY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000
@@ -168,5 +169,7 @@ export async function agentErasureStatements(input: {
     ] as const) for (const column of columns) out.push(db.prepare('UPDATE ' + quote(table) + ' SET ' + quote(column) + '=replace(' + quote(column) + ',?,(SELECT json_quote(marker) FROM agent_door_retired_refs WHERE digest=?)) WHERE instr(' + quote(column) + ',?)>0')
       .bind(JSON.stringify(ref), digest, JSON.stringify(ref)))
   }
+  // The erased operator's Business roster entry (bs_team and the stored signed document) goes in the same transaction.
+  if (refs.length) out.push(...await rosterRetirementStatements(db, refs, tombstone) as unknown as D1PreparedStatement[])
   return out
 }

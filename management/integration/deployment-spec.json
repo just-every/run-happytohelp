@@ -1134,6 +1134,12 @@
       "name": "321_legacy_import_files.sql",
       "sha256": "3983dea526885477fc74e66e4b5e8ddb3f81d6e44e90a4fb6ee83368c4309fc0",
       "sql": "-- Imported legacy files that have no conversation: a workspace's logo and widget background, its team's and assistants'\n-- avatars and its article images (src/modules/legacy-import/media-index.ts). A legacy import that rewrites a legacy\n-- storage URL naming such a file writes one row here, keyed by the workspace and the legacy media id, and the URL\n-- becomes /api/imported-files/<workspace>/<media id> (file-door.ts). audience 'public' (a file legacy linked to the\n-- workspace, a teammate or an assistant) is served to anyone, so the widget shows it on the customer's own site;\n-- 'article' (a file legacy linked to an article) is served to the workspace's members and to whoever may read an\n-- article that holds its URL. A conversation's files keep their native media rows and route; no row here names one.\n-- Additive only: the table starts empty and existing rows are untouched. A workspace imported earlier gets its rows\n-- from scripts/legacy-import/upgrade.mjs.\nCREATE TABLE legacy_import_files(project_id TEXT NOT NULL,media_id TEXT NOT NULL,object_key TEXT NOT NULL,content_type TEXT NOT NULL,filename TEXT NOT NULL,audience TEXT NOT NULL CHECK(audience IN ('public','article')),PRIMARY KEY(project_id,media_id)) WITHOUT ROWID;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "322_business_retired.sql",
+      "sha256": "3973b0702a096c8f71de37559bd142ed981a0b7b337e11c707885866493b4193",
+      "sql": "-- Business roster erasure (rer 0.2.107, Base default-seed/migrations/core/0044_business_retired.sql).\n-- Value-free tombstones of people erased from the installation: domain-separated SHA-256 digests of the roster\n-- address and the Business member id, with the invite number they had. Never a name, address or id.\n-- Additive only: the table starts empty; no roster row is read, moved or deleted here. Erasing a team member\n-- writes it, and the Business's next signed revision that still lists that person applies them as retired.\nCREATE TABLE bs_retired (\n  digest TEXT PRIMARY KEY,\n  invite INTEGER NOT NULL CHECK(invite >= 0),\n  erasure_id TEXT NOT NULL\n);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
@@ -1258,6 +1264,15 @@
   "mail": {
     "providers": [
       "rer"
+    ],
+    "credentialSecretNames": [
+      "EMAIL_PROVIDER",
+      "EMAIL_FROM",
+      "EMAIL_API_KEY_NAME",
+      "MAILGUN_DOMAIN",
+      "MAILGUN_REGION",
+      "MAILGUN_SENDING_KEY",
+      "MAILGUN_WEBHOOK_SIGNING_KEY"
     ]
   }
 }

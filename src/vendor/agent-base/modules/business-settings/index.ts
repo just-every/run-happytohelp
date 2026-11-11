@@ -8,6 +8,7 @@ import { fields, SettingsError } from './types.ts';
 import { parseJson } from './json.ts';
 import type { Field, Guard, Logo, Options } from './types.ts';
 export type * from './types.ts';
+export { rosterArtifacts, rosterRetirementStatements, checkRosterArtifacts } from './retire.ts';
 
 const noStore = { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' };
 async function body(request: Request): Promise<Record<string, unknown>> {

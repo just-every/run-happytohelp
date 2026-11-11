@@ -50,7 +50,7 @@ export function lobbyHtml(identity: EditionIdentity, state: SetupState, loginHin
   const claimed = state === 'claimed', product = escape(identity.product)
   const line = claimed ? signedIn ? 'You’re signed in. Continue to your workspace.' : 'The owner is set up. Sign in to continue.' : `This ${product} is waiting for its owner.`
   const action = claimed ? signedIn ? `<a class="btn" href="/app">Open app${ARROW}</a>` : `<a class="btn" href="${escape(identity.signInPath)}${loginHint ? `?login_hint=${encodeURIComponent(loginHint)}` : ''}">Sign in${ARROW}</a>` : `<a class="btn" href="/setup">Finish setup${ARROW}</a>`
-  const ownerHelp = claimed && local && !signedIn ? '<p class="credit">Choose a local persona on the sign-in page, or run <code>rer dev --as owner</code> from the project folder.</p>' : ''
+  const ownerHelp = claimed && local && !signedIn ? '<p class="credit">This app runs on your own computer. Open it from the terminal where <code>rer dev</code> is running, or run <code>rer dev --as owner</code> from the project folder.</p>' : ''
   const credit = claimed
     ? `<p class="credit">Powered by <a href="${escape(identity.runSite)}">${product}</a>, free and open source</p>`
     : identity.manualSetupTokenClaim ? '<p class="credit">You’ll need the setup token from your install.</p>' : ''

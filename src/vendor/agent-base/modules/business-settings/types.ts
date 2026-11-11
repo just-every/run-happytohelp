@@ -26,6 +26,11 @@ export interface ManagedMember extends TeamState {
 export interface Guard { sql: string; args: unknown[] }
 export interface TeamAdapter {
   ownerEmail?(): Promise<string | null>;
+  /** One-way forms under which an erasure by an older release of this seed stored a roster address (an opaque
+   * placeholder it renamed the `bs_team` row to, for instance). Never the address itself. The module treats a
+   * stored row under such a form as the listed person's row, and a tombstone of such a form as theirs, so a
+   * signed roster that lists an erased person by address alone is applied as retired, not as a new invitation. */
+  retiredForms?(email: string): Promise<string[]>;
   prepare(input: {
     members: Member[]; managed: ManagedMember[]; ownerEmail: string;
     roles: { admin: string; member: string }; guard: Guard;

@@ -162,6 +162,7 @@ account model, implement this server-only interface on the same D1 database:
 
 ```ts
 ownerEmail?(): Promise<string | null>
+retiredForms?(email: string): Promise<string[]>
 prepare(input: {
   members: { id?: string; email: string; name: string; role: 'admin' | 'member'; invite: number }[]
   managed: { email: string; operatorId: string | null; invite: number;
@@ -205,6 +206,18 @@ before the installation had `bs_retired` leaves the roster; the Business's next
 revision that still lists them applies as retired, not as a new invitation, until it
 sends a larger `invite`. A seed that never reports `gone` keeps every stored row exactly
 as it was.
+
+`retiredForms` is optional: for a roster address, the one-way forms under which an
+erasure by an older release of this seed stored that address, for example the opaque
+placeholder (`erased:<sha256 of the address>`) it renamed the `bs_team` row to. Never the
+address itself. The module then treats a stored row under such a form as the listed
+person's row (so `gone` retires it together with the listed address), and digests the
+forms with the address when it screens a signed roster against `bs_retired`. Without it,
+a row an older release renamed to a placeholder is tombstoned only under the placeholder
+and the Business id: a later revision that lists the person by their real address alone
+(no member `id`) matches neither, and is applied as a new person. A seed whose older
+erasure left the real address in the row does not need it. Nothing is stored beyond the
+digests `bs_retired` already holds.
 
 The module first places its settings compare-and-swap in the batch, then
 its logo writes, adapter statements, managed-ledger/audit writes and a final assertion.

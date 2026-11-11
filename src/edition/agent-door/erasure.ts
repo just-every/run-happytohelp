@@ -1,4 +1,4 @@
-import {agentErasureStatements,checkAgentArtifacts} from '../../vendor/agent-base/modules/agent-door/index.ts'
+import {agentErasureStatements,checkAgentArtifacts,operatorPolicyRefs} from '../../vendor/agent-base/modules/agent-door/index.ts'
 import type {Env} from '../../platform/env'
 import {contactAgentArtifacts,memberAgentArtifacts} from './artifacts.ts'
 /**
@@ -37,12 +37,12 @@ type Value={value:string|null;id?:string|null}
  * anonymized account's. An agent the teammate sponsored keeps its id; its display name
  * loses only an embedded copy of the teammate's name. Run before the account is anonymized.
  */
-export async function memberDoorErasure(env:Env,userId:string,now:number):Promise<D1PreparedStatement[]>{
+export async function memberDoorErasure(env:Env,userId:string,now:number,erasureId:string):Promise<D1PreparedStatement[]>{
  const db=env.DB
  const member=await db.prepare('SELECT email FROM users WHERE id=?').bind(userId).first<{email:string}>()
  const operations=(await db.prepare('SELECT id FROM h2h_agent_operations WHERE sponsor_id=?').bind(userId).all<{id:string}>()).results
- const tombstones=await agentErasureStatements({db,map:memberAgentArtifacts,subject:{values:JSON.stringify([userId,member?.email,...operations.map(row=>row.id)].filter(Boolean))},secret:String(env.INTEGRATION_ENCRYPTION_KEY??''),
-  tombstone:{erasure_id:crypto.randomUUID(),at:new Date(now).toISOString()},checkpoint:async()=>[]})
+ const tombstones=await agentErasureStatements({db,map:memberAgentArtifacts,subject:{values:JSON.stringify([userId,member?.email,...operations.map(row=>row.id)].filter(Boolean)),operatorPolicyRefs:JSON.stringify(await operatorPolicyRefs(db,userId))},secret:String(env.INTEGRATION_ENCRYPTION_KEY??''),
+  tombstone:{erasure_id:erasureId,at:new Date(now).toISOString()},checkpoint:async()=>[]})
  // D1 limits compound SELECTs, so each copy is its own read.
  const read=async(queries:string[])=>(await db.batch<Value>(queries.map(sql=>db.prepare(sql).bind(userId)))).flatMap(result=>result.results)
  const [names,emails,agents]=await Promise.all([

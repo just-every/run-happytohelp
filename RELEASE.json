@@ -32,6 +32,10 @@
     {
       "id": "322_contact_address_lookup.sql",
       "buyerSteps": "Back up D1 first; apply once after 321_legacy_import_files.sql, before serving the updated Worker. Additive only: creates two indexes on contacts (contacts_address_lookup on (project_id, lower(email)) and contacts_preferred_address_lookup on (project_id, lower(json_extract(metadata_json,'$.provided_email')))), so an inbound mail's contact lookups by address search an index instead of walking every contact of the workspace; no row changes and nothing is read, sent or queued. On a workspace of about 160,000 contacts it applies in under a second."
+    },
+    {
+      "id": "323_business_retired.sql",
+      "buyerSteps": "Back up D1 first; apply once after 322_contact_address_lookup.sql, before serving the updated Worker. Additive only: creates the empty bs_retired table (value-free tombstones of team members erased from the installation: domain-separated SHA-256 digests of the roster address and the Business member id, with the invite number each had; never a name or address); no existing row changes and nothing is read, sent or queued. Without it, erasing a team member refuses with business_roster_missing_table:bs_retired. Nothing else to do: a team member erased by an earlier release leaves the Business roster at the Business's next signed revision."
     }
   ]
 }

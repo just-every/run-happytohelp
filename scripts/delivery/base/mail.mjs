@@ -25,7 +25,7 @@ export function publicMailSender(spec) {
 /** Managed mail is an explicit capability, independent of direct provider adapters. */
 export function usesManagedMail(mail) {
   if (mail === undefined) return false;
-  keys(mail, ['providers'], 'mail');
+  keys(mail, ['providers', 'credentialSecretNames'], 'mail');
   const providers = strings(mail.providers, 'mail providers', /^(rer|resend|sendgrid|cloudflare)$/);
   if (!providers.length) throw Error('Mail requires at least one provider');
   return providers.includes('rer');

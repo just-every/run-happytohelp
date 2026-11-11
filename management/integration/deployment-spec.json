@@ -1140,6 +1140,12 @@
       "name": "322_contact_address_lookup.sql",
       "sha256": "8fb7bd2a9447b2f2b7aed04326d821d470716ffe60a1098cc1bcb821ef394218",
       "sql": "-- An inbound mail looks its sender's and each Cc's contact up by address with the expressions lower(email) and\n-- lower(json_extract(metadata_json,'$.provided_email')) (src/modules/integrations/inbound-service.ts and\n-- inbound-authority.ts: the blocked-sender check, the sender's contact and its insert guard, a reply's sender through a\n-- reply address or from a preferred notification address). No index held either expression (api_contact_key_0 and _1\n-- in 253 hold lower(trim(...)), which these lookups cannot use), so each lookup walked every contact of the workspace:\n-- about 162,000 rows on a large imported workspace. These two indexes hold the lookups' expressions verbatim, so each\n-- lookup searches its address and reads only the contacts holding it; the lookups' text and matches are unchanged.\n-- Additive: no row changes.\nCREATE INDEX contacts_address_lookup ON contacts(project_id,lower(email));\nCREATE INDEX contacts_preferred_address_lookup ON contacts(project_id,lower(json_extract(metadata_json,'$.provided_email')));\n"
+    },
+    {
+      "binding": "DB",
+      "name": "323_business_retired.sql",
+      "sha256": "3973b0702a096c8f71de37559bd142ed981a0b7b337e11c707885866493b4193",
+      "sql": "-- Business roster erasure (rer 0.2.107, Base default-seed/migrations/core/0044_business_retired.sql).\n-- Value-free tombstones of people erased from the installation: domain-separated SHA-256 digests of the roster\n-- address and the Business member id, with the invite number they had. Never a name, address or id.\n-- Additive only: the table starts empty; no roster row is read, moved or deleted here. Erasing a team member\n-- writes it, and the Business's next signed revision that still lists that person applies them as retired.\nCREATE TABLE bs_retired (\n  digest TEXT PRIMARY KEY,\n  invite INTEGER NOT NULL CHECK(invite >= 0),\n  erasure_id TEXT NOT NULL\n);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
@@ -1264,6 +1270,15 @@
   "mail": {
     "providers": [
       "rer"
+    ],
+    "credentialSecretNames": [
+      "EMAIL_PROVIDER",
+      "EMAIL_FROM",
+      "EMAIL_API_KEY_NAME",
+      "MAILGUN_DOMAIN",
+      "MAILGUN_REGION",
+      "MAILGUN_SENDING_KEY",
+      "MAILGUN_WEBHOOK_SIGNING_KEY"
     ]
   }
 }

@@ -24,10 +24,10 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const args=[userId,actor.projectId,userId,userId]
  if(!await c.env.DB.prepare('SELECT 1 WHERE '+eligible).bind(...args).first())throw new HTTPException(409,{message:'Transfer ownership first; accounts shared with other workspaces or installation administrators require installation review'})
  const context:ErasureContext={env:c.env,project:actor.projectId,user:userId,actor:actor.id,now,guard:{sql:`EXISTS(${guard.sql}) AND ${eligible}`,params:[...guard.params,...args]}}
- const registry=await currentRegistry(c.env.DB)
+ const registry=await currentRegistry(c.env.DB),erasureId=crypto.randomUUID()
  if(registry.errors.length)throw new HTTPException(503,{message:'Member erasure schema requires review'})
  // Agent-door identity copies are prepared before native anonymization.
- await c.env.DB.batch([...await redactionStatements(c.env.DB),...await invalidateTransfersStatements(c.env.DB),...await memberDoorErasure(c.env,userId,now),...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...replyDraftMemberErasure(c.env,actor.projectId,userId),...await memberBusinessErasure(c.env.DB,actor.projectId,userId)])
+ await c.env.DB.batch([...await redactionStatements(c.env.DB),...await invalidateTransfersStatements(c.env.DB),...await memberDoorErasure(c.env,userId,now,erasureId),...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...replyDraftMemberErasure(c.env,actor.projectId,userId),...await memberBusinessErasure(c.env.DB,actor.projectId,userId,erasureId)])
  return c.json({erased:true,credentialsRevoked:true,eventsRetained:true})
 })
 

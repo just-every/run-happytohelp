@@ -147,6 +147,15 @@
       "mail": {
         "providers": [
           "rer"
+        ],
+        "credentialSecretNames": [
+          "EMAIL_PROVIDER",
+          "EMAIL_FROM",
+          "EMAIL_API_KEY_NAME",
+          "MAILGUN_DOMAIN",
+          "MAILGUN_REGION",
+          "MAILGUN_SENDING_KEY",
+          "MAILGUN_WEBHOOK_SIGNING_KEY"
         ]
       }
     },

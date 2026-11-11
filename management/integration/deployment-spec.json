@@ -1140,6 +1140,12 @@
       "name": "322_contact_address_lookup.sql",
       "sha256": "8fb7bd2a9447b2f2b7aed04326d821d470716ffe60a1098cc1bcb821ef394218",
       "sql": "-- An inbound mail looks its sender's and each Cc's contact up by address with the expressions lower(email) and\n-- lower(json_extract(metadata_json,'$.provided_email')) (src/modules/integrations/inbound-service.ts and\n-- inbound-authority.ts: the blocked-sender check, the sender's contact and its insert guard, a reply's sender through a\n-- reply address or from a preferred notification address). No index held either expression (api_contact_key_0 and _1\n-- in 253 hold lower(trim(...)), which these lookups cannot use), so each lookup walked every contact of the workspace:\n-- about 162,000 rows on a large imported workspace. These two indexes hold the lookups' expressions verbatim, so each\n-- lookup searches its address and reads only the contacts holding it; the lookups' text and matches are unchanged.\n-- Additive: no row changes.\nCREATE INDEX contacts_address_lookup ON contacts(project_id,lower(email));\nCREATE INDEX contacts_preferred_address_lookup ON contacts(project_id,lower(json_extract(metadata_json,'$.provided_email')));\n"
+    },
+    {
+      "binding": "DB",
+      "name": "324_knowledge_documents_version_url.sql",
+      "sha256": "96b2b538fb64602a54939bdfcaa450b44c04dfbd8ec195479fb8b109d610343b",
+      "sql": "-- The knowledge reference policy (src/modules/knowledge/reference-policy.ts, documentCurrent) decides whether a cited\n-- crawled page is still current. A page of the published version is current; a page of an older crawl version is\n-- current only if the published version holds a page at the same URL. That second lookup is\n-- `SELECT 1 FROM knowledge_documents WHERE version_id=<published version> AND url=<the older page's url>`, and the only\n-- index on knowledge_documents holding version_id was knowledge_documents_version(version_id), so it walked every\n-- page of the published version for each cited source whose URL is no longer published: 644 rows per source, about\n-- 2.6 million rows to evaluate 16 copied passages of 255 older-version sources on a large imported workspace.\n-- This index holds both columns, so the lookup searches (version_id,url) and reads only the pages at that URL.\n-- Additive: no row, column or statement changes; the lookup's matches are unchanged.\nCREATE INDEX IF NOT EXISTS knowledge_documents_version_url ON knowledge_documents(version_id,url);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

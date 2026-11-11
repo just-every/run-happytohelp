@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "89869ef600628f11de1fbf4229469fe3dc36f76716df958c7e47cbe517f52533",
+      "sha256": "571a054c0eb0ab5f875c7ea6b322dd695e5a75057ff84f347f6028883a03a447",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2053,7 +2053,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "08e8dd45e8af6f0435c6a99f7278e0f5aba801eb0769aed25eeeba125ded28e5",
+      "sha256": "032b38a5a72af69b4588a492a8459b54242102184af3872ef7db6088a76105b0",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2848,6 +2848,10 @@
       "sha256": "8fb7bd2a9447b2f2b7aed04326d821d470716ffe60a1098cc1bcb821ef394218",
       "executable": false
     },
+    "migrations/324_knowledge_documents_version_url.sql": {
+      "sha256": "96b2b538fb64602a54939bdfcaa450b44c04dfbd8ec195479fb8b109d610343b",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2937,7 +2941,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "81e334b092c6bccf73b912b713ace6343131168feb9a6d661af62a66d9511af2",
+      "sha256": "dee2b1d69919d04cbedad6712fb3cc20f3fd6dfd6bb9925c6ecb552373298220",
       "executable": false
     },
     "rer-project.json": {

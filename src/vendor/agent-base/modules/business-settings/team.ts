@@ -1,8 +1,11 @@
 import { SettingsError } from './types.ts';
-import type { ManagedMember, Member } from './types.ts';
+import type { ManagedMember, Member, Options } from './types.ts';
+
+/** `retiredForms` of each listed address, by address. */
+export type Forms = Map<string, string[]>;
 
 /** Project durable identities onto the current roster keys for email-keyed adapters. */
-export function projectManaged(stored: ManagedMember[], members: Member[], ownerId: string | null): ManagedMember[] {
+export function projectManaged(stored: ManagedMember[], members: Member[], ownerId: string | null, forms: Forms = new Map()): ManagedMember[] {
   const byId = new Map(stored.filter(row => row.businessId).map(row => [row.businessId, row]));
   const assigned = new Map<ManagedMember, Member>();
   const linked = new Set<Member>();
@@ -13,7 +16,8 @@ export function projectManaged(stored: ManagedMember[], members: Member[], owner
   }
   for (const member of members) {
     if (linked.has(member)) continue;
-    const prior = stored.find(row => row.email === member.email && !assigned.has(row));
+    const named = [member.email, ...forms.get(member.email) ?? []];
+    const prior = stored.find(row => named.includes(row.email) && !assigned.has(row));
     if (!prior) continue;
     if (member.id && prior.businessId && member.id !== prior.businessId) throw new SettingsError('business_member_binding_mismatch');
     bind(prior, member);
@@ -39,4 +43,10 @@ export function teamRows(rows: ManagedMember[], members: Member[], managed: Mana
     const member = desired.get(row.email), prior = previous.get(row.email);
     return { ...row, businessId: member?.id ?? prior?.businessId ?? null, businessRole: member?.role ?? prior?.businessRole ?? null };
   });
+}
+
+/** What the seed's adapter names as the older-release forms of each listed address; nothing when it names none. */
+export async function retiredForms(options: Pick<Options, 'team'>, members: Member[]): Promise<Forms | undefined> {
+  const named = options.team?.retiredForms;
+  return named ? new Map(await Promise.all(members.map(async (member): Promise<[string, string[]]> => [member.email, await named.call(options.team, member.email)]))) : undefined;
 }

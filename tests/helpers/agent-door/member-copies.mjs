@@ -129,8 +129,17 @@ export async function memberCopies({app,owner,project,native,person,context,call
   assert.deepEqual((await app.sql('SELECT invite FROM bs_retired WHERE digest=?',await idDigest(sub))).map(row=>row.invite),[2],'the older erasure is tombstoned with the invite it had')
   const stillRetired=await settings(14,[{...member,invite:2},live,...other]);assert.equal(stillRetired.status,200)
   assert.deepEqual(stillRetired.data.retired,[email],'a retired teammate stays retired at the invite they had')
+  // The roster corner: the Business keeps listing the person by their real address and no member id. The older
+  // release stored only the hash-named address, so the team adapter's `retiredForms` is what ties the listing to
+  // that tombstone. A teammate the installation never erased, listed the same way, is invited as usual.
+  const hire={email:'synthetic-happytohelp-newhire@example.test',name:'Synthetic New Hire',role:'member',invite:1}
+  const byAddress=await settings(15,[{...member,id:undefined,invite:2},hire,live,...other]);assert.equal(byAddress.status,200,JSON.stringify(byAddress.data))
+  assert.deepEqual(byAddress.data.retired,[email],'a roster that lists an erased teammate by address alone applies as retired')
+  assert.equal(await app.first('SELECT 1 FROM users WHERE lower(email)=?',email),null,'no fresh account for the retired listing')
+  assert.equal(await app.first('SELECT 1 FROM bs_team WHERE business_id=? OR email=?',sub,email),null,'no roster row for the retired listing')
+  assert.equal((await app.first('SELECT state FROM bs_team WHERE email=?',hire.email)).state,'invited','a person never erased is invited as before')
   await olderErasure(invited.operator_id,2)
-  const readmitted=await settings(15,[{...member,invite:3},live,...other]);assert.equal(readmitted.status,200,JSON.stringify(readmitted.data))
+  const readmitted=await settings(16,[{...member,invite:3},live,...other]);assert.equal(readmitted.status,200,JSON.stringify(readmitted.data))
   const again=await app.first('SELECT operator_id,state FROM bs_team WHERE business_id=?',sub)
   assert.equal(again.state,'invited');assert.notEqual(again.operator_id,invited.operator_id,'a larger invite creates a new account for a teammate an older release erased')
   assert.equal(readmitted.data.retired,undefined)

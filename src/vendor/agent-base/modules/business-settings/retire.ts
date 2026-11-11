@@ -1,3 +1,4 @@
+import type { Forms } from './team.ts';
 import type { Database, Guard, ManagedMember, Member, Statement } from './types.ts';
 
 // Retiring an erased person from the Business roster.
@@ -30,7 +31,8 @@ async function sha256(text: string): Promise<string> {
 }
 export const emailDigest = (email: string) => sha256('rer-business-roster-retired/1\nemail\n' + email.trim().toLowerCase());
 export const idDigest = (id: string) => sha256('rer-business-roster-retired/1\nid\n' + id);
-const digests = async (member: Pick<Member, 'email' | 'id'>) => [await emailDigest(member.email), ...member.id ? [await idDigest(member.id)] : []];
+const digests = async (member: Pick<Member, 'email' | 'id'>, forms: readonly string[] = []) =>
+  [await emailDigest(member.email), ...await Promise.all(forms.map(emailDigest)), ...member.id ? [await idDigest(member.id)] : []];
 
 /** Every Business table is accounted for, including those a later migration adds. */
 export async function checkRosterArtifacts(db: Database): Promise<void> {
@@ -104,11 +106,11 @@ export async function retireGone(stored: ManagedMember[], projected: ManagedMemb
 export interface Screen { kept: Member[]; retired: string[]; readmit: string[]; checks: Array<{ digest: string; invite: number }> }
 /** Split a signed roster into the people it may apply and those the installation erased. A larger invite
  * number than the one the person had when erased is the Business's explicit new invitation. */
-export async function screenRoster(db: Database, members: Member[]): Promise<Screen> {
+export async function screenRoster(db: Database, members: Member[], forms: Forms = new Map()): Promise<Screen> {
   const kept: Member[] = [], retired: string[] = [], readmit: string[] = [], checks: Screen['checks'] = [];
   const lookup = db.prepare('SELECT digest,invite FROM bs_retired WHERE digest IN(SELECT value FROM json_each(?))');
   for (const item of members) {
-    const keys = await digests(item);
+    const keys = await digests(item, forms.get(item.email));
     const found = (await lookup.bind(JSON.stringify(keys)).all<{ digest: string; invite: number }>()).results;
     if (found.some(row => row.invite >= item.invite)) { retired.push(item.email); continue; }
     kept.push(item);

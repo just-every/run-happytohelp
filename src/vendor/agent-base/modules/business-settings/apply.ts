@@ -1,7 +1,7 @@
 import { checkedLogo } from './logo.ts';
 import { ack, initialSettings, managed, settingsRow, snapshot } from './store.ts';
 import { SettingsError } from './types.ts';
-import { projectManaged, teamRows } from './team.ts';
+import { projectManaged, retiredForms, teamRows } from './team.ts';
 import { retireGone, screenRoster } from './retire.ts';
 import type { Options, SettingsDocument } from './types.ts';
 
@@ -10,7 +10,8 @@ export async function apply(options: Options, signed: SettingsDocument, supplied
   const { db, business } = options;
   // People this installation erased stay erased until the Business sends a larger invite number. They are
   // removed before anything is stored, projected or handed to the team adapter, so nothing re-creates them.
-  const roster = !signed.detached && signed.team !== null ? await screenRoster(db, signed.team) : null;
+  const forms = !signed.detached && signed.team !== null ? await retiredForms(options, signed.team) : undefined;
+  const roster = !signed.detached && signed.team !== null ? await screenRoster(db, signed.team, forms) : null;
   const document: SettingsDocument = roster ? { ...signed, team: roster.kept } : signed;
   const before = await settingsRow(db) ?? initialSettings();
   if (before.stopped) throw new SettingsError('not_found', 404);
@@ -29,7 +30,7 @@ export async function apply(options: Options, signed: SettingsDocument, supplied
   const now = new Date().toISOString(), token = crypto.randomUUID();
   const guard = { sql: 'EXISTS(SELECT 1 FROM bs_settings WHERE singleton=1 AND rev=? AND token=? AND stopped=0)', args: [document.rev, token] };
   const fence = document.detached ? { sql: 'EXISTS(SELECT 1 FROM bs_settings WHERE singleton=1 AND rev=? AND token=?)', args: guard.args } : guard;
-  const projected = !document.detached && document.team !== null ? projectManaged(storedTeam, document.team, ownerId) : storedTeam;
+  const projected = !document.detached && document.team !== null ? projectManaged(storedTeam, document.team, ownerId, forms) : storedTeam;
   if (!document.detached && document.team !== null && business.team && !options.team) throw new SettingsError('team_adapter_required', 503);
   const team = !document.detached && document.team !== null && business.team && options.team
     ? await options.team.prepare({ members: document.team, managed: projected, ownerEmail: document.email, roles: business.team.roles, guard }) : null;

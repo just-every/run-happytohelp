@@ -4,8 +4,13 @@ import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
 import {linkedProject} from './people.ts'
 
+/** The opaque placeholder an erasure by v0.4.19 or earlier renamed a roster address to. */
+const retiredForm=async(email:string)=>'erased:'+await hashToken(email.toLowerCase())
+
 export function nativeTeam(env:Env):TeamAdapter {
  return {
+  // Lets the roster module recognise an erased person a Business lists by real address with no member id.
+  async retiredForms(email){return [await retiredForm(email)]},
   async ownerEmail(){const link=await linkedProject(env);return link?(await env.DB.prepare('SELECT email FROM users WHERE id=?').bind(link.owner_user_id).first<{email:string}>())?.email??null:null},
   async prepare({members,managed,guard}){
    const link=await linkedProject(env)
@@ -22,7 +27,7 @@ export function nativeTeam(env:Env):TeamAdapter {
    // retired, and so does an erased row nobody lists: both are reported gone, so the module tombstones and purges them.
    const renewed=new Set<string>(),listedErased=new Set<string>()
    for(const member of members){
-    const marker='erased:'+await hashToken(member.email.toLowerCase())
+    const marker=await retiredForm(member.email)
     const previous=managed.find(row=>row.email===member.email||row.email===marker)
     if(!previous?.operatorId||!erased.has(previous.operatorId))continue
     if(member.invite>previous.invite)renewed.add(previous.operatorId)

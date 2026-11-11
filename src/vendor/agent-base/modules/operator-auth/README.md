@@ -117,7 +117,7 @@ version), domain rules in `oa_domain_rules`. `auth.accounts` exposes it and
 | `/auth/confirm` | POST | token; consume once, create session and 303 to stored returnTo. A step-up link completes only in the session that asked for it and sets no new cookie. |
 | `/auth/session` | GET | session and operator, or 401 |
 | `/auth/signout` | POST | `{}`; revoke current session, clear cookie, 204 |
-| `/auth/invite` | POST | email, displayName, role? (member), returnTo?; mail invitation, 202 |
+| `/auth/invite` | POST | email, displayName, role? (member), returnTo?; mail invitation, 202 `{status}`. A local development mail provider sends nothing, so it adds `delivery: 'none'`, and for an owner who holds the local key also `signInUrl` (the key-gated one-click entry for the invited person); a seed must not say the invitation was sent then |
 | `/auth/invite/cancel` | POST | operatorId; cancel pending invitation, return inactive operator, 200 |
 | `/auth/operators` | GET | authorized operator list |
 | `/auth/operator/status` | POST | operatorId, status (`active`/`inactive`) |

@@ -159,7 +159,10 @@ A person whose native account was erased before the installation had `bs_retired
 retired the same way at runtime, in the apply batch of the first revision after the seed's
 team adapter reports the native identity gone (`gone` in the
 [adapter contract](ADOPTING.md#5-integrate-native-team-accounts)); until then the stored row
-and document entry stay where the older erasure left them. Nothing is read from or purged
+and document entry stay where the older erasure left them. An older
+erasure that renamed the row to a placeholder of the seed's own is matched to the Business's
+real address through the adapter's optional `retiredForms`; without it only the placeholder and
+the Business id are retired, so a roster that lists the person by address alone is not recognised. Nothing is read from or purged
 in a migration.
 Digests of addresses are guessable by anyone who already knows the address; they hold
 no value that is not in the Business's own roster.

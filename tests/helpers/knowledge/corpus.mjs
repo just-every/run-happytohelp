@@ -10,10 +10,14 @@ export async function corpusJourney(k){
  const requestsBefore=app.requests.length
  try{
   const corpus=await k.dataset('Corpus'),refresh=body=>call(`/api/knowledge/${p}/datasets/${corpus}/refresh`,{body})
-  const documents=Array.from({length:3},(_,i)=>({url:`https://example.com/${i}`,title:`Page ${i}`,content:`Corpus article ${i} `+'body '.repeat(230)}))
+  const documents=Array.from({length:3},(_,i)=>({url:`https://example.com/${2-i}`,title:`Page ${i}`,content:`Corpus article ${i} `+'body '.repeat(230)}))
   assert.equal((await refresh({documents})).status,202)
   let pages=0;for(;;){const jobs=await app.takeJobs();if(!jobs.length)break;for(const job of jobs){await app.runJobs([job]);await app.runJobs([job]);pages++}}
   assert.ok(pages>0);assert.equal((await app.first('SELECT COUNT(*) n FROM knowledge_documents d JOIN knowledge_versions v ON v.id=d.version_id WHERE v.dataset_id=?',corpus)).n,documents.length)
+  // The crawl returned the pages in descending URL order: the pages list and the pages that tie on score keep crawl order, whatever index the database searches.
+  const crawled=documents.map(d=>d.url)
+  assert.deepEqual((await call(`/api/knowledge/${p}/datasets/${corpus}/pages`,{status:200})).data.map(row=>row.url),crawled,'a dataset lists its pages in crawl order')
+  assert.deepEqual((await search('Corpus')).map(row=>row.url),crawled,'pages tied on score come back in crawl order')
   assert.equal((await search('Corpus')).length,3,'lexical ranking returns the best few');assert.equal((await search('Corpus','lexical',other)).length,0,'another workspace finds nothing')
   // Unsafe input is refused; an empty refresh fails and keeps the published corpus.
   assert.equal((await refresh({documents:[{url:'javascript:alert(1)',title:'x',content:'x'}]})).status,202);await drain()

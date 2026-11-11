@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "0aa20a8acad63e5989e2299f24d27cede525e186f56f0238f75647cb01358559",
+      "sha256": "72a8ffdc1863119a608acb213e4ab51f5a87ab5da3733d022a367e6b142d9251",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2053,7 +2053,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "8761199dbffbf00f8fb8e7bd5635e8aa643c98afb4cdef01a257fc8fdb4732d4",
+      "sha256": "b811326aa34c84f0b9bd62d3debef8d088b403113e5d8d07909f411732e023b9",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2856,6 +2856,10 @@
       "sha256": "24e9d6cd08701f318332096eed44a600efcca61f2fa4e9c1a7b7ec9615046505",
       "executable": false
     },
+    "migrations/325_knowledge_documents_version_url.sql": {
+      "sha256": "96b2b538fb64602a54939bdfcaa450b44c04dfbd8ec195479fb8b109d610343b",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2945,7 +2949,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "f8a830fac9db8c7cd83bf43e57b9ad9de836462b23aed89e4577f326084e0964",
+      "sha256": "30f44207ee3c2b2f586e518b01e32e85520e7f9c67fc146e8c369a3a3358eccf",
       "executable": false
     },
     "rer-project.json": {
@@ -7385,7 +7389,7 @@
       "executable": false
     },
     "src/modules/knowledge/authoring.ts": {
-      "sha256": "3b84bfb72b50bfecf7e43892ded71cb6a15afb75006dec92852132c178c07fcf",
+      "sha256": "4f86f9b99217f9674e0d11f000c00bde9395129b4ba6b7bebc1c88b5c4555c6d",
       "executable": false
     },
     "src/modules/knowledge/canonicaliser.ts": {
@@ -7545,7 +7549,7 @@
       "executable": false
     },
     "src/modules/knowledge/public-sources.ts": {
-      "sha256": "3fb1c8aacd1a52ca724f26eff4ceaae37b568a4252aa4f42eb6e1c3c1bb5db67",
+      "sha256": "20fe3184a61f953c7f27ee3379da0efa77627326ce5e65ec028fb5176598e882",
       "executable": false
     },
     "src/modules/knowledge/read-attribution.ts": {
@@ -7581,7 +7585,7 @@
       "executable": false
     },
     "src/modules/knowledge/service.ts": {
-      "sha256": "cf3f676806fbe6ec3ffcfd841e3bbb3f03f2d2a9b1c5a3dbc0d9d15daefb93e4",
+      "sha256": "d780eef4fcd8369cc4af8b6cf1066ddc5acff8b13881a3f351dbef286f50d4b8",
       "executable": false
     },
     "src/modules/knowledge/source-identity.ts": {
@@ -16317,7 +16321,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/corpus.mjs": {
-      "sha256": "29edafa4ba940d733966a20bdf20e51e1332851c53fa56d729464cee4cb0075f",
+      "sha256": "ffd73c6cde2db6f8f9a46260adcd77f3e4b14518a3c1d1556b3aaee969abe641",
       "executable": false
     },
     "tests/helpers/knowledge/domains-browser.mjs": {

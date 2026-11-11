@@ -53,7 +53,8 @@ export function citationAdmissionGuard(ref:PublicCitation,readers:Readers){
 }
 
 export async function knowledgeCatalog(env:Env,projectId:string,readers:Readers){
- const rows=await env.DB.prepare(`SELECT f.id,f.url,f.title FROM knowledge_documents f JOIN knowledge_datasets d ON d.published_version=f.version_id WHERE d.project_id=? AND ${activeProjectSql('d.project_id')} LIMIT 12`).bind(projectId).all<any>();return rows.results.map(row=>({...row,markdown:''}))
+ // The 12 catalog pages are the first 12 in crawl order (dataset, then storage order), not the 12 smallest URLs.
+ const rows=await env.DB.prepare(`SELECT f.id,f.url,f.title FROM knowledge_documents f JOIN knowledge_datasets d ON d.published_version=f.version_id WHERE d.project_id=? AND ${activeProjectSql('d.project_id')} ORDER BY d.rowid,f.rowid LIMIT 12`).bind(projectId).all<any>();return rows.results.map(row=>({...row,markdown:''}))
 }
 
 

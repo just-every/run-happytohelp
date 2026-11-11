@@ -60,7 +60,8 @@ export async function consumeJob(job:Job,env:Env):Promise<boolean>{
 export async function searchKnowledge(env:Env,projectId:string,query:string,readers:Readers,mode:'lexical'|'semantic'='lexical',requestedLocale?:string):Promise<Citation[]>{
  await requireActiveProject(env,projectId);
  const versions=await env.DB.prepare('SELECT v.id,v.semantic,v.embedding_model FROM knowledge_datasets d JOIN knowledge_versions v ON v.id=d.published_version WHERE d.project_id=?').bind(projectId).all<{id:string;semantic:number;embedding_model:string}>();
- const rows=await env.DB.prepare('SELECT f.id,f.version_id sourceVersion,f.url,f.title,f.content FROM knowledge_documents f JOIN knowledge_datasets d ON d.published_version=f.version_id WHERE d.project_id=?').bind(projectId).all<Citation>();
+ // Crawl order (dataset, then the order its pages were stored), stated so a different index on knowledge_documents cannot change which pages tie-break first.
+ const rows=await env.DB.prepare('SELECT f.id,f.version_id sourceVersion,f.url,f.title,f.content FROM knowledge_documents f JOIN knowledge_datasets d ON d.published_version=f.version_id WHERE d.project_id=? ORDER BY d.rowid,f.rowid').bind(projectId).all<Citation>();
  const articles=await env.DB.prepare(`SELECT id,publication_version sourceVersion,slug,title,content FROM knowledge_articles a WHERE project_id=? AND ${visibleArticleSql('a',readers)}`).bind(projectId).all<any>();
  const native:Citation[]=[],settings=requestedLocale?await getKnowledgeExperience(env,projectId):null
  if(requestedLocale&&!settings!.locales.includes(validLocale(requestedLocale)))throw new Error('Choose a configured knowledge locale')

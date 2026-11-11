@@ -77,7 +77,10 @@ dashboard stylesheet or its purple. The dashboard itself keeps its own design sy
   the browser and sets `autocomplete="new-password"`.
 - With no email provider, `/forgot-password` still fails closed (503, no reset token, no mail) and tells the visitor that
   the workspace owner must reset the password; owners with two-factor on can issue a one-hour reset link with `POST /api/identity/password-reset` (their own recent factor, audited)
-  (there is no dashboard control for it yet).
+  (there is no dashboard control for it yet). The link is issued only while that owner's workspace holds the account's
+  sole membership and the account is not a platform admin (otherwise 409): an account that belongs to more than one
+  workspace is reset after an owner of the other workspace removes it there, and with no email provider its
+  `/forgot-password` answers 503 too. Hosted sign-in by the deployer works only for an owner or an admin.
 
 ## Pending invitations
 

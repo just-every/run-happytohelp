@@ -592,6 +592,15 @@ settings. Without them, `/register` shows that sign-up is closed, and
 password. An owner with two-factor sign-in on can issue a teammate a one-hour
 reset link with `POST /api/identity/password-reset` (`{"userId":…}`); it needs the
 owner's own second factor within 15 minutes and is recorded in the security log.
+A password belongs to the account, so the link is issued, and accepted, only while
+that owner's workspace holds the account's sole membership and the account does
+not administer the installation; otherwise the answer is `409`. An account that
+belongs to more than one workspace is reset only after an owner of its other
+workspace removes it there (`DELETE /api/management/projects/<workspace id>/agents/<user id>`),
+and the same rule applies to an owner's two-factor reset. With the email settings
+off, `/forgot-password` answers `503` for every account, so such an account has
+no email route either, and `node scripts/hosted-signin.mjs` signs in only an owner
+or an admin.
 
 `REGISTRATION_ENABLED=true` turns on self-service sign-up at `/register`, where
 anyone can create an account and their own workspaces on your installation. It

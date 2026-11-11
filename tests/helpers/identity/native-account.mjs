@@ -63,6 +63,14 @@ export async function nativeAccountJourney(){
   assert.equal((await identity('/session',undefined,invited.token)).status,401)
   assert.equal((await identity('/login',{email:'new@example.test',password:'synthetic-teammate-reset-password'})).status,200)
 
+  // A password belongs to the account: once the teammate also works in another workspace, this owner cannot reset it
+  // until that workspace's owner removes them there.
+  await app.db.prepare('INSERT INTO memberships VALUES(?,?,?)').bind(other.projectId,invited.actor.id,'operator').run()
+  assert.equal((await identity('/password-reset',{userId:invited.actor.id},session.token)).status,409)
+  assert.equal((await manage(`/projects/${other.projectId}/agents/${invited.actor.id}`,other.tokens.owner,undefined,'DELETE')).status,200)
+  const reissued=await identity('/password-reset',{userId:invited.actor.id},session.token);assert.equal(reissued.status,201)
+  assert.equal((await identity('/accept-token',{token:reissued.data.token,password:'synthetic-teammate-second-password'})).status,200)
+
   // The same workspace admits signed customer identity without exposing its secret.
   const config=(await identity('/projects/'+project,undefined,session.token)).data
   assert.equal('verification_secret' in config,false)

@@ -54,6 +54,17 @@ phone: **Settings → Security**, then **Reset two-factor** on their row. It nee
 your own recent second factor. Their apps, passkeys and recovery codes are
 removed, they are signed out everywhere and emailed, and the reset is logged.
 
+A teammate's password and second factors belong to their account, not to one
+workspace. You can reset a teammate's two-factor, or issue them a password-reset
+link, only while your workspace is the only one the account belongs to and the
+account does not administer the installation; otherwise HappyToHelp refuses with
+a `409` and only they can change how they sign in. If the account belongs to
+another workspace, an owner of that workspace removes it there first (then you can
+reset it, and the other workspace can invite them again). With outbound email off,
+`/forgot-password` answers `503` for every account, so such a teammate has no email
+route either, and the deployer's hosted sign-in works only for an owner or an
+admin.
+
 ## Confirming it is you
 
 Exports, contact erasure, role changes, inviting an admin or owner (and copying or

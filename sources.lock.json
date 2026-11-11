@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "59ed057b28ab8ba2240b64ca3a756e815e520254711031fc414e4544e7f8287b",
+      "sha256": "0aa20a8acad63e5989e2299f24d27cede525e186f56f0238f75647cb01358559",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2053,7 +2053,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "eee2702a6e518275f0f1b0c5f49d544b48eb3c52018784c24fb063cbaeba684c",
+      "sha256": "8761199dbffbf00f8fb8e7bd5635e8aa643c98afb4cdef01a257fc8fdb4732d4",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2852,6 +2852,10 @@
       "sha256": "3973b0702a096c8f71de37559bd142ed981a0b7b337e11c707885866493b4193",
       "executable": false
     },
+    "migrations/324_scheduler_outbox_reads.sql": {
+      "sha256": "24e9d6cd08701f318332096eed44a600efcca61f2fa4e9c1a7b7ec9615046505",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2941,7 +2945,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "dea4e0dfc3f91edf7be92b882338c719ac631be4a957c0c9062669d2d33d33f8",
+      "sha256": "f8a830fac9db8c7cd83bf43e57b9ad9de836462b23aed89e4577f326084e0964",
       "executable": false
     },
     "rer-project.json": {
@@ -5441,7 +5445,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "099ba9f0eda89c7f69a8a4ce4acc80aadb391d6d5a6adbcbe1c86c8c396d98cc",
+      "sha256": "b1a5c9cc20ea968ad042244f8bfed68a0e9754ee5eac3953847da4d9cb426a74",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
@@ -10409,7 +10413,7 @@
       "executable": false
     },
     "src/modules/workflows/events.ts": {
-      "sha256": "bc597b0b11b8e13de304ec71efd2891d945cf2da904d15beebaddd28763b1a8f",
+      "sha256": "92eb124a5617887f75b9881af468cdcf7901347a8012e1cdb6f1823828e5f227",
       "executable": false
     },
     "src/modules/workflows/followups.ts": {

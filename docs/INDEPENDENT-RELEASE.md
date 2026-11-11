@@ -23,11 +23,11 @@ yours.
 
 ## Update your installation
 
-### Release 0.4.18
+### Release 0.4.19
 
-Update from v0.4.17 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.105. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. Apply the missing migrations once, in filename order, BEFORE the new Worker serves traffic: 321_legacy_import_files.sql. Earlier installations, including v0.4.16, also apply every intervening missing published migration in order (v0.4.16 also needs 320_legacy_import_work_repair.sql); retain each migration's buyer steps. After migration 321, run `node scripts/legacy-import/upgrade.mjs --project <legacy project id>` once per workspace imported from legacy, as the migration's buyer steps in RELEASE.json describe. To enable Cloudflare Email Sending, set `EMAIL_ACCOUNT_ID` privately and redeploy. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. No reset, cutover or production deployment is part of this release. Live-provider qualification and owner cutover remain separate.
+Update from v0.4.18 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.105. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. v0.4.19 adds no migration, so a v0.4.18 installation applies nothing before the new Worker serves traffic. Earlier installations apply every missing published migration once, in filename order, BEFORE the new Worker serves traffic (v0.4.17 needs 321_legacy_import_files.sql, then `node scripts/legacy-import/upgrade.mjs --project <legacy project id>` once per workspace imported from legacy, as the v0.4.18 notes describe; v0.4.16 also needs 320_legacy_import_work_repair.sql); retain each migration's buyer steps. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. No reset, cutover or production deployment is part of this release. Live-provider qualification and owner cutover remain separate.
 
-See [the 0.4.18 release notes](../CHANGELOG.md#0418--2026-11-11) for the imported media and widget changes, the Cloudflare Email Sending binding and the sign-in routes that stay open during a knowledge upgrade. Migration 321 is additive; its full buyer steps, including the per-workspace import upgrade, are in [RELEASE.json](../RELEASE.json).
+See [the 0.4.19 release notes](../CHANGELOG.md#0419--2026-11-11) for the fix to conversations that cite a help article. v0.4.17 and v0.4.18 installations with published help articles answered 500 on opening or searching such a conversation and on mail quoting an article; this release fixes it and adds no migration.
 
 ### Keep your installation state
 

@@ -23,11 +23,11 @@ yours.
 
 ## Update your installation
 
-### Release 0.4.19
+### Release 0.4.20
 
-Update from v0.4.18 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.105. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. v0.4.19 adds no migration, so a v0.4.18 installation applies nothing before the new Worker serves traffic. Earlier installations apply every missing published migration once, in filename order, BEFORE the new Worker serves traffic (v0.4.17 needs 321_legacy_import_files.sql, then `node scripts/legacy-import/upgrade.mjs --project <legacy project id>` once per workspace imported from legacy, as the v0.4.18 notes describe; v0.4.16 also needs 320_legacy_import_work_repair.sql); retain each migration's buyer steps. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. No reset, cutover or production deployment is part of this release. Live-provider qualification and owner cutover remain separate.
+Update from v0.4.19 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.107. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. Apply the missing migrations once, in filename order, BEFORE the new Worker serves traffic: 322_contact_address_lookup.sql, then 323_business_retired.sql (a v0.4.19 or v0.4.18 installation applies exactly those two; v0.4.18 has migrations through 321). Earlier installations apply every missing published migration in filename order first (v0.4.17 needs 321_legacy_import_files.sql, then `node scripts/legacy-import/upgrade.mjs --project <legacy project id>` once per workspace imported from legacy, as the v0.4.18 notes describe; v0.4.16 also needs 320_legacy_import_work_repair.sql); retain each migration's buyer steps. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. No reset, cutover or production deployment is part of this release. Live-provider qualification and owner cutover remain separate.
 
-See [the 0.4.19 release notes](../CHANGELOG.md#0419--2026-11-11) for the fix to conversations that cite a help article. v0.4.17 and v0.4.18 installations with published help articles answered 500 on opening or searching such a conversation and on mail quoting an article; this release fixes it and adds no migration.
+See [the 0.4.20 release notes](../CHANGELOG.md#0420--2026-11-11) for the inbound mail contact lookup index, the cheaper knowledge reference search on large imported desks, the Business roster erasure and the two migrations. The help-article `500` fixed in v0.4.19 was present in v0.4.15 through v0.4.18.
 
 ### Keep your installation state
 

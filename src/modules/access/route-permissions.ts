@@ -107,6 +107,13 @@ const rules:Record<string,Rule>={
  [`POST ${L}/local-agent-authorizations/decision`]:'integrations.install',[`DELETE ${L}/local-agent-grants/:grant`]:'integrations.install',
  'POST /delegation/authorize':'integrations.install','POST /delegation/settings/revoke':'integrations.install','POST /delegation/settings/clients':'integrations.install',
  // Move in
+ 'PUT /api/move-in/projects/:projectId/legacy-import/:sha/manifest':'data.import',
+ 'PUT /api/move-in/projects/:projectId/legacy-import/:sha/files/:file':'data.import',
+ 'GET /api/move-in/projects/:projectId/legacy-import/:sha/status':'data.import',
+ 'POST /api/move-in/projects/:projectId/legacy-import/:sha/start':'data.import',
+ 'POST /api/move-in/projects/:projectId/legacy-import/:sha/resume':'data.import',
+ 'POST /api/move-in/projects/:projectId/legacy-import/:sha/stop':'data.import',
+ 'GET /api/move-in/projects/:projectId/legacy-import/:sha/result':'data.import',
  'POST /api/move-in/projects/:projectId/business-imports':'data.import',
  'POST /api/move-in/projects/:projectId/imports':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/apply':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/resume':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/undo':'data.import',
  'POST /api/move-in/projects/:projectId/zendesk/connect':'data.import','DELETE /api/move-in/projects/:projectId/zendesk/connection':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls/:pullId/approve':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls/:pullId/resume':'data.import','POST /api/move-in/projects/:projectId/zendesk/attachments':'data.import','POST /api/move-in/projects/:projectId/zendesk/attachments/:runId/resume':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls/:pullId/abandon':'data.import',

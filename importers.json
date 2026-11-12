@@ -1,6 +1,6 @@
 {
   "$schema": "./schema/importers.schema.json",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "importers": [
     {
       "incumbent": "Zendesk",
@@ -17,6 +17,15 @@
         "validation": "synthetic-only",
         "realExport": "not-supplied"
       }
+    },
+    {
+      "incumbent": "HappyToHelp",
+      "product": "HappyToHelp",
+      "moveIn": "/app/move-in",
+      "accepts": [
+        "file"
+      ],
+      "export": "Choose the chunked export folder produced by scripts/export-legacy.mjs, including manifest.json, row chunks, context parts and attachment files. AI usage history is excluded by default."
     }
   ]
 }

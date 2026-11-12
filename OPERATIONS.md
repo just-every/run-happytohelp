@@ -958,6 +958,22 @@ undo can verify original bytes.
 
 ## Import data from the original HappyToHelp service
 
+### HappyToHelp export package
+
+In **Settings → Project → Move in**, choose **HappyToHelp (the original service)**. The Business Move in link at `/app/move-in` opens this section in your current workspace when signed in. After completing sign-in or a required second factor, reopen that link. Without a selected workspace, choose or create one on the existing Projects page, then reopen the Business link.
+
+Choose the flat chunked export folder produced by `scripts/export-legacy.mjs`, including `manifest.json`, row chunks, context parts and attachment files. You can choose the same files individually instead. Review the source and destination workspace IDs and manifest fingerprint before uploading. AI usage history (`ai_usages`) is omitted by default and its row count remains visible; required context is always included.
+
+This door accepts a manifest up to 2 MiB, JSON parts up to 4 MiB, attachment objects up to 16 MiB and at most 20,000 file descriptors. Prefer new exports with 1 MiB JSON parts. Larger parts require a fresh export. Nested, duplicate and unlisted filenames, changed bytes, wrong sizes/counts and credential-bearing rows are refused. Keep the original manifest bytes: their SHA-256 identifies the package.
+
+**Upload package** sends one file at a time. Uploading retains private immutable files only; it creates no imported history, journals or background import work. After interruption or reload, reselect the same folder and choose **Continue upload**. Status checks every required file pagewise and uploads only missing files; accepted files cannot be replaced.
+
+When all required files are present, **Import history** approves that exact manifest fingerprint. The separately installed import runner supplies Stop, Resume and the result table. A missing runner is shown as unavailable, never as a completed import. Results distinguish package, omitted, required and imported rows, attachment checksums and work-count changes. **Copy result note** supplies counts for the Business step.
+
+Different workspace IDs require an adoption approval door before import; that door is not part of this uploader. This uploader never remaps rows, creates a workspace or grants membership. New staging-package custody still needs verified erasure integration before real customer remote use. This round qualifies synthetic local upload only; it does not establish a fresh platform installation or end-to-end migration.
+
+### Command-line import
+
 This open-source project is a new edition of the original HappyToHelp
 application. If you have an export of your data from that original service, you
 can bring it into a local installation. If you are starting fresh, you can skip

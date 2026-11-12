@@ -1,0 +1,44 @@
+import React,{useEffect,useRef,useState} from 'react';
+import {nativeRequest} from '../../transport';
+import {packageBase,runnerRequest,rememberPackage,scanPackage,selectPackage,uploadFile} from './client';
+import PackageResult from './Result';
+const size=n=>`${Number(n||0).toLocaleString()} bytes`;
+export default function LegacyPackage({projectId}){
+ const [selection,setSelection]=useState(null),[sha,setSha]=useState(()=>new URLSearchParams(window.location.search).get('legacyPackage')||''),[status,setStatus]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[progress,setProgress]=useState(null),[result,setResult]=useState(null),[runner,setRunner]=useState('pending');
+ const operation=useRef(null),generation=useRef(0),base=sha?packageBase(projectId,sha):null;
+ const readResult=async(path,signal)=>{try{const r=await runnerRequest(`${path}/result`,{signal});if(signal?.aborted)return;setResult(r.data);setRunner('available')}catch(e){if(signal?.aborted)return;if(e.status===404||e.status===405){setResult(null);setRunner('unavailable')}else{setRunner('pending');setError(e.message)}}};
+ useEffect(()=>{if(!base||!/^[a-f0-9]{64}$/.test(sha))return;const controller=new AbortController();scanPackage(base,controller.signal).then(setStatus).catch(e=>{if(!controller.signal.aborted&&e.status!==404)setError(e.message)});readResult(base,controller.signal);return()=>controller.abort();},[base]);
+ useEffect(()=>{if(!base||!result||['complete','stopped'].includes(result.run.state))return;const controller=new AbortController();const timer=setInterval(()=>readResult(base,controller.signal),2000);return()=>{clearInterval(timer);controller.abort()};},[base,result?.run.state]);
+ useEffect(()=>()=>{generation.current++;operation.current?.abort()},[]);
+ const choose=async event=>{const selected=[...event.target.files],version=++generation.current;operation.current?.abort();setError('');setBusy(true);setProgress(null);try{const chosen=await selectPackage(selected);if(version!==generation.current)return;setSelection(chosen);setSha(chosen.sha);setStatus(null);setResult(null);setRunner('pending');rememberPackage(chosen.sha);if(chosen.sha===sha){try{setStatus(await scanPackage(packageBase(projectId,chosen.sha)))}catch(e){if(e.status!==404)throw e}await readResult(packageBase(projectId,chosen.sha))}}catch(e){if(version===generation.current)setError(e.message)}finally{if(version===generation.current)setBusy(false)}};
+ const upload=async()=>{
+  if(!selection)return;const controller=new AbortController();operation.current=controller;setBusy(true);setError('');const path=packageBase(projectId,selection.sha);
+  try{
+   await nativeRequest(`${path}/manifest`,{method:'PUT',headers:{'Content-Type':'application/json','X-Manifest-SHA256':selection.sha},body:selection.manifestFile,signal:controller.signal});
+   let current=await scanPackage(path,controller.signal);setStatus(current);
+   for(const part of current.missing){
+    const file=selection.files.get(part.file);if(!file)throw Error(`Reselect the export folder containing ${part.file}.`);
+    setProgress({file:part.file,files:current.presentFiles,bytes:current.presentBytes});
+    await uploadFile(path,part,file,controller.signal);current={...current,presentFiles:current.presentFiles+1,presentBytes:current.presentBytes+part.bytes,missing:current.missing.filter(p=>p.file!==part.file)};setStatus(current);
+   }
+   setStatus(await scanPackage(path,controller.signal));setProgress(null);await readResult(path,controller.signal);
+  }catch(e){setError(controller.signal.aborted?'Upload interrupted. Reselect this folder after a reload, then continue uploading missing files.':e.message);try{setStatus(await scanPackage(path))}catch{}}
+  finally{setBusy(false);setProgress(null);operation.current=null;}
+ };
+ const action=async name=>{setBusy(true);setError('');try{const body=name==='start'?{approvedManifestSha256:sha,excludeTables:['ai_usages'],replay:false}:name==='resume'?{approvedManifestSha256:sha}:{};const r=await runnerRequest(`${base}/${name}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});setRunner('available');setResult(old=>({...old,run:r.data,verification:old?.verification||'pending'}));await readResult(base);}catch(e){if(e.status===404||e.status===405)setRunner('unavailable');else if(e.data?.code==='destination_policy_required')setError('The source and destination workspaces differ. A destination policy decision is required before import.');else setError(e.message)}finally{setBusy(false)}};
+ const manifest=selection?.manifest,ready=status&&status.missing.length===0;
+ return <section className="legacy-package" aria-labelledby="legacy-package-title"><h3 id="legacy-package-title">HappyToHelp export</h3><p>Choose the chunked export folder, including manifest.json and attachment files. Uploads stay private. Selecting files does not import history.</p>
+ <label htmlFor="legacy-folder" className="form-label">Export folder</label><input id="legacy-folder" className="form-control" type="file" webkitdirectory="" multiple onChange={choose} disabled={busy}/><details className="move-in-details"><summary>Choose individual files instead</summary><label htmlFor="legacy-files" className="form-label">Export package files</label><input id="legacy-files" className="form-control" type="file" multiple onChange={choose} disabled={busy}/><p>Choose manifest.json and the flat files it lists, from the same export.</p></details>
+ {error&&<p role="alert">{error}</p>}
+ {sha&&<><dl className="legacy-identity"><dt>Manifest fingerprint</dt><dd><code>{sha}</code></dd><dt>Source workspace</dt><dd>{manifest?.source.projectId||status?.sourceProjectId||result?.run.sourceProjectId||'Awaiting manifest'}</dd><dt>Destination workspace</dt><dd>{projectId}</dd>{manifest&&<><dt>Source</dt><dd>{manifest.source.repository} · {manifest.source.revision} · {manifest.source.exportedAt}</dd></>}</dl>
+ <p>AI usage history omitted: {(status?.excluded.ai_usages??manifest?.source.rowCounts.ai_usages??0).toLocaleString()} rows. Required context is always included.</p>
+ {selection&&<details className="move-in-details"><summary>Review file inventory ({selection.descriptors.length} files)</summary><ul>{selection.descriptors.map(p=><li key={p.file}>{p.file} · {size(p.bytes)}{p.kind==='chunk'&&p.table==='ai_usages'?' · Omitted':''}</li>)}</ul></details>}
+ {status&&<><p role="status">{status.presentFiles} of {status.expectedFiles} files uploaded · {size(status.presentBytes)} of {size(status.expectedBytes)}</p><progress aria-label="Package upload progress" max={Math.max(1,status.expectedBytes)} value={status.presentBytes}/>{status.missing.length>0&&<details className="move-in-details"><summary>Missing or rejected files ({status.missing.length})</summary><ul>{status.missing.map(p=><li key={p.file}>{p.file} · {p.reason.replaceAll('_',' ')}</li>)}</ul></details>}</>}
+ {progress&&<p role="status">Uploading {progress.file}. One file at a time.</p>}
+ <div className="move-in-actions"><button className="btn btn-primary" disabled={busy||!selection||ready} onClick={upload}>{busy?'Uploading…':status?'Continue upload':'Upload package'}</button>{busy&&operation.current&&<button className="btn btn-white" onClick={()=>operation.current?.abort()}>Interrupt upload</button>}<button className="btn btn-white" disabled={busy||!status} onClick={async()=>{setError('');try{setStatus(await scanPackage(base));await readResult(base)}catch(e){setError(e.message)}}}>Refresh package status</button></div>
+ {!selection&&<p>Reselect the same export folder to review it and continue uploading only missing files.</p>}
+ <h3>Import history</h3>{ready?<p>All required package files are uploaded. Import approval is bound to the fingerprint above.</p>:<p>Upload every required file before importing history.</p>}
+ {runner==='unavailable'&&<p role="status">Import runner unavailable or not yet installed. Package upload and resume remain available; no import result is available yet.</p>}
+ <div className="move-in-actions"><button className="btn btn-primary" disabled={busy||!ready||!selection||Boolean(result&&result.run.state!=='complete')} onClick={()=>action('start')}>Import history</button>{result&&['running','queued','paused'].includes(result.run.state)&&<button className="btn btn-white" disabled={busy} onClick={()=>action('stop')}>Stop import</button>}{result?.run.canResume&&<button className="btn btn-white" disabled={busy} onClick={()=>action('resume')}>Resume import</button>}</div><PackageResult result={result}/></>}
+ </section>;
+}

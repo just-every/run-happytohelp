@@ -16,7 +16,11 @@ export interface KnowledgeBlock {id:string;project_id:string;kind:'text'|'link'|
 interface BlockInput {kind:KnowledgeBlock['kind'];text:string;title?:string;url?:string;sources:string[];sourceIdentities?:ObservedArticleSource[];generationId?:string;authorContactId?:string}
 // Existing generation ledgers already retain their article dependencies. Direct
 // source reads instead prove the incarnation observed with their source bytes.
-const blockSourcesObservedSql=(requested:string)=>`NOT EXISTS(SELECT 1 FROM json_each(json_extract(${requested},'$.sources_json')) source WHERE source.value LIKE 'article:%' AND NOT EXISTS(SELECT 1 FROM json_each(json_extract(${requested},'$.sourceIdentities')) observed WHERE json_extract(observed.value,'$.id')=source.value AND ${observedArticleSourceSql('source.value',"json_extract(observed.value,'$.project')","json_extract(observed.value,'$.incarnation')")}) AND NOT EXISTS(SELECT 1 FROM knowledge_generation_sources generation_source WHERE generation_source.project_id=json_extract(${requested},'$.project_id') AND generation_source.generation_id=json_extract(${requested},'$.generation_id') AND generation_source.source_id=source.value) AND NOT EXISTS(SELECT 1 FROM ai_generation_sources generation_source WHERE generation_source.project_id=json_extract(${requested},'$.project_id') AND generation_source.generation_id=json_extract(${requested},'$.generation_id') AND generation_source.source_id=source.value))`
+export const blockSourcesObservedSql=(requested:string)=>`NOT EXISTS(SELECT 1 FROM json_each(json_extract(${requested},'$.sources_json')) source WHERE source.value LIKE 'article:%' AND NOT EXISTS(SELECT 1 FROM json_each(json_extract(${requested},'$.sourceIdentities')) observed WHERE json_extract(observed.value,'$.id')=source.value AND ${observedArticleSourceSql('source.value',"json_extract(observed.value,'$.project')","json_extract(observed.value,'$.incarnation')")}) AND NOT EXISTS(SELECT 1 FROM knowledge_generation_sources generation_source WHERE generation_source.project_id=json_extract(${requested},'$.project_id') AND generation_source.generation_id=json_extract(${requested},'$.generation_id') AND generation_source.source_id=source.value) AND NOT EXISTS(SELECT 1 FROM ai_generation_sources generation_source WHERE generation_source.project_id=json_extract(${requested},'$.project_id') AND generation_source.generation_id=json_extract(${requested},'$.generation_id') AND generation_source.source_id=source.value))`
+// CROSS JOIN fixes the order: the requested array drives the join and each block is found by the
+// unique (project_id, fingerprint) index. With a plain JOIN the planner walks every block of the
+// workspace through knowledge_blocks_project and rescans the array for each one.
+export const blockReadbackSql=`SELECT b.id FROM json_each(?) requested CROSS JOIN knowledge_reply_blocks b ON b.project_id=? AND b.fingerprint=json_extract(requested.value,'$.fingerprint') WHERE ${blockSourcesObservedSql('requested.value')} ORDER BY CAST(requested.key AS INTEGER)`
 export async function createBlocks(env:Env,projectId:string,blocks:BlockInput[]){
  // Protect answer bytes before wrapping or indexing them. A permitted retrieved
  // source cannot authorize an unrelated restricted copy in the model output.
@@ -30,7 +34,7 @@ export async function createBlocks(env:Env,projectId:string,blocks:BlockInput[])
   while(offset<rows.length){const item=rows[offset],bytes=new TextEncoder().encode(JSON.stringify(item)).length;if(bytes>1800000)throw new Error('Knowledge reference exceeds storage limit');if(page.length&&size+bytes>1800000)break;page.push(item);size+=bytes+1;offset++}
   const serialized=JSON.stringify(page),result=await env.DB.batch([
    env.DB.prepare(`INSERT OR IGNORE INTO knowledge_reply_blocks SELECT json_extract(requested.value,'$.id'),json_extract(requested.value,'$.project_id'),json_extract(requested.value,'$.kind'),json_extract(requested.value,'$.payload_json'),json_extract(requested.value,'$.sources_json'),json_extract(requested.value,'$.generation_id'),json_extract(requested.value,'$.author_contact_id'),json_extract(requested.value,'$.created_at'),json_extract(requested.value,'$.fingerprint') FROM json_each(?) requested WHERE ${blockSourcesObservedSql('requested.value')}`).bind(serialized),
-   env.DB.prepare(`SELECT b.id FROM json_each(?) requested JOIN knowledge_reply_blocks b ON b.project_id=? AND b.fingerprint=json_extract(requested.value,'$.fingerprint') WHERE ${blockSourcesObservedSql('requested.value')} ORDER BY CAST(requested.key AS INTEGER)`).bind(serialized,projectId)])
+   env.DB.prepare(blockReadbackSql).bind(serialized,projectId)])
   if(result[1].results.length!==page.length)throw new HTTPException(409,{message:'Knowledge source identity changed'})
   tokens.push(...result[1].results.map((row:any)=>referenceToken(String(row.id))))
  }
@@ -66,6 +70,11 @@ export async function renderKnowledgeFields<T>(env:Env,projectId:string,value:T,
  }
  return value
 }
+// The blocks' source ids drive the join and each article is found by its primary key. Matching
+// 'article:'||a.id against the source ids cannot use an index, so it visited every article of the
+// workspace. ORDER BY slug is the order that scan produced (the (project_id, slug) index), kept so a
+// block's first article stays the same one.
+export const articleSourcesSql=`SELECT DISTINCT source.block_id,a.id,a.title FROM (SELECT b.id block_id,s.value source_id FROM knowledge_reply_blocks b,json_each(b.sources_json) s WHERE b.project_id=?1 AND b.id IN (SELECT value FROM json_each(?2)) UNION SELECT b.id block_id,gs.source_id FROM knowledge_reply_blocks b JOIN knowledge_generation_sources gs ON gs.project_id=b.project_id AND gs.generation_id=b.generation_id WHERE b.project_id=?1 AND b.id IN (SELECT value FROM json_each(?2))) source CROSS JOIN knowledge_articles a ON a.id=substr(source.source_id,9) AND a.project_id=?1 WHERE substr(source.source_id,1,8)='article:' ORDER BY a.slug,source.block_id`
 export async function referenceVisibility(env:Env,projectId:string,text:string,operatorId:string,readers:Readers){
  const ids=referenceIds(text);if(!ids.length)return []
  const policy=referenceAdmissionPolicy(ids,literal(projectId),memberReaders(operatorId))
@@ -74,7 +83,7 @@ export async function referenceVisibility(env:Env,projectId:string,text:string,o
   describeReaders(env,projectId,readers)
  ])
  const visibility=await Promise.all(recipients.map(async recipient=>{const current=referenceAdmissionPolicy(ids,literal(projectId),readerSet([recipient]));return new Set((await env.DB.prepare(`${current.prefix}SELECT id FROM visible_blocks`).bind(...current.params).all<{id:string}>()).results.map(row=>row.id))}))
- const sources=await env.DB.prepare(`SELECT DISTINCT source.block_id,a.id,a.title FROM knowledge_articles a JOIN (SELECT b.id block_id,s.value source_id FROM knowledge_reply_blocks b,json_each(b.sources_json) s WHERE b.project_id=?1 AND b.id IN (SELECT value FROM json_each(?2)) UNION SELECT b.id block_id,gs.source_id FROM knowledge_reply_blocks b JOIN knowledge_generation_sources gs ON gs.project_id=b.project_id AND gs.generation_id=b.generation_id WHERE b.project_id=?1 AND b.id IN (SELECT value FROM json_each(?2))) source ON source.source_id='article:'||a.id WHERE a.project_id=?1`).bind(projectId,JSON.stringify(ids)).all<{block_id:string;id:string;title:string}>()
+ const sources=await env.DB.prepare(articleSourcesSql).bind(projectId,JSON.stringify(ids)).all<{block_id:string;id:string;title:string}>()
  // Titles are editor metadata. Previews still obey the current read predicate.
  const {memberAccess}=await import('../access/gate'),access=await memberAccess(env.DB,projectId,operatorId),canName=(id:string)=>access?.base!=='collaborator'&&access?.permissions.has('knowledge.edit')&&(access.knowledgeArticleIds===null||access.knowledgeArticleIds.includes(id))
  return rows.results.map(block=>{

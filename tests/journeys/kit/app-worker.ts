@@ -5,6 +5,7 @@ import {routeRule} from '../../../src/modules/access/route-permissions'
 import {handleEmail} from '../../../src/modules/integrations'
 import {isPublicSitePath,publicHelpHostResponse,publicSiteRoutes} from '../../../src/modules/public-site'
 import {guardOverload} from '../../../src/platform/d1-overload'
+import {knowledgeStatements} from './knowledge-statements'
 import type {Env} from '../../../src/platform/env'
 export {ConversationSocket} from '../../../src/modules/conversations/socket'
 
@@ -96,6 +97,7 @@ const worker={
   env=faulted(request,bindings(env))
   const path=new URL(request.url).pathname
   if(path==='/_test/routes')return Response.json([...new Map(app.routes.filter(route=>route.method==='GET').map(route=>[route.path,{method:route.method,path:route.path}])).values()])
+  if(path.startsWith('/_test/knowledge-')){const response=await knowledgeStatements(request,env,path);if(response)return response}
   if(path==='/_test/queue/take')return Response.json(captured.splice(0))
   // Mutating routes no role rule classifies: a collaborator is refused them by default, and the roles journey expects none.
   if(path==='/_test/unclassified-routes')return Response.json([...new Set(app.routes.filter(route=>!['GET','HEAD','OPTIONS','ALL'].includes(route.method)&&routeRule(route.method,route.path)===undefined).map(route=>`${route.method} ${route.path}`))])

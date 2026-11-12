@@ -61,5 +61,6 @@ export async function referenceJourney(){
   await (await import('./reference-ai.mjs')).referenceAi({k,body,article,category,a,b,c,send,grants,call,app,p,insert,issued,mail})
   await (await import('./reference-erasure.mjs')).referenceErasure()
   await (await import('./reference-disclosure.mjs')).referenceDisclosure({body,article,category,a,b,c,send,grants,call,app,p,issued})
+  await (await import('./reference-readback.mjs')).referenceReadback({app,p})
  }finally{await k.close()}
 }

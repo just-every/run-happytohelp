@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "6c56df304c6f5df10c4990aab0aa84609c1913a950169b711d960d9c3084f535",
+      "sha256": "1a21a7d6a052cf2b0a00c6eb642a4f0a3d15bd1540882fb49e5f83609205872b",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2945,11 +2945,11 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "e5d55ba282124d086b88bb6530d8c72a6e0a33cb90936960f7c248ef6efdc4d0",
+      "sha256": "5483ddb9e5f071e5f23012776110bca7619a08e424166dd23e5839bc5bf30e55",
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "6f73d5f9b5bebe7249935fee032510a899818bf870f3f7b6189e41bdecbbbe8e",
+      "sha256": "159147862bff2ad78baaf370a18d9088b5b5adc303114825af764ccbdb5e9456",
       "executable": false
     },
     "rer-project.json": {
@@ -7573,7 +7573,7 @@
       "executable": false
     },
     "src/modules/knowledge/reference-store.ts": {
-      "sha256": "dd9176fe77744acf43a42704689fc9cb31c7480045d37f82b77a222e1ee63650",
+      "sha256": "cc4a28a7da38b3e21d7bf127a0b2bb2a8a3fec388e2a468a7b5be35c43df8022",
       "executable": false
     },
     "src/modules/knowledge/result-fields.ts": {
@@ -16388,12 +16388,16 @@
       "sha256": "4634f7041d5d8e143c0e092e271d06a140411d4b991900fe533c8c3171bb22f0",
       "executable": false
     },
+    "tests/helpers/knowledge/reference-readback.mjs": {
+      "sha256": "5a92fba2134ad8df72f110968fd237f5b1de2aa6f32d014937de9720a77f987c",
+      "executable": false
+    },
     "tests/helpers/knowledge/reference-upgrade.mjs": {
       "sha256": "eb9b60cdf2d42c6a5d5a71a216eebceb85c06532000afe45655a53c3ef2b13b5",
       "executable": false
     },
     "tests/helpers/knowledge/references.mjs": {
-      "sha256": "8de524c9706d7cd1310ff01e582e5072ac82c7f101b6af60d6e11618c960449a",
+      "sha256": "e4c6e1a67df705f7e3243fd611eecb461041f893a9d98db2f431505e86578a37",
       "executable": false
     },
     "tests/helpers/knowledge/settle-upgrade.mjs": {
@@ -16845,7 +16849,7 @@
       "executable": false
     },
     "tests/journeys/kit/app-worker.ts": {
-      "sha256": "3a7ca5af2718f69393c144241385d8164e30b9ef8bf10f83192a7030d50df00c",
+      "sha256": "2bd02b643d68d95874bafb659d2411a9b9c48f66f44c33921af9b4e1c4cd9f9e",
       "executable": false
     },
     "tests/journeys/kit/app.mjs": {
@@ -16858,6 +16862,10 @@
     },
     "tests/journeys/kit/http.mjs": {
       "sha256": "779cd062d632f27d60e56f5081d510613da3d1d062a55417610ae9e3c760c62c",
+      "executable": false
+    },
+    "tests/journeys/kit/knowledge-statements.ts": {
+      "sha256": "f35b5a3fe48f10fb1d2ae0be760a56c0e740ed1cf980d4ff383c51a00e148a4e",
       "executable": false
     },
     "tests/journeys/kit/steps.mjs": {

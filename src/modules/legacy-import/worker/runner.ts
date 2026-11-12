@@ -40,7 +40,7 @@ export async function advanceLegacy(env:Env,job:Job){
   else if(phase==='rows')measured=await rowStep(env,run,manifest,lease,false)
   else if(phase==='knowledge'){
    const plan=await planKnowledgeIndex(env,run.project_id,1)
-   await checkpoint(env,run,{...(plan.complete?{phase:'verify_result',cursor_json:'{}'}:{})},[lease.assertion(env.DB),...plan.statements,lease.cleared(env.DB)])
+   await checkpoint(env,run,{...(plan.complete?{phase:'verify_result',cursor_json:'{}'}:{})},[lease.assertion(env.DB),...plan.statements,...(plan.complete?[env.DB.prepare('INSERT INTO ik_d1_assertions(ok) SELECT NOT EXISTS(SELECT 1 FROM knowledge_index_dirty WHERE project_id=?)').bind(run.project_id)]:[]),lease.cleared(env.DB)])
    measured={rows:plan.shingles.length,bytes:plan.bytes}
   }
   else if(phase==='verify_result')measured=await verifyResult(env,run,manifest,lease)

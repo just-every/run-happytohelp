@@ -11,7 +11,7 @@ import {sliceRows} from './context-load'
 import {hydrate} from './context-read'
 import {readDelta,scopedErased} from './delta-context'
 import {objectScope,inspectObject} from './object-step'
-import {checkpoint,cursor,limits,type Run,type Part} from './state'
+import {checkpoint,cursor,limits,json,type Run,type Part} from './state'
 import {countWork} from './result'
 import {refuse} from './errors'
 /** Same full/delta engine, prepared under the immutable ORIGINAL part identity. */
@@ -46,7 +46,7 @@ export async function preflightObjects(env:Env,run:Run,manifest:LegacyPackageMan
  const before=await countWork(env)
  // Snapshot each original journal's existing row identities for this attempt,
  // without copying source JSON. A resumed tick can distinguish replay/applied.
- await checkpoint(env,run,{phase:'objects',cursor_json:'{}',work_before_json:JSON.stringify(before)},[
+ await checkpoint(env,run,{phase:'objects',cursor_json:'{}',work_before_json:JSON.stringify(before),metrics_json:JSON.stringify({...json<any>(run.metrics_json,{}),beforeAt:Date.now()})},[
   lease.assertion(env.DB),env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs(id,source_json,bundle_digest,state,created_at,completed_at) VALUES(?,?,?,'running',?,NULL)").bind(run.id,JSON.stringify(manifest.source),run.manifest_sha256,Date.now()),lease.cleared(env.DB),
  ])
  return {rows:0,bytes:0}

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {mkdtemp,mkdir,writeFile,appendFile,rm,symlink} from 'node:fs/promises'
+import {mkdtemp,mkdir,writeFile,appendFile,rm} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {resolve,join} from 'node:path'
 import {execFile} from 'node:child_process'
@@ -23,7 +23,6 @@ export async function recoveryRestoreJourney(){
  const stop=async()=>{if(!server)return;try{if(serverReady){await stopOwnedServer(server.child);await server.result()}}finally{await server.stop();server=undefined;serverReady=false}}
  try{
   await promisify(execFile)('git',['clone','--quiet','--no-local','--depth','1',resolve('.'),checkout])
-  await symlink(resolve('node_modules'),join(checkout,'node_modules'),'dir')
   await mkdir(join(checkout,'.seed'),{recursive:true})
   await writeFile(join(checkout,'.seed/answers.json'),JSON.stringify({WORKSPACE_NAME:'Recovery restore support',WIDGET_ORIGIN:origin,OWNER_NAME:'Casey Owner',OWNER_PASSWORD:password,EMAIL_PROVIDER:'later'}),{mode:0o600})
   await run(checkout,['setup','--owner-email',email,'--answers','.seed/answers.json','--port',String(port)])

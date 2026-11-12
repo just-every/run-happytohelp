@@ -11,7 +11,7 @@ const refs:Record<string,string[]>={project_id:['projects'],conversation_id:['co
 /** Async hydration ends before any synchronous mapper runs. */
 export async function hydrate(env:Env,run:Run,manifest:LegacyPackageManifest,table:string,sourceRows:Row[]){
  const records=new Map<string,Map<string,Row>>(),requested=new Map<string,Set<string>>(),loaded=new Set<string>();let bytes=0
- const add=(table:string,row:Row)=>{const id=String(row.id??''),list=records.get(table)??new Map<string,Row>();records.set(table,list);if(!list.has(id)){bytes+=jsonBytes(row);if(bytes>limits.closureBytes)refuse('row_too_large');list.set(id,row)}}
+ const add=(table:string,row:Row)=>{if(row.project_id!=null&&String(row.project_id)!==run.project_id||table==='projects'&&String(row.id)!==run.project_id)refuse('invalid_scope',422);const id=String(row.id??''),list=records.get(table)??new Map<string,Row>();records.set(table,list);if(!list.has(id)){bytes+=jsonBytes(row);if(bytes>limits.closureBytes)refuse('row_too_large');list.set(id,row)}}
  const want=(table:string,id:unknown)=>{if(id===undefined||id===null||id==='')return;const ids=requested.get(table)??new Set<string>();requested.set(table,ids);ids.add(String(id));if(ids.size>500)refuse('row_too_large')}
  const inspect=(table:string,row:Row)=>{
   for(const [field,tables] of Object.entries(refs))for(const related of tables)want(related,row[field])
@@ -60,6 +60,7 @@ export async function hydrate(env:Env,run:Run,manifest:LegacyPackageManifest,tab
  useRelationships(context,index)
  const media=packageMediaIndex(run.source_project_id,records.get('media')?.values()??[],new Set(manifest.objects.map(object=>object.key)),context)
  // Previously imported file doors remain available without loading old archives.
- if(keys.size){const prior=await env.DB.prepare("SELECT row_json FROM legacy_import_context WHERE run_id=? AND kind='media_lookup' AND source_table='media' AND parent_id IN (SELECT value FROM json_each(?)) LIMIT 251").bind(run.id,JSON.stringify([...keys])).all<{row_json:string}>();if(prior.results.length>250)refuse('row_too_large');for(const row of prior.results){const file=JSON.parse(row.row_json);media.files.set(file.legacyKey,file.file)}}
+ if(keys.size){const prior=await env.DB.prepare("SELECT row_json FROM legacy_import_context WHERE run_id=? AND kind='media_lookup' AND source_table='media' AND parent_id IN (SELECT value FROM json_each(?)) LIMIT 251").bind(run.id,JSON.stringify([...keys])).all<{row_json:string}>();if(prior.results.length>250)refuse('row_too_large');for(const row of prior.results){const file=JSON.parse(row.row_json);if(!media.files.has(file.legacyKey))media.files.set(file.legacyKey,file.file)}}
+ if(table==='messages'&&sourceRows.some(row=>!index.find('conversations',row.conversation_id)))refuse('invalid_scope',422)
  return {context,media,bytes}
 }

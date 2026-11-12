@@ -59,7 +59,7 @@ export async function indexTranscripts(env:Env,run:Run){
 }
 export async function indexDatasets(env:Env,run:Run){
  const c=cursor(run),rows=await env.DB.prepare(`SELECT source_id,row_json FROM legacy_import_context WHERE run_id=? AND kind='record' AND source_table='dataset_files' AND source_id>? ORDER BY source_id LIMIT ?`).bind(run.id,c.after??'',limits.rows).all<{source_id:string;row_json:string}>()
- if(!rows.results.length){await checkpoint(env,run,{phase:'preflight',cursor_json:JSON.stringify({stage:run.mode==='delta'?'delta':'rows',ordinal:0,row:0})});return {rows:0,bytes:0}}
+ if(!rows.results.length){await checkpoint(env,run,{cursor_json:JSON.stringify({stage:'earlier',created:-1,lastRun:''})});return {rows:0,bytes:0}}
  let bytes=0;const statements:D1PreparedStatement[]=[];let last=c.after
  for(const source of rows.results){bytes+=jsonBytes(source);if(bytes>limits.bytes)refuse('row_too_large');const file=JSON.parse(source.row_json),dataset=await env.DB.prepare("SELECT row_json FROM legacy_import_context WHERE run_id=? AND kind='record' AND source_table IN ('datasets','knowledge_datasets') AND source_id=? LIMIT 1").bind(run.id,String(file.dataset_id)).first<{row_json:string}>();last=source.source_id
   const d=dataset?JSON.parse(dataset.row_json):null,published=d&&!file.deleted_at&&(file.markdown||file.content)&&(d.status==='ready'||d.last_refreshed_at&&(Array.isArray(d.published_file_ids)?d.published_file_ids.map(String).includes(String(file.id)):(file.updated_at||file.created_at)&&timestamp(file.updated_at||file.created_at)<=timestamp(d.last_refreshed_at)))

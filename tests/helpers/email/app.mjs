@@ -4,6 +4,12 @@ import {startApp,sha} from '../../journeys/kit/app.mjs'
 // A workspace mailbox on the real application. Mail arrives through the Worker's email entry, the
 // JSON gateway or SendGrid Inbound Parse; outbound mail is captured at the mail provider, which
 // `mail.mode` can make fail. Mailboxes answer their MX lookup so they can receive replies.
+async function providerBody(request){
+ if(!['api.mailgun.net','api.eu.mailgun.net'].includes(new URL(request.url).hostname))return request.json()
+ const form=await request.formData()
+ return {from:form.get('from'),to:form.getAll('to'),subject:form.get('subject'),text:form.get('text'),html:form.get('html'),reply_to:form.get('h:Reply-To'),headers:Object.fromEntries([...form].filter(([name])=>name.startsWith('h:')).map(([name,value])=>[name.slice(2),value]))}
+}
+
 export async function mailApp({bindings={},projectId='p',inbound='inbound@example.com',outbox='support@example.com'}={}){
  // Each provider answers as it does on acceptance; `mail.respond(entry)` may answer instead (a refusal,
  // a bounce, or a response held open), and `mail.mode='lost'` loses the response after the request.
@@ -12,7 +18,7 @@ export async function mailApp({bindings={},projectId='p',inbound='inbound@exampl
  const app=await startApp({captureQueue:true,origin:'https://app.example',bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-resend',EMAIL_FROM:outbox,INBOUND_EMAIL_TOKEN:'fixture-gateway',...bindings},outbound:async request=>{
   if(request.url.startsWith('https://cloudflare-dns.com/'))return Response.json({Status:0,Answer:new URL(request.url).searchParams.get('name')==='unrouted.example'?[]:[{type:15,data:'10 mx.example.com.'}]})
   mail.attempts++;if(mail.mode==='lost')throw new Error('response lost')
-  const entry={url:request.url,host:new URL(request.url).hostname,headers:Object.fromEntries(request.headers),body:await request.json()};mail.sent.push(entry)
+  const entry={url:request.url,host:new URL(request.url).hostname,headers:Object.fromEntries(request.headers),body:await providerBody(request)};mail.sent.push(entry)
   return (await mail.respond?.(entry))??accepted(entry)
  }})
  await app.db.batch([

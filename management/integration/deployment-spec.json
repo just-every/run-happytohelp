@@ -1185,6 +1185,7 @@
     }
   ],
   "publicVariables": {
+    "MAIL_MODE": "",
     "MAIL_FROM": "",
     "MAIL_PROVIDER": "direct",
     "MAIL_RELAY_URL": "",
@@ -1218,6 +1219,7 @@
     "EMAIL_FROM",
     "INBOUND_EMAIL_TOKEN",
     "INTEGRATION_ENCRYPTION_KEY",
+    "H2H_OWNER_RECOVERY_KEY",
     "OWNER_EMAIL",
     "GITHUB_CLIENT_SECRET",
     "GITHUB_TOKEN",
@@ -1290,11 +1292,8 @@
       "rer"
     ],
     "credentialSecretNames": [
-      "EMAIL_PROVIDER",
+      "EMAIL_API_KEY",
       "EMAIL_FROM",
-      "EMAIL_API_KEY_NAME",
-      "MAILGUN_DOMAIN",
-      "MAILGUN_REGION",
       "MAILGUN_SENDING_KEY",
       "MAILGUN_WEBHOOK_SIGNING_KEY"
     ]

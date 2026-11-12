@@ -1,4 +1,4 @@
-import {managedMailDeclaration,publicMailNames} from '../deployment/mail-declaration.mjs';
+import {selectedMailDeclaration,publicMailNames} from '../deployment/mail-declaration.mjs';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {invalid} from '@runeditrun/rer/errors';
@@ -8,7 +8,7 @@ export async function hostedDeclaration(root,declaration,value,env){
  const hasOrigin=value!==undefined&&value!=='';
  const mail=Object.fromEntries(publicMailNames.filter(name=>typeof env[name]==='string').map(name=>[name,env[name]]));
  if(!hasOrigin&&env.MAIL_PROVIDER!=='rer'&&!Object.keys(mail).length)return null;
- const custom=env.MAIL_PROVIDER==='rer'?managedMailDeclaration(declaration):structuredClone(declaration);
+ const custom=selectedMailDeclaration(declaration,env);
  // Public inputs belong in vars; credentials keep the declaration's secret path.
  custom.vars={...custom.vars,...mail};
  if(hasOrigin){

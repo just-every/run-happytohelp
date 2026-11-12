@@ -61,6 +61,13 @@ async function localMailRoutes(){
   for(const path of ['/__dev/mail','/__dev/mail/messages','/api/identity/local-mail','/api/identity/local-mail/messages'])assert.equal((await app.request(path,{token})).status,404,'no local mail viewer at '+path)
   const login=await app.ok('/api/identity/login',{body:{email:'owner@example.test',password}})
   assert.equal(login.actor.id,owner.userId,'native password identity remains usable')
+  await app.configure({MAIL_MODE:'off',MAIL_PROVIDER:'none',EMAIL_API_KEY:'synthetic-dormant-local-key'})
+  assert.equal((await app.ok(base+'/email-settings',{token})).sending.mode,'unavailable','explicit off also overrides local suppression')
+  assert.equal((await send('explicit-local-off')).status,503)
+  const offBucket=await app.ok(`/api/dashboard/projects/${project}/conversations/${conversation.id}/buckets/${conversation.id}`,{token})
+  assert.equal(offBucket.data.messages.find(row=>row.id===reply.message.id).email_status.state,'not_configured')
+  assert.equal(await count('email_deliveries'),0);assert.equal(app.requests.length,0)
+  await app.configure({MAIL_MODE:undefined,MAIL_PROVIDER:undefined})
 
   // A local-looking request cannot replace missing or rejected hosted credentials.
   const forged={'X-H2H-Local':'true','X-Email-Provider':'development','X-Forwarded-Host':'localhost','X-Rer-Dev-Key':'forged'}

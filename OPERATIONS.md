@@ -225,7 +225,7 @@ and other reserved trial domains because they cannot receive sign-in mail. Suppl
 a real mailbox privately in `OWNER_EMAIL` or an owned 0600 `--env-file` for both
 dry run and deployment. Rer generates missing setup/encryption secrets. It also deploys
 the generated `INBOUND_EMAIL_TOKEN` for reply-mailbox authentication. Existing
-Worker secrets are retained; use `rer deploy --set-secret <name>` to change one
+Worker secrets are retained except provider credentials explicitly switched Off; use `rer deploy --set-secret <name>` to change one
 deliberately. Rer keeps the values it generates (`INBOUND_EMAIL_TOKEN`,
 `INTEGRATION_ENCRYPTION_KEY`, `H2H_OWNER_RECOVERY_KEY`) in the private 0600 file
 `.rer/deploy/<environment>.secrets.env` beside `.rer/deploy/<environment>.json`.
@@ -236,7 +236,7 @@ Worker already holds and sends only ones it lacks.
 The declaration maps native `EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`
 inputs to rer's shared `MAIL_PROVIDER`, `MAIL_FROM` and `MAIL_PROVIDER_API_KEY`
 preflight bindings as well as HappyToHelp's native bindings. The deploy adapter
-resolves the setup choice `MAIL_PROVIDER=direct` to the selected native provider
+resolves the setup choice `MAIL_MODE=own` (or legacy `direct`) to the selected native provider
 before preflight. Cloudflare also uses `EMAIL_ACCOUNT_ID`; the adapter supplies
 its native token to the shared `MAIL_API_KEY` binding. Managed deployments use
 their assigned `MAIL_*` inputs, independently of native credentials. Real
@@ -267,57 +267,21 @@ fails when an `EMAIL_*` name the Worker reads is not bound in `deploy.json` or
 
 ### Deploy with outbound email off
 
-A company's history can move into its own hosted installation before its mail is
-cut over, so a deploy can choose to send nothing. Put `MAIL_PROVIDER=none` and a
-real `OWNER_EMAIL` in the environment or the owned 0600 `--env-file`, with no
-other mail input (`EMAIL_*`, `MAIL_*`, the Mailgun sending inputs
-`MAILGUN_DOMAIN`, `MAILGUN_REGION` and `MAILGUN_SENDING_KEY`, mailbox OAuth or socket
-settings; supplying any of them with `none` refuses before anything is built):
+Before moving history or cutting over mail, choose **Email off** in native setup or the platform's **Settings → App settings**. Native setup stores `MAIL_MODE=off`; deployment accepts `off`, `none` or `disabled` and binds the canonical `MAIL_PROVIDER=none`. Keep a real `OWNER_EMAIL` in the environment or your owned 0600 `--env-file`:
 
 ```sh
 rer deploy --environment production --env-file ~/happytohelp-deploy.env
 ```
 
-`none` is always spelled out. A missing `MAIL_PROVIDER`, `later` or `direct`
-still needs a mail provider, exactly as before. With `none`, rer reports that
-outbound email is off and names the sign-in command below; the Worker is bound
-to no mail provider, key or sender, and `rer deploy --dry-run` lists nothing
-mail-related as missing and makes no outbound request. The installation then
-sends nothing: sign-in links, password resets, invitations, notifications,
-replies by email, the Email settings test send and surveys each refuse or record
-"Outbound email is off for this installation" instead of pretending, and
-**Setup** and **Email settings** say so with how to turn it on. Incoming mail,
-imports and everything that does not send keep working.
+Run a full deploy when changing the provider choice. Off removes existing mail provider credentials, sender configuration and `MAILGUN_WEBHOOK_SIGNING_KEY` from the Worker. Private saved values may remain for later, but are withheld from the deployment. A secret-only update does not override Off. The dry-run makes no outbound requests and lists no mail input as missing for Off; live binding-name verification requires a real deployment.
 
-To turn Mailgun mail on later, put `EMAIL_PROVIDER=mailgun`, `EMAIL_FROM`, `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_REGION` (`us` or `eu`, written out), `MAILGUN_SENDING_KEY` (a domain-scoped sending key) and `MAILGUN_WEBHOOK_SIGNING_KEY` (Mailgun's HTTP webhook signing key, which verifies mail Mailgun forwards to you) in your `--env-file`, remove `MAIL_PROVIDER=none` from it,
-and run one command from the checkout that deployed the installation. The
-installation must already run this release, because a secret change makes one
-new Worker version from the live one without rebuilding:
+The installation sends no sign-in links, password resets, invitations, notifications, email replies, test email or surveys. **Setup** and **Email settings** show how to enable it. Owners use their password or the one-time sign-in command below. Imports and work that does not send remain available; incoming Mailgun forwards refuse while its signing key is withheld.
 
-```sh
-rer deploy --environment production --env-file ~/happytohelp-deploy.env --set-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY,MAILGUN_WEBHOOK_SIGNING_KEY
-```
+To enable Mailgun, explicitly choose **Your email provider** (`MAIL_MODE=own`, with legacy `direct` accepted), then set `EMAIL_PROVIDER=mailgun`, `EMAIL_FROM`, `MAILGUN_DOMAIN`, `MAILGUN_REGION` (`us` or `eu`) and `MAILGUN_SENDING_KEY` in the private file. Add `MAILGUN_WEBHOOK_SIGNING_KEY` for receiving. `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY` is accepted but optional; omission selects that same binding. Run the full deploy above. For a platform installation, save the choice and fields under **Settings → App settings**, then use the normal owner Publish flow once the platform carries this contract. Saving keys alone cannot activate mail.
 
-Resend, SendGrid and Cloudflare Email Sending take the inputs in the provider
-table of [Email and integrations](src/modules/integrations/README.md#choose-a-provider),
-set the same way in one `--set-secret` run.
+Resend, SendGrid and Cloudflare use their corresponding inputs in the [email state table](docs/email.md#installation-email-choice). RER uses its assigned relay/mailbox configuration. Platform adoption and actual installed binding verification are separate from the seed declarations.
 
-To turn sending off again, remove the six sending inputs. A plain redeploy keeps
-every secret the Worker holds, so a redeploy with `MAIL_PROVIDER=none` alone does
-not stop sending; the removal must be an `--unset-secret` run. Mailgun receiving
-continues, because the signing key binds no way to send:
-
-```sh
-rer deploy --environment production --env-file ~/happytohelp-deploy.env --unset-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY
-```
-
-Then take those six inputs out of the file and put `MAIL_PROVIDER=none` back in it
-for later deploys.
-
-To stop Mailgun receiving, first point the Mailgun route elsewhere, then remove the
-signing key. Every forward is then refused; Mailgun retries for 8 hours and then
-drops the message. A removed declared secret is retired, so later plain deploys
-omit it until it is set again:
+To switch back off, set `MAIL_PROVIDER=none` and run the full deploy, or choose Off and Publish on the platform. All sending credentials and Mailgun's verification-only signing key are absent from the resulting deployment. The generic `INBOUND_EMAIL_TOKEN` may remain for non-Mailgun receiving; it grants no sending authority. Point a live Mailgun route elsewhere first: Mailgun retries refused forwards for 8 hours before dropping them. To stop only Mailgun receiving on an active installation, remove its signing key:
 
 ```sh
 rer deploy --environment production --env-file ~/happytohelp-deploy.env --unset-secret MAILGUN_WEBHOOK_SIGNING_KEY
@@ -356,11 +320,10 @@ actual Mailgun sending domain (a DNS name, without a URL or path), and
 Workspace and connected forwarding-mailbox sender, recipient, signature,
 attachment and reply-thread settings still apply.
 
-Set `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY`. That name selects the installation's
-native secret binding `MAILGUN_SENDING_KEY`; its value must be a **domain-scoped
-sending key** for `MAILGUN_DOMAIN`. This is the currently supported binding name.
-A missing/unknown name, unavailable binding, invalid domain or invalid region
-leaves mail unconfigured. The adapter never reads `EMAIL_API_KEY` as a fallback.
+`EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY` explicitly selects the installation's
+native secret binding; omitting it selects the same `MAILGUN_SENDING_KEY`. Its value
+must be a **domain-scoped sending key** for `MAILGUN_DOMAIN`. An unknown selector,
+unavailable key, invalid domain or invalid region leaves mail unconfigured. The adapter never reads `EMAIL_API_KEY` as a fallback.
 Keep the separate time-limited Mailgun Routes key outside this provider; no
 Routes/account/DNS permissions or changes are needed to build it.
 
@@ -375,9 +338,8 @@ Configuring this provider grants no new send authority: agents draft and an
 authorized owner sends under the existing policy. Imports remain silent.
 
 This source adapter must ship with the same qualified release as the import door
-and cutover status. The current rer setup selector and production-mail preflight
-do not offer Mailgun; this addition does not qualify a fresh hosted deployment or
-change that shared preflight. The native binding declarations are present for the
+and cutover status. Native setup now offers Mailgun. This source change does not establish a
+qualified fresh hosted deployment or change the shared production-mail preflight. The native binding declarations are present for the
 qualified release's installation configuration. Do not substitute another
 provider to satisfy preflight. No real sending key or live delivery has been
 tested here: automated coverage uses HTTP-edge fakes only. The owner supplies
@@ -406,9 +368,9 @@ threading, attachment limits, automatic-mail classification, Suspended policy an
 Closed-ticket handling as the other inbound doors. Received, repeated, Suspended and
 Closed-ticket mail is answered 200, the only answer Mailgun accepts; an address no
 workspace receives is answered 404 and Mailgun retries it. Sending and receiving are
-independent: removing the six sending inputs leaves receiving on, and removing the
-signing key stops receiving only. The commands are above under Deploy with outbound
-email off.
+separately configured while email is active: removing the signing key stops
+Mailgun receiving. The explicit Off state withholds both sending and receiving
+authority, including the signing key. See Deploy with outbound email off above.
 
 Protocol references: [message sending](https://documentation.mailgun.com/docs/mailgun/api-reference/send/mailgun/messages/post-v3--domain-name--messages),
 [domain sending keys](https://documentation.mailgun.com/docs/mailgun/user-manual/api-key-mgmt/rbac-mgmt)
@@ -478,13 +440,11 @@ the message in the owner's mailbox. A password set in the native app also works.
 
 If sign-in mail fails after the owner was claimed, repair the sender using the
 same Cloudflare credentials and checkout that deployed it. Supply the correct
-private `EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY` values in an owned
-0600 environment file, then run each needed update separately:
+private `MAIL_MODE=own`, `EMAIL_PROVIDER`, `EMAIL_FROM` and the selected provider key in an owned
+0600 environment file, then run a full deployment:
 
 ```sh
-rer deploy --environment production --env-file private-mail.env --set-secret EMAIL_PROVIDER
-rer deploy --environment production --env-file private-mail.env --set-secret EMAIL_FROM
-rer deploy --environment production --env-file private-mail.env --set-secret EMAIL_API_KEY
+rer deploy --environment production --env-file private-mail.env
 ```
 
 Return to `/login` and request a new email link for the original owner. Changing
@@ -1133,7 +1093,7 @@ does not switch widgets, approve a cutover or deploy a release.
 
 ## Managed conversation mail v1
 
-The application declares `mail.providers: ["rer"]` and `H2H_RER_MAIL_VERSION=1`. Managed routing is assigned by the platform through `MAIL_PROVIDER`, `MAIL_FROM`, `MAIL_RELAY_URL`, `RER_MAILBOX_ID`, `RER_MAIL_ADDRESS` and `RER_MAIL_CONTROL_URL`. Keep `MAIL_API_KEY`, `RER_MAIL_INGRESS_KEY`, `INBOUND_EMAIL_TOKEN` and the existing `INTEGRATION_ENCRYPTION_KEY` private. They are application authority/data keys; no provider credential is requested from a Managed customer. Native and Assisted direct-provider configuration still uses `EMAIL_*`.
+The application declares its RER relay capability with `mail.providers: ["rer"]` and `H2H_RER_MAIL_VERSION=1`. When the installation explicitly chooses RER, routing is assigned by the platform through `MAIL_PROVIDER`, `MAIL_FROM`, `MAIL_RELAY_URL`, `RER_MAILBOX_ID`, `RER_MAIL_ADDRESS` and `RER_MAIL_CONTROL_URL`. Keep `MAIL_API_KEY`, `RER_MAIL_INGRESS_KEY`, `INBOUND_EMAIL_TOKEN` and the existing `INTEGRATION_ENCRYPTION_KEY` private. They are application authority/data keys; no provider credential is requested for the RER choice. The own-provider choice uses `EMAIL_*` and the selected provider's inputs, including `MAILGUN_*` for Mailgun. Off withholds provider sending and Mailgun receiving credentials, even when values remain saved; see the [state table](docs/email.md#installation-email-choice).
 
 Migration 249 retains mailbox bindings, an idempotent control outbox, encrypted MIME object references and redacted command/thread receipts. Provisioning seeds the reserved default in the workspace transaction and binds it after commit. The native queue/schedule retries control work with bounded backoff, surfaces conflicts, refreshes route status and retires deleted workspaces. A new installation cannot choose a mailbox owned by another installation; platform enforcement and live qualification remain required.
 

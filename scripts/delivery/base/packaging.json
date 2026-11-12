@@ -73,7 +73,8 @@
         "H2H_RER_MAIL_VERSION",
         "RER_MAILBOX_ID",
         "RER_MAIL_ADDRESS",
-        "RER_MAIL_CONTROL_URL"
+        "RER_MAIL_CONTROL_URL",
+        "MAIL_MODE"
       ],
       "secretNames": [
         "H2H_SETUP_TOKEN"
@@ -100,6 +101,7 @@
         "EMAIL_FROM",
         "INBOUND_EMAIL_TOKEN",
         "INTEGRATION_ENCRYPTION_KEY",
+        "H2H_OWNER_RECOVERY_KEY",
         "OWNER_EMAIL",
         "GITHUB_CLIENT_SECRET",
         "GITHUB_TOKEN",
@@ -149,11 +151,8 @@
           "rer"
         ],
         "credentialSecretNames": [
-          "EMAIL_PROVIDER",
+          "EMAIL_API_KEY",
           "EMAIL_FROM",
-          "EMAIL_API_KEY_NAME",
-          "MAILGUN_DOMAIN",
-          "MAILGUN_REGION",
           "MAILGUN_SENDING_KEY",
           "MAILGUN_WEBHOOK_SIGNING_KEY"
         ]

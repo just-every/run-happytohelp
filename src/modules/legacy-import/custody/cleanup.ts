@@ -1,3 +1,4 @@
+import {seedLegacyPage,seedLegacyInventory,seedLegacyScopeRun} from './seed'
 import type {Env} from '../../../platform/env'
 import {dbNow} from '../lease'
 import {associatedPage,closeCustody,sourceCleanupStatus} from './fence'
@@ -14,6 +15,7 @@ export async function cleanupStep(env:Pick<Env,'DB'|'FILES'>,sha:string,generati
  if(!claimed)return {keys:0,rows:0,pending:true}
  let keys=0,rows=0
  try{
+  if(!c.seeding_complete)return await seedLegacyPage(env,c,token)
   // A completed tombstone periodically sweeps its opaque coordinates for late nonce placeholders.
   // Original key rows stay as a cleanup ledger; never list a prefix or accept them as source.
   if(c.status==='purged'){
@@ -33,9 +35,16 @@ export async function cleanupStep(env:Pick<Env,'DB'|'FILES'>,sha:string,generati
    if(page.results.length){await batch(env.DB,c,token,[env.DB.prepare(`DELETE FROM ${table} WHERE run_id=? AND rowid IN (SELECT value FROM json_each(?))`).bind(`legacy-package:${sha}`,JSON.stringify(page.results.map(row=>row.rowid)))]);rows+=page.results.length}
    if(rows===250)break
   }
+  // Old v1 filenames may contain personal words. Once their bodies are deleted,
+  // remove these cleanup-only coordinates in the same bounded D1 row allowance.
+  if(c.cleanup_only&&rows<250){
+   const clean=await env.DB.prepare('SELECT key FROM legacy_package_keys WHERE manifest_sha256=? AND cleanup_state=1 ORDER BY key LIMIT ?').bind(sha,250-rows).all<{key:string}>()
+   if(clean.results.length){await batch(env.DB,c,token,[env.DB.prepare('DELETE FROM legacy_package_keys WHERE manifest_sha256=? AND cleanup_state=1 AND key IN (SELECT value FROM json_each(?))').bind(sha,JSON.stringify(clean.results.map(r=>r.key)))]);rows+=clean.results.length}
+  }
   const remaining=await env.DB.prepare('SELECT 1 FROM legacy_package_keys WHERE manifest_sha256=? AND cleanup_state=0 LIMIT 1').bind(sha).first()
-  const done=tableIndex>=children.length&&!remaining
-  await batch(env.DB,c,token,[...(done?[env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT ${children.map(table=>`NOT EXISTS(SELECT 1 FROM ${table} WHERE run_id=?1)`).join(' AND ')} AND NOT EXISTS(SELECT 1 FROM legacy_package_keys WHERE manifest_sha256=?2 AND cleanup_state=0)`).bind(`legacy-package:${sha}`,sha)]:[]),env.DB.prepare(`UPDATE legacy_package_custody SET cleanup_table=?,status=?,purged_at=CASE WHEN ? THEN ${dbNow} ELSE purged_at END WHERE manifest_sha256=? AND generation=?`).bind(tableIndex,done?'purged':'purging',done?1:0,sha,generation)])
+  const coordinates=c.cleanup_only?await env.DB.prepare('SELECT 1 FROM legacy_package_keys WHERE manifest_sha256=? LIMIT 1').bind(sha).first():null
+  const done=tableIndex>=children.length&&!remaining&&!coordinates
+  await batch(env.DB,c,token,[...(done?[env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT ${children.map(table=>`NOT EXISTS(SELECT 1 FROM ${table} WHERE run_id=?1)`).join(' AND ')} AND EXISTS(SELECT 1 FROM legacy_package_custody WHERE manifest_sha256=?2 AND seeding_complete=1 AND (cleanup_only=0 OR NOT EXISTS(SELECT 1 FROM legacy_package_keys WHERE manifest_sha256=?2))) AND NOT EXISTS(SELECT 1 FROM legacy_package_keys WHERE manifest_sha256=?2 AND cleanup_state=0)`).bind(`legacy-package:${sha}`,sha)]:[]),env.DB.prepare(`UPDATE legacy_package_custody SET cleanup_table=?,status=?,purged_at=CASE WHEN ? THEN ${dbNow} ELSE purged_at END WHERE manifest_sha256=? AND generation=?`).bind(tableIndex,done?'purged':'purging',done?1:0,sha,generation)])
   return {keys,rows,pending:!done}
  }finally{
   await env.DB.prepare(`UPDATE legacy_package_custody SET cleanup_token=NULL,cleanup_until=NULL,next_cleanup_at=${dbNow}+? WHERE manifest_sha256=? AND generation=? AND cleanup_token=?`).bind(c.status==='purged'?60000:1000,sha,generation,token).run()
@@ -52,6 +61,8 @@ async function invalidReason(env:Pick<Env,'DB'>,c:Custody){
 }
 /** One native erase request performs one package quantum; following requests continue the ledger. */
 export async function cleanupScopeStep(env:Pick<Env,'DB'|'FILES'>,projectId:string){
+ await seedLegacyInventory(env)
+ await seedLegacyScopeRun(env,projectId)
  const c=await env.DB.prepare(`SELECT * FROM legacy_package_custody WHERE manifest_sha256 IN (${associatedPage(true)}) ORDER BY manifest_sha256 LIMIT 1`).bind(projectId,'',1).first<Custody>()
  if(c){const closed=await closeCustody(env,c.manifest_sha256,await invalidReason(env,c));if(closed)await cleanupStep(env,closed.manifest_sha256,closed.generation)}
  return sourceCleanupStatus(env,projectId)
@@ -62,7 +73,8 @@ export async function enqueueCleanup(env:Pick<Env,'JOBS'>,c:Custody){
 }
 /** C calls before the inactive-project guard, splitting the existing cron reservation.
  * Discovery closes at most ten packages, then enqueues only; never copies/imports source. */
-export async function discoverCleanup(env:Pick<Env,'DB'|'JOBS'>,limit=10){
+export async function discoverCleanup(env:Pick<Env,'DB'|'FILES'|'JOBS'>,limit=10){
+ await seedLegacyInventory(env)
  limit=Math.min(10,Math.max(1,Math.floor(limit)))
  const fence=await env.DB.prepare("SELECT project_id,cleanup_after FROM legacy_package_scope_fences WHERE cleanup_done=0 ORDER BY fenced_at,project_id LIMIT 1").first<{project_id:string;cleanup_after:string}>()
  let rows:Custody[]=[]

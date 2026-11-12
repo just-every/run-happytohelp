@@ -2,6 +2,7 @@ export const CUSTODY_JOB='legacy-package.cleanup' as const
 export const DAY=86_400_000
 export interface Custody {
  manifest_sha256:string;custody_project_id:string;source_project_id:string;destination_project_id:string|null
+ cleanup_only:number;seeding_complete:number
  generation:number;custody_generation:number;source_generation:number;destination_generation:number
  status:'admitting'|'ready'|'purging'|'purged'|'invalidated';mapping_policy_version:2;retention_state:'upload'|'progress'|'paused'|'stopped'|'resume'|'complete'
  created_at:number;last_explicit_activity_at:number;expires_at:number;absolute_expires_at:number

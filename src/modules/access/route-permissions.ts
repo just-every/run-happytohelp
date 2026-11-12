@@ -118,6 +118,7 @@ const rules:Record<string,Rule>={
  'GET /api/move-in/projects/:projectId/legacy-import/:sha/adoption':'data.import',
  'POST /api/move-in/projects/:projectId/legacy-import/:sha/adoption/approve':'data.import',
  'POST /api/move-in/projects/:projectId/legacy-import/:sha/discard':'data.import',
+ 'POST /api/move-in/projects/:projectId/legacy-import/:sha/cleanup-v1':'data.import',
  'POST /api/move-in/projects/:projectId/business-imports':'data.import',
  'POST /api/move-in/projects/:projectId/imports':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/apply':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/resume':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/undo':'data.import',
  'POST /api/move-in/projects/:projectId/zendesk/connect':'data.import','DELETE /api/move-in/projects/:projectId/zendesk/connection':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls/:pullId/approve':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls/:pullId/resume':'data.import','POST /api/move-in/projects/:projectId/zendesk/attachments':'data.import','POST /api/move-in/projects/:projectId/zendesk/attachments/:runId/resume':'data.import','POST /api/move-in/projects/:projectId/zendesk/pulls/:pullId/abandon':'data.import',

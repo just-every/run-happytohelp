@@ -1,3 +1,4 @@
+import {historyBrowserFlow} from './history-browser.mjs'
 import assert from 'node:assert/strict'
 import {mkdtemp,readFile,writeFile,rm} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
@@ -32,6 +33,9 @@ export async function legacyPackageBrowserFlow({page,runtime,project,inspect,wid
   await page.getByRole('button',{name:'Approve this destination',exact:true}).click();await page.getByText('Destination approved.',{exact:false}).waitFor();await shot('approved')
   await page.getByRole('button',{name:'Import history',exact:true}).click();await page.getByRole('heading',{name:'Import result',exact:true}).waitFor();await shot('queued')
   await page.getByText(/^complete · verified$/).waitFor({timeout:120000});await shot('completed')
+  await historyBrowserFlow({page,runtime,source:good.manifest.source.projectId,inspect:shot})
+  // Reading the adopted workspace switches native sessions; renew the exact owner approval explicitly.
+  await page.getByRole('button',{name:'Renew owner approval',exact:true}).click();await page.getByText('Destination approved.',{exact:false}).waitFor()
   await page.getByText('Replay retained source',{exact:true}).click();const replayed=page.waitForResponse(r=>r.url().endsWith('/start')&&r.request().postData()?.includes('\"replay\":true'));await page.getByRole('button',{name:'Replay verification',exact:true}).click();assert.equal((await replayed).status(),202);await page.getByText('Counts and verification details',{exact:true}).click();await page.waitForFunction(()=>{try{const note=JSON.parse(document.querySelector('.legacy-result pre').textContent);return note.state==='complete'&&note.attempt?.number===2}catch{return false}},{},{timeout:120000});const note=JSON.parse(await page.locator('.legacy-result pre').textContent());assert.equal(note.attempt.appliedRows,0);await shot('replayed')
 
   // Server's unchanged secret classifier refuses a provider-shaped synthetic credential.

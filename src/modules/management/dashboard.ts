@@ -71,13 +71,15 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  SELECT c.id,c.created_at AS fallback_created_at,(SELECT min(created_at) FROM (
  SELECT created_at FROM messages WHERE conversation_id=c.id AND coalesce(bucket_id,conversation_id)=c.id
  UNION ALL SELECT created_at FROM conversation_notes WHERE conversation_id=c.id
+ UNION ALL SELECT created_at FROM move_in_notes WHERE project_id=c.project_id AND conversation_id=c.id AND coalesce(bucket_id,conversation_id)=c.id
  UNION ALL SELECT e.created_at FROM context_tracked_events e WHERE e.project_id=c.project_id AND e.subject_id=c.contact_id AND json_valid(e.payload) AND json_extract(e.payload,'$.conversation_id')=c.id AND coalesce(json_extract(e.payload,'$.bucket_id'),c.id)=c.id
  )) AS created_at FROM conversations c WHERE c.id=?),buckets AS (
  SELECT id,created_at FROM conversation_buckets WHERE conversation_id=? AND id<>?
+ UNION ALL SELECT n.bucket_id,min(n.created_at) FROM move_in_notes n WHERE n.conversation_id=? AND n.project_id=? AND n.bucket_id<>n.conversation_id AND NOT EXISTS(SELECT 1 FROM conversation_buckets b WHERE b.conversation_id=n.conversation_id AND b.id=n.bucket_id) GROUP BY n.bucket_id
  UNION ALL SELECT id,coalesce(created_at,fallback_created_at) FROM root WHERE created_at IS NOT NULL OR NOT EXISTS(SELECT 1 FROM conversation_buckets WHERE conversation_id=?))
  SELECT id,created_at FROM buckets${createdBefore?' WHERE created_at<?':''}`
  // Preserve an invalid cursor's empty result while keeping bound values finite.
- const params=[conversation.id,conversation.id,conversation.id,conversation.id,...(createdBefore?[Number.isFinite(stamp)?stamp:-Number.MAX_VALUE]:[])]
+ const params=[conversation.id,conversation.id,conversation.id,conversation.id,conversation.project_id,conversation.id,...(createdBefore?[Number.isFinite(stamp)?stamp:-Number.MAX_VALUE]:[])]
  const results=await c.env.DB.batch<any>([
  c.env.DB.prepare(`SELECT count(*) total FROM (${eligible})`).bind(...params),
  c.env.DB.prepare(`${eligible} ORDER BY created_at DESC,id LIMIT 10 OFFSET ?`).bind(...params,(page-1)*10)

@@ -83,7 +83,9 @@ export async function workerRunnerJourney({packageRoot,interrupt=true,measure=tr
   }
   await until(run=>run.state==='complete')
   const readerToken=interrupt?'synthetic-admin-session':token
-  const first=(await runtime.call(base+'/result',{token:readerToken,status:200})).data.data
+  const denied=(await runtime.call(base+'/result',{token:'synthetic-admin-session',status:200})).data.data
+  assert.equal(denied.diagnosticsUnavailable,'installation_owner_required');assert.equal(denied.diagnostics,undefined);assert.deepEqual(denied.work,{before:{},after:null,delta:null,unchanged:null})
+  const first=(await runtime.call(base+'/result',{token:interrupt?'synthetic-owner-renewed-session':token,status:200})).data.data
   assert.equal(first.verification,'verified');assert.equal(first.journalEqualsPackage,true);assert.equal(first.attachments.complete,true);assert.equal(first.work.unchanged,true);assert.equal(first.lease.runHeld,false);assert.equal(first.lease.workspaceHeld,false)
   assert.equal(await count('SELECT count(*) n FROM legacy_delta_leases WHERE project_id=?',project),0)
   assert.equal(await count('SELECT count(*) n FROM legacy_import_context WHERE run_id=?',runId),0)

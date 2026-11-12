@@ -1,8 +1,8 @@
 import type {Env} from '../../../platform/env'
-import {sqlName} from '../d1'
 import {view,json,type Run} from './state'
-export const workTables=['conversation_outbox','email_deliveries','magic_signins','operator_notifications','operator_notification_activity','native_integration_events','native_integration_intents','integration_deliveries','context_jobs','lead_jobs','leads','brand_generations','csat_surveys','workflow_events']
-export async function countWork(env:Env){const row=await env.DB.prepare('SELECT '+[...workTables.map(table=>`(SELECT count(*) FROM ${sqlName(table)}) AS ${sqlName(table)}`),"(SELECT count(*) FROM knowledge_datasets WHERE next_refresh_at IS NOT NULL) AS knowledge_datasets"].join(',')).first<Record<string,number>>();return row!}
+export {workTables} from '../../identity/installation-baseline'
+import {workCountSelect} from '../../identity/installation-baseline'
+export async function countWork(env:Env){return (await env.DB.prepare(workCountSelect).first<Record<string,number>>())!}
 
 export const emptyAttachments=()=>({package:0,required:0,journal:0,identical:0,withheld:0,missing:0,different:0,unverified:0,bytes:0,complete:false,method:'r2-sha256-vs-manifest' as const})
 /** GET reads persisted counts/diagnostics only. No source scan or file reads. */

@@ -245,3 +245,37 @@ remote source remains held for combined ordering/restart/browser qualification,
 the independent lane gate, signed migration-before-Worker delivery and the
 fleet's COMPLETE publication scan. This integration is not release, deployment,
 mail activation, production import or cutover authorization.
+
+### Old synthetic v1 source cleanup and installation baseline
+
+Install additive migration `331_legacy_cleanup_seeding.sql` before this Worker
+(330 remains reserved for platform recovery). Stop the old Worker during the
+upgrade and retain the D1/R2 backup. New uploads remain v2-only. The one-time
+bounded old-prefix inventory discovers pre-start v1 manifests; existing v1 runs
+retain their synthetic interpretation until an explicit cleanup or erasure.
+Native contact erasure also discovers old runs through their recorded scopes.
+A first installation owner with native step-up may explicitly request
+`POST /api/move-in/projects/:setupProjectId/legacy-import/:sha/cleanup-v1` with
+`{}` for a known old synthetic package. It closes that SHA permanently; it never
+adopts its bytes or creates users. There is no cleanup download or list endpoint.
+
+Cleanup-only registry rows remain invalidated while manifest descriptor pages
+and known-prefix listing pages are registered. Cursor and coordinates commit
+together, at most 100 coordinates per step. Neither manifest nor source objects
+are deleted until seeding completes. The normal bounded cleanup then removes
+at most 100 R2 keys and 250 scratch rows per step; duplicate/lost wakes and
+Worker replacement resume the durable cursor. Native erasure stays pending
+until old-prefix inventory, seeding and purge have all completed. An unreadable
+or orphaned old manifest keeps cleanup pending for investigation. No historical
+user/account backfill is performed.
+
+Fresh native owner setup records an immutable private counts-only installation baseline
+inside its existing guarded creation batch, before provisioning side effects.
+The private table is outside workspace audit reads and audit retention.
+Import diagnostics preserve the separate before-import baseline, deltas and
+sample IDs. Installation-wide diagnostics are available only to that original
+first owner in the setup workspace; workspace-admin takeover grants no global
+read. An installation created before this hook has no original baseline and
+continues to report `installation: null`; an upgrade never invents one.
+Historical note buckets, assignment attribution and macro creator snapshots are
+read as history. Historical people never enter native assignment/member lists.

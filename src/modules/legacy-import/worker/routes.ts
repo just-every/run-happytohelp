@@ -9,7 +9,7 @@ import {refuse,WorkerImportError} from './errors'
 import {getRun,enqueue,view,runAuthority,type Run} from './state'
 import {requireInstallationOwner,firstOwnerPredicate,expectedOwnerEmail} from '../adoption/authority'
 import {getAdoption} from '../adoption/store'
-import {CustodyError,getCustody,assertCustody,custodyAssertion,renewCustody,discardCustody,enqueueCleanup,activeCustody} from '../custody'
+import {CustodyError,getCustody,assertCustody,custodyAssertion,renewCustody,discardCustody,enqueueCleanup,activeCustody,beginLegacyCleanup,cleanupStep} from '../custody'
 import {readCustodyManifest} from '../package-in/v2'
 import {requireStepUp} from '../../identity/two-factor/step-up'
 import {dbNow} from '../lease'
@@ -22,8 +22,9 @@ async function admission(c:any,readPackage=true){
  const actor=await importActor(c),access=await memberAccess(c.env.DB,actor.project_id,actor.actor_id)
  if(!access?.permissions.has('data.import'))throw new HTTPException(403)
  const sha=c.req.param('sha');if(!/^[a-f0-9]{64}$/.test(sha))refuse('invalid_request',400)
- const held=await getCustody(c.env.DB,sha),stored=await getRun(c.env,`legacy-package:${sha}`),v2=held!==null
+ const held=await getCustody(c.env.DB,sha),stored=await getRun(c.env,`legacy-package:${sha}`),v2=held!==null&&!held.cleanup_only
  if(held&&held.custody_project_id!==actor.project_id)refuse('run_not_found',404)
+ if(held?.cleanup_only&&readPackage)refuse('source_invalidated')
  if(v2)await requireInstallationOwner(c,actor.project_id)
  const manifest=readPackage?(v2?await readCustodyManifest(c.env,actor.project_id,sha,{projectId:actor.project_id,actorId:actor.actor_id,sessionHash:actor.session_hash}):await readManifest(c.env.FILES,sha,actor.project_id,1)):undefined
  return {actor,sha,held,version:v2?2:1,manifest:manifest!,id:`legacy-package:${sha}`}
@@ -89,7 +90,7 @@ legacyRunnerRoutes.get(`${root}/result`,async c=>{
  const installationOwner=!!await c.env.DB.prepare(owner.sql).bind(...owner.params!).first()
  const {diagnostics,work,...scoped}=value
  const source=held?!!await c.env.DB.prepare(`SELECT 1 FROM legacy_package_custody c WHERE manifest_sha256=? AND ${activeCustody}`).bind(run.manifest_sha256).first():true
- return c.json({data:{...scoped,run:{...value.run,canResume:value.run.canResume&&source},...(installationOwner?{diagnostics,work}:{work:{before:{},after:null,delta:null,unchanged:null},diagnosticsUnavailable:'installation_owner_required'}),...(held?{sourceCustody:{status:!source&&['ready','admitting'].includes(held.status)?Math.min(held.expires_at,held.absolute_expires_at)<=Date.now()?'expired':'invalidated':held.status,expiresAt:held.expires_at,absoluteExpiresAt:held.absolute_expires_at,sourcePurged:held.status==='purged',invalidated:!source,cleanupPending:!source&&held.status!=='purged',canResume:source&&value.run.canResume},adoption:{destinationProjectId:run.source_project_id,membershipPolicy:'historical memberships; no access created'}}:{syntheticOnly:true})}})
+ return c.json({data:{...scoped,run:{...value.run,canResume:value.run.canResume&&source},...(installationOwner?{diagnostics,work}:{work:{before:{},after:null,delta:null,unchanged:null},diagnosticsUnavailable:'installation_owner_required'}),...(held?{sourceCustody:{status:!source&&['ready','admitting'].includes(held.status)?Math.min(held.expires_at,held.absolute_expires_at)<=Date.now()?'expired':'invalidated':held.status,expiresAt:held.expires_at,absoluteExpiresAt:held.absolute_expires_at,sourcePurged:held.status==='purged',invalidated:!source,cleanupPending:!source&&held.status!=='purged',canResume:source&&value.run.canResume},...(run.contract_version===2?{adoption:{destinationProjectId:run.source_project_id,membershipPolicy:'historical memberships; no access created'}}:{syntheticOnly:true,cleanupOnly:true})}:{syntheticOnly:true})}})
 })
 legacyRunnerRoutes.post(`${root}/discard`,async c=>{
  const {actor,sha,held}=await admission(c,false);await body(c)
@@ -104,4 +105,16 @@ legacyRunnerRoutes.get(LEGACY_ROUTE,async c=>{
  const actor=await importActor(c);await requireInstallationOwner(c,actor.project_id)
  const rows=await c.env.DB.prepare('SELECT * FROM legacy_import_worker_runs WHERE project_id=? ORDER BY updated_at DESC,id LIMIT 50').bind(actor.project_id).all<Run>()
  return c.json({data:rows.results.map(run=>view(run))})
+})
+
+/** Explicit first-owner cleanup of a known old synthetic v1 package. Never starts/imports it. */
+legacyRunnerRoutes.post(`${root}/cleanup-v1`,async c=>{
+ const setup=c.req.param('projectId')!,sha=c.req.param('sha')!
+ const {principal}=await requireInstallationOwner(c,setup)
+ await requireStepUp(c,c.get('actor'),'legacy.cleanup-v1');await body(c)
+ const held=await beginLegacyCleanup(c.env,sha,setup,firstOwnerPredicate(principal))
+ await cleanupStep(c.env,sha,held.generation)
+ const current=(await getCustody(c.env.DB,sha))!
+ await enqueueCleanup(c.env,current)
+ return c.json({data:{manifestSha256:sha,status:current.status,cleanupOnly:true,seedingComplete:!!current.seeding_complete,cleanupPending:current.status!=='purged'}},202)
 })

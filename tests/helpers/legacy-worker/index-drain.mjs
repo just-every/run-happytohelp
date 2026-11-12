@@ -61,7 +61,9 @@ export async function knowledgeIndexDrainJourney(){
    if(before.phase==='rows'&&count>20){assert.equal(left,count-1,'each continuation drains one source');assert.equal(run.cursor_json,before.cursor_json,'index work never advances the source row');assert.equal((await journal()).length,articles.length,'the macro is not journaled until its plan can commit');drains.push({before:count,after:left,statements})}
   }
   const complete=await read();assert.equal(complete.state,'complete');assert.ok(drains.length>1,'backlog spans bounded wakes')
-  const first=(await runtime.call(base+'/result',{token,status:200})).data.data
+  const denied=(await runtime.call(base+'/result',{token,status:200})).data.data
+  assert.equal(denied.diagnosticsUnavailable,'installation_owner_required');assert.equal(denied.diagnostics,undefined);assert.deepEqual(denied.work,{before:{},after:null,delta:null,unchanged:null})
+  const first=(await runtime.call(base+'/result',{token:tokens.ownerRenewed,status:200})).data.data
   assert.equal(first.verification,'verified');assert.equal(first.journalEqualsPackage,true);assert.equal(first.work.unchanged,true);assert.equal(await dirty(),0)
   assert.equal(first.lease.runHeld,false);assert.equal(first.lease.workspaceHeld,false)
   const copied=(await runtime.call(`/api/management/projects/${project}/macros/${macro.id}`,{token,status:200})).data.data

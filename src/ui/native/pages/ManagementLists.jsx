@@ -18,7 +18,7 @@ const contactMetadata=item=>typeof item.metadata_json==='string'?JSON.parse(item
 const columns={
  macros:[
   {label:'Title',cell:({item,href})=><Link to={href}>{item.title}</Link>},
-  {label:'Created By',cell:({item})=>item.created_by_name},
+  {label:'Created By',cell:({item})=><span>{item.created_by_name}{item.created_by_historical ? ' (historical)' : ''}</span>},
   {label:'Created',cell:({item})=>date(item.created_at)},
  ],
  agents:[

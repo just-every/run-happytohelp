@@ -12,7 +12,15 @@ export async function adoptionIntegrationJourney({representative=true}={}){
  const facts={states:[],uploads:0,maxStatements:0,measurements:{},kills:0,indexDrainSteps:0}
  try{
   const owner=(await app.call('/api/identity/bootstrap',{body:{setupToken:'synthetic-wire-setup',email:'synthetic-wire@example.test',password:'Synthetic wire password 42!',name:'Support owner',allowedOrigin:app.origin},status:201})).data
+  const installBaseline=await app.first("SELECT captured_at,counts_json FROM installation_work_baseline WHERE singleton=1")
+  assert.ok(installBaseline);const baseline={kind:'installation-setup',at:installBaseline.captured_at,counts:JSON.parse(installBaseline.counts_json)};assert.equal(baseline.kind,'installation-setup');assert.ok(baseline.at>0);assert.ok(Object.keys(baseline.counts).length>10);assert.ok(Object.values(baseline.counts).every(n=>n===0))
+  await app.call('/api/identity/bootstrap',{body:{setupToken:'synthetic-wire-setup',email:'synthetic-wire@example.test',password:'Synthetic wire password 42!',allowedOrigin:app.origin},status:409})
+  assert.deepEqual(await app.first("SELECT captured_at,counts_json FROM installation_work_baseline WHERE singleton=1"),installBaseline,'refused repeat cannot overwrite original setup baseline')
   const setup=owner.projectId,token=owner.token,source='synthetic-wire-source',foreign=await app.seedWorkspace('wire-foreign')
+  await app.db.prepare("INSERT INTO memberships(project_id,user_id,role) VALUES(?,?,'admin')").bind(setup,foreign.users.admin).run()
+  const setupAdmin=(await app.call('/api/identity/switch-project',{token:foreign.tokens.admin,body:{projectId:setup},status:200})).data.token
+  const audit=(await app.call(`/api/management/projects/${setup}/audit`,{token:setupAdmin,status:200})).data
+  assert.equal(JSON.stringify(audit).includes('installation-setup'),false,'workspace audit reads cannot expose the private installation baseline')
   const p=await packageFixture(join(directory,'package'),source,{representative,large:representative,staff:[{id:owner.userId,name:'Historical owner',email:'synthetic-wire@example.test',created_at:1},{id:foreign.users.owner,name:'Historical foreign admin',email:'owner-wire-foreign@example.test',created_at:1}]}),base=`/api/move-in/projects/${setup}/legacy-import/${p.manifestSha256}`
   const manifest=(body=p.bytes,headers={})=>app.call(base+'/manifest',{method:'PUT',raw:true,body,token,headers:{'Content-Type':'application/json','X-Manifest-SHA256':p.manifestSha256,...headers}})
   assert.equal((await manifest(p.bytes,{'X-Legacy-Contract-Version':'1'})).status,422)
@@ -46,7 +54,7 @@ export async function adoptionIntegrationJourney({representative=true}={}){
    if(facts.states.at(-1)!==state)facts.states.push(state)
    if(result.run.state==='paused')throw new Error('Mounted v2 paused: '+JSON.stringify(result))
    if(result.run.state==='complete'){
-    assert.equal(result.journalEqualsPackage,true);assert.equal(result.attachments.complete,true);assert.equal(result.work.unchanged,true);facts.result=result;break
+    assert.equal(result.journalEqualsPackage,true);assert.equal(result.attachments.complete,true);assert.equal(result.work.unchanged,true);assert.deepEqual(result.diagnostics.baseline.installation,baseline);assert.ok(result.diagnostics.baseline.at>=baseline.at);assert.ok(result.diagnostics.sampleConversationIds.length);assert.equal((await app.call(base+'/result',{token:setupAdmin})).status,403,'workspace admin cannot read installation baseline/results');facts.installationBaseline=baseline;facts.result=result;break
    }
    const jobs=(await app.takeJobs()).filter(job=>job.type==='legacy-import.step')
    assert.ok(jobs.length,'durable run has a queued wake')
@@ -91,6 +99,19 @@ export async function adoptionIntegrationJourney({representative=true}={}){
   const adopted=(await app.call('/api/identity/switch-project',{token,body:{projectId:source},status:200})).data
   const transcript=(await app.call('/api/dashboard/conversations/synthetic-conversation/buckets/synthetic-conversation',{token:adopted.token,status:200})).data.data
   assert.equal(transcript.messages.find(m=>m.id==='synthetic-message').agent.name,'Historical owner')
+  assert.deepEqual(transcript.events.map(n=>n.id),['synthetic-wire-note'],'root read does not pull non-root historical notes into the root')
+  const detail=(await app.call('/api/dashboard/conversations/synthetic-conversation',{token:adopted.token,status:200})).data.data
+  assert.equal(detail.agent,null);assert.equal(detail.historical_assignment.display_name,'Historical owner')
+  const buckets=(await app.call('/api/dashboard/conversations/synthetic-conversation/buckets',{token:adopted.token,status:200})).data.data
+  for(const [bucketId,noteId,author] of [['synthetic-history-thread','synthetic-thread-note','Historical foreign admin'],['synthetic-note-only-thread','synthetic-note-only','Historical owner']]){
+   const b=buckets.find(b=>b.id===bucketId);assert.ok(b);assert.equal(b.counts.agent_events_internal_note,1);assert.equal(b.events[0].id,noteId);assert.equal(b.events[0].agent.name,author)
+   const single=(await app.call(`/api/dashboard/conversations/synthetic-conversation/buckets/${bucketId}`,{token:adopted.token,status:200})).data.data;assert.deepEqual(single,b)
+  }
+  const historicalMacro=(await app.call(`/api/management/projects/${source}/macros/synthetic-wire-macro`,{token:adopted.token,status:200})).data.data
+  assert.equal(historicalMacro.created_by_name,'Historical owner');assert.equal(historicalMacro.created_by_historical,1)
+  const members=(await app.call(`/api/management/projects/${source}/agents`,{token:adopted.token,status:200})).data.data
+  assert.equal(members.some(m=>m.name==='Historical owner'||m.name==='Historical foreign admin'),false,'historical people are never selectable native members')
+  facts.history={notes:3,nonRootBuckets:2,assignment:detail.historical_assignment.display_name,macroAuthor:historicalMacro.created_by_name,historicalMembersSelectable:false}
   assert.equal((await app.first("SELECT count(*) n FROM legacy_actor_origins WHERE project_id=?",source)).n>0,true)
   assert.equal((await app.first("SELECT count(*) n FROM legacy_import_rows WHERE source_table IN ('users','project_users') AND status='archived_only'")).n,4)
   assert.equal((await app.call(`/api/imported-files/${encodeURIComponent('legacy-package/'+p.manifestSha256+'/manifest.json')}`,{token})).status,404)

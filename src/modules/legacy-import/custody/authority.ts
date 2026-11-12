@@ -9,7 +9,7 @@ export function custodyPrincipal(p:CustodyPrincipal){
 }
 export const scopeAllowed=(scope:string)=>`NOT EXISTS(SELECT 1 FROM legacy_package_scope_fences WHERE project_id=${scope}) AND NOT EXISTS(SELECT 1 FROM contact_erasures WHERE project_id=${scope}) AND NOT EXISTS(SELECT 1 FROM contact_erasure_leases WHERE project_id=${scope})`
 /** C must add this predicate to every worker scratch/canonical/checkpoint group, alongside its run/lease guards. */
-export const activeCustody=`c.status IN ('admitting','ready') AND c.mapping_policy_version=2 AND c.retention_state IN ('upload','progress','paused','stopped','resume','complete') AND c.expires_at>${dbNow} AND c.absolute_expires_at>${dbNow}
+export const activeCustody=`c.status IN ('admitting','ready') AND c.mapping_policy_version=2 AND c.cleanup_only=0 AND c.seeding_complete=1 AND c.retention_state IN ('upload','progress','paused','stopped','resume','complete') AND c.expires_at>${dbNow} AND c.absolute_expires_at>${dbNow}
  AND ${scopeAllowed('c.custody_project_id')} AND ${scopeAllowed('c.source_project_id')}
  AND (c.destination_project_id IS NULL OR (${scopeAllowed('c.destination_project_id')}))`
 export function custodyAssertion(db:D1Database,h:CustodyHandle,p?:CustodyPrincipal){

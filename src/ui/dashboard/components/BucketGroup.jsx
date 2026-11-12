@@ -69,9 +69,9 @@ function BucketGroup({ conversation, groupBy = 'all', groupDate = 'none', bucket
         if(buckets[0].first_message) {
             content.push(<Bucket key={ buckets[0].id } conversation={ conversation } bucket={ buckets[0] } firstOnly={ true } />);
         }*/
-        if(counts.contact_messages || counts.agent_messages || counts.contact_events_page_view) {
+        if(counts.contact_messages || counts.agent_messages || counts.contact_events_page_view || counts.agent_events_internal_note) {
             content.push(
-                <div key="bucket-group" className="bucket-group mb-4 position-relative" onClick={ () => setIsExpanded(!isExpanded) }>
+                <div key="bucket-group" className="bucket-group mb-4 position-relative" role="button" tabIndex={ 0 } aria-expanded={ false } aria-label="Expand conversation history" style={{minHeight:44}} onKeyDown={ event => { if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setIsExpanded(true); } } } onClick={ () => setIsExpanded(!isExpanded) }>
                     <div className="row d-flex align-items-center">
                         { (counts.contact_messages || counts.contact_events_page_view) && conversation.contact && <div className="col-auto">
                             <ContactAvatar
@@ -82,11 +82,12 @@ function BucketGroup({ conversation, groupBy = 'all', groupDate = 'none', bucket
                         { (counts.contact_messages || counts.contact_events_page_view) && <div className="col-auto ms-n3 message-outline text-gray-700">
                             { counts.contact_messages && counts.contact_messages+" message"+(counts.contact_messages > 1 ? "s" : "") }{ counts.contact_messages && counts.contact_events_page_view && " and "}{ counts.contact_events_page_view && counts.contact_events_page_view+" page view"+(counts.contact_events_page_view > 1 ? "s" : "") } ...
                         </div> }
+                        { counts.agent_events_internal_note > 0 && <div className="col-auto message-outline text-gray-700">{ counts.agent_events_internal_note } private note{ counts.agent_events_internal_note > 1 ? 's' : '' }</div> }
                         <div className="col" />
-                        { counts.agent_messages && <div className="col-auto align-self-end me-n3 message-outline message-outline-right text-gray-700">
+                        { counts.agent_messages > 0 && <div className="col-auto align-self-end me-n3 message-outline message-outline-right text-gray-700">
                             { counts.agent_messages } message{ (counts.agent_messages > 1 ? "s" : "") } ...
                         </div> }
-                        { counts.agent_messages && conversation.agent && <div className="col-auto align-self-end">
+                        { counts.agent_messages > 0 && conversation.agent && <div className="col-auto align-self-end">
                             <AgentAvatar
                                 agent={ conversation.agent }
                                 className="ms-2 ms-lg-3 avatar-sm" />

@@ -7,7 +7,10 @@ import {validateFieldValue} from '../tickets/fields'
 import {assertMacroFieldsReadable} from './read-access'
 import {validateAttachments} from './attachments'
 export function macroData(row:any){return {...row,actions:JSON.parse(row.actions_json),scope:JSON.parse(row.scope_json)}}
-const selection='SELECT v.*,m.created_by owner_id,m.created_at created_at,(SELECT name FROM users WHERE id=m.created_by) created_by_name,h.version current_version,h.archived_at FROM macros m JOIN macro_heads h ON h.macro_id=m.id JOIN macro_versions v ON v.macro_id=m.id AND v.version=h.version'
+const selection=`SELECT v.*,m.created_by owner_id,m.created_at created_at,
+ CASE WHEN o.target_id IS NOT NULL THEN coalesce(o.display_name,'Imported author') ELSE (SELECT name FROM users WHERE id=m.created_by) END created_by_name,
+ (o.target_id IS NOT NULL) created_by_historical,h.version current_version,h.archived_at FROM macros m JOIN macro_heads h ON h.macro_id=m.id JOIN macro_versions v ON v.macro_id=m.id AND v.version=h.version
+ LEFT JOIN legacy_actor_origins o ON o.project_id=m.project_id AND o.target_table='macros' AND o.target_id=m.id AND o.field='created_by'`
 export function scopeGuard(actor:Actor,row:any,roleKey:string,brandId:string){
  const scope:MacroScope=JSON.parse(row.scope_json),conditions=['m.project_id=?','m.id=?','h.version=?','h.archived_at IS NULL'],params:any[]=[actor.projectId,row.macro_id,row.version]
  if(scope.visibility==='personal'){conditions.push('m.created_by=?');params.push(actor.id)}

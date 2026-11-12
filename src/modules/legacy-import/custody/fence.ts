@@ -14,14 +14,18 @@ export const associated=`SELECT manifest_sha256 FROM legacy_package_custody WHER
 /** Each scope index contributes at most limit coordinates; never materialize a workspace's full package set. */
 export function associatedPage(pendingOnly=false){return ['custody_project_id','source_project_id','destination_project_id'].map(column=>`SELECT manifest_sha256 FROM (SELECT manifest_sha256 FROM legacy_package_custody WHERE ${column}=?1 AND manifest_sha256>?2 ${pendingOnly?"AND status<>'purged'":''} ORDER BY manifest_sha256 LIMIT ?3)`).join(' UNION ')+ ' ORDER BY manifest_sha256 LIMIT ?3'}
 const sourceChildren=['legacy_import_context','legacy_import_context_messages','legacy_import_context_media','legacy_import_context_identities','legacy_import_worker_parts'] as const
-export const pendingPackage=`(c.status<>'purged' OR EXISTS(SELECT 1 FROM legacy_package_keys k WHERE k.manifest_sha256=c.manifest_sha256 AND k.cleanup_state=0) OR ${sourceChildren.map(table=>`EXISTS(SELECT 1 FROM ${table} WHERE run_id='legacy-package:'||c.manifest_sha256)`).join(' OR ')})`
+export const pendingPackage=`(c.seeding_complete=0 OR c.status<>'purged' OR EXISTS(SELECT 1 FROM legacy_package_keys k WHERE k.manifest_sha256=c.manifest_sha256 AND k.cleanup_state=0) OR ${sourceChildren.map(table=>`EXISTS(SELECT 1 FROM ${table} WHERE run_id='legacy-package:'||c.manifest_sha256)`).join(' OR ')})`
+const unregisteredV1=`EXISTS(SELECT 1 FROM legacy_import_worker_runs r WHERE r.manifest_sha256 IN (SELECT manifest_sha256 FROM legacy_import_worker_runs WHERE project_id=?1 AND contract_version=1 UNION SELECT manifest_sha256 FROM legacy_import_worker_runs WHERE source_project_id=?1 AND contract_version=1) AND NOT EXISTS(SELECT 1 FROM legacy_package_custody c WHERE c.manifest_sha256=r.manifest_sha256))`
 export const pendingScope=`EXISTS(SELECT 1 FROM legacy_package_custody c WHERE c.manifest_sha256 IN (${associated}) AND ${pendingPackage})`
 export function sourceCleanupAssertion(db:D1Database,projectId:string){
- return db.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT NOT (${pendingScope})`).bind(projectId)
+ return db.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT EXISTS(SELECT 1 FROM legacy_package_v1_inventory WHERE singleton=1 AND complete=1) AND NOT (${pendingScope}) AND NOT (${unregisteredV1})`).bind(projectId)
 }
 export async function sourceCleanupStatus(env:Pick<Env,'DB'>,projectId:string){
  const row=await env.DB.prepare(`SELECT count(*) packages FROM legacy_package_custody c WHERE c.manifest_sha256 IN (${associated}) AND ${pendingPackage}`).bind(projectId).first<{packages:number}>()
- return {cleanupPending:!!row?.packages,packages:row?.packages??0,code:row?.packages?'source_cleanup_pending':null}
+ const inventory=await env.DB.prepare('SELECT complete FROM legacy_package_v1_inventory WHERE singleton=1').first<{complete:number}>()
+ const unregistered=await env.DB.prepare(`SELECT ${unregisteredV1} pending`).bind(projectId).first<{pending:number}>()
+ const pending=!inventory?.complete||!!row?.packages||!!unregistered?.pending
+ return {cleanupPending:pending,packages:row?.packages??0,code:pending?'source_cleanup_pending':null}
 }
 /** Terminal closure for a single SHA; tombstones cannot be reopened. */
 export async function closeCustody(env:Pick<Env,'DB'>,sha:string,reason:'erasure'|'workspace_deleted'|'expired'|'discarded'){

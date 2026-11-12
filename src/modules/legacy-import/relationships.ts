@@ -3,6 +3,9 @@ import {type LegacyBundle,type Row,timestamp} from './types'
  * them once; a chunked package supplies an equivalent on-disk index instead. */
 export interface Relationships {
  find(table:string,id:unknown):Row|undefined
+ conversationSummary?:{get(id:string):{count:number;lastId:string|null}|undefined}
+ publishedFileCount?:{get(datasetId:string):number|undefined}
+ publishedFile?:{has(datasetId:string,fileId:string):boolean}
  messages:{get(conversationId:string):Row[]|undefined}
  revisions:{get(messageId:string):number|undefined}
  mediaMessages:{get(mediaId:string):Row|undefined}

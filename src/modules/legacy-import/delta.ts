@@ -1,6 +1,6 @@
 import type { Env } from '../../platform/env'
 import { type LegacyBundle,type Row,type MappedRow,stable } from './types'
-import {planImport,writtenColumns,canonicalRows} from './importer'
+import {planImport,writtenColumns,canonicalRows,normalizeImportPlan,canonicalAssertions,type PreparedSlice} from './importer'
 import {identity,targetSchemas,byteSlices,jsonBytes} from './d1'
 import {readStates,stateEntry,stateKey,targetKeyOf,unchangedSinceImport,type ImportState} from './state'
 import {projectTables,identityTables,contactsOf} from './delta-scope'
@@ -34,12 +34,15 @@ function positioned(mapped:MappedRow,plan:DeltaPlan):MappedRow{
  * without the identity another seed contact holds (delta-guard.ts). Every decision reads the seed
  * as it is, so a stopped import resumes with the same decisions. Writes only under the workspace's
  * delta lease (`lease`, lease.ts): every batch asserts it, and a lapsed lease stops the delta. */
-export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;checkOnly?:boolean;plan:DeltaPlan;projectId:string;lease?:DeltaLease}){
- const plan=await planImport(bundle,options),{plan:delta,context}=options
+export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;checkOnly?:boolean;plan:DeltaPlan;projectId:string;lease?:DeltaLease;prepared?:PreparedSlice}){
+ const plan=await planImport(bundle,{...options,identity:options.prepared?.identity}),{plan:delta,context}=options
  const existing=await env.DB.prepare('SELECT bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{bundle_digest:string;state:string}>()
  if(existing&&existing.bundle_digest!==plan.bundleDigest)throw new Error('Import digest conflict')
- const priors=new Map((await env.DB.prepare('SELECT source_table,source_id,row_digest FROM legacy_import_rows WHERE run_id=?').bind(plan.id).all<{source_table:string;source_id:string;row_digest:string}>()).results.map(r=>[identity(r.source_table,[r.source_id]),r.row_digest]))
+ const priors=new Map((await env.DB.prepare(`SELECT source_table,source_id,row_digest FROM legacy_import_rows WHERE run_id=? ${options.prepared?'AND source_id IN (SELECT value FROM json_each(?))':''}`).bind(...(options.prepared?[plan.id,JSON.stringify(plan.rows.map(row=>row.sourceId))]:[plan.id])).all<{source_table:string;source_id:string;row_digest:string}>()).results.map(r=>[identity(r.source_table,[r.source_id]),r.row_digest]))
  for(const source of plan.rows){const prior=priors.get(identity(source.table,[source.sourceId]));if(prior!==undefined&&prior!==source.rowDigest)throw new Error('Source row replay differs')}
+ const originalText=new Map(plan.rows.flatMap(source=>source.mapped).map(mapped=>[identity(mapped.table,mapped.key.map(key=>mapped.row[key])),{...mapped.row}]))
+ const normalization=await normalizeImportPlan(plan,env,options.prepared,source=>!priors.has(identity(source.table,[source.sourceId]))&&!contactsOf(source.table,source.row,context).some(id=>delta.erased.has(id))&&!skippedRow(source.table,source.row,context,delta)&&!delta.held.has(`${source.table}:${source.sourceId}`)&&source.table!=='projects'&&!source.mapped.some(mapped=>projectTables.has(mapped.table)));env=normalization.env
+ const copiedText=new Map(plan.rows.flatMap(source=>source.mapped).map(mapped=>{const id=identity(mapped.table,mapped.key.map(key=>mapped.row[key])),original=originalText.get(id)??{};return [id,Object.fromEntries(Object.keys(mapped.row).filter(column=>typeof original[column]==='string'&&original[column]!==mapped.row[column]).map(column=>[column,original[column]]))]}))
  const pending=plan.rows.filter(source=>!priors.has(identity(source.table,[source.sourceId]))).map(source=>({...source,mapped:source.mapped.map(m=>positioned(m,delta))}))
  const replayed=plan.rows.length-pending.length
  // A rerun writes nothing and lists the conflicts this chunk's run recorded.
@@ -47,6 +50,7 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
  const schemas=await targetSchemas(env.DB,pending.flatMap(source=>source.mapped.map(m=>m.table)))
  const columnsOf=writtenColumns(schemas)
  const proposed=await canonicalRows(env.DB,pending.flatMap(source=>source.mapped),columnsOf)
+ const observed=new Map(proposed)
  const states=await readStates(env.DB,pending.flatMap(source=>source.mapped.map(m=>[m.table,targetKeyOf(m)] as [string,string])))
  // Each written row as it would stand after the write: the mapping alone when appended, over the seed's row when updated.
  const guard=await readGuard(env.DB,pending.flatMap(source=>source.mapped.map(m=>{const row=columnsOf(m);return {table:m.table,key:m.key,row:{...(proposed.get(identity(m.table,m.key.map(k=>row[k])))??{}),...row}}})))
@@ -114,17 +118,26 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
  for(const d of decisions)counts[d.status]++
  const summary={id:plan.id,...counts,mappedRows:plan.summary.mappedRows,mediaUrls:plan.summary.mediaUrls,holds:decisions.flatMap(d=>d.status==='mapped'||d.status==='updated'?d.mapped.filter(m=>m.hold).map(m=>`${d.source.table}:${d.source.sourceId}: ${m.hold}`):[]),conflicts}
  if(options.checkOnly)return {...summary,applied:0,d1Ms:0}
+ if(options.prepared){
+  // Only references actually used by canonical appends/updates can be committed.
+  // Erased, skipped, replayed and conflicted sources create no orphan copies.
+  const targets=decisions.flatMap(decision=>[...decision.appends,...decision.updates.map(update=>update.mapped)])
+  const materialized=await options.prepared.normalize(targets.map(target=>({...target,row:{...target.row,...copiedText.get(identity(target.table,target.key.map(key=>target.row[key])))}})))
+  if(materialized.targets.some((target,index)=>stable(target.row)!==stable(targets[index].row)))throw new Error('Knowledge plan changed before commit')
+  normalization.statements=materialized.statements;env={...env,DB:materialized.env.DB}
+ }
  const lease=options.lease
  if(!lease)throw new Error('A legacy delta writes only under its workspace delta lease')
- await env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now()).run()
+ await env.DB.batch([lease.assertion(env.DB),env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now()),lease.cleared(env.DB)])
+ if(replayed&&options.prepared?.journalStatements)await env.DB.batch([lease.assertion(env.DB),...options.prepared.journalStatements(env.DB,plan.rows.filter(source=>priors.has(identity(source.table,[source.sourceId]))),false),lease.cleared(env.DB)])
  let d1Ms=0
  const sized=decisions.map(d=>({d,bytes:Math.max(jsonBytes(d.source.row),...d.mapped.map(m=>jsonBytes(columnsOf(m))),jsonBytes(d.state))}))
  for(const group of byteSlices(sized,item=>item.bytes,100)){
   // A batch the lease assertion refused stops the delta with the lease's own message.
-  const result=await env.DB.batch(deltaBatch(env.DB,options.projectId,plan.id,group.map(g=>g.d),columnsOf,lease)).catch(async error=>{await lease.confirm();throw error})
+  const result=await env.DB.batch([lease.assertion(env.DB),...normalization.statements,...canonicalAssertions(env.DB,group.flatMap(g=>g.d.mapped),observed,columnsOf),...deltaBatch(env.DB,options.projectId,plan.id,group.map(g=>g.d),columnsOf,lease),...(options.prepared?.journalStatements?.(env.DB,group.map(g=>g.d.source),true)??[]),...(options.prepared?[lease.assertion(env.DB),lease.cleared(env.DB)]:[])]).catch(async error=>{await lease.confirm();throw error})
   d1Ms+=result.reduce((ms,r)=>ms+Number(r.meta?.duration||0),0)
  }
- await env.DB.prepare("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=? AND state<>'complete'").bind(Date.now(),plan.id).run()
+ if(!options.prepared)await env.DB.batch([lease.assertion(env.DB),env.DB.prepare("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=? AND state<>'complete'").bind(Date.now(),plan.id),lease.cleared(env.DB)])
  return {...summary,applied:decisions.length,d1Ms:Math.round(d1Ms)}
 }
 

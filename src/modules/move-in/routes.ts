@@ -1,3 +1,4 @@
+import {legacyRunnerRoutes} from '../legacy-import/worker/routes'
 import {importDoorSettings} from './door/settings'
 import {ownershipOptions,previewOwnership,activateOwnership} from './ownership'
 import {Hono} from 'hono'
@@ -32,6 +33,7 @@ async function uploadBytes(request:Request){if(Number(request.headers.get('conte
 export const moveInRoutes=new Hono<AppEnv>()
 moveInRoutes.route('/',importDoorSettings)
 moveInRoutes.use('*',async(c,next)=>{c.env={...c.env,DB:boundedDatabase(c.env.DB).database};await next()})
+moveInRoutes.route('/',legacyRunnerRoutes)
 moveInRoutes.route('/',zendeskConnectionRoutes)
 moveInRoutes.route('/',zendeskPullRoutes)
 moveInRoutes.route('/',cutoverRoutes)

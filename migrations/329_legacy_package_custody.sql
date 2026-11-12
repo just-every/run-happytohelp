@@ -11,6 +11,7 @@ CREATE TABLE legacy_package_custody (
  destination_generation INTEGER NOT NULL DEFAULT 0,
  status TEXT NOT NULL CHECK(status IN ('admitting','ready','purging','purged','invalidated')),
  mapping_policy_version INTEGER NOT NULL CHECK(mapping_policy_version=2),
+ retention_state TEXT NOT NULL DEFAULT 'upload' CHECK(retention_state IN ('upload','progress','paused','stopped','resume','complete')),
  created_at INTEGER NOT NULL, last_explicit_activity_at INTEGER NOT NULL,
  expires_at INTEGER NOT NULL, absolute_expires_at INTEGER NOT NULL,
  purge_reason TEXT CHECK(purge_reason IN ('erasure','workspace_deleted','expired','discarded')),

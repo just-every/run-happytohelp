@@ -56,5 +56,16 @@ export function destinationStatements(db:D1Database,h:CustodyHandle,destination:
 }
 /** Explicit valid upload or committed progress only. Reads never renew retention. Complete follows scratch readiness. */
 export async function renewCustody(env:Pick<Env,'DB'>,h:CustodyHandle,p:CustodyPrincipal,state:'upload'|'progress'|'paused'|'stopped'|'resume'|'complete'){
- await custodyBatch(env,h,p,[...(state==='complete'?[env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT ${['legacy_import_context','legacy_import_context_messages','legacy_import_context_media','legacy_import_context_identities'].map(table=>`NOT EXISTS(SELECT 1 FROM ${table} WHERE run_id=?1)`).join(' AND ')}`).bind(`legacy-package:${h.sha}`)]:[]),env.DB.prepare(`UPDATE legacy_package_custody SET last_explicit_activity_at=${dbNow},expires_at=min(absolute_expires_at,${dbNow}+?),status='ready' WHERE manifest_sha256=? AND generation=?`).bind(state==='progress'?7*DAY:DAY,h.sha,h.generation)])
+ const current=await assertCustody(env,h,p)
+ // Valid repeated PUTs cannot turn a stopped/completed package back into partial upload,
+ // nor extend its terminal replay window. Only an explicit resume starts new activity.
+ if(!['upload','progress','paused','stopped','resume','complete'].includes(state))throw new CustodyError('invalid_request',400)
+ if(state==='upload'&&current.retention_state!=='upload'||state!=='upload'&&state!=='progress'&&current.retention_state===state)return
+ if(state==='resume'&&['upload','progress'].includes(current.retention_state))return
+ if(state==='progress'&&['paused','stopped','complete'].includes(current.retention_state))throw new CustodyError('custody_conflict')
+ const transition=env.DB.prepare(`UPDATE legacy_package_custody SET last_explicit_activity_at=${dbNow},expires_at=min(absolute_expires_at,${dbNow}+?),status='ready',retention_state=? WHERE manifest_sha256=? AND generation=? AND retention_state=?`).bind(state==='progress'?7*DAY:DAY,state,h.sha,h.generation,current.retention_state)
+ await custodyBatch(env,h,p,[
+  env.DB.prepare('INSERT INTO ik_d1_assertions(ok) SELECT EXISTS(SELECT 1 FROM legacy_package_custody WHERE manifest_sha256=? AND generation=? AND retention_state=?)').bind(h.sha,h.generation,current.retention_state),
+  ...(state==='complete'?[env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT ${['legacy_import_context','legacy_import_context_messages','legacy_import_context_media','legacy_import_context_identities'].map(table=>`NOT EXISTS(SELECT 1 FROM ${table} WHERE run_id=?1)`).join(' AND ')}`).bind(`legacy-package:${h.sha}`)]:[]),transition,
+ ])
 }

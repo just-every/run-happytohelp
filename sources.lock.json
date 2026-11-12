@@ -2865,7 +2865,7 @@
       "executable": false
     },
     "migrations/329_legacy_package_custody.sql": {
-      "sha256": "421e88ae0b428d7c68d535ae554c8e9cacf331f044f36c968976e18ae6c947f2",
+      "sha256": "0ab0de77b0d916684ce19778f94a3256e53ec1237f50f07da396084465f3fcdb",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -7665,7 +7665,7 @@
       "executable": false
     },
     "src/modules/legacy-import/custody/authority.ts": {
-      "sha256": "25fe2a1b87ae48a70a3402748cfe8272a14d19016e9df80272adfa4e546674bc",
+      "sha256": "e628a0d76977723e58e3301a93e3ffb2ff932d4514acfabf13f9b00efa630994",
       "executable": false
     },
     "src/modules/legacy-import/custody/cleanup.ts": {
@@ -7685,11 +7685,11 @@
       "executable": false
     },
     "src/modules/legacy-import/custody/registry.ts": {
-      "sha256": "f68156f8ee9b86e65227b542dde7a6348ac9974863b0398de83e151e46b932ba",
+      "sha256": "20ecbe3ccab19c943c26bc5d7ecd41175541a3d911774457b283767d7bb7f3b0",
       "executable": false
     },
     "src/modules/legacy-import/custody/types.ts": {
-      "sha256": "6fbbbabea13ac62aedd93b0c6f518700605386fca13fad07e663d3ede91a92d4",
+      "sha256": "6a014765e89da1c4f9ec8a41453f4a25be9a615c83f3b8e2eef3a8b27dfc81e3",
       "executable": false
     },
     "src/modules/legacy-import/d1.ts": {
@@ -16633,7 +16633,7 @@
       "executable": false
     },
     "tests/helpers/legacy-custody/journey.mjs": {
-      "sha256": "dab02ec859b02ec3e749a3e4da4247aef5725e41e10fd3e985fc2557b29c458e",
+      "sha256": "4e867edabfc876e8e4286016e71a187f429e519deabd81809fedca537781aacd",
       "executable": false
     },
     "tests/helpers/legacy-custody/worker.ts": {

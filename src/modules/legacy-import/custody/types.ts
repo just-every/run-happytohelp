@@ -3,7 +3,7 @@ export const DAY=86_400_000
 export interface Custody {
  manifest_sha256:string;custody_project_id:string;source_project_id:string;destination_project_id:string|null
  generation:number;custody_generation:number;source_generation:number;destination_generation:number
- status:'admitting'|'ready'|'purging'|'purged'|'invalidated';mapping_policy_version:2
+ status:'admitting'|'ready'|'purging'|'purged'|'invalidated';mapping_policy_version:2;retention_state:'upload'|'progress'|'paused'|'stopped'|'resume'|'complete'
  created_at:number;last_explicit_activity_at:number;expires_at:number;absolute_expires_at:number
  purge_reason:'erasure'|'workspace_deleted'|'expired'|'discarded'|null;closed_at:number|null;purged_at:number|null
  cleanup_table:number;cleanup_after:string;cleanup_token:string|null;cleanup_until:number|null;next_cleanup_at:number

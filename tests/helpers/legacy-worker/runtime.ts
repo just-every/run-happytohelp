@@ -17,7 +17,7 @@ function intercepted(env:Env,point:string|null):Env{
 }
 export default {...common,async fetch(request:Request,env:Env,context:ExecutionContext){
  const path=new URL(request.url).pathname
- if(path==='/_test/legacy/state-match'){const {messageId}=await request.json<{messageId:string}>(),canonical=await env.DB.prepare('SELECT * FROM messages WHERE id=?').bind(messageId).first(),state=await env.DB.prepare("SELECT * FROM legacy_import_state WHERE target_table='messages' AND target_key=?").bind(messageId).first();return Response.json({matches:!!canonical&&await unchangedSinceImport(canonical as any,state as any)})}
+ if(path==='/_test/legacy/state-match'){const {messageId,table='messages'}=await request.json<{messageId:string;table?:string}>();if(!['messages','macros'].includes(table))return new Response(null,{status:400});const canonical=await env.DB.prepare(`SELECT * FROM ${table} WHERE id=?`).bind(messageId).first(),state=await env.DB.prepare('SELECT * FROM legacy_import_state WHERE target_table=? AND target_key=?').bind(table,messageId).first();return Response.json({matches:!!canonical&&await unchangedSinceImport(canonical as any,state as any)})}
  if(path==='/_test/legacy/barrier'){if(request.method==='POST')release?.();return Response.json({barrier})}
  if(path==='/_test/legacy/step'){
   failures=[]

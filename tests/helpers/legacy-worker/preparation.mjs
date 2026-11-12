@@ -17,6 +17,9 @@ export async function workerPreparation(){
   const manifestBytes=await readFile(join(directory,'manifest.json'))
   await files.put(`legacy-package/${digest}/manifest.json`,manifestBytes,{sha256:digest,customMetadata:metadata})
   for(const [kind,list] of [['chunk',manifest.chunks],['context',manifest.context]])for(const part of list)await files.put(`legacy-package/${digest}/${kind==='chunk'?'chunks':'context'}/${part.file}`,await readFile(join(directory,part.file)),{sha256:part.sha256,customMetadata:{...metadata,kind,file:part.file}})
+  const mismatch={...manifest,source:{...manifest.source,revision:'synthetic-other-custody'}},mismatchBytes=Buffer.from(JSON.stringify(mismatch)),mismatchSha=sha(mismatchBytes)
+  await files.put(`legacy-package/${mismatchSha}/manifest.json`,mismatchBytes,{sha256:mismatchSha,customMetadata:{contractVersion:'1',projectId:foreign.projectId,manifestSha256:mismatchSha}})
+  const refused=await app.call(`/api/move-in/projects/${foreign.projectId}/legacy-import/${mismatchSha}/start`,{token:foreign.tokens.owner,body:{approvedManifestSha256:mismatchSha},status:409});assert.equal(refused.data.code,'destination_policy_required')
   const query=`/_test/legacy/reader?sha=${digest}&project=${owner.projectId}`
   const initial=(await app.call(query,{status:200})).data
   assert.equal(initial.rows,1);assert.equal(initial.sourceProjectId,owner.projectId)
@@ -45,7 +48,7 @@ export async function workerPreparation(){
   const transcript=(await app.call(`/api/conversations/${probe.conversation}/messages`,{token:owner.tokens.owner,status:200})).data
   const message=transcript.messages.find(row=>row.id===probe.message)
   assert.equal(Buffer.byteLength(message.content),probe.sourceBytes,'the normal owner HTTP read returns the complete literal')
-  assert.equal(message.content,Array.from({length:120},()=> 'A synthetic archive preserves the original customer account history across every import and verifies each relationship before any write.').join(' '))
+  assert.ok(message.content===Array.from({length:120},()=> 'A synthetic archive preserves the original customer account history across every import and verifies each relationship before any write.').join(' '),'the owner reads the complete literal')
   const facts={sourceBytes:probe.sourceBytes,stateMatches:probe.stateMatches,deltaConflicts:probe.deltaConflicts,renderedUnavailable:typeof message?.content==='string'&&message.content.includes('[Knowledge unavailable]'),replayApplied:probe.replayApplied}
   console.log('LEGACY_KNOWLEDGE_FIDELITY '+JSON.stringify(facts))
   assert.equal((await app.first('SELECT count(*) n FROM legacy_import_worker_runs')).n,0,'reader inspection creates no run')

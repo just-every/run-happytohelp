@@ -20,7 +20,7 @@ export async function deltaJourney(runtime,scratch,bundle,token){
  const conflictCount=await runtime.db.prepare('SELECT count(*) n FROM legacy_import_conflicts WHERE run_id IN (SELECT journal_run_id FROM legacy_import_worker_parts WHERE run_id=?)').bind(delta.id).first()
  assert.equal(conflictCount.n,0,'the changed delta has no spurious hash conflict')
  const read=(await runtime.call(`/api/conversations/${conversation.id}/messages`,{token,status:200})).data.messages
- assert.equal(read.find(row=>row.id===edited.id).content,edited.content);assert.ok(read.some(row=>row.id===fresh.id));assert.notEqual(read.find(row=>row.id===fresh.id).local_id,first.local_id,'native delivery IDs stay unique')
+ assert.ok(read.find(row=>row.id===edited.id).content===edited.content,'the owner reads the complete changed delta literal');assert.ok(read.some(row=>row.id===fresh.id));assert.notEqual(read.find(row=>row.id===fresh.id).local_id,first.local_id,'native delivery IDs stay unique')
  const state=(await runtime.call('/_test/legacy/state-match',{body:{messageId:edited.id},status:200})).data
  assert.equal(state.matches,true)
  const frontier=(await runtime.call(`/api/conversations/${conversation.id}`,{token,status:200})).data

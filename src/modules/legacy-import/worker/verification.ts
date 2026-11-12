@@ -49,7 +49,7 @@ export async function cleanup(env:Env,run:Run){
  const c=cursor(run),ordinal=Number(c.ordinal??0),table=scratch[ordinal]
  if(!table){await checkpoint(env,run,{phase:'done',state:'complete',completed_at:Date.now(),cursor_json:'{}'});return {rows:0,bytes:0}}
  // rowid is local to a scratch table; delete only this run's bounded page.
- const deleted=await env.DB.prepare(`SELECT rowid FROM ${table} WHERE run_id=? LIMIT ?`).bind(run.id,limits.rows).all<{rowid:number}>()
+ const deleted=await env.DB.prepare(`SELECT rowid FROM ${table} WHERE run_id=? LIMIT ?`).bind(run.id,250).all<{rowid:number}>()
  await checkpoint(env,run,{cursor_json:JSON.stringify({ordinal:deleted.results.length?ordinal:ordinal+1})},deleted.results.length?[env.DB.prepare(`DELETE FROM ${table} WHERE run_id=? AND rowid IN (SELECT value FROM json_each(?))`).bind(run.id,JSON.stringify(deleted.results.map(row=>row.rowid)))]:[])
  return {rows:deleted.results.length,bytes:0}
 }

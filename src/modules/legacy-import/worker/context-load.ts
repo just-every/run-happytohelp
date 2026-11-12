@@ -8,14 +8,14 @@ import {readRows} from './reader'
 import {checkpoint,cursor,limits,packageParts,type Run} from './state'
 import {refuse} from './errors'
 /** Byte and row ceilings apply together. Oversized indivisible rows are refused. */
-export function sliceRows(rows:Row[],offset:number){const selected:Row[]=[];let bytes=2
- for(const row of rows.slice(offset,offset+limits.rows)){const n=jsonBytes(row);if(n>limits.bytes)refuse('row_too_large');if(selected.length&&bytes+n>limits.bytes)break;selected.push(row);bytes+=n+1}
+export function sliceRows(rows:Row[],offset:number,maxRows:number=limits.rows){const selected:Row[]=[];let bytes=2
+ for(const row of rows.slice(offset,offset+maxRows)){const n=jsonBytes(row);if(n>limits.bytes)refuse('row_too_large');if(selected.length&&bytes+n>limits.bytes)break;selected.push(row);bytes+=n+1}
  return {rows:selected,bytes}
 }
 export async function loadContext(env:Env,run:Run,manifest:LegacyPackageManifest){
  const parts=packageParts(manifest,JSON.parse(run.exclude_json)).filter(part=>part.kind!=='object'),c=cursor(run),ordinal=Number(c.ordinal??0),part=parts[ordinal]
  if(!part){await checkpoint(env,run,{cursor_json:JSON.stringify({stage:'transcripts',after:'',conversation:'',revision:0}),phase:'context'});return {rows:0,bytes:0}}
- const original=await readRows(env.FILES,run.manifest_sha256,run.project_id,part.kind as 'chunk'|'context',part as LegacyPart),offset=Number(c.row??0),selected=sliceRows(original,offset)
+ const original=await readRows(env.FILES,run.manifest_sha256,run.project_id,part.kind as 'chunk'|'context',part as LegacyPart),offset=Number(c.row??0),selected=sliceRows(original,offset,100)
  const records:unknown[][]=[],messages:unknown[][]=[],media:unknown[][]=[],identities:Row[]=[]
  for(const source of selected.rows){
   let row={...source};const sourceId=String(row.id??row.event_id??row.token_hash??await digest(stable(row)))

@@ -184,7 +184,7 @@ message/note writes retain their existing knowledge protection. The reference
 plan commits with the canonical rows whose state digest it describes.
 
 Initial ceilings remain experimental until the accompanying workerd measurements
-qualify them: 25 mapped/context rows and 262,144 source bytes per ordinary unit,
+qualify them: 25 mapped rows, 100 context-load rows, and 262,144 source bytes per unit,
 one 4 MiB part parse, one streamed 16 MiB object, 200 metered D1 statements and
 8 MiB relationship closure. Timestamp ties are sorted with the CLI's JavaScript
 collation in a bounded tie group (at most 250 rows); larger indivisible rows or
@@ -199,7 +199,7 @@ whole-installation work deltas. Optional counts-only `diagnostics` adds workspac
 conversation count, distinct delta source IDs, incomplete delta runs, five
 ordered sample conversation IDs and the before-import work baseline. An original
 installation baseline is null when none was recorded. Concurrent native work is
-not attributed to the importer. Scratch is deleted in bounded pages after result
+not attributed to the importer. Scratch is deleted in pages of at most 250 rows after result
 verification; runs, counts, original journals and private source packages remain.
 
 This round supports synthetic matched-workspace rehearsal only. Arbitrary fresh

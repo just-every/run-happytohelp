@@ -67,6 +67,16 @@ export async function recoveryRestoreJourney(){
   })
   console.info('Recovery restore: restored access and fresh recovery')
   await start()
+  // Public maintenance wakes the real post-restore knowledge queue. Recovery
+  // remains closed until conversion finishes; never replay a recovery command.
+  const readyBy=Date.now()+60000
+  for(;;){
+   const response=await fetch(origin+'/api/knowledge/public');await response.arrayBuffer()
+   if(response.status!==503)break
+   assert.ok(Number(response.headers.get('Retry-After'))>0)
+   assert.ok(Date.now()<readyBy,'the real restored queue finishes conversion')
+   await new Promise(done=>setTimeout(done,100))
+  }
   assert.equal((await call(rootPath+'/status',undefined,undefined,pending.capability)).response.status,401)
   assert.equal((await call(rootPath+'/complete',{factorId:pendingFactor.factorId,code:totp(pendingFactor.secret)},undefined,pending.capability)).response.status,401)
   const restored=await ok('/api/identity/login',{email,password})

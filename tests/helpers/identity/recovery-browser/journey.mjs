@@ -17,7 +17,7 @@ export async function recoveryBrowserJourney(browser){
  let passed=false,approver
  try{
   const owner=await api('/api/identity/bootstrap',{name:'Lantern support',ownerName:'Casey Owner',email:'casey@lantern.test',password,allowedOrigin:'https://lantern.test'})
-  await useFactor(owner.token)
+  const ownerFactor=await useFactor(owner.token)
   const second=await runtime.seedTenant({name:'Harbour support',email:'owner@harbour.test',allowedOrigin:'https://harbour.test'})
   await useFactor(second.token)
   const invitation=await api(`/api/management/projects/${owner.projectId}/agents`,{email:'taylor@support.test'},owner.token)
@@ -34,7 +34,7 @@ export async function recoveryBrowserJourney(browser){
   const requestId=await page.locator('.recovery-request').innerText(),capability=await page.evaluate(()=>sessionStorage.getItem('h2h-owner-recovery'))
   assert.equal((await fetch(origin+'/api/identity/session',{headers:{'X-Recovery-Capability':capability}})).status,401)
   approver=await browser.newContext({viewport:viewports.desktop});await approver.addCookies([{name:'h2h_session',value:owner.token,url:origin}])
-  const review=await approver.newPage();await review.goto(origin+'/owner-recovery');await review.getByRole('button',{name:'Approve a workspace request'}).click();await review.getByLabel('Recovery request ID').fill(requestId);await review.getByRole('button',{name:'Review request',exact:true}).click();await review.getByRole('button',{name:'Approve for this workspace'}).waitFor()
+  const review=await approver.newPage();await review.goto(origin+'/owner-recovery');await review.getByRole('button',{name:'Approve a workspace request'}).click();await review.getByText('Confirm your second factor',{exact:true}).click();await review.getByLabel('Code from your authenticator app',{exact:true}).fill(totp(ownerFactor.secret,1));await review.getByRole('button',{name:'Confirm second factor',exact:true}).click();await review.getByRole('status').filter({hasText:'Second factor confirmed'}).waitFor();await auditPage(review,shot('approver-factor-confirmed-1440.png'));await review.setViewportSize(viewports.mobile);await auditPage(review,shot('approver-factor-confirmed-390.png'));await review.setViewportSize(viewports.desktop);await review.getByText('Confirm your second factor',{exact:true}).click();await review.getByLabel('Recovery request ID').fill(requestId);await review.getByRole('button',{name:'Review request',exact:true}).click();await review.getByRole('button',{name:'Approve for this workspace'}).waitFor()
   await auditPage(review,shot('local-owner-review-1440.png'));await review.setViewportSize(viewports.mobile);await auditPage(review,shot('local-owner-review-390.png'));await review.setViewportSize(viewports.desktop)
   assert.equal((await review.locator('body').innerText()).includes('Harbour support'),false)
   await review.getByRole('button',{name:'Approve for this workspace'}).click();await review.getByRole('heading',{name:'Workspace consent recorded'}).waitFor();await auditPage(review,shot('local-consent-recorded-1440.png'));await review.setViewportSize(viewports.mobile);await auditPage(review,shot('local-consent-recorded-390.png'))
@@ -62,7 +62,7 @@ export async function recoveryBrowserJourney(browser){
   await runtime.execute(`UPDATE owner_setup SET claim_id='${owner.userId}' WHERE singleton=1`)
   await page.getByRole('button',{name:'Continue recovery',exact:true}).click();await page.getByRole('heading',{name:'Prove your replacement factor'}).waitFor()
   const manual=await page.evaluate(()=>sessionStorage.getItem('h2h-owner-recovery'))
-  await runtime.execute("UPDATE identity_recovery_requests SET expires_at=1 WHERE mode='manual' AND state='authorized'")
+  await runtime.execute(`UPDATE identity_recovery_requests SET expires_at=${Date.now()-1000} WHERE mode='manual' AND state='authorized'`)
   await page.reload();await page.getByRole('heading',{name:'Recovery expired'}).waitFor();await proof('expired')
   await page.getByRole('button',{name:'Start a new recovery',exact:true}).click();await page.getByText('Separately controlled installation',{exact:true}).click();await page.getByRole('button',{name:'Use an installation key',exact:true}).click()
   await page.getByLabel('Account email',{exact:true}).fill('casey@lantern.test');await page.getByLabel('Password',{exact:true}).fill(password);await page.getByLabel('Installation recovery key',{exact:true}).fill(key);await page.getByRole('button',{name:'Continue recovery',exact:true}).click();await page.getByRole('heading',{name:'Prove your replacement factor'}).waitFor()

@@ -1,6 +1,6 @@
 import type { Env } from '../../platform/env'
 import { type LegacyBundle,type Row,type MappedRow,stable } from './types'
-import {planImport,writtenColumns,canonicalRows} from './importer'
+import {planImport,writtenColumns,canonicalRows,normalizeImportPlan,canonicalAssertions,type PreparedSlice} from './importer'
 import {identity,targetSchemas,byteSlices,jsonBytes} from './d1'
 import {readStates,stateEntry,stateKey,targetKeyOf,unchangedSinceImport,type ImportState} from './state'
 import {projectTables,identityTables,contactsOf} from './delta-scope'
@@ -34,11 +34,11 @@ function positioned(mapped:MappedRow,plan:DeltaPlan):MappedRow{
  * without the identity another seed contact holds (delta-guard.ts). Every decision reads the seed
  * as it is, so a stopped import resumes with the same decisions. Writes only under the workspace's
  * delta lease (`lease`, lease.ts): every batch asserts it, and a lapsed lease stops the delta. */
-export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;checkOnly?:boolean;plan:DeltaPlan;projectId:string;lease?:DeltaLease}){
- const plan=await planImport(bundle,options),{plan:delta,context}=options
+export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;checkOnly?:boolean;plan:DeltaPlan;projectId:string;lease?:DeltaLease;prepared?:PreparedSlice}){
+ const plan=await planImport(bundle,{...options,identity:options.prepared?.identity}),{plan:delta,context}=options,normalization=await normalizeImportPlan(plan,env,options.prepared);env=normalization.env
  const existing=await env.DB.prepare('SELECT bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{bundle_digest:string;state:string}>()
  if(existing&&existing.bundle_digest!==plan.bundleDigest)throw new Error('Import digest conflict')
- const priors=new Map((await env.DB.prepare('SELECT source_table,source_id,row_digest FROM legacy_import_rows WHERE run_id=?').bind(plan.id).all<{source_table:string;source_id:string;row_digest:string}>()).results.map(r=>[identity(r.source_table,[r.source_id]),r.row_digest]))
+ const priors=new Map((await env.DB.prepare(`SELECT source_table,source_id,row_digest FROM legacy_import_rows WHERE run_id=? ${options.prepared?'AND source_id IN (SELECT value FROM json_each(?))':''}`).bind(...(options.prepared?[plan.id,JSON.stringify(plan.rows.map(row=>row.sourceId))]:[plan.id])).all<{source_table:string;source_id:string;row_digest:string}>()).results.map(r=>[identity(r.source_table,[r.source_id]),r.row_digest]))
  for(const source of plan.rows){const prior=priors.get(identity(source.table,[source.sourceId]));if(prior!==undefined&&prior!==source.rowDigest)throw new Error('Source row replay differs')}
  const pending=plan.rows.filter(source=>!priors.has(identity(source.table,[source.sourceId]))).map(source=>({...source,mapped:source.mapped.map(m=>positioned(m,delta))}))
  const replayed=plan.rows.length-pending.length
@@ -47,6 +47,7 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
  const schemas=await targetSchemas(env.DB,pending.flatMap(source=>source.mapped.map(m=>m.table)))
  const columnsOf=writtenColumns(schemas)
  const proposed=await canonicalRows(env.DB,pending.flatMap(source=>source.mapped),columnsOf)
+ const observed=new Map(proposed)
  const states=await readStates(env.DB,pending.flatMap(source=>source.mapped.map(m=>[m.table,targetKeyOf(m)] as [string,string])))
  // Each written row as it would stand after the write: the mapping alone when appended, over the seed's row when updated.
  const guard=await readGuard(env.DB,pending.flatMap(source=>source.mapped.map(m=>{const row=columnsOf(m);return {table:m.table,key:m.key,row:{...(proposed.get(identity(m.table,m.key.map(k=>row[k])))??{}),...row}}})))
@@ -116,15 +117,16 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
  if(options.checkOnly)return {...summary,applied:0,d1Ms:0}
  const lease=options.lease
  if(!lease)throw new Error('A legacy delta writes only under its workspace delta lease')
- await env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now()).run()
+ await env.DB.batch([lease.assertion(env.DB),env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now()),lease.cleared(env.DB)])
+ if(replayed&&options.prepared?.journalStatements)await env.DB.batch([lease.assertion(env.DB),...options.prepared.journalStatements(plan.rows.filter(source=>priors.has(identity(source.table,[source.sourceId]))),false),lease.cleared(env.DB)])
  let d1Ms=0
  const sized=decisions.map(d=>({d,bytes:Math.max(jsonBytes(d.source.row),...d.mapped.map(m=>jsonBytes(columnsOf(m))),jsonBytes(d.state))}))
  for(const group of byteSlices(sized,item=>item.bytes,100)){
   // A batch the lease assertion refused stops the delta with the lease's own message.
-  const result=await env.DB.batch(deltaBatch(env.DB,options.projectId,plan.id,group.map(g=>g.d),columnsOf,lease)).catch(async error=>{await lease.confirm();throw error})
+  const result=await env.DB.batch([lease.assertion(env.DB),...normalization.statements,...canonicalAssertions(env.DB,group.flatMap(g=>g.d.mapped),observed,columnsOf),...deltaBatch(env.DB,options.projectId,plan.id,group.map(g=>g.d),columnsOf,lease),...(options.prepared?.journalStatements?.(group.map(g=>g.d.source),true)??[])]).catch(async error=>{await lease.confirm();throw error})
   d1Ms+=result.reduce((ms,r)=>ms+Number(r.meta?.duration||0),0)
  }
- await env.DB.prepare("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=? AND state<>'complete'").bind(Date.now(),plan.id).run()
+ if(!options.prepared)await env.DB.batch([lease.assertion(env.DB),env.DB.prepare("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=? AND state<>'complete'").bind(Date.now(),plan.id),lease.cleared(env.DB)])
  return {...summary,applied:decisions.length,d1Ms:Math.round(d1Ms)}
 }
 

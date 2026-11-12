@@ -56,6 +56,7 @@ export async function referenceJourney(){
   await call(`/api/knowledge/${p}/categories/${signed}`,{method:'PUT',body:{title:'Signed in',audience:'signed-in',is_published:true},status:200})
   assert.equal((await app.call(`/api/knowledge/public/${p}/articles/reader-guide`,{token:c.token})).status,200)
   await (await import('./reference-copies.mjs')).referenceCopies({k,body,article,category,a,b,c,send,grants,call,app,p})
+  await (await import('./reference-get.mjs')).referenceGet({k,body,category,a,b,c,send,grants,call,app,p})
   await (await import('./reference-authority.mjs')).referenceAuthority({k,body,article,category,a,b,c,send,grants,call,app,p,insert,issued,mail})
   await (await import('./reference-ai.mjs')).referenceAi({k,body,article,category,a,b,c,send,grants,call,app,p,insert,issued,mail})
   await (await import('./reference-erasure.mjs')).referenceErasure()

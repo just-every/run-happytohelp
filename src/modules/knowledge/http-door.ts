@@ -52,7 +52,10 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  const baseReaders=publicKnowledge?accessReaders(await resolveHelpAccess(rawEnv,projectId,c.req.raw)):authority&&c.req.path.startsWith('/api/v1/articles')&&c.req.query('contact_id')?readerSet([{kind:'contact',id:c.req.query('contact_id')!}]):member?memberReaders(actor.id):actor?.role==='contact'?readerSet([{kind:'contact',id:actor.contactId||actor.id}]):conversation?currentTicketReaders(projectId,conversation,{}):anonymousReaders
  let data:any=await c.res.json()
  if(c.res.status>=400)errorData=data
- if(!sourceRead&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseResponse(rawEnv,projectId,data,conversation,privateComposer)
+ // A read renders the references already stored in its text and writes nothing: copied runs were turned into
+ // references when the text was written (write boundary, upgrade), so a GET creates no block and refreshes no index.
+ const readOnly=c.req.method==='GET'||c.req.method==='HEAD'
+ if(!readOnly&&!sourceRead&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseResponse(rawEnv,projectId,data,conversation,privateComposer)
  async function render(value:any,inherited:Readers,cid?:string):Promise<any>{
   if(Array.isArray(value))return Promise.all(value.map(row=>render(row,inherited,cid)))
   if(!value||typeof value!=='object')return renderKnowledgeFields(rawEnv,projectId!,value,inherited)

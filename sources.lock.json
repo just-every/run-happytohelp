@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "97443dab2a4c9f8fc9338346241c722678c7d5e69f2c89d63d2b098b691f8be1",
+      "sha256": "f28e392e49dfffee63e3457ddfd4794b75f49d02d2ce881bd5e3df9feccd15b8",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2945,11 +2945,11 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "ec33aefde8a8bc6007a541e509154db2e5f478ed85782df96453d30d45b5923a",
+      "sha256": "42c3dc9d6cc4243d8b5b9f6c5f9dc0d3c59e4f281fbca81311bd7a21b114b03c",
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "29ab7cbeaae5ac38f9db5da027b1fcadd132c4549e5ad0c9d038c2090d0b07bf",
+      "sha256": "c2d928d3b4e31fd91625af2c80784a924e250a42e0b713d07c71c8d33e7f4b50",
       "executable": false
     },
     "rer-project.json": {
@@ -5449,7 +5449,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "b1a5c9cc20ea968ad042244f8bfed68a0e9754ee5eac3953847da4d9cb426a74",
+      "sha256": "e24f4fb24614ef9467c7fc65dfe762782bc03a37e2a8b91682a4057b6bec9257",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
@@ -7465,7 +7465,7 @@
       "executable": false
     },
     "src/modules/knowledge/http-door.ts": {
-      "sha256": "74e18eefdb43f334f66ae8d48fb6f7590c2fd6a9ac0ab5dc41d5705623e4bba7",
+      "sha256": "cd162c0f5893ef8c691d6febf47422564a6ed64f718f7034b103dbe3d50330f7",
       "executable": false
     },
     "src/modules/knowledge/import-jobs.ts": {
@@ -9801,7 +9801,7 @@
       "executable": false
     },
     "src/modules/training-runs/routes.ts": {
-      "sha256": "9b725bee6ae52ff8f466acea1e2444cecc17e6795894c6989e2f55bb232ede62",
+      "sha256": "af3b898d20a1aed9703a183d0cc1bef4185cbb11ce838795e39cad104c2f2956",
       "executable": false
     },
     "src/modules/training-runs/runner.ts": {
@@ -16380,6 +16380,10 @@
       "sha256": "d361551a7fceeeab2d000346b6d2f23cf5be4cca088601b00336bf04d1d89dba",
       "executable": false
     },
+    "tests/helpers/knowledge/reference-get.mjs": {
+      "sha256": "426bd284cf8b0329ddcabc472f5d1d0e5fa2d071f26526c3ef54f65ef26f1dc7",
+      "executable": false
+    },
     "tests/helpers/knowledge/reference-layout.mjs": {
       "sha256": "4634f7041d5d8e143c0e092e271d06a140411d4b991900fe533c8c3171bb22f0",
       "executable": false
@@ -16389,7 +16393,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/references.mjs": {
-      "sha256": "1bba8d665d72f88a532096320fb273d0548754951258d8d42cae48c73ec444a1",
+      "sha256": "8de524c9706d7cd1310ff01e582e5072ac82c7f101b6af60d6e11618c960449a",
       "executable": false
     },
     "tests/helpers/knowledge/settle-upgrade.mjs": {
@@ -16841,7 +16845,7 @@
       "executable": false
     },
     "tests/journeys/kit/app-worker.ts": {
-      "sha256": "e11090512a08ebd1143667f6b0846d2214b5d11de7d3e1349200c1beb8539d9a",
+      "sha256": "3a7ca5af2718f69393c144241385d8164e30b9ef8bf10f83192a7030d50df00c",
       "executable": false
     },
     "tests/journeys/kit/app.mjs": {

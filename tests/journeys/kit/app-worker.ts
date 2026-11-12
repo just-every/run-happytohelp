@@ -14,17 +14,21 @@ export {ConversationSocket} from '../../../src/modules/conversations/socket'
 const captured:unknown[]=[]
 const bindings=(env:Env):Env=>env.H2H_TEST_CAPTURE_QUEUE?{...env,JOBS:{send:async(job:unknown)=>{captured.push(job)},sendBatch:async(batch:{body:unknown}[])=>{captured.push(...batch.map(item=>item.body))}} as unknown as Env['JOBS']}:env
 // Count all three cron branches against the same enforced platform limit.
+const writing=(sql:string)=>/^\s*(?:INSERT|UPDATE|DELETE|REPLACE)\b/i.test(sql)||/^\s*WITH\b[\s\S]*\b(?:INSERT|UPDATE|DELETE|REPLACE)\b/i.test(sql)
 function scheduledMeter(db:D1Database){
- const counts={statements:0,calls:0,refused:0,pruned:false},consumers:Record<string,{statements:number;completed:boolean}>={}
+ const counts={statements:0,calls:0,refused:0,pruned:false,writes:0,rowsRead:0},consumers:Record<string,{statements:number;completed:boolean}>={}
  const database=(name:string,input=db):D1Database=>{
   const rebase=(input as any)[Symbol.for('happytohelp.d1.layer')];if(rebase)return rebase((inner:D1Database)=>database(name,inner))
-  const own=consumers[name]={statements:0,completed:false},raw=new WeakMap<object,D1PreparedStatement>()
-  const hit=(n:number,sql='')=>{if(counts.statements+n>1000){counts.refused++;throw new Error('D1 invocation statement limit')}if(name==='invocation'){counts.statements+=n;counts.calls++};own.statements+=n;if(sql.includes('DELETE FROM abuse_counters'))counts.pruned=true}
+  const own=consumers[name]={statements:0,completed:false},raw=new WeakMap<object,D1PreparedStatement>(),sqls=new WeakMap<object,string>()
+  const hit=(n:number,sql='')=>{if(name==='invocation'&&n===1&&writing(sql))counts.writes++;if(counts.statements+n>1000){counts.refused++;throw new Error('D1 invocation statement limit')}if(name==='invocation'){counts.statements+=n;counts.calls++};own.statements+=n;if(sql.includes('DELETE FROM abuse_counters'))counts.pruned=true}
+  const read=(result:any)=>{if(name==='invocation'){for(const item of Array.isArray(result)?result:[result])counts.rowsRead+=Number(item?.meta?.rows_read||0)};return result}
   const wrap=(statement:D1PreparedStatement,sql:string):D1PreparedStatement=>{
-   const result={bind:(...args:unknown[])=>wrap(statement.bind(...args),sql),...Object.fromEntries(['first','all','run','raw'].map(key=>[key,(...args:unknown[])=>{hit(1,sql);return (statement as any)[key](...args)}]))} as D1PreparedStatement
-   raw.set(result,statement);return result
+   // first() reads through all() so the rows the statement read are counted.
+   const first=async(column?:string)=>{hit(1,sql);const rows=read(await statement.all()).results;return column===undefined?rows[0]??null:rows[0]?.[column]??null}
+   const result={bind:(...args:unknown[])=>wrap(statement.bind(...args),sql),first,...Object.fromEntries(['all','run','raw'].map(key=>[key,async(...args:unknown[])=>{hit(1,sql);return read(await (statement as any)[key](...args))}]))} as D1PreparedStatement
+   raw.set(result,statement);sqls.set(result,sql);return result
   }
-  return {prepare:(sql:string)=>wrap(input.prepare(sql),sql),batch:(statements:D1PreparedStatement[])=>{hit(statements.length);return input.batch(statements.map(statement=>raw.get(statement)??statement))},exec:()=>{throw new Error('Cron exec is not metered')},dump:()=>db.dump()} as D1Database
+  return {prepare:(sql:string)=>wrap(input.prepare(sql),sql),batch:async(statements:D1PreparedStatement[])=>{hit(statements.length);if(name==='invocation')counts.writes+=statements.filter(statement=>writing(sqls.get(statement)??'')).length;return read(await input.batch(statements.map(statement=>raw.get(statement)??statement)))},exec:()=>{throw new Error('Cron exec is not metered')},dump:()=>db.dump()} as D1Database
  }
  return {counts,consumers,database}
 }
@@ -131,6 +135,6 @@ export default {...worker,async fetch(request:Request,env:Env,context:ExecutionC
  const response=await worker.fetch(request,{...env,DB:meter.database('invocation')},ctx)
  await Promise.all(pending)
  const result=new Response(response.body,response)
- result.headers.set('x-test-d1-statements',String(meter.counts.statements));result.headers.set('x-test-d1-calls',String(meter.counts.calls));result.headers.set('x-test-d1-refused',String(meter.counts.refused))
+ result.headers.set('x-test-d1-statements',String(meter.counts.statements));result.headers.set('x-test-d1-calls',String(meter.counts.calls));result.headers.set('x-test-d1-refused',String(meter.counts.refused));result.headers.set('x-test-d1-writes',String(meter.counts.writes));result.headers.set('x-test-d1-rows-read',String(meter.counts.rowsRead))
  return result
 }}

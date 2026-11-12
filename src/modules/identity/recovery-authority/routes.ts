@@ -1,0 +1,28 @@
+import {Hono} from 'hono'
+import type {AppEnv} from '../../../platform/env'
+import {platformRecovery} from './platform'
+import {primaryRecovery} from './primary'
+import {consentRecovery} from './consent'
+import {enrolmentRecovery} from './enrolment'
+import {browserOrigin,refuse} from './common'
+import {accountSql,approvalsSql,audit,authority,cleanup,load} from './store'
+export const recoveryAuthority=new Hono<AppEnv>()
+recoveryAuthority.use('*',async(c,next)=>{c.header('Cache-Control','no-store');await cleanup(c.env);await next()})
+recoveryAuthority.route('/',platformRecovery)
+recoveryAuthority.route('/',primaryRecovery)
+recoveryAuthority.route('/',consentRecovery)
+recoveryAuthority.route('/',enrolmentRecovery)
+recoveryAuthority.get('/status',async c=>{
+ browserOrigin(c);const row=await load(c),predicate=await authority(c.env,row)
+ const valid=Boolean(await c.env.DB.prepare(`SELECT 1 WHERE ${predicate.sql}`).bind(...predicate.args).first())
+ const counts=row.mode==='account'?await c.env.DB.prepare(`SELECT (SELECT count(*) FROM memberships WHERE user_id=r.user_id) required,(SELECT count(*) FROM identity_recovery_approvals WHERE request_id=r.id) approved,(${approvalsSql}) ready FROM identity_recovery_requests r WHERE r.id=? AND ${accountSql}`).bind(row.id).first<{required:number;approved:number;ready:number}>():null
+ const needsPassword=!await c.env.DB.prepare('SELECT 1 FROM credentials WHERE user_id=?').bind(row.user_id).first()
+ return c.json({requestId:row.id,state:['completed','cancelled','expired','refused'].includes(row.state)?row.state:valid?row.state:'refused',expiresAt:row.expires_at,mode:row.mode,approved:valid?(counts?.approved??0):0,required:valid?(counts?.required??0):0,ready:valid&&row.state==='authorized'&&(row.mode!=='account'||Boolean(counts?.ready)),needsPassword})
+})
+recoveryAuthority.post('/cancel',async c=>{
+ browserOrigin(c);const row=await load(c)
+ if(!['pending','authorized'].includes(row.state))refuse(409)
+ await c.env.DB.prepare("UPDATE identity_recovery_requests SET state='cancelled',pending_secret=NULL,passkey_challenge=NULL WHERE id=? AND state IN ('pending','authorized')").bind(row.id).run()
+ await audit(c.env,'cancelled','accepted',row)
+ return c.json({cancelled:true})
+})

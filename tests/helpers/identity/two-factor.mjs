@@ -1,3 +1,4 @@
+import {manualRecovery} from './recovery-authority/manual.mjs'
 import assert from 'node:assert/strict'
 import {createHmac,randomBytes} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
@@ -125,11 +126,7 @@ export async function twoFactorJourney(){
   const recoveryKey=randomBytes(32).toString('hex');await app.configure({H2H_OWNER_RECOVERY_KEY:recoveryKey})
   assert.equal((await recover({email:'owner@example.com',password:'owner-correct-horse-battery',recoveryKey:'y'.repeat(64)})).status,403)
   assert.equal((await recover({email:'agent@example.com',password:'agent-correct-horse-battery',recoveryKey})).status,403,'only an owner recovers this way')
-  const recovered=await recover({email:'owner@example.com',password:'owner-correct-horse-battery',recoveryKey});assert.equal(recovered.status,200)
-  assert.equal((await call('/api/identity/session',undefined,owner.token)).status,401,'every earlier owner session ended')
-  assert.equal((await app.first('SELECT count(*) n FROM user_factors WHERE user_id=?',owner.userId)).n,0)
-  assert.equal((await recover({email:'owner@example.com',password:'owner-correct-horse-battery',recoveryKey})).status,403,'each key value works once')
-  const ownerRecovery=await events('owner.recovered');assert.equal(ownerRecovery.length,1)
-  assert.deepEqual((await events('owner.recovery_refused')).map(row=>JSON.parse(row.detail_json).reason),['key_incorrect','key_already_used'])
+  await manualRecovery(app,owner,recoveryKey,'owner-correct-horse-battery')
+
  }finally{await app.close()}
 }

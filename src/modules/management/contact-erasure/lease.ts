@@ -1,3 +1,4 @@
+import {pendingScope} from '../../legacy-import/custody/fence'
 /**
  * One erasure of a contact at a time (migrations/315_erasure_leases.sql). An erasure takes the contact's lease before it
  * reads or writes any of the person's data and renews it while it works; the route deletes it (`leaseCompletion`) in the
@@ -55,7 +56,7 @@ const erasing = `SELECT 1 ok FROM contact_erasure_leases WHERE project_id=?1 AND
  * only in the batch that completes an erasure (`leaseCompletion`), so once a waiting request saw it live, its absence means
  * the erasure it waited for (or one that took it over) completed. */
 const completed = `SELECT 1 ok FROM contact_erasures WHERE project_id=?1 AND contact_id=?2
- AND NOT EXISTS(SELECT 1 FROM contact_erasure_leases WHERE project_id=?1 AND contact_id=?2)`
+ AND NOT EXISTS(SELECT 1 FROM contact_erasure_leases WHERE project_id=?1 AND contact_id=?2) AND NOT (${pendingScope})`
 
 /** A request that waited for another erasure of the contact found it complete: the route answers that erasure's record,
  * doing none of its work. */

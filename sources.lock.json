@@ -2868,6 +2868,10 @@
       "sha256": "53a86ffd67d1effa8559e7cbb277a6cccb001f6d77803ce51d6feb4a865ecc1c",
       "executable": false
     },
+    "migrations/329_legacy_package_custody.sql": {
+      "sha256": "0ab0de77b0d916684ce19778f94a3256e53ec1237f50f07da396084465f3fcdb",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -7696,6 +7700,34 @@
       "sha256": "f6e7cbf9309b672009ce00fb13619f27650a7b7b45d1bc219e69ac61d97dd8d0",
       "executable": false
     },
+    "src/modules/legacy-import/custody/authority.ts": {
+      "sha256": "e628a0d76977723e58e3301a93e3ffb2ff932d4514acfabf13f9b00efa630994",
+      "executable": false
+    },
+    "src/modules/legacy-import/custody/cleanup.ts": {
+      "sha256": "55e20a7fb4d8507747af1ab0577ea0ed19bc62b8e3557128e1eb3e39fb0f3ef1",
+      "executable": false
+    },
+    "src/modules/legacy-import/custody/fence.ts": {
+      "sha256": "c27af0d7f72b246c46eeda0ee588cc4370cdf3b55346d3b298aa7488968cd5df",
+      "executable": false
+    },
+    "src/modules/legacy-import/custody/index.ts": {
+      "sha256": "c0aa142fd23c7d98d34b369ab86ad8b8c015d259c37dfbd0386ae1abbad682b2",
+      "executable": false
+    },
+    "src/modules/legacy-import/custody/put.ts": {
+      "sha256": "0801789b022f75af56cdb6a53a962457a74b5a86b072daf669501ae0ff5c2a94",
+      "executable": false
+    },
+    "src/modules/legacy-import/custody/registry.ts": {
+      "sha256": "20ecbe3ccab19c943c26bc5d7ecd41175541a3d911774457b283767d7bb7f3b0",
+      "executable": false
+    },
+    "src/modules/legacy-import/custody/types.ts": {
+      "sha256": "6a014765e89da1c4f9ec8a41453f4a25be9a615c83f3b8e2eef3a8b27dfc81e3",
+      "executable": false
+    },
     "src/modules/legacy-import/d1.ts": {
       "sha256": "be2595fee5fb260d459a95eeca92291b0c4d6715836f0b74f8da41043cd14305",
       "executable": false
@@ -8149,7 +8181,7 @@
       "executable": false
     },
     "src/modules/management/contact-erasure.ts": {
-      "sha256": "eebde21d6922acce77a9d7974a210ab57b4873cf2ad7caedabed4c676d41e98d",
+      "sha256": "e165ede9b8a4bc92a3ebde48570c82d87053f47a7a1f74f980c710cf80a5cda7",
       "executable": false
     },
     "src/modules/management/contact-erasure/admitted-identity.ts": {
@@ -8189,11 +8221,11 @@
       "executable": false
     },
     "src/modules/management/contact-erasure/lease.ts": {
-      "sha256": "754560e6b42d1f5f179f46660d4e9f1d1448c45e635baa4bf31fb2110c27317c",
+      "sha256": "70a61e59736270322e258df6ddf29f64cec779750a940e00207e701355022a45",
       "executable": false
     },
     "src/modules/management/contact-erasure/objects.ts": {
-      "sha256": "50ea91a4bebca84bfdeb816865ba019e7c9b0ba7e1b3576f635ca08886de05a9",
+      "sha256": "b33591cb0106977f8a6b2dfd412ca9da84940694c6405d2e3ea00c2b41c7b9f1",
       "executable": false
     },
     "src/modules/management/contact-erasure/portability.d.ts": {
@@ -8421,7 +8453,7 @@
       "executable": false
     },
     "src/modules/management/projects.ts": {
-      "sha256": "966292246b8eeae7a21d1f9e363f0bbeea4945c2f097f7fdbfe547e292cab350",
+      "sha256": "f6ce6d7e49f65c876fadc6a44899c5f40f6f52ce0ee59bdccbfab5e9f90f14d4",
       "executable": false
     },
     "src/modules/management/provisioning/condition.ts": {
@@ -16648,6 +16680,14 @@
       "sha256": "638d62b34810200a123ea8b389ff334762e3337946527c724affb20ea677d166",
       "executable": false
     },
+    "tests/helpers/legacy-custody/journey.mjs": {
+      "sha256": "4e867edabfc876e8e4286016e71a187f429e519deabd81809fedca537781aacd",
+      "executable": false
+    },
+    "tests/helpers/legacy-custody/worker.ts": {
+      "sha256": "61849368ff4b81e91bdd595a60ae645b8e432c88f541d65a790dee3be91d14f5",
+      "executable": false
+    },
     "tests/helpers/legacy-package.mjs": {
       "sha256": "d8e36acb8b14b254142c6df9e15b05bcc45ceb5734c46fa1a0e09ae1d4258443",
       "executable": false
@@ -17165,11 +17205,11 @@
       "executable": false
     },
     "tests/journeys/move-in-custody.mjs": {
-      "sha256": "b5312866af27c19f2c37ce9a57a2ce404a6e522325549e94643ea5602106f308",
+      "sha256": "0cdeec4f1b80eb6835d44feb02474421f0dce1a0789893273b61288e71580364",
       "executable": false
     },
     "tests/journeys/move-in-erasure.mjs": {
-      "sha256": "002677b2edd66e74a9ee7ff07507bfd9a10b9e8d8c20f451a9852e85840c2ee8",
+      "sha256": "d5c30587bfaba72678fead9cf22e3e88cd81491817dfbaeb06218ea185e9bbf5",
       "executable": false
     },
     "tests/journeys/move-in-zendesk-pull.mjs": {

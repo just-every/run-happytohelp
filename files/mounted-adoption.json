@@ -1,0 +1,607 @@
+{
+  "states": [
+    "queued:verify_package",
+    "queued:context",
+    "queued:preflight",
+    "queued:objects",
+    "running:objects",
+    "queued:objects",
+    "queued:rows",
+    "running:rows",
+    "queued:rows",
+    "queued:knowledge",
+    "queued:verify_result",
+    "queued:cleanup",
+    "complete:done"
+  ],
+  "uploads": 22,
+  "maxStatements": 154,
+  "measurements": {
+    "verify_package": {
+      "invocations": 24,
+      "maxCpuMs": 31.565,
+      "maxHeapBytes": 51586384,
+      "maxStatements": 48,
+      "rows": 66,
+      "bytes": 33627,
+      "worstCpu": {
+        "ms": 31.565,
+        "rows": 22,
+        "bytes": 3983,
+        "statements": 48
+      },
+      "totalCpuMs": 533.6430000000001,
+      "totalRows": 272,
+      "totalBytes": 123841,
+      "rowsPer30sCpu": 15291.121592525336,
+      "bytesPer30sCpu": 6962013.930661508
+    },
+    "context": {
+      "invocations": 91,
+      "maxCpuMs": 51.371,
+      "maxHeapBytes": 69316223,
+      "maxStatements": 39,
+      "rows": 66,
+      "bytes": 33628,
+      "worstCpu": {
+        "ms": 51.371,
+        "rows": 66,
+        "bytes": 33628,
+        "statements": 39
+      },
+      "totalCpuMs": 1945.7619999999997,
+      "totalRows": 316,
+      "totalBytes": 163195,
+      "rowsPer30sCpu": 4872.127218025638,
+      "bytesPer30sCpu": 2516160.763752196
+    },
+    "preflight": {
+      "invocations": 31,
+      "maxCpuMs": 200.039,
+      "maxHeapBytes": 71511467,
+      "maxStatements": 129,
+      "rows": 25,
+      "bytes": 23009,
+      "worstCpu": {
+        "ms": 200.039,
+        "rows": 25,
+        "bytes": 23009,
+        "statements": 129
+      },
+      "totalCpuMs": 1845.0389999999998,
+      "totalRows": 250,
+      "totalBytes": 119890,
+      "rowsPer30sCpu": 4064.9547245342787,
+      "bytesPer30sCpu": 1949389.6876976588
+    },
+    "objects": {
+      "invocations": 3,
+      "maxCpuMs": 60.831,
+      "maxHeapBytes": 44008438,
+      "maxStatements": 87,
+      "rows": 0,
+      "bytes": 480000,
+      "worstCpu": {
+        "ms": 60.831,
+        "rows": 0,
+        "bytes": 480000,
+        "statements": 87
+      },
+      "totalCpuMs": 119.012,
+      "totalRows": 0,
+      "totalBytes": 480029,
+      "rowsPer30sCpu": 0,
+      "bytesPer30sCpu": 121003512.25086546
+    },
+    "rows": {
+      "invocations": 23,
+      "maxCpuMs": 268.12,
+      "maxHeapBytes": 60875900,
+      "maxStatements": 154,
+      "rows": 25,
+      "bytes": 83074,
+      "worstCpu": {
+        "ms": 268.12,
+        "rows": 22,
+        "bytes": 83074,
+        "statements": 71
+      },
+      "totalCpuMs": 1914.6740000000002,
+      "totalRows": 163,
+      "totalBytes": 166710,
+      "rowsPer30sCpu": 2553.9595774528716,
+      "bytesPer30sCpu": 2612089.5776513387
+    },
+    "knowledge": {
+      "invocations": 1,
+      "maxCpuMs": 23.956,
+      "maxHeapBytes": 55662322,
+      "maxStatements": 39,
+      "rows": 0,
+      "bytes": 0,
+      "worstCpu": {
+        "ms": 23.956,
+        "rows": 0,
+        "bytes": 0,
+        "statements": 39
+      },
+      "totalCpuMs": 23.956,
+      "totalRows": 0,
+      "totalBytes": 0,
+      "rowsPer30sCpu": 0,
+      "bytesPer30sCpu": 0
+    },
+    "verify_result": {
+      "invocations": 18,
+      "maxCpuMs": 41.598,
+      "maxHeapBytes": 63706226,
+      "maxStatements": 56,
+      "rows": 30,
+      "bytes": 0,
+      "worstCpu": {
+        "ms": 41.598,
+        "rows": 0,
+        "bytes": 0,
+        "statements": 56
+      },
+      "totalCpuMs": 515.244,
+      "totalRows": 141,
+      "totalBytes": 0,
+      "rowsPer30sCpu": 8209.702587511936,
+      "bytesPer30sCpu": 0
+    },
+    "cleanup": {
+      "invocations": 11,
+      "maxCpuMs": 60.394,
+      "maxHeapBytes": 65935618,
+      "maxStatements": 37,
+      "rows": 250,
+      "bytes": 0,
+      "worstCpu": {
+        "ms": 60.394,
+        "rows": 238,
+        "bytes": 0,
+        "statements": 37
+      },
+      "totalCpuMs": 308.31399999999996,
+      "totalRows": 1056,
+      "totalBytes": 0,
+      "rowsPer30sCpu": 102752.38879843277,
+      "bytesPer30sCpu": 0
+    }
+  },
+  "kills": 2,
+  "indexDrainSteps": 5,
+  "shape": {
+    "packageRows": 142,
+    "largestPartBytes": 33627,
+    "largestObjectBytes": 480000,
+    "descriptors": 23
+  },
+  "lastRun": {
+    "runId": "legacy-package:260a997a3751ec3cdfe060a5732c9e13ce25865fa443644a43a582d2a09216cd",
+    "manifestSha256": "260a997a3751ec3cdfe060a5732c9e13ce25865fa443644a43a582d2a09216cd",
+    "projectId": "bafc5cb1-f8c6-4d05-8ff4-d54ccaa51d5e",
+    "sourceProjectId": "synthetic-wire-source",
+    "contractVersion": 2,
+    "mode": "full",
+    "state": "complete",
+    "phase": "done",
+    "attempt": 1,
+    "version": 207,
+    "cursor": {
+      "file": null,
+      "row": 0
+    },
+    "nextAt": 0,
+    "errorCode": null,
+    "createdAt": 1794515531072,
+    "updatedAt": 1794515564232,
+    "completedAt": 1794515564232,
+    "progress": {
+      "rows": 2198,
+      "bytes": 1053665,
+      "objects": 2
+    },
+    "canResume": false
+  },
+  "stopFenced": true,
+  "installationBaseline": {
+    "kind": "installation-setup",
+    "at": 1794515529483,
+    "counts": {
+      "conversation_outbox": 0,
+      "email_deliveries": 0,
+      "magic_signins": 0,
+      "operator_notifications": 0,
+      "operator_notification_activity": 0,
+      "native_integration_events": 0,
+      "native_integration_intents": 0,
+      "integration_deliveries": 0,
+      "context_jobs": 0,
+      "lead_jobs": 0,
+      "leads": 0,
+      "brand_generations": 0,
+      "csat_surveys": 0,
+      "workflow_events": 0,
+      "knowledge_datasets": 0
+    }
+  },
+  "result": {
+    "run": {
+      "runId": "legacy-package:260a997a3751ec3cdfe060a5732c9e13ce25865fa443644a43a582d2a09216cd",
+      "manifestSha256": "260a997a3751ec3cdfe060a5732c9e13ce25865fa443644a43a582d2a09216cd",
+      "projectId": "bafc5cb1-f8c6-4d05-8ff4-d54ccaa51d5e",
+      "sourceProjectId": "synthetic-wire-source",
+      "contractVersion": 2,
+      "mode": "full",
+      "state": "complete",
+      "phase": "done",
+      "attempt": 1,
+      "version": 207,
+      "cursor": {
+        "file": null,
+        "row": 0
+      },
+      "nextAt": 0,
+      "errorCode": null,
+      "createdAt": 1794515531072,
+      "updatedAt": 1794515564232,
+      "completedAt": 1794515564232,
+      "progress": {
+        "rows": 2198,
+        "bytes": 1053665,
+        "objects": 2
+      },
+      "canResume": false
+    },
+    "verifiedAt": 1794515562510,
+    "verification": "verified",
+    "tables": {
+      "ai_usages": {
+        "packageRows": 1,
+        "excludedRows": 1,
+        "requiredRows": 0,
+        "journalRows": 0,
+        "mapped": 0,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "articles": {
+        "packageRows": 25,
+        "excludedRows": 0,
+        "requiredRows": 25,
+        "journalRows": 25,
+        "mapped": 25,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "buckets": {
+        "packageRows": 1,
+        "excludedRows": 0,
+        "requiredRows": 1,
+        "journalRows": 1,
+        "mapped": 1,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "contacts": {
+        "packageRows": 36,
+        "excludedRows": 0,
+        "requiredRows": 36,
+        "journalRows": 36,
+        "mapped": 36,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "conversations": {
+        "packageRows": 2,
+        "excludedRows": 0,
+        "requiredRows": 2,
+        "journalRows": 2,
+        "mapped": 2,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "events": {
+        "packageRows": 3,
+        "excludedRows": 0,
+        "requiredRows": 3,
+        "journalRows": 3,
+        "mapped": 3,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "macros": {
+        "packageRows": 1,
+        "excludedRows": 0,
+        "requiredRows": 1,
+        "journalRows": 1,
+        "mapped": 1,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "media": {
+        "packageRows": 2,
+        "excludedRows": 0,
+        "requiredRows": 2,
+        "journalRows": 2,
+        "mapped": 2,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "messages": {
+        "packageRows": 66,
+        "excludedRows": 0,
+        "requiredRows": 66,
+        "journalRows": 66,
+        "mapped": 66,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "project_users": {
+        "packageRows": 2,
+        "excludedRows": 0,
+        "requiredRows": 2,
+        "journalRows": 2,
+        "mapped": 0,
+        "archivedOnly": 2,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "projects": {
+        "packageRows": 1,
+        "excludedRows": 0,
+        "requiredRows": 1,
+        "journalRows": 1,
+        "mapped": 1,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "users": {
+        "packageRows": 2,
+        "excludedRows": 0,
+        "requiredRows": 2,
+        "journalRows": 2,
+        "mapped": 0,
+        "archivedOnly": 2,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      }
+    },
+    "excluded": {
+      "ai_usages": 1
+    },
+    "journalEqualsPackage": true,
+    "attachments": {
+      "package": 2,
+      "required": 2,
+      "journal": 2,
+      "identical": 2,
+      "withheld": 0,
+      "missing": 0,
+      "different": 0,
+      "unverified": 0,
+      "bytes": 480029,
+      "complete": true,
+      "method": "r2-sha256-vs-manifest"
+    },
+    "lease": {
+      "runHeld": false,
+      "runLeaseUntil": null,
+      "workspaceHeld": false,
+      "workspaceLeaseUntil": null,
+      "waitingFor": "none"
+    },
+    "attempt": {
+      "number": 1,
+      "appliedRows": 141,
+      "replayedRows": 0,
+      "measuredRows": 2198,
+      "measuredBytes": 1053665,
+      "maxCpuMs": null,
+      "maxHeapBytes": null
+    },
+    "diagnostics": {
+      "scope": "workspace-and-installation",
+      "conversationCount": 2,
+      "distinctDeltaSourceIds": 0,
+      "incompleteDeltaRuns": 0,
+      "sampleConversationIds": [
+        "synthetic-conversation",
+        "synthetic-peer-conversation"
+      ],
+      "installationWork": {
+        "before": {
+          "conversation_outbox": 0,
+          "email_deliveries": 0,
+          "magic_signins": 0,
+          "operator_notifications": 0,
+          "operator_notification_activity": 0,
+          "native_integration_events": 0,
+          "native_integration_intents": 0,
+          "integration_deliveries": 0,
+          "context_jobs": 0,
+          "lead_jobs": 0,
+          "leads": 0,
+          "brand_generations": 0,
+          "csat_surveys": 0,
+          "workflow_events": 0,
+          "knowledge_datasets": 0
+        },
+        "after": {
+          "conversation_outbox": 0,
+          "email_deliveries": 0,
+          "magic_signins": 0,
+          "operator_notifications": 0,
+          "operator_notification_activity": 0,
+          "native_integration_events": 0,
+          "native_integration_intents": 0,
+          "integration_deliveries": 0,
+          "context_jobs": 0,
+          "lead_jobs": 0,
+          "leads": 0,
+          "brand_generations": 0,
+          "csat_surveys": 0,
+          "workflow_events": 0,
+          "knowledge_datasets": 0
+        },
+        "qualification": "whole-installation; concurrent native work is not attributed to this import"
+      },
+      "baseline": {
+        "kind": "before-import",
+        "at": 1794515552259,
+        "counts": {
+          "conversation_outbox": 0,
+          "email_deliveries": 0,
+          "magic_signins": 0,
+          "operator_notifications": 0,
+          "operator_notification_activity": 0,
+          "native_integration_events": 0,
+          "native_integration_intents": 0,
+          "integration_deliveries": 0,
+          "context_jobs": 0,
+          "lead_jobs": 0,
+          "leads": 0,
+          "brand_generations": 0,
+          "csat_surveys": 0,
+          "workflow_events": 0,
+          "knowledge_datasets": 0
+        },
+        "installation": {
+          "kind": "installation-setup",
+          "at": 1794515529483,
+          "counts": {
+            "conversation_outbox": 0,
+            "email_deliveries": 0,
+            "magic_signins": 0,
+            "operator_notifications": 0,
+            "operator_notification_activity": 0,
+            "native_integration_events": 0,
+            "native_integration_intents": 0,
+            "integration_deliveries": 0,
+            "context_jobs": 0,
+            "lead_jobs": 0,
+            "leads": 0,
+            "brand_generations": 0,
+            "csat_surveys": 0,
+            "workflow_events": 0,
+            "knowledge_datasets": 0
+          }
+        }
+      }
+    },
+    "work": {
+      "before": {
+        "conversation_outbox": 0,
+        "email_deliveries": 0,
+        "magic_signins": 0,
+        "operator_notifications": 0,
+        "operator_notification_activity": 0,
+        "native_integration_events": 0,
+        "native_integration_intents": 0,
+        "integration_deliveries": 0,
+        "context_jobs": 0,
+        "lead_jobs": 0,
+        "leads": 0,
+        "brand_generations": 0,
+        "csat_surveys": 0,
+        "workflow_events": 0,
+        "knowledge_datasets": 0
+      },
+      "after": {
+        "conversation_outbox": 0,
+        "email_deliveries": 0,
+        "magic_signins": 0,
+        "operator_notifications": 0,
+        "operator_notification_activity": 0,
+        "native_integration_events": 0,
+        "native_integration_intents": 0,
+        "integration_deliveries": 0,
+        "context_jobs": 0,
+        "lead_jobs": 0,
+        "leads": 0,
+        "brand_generations": 0,
+        "csat_surveys": 0,
+        "workflow_events": 0,
+        "knowledge_datasets": 0
+      },
+      "delta": {
+        "conversation_outbox": 0,
+        "email_deliveries": 0,
+        "magic_signins": 0,
+        "operator_notifications": 0,
+        "operator_notification_activity": 0,
+        "native_integration_events": 0,
+        "native_integration_intents": 0,
+        "integration_deliveries": 0,
+        "context_jobs": 0,
+        "lead_jobs": 0,
+        "leads": 0,
+        "brand_generations": 0,
+        "csat_surveys": 0,
+        "workflow_events": 0,
+        "knowledge_datasets": 0
+      },
+      "unchanged": true
+    },
+    "sourceCustody": {
+      "status": "ready",
+      "expiresAt": 1794601964232,
+      "absoluteExpiresAt": 1795120329676,
+      "sourcePurged": false,
+      "invalidated": false,
+      "cleanupPending": false,
+      "canResume": false
+    },
+    "adoption": {
+      "destinationProjectId": "synthetic-wire-source",
+      "membershipPolicy": "historical memberships; no access created"
+    }
+  },
+  "history": {
+    "notes": 3,
+    "nonRootBuckets": 2,
+    "assignment": "Historical owner",
+    "macroAuthor": "Historical owner",
+    "historicalMembersSelectable": false
+  },
+  "replay": {
+    "number": 2,
+    "appliedRows": 0,
+    "replayedRows": 141,
+    "measuredRows": 2184,
+    "measuredBytes": 967664,
+    "maxCpuMs": null,
+    "maxHeapBytes": null
+  },
+  "erased": true,
+  "counts": {
+    "nativeUsersBefore": 4,
+    "nativeUsersAfter": 4,
+    "sourceRows": 141,
+    "membershipsAdded": 1
+  }
+}

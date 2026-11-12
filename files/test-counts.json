@@ -1,0 +1,9 @@
+{
+  "scope": "tests/journeys/*.mjs root test registrations; no new loops or .each registrations",
+  "before": 104,
+  "after": 104,
+  "newRegistrations": 0,
+  "admissionTimeoutSeconds": 480,
+  "migrationFilesBefore": 193,
+  "migrationFilesAfter": 195
+}

@@ -1,0 +1,33 @@
+{
+  "requiredWorkflow": "Verify",
+  "expectedHead": "936b2ff42f7fb8cf459a21f58606a8998fcc03a8",
+  "initialRun": {
+    "conclusion": "failure",
+    "created_at": "2026-11-12T20:46:52Z",
+    "head_sha": "a26f376e1a57afe561accc155826f03e2b6cb789",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43303685870",
+    "id": 43303685870,
+    "name": "Verify",
+    "status": "completed",
+    "updated_at": "2026-11-12T20:47:54Z"
+  },
+  "githubCallsUsed": 10,
+  "ready": false,
+  "qualification": "71e4183 completed/failure. Build/source preservation passed; two shards failed. The introduced inventory/restore failure is repaired additively; the subsequent product SHA has not been queried because the ten-call GitHub budget is exhausted.",
+  "githubBudget": 10,
+  "previousCandidateRun": {
+    "conclusion": "failure",
+    "head_sha": "71e4183d9bff01f184c035817cf5fffc67095baa",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43304598440",
+    "status": "completed",
+    "id": 43304598440,
+    "name": "Verify"
+  },
+  "nextCandidate": {
+    "head_sha": "936b2ff42f7fb8cf459a21f58606a8998fcc03a8",
+    "status": "pushed; Verify unobserved",
+    "id": null,
+    "discovery": "NOT RUN; ten-call GitHub budget exhausted",
+    "requiredEntryPoint": "existing cloud branch push"
+  }
+}

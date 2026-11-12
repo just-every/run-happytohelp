@@ -1,0 +1,134 @@
+{
+  "repair": "Additive 332 + lazy operational inventory; 331 bytes retained",
+  "restoredCase": {
+    "command": "node --test --test-concurrency=1 --test-name-pattern='knowledge references survive cross-ticket' tests/journeys/knowledge.mjs",
+    "exit": 0,
+    "pass": 1,
+    "fail": 0,
+    "durationMs": 113210.912379,
+    "erasurePersonalPayloads": {
+      "live": 0,
+      "backup": 0,
+      "export": 0,
+      "restore": 0,
+      "legacyRestore": 0
+    },
+    "retainedLiveAuthorPreserved": true
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0
+  },
+  "unchangedBrowserTriage": {
+    "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium node --test --test-concurrency=1 --test-name-pattern='^a lead compares saved procedure definitions|^an owner maps and refreshes HubSpot' tests/journeys/workflows-browser.mjs",
+    "exit": 0,
+    "pass": 2,
+    "fail": 0,
+    "durationMs": 440347.216199,
+    "proceduresDurationMs": 189955.304093,
+    "hubspotDurationMs": 246748.799644,
+    "qualification": "Both failed CI registrations pass locally with assertions unchanged. Hosted failure not reproduced; no CI success inferred. No same-test main run needed after passing local triage."
+  },
+  "custodyRegistration": {
+    "command": "node --test --test-concurrency=1 tests/journeys/move-in-custody.mjs",
+    "exit": 0,
+    "pass": 1,
+    "durationMs": 47547.492165,
+    "includes": "Native custody/authority + terminal cleanup-only v1 pages, replacement Worker, duplicate/lost wake recovery and native erasure completion"
+  },
+  "mountedOrdering": {
+    "command": "node tests/move-in/legacy-adoption-integration/ordering.mjs",
+    "exit": 0,
+    "receipt": "mounted-ordering.json",
+    "barriers": 4,
+    "schemaRefusals": [
+      {
+        "migration": "328_",
+        "status": 503,
+        "retainedBodies": 0
+      },
+      {
+        "migration": "329_",
+        "status": 503,
+        "retainedBodies": 0
+      },
+      {
+        "migration": "331_",
+        "status": 503,
+        "retainedBodies": 0
+      }
+    ],
+    "cronStatements": 94,
+    "cronRefused": 0,
+    "consumersCompleted": true
+  },
+  "maximumCleanup": {
+    "command": "node tests/move-in/legacy-adoption-integration/v1-cleanup.mjs 20000",
+    "exit": 0,
+    "receipt": "v1-cleanup-20000.json",
+    "coordinates": 20000,
+    "maxCoordinatesPerPage": 100,
+    "continuationQuanta": 397,
+    "replacementWorkers": 1,
+    "duplicateWakes": 1,
+    "lostWakes": 1,
+    "erasureCompleted": true,
+    "noAdoption": true
+  },
+  "typecheckBeforeMainMerge": {
+    "command": "pnpm run typecheck",
+    "exit": 0
+  },
+  "freshMainMerge": {
+    "main": "0fa71c5efb3c2a0da77706740ec6141b7be4a75b",
+    "preservedMainCommits": [
+      "e67f4b4",
+      "802ed2b",
+      "77848b8",
+      "0fa71c5"
+    ],
+    "conflicts": [
+      "src/platform/env.ts: retain MAIL_MODE and typed cleanup queue",
+      "sources.lock.json: regenerate from main selection after build"
+    ],
+    "noContractChange": true,
+    "rer": "0.2.112",
+    "install": "pnpm install --frozen-lockfile; exit 0",
+    "setup": "rer setup --owner-email fleet@runeditrun.com --answers .rer/cloud-answers.json --non-interactive; exit 0",
+    "hooksReinstalled": true,
+    "buildExit": 0,
+    "typecheckExit": 0,
+    "seamRegistrations": {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='^the first owner claims once|^a mailbox-only owner|^an owner runs a bounded legacy' tests/journeys/identity.mjs tests/journeys/legacy.mjs",
+      "exit": 0,
+      "pass": 3,
+      "fail": 0,
+      "durationMs": 89033.225617,
+      "r2WorkerReceipt": "r2-worker.json",
+      "r2IndexDrainReceipt": "r2-index-drain.json"
+    }
+  },
+  "finalSourceChecks": {
+    "lockRegeneratedLast": true,
+    "sourceCheckExit": 0,
+    "firstPartyExit": 0,
+    "baseContractCheckExit": 0,
+    "seedContractCheckExit": 0,
+    "head": "936b2ff42f7fb8cf459a21f58606a8998fcc03a8",
+    "committedHeadRecheckExit": 0
+  },
+  "finalMergedBrowserProof": {
+    "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium node tests/move-in/legacy-adoption-integration/browser-proof.mjs",
+    "exit": 0,
+    "head": "936b2ff42f7fb8cf459a21f58606a8998fcc03a8",
+    "receipt": "browser-receipt.json",
+    "states": 14,
+    "screenshots": 28,
+    "widths": [
+      1440,
+      390
+    ],
+    "pageErrors": 0,
+    "changedScreensManuallyInspected": 8
+  }
+}

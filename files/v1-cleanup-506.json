@@ -1,0 +1,22 @@
+{
+  "coordinates": 506,
+  "restarts": 1,
+  "duplicateWakes": 1,
+  "lostWakes": 1,
+  "maxKeys": 100,
+  "seedMeasurement": {
+    "sampledCpuMs": 89.41,
+    "maxHeapBytes": 42702025,
+    "samples": 256,
+    "idleMs": 96.119,
+    "method": "workerd-inspector-v8-sampling-excluding-idle"
+  },
+  "registeredCoordinates": 506,
+  "pages": 9,
+  "seedComplete": true,
+  "purged": true,
+  "erasureCompleted": true,
+  "noAdoption": true,
+  "manifestBytes": 42305,
+  "v1ResultRemainsSynthetic": true
+}

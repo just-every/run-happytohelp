@@ -1,0 +1,24 @@
+{
+  "run": 43303685870,
+  "head": "a26f376e1a57afe561accc155826f03e2b6cb789",
+  "job": 131481699271,
+  "command": [
+    "gh",
+    "run",
+    "view",
+    "43303685870",
+    "--repo",
+    "just-every/run-happytohelp",
+    "--job",
+    "131481699271",
+    "--log-failed"
+  ],
+  "exit": 0,
+  "outputBytes": 4031,
+  "excerpts": [
+    "verify\tRequire the plan and every selected check\t2026-11-12T20:47:51.8880246Z ##[error]Process completed with exit code 1."
+  ],
+  "emptyOutput": false,
+  "http": null,
+  "dependencyFailure": "build (confirmed by jobs API)"
+}

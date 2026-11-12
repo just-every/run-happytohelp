@@ -1,0 +1,98 @@
+{
+  "execution": "dedicated cloud VM; long-lived commands use cloud_run; source-specified toolchain script",
+  "commands": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --answers .rer/cloud-answers.json --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs",
+      "exit": 0,
+      "registrations": 1,
+      "durationMs": 405166.03475,
+      "allowanceMs": 480000
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='^the first owner claims once|^a mailbox-only owner|^an admin reviews' tests/journeys/identity.mjs tests/journeys/move-in-custody.mjs",
+      "exit": 0,
+      "registrations": 3,
+      "durationMs": 72671.456056
+    },
+    {
+      "command": "node --test --test-name-pattern='an owner runs a bounded legacy' tests/journeys/legacy.mjs",
+      "exit": 0,
+      "registrations": 1,
+      "durationMs": 63563.800262
+    },
+    {
+      "command": "node tests/move-in/legacy-adoption-integration/v1-cleanup.mjs 20000",
+      "exit": 0,
+      "receipt": "v1-cleanup-20000.json"
+    },
+    {
+      "command": "node --test --test-name-pattern='^erase an imported' tests/journeys/move-in-erasure.mjs (selected in initial touched run)",
+      "exit": 0,
+      "registrations": 1,
+      "durationMs": 13527.821398
+    },
+    {
+      "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium node tests/move-in/legacy-adoption-integration/browser-proof.mjs",
+      "exit": 0,
+      "receipt": "browser-receipt.json"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check (initial committed a26f376 head)",
+      "exit": 1,
+      "reason": "New files had not been tracked when its lock was generated."
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock (all files tracked), then check",
+      "exit": 0
+    },
+    {
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party (tracked sources)",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check (exact final 71e4183 head)",
+      "exit": 0
+    }
+  ],
+  "browser": "pass; 14 actual states / 28 screenshots, including four changed history states at 1440 and 390",
+  "notRun": [
+    "full local rer verify / whole suite",
+    "COMPLETE Mac publication scan",
+    "independent combined gate",
+    "provider/stage/customer/release actions"
+  ],
+  "latestRepairChecks": "repair-checks.json",
+  "proofQualification": "Earlier receipts are retained. Repair checks and final merged browser proof identify the final candidate separately."
+}

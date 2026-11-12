@@ -1,0 +1,394 @@
+{
+  "success": true,
+  "checks": [
+    {
+      "name": "legacy-review-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Upload package",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-tampered-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-progress-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Uploading\u2026",
+          "height": 44
+        },
+        {
+          "label": "Interrupt upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-interrupted-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-resume-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Approve this destination",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-approved-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Renew owner approval",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-queued-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Renew owner approval",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "Stop import",
+          "height": 44
+        },
+        {
+          "label": "Copy result note",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-d26afa5b-e59b-4c47-bb3c-b9c961dc7b91 \u00b7 queued",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-completed-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Renew owner approval",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "Replay verification",
+          "height": 44
+        },
+        {
+          "label": "Copy result note",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-d26afa5b-e59b-4c47-bb3c-b9c961dc7b91 \u00b7 complete",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-history-collapsed-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": []
+    },
+    {
+      "name": "legacy-history-expanded-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": []
+    },
+    {
+      "name": "legacy-history-assignment-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": []
+    },
+    {
+      "name": "legacy-history-macro-origin-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": []
+    },
+    {
+      "name": "legacy-replayed-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Renew owner approval",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "Replay verification",
+          "height": 44
+        },
+        {
+          "label": "Copy result note",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-d26afa5b-e59b-4c47-bb3c-b9c961dc7b91 \u00b7 complete",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-policy-refused-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-d26afa5b-e59b-4c47-bb3c-b9c961dc7b91 \u00b7 complete",
+          "height": 44
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "productHead": "936b2ff42f7fb8cf459a21f58606a8998fcc03a8",
+  "main": "0fa71c5efb3c2a0da77706740ec6141b7be4a75b",
+  "manualInspection": {
+    "changedStates": [
+      "history-collapsed",
+      "history-expanded",
+      "history-assignment",
+      "history-macro-origin"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "screenshotsViewed": 8,
+    "observations": "Non-root notes stay in original groups with author name/role; assignment remains read-only and separate from native Unassigned; saved reply shows original creator (historical); no clipping/overflow in changed captures."
+  }
+}

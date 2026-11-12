@@ -1,0 +1,70 @@
+{
+  "setup": [
+    {
+      "exit": 3,
+      "reason": "Noninteractive setup needed private answers; dependencies installed."
+    },
+    {
+      "exit": 4,
+      "reason": "Private answers path must be inside checkout; fixed with ignored .rer/cloud-answers.json."
+    },
+    {
+      "exit": 0,
+      "reason": "Supported setup completed."
+    }
+  ],
+  "localFailures": [
+    {
+      "test": "R2 worker registration",
+      "assertion": "durable continuation has a wake",
+      "cause": "Initial old-prefix inventory also closed existing v1 runs. Fixed inventory to preserve their stored interpretation and discover those runs only for explicit cleanup/erasure."
+    },
+    {
+      "test": "R2 delta continuation",
+      "assertion": "work.unchanged null !== true",
+      "cause": "Nested delta helper also used the admin result reader; added explicit admin denial and real first-owner diagnostic read."
+    },
+    {
+      "test": "Browser history fixture",
+      "assertion": "note-only older groups retain an expand control",
+      "cause": "All original fixture dates were older than the existing grouping year window; realistic within-year synthetic history added to exercise collapsed note-only groups."
+    },
+    {
+      "test": "Browser continuation after historical workspace navigation",
+      "assertion": "replay start 409 instead of 202",
+      "cause": "Native workspace navigation changes the session. The proof now explicitly renews owner approval before replay; no product authority predicate changed."
+    },
+    {
+      "test": "Broader admission registration",
+      "assertion": "existing imported note agent_id changed",
+      "cause": "Restored its original public import:<id> identity. Historical message/native actor separation now uses only the UI grouping key; every existing admission assertion remains."
+    },
+    {
+      "test": "Missing-schema fixture",
+      "assertion": "migration setup failed before the intended intake assertion",
+      "cause": "331 depends on 329. The missing-329 fixture now omits dependent 331 too, retaining the original 503/no-source-retention assertions."
+    }
+  ],
+  "ciFailures": [
+    {
+      "run": 43303685870,
+      "head": "a26f376e1a57afe561accc155826f03e2b6cb789",
+      "job": 131481333395,
+      "step": "node scripts/edition-authoring/cli.mjs check",
+      "cause": "Five newly added files were omitted from the lock generated while they were untracked.",
+      "fixHead": "71e4183d9bff01f184c035817cf5fffc67095baa",
+      "fix": "Regenerate lock with all files tracked; separate follow-up commit, no rewrite."
+    },
+    {
+      "head": "71e4183d9bff01f184c035817cf5fffc67095baa",
+      "run": 43304598440,
+      "introduced": "Native restore target_not_empty:legacy_package_v1_inventory from initial singleton",
+      "repair": "Additive migration 332 + lazy inventory; preserve published 331 and existing empty-target guard. Failing knowledge registration passes locally.",
+      "otherFailures": [
+        "Procedure version visibility timeout",
+        "HubSpot socket hangup"
+      ],
+      "triage": "Local rerun of the two unchanged registrations; see repair-checks.json. No hosted rerun/dispatch."
+    }
+  ]
+}

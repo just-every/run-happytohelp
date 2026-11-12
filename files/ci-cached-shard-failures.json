@@ -1,0 +1,69 @@
+{
+  "runId": 43304598440,
+  "head": "71e4183d9bff01f184c035817cf5fffc67095baa",
+  "source": "already downloaded gh CLI log archive; local read, no additional API call",
+  "shards": [
+    {
+      "shard": "Verify _ identity-and-desk",
+      "pass": "15",
+      "fail": "0",
+      "failures": []
+    },
+    {
+      "shard": "Verify _ identity-and-repair-browser",
+      "pass": "6",
+      "fail": "0",
+      "failures": []
+    },
+    {
+      "shard": "Verify _ support-workflow-browser",
+      "pass": "5",
+      "fail": "2",
+      "failures": [
+        {
+          "test": "a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release",
+          "error": "Timeout waiting 30000ms for visible button \"refund \u00b7 Version 1\" at tests/helpers/ai/procedures-browser.mjs:41"
+        },
+        {
+          "test": "an owner maps and refreshes HubSpot context while unsaved edits and revoked permissions remain safe",
+          "error": "apiRequestContext.put: socket hang up at tests/helpers/hubspot/browser.mjs:182"
+        }
+      ]
+    },
+    {
+      "shard": "Verify _ assistant-and-knowledge",
+      "pass": "15",
+      "fail": "1",
+      "failures": [
+        {
+          "test": "knowledge references survive cross-ticket saved replies, copied edits, revocation, API reads and collection publication",
+          "error": "'target_not_empty:legacy_package_v1_inventory'"
+        }
+      ]
+    },
+    {
+      "shard": "Verify _ support-and-recovery",
+      "pass": "7",
+      "fail": "0",
+      "failures": []
+    },
+    {
+      "shard": "Verify _ import-and-reports",
+      "pass": "19",
+      "fail": "0",
+      "failures": []
+    },
+    {
+      "shard": "Verify _ public-and-import-browser",
+      "pass": "4",
+      "fail": "0",
+      "failures": []
+    },
+    {
+      "shard": "Verify _ connections-and-computers",
+      "pass": "20",
+      "fail": "0",
+      "failures": []
+    }
+  ]
+}

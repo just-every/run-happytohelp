@@ -1,0 +1,31 @@
+{
+  "run": 43304598440,
+  "head": "71e4183d9bff01f184c035817cf5fffc67095baa",
+  "command": [
+    "gh",
+    "run",
+    "view",
+    "43304598440",
+    "--repo",
+    "just-every/run-happytohelp",
+    "--log-failed"
+  ],
+  "exit": 0,
+  "outputBytes": 4031,
+  "excerpts": [
+    "verify\tRequire the plan and every selected check\t2026-11-12T21:15:28.2789697Z ##[error]Process completed with exit code 1."
+  ],
+  "emptyOutput": false,
+  "http": null,
+  "budgetNote": "Last of ten calls; one failed-steps archive read for the completed run, with no separate job lookup.",
+  "dependencyResults": {
+    "PLAN": "success",
+    "TIER": "push",
+    "COVERAGE": "full",
+    "BUILD": "success",
+    "CHECKS": "failure",
+    "SLOW": "skipped",
+    "PUSH_PROOF": "skipped",
+    "NIGHTLY_PROOF": "skipped"
+  }
+}

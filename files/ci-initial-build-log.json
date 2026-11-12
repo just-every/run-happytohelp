@@ -1,0 +1,24 @@
+{
+  "run": 43303685870,
+  "head": "a26f376e1a57afe561accc155826f03e2b6cb789",
+  "job": 131481333395,
+  "command": [
+    "gh",
+    "run",
+    "view",
+    "43303685870",
+    "--repo",
+    "just-every/run-happytohelp",
+    "--job",
+    "131481333395",
+    "--log-failed"
+  ],
+  "exit": 0,
+  "outputBytes": 1415,
+  "excerpts": [
+    "build\tRun node scripts/edition-authoring/cli.mjs check\t2026-11-12T20:47:40.2780821Z Stale lock or source/tool integrity mismatch; run changes to inspect intentional edits before lock",
+    "build\tRun node scripts/edition-authoring/cli.mjs check\t2026-11-12T20:47:40.3001977Z ##[error]Process completed with exit code 1."
+  ],
+  "emptyOutput": false,
+  "http": null
+}

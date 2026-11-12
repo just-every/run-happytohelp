@@ -1,0 +1,6 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "ref": "refs/heads/cloud/hh-importer-adoption-wire-3",
+  "head": "936b2ff42f7fb8cf459a21f58606a8998fcc03a8",
+  "verification": "Git ls-remote exact branch after guarded push; no CI conclusion inferred"
+}

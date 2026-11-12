@@ -44,7 +44,7 @@ export async function workerRunnerJourney({packageRoot,interrupt=true,measure=tr
    const profiled=measure&&(!measurements[before.phase]||measurements[before.phase].invocations<2)?await runtime.profile(()=>runtime.step(jobs,headers)): {value:await runtime.step(jobs,headers)}
    queue.push(...profiled.value.queue);const after=await readRun();invocations++
    if(profiled.measurement){const m=profiled.measurement,prior=measurements[before.phase]??{invocations:0,maxCpuMs:0,maxHeapBytes:0,maxStatements:0,rows:0,bytes:0};prior.invocations++;prior.maxCpuMs=Math.max(prior.maxCpuMs,m.sampledCpuMs);prior.maxHeapBytes=Math.max(prior.maxHeapBytes,m.maxHeapBytes);prior.maxStatements=Math.max(prior.maxStatements,profiled.value.metrics.statements);const old=JSON.parse(before.metrics_json),next=JSON.parse(after.metrics_json);prior.rows=Math.max(prior.rows,(next.rows??0)-(old.rows??0));prior.bytes=Math.max(prior.bytes,(next.bytes??0)-(old.bytes??0));measurements[before.phase]=prior}
-   assert.notEqual(after.state,'paused',JSON.stringify({phase:after.phase,cursor:JSON.parse(after.cursor_json),error:after.error_code}));return after
+   assert.notEqual(after.state,'paused',JSON.stringify({phase:after.phase,cursor:JSON.parse(after.cursor_json),error:after.error_code,failures:profiled.value.failures}));return after
   }
   const until=async(check)=>{for(let n=0;n<15000;n++){const run=await readRun();if(await check(run))return run;await runStep()}throw new Error('Runner did not settle')}
   await until(run=>run.phase==='objects')

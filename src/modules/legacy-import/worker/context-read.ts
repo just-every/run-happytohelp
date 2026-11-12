@@ -6,12 +6,13 @@ import {packageMediaIndex,type MediaIndex} from '../media-index'
 import {rewriteText} from '../media-urls'
 import {jsonBytes} from '../d1'
 import {limits,type Run} from './state'
+import {jsonRows} from './json-rows'
 import {refuse} from './errors'
 const refs:Record<string,string[]>={project_id:['projects'],conversation_id:['conversations'],contact_id:['contacts'],user_id:['users'],agent_id:['users','ais','ai_profiles'],ai_id:['ais','ai_profiles'],dataset_id:['datasets','knowledge_datasets'],media_id:['media'],original_media_id:['media'],message_id:['messages'],support_delegation_id:['support_delegations'],article_id:['articles','knowledge_articles'],category_id:['categories','knowledge_categories']}
 /** Async hydration ends before any synchronous mapper runs. */
 export async function hydrate(env:Env,run:Run,manifest:LegacyPackageManifest,table:string,sourceRows:Row[]){
  const records=new Map<string,Map<string,Row>>(),requested=new Map<string,Set<string>>(),loaded=new Set<string>();let bytes=0
- const add=(table:string,row:Row)=>{if(row.project_id!=null&&String(row.project_id)!==run.project_id||table==='projects'&&String(row.id)!==run.project_id)refuse('invalid_scope',422);const id=String(row.id??''),list=records.get(table)??new Map<string,Row>();records.set(table,list);bytes+=jsonBytes(row)-(list.has(id)?jsonBytes(list.get(id)):0);if(bytes>limits.closureBytes)refuse('row_too_large');list.set(id,row)}
+ const add=(table:string,row:Row)=>{if(row.project_id!=null&&String(row.project_id)!==run.project_id||table==='projects'&&String(row.id)!==run.project_id)refuse('invalid_scope',422);const id=String(row.id??''),list=records.get(table)??new Map<string,Row>();records.set(table,list);bytes+=4*(jsonBytes(row)-(list.has(id)?jsonBytes(list.get(id)):0));if(bytes>limits.closureBytes)refuse('row_too_large');list.set(id,row)}
  const want=(table:string,id:unknown)=>{if(id===undefined||id===null||id==='')return;const ids=requested.get(table)??new Set<string>();requested.set(table,ids);ids.add(String(id));if(ids.size>500)refuse('row_too_large')}
  const inspect=(table:string,row:Row)=>{
   for(const [field,tables] of Object.entries(refs))for(const related of tables)want(related,row[field])
@@ -22,20 +23,20 @@ export async function hydrate(env:Env,run:Run,manifest:LegacyPackageManifest,tab
  want('projects',run.source_project_id)
  // The mapper's team/default arrays are bounded independently of history size.
  for(const small of ['users','ais','ai_profiles','ai_defaults']){
-  const rows=await env.DB.prepare("SELECT row_json FROM legacy_import_context WHERE run_id=? AND kind='record' AND source_table=? LIMIT 251").bind(run.id,small).all<{row_json:string}>()
+  const rows=await jsonRows<{row_json:string}>(env.DB,"SELECT row_json FROM legacy_import_context WHERE run_id=? AND kind='record' AND source_table=?",[run.id,small],['row_json'],250,(limits.closureBytes-bytes)/4)
   if(rows.results.length>250)refuse('row_too_large');for(const row of rows.results)add(small,JSON.parse(row.row_json))
  }
  const keys=new Set<string>();const collect=(value:unknown)=>{if(typeof value==='string')rewriteText(value,key=>{keys.add(key);return undefined},{rewritten:0,left:0});else if(Array.isArray(value))value.forEach(collect);else if(value&&typeof value==='object')Object.values(value).forEach(collect)};sourceRows.forEach(collect)
- if(keys.size){const media=await env.DB.prepare(`SELECT media_id,row_json FROM legacy_import_context_media WHERE run_id=? AND legacy_key IN (SELECT value FROM json_each(?)) AND link_id='' LIMIT 251`).bind(run.id,JSON.stringify([...keys])).all<{media_id:string;row_json:string}>();if(media.results.length>250)refuse('row_too_large');for(const row of media.results){add('media',JSON.parse(row.row_json));want('media',row.media_id)}}
+ if(keys.size){const media=await jsonRows<{media_id:string;row_json:string}>(env.DB,`SELECT media_id,row_json FROM legacy_import_context_media WHERE run_id=? AND legacy_key IN (SELECT value FROM json_each(?)) AND link_id=''`,[run.id,JSON.stringify([...keys])],['media_id','row_json'],250,(limits.closureBytes-bytes)/4);if(media.results.length>250)refuse('row_too_large');for(const row of media.results){add('media',JSON.parse(row.row_json));want('media',row.media_id)}}
  const links=new Map<string,Row[]>(),pivots=new Map<string,Row>()
  for(let depth=0;depth<12;depth++){
   let more=false
   for(const [related,ids] of requested){const pending=[...ids].filter(id=>!loaded.has(related+'\0'+id));if(!pending.length)continue;more=true;for(const id of pending)loaded.add(related+'\0'+id)
-   const rows=await env.DB.prepare("SELECT row_json FROM legacy_import_context WHERE run_id=? AND kind='record' AND source_table=? AND source_id IN (SELECT value FROM json_each(?))").bind(run.id,related,JSON.stringify(pending)).all<{row_json:string}>()
+   const rows=await jsonRows<{row_json:string}>(env.DB,"SELECT row_json FROM legacy_import_context WHERE run_id=? AND kind='record' AND source_table=? AND source_id IN (SELECT value FROM json_each(?))",[run.id,related,JSON.stringify(pending)],['row_json'],500,(limits.closureBytes-bytes)/4)
    for(const item of rows.results){const row=JSON.parse(item.row_json);add(related,row);inspect(related,row)}
    if(related==='media'){
-    const found=await env.DB.prepare("SELECT media_id,row_json FROM legacy_import_context_media WHERE run_id=? AND media_id IN (SELECT value FROM json_each(?)) AND link_id<>'' ORDER BY media_id,link_id LIMIT 251").bind(run.id,JSON.stringify(pending)).all<{media_id:string;row_json:string}>();if(found.results.length>250)refuse('row_too_large')
-    for(const item of found.results){const row=JSON.parse(item.row_json),list=links.get(item.media_id)??[];links.set(item.media_id,list);list.push(row);if(isMessageMedia(row))pivots.set(item.media_id,row);inspect('mediables',row)}
+    const found=await jsonRows<{media_id:string;row_json:string}>(env.DB,"SELECT media_id,row_json FROM legacy_import_context_media WHERE run_id=? AND media_id IN (SELECT value FROM json_each(?)) AND link_id NOT IN ('','prior-record') ORDER BY media_id,link_id",[run.id,JSON.stringify(pending)],['media_id','row_json'],250,(limits.closureBytes-bytes)/4);if(found.results.length>250)refuse('row_too_large')
+    for(const item of found.results){bytes+=4*jsonBytes(item.row_json);if(bytes>limits.closureBytes)refuse('row_too_large');const row=JSON.parse(item.row_json),list=links.get(item.media_id)??[];links.set(item.media_id,list);list.push(row);if(isMessageMedia(row))pivots.set(item.media_id,row);inspect('mediables',row)}
    }
   }
   if(!more)break;if(depth===11)refuse('row_too_large')
@@ -60,7 +61,7 @@ export async function hydrate(env:Env,run:Run,manifest:LegacyPackageManifest,tab
  useRelationships(context,index)
  const media=packageMediaIndex(run.source_project_id,records.get('media')?.values()??[],new Set(manifest.objects.map(object=>object.key)),context)
  // Previously imported file doors remain available without loading old archives.
- if(keys.size){const prior=await env.DB.prepare("SELECT row_json FROM legacy_import_context WHERE run_id=? AND kind='media_lookup' AND source_table='media' AND parent_id IN (SELECT value FROM json_each(?)) LIMIT 251").bind(run.id,JSON.stringify([...keys])).all<{row_json:string}>();if(prior.results.length>250)refuse('row_too_large');for(const row of prior.results){const file=JSON.parse(row.row_json);if(!media.files.has(file.legacyKey))media.files.set(file.legacyKey,file.file)}}
+ if(keys.size){const prior=await jsonRows<{row_json:string}>(env.DB,"SELECT row_json FROM legacy_import_context WHERE run_id=? AND kind='media_lookup' AND source_table='media' AND parent_id IN (SELECT value FROM json_each(?))",[run.id,JSON.stringify([...keys])],['row_json'],250,(limits.closureBytes-bytes)/4);if(prior.results.length>250)refuse('row_too_large');for(const row of prior.results){const file=JSON.parse(row.row_json);if(!media.files.has(file.legacyKey))media.files.set(file.legacyKey,file.file)}}
  if(table==='messages'&&sourceRows.some(row=>!index.find('conversations',row.conversation_id)))refuse('invalid_scope',422)
  return {context,media,bytes}
 }

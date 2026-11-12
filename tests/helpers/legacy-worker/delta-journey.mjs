@@ -1,17 +1,18 @@
 import assert from 'node:assert/strict'
 import {join} from 'node:path'
 import {writeLegacyPackage} from '../legacy-package.mjs'
+import {recordMeasurement} from './profiler.mjs'
 import {putPackage} from './journey.mjs'
 /** Same matched workspace, via the real HTTP start/result and consumeQueue. */
-export async function deltaJourney(runtime,scratch,bundle,token){
+export async function deltaJourney(runtime,scratch,bundle,token,measurements,measure){
  const project=bundle.source.projectId,first=bundle.tables.messages[0],conversation=bundle.tables.conversations.find(row=>row.id===first.conversation_id),edited={...first,content:first.content+' Legacy added a later sentence.'},fresh={...first,id:'synthetic-delta-message',local_id:first.local_id,content:'Synthetic delta addition',created_at:100000}
- const start=async(name,messages,whole)=>{
-  const root=join(scratch,name),exported=await writeLegacyPackage(root,whole,{rowsPerChunk:2,delta:{since:'2026-01-02T00:00:00Z',tables:{conversations:[conversation],messages}}}),sha=exported.manifestSha256,base=`/api/move-in/projects/${project}/legacy-import/${sha}`
+ const start=async(name,messages,whole,article)=>{
+  const root=join(scratch,name),exported=await writeLegacyPackage(root,whole,{rowsPerChunk:2,delta:{since:'2026-01-02T00:00:00Z',tables:article?{articles:[article]}:{conversations:[conversation],messages}}}),sha=exported.manifestSha256,base=`/api/move-in/projects/${project}/legacy-import/${sha}`
   await putPackage(runtime,root,exported.manifest,sha,project);await runtime.call(base+'/start',{token,body:{approvedManifestSha256:sha},status:202});let queue=await runtime.take()
   for(let n=0;n<2000;n++){
-   const run=await runtime.db.prepare('SELECT state,error_code,phase FROM legacy_import_worker_runs WHERE id=?').bind(`legacy-package:${sha}`).first()
+   const run=await runtime.db.prepare('SELECT state,error_code,phase,metrics_json FROM legacy_import_worker_runs WHERE id=?').bind(`legacy-package:${sha}`).first()
    assert.notEqual(run.state,'paused',JSON.stringify(run));if(run.state==='complete'){const result=(await runtime.call(base+'/result',{token,status:200})).data.data;assert.equal(result.journalEqualsPackage,true);assert.equal(result.work.unchanged,true);return {result,id:`legacy-package:${sha}`}}
-   const jobs=queue.splice(0,1);assert.equal(jobs.length,1);const step=await runtime.step(jobs);queue.push(...step.queue)
+   const jobs=queue.splice(0,1);assert.equal(jobs.length,1);const profiled=measure&&run.phase==='knowledge'?await runtime.profile(()=>runtime.step(jobs)):{value:await runtime.step(jobs)},step=profiled.value;queue.push(...step.queue);if(profiled.measurement){const after=await runtime.db.prepare('SELECT metrics_json FROM legacy_import_worker_runs WHERE id=?').bind(`legacy-package:${sha}`).first();recordMeasurement(measurements,'knowledge',JSON.parse(run.metrics_json),JSON.parse(after.metrics_json),profiled.measurement,step.metrics.statements)}
   }
   throw new Error('Delta did not settle')
  }
@@ -30,5 +31,8 @@ export async function deltaJourney(runtime,scratch,bundle,token){
  const held=await start('delta-two',[later],{...context,tables:{...context.tables,messages:[...context.tables.messages,later]}})
  const conflicts=await runtime.db.prepare('SELECT count(*) n FROM legacy_import_conflicts WHERE run_id IN (SELECT journal_run_id FROM legacy_import_worker_parts WHERE run_id=?)').bind(held.id).first()
  assert.ok(conflicts.n>0);assert.equal(await runtime.db.prepare('SELECT 1 FROM messages WHERE id=?').bind(later.id).first(),null,'a native-edited conversation withholds new legacy messages')
+ const article={...bundle.tables.articles[0],title:'Synthetic revised guide',updated_at:2}
+ const knowledge=await start('delta-knowledge',[],{...bundle,tables:{articles:[article]}},article)
+ assert.equal(knowledge.result.verification,'verified')
  return {stateMatches:state.matches,deltaConflicts:conflictCount.n,nativeChangeConflicts:conflicts.n,deltaApplied:delta.result.attempt.appliedRows}
 }

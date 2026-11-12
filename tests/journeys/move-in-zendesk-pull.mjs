@@ -132,7 +132,11 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.doesNotMatch(everything,new RegExp(PATH_TOKEN));assert.doesNotMatch(everything,new RegExp(QUERY_TOKEN))
 
   // Search finds an imported ticket by its exact Zendesk id, with and without #.
-  for(const term of ['104','#104','105','#105']){const found=await h.call(`/api/dashboard/projects/p/conversations?view=all&search=${encodeURIComponent(term)}`);assert.deepEqual(found.data.map(c=>c.id),[imported.find(row=>row.source_id===term.replace('#','')).id],term)}
+  for(const term of ['104','#104']){const found=await h.call(`/api/dashboard/projects/p/conversations?view=all&search=${encodeURIComponent(term)}`);assert.deepEqual(found.data.map(c=>c.id),[large],term)}
+  // The highest live source ID also occurs in 104's public comment text. Normal
+  // full-text search returns that match as well as the unique source-mapped ticket.
+  const highest=imported.find(row=>row.source_id==='105').id
+  for(const term of ['105','#105']){const found=await h.call(`/api/dashboard/projects/p/conversations?view=all&search=${encodeURIComponent(term)}`);assert.deepEqual(found.data.map(c=>c.id).sort(),[large,highest].sort(),term)}
 
   const nativeBefore=await nativeSnapshot(h)
   assert.ok(nativeBefore.complete)

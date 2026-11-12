@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
+import {randomBytes} from 'node:crypto'
 import {totp} from '../two-factor.mjs'
+import {passkeyRecovery} from './passkey.mjs'
 import {startApp} from '../../../journeys/kit/app.mjs'
 import {fresh,bind,challenge,authorize,enrol,root,custody,envelope,key,bindings,capabilityHeaders,factor,session,password,random,assertNoSession} from './kit.mjs'
 export async function managedRecoveryJourney(){
@@ -53,6 +55,7 @@ export async function managedRecoveryJourney(){
   assert.equal(app.requests.filter(request=>request.method==='POST').length,0,'OFF recovery never contacts mail')
  }finally{await app.close()}
  await passwordlessRecovery()
+ await passkeyRecovery()
 }
 async function passwordlessRecovery(){
  const app=await startApp({bindings:{...bindings,OWNER_EMAIL:'passwordless@example.test'}})
@@ -79,13 +82,14 @@ export async function custodyRecoveryJourney(){
   assert.equal((await app.call(root+'/custody',{body:revoke})).status,409)
   assert.equal((await app.call(root+'/complete',{body:{},headers:capabilityHeaders(pending.capability)})).status,409)
   assert.equal((await authorize(app,pending)).status,403)
-  await app.configure({H2H_OWNER_RECOVERY_GENERATION:'2',H2H_OWNER_RECOVERY_KEY:key})
-  assert.equal((await app.call(root+'/custody',{body:custody('bind',2)})).status,200)
+  const rotated=randomBytes(32).toString('hex'),nextCustody=op=>envelope(JSON.parse(Buffer.from(custody(op,2).payload,'base64url')),rotated)
+  await app.configure({H2H_OWNER_RECOVERY_GENERATION:'2',H2H_OWNER_RECOVERY_KEY:rotated})
+  assert.equal((await app.call(root+'/custody',{body:nextCustody('bind')})).status,200)
   await app.configure({H2H_OWNER_RECOVERY_GENERATION:'1'})
   assert.equal((await app.call(root+'/custody',{body:custody()})).status,409)
   await app.sql("UPDATE owner_setup SET claim_id='existing-installation' WHERE singleton=1")
   await app.configure({H2H_OWNER_RECOVERY_GENERATION:'2'})
-  const sentinel=await app.ok(root+'/custody',{body:custody('status',2)});assert.equal(JSON.parse(Buffer.from(sentinel.payload,'base64url')).anchor,'sentinel')
+  const sentinel=await app.ok(root+'/custody',{body:nextCustody('status')});assert.equal(JSON.parse(Buffer.from(sentinel.payload,'base64url')).anchor,'sentinel')
   assert.equal((await app.call(root,{body:{email:'owner@example.test',password,recoveryKey:key}})).data.code,'installation_owner_binding_required')
   await app.sql('UPDATE owner_setup SET claim_id=? WHERE singleton=1',owner.userId)
   await app.sql('UPDATE h2h_business_project SET owner_user_id=? WHERE singleton=1',(await app.seedWorkspace('conflict')).users.owner)

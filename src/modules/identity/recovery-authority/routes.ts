@@ -24,7 +24,7 @@ recoveryAuthority.get('/status',async c=>{
 recoveryAuthority.post('/cancel',async c=>{
  browserOrigin(c);const row=await load(c)
  if(!['pending','authorized'].includes(row.state))refuse(409)
- const cancelled=await c.env.DB.prepare("UPDATE identity_recovery_requests SET state='cancelled',pending_secret=NULL,passkey_challenge=NULL WHERE id=? AND state IN ('pending','authorized') RETURNING id").bind(row.id).first()
+ const cancelled=await c.env.DB.prepare("UPDATE identity_recovery_requests SET state='cancelled',pending_secret=NULL,pending_passkey=NULL,passkey_challenge=NULL WHERE id=? AND state IN ('pending','authorized') RETURNING id").bind(row.id).first()
  if(!cancelled)refuse(409)
  await audit(c.env,'cancelled','accepted',row)
  return c.json({cancelled:true})

@@ -95,7 +95,8 @@ principal and replacement-factor requirement, retaining spent-key history.
 Shared-account recovery accepts a fresh native primary proof, then current
 factor-backed owner consent from every target membership workspace. Native
 membership and credential epochs invalidate stale requests and approvals.
-Completion checks every predicate in the same D1 batch as its unique consume,
+Passkey registration stages only public material; a fresh UV assertion from that
+new private key is required before admission. Completion checks every predicate in the same D1 batch as its unique consume,
 credential replacement, session/link revocation and audit. The recovery
 capability has no native session authority. All new live capability tables are
 excluded from portability; custody acknowledgement is cleared on restore while

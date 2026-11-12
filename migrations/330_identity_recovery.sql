@@ -9,7 +9,7 @@ CREATE TABLE identity_recovery_requests(
  user_id TEXT NOT NULL,project_id TEXT NOT NULL,installation_id TEXT NOT NULL,app_origin TEXT NOT NULL,platform_origin TEXT NOT NULL,epoch INTEGER NOT NULL,generation INTEGER NOT NULL,key_hash TEXT,
  state TEXT NOT NULL CHECK(state IN ('pending','authorized','cancelled','expired','completed','refused')),
  created_at INTEGER NOT NULL,expires_at INTEGER NOT NULL,challenge_exp INTEGER,authorized_at INTEGER,
- proof_id TEXT UNIQUE,completion_id TEXT UNIQUE,pending_id TEXT,pending_secret TEXT,passkey_challenge TEXT,passkey_expires INTEGER
+ proof_id TEXT UNIQUE,completion_id TEXT UNIQUE,pending_id TEXT,pending_secret TEXT,pending_passkey TEXT,passkey_challenge TEXT,passkey_expires INTEGER
 );
 CREATE INDEX identity_recovery_requests_expiry ON identity_recovery_requests(expires_at);
 CREATE INDEX identity_recovery_requests_user ON identity_recovery_requests(user_id,state,expires_at);

@@ -22,22 +22,26 @@ export function configuration(env:Env){
 async function signingKey(env:Env){const value=keyValue(env);if(!/^[a-f0-9]{64}$/.test(value))refuse(503);return crypto.subtle.importKey('raw',Uint8Array.from(value.match(/../g)!,byte=>parseInt(byte,16)),{name:'HMAC',hash:'SHA-256'},false,['sign','verify'])}
 const message=(bytes:Uint8Array)=>{const prefix=new TextEncoder().encode('h2h-owner-recovery-v1\n'),out=new Uint8Array(prefix.length+bytes.length);out.set(prefix);out.set(bytes,prefix.length);return out}
 export async function sign(env:Env,payload:Payload):Promise<Envelope>{const bytes=new TextEncoder().encode(canonical(payload));return {alg:'HS256',payload:b64url(bytes),signature:b64url(new Uint8Array(await crypto.subtle.sign('HMAC',await signingKey(env),message(bytes))))}}
-export async function verify(env:Env,input:unknown,type:MessageType):Promise<Payload>{
+export async function verify(env:Env,input:unknown,type:MessageType,minimumGeneration=0):Promise<Payload>{
  if(!input||typeof input!=='object'||Array.isArray(input))refuse()
  const envelope=input as Envelope
  if(Object.keys(envelope).sort().join(',')!=='alg,payload,signature'||envelope.alg!=='HS256'||typeof envelope.payload!=='string'||!isRandom(envelope.signature))refuse()
  let bytes:Uint8Array,payload:Payload
  try{bytes=fromB64url(envelope.payload);if(b64url(bytes)!==envelope.payload)refuse();payload=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));if(!payload||Object.keys(payload).sort().join(',')!==scopes[type].sort().join(',')||canonical(payload)!==new TextDecoder().decode(bytes))refuse()}catch{refuse()}
- if(!await crypto.subtle.verify('HMAC',await signingKey(env),fromB64url(envelope.signature),message(bytes)))refuse()
  const now=Math.floor(Date.now()/1000),config=configuration(env)
  for(const [name,value] of Object.entries(payload)){
   if(['v','generation','iat','exp','watermark'].includes(name)){if(typeof value!=='number'||!Number.isSafeInteger(value)||value<0)refuse()}
   else if(typeof value!=='string'||!value.length||!/^[\x21-\x7e]+$/.test(value)||value.length>(['iss','aud','app_origin'].includes(name)?2048:128))refuse()
  }
- if(payload.v!==1||payload.type!==type||payload.installation_id!==config.installation||payload.app_id!=='happytohelp'||payload.environment!=='production'||payload.generation!==config.generation||Number(payload.iat)>now+30||Number(payload.exp)<=now||Number(payload.exp)<=Number(payload.iat)||Number(payload.exp)-Number(payload.iat)>(type.startsWith('custody')?120:300))refuse()
+ if(payload.v!==1||payload.type!==type||payload.installation_id!==config.installation||payload.app_id!=='happytohelp'||payload.environment!=='production'||Number(payload.iat)>now+30||Number(payload.exp)<=now||Number(payload.exp)<=Number(payload.iat)||Number(payload.exp)-Number(payload.iat)>(type.startsWith('custody')?120:300))refuse()
  for(const field of ['nonce',...(!type.startsWith('custody')?['challenge_id']:[]),...(type==='platform-authorization'?['platform_proof_id']:[])])if(!isRandom(payload[field]))refuse()
  const endpoint=type==='custody-request'?'custody':'authorize'
  if(payload.iss!==config.platform||payload.aud!==`${config.app}/api/identity/owner-recovery/${endpoint}`||(!type.startsWith('custody')&&payload.app_origin!==config.app))refuse()
  if(type==='custody-request'&&!['bind','status','revoke'].includes(String(payload.op)))refuse()
+ // A revoked generation receives the specified unsigned refusal; it can never
+ // mutate custody. Every accepted operation still verifies the CURRENT key.
+ if(type==='custody-request'&&Number(payload.generation)<minimumGeneration)refuse(409,'recovery_generation_revoked')
+ if(payload.generation!==config.generation)refuse()
+ if(!await crypto.subtle.verify('HMAC',await signingKey(env),fromB64url(envelope.signature),message(bytes)))refuse()
  return payload
 }

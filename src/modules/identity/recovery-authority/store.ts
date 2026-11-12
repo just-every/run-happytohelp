@@ -1,3 +1,4 @@
+import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../../platform/env'
 import {hashToken} from '../../../platform/auth'
 import {clientAddress} from '../../../platform/rate-limits'
@@ -5,7 +6,7 @@ import {accountAudit} from '../two-factor/factors'
 import {digest,generation,guarded,isRandom,keyHash,random,refuse,type Predicate,type RecoveryContext} from './common'
 import {firstOwnerPredicate} from './first-owner'
 import {configuration} from './envelope'
-export interface RequestRow {id:string;capability_hash:string;mode:'managed'|'manual'|'account';user_id:string;project_id:string;installation_id:string;app_origin:string;platform_origin:string;epoch:number;generation:number;key_hash:string|null;state:string;created_at:number;expires_at:number;challenge_exp:number|null;authorized_at:number|null;proof_id:string|null;completion_id:string|null;pending_id:string|null;pending_secret:string|null;passkey_challenge:string|null;passkey_expires:number|null}
+export interface RequestRow {id:string;capability_hash:string;mode:'managed'|'manual'|'account';user_id:string;project_id:string;installation_id:string;app_origin:string;platform_origin:string;epoch:number;generation:number;key_hash:string|null;state:string;created_at:number;expires_at:number;challenge_exp:number|null;authorized_at:number|null;proof_id:string|null;completion_id:string|null;pending_id:string|null;pending_secret:string|null;pending_passkey:string|null;passkey_challenge:string|null;passkey_expires:number|null}
 export async function audit(env:Env,action:string,reason='accepted',request?:(Pick<RequestRow,'id'|'user_id'>&Partial<Pick<RequestRow,'mode'>>)){
  const now=Date.now()
  await env.DB.batch([env.DB.prepare('INSERT INTO identity_recovery_events VALUES(?,?,?,?,?,?)').bind(random(),request?.id??null,request?.user_id??null,action,reason,now),...(request?await accountAudit(env.DB,request.user_id,{category:'auth',action:`recovery.${action}`,outcome:reason==='accepted'?'succeeded':'refused',actor:{type:'installation'},source:'api',target:{type:'recovery',id:request.id},detail:{reason,...(request.mode?{proof:request.mode}:{})}}):[])])
@@ -14,7 +15,7 @@ export async function cleanup(env:Env){
  const now=Date.now(),db=env.DB
  const expired=(await db.prepare("SELECT id,user_id FROM identity_recovery_requests WHERE (expires_at<=? OR (state='pending' AND challenge_exp<=unixepoch())) AND state IN ('pending','authorized') ORDER BY expires_at LIMIT 20").bind(now).all<Pick<RequestRow,'id'|'user_id'>>()).results
  for(const row of expired){
-  const claimed=await db.prepare("UPDATE identity_recovery_requests SET state='expired',pending_secret=NULL,passkey_challenge=NULL WHERE id=? AND (expires_at<=? OR (state='pending' AND challenge_exp<=unixepoch())) AND state IN ('pending','authorized') RETURNING id").bind(row.id,now).first()
+  const claimed=await db.prepare("UPDATE identity_recovery_requests SET state='expired',pending_secret=NULL,pending_passkey=NULL,passkey_challenge=NULL WHERE id=? AND (expires_at<=? OR (state='pending' AND challenge_exp<=unixepoch())) AND state IN ('pending','authorized') RETURNING id").bind(row.id,now).first()
   if(claimed)await audit(env,'expired','expired',row)
  }
  await db.batch([
@@ -59,4 +60,15 @@ export async function create(c:RecoveryContext,input:{userId:string;projectId:st
  const row=await db.prepare('SELECT * FROM identity_recovery_requests WHERE id=?').bind(id).first<RequestRow>()
  await audit(c.env,'requested','accepted',row!)
  return {row:row!,capability}
+}
+
+/** Public refusals retain fixed installation-scoped reason/count records even
+ * when no trustworthy account/request identity can be attached. */
+export function recoveryDoor(handler:(c:RecoveryContext)=>Promise<Response>){
+ return async(c:RecoveryContext)=>{
+  try{return await handler(c)}catch(error){
+   if(error instanceof HTTPException)await audit(c.env,'public_refused',error.status===503?'unavailable':error.status===429?'rate_limited':error.status===409?'state_refused':'proof_refused')
+   throw error
+  }
+ }
 }

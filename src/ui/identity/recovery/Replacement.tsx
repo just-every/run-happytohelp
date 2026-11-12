@@ -1,7 +1,7 @@
 import {useState,type FormEvent} from 'react'
 import {Field,SubmitButton} from '../fields'
 import QrCode from '../two-factor/QrCode'
-import {createPasskey,passkeysAvailable,passkeyDomain} from '../two-factor/webauthn-client'
+import {assertPasskey,createPasskey,passkeysAvailable,passkeyDomain} from '../two-factor/webauthn-client'
 import {recoveryApi,type RecoveryStatus} from './api'
 export function Replacement({capability,status,busy,run,finish}:{capability:string;status:RecoveryStatus;busy:boolean;run:(work:()=>Promise<void>)=>void;finish:(result:any)=>void}){
  const [totp,setTotp]=useState<any>(null),[password,setPassword]=useState('')
@@ -13,7 +13,7 @@ export function Replacement({capability,status,busy,run,finish}:{capability:stri
   <Field id="replacementPassword" label={status.needsPassword?'Create a password':'New password (optional)'} type="password" autoComplete="new-password" required={status.needsPassword} value={password} onChange={event=>setPassword(event.target.value)} minLength={12} maxLength={1024} hint={status.needsPassword?'A password lets you sign in when email is off.':'Leave blank to keep your current password.'}/>
   {!totp?<div className="recovery-actions">
    <button className="pill pill--ink" disabled={busy} onClick={()=>run(async()=>setTotp(await recoveryApi('/enrol/totp',{},capability)))}>Set up an authenticator app</button>
-   {passkeysAvailable()&&passkeyDomain()&&<button className="recovery-link" disabled={busy||(status.needsPassword&&password.length<12)} onClick={()=>run(async()=>{const options=await recoveryApi('/enrol/passkey-options',{},capability);const credential=await createPasskey(options);await complete({credential})})}>Use a new passkey</button>}
+   {passkeysAvailable()&&passkeyDomain()&&<button className="recovery-link" disabled={busy||(status.needsPassword&&password.length<12)} onClick={()=>run(async()=>{const options=await recoveryApi('/enrol/passkey-options',{},capability);const registration=await createPasskey(options);const assertionOptions=await recoveryApi('/enrol/passkey-options',{credential:registration},capability);const credential=await assertPasskey(assertionOptions);await complete({credential})})}>Use a new passkey</button>}
   </div>:<form onSubmit={submit}>
    <div className="recovery-qr"><QrCode value={totp.uri} label="Scan with your authenticator app"/></div>
    <p>Scan the code or enter this key in your authenticator app.</p>

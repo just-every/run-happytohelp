@@ -5,9 +5,9 @@ import {verifyPassword} from '../credentials'
 import {emailMode} from '../../integrations/email-provider'
 import {browserOrigin,json,keyHash,keyValue,refuse} from './common'
 import {firstOwner,firstOwnerPredicate} from './first-owner'
-import {accountSql,audit,create,ipLimit,limit} from './store'
+import {accountSql,audit,create,ipLimit,limit,recoveryDoor} from './store'
 export const primaryRecovery=new Hono<AppEnv>()
-primaryRecovery.post('/',async c=>{
+primaryRecovery.post('/',recoveryDoor(async c=>{
  browserOrigin(c);await ipLimit(c)
  const body=await json(c),email=typeof body?.email==='string'?body.email.trim().toLowerCase().slice(0,320):''
  await limit(c,`account:${email}`,5)
@@ -18,8 +18,8 @@ primaryRecovery.post('/',async c=>{
  const predicate=firstOwnerPredicate(c.env,owner.user_id,owner.project_id)
  const {row,capability}=await create(c,{mode:'manual',userId:owner.user_id,projectId:owner.project_id,predicate:{sql:`(${predicate.sql}) AND EXISTS(SELECT 1 FROM credentials WHERE user_id=? AND password_hash=?) AND NOT EXISTS(SELECT 1 FROM owner_recoveries WHERE key_hash=?)`,args:[...predicate.args,owner.user_id,credential.password_hash,expected]}})
  return c.json({requestId:row.id,capability,expiresAt:row.expires_at,state:'authorized'},201)
-})
-primaryRecovery.post('/account/request',async c=>{
+}))
+primaryRecovery.post('/account/request',recoveryDoor(async c=>{
  browserOrigin(c);await ipLimit(c)
  const body=await json(c),email=typeof body?.email==='string'?body.email.trim().toLowerCase().slice(0,320):''
  await limit(c,`account:${email}`,5)
@@ -32,4 +32,4 @@ primaryRecovery.post('/account/request',async c=>{
  const proofSql=token?`EXISTS(SELECT 1 FROM magic_signins t JOIN users u ON u.id=t.user_id AND u.email=t.email WHERE t.token_hash=? AND t.user_id=? AND t.email=? AND t.consumed_at IS NULL AND t.expires_at>unixepoch('subsec')*1000)`:`EXISTS(SELECT 1 FROM credentials WHERE user_id=? AND password_hash=?)`
  const {row,capability}=await create(c,{mode:'account',userId:user.id,projectId:user.project_id,predicate:{sql:`EXISTS(SELECT 1 FROM (SELECT ? user_id) r WHERE ${accountSql}) AND ${proofSql}`,args:[user.id,...(token?[link,user.id,user.email]:[user.id,user.password_hash])]},extra:token?[db.prepare('UPDATE magic_signins SET consumed_at=? WHERE token_hash=? AND consumed_at IS NULL').bind(Date.now(),link)]:[]})
  return c.json({requestId:row.id,capability,expiresAt:row.expires_at,state:'authorized'},201)
-})
+}))

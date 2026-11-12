@@ -34,7 +34,9 @@ export async function json(c:RecoveryContext){
     i=end
    }
   }
-  return JSON.parse(text)
+  const value=JSON.parse(text)
+  if(!value||typeof value!=='object'||Array.isArray(value))refuse(400)
+  return value
  }catch{refuse(400)}
 }
 export function keyValue(env:Env){const key=typeof env.H2H_OWNER_RECOVERY_KEY==='string'?env.H2H_OWNER_RECOVERY_KEY.trim():'';if(key.length<32)refuse(503);return key}

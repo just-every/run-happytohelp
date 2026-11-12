@@ -161,7 +161,8 @@ also works with outbound email off.
 For a separately controlled installation, the original owner may instead use
 their native password and a private one-time `H2H_OWNER_RECOVERY_KEY` of at least
 32 characters. Each key value works once. Both paths require proving a new
-factor **before** any new session is created. Until completion, old credentials
+factor **before** any new session is created. A new passkey is created and then
+used once to prove possession of its private key. Until completion, old credentials
 remain intact. Completion replaces factors and recovery codes, retires old
 sessions and outstanding sign-in/reset links, and keeps every membership and
 role. Save the new codes when they appear; they are shown once.

@@ -22,8 +22,8 @@ test('a populated packaged install restores from its documented credential-free 
   const source=join(build,'delivery-artifact/happytohelp-worker-artifact.json'),artifact=await readArtifact(source),bytes=await readFile(source)
   await writeFile(join(build,'delivery-artifact/artifact.json'),bytes)
   await writeFile(join(build,'build.json'),JSON.stringify({sourceSha:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),artifactSha256:sha256(bytes),migrations:artifact.deploymentSpec.migrations.map(({name,sha256})=>({name,sha256}))}))
-  await recoveryComparison(build,join(output,'proof'))
   await recoveryRestoreJourney()
+  await recoveryComparison(build,join(output,'proof'))
  }finally{await rm(scratch,{recursive:true,force:true})}
 })
 

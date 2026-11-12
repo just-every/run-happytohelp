@@ -42,6 +42,7 @@ export default {
    const row:Row={id:message,project_id:projectId,conversation_id:conversation,contact_id:contact,content:text,created_at:1,local_id:'synthetic-original-local'}
    const bundle:LegacyBundle={format:'happytohelp-legacy-v1',source:{repository:'synthetic',revision:'synthetic',exportedAt:'2026-01-01T00:00:00.000Z',projectId},tables:{messages:[row]}}
    const context:LegacyBundle={...bundle,tables:{...bundle.tables,contacts:[{id:contact,project_id:projectId}],conversations:[{id:conversation,project_id:projectId,contact_id:contact}]}}
+   await db.prepare("UPDATE knowledge_articles SET title='Source revised',updated_at=2 WHERE id=?").bind(article).run()
    const beforePlan=await db.prepare('SELECT count(*) n FROM knowledge_reply_blocks').first<{n:number}>(),dirtyBefore=await db.prepare('SELECT count(*) n FROM knowledge_index_dirty').first<{n:number}>()
    const readOnly=await planCanonicaliseFields(env,foreignProjectId,{content:text})
    const planReadOnly=(await db.prepare('SELECT count(*) n FROM knowledge_reply_blocks').first<{n:number}>())?.n===beforePlan?.n&&(await db.prepare('SELECT count(*) n FROM knowledge_index_dirty').first<{n:number}>())?.n===dirtyBefore?.n

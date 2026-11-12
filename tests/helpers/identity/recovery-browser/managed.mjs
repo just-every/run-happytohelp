@@ -37,5 +37,10 @@ export async function managedBrowserStates({browser,runtime,shot}){
   const cdp=await context.newCDPSession(page);await cdp.send('WebAuthn.enable');await cdp.send('WebAuthn.addVirtualAuthenticator',{options:{protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,isUserVerified:true,automaticPresenceSimulation:true}})
   await page.getByRole('button',{name:'Use a new passkey'}).click();await page.getByRole('heading',{name:'Save your new recovery codes'}).waitFor();await proof('managed-completed')
   await popup.close()
+  await app.configure({H2H_OWNER_RECOVERY_KEY:undefined})
+  await page.evaluate(()=>sessionStorage.removeItem('h2h-owner-recovery'));await page.reload()
+  await page.getByText('Separately controlled installation',{exact:true}).click();await page.getByRole('button',{name:'Use an installation key',exact:true}).click()
+  await page.getByLabel('Account email',{exact:true}).fill('managed-owner@lantern.test');await page.getByLabel('Password',{exact:true}).fill('managed-replacement-owner-password');await page.getByLabel('Installation recovery key',{exact:true}).fill('synthetic-unavailable-installation-key')
+  await page.getByRole('button',{name:'Continue recovery',exact:true}).click();await page.getByRole('alert').waitFor();await proof('missing-key')
  }finally{await context.close();await app.close()}
 }

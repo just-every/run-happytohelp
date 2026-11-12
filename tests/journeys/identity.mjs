@@ -20,8 +20,9 @@ test('while a knowledge upgrade is pending, setup, sign-in options and the email
 import {assuranceJourney} from '../helpers/assurance/journeys.mjs'
 test('an owner records regulated qualification, retains ordinary support access and erasure, and cannot activate health-data processing without independent review',assuranceJourney)
 
+import {recoveryRaceAndLimits} from '../helpers/identity/recovery-authority/races.mjs'
 import {managedRecoveryJourney,custodyRecoveryJourney} from '../helpers/identity/recovery-authority/managed.mjs'
 import {sharedRecoveryJourney} from '../helpers/identity/recovery-authority/shared.mjs'
 test('the setup owner recovers through a scoped Managed handoff only after proving a replacement factor, with old authority revoked',managedRecoveryJourney)
-test('recovery custody binds and revokes monotonic generations while sentinel and conflicting owner anchors refuse',custodyRecoveryJourney)
+test('recovery custody binds and revokes monotonic generations while sentinel and conflicting owner anchors refuse',async()=>{await custodyRecoveryJourney();await recoveryRaceAndLimits()})
 test('a shared account needs every affected workspace owner’s current factor-backed consent and keeps its memberships',sharedRecoveryJourney)

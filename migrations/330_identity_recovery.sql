@@ -6,7 +6,7 @@ CREATE INDEX identity_recovery_nonces_expiry ON identity_recovery_nonces(expires
 CREATE TABLE identity_recovery_epochs(user_id TEXT PRIMARY KEY,epoch INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE identity_recovery_requests(
  id TEXT PRIMARY KEY,capability_hash TEXT NOT NULL UNIQUE,mode TEXT NOT NULL CHECK(mode IN ('managed','manual','account')),
- user_id TEXT NOT NULL,project_id TEXT NOT NULL,epoch INTEGER NOT NULL,generation INTEGER NOT NULL,key_hash TEXT,
+ user_id TEXT NOT NULL,project_id TEXT NOT NULL,installation_id TEXT NOT NULL,app_origin TEXT NOT NULL,platform_origin TEXT NOT NULL,epoch INTEGER NOT NULL,generation INTEGER NOT NULL,key_hash TEXT,
  state TEXT NOT NULL CHECK(state IN ('pending','authorized','cancelled','expired','completed','refused')),
  created_at INTEGER NOT NULL,expires_at INTEGER NOT NULL,challenge_exp INTEGER,authorized_at INTEGER,
  proof_id TEXT UNIQUE,completion_id TEXT UNIQUE,pending_id TEXT,pending_secret TEXT,passkey_challenge TEXT,passkey_expires INTEGER
@@ -30,3 +30,5 @@ CREATE TRIGGER identity_recovery_user_factors_0 AFTER INSERT ON user_factors BEG
 CREATE TRIGGER identity_recovery_user_factors_1 AFTER DELETE ON user_factors BEGIN INSERT INTO identity_recovery_epochs(user_id,epoch) VALUES(OLD.user_id,1) ON CONFLICT(user_id) DO UPDATE SET epoch=epoch+1; END;
 CREATE TRIGGER identity_recovery_user_factors_2 AFTER UPDATE OF kind,secret_ciphertext,credential_id,public_key,confirmed_at ON user_factors BEGIN INSERT INTO identity_recovery_epochs(user_id,epoch) VALUES(NEW.user_id,1) ON CONFLICT(user_id) DO UPDATE SET epoch=epoch+1; END;
 CREATE TRIGGER identity_recovery_users_0 AFTER UPDATE OF email ON users BEGIN INSERT INTO identity_recovery_epochs(user_id,epoch) VALUES(NEW.id,1) ON CONFLICT(user_id) DO UPDATE SET epoch=epoch+1; END;
+-- An in-place move between principals invalidates both sides, just like delete/insert.
+CREATE TRIGGER identity_recovery_membership_old AFTER UPDATE OF user_id ON memberships WHEN OLD.user_id<>NEW.user_id BEGIN INSERT INTO identity_recovery_epochs(user_id,epoch) VALUES(OLD.user_id,1) ON CONFLICT(user_id) DO UPDATE SET epoch=epoch+1; END;

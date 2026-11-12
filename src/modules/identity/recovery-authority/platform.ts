@@ -7,6 +7,7 @@ import {browserOrigin,generation,guarded,isRandom,json,keyHash,refuse} from './c
 import {audit,authority,create,ipLimit,limit,type RequestRow} from './store'
 export const platformRecovery=new Hono<AppEnv>()
 platformRecovery.post('/custody',async c=>{
+ await ipLimit(c)
  const payload=await verify(c.env,await json(c),'custody-request'),config=configuration(c.env),db=c.env.DB
  if(c.req.header('Origin')&&c.req.header('Origin')!==config.platform)refuse()
  const current=await db.prepare('SELECT watermark FROM identity_recovery_authority WHERE singleton=1').first<{watermark:number}>()
@@ -32,6 +33,7 @@ platformRecovery.post('/challenge',async c=>{
  return c.json({requestId:row.id,challenge,platformOrigin:config.platform,installationId:config.installation,platformUrl:`${config.platform}/apps/${encodeURIComponent(config.installation)}/settings/app-settings`,expiresAt:row.expires_at},201)
 })
 platformRecovery.post('/authorize',async c=>{
+ await ipLimit(c)
  const payload=await verify(c.env,await json(c),'platform-authorization'),config=configuration(c.env)
  if(c.req.header('Origin')&&c.req.header('Origin')!==config.platform)refuse()
  const row=await c.env.DB.prepare("SELECT * FROM identity_recovery_requests WHERE id=? AND mode='managed'").bind(payload.challenge_id).first<RequestRow>()

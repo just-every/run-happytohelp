@@ -30,9 +30,9 @@ async function blockRows(env:Env,projectId:string,blocks:BlockInput[]){
  * an existing native block retains its original ID. Source-incarnation and ID
  * assertions execute with the caller's canonical rows, never during planning. */
 export async function planCopyBlocks(env:Env,projectId:string,blocks:BlockInput[]){
- if(blocks.length>250||blocks.some(block=>block.kind!=='copy'))throw new Error('KNOWLEDGE_PLAN_TOO_LARGE')
+ if(blocks.length>250||blocks.some(block=>block.kind!=='copy'))throw new Error('KNOWLEDGE_PLAN_TOO_LARGE:block_count')
  const rows=await blockRows(env,projectId,blocks),serialized=JSON.stringify(rows)
- if(new TextEncoder().encode(serialized).length>262144)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE')
+ if(new TextEncoder().encode(serialized).length>262144)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE:block_bytes')
  const existing=await env.DB.prepare(`SELECT b.fingerprint,b.id FROM json_each(?) requested CROSS JOIN knowledge_reply_blocks b ON b.project_id=? AND b.fingerprint=json_extract(requested.value,'$.fingerprint') WHERE ${blockSourcesObservedSql('requested.value')}`).bind(serialized,projectId).all<{fingerprint:string;id:string}>()
  const ids=new Map(existing.results.map(row=>[row.fingerprint,row.id]))
  for(const row of rows)row.id=ids.get(row.fingerprint)??row.fingerprint.slice(0,32)

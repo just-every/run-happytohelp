@@ -21,8 +21,8 @@ export async function runnerRuntime(){
  const call=async(path,options={})=>{const response=await request(path,options);const data=await response.json();if(options.status!==undefined)assert.equal(response.status,options.status,JSON.stringify({path,status:response.status,data}));return {status:response.status,data}}
  const take=async()=> (await call('/_test/queue/take')).data
  const step=async(jobs,headers)=>{const result=(await call('/_test/legacy/step',{body:jobs,headers,status:200})).data;assert.deepEqual(result.retried,[]);return result}
- const seed=async(projectId='p-legacy-runner')=>{
-  const now=Date.now(),tokens={};await db.prepare("INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,'Synthetic','synthetic-widget','https://example.test',1)").bind(projectId).run()
+ const seed=async(projectId='p-legacy-runner',source)=>{
+  const now=Date.now(),tokens={};await db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,?,?,?,?)').bind(projectId,source?.name??'Synthetic',source?.widget_key??source?.public_key??(source?projectId:'synthetic-widget'),source?new URL(source.allowed_origin||source.website||source.website_url||source.url).origin:'https://example.test',source?typeof source.created_at==='number'?source.created_at:Date.parse(source.created_at):1).run()
   for(const role of ['owner','admin','operator']){const id=`synthetic-${role}`,token=`synthetic-${role}-session`;tokens[role]=token;await db.batch([db.prepare('INSERT INTO users(id,email,name,created_at) VALUES(?,?,?,1)').bind(id,`${role}@example.test`,role),db.prepare('INSERT INTO memberships VALUES(?,?,?)').bind(projectId,id,role),db.prepare('INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,?,?,?)').bind(hash(token),id,projectId,role,now+3600000),db.prepare("INSERT INTO session_factors(token_hash,user_id,method,verified_at) VALUES(?,?,'password',?)").bind(hash(token),id,now)])}
   return {projectId,tokens}
  }

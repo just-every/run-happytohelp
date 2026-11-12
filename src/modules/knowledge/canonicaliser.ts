@@ -19,7 +19,7 @@ async function indexKnowledge(env:Env,projectId:string,limit:number,plan?:IndexP
    ) UNION ALL SELECT * FROM (SELECT 'knowledge:'||f.id,f.version_id,f.title||'\n'||f.content FROM knowledge_documents f JOIN knowledge_versions v ON v.id=f.version_id JOIN knowledge_datasets d ON d.id=v.dataset_id WHERE d.project_id=?1 AND 'knowledge:'||f.id IN (SELECT value FROM json_each(?2))
    UNION ALL SELECT 'generation:'||g.id,'legacy-output:'||leaf.fullkey,CAST(leaf.value AS TEXT) FROM ai_generations g,json_tree(g.output_json) leaf WHERE g.project_id=?1 AND json_valid(g.output_json) AND leaf.type='text' AND 'generation:'||g.id IN (SELECT value FROM json_each(?2)) AND EXISTS(SELECT 1 FROM knowledge_generation_sources gs WHERE gs.project_id=g.project_id AND gs.generation_id=g.id)
    UNION ALL SELECT 'generation:'||b.generation_id,'answer:'||b.id,json_extract(b.payload_json,'$.text') FROM knowledge_reply_blocks b WHERE b.project_id=?1 AND b.kind='answer' AND 'generation:'||b.generation_id IN (SELECT value FROM json_each(?2))) ${plan?'LIMIT 201':''}`).bind(projectId,selected).all<{source_id:string;version:string;content:string}>()
-  if(plan){plan.bytes+=new TextEncoder().encode(JSON.stringify(rows.results)).length;if(rows.results.length>200||plan.bytes>262144)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE')}
+  if(plan){plan.bytes+=new TextEncoder().encode(JSON.stringify(rows.results)).length;if(rows.results.length>200||plan.bytes>262144)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE:index_rows')}
   const shingles=new Map<string,{hash:string;words:string;source_id:string}>(),versions=[]
   for(const row of rows.results){for(const shingle of wordShingles(knowledgeWords(row.content||'')))shingles.set(row.source_id+'\0'+shingle.words,{hash:shingle.hash,words:shingle.words,source_id:row.source_id});versions.push({source_id:row.source_id,version:row.version,fingerprint:shingleHash(row.content||'')})}
   const statements:D1PreparedStatement[]=[]
@@ -28,7 +28,7 @@ async function indexKnowledge(env:Env,projectId:string,limit:number,plan?:IndexP
   for(let index=0;index<entries.length;index+=1500)statements.push(env.DB.prepare(`INSERT OR IGNORE INTO knowledge_shingles SELECT ?1,json_extract(value,'$.hash'),json_extract(value,'$.words'),json_extract(value,'$.source_id') FROM json_each(?2)`).bind(projectId,JSON.stringify(entries.slice(index,index+1500))))
   if(versions.length)statements.push(env.DB.prepare(`INSERT OR REPLACE INTO knowledge_source_index SELECT ?1,json_extract(value,'$.source_id'),json_extract(value,'$.version'),json_extract(value,'$.fingerprint') FROM json_each(?2)`).bind(projectId,JSON.stringify(versions)))
   statements.push(env.DB.prepare(`DELETE FROM knowledge_index_dirty WHERE project_id=? AND EXISTS(SELECT 1 FROM json_each(?) selected WHERE json_extract(selected.value,'$.source_id')=knowledge_index_dirty.source_id AND json_extract(selected.value,'$.stamp')=knowledge_index_dirty.stamp)`).bind(projectId,JSON.stringify(page)))
-  if(plan){plan.statements.push(...statements);plan.shingles.push(...entries);if(plan.statements.length>60)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE')}else await env.DB.batch(statements)
+  if(plan){plan.statements.push(...statements);plan.shingles.push(...entries);if(plan.statements.length>60)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE:index_statements')}else await env.DB.batch(statements)
  }
  return !await env.DB.prepare(plan?'SELECT 1 FROM knowledge_index_dirty WHERE project_id=? LIMIT 1 OFFSET ?':'SELECT 1 FROM knowledge_index_dirty WHERE project_id=? LIMIT 1').bind(...(plan?[projectId,dirty.results.length]:[projectId])).first()
 }
@@ -86,7 +86,7 @@ async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf
  const lookup=()=>env.DB.prepare(`WITH dirty AS MATERIALIZED (SELECT DISTINCT project_id FROM knowledge_index_dirty WHERE ?2=0 AND (?3 IS NULL OR project_id=?3)),matches AS (SELECT s.words,json_group_array(DISTINCT json_object('id',s.source_id,'project',s.project_id,'incarnation',coalesce(a.source_incarnation,retired.source_incarnation))) sources FROM json_each(?1) incoming CROSS JOIN knowledge_shingles s INDEXED BY knowledge_shingles_lookup LEFT JOIN knowledge_articles a ON s.source_id LIKE 'article:%' AND a.id=substr(s.source_id,9) AND a.project_id=s.project_id LEFT JOIN knowledge_retired_articles retired ON s.source_id LIKE 'article:%' AND retired.article_id=substr(s.source_id,9) AND retired.project_id=s.project_id WHERE (?3 IS NULL OR s.project_id=?3) AND NOT EXISTS(SELECT 1 FROM dirty) AND s.hash=json_extract(incoming.value,'$.hash') AND s.words=json_extract(incoming.value,'$.words') GROUP BY s.words) SELECT 'dirty' kind,project_id words,'' sources FROM dirty UNION ALL SELECT 'match',json_group_array(words),sources FROM matches GROUP BY sources ${planning?'LIMIT 4097':''}`).bind(JSON.stringify([...unique.values()]),planning||indexReady?1:0,planning?.projectId??null).all<{kind:string;words:string;sources:string}>()
  let rows=await lookup()
  if(rows.results.some(row=>row.kind==='dirty')){await refreshKnowledgeIndex(env);rows=await lookup()}
- if(planning&&rows.results.length>4096)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE')
+ if(planning&&rows.results.length>4096)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE:matches')
  if(planning){
   const indexed=new Map<string,Source[]>()
   for(const row of rows.results)for(const words of JSON.parse(row.words))indexed.set(words,JSON.parse(row.sources))
@@ -150,7 +150,7 @@ export async function canonicaliseFields<T>(env:Env,projectId:WriteProject,value
  * transcript literals are the exported record; other imported fields match only
  * the destination corpus. Native callers retain canonicaliseFields semantics. */
 export async function planCanonicaliseFields<T>(env:Env,projectId:string,value:T,options:{literal?:boolean;custody?:string}={}){
- if(new TextEncoder().encode(JSON.stringify(value)).length>262144)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE')
+ if(new TextEncoder().encode(JSON.stringify(value)).length>262144)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE:input')
  const candidate=(item:unknown):boolean=>typeof item==='string'?knowledgeWords(item).length>=12:Array.isArray(item)?item.some(candidate):!!item&&typeof item==='object'?Object.entries(item).some(([key,child])=>candidate(key)||candidate(child)):false
  if(options.literal||!candidate(value))return {value,statements:[] as D1PreparedStatement[]}
  const index=await planKnowledgeIndex(env,projectId)

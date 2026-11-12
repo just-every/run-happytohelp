@@ -95,8 +95,8 @@ async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf
   for(const shingle of planning.index.shingles)if(unique.has(shingle.words)){const sources=indexed.get(shingle.words)||[];if(!sources.some(source=>source.id===shingle.source_id))sources.push({id:shingle.source_id,project:planning.projectId,incarnation:incarnations.get(shingle.source_id.slice(8))??null});indexed.set(shingle.words,sources)}
   rows={...rows,results:[...indexed].map(([words,sources])=>({kind:'match',words:JSON.stringify([words]),sources:JSON.stringify(sources)}))}
  }
- const matches=new Map<string,number>(),sourceSets=new Map<number,Source[]>()
- for(const row of rows.results){const sources=(JSON.parse(row.sources) as Source[]).sort((a,b)=>(a.project+'\0'+a.id).localeCompare(b.project+'\0'+b.id)),key=sourceSets.size;sourceSets.set(key,sources);for(const words of JSON.parse(row.words))matches.set(words,key)}
+ const matches=new Map<string,number>(),sourceSets=new Map<number,Source[]>(),setIds=new Map<string,number>()
+ for(const row of rows.results){const sources=(JSON.parse(row.sources) as Source[]).sort((a,b)=>(a.project+'\0'+a.id).localeCompare(b.project+'\0'+b.id)),signature=JSON.stringify(sources);let key=setIds.get(signature);if(key===undefined){key=sourceSets.size;setIds.set(signature,key);sourceSets.set(key,sources)}for(const words of JSON.parse(row.words))matches.set(words,key)}
  if(!matches.size)return
  const targetProject=typeof projectId==='function'?await projectId():projectId
  const generationId=typeof custody==='function'?targetProject?await custody(targetProject):undefined:custody

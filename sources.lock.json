@@ -16937,7 +16937,7 @@
       "executable": false
     },
     "tests/journeys/move-in-zendesk-pull.mjs": {
-      "sha256": "13528bb48d052d8d4f5f7f30f6090e8e33cc2c7b1f855795256c1c4473139fde",
+      "sha256": "059a768896ec82243c84310360b860ad67a2246c5d55aaf97d86764f949486ac",
       "executable": false
     },
     "tests/journeys/public-browser.mjs": {

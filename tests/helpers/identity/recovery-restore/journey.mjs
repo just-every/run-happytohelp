@@ -23,6 +23,7 @@ export async function recoveryRestoreJourney(){
  const stop=async()=>{if(!server)return;try{if(serverReady){await stopOwnedServer(server.child);await server.result()}}finally{await server.stop();server=undefined;serverReady=false}}
  try{
   await promisify(execFile)('git',['clone','--quiet','--no-local','--depth','1',resolve('.'),checkout])
+  await run(checkout,['install'])
   await mkdir(join(checkout,'.seed'),{recursive:true})
   await writeFile(join(checkout,'.seed/answers.json'),JSON.stringify({WORKSPACE_NAME:'Recovery restore support',WIDGET_ORIGIN:origin,OWNER_NAME:'Casey Owner',OWNER_PASSWORD:password,EMAIL_PROVIDER:'later'}),{mode:0o600})
   await run(checkout,['setup','--owner-email',email,'--answers','.seed/answers.json','--port',String(port)])

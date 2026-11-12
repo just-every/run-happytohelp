@@ -1,0 +1,15 @@
+{
+  "skill": "12ui-design",
+  "cliVersion": "0.2.134",
+  "hostedReview": "NOT RUN: 12ui account sign-in unavailable",
+  "localScreens": "actual built Move in states captured and inspected at 1440 and 390; stop/resume, destination collision and invalidation included",
+  "layout": "existing native Move in layout/navigation preserved",
+  "states": 14,
+  "screens": 28,
+  "sourceHead": "f3f4f91003e5097e00966d559a6cf1975df01f1e",
+  "accessibility": {
+    "seriousCritical": 0,
+    "pageOverflow": false,
+    "minimumVisibleControlHeight": 44
+  }
+}

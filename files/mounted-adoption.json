@@ -1,0 +1,548 @@
+{
+  "states": [
+    "queued:verify_package",
+    "queued:context",
+    "queued:preflight",
+    "queued:objects",
+    "running:objects",
+    "queued:objects",
+    "queued:rows",
+    "running:rows",
+    "queued:rows",
+    "queued:knowledge",
+    "queued:verify_result",
+    "queued:cleanup",
+    "complete:done"
+  ],
+  "uploads": 21,
+  "maxStatements": 154,
+  "measurements": {
+    "verify_package": {
+      "invocations": 23,
+      "maxCpuMs": 27.428,
+      "maxHeapBytes": 51375696,
+      "maxStatements": 47,
+      "rows": 66,
+      "bytes": 33591,
+      "worstCpu": {
+        "ms": 27.428,
+        "rows": 21,
+        "bytes": 3811,
+        "statements": 47
+      },
+      "totalCpuMs": 511.163,
+      "totalRows": 268,
+      "totalBytes": 122815,
+      "rowsPer30sCpu": 15728.837963624128,
+      "bytesPer30sCpu": 7207974.755606333
+    },
+    "context": {
+      "invocations": 90,
+      "maxCpuMs": 51.402,
+      "maxHeapBytes": 61331131,
+      "maxStatements": 39,
+      "rows": 66,
+      "bytes": 33592,
+      "worstCpu": {
+        "ms": 51.402,
+        "rows": 66,
+        "bytes": 33592,
+        "statements": 39
+      },
+      "totalCpuMs": 1934.1020000000005,
+      "totalRows": 313,
+      "totalBytes": 162300,
+      "rowsPer30sCpu": 4854.966284094633,
+      "bytesPer30sCpu": 2517447.3735097726
+    },
+    "preflight": {
+      "invocations": 30,
+      "maxCpuMs": 148.069,
+      "maxHeapBytes": 80745744,
+      "maxStatements": 129,
+      "rows": 25,
+      "bytes": 22973,
+      "worstCpu": {
+        "ms": 148.069,
+        "rows": 25,
+        "bytes": 6477,
+        "statements": 129
+      },
+      "totalCpuMs": 1858.691,
+      "totalRows": 247,
+      "totalBytes": 119035,
+      "rowsPer30sCpu": 3986.6766450152286,
+      "bytesPer30sCpu": 1921271.4754631082
+    },
+    "objects": {
+      "invocations": 3,
+      "maxCpuMs": 124.759,
+      "maxHeapBytes": 43900284,
+      "maxStatements": 87,
+      "rows": 0,
+      "bytes": 480000,
+      "worstCpu": {
+        "ms": 124.759,
+        "rows": 0,
+        "bytes": 480000,
+        "statements": 87
+      },
+      "totalCpuMs": 191.33299999999997,
+      "totalRows": 0,
+      "totalBytes": 480029,
+      "rowsPer30sCpu": 0,
+      "bytesPer30sCpu": 75266002.20557877
+    },
+    "rows": {
+      "invocations": 22,
+      "maxCpuMs": 300.419,
+      "maxHeapBytes": 60170438,
+      "maxStatements": 154,
+      "rows": 25,
+      "bytes": 83074,
+      "worstCpu": {
+        "ms": 300.419,
+        "rows": 22,
+        "bytes": 83074,
+        "statements": 71
+      },
+      "totalCpuMs": 1752.5550000000005,
+      "totalRows": 160,
+      "totalBytes": 165941,
+      "rowsPer30sCpu": 2738.8584095791566,
+      "bytesPer30sCpu": 2840555.6458998425
+    },
+    "knowledge": {
+      "invocations": 1,
+      "maxCpuMs": 19.337,
+      "maxHeapBytes": 60992262,
+      "maxStatements": 39,
+      "rows": 0,
+      "bytes": 0,
+      "worstCpu": {
+        "ms": 19.337,
+        "rows": 0,
+        "bytes": 0,
+        "statements": 39
+      },
+      "totalCpuMs": 19.337,
+      "totalRows": 0,
+      "totalBytes": 0,
+      "rowsPer30sCpu": 0,
+      "bytesPer30sCpu": 0
+    },
+    "verify_result": {
+      "invocations": 17,
+      "maxCpuMs": 35.369,
+      "maxHeapBytes": 61578414,
+      "maxStatements": 56,
+      "rows": 30,
+      "bytes": 0,
+      "worstCpu": {
+        "ms": 35.369,
+        "rows": 0,
+        "bytes": 0,
+        "statements": 56
+      },
+      "totalCpuMs": 408.324,
+      "totalRows": 138,
+      "totalBytes": 0,
+      "rowsPer30sCpu": 10139.007258941429,
+      "bytesPer30sCpu": 0
+    },
+    "cleanup": {
+      "invocations": 11,
+      "maxCpuMs": 22.859,
+      "maxHeapBytes": 51778740,
+      "maxStatements": 37,
+      "rows": 250,
+      "bytes": 0,
+      "worstCpu": {
+        "ms": 22.859,
+        "rows": 250,
+        "bytes": 0,
+        "statements": 37
+      },
+      "totalCpuMs": 214.91999999999996,
+      "totalRows": 1042,
+      "totalBytes": 0,
+      "rowsPer30sCpu": 145449.4695700726,
+      "bytesPer30sCpu": 0
+    }
+  },
+  "kills": 2,
+  "indexDrainSteps": 5,
+  "shape": {
+    "packageRows": 139,
+    "largestPartBytes": 33591,
+    "largestObjectBytes": 480000,
+    "descriptors": 22
+  },
+  "lastRun": {
+    "runId": "legacy-package:868c426eee22355a207eb90dc2e7db8d4263359db3a000d380c61f797eb3fbd4",
+    "manifestSha256": "868c426eee22355a207eb90dc2e7db8d4263359db3a000d380c61f797eb3fbd4",
+    "projectId": "e25a56f9-62c2-49ce-8ce7-e8b067e12f2c",
+    "sourceProjectId": "synthetic-wire-source",
+    "contractVersion": 2,
+    "mode": "full",
+    "state": "complete",
+    "phase": "done",
+    "attempt": 1,
+    "version": 202,
+    "cursor": {
+      "file": null,
+      "row": 0
+    },
+    "nextAt": 0,
+    "errorCode": null,
+    "createdAt": 1794510406461,
+    "updatedAt": 1794510434512,
+    "completedAt": 1794510434512,
+    "progress": {
+      "rows": 2168,
+      "bytes": 1050120,
+      "objects": 2
+    },
+    "canResume": false
+  },
+  "stopFenced": true,
+  "result": {
+    "run": {
+      "runId": "legacy-package:868c426eee22355a207eb90dc2e7db8d4263359db3a000d380c61f797eb3fbd4",
+      "manifestSha256": "868c426eee22355a207eb90dc2e7db8d4263359db3a000d380c61f797eb3fbd4",
+      "projectId": "e25a56f9-62c2-49ce-8ce7-e8b067e12f2c",
+      "sourceProjectId": "synthetic-wire-source",
+      "contractVersion": 2,
+      "mode": "full",
+      "state": "complete",
+      "phase": "done",
+      "attempt": 1,
+      "version": 202,
+      "cursor": {
+        "file": null,
+        "row": 0
+      },
+      "nextAt": 0,
+      "errorCode": null,
+      "createdAt": 1794510406461,
+      "updatedAt": 1794510434512,
+      "completedAt": 1794510434512,
+      "progress": {
+        "rows": 2168,
+        "bytes": 1050120,
+        "objects": 2
+      },
+      "canResume": false
+    },
+    "verifiedAt": 1794510433398,
+    "verification": "verified",
+    "tables": {
+      "ai_usages": {
+        "packageRows": 1,
+        "excludedRows": 1,
+        "requiredRows": 0,
+        "journalRows": 0,
+        "mapped": 0,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "articles": {
+        "packageRows": 25,
+        "excludedRows": 0,
+        "requiredRows": 25,
+        "journalRows": 25,
+        "mapped": 25,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "contacts": {
+        "packageRows": 36,
+        "excludedRows": 0,
+        "requiredRows": 36,
+        "journalRows": 36,
+        "mapped": 36,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "conversations": {
+        "packageRows": 2,
+        "excludedRows": 0,
+        "requiredRows": 2,
+        "journalRows": 2,
+        "mapped": 2,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "events": {
+        "packageRows": 1,
+        "excludedRows": 0,
+        "requiredRows": 1,
+        "journalRows": 1,
+        "mapped": 1,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "macros": {
+        "packageRows": 1,
+        "excludedRows": 0,
+        "requiredRows": 1,
+        "journalRows": 1,
+        "mapped": 1,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "media": {
+        "packageRows": 2,
+        "excludedRows": 0,
+        "requiredRows": 2,
+        "journalRows": 2,
+        "mapped": 2,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "messages": {
+        "packageRows": 66,
+        "excludedRows": 0,
+        "requiredRows": 66,
+        "journalRows": 66,
+        "mapped": 66,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "project_users": {
+        "packageRows": 2,
+        "excludedRows": 0,
+        "requiredRows": 2,
+        "journalRows": 2,
+        "mapped": 0,
+        "archivedOnly": 2,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "projects": {
+        "packageRows": 1,
+        "excludedRows": 0,
+        "requiredRows": 1,
+        "journalRows": 1,
+        "mapped": 1,
+        "archivedOnly": 0,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      },
+      "users": {
+        "packageRows": 2,
+        "excludedRows": 0,
+        "requiredRows": 2,
+        "journalRows": 2,
+        "mapped": 0,
+        "archivedOnly": 2,
+        "erased": 0,
+        "journalEqualsPackage": true,
+        "holds": 0
+      }
+    },
+    "excluded": {
+      "ai_usages": 1
+    },
+    "journalEqualsPackage": true,
+    "attachments": {
+      "package": 2,
+      "required": 2,
+      "journal": 2,
+      "identical": 2,
+      "withheld": 0,
+      "missing": 0,
+      "different": 0,
+      "unverified": 0,
+      "bytes": 480029,
+      "complete": true,
+      "method": "r2-sha256-vs-manifest"
+    },
+    "lease": {
+      "runHeld": false,
+      "runLeaseUntil": null,
+      "workspaceHeld": false,
+      "workspaceLeaseUntil": null,
+      "waitingFor": "none"
+    },
+    "attempt": {
+      "number": 1,
+      "appliedRows": 138,
+      "replayedRows": 0,
+      "measuredRows": 2168,
+      "measuredBytes": 1050120,
+      "maxCpuMs": null,
+      "maxHeapBytes": null
+    },
+    "diagnostics": {
+      "scope": "workspace-and-installation",
+      "conversationCount": 2,
+      "distinctDeltaSourceIds": 0,
+      "incompleteDeltaRuns": 0,
+      "sampleConversationIds": [
+        "synthetic-conversation",
+        "synthetic-peer-conversation"
+      ],
+      "installationWork": {
+        "before": {
+          "conversation_outbox": 0,
+          "email_deliveries": 0,
+          "magic_signins": 0,
+          "operator_notifications": 0,
+          "operator_notification_activity": 0,
+          "native_integration_events": 0,
+          "native_integration_intents": 0,
+          "integration_deliveries": 0,
+          "context_jobs": 0,
+          "lead_jobs": 0,
+          "leads": 0,
+          "brand_generations": 0,
+          "csat_surveys": 0,
+          "workflow_events": 0,
+          "knowledge_datasets": 0
+        },
+        "after": {
+          "conversation_outbox": 0,
+          "email_deliveries": 0,
+          "magic_signins": 0,
+          "operator_notifications": 0,
+          "operator_notification_activity": 0,
+          "native_integration_events": 0,
+          "native_integration_intents": 0,
+          "integration_deliveries": 0,
+          "context_jobs": 0,
+          "lead_jobs": 0,
+          "leads": 0,
+          "brand_generations": 0,
+          "csat_surveys": 0,
+          "workflow_events": 0,
+          "knowledge_datasets": 0
+        },
+        "qualification": "whole-installation; concurrent native work is not attributed to this import"
+      },
+      "baseline": {
+        "kind": "before-import",
+        "at": 1794510424860,
+        "counts": {
+          "conversation_outbox": 0,
+          "email_deliveries": 0,
+          "magic_signins": 0,
+          "operator_notifications": 0,
+          "operator_notification_activity": 0,
+          "native_integration_events": 0,
+          "native_integration_intents": 0,
+          "integration_deliveries": 0,
+          "context_jobs": 0,
+          "lead_jobs": 0,
+          "leads": 0,
+          "brand_generations": 0,
+          "csat_surveys": 0,
+          "workflow_events": 0,
+          "knowledge_datasets": 0
+        },
+        "installation": null
+      }
+    },
+    "work": {
+      "before": {
+        "conversation_outbox": 0,
+        "email_deliveries": 0,
+        "magic_signins": 0,
+        "operator_notifications": 0,
+        "operator_notification_activity": 0,
+        "native_integration_events": 0,
+        "native_integration_intents": 0,
+        "integration_deliveries": 0,
+        "context_jobs": 0,
+        "lead_jobs": 0,
+        "leads": 0,
+        "brand_generations": 0,
+        "csat_surveys": 0,
+        "workflow_events": 0,
+        "knowledge_datasets": 0
+      },
+      "after": {
+        "conversation_outbox": 0,
+        "email_deliveries": 0,
+        "magic_signins": 0,
+        "operator_notifications": 0,
+        "operator_notification_activity": 0,
+        "native_integration_events": 0,
+        "native_integration_intents": 0,
+        "integration_deliveries": 0,
+        "context_jobs": 0,
+        "lead_jobs": 0,
+        "leads": 0,
+        "brand_generations": 0,
+        "csat_surveys": 0,
+        "workflow_events": 0,
+        "knowledge_datasets": 0
+      },
+      "delta": {
+        "conversation_outbox": 0,
+        "email_deliveries": 0,
+        "magic_signins": 0,
+        "operator_notifications": 0,
+        "operator_notification_activity": 0,
+        "native_integration_events": 0,
+        "native_integration_intents": 0,
+        "integration_deliveries": 0,
+        "context_jobs": 0,
+        "lead_jobs": 0,
+        "leads": 0,
+        "brand_generations": 0,
+        "csat_surveys": 0,
+        "workflow_events": 0,
+        "knowledge_datasets": 0
+      },
+      "unchanged": true
+    },
+    "sourceCustody": {
+      "status": "ready",
+      "expiresAt": 1794596834512,
+      "absoluteExpiresAt": 1795115205121,
+      "sourcePurged": false,
+      "invalidated": false,
+      "cleanupPending": false,
+      "canResume": false
+    },
+    "adoption": {
+      "destinationProjectId": "synthetic-wire-source",
+      "membershipPolicy": "historical memberships; no access created"
+    }
+  },
+  "replay": {
+    "number": 2,
+    "appliedRows": 0,
+    "replayedRows": 138,
+    "measuredRows": 2154,
+    "measuredBytes": 964119,
+    "maxCpuMs": null,
+    "maxHeapBytes": null
+  },
+  "erased": true,
+  "counts": {
+    "nativeUsersBefore": 4,
+    "nativeUsersAfter": 4,
+    "sourceRows": 138,
+    "membershipsAdded": 1
+  }
+}

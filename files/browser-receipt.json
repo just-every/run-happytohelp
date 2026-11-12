@@ -1,0 +1,514 @@
+{
+  "success": true,
+  "checks": [
+    {
+      "name": "legacy-review-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Upload package",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-tampered-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-progress-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Uploading…",
+          "height": 44
+        },
+        {
+          "label": "Interrupt upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-interrupted-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-resume-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Approve this destination",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-approved-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Renew owner approval",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-queued-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Renew owner approval",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "Stop import",
+          "height": 44
+        },
+        {
+          "label": "Copy result note",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-5df93266-8699-41d5-a1ab-a293f7db4296 · queued",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-stopped-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Renew owner approval",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "Resume import",
+          "height": 44
+        },
+        {
+          "label": "Copy result note",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-5df93266-8699-41d5-a1ab-a293f7db4296 · stopped",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-worker-resumed-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Renew owner approval",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "Stop import",
+          "height": 44
+        },
+        {
+          "label": "Copy result note",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-5df93266-8699-41d5-a1ab-a293f7db4296 · queued",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-completed-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Renew owner approval",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "Replay verification",
+          "height": 44
+        },
+        {
+          "label": "Copy result note",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-5df93266-8699-41d5-a1ab-a293f7db4296 · complete",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-replayed-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Renew owner approval",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "Replay verification",
+          "height": 44
+        },
+        {
+          "label": "Copy result note",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-5df93266-8699-41d5-a1ab-a293f7db4296 · complete",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-invalidated-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Renew owner approval",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "Copy result note",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-5df93266-8699-41d5-a1ab-a293f7db4296 · complete",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-policy-refused-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-5df93266-8699-41d5-a1ab-a293f7db4296 · complete",
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "legacy-adoption-refused-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false,
+      "targets": [
+        {
+          "label": "legacy-folder",
+          "height": 44
+        },
+        {
+          "label": "legacy-files",
+          "height": 44
+        },
+        {
+          "label": "Continue upload",
+          "height": 44
+        },
+        {
+          "label": "Refresh package status",
+          "height": 44
+        },
+        {
+          "label": "Approve this destination",
+          "height": 44
+        },
+        {
+          "label": "Import history",
+          "height": 44
+        },
+        {
+          "label": "synthetic-browser-5df93266-8699-41d5-a1ab-a293f7db4296 · complete",
+          "height": 44
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

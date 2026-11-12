@@ -1,0 +1,10 @@
+  - tanstack-start-core:import-protection resolveId (15014 calls)
+  - vite:css transform (75 calls)
+  - vite-plugin-cloudflare:additional-modules resolveId (5 calls)
+  … and 1 more
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+[REDACTED]/delivery-artifact/happytohelp-worker-artifact.json
+[REDACTED]/management/integration/deployment-spec.json
+Your application is built
+build: complete (exit 0)

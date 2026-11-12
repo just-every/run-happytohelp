@@ -1,0 +1,6 @@
+{
+  "status": "failed before UI assertions",
+  "reason": "standalone evidence driver retained checkout-relative axe path",
+  "observed": "ENOENT /home/agent/rer-consolidation/node_modules/axe-core/axe.min.js",
+  "repair": "driver uses explicit actual checkout dependency path; product unchanged"
+}

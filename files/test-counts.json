@@ -1,0 +1,5 @@
+{
+  "method": "literal root tests/journeys/*.mjs registrations; no registrations added or removed",
+  "before": 104,
+  "after": 104
+}

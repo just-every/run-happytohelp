@@ -1,0 +1,65 @@
+{
+  "head": "f3f4f91003e5097e00966d559a6cf1975df01f1e",
+  "rows": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build-summary.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-check.log"
+    },
+    {
+      "command": "cloud_run pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party.log"
+    },
+    {
+      "command": "cloud_run node tests/move-in/legacy-adoption-integration/journey.mjs",
+      "exit": 0,
+      "receipt": "mounted-adoption.json",
+      "note": "merged destination knowledge backlog, actual native sessions and queue, original identities, erasure and replay"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern=Worker|worker tests/journeys/legacy.mjs",
+      "exit": 1,
+      "log": "v1-worker-regression.log",
+      "note": "knowledge/source reader passes; workspace-admin installation diagnostics expectation fails; readonly allocation boundary"
+    },
+    {
+      "command": "cloud_run node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs",
+      "status": "passed",
+      "exit": 0,
+      "receipt": "admission-command.json"
+    },
+    {
+      "command": "cloud_run node tests/move-in/legacy-adoption-integration/browser-proof.mjs",
+      "receipt": "browser-command.json",
+      "note": "standalone evidence script adds real stop/resume, discard invalidation and native destination collision; no product code mocks",
+      "status": "passed",
+      "exit": 0
+    }
+  ],
+  "ci": {
+    "runId": 43286008263,
+    "conclusion": "failure",
+    "buildSourcePreservation": "passed",
+    "shardsPassed": 7,
+    "shardsFailed": 1,
+    "failedAssertion": "tests/helpers/legacy-worker/journey.mjs:87 null !== true",
+    "ownedAdmissionCiDurationMs": 284953.675,
+    "archiveCalls": 2,
+    "totalGitHubCalls": 7
+  }
+}

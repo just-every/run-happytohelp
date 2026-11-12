@@ -1,0 +1,19 @@
+# Integrated v2 API and ownership handoff
+
+All endpoints are relative to `/api/move-in/projects/:custodyProjectId/legacy-import`. The custody/setup workspace remains distinct from the source/destination. Native sessions and `data.import` remain mandatory. First installation owner authority is additionally required for adoption and installation-wide diagnostics. No Business linkage changes.
+
+- `PUT /:sha/manifest` and `PUT /:sha/files/:file`: deployed contract v2 only for new uploads. Original-byte checksum verification, ordinal descriptor names, schema checks before retention, exact registered keys and B nonce-CAS writes. Repeated accepted files require submitted byte verification. Prior v1 bodies/runs are not relabeled or upgraded.
+- `GET /:sha/status`: bounded descriptor page, current accepted custody and stored R2 checksum; no status renewal of retention. No staging download entitlement.
+- `GET /:sha/adoption` and `POST /:sha/adoption/approve`: A's real router is mounted with C's `readAdoptionReview` callback, current custody/deadline check, native first-owner/step-up/exact SHA/source/policy2. Approval does not create a project; start schedules bounded all-package preflight.
+- `POST /:sha/start`, `/resume`, `/stop`: v2 creation/application use stored approval, original setup principal/session, source/destination lease, current run version and custody/scope predicates. No synthetic query bypass. Explicit renew approval is needed after session renewal. Stop and pause keep finite deadlines; an already expired deadline cannot be renewed by the pause path.
+- `GET /:sha/result`: existing additive Q4 shape retained. Installation-wide work/diagnostics require the original installation owner; workspace administrators receive no global count read. `adoption` and `sourceCustody` distinguish historical verification from current expiry/invalidation/purge/cleanup. Attachment summary is retained as counts-only audit data after B purges transient source diagnostics.
+- `GET /`: bounded 50-run history for original installation owner. Empty, unavailable and owner-required states are explicit.
+- `POST /:sha/discard`: native first owner and step-up; terminal source closure and bounded cleanup. Imported native history is not undone.
+
+Worker `LEGACY_CONTRACT_VERSION` is 2. Persisted wake contract versions remain 1 or 2, derived from the stored run; active v1 runs retain their original mapping and synthetic-only meaning. Typed `legacy-package.cleanup` messages contain SHA/generation only and dispatch before project activity checks. Discovery uses existing unused cron credit, does not create new deployment settings or queues, and preserves the 937/1000 reservation.
+
+Core C integration invokes A `adoptionForRun` -> `adoptionApply`/historical profile, preflights canonical targets/FKs/unique indexes across original parts via bounded private scratch, and passes the capability into the existing importer. Every mutation retains native/run/destination lease and custody fences. Original manifest, part bytes and whole-chunk identities stay unchanged.
+
+Canonical-copy reservation: `reserveCanonical` records the exact candidate and non-content ancestry under the package journal before reserving/copying. The candidate is temporarily discoverable through the registered-key cleanup and existing erasure ancestry. Random nonce ETag replacement fences delayed raw writes. `releaseCanonical` removes temporary cleanup ownership in the same canonical/journal transaction after native media/file-door ownership exists. Cleanup never deletes accepted shared/native-held media. Late nonce sweeps and retired copy-intent cleanup share the original 100-key/250-row quantum.
+
+A/B API packets are included intact under `upstream/`; those immutable implementation branches and their holds are not changed. Remaining allocation boundaries are listed in REPORT.md.

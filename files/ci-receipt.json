@@ -1,0 +1,24 @@
+{
+  "conclusion": "failure",
+  "head_sha": "f3f4f91003e5097e00966d559a6cf1975df01f1e",
+  "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43286008263",
+  "status": "completed",
+  "runId": 43286008263,
+  "calls": 7,
+  "pollIntervalSeconds": 300,
+  "pollUtc": [
+    "2026-11-12T19:02:42Z",
+    "2026-11-12T19:12:11Z",
+    "2026-11-12T19:17:25Z",
+    "2026-11-12T19:23:37Z"
+  ],
+  "dispatches": 0,
+  "reruns": 0,
+  "failedJobIds": [
+    131420363195,
+    131430648968
+  ],
+  "buildPreservesSource": "success",
+  "diagnosis": "read-only legacy-worker/journey.mjs:87 expected global work.unchanged true after workspace-admin takeover; required first-owner policy returns null",
+  "contractViewException": false
+}

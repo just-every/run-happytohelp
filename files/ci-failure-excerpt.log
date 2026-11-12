@@ -1,0 +1,24 @@
+2026-11-12T19:10:24.0574871Z # Subtest: an owner runs a bounded legacy package through HTTP and queue, stops in-flight writes, resumes two real Worker deaths and replays zero rows
+2026-11-12T19:10:24.0576523Z not ok 6 - an owner runs a bounded legacy package through HTTP and queue, stops in-flight writes, resumes two real Worker deaths and replays zero rows
+2026-11-12T19:10:24.0577255Z   ---
+2026-11-12T19:10:24.0580199Z   duration_ms: 18173.379755
+2026-11-12T19:10:24.0580434Z   type: 'test'
+2026-11-12T19:10:24.0580972Z   location: '/home/runner/work/run-happytohelp/run-happytohelp/tests/journeys/legacy.mjs:208:1'
+2026-11-12T19:10:24.0581417Z   failureType: 'testCodeFailure'
+2026-11-12T19:10:24.0581660Z   error: |-
+2026-11-12T19:10:24.0581874Z     Expected values to be strictly equal:
+2026-11-12T19:10:24.0582095Z     
+2026-11-12T19:10:24.0582257Z     null !== true
+2026-11-12T19:10:24.0582421Z     
+2026-11-12T19:10:24.0582583Z   code: 'ERR_ASSERTION'
+2026-11-12T19:10:24.0582777Z   name: 'AssertionError'
+2026-11-12T19:10:24.0582968Z   expected: true
+2026-11-12T19:10:24.0583135Z   actual: ~
+2026-11-12T19:10:24.0583303Z   operator: 'strictEqual'
+2026-11-12T19:10:24.0583497Z   stack: |-
+2026-11-12T19:10:24.0583961Z     workerRunnerJourney (file:///home/runner/work/run-happytohelp/run-happytohelp/tests/helpers/legacy-worker/journey.mjs:87:146)
+2026-11-12T19:10:24.0584578Z     process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-11-12T19:10:24.0585232Z     async TestContext.<anonymous> (file:///home/runner/work/run-happytohelp/run-happytohelp/tests/journeys/legacy.mjs:210:2)
+2026-11-12T19:10:24.0585800Z     async Test.run (node:internal/test_runner/test:1054:7)
+2026-11-12T19:10:24.0586228Z     async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+2026-11-12T19:10:24.0586917Z   ...

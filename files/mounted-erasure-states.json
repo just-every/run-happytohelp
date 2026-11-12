@@ -1,0 +1,80 @@
+[
+  {
+    "state": "manifest",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "partial",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "context",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "objects",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "objects_before_body",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "objects_after_body",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "rows",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "stopped",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "revoked",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "expired",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "absolute",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "complete",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  },
+  {
+    "state": "deleted",
+    "sourceBodiesRemaining": 0,
+    "scratchRemaining": 0,
+    "refusesResume": true
+  }
+]

@@ -1,0 +1,43 @@
+TAP version 13
+# (node:8332) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# LEGACY_KNOWLEDGE_FIDELITY {"sourceBytes":16439,"stateMatches":true,"deltaConflicts":0,"renderedUnavailable":false,"replayApplied":0}
+# Subtest: the Worker package reader verifies immutable custody and chunk identity, while legacy source journals remain byte-exact under the native knowledge boundary
+ok 1 - the Worker package reader verifies immutable custody and chunk identity, while legacy source journals remain byte-exact under the native knowledge boundary
+  ---
+  duration_ms: 7436.702255
+  type: 'test'
+  ...
+# Subtest: an owner runs a bounded legacy package through HTTP and queue, stops in-flight writes, resumes two real Worker deaths and replays zero rows
+not ok 2 - an owner runs a bounded legacy package through HTTP and queue, stops in-flight writes, resumes two real Worker deaths and replays zero rows
+  ---
+  duration_ms: 25896.253009
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/hh-importer-adoption-wire-2/repo/tests/journeys/legacy.mjs:208:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    null !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: ~
+  operator: 'strictEqual'
+  stack: |-
+    workerRunnerJourney (file:///home/agent/rer-consolidation/work/hh-importer-adoption-wire-2/repo/tests/helpers/legacy-worker/journey.mjs:87:146)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/hh-importer-adoption-wire-2/repo/tests/journeys/legacy.mjs:210:2)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 33466.370238

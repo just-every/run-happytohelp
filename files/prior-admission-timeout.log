@@ -1,0 +1,37 @@
+TAP version 13
+# (node:12289) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# DOOR_COUNTS {"sourceRecords":333,"plan":{"input":333,"unique":333,"duplicates":0,"mapped":330,"unmapped":330,"rejected":0,"effects":330,"byKind":{"article":4,"organization":3,"tag-name":1,"ticket":312,"user":13}},"reconciled":{"sourceRecords":333,"present":3,"explained":330,"nativeTargets":330,"byKind":{"tag-name":1,"organization":3,"user":13,"ticket":312,"article":4},"nativeByKind":{"tag":1,"company":3,"contact":12,"conversation":312,"article":2}},"native":{"tickets":312,"contacts":12,"companies":3,"articles":2}}
+# PROBE Zendesk grant door: first claim, privacy, 312 tickets, counts/search, grant fences, erasure and owner close asserted
+# Native access refresh notification failed
+# Native access refresh notification failed
+# Native access refresh notification failed
+# Native access refresh notification failed
+# Persisted job handler failed move-in 942e7ce9-9aee-42cf-8fa7-f66f4043279f
+# Native access refresh notification failed
+# Native access refresh notification failed
+# Native access refresh notification failed
+# MOVE-IN-003 zendesk: headers, encoded, number; lifecycle, custody, refusal, undo/reimport and quiet effects asserted
+# MOVE-IN-003 helpscout: headers, number, address; lifecycle, custody, refusal, undo/reimport and quiet effects asserted
+# MOVE-IN-003 freshdesk: headers, number, address; lifecycle, custody, refusal, undo/reimport and quiet effects asserted
+# MOVE-IN-003 intercom: headers, address; lifecycle, custody, refusal, undo/reimport and quiet effects asserted
+# LEGACY_ADOPTION_RESULT {"status":"pass","sourceProjectId":"synthetic-adopted-workspace","setupUnchanged":true,"businessLinkUnchanged":true,"historicalStaffRows":4,"historicalMembershipRows":4,"nativeMembershipsAdded":1,"nativeUsersAdded":0,"firstSliceRows":1,"noteMediaBytes":36,"originalRows":21,"appliedRows":20,"replayedRows":21,"replayApplied":0,"workUnchanged":true,"preflightAuthorityRefusals":true,"transactionAuthorityRefusals":true,"mountedProductAcceptance":"pending C","registration":"pending C/lane after index-drain terminal"}
+# Subtest: review an export, import its history and private notes, repeat and repackage without effects, then undo exactly
+not ok 1 - review an export, import its history and private notes, repeat and repackage without effects, then undo exactly
+  ---
+  duration_ms: 360001.143246
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/hh-importer-adoption-wire-2/repo/tests/journeys/move-in-admission.mjs:11:1'
+  failureType: 'testTimeoutFailure'
+  error: 'test timed out after 360000ms'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 0
+# cancelled 1
+# skipped 0
+# todo 0
+# duration_ms 396915.414754

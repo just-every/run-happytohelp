@@ -1,0 +1,208 @@
+{
+  "tag": "hh-importer-custody-2",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-importer-custody-2",
+  "head": "fb705f8c7ef2043f8d012d0de9300c59d6d567d1",
+  "base": "403c8317144571852bcbcaae34ba4e3ce8bcc06c",
+  "recorded_at": "2026-11-12T16:40:44.969738+00:00",
+  "working_tree_clean": true,
+  "checks": {
+    "focused_storage": 0,
+    "typecheck": 0,
+    "source_lock": 0,
+    "source_check": 0,
+    "first_party_check": 0
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0,
+    "qualification": "successful final-head build; generates only deployment-spec migration projection, restored because outside B allowlist; exact generated diff retained",
+    "head": "fb705f8c7ef2043f8d012d0de9300c59d6d567d1"
+  },
+  "touched_journeys": {
+    "command": "cloud_run node --test --test-concurrency=1 tests/journeys/erasure.mjs tests/journeys/move-in-erasure.mjs tests/journeys/move-in-custody.mjs",
+    "exit": 0,
+    "tests": 3,
+    "pass": 3,
+    "fail": 0,
+    "skip": 0,
+    "duration_ms": 720747.305764
+  },
+  "focused_storage": {
+    "command": "cloud_run node /tmp/hh-run-custody.mjs",
+    "exit": 0,
+    "qualification": "owned harness mounts generic B APIs; real workerd D1/R2 and actual native erase door; full application intake/jobs remain C"
+  },
+  "test_inventory": {
+    "literal_journey_registrations_before": 104,
+    "literal_journey_registrations_after": 104,
+    "new_registrations": 0,
+    "extended_registrations": 2,
+    "qualification": "literal root journey inventory, not every CI assertion script"
+  },
+  "clause_changes": [],
+  "claim": "CLAIM MIGRATION-001 PARTIAL points=none",
+  "product_push": {
+    "success": true,
+    "attempts": 1,
+    "remote": "https://github.com/just-every/run-happytohelp.git",
+    "identity_trailers_checked_all_candidates": true,
+    "published_heads": [
+      "6d4d4e29a691419d8371a87d2a3d82323e481ea3",
+      "fb705f8c7ef2043f8d012d0de9300c59d6d567d1"
+    ],
+    "final_attempts": 1,
+    "history_rewritten": false,
+    "main_merge": "already up to date"
+  },
+  "ci": {
+    "run_id": 43263108181,
+    "head": "fb705f8c7ef2043f8d012d0de9300c59d6d567d1",
+    "status": "completed",
+    "conclusion": "failure",
+    "github_calls": 8,
+    "failed_job": 131339537452,
+    "failed_step": "Confirm build preserves source",
+    "aggregate_failed_job": 131340600052,
+    "route_browser_shards": "skipped",
+    "build_steps": [
+      {
+        "conclusion": "success",
+        "name": "Set up job"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run actions/checkout@v4"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run pnpm/action-setup@v4"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run actions/setup-node@v4"
+      },
+      {
+        "conclusion": "success",
+        "name": "Set runner-owned caches"
+      },
+      {
+        "conclusion": "success",
+        "name": "Cache frozen dependencies and Chromium"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run pnpm install --frozen-lockfile"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run pnpm exec rer describe"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run node src/site/base/contract-docs.mjs check"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run node scripts/edition-authoring/cli.mjs check"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run node scripts/contract-docs.mjs check"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run pnpm run typecheck"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run pnpm exec rer check --profile first-party"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run pnpm run build"
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Run reviewed light readers and build the run site"
+      },
+      {
+        "conclusion": "success",
+        "name": "Package internal build output"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run actions/upload-artifact@v4"
+      },
+      {
+        "conclusion": "failure",
+        "name": "Confirm build preserves source"
+      },
+      {
+        "conclusion": "success",
+        "name": "Upload build failure diagnostics"
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Post Cache frozen dependencies and Chromium"
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Post Run actions/setup-node@v4"
+      },
+      {
+        "conclusion": "success",
+        "name": "Post Run pnpm/action-setup@v4"
+      },
+      {
+        "conclusion": "success",
+        "name": "Post Run actions/checkout@v4"
+      },
+      {
+        "conclusion": "success",
+        "name": "Complete job"
+      }
+    ]
+  },
+  "public_scan": {
+    "status": "pending Mac supported scanner",
+    "repository": "https://github.com/just-every/run-happytohelp#main",
+    "edition": "just-every/happytohelp"
+  },
+  "pending_c_acceptance": true,
+  "independent_gate": "pending lane",
+  "cpu_heap": "not measured; no throughput claim",
+  "previous_head": "6d4d4e29a691419d8371a87d2a3d82323e481ea3",
+  "retention_tests": {
+    "command": "cloud_run node --test --test-concurrency=1 tests/journeys/move-in-custody.mjs tests/journeys/move-in-erasure.mjs",
+    "exit": 0,
+    "tests": 2,
+    "pass": 2,
+    "fail": 0,
+    "skip": 0,
+    "duration_ms": 59249.683195,
+    "qualification": "repeated after the persisted retention-state fix, followed by final focused storage checks"
+  },
+  "ci_initial": {
+    "run_id": 43261020994,
+    "head": "6d4d4e29a691419d8371a87d2a3d82323e481ea3",
+    "status": "completed",
+    "conclusion": "failure",
+    "failed_step": "Confirm build preserves source",
+    "checks": "skipped after build source-preservation failure"
+  },
+  "failed_archive_read": {
+    "command": "gh run view 43261020994 --repo just-every/run-happytohelp --job 131332280343 --log-failed",
+    "exit": 1,
+    "sanitized_error": "EOF",
+    "http_status": "not supplied",
+    "retried": false
+  },
+  "terminal": "BLOCKED: exact-SHA Verify source-preservation failure; local final build changes only out-of-scope generated deployment projection for migration 329",
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "chromium": "not used; no UI change"
+  },
+  "completed_at": "2026-11-12T16:58:09.403447+00:00"
+}

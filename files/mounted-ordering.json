@@ -1,0 +1,71 @@
+{
+  "facts": [
+    {
+      "point": "before_reserve",
+      "erasureStatus": 200,
+      "rawBodyAfterErasure": false,
+      "lateNonceSwept": true,
+      "sameAndFreshShaRefused": true
+    },
+    {
+      "point": "after_reserve",
+      "erasureStatus": 200,
+      "rawBodyAfterErasure": false,
+      "lateNonceSwept": true,
+      "sameAndFreshShaRefused": true
+    },
+    {
+      "point": "before_body",
+      "erasureStatus": 200,
+      "rawBodyAfterErasure": false,
+      "lateNonceSwept": true,
+      "sameAndFreshShaRefused": true
+    },
+    {
+      "point": "after_body",
+      "erasureStatus": 200,
+      "rawBodyAfterErasure": false,
+      "lateNonceSwept": true,
+      "sameAndFreshShaRefused": true
+    }
+  ],
+  "cron": {
+    "ran": true,
+    "statements": 93,
+    "calls": 88,
+    "refused": 0,
+    "pruned": true,
+    "writes": 42,
+    "rowsRead": 194,
+    "consumers": {
+      "cron": {
+        "statements": 78,
+        "completed": true
+      },
+      "notifications": {
+        "statements": 4,
+        "completed": true
+      },
+      "reports": {
+        "statements": 1,
+        "completed": true
+      },
+      "audit": {
+        "statements": 1,
+        "completed": true
+      }
+    }
+  },
+  "schemaMissing": [
+    {
+      "migration": "328_",
+      "status": 503,
+      "retainedBodies": 0
+    },
+    {
+      "migration": "329_",
+      "status": 503,
+      "retainedBodies": 0
+    }
+  ]
+}

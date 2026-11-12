@@ -1,0 +1,44 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-importer-adoption-wire-2",
+  "head": "f3f4f91003e5097e00966d559a6cf1975df01f1e",
+  "freshBase": "403c8317144571852bcbcaae34ba4e3ce8bcc06c",
+  "integratedMain": "d37e223eef89d3c7a0fb9e139fc7295d0b97111a",
+  "mainMerge": "f3f4f91003e5097e00966d559a6cf1975df01f1e",
+  "A": {
+    "head": "357cc9e96b5c6cce77faa332f2a2ba9644824e56",
+    "merge": "e041101a9b342ece818f4ad0badd01389326520f"
+  },
+  "B": {
+    "head": "fb705f8c7ef2043f8d012d0de9300c59d6d567d1",
+    "merge": "99f8b3b6435252517a588542bc4d1d303fdf92b8"
+  },
+  "productPushed": true,
+  "pushAttempts": 1,
+  "pr": null,
+  "fullHistory": true,
+  "identityAudit": "all origin/main..HEAD authors and committers fleet; side parents included; trailers absent",
+  "contractJudgmentChanges": 0,
+  "testRegistrations": {
+    "before": 104,
+    "after": 104
+  },
+  "migrations": [
+    "328_legacy_workspace_adoption.sql",
+    "329_legacy_package_custody.sql"
+  ],
+  "releaseVersion": "0.4.22",
+  "publicationScan": "NOT RUN: supported entrypoint absent; pending Mac COMPLETE scan",
+  "independentGate": "pending; original A/B holds unchanged",
+  "recordedAt": "2026-11-12T19:03:37.448072+00:00",
+  "terminal": "BLOCKED",
+  "ciRunId": 43286008263,
+  "ciConclusion": "failure",
+  "blockedBy": [
+    "readonly R2 diagnostics regression fixture expects global counts for admin",
+    "legacy v1 cleanup-only seeding needs B migration/API and final cleanup predicate",
+    "historical note/detail readers and install baseline outside C allocation",
+    "independent combined gate and COMPLETE Mac publication scan pending"
+  ],
+  "productTreeClean": true
+}

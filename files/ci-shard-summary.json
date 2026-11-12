@@ -1,0 +1,124 @@
+{
+  "runId": 43286008263,
+  "jobId": 131420363195,
+  "head": "f3f4f91003e5097e00966d559a6cf1975df01f1e",
+  "source": "already downloaded gh run-view archive; Verify _ import-and-reports/12_Run shard checks.txt",
+  "cases": [
+    {
+      "number": 1,
+      "result": "ok",
+      "name": "a legacy package is reviewed, imported and replayed through its command; the native owner reads retained transcripts, files and knowledge while old execution authority stays inert",
+      "durationMs": 154881.276607
+    },
+    {
+      "number": 2,
+      "result": "ok",
+      "name": "a full legacy import leaves the work counts unchanged and the default rule a draft, authorless texts are system, history opens read; each can be opted back in",
+      "durationMs": 64495.942936
+    },
+    {
+      "number": 3,
+      "result": "ok",
+      "name": "migration 320 removes the work rows a pre-fidelity full import left and keeps the native activity after it",
+      "durationMs": 59079.88064
+    },
+    {
+      "number": 4,
+      "result": "ok",
+      "name": "imported storage URLs serve their files to who may read them, the widget keeps its legacy look, team and hours, and the upgrade command brings an earlier import to the same rows",
+      "durationMs": 67890.458897
+    },
+    {
+      "number": 5,
+      "result": "ok",
+      "name": "the Worker package reader verifies immutable custody and chunk identity, while legacy source journals remain byte-exact under the native knowledge boundary",
+      "durationMs": 4198.22606
+    },
+    {
+      "number": 6,
+      "result": "not ok",
+      "name": "an owner runs a bounded legacy package through HTTP and queue, stops in-flight writes, resumes two real Worker deaths and replays zero rows",
+      "durationMs": 18173.379755
+    },
+    {
+      "number": 7,
+      "result": "ok",
+      "name": "review an export, import its history and private notes, repeat and repackage without effects, then undo exactly",
+      "durationMs": 284953.675
+    },
+    {
+      "number": 8,
+      "result": "ok",
+      "name": "an admin reviews conflicts, loses and regains authority, resumes after a Worker stop and keeps later native work when undo refuses",
+      "durationMs": 31396.975751
+    },
+    {
+      "number": 9,
+      "result": "ok",
+      "name": "erase an imported customer across reviewed, rejected and pending alias uploads; revoke their transcript and attachments while preserving the peer",
+      "durationMs": 10447.054471
+    },
+    {
+      "number": 10,
+      "result": "ok",
+      "name": "an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo",
+      "durationMs": 13420.10365
+    },
+    {
+      "number": 11,
+      "result": "ok",
+      "name": "a refused record never holds back a valid one and a stopped batch is never left behind: credential refusals stay out of packed batches across resume and every valid record imports",
+      "durationMs": 10001.374794
+    },
+    {
+      "number": 12,
+      "result": "ok",
+      "name": "any owner or admin pulls and the next pull by any of them works; every owner and admin sees the workspace pull, and an owner stops or takes over another member\u2019s stopped pull, or stops an approved pull that stopped or whose admin was removed",
+      "durationMs": 15324.237999
+    },
+    {
+      "number": 13,
+      "result": "ok",
+      "name": "an owner reads the Cutover sources with their live Zendesk counts after a pull applies, records steps that follow newest first with the source state, and an agent is refused",
+      "durationMs": 11016.119214
+    },
+    {
+      "number": 14,
+      "result": "ok",
+      "name": "an owner fetches every imported comment's files over the Zendesk connection into private storage: shown in place, private notes stay private, refusals by id, Retry-After honoured, and a second run fetches nothing already stored; undoing a later pull keeps its replies and notes with files",
+      "durationMs": 14291.649887
+    },
+    {
+      "number": 15,
+      "result": "ok",
+      "name": "a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing",
+      "durationMs": 50096.58781
+    },
+    {
+      "number": 16,
+      "result": "ok",
+      "name": "help filled by a Move in import stays noindex on every public page until a member publishes, then is indexable for good",
+      "durationMs": 46956.349698
+    },
+    {
+      "number": 17,
+      "result": "ok",
+      "name": "the public site and a configured help host answer D1's overload as the application does: a read is retried, then 503 with Retry-After, never 500, and a write is never re-run; a read's side effects happen once",
+      "durationMs": 98611.562409
+    },
+    {
+      "number": 18,
+      "result": "ok",
+      "name": "inspect calendar Reports and formula-safe exports against known durations, rates and exclusions, then revoke private export access",
+      "durationMs": 17794.807706
+    },
+    {
+      "number": 19,
+      "result": "ok",
+      "name": "resolve and reopen multichannel support with visible answer attribution, visitor feedback and permission-scoped team reports",
+      "durationMs": 15962.158086
+    }
+  ],
+  "passed": 18,
+  "failed": 1
+}

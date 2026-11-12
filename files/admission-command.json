@@ -1,0 +1,5 @@
+{
+  "command": "cloud_run node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs",
+  "head": "f3f4f91003e5097e00966d559a6cf1975df01f1e",
+  "exit": 0
+}

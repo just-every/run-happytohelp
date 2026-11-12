@@ -1,0 +1,46 @@
+{
+  "name": "AssertionError",
+  "states": [
+    "queued:verify_package",
+    "queued:context",
+    "queued:preflight",
+    "queued:objects",
+    "running:objects",
+    "queued:objects",
+    "queued:rows",
+    "running:rows",
+    "queued:rows",
+    "queued:knowledge",
+    "queued:verify_result",
+    "queued:cleanup",
+    "complete:done"
+  ],
+  "lastRun": {
+    "runId": "legacy-package:3b95c15b15eda65115f0f082e3efb4000eaca6ccf01916b839f1613059fd281c",
+    "manifestSha256": "3b95c15b15eda65115f0f082e3efb4000eaca6ccf01916b839f1613059fd281c",
+    "projectId": "0610987d-78f6-4dee-ba0f-8c8cd5b09295",
+    "sourceProjectId": "synthetic-wire-source",
+    "contractVersion": 2,
+    "mode": "full",
+    "state": "complete",
+    "phase": "done",
+    "attempt": 1,
+    "version": 202,
+    "cursor": {
+      "file": null,
+      "row": 0
+    },
+    "nextAt": 0,
+    "errorCode": null,
+    "createdAt": 1794509855153,
+    "updatedAt": 1794509883767,
+    "completedAt": 1794509883767,
+    "progress": {
+      "rows": 2168,
+      "bytes": 1050120,
+      "objects": 2
+    },
+    "canResume": false
+  },
+  "kills": 2
+}

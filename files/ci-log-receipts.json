@@ -1,0 +1,18 @@
+{
+  "calls": 2,
+  "commands": [
+    {
+      "command": "gh run view 43286008263 --repo just-every/run-happytohelp --job 131420363195 --log-failed",
+      "exit": 0,
+      "stdoutBytes": 0,
+      "recovery": "read existing local archive from that same CLI invocation, no additional network call",
+      "archiveEntry": "Verify _ import-and-reports/12_Run shard checks.txt"
+    },
+    {
+      "command": "gh run view 43286008263 --repo just-every/run-happytohelp --job 131430648968 --log-failed",
+      "exit": 0,
+      "stdoutBytes": 4031
+    }
+  ],
+  "newBlobDownloadRetries": 0
+}

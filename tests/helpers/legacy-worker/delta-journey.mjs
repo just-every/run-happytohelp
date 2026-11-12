@@ -23,7 +23,8 @@ export async function deltaJourney(runtime,scratch,bundle,token){
  assert.equal(read.find(row=>row.id===edited.id).content,edited.content);assert.ok(read.some(row=>row.id===fresh.id));assert.notEqual(read.find(row=>row.id===fresh.id).local_id,first.local_id,'native delivery IDs stay unique')
  const state=(await runtime.call('/_test/legacy/state-match',{body:{messageId:edited.id},status:200})).data
  assert.equal(state.matches,true)
- const native=await runtime.call(`/api/conversations/${conversation.id}/messages`,{token,body:{localId:'synthetic-native-after-import',content:'A native conversation change'},status:200});assert.equal(native.data.accepted,true)
+ const frontier=(await runtime.call(`/api/conversations/${conversation.id}`,{token,status:200})).data
+ const native=await runtime.call(`/api/conversations/${conversation.id}/messages`,{token,body:{localId:'synthetic-native-after-import',content:'A native conversation change',expectedRevision:frontier.revision,expectedLastMessageId:frontier.last_message_id},status:200});assert.equal(native.data.accepted,true)
  await runtime.take()
  const later={...fresh,id:'synthetic-held-message',local_id:'synthetic-held-local',content:'A later legacy addition',created_at:200000}
  const held=await start('delta-two',[later],{...context,tables:{...context.tables,messages:[...context.tables.messages,later]}})

@@ -1,5 +1,6 @@
 import {nativeSnapshot,assertRepeatSurvival} from '../helpers/zendesk-diagnostics/snapshot.mjs'
 import {diagnosticsAuthority} from '../helpers/zendesk-diagnostics/authority.mjs'
+import {boundedOriginPages} from '../helpers/zendesk-diagnostics/pagination.mjs'
 import {linkageObservations} from '../helpers/zendesk-diagnostics/linkage.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -231,6 +232,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   for(const r of zendesk.state.requests)assert.ok(r.method==='GET'||r.method==='POST'&&r.path==='/oauth/tokens',`${r.method} ${r.path}`)
 
   await linkageObservations(h)
+  await boundedOriginPages(h)
 
   // Disconnect removes the ciphertext and reports Zendesk's revoke outcome.
   const disconnected=await h.call(`${api}/zendesk/connection`,{method:'DELETE'})

@@ -12,7 +12,7 @@ export async function nativeSnapshot(h,project='p',limit=2){
   let cursor=null;const seen=new Set()
   do{
    const result=await h.raw(`${root}/${kind}?${new URLSearchParams({limit:String(limit),...(cursor?{cursor}:{})})}`)
-   assert.equal(result.response.status,200);assert.equal(result.response.headers.get('Cache-Control'),'no-store')
+   assert.equal(result.response.status,200);assert.equal(h.lastWrites,0,'native census has no writes');assert.equal(result.response.headers.get('Cache-Control'),'no-store')
    const page=result.data.data;assert.ok(page.rows.length<=limit)
    pages[kind].push(page.rows);cursors[kind].push(cursor)
    cursor=page.nextCursor

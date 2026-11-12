@@ -30,7 +30,12 @@ export async function mountedOrderingJourney(){
   const cron=await app.scheduled();assert.ok(cron.statements<=1000);assert.equal(cron.refused,0)
   for(const consumer of Object.values(cron.consumers))assert.equal(consumer.completed,true)
   await app.configure({})
-  if(process.env.H2H_EVIDENCE_DIR){await mkdir(process.env.H2H_EVIDENCE_DIR,{recursive:true});await writeFile(join(process.env.H2H_EVIDENCE_DIR,'mounted-ordering.json'),JSON.stringify({facts,cron},null,2)+'\n')}
+  const schemaMissing=[]
+  for(const prefix of ['328_','329_']){
+   const old=await startApp({captureQueue:true,cf:false,migrate:name=>!name.startsWith(prefix)})
+   try{const w=await old.seedWorkspace('schema-'+prefix),p=await packageFixture(join(scratch,'schema-'+prefix),'synthetic-schema-source'),response=await old.call(`/api/move-in/projects/${w.projectId}/legacy-import/${p.manifestSha256}/manifest`,{token:w.tokens.owner,method:'PUT',raw:true,body:p.bytes,headers:{'Content-Type':'application/json','X-Manifest-SHA256':p.manifestSha256}});assert.equal(response.status,503);assert.equal((await (await old.files).list({prefix:'legacy-package/'})).objects.length,0);schemaMissing.push({migration:prefix,status:response.status,retainedBodies:0})}finally{await old.close()}
+  }
+  if(process.env.H2H_EVIDENCE_DIR){await mkdir(process.env.H2H_EVIDENCE_DIR,{recursive:true});await writeFile(join(process.env.H2H_EVIDENCE_DIR,'mounted-ordering.json'),JSON.stringify({facts,cron,schemaMissing},null,2)+'\n')}
   return facts
  }finally{await app.close();await rm(scratch,{recursive:true,force:true})}
 }

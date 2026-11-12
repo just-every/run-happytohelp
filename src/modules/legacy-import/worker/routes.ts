@@ -9,12 +9,13 @@ import {refuse,WorkerImportError} from './errors'
 import {getRun,enqueue,view,runAuthority,type Run} from './state'
 import {requireInstallationOwner,firstOwnerPredicate,expectedOwnerEmail} from '../adoption/authority'
 import {getAdoption} from '../adoption/store'
-import {getCustody,assertCustody,custodyAssertion,renewCustody,discardCustody,enqueueCleanup,activeCustody} from '../custody'
+import {CustodyError,getCustody,assertCustody,custodyAssertion,renewCustody,discardCustody,enqueueCleanup,activeCustody} from '../custody'
 import {readCustodyManifest} from '../package-in/v2'
 import {requireStepUp} from '../../identity/two-factor/step-up'
 import {dbNow} from '../lease'
 import {result} from './result'
 export const legacyRunnerRoutes=new Hono<AppEnv>()
+legacyRunnerRoutes.onError((error,c)=>{c.header('Cache-Control','no-store');if(error instanceof CustodyError)return c.json({error:error.code.replaceAll('_',' '),code:error.code},error.status as 400);if(error instanceof HTTPException)return error.res?error.getResponse():c.json({error:error.message},error.status);return c.json({error:'Import storage unavailable',code:'database_unavailable'},503)})
 const root=LEGACY_ROUTE+'/:sha'
 legacyRunnerRoutes.use(`${root}/*`,async(c,next)=>{c.header('Cache-Control','no-store');await next()})
 async function admission(c:any,readPackage=true){
@@ -88,7 +89,7 @@ legacyRunnerRoutes.get(`${root}/result`,async c=>{
  const installationOwner=!!await c.env.DB.prepare(owner.sql).bind(...owner.params!).first()
  const {diagnostics,work,...scoped}=value
  const source=held?!!await c.env.DB.prepare(`SELECT 1 FROM legacy_package_custody c WHERE manifest_sha256=? AND ${activeCustody}`).bind(run.manifest_sha256).first():true
- return c.json({data:{...scoped,run:{...value.run,canResume:value.run.canResume&&source},...(installationOwner?{diagnostics,work}:{work:{before:{},after:null,delta:null,unchanged:null},diagnosticsUnavailable:'installation_owner_required'}),...(held?{sourceCustody:{status:held.status,expiresAt:held.expires_at,absoluteExpiresAt:held.absolute_expires_at,sourcePurged:held.status==='purged',invalidated:!source,cleanupPending:['invalidated','purging'].includes(held.status),canResume:source&&value.run.canResume},adoption:{destinationProjectId:run.source_project_id,membershipPolicy:'historical memberships; no access created'}}:{syntheticOnly:true})}})
+ return c.json({data:{...scoped,run:{...value.run,canResume:value.run.canResume&&source},...(installationOwner?{diagnostics,work}:{work:{before:{},after:null,delta:null,unchanged:null},diagnosticsUnavailable:'installation_owner_required'}),...(held?{sourceCustody:{status:!source&&['ready','admitting'].includes(held.status)?Math.min(held.expires_at,held.absolute_expires_at)<=Date.now()?'expired':'invalidated':held.status,expiresAt:held.expires_at,absoluteExpiresAt:held.absolute_expires_at,sourcePurged:held.status==='purged',invalidated:!source,cleanupPending:!source&&held.status!=='purged',canResume:source&&value.run.canResume},adoption:{destinationProjectId:run.source_project_id,membershipPolicy:'historical memberships; no access created'}}:{syntheticOnly:true})}})
 })
 legacyRunnerRoutes.post(`${root}/discard`,async c=>{
  const {actor,sha,held}=await admission(c,false);await body(c)

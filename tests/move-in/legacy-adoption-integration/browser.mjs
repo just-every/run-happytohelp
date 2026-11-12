@@ -11,7 +11,7 @@ export async function legacyPackageBrowserFlow({page,runtime,project,inspect,wid
   await page.setViewportSize({width,height:1000})
   await page.goto(runtime.origin+'/app/move-in');await page.waitForURL(`**/projects/${project}/move-in?legacy=1`)
   await page.getByRole('heading',{name:'HappyToHelp export',exact:true}).waitFor()
-  const good=await packageFixture(join(directory,'good'),'synthetic-browser-'+project,{large:true})
+  const good=await packageFixture(join(directory,'good'),'synthetic-browser-'+project,{large:true,staff:[{id:'synthetic-browser-staff',name:'Retired billing manager',email:'synthetic-browser-staff@example.test',created_at:1},{id:'synthetic-browser-admin',name:'Historical support lead',email:'synthetic-browser-admin@example.test',created_at:1}]})
   // Actual directory selection, then a changed local part is refused before acceptance.
   const first=good.manifest.chunks[0],original=await readFile(join(good.root,first.file));await writeFile(join(good.root,first.file),Buffer.alloc(original.length,32))
   await page.getByLabel('Export folder',{exact:true}).setInputFiles(good.root);await page.getByText('AI usage history omitted: 1 rows.',{exact:false}).waitFor();await page.getByText(`Review file inventory (${good.manifest.chunks.length+good.manifest.context.length+good.manifest.objects.length} files)`,{exact:false}).click();await shot('review')
@@ -32,6 +32,7 @@ export async function legacyPackageBrowserFlow({page,runtime,project,inspect,wid
   await page.getByRole('button',{name:'Approve this destination',exact:true}).click();await page.getByText('Destination approved.',{exact:false}).waitFor();await shot('approved')
   await page.getByRole('button',{name:'Import history',exact:true}).click();await page.getByRole('heading',{name:'Import result',exact:true}).waitFor();await shot('queued')
   await page.getByText(/^complete · verified$/).waitFor({timeout:120000});await shot('completed')
+  await page.getByText('Replay retained source',{exact:true}).click();const replayed=page.waitForResponse(r=>r.url().endsWith('/start')&&r.request().postData()?.includes('\"replay\":true'));await page.getByRole('button',{name:'Replay verification',exact:true}).click();assert.equal((await replayed).status(),202);await page.getByText('Counts and verification details',{exact:true}).click();await page.waitForFunction(()=>{try{const note=JSON.parse(document.querySelector('.legacy-result pre').textContent);return note.state==='complete'&&note.attempt?.number===2}catch{return false}},{},{timeout:120000});const note=JSON.parse(await page.locator('.legacy-result pre').textContent());assert.equal(note.attempt.appliedRows,0);await shot('replayed')
 
   // Server's unchanged secret classifier refuses a provider-shaped synthetic credential.
   const bad=await packageFixture(join(directory,'policy-refusal'),'synthetic-policy-'+project,{secret:true});await page.getByLabel('Export folder',{exact:true}).setInputFiles(bad.root);await page.getByRole('button',{name:/^(Upload package|Continue upload)$/}).click();await page.getByRole('alert').filter({hasText:'source secret policy'}).waitFor();await shot('policy-refused')

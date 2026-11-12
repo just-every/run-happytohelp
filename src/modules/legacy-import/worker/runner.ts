@@ -1,3 +1,4 @@
+import {preflightContextScope} from './v2'
 import type {Env,Job} from '../../../platform/env'
 import {boundedDatabase} from '../../../platform/d1-budget'
 import {LEGACY_JOB} from '../worker-contract'
@@ -23,6 +24,7 @@ export async function advanceLegacy(env:Env,job:Job){
  const found=await getRun(env,job.id);if(!found||found.project_id!==job.projectId||found.manifest_sha256!==job.manifestSha256||!['queued','running'].includes(found.state))return
  const run=await claim(env,found);if(!run)return
  if(![1,2].includes(run.contract_version)||run.contract_version!==job.contractVersion){await pause(env,run,'unsupported_contract_version');return}
+ if(run.contract_version===2)try{await assertCustody(env,{sha:run.manifest_sha256,generation:1},{projectId:run.project_id,actorId:run.actor_id,sessionHash:run.session_hash})}catch(error){await pause(env,run,error instanceof CustodyError?error.code:'database_unavailable');return}
  if(!await allowed(env,run)){await pause(env,run,'import_authority_revoked');return}
  let lease:(DeltaLease&{token:string})|null=null
  try{
@@ -37,7 +39,7 @@ export async function advanceLegacy(env:Env,job:Job){
   const phase=run.phase,c=cursor(run);let measured:{rows:number;bytes:number;objects?:number}
   if(phase==='verify_package')measured=await verifyPackage(env,run,manifest)
   else if(phase==='context')measured=c.stage==='transcripts'?await indexTranscripts(env,run):c.stage==='datasets'?await indexDatasets(env,run):c.stage==='earlier'||c.stage==='earlier_files'?await loadEarlierMedia(env,run):await loadContext(env,run,manifest)
-  else if(phase==='preflight')measured=c.stage==='delta'?await deltaMessages(env,run,manifest):c.stage==='delta_media'?await deltaMedia(env,run,manifest):c.stage==='objects'?await preflightObjects(env,run,manifest,lease):await rowStep(env,run,manifest,lease,true)
+  else if(phase==='preflight')measured=c.stage==='scope'?await preflightContextScope(env,run,manifest):c.stage==='delta'?await deltaMessages(env,run,manifest):c.stage==='delta_media'?await deltaMedia(env,run,manifest):c.stage==='objects'?await preflightObjects(env,run,manifest,lease):await rowStep(env,run,manifest,lease,true)
   else if(phase==='objects')measured=await copyObject(env,run,manifest,lease)
   else if(phase==='rows')measured=await rowStep(env,run,manifest,lease,false)
   else if(phase==='knowledge'){

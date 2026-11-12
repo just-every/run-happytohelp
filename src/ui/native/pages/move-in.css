@@ -24,3 +24,6 @@
 .legacy-package input[type="file"],.legacy-package .btn-link{min-height:44px}
 .legacy-package summary{min-height:44px;padding-block:10px}
 .legacy-package button{max-width:100%;overflow-wrap:anywhere;white-space:normal}
+.legacy-result .legacy-table-scroll{max-width:100%;overflow-x:auto}
+.legacy-result table{min-width:640px}
+.legacy-result th{overflow-wrap:normal;word-break:normal;white-space:nowrap}

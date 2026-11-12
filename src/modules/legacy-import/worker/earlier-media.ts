@@ -27,7 +27,7 @@ export async function loadEarlierMedia(env:Env,run:Run){
 }
 async function indexEarlierFiles(env:Env,run:Run){
  const c=cursor(run),source=await env.DB.prepare("SELECT media_id,row_json,legacy_key FROM legacy_import_context_media WHERE run_id=? AND link_id='prior-record' AND media_id>? ORDER BY media_id LIMIT 1").bind(run.id,c.after??'').first<{media_id:string;row_json:string;legacy_key:string}>()
- if(!source){await checkpoint(env,run,{phase:'preflight',cursor_json:JSON.stringify({stage:run.mode==='delta'?'delta':'rows',ordinal:0,row:0})});return {rows:0,bytes:0}}
+ if(!source){await checkpoint(env,run,{phase:'preflight',cursor_json:JSON.stringify({stage:run.contract_version===2?'scope':run.mode==='delta'?'delta':'rows',ordinal:0,row:0})});return {rows:0,bytes:0}}
  const row=JSON.parse(source.row_json),native=await env.DB.prepare('SELECT conversation_id,object_key FROM media WHERE project_id=? AND id=?').bind(run.source_project_id,source.media_id).first<{conversation_id:string;object_key:string}>()
  let file:any=native?{mediaId:source.media_id,objectKey:native.object_key,conversationId:native.conversation_id,contentType:String(row.content_type||row.mime_type||'application/octet-stream'),filename:String(row.original_filename||row.filename_original||row.filename||row.id)}:undefined
  if(!file){

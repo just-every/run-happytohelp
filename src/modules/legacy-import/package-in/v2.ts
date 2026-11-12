@@ -24,7 +24,7 @@ export async function readCustodyManifest(env:Env,projectId:string,sha:string,p?
  return validateV2Manifest(await readManifest(env.FILES,sha,projectId,2))
 }
 import {activeCustody} from '../custody'
-export async function readAdoptionReview(env:Env,sha:string,setup:string){const manifest=await readCustodyManifest(env,setup,sha);return {manifest,sourceRetentionDeadline:(await getCustody(env.DB,sha))!.expires_at}}
+export async function readAdoptionReview(env:Env,sha:string,setup:string){try{const manifest=await readCustodyManifest(env,setup,sha);return {manifest,sourceRetentionDeadline:(await getCustody(env.DB,sha))!.expires_at}}catch(error){if(error instanceof CustodyError)refuse(error.status,error.code,error.code.replaceAll('_',' '));throw error}}
 
 /** Schema is a capability boundary, checked before retaining any new source. */
 export async function requireV2Capability(env:Env){

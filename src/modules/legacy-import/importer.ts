@@ -18,11 +18,11 @@ export interface PreparedSlice {
  journalStatements?:(db:D1Database,sources:{table:string;sourceId:string}[],applied:boolean)=>D1PreparedStatement[]
  normalize:(targets:MappedRow[])=>Promise<{targets:MappedRow[];statements:D1PreparedStatement[];env:Env}>
 }
-export async function normalizeImportPlan(plan:Awaited<ReturnType<typeof planImport>>,env:Pick<Env,'DB'|'FILES'>,prepared?:PreparedSlice){
+export async function normalizeImportPlan(plan:Awaited<ReturnType<typeof planImport>>,env:Pick<Env,'DB'|'FILES'>,prepared?:PreparedSlice,include:(source:Awaited<ReturnType<typeof planImport>>['rows'][number])=>boolean=()=>true){
  if(!prepared)return {env,statements:[] as D1PreparedStatement[]}
- const mapped=plan.rows.flatMap(source=>source.mapped),schemas=await targetSchemas(env.DB,mapped.map(row=>row.table)),columnsOf=writtenColumns(schemas)
+ const sources=plan.rows.filter(include),mapped=sources.flatMap(source=>source.mapped),schemas=await targetSchemas(env.DB,mapped.map(row=>row.table)),columnsOf=writtenColumns(schemas)
  const normalized=await prepared.normalize(mapped.map(row=>({...row,row:columnsOf(row)})));let at=0
- for(const source of plan.rows){source.mapped=normalized.targets.slice(at,at+source.mapped.length);at+=source.mapped.length}
+ for(const source of sources){source.mapped=normalized.targets.slice(at,at+source.mapped.length);at+=source.mapped.length}
  return {env:{...env,DB:normalized.env.DB},statements:normalized.statements}
 }
 /** `media`: the workspace's files by legacy key (media-index.ts), resolved before mapping; a `--file` export without one
@@ -52,7 +52,7 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
  const lease=options.lease
  if(!options.checkOnly&&!lease)throw new Error('A legacy import writes only under its workspace lease')
  const context=options.context??bundle,erased=options.erased??new Set<string>()
- const plan=await planImport(bundle,{...options,identity:options.prepared?.identity}),normalization=await normalizeImportPlan(plan,env,options.prepared);env=normalization.env
+ const plan=await planImport(bundle,{...options,identity:options.prepared?.identity})
  const existing=await env.DB.prepare('SELECT id,bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{id:string;bundle_digest:string;state:string}>();if(existing&&existing.bundle_digest!==plan.bundleDigest)throw new Error('Import digest conflict')
  // A run's journal is read once. Existing canonical rows are looked up, and new
  // rows written, as one JSON array parameter per statement, so a production-sized
@@ -66,6 +66,7 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
  const isErased=(source:{table:string;row:Row})=>ofErased(erased,source.table,source.row,context)
  const live=pending.filter(source=>!isErased(source)),withheld=new Set(pending.filter(isErased))
  const replayedRows=plan.rows.filter(source=>priors.has(identity(source.table,[source.sourceId])))
+ const normalization=await normalizeImportPlan(plan,env,options.prepared,source=>pending.includes(source)&&!isErased(source));env=normalization.env
  const schemas=await targetSchemas(env.DB,plan.rows.flatMap(source=>source.mapped.map(m=>m.table)))
  const columnsOf=writtenColumns(schemas)
  const current=await canonicalRows(env.DB,live.flatMap(source=>source.mapped),columnsOf)

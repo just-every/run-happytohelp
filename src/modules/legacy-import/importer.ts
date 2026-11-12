@@ -15,12 +15,13 @@ export interface PreparedSlice {
  identity:PreparedIdentity
  /** False until the runner verifies every row of the ORIGINAL part. */
  finalize:false
- journalStatements?:(sources:{table:string;sourceId:string}[],applied:boolean)=>D1PreparedStatement[]
+ journalStatements?:(db:D1Database,sources:{table:string;sourceId:string}[],applied:boolean)=>D1PreparedStatement[]
  normalize:(targets:MappedRow[])=>Promise<{targets:MappedRow[];statements:D1PreparedStatement[];env:Env}>
 }
 export async function normalizeImportPlan(plan:Awaited<ReturnType<typeof planImport>>,env:Pick<Env,'DB'|'FILES'>,prepared?:PreparedSlice){
  if(!prepared)return {env,statements:[] as D1PreparedStatement[]}
- const normalized=await prepared.normalize(plan.rows.flatMap(source=>source.mapped));let at=0
+ const mapped=plan.rows.flatMap(source=>source.mapped),schemas=await targetSchemas(env.DB,mapped.map(row=>row.table)),columnsOf=writtenColumns(schemas)
+ const normalized=await prepared.normalize(mapped.map(row=>({...row,row:columnsOf(row)})));let at=0
  for(const source of plan.rows){source.mapped=normalized.targets.slice(at,at+source.mapped.length);at+=source.mapped.length}
  return {env:{...env,DB:normalized.env.DB},statements:normalized.statements}
 }
@@ -95,7 +96,7 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
  const leased=async(statements:D1PreparedStatement[])=>env.DB.batch([lease!.assertion(env.DB),...normalization.statements,...statements,lease!.cleared(env.DB)]).catch(async error=>{await lease!.confirm();throw error})
  await leased([env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now())])
  await confirmReplayedState(env.DB,plan.id,replayedRows,columnsOf,leased)
- if(replayedRows.length&&options.prepared?.journalStatements)await leased(options.prepared.journalStatements(replayedRows,false))
+ if(replayedRows.length&&options.prepared?.journalStatements)await leased(options.prepared.journalStatements(env.DB,replayedRows,false))
  for(const {object,ids} of leftovers)if(await env.FILES.head(object.key)&&!await heldByNativeMedia(env.DB,ids,object.key)){await leased([env.DB.prepare('DELETE FROM legacy_import_objects WHERE run_id=? AND object_key=?').bind(plan.id,object.key)]);await env.FILES.delete(object.key)}
  for(const object of objects){
   const bytes=Uint8Array.from(atob(object.dataBase64),c=>c.charCodeAt(0)),current=await env.FILES.get(object.key);let uploaded=false
@@ -143,7 +144,7 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
   if(reporting.length)statements.push(insertJson(env.DB,'INSERT OR IGNORE INTO reporting_legacy_conversations(project_id,conversation_id,run_id)',3,reporting))
   if(state.length)statements.push(stateStatement(env.DB,state))
   statements.push(insertJson(env.DB,'INSERT INTO legacy_import_rows(run_id,source_table,source_id,row_digest,source_json,target_table,target_key,status)',8,journal))
-  if(options.prepared?.journalStatements)statements.push(...options.prepared.journalStatements(group.map(write=>write.source),true))
+  if(options.prepared?.journalStatements)statements.push(...options.prepared.journalStatements(env.DB,group.map(write=>write.source),true))
   // What the import writes is history, not work (imported-history.ts): reads, the unpublished default rules, no trigger rows.
   statements.push(...importedHistoryStatements(env.DB,{projects,conversations,publishDefaultRules:options.publishDefaultRules,leaveUnread:options.leaveUnread}),...purgeWorkRows(env.DB))
   // D1 reports each statement's server time; the batch's sum is its share of the database's CPU.

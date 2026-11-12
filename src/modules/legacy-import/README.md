@@ -148,30 +148,63 @@ original remains archived otherwise.
 
 The public command uses the same `v3` local persistence layout as Wrangler/rer. Source `events` of type `INTERNAL_NOTE` become private notes; nullable category `published_at` retains drafts. Soft-deleted rows and their dependent transcripts remain archive-only.
 
-### Worker preparation (synthetic only; runner not installed)
+### Installed Worker runner (synthetic matched-workspace qualification)
 
-The additive `327_legacy_import_worker.sql` schema reserves the durable runner,
-part, context and result-count stores. Apply it before any future Worker runner
-uses them; it does not change native rows, authority or work. The independent
-`worker/reader.ts` checks private package custody, actual JSON bytes and R2 stored
-SHA-256 checksums in the fixed installation-local `legacy-package/<sha>/` layout.
-It reproduces the original whole-chunk journal identity before slicing. This
-preparation does not install HTTP controls, queue execution or a completed result.
+Apply `327_legacy_import_worker.sql` before this Worker serves traffic, after all
+missing published migrations and a complete D1/R2/DO/private-settings backup.
+The migration adds private run, part, indexed context and result-count stores.
+It does not reset native rows or change the release version.
 
-The native knowledge boundary now recognizes quoted source table names and keeps
-legacy journal/context bytes exact. Native text targets still use that boundary.
-A pure canonicalization plan and atomic reference-write integration are needed
-before the runner can safely use the existing importer: the current canonicalizer
-writes reference blocks while preparing values, after import state hashes have
-already been computed. Planning it during read-only package preflight would also
-write native state. Cross-workspace knowledge matches need an explicit fidelity
-ruling; they can currently hide imported literal text behind an unavailable
-reference. No exemption of native message or note content is supplied here.
+The owner/admin `data.import` doors under
+`/api/move-in/projects/:projectId/legacy-import/:sha` are `POST start`, `resume`,
+`stop` and `GET result`. Start binds the approved original manifest digest and
+fixed exclusions (AI usage is omitted by default); `replay:true` starts another
+attempt using the same chunk journals. The source workspace must equal the URL
+workspace. A mismatch returns `409 destination_policy_required`. Resume can
+explicitly replace a paused/stopped run's authority with the current owner/admin
+session. A revoked session pauses; Stop fences in-flight commits by run version.
 
-Future start/preflight must require the package source workspace to equal the URL
-workspace and existing owner/admin `data.import` access. A fresh Business workspace
-with a different ID still needs the destination-policy decision. Keep source
-packages private for synthetic resume; real customer remote use requires allocated
-package-custody/contact-erasure work. This migration and reader do not qualify that
-retention policy or a Managed installation. Upload, CPU/heap qualification,
-kill/restart/resume and counts-only completion remain unexercised here.
+Each `legacy-import.step` JOBS wake reads its phase and cursor from D1, claims the
+run for 60 seconds using the DB clock, takes the separate nonwaiting workspace
+import/erasure fence, performs one bounded unit and persists the next wake before
+sending it. Minute cron only discovers/enqueues at most ten due runs, using
+unused credit within the existing jobs envelope. Duplicate/lost wakes and process
+death recover from those checkpoints and the original source-row journals.
+
+Preparation verifies every private package part, hydrates indexed context and
+preflights all source rows and objects before canonical writes. Mapping and
+full/delta application use the existing engine. Slices retain the ORIGINAL
+whole-part identity. Canonical rows, import state digests, reference/index writes,
+source journals, work cleanup and run/lease/current-authority guards share a
+transaction. A lost cursor after commit replays its unchanged journal.
+
+Knowledge planning is read-only. Imported transcript literals remain literal;
+other imported copied fields match destination knowledge only. Ordinary native
+message/note writes retain their existing knowledge protection. The reference
+plan commits with the canonical rows whose state digest it describes.
+
+Initial ceilings remain experimental until the accompanying workerd measurements
+qualify them: 25 mapped/context rows and 262,144 source bytes per ordinary unit,
+one 4 MiB part parse, one streamed 16 MiB object, 200 metered D1 statements and
+8 MiB relationship closure. Timestamp ties are sorted with the CLI's JavaScript
+collation in a bounded tie group (at most 250 rows); larger indivisible rows or
+closures pause `row_too_large`. No CPU limit is raised. Workload counts and wall
+duration are not CPU measurements; app results leave unavailable CPU/heap values
+null. The test harness uses the pinned workerd inspector for isolate sampling and
+heap measurements.
+
+Result reads durable table/journal equality, exclusions, canonical attachment
+size/stored SHA-256 equality, attempt apply/replay counts, released leases and
+whole-installation work deltas. Optional counts-only `diagnostics` adds workspace
+conversation count, distinct delta source IDs, incomplete delta runs, five
+ordered sample conversation IDs and the before-import work baseline. An original
+installation baseline is null when none was recorded. Concurrent native work is
+not attributed to the importer. Scratch is deleted in bounded pages after result
+verification; runs, counts, original journals and private source packages remain.
+
+This round supports synthetic matched-workspace rehearsal only. Arbitrary fresh
+Business adoption and source-package retention/contact-erasure qualification are
+separate allocated rounds. Package originals and new scratch are not yet covered
+by native contact erasure. Do not treat local proof as Managed plan, installation,
+real-customer remote-use or release qualification. The runner supplies no upload
+endpoint, provider credential, CLI remote fallback or public source download.

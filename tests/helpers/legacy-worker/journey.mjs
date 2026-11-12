@@ -67,8 +67,9 @@ export async function workerRunnerJourney({packageRoot,interrupt=true,measure=tr
    await runtime.call(base+'/stop',{token,body:{},status:202});await runtime.call('/_test/legacy/barrier',{body:{}});await pending
    assert.equal(await count('SELECT count(*) n FROM legacy_import_rows'),before);facts.stopFenced=true
    await runtime.call(base+'/resume',{token,body:{approvedManifestSha256:sha},status:202});queue=await runtime.take()
-   const committed=runtime.step(queue.splice(0,1),{'x-legacy-barrier':'after_canonical'}).catch(()=>null)
-   for(let n=0;n<100;n++){if((await runtime.call('/_test/legacy/barrier')).data.barrier==='after_canonical')break;await new Promise(resolve=>setTimeout(resolve,20));if(n===99)throw new Error('After-commit barrier not reached')}
+   let completed
+   const committed=runtime.step(queue.splice(0,1),{'x-legacy-barrier':'after_canonical'}).then(value=>{completed=value;return value}).catch(()=>null)
+   for(let n=0;n<100;n++){if((await runtime.call('/_test/legacy/barrier')).data.barrier==='after_canonical')break;await new Promise(resolve=>setTimeout(resolve,20));if(n===99)throw new Error('After-commit barrier not reached '+JSON.stringify({run:await readRun().then(({state,phase,error_code})=>({state,phase,error_code})),failures:completed?.failures}))}
    assert.ok(await count('SELECT count(*) n FROM legacy_import_rows')>before)
    await runtime.crash();await committed;facts.kills++;queue=[]
    await runtime.db.batch([runtime.db.prepare('UPDATE legacy_import_worker_runs SET lease_until=0,next_at=0 WHERE id=?').bind(runId),runtime.db.prepare('UPDATE legacy_delta_leases SET expires_at=0 WHERE project_id=?').bind(project)])

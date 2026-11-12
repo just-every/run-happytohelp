@@ -21,12 +21,33 @@ export const blockSourcesObservedSql=(requested:string)=>`NOT EXISTS(SELECT 1 FR
 // unique (project_id, fingerprint) index. With a plain JOIN the planner walks every block of the
 // workspace through knowledge_blocks_project and rescans the array for each one.
 export const blockReadbackSql=`SELECT b.id FROM json_each(?) requested CROSS JOIN knowledge_reply_blocks b ON b.project_id=? AND b.fingerprint=json_extract(requested.value,'$.fingerprint') WHERE ${blockSourcesObservedSql('requested.value')} ORDER BY CAST(requested.key AS INTEGER)`
+async function blockRows(env:Env,projectId:string,blocks:BlockInput[]){
+ return await Promise.all(blocks.map(async block=>{const text=block.kind==='answer'?await canonicaliseKnowledge(env,projectId,block.text,undefined,false,block.generationId):block.text;const payload_json=JSON.stringify({text,title:block.title,url:block.url}),sources_json=JSON.stringify([...new Set(block.sources)].sort()),generation_id=block.generationId||null,author_contact_id=block.authorContactId||null;
+ const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify([block.kind,payload_json,sources_json,generation_id,author_contact_id]))),fingerprint=Array.from(new Uint8Array(bytes),n=>n.toString(16).padStart(2,'0')).join('');
+ return {id:crypto.randomUUID().replaceAll('-',''),project_id:projectId,kind:block.kind,payload_json,sources_json,generation_id,author_contact_id,created_at:Date.now(),fingerprint,sourceIdentities:block.sourceIdentities||[]}}))
+}
+/** Copy-only, read-only planning. Stable IDs make separate planned fields agree;
+ * an existing native block retains its original ID. Source-incarnation and ID
+ * assertions execute with the caller's canonical rows, never during planning. */
+export async function planCopyBlocks(env:Env,projectId:string,blocks:BlockInput[]){
+ if(blocks.length>250||blocks.some(block=>block.kind!=='copy'))throw new Error('KNOWLEDGE_PLAN_TOO_LARGE')
+ const rows=await blockRows(env,projectId,blocks),serialized=JSON.stringify(rows)
+ if(new TextEncoder().encode(serialized).length>262144)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE')
+ const existing=await env.DB.prepare(`SELECT b.fingerprint,b.id FROM json_each(?) requested CROSS JOIN knowledge_reply_blocks b ON b.project_id=? AND b.fingerprint=json_extract(requested.value,'$.fingerprint') WHERE ${blockSourcesObservedSql('requested.value')}`).bind(serialized,projectId).all<{fingerprint:string;id:string}>()
+ const ids=new Map(existing.results.map(row=>[row.fingerprint,row.id]))
+ for(const row of rows)row.id=ids.get(row.fingerprint)??row.fingerprint.slice(0,32)
+ if(!rows.length)return {tokens:[] as string[],statements:[] as D1PreparedStatement[]}
+ const payload=JSON.stringify(rows),guard=crypto.randomUUID()
+ return {tokens:rows.map(row=>referenceToken(row.id)),statements:[
+  env.DB.prepare(`INSERT OR IGNORE INTO knowledge_reply_blocks SELECT json_extract(requested.value,'$.id'),json_extract(requested.value,'$.project_id'),json_extract(requested.value,'$.kind'),json_extract(requested.value,'$.payload_json'),json_extract(requested.value,'$.sources_json'),json_extract(requested.value,'$.generation_id'),json_extract(requested.value,'$.author_contact_id'),json_extract(requested.value,'$.created_at'),json_extract(requested.value,'$.fingerprint') FROM json_each(?) requested WHERE ${blockSourcesObservedSql('requested.value')}`).bind(payload),
+  env.DB.prepare(`INSERT INTO knowledge_write_guards(id,valid) SELECT ?,NOT EXISTS(SELECT 1 FROM json_each(?) requested WHERE NOT (${blockSourcesObservedSql('requested.value')}) OR NOT EXISTS(SELECT 1 FROM knowledge_reply_blocks b WHERE b.id=json_extract(requested.value,'$.id') AND b.project_id=json_extract(requested.value,'$.project_id') AND b.fingerprint=json_extract(requested.value,'$.fingerprint')))` ).bind(guard,payload),
+  env.DB.prepare('DELETE FROM knowledge_write_guards WHERE id=?').bind(guard),
+ ]}
+}
 export async function createBlocks(env:Env,projectId:string,blocks:BlockInput[]){
  // Protect answer bytes before wrapping or indexing them. A permitted retrieved
  // source cannot authorize an unrelated restricted copy in the model output.
- const rows=await Promise.all(blocks.map(async block=>{const text=block.kind==='answer'?await canonicaliseKnowledge(env,projectId,block.text,undefined,false,block.generationId):block.text;const payload_json=JSON.stringify({text,title:block.title,url:block.url}),sources_json=JSON.stringify([...new Set(block.sources)].sort()),generation_id=block.generationId||null,author_contact_id=block.authorContactId||null;
- const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify([block.kind,payload_json,sources_json,generation_id,author_contact_id]))),fingerprint=Array.from(new Uint8Array(bytes),n=>n.toString(16).padStart(2,'0')).join('');
- return {id:crypto.randomUUID().replaceAll('-',''),project_id:projectId,kind:block.kind,payload_json,sources_json,generation_id,author_contact_id,created_at:Date.now(),fingerprint,sourceIdentities:block.sourceIdentities||[]}}))
+ const rows=await blockRows(env,projectId,blocks)
  if(!rows.length)return []
  const tokens:string[]=[]
  for(let offset=0;offset<rows.length;){

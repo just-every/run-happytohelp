@@ -1,16 +1,51 @@
 import {guardKnowledgeWrite,textBindingIndexes} from './write-bindings'
 import type {Env} from '../../platform/env'
-import {canonicaliseFields,ticketCustody} from './canonicaliser'
+import {canonicaliseFields,planCanonicaliseFields,ticketCustody} from './canonicaliser'
 import {knowledgeWords} from './words'
 
 export interface KnowledgeWriteScope {projectId?:string;authorContactId?:string;conversationId?:string}
 const boundaries=new WeakSet<object>()
+const underlying=new WeakMap<object,D1Database>()
+type PlannedTarget={table:string;row:Record<string,unknown>;key:string[]}
+/** This capability carries exact planned target values, not a native-table exemption. */
+export async function planLegacyKnowledgeTargets(env:Env,projectId:string,targets:PlannedTarget[]){
+ const sourceTables=new Set(['knowledge_articles','knowledge_categories','knowledge_article_categories','knowledge_documents','knowledge_datasets','knowledge_versions','projects','users','memberships','project_settings','brands'])
+ const normalized:PlannedTarget[]=[],statements:D1PreparedStatement[]=[]
+ for(const target of targets){
+  if(sourceTables.has(target.table)){normalized.push(target);continue}
+  const literal=['messages','conversation_notes'].includes(target.table)
+  const content=literal?target.row.content:undefined
+  const input=literal?{...target.row,content:undefined}:target.row
+  const plan=await planCanonicaliseFields(env,projectId,input,{custody:target.row.conversation_id?ticketCustody(String(target.row.conversation_id)):undefined})
+  normalized.push({...target,row:literal?{...plan.value,content}:plan.value});statements.push(...plan.statements)
+ }
+ if(statements.length>120)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE')
+ const base={...env,DB:underlying.get(env.DB)??env.DB}
+ return {targets:normalized,statements,env:plannedEnvironment(base,()=>({projectId}),normalized)}
+}
+// Only the core's exact INSERT/UPDATE shapes and planned row values are admitted.
+// Everything else still takes the ordinary native boundary.
+function plannedTarget(sql:string,values:unknown[],targets:PlannedTarget[]){
+ const insert=sql.match(/^INSERT INTO "([a-z_]+)" \(([^)]+)\) SELECT /i)
+ if(insert&&values.length===1&&typeof values[0]==='string'){
+  const names=insert[2].split(',').map(name=>name.replaceAll('"','')),wanted=targets.filter(row=>row.table===insert[1]).map(({row})=>JSON.stringify(names.map(name=>row[name])))
+  let rows:unknown;try{rows=JSON.parse(values[0])}catch{return false}
+  return Array.isArray(rows)&&rows.length>0&&rows.every(row=>wanted.includes(JSON.stringify(row)))
+ }
+ const update=sql.match(/^UPDATE "([a-z_]+)" SET (.+) WHERE (.+)$/i)
+ if(update&&values.length===1&&typeof values[0]==='string'){
+  const names=[...update[2].matchAll(/"([a-z_]+)"=/g),...update[3].matchAll(/"([a-z_]+)"=/g)].map(match=>match[1])
+  return targets.some(target=>target.table===update[1]&&JSON.stringify(names.map(name=>target.row[name]))===values[0])
+ }
+ return false
+}
 /** Source bytes and the author's own help templates stay in their owning stores.
  * Every other D1 writer, including SQL/JSON content movers, uses this boundary.
  * The guard and write share a transaction: a concurrent source edit cannot land
  * between index observation and storing newly unrecognized copied text. */
-export function knowledgeWriteEnvironment(env:Env,scope:()=>KnowledgeWriteScope):Env{
- if(boundaries.has(env.DB))return env
+export function knowledgeWriteEnvironment(env:Env,scope:()=>KnowledgeWriteScope):Env{return plannedEnvironment(env,scope)}
+function plannedEnvironment(env:Env,scope:()=>KnowledgeWriteScope,targets?:PlannedTarget[]):Env{
+ if(boundaries.has(env.DB)&&!targets)return env
  const original=env.DB,statements=new WeakMap<object,{sql:string;values:unknown[]}>()
  const candidate=(value:unknown):boolean=>{if(typeof value==='string'){if(/^[\[{]/.test(value)){try{return candidate(JSON.parse(value))}catch{}}return knowledgeWords(value).length>=12}if(Array.isArray(value))return value.some(candidate);if(value&&typeof value==='object')return Object.entries(value).some(([key,item])=>candidate(key)||candidate(item));return false}
  const mutation=(sql:string)=>/^\s*(?:INSERT|UPDATE|REPLACE|WITH)\b/i.test(sql)&&/\b(?:INSERT|UPDATE|REPLACE)\b/i.test(sql)
@@ -26,6 +61,7 @@ export function knowledgeWriteEnvironment(env:Env,scope:()=>KnowledgeWriteScope)
  }
 
  async function prepare(sql:string,values:unknown[]){
+  if(targets&&plannedTarget(sql,values,targets))return {statement:original.prepare(sql).bind(...values),protected:true}
   if(!mutation(sql)||source(sql)||!values.some(candidate))return {statement:original.prepare(sql).bind(...values),protected:false}
   const stored=textBindingIndexes(sql).indexes.filter(index=>candidate(values[index]))
   if(!stored.length)return {statement:original.prepare(sql).bind(...values),protected:false}
@@ -55,11 +91,12 @@ export function knowledgeWriteEnvironment(env:Env,scope:()=>KnowledgeWriteScope)
   const result={bind(...params:unknown[]){return wrap(sql,params)},run(){return execute(sql,values,'run',[])},all(){return execute(sql,values,'all',[])},first(...args:any[]){return execute(sql,values,'first',args)},raw(...args:any[]){return execute(sql,values,'raw',args)}} as D1PreparedStatement
   statements.set(result,{sql,values});return result
  }
- const database={[Symbol.for('happytohelp.d1.layer')]:(instrument:(db:D1Database)=>D1Database)=>knowledgeWriteEnvironment({...env,DB:instrument(original)},scope).DB,prepare:wrap,async batch(batch:D1PreparedStatement[]){
+ const database={[Symbol.for('happytohelp.d1.layer')]:(instrument:(db:D1Database)=>D1Database)=>plannedEnvironment({...env,DB:instrument(original)},scope,targets).DB,prepare:wrap,async batch(batch:D1PreparedStatement[]){
   const prepared=[]
   for(const statement of batch){const description=statements.get(statement);prepared.push(description?await prepare(description.sql,description.values):{statement,protected:false})}
   return original.batch(prepared.map(row=>row.statement))
  },exec:(...args:any[])=>original.exec(...args as [string]),dump:()=>original.dump()} as unknown as D1Database
+ underlying.set(database,original)
  boundaries.add(database)
  return {...env,DB:database}
 }

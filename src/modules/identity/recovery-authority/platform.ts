@@ -29,7 +29,7 @@ platformRecovery.post('/challenge',async c=>{
  const predicate=firstOwnerPredicate(c.env,owner.user_id,owner.project_id)
  const {row}=await create(c,{mode:'managed',userId:owner.user_id,projectId:owner.project_id,nonce:body.nonce,challengeExp:now+300,predicate:{sql:`(${predicate.sql}) AND EXISTS(SELECT 1 FROM identity_recovery_authority WHERE singleton=1 AND watermark<=? AND acknowledged_generation=?)`,args:[...predicate.args,config.generation,config.generation]}})
  const challenge=await sign(c.env,{v:1,type:'app-challenge',iss:config.app,aud:`${config.platform}/api/installations/${config.installation}/owner-recovery`,installation_id:config.installation,app_id:'happytohelp',environment:'production',app_origin:config.app,owner_id:owner.user_id,workspace_id:owner.project_id,challenge_id:row.id,nonce:body.nonce,generation:config.generation,iat:now,exp:now+300})
- return c.json({requestId:row.id,challenge,platformOrigin:config.platform,installationId:config.installation,platformUrl:`${config.platform}/installations/${config.installation}/settings`,expiresAt:row.expires_at},201)
+ return c.json({requestId:row.id,challenge,platformOrigin:config.platform,installationId:config.installation,platformUrl:`${config.platform}/apps/${encodeURIComponent(config.installation)}/settings/app-settings`,expiresAt:row.expires_at},201)
 })
 platformRecovery.post('/authorize',async c=>{
  const payload=await verify(c.env,await json(c),'platform-authorization'),config=configuration(c.env)

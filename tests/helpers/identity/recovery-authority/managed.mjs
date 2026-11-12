@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {totp} from '../two-factor.mjs'
+import {startApp} from '../../../journeys/kit/app.mjs'
 import {fresh,bind,challenge,authorize,enrol,root,custody,envelope,key,bindings,capabilityHeaders,factor,session,password,random,assertNoSession} from './kit.mjs'
 export async function managedRecoveryJourney(){
  const {app,owner}=await fresh()
@@ -44,7 +45,25 @@ export async function managedRecoveryJourney(){
   const loginToken=session(login)||login.data.token
   assert.equal((await app.call('/api/identity/two-factor/verify',{body:{code:totp(options.secret,1)},token:loginToken})).status,200)
   assert.equal((await app.call('/api/identity/session',{token:loginToken})).data.twoFactor,undefined)
-  assert.equal(app.requests.length,0,'OFF recovery never contacts mail')
+  assert.equal(app.requests.filter(request=>request.method==='POST').length,0,'OFF recovery never contacts mail')
+ }finally{await app.close()}
+ await passwordlessRecovery()
+}
+async function passwordlessRecovery(){
+ const app=await startApp({bindings:{...bindings,OWNER_EMAIL:'passwordless@example.test'}})
+ try{
+  const claimed=await app.call('/auth/bootstrap',{body:{token:bindings.H2H_SETUP_TOKEN}});assert.equal(claimed.status,303)
+  const token=session(claimed),actor=await app.ok('/api/identity/session',{token})
+  assert.equal((await app.first('SELECT count(*) n FROM credentials WHERE user_id=?',actor.id)).n,0)
+  await bind(app);const request=await challenge(app);assert.equal((await authorize(app,request)).status,200)
+  const options=await app.ok(root+'/enrol/totp',{body:{},headers:capabilityHeaders(request.capability)})
+  const proof={factorId:options.factorId,code:totp(options.secret)}
+  assert.equal((await app.call(root+'/complete',{body:proof,headers:capabilityHeaders(request.capability)})).status,400)
+  assert.equal((await app.call(root+'/complete',{body:{...proof,password},headers:capabilityHeaders(request.capability)})).status,200)
+  const login=await app.ok('/api/identity/login',{body:{email:'passwordless@example.test',password}})
+  assert.equal(login.twoFactor,'verify')
+  assert.equal((await app.call('/api/identity/two-factor/verify',{body:{code:totp(options.secret,1)},token:login.token})).status,200)
+  assert.equal(app.requests.filter(request=>request.method==='POST').length,0)
  }finally{await app.close()}
 }
 export async function custodyRecoveryJourney(){

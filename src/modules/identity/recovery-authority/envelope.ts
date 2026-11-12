@@ -41,9 +41,3 @@ export async function verify(env:Env,input:unknown,type:MessageType):Promise<Pay
  if(type==='custody-request'&&!['bind','status','revoke'].includes(String(payload.op)))refuse()
  return payload
 }
-// No outer duplicate fields, including escaped field names. Payload duplicates
-// are rejected by canonical byte equality above.
-export function envelopeKeys(text:string){
- const keys=[...text.matchAll(/"((?:[^"\\]|\\.)*)"\s*:/g)].map(match=>{try{return JSON.parse('"'+match[1]+'"')}catch{return ''}})
- if(keys.length!==3||new Set(keys).size!==3)refuse()
-}

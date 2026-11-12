@@ -44,5 +44,5 @@ export interface Predicate {sql:string;args:unknown[]}
 export function assertion(db:D1Database,predicate:Predicate){return db.prepare(`INSERT INTO identity_recovery_assertions(ok) SELECT CASE WHEN (${predicate.sql}) THEN 1 ELSE 0 END`).bind(...predicate.args)}
 export async function guarded(db:D1Database,predicate:Predicate,statements:D1PreparedStatement[]){
  try{return await db.batch([assertion(db,predicate),...statements,db.prepare('DELETE FROM identity_recovery_assertions')])}
- catch(error){if(String(error).includes('CHECK constraint failed: ok=1'))refuse(409);throw error}
+ catch(error){if(/CHECK constraint failed: ok=1|UNIQUE constraint failed/.test(String(error)))refuse(409);throw error}
 }

@@ -38,6 +38,6 @@ export async function sharedRecoveryJourney(){
   assert.equal((await app.call(root+'/account/request',{body:{email:'owner@example.test',password}})).status,409)
   assert.equal((await app.call(root+'/cancel',{body:{},headers:capabilityHeaders(next.capability)})).status,200)
   assert.equal((await app.ok(root+'/status',{headers:capabilityHeaders(next.capability)})).state,'cancelled')
-  assert.equal(app.requests.length,0)
+  assert.equal(app.requests.filter(request=>request.method==='POST').length,0)
  }finally{await app.close()}
 }

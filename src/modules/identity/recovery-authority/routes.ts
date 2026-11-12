@@ -5,7 +5,7 @@ import {primaryRecovery} from './primary'
 import {consentRecovery} from './consent'
 import {enrolmentRecovery} from './enrolment'
 import {browserOrigin,refuse} from './common'
-import {accountSql,approvalsSql,audit,authority,cleanup,load} from './store'
+import {accountSql,approvalsSql,currentApprovalSql,audit,authority,cleanup,load} from './store'
 export const recoveryAuthority=new Hono<AppEnv>()
 recoveryAuthority.use('*',async(c,next)=>{c.header('Cache-Control','no-store');await cleanup(c.env);await next()})
 recoveryAuthority.route('/',platformRecovery)
@@ -15,7 +15,7 @@ recoveryAuthority.route('/',enrolmentRecovery)
 recoveryAuthority.get('/status',async c=>{
  browserOrigin(c);const row=await load(c),predicate=await authority(c.env,row)
  const valid=Boolean(await c.env.DB.prepare(`SELECT 1 WHERE ${predicate.sql}`).bind(...predicate.args).first())
- const counts=row.mode==='account'?await c.env.DB.prepare(`SELECT (SELECT count(*) FROM memberships WHERE user_id=r.user_id) required,(SELECT count(*) FROM identity_recovery_approvals WHERE request_id=r.id) approved,(${approvalsSql}) ready FROM identity_recovery_requests r WHERE r.id=? AND ${accountSql}`).bind(row.id).first<{required:number;approved:number;ready:number}>():null
+ const counts=row.mode==='account'?await c.env.DB.prepare(`SELECT (SELECT count(*) FROM memberships WHERE user_id=r.user_id) required,(SELECT count(*) FROM memberships target WHERE target.user_id=r.user_id AND (${currentApprovalSql})) approved,(${approvalsSql}) ready FROM identity_recovery_requests r WHERE r.id=? AND ${accountSql}`).bind(row.id).first<{required:number;approved:number;ready:number}>():null
  const needsPassword=!await c.env.DB.prepare('SELECT 1 FROM credentials WHERE user_id=?').bind(row.user_id).first()
  return c.json({requestId:row.id,state:['completed','cancelled','expired','refused'].includes(row.state)?row.state:valid?row.state:'refused',expiresAt:row.expires_at,mode:row.mode,approved:valid?(counts?.approved??0):0,required:valid?(counts?.required??0):0,ready:valid&&row.state==='authorized'&&(row.mode!=='account'||Boolean(counts?.ready)),needsPassword})
 })

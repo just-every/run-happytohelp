@@ -5,6 +5,6 @@ export function recoveryArchiveRow(table,row){return table==='identity_recovery_
 export async function recoveryArchiveSafety({db,tables}){
  const statements=[];
  for(const name of recoveryPrivateTables)if(tables[name])statements.push(db.prepare(`DELETE FROM "${tables[name].replaceAll('"','""')}"`));
- if(tables.identity_recovery_authority)statements.push(db.prepare(`UPDATE "${tables.identity_recovery_authority.replaceAll('"','""')}" SET acknowledged_generation=NULL`));
+ if(tables.identity_recovery_authority)statements.push(db.prepare(`UPDATE "${tables.identity_recovery_authority.replaceAll('"','""')}" SET acknowledged_generation=NULL,watermark=max(watermark,coalesce((SELECT watermark FROM identity_recovery_authority WHERE singleton=1),0))`));
  if(statements.length)await db.batch(statements);
 }

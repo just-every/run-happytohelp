@@ -23,3 +23,8 @@ test('in one browser the widget keeps every visitor to its own conversation acro
  const browser=await launchBrowser()
  try{await widgetIdentitySwitchBrowser(browser)}finally{await browser.close()}
 })
+
+import {recoveryBrowserJourney} from '../helpers/identity/recovery-browser/journey.mjs'
+test('lost-factor recovery collects every workspace consent, proves a replacement, preserves access and exposes no session before completion',async()=>{
+ const browser=await launchBrowser();try{await recoveryBrowserJourney(browser)}finally{await browser.close()}
+})

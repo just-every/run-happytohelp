@@ -7,6 +7,7 @@ import {execFileSync} from 'node:child_process'
 import {readArtifact} from '../helpers/artifact-payloads.mjs'
 import {sha256} from '../helpers/recovery/snapshot.mjs'
 import {recoveryComparison} from '../helpers/recovery/comparison.mjs'
+import {recoveryRestoreJourney} from '../helpers/identity/recovery-restore/journey.mjs'
 import {excludedTable} from '@runeditrun/rer/modules/portability/catalogue'
 import {archivePolicy} from '../../scripts/installer/portability-policy.mjs'
 import {inboxRebuildSql} from '../../scripts/installer/inbox-entries-sql.mjs'
@@ -22,6 +23,7 @@ test('a populated packaged install restores from its documented credential-free 
   await writeFile(join(build,'delivery-artifact/artifact.json'),bytes)
   await writeFile(join(build,'build.json'),JSON.stringify({sourceSha:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),artifactSha256:sha256(bytes),migrations:artifact.deploymentSpec.migrations.map(({name,sha256})=>({name,sha256}))}))
   await recoveryComparison(build,join(output,'proof'))
+  await recoveryRestoreJourney()
  }finally{await rm(scratch,{recursive:true,force:true})}
 })
 

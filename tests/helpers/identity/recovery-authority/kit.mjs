@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict'
 import {createHash,createHmac,randomBytes} from 'node:crypto'
-import {totp,encryptionKey} from '../two-factor.mjs'
+import {totp} from '../two-factor.mjs'
 import {startApp} from '../../../journeys/kit/app.mjs'
 export const root='/api/identity/owner-recovery'
 export const random=()=>randomBytes(32).toString('base64url')
 export const digest=secret=>createHash('sha256').update(Buffer.from(secret,'base64url')).digest('base64url')
 export const key=randomBytes(32).toString('hex')
 export const installation='d6f96c8b-83a5-4edb-b1ba-cb5e34ffb072'
-export const bindings={H2H_OWNER_RECOVERY_KEY:key,H2H_OWNER_RECOVERY_GENERATION:'1',H2H_OWNER_RECOVERY_ENABLED:'true',RER_INSTALLATION_ID:installation,RER_MANAGEMENT_ORIGIN:'https://platform.example',APP_ORIGIN:'https://app.example',H2H_SETUP_TOKEN:'synthetic-setup-recovery',INTEGRATION_ENCRYPTION_KEY:encryptionKey(),EMAIL_PROVIDER:'off'}
+export const bindings={H2H_OWNER_RECOVERY_KEY:key,H2H_OWNER_RECOVERY_GENERATION:'1',H2H_OWNER_RECOVERY_ENABLED:'true',RER_INSTALLATION_ID:installation,RER_MANAGEMENT_ORIGIN:'https://platform.example',APP_ORIGIN:'https://app.example',H2H_SETUP_TOKEN:'synthetic-setup-recovery',INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),EMAIL_PROVIDER:'off'}
 export const password='correct-horse-battery-owner'
 export async function fresh(extra={}){const app=await startApp({bindings:{...bindings,...extra}});const owner=await app.ok('/api/identity/bootstrap',{body:{email:'owner@example.test',password,name:'Lantern support',allowedOrigin:'https://lantern.example',setupToken:bindings.H2H_SETUP_TOKEN}});return {app,owner}}
 export function envelope(payload,signKey=key){const text=JSON.stringify(Object.fromEntries(Object.keys(payload).sort().map(k=>[k,payload[k]])));return {alg:'HS256',payload:Buffer.from(text).toString('base64url'),signature:createHmac('sha256',Buffer.from(signKey,'hex')).update('h2h-owner-recovery-v1\n'+text).digest('base64url')}}

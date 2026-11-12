@@ -83,7 +83,24 @@ teammate's reset link, the sign-in email), workspace deletion and the policy: th
 an account without one; the local `rer dev` entry is installation custody.
 `policy-routes.ts` holds Settings → Security (policy by role, ending unproven
 sessions) and the owner's reset of a teammate (own recent factor, email, audit).
-`owner-recovery.ts` is the installation-level owner recovery: the owner's password
-plus `H2H_OWNER_RECOVERY_KEY` (set through `rer deploy --set-secret`, or the local
-`.dev.vars`), each value once. Tests: `tests/journeys/identity.mjs`,
-`tests/journeys/identity-browser.mjs`.
+`owner-recovery.ts` mounts `recovery-authority/` under the existing identity
+module. Its first-owner predicate uses `owner_setup.singleton=1` and its exact
+principal, reconciles original Business/import/setup workspace bindings, and
+refuses sentinel or ambiguous anchors. Managed challenges and custody use the
+P2/P7 canonical, bounded HS256 protocol and the actual per-installation runtime
+key. Custody revocation raises a durable generation watermark; authorize and
+completion recheck it. The manual password/key variant has the same strict
+principal and replacement-factor requirement, retaining spent-key history.
+
+Shared-account recovery accepts a fresh native primary proof, then current
+factor-backed owner consent from every target membership workspace. Native
+membership and credential epochs invalidate stale requests and approvals.
+Completion checks every predicate in the same D1 batch as its unique consume,
+credential replacement, session/link revocation and audit. The recovery
+capability has no native session authority. All new live capability tables are
+excluded from portability; custody acknowledgement is cleared on restore while
+the watermark and manual-key replay fences remain.
+
+Tests: `tests/journeys/identity.mjs`, `tests/journeys/identity-browser.mjs` and the
+populated recovery flow in `tests/journeys/restore.mjs`. Deployment declarations
+and installed platform qualification are separate integration work.

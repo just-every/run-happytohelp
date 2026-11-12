@@ -148,19 +148,52 @@ An installation deployed with outbound email off cannot email a sign-in link or 
 
 ## Owner recovery
 
-An owner who loses every factor and every recovery code recovers through the
-installation, never by email alone:
+The **original installation owner** uses `/owner-recovery`. Another workspace's
+owner cannot use installation custody to reset an unrelated account.
 
-- **Your own computer:** `rer dev` signs the owner in directly. Remove the old
-  factors from the **Security** tab and add new ones.
-- **A deployed installation:** whoever deployed it sets a one-time recovery key of
-  at least 32 characters, then the owner opens `/owner-recovery`:
+For a compatible, explicitly enabled Managed installation, choose **Recover
+installation owner**. In Managed App settings, prove current installation
+ownership with its recovery passkey. A remembered platform session or email
+alone supplies no recovery authority. Return to the app and prove a replacement
+authenticator or passkey. If the account has no password, create one so sign-in
+also works with outbound email off.
 
-  ```sh
-  H2H_OWNER_RECOVERY_KEY=<a long random value> rer deploy --environment production --set-secret H2H_OWNER_RECOVERY_KEY
-  ```
+For a separately controlled installation, the original owner may instead use
+their native password and a private one-time `H2H_OWNER_RECOVERY_KEY` of at least
+32 characters. Each key value works once. Both paths require proving a new
+factor **before** any new session is created. Until completion, old credentials
+remain intact. Completion replaces factors and recovery codes, retires old
+sessions and outstanding sign-in/reset links, and keeps every membership and
+role. Save the new codes when they appear; they are shown once.
 
-  On `/owner-recovery`, enter the owner email, password and that key. The owner's
-  factors and recovery codes are removed, every session ends, and you are signed
-  in to set up a new factor. Each key value works once; set a new one for another
-  recovery. The recovery is logged in every workspace the owner belongs to.
+A missing key or Managed binding leaves recovery unavailable. Older installations
+with no unambiguous first-owner anchor require the separately authorized owner
+binding procedure. Recovery does not pick an arbitrary admin or reopen setup.
+If both native and platform proof are lost, there is no automatic bypass.
+
+## Shared-account recovery
+
+On `/owner-recovery`, choose **Recover a shared account**. Prove your own native
+password, or paste a fresh emailed sign-in link when sending is enabled. Share
+the request ID with one current owner of **each affected workspace**. Each owner
+signs in, confirms a recent actual second factor, and chooses **Approve a
+workspace request** on this page. Approvers see only their own workspace and its
+member. A platform role or an installation key never supplies another
+workspace's consent.
+
+After every consent is current, prove a replacement authenticator or passkey.
+Completion keeps memberships intact and revokes old sessions and links. Requests
+expire within 15 minutes. Membership, credential or approving-authority changes
+require fresh recovery. The installation first owner and platform administrators
+cannot use this generic account route.
+
+With email off and no known password, this shared-account path cannot start.
+If an affected workspace cannot supply its owner's consent, the existing
+membership removal/reinvite remedy requires cooperation from its real owners.
+Old sole-workspace reset restrictions remain in force.
+
+Recovery requests, pending factors, approvals and browser capabilities never
+travel in portable archives. A restored installation requires fresh recovery and
+Managed custody acknowledgement; spent manual-key history and the durable
+revocation watermark remain. Recovery audit records contain IDs and fixed
+reasons, never keys, factor secrets, assertions, passwords or recovery codes.

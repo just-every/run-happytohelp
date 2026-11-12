@@ -37,8 +37,8 @@ export const mailInputNames=[
  'MAIL_FROM','MAIL_API_KEY','MAIL_RELAY_URL','H2H_RER_MAIL_VERSION','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL','RER_MAIL_INGRESS_KEY',
  'GOOGLE_MAIL_CLIENT_ID','GOOGLE_MAIL_CLIENT_SECRET','MICROSOFT_MAIL_CLIENT_ID','MICROSOFT_MAIL_CLIENT_SECRET','MAILBOX_SOCKET_HOSTS','MAILBOX_SOCKET_PORTS','MAILBOX_IMAP_AUTHSERV',
 ]
-/** An explicit off selection persists even when credentials are saved for later. */
-export const outboundEmailOff=env=>env.MAIL_MODE==='off'||!env.MAIL_MODE&&['off','none','disabled'].includes(env.MAIL_PROVIDER)
+/** Either explicit off switch wins, even with a saved mode and credentials. */
+export const outboundEmailOff=env=>env.MAIL_MODE==='off'||['off','none','disabled'].includes(env.MAIL_PROVIDER)
 function withoutMailInputs(env){
  const result={...env,MAIL_MODE:'off',MAIL_PROVIDER:'none'}
  for(const name of mailInputNames)delete result[name]
@@ -47,9 +47,9 @@ function withoutMailInputs(env){
 /** The setup's direct choice selects the native adapter, not a mail provider. */
 export function deploymentMailEnvironment(env){
  if(configured(env,'MAIL_MODE')&&!['off','own','rer'].includes(env.MAIL_MODE))throw new Error('MAIL_MODE must be off, own or rer')
+ if(outboundEmailOff(env))return withoutMailInputs(env)
  if(env.MAIL_MODE==='own')env={...env,MAIL_PROVIDER:'own'}
  if(env.MAIL_MODE==='rer')env={...env,MAIL_PROVIDER:'rer'}
- if(outboundEmailOff(env))return withoutMailInputs(env)
  if(env.MAIL_PROVIDER==='rer')return {...env}
  const nativeProviders=['resend','cloudflare','sendgrid','mailgun']
  if(configured(env,'MAIL_PROVIDER')&&!['direct','own'].includes(env.MAIL_PROVIDER)&&!nativeProviders.includes(env.MAIL_PROVIDER))throw new Error('MAIL_PROVIDER must be off, own, rer, none, disabled, direct, resend, cloudflare, sendgrid or mailgun')

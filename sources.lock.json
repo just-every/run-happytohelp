@@ -2872,6 +2872,10 @@
       "sha256": "0ab0de77b0d916684ce19778f94a3256e53ec1237f50f07da396084465f3fcdb",
       "executable": false
     },
+    "migrations/331_legacy_cleanup_seeding.sql": {
+      "sha256": "0938deb57836dc0613670d67494b14ba7fe3687e037675a59b77bbf445655cfa",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -5904,6 +5908,10 @@
       "sha256": "58dcb1334d7322e283b4e4467f3d24effb6b3bdede2b6da8c02695c5c4417ba8",
       "executable": false
     },
+    "src/modules/identity/installation-baseline.ts": {
+      "sha256": "f05a68c0466afbf9714b91eccb5d4cb87fe0a8745e617553d478a47a04af9036",
+      "executable": false
+    },
     "src/modules/identity/invitation-acceptance.ts": {
       "sha256": "179a56cc1354a60a694d52050aecaaff6ba1706629860f2143aaa2843e30f83c",
       "executable": false
@@ -7722,6 +7730,10 @@
     },
     "src/modules/legacy-import/custody/registry.ts": {
       "sha256": "20ecbe3ccab19c943c26bc5d7ecd41175541a3d911774457b283767d7bb7f3b0",
+      "executable": false
+    },
+    "src/modules/legacy-import/custody/seed.ts": {
+      "sha256": "a9d5a74591dc34f0588043f747a4401e4eb9f3ae0b1b24f94b8e7096b7c204c3",
       "executable": false
     },
     "src/modules/legacy-import/custody/types.ts": {
@@ -17444,6 +17456,10 @@
       "sha256": "5830b24129a096b2fa3990b762298b459afca00b20e87d8a1bcdf49f13be87d0",
       "executable": false
     },
+    "tests/move-in/legacy-adoption-integration/history-browser.mjs": {
+      "sha256": "c0ff165326b2d3ff0f5ddc3b9c1ea82b051f103e92baa3325ccb1f5b40f4c538",
+      "executable": false
+    },
     "tests/move-in/legacy-adoption-integration/journey.mjs": {
       "sha256": "c5c6ae34fd98ef3cf7748ea31858bed0388f28833a3f085c9e4ff9082a1cfc6c",
       "executable": false
@@ -17458,6 +17474,10 @@
     },
     "tests/move-in/legacy-adoption-integration/runtime.mjs": {
       "sha256": "9c3c1699feef35678726eb559991a2e64a72448f55c0cbc7c6f324e26eeb2106",
+      "executable": false
+    },
+    "tests/move-in/legacy-adoption-integration/v1-cleanup.mjs": {
+      "sha256": "7d424ad49d56db03ad5efb863f1077cc72144ba2b8a0213dd07e68ab070a5da3",
       "executable": false
     },
     "tests/move-in/legacy-package-upload/admission.mjs": {

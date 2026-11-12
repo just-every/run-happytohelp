@@ -15889,11 +15889,11 @@
       "executable": false
     },
     "tests/helpers/email/complete-mail-edge.mjs": {
-      "sha256": "76e3dabf578b981bebc7af2a99ae642effdcfdbb242bc2384506057fe2eb9adf",
+      "sha256": "29f6a32adae4a752cfcc0b1eaef04f427fbe6123f7d64656dfbaecd9a7fd04b4",
       "executable": false
     },
     "tests/helpers/email/complete-mail-outcomes.mjs": {
-      "sha256": "d54a832964d0c10d1ab3b6e4c03996d1e6e58e83b00417547f7bd36beb0023d8",
+      "sha256": "9d390689018b57212cb5e1478f59135aa3549e7f46fe99a2778d5c14cc5a4a80",
       "executable": false
     },
     "tests/helpers/email/complete-mail-socket.mjs": {

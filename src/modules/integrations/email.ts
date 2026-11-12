@@ -7,7 +7,7 @@ import {holdRerMail,claimRerMailHold} from './rer-mail-hold'
 import {hashToken} from '../../platform/auth'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
 import {sendDevelopment} from '../../edition/local-mail/sender.mjs'
-import {emailMode} from './email-provider'
+import {emailMode,emailExplicitlyOff} from './email-provider'
 import type {Env} from '../../platform/env'
 import {emailConfigured, emailOffMessage, providerRequest, providerReceipt, selectedEmailProvider, sendGridDelivery, providerMessage, validateEmailInput} from './email-provider'
 import {SendGridSendError} from '../../vendor/base/modules/sendgrid-email/src/sender'
@@ -77,6 +77,10 @@ function sendGridFailure(error:unknown){
 /** `hold` marks a command that outbox replay resends; `since` is the first
  * refusal instant of a held command being sent again. */
 async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:number}):Promise<EmailOutcome>{
+ if(emailExplicitlyOff(env)){
+  await updateDelivery(env,input.idempotencyKey,'failed',emailOffMessage)
+  throw new HTTPException(503,{message:emailOffMessage})
+ }
  try{
   const guard=await mailClaimSql(env,input),claimed=guard.prefix||guard.sql!=='1=1'?await env.DB.prepare(`${guard.prefix}UPDATE email_deliveries SET updated_at=? WHERE id=? AND state='sending' AND ${guard.sql} RETURNING id`).bind(...guard.params,Date.now(),input.idempotencyKey).all():undefined;if(claimed&&!claimed.results.length){await updateDelivery(env,input.idempotencyKey,'failed','Knowledge access changed; edit and resend for the current recipients');return {id:null,state:'failed'}}
   input=await renderMail(env,input)
@@ -134,6 +138,7 @@ async function suppressDevelopment(env:Env,input:EmailInput,from:string):Promise
  return {id:null,state:'suppressed',mode:'local'}
 }
 export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelivery,holdable=false):Promise<EmailOutcome>{
+ if(emailExplicitlyOff(env))throw new HTTPException(503,{message:emailOffMessage})
  input=await canonicaliseMail(env,await prepareConversationEmail(env,input))
  if(!input.mailboxId&&!emailConfigured(env))throw new HTTPException(503,{message:emailOffMessage})
  const from=await senderFor(env,input)
@@ -156,6 +161,7 @@ export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelive
  * never a partially reconstructed recipient list on automatic outbox replay. */
 export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:DeferEmailDelivery,holdable=false):Promise<EmailOutcome[]>{
  if(!inputs.length)return []
+ if(emailExplicitlyOff(env))throw new HTTPException(503,{message:emailOffMessage})
  inputs=await Promise.all(inputs.map(async input=>canonicaliseMail(env,await prepareConversationEmail(env,input))))
  if(inputs.some(input=>!input.mailboxId)&&!emailConfigured(env))throw new HTTPException(503,{message:emailOffMessage})
  const prepared=await Promise.all(inputs.map(async input=>{const from=await senderFor(env,input);validateEmailInput(input,from);return {input,from,intentHash:await hashToken(JSON.stringify({...input,from}))}}))
@@ -181,6 +187,7 @@ export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:Def
 /** Replay resends each held command among `inputs` once: the same identity, and so
  * the same messageKey, to its recorded recipient. Nothing else is ever sent again. */
 export async function resendHeldEmails(env:Env,inputs:readonly EmailInput[]){
+ if(emailExplicitlyOff(env))return
  await Promise.all(inputs.map(async input=>{
   try{
    input=await canonicaliseMail(env,await prepareConversationEmail(env,input))

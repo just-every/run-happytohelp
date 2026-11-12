@@ -11,7 +11,7 @@ const sign=(timestamp,token,secret=key)=>createHmac('sha256',secret).update(time
 const pairs=(entries,id)=>JSON.stringify([...(id?[['Message-Id',`<${id}>`]]:[]),...entries])
 
 export async function mailgunInboundJourney(){
- const m=await mailApp({bindings:{MAILGUN_WEBHOOK_SIGNING_KEY:key},inbound:'support@reply.support.example.com',outbox:'help@support.example.com'}),env={DB:m.DB}
+ const m=await mailApp({bindings:{MAILGUN_WEBHOOK_SIGNING_KEY:key},inbound:'support@reply.support.example.com',outbox:'help@support.example.com'}),env={get DB(){return m.DB}}
  try{
   await env.DB.prepare("INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES('q','Second Project','q-w','https://example.com',1)").run()
   await env.DB.prepare("INSERT INTO email_settings VALUES('q','Support','help@support.example.com','second@reply.support.example.com',1,1)").run()
@@ -34,11 +34,22 @@ export async function mailgunInboundJourney(){
   assert.equal(firstBody.state,'delivered')
   assert.equal(await m.count("SELECT count(*) n FROM conversations WHERE id='"+firstBody.conversationId+"' AND project_id='p'"),1)
   assert.equal(await m.count('SELECT count(*) n FROM messages'),1)
+  // Own Mailgun receives through the same signed public door. Dormant signing
+  // credentials cannot admit a forward while installation mail is explicitly off.
+  await m.app.configure({MAIL_MODE:'own',EMAIL_PROVIDER:'mailgun',MAIL_PROVIDER:'mailgun',MAILGUN_DOMAIN:'mg.support.example',MAILGUN_SENDING_KEY:'synthetic-mailgun-sending-key'})
+  await nothingWritten('own provider unsigned',()=>post({id:'mg-own-unsigned@example.com',omit:['signature']}))
+  const own=await post({id:'mg-own-signed@example.com',text:'An own-provider signed request.'})
+  assert.equal(own.status,200);assert.equal((await own.json()).state,'delivered')
+  for(const mode of ['none','disabled','off','mail-mode']){
+   await m.app.configure({MAIL_MODE:mode==='mail-mode'?'off':undefined,MAIL_PROVIDER:mode==='mail-mode'?'rer':mode})
+   await nothingWritten('mail '+mode+', with dormant signing key',()=>post({id:'mg-off-'+mode+'@example.com'}))
+  }
+  await m.app.configure({MAIL_MODE:undefined,MAIL_PROVIDER:undefined,EMAIL_PROVIDER:'resend'})
   // Replaying the accepted bytes is refused and frees nothing: the next replay is refused too, with nothing written.
   await nothingWritten('replay',()=>submit(first));await nothingWritten('second replay',()=>submit(first))
   // The same Message-ID under a fresh signature is mail already received: 200, no second message.
   assert.equal((await post({id:'mg-1@example.com',text:'My order is late.'})).status,200)
-  assert.equal(await m.count('SELECT count(*) n FROM messages'),1)
+  assert.equal(await m.count('SELECT count(*) n FROM messages'),2)
   // A reply that names the first mail threads into its conversation, whatever its subject.
   const threaded=await (await post({id:'mg-2@example.com',subject:'Totally different words',text:'Any news?',headers:[['In-Reply-To','<mg-1@example.com>'],['References','<mg-1@example.com>']]})).json()
   assert.equal(threaded.conversationId,firstBody.conversationId)

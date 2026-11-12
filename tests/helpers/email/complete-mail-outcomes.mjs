@@ -88,6 +88,20 @@ export async function completeMailOutcomes(){
    assert.deepEqual(await counts(),reconnectBefore,kind+' reconnect and backfill redelivery creates no ticket, message or send')
    assert.equal((await transcript()).messages.length,5)
    await quietMailOutcomes(m,{id,path,dashboard,reply,counts})
+   // The preceding permission-loss scenario deliberately disconnects OAuth/TLS
+   // mailboxes. Restore through the public door before testing dormant credentials.
+   if(kind!=='forwarding')await m.reconnect({restoreAlias:false})
+   assert.equal((await m.mailbox()).status,'connected')
+   // An installation mail-off choice also fences connected provider credentials.
+   // The reply remains in the native transcript and reports why no email left.
+   await app.configure({MAIL_MODE:'off',MAIL_PROVIDER:'none'})
+   const offBefore=await counts(),offReply=await reply(kind+'-mail-off','Keep this support answer while email is off.')
+   await app.drainJobs();await app.scheduled()
+   const offStatus=(await bucket()).messages.find(row=>row.id===offReply.message.id)?.email_status
+   assert.equal(offStatus.state,'not_configured',kind+' explicit off is visible in the inbox')
+   assert.equal(edge.attempts,offBefore.attempts,kind+' dormant connection cannot send while off')
+   assert.equal(edge.sent.length,offBefore.sends)
+   await app.configure({MAIL_MODE:undefined,MAIL_PROVIDER:undefined})
    const retainedHistory=await history()
    await m.disconnect()
    const removedBefore=await counts()

@@ -16305,7 +16305,7 @@
       "executable": false
     },
     "tests/helpers/identity/recovery-restore/journey.mjs": {
-      "sha256": "9e0d1138235031b9238440721d3294d7680aacb955b2f82c8ad0c04ab0a732ae",
+      "sha256": "61e3719c08b8751895e3062cf9b5efcea9a0ef8bd9d5ebf837086da0921a57d4",
       "executable": false
     },
     "tests/helpers/identity/recovery-restore/storage.mjs": {

@@ -25,14 +25,13 @@ export async function legacyMoveInAuthReturn(browser,{width=1440,inspect=async()
    const context=await browser.newContext({viewport:{width,height:1000},bypassCSP:true});contexts.push(context)
    const page=await context.newPage();page.setDefaultTimeout(20000);return page
   }
-  const login=async page=>{
+  const prepareLogin=async page=>{
    await page.goto(runtime.origin+continuation)
    await page.waitForURL(url=>url.pathname==='/login')
    assert.equal(new URL(page.url()).searchParams.get('returnTo'),continuation)
    await page.getByLabel('Email',{exact:true}).fill(owner.email)
    await page.getByLabel('Password',{exact:true}).fill(owner.password)
    await inspect(page,`legacy-login-${width}`)
-   await page.getByRole('button',{name:'Login',exact:true}).click()
   }
   const resumed=page=>page.waitForRequest(request=>request.isNavigationRequest()&&request.url()===runtime.origin+continuation)
   const ready=async(page,name)=>{
@@ -40,8 +39,10 @@ export async function legacyMoveInAuthReturn(browser,{width=1440,inspect=async()
    await page.getByRole('heading',{name:'HappyToHelp export',exact:true}).waitFor()
    await inspect(page,`${name}-${width}`)
   }
-  const passwordPage=await fresh(),passwordReturn=resumed(passwordPage)
-  await login(passwordPage);await passwordReturn;await ready(passwordPage,'legacy-password-return')
+  const passwordPage=await fresh();await prepareLogin(passwordPage)
+  const passwordReturn=resumed(passwordPage)
+  await passwordPage.getByRole('button',{name:'Login',exact:true}).click()
+  await passwordReturn;await ready(passwordPage,'legacy-password-return')
   // Enrol through the native owner session; the secret stays only inside this synthetic test.
   const enrolled=await passwordPage.evaluate(async()=>{
    const response=await fetch('/api/identity/two-factor/totp',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
@@ -51,7 +52,8 @@ export async function legacyMoveInAuthReturn(browser,{width=1440,inspect=async()
   const confirmed=await passwordPage.evaluate(async body=>(await fetch('/api/identity/two-factor/totp/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).status,{factorId:enrolled.factorId,code:totp(enrolled.secret)})
   assert.equal(confirmed,201)
   const factorPage=await fresh()
-  await login(factorPage);await factorPage.waitForURL(url=>url.pathname==='/two-factor')
+  await prepareLogin(factorPage);await factorPage.getByRole('button',{name:'Login',exact:true}).click()
+  await factorPage.waitForURL(url=>url.pathname==='/two-factor')
   assert.equal(new URL(factorPage.url()).searchParams.get('returnTo'),continuation)
   // A pending native session also follows the entry's own second-factor redirect with its query.
   await factorPage.goto(runtime.origin+continuation)

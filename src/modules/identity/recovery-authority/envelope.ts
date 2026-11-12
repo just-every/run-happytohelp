@@ -14,10 +14,15 @@ const scopes={
 }
 export type MessageType=keyof typeof scopes
 function origin(value:unknown){try{const u=new URL(String(value));if(u.origin!==value||u.protocol!=='https:')return null;return u.origin}catch{return null}}
-export function configuration(env:Env){
+function bindingScope(env:Env){
  const app=origin(env.APP_ORIGIN),platform=origin(env.RER_MANAGEMENT_ORIGIN),installation=String(env.RER_INSTALLATION_ID||'')
- if(!app||!platform||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(installation)||env.H2H_OWNER_RECOVERY_ENABLED!=='true'||!Number.isSafeInteger(Number(env.H2H_OWNER_RECOVERY_GENERATION))||generation(env)<1||!/^[a-f0-9]{64}$/.test(keyValue(env)))refuse(503)
- return {app,platform,installation,generation:generation(env)}
+ if(!app||!platform||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(installation))refuse(503)
+ return {app,platform,installation}
+}
+export function configuration(env:Env){
+ const scope=bindingScope(env)
+ if(env.H2H_OWNER_RECOVERY_ENABLED!=='true'||!Number.isSafeInteger(Number(env.H2H_OWNER_RECOVERY_GENERATION))||generation(env)<1||!/^[a-f0-9]{64}$/.test(keyValue(env)))refuse(503)
+ return {...scope,generation:generation(env)}
 }
 async function signingKey(env:Env){const value=keyValue(env);if(!/^[a-f0-9]{64}$/.test(value))refuse(503);return crypto.subtle.importKey('raw',Uint8Array.from(value.match(/../g)!,byte=>parseInt(byte,16)),{name:'HMAC',hash:'SHA-256'},false,['sign','verify'])}
 const message=(bytes:Uint8Array)=>{const prefix=new TextEncoder().encode('h2h-owner-recovery-v1\n'),out=new Uint8Array(prefix.length+bytes.length);out.set(prefix);out.set(bytes,prefix.length);return out}
@@ -28,7 +33,7 @@ export async function verify(env:Env,input:unknown,type:MessageType,minimumGener
  if(Object.keys(envelope).sort().join(',')!=='alg,payload,signature'||envelope.alg!=='HS256'||typeof envelope.payload!=='string'||!isRandom(envelope.signature))refuse()
  let bytes:Uint8Array,payload:Payload
  try{bytes=fromB64url(envelope.payload);if(b64url(bytes)!==envelope.payload)refuse();payload=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));if(!payload||Object.keys(payload).sort().join(',')!==scopes[type].sort().join(',')||canonical(payload)!==new TextDecoder().decode(bytes))refuse()}catch{refuse()}
- const now=Math.floor(Date.now()/1000),config=configuration(env)
+ const now=Math.floor(Date.now()/1000),config=bindingScope(env)
  for(const [name,value] of Object.entries(payload)){
   if(['v','generation','iat','exp','watermark'].includes(name)){if(typeof value!=='number'||!Number.isSafeInteger(value)||value<0)refuse()}
   else if(typeof value!=='string'||!value.length||!/^[\x21-\x7e]+$/.test(value)||value.length>(['iss','aud','app_origin'].includes(name)?2048:128))refuse()
@@ -39,9 +44,10 @@ export async function verify(env:Env,input:unknown,type:MessageType,minimumGener
  if(payload.iss!==config.platform||payload.aud!==`${config.app}/api/identity/owner-recovery/${endpoint}`||(!type.startsWith('custody')&&payload.app_origin!==config.app))refuse()
  if(type==='custody-request'&&!['bind','status','revoke'].includes(String(payload.op)))refuse()
  // A revoked generation receives the specified unsigned refusal; it can never
- // mutate custody. Every accepted operation still verifies the CURRENT key.
+ // mutate custody, including after the binding is removed. Every accepted
+ // operation still requires enabled custody and verifies the CURRENT key.
  if(type==='custody-request'&&Number(payload.generation)<minimumGeneration)refuse(409,'recovery_generation_revoked')
- if(payload.generation!==config.generation)refuse()
+ if(payload.generation!==configuration(env).generation)refuse()
  if(!await crypto.subtle.verify('HMAC',await signingKey(env),fromB64url(envelope.signature),message(bytes)))refuse()
  return payload
 }

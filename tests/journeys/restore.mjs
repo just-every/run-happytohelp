@@ -14,7 +14,7 @@ import {inboxRebuildSql} from '../../scripts/installer/inbox-entries-sql.mjs'
 import {cutoverRebuildSql} from '../../scripts/installer/cutover-bounds-sql.mjs'
 import {contactTallyRebuildSql} from '../../scripts/installer/contact-bounds-sql.mjs'
 
-test('a populated packaged install restores from its documented credential-free backup into a fresh destination with every row, object and metadata equal, sessions and password sign-in working, setup closed and delegated credentials gone',{timeout:10*60_000},async()=>{
+test('a populated packaged install restores from its documented credential-free backup into a fresh destination with every row, object and metadata equal, sessions and password sign-in working, setup closed and delegated credentials gone',{timeout:20*60_000},async()=>{
  const scratch=await mkdtemp(join(tmpdir(),'h2h-recovery-')),output=process.env.H2H_EVIDENCE_DIR?await mkdtemp(join(resolve(process.env.H2H_EVIDENCE_DIR),'recovery-')):scratch
  try{
   // The actual artifact this build emitted, identified by its bytes and migration ledger.

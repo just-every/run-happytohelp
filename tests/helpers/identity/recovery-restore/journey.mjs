@@ -16,11 +16,11 @@ export async function recoveryRestoreJourney(){
  process.env.CLOUDFLARE_CF_FETCH_ENABLED='false'
  const scratch=await mkdtemp(join(tmpdir(),'h2h-identity-restore-')),checkout=join(scratch,'checkout'),email='recovery-restore@example.test',password='synthetic-recovery-restore-password',key=randomBytes(32).toString('hex')
  const reservation=createServer();await new Promise(done=>reservation.listen(0,'127.0.0.1',done));const port=reservation.address().port;await new Promise(done=>reservation.close(done))
- const origin=`http://127.0.0.1:${port}`;let server
+ const origin=`http://127.0.0.1:${port}`;let server,serverReady=false
  const call=async(path,body,token,capability)=>{const response=await fetch(origin+path,{method:body===undefined?'GET':'POST',headers:{Origin:origin,...(body===undefined?{}:{'Content-Type':'application/json'}),...(token?{Authorization:'Bearer '+token}:{}),...(capability?{'X-Recovery-Capability':capability}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});const data=await response.json();return {response,data}}
  const ok=async(...args)=>{const result=await call(...args);assert.ok(result.response.ok,`${args[0]} returned ${result.response.status}`);return result.data}
- const start=async()=>{server=command(checkout,['dev']);await server.waitFor(event=>event.event==='ready',240000)}
- const stop=async()=>{if(!server)return;await stopOwnedServer(server.child);await server.result();await server.stop();server=undefined}
+ const start=async()=>{serverReady=false;server=command(checkout,['dev']);await server.waitFor(event=>event.event==='ready',240000);serverReady=true}
+ const stop=async()=>{if(!server)return;try{if(serverReady){await stopOwnedServer(server.child);await server.result()}}finally{await server.stop();server=undefined;serverReady=false}}
  try{
   await promisify(execFile)('git',['clone','--quiet','--no-local','--depth','1',resolve('.'),checkout])
   await symlink(resolve('node_modules'),join(checkout,'node_modules'),'dir')
@@ -51,8 +51,14 @@ export async function recoveryRestoreJourney(){
   assert.equal(before.approvals,1);assert.equal(before.spent.length,1)
   console.info('Recovery restore: public export/reset/import')
   await run(checkout,['export','--output','exports/recovery.rer'])
+  console.info('Recovery restore: public reset')
   await run(checkout,['reset','--yes'])
+  console.info('Recovery restore: public import')
   await run(checkout,['import','--input','exports/recovery.rer','--yes'])
+  // The documented restore path completes local configuration with setup. It
+  // preserves restored owners/credentials instead of claiming a fresh owner.
+  console.info('Recovery restore: post-import setup')
+  await run(checkout,['setup','--owner-email',email,'--answers','.seed/answers.json','--port',String(port)])
   await recoveryStorage(checkout,db=>{
    for(const table of ['identity_recovery_requests','identity_recovery_approvals','identity_recovery_nonces'])assert.equal(db.prepare(`SELECT count(*) n FROM ${table}`).get().n,0)
    assert.deepEqual(db.prepare('SELECT * FROM memberships ORDER BY user_id,project_id').all(),before.members)
@@ -86,5 +92,5 @@ export async function recoveryRestoreJourney(){
    assert.equal(db.prepare('SELECT count(*) n FROM identity_recovery_approvals WHERE request_id=?').get(retiring.requestId).n,0)
    assert.ok(db.prepare('SELECT count(*) n FROM identity_recovery_events WHERE user_id=?').get(target.actor.id).n>0)
   })
- }finally{try{await stop();await rm(scratch,{recursive:true,force:true})}finally{if(priorCfFetch===undefined)delete process.env.CLOUDFLARE_CF_FETCH_ENABLED;else process.env.CLOUDFLARE_CF_FETCH_ENABLED=priorCfFetch}}
+ }finally{try{try{await stop()}finally{await rm(scratch,{recursive:true,force:true})}}finally{if(priorCfFetch===undefined)delete process.env.CLOUDFLARE_CF_FETCH_ENABLED;else process.env.CLOUDFLARE_CF_FETCH_ENABLED=priorCfFetch}}
 }

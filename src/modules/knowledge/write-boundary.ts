@@ -17,7 +17,14 @@ export function knowledgeWriteEnvironment(env:Env,scope:()=>KnowledgeWriteScope)
  // Import-kit custody is private, hash-bound source material. Rewriting its
  // plans/journals would invalidate erasure and reversal fingerprints; native
  // text targets still pass through this boundary and ordinary read guards.
- const source=(sql:string)=>/^\s*(?:INSERT(?:\s+OR\s+\w+)?\s+INTO|REPLACE\s+INTO|UPDATE)\s+(?:knowledge_(?:articles|article_history|translations|translation_history|documents|datasets|versions|reply_blocks|generation_sources|translation_publications|article_publications|retired_articles|source_index|shingles|index_dirty|write_guards|canonicalisation_receipts|upgrade_reports|upgrade_progress|upgrade_permits|categories|article_categories|experience)|ik_(?:d1_[a-z_]+|door_[a-z_]+|jobs|sources|provenance|originals|original_sets|stages|batches|targets)|projects|users|memberships|sessions|project_settings|brands)\b/i.test(sql)
+ const source=(sql:string)=>{
+  // insertJson emits quoted identifiers. Recognize one complete target name,
+  // then match the existing source inventory plus the legacy hash-bound stores.
+  const target=sql.match(/^\s*(?:INSERT(?:\s+OR\s+\w+)?\s+INTO|REPLACE\s+INTO|UPDATE)\s+(?:"([a-z][a-z0-9_]*)"|([a-z][a-z0-9_]*))(?=\s|\(|$)/i)
+  if(!target)return false
+  return /^(?:knowledge_(?:articles|article_history|translations|translation_history|documents|datasets|versions|reply_blocks|generation_sources|translation_publications|article_publications|retired_articles|source_index|shingles|index_dirty|write_guards|canonicalisation_receipts|upgrade_reports|upgrade_progress|upgrade_permits|categories|article_categories|experience)|ik_(?:d1_[a-z_]+|door_[a-z_]+|jobs|sources|provenance|originals|original_sets|stages|batches|targets)|legacy_import_(?:runs|rows|objects|state|holds|marks|conflicts|worker_runs|worker_parts|worker_counts|context|context_messages|context_media|context_identities)|projects|users|memberships|sessions|project_settings|brands)$/i.test(target[1]??target[2])
+ }
+
  async function prepare(sql:string,values:unknown[]){
   if(!mutation(sql)||source(sql)||!values.some(candidate))return {statement:original.prepare(sql).bind(...values),protected:false}
   const stored=textBindingIndexes(sql).indexes.filter(index=>candidate(values[index]))

@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "f28e392e49dfffee63e3457ddfd4794b75f49d02d2ce881bd5e3df9feccd15b8",
+      "sha256": "6c56df304c6f5df10c4990aab0aa84609c1913a950169b711d960d9c3084f535",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2945,11 +2945,11 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "42c3dc9d6cc4243d8b5b9f6c5f9dc0d3c59e4f281fbca81311bd7a21b114b03c",
+      "sha256": "e5d55ba282124d086b88bb6530d8c72a6e0a33cb90936960f7c248ef6efdc4d0",
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "c2d928d3b4e31fd91625af2c80784a924e250a42e0b713d07c71c8d33e7f4b50",
+      "sha256": "6f73d5f9b5bebe7249935fee032510a899818bf870f3f7b6189e41bdecbbbe8e",
       "executable": false
     },
     "rer-project.json": {
@@ -4617,7 +4617,7 @@
       "executable": false
     },
     "src/jobs.ts": {
-      "sha256": "da87f5c7f021735d2a993e9cb2eafff696f0dd8bda7cc1bca9af480230767474",
+      "sha256": "d85e2c09c0dcb46c1d0dcec97cc00ed75f6aafda5889be13a9d4cc30b57a6f0d",
       "executable": false
     },
     "src/message-effects.ts": {

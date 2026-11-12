@@ -11,14 +11,15 @@ type PlannedTarget={table:string;row:Record<string,unknown>;key:string[]}
 export async function planLegacyKnowledgeTargets(env:Env,projectId:string,targets:PlannedTarget[]){
  const base={...env,DB:underlying.get(env.DB)??env.DB}
  const sourceTables=new Set(['knowledge_articles','knowledge_categories','knowledge_article_categories','knowledge_documents','knowledge_datasets','knowledge_versions','projects','users','memberships','project_settings','brands'])
- const normalized:PlannedTarget[]=[],statements:D1PreparedStatement[]=[]
- for(const target of targets){
-  if(sourceTables.has(target.table)){normalized.push(target);continue}
-  const literal=['messages','conversation_notes'].includes(target.table)
-  const content=literal?target.row.content:undefined
-  const input=literal?{...target.row,content:undefined}:target.row
-  const plan=await planCanonicaliseFields(base,projectId,input,{custody:target.row.conversation_id?ticketCustody(String(target.row.conversation_id)):undefined})
-  normalized.push({...target,row:literal?{...plan.value,content}:plan.value});statements.push(...plan.statements)
+ const normalized=targets.map(target=>({...target,row:{...target.row}})),statements:D1PreparedStatement[]=[],groups=new Map<string,{indices:number[];values:Record<string,unknown>[]}>()
+ for(let index=0;index<targets.length;index++){
+  const target=targets[index];if(sourceTables.has(target.table))continue
+  const literal=['messages','conversation_notes'].includes(target.table),input=literal?{...target.row,content:undefined}:target.row,custody=target.row.conversation_id?ticketCustody(String(target.row.conversation_id)):''
+  const group=groups.get(custody)??{indices:[],values:[]};group.indices.push(index);group.values.push(input);groups.set(custody,group)
+ }
+ for(const [custody,group] of groups){
+  const plan=await planCanonicaliseFields(base,projectId,group.values,{custody:custody||undefined})
+  group.indices.forEach((index,at)=>{const target=targets[index],literal=['messages','conversation_notes'].includes(target.table);normalized[index].row=literal?{...plan.value[at],content:target.row.content}:plan.value[at]});statements.push(...plan.statements)
  }
  if(statements.length>120)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE')
  return {targets:normalized,statements,env:plannedEnvironment(base,()=>({projectId}),normalized)}

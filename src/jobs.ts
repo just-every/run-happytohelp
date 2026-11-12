@@ -1,6 +1,7 @@
 import {remindObligations} from './modules/ai-support/obligations'
 import {expireVoiceMedia} from './modules/voice/media'
 import {canonicaliseExistingProject} from './modules/knowledge/upgrade'
+import {updateKnowledgeIndex} from './modules/knowledge/canonicaliser'
 import {dispatchKnowledgeUpgrades} from './modules/knowledge/upgrade-progress'
 import {sweepUploads} from './modules/api-integrations/upload-lifecycle'
 import {processRerMailbox,recoverRerMailboxes,refreshRerMailbox} from './modules/integrations/rer-mailbox'
@@ -50,8 +51,9 @@ export async function consumeJob(job:Job,env:Env) {
  if(job.type==='outbox.recover'){if(typeof job.conversationId!=='string'||!Number.isSafeInteger(job.outboxId))throw new Error('Invalid persisted outbox job');await recoverOutbox(env,job.projectId,job.conversationId,Number(job.outboxId),job.id);return}
  if(job.type!=='lead.process'&&!await isProjectActive(env,job.projectId))return
  if(job.type==='integrations'){await dispatchIntegrations(env,job.projectId);return}
- if(job.type==='move-in'){const run=await getWorkRun(env,job.id);if(run&&run.project_id===job.projectId)await advanceImport(env,run);return}
- if(job.type===PULL_JOB){await advancePull(env,job.id,job.projectId);return}
+ // A step that lands articles leaves the copied-text index current, so a read (which never refreshes it) and the next write find it ready.
+ if(job.type==='move-in'){const run=await getWorkRun(env,job.id);if(run&&run.project_id===job.projectId){await advanceImport(env,run);await updateKnowledgeIndex(env,job.projectId,100)}return}
+ if(job.type===PULL_JOB){await advancePull(env,job.id,job.projectId);await updateKnowledgeIndex(env,job.projectId,100);return}
  if(job.type===ATTACHMENTS_JOB){await advanceAttachments(env,job.id,job.projectId);return}
  if(await consumeTriage(job,env))return
  if(await handleGeneration(env,job,generationEffects))return

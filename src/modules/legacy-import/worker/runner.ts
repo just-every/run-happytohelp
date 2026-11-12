@@ -5,6 +5,7 @@ import {planKnowledgeIndex} from '../../knowledge/canonicaliser'
 import {readManifest} from './reader'
 import {verifyPackage} from './package-step'
 import {loadContext,indexTranscripts,indexDatasets} from './context-load'
+import {loadEarlierMedia} from './earlier-media'
 import {deltaMessages,deltaMedia} from './delta-context'
 import {workspaceLease} from './fence'
 import {rowStep,preflightObjects} from './row-step'
@@ -33,7 +34,7 @@ export async function advanceLegacy(env:Env,job:Job){
   }
   const phase=run.phase,c=cursor(run);let measured:{rows:number;bytes:number;objects?:number}
   if(phase==='verify_package')measured=await verifyPackage(env,run,manifest)
-  else if(phase==='context')measured=c.stage==='transcripts'?await indexTranscripts(env,run):c.stage==='datasets'?await indexDatasets(env,run):await loadContext(env,run,manifest)
+  else if(phase==='context')measured=c.stage==='transcripts'?await indexTranscripts(env,run):c.stage==='datasets'?await indexDatasets(env,run):c.stage==='earlier'||c.stage==='earlier_files'?await loadEarlierMedia(env,run):await loadContext(env,run,manifest)
   else if(phase==='preflight')measured=c.stage==='delta'?await deltaMessages(env,run,manifest):c.stage==='delta_media'?await deltaMedia(env,run,manifest):c.stage==='objects'?await preflightObjects(env,run,manifest,lease):await rowStep(env,run,manifest,lease,true)
   else if(phase==='objects')measured=await copyObject(env,run,manifest,lease)
   else if(phase==='rows')measured=await rowStep(env,run,manifest,lease,false)

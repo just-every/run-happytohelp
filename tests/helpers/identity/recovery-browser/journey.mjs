@@ -1,3 +1,4 @@
+import {managedBrowserStates} from './managed.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
 import {createServer} from 'node:net'
@@ -42,6 +43,7 @@ export async function recoveryBrowserJourney(browser){
   await page.getByRole('button',{name:'Refresh status',exact:true}).click();await page.getByRole('heading',{name:'Prove your replacement factor'}).waitFor();await proof('replacement-choice')
   await page.getByRole('button',{name:'Set up an authenticator app',exact:true}).click();await page.getByTestId('recovery-secret').waitFor();await proof('replacement-totp')
   const secret=await page.getByTestId('recovery-secret').innerText();await page.getByLabel('Code from your authenticator app',{exact:true}).fill(totp(secret));await page.getByRole('button',{name:'Complete recovery',exact:true}).click();await page.getByRole('heading',{name:'Save your new recovery codes'}).waitFor();await proof('new-codes')
+  const codes=await page.locator('.recovery-codes li').allTextContents()
   assert.equal((await fetch(origin+'/api/identity/session',{headers:{Authorization:'Bearer '+target.token}})).status,401)
   const cookie=(await context.cookies(origin)).find(c=>c.name==='h2h_session');assert.ok(cookie)
   await api('/api/identity/two-factor/verify',{recoveryCode:await page.locator('.recovery-codes li').first().innerText()},cookie.value)
@@ -50,6 +52,7 @@ export async function recoveryBrowserJourney(browser){
   await page.getByLabel('Code from your authenticator app',{exact:true}).fill(totp(secret,1));await page.getByRole('button',{name:/Confirm|Verify|Continue|Sign in/}).first().click()
   // The public API observes real access after the ordinary factor-confirmed login.
   await page.waitForURL(url=>url.pathname.startsWith('/projects/')||url.pathname==='/users/profile');assert.equal((await context.request.get(origin+'/api/identity/session')).status(),200)
+  const targetSession=(await context.cookies(origin)).find(c=>c.name==='h2h_session').value
   await context.clearCookies();await page.goto(origin+'/owner-recovery');await page.getByRole('button',{name:'Start a new recovery',exact:true}).click()
   await page.getByRole('button',{name:'Recover a shared account',exact:true}).click();await page.getByLabel('Account email',{exact:true}).fill('taylor@support.test');await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Continue recovery',exact:true}).click();await page.getByRole('heading',{name:'Waiting for workspace owners'}).waitFor();await page.getByRole('button',{name:'Cancel recovery',exact:true}).click();await page.getByRole('heading',{name:'Recovery cancelled'}).waitFor();await proof('cancelled')
   await page.getByRole('button',{name:'Start a new recovery',exact:true}).click();await page.getByText('Separately controlled installation',{exact:true}).click();await page.getByRole('button',{name:'Use an installation key',exact:true}).click();await proof('manual-primary')
@@ -61,6 +64,19 @@ export async function recoveryBrowserJourney(browser){
   const manual=await page.evaluate(()=>sessionStorage.getItem('h2h-owner-recovery'))
   await runtime.execute("UPDATE identity_recovery_requests SET expires_at=1 WHERE mode='manual' AND state='authorized'")
   await page.reload();await page.getByRole('heading',{name:'Recovery expired'}).waitFor();await proof('expired')
+  await page.getByRole('button',{name:'Start a new recovery',exact:true}).click();await page.getByText('Separately controlled installation',{exact:true}).click();await page.getByRole('button',{name:'Use an installation key',exact:true}).click()
+  await page.getByLabel('Account email',{exact:true}).fill('casey@lantern.test');await page.getByLabel('Password',{exact:true}).fill(password);await page.getByLabel('Installation recovery key',{exact:true}).fill(key);await page.getByRole('button',{name:'Continue recovery',exact:true}).click();await page.getByRole('heading',{name:'Prove your replacement factor'}).waitFor()
+  const passkeyCapability=await page.evaluate(()=>sessionStorage.getItem('h2h-owner-recovery'))
+  const cdp=await context.newCDPSession(page);await cdp.send('WebAuthn.enable');await cdp.send('WebAuthn.addVirtualAuthenticator',{options:{protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,isUserVerified:true,automaticPresenceSimulation:true}})
+  await page.getByRole('button',{name:'Use a new passkey',exact:true}).click();await page.getByRole('heading',{name:'Save your new recovery codes'}).waitFor();await proof('passkey-completed')
+  await page.evaluate(value=>sessionStorage.setItem('h2h-owner-recovery',value),passkeyCapability);await page.reload();await page.getByRole('heading',{name:'Recovery already completed'}).waitFor();await proof('replayed-completion')
+  await page.getByRole('button',{name:'Start a new recovery',exact:true}).click();await page.getByText('Separately controlled installation',{exact:true}).click();await page.getByRole('button',{name:'Use an installation key',exact:true}).click()
+  await page.getByLabel('Account email',{exact:true}).fill('casey@lantern.test');await page.getByLabel('Password',{exact:true}).fill(password);await page.getByLabel('Installation recovery key',{exact:true}).fill(key);await page.getByRole('button',{name:'Continue recovery',exact:true}).click();await page.getByRole('alert').waitFor();await proof('spent-key-refusal')
+  const stale=await api(root+'/account/request',{email:'taylor@support.test',password})
+  await api('/api/identity/password',{currentPassword:password,password:'replacement-shared-native-password'},targetSession)
+  await page.evaluate(value=>sessionStorage.setItem('h2h-owner-recovery',value),stale.capability);await page.reload();await page.getByRole('heading',{name:'Recovery cannot continue'}).waitFor();await proof('authority-changed')
+  await approver.close();approver=undefined
+  await managedBrowserStates({browser,runtime,shot})
   assert.deepEqual(errors,[]);passed=true
  }finally{await approver?.close();await context.close();await runtime.close(passed)}
 }

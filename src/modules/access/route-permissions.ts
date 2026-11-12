@@ -113,6 +113,17 @@ const rules:Record<string,Rule>={
  'POST /api/move-in/projects/:projectId/imports/:runId/ownership/preview':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/ownership/apply':'data.import',
  'GET /api/move-in/projects/:projectId/cutover':'data.import','POST /api/move-in/projects/:projectId/cutover/steps':'data.import',
  // Doors with their own authority
+ // Recovery doors enforce their own HMAC, primary proof or scoped capability;
+ // workspace approval additionally requires the live native owner and factor.
+ 'POST /api/identity/owner-recovery/custody':'none',
+ 'POST /api/identity/owner-recovery/challenge':'none',
+ 'POST /api/identity/owner-recovery/authorize':'none',
+ 'POST /api/identity/owner-recovery/account/request':'none',
+ 'POST /api/identity/owner-recovery/account/approve':'none',
+ 'POST /api/identity/owner-recovery/enrol/totp':'none',
+ 'POST /api/identity/owner-recovery/enrol/passkey-options':'none',
+ 'POST /api/identity/owner-recovery/complete':'none',
+ 'POST /api/identity/owner-recovery/cancel':'none',
  'POST /auth/bootstrap':'none','POST /auth/owner-claim':'none','POST /api/identity/login':'none','POST /api/identity/accept-token':'none','POST /api/identity/forgot-password':'none','POST /api/identity/widget/session':'none','POST /api/identity/register':'none','POST /api/identity/verify-email':'none','POST /api/identity/bootstrap':'none','POST /api/identity/link-status':'none','POST /api/identity/magic-link':'none','POST /api/identity/magic-link/consume':'none','POST /api/identity/owner-recovery':'none',
  'POST /api/conversations/:id/widget-events':'none','POST /api/integrations/email/rer/v1/inbound':'none','POST /api/integrations/email/inbound':'none','POST /api/integrations/email/sendgrid/inbound':'none','POST /api/integrations/email/mailgun/inbound':'none','POST /api/dashboard/demo-inbox':'none',
  'POST /api/delegation/v1/token':'none','POST /api/delegation/v1/effects':'none','POST /api/delegation/v1/revoke':'none',

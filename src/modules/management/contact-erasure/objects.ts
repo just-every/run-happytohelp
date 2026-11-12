@@ -1,3 +1,4 @@
+import {scopeFenceStatements} from '../../legacy-import/custody/fence'
 import {contactKeys} from '../../api-integrations/requester-admission'
 import {fenceImportErasure,type ErasureIdentity} from '../../move-in/erasure'
 import type {Env} from '../../../platform/env'
@@ -19,6 +20,7 @@ export async function fenceAndStage(env: Env, projectId: string, contactId: stri
   const apiKeys=await contactKeys(env,projectId,contactId)
   const bound = (sql: string) => env.DB.prepare(sql).bind(projectId, contactId)
   await fenceAdmittedIdentity(env,projectId,contactId,snapshot,[
+    ...scopeFenceStatements(env.DB,projectId,'erasure'),
     ...apiKeys.map(key=>env.DB.prepare('INSERT OR IGNORE INTO api_erased_keys(project_id,digest) VALUES(?,?)').bind(projectId,key.digest)),
     bound(`INSERT OR IGNORE INTO api_erasure_inventory SELECT ?1,?2,
      (SELECT count(*) FROM api_requests WHERE project_id=?1 AND contact_id=?2 AND response_json IS NOT NULL),

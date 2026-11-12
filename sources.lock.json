@@ -16277,11 +16277,11 @@
       "executable": false
     },
     "tests/helpers/identity/recovery-authority/managed.mjs": {
-      "sha256": "b0c2c7dcbf468d3f187914c3b458590e67b5f7ae428dc87ff78b908c98dfaa90",
+      "sha256": "6460fe2c6745a4b93caffe5be6abe970e3f3005e99f0d3115b99b2b99db784a3",
       "executable": false
     },
     "tests/helpers/identity/recovery-authority/manual.mjs": {
-      "sha256": "dd33b81c5e21e1b4f07b449cedac1363724b1454b403dd1e772ce7d59c2ffcbf",
+      "sha256": "f338182a1f3837524678c1cafee72aebb12ea2e069cf89fbbd42c6bd4cf7e880",
       "executable": false
     },
     "tests/helpers/identity/recovery-authority/passkey.mjs": {

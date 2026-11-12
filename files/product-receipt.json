@@ -1,0 +1,28 @@
+{
+  "head": "7f21bac240747db1e2bed5112e92380f0646c702",
+  "base": "9a4f9408a2fd46159086df698dba9ebcf3f5d657",
+  "clean": true,
+  "fullHistory": true,
+  "files": [
+    {
+      "path": "src/modules/legacy-import/worker/runner.ts",
+      "sha256": "eb64d7eae2b063d419e8468f68b17b5f799c5720ef1610abefea51b8f74c284a"
+    },
+    {
+      "path": "tests/helpers/legacy-worker/runtime.ts",
+      "sha256": "c782ab8eecc8c81416d5f33cc9a4903f5c305d03accdb30115f7606e87cfa9d5"
+    },
+    {
+      "path": "tests/helpers/legacy-worker/index-drain.mjs",
+      "sha256": "7d163c0956008d873a7154c7dedb8d8f9e0347e267f188dc452ee65654b0ada2"
+    },
+    {
+      "path": "tests/journeys/legacy.mjs",
+      "sha256": "ea19dfc2250feebc7ba7292c3c5c68b36fdab08d89251492cd1ccdc01a3698d4"
+    },
+    {
+      "path": "sources.lock.json",
+      "sha256": "3177952685370539335d900a78d134d62492df8f5ef0e388f8843dc49f29f26d"
+    }
+  ]
+}

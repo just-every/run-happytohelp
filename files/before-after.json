@@ -1,0 +1,94 @@
+{
+  "base": "9a4f9408a2fd46159086df698dba9ebcf3f5d657",
+  "samePackage": true,
+  "before": {
+    "manifestSha256": "9b35b11ad87837873b07bdfa0a314ec4b7452cf5d5aacb079e3312a79ac155c4",
+    "articles": 25,
+    "macroBytes": 16439,
+    "state": "paused",
+    "phase": "rows",
+    "error": "knowledge_index_not_ready",
+    "dirty": 25,
+    "ticks": 18,
+    "resume": {
+      "state": "paused",
+      "error": "knowledge_index_not_ready",
+      "dirty": 25
+    }
+  },
+  "after": {
+    "manifestSha256": "9b35b11ad87837873b07bdfa0a314ec4b7452cf5d5aacb079e3312a79ac155c4",
+    "articles": 25,
+    "macroBytes": 16439,
+    "state": "complete",
+    "dirty": 0,
+    "ticks": 68,
+    "drains": [
+      {
+        "before": 25,
+        "after": 24,
+        "statements": 45
+      },
+      {
+        "before": 24,
+        "after": 23,
+        "statements": 44
+      },
+      {
+        "before": 23,
+        "after": 22,
+        "statements": 44
+      },
+      {
+        "before": 22,
+        "after": 21,
+        "statements": 44
+      },
+      {
+        "before": 21,
+        "after": 20,
+        "statements": 44
+      }
+    ],
+    "fences": {
+      "stop": {
+        "state": "stopped",
+        "error": null,
+        "dirty": 25,
+        "cursorUnchanged": true,
+        "journalUnchanged": true,
+        "indexUnchanged": true
+      },
+      "revocation": {
+        "state": "paused",
+        "error": "import_authority_revoked",
+        "dirty": 25,
+        "cursorUnchanged": true,
+        "journalUnchanged": true,
+        "indexUnchanged": true
+      },
+      "workspaceLease": {
+        "state": "paused",
+        "error": "database_unavailable",
+        "dirty": 25,
+        "cursorUnchanged": true,
+        "journalUnchanged": true,
+        "indexUnchanged": true
+      },
+      "runLease": {
+        "state": "paused",
+        "error": "database_unavailable",
+        "dirty": 25,
+        "cursorUnchanged": true,
+        "journalUnchanged": true,
+        "indexUnchanged": true
+      }
+    },
+    "cronRecovered": true,
+    "journalExact": true,
+    "journalRows": 26,
+    "replayApplied": 0,
+    "workUnchanged": true,
+    "outbound": 0
+  }
+}

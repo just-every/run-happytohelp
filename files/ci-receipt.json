@@ -1,0 +1,13 @@
+{
+  "conclusion": null,
+  "head_sha": "7f21bac240747db1e2bed5112e92380f0646c702",
+  "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43252518744",
+  "status": "in_progress",
+  "run_id": 43252518744,
+  "calls": 8,
+  "observed_at": 1794499656,
+  "head": "7f21bac240747db1e2bed5112e92380f0646c702",
+  "watcherStopped": true,
+  "terminalCustody": "PUSHED",
+  "reason": "Verify still in progress after the fifteen-minute observation; eight of ten calls used, polling ended under the brief budget-short rule."
+}

@@ -1,0 +1,57 @@
+{
+  "limit": 10,
+  "usedBeforeCorrectedWatcher": 5,
+  "calls": [
+    {
+      "number": 1,
+      "operation": "REST exact-SHA run discovery",
+      "head": "ee9e91031cd04bf99e8eeab332c24fd106b29b5f",
+      "result": "no runs advertised yet"
+    },
+    {
+      "number": 2,
+      "operation": "REST exact-SHA discovery after at least 300 seconds",
+      "run": 43251427718,
+      "result": "completed/failure"
+    },
+    {
+      "number": 3,
+      "operation": "REST completed run job list",
+      "run": 43251427718,
+      "result": "build source-lock check failed; downstream skipped/aggregate failed"
+    },
+    {
+      "number": 4,
+      "operation": "gh run view 43251427718 --repo just-every/run-happytohelp --job 131298096909 --log-failed",
+      "result": "exit 0; assertion retained in ci-build-failed.log"
+    },
+    {
+      "number": 5,
+      "operation": "REST corrected exact-SHA run discovery",
+      "head": "7f21bac240747db1e2bed5112e92380f0646c702",
+      "result": "no runs advertised yet"
+    },
+    {
+      "number": 6,
+      "operation": "REST corrected exact-SHA discovery after at least 300 seconds",
+      "run": 43252518744,
+      "result": "in_progress"
+    },
+    {
+      "number": 7,
+      "operation": "REST corrected exact-SHA run status after at least 300 seconds",
+      "run": 43252518744,
+      "result": "in_progress"
+    },
+    {
+      "number": 8,
+      "operation": "REST corrected exact-SHA run status after at least 300 seconds",
+      "run": 43252518744,
+      "result": "in_progress"
+    }
+  ],
+  "watcher": "single active watcher; at least 300 seconds between discovery/status calls for each head; no workflow dispatch or rerun",
+  "used": 8,
+  "remaining": 2,
+  "pollingEnded": "budget short; no watcher left running"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "regularFiles": 44,
+  "issues": [],
+  "checks": [
+    "no injected bundle values",
+    "no credential-shaped GitHub tokens",
+    "regular files only"
+  ],
+  "scope": "Task-side packet selection check; not the required fleet publication scan"
+}

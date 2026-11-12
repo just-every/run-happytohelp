@@ -1,0 +1,1 @@
+LEGACY_INDEX_DRAIN {"manifestSha256":"9b35b11ad87837873b07bdfa0a314ec4b7452cf5d5aacb079e3312a79ac155c4","articles":25,"macroBytes":16439,"state":"paused","phase":"rows","error":"knowledge_index_not_ready","dirty":25,"ticks":18,"resume":{"state":"paused","error":"knowledge_index_not_ready","dirty":25}}

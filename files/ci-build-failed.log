@@ -1,0 +1,2 @@
+build	Run node scripts/edition-authoring/cli.mjs check	2026-11-12T15:47:18.7420214Z Stale lock or source/tool integrity mismatch; run changes to inspect intentional edits before lock
+build	Run node scripts/edition-authoring/cli.mjs check	2026-11-12T15:47:18.7629168Z ##[error]Process completed with exit code 1.

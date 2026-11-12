@@ -1,0 +1,102 @@
+{
+  "base": "9a4f9408a2fd46159086df698dba9ebcf3f5d657",
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm run source:lock",
+      "exit": 0,
+      "log": "source-lock.log"
+    },
+    {
+      "command": "pnpm run source:check",
+      "exit": 0,
+      "log": "source-check.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "node /tmp/hh-before.mjs",
+      "exit": 0,
+      "log": "before.log",
+      "tree": "main product code; helper-only probe"
+    },
+    {
+      "command": "node /tmp/hh-after.mjs",
+      "exit": 0,
+      "log": "after.log",
+      "tree": "candidate product code"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/journeys/legacy.mjs",
+      "status": "interrupted",
+      "log": "legacy-initial.log",
+      "reason": "Stopped owned processes while the unrelated emitted-Worker command test was preparing migrations; no assertion result was emitted. Narrowed to the two existing Worker registrations that cover this change."
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='the Worker package reader|an owner runs a bounded legacy package' tests/journeys/legacy.mjs",
+      "exit": 0,
+      "log": "legacy.log",
+      "result": "2 passed; no registrations added"
+    },
+    {
+      "command": "pnpm run source:lock (after final fresh-main rebase)",
+      "exit": 0,
+      "log": "source-lock-final.log"
+    },
+    {
+      "command": "pnpm run source:check (after final source lock)",
+      "exit": 0,
+      "log": "source-check-final.log"
+    },
+    {
+      "command": "pnpm run source:lock (include newly tracked helper after CI mismatch)",
+      "exit": 0,
+      "log": "source-lock-corrected.log"
+    },
+    {
+      "command": "pnpm run source:check (corrected candidate)",
+      "exit": 0,
+      "log": "source-check-corrected.log"
+    }
+  ],
+  "registeredTests": {
+    "legacyBefore": 6,
+    "legacyAfter": 6,
+    "added": 0
+  },
+  "notRun": [
+    "Full local suite (prohibited by brief)",
+    "UI screenshots (no UI changed)",
+    "production/provider/customer/real-package work (outside task)",
+    "publication scan (supported helper unavailable; pending Mac)",
+    "independent acceptance gate (required separately)"
+  ],
+  "head": "7f21bac240747db1e2bed5112e92380f0646c702",
+  "candidateCommits": [
+    {
+      "head": "ee9e91031cd04bf99e8eeab332c24fd106b29b5f",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": []
+    },
+    {
+      "head": "7f21bac240747db1e2bed5112e92380f0646c702",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": []
+    }
+  ],
+  "githubCalls": 8
+}

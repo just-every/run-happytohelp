@@ -11,7 +11,7 @@ import {dbNow} from '../lease'
 import {result} from './result'
 export const legacyRunnerRoutes=new Hono<AppEnv>()
 const root=LEGACY_ROUTE+'/:sha'
-legacyRunnerRoutes.use(`${root}/*`,async(c,next)=>{c.header('Cache-Control','no-store');try{await next()}catch(error){if(error instanceof WorkerImportError)return c.json({error:error.code.replaceAll('_',' '),code:error.code},error.status as 400);throw error}})
+legacyRunnerRoutes.use(`${root}/*`,async(c,next)=>{c.header('Cache-Control','no-store');await next()})
 async function admission(c:any,readPackage=true){
  const actor=await importActor(c),access=await memberAccess(c.env.DB,actor.project_id,actor.actor_id)
  if(!access?.permissions.has('data.import'))throw new HTTPException(403)

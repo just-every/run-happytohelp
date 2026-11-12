@@ -1,3 +1,6 @@
+import {nativeSnapshot,assertRepeatSurvival} from '../helpers/zendesk-diagnostics/snapshot.mjs'
+import {diagnosticsAuthority} from '../helpers/zendesk-diagnostics/authority.mjs'
+import {linkageObservations} from '../helpers/zendesk-diagnostics/linkage.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {createHash,randomBytes} from 'node:crypto'
@@ -55,6 +58,11 @@ async function addMember(h,actor,role){
 test('an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo',{timeout:600_000},async()=>{
  const zendesk=fakeZendesk(),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
  try{
+  const empty=await nativeSnapshot(h)
+  assert.ok(empty.complete);assert.deepEqual(empty.tickets,[]);assert.deepEqual(empty.articles,[])
+  assert.ok(Object.values(empty.summary).every(value=>value===0))
+  await diagnosticsAuthority(h,{addMember,endSession,signIn})
+
   // Connect: a public PKCE client, a single-use state bound to this session and workspace.
   assert.equal((await h.raw(`${api}/zendesk/connect`,{...post({subdomain:SUBDOMAIN,clientId:CLIENT_ID}),actor:'operator'})).response.status,403)
   const {url}=await h.call(`${api}/zendesk/connect`,post({subdomain:SUBDOMAIN.toUpperCase(),clientId:CLIENT_ID}))
@@ -125,6 +133,25 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   // Search finds an imported ticket by its exact Zendesk id, with and without #.
   for(const term of ['104','#104']){const found=await h.call(`/api/dashboard/projects/p/conversations?view=all&search=${encodeURIComponent(term)}`);assert.deepEqual(found.data.map(c=>c.id),[large],term)}
 
+  const nativeBefore=await nativeSnapshot(h)
+  assert.ok(nativeBefore.complete)
+  assert.deepEqual(nativeBefore.sourceIds,['101','102','104','105'])
+  assert.equal(nativeBefore.summary.mappingRows,nativeBefore.summary.distinctSourceIds)
+  assert.equal(nativeBefore.summary.duplicateSourceGroups,0)
+  assert.equal(nativeBefore.summary.companyOrigins,1)
+  assert.deepEqual([nativeBefore.summary.publishedArticleOrigins,nativeBefore.summary.draftArticleOrigins],[1,1])
+  assert.ok(!nativeBefore.articles.some(row=>row.sourceId==='803'),'restricted source has no origin')
+  for(const row of nativeBefore.tickets){
+   const sample=zendesk.tickets[row.sourceId]
+   assert.equal(row.messageCount,sample.comments.filter(comment=>comment.public).length)
+   assert.equal(row.noteCount,sample.comments.filter(comment=>!comment.public).length)
+   assert.ok(row.contactLinked&&row.nativePresent)
+   assert.equal((await h.raw(`/api/dashboard/projects/p/conversations/${row.conversationId}`)).response.status,200)
+  }
+  const diagnosticsOutbound=h.outbound
+  await nativeSnapshot(h)
+  assert.equal(h.outbound,diagnosticsOutbound,'census makes no provider request')
+
   // Another account is refused once this workspace holds Zendesk history.
   assert.equal((await h.raw(`${api}/zendesk/connect`,post({subdomain:'synthetic-other',clientId:CLIENT_ID}))).response.status,409)
 
@@ -157,6 +184,12 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.equal(repeat.state,'applied',JSON.stringify({error:repeat.error}))
   assert.equal(repeat.totals.tickets.imported,2);assert.equal(repeat.totals.replies.imported,2)
   assert.ok(budget.maxStatements<=980,'a repeat pull stays inside the D1 statement budget')
+  const nativeAfter=await nativeSnapshot(h)
+  assertRepeatSurvival(nativeBefore,nativeAfter)
+  assert.deepEqual(nativeAfter.sourceIds.filter(id=>!nativeBefore.sourceIds.includes(id)),['106','107'])
+  assert.ok(nativeAfter.sourceIds.filter(id=>!nativeBefore.sourceIds.includes(id)).every(id=>BigInt(id)>105n),'extras are later arrivals')
+  assert.ok(!nativeAfter.sourceIds.includes('103'),'deleted ticket remains absent')
+  assert.notEqual(nativeBefore.tupleFingerprint,nativeAfter.tupleFingerprint,'legitimate new replies and sources change tuple observations')
   const everyTicket=[['101',1],['102',1],['104',1],['105',1],['106',1],['107',1]]
   assert.deepEqual(await sourceIds(),everyTicket)
   assert.equal(await messagesOf('101'),replies+1,'the reply on 101 imports as one more message')
@@ -196,6 +229,8 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
 
   // Every source read was a GET; the only POSTs went to the token endpoint.
   for(const r of zendesk.state.requests)assert.ok(r.method==='GET'||r.method==='POST'&&r.path==='/oauth/tokens',`${r.method} ${r.path}`)
+
+  await linkageObservations(h)
 
   // Disconnect removes the ciphertext and reports Zendesk's revoke outcome.
   const disconnected=await h.call(`${api}/zendesk/connection`,{method:'DELETE'})

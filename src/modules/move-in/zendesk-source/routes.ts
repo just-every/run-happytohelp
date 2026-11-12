@@ -1,3 +1,4 @@
+import {zendeskDiagnosticsRoutes} from '../zendesk-diagnostics/routes'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {Context} from 'hono'
@@ -12,6 +13,7 @@ import {access,resumeBatches,takeOverPatch,takeOverStatements} from './takeover'
 import {pullView} from './view'
 const root='/projects/:projectId/zendesk/pulls'
 export const zendeskPullRoutes=new Hono<AppEnv>()
+zendeskPullRoutes.route('/',zendeskDiagnosticsRoutes)
 /** The workspace's pull, whoever started it: every owner and admin sees it. */
 async function workspacePull(c:Context<AppEnv>){const actor=await importActor(c),pull=await getPull(c.env,c.req.param('pullId')!);if(!pull||pull.project_id!==actor.project_id)throw new HTTPException(404);return {actor,pull}}
 const view=async(c:Context<AppEnv>,actor:ImportActor,id:string)=>{const pull=(await getPull(c.env,id))!;return pullView(c.env,pull,await access(c.env,pull,actor))}

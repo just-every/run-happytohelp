@@ -10,11 +10,25 @@ import {markWorkRows,purgeWorkRows} from './work-rows'
 import {importedHistoryStatements} from './imported-history'
 import {mediaRewrite} from './media-rewrite'
 import {bundleMediaIndex,type MediaIndex} from './media-index'
+export interface PreparedIdentity {id:string;bundleDigest:string;source:LegacyBundle['source']}
+export interface PreparedSlice {
+ identity:PreparedIdentity
+ /** False until the runner verifies every row of the ORIGINAL part. */
+ finalize:false
+ journalStatements?:(sources:{table:string;sourceId:string}[],applied:boolean)=>D1PreparedStatement[]
+ normalize:(targets:MappedRow[])=>Promise<{targets:MappedRow[];statements:D1PreparedStatement[];env:Env}>
+}
+export async function normalizeImportPlan(plan:Awaited<ReturnType<typeof planImport>>,env:Pick<Env,'DB'|'FILES'>,prepared?:PreparedSlice){
+ if(!prepared)return {env,statements:[] as D1PreparedStatement[]}
+ const normalized=await prepared.normalize(plan.rows.flatMap(source=>source.mapped));let at=0
+ for(const source of plan.rows){source.mapped=normalized.targets.slice(at,at+source.mapped.length);at+=source.mapped.length}
+ return {env:{...env,DB:normalized.env.DB},statements:normalized.statements}
+}
 /** `media`: the workspace's files by legacy key (media-index.ts), resolved before mapping; a `--file` export without one
  * resolves its own. Legacy storage URLs in the mapped rows are rewritten to native URLs (media-rewrite.ts). */
-export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex}={}){
+export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;identity?:PreparedIdentity}={}){
  if(bundle.format!=='happytohelp-legacy-v1'||!bundle.tables||!bundle.source?.revision||!bundle.source.repository||!Number.isFinite(Date.parse(bundle.source.exportedAt)))throw new Error('Invalid legacy bundle provenance')
- const bundleDigest=await digest(stable(bundle)),rows=[],rewrite=mediaRewrite(options.media??(options.context?undefined:bundleMediaIndex(bundle)),String(bundle.source.projectId??''))
+ const bundleDigest=options.identity?.bundleDigest??await digest(stable(bundle)),rows=[],rewrite=mediaRewrite(options.media??(options.context?undefined:bundleMediaIndex(bundle)),String(bundle.source.projectId??''))
  for(const table of Object.keys(bundle.tables).sort((a,b)=>{const ia=tableOrder.indexOf(a),ib=tableOrder.indexOf(b);return (ia<0?1000:ia)-(ib<0?1000:ib)||a.localeCompare(b)})){
  if(!Array.isArray(bundle.tables[table]))throw new Error(`Expected row array for ${table}`)
  let sourceRows=[...bundle.tables[table]]
@@ -32,18 +46,19 @@ export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBun
  * erasure leaves it (digest kept, source copy '{}', status 'erased', its mapped target) and writes no canonical row, hold,
  * reporting row or import state; it takes no part in the conflict preflight; its file is not uploaded, and one an earlier
  * run left in R2 that no native media row holds is removed. Replayed rows are untouched. */
-export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;checkOnly?:boolean;erased?:Set<string>;lease?:DeltaLease;publishDefaultRules?:boolean;leaveUnread?:boolean}={}){
+export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;checkOnly?:boolean;erased?:Set<string>;lease?:DeltaLease;publishDefaultRules?:boolean;leaveUnread?:boolean;prepared?:PreparedSlice}={}){
  if(bundle.source?.since!==undefined||bundle.source?.delta!==undefined)throw new Error('A delta export imports only as a package (--package), which applies it update-aware')
  const lease=options.lease
  if(!options.checkOnly&&!lease)throw new Error('A legacy import writes only under its workspace lease')
  const context=options.context??bundle,erased=options.erased??new Set<string>()
- const plan=await planImport(bundle,options),existing=await env.DB.prepare('SELECT id,bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{id:string;bundle_digest:string;state:string}>();if(existing&&existing.bundle_digest!==plan.bundleDigest)throw new Error('Import digest conflict')
+ const plan=await planImport(bundle,{...options,identity:options.prepared?.identity}),normalization=await normalizeImportPlan(plan,env,options.prepared);env=normalization.env
+ const existing=await env.DB.prepare('SELECT id,bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{id:string;bundle_digest:string;state:string}>();if(existing&&existing.bundle_digest!==plan.bundleDigest)throw new Error('Import digest conflict')
  // A run's journal is read once. Existing canonical rows are looked up, and new
  // rows written, as one JSON array parameter per statement, so a production-sized
  // chunk costs a few D1 round trips and never approaches D1's 100 bound
  // parameters. Each group commits its canonical writes, holds and
  // legacy_import_rows records together in one batch.
- const priors=new Map((await env.DB.prepare('SELECT source_table,source_id,row_digest FROM legacy_import_rows WHERE run_id=?').bind(plan.id).all<{source_table:string;source_id:string;row_digest:string}>()).results.map(r=>[identity(r.source_table,[r.source_id]),r.row_digest]))
+ const priors=new Map((await env.DB.prepare(`SELECT source_table,source_id,row_digest FROM legacy_import_rows WHERE run_id=? ${options.prepared?'AND source_id IN (SELECT value FROM json_each(?))':''}`).bind(...(options.prepared?[plan.id,JSON.stringify(plan.rows.map(row=>row.sourceId))]:[plan.id])).all<{source_table:string;source_id:string;row_digest:string}>()).results.map(r=>[identity(r.source_table,[r.source_id]),r.row_digest]))
  let applied=0,replayed=0,d1Ms=0,maxBatchMs=0
  for(const source of plan.rows){const prior=priors.get(identity(source.table,[source.sourceId]));if(prior!==undefined){if(prior!==source.rowDigest)throw new Error('Source row replay differs');replayed++}}
  const pending=plan.rows.filter(source=>!priors.has(identity(source.table,[source.sourceId])))
@@ -55,6 +70,7 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
  const current=await canonicalRows(env.DB,live.flatMap(source=>source.mapped),columnsOf)
  // Preflight every canonical row and object before changing either store. A
  // conflict in a later batch/chunk must not leave earlier business rows applied.
+ const observed=new Map(current)
  const proposed=new Map(current)
  for(const source of live)for(const mapped of source.mapped){
   const row=columnsOf(mapped),values=mapped.key.map(k=>row[k]),id=identity(mapped.table,values),prior=proposed.get(id)
@@ -76,9 +92,10 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
  const summary={...plan.summary,holds:plan.rows.filter(source=>!withheld.has(source)).flatMap(r=>r.mapped.filter(m=>m.hold).map(m=>`${r.table}:${r.sourceId}: ${m.hold}`))}
  if(options.checkOnly)return {id:plan.id,...summary,applied:0,replayed,erased:0,d1Ms:0,maxBatchMs:0}
  // A batch the lease assertion refused stops the import with the lease's own message.
- const leased=async(statements:D1PreparedStatement[])=>env.DB.batch([lease!.assertion(env.DB),...statements,lease!.cleared(env.DB)]).catch(async error=>{await lease!.confirm();throw error})
- await env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now()).run()
+ const leased=async(statements:D1PreparedStatement[])=>env.DB.batch([lease!.assertion(env.DB),...normalization.statements,...statements,lease!.cleared(env.DB)]).catch(async error=>{await lease!.confirm();throw error})
+ await leased([env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now())])
  await confirmReplayedState(env.DB,plan.id,replayedRows,columnsOf,leased)
+ if(replayedRows.length&&options.prepared?.journalStatements)await leased(options.prepared.journalStatements(replayedRows,false))
  for(const {object,ids} of leftovers)if(await env.FILES.head(object.key)&&!await heldByNativeMedia(env.DB,ids,object.key)){await leased([env.DB.prepare('DELETE FROM legacy_import_objects WHERE run_id=? AND object_key=?').bind(plan.id,object.key)]);await env.FILES.delete(object.key)}
  for(const object of objects){
   const bytes=Uint8Array.from(atob(object.dataBase64),c=>c.charCodeAt(0)),current=await env.FILES.get(object.key);let uploaded=false
@@ -121,17 +138,19 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
    holds.push(...held);if(report)reporting.push(report);journal.push(entry)
   }
   // Tables keep their first-mapped order, so a parent row precedes the rows that reference it.
-  const statements:D1PreparedStatement[]=[...markWorkRows(env.DB),...[...inserts].flatMap(([table,byColumns])=>[...byColumns].map(([names,values])=>insertJson(env.DB,`INSERT INTO ${sqlName(table)} (${names.split(',').map(sqlName).join(',')})`,names.split(',').length,values)))]
+  const statements:D1PreparedStatement[]=[...canonicalAssertions(env.DB,group.flatMap(write=>write.mapped),observed,columnsOf),...markWorkRows(env.DB),...[...inserts].flatMap(([table,byColumns])=>[...byColumns].map(([names,values])=>insertJson(env.DB,`INSERT INTO ${sqlName(table)} (${names.split(',').map(sqlName).join(',')})`,names.split(',').length,values)))]
   if(holds.length)statements.push(insertJson(env.DB,'INSERT OR IGNORE INTO legacy_import_holds(id,run_id,source_table,source_id,reason)',5,holds))
   if(reporting.length)statements.push(insertJson(env.DB,'INSERT OR IGNORE INTO reporting_legacy_conversations(project_id,conversation_id,run_id)',3,reporting))
   if(state.length)statements.push(stateStatement(env.DB,state))
   statements.push(insertJson(env.DB,'INSERT INTO legacy_import_rows(run_id,source_table,source_id,row_digest,source_json,target_table,target_key,status)',8,journal))
+  if(options.prepared?.journalStatements)statements.push(...options.prepared.journalStatements(group.map(write=>write.source),true))
   // What the import writes is history, not work (imported-history.ts): reads, the unpublished default rules, no trigger rows.
   statements.push(...importedHistoryStatements(env.DB,{projects,conversations,publishDefaultRules:options.publishDefaultRules,leaveUnread:options.leaveUnread}),...purgeWorkRows(env.DB))
   // D1 reports each statement's server time; the batch's sum is its share of the database's CPU.
   const batch=(await leased(statements)).reduce((ms,result)=>ms+Number(result.meta?.duration||0),0);applied+=group.length;d1Ms+=batch;maxBatchMs=Math.max(maxBatchMs,batch)
  }
- await env.DB.prepare("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=?").bind(Date.now(),plan.id).run();return {id:plan.id,...summary,applied,replayed,erased:erasedRows,d1Ms:Math.round(d1Ms),maxBatchMs:Math.round(maxBatchMs)}
+ if(!options.prepared)await leased([env.DB.prepare("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=?").bind(Date.now(),plan.id)])
+ return {id:plan.id,...summary,applied,replayed,erased:erasedRows,d1Ms:Math.round(d1Ms),maxBatchMs:Math.round(maxBatchMs)}
 }
 /** The mapped columns the target table has, objects as their stable JSON: what the importer writes. */
 export function writtenColumns(schemas:Map<string,Set<string>>){return (mapped:MappedRow)=>Object.fromEntries(Object.entries(mapped.row).filter(([key,value])=>schemas.get(mapped.table)!.has(key)&&value!==undefined).map(([key,value])=>[key,typeof value==='object'&&value!==null?stable(value):value])) as Row}
@@ -161,4 +180,18 @@ async function confirmReplayedState(db:D1Database,runId:string,replayed:{table:s
   if(existing&&Object.entries(row).every(([column,value])=>existing[column]===value))entries.push(await stateEntry(m.table,key,row,source.rowDigest,runId,source.table,source.sourceId))
  }
  for(const part of byteSlices(entries,jsonBytes))await leased([stateStatement(db,part)])
+}
+
+/** Compare the observed native rows again INSIDE the write transaction. A native
+ * edit between planning and commit must never acquire an import-state digest. */
+export function canonicalAssertions(db:D1Database,mapped:MappedRow[],observed:Map<string,Row|null>,columnsOf:(mapped:MappedRow)=>Row){
+ const statements:D1PreparedStatement[]=[]
+ for(const [shape,targets] of groupBy(mapped,m=>m.table+'\0'+m.key.join(','),m=>m)){
+  const [table,keyList]=shape.split('\0'),keys=keyList.split(','),rows=targets.map(m=>{const row=columnsOf(m),prior=observed.get(identity(table,keys.map(key=>row[key])));return {keys:keys.map(key=>row[key]),prior:prior??null}})
+  const columns=[...new Set(rows.flatMap(row=>row.prior?Object.keys(row.prior):[]))]
+  const match=keys.map((key,i)=>`native.${sqlName(key)} IS json_extract(requested.value,'$.keys[${i}]')`).join(' AND ')
+  const equal=columns.map(column=>`native.${sqlName(column)} IS json_extract(requested.value,'$.prior.${column}')`).join(' AND ')||'1'
+  statements.push(db.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT NOT EXISTS(SELECT 1 FROM json_each(?) requested WHERE CASE WHEN json_type(requested.value,'$.prior')='null' THEN EXISTS(SELECT 1 FROM ${sqlName(table)} native WHERE ${match}) ELSE NOT EXISTS(SELECT 1 FROM ${sqlName(table)} native WHERE ${match} AND ${equal}) END)`).bind(JSON.stringify(rows)))
+ }
+ return statements
 }

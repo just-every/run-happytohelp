@@ -45,12 +45,24 @@ export function skippedRow(table:string,row:Row,context:LegacyBundle,plan:DeltaP
 
 interface SeedMessage {id:string;conversation_id:string;revision:number;local_id:string}
 
+/** Indexed Worker summaries replace loading a whole native transcript. The
+ * same planner assigns positions; offsets belong to the persisted package plan. */
+export interface DeltaSeed {
+ erased?:Set<string>
+ rows:SeedMessage[]
+ base:Map<string,number>
+ taken:Map<string,Set<string>>
+ offset:Map<string,number>
+ freshTotal:Map<string,number>
+ lastFresh:Map<string,string>
+ skippedConversations:Set<string>
+}
 /** `ours`: messages this same package already appended (an interrupted run resumes with the
  * same plan, as if they were not there yet). `erased`: every contact in contact_erasures or with a
  * contact_erasure_leases row (an erasure in progress or interrupted). */
-export async function planDelta(db:D1Database,{projectId,context,conversations,messages,media,ours}:{projectId:string;context:LegacyBundle;conversations:Iterable<string>;messages:Row[];media:Row[];ours:Set<string>}):Promise<DeltaPlan>{
+export async function planDelta(db:D1Database,{projectId,context,conversations,messages,media,ours,prepared}:{projectId:string;context:LegacyBundle;conversations:Iterable<string>;messages:Row[];media:Row[];ours:Set<string>;prepared?:DeltaSeed}):Promise<DeltaPlan>{
  // Erased, being erased or left mid-erasure: the delta holds the workspace's lease (lease.ts), so no erasure starts after this read.
- const erased=await readErased(db,projectId)
+ const erased=prepared?.erased??await readErased(db,projectId)
  const isErased=(table:string,row:Row)=>ofErased(erased,table,row,context)
  // Mail the Amazon SES reader recorded holds its SES message id; legacy stores the same mail with that id as its delivery id.
  const localIds=[...new Set(messages.map(row=>row.local_id).filter(id=>id!==undefined&&id!==null&&id!=='').map(String))],received=new Set<string>()
@@ -61,10 +73,11 @@ export async function planDelta(db:D1Database,{projectId,context,conversations,m
  const canonical=await lookupRows(db,'conversations',['id'],ids.map(id=>[id]))
  // A conversation the seed does not hold yet, whose every message in the delta is skipped, goes with them.
  const inDelta=new Map<string,Row[]>();for(const row of messages){const list=inDelta.get(String(row.conversation_id))??[];list.push(row);inDelta.set(String(row.conversation_id),list)}
- const skippedConversations=new Set(ids.filter(id=>{const rows=inDelta.get(id)??[];return rows.length>0&&rows.every(row=>skippedMessages.has(String(row.id)))&&!canonical.get(identity('conversations',[id]))}))
+ const skippedConversations=prepared?.skippedConversations??new Set(ids.filter(id=>{const rows=inDelta.get(id)??[];return rows.length>0&&rows.every(row=>skippedMessages.has(String(row.id)))&&!canonical.get(identity('conversations',[id]))}))
  const states=await readStates(db,ids.map(id=>['conversations',id]))
  const seed=new Map<string,SeedMessage[]>()
- for(const part of byteSlices(ids,jsonBytes,100))for(const row of (await db.prepare('SELECT id,conversation_id,revision,local_id FROM messages WHERE conversation_id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(part)).all<SeedMessage>()).results){const list=seed.get(String(row.conversation_id))??[];list.push(row);seed.set(String(row.conversation_id),list)}
+ if(prepared){for(const row of prepared.rows){const list=seed.get(row.conversation_id)??[];list.push(row);seed.set(row.conversation_id,list)}}
+ else for(const part of byteSlices(ids,jsonBytes,100))for(const row of (await db.prepare('SELECT id,conversation_id,revision,local_id FROM messages WHERE conversation_id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(part)).all<SeedMessage>()).results){const list=seed.get(String(row.conversation_id))??[];list.push(row);seed.set(String(row.conversation_id),list)}
  const delta=new Map<string,Row[]>();for(const row of live){const list=delta.get(String(row.conversation_id))??[];list.push(row);delta.set(String(row.conversation_id),list)}
  const plan:DeltaPlan={erased,messages:new Map(),conversations:new Map(),held:new Map(),heldIn:new Map(),gaining:new Set(),withheldMedia:new Set(),erasedMedia:new Set(),skippedMessages,skippedConversations}
  const changed=new Set<string>()
@@ -73,16 +86,16 @@ export async function planDelta(db:D1Database,{projectId,context,conversations,m
   const row=canonical.get(identity('conversations',[id]))
   if(row&&(row.status_category==='closed'||!await unchangedSinceImport(row,states.get(stateKey('conversations',id)))))changed.add(id)
   const seedRows=seed.get(id)??[],seedIds=new Map(seedRows.map(r=>[String(r.id),r])),prior=seedRows.filter(r=>!ours.has(String(r.id)))
-  const base=prior.reduce((n,r)=>Math.max(n,Number(r.revision)),0),taken=new Set(prior.map(r=>String(r.local_id)))
+  const base=prepared?.base.get(id)??prior.reduce((n,r)=>Math.max(n,Number(r.revision)),0),taken=prepared?.taken.get(id)??new Set(prior.map(r=>String(r.local_id)))
   const incoming=(delta.get(id)??[]).sort(transcriptOrder),fresh=incoming.filter(r=>!seedIds.has(String(r.id))||ours.has(String(r.id)))
   for(const r of incoming){const existing=seedIds.get(String(r.id));if(existing&&!ours.has(String(r.id)))plan.messages.set(String(r.id),{revision:Number(existing.revision),local_id:existing.local_id})}
-  if(fresh.length&&changed.has(id)){for(const r of fresh)plan.held.set(`messages:${r.id}`,id);plan.heldIn.set(id,fresh.length)}
+  if(fresh.length&&changed.has(id)){for(const r of fresh)plan.held.set(`messages:${r.id}`,id);plan.heldIn.set(id,prepared?.freshTotal.get(id)??fresh.length)}
   else fresh.forEach((r,i)=>{
    // The first message in transcript order keeps a delivery id; a repeat takes legacy:<id>, as the full import does.
    const local=r.local_id!==undefined&&r.local_id!==null&&r.local_id!==''&&!taken.has(String(r.local_id))?r.local_id:`legacy:${r.id}`
-   taken.add(String(local));plan.messages.set(String(r.id),{revision:base+i+1,local_id:local})
+   taken.add(String(local));plan.messages.set(String(r.id),{revision:base+(prepared?.offset.get(id)??0)+i+1,local_id:local})
   })
-  if(fresh.length&&!changed.has(id)){plan.gaining.add(id);plan.conversations.set(id,{revision:base+fresh.length,last_message_id:String(fresh.at(-1)!.id)})}
+  if((prepared?.freshTotal.get(id)??fresh.length)&&!changed.has(id)){plan.gaining.add(id);plan.conversations.set(id,{revision:base+(prepared?.freshTotal.get(id)??fresh.length),last_message_id:prepared?.lastFresh.get(id)??String(fresh.at(-1)!.id)})}
   else plan.conversations.set(id,row?{revision:Number(row.revision),last_message_id:row.last_message_id}:{revision:0,last_message_id:null})
  }
  // A file the seed deleted after its import stays deleted: its bytes are not uploaded again.

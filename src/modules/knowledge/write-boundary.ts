@@ -9,6 +9,7 @@ const underlying=new WeakMap<object,D1Database>()
 type PlannedTarget={table:string;row:Record<string,unknown>;key:string[]}
 /** This capability carries exact planned target values, not a native-table exemption. */
 export async function planLegacyKnowledgeTargets(env:Env,projectId:string,targets:PlannedTarget[]){
+ const base={...env,DB:underlying.get(env.DB)??env.DB}
  const sourceTables=new Set(['knowledge_articles','knowledge_categories','knowledge_article_categories','knowledge_documents','knowledge_datasets','knowledge_versions','projects','users','memberships','project_settings','brands'])
  const normalized:PlannedTarget[]=[],statements:D1PreparedStatement[]=[]
  for(const target of targets){
@@ -16,11 +17,10 @@ export async function planLegacyKnowledgeTargets(env:Env,projectId:string,target
   const literal=['messages','conversation_notes'].includes(target.table)
   const content=literal?target.row.content:undefined
   const input=literal?{...target.row,content:undefined}:target.row
-  const plan=await planCanonicaliseFields(env,projectId,input,{custody:target.row.conversation_id?ticketCustody(String(target.row.conversation_id)):undefined})
+  const plan=await planCanonicaliseFields(base,projectId,input,{custody:target.row.conversation_id?ticketCustody(String(target.row.conversation_id)):undefined})
   normalized.push({...target,row:literal?{...plan.value,content}:plan.value});statements.push(...plan.statements)
  }
  if(statements.length>120)throw new Error('KNOWLEDGE_PLAN_TOO_LARGE')
- const base={...env,DB:underlying.get(env.DB)??env.DB}
  return {targets:normalized,statements,env:plannedEnvironment(base,()=>({projectId}),normalized)}
 }
 // Only the core's exact INSERT/UPDATE shapes and planned row values are admitted.

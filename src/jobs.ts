@@ -1,3 +1,6 @@
+import {advanceLegacy} from './modules/legacy-import/worker/runner'
+import {discover as discoverLegacy} from './modules/legacy-import/worker/fence'
+import {LEGACY_JOB} from './modules/legacy-import/worker-contract'
 import {remindObligations} from './modules/ai-support/obligations'
 import {expireVoiceMedia} from './modules/voice/media'
 import {canonicaliseExistingProject} from './modules/knowledge/upgrade'
@@ -50,6 +53,7 @@ export async function consumeJob(job:Job,env:Env) {
  if(job.type==='local.effects'){await recoverLocalResultEffects(env,localComputerIntegration,job.id);return}
  if(job.type==='outbox.recover'){if(typeof job.conversationId!=='string'||!Number.isSafeInteger(job.outboxId))throw new Error('Invalid persisted outbox job');await recoverOutbox(env,job.projectId,job.conversationId,Number(job.outboxId),job.id);return}
  if(job.type!=='lead.process'&&!await isProjectActive(env,job.projectId))return
+ if(job.type===LEGACY_JOB){await advanceLegacy(env,job);return}
  if(job.type==='integrations'){await dispatchIntegrations(env,job.projectId);return}
  // A step that lands articles leaves the copied-text index current, so a read (which never refreshes it) and the next write find it ready.
  if(job.type==='move-in'){const run=await getWorkRun(env,job.id);if(run&&run.project_id===job.projectId){await advanceImport(env,run);await updateKnowledgeIndex(env,job.projectId,100)}return}
@@ -70,8 +74,8 @@ export async function consumeJob(job:Job,env:Env) {
 }
 /** Each consumer owns a bounded allocation, including its admitted quantum.
  * An exception in one never takes away another consumer's turn. The workflow
- * maximum (720), tail allocations (220) total 940, including the local clock read.
- * The other parallel scheduled consumers reserve the remaining 60 statements. */
+ * maximum (720), tail allocations (220) request 940; the outer jobs ceiling is 937, including the local clock read.
+ * The other parallel scheduled consumers reserve the remaining 63 statements. */
 export async function runScheduled(env:Env) {
  const budget=boundedDatabase(env.DB,scheduledReservations.jobs)
  env=withWorkflowInvocation(await workflowEnvironment({...env,DB:budget.database}))
@@ -100,4 +104,7 @@ export async function runScheduled(env:Env) {
  await visit('Site read',7,recoverSiteReads)
  await visit('Lead',12,recoverLeadJobs)
  await visit('Counter',1,pruneCounters)
+ // Discovery consumes only unused jobs credit, after all existing reservations.
+ const legacyRoom=scheduledReservations.jobs-budget.statements
+ if(legacyRoom>=2)await discoverLegacy(cronConsumer(env,2))
 }

@@ -6,9 +6,9 @@ import {digest,generation,guarded,isRandom,keyHash,random,refuse,type Predicate,
 import {firstOwnerPredicate} from './first-owner'
 import {configuration} from './envelope'
 export interface RequestRow {id:string;capability_hash:string;mode:'managed'|'manual'|'account';user_id:string;project_id:string;installation_id:string;app_origin:string;platform_origin:string;epoch:number;generation:number;key_hash:string|null;state:string;created_at:number;expires_at:number;challenge_exp:number|null;authorized_at:number|null;proof_id:string|null;completion_id:string|null;pending_id:string|null;pending_secret:string|null;passkey_challenge:string|null;passkey_expires:number|null}
-export async function audit(env:Env,action:string,reason='accepted',request?:Pick<RequestRow,'id'|'user_id'>){
+export async function audit(env:Env,action:string,reason='accepted',request?:(Pick<RequestRow,'id'|'user_id'>&Partial<Pick<RequestRow,'mode'>>)){
  const now=Date.now()
- await env.DB.batch([env.DB.prepare('INSERT INTO identity_recovery_events VALUES(?,?,?,?,?,?)').bind(random(),request?.id??null,request?.user_id??null,action,reason,now),...(request?await accountAudit(env.DB,request.user_id,{category:'auth',action:`recovery.${action}`,outcome:reason==='accepted'?'succeeded':'refused',actor:{type:'installation'},source:'api',target:{type:'recovery',id:request.id},detail:{reason}}):[])])
+ await env.DB.batch([env.DB.prepare('INSERT INTO identity_recovery_events VALUES(?,?,?,?,?,?)').bind(random(),request?.id??null,request?.user_id??null,action,reason,now),...(request?await accountAudit(env.DB,request.user_id,{category:'auth',action:`recovery.${action}`,outcome:reason==='accepted'?'succeeded':'refused',actor:{type:'installation'},source:'api',target:{type:'recovery',id:request.id},detail:{reason,...(request.mode?{proof:request.mode}:{})}}):[])])
 }
 export async function cleanup(env:Env){
  const now=Date.now(),db=env.DB

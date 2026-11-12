@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import {totp} from '../two-factor.mjs'
 import {fresh,root,password,factor,enrol,capabilityHeaders,session} from './kit.mjs'
 export async function sharedRecoveryJourney(){
- const {app,owner}=await fresh()
+ const mail=[]
+ const {app,owner}=await fresh({},{outbound:async request=>{if(new URL(request.url).origin!=='https://api.resend.com')throw Error('Unexpected external read');mail.push(await request.json());return Response.json({id:'synthetic-mail-'+mail.length})}})
  try{
   const second=await app.seedWorkspace('consent'),P=`/api/management/projects/${owner.projectId}`
   const invitation=await app.ok(P+'/agents',{body:{email:'teammate@example.test'},token:owner.token})
@@ -20,6 +21,7 @@ export async function sharedRecoveryJourney(){
   assert.equal(review.target.email,'teammate@example.test');assert.equal(JSON.stringify(review).includes(second.projectId),false)
   assert.equal((await app.call(root+'/account/approve',{body:{requestId:request.requestId},token:owner.token})).status,200)
   assert.equal((await app.ok(root+'/status',{headers})).approved,1)
+  const consentLog=await app.sql("SELECT project_id,actor_id,detail_json FROM audit_events WHERE action='recovery.approved'");assert.equal(consentLog.length,1);assert.equal(consentLog[0].project_id,owner.projectId);assert.equal(consentLog[0].actor_id,owner.userId)
   assert.equal((await app.call(root+'/complete',{body:{},headers})).status,409)
   assert.equal((await app.call(root+'/account/approve',{body:{requestId:request.requestId},token:second.tokens.owner})).status,200)
   const memberships=await app.sql('SELECT project_id,role FROM memberships WHERE user_id=? ORDER BY project_id',target.actor.id)
@@ -39,5 +41,14 @@ export async function sharedRecoveryJourney(){
   assert.equal((await app.call(root+'/cancel',{body:{},headers:capabilityHeaders(next.capability)})).status,200)
   assert.equal((await app.ok(root+'/status',{headers:capabilityHeaders(next.capability)})).state,'cancelled')
   assert.equal(app.requests.filter(request=>request.method==='POST').length,0)
+  // Mail is primary proof only; its native one-use token never supplies consent.
+  await app.configure({EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-mail-edge',EMAIL_FROM:'support@lantern.test'})
+  await app.ok('/api/identity/magic-link',{body:{email:'teammate@example.test'}})
+  await app.until(()=>mail.find(item=>item.subject==='Sign in to HappyToHelp'))
+  const message=mail.find(item=>item.subject==='Sign in to HappyToHelp'),url=new URL(message.text.match(/https:\/\/\S+/)[0]),primaryToken=new URLSearchParams(url.hash.slice(1)).get('token')
+  const relay=await app.call(root+'/account/request',{body:{email:'teammate@example.test',primaryToken}})
+  assert.equal(relay.status,201);assert.equal(relay.headers.has('set-cookie'),false)
+  assert.equal((await app.call(root+'/enrol/totp',{body:{},headers:capabilityHeaders(relay.data.capability)})).status,409)
+  assert.equal((await app.call('/api/identity/magic-link/consume',{body:{token:primaryToken}})).status,400,'recovery spent the native mail token')
  }finally{await app.close()}
 }

@@ -1,8 +1,9 @@
 import {Hono} from 'hono'
 import type {AppEnv} from '../../../platform/env'
+import {auditStatement} from '../../audit/record'
 import {requireActor} from '../../../platform/auth'
-import {browserOrigin,guarded,json,refuse,type RecoveryContext} from './common'
-import {accountSql,audit,epochSql,type RequestRow} from './store'
+import {browserOrigin,guarded,json,random,refuse,type RecoveryContext} from './common'
+import {accountSql,epochSql,type RequestRow} from './store'
 export const consentRecovery=new Hono<AppEnv>()
 // The actual selected native owner session, with an actual recent factor. A
 // platform role, dev admission or password/mail step-up supplies no consent.
@@ -24,7 +25,8 @@ consentRecovery.post('/account/approve',async c=>{
  const body=await json(c),{row,actor}=await reviewer(c,body.requestId),db=c.env.DB
  await guarded(db,{sql:`EXISTS(SELECT 1 FROM identity_recovery_requests r WHERE r.id=? AND r.state='authorized' AND r.expires_at>unixepoch('subsec')*1000 AND ${epochSql} AND ${accountSql}) AND EXISTS(SELECT 1 FROM sessions s JOIN memberships m ON m.user_id=s.actor_id AND m.project_id=s.project_id JOIN session_factors sf ON sf.token_hash=s.token_hash WHERE s.token_hash=? AND s.actor_id=? AND s.project_id=? AND s.role='owner' AND m.role='owner' AND s.revoked_at IS NULL AND s.expires_at>unixepoch('subsec')*1000 AND sf.verified_at=? AND sf.verified_at>unixepoch('subsec')*1000-900000 AND sf.method IN ('totp','webauthn','recovery'))`,args:[row.id,c.get('sessionHash'),actor.id,actor.projectId,actor.security!.factorAt]},[
   db.prepare('INSERT INTO identity_recovery_approvals VALUES(?,?,?,?,?,coalesce((SELECT epoch FROM identity_recovery_epochs WHERE user_id=?),0)) ON CONFLICT(request_id,project_id) DO UPDATE SET user_id=excluded.user_id,session_hash=excluded.session_hash,factor_at=excluded.factor_at,approver_epoch=excluded.approver_epoch').bind(row.id,actor.projectId,actor.id,c.get('sessionHash'),actor.security!.factorAt,actor.id),
+  auditStatement(db,{projectId:actor.projectId,category:'auth',action:'recovery.approved',actor:{type:'user',id:actor.id},source:'api',target:{type:'recovery',id:row.id},detail:{reason:'accepted',proof:actor.security!.factorMethod,targetId:row.user_id}}),
+  db.prepare('INSERT INTO identity_recovery_events VALUES(?,?,?,?,?,?)').bind(random(),row.id,row.user_id,'approved','accepted',Date.now()),
  ])
- await audit(c.env,'approved','accepted',row)
  return c.json({approved:true})
 })

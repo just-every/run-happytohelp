@@ -1,4 +1,4 @@
-export const LEGACY_CONTRACT_VERSION = 1 as const
+export const LEGACY_CONTRACT_VERSION = 2 as const
 export const LEGACY_JOB = 'legacy-import.step' as const
 export const LEGACY_ROUTE = '/projects/:projectId/legacy-import' as const
 export const LEGACY_LIMITS = {
@@ -22,7 +22,7 @@ export interface LegacyPackageManifest {
 }
 export interface LegacyWorkerWake {
   type: typeof LEGACY_JOB; id: string; projectId: string
-  manifestSha256: string; contractVersion: typeof LEGACY_CONTRACT_VERSION
+  manifestSha256: string; contractVersion: 1 | typeof LEGACY_CONTRACT_VERSION
 }
 export interface LegacyStart {
   approvedManifestSha256: string; excludeTables?: string[]; replay?: boolean

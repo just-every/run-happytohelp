@@ -1,3 +1,4 @@
+import {releaseCanonical,type CanonicalTarget} from './canonical-custody'
 import type {Env} from '../../../platform/env'
 import type {LegacyPackageManifest} from '../worker-contract'
 import type {DeltaLease} from '../lease'
@@ -13,6 +14,7 @@ import {readDelta,scopedErased} from './delta-context'
 import {objectScope,inspectObject} from './object-step'
 import {checkpoint,cursor,limits,json,type Run,type Part} from './state'
 import {countWork} from './result'
+import {adoptionForRun,preflightSlice} from './v2'
 import {refuse} from './errors'
 /** Same full/delta engine, prepared under the immutable ORIGINAL part identity. */
 export async function rowStep(env:Env,run:Run,manifest:LegacyPackageManifest,lease:DeltaLease,checkOnly:boolean){
@@ -22,12 +24,15 @@ export async function rowStep(env:Env,run:Run,manifest:LegacyPackageManifest,lea
   else await checkpoint(env,run,{phase:'knowledge',cursor_json:JSON.stringify({})})
   return {rows:0,bytes:0}
  }
- const original=await readRows(env.FILES,run.manifest_sha256,run.project_id,'chunk',part),offset=Number(c.row??0),selected=sliceRows(original,offset),hydrated=await hydrate(env,run,manifest,part.table,selected.rows)
+ const original=await readRows(env.FILES,run.manifest_sha256,run.project_id,'chunk',part,run.contract_version as 1|2,run.source_project_id),offset=Number(c.row??0),selected=sliceRows(original,offset),hydrated=await hydrate(env,run,manifest,part.table,selected.rows)
  const descriptor=await env.DB.prepare('SELECT * FROM legacy_import_worker_parts WHERE run_id=? AND file=?').bind(run.id,part.file).first<Part>()
  if(!descriptor?.journal_run_id||!descriptor.journal_digest)refuse('unsupported_contract_version')
- const bundle=chunkBundle(manifest,run.manifest_sha256,part,selected.rows),prepared:PreparedSlice={identity:{id:descriptor.journal_run_id,bundleDigest:descriptor.journal_digest,source:bundle.source},finalize:false,journalStatements:(db,sources,applied)=>sources.length?[insertJson(db,'INSERT OR IGNORE INTO legacy_import_context(run_id,kind,source_table,source_id,parent_id,row_json,row_digest)',7,sources.map(source=>[run.id,'delta_plan','attempt:'+part.file,source.sourceId,source.table,JSON.stringify({applied}), '']))]:[],normalize:targets=>planLegacyKnowledgeTargets(env,run.project_id,targets)}
- const common={context:hydrated.context,media:hydrated.media,objectKeys:new Set(manifest.objects.map(object=>object.key)),lease,prepared,checkOnly}
- const applied=run.mode==='delta'?await importDelta(env,bundle,{...common,projectId:run.project_id,plan:await readDelta(env,run,part.table,selected.rows,hydrated.context)}):await importLegacy(env,bundle,{...common,erased:await scopedErased(env,run,part.table,selected.rows,hydrated.context)})
+ let confirmedTargets:CanonicalTarget[]=[]
+ const bundle=chunkBundle(manifest,run.manifest_sha256,part,selected.rows),prepared:PreparedSlice={identity:{id:descriptor.journal_run_id,bundleDigest:descriptor.journal_digest,source:bundle.source},finalize:false,journalStatements:(db,sources,applied)=>sources.length?[...releaseCanonical(db,run,part.table,sources.map(s=>s.sourceId),confirmedTargets),insertJson(db,'INSERT OR IGNORE INTO legacy_import_context(run_id,kind,source_table,source_id,parent_id,row_json,row_digest)',7,sources.map(source=>[run.id,'delta_plan','attempt:'+part.file,source.sourceId,source.table,JSON.stringify({applied}), '']))]:[],normalize:targets=>{confirmedTargets=targets.filter(t=>['media','legacy_import_files'].includes(t.table)).map(t=>({key:String(t.row.object_key),kind:t.table,id:String(t.row.id??t.row.media_id)}));return planLegacyKnowledgeTargets(env,run.source_project_id,targets)}}
+ const adoption=run.contract_version===2?await adoptionForRun(env,run,lease):undefined
+ if(checkOnly&&adoption)await preflightSlice(env,run,bundle,hydrated,prepared,adoption,new Set(manifest.objects.map(o=>o.key)))
+ const common={adoption,context:hydrated.context,media:hydrated.media,objectKeys:new Set(manifest.objects.map(object=>object.key)),lease,prepared,checkOnly}
+ const applied=run.mode==='delta'?await importDelta(env,bundle,{...common,projectId:run.source_project_id,plan:await readDelta(env,run,part.table,selected.rows,hydrated.context)}):await importLegacy(env,bundle,{...common,erased:await scopedErased(env,run,part.table,selected.rows,hydrated.context)})
  // Commit-before-cursor is safe: the engine journals and state share its guarded
  // transaction. Redelivery of this slice skips those exact original source IDs.
  const next=offset+selected.rows.length,done=next===original.length,statements:D1PreparedStatement[]=[lease.assertion(env.DB),env.DB.prepare(`UPDATE legacy_import_worker_parts SET ${checkOnly?'preflight_rows':'applied_rows'}=? WHERE run_id=? AND file=?`).bind(next,run.id,part.file)]

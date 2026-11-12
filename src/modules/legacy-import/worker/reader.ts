@@ -5,11 +5,11 @@ import {hex256,packageKey,validateManifest} from './manifest'
 // @ts-expect-error The same exporter classifier is JavaScript and runs under nodejs_compat.
 import {classifySnapshot} from '../../../../scripts/legacy-export/secrets.mjs'
 export function checksum(object:R2Object){const bytes=object.checksums.sha256;return bytes?Array.from(new Uint8Array(bytes)).map(x=>x.toString(16).padStart(2,'0')).join(''):null}
-function custody(object:R2Object,sha:string,projectId:string,kind:LegacyFileKind|'manifest',file:string){
+function custody(object:R2Object,sha:string,projectId:string,kind:LegacyFileKind|'manifest',file:string,version:1|2){
  const m=object.customMetadata
- if(!m||m.projectId!==projectId)refuse('package_not_found',404)
- if(m.contractVersion!=='1')refuse('unsupported_contract_version')
- if(m.manifestSha256!==sha||kind!=='manifest'&&(m.kind!==kind||m.file!==file))refuse('custody_conflict')
+ if(!m||(version===2?m.custodyProjectId:m.projectId)!==projectId)refuse('package_not_found',404)
+ if(version===2?m.custodyBody!=='accepted'||!m.custodyGeneration:m.contractVersion!=='1')refuse('unsupported_contract_version')
+ if(m.manifestSha256!==sha||version===1&&kind!=='manifest'&&(m.kind!==kind||m.file!==file))refuse('custody_conflict')
 }
 /** Counts actual streamed bytes even if metadata claims a smaller object. JSON only. */
 async function boundedBody(object:R2ObjectBody,limit:number){
@@ -18,34 +18,34 @@ async function boundedBody(object:R2ObjectBody,limit:number){
  const bytes=new Uint8Array(size);let at=0;for(const part of chunks){bytes.set(part,at);at+=part.length}return bytes
 }
 function parse(bytes:Uint8Array):unknown{try{return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes))}catch{refuse('invalid_manifest',400)}}
-export async function readManifest(files:R2Bucket,sha:string,projectId:string){
+export async function readManifest(files:R2Bucket,sha:string,projectId:string,version:1|2=1){
  if(!hex256(sha))refuse('invalid_request',400)
  const object=await files.get(packageKey(sha,'manifest'));if(!object)refuse('package_not_found',404)
- custody(object,sha,projectId,'manifest','manifest.json')
+ custody(object,sha,projectId,'manifest','manifest.json',version)
  if(object.size>LEGACY_LIMITS.manifestBytes)refuse('manifest_too_large',413)
  const bytes=await boundedBody(object,LEGACY_LIMITS.manifestBytes)
  if(object.size!==bytes.length||await digest(bytes)!==sha||checksum(object)!==sha)refuse('digest_mismatch',422)
  return validateManifest(parse(bytes))
 }
-export async function checkPart(files:R2Bucket,sha:string,projectId:string,kind:LegacyFileKind,part:LegacyPart|LegacyObject){
+export async function checkPart(files:R2Bucket,sha:string,projectId:string,kind:LegacyFileKind,part:LegacyPart|LegacyObject,version:1|2=1){
  const object=await files.head(packageKey(sha,kind,part.file));if(!object)refuse('package_incomplete')
- custody(object,sha,projectId,kind,part.file)
+ custody(object,sha,projectId,kind,part.file,version)
  if(object.size!==(kind==='object'?(part as LegacyObject).size:(part as LegacyPart).bytes))refuse('size_mismatch',422)
  if(!checksum(object))refuse('checksum_unavailable')
  if(checksum(object)!==part.sha256)refuse('digest_mismatch',422)
  return object
 }
-export async function readRows(files:R2Bucket,sha:string,projectId:string,kind:'chunk'|'context',part:LegacyPart):Promise<Row[]>{
- await checkPart(files,sha,projectId,kind,part)
+export async function readRows(files:R2Bucket,sha:string,projectId:string,kind:'chunk'|'context',part:LegacyPart,version:1|2=1,sourceProjectId=projectId):Promise<Row[]>{
+ await checkPart(files,sha,projectId,kind,part,version)
  const object=await files.get(packageKey(sha,kind,part.file));if(!object)refuse('package_incomplete')
- custody(object,sha,projectId,kind,part.file)
+ custody(object,sha,projectId,kind,part.file,version)
  const bytes=await boundedBody(object,LEGACY_LIMITS.partBytes)
  if(bytes.length!==part.bytes||object.size!==bytes.length)refuse('size_mismatch',422)
  if(checksum(object)!==part.sha256||await digest(bytes)!==part.sha256)refuse('digest_mismatch',422)
  const rows=parse(bytes)
  if(!Array.isArray(rows)||rows.length!==part.count||rows.some(row=>!row||typeof row!=='object'||Array.isArray(row)))refuse('row_count_mismatch',422)
  try{classifySnapshot({tables:{[part.table]:rows}})}catch{refuse('source_policy_refused',422)}
- for(const row of rows){if(row.project_id!=null&&String(row.project_id)!==projectId||part.table==='projects'&&String(row.id)!==projectId)refuse('invalid_scope',422)}
+ for(const row of rows){if(row.project_id!=null&&String(row.project_id)!==sourceProjectId||part.table==='projects'&&String(row.id)!==sourceProjectId)refuse('invalid_scope',422)}
  return rows
 }
 /** Exactly the CLI's original chunkBundle, before slicing. No normalized-manifest digest. */

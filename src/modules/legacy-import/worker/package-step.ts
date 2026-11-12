@@ -19,8 +19,8 @@ export async function verifyPackage(env:Env,run:Run,manifest:LegacyPackageManife
  const part=parts[ordinal]
  if(!part){await checkpoint(env,run,{phase:'context',cursor_json:JSON.stringify({stage:'load',ordinal:0,row:0})});return {rows:0,bytes:0}}
  let identity:{id:string;bundleDigest:string}|undefined
- if(part.kind==='object')await checkPart(env.FILES,run.manifest_sha256,run.project_id,'object',part as LegacyObject)
- else {const rows=await readRows(env.FILES,run.manifest_sha256,run.project_id,part.kind,part as LegacyPart);if(part.kind==='chunk')identity=await originalIdentity(manifest,run.manifest_sha256,part as LegacyPart,rows)}
+ if(part.kind==='object')await checkPart(env.FILES,run.manifest_sha256,run.project_id,'object',part as LegacyObject,run.contract_version as 1|2)
+ else {const rows=await readRows(env.FILES,run.manifest_sha256,run.project_id,part.kind,part as LegacyPart,run.contract_version as 1|2,run.source_project_id);if(part.kind==='chunk')identity=await originalIdentity(manifest,run.manifest_sha256,part as LegacyPart,rows)}
  await checkpoint(env,run,{cursor_json:JSON.stringify({stage:'verify',ordinal:ordinal+1})},[env.DB.prepare('UPDATE legacy_import_worker_parts SET verified=1,journal_run_id=?,journal_digest=? WHERE run_id=? AND file=?').bind(identity?.id??null,identity?.bundleDigest??null,run.id,part.file)])
  return {rows:part.kind==='object'?0:(part as LegacyPart).count,bytes:part.kind==='object'?0:(part as LegacyPart).bytes}
 }

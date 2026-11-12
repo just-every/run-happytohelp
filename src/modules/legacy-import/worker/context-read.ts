@@ -12,7 +12,7 @@ const refs:Record<string,string[]>={project_id:['projects'],conversation_id:['co
 /** Async hydration ends before any synchronous mapper runs. */
 export async function hydrate(env:Env,run:Run,manifest:LegacyPackageManifest,table:string,sourceRows:Row[]){
  const records=new Map<string,Map<string,Row>>(),requested=new Map<string,Set<string>>(),loaded=new Set<string>();let bytes=0
- const add=(table:string,row:Row)=>{if(row.project_id!=null&&String(row.project_id)!==run.project_id||table==='projects'&&String(row.id)!==run.project_id)refuse('invalid_scope',422);const id=String(row.id??''),list=records.get(table)??new Map<string,Row>();records.set(table,list);bytes+=4*(jsonBytes(row)-(list.has(id)?jsonBytes(list.get(id)):0));if(bytes>limits.closureBytes)refuse('row_too_large');list.set(id,row)}
+ const add=(table:string,row:Row)=>{if(row.project_id!=null&&String(row.project_id)!==run.source_project_id||table==='projects'&&String(row.id)!==run.source_project_id)refuse('invalid_scope',422);const id=String(row.id??''),list=records.get(table)??new Map<string,Row>();records.set(table,list);bytes+=4*(jsonBytes(row)-(list.has(id)?jsonBytes(list.get(id)):0));if(bytes>limits.closureBytes)refuse('row_too_large');list.set(id,row)}
  const want=(table:string,id:unknown)=>{if(id===undefined||id===null||id==='')return;const ids=requested.get(table)??new Set<string>();requested.set(table,ids);ids.add(String(id));if(ids.size>500)refuse('row_too_large')}
  const inspect=(table:string,row:Row)=>{
   for(const [field,tables] of Object.entries(refs))for(const related of tables)want(related,row[field])
@@ -22,7 +22,7 @@ export async function hydrate(env:Env,run:Run,manifest:LegacyPackageManifest,tab
  for(const row of sourceRows){add(table,row);inspect(table,row);if(table==='media')want('media',row.id)}
  want('projects',run.source_project_id)
  // The mapper's team/default arrays are bounded independently of history size.
- for(const small of ['users','ais','ai_profiles','ai_defaults']){
+ for(const small of ['users','project_users','memberships','ais','ai_profiles','ai_defaults']){
   const rows=await jsonRows<{row_json:string}>(env.DB,"SELECT row_json FROM legacy_import_context WHERE run_id=? AND kind='record' AND source_table=?",[run.id,small],['row_json'],250,(limits.closureBytes-bytes)/4)
   if(rows.results.length>250)refuse('row_too_large');for(const row of rows.results)add(small,JSON.parse(row.row_json))
  }

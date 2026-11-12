@@ -1140,3 +1140,40 @@ Migration 249 retains mailbox bindings, an idempotent control outbox, encrypted 
 The frozen transport signs `POST`, the ingress path, canonical metadata and the exact MIME bytes with HMAC-SHA256. Metadata includes protocol version, delivery/mailbox/workspace identities, generation, envelope, provider verdict, timestamp and body SHA-256. The app rejects stale, tampered or foreign requests and stores content before acknowledgment. Retrying a delivery keeps its identity. Never route this through the bearer JSON gateway as a substitute for sender authentication.
 
 HTTP 202 records provider acceptance only. Native outbound commands never replay failed, sending or uncertain attempts. One refusal is held instead: a conversation notification (a scheduled reply’s included) or a problem reply refused at authenticate with `mail_credential_revoked` or `mail_credential_required` (a `MAIL_API_KEY` rotation before the rebuilt release serves traffic) has no relay send row, so it stays pending and the conversation outbox resends the same command, with the same `messageKey`, using the key the running release holds. About an hour after the first refusal it fails as an unavailable authority. The scheduled reply or problem attempt then records the resend’s or the failure’s outcome. Other mail is not held. An authorized reconciliation reads `send/:messageKey`; it never posts another send. During disconnect/leave, platform revocation remains responsible for its durable authority boundary. Hosted complete export and the real-mail gate remain pending; this change does not promote PORTABILITY-001 or MAIL-001. See [support email](docs/email.md#managed-email).
+
+
+### Legacy package adoption and source custody (v2)
+
+New installed-app package uploads use the v2 custody registry. The original
+manifest and exporter ordinal filenames stay unchanged. The original native
+installation owner reviews the setup and source workspace IDs in Move in,
+explicitly approves that exact fingerprint with a recent sign-in proof, then
+starts bounded preflight. An existing destination without this package's
+adoption provenance conflicts even when its fields look equal. Missing native
+owner binding or schema refuses; a workspace admin or Business credential does
+not substitute for the original native owner.
+
+The source ID becomes a separate historical workspace. Setup, native accounts
+and the Business workspace link stay intact. Only the approving native owner
+receives a new membership. Source people and memberships are archived history;
+old roles, matching email addresses and original staff IDs grant no access.
+Normal native invitations remain the later access door.
+
+Source originals are private and have no download entitlement. Upload, paused,
+stopped and completed-source windows are at most 24 hours; committed progress
+is bounded by seven days from first admission. Polling never extends retention.
+Erasure invalidates the whole package across setup/source/destination scopes,
+including before start, and cleanup proceeds without the importing session or
+an active workspace. A source cleanup failure remains pending erasure. Same-SHA
+closure is terminal, and any erasure or unfinished erasure lease prevents a
+fresh legacy package in that scope. Canonical history for other contacts stays.
+Results distinguish historical verification from current source status and
+resume availability. Installation-wide work diagnostics are visible only to
+the original installation owner.
+
+Existing v1 artifacts retain their synthetic interpretation; they cannot gain
+historical-adoption authority merely through a Worker update. Real customer
+remote source remains held for combined ordering/restart/browser qualification,
+the independent lane gate, signed migration-before-Worker delivery and the
+fleet's COMPLETE publication scan. This integration is not release, deployment,
+mail activation, production import or cutover authorization.

@@ -1,4 +1,4 @@
-import {legacyPackageBrowserFlow} from '../move-in/legacy-package-upload/browser.mjs'
+import {legacyPackageBrowserFlow} from '../move-in/legacy-adoption-integration/browser.mjs'
 import {zendeskResumeBrowserFlow} from '../move-in/zendesk-resume-browser.mjs'
 import {zendeskConnectBrowserFlow} from '../move-in/zendesk-connect-browser.mjs'
 import {zendeskOfflineBrowserFlow} from '../move-in/zendesk-offline-browser.mjs'

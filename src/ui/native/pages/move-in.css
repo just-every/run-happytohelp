@@ -15,3 +15,12 @@
 .legacy-table-scroll { overflow-x: auto; }
 .legacy-package .move-in-details { margin-block: 12px; }
 @media(max-width: 600px) { .legacy-identity { grid-template-columns: minmax(0,1fr); gap: 4px; } .legacy-identity dd { margin-bottom: 12px; } }
+
+/* Immutable IDs and source table names remain readable on the package screen. */
+.legacy-package code,.legacy-package dd,.legacy-package li,.legacy-result th{overflow-wrap:anywhere;word-break:normal}
+.legacy-package .move-in-actions .btn,.legacy-adoption .btn,.legacy-result .btn{min-height:44px}
+.legacy-result pre{white-space:pre-wrap;overflow-wrap:anywhere}
+
+.legacy-package input[type="file"],.legacy-package .btn-link{min-height:44px}
+.legacy-package summary{min-height:44px;padding-block:10px}
+.legacy-package button{max-width:100%;overflow-wrap:anywhere;white-space:normal}

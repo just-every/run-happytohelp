@@ -16,7 +16,7 @@ export function sliceRows(rows:Row[],offset:number,maxRows:number=limits.rows){c
 export async function loadContext(env:Env,run:Run,manifest:LegacyPackageManifest){
  const parts=packageParts(manifest,JSON.parse(run.exclude_json)).filter(part=>part.kind!=='object'),c=cursor(run),ordinal=Number(c.ordinal??0),part=parts[ordinal]
  if(!part){await checkpoint(env,run,{cursor_json:JSON.stringify({stage:'transcripts',after:'',conversation:'',revision:0}),phase:'context'});return {rows:0,bytes:0}}
- const original=await readRows(env.FILES,run.manifest_sha256,run.project_id,part.kind as 'chunk'|'context',part as LegacyPart),offset=Number(c.row??0),selected=sliceRows(original,offset,100)
+ const original=await readRows(env.FILES,run.manifest_sha256,run.project_id,part.kind as 'chunk'|'context',part as LegacyPart,run.contract_version as 1|2,run.source_project_id),offset=Number(c.row??0),selected=sliceRows(original,offset,100)
  const records:unknown[][]=[],messages:unknown[][]=[],media:unknown[][]=[],identities:Row[]=[]
  for(const source of selected.rows){
   let row={...source};const sourceId=String(row.id??row.event_id??row.token_hash??await digest(stable(row)))

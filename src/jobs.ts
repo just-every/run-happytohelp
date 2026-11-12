@@ -1,3 +1,6 @@
+import {sweepCanonicalNonces,cleanupCopyIntents} from './modules/legacy-import/worker/canonical-custody'
+import {CUSTODY_JOB,cleanupStep,discoverCleanup,getCustody} from './modules/legacy-import/custody'
+import type {LegacyCleanupJob} from './platform/env'
 import {advanceLegacy} from './modules/legacy-import/worker/runner'
 import {discover as discoverLegacy} from './modules/legacy-import/worker/fence'
 import {LEGACY_JOB} from './modules/legacy-import/worker-contract'
@@ -42,7 +45,9 @@ import { consumeSiteRead,recoverSiteReads } from './modules/management/site-read
 import { pruneCounters } from './platform/usage-counters'
 import {dispatchSurveys} from './modules/outcomes/survey-delivery'
 
-export async function consumeJob(job:Job,env:Env) {
+export async function consumeJob(job:Job|LegacyCleanupJob,env:Env) {
+ if(job.type===CUSTODY_JOB){if(/^[0-9a-f]{64}$/.test(job.id)&&Number.isSafeInteger(job.generation)){const c=await getCustody(env.DB,job.id);if(!c||c.generation!==job.generation||!['invalidated','purging','purged'].includes(c.status))return;const step=await cleanupStep(env,job.id,Number(job.generation));await sweepCanonicalNonces(env,job.id,100-step.keys);await cleanupCopyIntents(env,job.id,250-step.rows)};return}
+ if(!('projectId' in job))return
  if(job.type==='knowledge.upgrade'){await canonicaliseExistingProject(env,job.projectId);await dispatchKnowledgeUpgrades(env);return}
  if(job.type==='rer.mailbox.status'){await refreshRerMailbox(env,job.projectId);return}
  if(job.type==='rer.mailbox'){await processRerMailbox(env,job.projectId);return}
@@ -106,5 +111,6 @@ export async function runScheduled(env:Env) {
  await visit('Counter',1,pruneCounters)
  // Discovery consumes only unused jobs credit, after all existing reservations.
  const legacyRoom=scheduledReservations.jobs-budget.statements
- if(legacyRoom>=2)await discoverLegacy(cronConsumer(env,2))
+ if(legacyRoom>=26)await discoverCleanup(cronConsumer(env,24),1)
+ if(scheduledReservations.jobs-budget.statements>=2)await discoverLegacy(cronConsumer(env,2))
 }

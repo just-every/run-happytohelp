@@ -1,3 +1,4 @@
+import {reserveCanonical} from './canonical-custody'
 import type {Env} from '../../../platform/env'
 import type {LegacyPackageManifest,LegacyObject} from '../worker-contract'
 import type {DeltaLease} from '../lease'
@@ -17,8 +18,9 @@ export async function objectScope(env:Env,run:Run,manifest:LegacyPackageManifest
  return {withheld:erasedObject||delta?.withheldMedia.has(String(object.mediaId))===true,erased:erasedObject||delta?.erasedMedia.has(String(object.mediaId))===true}
 }
 export async function inspectObject(env:Env,run:Run,object:LegacyObject){
- await checkPart(env.FILES,run.manifest_sha256,run.project_id,'object',object)
+ await checkPart(env.FILES,run.manifest_sha256,run.project_id,'object',object,run.contract_version as 1|2)
  const existing=await env.FILES.head(object.key)
+ if(existing?.customMetadata?.canonicalReservation===run.id)return null
  if(existing){if(existing.size!==object.size)refuse('object_conflict');if(!checksum(existing))refuse('checksum_unavailable');if(checksum(existing)!==object.sha256)refuse('object_conflict')}
  return existing
 }
@@ -34,13 +36,22 @@ export async function copyObject(env:Env,run:Run,manifest:LegacyPackageManifest,
   if(!existing){
    await lease.confirm()
    const source=await env.FILES.get(packageKey(run.manifest_sha256,'object',object.file));if(!source||source.size!==object.size||checksum(source)!==object.sha256)refuse('digest_mismatch',422)
-   const stored=await env.FILES.put(object.key,source.body,{sha256:object.sha256,onlyIf:{etagDoesNotMatch:'*'},customMetadata:{legacyImport:run.id}})
+   let reservation:R2Object|null=null
+   if(run.contract_version===2){
+    await reserveCanonical(env,run,object,lease)
+    const prior=await env.FILES.head(object.key)
+    if(prior&&prior.customMetadata?.canonicalReservation!==run.id)refuse('object_conflict')
+    reservation=await env.FILES.put(object.key,crypto.randomUUID(),{onlyIf:prior?{etagMatches:prior.etag}:{etagDoesNotMatch:'*'},customMetadata:{canonicalReservation:run.id}})
+    if(!reservation)refuse('source_reservation_pending')
+    await lease.confirm()
+   }
+   const stored=await env.FILES.put(object.key,source.body,{sha256:object.sha256,onlyIf:reservation?{etagMatches:reservation.etag}:{etagDoesNotMatch:'*'},customMetadata:{legacyImport:run.id}})
    if(!stored)await inspectObject(env,run,object)
    await lease.confirm()
   }
  }
- // R2 copy is deliberately before its D1 journal. A crash resumes by the stored
- // size/checksum and conditionally records it; no competing object is deleted.
+ // V2 persisted the exact candidate and non-content ancestry BEFORE the nonce.
+ // A crash resumes by checksum; erasure can delete the nonce or body meanwhile.
  const statements=[lease.assertion(env.DB)]
  if(!scope.withheld)statements.push(env.DB.prepare('INSERT OR IGNORE INTO legacy_import_objects(run_id,object_key,sha256,size) VALUES(?,?,?,?)').bind(run.id,object.key,object.sha256,object.size))
  statements.push(lease.cleared(env.DB))

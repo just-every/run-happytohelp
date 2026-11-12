@@ -5,7 +5,7 @@ export function resultNote(result){
   projectId:run.projectId,sourceProjectId:run.sourceProjectId,state:run.state,
   verification:result.verification,verifiedAt:result.verifiedAt,tables,
   excluded:result.excluded,journalEqualsPackage:result.journalEqualsPackage,
-  attachments,work,attempt:result.attempt};
+  attachments,work,attempt:result.attempt,sourceCustody:result.sourceCustody,adoption:result.adoption,syntheticOnly:result.syntheticOnly};
  // Older runners omit diagnostics. Keep that absence honest and every existing result field intact.
  if(diagnostics){
   const {installationWork,baseline}=diagnostics;

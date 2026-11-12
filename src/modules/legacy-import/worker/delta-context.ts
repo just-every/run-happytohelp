@@ -14,7 +14,7 @@ const own=`EXISTS(SELECT 1 FROM legacy_import_rows journal JOIN legacy_import_wo
 /** Erasure scope is refreshed each quantum, limited to the hydrated ancestry. */
 export async function scopedErased(env:Env,run:Run,table:string,rows:SourceRow[],context:any){
  const ids=[...new Set(rows.flatMap(row=>contactsOf(table,row,context)))];if(ids.length>500)refuse('row_too_large')
- const found=await env.DB.prepare(`SELECT contact_id FROM contact_erasures WHERE project_id=?1 AND contact_id IN (SELECT value FROM json_each(?2)) UNION SELECT contact_id FROM contact_erasure_leases WHERE project_id=?1 AND contact_id IN (SELECT value FROM json_each(?2))`).bind(run.project_id,JSON.stringify(ids)).all<{contact_id:string}>()
+ const found=await env.DB.prepare(`SELECT contact_id FROM contact_erasures WHERE project_id=?1 AND contact_id IN (SELECT value FROM json_each(?2)) UNION SELECT contact_id FROM contact_erasure_leases WHERE project_id=?1 AND contact_id IN (SELECT value FROM json_each(?2))`).bind(run.source_project_id,JSON.stringify(ids)).all<{contact_id:string}>()
  return new Set(found.results.map(row=>row.contact_id))
 }
 function empty(erased=new Set<string>()):DeltaPlan{return {erased,messages:new Map(),conversations:new Map(),held:new Map(),heldIn:new Map(),gaining:new Set(),withheldMedia:new Set(),erasedMedia:new Set(),skippedMessages:new Set(),skippedConversations:new Set()}}
@@ -48,7 +48,7 @@ export async function deltaMessages(env:Env,run:Run,manifest:LegacyPackageManife
  const canonical=await env.DB.prepare('SELECT 1 FROM conversations WHERE id=?').bind(conversation).first()
  const skipped=new Set<string>(!canonical&&all?.total&&all.total===all.skipped?[conversation]:[])
  const seed:DeltaSeed={erased,rows:existing.results,base:new Map([[conversation,summary.base]]),taken:new Map([[conversation,new Set(taken.results.map(row=>row.local_id))]]),offset:new Map([[conversation,summary.offset]]),freshTotal:new Map([[conversation,summary.freshTotal]]),lastFresh:new Map([[conversation,summary.lastFresh]]),skippedConversations:skipped}
- const plan=await planDelta(env.DB,{projectId:run.project_id,context:hydrated.context,conversations:[conversation],messages:rows,media:[],ours:new Set(ours.results.map(row=>row.id)),prepared:seed})
+ const plan=await planDelta(env.DB,{projectId:run.source_project_id,context:hydrated.context,conversations:[conversation],messages:rows,media:[],ours:new Set(ours.results.map(row=>row.id)),prepared:seed})
  const ownIds=new Set(ours.results.map(row=>row.id)),nativeIds=new Set(existing.results.filter(row=>!ownIds.has(row.id)).map(row=>row.id))
  summary.offset+=rows.filter(row=>!row.deleted_at&&!plan.skippedMessages.has(String(row.id))&&!nativeIds.has(String(row.id))&&!archiveOnly('messages',row,hydrated.context)&&!contactsOf('messages',row,hydrated.context).some(id=>erased.has(id))).length
  Object.assign(summary,{conversation:plan.conversations.get(conversation),heldIn:plan.heldIn.get(conversation)??(summary.freshTotal&&!plan.gaining.has(conversation)?summary.freshTotal:0),gaining:plan.gaining.has(conversation),skipped:plan.skippedConversations.has(conversation)})
@@ -62,7 +62,7 @@ export async function deltaMedia(env:Env,run:Run,manifest:LegacyPackageManifest)
  if(!found.results.length){await checkpoint(env,run,{cursor_json:JSON.stringify({stage:'rows',ordinal:0,row:0})});return {rows:0,bytes:0}}
  const rows=found.results.map(row=>JSON.parse(row.row_json)),hydrated=await hydrate(env,run,manifest,'media',rows),ids=[...(hydrated.context.tables.conversations??[]).map(row=>String(row.id))],erased=await scopedErased(env,run,'media',rows,hydrated.context)
  const seed:DeltaSeed={erased,rows:[],base:new Map(),taken:new Map(),offset:new Map(),freshTotal:new Map(),lastFresh:new Map(),skippedConversations:new Set()}
- const plan=await planDelta(env.DB,{projectId:run.project_id,context:hydrated.context,conversations:ids,messages:[],media:rows,ours:new Set(),prepared:seed})
+ const plan=await planDelta(env.DB,{projectId:run.source_project_id,context:hydrated.context,conversations:ids,messages:[],media:rows,ours:new Set(),prepared:seed})
  const statements=[];for(const row of rows){const id=String(row.id);statements.push(await savePlan(env,run,'media',id,null,{withheld:plan.withheldMedia.has(id),erased:plan.erasedMedia.has(id),held:plan.held.get('media:'+id)}))}
  await checkpoint(env,run,{cursor_json:JSON.stringify({stage:'delta_media',after:found.results.at(-1)!.source_id})},statements);return {rows:rows.length,bytes:jsonBytes(rows)}
 }

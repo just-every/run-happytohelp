@@ -1,3 +1,4 @@
+import {renewCustody} from '../custody'
 import type {Env} from '../../../platform/env'
 import type {LegacyPackageManifest} from '../worker-contract'
 import type {DeltaLease} from '../lease'
@@ -41,13 +42,13 @@ export async function verifyResult(env:Env,run:Run,manifest:LegacyPackageManifes
  return {rows:0,bytes:0}
 }
 async function collectDiagnostics(env:Env,run:Run,after:Record<string,number>){
- const counts=await env.DB.prepare(`SELECT (SELECT count(*) FROM conversations WHERE project_id=?1) conversations,(SELECT count(DISTINCT source_id) FROM legacy_import_rows rows JOIN legacy_import_runs runs ON runs.id=rows.run_id WHERE json_extract(runs.source_json,'$.projectId')=?1 AND json_extract(runs.source_json,'$.delta')=1) deltaSourceIds,(SELECT count(*) FROM legacy_import_runs WHERE json_extract(source_json,'$.projectId')=?1 AND json_extract(source_json,'$.delta')=1 AND state<>'complete') incompleteDeltaRuns`).bind(run.project_id).first<{conversations:number;deltaSourceIds:number;incompleteDeltaRuns:number}>()
- const samples=await env.DB.prepare('SELECT id FROM conversations WHERE project_id=? ORDER BY id LIMIT 5').bind(run.project_id).all<{id:string}>()
+ const counts=await env.DB.prepare(`SELECT (SELECT count(*) FROM conversations WHERE project_id=?1) conversations,(SELECT count(DISTINCT source_id) FROM legacy_import_rows rows JOIN legacy_import_runs runs ON runs.id=rows.run_id WHERE json_extract(runs.source_json,'$.projectId')=?1 AND json_extract(runs.source_json,'$.delta')=1) deltaSourceIds,(SELECT count(*) FROM legacy_import_runs WHERE json_extract(source_json,'$.projectId')=?1 AND json_extract(source_json,'$.delta')=1 AND state<>'complete') incompleteDeltaRuns`).bind(run.source_project_id).first<{conversations:number;deltaSourceIds:number;incompleteDeltaRuns:number}>()
+ const samples=await env.DB.prepare('SELECT id FROM conversations WHERE project_id=? ORDER BY id LIMIT 5').bind(run.source_project_id).all<{id:string}>()
  return {scope:'workspace-and-installation',conversationCount:counts?.conversations??0,distinctDeltaSourceIds:counts?.deltaSourceIds??0,incompleteDeltaRuns:counts?.incompleteDeltaRuns??0,sampleConversationIds:samples.results.map(row=>row.id),installationWork:{before:json(run.work_before_json,{}),after,qualification:'whole-installation; concurrent native work is not attributed to this import'},baseline:{kind:'before-import',at:json<any>(run.metrics_json,{}).beforeAt??null,counts:json(run.work_before_json,{}),installation:null}}
 }
 export async function cleanup(env:Env,run:Run){
  const c=cursor(run),ordinal=Number(c.ordinal??0),table=scratch[ordinal]
- if(!table){await checkpoint(env,run,{phase:'done',state:'complete',completed_at:Date.now(),cursor_json:'{}'});return {rows:0,bytes:0}}
+ if(!table){if(run.contract_version===2)await renewCustody(env,{sha:run.manifest_sha256,generation:1},{projectId:run.project_id,actorId:run.actor_id,sessionHash:run.session_hash},'complete');await checkpoint(env,run,{phase:'done',state:'complete',completed_at:Date.now(),cursor_json:'{}'});return {rows:0,bytes:0}}
  // rowid is local to a scratch table; delete only this run's bounded page.
  const deleted=await env.DB.prepare(`SELECT rowid FROM ${table} WHERE run_id=? LIMIT ?`).bind(run.id,250).all<{rowid:number}>()
  await checkpoint(env,run,{cursor_json:JSON.stringify({ordinal:deleted.results.length?ordinal:ordinal+1})},deleted.results.length?[env.DB.prepare(`DELETE FROM ${table} WHERE run_id=? AND rowid IN (SELECT value FROM json_each(?))`).bind(run.id,JSON.stringify(deleted.results.map(row=>row.rowid)))]:[])

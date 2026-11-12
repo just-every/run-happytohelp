@@ -1,15 +1,27 @@
-import {readFile,writeFile} from 'node:fs/promises'
+import assert from 'node:assert/strict'
+import {readdir} from 'node:fs/promises'
 import {join} from 'node:path'
-import {createRequire} from 'node:module'
-import {parseJsonc} from '@runeditrun/rer/jsonc'
+import {DatabaseSync} from 'node:sqlite'
 
-// An offline D1 inspection owner, opened only after rer stops its server. Match
-// the existing independent-storage harness: no app assets, DOs, queues or vars.
+// Read the actual workerd D1 file only after rer stops its server. This oracle
+// neither emulates a binding nor writes credentials; all mutations use native
+// routes or public rer export/reset/import commands.
 export async function recoveryStorage(root,visit){
- const config=parseJsonc(await readFile(join(root,'wrangler.jsonc'),'utf8'))
- const configPath=join(root,'.seed/identity-recovery.storage.json')
- await writeFile(configPath,JSON.stringify({name:config.name,compatibility_date:config.compatibility_date,compatibility_flags:config.compatibility_flags,d1_databases:config.d1_databases}))
- const {getPlatformProxy}=createRequire(join(root,'package.json'))('wrangler')
- const proxy=await getPlatformProxy({configPath,envFiles:[],remoteBindings:false,persist:{path:join(root,'.wrangler/state/v3')}})
- try{return await visit(proxy.env)}finally{await proxy.dispose()}
+ const files=[]
+ async function scan(directory){
+  for(const entry of await readdir(directory,{withFileTypes:true})){
+   const path=join(directory,entry.name)
+   if(entry.isDirectory())await scan(path)
+   else if(entry.name.endsWith('.sqlite'))files.push(path)
+  }
+ }
+ await scan(join(root,'.wrangler/state/v3/d1'))
+ const matches=[]
+ for(const file of files){
+  const db=new DatabaseSync(file,{readOnly:true})
+  try{if(db.prepare("SELECT name FROM sqlite_master WHERE name IN ('memberships','identity_recovery_requests')").all().length===2)matches.push(file)}finally{db.close()}
+ }
+ assert.equal(matches.length,1,'one actual native identity database')
+ const db=new DatabaseSync(matches[0],{readOnly:true})
+ try{return await visit(db)}finally{db.close()}
 }

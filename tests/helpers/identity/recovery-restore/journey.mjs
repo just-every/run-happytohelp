@@ -47,17 +47,17 @@ export async function recoveryRestoreJourney(){
   assert.ok(pendingFactor.secret)
   await stop()
   console.info('Recovery restore: offline snapshot')
-  const before=await recoveryStorage(checkout,async({DB})=>({members:(await DB.prepare('SELECT * FROM memberships ORDER BY user_id,project_id').all()).results,credentials:(await DB.prepare('SELECT * FROM credentials ORDER BY user_id').all()).results,spent:(await DB.prepare('SELECT * FROM owner_recoveries').all()).results,approvals:(await DB.prepare('SELECT count(*) n FROM identity_recovery_approvals').first()).n}))
+  const before=await recoveryStorage(checkout,db=>({members:db.prepare('SELECT * FROM memberships ORDER BY user_id,project_id').all(),credentials:db.prepare('SELECT * FROM credentials ORDER BY user_id').all(),spent:db.prepare('SELECT * FROM owner_recoveries').all(),approvals:db.prepare('SELECT count(*) n FROM identity_recovery_approvals').get().n}))
   assert.equal(before.approvals,1);assert.equal(before.spent.length,1)
   console.info('Recovery restore: public export/reset/import')
   await run(checkout,['export','--output','exports/recovery.rer'])
   await run(checkout,['reset','--yes'])
   await run(checkout,['import','--input','exports/recovery.rer','--yes'])
-  await recoveryStorage(checkout,async({DB})=>{
-   for(const table of ['identity_recovery_requests','identity_recovery_approvals','identity_recovery_nonces'])assert.equal((await DB.prepare(`SELECT count(*) n FROM ${table}`).first()).n,0)
-   assert.deepEqual((await DB.prepare('SELECT * FROM memberships ORDER BY user_id,project_id').all()).results,before.members)
-   assert.deepEqual((await DB.prepare('SELECT * FROM credentials ORDER BY user_id').all()).results,before.credentials)
-   assert.deepEqual((await DB.prepare('SELECT * FROM owner_recoveries').all()).results,before.spent)
+  await recoveryStorage(checkout,db=>{
+   for(const table of ['identity_recovery_requests','identity_recovery_approvals','identity_recovery_nonces'])assert.equal(db.prepare(`SELECT count(*) n FROM ${table}`).get().n,0)
+   assert.deepEqual(db.prepare('SELECT * FROM memberships ORDER BY user_id,project_id').all(),before.members)
+   assert.deepEqual(db.prepare('SELECT * FROM credentials ORDER BY user_id').all(),before.credentials)
+   assert.deepEqual(db.prepare('SELECT * FROM owner_recoveries').all(),before.spent)
   })
   console.info('Recovery restore: restored access and fresh recovery')
   await start()
@@ -81,10 +81,10 @@ export async function recoveryRestoreJourney(){
   assert.equal((await call(rootPath+'/status',undefined,undefined,retiring.capability)).response.status,401)
   assert.equal((await call('/api/identity/session',undefined,restored.token)).response.status,200)
   await stop()
-  await recoveryStorage(checkout,async({DB})=>{
-   assert.equal((await DB.prepare('SELECT count(*) n FROM identity_recovery_requests WHERE user_id=?').bind(target.actor.id).first()).n,0)
-   assert.equal((await DB.prepare('SELECT count(*) n FROM identity_recovery_approvals WHERE request_id=?').bind(retiring.requestId).first()).n,0)
-   assert.ok((await DB.prepare('SELECT count(*) n FROM identity_recovery_events WHERE user_id=?').bind(target.actor.id).first()).n>0)
+  await recoveryStorage(checkout,db=>{
+   assert.equal(db.prepare('SELECT count(*) n FROM identity_recovery_requests WHERE user_id=?').get(target.actor.id).n,0)
+   assert.equal(db.prepare('SELECT count(*) n FROM identity_recovery_approvals WHERE request_id=?').get(retiring.requestId).n,0)
+   assert.ok(db.prepare('SELECT count(*) n FROM identity_recovery_events WHERE user_id=?').get(target.actor.id).n>0)
   })
  }finally{try{await stop();await rm(scratch,{recursive:true,force:true})}finally{if(priorCfFetch===undefined)delete process.env.CLOUDFLARE_CF_FETCH_ENABLED;else process.env.CLOUDFLARE_CF_FETCH_ENABLED=priorCfFetch}}
 }

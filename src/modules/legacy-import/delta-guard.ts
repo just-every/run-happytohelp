@@ -51,10 +51,10 @@ async function rowsWith(db:D1Database,table:string,columns:string[],select:strin
  * the seed once per chunk, then records what each applied decision writes, so two rows of one delta cannot take
  * the same value and a row may reference one appended earlier in the chunk. A value is never treated as freed:
  * a batch runs its inserts before its updates, so a release later in the same delta cannot make room. */
-export async function readGuard(db:D1Database,rows:Written[]){
+export async function readGuard(db:D1Database,rows:Written[],options:{identityIndexes?:boolean}={}){
  const tables=[...new Set(rows.map(r=>r.table))],shape=new Map<string,Shape>()
  for(const table of tables)shape.set(table,await shapeOf(db,table))
- const guarded=(table:string,key:string[])=>identityTables.has(table)?[]:shape.get(table)!.unique.filter(index=>!key.every(k=>index.columns.includes(k)))
+ const guarded=(table:string,key:string[])=>identityTables.has(table)&&!options.identityIndexes?[]:shape.get(table)!.unique.filter(index=>!key.every(k=>index.columns.includes(k)))
  const holders=new Map<string,string>(),present=new Set<string>()
  for(const table of tables){
   const ofTable=rows.filter(r=>r.table===table),key=ofTable[0].key

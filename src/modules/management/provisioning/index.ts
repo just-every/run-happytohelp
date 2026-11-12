@@ -12,6 +12,7 @@ import {ownerAlerts} from './owner-alerts'
 export {starterModels, defaultStarterProvider, installedProvider, providerKeyInstalled, starterModel, modelReady, modelReadiness} from './models'
 export type {ModelProvider} from './models'
 export {starterSeed} from './starter-assistant'
+export {legacyWorkspaceDefaults} from './legacy-workspace'
 
 export type WorkspaceSeed = {projectId: string; name: string; website: string; ownerEmail: string}
 

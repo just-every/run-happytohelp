@@ -10,6 +10,9 @@ import {markWorkRows,purgeWorkRows} from './work-rows'
 import {importedHistoryStatements} from './imported-history'
 import {mediaRewrite} from './media-rewrite'
 import {bundleMediaIndex,type MediaIndex} from './media-index'
+import type {MappingProfile} from './adoption/profile'
+import {validateAdoptionScope,preflightAdoptionTargets} from './adoption/scope'
+import {checkMappingProfile,type AdoptionApply} from './adoption/store'
 export interface PreparedIdentity {id:string;bundleDigest:string;source:LegacyBundle['source']}
 export interface PreparedSlice {
  identity:PreparedIdentity
@@ -27,14 +30,15 @@ export async function normalizeImportPlan(plan:Awaited<ReturnType<typeof planImp
 }
 /** `media`: the workspace's files by legacy key (media-index.ts), resolved before mapping; a `--file` export without one
  * resolves its own. Legacy storage URLs in the mapped rows are rewritten to native URLs (media-rewrite.ts). */
-export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;identity?:PreparedIdentity}={}){
+export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;identity?:PreparedIdentity;mappingProfile?:MappingProfile}={}){
  if(bundle.format!=='happytohelp-legacy-v1'||!bundle.tables||!bundle.source?.revision||!bundle.source.repository||!Number.isFinite(Date.parse(bundle.source.exportedAt)))throw new Error('Invalid legacy bundle provenance')
+ if(options.mappingProfile)validateAdoptionScope(bundle,options.context??bundle,options.mappingProfile)
  const bundleDigest=options.identity?.bundleDigest??await digest(stable(bundle)),rows=[],rewrite=mediaRewrite(options.media??(options.context?undefined:bundleMediaIndex(bundle)),String(bundle.source.projectId??''))
  for(const table of Object.keys(bundle.tables).sort((a,b)=>{const ia=tableOrder.indexOf(a),ib=tableOrder.indexOf(b);return (ia<0?1000:ia)-(ib<0?1000:ib)||a.localeCompare(b)})){
  if(!Array.isArray(bundle.tables[table]))throw new Error(`Expected row array for ${table}`)
  let sourceRows=[...bundle.tables[table]]
  if(table==='categories'||table==='knowledge_categories'){const depth=(r:Row,seen=new Set<string>()):number=>{if(!r.parent_id)return 0;const key=String(r.id);if(seen.has(key))throw new Error('Category parent cycle');seen.add(key);const parent=sourceRows.find(p=>String(p.id)===String(r.parent_id));return parent?1+depth(parent,seen):1};sourceRows.sort((a,b)=>depth(a)-depth(b))}
- const seen=new Set<string>();for(const row of sourceRows){if(!row||Array.isArray(row)||typeof row!=='object')throw new Error(`Invalid ${table} row`);const rowDigest=await digest(stable(row)),sourceId=String(row.id??row.event_id??row.token_hash??rowDigest);if(seen.has(sourceId))throw new Error(`Duplicate source identity ${table}:${sourceId}`);seen.add(sourceId);rows.push({table,sourceId,row,rowDigest,mapped:rewrite.map(table,row,mapLegacy(table,row,options.context??bundle))})}
+ const seen=new Set<string>();for(const row of sourceRows){if(!row||Array.isArray(row)||typeof row!=='object')throw new Error(`Invalid ${table} row`);const rowDigest=await digest(stable(row)),sourceId=String(row.id??row.event_id??row.token_hash??rowDigest);if(seen.has(sourceId))throw new Error(`Duplicate source identity ${table}:${sourceId}`);seen.add(sourceId);rows.push({table,sourceId,row,rowDigest,mapped:rewrite.map(table,row,mapLegacy(table,row,options.context??bundle,options.mappingProfile))})}
  }
  const mappedRows=rows.flatMap(row=>row.mapped);const conversationScopes=new Map(mappedRows.filter(m=>m.table==='conversations').map(m=>[String(m.row.id),m.row]));const contacts=new Map(mappedRows.filter(m=>m.table==='contacts').map(m=>[String(m.row.id),m.row]));for(const mapped of mappedRows){const r=mapped.row;if(r.conversation_id&&r.project_id){const conv=conversationScopes.get(String(r.conversation_id))??(options.context?relationships(options.context).find('conversations',r.conversation_id):undefined);if(conv&&conv.project_id!==r.project_id)throw new Error(`Cross-project legacy reference in ${mapped.table}:${r.id}`)}if(mapped.table==='conversations'){const contact=contacts.get(String(r.contact_id))??(options.context?relationships(options.context).find('contacts',r.contact_id):undefined);if(contact&&contact.project_id!==r.project_id)throw new Error(`Cross-project legacy conversation contact: ${r.id}`)}}
  const keys=new Set<string>(options.objectKeys);for(const object of bundle.objects||[]){if(!object.key||object.key.startsWith('/')||object.key.split('/').includes('..')||keys.has(object.key))throw new Error('Invalid or duplicate object key');keys.add(object.key);const bytes=Uint8Array.from(atob(object.dataBase64),c=>c.charCodeAt(0));if(await digest(bytes)!==object.sha256)throw new Error(`Object digest mismatch: ${object.key}`)}
@@ -47,12 +51,13 @@ export async function planImport(bundle:LegacyBundle,options:{context?:LegacyBun
  * erasure leaves it (digest kept, source copy '{}', status 'erased', its mapped target) and writes no canonical row, hold,
  * reporting row or import state; it takes no part in the conflict preflight; its file is not uploaded, and one an earlier
  * run left in R2 that no native media row holds is removed. Replayed rows are untouched. */
-export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;checkOnly?:boolean;erased?:Set<string>;lease?:DeltaLease;publishDefaultRules?:boolean;leaveUnread?:boolean;prepared?:PreparedSlice}={}){
+export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context?:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;checkOnly?:boolean;erased?:Set<string>;lease?:DeltaLease;publishDefaultRules?:boolean;leaveUnread?:boolean;prepared?:PreparedSlice;adoption?:AdoptionApply}={}){
  if(bundle.source?.since!==undefined||bundle.source?.delta!==undefined)throw new Error('A delta export imports only as a package (--package), which applies it update-aware')
  const lease=options.lease
  if(!options.checkOnly&&!lease)throw new Error('A legacy import writes only under its workspace lease')
  const context=options.context??bundle,erased=options.erased??new Set<string>()
- const plan=await planImport(bundle,{...options,identity:options.prepared?.identity})
+ const plan=await planImport(bundle,{...options,identity:options.prepared?.identity,mappingProfile:options.adoption?.profile})
+ const profileBinding=await checkMappingProfile(env.DB,plan.id,options.adoption?.profile)
  const existing=await env.DB.prepare('SELECT id,bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{id:string;bundle_digest:string;state:string}>();if(existing&&existing.bundle_digest!==plan.bundleDigest)throw new Error('Import digest conflict')
  // A run's journal is read once. Existing canonical rows are looked up, and new
  // rows written, as one JSON array parameter per statement, so a production-sized
@@ -79,6 +84,7 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
   if(prior){for(const [key,value]of Object.entries(row))if(prior[key]!==value)throw new Error(`Existing data conflict ${mapped.table}:${values.join(':')} column ${key}; no rows overwritten`)}
   else proposed.set(id,row)
  }
+ if(options.adoption)await preflightAdoptionTargets(env.DB,options.adoption.profile,live.flatMap(source=>source.mapped),new Set(),!options.checkOnly)
  const objects=[],leftovers=[]
  for(const object of plan.objects){
   const media=context.tables.media?.filter(row=>String(row.object_key||row.storage_key)===object.key)??[]
@@ -94,8 +100,8 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
  const summary={...plan.summary,holds:plan.rows.filter(source=>!withheld.has(source)).flatMap(r=>r.mapped.filter(m=>m.hold).map(m=>`${r.table}:${r.sourceId}: ${m.hold}`))}
  if(options.checkOnly)return {id:plan.id,...summary,applied:0,replayed,erased:0,d1Ms:0,maxBatchMs:0}
  // A batch the lease assertion refused stops the import with the lease's own message.
- const leased=async(statements:D1PreparedStatement[])=>env.DB.batch([lease!.assertion(env.DB),...normalization.statements,...statements,...(options.prepared?[lease!.assertion(env.DB)]:[]),lease!.cleared(env.DB)]).catch(async error=>{await lease!.confirm();throw error})
- await leased([env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now())])
+ const leased=async(statements:D1PreparedStatement[])=>env.DB.batch([lease!.assertion(env.DB),...(options.adoption?[options.adoption.assertion(env.DB)]:[]),...normalization.statements,...statements,...(options.adoption?[options.adoption.assertion(env.DB)]:[]),...(options.prepared?[lease!.assertion(env.DB)]:[]),lease!.cleared(env.DB)]).catch(async error=>{await lease!.confirm();throw error})
+ await leased([env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now()),...(profileBinding?[profileBinding(env.DB)]:[])])
  await confirmReplayedState(env.DB,plan.id,replayedRows,columnsOf,leased)
  if(replayedRows.length&&options.prepared?.journalStatements)await leased(options.prepared.journalStatements(env.DB,replayedRows,false))
  for(const {object,ids} of leftovers)if(await env.FILES.head(object.key)&&!await heldByNativeMedia(env.DB,ids,object.key)){await leased([env.DB.prepare('DELETE FROM legacy_import_objects WHERE run_id=? AND object_key=?').bind(plan.id,object.key)]);await env.FILES.delete(object.key)}
@@ -104,11 +110,12 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
   if(current&&await digest(new Uint8Array(await current.arrayBuffer()))!==object.sha256)throw new Error(`Existing R2 object differs: ${object.key}`)
   if(!current){
    await lease!.confirm()
+   if(options.adoption)await leased([])
    const stored=await env.FILES.put(object.key,bytes,{onlyIf:{etagDoesNotMatch:'*'},customMetadata:{sha256:object.sha256,legacyImport:plan.id}})
    if(!stored){const raced=await env.FILES.get(object.key);if(!raced||await digest(new Uint8Array(await raced.arrayBuffer()))!==object.sha256)throw new Error(`Concurrent R2 object conflict: ${object.key}`)}
    else uploaded=true
    // Kept only under a live lease: an upload that landed after the lease lapsed is removed again.
-   if(uploaded)await lease!.confirm().catch(async error=>{await env.FILES.delete(object.key);throw error})
+   if(uploaded)await (async()=>{await lease!.confirm();if(options.adoption)await leased([])})().catch(async error=>{await env.FILES.delete(object.key);throw error})
   }
   await leased([env.DB.prepare('INSERT OR IGNORE INTO legacy_import_objects VALUES(?,?,?,?)').bind(plan.id,object.key,object.sha256,bytes.length)]).catch(async error=>{if(uploaded)await env.FILES.delete(object.key);throw error})
  }
@@ -141,6 +148,7 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
   }
   // Tables keep their first-mapped order, so a parent row precedes the rows that reference it.
   const statements:D1PreparedStatement[]=[...canonicalAssertions(env.DB,group.flatMap(write=>write.mapped),observed,columnsOf),...markWorkRows(env.DB),...[...inserts].flatMap(([table,byColumns])=>[...byColumns].map(([names,values])=>insertJson(env.DB,`INSERT INTO ${sqlName(table)} (${names.split(',').map(sqlName).join(',')})`,names.split(',').length,values)))]
+  if(projects.length&&options.adoption){if(projects.length!==1||projects[0]!==options.adoption.profile.sourceProjectId)throw new Error('invalid_scope');statements.push(...options.adoption.creation(env.DB,group.flatMap(write=>write.mapped).map(target=>({...target,row:columnsOf(target)}))))}
   if(holds.length)statements.push(insertJson(env.DB,'INSERT OR IGNORE INTO legacy_import_holds(id,run_id,source_table,source_id,reason)',5,holds))
   if(reporting.length)statements.push(insertJson(env.DB,'INSERT OR IGNORE INTO reporting_legacy_conversations(project_id,conversation_id,run_id)',3,reporting))
   if(state.length)statements.push(stateStatement(env.DB,state))

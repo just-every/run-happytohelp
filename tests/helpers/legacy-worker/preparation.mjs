@@ -37,10 +37,17 @@ export async function workerPreparation(){
   assert.equal(probe.journalExact,true,'the legacy source journal stays exact through the native write boundary')
   assert.equal(probe.nativeProtected,true,'ordinary native messages retain the knowledge boundary')
   assert.equal(probe.replayApplied,0)
+  assert.equal(probe.planReadOnly,true)
+  assert.ok(probe.planWrites>0)
+  assert.equal(probe.importLiteral,true)
+  assert.equal(probe.stateMatches,true)
+  assert.equal(probe.deltaConflicts,0)
   const transcript=(await app.call(`/api/conversations/${probe.conversation}/messages`,{token:owner.tokens.owner,status:200})).data
   const message=transcript.messages.find(row=>row.id===probe.message)
+  assert.equal(Buffer.byteLength(message.content),probe.sourceBytes,'the normal owner HTTP read returns the complete literal')
+  assert.equal(message.content,Array.from({length:120},()=> 'A synthetic archive preserves the original customer account history across every import and verifies each relationship before any write.').join(' '))
   const facts={sourceBytes:probe.sourceBytes,stateMatches:probe.stateMatches,deltaConflicts:probe.deltaConflicts,renderedUnavailable:typeof message?.content==='string'&&message.content.includes('[Knowledge unavailable]'),replayApplied:probe.replayApplied}
-  console.log('LEGACY_KNOWLEDGE_DEPENDENCY '+JSON.stringify(facts))
+  console.log('LEGACY_KNOWLEDGE_FIDELITY '+JSON.stringify(facts))
   assert.equal((await app.first('SELECT count(*) n FROM legacy_import_worker_runs')).n,0,'reader inspection creates no run')
   assert.equal((await app.first('SELECT count(*) n FROM legacy_delta_leases')).n,0,'the proof releases its own workspace lease')
   assert.equal(app.requests.length,0,'no provider request')

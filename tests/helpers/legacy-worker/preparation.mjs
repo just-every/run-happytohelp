@@ -39,7 +39,7 @@ export async function workerPreparation(){
   assert.equal(probe.replayApplied,0)
   const transcript=(await app.call(`/api/conversations/${probe.conversation}/messages`,{token:owner.tokens.owner,status:200})).data
   const message=transcript.messages.find(row=>row.id===probe.message)
-  const facts={sourceBytes:probe.sourceBytes,stateMatches:probe.stateMatches,deltaConflicts:probe.deltaConflicts,renderedUnavailable:message?.content==='[Knowledge unavailable]',replayApplied:probe.replayApplied}
+  const facts={sourceBytes:probe.sourceBytes,stateMatches:probe.stateMatches,deltaConflicts:probe.deltaConflicts,renderedUnavailable:typeof message?.content==='string'&&message.content.includes('[Knowledge unavailable]'),replayApplied:probe.replayApplied}
   console.log('LEGACY_KNOWLEDGE_DEPENDENCY '+JSON.stringify(facts))
   assert.equal((await app.first('SELECT count(*) n FROM legacy_import_worker_runs')).n,0,'reader inspection creates no run')
   assert.equal((await app.first('SELECT count(*) n FROM legacy_delta_leases')).n,0,'the proof releases its own workspace lease')

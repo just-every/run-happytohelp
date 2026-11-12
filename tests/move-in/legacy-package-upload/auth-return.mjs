@@ -18,6 +18,12 @@ export async function legacyMoveInAuthReturn(browser,{width=1440,inspect=async()
   }
   assert.equal(loginDestination(continuation,runtime.origin),continuation)
   assert.equal(loginDestination(continuation,runtime.origin,true),continuation)
+  const assertContinuation=actual=>{
+   const target=new URL(actual,runtime.origin),expected=new URL(continuation,runtime.origin)
+   assert.equal(target.origin,expected.origin);assert.equal(target.pathname,expected.pathname)
+   // The router serializes query spaces as +; retain every decoded value, including encoded separators.
+   assert.deepEqual([...target.searchParams],[...expected.searchParams])
+  }
   const setup=await fetch(runtime.origin+'/api/identity/bootstrap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...owner,name:'Synthetic Import Owner',allowedOrigin:runtime.origin})})
   assert.equal(setup.status,201)
   const {projectId}=await setup.json(),destination=`/projects/${projectId}/move-in?legacy=1`
@@ -28,12 +34,12 @@ export async function legacyMoveInAuthReturn(browser,{width=1440,inspect=async()
   const prepareLogin=async page=>{
    await page.goto(runtime.origin+continuation)
    await page.waitForURL(url=>url.pathname==='/login')
-   assert.equal(new URL(page.url()).searchParams.get('returnTo'),continuation)
+   assertContinuation(new URL(page.url()).searchParams.get('returnTo'))
    await page.getByLabel('Email',{exact:true}).fill(owner.email)
    await page.getByLabel('Password',{exact:true}).fill(owner.password)
    await inspect(page,`legacy-login-${width}`)
   }
-  const resumed=page=>page.waitForRequest(request=>request.isNavigationRequest()&&request.url()===runtime.origin+continuation)
+  const resumed=page=>page.waitForRequest(request=>request.isNavigationRequest()&&new URL(request.url()).pathname==='/app/move-in').then(request=>assertContinuation(request.url()))
   const ready=async(page,name)=>{
    await page.waitForURL(url=>url.pathname+url.search===destination)
    await page.getByRole('heading',{name:'HappyToHelp export',exact:true}).waitFor()
@@ -54,13 +60,13 @@ export async function legacyMoveInAuthReturn(browser,{width=1440,inspect=async()
   const factorPage=await fresh()
   await prepareLogin(factorPage);await factorPage.getByRole('button',{name:'Login',exact:true}).click()
   await factorPage.waitForURL(url=>url.pathname==='/two-factor')
-  assert.equal(new URL(factorPage.url()).searchParams.get('returnTo'),continuation)
+  assertContinuation(new URL(factorPage.url()).searchParams.get('returnTo'))
   // A pending native session also follows the entry's own second-factor redirect with its query.
   await factorPage.goto(runtime.origin+continuation)
   await factorPage.waitForURL(url=>url.pathname==='/two-factor')
-  assert.equal(new URL(factorPage.url()).searchParams.get('returnTo'),continuation)
-  await factorPage.getByLabel('Code from your authenticator app',{exact:true}).fill(totp(enrolled.secret,1))
+  assertContinuation(new URL(factorPage.url()).searchParams.get('returnTo'))
   await inspect(factorPage,`legacy-totp-${width}`)
+  await factorPage.getByLabel('Code from your authenticator app',{exact:true}).fill(totp(enrolled.secret,1))
   const factorReturn=resumed(factorPage)
   await factorPage.getByRole('button',{name:'Continue',exact:true}).click()
   await factorReturn;await ready(factorPage,'legacy-totp-return')

@@ -17189,7 +17189,7 @@
       "executable": false
     },
     "tests/move-in/legacy-package-upload/auth-return.mjs": {
-      "sha256": "a15b51cae5a74e6750fb2d239f3c5914c9834d99927efd57cc61dfb0989a332f",
+      "sha256": "d0595c56317dd64078e401d83f382d2345ba3707f6a1b1a3a550609c7da04667",
       "executable": false
     },
     "tests/move-in/legacy-package-upload/browser.mjs": {

@@ -34,7 +34,7 @@ export async function verify(env:Env,input:unknown,type:MessageType):Promise<Pay
   if(['v','generation','iat','exp','watermark'].includes(name)){if(typeof value!=='number'||!Number.isSafeInteger(value)||value<0)refuse()}
   else if(typeof value!=='string'||!value.length||!/^[\x21-\x7e]+$/.test(value)||value.length>(['iss','aud','app_origin'].includes(name)?2048:128))refuse()
  }
- if(payload.v!==1||payload.type!==type||payload.installation_id!==config.installation||payload.app_id!=='happytohelp'||payload.environment!=='production'||payload.generation!==config.generation||payload.iat>now+30||payload.exp<=now||payload.exp<=payload.iat||Number(payload.exp)-Number(payload.iat)>(type.startsWith('custody')?120:300))refuse()
+ if(payload.v!==1||payload.type!==type||payload.installation_id!==config.installation||payload.app_id!=='happytohelp'||payload.environment!=='production'||payload.generation!==config.generation||Number(payload.iat)>now+30||Number(payload.exp)<=now||Number(payload.exp)<=Number(payload.iat)||Number(payload.exp)-Number(payload.iat)>(type.startsWith('custody')?120:300))refuse()
  for(const field of ['nonce',...(!type.startsWith('custody')?['challenge_id']:[]),...(type==='platform-authorization'?['platform_proof_id']:[])])if(!isRandom(payload[field]))refuse()
  const endpoint=type==='custody-request'?'custody':'authorize'
  if(payload.iss!==config.platform||payload.aud!==`${config.app}/api/identity/owner-recovery/${endpoint}`||(!type.startsWith('custody')&&payload.app_origin!==config.app))refuse()

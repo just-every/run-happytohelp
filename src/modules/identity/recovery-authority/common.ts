@@ -7,7 +7,7 @@ export type RecoveryContext=Context<AppEnv>
 export const random=()=>b64url(crypto.getRandomValues(new Uint8Array(32)))
 export const digest=async(secret:string)=>b64url(new Uint8Array(await crypto.subtle.digest('SHA-256',fromB64url(secret))))
 export const isRandom=(value:unknown):value is string=>typeof value==='string'&&/^[\w-]{43}$/.test(value)&&b64url(fromB64url(value))===value
-export const refuse=(status:400|401|403|409|429|503=403,code='recovery_refused'):never=>{throw new HTTPException(status,{res:Response.json({error:code==='installation_owner_binding_required'?'This installation needs its original owner binding before recovery is available.':'Recovery is unavailable or the proof was not accepted. Restart recovery or use a surviving factor.',code},{status,headers:{'Cache-Control':'no-store',...(status===429?{'Retry-After':'3600'}:{})}})})}
+export function refuse(status:400|401|403|409|429|503=403,code='recovery_refused'):never {throw new HTTPException(status,{res:Response.json({error:code==='installation_owner_binding_required'?'This installation needs its original owner binding before recovery is available.':'Recovery is unavailable or the proof was not accepted. Restart recovery or use a surviving factor.',code},{status,headers:{'Cache-Control':'no-store',...(status===429?{'Retry-After':'3600'}:{})}})})}
 export function browserOrigin(c:RecoveryContext){
  const origin=new URL(c.req.url).origin
  if(c.req.header('Origin')&&c.req.header('Origin')!==origin||c.req.header('Sec-Fetch-Site')==='cross-site')refuse()

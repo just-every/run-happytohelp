@@ -9,7 +9,7 @@ import {packageFixture,sha} from './fixture.mjs'
 export async function adoptionIntegrationJourney({representative=true}={}){
  const app=await runnerRuntime(),directory=await mkdtemp(join(tmpdir(),'legacy-wire-'))
  app.ok=async(path,options={})=>{const r=await app.call(path,{...options,status:200});return r.data}
- const facts={states:[],uploads:0,maxStatements:0,measurements:{},kills:0}
+ const facts={states:[],uploads:0,maxStatements:0,measurements:{},kills:0,indexDrainSteps:0}
  try{
   const owner=(await app.call('/api/identity/bootstrap',{body:{setupToken:'synthetic-wire-setup',email:'synthetic-wire@example.test',password:'Synthetic wire password 42!',name:'Support owner',allowedOrigin:app.origin},status:201})).data
   const setup=owner.projectId,token=owner.token,source='synthetic-wire-source',foreign=await app.seedWorkspace('wire-foreign')
@@ -74,13 +74,16 @@ export async function adoptionIntegrationJourney({representative=true}={}){
      await app.call(base+'/resume',{token,body:{approvedManifestSha256:p.manifestSha256},status:202});facts.stopFenced=true;continue
     }
    }
-   const before=await app.first('SELECT metrics_json FROM legacy_import_worker_runs WHERE manifest_sha256=?',p.manifestSha256),profiled=await app.profile(()=>app.runJobs(jobs)),after=await app.first('SELECT metrics_json FROM legacy_import_worker_runs WHERE manifest_sha256=?',p.manifestSha256),response=profiled.value
+   const dirtyBefore=result.run.phase==='rows'?(await app.first('SELECT count(*) n FROM knowledge_index_dirty WHERE project_id=?',source)).n:0
+   const before=await app.first('SELECT metrics_json,cursor_json FROM legacy_import_worker_runs WHERE manifest_sha256=?',p.manifestSha256),profiled=await app.profile(()=>app.runJobs(jobs)),after=await app.first('SELECT metrics_json,cursor_json FROM legacy_import_worker_runs WHERE manifest_sha256=?',p.manifestSha256),response=profiled.value
+   if(result.run.phase==='rows'&&before.cursor_json===after.cursor_json&&dirtyBefore>20){const dirtyAfter=(await app.first('SELECT count(*) n FROM knowledge_index_dirty WHERE project_id=?',source)).n;assert.equal(dirtyAfter,dirtyBefore-1,'one index source per continuation');facts.indexDrainSteps++}
    facts.maxStatements=Math.max(facts.maxStatements,response.metrics.statements)
    recordMeasurement(facts.measurements,result.run.phase,JSON.parse(before.metrics_json),JSON.parse(after.metrics_json),profiled.measurement,response.metrics.statements)
    assert.deepEqual(response.retried,[])
    if(tick===349)throw new Error('Mounted run did not complete: '+JSON.stringify(result.run))
   }
   assert.equal(facts.kills,2);assert.equal(facts.stopFenced,true)
+  if(representative){assert.ok(facts.indexDrainSteps>1,'adopted destination drains its backlog through bounded continuations');assert.equal((await app.first('SELECT count(*) n FROM knowledge_index_dirty WHERE project_id=?',source)).n,0);const macro=(await app.call(`/api/management/projects/${source}/macros/synthetic-wire-macro`,{token,status:200})).data.data;assert.ok(macro.references.length&&macro.references.every(r=>!r.withheld),'native historical macro reads the adopted workspace knowledge')}
   assert.deepEqual(await app.first('SELECT count(*) n FROM users'),before)
   assert.equal((await app.first('SELECT count(*) n FROM memberships')).n,native.n+1)
   assert.deepEqual(await app.first('SELECT count(*) n FROM conversation_outbox'),work)

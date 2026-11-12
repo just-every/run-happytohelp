@@ -39,9 +39,9 @@ export async function advanceLegacy(env:Env,job:Job){
   const phase=run.phase,c=cursor(run);let measured:{rows:number;bytes:number;objects?:number}
   if(phase==='verify_package')measured=await verifyPackage(env,run,manifest)
   else if(phase==='context')measured=c.stage==='transcripts'?await indexTranscripts(env,run):c.stage==='datasets'?await indexDatasets(env,run):c.stage==='earlier'||c.stage==='earlier_files'?await loadEarlierMedia(env,run):await loadContext(env,run,manifest)
-  else if(phase==='preflight')measured=c.stage==='scope'?await preflightContextScope(env,run,manifest):c.stage==='delta'?await deltaMessages(env,run,manifest):c.stage==='delta_media'?await deltaMedia(env,run,manifest):c.stage==='objects'?await preflightObjects(env,run,manifest,lease):await rowStep(env,run,manifest,lease,true)
+  else if(phase==='preflight')measured=c.stage==='scope'?await preflightContextScope(env,run,manifest):c.stage==='delta'?await deltaMessages(env,run,manifest):c.stage==='delta_media'?await deltaMedia(env,run,manifest):c.stage==='objects'?await preflightObjects(env,run,manifest,lease):await rowsOrIndex(env,run,manifest,lease,true)
   else if(phase==='objects')measured=await copyObject(env,run,manifest,lease)
-  else if(phase==='rows')measured=await rowStep(env,run,manifest,lease,false)
+  else if(phase==='rows')measured=await rowsOrIndex(env,run,manifest,lease,false)
   else if(phase==='knowledge'){
    const plan=await planKnowledgeIndex(env,run.source_project_id,1)
    await checkpoint(env,run,{...(plan.complete?{phase:'verify_result',cursor_json:'{}'}:{})},[lease.assertion(env.DB),...plan.statements,...(plan.complete?[env.DB.prepare('INSERT INTO ik_d1_assertions(ok) SELECT NOT EXISTS(SELECT 1 FROM knowledge_index_dirty WHERE project_id=?)').bind(run.source_project_id)]:[]),lease.cleared(env.DB)])
@@ -66,6 +66,17 @@ export async function advanceLegacy(env:Env,job:Job){
   await pause(env,run,code)
   if(run.contract_version===2)try{await renewCustody(env,{sha:run.manifest_sha256,generation:1},{projectId:run.project_id,actorId:run.actor_id,sessionHash:run.session_hash},'paused')}catch{/* Expiry/revocation never reopens source. */}
  }finally{await lease?.release()}
+}
+/** Planning is read-only. A source backlog yields this wake to one guarded
+ * index source, retaining the row cursor for the next ordinary continuation.
+ * Never retry row planning in the same quantum or commit a discarded row plan. */
+async function rowsOrIndex(env:Env,run:Run,manifest:Awaited<ReturnType<typeof readManifest>>,lease:DeltaLease,checkOnly:boolean){
+ try{return await rowStep(env,run,manifest,lease,checkOnly)}catch(error){
+  if(!(error instanceof Error)||error.message!=='KNOWLEDGE_INDEX_NOT_READY')throw error
+  const plan=await planKnowledgeIndex(env,run.source_project_id,1)
+  await checkpoint(env,run,{},[lease.assertion(env.DB),...plan.statements,lease.cleared(env.DB)])
+  return {rows:plan.shingles.length,bytes:plan.bytes}
+ }
 }
 async function releaseClaim(env:Env,run:Run){
  await checkpoint(env,run,{state:'queued',lease_token:null,lease_until:null})

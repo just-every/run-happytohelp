@@ -1182,6 +1182,12 @@
       "name": "331_legacy_cleanup_seeding.sql",
       "sha256": "0938deb57836dc0613670d67494b14ba7fe3687e037675a59b77bbf445655cfa",
       "sql": "-- 330 is reserved for platform recovery. Cleanup-only v1 inventory never grants v2 readiness.\nALTER TABLE legacy_package_custody ADD COLUMN cleanup_only INTEGER NOT NULL DEFAULT 0 CHECK(cleanup_only IN (0,1));\nALTER TABLE legacy_package_custody ADD COLUMN seeding_complete INTEGER NOT NULL DEFAULT 1 CHECK(seeding_complete IN (0,1));\nCREATE TABLE legacy_package_v1_seeds (\n manifest_sha256 TEXT PRIMARY KEY REFERENCES legacy_package_custody(manifest_sha256),\n phase TEXT NOT NULL DEFAULT 'manifest' CHECK(phase IN ('manifest','listing','complete')),\n manifest_offset INTEGER NOT NULL DEFAULT 0,\n list_cursor TEXT NOT NULL DEFAULT ''\n);\n-- Until the old prefix inventory is exhausted, no erasure may assert all source is gone.\n-- New intake is v2-only; this cursor is never reset by an upload or a status read.\nCREATE TABLE legacy_package_v1_inventory (\n singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n list_cursor TEXT NOT NULL DEFAULT '', complete INTEGER NOT NULL DEFAULT 0 CHECK(complete IN (0,1))\n);\nINSERT INTO legacy_package_v1_inventory(singleton) VALUES(1);\nCREATE INDEX legacy_worker_source_scope ON legacy_import_worker_runs(source_project_id,contract_version,manifest_sha256);\n-- Private installation counts have no workspace audit/read entitlement.\nCREATE TABLE installation_work_baseline (\n singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n captured_at INTEGER NOT NULL,\n counts_json TEXT NOT NULL CHECK(json_valid(counts_json))\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "332_legacy_cleanup_inventory_lazy.sql",
+      "sha256": "b0e22ac88fd234758bb2f26c6def7e1ba3392dbdd0eaea6171f96e5b75aa7fc3",
+      "sql": "-- Keep a fresh restore destination empty: inventory is operational state, created\n-- lazily by the first bounded discovery. Missing state remains cleanup-pending.\n-- Never discard a cursor or an installation's existing package/run inventory.\nDELETE FROM legacy_package_v1_inventory\nWHERE singleton=1 AND complete=0 AND list_cursor=''\n AND NOT EXISTS(SELECT 1 FROM legacy_package_custody)\n AND NOT EXISTS(SELECT 1 FROM legacy_import_worker_runs);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

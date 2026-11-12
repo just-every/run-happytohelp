@@ -37,8 +37,12 @@ export async function beginLegacyCleanup(env:Pick<Env,'DB'|'FILES'>,sha:string,p
 /** One bounded old-prefix discovery. New uploads cannot create v1 prefixes.
  * A malformed/orphaned old prefix keeps inventory pending, never erasure success. */
 export async function seedLegacyInventory(env:Pick<Env,'DB'|'FILES'>){
- const state=await env.DB.prepare('SELECT * FROM legacy_package_v1_inventory WHERE singleton=1').first<{list_cursor:string;complete:number}>()
- if(!state||state.complete)return
+ // A pristine restore target has no operational inventory row. Missing remains
+ // pending in every completion predicate; the first discovery creates it here.
+ const read=()=>env.DB.prepare('SELECT list_cursor,complete FROM legacy_package_v1_inventory WHERE singleton=1').first<{list_cursor:string;complete:number}>()
+ const state=await read()??await env.DB.prepare('INSERT OR IGNORE INTO legacy_package_v1_inventory(singleton) VALUES(1) RETURNING list_cursor,complete').first<{list_cursor:string;complete:number}>()??await read()
+ if(!state)throw new CustodyError('source_cleanup_pending')
+ if(state.complete)return
  const page=await env.FILES.list({prefix:'legacy-package/',delimiter:'/',limit:1,...(state.list_cursor?{cursor:state.list_cursor}:{})})
  for(const directory of page.delimitedPrefixes){
   const sha=directory.slice('legacy-package/'.length,-1);validateSha(sha)

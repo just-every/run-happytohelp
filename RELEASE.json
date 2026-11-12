@@ -53,6 +53,10 @@
     {
       "id": "331_legacy_cleanup_seeding.sql",
       "buyerSteps": "Back up D1, R2, Durable Object state and private settings first. Apply once after 329 and any intervening published migrations (330 is reserved for platform recovery), BEFORE serving this Worker. Additive cleanup-only v1 seed/inventory cursors, completion fences and a private installation baseline table; no account backfill or v1 adoption. Keep the old Worker stopped during upgrade. Old synthetic manifest/prefix coordinates are registered pagewise before bounded purge; erasure remains pending until inventory and seeding complete. No reset or customer enablement."
+    },
+    {
+      "id": "332_legacy_cleanup_inventory_lazy.sql",
+      "buyerSteps": "After the same complete backup, apply once after 331 and BEFORE serving this Worker. Removes only the pristine, unstarted inventory marker when no package custody or import run exists, keeping empty native restore targets empty. Existing cursors and package/run inventory remain intact. Bounded discovery creates missing inventory lazily; missing or incomplete inventory still prevents source-cleanup completion. No source, account or permission changes and no reset."
     }
   ]
 }

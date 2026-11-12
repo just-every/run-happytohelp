@@ -248,12 +248,17 @@ mail activation, production import or cutover authorization.
 
 ### Old synthetic v1 source cleanup and installation baseline
 
-Install additive migration `331_legacy_cleanup_seeding.sql` before this Worker
-(330 remains reserved for platform recovery). Stop the old Worker during the
+Install additive migrations `331_legacy_cleanup_seeding.sql`, then
+`332_legacy_cleanup_inventory_lazy.sql`, before this Worker (330 remains reserved
+for platform recovery). Stop the old Worker during the
 upgrade and retain the D1/R2 backup. New uploads remain v2-only. The one-time
 bounded old-prefix inventory discovers pre-start v1 manifests; existing v1 runs
 retain their synthetic interpretation until an explicit cleanup or erasure.
 Native contact erasure also discovers old runs through their recorded scopes.
+Inventory is created lazily so a pristine native restore destination remains
+empty. Missing inventory is pending, never proof of completed cleanup; migration
+332 preserves existing progress and removes only an unused bootstrap marker
+where no package or run exists.
 A first installation owner with native step-up may explicitly request
 `POST /api/move-in/projects/:setupProjectId/legacy-import/:sha/cleanup-v1` with
 `{}` for a known old synthetic package. It closes that SHA permanently; it never

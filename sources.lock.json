@@ -2053,7 +2053,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "3f325147071d2a4f1b1dde72b5a9b87f53262a2b9938560050201314fc2e8907",
+      "sha256": "aa7e4a608bdcc9aff76064ecf6e232507d55cbf3d7da683588c82dcd058f9358",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2876,12 +2876,16 @@
       "sha256": "0938deb57836dc0613670d67494b14ba7fe3687e037675a59b77bbf445655cfa",
       "executable": false
     },
+    "migrations/332_legacy_cleanup_inventory_lazy.sql": {
+      "sha256": "b0e22ac88fd234758bb2f26c6def7e1ba3392dbdd0eaea6171f96e5b75aa7fc3",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "6cb486f8bd712a4118e5ea5504e6af55fda688b3874630a08952b7478922366b",
+      "sha256": "13dae985450c7d121aa2e631f516b44717344da9cd6ca379b798625c56717503",
       "executable": false
     },
     "package.json": {
@@ -2965,7 +2969,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "75ed8841a32da21653f04f3021761b6217fd56428fdb1c4f38635762603a98cd",
+      "sha256": "54e75d5a8a77ae0285402c463e9f0dbf95def9eb10eb2d7c20d5aaeaa63c7b1d",
       "executable": false
     },
     "rer-project.json": {
@@ -7733,7 +7737,7 @@
       "executable": false
     },
     "src/modules/legacy-import/custody/seed.ts": {
-      "sha256": "a9d5a74591dc34f0588043f747a4401e4eb9f3ae0b1b24f94b8e7096b7c204c3",
+      "sha256": "ef94de7873f4c83149c199cb55ae205fa3cd84c78c6f9765049faa4b5a2d3ecc",
       "executable": false
     },
     "src/modules/legacy-import/custody/types.ts": {
@@ -7857,7 +7861,7 @@
       "executable": false
     },
     "src/modules/legacy-import/README.md": {
-      "sha256": "4cff6b950e42d723545a1ed7f5750c74e1e0014ed92b7e2bc5c6c196772b3c1f",
+      "sha256": "0540eba476e0002bac65b5005a9839895f1d0ef5f6859d9bd91bf61af09bb709",
       "executable": false
     },
     "src/modules/legacy-import/relationships.ts": {
@@ -17465,7 +17469,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/ordering.mjs": {
-      "sha256": "f332e6f45c9d30aee8cbb6b9f32b5c5b113fab4855e8c904c348488611b4705b",
+      "sha256": "2e2992235ab32a45ffafddf0164370e3b69fef6bdb3aecb29c1744538c4e22d3",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/runtime-worker.ts": {

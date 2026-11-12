@@ -1180,8 +1180,8 @@ mail activation, production import or cutover authorization.
 
 ### Retiring old synthetic importer v1 staging
 
-After the normal backup, install `331_legacy_cleanup_seeding.sql` before serving
-this Worker; keep the prior Worker stopped during upgrade. Migration 330 remains
+After the normal backup, install `331_legacy_cleanup_seeding.sql` followed by
+`332_legacy_cleanup_inventory_lazy.sql` before serving this Worker; keep the prior Worker stopped during upgrade. Migration 330 remains
 reserved for platform recovery. The bounded inventory and cleanup queue retire
 old synthetic pre-start prefixes without upgrading them to v2. For a known
 package, the first installation owner may use the step-up-protected
@@ -1190,7 +1190,11 @@ with `{}`. It is terminal source cleanup, not native-history undo. Contact erasu
 uses the same durable seed/purge cursors and returns `source_cleanup_pending`
 until all coordinates are registered and purged. Unreadable/orphaned manifests
 remain pending; do not bypass the completion guard or reclassify customer bytes
-as synthetic. No customer enablement or account backfill follows from cleanup.
+as synthetic. Migration 332 preserves empty native restore targets by removing
+only an untouched inventory marker when no package or run exists. Discovery
+creates missing inventory lazily; missing state still means cleanup is pending.
+Existing cursors remain intact. No customer enablement or account backfill follows
+from cleanup.
 
 Fresh owner setup now records counts before provisioning as the original
 installation work baseline. Existing installations are not backfilled. Import

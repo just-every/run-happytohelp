@@ -65,5 +65,19 @@ export async function recoveryRestoreJourney(){
   const replacement=await ok(rootPath+'/enrol/totp',{},undefined,fresh.capability)
   assert.equal((await call(rootPath+'/complete',{factorId:replacement.factorId,code:totp(replacement.secret)},undefined,fresh.capability)).response.status,200)
   assert.equal((await ok('/api/identity/login',{email:'shared-restore@example.test',password})).twoFactor,'verify')
+  // The existing eligible member erase door retires pending credential state;
+  // retained opaque recovery history does not keep a capability alive.
+  const retiring=await ok(rootPath+'/account/request',{email:'shared-restore@example.test',password})
+  await ok(rootPath+'/account/approve',{requestId:retiring.requestId},restored.token)
+  await ok(rootPath+'/enrol/totp',{},undefined,retiring.capability)
+  await ok(`/api/management/projects/${owner.projectId}/agents/${target.actor.id}/erase`,{},restored.token)
+  assert.equal((await call(rootPath+'/status',undefined,undefined,retiring.capability)).response.status,401)
+  assert.equal((await call('/api/identity/session',undefined,restored.token)).response.status,200)
+  await stop()
+  await archiveStorage(checkout,async({DB})=>{
+   assert.equal((await DB.prepare('SELECT count(*) n FROM identity_recovery_requests WHERE user_id=?').bind(target.actor.id).first()).n,0)
+   assert.equal((await DB.prepare('SELECT count(*) n FROM identity_recovery_approvals WHERE request_id=?').bind(retiring.requestId).first()).n,0)
+   assert.ok((await DB.prepare('SELECT count(*) n FROM identity_recovery_events WHERE user_id=?').bind(target.actor.id).first()).n>0)
+  })
  }finally{await stop();await rm(scratch,{recursive:true,force:true})}
 }

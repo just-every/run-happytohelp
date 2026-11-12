@@ -1,4 +1,5 @@
 import {redactionStatements,invalidateTransfersStatements} from '@runeditrun/rer/modules/portability/journal'
+import {recoveryMemberErasure} from '../identity/recovery-authority/erasure'
 import {replyDraftMemberErasure} from '../conversations/draft-erasure'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
@@ -27,7 +28,7 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const registry=await currentRegistry(c.env.DB),erasureId=crypto.randomUUID()
  if(registry.errors.length)throw new HTTPException(503,{message:'Member erasure schema requires review'})
  // Agent-door identity copies are prepared before native anonymization.
- await c.env.DB.batch([...await redactionStatements(c.env.DB),...await invalidateTransfersStatements(c.env.DB),...await memberDoorErasure(c.env,userId,now,erasureId),...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...replyDraftMemberErasure(c.env,actor.projectId,userId),...await memberBusinessErasure(c.env.DB,actor.projectId,userId,erasureId)])
+ await c.env.DB.batch([...await redactionStatements(c.env.DB),...await invalidateTransfersStatements(c.env.DB),...await memberDoorErasure(c.env,userId,now,erasureId),...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...recoveryMemberErasure(c.env.DB,userId),...replyDraftMemberErasure(c.env,actor.projectId,userId),...await memberBusinessErasure(c.env.DB,actor.projectId,userId,erasureId)])
  return c.json({erased:true,credentialsRevoked:true,eventsRetained:true})
 })
 
@@ -75,6 +76,8 @@ const memberPolicies:Record<string,RegistryEntry>={
  ticket_handle_sessions:{effects:[{prefix:'UPDATE ticket_handle_sessions SET ended_at=max(started_at,?)',where:'user_id=? AND ended_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
  audit_events:{audit:true},
  ...Object.fromEntries(['macros','conversation_reads','conversation_notes','github_oauth_states','move_in_runs','local_pairings','local_grants','local_authorizations','local_devices','operator_notifications','ticket_group_members','ticket_views','notification_preferences','notification_inbox','conversation_note_mentions','routing_operators','mailbox_oauth_states','email_sender_rules','email_message_options','operator_ticket_commands','report_schedules','report_schedule_recipients','report_schedule_deliveries','customer_identity_links','customer_identity_link_history','voice_context_links','api_notes','h2h_business_project'].map(table=>[table,{}])),
+ identity_recovery_requests:{},identity_recovery_approvals:{},
+ identity_recovery_epochs:{accountOnly:true},identity_recovery_events:{accountOnly:true},
  platform_admins:{accountOnly:true},owner_recoveries:{accountOnly:true},
  assertion_cleanup:{internal:'cleanup'},
 }

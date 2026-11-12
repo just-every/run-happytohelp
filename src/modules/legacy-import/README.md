@@ -147,3 +147,31 @@ original remains archived otherwise.
 `tests/journeys/legacy.mjs` exercises 33 table families with real local D1/R2, original transcript/bucket/knowledge IDs, exact minor-unit money, held operations, deterministic replay, conflict protection and corrupt-object denial. This fixture proof is not an import of a production dump, nor a claim that every archive-only historical system is already normalized.
 
 The public command uses the same `v3` local persistence layout as Wrangler/rer. Source `events` of type `INTERNAL_NOTE` become private notes; nullable category `published_at` retains drafts. Soft-deleted rows and their dependent transcripts remain archive-only.
+
+### Worker preparation (synthetic only; runner not installed)
+
+The additive `327_legacy_import_worker.sql` schema reserves the durable runner,
+part, context and result-count stores. Apply it before any future Worker runner
+uses them; it does not change native rows, authority or work. The independent
+`worker/reader.ts` checks private package custody, actual JSON bytes and R2 stored
+SHA-256 checksums in the fixed installation-local `legacy-package/<sha>/` layout.
+It reproduces the original whole-chunk journal identity before slicing. This
+preparation does not install HTTP controls, queue execution or a completed result.
+
+The native knowledge boundary now recognizes quoted source table names and keeps
+legacy journal/context bytes exact. Native text targets still use that boundary.
+A pure canonicalization plan and atomic reference-write integration are needed
+before the runner can safely use the existing importer: the current canonicalizer
+writes reference blocks while preparing values, after import state hashes have
+already been computed. Planning it during read-only package preflight would also
+write native state. Cross-workspace knowledge matches need an explicit fidelity
+ruling; they can currently hide imported literal text behind an unavailable
+reference. No exemption of native message or note content is supplied here.
+
+Future start/preflight must require the package source workspace to equal the URL
+workspace and existing owner/admin `data.import` access. A fresh Business workspace
+with a different ID still needs the destination-policy decision. Keep source
+packages private for synthetic resume; real customer remote use requires allocated
+package-custody/contact-erasure work. This migration and reader do not qualify that
+retention policy or a Managed installation. Upload, CPU/heap qualification,
+kill/restart/resume and counts-only completion remain unexercised here.

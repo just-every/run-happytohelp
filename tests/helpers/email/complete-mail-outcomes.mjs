@@ -90,7 +90,7 @@ export async function completeMailOutcomes(){
    await quietMailOutcomes(m,{id,path,dashboard,reply,counts})
    // The preceding permission-loss scenario deliberately disconnects OAuth/TLS
    // mailboxes. Restore through the public door before testing dormant credentials.
-   if(kind!=='forwarding')await m.reconnect()
+   if(kind!=='forwarding')await m.reconnect({restoreAlias:false})
    assert.equal((await m.mailbox()).status,'connected')
    // An installation mail-off choice also fences connected provider credentials.
    // The reply remains in the native transcript and reports why no email left.

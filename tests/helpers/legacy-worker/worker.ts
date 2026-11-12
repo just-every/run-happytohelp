@@ -37,7 +37,7 @@ export default {
    const contact='synthetic-legacy-custody-contact',conversation='synthetic-legacy-custody-conversation',message='synthetic-legacy-custody-message'
    await db.prepare("INSERT INTO contacts(id,project_id,name,created_at) VALUES(?,?,'Synthetic',1)").bind(contact,projectId).run()
    await db.prepare('INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES(?,?,?,1,1)').bind(conversation,projectId,contact).run()
-   await wrapped.DB.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,'synthetic-native-local',?,'operator',?,1,1)").bind(message+'-native',projectId,conversation,'synthetic-operator',text).run()
+   await wrapped.DB.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,'synthetic-native-local',?,'operator',?,2,1)").bind(message+'-native',projectId,conversation,'synthetic-operator',text).run()
    const native=await db.prepare('SELECT content FROM messages WHERE id=?').bind(message+'-native').first<{content:string}>()
    const row:Row={id:message,project_id:projectId,conversation_id:conversation,contact_id:contact,content:text,created_at:1,local_id:'synthetic-original-local'}
    const bundle:LegacyBundle={format:'happytohelp-legacy-v1',source:{repository:'synthetic',revision:'synthetic',exportedAt:'2026-01-01T00:00:00.000Z',projectId},tables:{messages:[row]}}

@@ -41,7 +41,7 @@ export async function workerRunnerJourney({packageRoot,interrupt=true,measure=tr
   const readRun=()=>runtime.db.prepare('SELECT * FROM legacy_import_worker_runs WHERE id=?').bind(runId).first()
   const runStep=async(headers)=>{
    assert.ok(queue.length,'durable continuation has a wake');const jobs=queue.splice(0,1),before=await readRun()
-   const profiled=measure&&(!measurements[before.phase]||measurements[before.phase].invocations<2)?await runtime.profile(()=>runtime.step(jobs,headers)): {value:await runtime.step(jobs,headers)}
+   const profiled=measure?await runtime.profile(()=>runtime.step(jobs,headers)): {value:await runtime.step(jobs,headers)}
    queue.push(...profiled.value.queue);const after=await readRun();invocations++
    if(profiled.measurement){const m=profiled.measurement,prior=measurements[before.phase]??{invocations:0,maxCpuMs:0,maxHeapBytes:0,maxStatements:0,rows:0,bytes:0};prior.invocations++;prior.maxCpuMs=Math.max(prior.maxCpuMs,m.sampledCpuMs);prior.maxHeapBytes=Math.max(prior.maxHeapBytes,m.maxHeapBytes);prior.maxStatements=Math.max(prior.maxStatements,profiled.value.metrics.statements);const old=JSON.parse(before.metrics_json),next=JSON.parse(after.metrics_json);prior.rows=Math.max(prior.rows,(next.rows??0)-(old.rows??0));prior.bytes=Math.max(prior.bytes,(next.bytes??0)-(old.bytes??0));measurements[before.phase]=prior}
    assert.notEqual(after.state,'paused',JSON.stringify({phase:after.phase,cursor:JSON.parse(after.cursor_json),error:after.error_code,failures:profiled.value.failures}));return after

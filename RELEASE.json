@@ -37,5 +37,10 @@
       "buyerSteps": "Back up D1 first; apply once after 324_scheduler_outbox_reads.sql, before serving the updated Worker. Additive only: creates one index on knowledge_documents (knowledge_documents_version_url on (version_id, url)), so the knowledge reference policy's check that an older crawl version's page still has a current twin at the same URL searches an index instead of walking every page of the published version; no row changes and nothing is read, sent or queued. Measured on real D1 with 3,154 documents it read 7,721 rows, wrote 3,806 and took 109 ms; a far larger knowledge table was not measured and the build cost grows with the number of documents. Afterwards each crawled document writes one more row."
     }
   ],
-  "pendingMigrations": []
+  "pendingMigrations": [
+    {
+      "id": "327_legacy_import_worker.sql",
+      "buyerSteps": "Back up D1, R2, Durable Object state and private settings first. Apply every missing published migration once in order, then 327_legacy_import_worker.sql once BEFORE serving the importer Worker. 326 remains reserved for the separate media_message release. Additive only: seven private run/part/context/message/media/identity/count tables and their indexes; no existing rows, identities, permissions or work are changed. No reset. Uploaded package retention and contact-erasure coverage remain unqualified for real customer remote use; this round is local synthetic only."
+    }
+  ]
 }

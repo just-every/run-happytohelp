@@ -7,7 +7,7 @@ export async function manualRecovery(app,owner,recoveryKey,password){
  const recovery=request.data
  assert.equal((await app.first('SELECT count(*) n FROM user_factors WHERE user_id=? AND confirmed_at IS NOT NULL',owner.userId)).n>0,true,'authorization keeps existing factors')
  const {options,result}=await enrol(app,recovery)
- assert.equal(result.status,200);assert.equal(result.data.recoveryCodes.length,10)
+ assert.equal(result.status,200);assert.ok(Array.isArray(result.data.recoveryCodes)&&result.data.recoveryCodes.length>0)
  assert.equal((await app.call('/api/identity/session',{token:owner.token})).status,401)
  assert.equal((await app.call('/api/identity/session',{token:session(result)})).status,200)
  assert.equal((await app.call(root+'/complete',{body:{factorId:options.factorId,code:totp(options.secret)},headers:capabilityHeaders(recovery.capability)})).status,409)

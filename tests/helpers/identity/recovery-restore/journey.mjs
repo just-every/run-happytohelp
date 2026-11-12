@@ -7,7 +7,7 @@ import {promisify} from 'node:util'
 import {randomBytes} from 'node:crypto'
 import {createServer} from 'node:net'
 import {command,run,stopOwnedServer} from '../../rer-command.mjs'
-import {archiveStorage} from '../../rer-archive.mjs'
+import {recoveryStorage} from './storage.mjs'
 import {totp} from '../two-factor.mjs'
 const rootPath='/api/identity/owner-recovery'
 export async function recoveryRestoreJourney(){
@@ -47,13 +47,13 @@ export async function recoveryRestoreJourney(){
   assert.ok(pendingFactor.secret)
   await stop()
   console.info('Recovery restore: offline snapshot')
-  const before=await archiveStorage(checkout,async({DB})=>({members:(await DB.prepare('SELECT * FROM memberships ORDER BY user_id,project_id').all()).results,credentials:(await DB.prepare('SELECT * FROM credentials ORDER BY user_id').all()).results,spent:(await DB.prepare('SELECT * FROM owner_recoveries').all()).results,approvals:(await DB.prepare('SELECT count(*) n FROM identity_recovery_approvals').first()).n}))
+  const before=await recoveryStorage(checkout,async({DB})=>({members:(await DB.prepare('SELECT * FROM memberships ORDER BY user_id,project_id').all()).results,credentials:(await DB.prepare('SELECT * FROM credentials ORDER BY user_id').all()).results,spent:(await DB.prepare('SELECT * FROM owner_recoveries').all()).results,approvals:(await DB.prepare('SELECT count(*) n FROM identity_recovery_approvals').first()).n}))
   assert.equal(before.approvals,1);assert.equal(before.spent.length,1)
   console.info('Recovery restore: public export/reset/import')
   await run(checkout,['export','--output','exports/recovery.rer'])
   await run(checkout,['reset','--yes'])
   await run(checkout,['import','--input','exports/recovery.rer','--yes'])
-  await archiveStorage(checkout,async({DB})=>{
+  await recoveryStorage(checkout,async({DB})=>{
    for(const table of ['identity_recovery_requests','identity_recovery_approvals','identity_recovery_nonces'])assert.equal((await DB.prepare(`SELECT count(*) n FROM ${table}`).first()).n,0)
    assert.deepEqual((await DB.prepare('SELECT * FROM memberships ORDER BY user_id,project_id').all()).results,before.members)
    assert.deepEqual((await DB.prepare('SELECT * FROM credentials ORDER BY user_id').all()).results,before.credentials)
@@ -81,7 +81,7 @@ export async function recoveryRestoreJourney(){
   assert.equal((await call(rootPath+'/status',undefined,undefined,retiring.capability)).response.status,401)
   assert.equal((await call('/api/identity/session',undefined,restored.token)).response.status,200)
   await stop()
-  await archiveStorage(checkout,async({DB})=>{
+  await recoveryStorage(checkout,async({DB})=>{
    assert.equal((await DB.prepare('SELECT count(*) n FROM identity_recovery_requests WHERE user_id=?').bind(target.actor.id).first()).n,0)
    assert.equal((await DB.prepare('SELECT count(*) n FROM identity_recovery_approvals WHERE request_id=?').bind(retiring.requestId).first()).n,0)
    assert.ok((await DB.prepare('SELECT count(*) n FROM identity_recovery_events WHERE user_id=?').bind(target.actor.id).first()).n>0)

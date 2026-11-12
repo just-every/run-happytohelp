@@ -89,6 +89,7 @@ export async function workerRunnerJourney({packageRoot,interrupt=true,measure=tr
   await runtime.call(base+'/start',{token:readerToken,body:{approvedManifestSha256:sha,replay:true},status:202});queue=await runtime.take();await until(run=>run.state==='complete')
   const replay=(await runtime.call(base+'/result',{token:readerToken,status:200})).data.data
   assert.equal(replay.attempt.appliedRows,0);assert.equal(replay.attempt.replayedRows,first.attempt.appliedRows);assert.equal(replay.journalEqualsPackage,true);assert.deepEqual((await runtime.db.prepare('SELECT run_id,source_table,source_id,row_digest,status FROM legacy_import_rows ORDER BY run_id,source_table,source_id').all()).results,journal.results)
+  if(!packageRoot){const {deltaJourney}=await import('./delta-journey.mjs');Object.assign(facts,await deltaJourney(runtime,scratch,fixtureData.bundle,readerToken))}
   assert.equal(runtime.outbound.length,0)
   const report={...facts,rows:first.attempt.appliedRows,replayApplied:replay.attempt.appliedRows,objects:first.attachments,workUnchanged:first.work.unchanged,invocations,measurements,diagnostics:first.diagnostics}
   console.log('LEGACY_WORKER_RESULT '+JSON.stringify(report));return report

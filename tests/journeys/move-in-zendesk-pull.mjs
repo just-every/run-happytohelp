@@ -132,7 +132,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.doesNotMatch(everything,new RegExp(PATH_TOKEN));assert.doesNotMatch(everything,new RegExp(QUERY_TOKEN))
 
   // Search finds an imported ticket by its exact Zendesk id, with and without #.
-  for(const term of ['104','#104']){const found=await h.call(`/api/dashboard/projects/p/conversations?view=all&search=${encodeURIComponent(term)}`);assert.deepEqual(found.data.map(c=>c.id),[large],term)}
+  for(const term of ['104','#104','105','#105']){const found=await h.call(`/api/dashboard/projects/p/conversations?view=all&search=${encodeURIComponent(term)}`);assert.deepEqual(found.data.map(c=>c.id),[imported.find(row=>row.source_id===term.replace('#','')).id],term)}
 
   const nativeBefore=await nativeSnapshot(h)
   assert.ok(nativeBefore.complete)

@@ -57,7 +57,7 @@ export async function advanceLegacy(env:Env,job:Job){
   if(run.state!=='complete'){await releaseClaim(env,run);await enqueue(env,run)}else await env.DB.prepare('UPDATE legacy_import_worker_runs SET lease_token=NULL,lease_until=NULL WHERE id=? AND version=?').bind(run.id,run.version).run()
  }catch(error){
   const current=await getRun(env,run.id);if(!current||current.version!==run.version||current.state==='stopped')return
-  const code=error instanceof WorkerImportError?error.code:!await allowed(env,run)?'import_authority_revoked':error instanceof Error&&error.message.includes('KNOWLEDGE_PLAN_TOO_LARGE')?'row_too_large':error instanceof Error&&error.message.includes('KNOWLEDGE_INDEX_NOT_READY')?'knowledge_index_not_ready':error instanceof Error&&error.message.includes('WORKER_D1')?'quantum_too_large':error instanceof Error&&/conflict|replay differs/i.test(error.message)?'native_conflict':'database_unavailable'
+  const code=error instanceof WorkerImportError?error.code:!await allowed(env,run)?'import_authority_revoked':error instanceof Error&&error.message.includes('KNOWLEDGE_PLAN_TOO_LARGE')?'row_too_large':error instanceof Error&&error.message.includes('KNOWLEDGE_INDEX_NOT_READY')?'knowledge_index_not_ready':error instanceof Error&&error.message.startsWith('Required legacy field missing')?'invalid_scope':error instanceof Error&&error.message==='Knowledge plan changed before commit'?'native_conflict':error instanceof Error&&error.message.includes('WORKER_D1')?'quantum_too_large':error instanceof Error&&/conflict|replay differs/i.test(error.message)?'native_conflict':'database_unavailable'
   await pause(env,run,code)
  }finally{await lease?.release()}
 }

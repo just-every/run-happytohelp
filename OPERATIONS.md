@@ -960,7 +960,7 @@ undo can verify original bytes.
 
 ### HappyToHelp export package
 
-In **Settings → Project → Move in**, choose **HappyToHelp (the original service)**. The Business Move in link at `/app/move-in` opens this section in your current workspace when signed in. After completing sign-in or a required second factor, reopen that link. Without a selected workspace, choose or create one on the existing Projects page, then reopen the Business link.
+In **Settings → Project → Move in**, choose **HappyToHelp (the original service)**. The Business Move in link at `/app/move-in` opens this section in your current workspace, continuing after password sign-in and any required second factor. Without a selected workspace, choose or create one on the existing Projects page, then reopen the Business link.
 
 Choose the flat chunked export folder produced by `scripts/export-legacy.mjs`, including `manifest.json`, row chunks, context parts and attachment files. You can choose the same files individually instead. Review the source and destination workspace IDs and manifest fingerprint before uploading. AI usage history (`ai_usages`) is omitted by default and its row count remains visible; required context is always included.
 

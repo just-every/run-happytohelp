@@ -43,6 +43,8 @@ export async function verify(env:Env,input:unknown,type:MessageType,minimumGener
  const endpoint=type==='custody-request'?'custody':'authorize'
  if(payload.iss!==config.platform||payload.aud!==`${config.app}/api/identity/owner-recovery/${endpoint}`||(!type.startsWith('custody')&&payload.app_origin!==config.app))refuse()
  if(type==='custody-request'&&!['bind','status','revoke'].includes(String(payload.op)))refuse()
+ // A revoke must also have a representable next watermark before any D1 bind.
+ if(type==='custody-request'&&payload.op==='revoke'&&!Number.isSafeInteger(Number(payload.generation)+1))refuse()
  // A revoked generation receives the specified unsigned refusal; it can never
  // mutate custody, including after the binding is removed. Every accepted
  // operation still requires enabled custody and verifies the CURRENT key.

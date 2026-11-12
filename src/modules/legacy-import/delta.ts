@@ -134,7 +134,7 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
  const sized=decisions.map(d=>({d,bytes:Math.max(jsonBytes(d.source.row),...d.mapped.map(m=>jsonBytes(columnsOf(m))),jsonBytes(d.state))}))
  for(const group of byteSlices(sized,item=>item.bytes,100)){
   // A batch the lease assertion refused stops the delta with the lease's own message.
-  const result=await env.DB.batch([lease.assertion(env.DB),...normalization.statements,...canonicalAssertions(env.DB,group.flatMap(g=>g.d.mapped),observed,columnsOf),...deltaBatch(env.DB,options.projectId,plan.id,group.map(g=>g.d),columnsOf,lease),...(options.prepared?.journalStatements?.(env.DB,group.map(g=>g.d.source),true)??[])]).catch(async error=>{await lease.confirm();throw error})
+  const result=await env.DB.batch([lease.assertion(env.DB),...normalization.statements,...canonicalAssertions(env.DB,group.flatMap(g=>g.d.mapped),observed,columnsOf),...deltaBatch(env.DB,options.projectId,plan.id,group.map(g=>g.d),columnsOf,lease),...(options.prepared?.journalStatements?.(env.DB,group.map(g=>g.d.source),true)??[]),...(options.prepared?[lease.assertion(env.DB),lease.cleared(env.DB)]:[])]).catch(async error=>{await lease.confirm();throw error})
   d1Ms+=result.reduce((ms,r)=>ms+Number(r.meta?.duration||0),0)
  }
  if(!options.prepared)await env.DB.batch([lease.assertion(env.DB),env.DB.prepare("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=? AND state<>'complete'").bind(Date.now(),plan.id),lease.cleared(env.DB)])

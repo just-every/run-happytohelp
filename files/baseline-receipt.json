@@ -1,0 +1,8 @@
+{
+  "baseline_tree": "3e82bc7e1fc18ced9af913b592f870bda32333ac",
+  "candidate_head": "403c8317144571852bcbcaae34ba4e3ce8bcc06c",
+  "candidate_tree": "47e3f839fd630a8c1ec9f27b8bfaa95d131b5352",
+  "r1": "fd684b02ca59631a4799565bd4dbecbe4aeddff9",
+  "main": "9a4f9408a2fd46159086df698dba9ebcf3f5d657",
+  "baseline_reconstruction": "Use candidate tree, restore src/modules/legacy-import/package-in/routes.ts from R1 and sources.lock.json from main. The baseline had the exact permission union, and no seam repair. No baseline commit was created."
+}

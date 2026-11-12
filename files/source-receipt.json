@@ -1,0 +1,6 @@
+{
+  "lock_exit": 0,
+  "check_exit": 0,
+  "lock_command": "node scripts/edition-authoring/cli.mjs lock",
+  "check_command": "node scripts/edition-authoring/cli.mjs check"
+}

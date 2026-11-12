@@ -1,0 +1,55 @@
+PROBE ACCESS-001 P1 AFTER: prepared note/participant/tag + role PUT rename; group DELETE / role PUT or POST in both orders -> {"commits":[{"status":409,"roleSave":200,"unchanged":true},{"status":409,"roleSave":200,"unchanged":true},{"status":409,"roleSave":200,"unchanged":true}],"deleteFirst":409,"saveFirst":409,"post":409,"dangling":0}
+PROBE ACCESS-001 P2 AFTER: none -> "erasure/retention untouched; role audit scope contains only group ids and a boolean"
+PROBE ACCESS-001 P3 AFTER: none -> "no money path changed or invoked"
+PROBE ACCESS-001 P4 AFTER: GET roles; invalid/foreign scope, unauthorized/member/foreign, admin-base, built-in and stale-step-up PUT -> {"groups":3,"nullScope":null,"builtInUnscopable":true,"validation":[400,400,400,400,400,400,400,400,403,403],"stepUp":403,"admin":403,"builtIn":404,"dedup":{"groupIds":["synthetic-hh-301-a"],"includeUngrouped":false}}
+PROBE ACCESS-001 P5 AFTER: omitted PUT selection/empty/null; explicit null; omitted POST; corrupt omission; explicit empty list/count/GET -> {"omissions":[{"status":200,"same":true},{"status":200,"same":true},{"status":200,"same":true}],"explicitNull":200,"post":null,"corrupt":409,"emptyList":0,"counts":{"data":{"mine":0,"open":0,"unassigned":0,"ai":0,"closed":0,"unread":0,"snoozed":0,"suspended":0}},"read":404}
+PROBE ACCESS-001 P6 AFTER: role.created and role.updated audit detail -> {"created":{"before":null,"after":null},"createdSelected":{"before":null,"after":{"groupIds":["synthetic-hh-301-a"],"includeUngrouped":false}},"transitions":[{"before":{"groupIds":[],"includeUngrouped":false},"after":null},{"before":null,"after":{"groupIds":["synthetic-hh-301-a"],"includeUngrouped":false}},{"before":{"groupIds":["synthetic-hh-301-a"],"includeUngrouped":false},"after":{"groupIds":[],"includeUngrouped":false}}]}
+Native access refresh notification failed
+PROBE ACCESS-001 P7 AFTER: open project/ticket streams + role narrowing; assignRole; forced notification failure -> {"save":200,"notified":true,"ticketClose":[1008],"hiddenFrames":0,"nextRequest":404,"replay":404,"assigned":true,"publishFailureWrite":200}
+PROBE ACCESS-001 P8 AFTER: DELETE selected group, then remove it from role and DELETE; corrupt unrelated row -> {"used":409,"message":{"error":"A role still uses this group; remove it from the selection first."},"removed":200,"unused":200}
+PROBE ACCESS-001 P9 AFTER: owner moves visible ticket outside role selection; stream frame/replay/ping/GET, then moves back -> {"move":200,"close":[1008],"projectHidden":false,"owner":200,"hidden":404,"restored":200}
+PROBE 1 selected read: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket -> {"status":200}
+PROBE 2 hidden read: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket -> {"status":404}
+PROBE 3 selected patch: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket priority=high -> {"status":200}
+PROBE 4 hidden patch: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket priority=high -> {"status":404}
+PROBE 5 destination refused: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket group_id=synthetic-hh-b -> {"status":403}
+PROBE 6 source refused: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket group_id=synthetic-hh-a -> {"status":404}
+PROBE 7 bulk selected preview: POST /api/management/projects/p-synthetic-hh-1/tickets/bulk/preview visible priority=urgent -> {"status":200,"results":[{"status":"ready"}]}
+PROBE 8 bulk hidden apply: POST /api/management/projects/p-synthetic-hh-1/tickets/bulk/apply hidden priority=urgent -> {"status":200,"results":[{"status":"forbidden"}]}
+PROBE 9 bulk destination refused: POST /api/management/projects/p-synthetic-hh-1/tickets/bulk/apply visible group_id=synthetic-hh-b -> {"status":400}
+PROBE 10 bulk commit revocation: POST /api/management/projects/p-synthetic-hh-1/tickets/bulk/apply visible priority=urgent; scope narrowed before INSERT ticket_history -> {"status":200,"results":[{"status":"stale"}]}
+RACE unchanged=true
+PROBE 11 ungrouped selected: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket -> {"status":200}
+PROBE 12 ungrouped excludes groups: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket -> {"status":404}
+PROBE 13 empty excludes ungrouped: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket -> {"status":404}
+PROBE 14 empty excludes groups: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket -> {"status":404}
+PROBE 15 owner recovery: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket as native owner -> {"status":200}
+PROBE 16 destination revoked at commit: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket group_id=synthetic-hh-b; scope narrows before receipt -> {"status":409}
+PROBE 17 routing assignment follow confer no visibility: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket as routed assignee/follower -> {"status":404}
+PROBE 18 malformed JSON: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket with test-only stored malformed JSON -> {"status":404}
+PROBE 19 malformed JSON ungrouped: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket with test-only stored malformed JSON -> {"status":404}
+PROBE 20 malformed shape: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket with test-only stored malformed shape -> {"status":404}
+PROBE 21 malformed shape ungrouped: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket with test-only stored malformed shape -> {"status":404}
+PROBE 22 unknown group: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket with test-only stored unknown group -> {"status":404}
+PROBE 23 unknown group ungrouped: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket with test-only stored unknown group -> {"status":404}
+PROBE 24 foreign group: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket with test-only stored foreign group -> {"status":404}
+PROBE 25 foreign group ungrouped: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket with test-only stored foreign group -> {"status":404}
+PROBE 26 NULL compatibility hidden read: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket -> {"status":200}
+PROBE 27 NULL compatibility mutate: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket subject=Synthetic unrestricted -> {"status":200}
+PROBE 28 collaborator reads permitted: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket -> {"status":200}
+PROBE 29 collaborator notes permitted: POST /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/notes -> {"status":201}
+PROBE 30 collaborator follows permitted: POST /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/follow -> {"status":200}
+PROBE 31 collaborator reply refused: POST /api/conversations/synthetic-hh-visible/messages -> {"status":403,"code":"permission_denied"}
+PROBE 32 collaborator fields refused: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket priority=low -> {"status":403,"code":"permission_denied"}
+PROBE 33 collaborator hidden refused: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket -> {"status":404}
+PROBE_TOTAL=33 phase=AFTER
+COMMIT_PROOF participants=201,404,409 unchanged=true; tags=201,409 unchanged=true
+✔ custom roles restrict native and delegated knowledge and ticket actions, and security retention and legal holds preserve accountable history (46478.632457ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 47322.611743

@@ -1,0 +1,91 @@
+{
+  "head": "403c8317144571852bcbcaae34ba4e3ce8bcc06c",
+  "execution": "cloud_run on dedicated VM, no full suite",
+  "checks": [
+    {
+      "name": "baseline runner",
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"an owner runs a bounded legacy package\" tests/journeys/legacy.mjs",
+      "exit": 1,
+      "expected_baseline_failure": true,
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "reason": "Unexpected token W: Workspace owner or admin required is plain text"
+    },
+    {
+      "name": "after runner",
+      "command": "same unchanged bounded runner case",
+      "exit": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "rows": 116,
+      "replayApplied": 0,
+      "workerDeathsRecovered": 2,
+      "stopFenced": true,
+      "revocationPaused": true,
+      "outbound": 0
+    },
+    {
+      "name": "admission journey",
+      "command": "node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs",
+      "exit": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "duration_ms": 357940.797344
+    },
+    {
+      "name": "roles",
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"custom roles restrict\" tests/journeys/identity.mjs",
+      "exit": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "name": "source lock",
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "name": "source check",
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "name": "first party",
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "repeated_after_source_lock": true
+    },
+    {
+      "name": "contract generator",
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exit": 0,
+      "contract_edits": false,
+      "generated_views_unchanged": true
+    },
+    {
+      "name": "HTTP seam probe",
+      "command": "node ../packet/seam-probe.mjs .",
+      "exit": 0,
+      "public_door_assertions": 18,
+      "outbound": 0,
+      "runs_created": 0,
+      "queued_jobs": 0
+    },
+    {
+      "name": "redundant standalone intake invocation",
+      "command": "node --input-type=module (legacyPackageAdmission direct)",
+      "status": "CANCELLED_SUPPLEMENTAL",
+      "pass_claim": false,
+      "reason": "No stdout for >360 seconds; required enclosing admission registration already passed; receipt retained"
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "assertions": 18,
+  "receipts": [
+    {
+      "name": "runner start operator",
+      "status": 403,
+      "json": true,
+      "code": null,
+      "error": "Workspace owner or admin required"
+    },
+    {
+      "name": "runner start unauthenticated",
+      "status": 401,
+      "json": true,
+      "code": null,
+      "error": "Authentication required"
+    },
+    {
+      "name": "runner start foreign member",
+      "status": 404,
+      "json": true,
+      "code": null,
+      "error": ""
+    },
+    {
+      "name": "runner resume operator",
+      "status": 403,
+      "json": true,
+      "code": null,
+      "error": "Workspace owner or admin required"
+    },
+    {
+      "name": "runner resume unauthenticated",
+      "status": 401,
+      "json": true,
+      "code": null,
+      "error": "Authentication required"
+    },
+    {
+      "name": "runner resume foreign member",
+      "status": 404,
+      "json": true,
+      "code": null,
+      "error": ""
+    },
+    {
+      "name": "runner stop operator",
+      "status": 403,
+      "json": true,
+      "code": null,
+      "error": "Workspace owner or admin required"
+    },
+    {
+      "name": "runner stop unauthenticated",
+      "status": 401,
+      "json": true,
+      "code": null,
+      "error": "Authentication required"
+    },
+    {
+      "name": "runner stop foreign member",
+      "status": 404,
+      "json": true,
+      "code": null,
+      "error": ""
+    },
+    {
+      "name": "runner result operator",
+      "status": 403,
+      "json": true,
+      "code": null,
+      "error": "Workspace owner or admin required"
+    },
+    {
+      "name": "runner result unauthenticated",
+      "status": 401,
+      "json": true,
+      "code": null,
+      "error": "Authentication required"
+    },
+    {
+      "name": "runner result foreign member",
+      "status": 404,
+      "json": true,
+      "code": null,
+      "error": ""
+    },
+    {
+      "name": "intake operator",
+      "status": 403,
+      "json": true,
+      "code": null,
+      "error": "Workspace owner or admin required"
+    },
+    {
+      "name": "intake unauthenticated",
+      "status": 401,
+      "json": true,
+      "code": null,
+      "error": "Authentication required"
+    },
+    {
+      "name": "intake foreign member",
+      "status": 404,
+      "json": true,
+      "code": null,
+      "error": ""
+    },
+    {
+      "name": "intake owner wrong version",
+      "status": 422,
+      "json": true,
+      "code": "unsupported_package",
+      "error": "Unsupported package contract version"
+    },
+    {
+      "name": "intake owner accepts manifest",
+      "status": 201,
+      "json": true,
+      "code": null,
+      "error": null
+    },
+    {
+      "name": "runner owns approval despite intake-only version header",
+      "status": 409,
+      "json": true,
+      "code": "approval_mismatch",
+      "error": "approval mismatch"
+    }
+  ],
+  "runnerRuns": 0,
+  "queuedJobs": 0,
+  "outbound": 0
+}

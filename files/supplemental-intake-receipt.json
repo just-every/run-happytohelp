@@ -1,0 +1,15 @@
+{
+  "command": "node --input-type=module -e import-legacyPackageAdmission-and-run",
+  "status": "CANCELLED_SUPPLEMENTAL",
+  "result": "No assertion result from redundant direct invocation; stopped after >360 seconds with no stdout. The same unchanged helper already completed in the required passing full admission registration.",
+  "required_admission_journey": "PASS 1/1, 357940.797344 ms",
+  "stopped_only_recorded_owned_pids": [
+    3239,
+    3251,
+    3262
+  ],
+  "product_changes_for_stall": null,
+  "main_process_exit": 247,
+  "termination": "SIGTERM followed by SIGKILL for the recorded Node PID after graceful termination did not exit; recorded children terminated and subreaper finished",
+  "owned_processes_remaining": 0
+}

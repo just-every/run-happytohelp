@@ -1,0 +1,37 @@
+{
+  "r1": "fd684b02ca59631a4799565bd4dbecbe4aeddff9",
+  "main": "9a4f9408a2fd46159086df698dba9ebcf3f5d657",
+  "merge_base": "129e2b196162a2847fc43fadcecf4a8a84495f1d",
+  "worker_contract_sha256": "23c20b626d692e6c6f6ec31daed62699a83004a25fd5e01c167b3ccc35c9a993",
+  "worker_contract_byte_identical_both_parents": true,
+  "permission_union_preserved": true,
+  "intake_routes": 3,
+  "runner_routes": 4,
+  "parent_test_files_preserved_whole": 21,
+  "tests_added_by_seam": 0,
+  "tests_edited_by_seam": 0,
+  "tests_deleted_by_seam": 0,
+  "contract_and_generated_views_identical_main": true,
+  "clause_counts_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "clause_counts_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "clause_status_changes": [],
+  "screens_changed_by_seam": false,
+  "test_census": {
+    "static_registration_calls": 108,
+    "files_with_registrations": 38,
+    "registrations_in_loops": 0,
+    "before": 108,
+    "after": 108,
+    "method": "TypeScript AST of tests/**.{mjs,cjs,js,ts,tsx}; test/contract registrations; no seam changes"
+  }
+}

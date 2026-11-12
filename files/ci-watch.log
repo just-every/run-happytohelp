@@ -1,0 +1,32 @@
+CI_DISCOVERED {"conclusion": null, "head_sha": "403c8317144571852bcbcaae34ba4e3ce8bcc06c", "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43233769000", "id": 43233769000, "name": "Verify", "status": "in_progress"}
+CI_WAIT seconds_to_next_allowed_call=239
+CI_WAIT seconds_to_next_allowed_call=179
+CI_WAIT seconds_to_next_allowed_call=119
+CI_WAIT seconds_to_next_allowed_call=59
+CI_WAIT seconds_to_next_allowed_call=0
+CI_STATUS {"conclusion": null, "head_sha": "403c8317144571852bcbcaae34ba4e3ce8bcc06c", "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43233769000", "status": "in_progress"}
+CI_WAIT seconds_to_next_allowed_call=239
+CI_WAIT seconds_to_next_allowed_call=179
+CI_WAIT seconds_to_next_allowed_call=119
+CI_WAIT seconds_to_next_allowed_call=59
+CI_WAIT seconds_to_next_allowed_call=0
+CI_STATUS {"conclusion": null, "head_sha": "403c8317144571852bcbcaae34ba4e3ce8bcc06c", "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43233769000", "status": "in_progress"}
+CI_WAIT seconds_to_next_allowed_call=239
+CI_WAIT seconds_to_next_allowed_call=179
+CI_WAIT seconds_to_next_allowed_call=119
+CI_WAIT seconds_to_next_allowed_call=59
+CI_WAIT seconds_to_next_allowed_call=0
+CI_STATUS {"conclusion": null, "head_sha": "403c8317144571852bcbcaae34ba4e3ce8bcc06c", "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43233769000", "status": "in_progress"}
+CI_WAIT seconds_to_next_allowed_call=239
+CI_WAIT seconds_to_next_allowed_call=179
+CI_WAIT seconds_to_next_allowed_call=119
+CI_WAIT seconds_to_next_allowed_call=59
+CI_WAIT seconds_to_next_allowed_call=0
+CI_STATUS {"conclusion": null, "head_sha": "403c8317144571852bcbcaae34ba4e3ce8bcc06c", "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43233769000", "status": "in_progress"}
+CI_WAIT seconds_to_next_allowed_call=239
+CI_WAIT seconds_to_next_allowed_call=179
+CI_WAIT seconds_to_next_allowed_call=119
+CI_WAIT seconds_to_next_allowed_call=59
+CI_WAIT seconds_to_next_allowed_call=0
+CI_STATUS {"conclusion": "success", "head_sha": "403c8317144571852bcbcaae34ba4e3ce8bcc06c", "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43233769000", "status": "completed"}
+CI_FINAL {"head": "403c8317144571852bcbcaae34ba4e3ce8bcc06c", "repository": "just-every/run-happytohelp", "gh_calls": 6, "calls": [{"time": "2026-11-12T14:07:07.182074+00:00", "endpoint": "repos/just-every/run-happytohelp/actions/runs?head_sha=403c8317144571852bcbcaae34ba4e3ce8bcc06c&per_page=100", "exit": 0}, {"time": "2026-11-12T14:12:07.183393+00:00", "endpoint": "repos/just-every/run-happytohelp/actions/runs/43233769000", "exit": 0}, {"time": "2026-11-12T14:17:07.185114+00:00", "endpoint": "repos/just-every/run-happytohelp/actions/runs/43233769000", "exit": 0}, {"time": "2026-11-12T14:22:07.186281+00:00", "endpoint": "repos/just-every/run-happytohelp/actions/runs/43233769000", "exit": 0}, {"time": "2026-11-12T14:27:07.187824+00:00", "endpoint": "repos/just-every/run-happytohelp/actions/runs/43233769000", "exit": 0}, {"time": "2026-11-12T14:32:07.188870+00:00", "endpoint": "repos/just-every/run-happytohelp/actions/runs/43233769000", "exit": 0}], "run_id": 43233769000, "status": "completed", "conclusion": "success", "url": "https://github.com/just-every/run-happytohelp/actions/runs/43233769000"}

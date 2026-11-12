@@ -1,0 +1,28 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-importer-seam-fix-1",
+  "head": "403c8317144571852bcbcaae34ba4e3ce8bcc06c",
+  "parents": [
+    "fd684b02ca59631a4799565bd4dbecbe4aeddff9",
+    "9a4f9408a2fd46159086df698dba9ebcf3f5d657"
+  ],
+  "r1_verified": "fd684b02ca59631a4799565bd4dbecbe4aeddff9",
+  "main_integrated": "9a4f9408a2fd46159086df698dba9ebcf3f5d657",
+  "no_force_push": true,
+  "publication_status": "INCOMPLETE: scan.gitleaks-unavailable; COMPLETE supported scan remains the Mac lander duty",
+  "independent_gate": "required; candidate held",
+  "pr": null,
+  "push_status": "PUSHED",
+  "remote_ref_verified": "403c8317144571852bcbcaae34ba4e3ce8bcc06c",
+  "working_tree_clean_after_commit": true,
+  "product_commits_authored": 1,
+  "candidate_commits_including_accepted_R1": 6,
+  "head_tree": "47e3f839fd630a8c1ec9f27b8bfaa95d131b5352",
+  "seam_route_sha256": "8f91e27a1886181b9d23928502d2b7f9f25a2a357a236cd5721f3a563dbf7c76",
+  "source_lock_sha256": "bbc158bf2e5559ee4ba514e8ceb099ddc48a81d27c544f2e9b1948445c21a508",
+  "verify_run_id": 43233769000,
+  "verify_status": "completed",
+  "verify_conclusion": "success",
+  "verify_url": "https://github.com/just-every/run-happytohelp/actions/runs/43233769000",
+  "custody": "CANDIDATE; independent gate required; no READY"
+}

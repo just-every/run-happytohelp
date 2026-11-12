@@ -1,0 +1,52 @@
+diff --git a/src/modules/legacy-import/package-in/routes.ts b/src/modules/legacy-import/package-in/routes.ts
+index 278dca1..3e6f578 100644
+--- a/src/modules/legacy-import/package-in/routes.ts
++++ b/src/modules/legacy-import/package-in/routes.ts
+@@ -1,4 +1,5 @@
+ import {Hono} from 'hono'
++import {createMiddleware} from 'hono/factory'
+ import {HTTPException} from 'hono/http-exception'
+ import type {AppEnv} from '../../../platform/env'
+ import {importActor} from '../../move-in/routes'
+@@ -15,11 +16,12 @@ export const packageInRoutes=new Hono<AppEnv>()
+ const root=`${LEGACY_ROUTE}/:sha`
+ packageInRoutes.onError((error,c)=>{
+  c.header('Cache-Control','no-store')
+- if(error instanceof HTTPException)return error.getResponse()
++ if(error instanceof HTTPException)return error.res?error.getResponse():c.json({error:error.message},error.status)
+  if(error instanceof PackageError)return c.json({error:error.message,code:error.code},error.status as 400)
+  return c.json({error:'Package storage is temporarily unavailable',code:'storage_unavailable'},503)
+ })
+-packageInRoutes.use(`${root}/*`,async(c,next)=>{
++// Intake owns uploads and inventory; runner controls retain their own admission.
++const intake=createMiddleware<AppEnv>(async(c,next)=>{
+  c.header('Cache-Control','no-store')
+  try{await importActor(c);await enforceRole(c,c.get('actor'),'data.import')}catch(error){if(error instanceof HTTPException)throw error;refuse(503,'database_unavailable','Workspace authorization is temporarily unavailable')}
+  const version=c.req.header('X-Legacy-Contract-Version')
+@@ -27,7 +29,7 @@ packageInRoutes.use(`${root}/*`,async(c,next)=>{
+  requireSha(c.req.param('sha')!)
+  await next()
+ })
+-packageInRoutes.put(`${root}/manifest`,async c=>{
++packageInRoutes.put(`${root}/manifest`,intake,async c=>{
+  if(c.req.header('Content-Type')?.split(';')[0].trim().toLowerCase()!=='application/json')refuse(415,'unsupported_media_type','Manifest must be application/json')
+  const sha=c.req.param('sha')!,projectId=c.req.param('projectId')!
+  if(c.req.header('X-Manifest-SHA256')!==sha)refuse(409,'approval_mismatch','Approved manifest fingerprint differs')
+@@ -37,7 +39,7 @@ packageInRoutes.put(`${root}/manifest`,async c=>{
+  const alreadyPresent=await putImmutable(c.env.FILES,manifestKey(sha),bytes,sha,metadata(projectId,sha),sha)
+  return c.json({data:{manifestSha256:sha,runId:`legacy-package:${sha}`,projectId,sourceProjectId:manifest.source.projectId,alreadyPresent}},alreadyPresent?200:201)
+ })
+-packageInRoutes.put(`${root}/files/:file`,async c=>{
++packageInRoutes.put(`${root}/files/:file`,intake,async c=>{
+  if(c.req.header('Content-Type')?.split(';')[0].trim().toLowerCase()!=='application/octet-stream')refuse(415,'unsupported_media_type','Package files must be application/octet-stream')
+  const sha=c.req.param('sha')!,projectId=c.req.param('projectId')!,file=c.req.param('file')!
+  if(!safeFile(file))refuse(400,'invalid_filename','Invalid package filename')
+@@ -55,7 +57,7 @@ packageInRoutes.put(`${root}/files/:file`,async c=>{
+  const alreadyPresent=await putImmutable(c.env.FILES,storageKey(sha,part),bytes,sha256,{...metadata(projectId,sha),kind:part.kind,file},sha)
+  return c.json({data:{file,kind:part.kind,bytes:bytes.length,sha256,alreadyPresent}},alreadyPresent?200:201)
+ })
+-packageInRoutes.get(`${root}/status`,async c=>{
++packageInRoutes.get(`${root}/status`,intake,async c=>{
+  const sha=c.req.param('sha')!,projectId=c.req.param('projectId')!,exclude=exclusions(c.req.query('excludeTables'))
+  const manifest=await heldManifest(c.env.FILES,projectId,sha),{files,excluded}=inventory(manifest,exclude)
+  const rawLimit=c.req.query('limit'),limit=rawLimit===undefined?100:Number(rawLimit)

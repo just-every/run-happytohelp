@@ -1,0 +1,11 @@
+{
+  "command": "cloud_run npx -y @runeditrun/rer build",
+  "baseline": "R1 + main integrated baseline before seam repair",
+  "exit": 0,
+  "success_marker": "build: complete (exit 0)",
+  "application_built": true,
+  "ui_seam_changes": false,
+  "node": "v24.19.0",
+  "pnpm": "10.12.4",
+  "note": "Supplied cloud toolchain retains the VM newer Node; repo pins 22.20.0; branch Verify uses pin."
+}

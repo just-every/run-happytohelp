@@ -1,0 +1,23 @@
+DOOR_COUNTS {"sourceRecords":333,"plan":{"input":333,"unique":333,"duplicates":0,"mapped":330,"unmapped":330,"rejected":0,"effects":330,"byKind":{"article":4,"organization":3,"tag-name":1,"ticket":312,"user":13}},"reconciled":{"sourceRecords":333,"present":3,"explained":330,"nativeTargets":330,"byKind":{"tag-name":1,"organization":3,"user":13,"ticket":312,"article":4},"nativeByKind":{"tag":1,"company":3,"contact":12,"conversation":312,"article":2}},"native":{"tickets":312,"contacts":12,"companies":3,"articles":2}}
+PROBE Zendesk grant door: first claim, privacy, 312 tickets, counts/search, grant fences, erasure and owner close asserted
+Native access refresh notification failed
+Native access refresh notification failed
+Native access refresh notification failed
+Native access refresh notification failed
+Persisted job handler failed move-in 7bfe4a07-6ae0-4a0e-8f40-e2defa64cfdb
+Native access refresh notification failed
+Native access refresh notification failed
+Native access refresh notification failed
+MOVE-IN-003 zendesk: headers, encoded, number; lifecycle, custody, refusal, undo/reimport and quiet effects asserted
+MOVE-IN-003 helpscout: headers, number, address; lifecycle, custody, refusal, undo/reimport and quiet effects asserted
+MOVE-IN-003 freshdesk: headers, number, address; lifecycle, custody, refusal, undo/reimport and quiet effects asserted
+MOVE-IN-003 intercom: headers, address; lifecycle, custody, refusal, undo/reimport and quiet effects asserted
+✔ review an export, import its history and private notes, repeat and repackage without effects, then undo exactly (357940.797344ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 358534.384848

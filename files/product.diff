@@ -1,0 +1,995 @@
+diff --git a/OPERATIONS.md b/OPERATIONS.md
+index fe5a89d..6660b63 100644
+--- a/OPERATIONS.md
++++ b/OPERATIONS.md
+@@ -958,6 +958,22 @@ undo can verify original bytes.
+ 
+ ## Import data from the original HappyToHelp service
+ 
++### HappyToHelp export package
++
++In **Settings → Project → Move in**, choose **HappyToHelp (the original service)**. The Business Move in link at `/app/move-in` opens this section in your current workspace, continuing after password sign-in and any required second factor. Without a selected workspace, choose or create one on the existing Projects page, then reopen the Business link.
++
++Choose the flat chunked export folder produced by `scripts/export-legacy.mjs`, including `manifest.json`, row chunks, context parts and attachment files. You can choose the same files individually instead. Review the source and destination workspace IDs and manifest fingerprint before uploading. AI usage history (`ai_usages`) is omitted by default and its row count remains visible; required context is always included.
++
++This door accepts a manifest up to 2 MiB, JSON parts up to 4 MiB, attachment objects up to 16 MiB and at most 20,000 file descriptors. Prefer new exports with 1 MiB JSON parts. Larger parts require a fresh export. Nested, duplicate and unlisted filenames, changed bytes, wrong sizes/counts and credential-bearing rows are refused. Keep the original manifest bytes: their SHA-256 identifies the package.
++
++**Upload package** sends one file at a time. Uploading retains private immutable files only; it creates no imported history, journals or background import work. After interruption or reload, reselect the same folder and choose **Continue upload**. Status checks every required file pagewise and uploads only missing files; accepted files cannot be replaced.
++
++When all required files are present, **Import history** approves that exact manifest fingerprint. The separately installed import runner supplies Stop, Resume and the result table. A missing runner is shown as unavailable, never as a completed import. Results distinguish package, omitted, required and imported rows, attachment checksums and work-count changes. **Copy result note** supplies counts for the Business step.
++
++Different workspace IDs require an adoption approval door before import; that door is not part of this uploader. This uploader never remaps rows, creates a workspace or grants membership. New staging-package custody still needs verified erasure integration before real customer remote use. This round qualifies synthetic local upload only; it does not establish a fresh platform installation or end-to-end migration.
++
++### Command-line import
++
+ This open-source project is a new edition of the original HappyToHelp
+ application. If you have an export of your data from that original service, you
+ can bring it into a local installation. If you are starting fresh, you can skip
+diff --git a/importers.json b/importers.json
+index 5ad0a41..cf3beee 100644
+--- a/importers.json
++++ b/importers.json
+@@ -1,6 +1,6 @@
+ {
+   "$schema": "./schema/importers.schema.json",
+-  "schemaVersion": 1,
++  "schemaVersion": 2,
+   "importers": [
+     {
+       "incumbent": "Zendesk",
+@@ -17,6 +17,15 @@
+         "validation": "synthetic-only",
+         "realExport": "not-supplied"
+       }
++    },
++    {
++      "incumbent": "HappyToHelp",
++      "product": "HappyToHelp",
++      "moveIn": "/app/move-in",
++      "accepts": [
++        "file"
++      ],
++      "export": "Choose the chunked export folder produced by scripts/export-legacy.mjs, including manifest.json, row chunks, context parts and attachment files. AI usage history is excluded by default."
+     }
+   ]
+ }
+diff --git a/sources.lock.json b/sources.lock.json
+index 97e9938..97d2b83 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -1885,7 +1885,7 @@
+       "executable": false
+     },
+     "importers.json": {
+-      "sha256": "83f145215b820f7e932fa9c7d568c4e735d12af747431dbe3a1f4e45394eba16",
++      "sha256": "bd57cdb5fec26f8594676b8d622a1991551b62b94caa10e1b613ac0192767f5b",
+       "executable": false
+     },
+     "LICENSE": {
+@@ -2869,7 +2869,7 @@
+       "executable": false
+     },
+     "OPERATIONS.md": {
+-      "sha256": "b4612d59e75af9f7a7f6f6b432ca77a5a1ff8cc0cbfd63ef5aca700f790fae7d",
++      "sha256": "9fa4a7ed6fa5ac02b40c3b9878fa9188c75840ecea8d0c17b62dce24fba4e5f2",
+       "executable": false
+     },
+     "package.json": {
+@@ -4277,7 +4277,7 @@
+       "executable": false
+     },
+     "src/app.ts": {
+-      "sha256": "fa1062ae952d5aab806fcc84218ab6e6bc4fc35db2a9d55fc392e4e2ce811c58",
++      "sha256": "1b00c8a76e799108941899d229a4053dc846882ff4e72abfa35d9ad0598f8131",
+       "executable": false
+     },
+     "src/base/contract-anchor.mjs": {
+@@ -4681,7 +4681,7 @@
+       "executable": false
+     },
+     "src/modules/access/route-permissions.ts": {
+-      "sha256": "ae092ba6919d0beb28bfa633fa35107ba9a34dab67088aba82d055306161725d",
++      "sha256": "0f18ef5593944bffe3a850a0b4900f006d7f36dfbe11fbf65c8063f2b7d1aede",
+       "executable": false
+     },
+     "src/modules/access/routes.ts": {
+@@ -7752,6 +7752,26 @@
+       "sha256": "c22bef81da59fe6938c1ca596013b31d260f7fa6c200ba19a40bd8c6dc1f512c",
+       "executable": false
+     },
++    "src/modules/legacy-import/package-in/body.ts": {
++      "sha256": "8476cb4071abcd27aeb51714742c5054c209b0c19179b63348b55bd7a41b758a",
++      "executable": false
++    },
++    "src/modules/legacy-import/package-in/errors.ts": {
++      "sha256": "82320fa8a1d242cfb1004993ff8118319fe94386d1f076714693cd3f3a5a5ddf",
++      "executable": false
++    },
++    "src/modules/legacy-import/package-in/manifest.ts": {
++      "sha256": "eb893ebfd068df784ce7d460f47a030e15bfc11de294d868dc0b4f8f43c82d36",
++      "executable": false
++    },
++    "src/modules/legacy-import/package-in/routes.ts": {
++      "sha256": "8f91e27a1886181b9d23928502d2b7f9f25a2a357a236cd5721f3a563dbf7c76",
++      "executable": false
++    },
++    "src/modules/legacy-import/package-in/storage.ts": {
++      "sha256": "b56c5b99b848735b7c613538eacaa783bfff3b0fa190ff536085d2aa554dfeaf",
++      "executable": false
++    },
+     "src/modules/legacy-import/README.md": {
+       "sha256": "66198bf051f4984f0d7570420a5ce585361ff54a38801bbad6f9c9919fcae344",
+       "executable": false
+@@ -10741,7 +10761,7 @@
+       "executable": false
+     },
+     "src/platform/dashboard-path.js": {
+-      "sha256": "8ea475b8017c85d311eb081708b6c6e1a2040274c4112819371010eafb0d3b62",
++      "sha256": "6d417be5ebfcf4712268cc869a835f846e83eee3381d7150a9734955a7f075cf",
+       "executable": false
+     },
+     "src/platform/db.ts": {
+@@ -10904,6 +10924,10 @@
+       "sha256": "e75764d7dec812a791123692ac0d657c18c7dc45b4e8be92201c98cd938e9c2a",
+       "executable": false
+     },
++    "src/routes/app.move-in.tsx": {
++      "sha256": "8bee63e7555e23a6f6bd25c3e442321b16a97087bf0e0915bcadab73ae33de5d",
++      "executable": false
++    },
+     "src/routes/docs.$slug.tsx": {
+       "sha256": "09387333b0bdab1891d753acd97a633996a92c74aa0054caa724a1e63d282e97",
+       "executable": false
+@@ -13236,6 +13260,22 @@
+       "sha256": "1a95f614cf310a11ecda3c16906459d9589d20bd25246b7f66ac257e357f8701",
+       "executable": false
+     },
++    "src/ui/native/pages/legacy-package/client.js": {
++      "sha256": "b8cf3430022e8f1c7319a067c83d12fd6444a6b451bfc814de180a6e1bc89c36",
++      "executable": false
++    },
++    "src/ui/native/pages/legacy-package/LegacyPackage.jsx": {
++      "sha256": "45687a6102796110fad6ffed601d69cbbc813284c7c1a7cacce8dee5be573473",
++      "executable": false
++    },
++    "src/ui/native/pages/legacy-package/result-note.js": {
++      "sha256": "c0aa482bbf9040f03d21c6008b3c559e113f41b5fd66cab97991c62428b73e80",
++      "executable": false
++    },
++    "src/ui/native/pages/legacy-package/Result.jsx": {
++      "sha256": "d52bfaae9111dc45c7045ce9efa9d46d735608f44dd97906f55ab8dd71e66032",
++      "executable": false
++    },
+     "src/ui/native/pages/LocalComputerAuthorize.jsx": {
+       "sha256": "049f6a08aa3e7b9d7a1bda428b1040badab3dd998f800336ca946827deb014b4",
+       "executable": false
+@@ -13289,15 +13329,15 @@
+       "executable": false
+     },
+     "src/ui/native/pages/move-in.css": {
+-      "sha256": "42bdf6b81195579df516fe1121a5176ccf25c73f995c3e98e4c8b371c280dd12",
++      "sha256": "ead660014eff6b4bc56904e64c0f5ec1496bfca70048c032583dea015eb54590",
+       "executable": false
+     },
+     "src/ui/native/pages/MoveIn.jsx": {
+-      "sha256": "061f6b0827321a322f623f6af929b5e701482cf7ec1840bc6d0faba62b91030f",
++      "sha256": "5a2e1451e67830ea3f6ae27b1d4b245088b4e5ea31f7bc4a02ce9d4b8ded90d1",
+       "executable": false
+     },
+     "src/ui/native/pages/MoveInGuide.jsx": {
+-      "sha256": "e458222b7eacebabd41b057793cb8b7ea384b8c3909ff65e6beb489054076305",
++      "sha256": "5e36d6324ce90392979b10e6fd95fb6d28e00432d2311dca04059783bd8684da",
+       "executable": false
+     },
+     "src/ui/native/pages/MoveInOwnership.jsx": {
+@@ -17013,7 +17053,7 @@
+       "executable": false
+     },
+     "tests/journeys/identity-browser.mjs": {
+-      "sha256": "e4e4d4c9f24c1ae28e9400699bc045ee23e50a21c0cc1039e0b1569e30451285",
++      "sha256": "6405a1cd4749277d9d0a83d146114ae5fb11493bccfe28e116b9811da642b1e0",
+       "executable": false
+     },
+     "tests/journeys/identity.mjs": {
+@@ -17065,11 +17105,11 @@
+       "executable": false
+     },
+     "tests/journeys/move-in-admission.mjs": {
+-      "sha256": "b8585efcd8aacd0f0afab6afd03d8113df58729dfa7d248c985a7559191afe34",
++      "sha256": "81e503d7f796ba853655c55d47d82cd7728f98001428ce76670bb9b743c70fb9",
+       "executable": false
+     },
+     "tests/journeys/move-in-browser.mjs": {
+-      "sha256": "ca42ee21d84de1abf8b8c2205d34ab1b61af755eb43cf204103c82704abf13e5",
++      "sha256": "3f3db0ec226b45644f9c7fef3e9a5a6811f30d675ca2b29baf97c0bd3052bd8d",
+       "executable": false
+     },
+     "tests/journeys/move-in-capacity.mjs": {
+@@ -17280,6 +17320,22 @@
+       "sha256": "4945af12370eca667bf9cbbbad42909b28280833c3652c070f2355d553a78e1a",
+       "executable": false
+     },
++    "tests/move-in/legacy-package-upload/admission.mjs": {
++      "sha256": "0cfaeb6874413e0ae29589aadaf469e5ae20fec82f3b86e33fe847f7f5192906",
++      "executable": false
++    },
++    "tests/move-in/legacy-package-upload/auth-return.mjs": {
++      "sha256": "d0595c56317dd64078e401d83f382d2345ba3707f6a1b1a3a550609c7da04667",
++      "executable": false
++    },
++    "tests/move-in/legacy-package-upload/browser.mjs": {
++      "sha256": "dbf78228d4e16a8a2f8150b5818ec89e2e8492a061d94501eff66736c34d622f",
++      "executable": false
++    },
++    "tests/move-in/legacy-package-upload/fixture.mjs": {
++      "sha256": "434cb482e37ca90b7587ef58e3d1abb9a2363cb5ab29bd2f7e24c77dca43243d",
++      "executable": false
++    },
+     "tests/move-in/outcomes-policy.mjs": {
+       "sha256": "7a550583898f1d8950d1785db2d91c52d92440db0931d4ccacb51024c0cbafcf",
+       "executable": false
+@@ -17321,7 +17377,7 @@
+       "executable": false
+     },
+     "tests/move-in/zendesk-door.mjs": {
+-      "sha256": "b297e10617d889e08e5cd6542aa81afcdbc2d346a66ec7278cae841a6d0af6d9",
++      "sha256": "2ad5d26d57277fc67f646353a623bec86278a4ebaf2ab425b97a342ebb2d9e75",
+       "executable": false
+     },
+     "tests/move-in/zendesk-offline-browser.mjs": {
+diff --git a/src/app.ts b/src/app.ts
+index eee5429..bf5e74e 100644
+--- a/src/app.ts
++++ b/src/app.ts
+@@ -1,3 +1,4 @@
++import {packageInRoutes} from './modules/legacy-import/package-in/routes'
+ import {handleImportDoor} from './modules/move-in/door'
+ import {businessProject} from './edition/agent-door/project.ts'
+ import {cutoverStatus} from './modules/cutover-status/routes'
+@@ -133,6 +134,7 @@ app.route('/api/dashboard',dashboardRoutes)
+ app.route('/api/dashboard',tags)
+ app.route('/api/dashboard',createOutboundTicketRoutes(applyMessageEffects))
+ app.route('/api/management',createOutboundTicketRoutes(applyMessageEffects))
++app.route('/api/move-in',packageInRoutes)
+ app.route('/api/move-in',moveInRoutes)
+ app.route('/api/widget',publicWidget)
+ app.route('/api/widget',legacyWidget)
+diff --git a/src/modules/access/route-permissions.ts b/src/modules/access/route-permissions.ts
+index b9c7f55..c4682d2 100644
+--- a/src/modules/access/route-permissions.ts
++++ b/src/modules/access/route-permissions.ts
+@@ -107,6 +107,9 @@ const rules:Record<string,Rule>={
+  [`POST ${L}/local-agent-authorizations/decision`]:'integrations.install',[`DELETE ${L}/local-agent-grants/:grant`]:'integrations.install',
+  'POST /delegation/authorize':'integrations.install','POST /delegation/settings/revoke':'integrations.install','POST /delegation/settings/clients':'integrations.install',
+  // Move in
++ 'PUT /api/move-in/projects/:projectId/legacy-import/:sha/manifest':'data.import',
++ 'PUT /api/move-in/projects/:projectId/legacy-import/:sha/files/:file':'data.import',
++ 'GET /api/move-in/projects/:projectId/legacy-import/:sha/status':'data.import',
+  'POST /api/move-in/projects/:projectId/legacy-import/:sha/start':'data.import',
+  'POST /api/move-in/projects/:projectId/legacy-import/:sha/resume':'data.import',
+  'POST /api/move-in/projects/:projectId/legacy-import/:sha/stop':'data.import',
+diff --git a/src/modules/legacy-import/package-in/body.ts b/src/modules/legacy-import/package-in/body.ts
+new file mode 100644
+index 0000000..cc309bd
+--- /dev/null
++++ b/src/modules/legacy-import/package-in/body.ts
+@@ -0,0 +1,15 @@
++import {createHash} from 'node:crypto'
++import {refuse} from './errors'
++/** Bounded allocation and incremental counting/hashing also cover chunked bodies. */
++export async function readBody(request:Request,max:number,code:string,expected?:number){
++ if(Number(request.headers.get('Content-Length'))>max)refuse(413,code,'File exceeds the package upload limit')
++ const reader=request.body?.getReader(),chunks:Uint8Array[]=[];let size=0
++ const hash=createHash('sha256')
++ try{if(reader)for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>max){await reader.cancel();refuse(413,code,'File exceeds the package upload limit')}if(expected!==undefined&&size>expected){await reader.cancel();refuse(422,'size_mismatch','File size differs from its manifest')}hash.update(value);chunks.push(value)}}finally{reader?.releaseLock()}
++ if(expected!==undefined&&size!==expected)refuse(422,'size_mismatch','File size differs from its manifest')
++ const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length}
++ return {bytes,sha256:hash.digest('hex')}
++}
++export function parseJson(bytes:Uint8Array,code='invalid_manifest'):unknown{
++ try{return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes))}catch{refuse(400,code,'Expected valid UTF-8 JSON')}
++}
+diff --git a/src/modules/legacy-import/package-in/errors.ts b/src/modules/legacy-import/package-in/errors.ts
+new file mode 100644
+index 0000000..f00edd0
+--- /dev/null
++++ b/src/modules/legacy-import/package-in/errors.ts
+@@ -0,0 +1,4 @@
++export class PackageError extends Error {
++ constructor(public status:number,public code:string,message:string){super(message)}
++}
++export function refuse(status:number,code:string,message:string):never{throw new PackageError(status,code,message)}
+diff --git a/src/modules/legacy-import/package-in/manifest.ts b/src/modules/legacy-import/package-in/manifest.ts
+new file mode 100644
+index 0000000..e4b60f3
+--- /dev/null
++++ b/src/modules/legacy-import/package-in/manifest.ts
+@@ -0,0 +1,41 @@
++import {LEGACY_LIMITS,type LegacyPackageManifest,type LegacyFileKind} from '../worker-contract'
++// @ts-expect-error Exporter scope is shared JavaScript, with no alternate secret policy.
++import {directTables,childScopes} from '../../../../scripts/legacy-export/scope.mjs'
++import {refuse} from './errors'
++export const digestPattern=/^[a-f0-9]{64}$/
++const encoder=new TextEncoder()
++export const boundedName=(value:unknown):value is string=>typeof value==='string'&&value.length>0&&encoder.encode(value).length<=512&&!/[\x00-\x1f\x7f]/.test(value)
++export const safeFile=(value:unknown):value is string=>boundedName(value)&&/^\w[\w.-]*$/.test(value)&&value!=='manifest.json'
++const integer=(v:unknown,min=0,max=Number.MAX_SAFE_INTEGER):v is number=>Number.isSafeInteger(v)&&Number(v)>=min&&Number(v)<=max
++const supported=new Set([...directTables,...Object.keys(childScopes),'users','ai_defaults','article_categories','mediables','media','local_agent_devices','local_agent_grants'])
++export interface Descriptor{kind:LegacyFileKind;file:string;bytes:number;sha256:string;table?:string;count?:number}
++export function descriptors(m:LegacyPackageManifest):Descriptor[]{return [...m.chunks.map(p=>({...p,kind:'chunk' as const})),...m.context.map(p=>({...p,kind:'context' as const})),...m.objects.map(p=>({...p,bytes:p.size,kind:'object' as const}))]}
++export function validateManifest(value:unknown):LegacyPackageManifest{
++ const bad=()=>refuse(400,'invalid_manifest','Invalid package manifest or descriptor')
++ if(!value||typeof value!=='object'||Array.isArray(value))bad()
++ const m=value as LegacyPackageManifest,s=m.source,format=(value as {format?:unknown}).format
++ if(format!=='happytohelp-legacy-chunks-v1'){if(typeof format==='string'&&format.startsWith('happytohelp-legacy-chunks-'))refuse(422,'unsupported_package','Unsupported legacy package version');bad()}
++ if(!s||!boundedName(s.repository)||!boundedName(s.revision)||!boundedName(s.exportedAt)||!Number.isFinite(Date.parse(s.exportedAt))||!boundedName(s.projectId)||!s.rowCounts||typeof s.rowCounts!=='object'||Array.isArray(s.rowCounts)||!Array.isArray(s.attachments)||!Array.isArray(m.chunks)||!Array.isArray(m.context)||!Array.isArray(m.objects)||m.attachmentsComplete!==true)bad()
++ if(m.chunks.length+m.context.length+m.objects.length>LEGACY_LIMITS.descriptors)bad()
++ const names=new Set<string>(),totals=new Map<string,number>(),keys=new Set<string>(),media=new Set<string>()
++ for(const p of [...m.chunks,...m.context]){
++  if(!p||!safeFile(p.file)||names.has(p.file)||!boundedName(p.table)||!supported.has(p.table)||!integer(p.count)||!integer(p.bytes,2,LEGACY_LIMITS.partBytes)||(typeof p.sha256!=='string'||!digestPattern.test(p.sha256)))bad()
++  names.add(p.file)
++ }
++ for(const p of m.chunks){const total=(totals.get(p.table)||0)+p.count;if(!integer(total))bad();totals.set(p.table,total)}
++ for(const [table,count]of Object.entries(s.rowCounts))if(!supported.has(table)||!integer(count)||(totals.get(table)||0)!==count)bad()
++ for(const table of totals.keys())if(!Object.hasOwn(s.rowCounts,table))bad()
++ let bytes=0
++ for(const o of m.objects){
++  if(!o||!safeFile(o.file)||names.has(o.file)||!integer(o.size,0,LEGACY_LIMITS.objectBytes)||(typeof o.sha256!=='string'||!digestPattern.test(o.sha256))||!boundedName(o.key)||!o.key.startsWith('legacy/')||/[\\\x00-\x1f\x7f]/.test(o.key)||o.key.split('/').some(p=>!p||p==='.'||p==='..')||!(boundedName(o.mediaId)||integer(o.mediaId))||keys.has(o.key)||media.has(String(o.mediaId)))bad()
++  names.add(o.file);keys.add(o.key);media.add(String(o.mediaId));bytes+=o.size
++ }
++ if(m.mediaBytes!==undefined&&(!integer(m.mediaBytes)||m.mediaBytes!==bytes))bad()
++ const attachments=new Set<string>(),pairs=new Set(m.objects.map(o=>JSON.stringify([o.key,String(o.mediaId)])))
++ for(const a of s.attachments){if(!a||!pairs.has(JSON.stringify([a.key,String(a.mediaId)])))bad();attachments.add(JSON.stringify([a.key,String(a.mediaId)]))}
++ if(s.attachments.length!==m.objects.length||attachments.size!==m.objects.length)bad()
++ return m
++}
++export function exclusions(raw:string|undefined){if(raw===undefined||raw==='ai_usages')return ['ai_usages'];if(raw==='')return [];return refuse(400,'invalid_request','Only AI usage chunks may be omitted')}
++export function inventory(m:LegacyPackageManifest,exclude:string[]){const excluded:Record<string,number>={};const files=descriptors(m).filter(p=>{if(p.kind==='chunk'&&exclude.includes(p.table!)){excluded[p.table!]=(excluded[p.table!]||0)+p.count!;return false}return true});return {files,excluded}}
++export const storageKey=(sha:string,p:Descriptor)=>`legacy-package/${sha}/${p.kind==='chunk'?'chunks':p.kind==='context'?'context':'objects'}/${p.file}`
+diff --git a/src/modules/legacy-import/package-in/routes.ts b/src/modules/legacy-import/package-in/routes.ts
+new file mode 100644
+index 0000000..3e6f578
+--- /dev/null
++++ b/src/modules/legacy-import/package-in/routes.ts
+@@ -0,0 +1,75 @@
++import {Hono} from 'hono'
++import {createMiddleware} from 'hono/factory'
++import {HTTPException} from 'hono/http-exception'
++import type {AppEnv} from '../../../platform/env'
++import {importActor} from '../../move-in/routes'
++import {enforceRole} from '../../access/gate'
++// @ts-expect-error The shared exporter classifier is JavaScript; use its exact policy.
++import {classifySnapshot} from '../../../../scripts/legacy-export/secrets.mjs'
++import {LEGACY_CONTRACT_VERSION,LEGACY_LIMITS,LEGACY_ROUTE} from '../worker-contract'
++import {PackageError,refuse} from './errors'
++import {parseJson,readBody} from './body'
++import {descriptors,exclusions,inventory,safeFile,storageKey,validateManifest} from './manifest'
++import {custody,heldManifest,integrity,manifestKey,metadata,putImmutable,requireSha} from './storage'
++
++export const packageInRoutes=new Hono<AppEnv>()
++const root=`${LEGACY_ROUTE}/:sha`
++packageInRoutes.onError((error,c)=>{
++ c.header('Cache-Control','no-store')
++ if(error instanceof HTTPException)return error.res?error.getResponse():c.json({error:error.message},error.status)
++ if(error instanceof PackageError)return c.json({error:error.message,code:error.code},error.status as 400)
++ return c.json({error:'Package storage is temporarily unavailable',code:'storage_unavailable'},503)
++})
++// Intake owns uploads and inventory; runner controls retain their own admission.
++const intake=createMiddleware<AppEnv>(async(c,next)=>{
++ c.header('Cache-Control','no-store')
++ try{await importActor(c);await enforceRole(c,c.get('actor'),'data.import')}catch(error){if(error instanceof HTTPException)throw error;refuse(503,'database_unavailable','Workspace authorization is temporarily unavailable')}
++ const version=c.req.header('X-Legacy-Contract-Version')
++ if(version!==undefined&&version!==String(LEGACY_CONTRACT_VERSION))refuse(422,'unsupported_package','Unsupported package contract version')
++ requireSha(c.req.param('sha')!)
++ await next()
++})
++packageInRoutes.put(`${root}/manifest`,intake,async c=>{
++ if(c.req.header('Content-Type')?.split(';')[0].trim().toLowerCase()!=='application/json')refuse(415,'unsupported_media_type','Manifest must be application/json')
++ const sha=c.req.param('sha')!,projectId=c.req.param('projectId')!
++ if(c.req.header('X-Manifest-SHA256')!==sha)refuse(409,'approval_mismatch','Approved manifest fingerprint differs')
++ const {bytes,sha256}=await readBody(c.req.raw,LEGACY_LIMITS.manifestBytes,'manifest_too_large')
++ if(sha256!==sha)refuse(422,'digest_mismatch','Manifest bytes differ from its fingerprint')
++ const manifest=validateManifest(parseJson(bytes))
++ const alreadyPresent=await putImmutable(c.env.FILES,manifestKey(sha),bytes,sha,metadata(projectId,sha),sha)
++ return c.json({data:{manifestSha256:sha,runId:`legacy-package:${sha}`,projectId,sourceProjectId:manifest.source.projectId,alreadyPresent}},alreadyPresent?200:201)
++})
++packageInRoutes.put(`${root}/files/:file`,intake,async c=>{
++ if(c.req.header('Content-Type')?.split(';')[0].trim().toLowerCase()!=='application/octet-stream')refuse(415,'unsupported_media_type','Package files must be application/octet-stream')
++ const sha=c.req.param('sha')!,projectId=c.req.param('projectId')!,file=c.req.param('file')!
++ if(!safeFile(file))refuse(400,'invalid_filename','Invalid package filename')
++ const manifest=await heldManifest(c.env.FILES,projectId,sha),part=descriptors(manifest).find(p=>p.file===file)
++ if(!part)refuse(400,'invalid_filename','File is not listed in the manifest')
++ if(part.kind==='chunk'&&exclusions(c.req.query('excludeTables')).includes(part.table!))refuse(409,'excluded_file','AI usage history is omitted from this upload')
++ const {bytes,sha256}=await readBody(c.req.raw,part.kind==='object'?LEGACY_LIMITS.objectBytes:LEGACY_LIMITS.partBytes,part.kind==='object'?'object_too_large':'part_too_large',part.bytes)
++ if(sha256!==part.sha256)refuse(422,'digest_mismatch','File bytes differ from its manifest')
++ if(part.kind!=='object'){
++  const rows=parseJson(bytes,'invalid_request')
++  if(!Array.isArray(rows)||rows.length!==part.count)refuse(422,'row_count_mismatch','File row count differs from its manifest')
++  if(rows.some(row=>!row||typeof row!=='object'||Array.isArray(row)))refuse(422,'invalid_scope','Expected source rows')
++  try{classifySnapshot({tables:{[part.table!]:rows}})}catch{refuse(422,'source_policy_refused','File refused by the source secret policy. Re-export with credentials omitted.')}
++ }
++ const alreadyPresent=await putImmutable(c.env.FILES,storageKey(sha,part),bytes,sha256,{...metadata(projectId,sha),kind:part.kind,file},sha)
++ return c.json({data:{file,kind:part.kind,bytes:bytes.length,sha256,alreadyPresent}},alreadyPresent?200:201)
++})
++packageInRoutes.get(`${root}/status`,intake,async c=>{
++ const sha=c.req.param('sha')!,projectId=c.req.param('projectId')!,exclude=exclusions(c.req.query('excludeTables'))
++ const manifest=await heldManifest(c.env.FILES,projectId,sha),{files,excluded}=inventory(manifest,exclude)
++ const rawLimit=c.req.query('limit'),limit=rawLimit===undefined?100:Number(rawLimit)
++ if(!Number.isInteger(limit)||limit<1||limit>LEGACY_LIMITS.statusPage)refuse(400,'invalid_request','Invalid status page size')
++ const binding=`${sha}:${exclude.join(',')}:`,raw=c.req.query('cursor');let offset=0
++ if(raw){try{const decoded=atob(raw);if(!decoded.startsWith(binding)||!/^\d+$/.test(decoded.slice(binding.length)))throw Error();offset=Number(decoded.slice(binding.length));if(!Number.isSafeInteger(offset)||offset>files.length)throw Error()}catch{refuse(400,'invalid_cursor','Invalid package status cursor')}}
++ const page={checkedFiles:0,presentFiles:0,presentBytes:0},missing=[]
++ for(const part of files.slice(offset,offset+limit)){
++  const object=await c.env.FILES.head(storageKey(sha,part));page.checkedFiles++
++  if(object&&custody(object,projectId,sha)&&integrity(object,part.bytes,part.sha256)){page.presentFiles++;page.presentBytes+=part.bytes}
++  else missing.push({kind:part.kind,file:part.file,bytes:part.bytes,sha256:part.sha256,reason:!object||!custody(object,projectId,sha)?'missing':object.size!==part.bytes?'size_mismatch':'checksum_mismatch'})
++ }
++ const next=offset+limit
++ return c.json({data:{manifestSha256:sha,runId:`legacy-package:${sha}`,projectId,sourceProjectId:manifest.source.projectId,expectedFiles:files.length,expectedBytes:files.reduce((n,p)=>n+p.bytes,0),excluded,page,missing,nextCursor:next<files.length?btoa(binding+next):null}})
++})
+diff --git a/src/modules/legacy-import/package-in/storage.ts b/src/modules/legacy-import/package-in/storage.ts
+new file mode 100644
+index 0000000..91ea2e6
+--- /dev/null
++++ b/src/modules/legacy-import/package-in/storage.ts
+@@ -0,0 +1,27 @@
++import {LEGACY_CONTRACT_VERSION,LEGACY_LIMITS,type LegacyPackageManifest} from '../worker-contract'
++import {digestPattern,validateManifest} from './manifest'
++import {parseJson} from './body'
++import {refuse} from './errors'
++export const manifestKey=(sha:string)=>`legacy-package/${sha}/manifest.json`
++export function custody(object:R2Object,projectId:string,sha:string){return object.customMetadata?.projectId===projectId&&object.customMetadata?.manifestSha256===sha&&object.customMetadata?.contractVersion===String(LEGACY_CONTRACT_VERSION)}
++export function integrity(object:R2Object,bytes:number,sha:string){return object.size===bytes&&object.checksums.sha256!==undefined&&hex(object.checksums.sha256)===sha}
++function hex(bytes:ArrayBuffer){return [...new Uint8Array(bytes)].map(n=>n.toString(16).padStart(2,'0')).join('')}
++export function metadata(projectId:string,sha:string){return {contractVersion:String(LEGACY_CONTRACT_VERSION),projectId,manifestSha256:sha}}
++export async function heldManifest(bucket:R2Bucket,projectId:string,sha:string):Promise<LegacyPackageManifest>{
++ const object=await bucket.get(manifestKey(sha))
++ if(!object||!custody(object,projectId,sha))refuse(404,'package_not_found','Package not found')
++ if(object.size>LEGACY_LIMITS.manifestBytes||!integrity(object,object.size,sha))refuse(409,'custody_conflict','Stored package integrity could not be confirmed')
++ return validateManifest(parseJson(new Uint8Array(await object.arrayBuffer())))
++}
++export async function putImmutable(bucket:R2Bucket,key:string,bytes:Uint8Array,sha:string,customMetadata:Record<string,string>,manifestSha:string){
++ const prior=await bucket.head(key)
++ const check=(object:R2Object)=>{
++  if(!custody(object,customMetadata.projectId,manifestSha))refuse(404,'package_not_found','Package not found')
++  if(!integrity(object,bytes.byteLength,sha)||Object.entries(customMetadata).some(([k,v])=>object.customMetadata?.[k]!==v))refuse(409,'file_conflict','Stored file differs from this package')
++ }
++ if(prior){check(prior);return true}
++ const accepted=await bucket.put(key,bytes,{sha256:sha,onlyIf:{etagDoesNotMatch:'*'},customMetadata})
++ if(accepted)return false
++ const raced=await bucket.head(key);if(!raced)refuse(409,'file_conflict','File changed during upload');check(raced);return true
++}
++export function requireSha(sha:string){if(!digestPattern.test(sha))refuse(400,'invalid_request','Invalid manifest fingerprint');return sha}
+diff --git a/src/platform/dashboard-path.js b/src/platform/dashboard-path.js
+index 0d7b32f..2eecf26 100644
+--- a/src/platform/dashboard-path.js
++++ b/src/platform/dashboard-path.js
+@@ -4,8 +4,10 @@ export const dashboardPath = /^\/(?:conversations(?:\/[^/]+)?|projects(?:\/creat
+ const invitationPath = /^\/accept-invitation\/?$/;
+ // Sign-in returns an owner to first-run setup, which sends them on to their workspace.
+ const setupPath = /^\/setup\/?$/;
++// Business links to the current workspace's Move in page through this authenticated entry.
++const moveInPath = /^\/app\/move-in\/?$/;
+ 
+-/** Login resumes only a dashboard URL, an invitation link or first-run setup within this application. */
++/** Login resumes only a dashboard URL, invitation, setup or Move in entry within this application. */
+ export function loginDestination(returnTo, origin, accountOnly = false) {
+     const fallback = accountOnly ? '/projects/create' : '/conversations';
+     if (typeof returnTo !== 'string' || !returnTo.startsWith('/') || returnTo.startsWith('//')) return fallback;
+@@ -13,7 +15,7 @@ export function loginDestination(returnTo, origin, accountOnly = false) {
+         // URL parsing otherwise silently normalizes backslashes and strips controls.
+         if (/[\\\u0000-\u0020\u007f]/.test(returnTo) || /[\\\u0000-\u001f\u007f]/.test(decodeURIComponent(returnTo))) return fallback;
+         const target = new URL(returnTo, origin);
+-        if (target.origin !== origin || !dashboardPath.test(target.pathname) && !invitationPath.test(target.pathname) && !setupPath.test(target.pathname)) return fallback;
++        if (target.origin !== origin || !dashboardPath.test(target.pathname) && !invitationPath.test(target.pathname) && !setupPath.test(target.pathname) && !moveInPath.test(target.pathname)) return fallback;
+         return target.pathname + target.search + target.hash;
+     } catch {
+         return fallback;
+diff --git a/src/routes/app.move-in.tsx b/src/routes/app.move-in.tsx
+new file mode 100644
+index 0000000..d5ce79a
+--- /dev/null
++++ b/src/routes/app.move-in.tsx
+@@ -0,0 +1,16 @@
++import {createFileRoute,redirect} from '@tanstack/react-router'
++import {checkNativeSession} from '../ui/identity/loaders'
++
++/** Business's declared link continues through native sign-in and workspace choice. */
++export const Route=createFileRoute('/app/move-in')({
++ headers:()=>({'Cache-Control':'no-store'}),
++ beforeLoad:async({location})=>{
++  const returnTo=location.pathname+location.searchStr,headers={'Cache-Control':'no-store'}
++  const session=await checkNativeSession()
++  if(!session)throw redirect({to:'/login',search:{returnTo},replace:true,headers})
++  if('busy' in session)throw new Error('Workspace is temporarily busy. Reload to continue to Move in.')
++  if(session.twoFactor)throw redirect({href:`/two-factor?returnTo=${encodeURIComponent(returnTo)}`,replace:true,headers})
++  if(!session.projectId)throw redirect({href:'/projects?returnTo='+encodeURIComponent(returnTo),replace:true,headers})
++  throw redirect({href:`/projects/${encodeURIComponent(session.projectId)}/move-in?legacy=1`,replace:true,headers})
++ },
++})
+diff --git a/src/ui/native/pages/MoveIn.jsx b/src/ui/native/pages/MoveIn.jsx
+index a9c1c5d..2132f73 100644
+--- a/src/ui/native/pages/MoveIn.jsx
++++ b/src/ui/native/pages/MoveIn.jsx
+@@ -3,6 +3,7 @@ import {Link} from '@tanstack/react-router';
+ import {nativeRequest} from '../transport';
+ import {Feedback,Section} from './forms';
+ import './move-in.css';
++import LegacyPackage from './legacy-package/LegacyPackage';
+ import MoveInReview from './MoveInReview';
+ import MoveInOwnership from './MoveInOwnership';
+ import MoveInReport from './MoveInReport';
+@@ -15,7 +16,7 @@ const label={uploaded:'Preparing export',parsing:'Reading export',planning:'Prep
+ export default function MoveIn({projectId}){return <MoveInWorkspace key={projectId} projectId={projectId}/>;}
+ function MoveInWorkspace({projectId}){
+  const selectedId=useRef(null);
+- const base=`/api/move-in/projects/${projectId}/imports`,[vendor,setVendor]=useState('zendesk'),[file,setFile]=useState(null),[runs,setRuns]=useState([]),[selected,setSelected]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[repeated,setRepeated]=useState(false),[access,setAccess]=useState('loading');
++ const base=`/api/move-in/projects/${projectId}/imports`,[vendor,setVendor]=useState(()=>new URLSearchParams(window.location.search).get('legacy')==='1'?'happytohelp':'zendesk'),[file,setFile]=useState(null),[runs,setRuns]=useState([]),[selected,setSelected]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[repeated,setRepeated]=useState(false),[access,setAccess]=useState('loading');
+  const reload=()=>nativeRequest(base).then(r=>{setAccess('ready');setRuns(r.data);setSelected(old=>{const fresh=old&&r.data.find(run=>run.id===old.id);return fresh?{...fresh,plan:old.plan?.fingerprint===fresh.plan?.fingerprint?old.plan:fresh.plan}:old})}).catch(e=>{setError(e.message);setAccess(e.status===403?'denied':'failed');setSelected(null);setRuns([]);setFile(null)});
+  const showRun=run=>{selectedId.current=run.id;setSelected(run);setRuns(old=>old.map(item=>item.id===run.id?run:item))};
+  // The list carries review summaries; one run's decisions and diagnostics load with it, and its format's guide shows.
+@@ -31,7 +32,7 @@ function MoveInWorkspace({projectId}){
+  const plan=selected?.plan,decisions=plan?.decisions||[],links=decisions.flatMap(d=>d.targets),importable=decisions.some(d=>d.targets.length);
+  if(access!=='ready')return <div className="move-in-page">{access==='loading'?<p role="status">Checking import access…</p>:access==='denied'?<p role="alert">Only a workspace owner or admin can move in support history. Ask your workspace owner to review the export.</p>:<><Feedback error={error}/><button className="btn btn-white" onClick={reload}>Check import access</button></>}</div>;
+  return <div className="move-in-page"><p>Bring your support history into this workspace. Imports preserve source details and stay out of Reports. Importing does not send messages, assign conversations, run AI, or notify customers. Switching a source over? Record it in <Link to={`/projects/${encodeURIComponent(projectId)}/cutover`}>Cutover</Link>.</p><Feedback error={error}/>
+- <Section title="Choose an export"><label htmlFor="move-in-vendor" className="form-label">Export format</label><select id="move-in-vendor" className="form-select" value={vendor} onChange={e=>{if(e.target.value!==vendor){setVendor(e.target.value);setFile(null)}}}>{Object.entries(vendorGuides).map(([value,{label}])=><option key={value} value={value}>{label}</option>)}</select>{vendor==='zendesk'&&<MoveInZendesk projectId={projectId} onOpenRun={openRun}/>}<div className="sh-steps mt-3" data-guide={vendor}><p><b>{vendor==='zendesk'?'Or upload Zendesk files':`Get the file from ${vendorGuides[vendor].label}`}</b></p>{vendorGuides[vendor].guide}</div>{vendorGuides[vendor].accept&&<form onSubmit={upload}><label htmlFor="move-in-file" className="form-label">Export file</label><input key={vendor} id="move-in-file" className="form-control" type="file" accept={vendorGuides[vendor].accept} onChange={e=>setFile(e.target.files?.[0]||null)}/><p className="mt-2 settings-note">Each file can be up to 2 MiB. A file we can’t read completely is refused before anything is saved, with the file, line and field to fix. Export files stay private to you. Uploading a file again, or one that overlaps an earlier file, is safe: records already imported are recognised and left as they are. <a href="/docs/moving-in#files-and-limits">All limits</a></p>{file?.size>2*1024*1024&&<p role="alert">This file exceeds the 2 MiB upload limit. Make smaller batches with the script above.</p>}<button className="btn btn-primary" disabled={busy||!file||file.size>2*1024*1024}>{busy?'Working…':'Upload and review'}</button></form>}</Section>
++ <Section title="Choose an export"><label htmlFor="move-in-vendor" className="form-label">Export format</label><select id="move-in-vendor" className="form-select" value={vendor} onChange={e=>{if(e.target.value!==vendor){setVendor(e.target.value);setFile(null)}}}>{Object.entries(vendorGuides).map(([value,{label}])=><option key={value} value={value}>{label}</option>)}</select>{vendor==='zendesk'&&<MoveInZendesk projectId={projectId} onOpenRun={openRun}/>}{vendor==='happytohelp'?<LegacyPackage projectId={projectId}/>:<div className="sh-steps mt-3" data-guide={vendor}><p><b>{vendor==='zendesk'?'Or upload Zendesk files':`Get the file from ${vendorGuides[vendor].label}`}</b></p>{vendorGuides[vendor].guide}</div>}{vendorGuides[vendor].accept&&<form onSubmit={upload}><label htmlFor="move-in-file" className="form-label">Export file</label><input key={vendor} id="move-in-file" className="form-control" type="file" accept={vendorGuides[vendor].accept} onChange={e=>setFile(e.target.files?.[0]||null)}/><p className="mt-2 settings-note">Each file can be up to 2 MiB. A file we can’t read completely is refused before anything is saved, with the file, line and field to fix. Export files stay private to you. Uploading a file again, or one that overlaps an earlier file, is safe: records already imported are recognised and left as they are. <a href="/docs/moving-in#files-and-limits">All limits</a></p>{file?.size>2*1024*1024&&<p role="alert">This file exceeds the 2 MiB upload limit. Make smaller batches with the script above.</p>}<button className="btn btn-primary" disabled={busy||!file||file.size>2*1024*1024}>{busy?'Working…':'Upload and review'}</button></form>}</Section>
+  {selected&&<Section title={`${label[selected.state]||selected.state}: ${selected.filename}`}><p role="status">{active.includes(selected.state)?`${label[selected.state]}. ${selected.state==='applying'||selected.state==='undoing'?`${selected.cursor} of ${selected.report?.total||plan?.counts.unique||0} source records processed.`:`${selected.parsed} source records read.`}`:label[selected.state]}</p>{repeated&&<p role="status">This export was already processed. Its accepted records are already imported. No data or import bookkeeping was changed.</p>}{selected.error&&<p role="alert">{reasonLabel(selected.error)} Records already imported stay imported. Fix the problem, then choose Resume import, or undo the whole import.</p>}
+  {plan?.decisions?<MoveInReview key={selected.id} plan={plan} projectId={projectId} vendor={selected.vendor} state={selected.state}/>:plan&&<p role="status">Loading the review…</p>}
+  {selected.state==='ready'&&plan?.decisions&&!importable&&<p role="alert">Nothing in this file can be imported yet. Fix the records listed under Needs fixing, then upload the corrected file.</p>}
+diff --git a/src/ui/native/pages/MoveInGuide.jsx b/src/ui/native/pages/MoveInGuide.jsx
+index 8c17ccc..5333e3f 100644
+--- a/src/ui/native/pages/MoveInGuide.jsx
++++ b/src/ui/native/pages/MoveInGuide.jsx
+@@ -48,6 +48,6 @@ export const vendorGuides = {
+   <p className="sh-note">This script keeps attachment metadata only. You can explicitly supply bounded attachment bytes as described in the guide. Help articles come across with Knowledge, Import, Freshdesk. Details: <a href="/docs/moving-in#freshdesk">Freshdesk in the Move in guide</a>.</p>
+  </>},
+  happytohelp: {label: 'HappyToHelp (the original service)', guide: <>
+-  <p>History from the original HappyToHelp service moves in with a command run on your computer, not an upload here. Follow <a href="/docs/operations#import-data-from-the-original-happytohelp-service">Import data from the original HappyToHelp service</a>.</p>
++  <p>Choose the chunked export folder below to review and upload support history. <a href="/docs/operations#import-data-from-the-original-happytohelp-service">Package instructions and limits</a>.</p>
+  </>},
+ };
+diff --git a/src/ui/native/pages/legacy-package/LegacyPackage.jsx b/src/ui/native/pages/legacy-package/LegacyPackage.jsx
+new file mode 100644
+index 0000000..0153178
+--- /dev/null
++++ b/src/ui/native/pages/legacy-package/LegacyPackage.jsx
+@@ -0,0 +1,44 @@
++import React,{useEffect,useRef,useState} from 'react';
++import {nativeRequest} from '../../transport';
++import {packageBase,runnerRequest,rememberPackage,scanPackage,selectPackage,uploadFile} from './client';
++import PackageResult from './Result';
++const size=n=>`${Number(n||0).toLocaleString()} bytes`;
++export default function LegacyPackage({projectId}){
++ const [selection,setSelection]=useState(null),[sha,setSha]=useState(()=>new URLSearchParams(window.location.search).get('legacyPackage')||''),[status,setStatus]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[progress,setProgress]=useState(null),[result,setResult]=useState(null),[runner,setRunner]=useState('pending');
++ const operation=useRef(null),generation=useRef(0),base=sha?packageBase(projectId,sha):null;
++ const readResult=async(path,signal)=>{try{const r=await runnerRequest(`${path}/result`,{signal});if(signal?.aborted)return;setResult(r.data);setRunner('available')}catch(e){if(signal?.aborted)return;if(e.status===404||e.status===405){setResult(null);setRunner('unavailable')}else{setRunner('pending');setError(e.message)}}};
++ useEffect(()=>{if(!base||!/^[a-f0-9]{64}$/.test(sha))return;const controller=new AbortController();scanPackage(base,controller.signal).then(setStatus).catch(e=>{if(!controller.signal.aborted&&e.status!==404)setError(e.message)});readResult(base,controller.signal);return()=>controller.abort();},[base]);
++ useEffect(()=>{if(!base||!result||['complete','stopped'].includes(result.run.state))return;const controller=new AbortController();const timer=setInterval(()=>readResult(base,controller.signal),2000);return()=>{clearInterval(timer);controller.abort()};},[base,result?.run.state]);
++ useEffect(()=>()=>{generation.current++;operation.current?.abort()},[]);
++ const choose=async event=>{const selected=[...event.target.files],version=++generation.current;operation.current?.abort();setError('');setBusy(true);setProgress(null);try{const chosen=await selectPackage(selected);if(version!==generation.current)return;setSelection(chosen);setSha(chosen.sha);setStatus(null);setResult(null);setRunner('pending');rememberPackage(chosen.sha);if(chosen.sha===sha){try{setStatus(await scanPackage(packageBase(projectId,chosen.sha)))}catch(e){if(e.status!==404)throw e}await readResult(packageBase(projectId,chosen.sha))}}catch(e){if(version===generation.current)setError(e.message)}finally{if(version===generation.current)setBusy(false)}};
++ const upload=async()=>{
++  if(!selection)return;const controller=new AbortController();operation.current=controller;setBusy(true);setError('');const path=packageBase(projectId,selection.sha);
++  try{
++   await nativeRequest(`${path}/manifest`,{method:'PUT',headers:{'Content-Type':'application/json','X-Manifest-SHA256':selection.sha},body:selection.manifestFile,signal:controller.signal});
++   let current=await scanPackage(path,controller.signal);setStatus(current);
++   for(const part of current.missing){
++    const file=selection.files.get(part.file);if(!file)throw Error(`Reselect the export folder containing ${part.file}.`);
++    setProgress({file:part.file,files:current.presentFiles,bytes:current.presentBytes});
++    await uploadFile(path,part,file,controller.signal);current={...current,presentFiles:current.presentFiles+1,presentBytes:current.presentBytes+part.bytes,missing:current.missing.filter(p=>p.file!==part.file)};setStatus(current);
++   }
++   setStatus(await scanPackage(path,controller.signal));setProgress(null);await readResult(path,controller.signal);
++  }catch(e){setError(controller.signal.aborted?'Upload interrupted. Reselect this folder after a reload, then continue uploading missing files.':e.message);try{setStatus(await scanPackage(path))}catch{}}
++  finally{setBusy(false);setProgress(null);operation.current=null;}
++ };
++ const action=async name=>{setBusy(true);setError('');try{const body=name==='start'?{approvedManifestSha256:sha,excludeTables:['ai_usages'],replay:false}:name==='resume'?{approvedManifestSha256:sha}:{};const r=await runnerRequest(`${base}/${name}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});setRunner('available');setResult(old=>({...old,run:r.data,verification:old?.verification||'pending'}));await readResult(base);}catch(e){if(e.status===404||e.status===405)setRunner('unavailable');else if(e.data?.code==='destination_policy_required')setError('The source and destination workspaces differ. A destination policy decision is required before import.');else setError(e.message)}finally{setBusy(false)}};
++ const manifest=selection?.manifest,ready=status&&status.missing.length===0;
++ return <section className="legacy-package" aria-labelledby="legacy-package-title"><h3 id="legacy-package-title">HappyToHelp export</h3><p>Choose the chunked export folder, including manifest.json and attachment files. Uploads stay private. Selecting files does not import history.</p>
++ <label htmlFor="legacy-folder" className="form-label">Export folder</label><input id="legacy-folder" className="form-control" type="file" webkitdirectory="" multiple onChange={choose} disabled={busy}/><details className="move-in-details"><summary>Choose individual files instead</summary><label htmlFor="legacy-files" className="form-label">Export package files</label><input id="legacy-files" className="form-control" type="file" multiple onChange={choose} disabled={busy}/><p>Choose manifest.json and the flat files it lists, from the same export.</p></details>
++ {error&&<p role="alert">{error}</p>}
++ {sha&&<><dl className="legacy-identity"><dt>Manifest fingerprint</dt><dd><code>{sha}</code></dd><dt>Source workspace</dt><dd>{manifest?.source.projectId||status?.sourceProjectId||result?.run.sourceProjectId||'Awaiting manifest'}</dd><dt>Destination workspace</dt><dd>{projectId}</dd>{manifest&&<><dt>Source</dt><dd>{manifest.source.repository} · {manifest.source.revision} · {manifest.source.exportedAt}</dd></>}</dl>
++ <p>AI usage history omitted: {(status?.excluded.ai_usages??manifest?.source.rowCounts.ai_usages??0).toLocaleString()} rows. Required context is always included.</p>
++ {selection&&<details className="move-in-details"><summary>Review file inventory ({selection.descriptors.length} files)</summary><ul>{selection.descriptors.map(p=><li key={p.file}>{p.file} · {size(p.bytes)}{p.kind==='chunk'&&p.table==='ai_usages'?' · Omitted':''}</li>)}</ul></details>}
++ {status&&<><p role="status">{status.presentFiles} of {status.expectedFiles} files uploaded · {size(status.presentBytes)} of {size(status.expectedBytes)}</p><progress aria-label="Package upload progress" max={Math.max(1,status.expectedBytes)} value={status.presentBytes}/>{status.missing.length>0&&<details className="move-in-details"><summary>Missing or rejected files ({status.missing.length})</summary><ul>{status.missing.map(p=><li key={p.file}>{p.file} · {p.reason.replaceAll('_',' ')}</li>)}</ul></details>}</>}
++ {progress&&<p role="status">Uploading {progress.file}. One file at a time.</p>}
++ <div className="move-in-actions"><button className="btn btn-primary" disabled={busy||!selection||ready} onClick={upload}>{busy?'Uploading…':status?'Continue upload':'Upload package'}</button>{busy&&operation.current&&<button className="btn btn-white" onClick={()=>operation.current?.abort()}>Interrupt upload</button>}<button className="btn btn-white" disabled={busy||!status} onClick={async()=>{setError('');try{setStatus(await scanPackage(base));await readResult(base)}catch(e){setError(e.message)}}}>Refresh package status</button></div>
++ {!selection&&<p>Reselect the same export folder to review it and continue uploading only missing files.</p>}
++ <h3>Import history</h3>{ready?<p>All required package files are uploaded. Import approval is bound to the fingerprint above.</p>:<p>Upload every required file before importing history.</p>}
++ {runner==='unavailable'&&<p role="status">Import runner unavailable or not yet installed. Package upload and resume remain available; no import result is available yet.</p>}
++ <div className="move-in-actions"><button className="btn btn-primary" disabled={busy||!ready||!selection||Boolean(result&&result.run.state!=='complete')} onClick={()=>action('start')}>Import history</button>{result&&['running','queued','paused'].includes(result.run.state)&&<button className="btn btn-white" disabled={busy} onClick={()=>action('stop')}>Stop import</button>}{result?.run.canResume&&<button className="btn btn-white" disabled={busy} onClick={()=>action('resume')}>Resume import</button>}</div><PackageResult result={result}/></>}
++ </section>;
++}
+diff --git a/src/ui/native/pages/legacy-package/Result.jsx b/src/ui/native/pages/legacy-package/Result.jsx
+new file mode 100644
+index 0000000..30fb613
+--- /dev/null
++++ b/src/ui/native/pages/legacy-package/Result.jsx
+@@ -0,0 +1,9 @@
++import React,{useState} from 'react';
++import {resultNote} from './result-note.js';
++export default function PackageResult({result}){
++ const [copied,setCopied]=useState(false);
++ if(!result)return null;
++ const {run,tables={},attachments,work}=result;
++ const note=resultNote(result);
++ return <div className="legacy-result"><h3>Import result</h3><p role="status">{run.state} · {result.verification}{run.errorCode?` · ${run.errorCode}`:''}</p><div className="legacy-table-scroll"><table className="table"><caption>Source history reconciliation</caption><thead><tr><th scope="col">Table</th><th scope="col">Package</th><th scope="col">Omitted</th><th scope="col">Required</th><th scope="col">Imported</th><th scope="col">Equal</th></tr></thead><tbody>{Object.entries(tables).map(([name,t])=><tr key={name}><th scope="row">{name}</th><td>{t.packageRows}</td><td>{t.excludedRows}</td><td>{t.requiredRows}</td><td>{t.journalRows}</td><td>{t.journalEqualsPackage===true?'Yes':t.journalEqualsPackage===false?'No':'Pending'}</td></tr>)}</tbody></table></div>{attachments&&<p>Attachments: {attachments.identical} of {attachments.required} identical by stored SHA-256; {attachments.withheld} withheld, {attachments.missing} missing, {attachments.different} different, {attachments.unverified} unverified.</p>}<p>Work unchanged: {work?.unchanged===true?'Yes':work?.unchanged===false?'No':'Pending'}</p><button className="btn btn-white" onClick={async()=>{try{await navigator.clipboard.writeText(note);setCopied(true)}catch{setCopied(false)}}}>Copy result note</button>{copied&&<span role="status"> Result note copied</span>}<details className="move-in-details"><summary>Counts and verification details</summary><pre>{note}</pre></details></div>;
++}
+diff --git a/src/ui/native/pages/legacy-package/client.js b/src/ui/native/pages/legacy-package/client.js
+new file mode 100644
+index 0000000..986da31
+--- /dev/null
++++ b/src/ui/native/pages/legacy-package/client.js
+@@ -0,0 +1,38 @@
++import {transportFetch} from '../../../dashboard/utils/busy';
++import {nativeRequest} from '../../transport';
++import {LEGACY_LIMITS} from '../../../../modules/legacy-import/worker-contract';
++export const fingerprint=async file=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer()))].map(n=>n.toString(16).padStart(2,'0')).join('');
++export const packageBase=(projectId,sha)=>`/api/move-in/projects/${encodeURIComponent(projectId)}/legacy-import/${sha}`;
++export function rememberPackage(sha){const url=new URL(window.location.href);url.searchParams.set('legacyPackage',sha);url.searchParams.set('legacy','1');window.history.replaceState(window.history.state,'',url);}
++export async function selectPackage(selected){
++ const files=new Map();let root;
++ for(const file of selected){const path=file.webkitRelativePath||file.name,parts=path.split('/');if(parts.length>2)throw Error('Choose a flat export folder; nested files are not supported.');if(parts.length===2){if(root&&root!==parts[0])throw Error('Choose one export folder.');root=parts[0];}const name=parts.at(-1);if(files.has(name))throw Error('Duplicate package filename.');files.set(name,file);}
++ const manifestFile=files.get('manifest.json');if(!manifestFile)throw Error('Choose the export folder including manifest.json.');if(manifestFile.size>LEGACY_LIMITS.manifestBytes)throw Error('Manifest exceeds 2 MiB. Re-export a smaller package.');
++ let manifest;try{manifest=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(await manifestFile.arrayBuffer()));}catch{throw Error('Manifest must contain valid UTF-8 JSON.');}
++ if(manifest?.format!=='happytohelp-legacy-chunks-v1'||!Array.isArray(manifest.chunks)||!Array.isArray(manifest.context)||!Array.isArray(manifest.objects)||!manifest.source?.projectId||!manifest.source?.rowCounts||manifest.attachmentsComplete!==true)throw Error('Choose a complete chunked HappyToHelp export.');
++ const descriptors=[...manifest.chunks.map(p=>({...p,kind:'chunk'})),...manifest.context.map(p=>({...p,kind:'context'})),...manifest.objects.map(p=>({...p,bytes:p.size,kind:'object'}))];
++ if(descriptors.length>LEGACY_LIMITS.descriptors)throw Error('Package has too many files. Re-export a smaller package.');
++ const names=new Set(['manifest.json']);for(const p of descriptors){if(typeof p.file!=='string'||!/^\w[\w.-]*$/.test(p.file)||names.has(p.file))throw Error('Invalid or duplicate package filename.');names.add(p.file);if(!Number.isSafeInteger(p.bytes)||p.bytes<0||p.bytes>(p.kind==='object'?LEGACY_LIMITS.objectBytes:LEGACY_LIMITS.partBytes))throw Error(`File exceeds the upload limit: ${p.file}`);}
++ for(const name of files.keys())if(!names.has(name))throw Error('The selected folder contains an unlisted file. Choose only the original export files.');
++ return {manifest,manifestFile,files,descriptors,sha:await fingerprint(manifestFile)};
++}
++export async function scanPackage(base,signal){
++ let cursor=null,summary,missing=[],presentFiles=0,presentBytes=0;
++ do{const response=await nativeRequest(`${base}/status?excludeTables=ai_usages${cursor?`&cursor=${encodeURIComponent(cursor)}`:''}`,{signal});summary=response.data;missing.push(...summary.missing);presentFiles+=summary.page.presentFiles;presentBytes+=summary.page.presentBytes;cursor=summary.nextCursor;}while(cursor);
++ return {...summary,missing,presentFiles,presentBytes};
++}
++export async function uploadFile(base,part,file,signal){
++ if(file.size!==part.bytes)throw Error(`File size differs from manifest: ${part.file}`);
++ if(await fingerprint(file)!==part.sha256)throw Error(`File fingerprint differs from manifest: ${part.file}`);
++ return nativeRequest(`${base}/files/${encodeURIComponent(part.file)}?excludeTables=ai_usages`,{method:'PUT',headers:{'Content-Type':'application/octet-stream'},body:file,signal});
++}
++
++// Runner routes may not be installed on an intake-only edition. Preserve their
++// actual HTTP status even when the router returns a non-JSON 404 document.
++export async function runnerRequest(path,init={}){
++ const response=await transportFetch(path,{credentials:'same-origin',...init});
++ let value;try{value=await response.json()}catch{throw Object.assign(new Error('Import runner response unavailable'),{status:response.status})}
++ if(!response.ok)throw Object.assign(new Error(typeof value.error==='string'?value.error:'Import request refused'),{status:response.status,data:value});
++ if(!value?.data?.runId&&!value?.data?.run)throw Object.assign(new Error('Import result pending'),{status:503});
++ return value;
++}
+diff --git a/src/ui/native/pages/legacy-package/result-note.js b/src/ui/native/pages/legacy-package/result-note.js
+new file mode 100644
+index 0000000..c3288c6
+--- /dev/null
++++ b/src/ui/native/pages/legacy-package/result-note.js
+@@ -0,0 +1,22 @@
++/** Counts-only note shared by the result disclosure and Business-step clipboard action. */
++export function resultNote(result){
++ const {run,tables={},attachments,work,diagnostics}=result;
++ const note={runId:run.runId,manifestSha256:run.manifestSha256,
++  projectId:run.projectId,sourceProjectId:run.sourceProjectId,state:run.state,
++  verification:result.verification,verifiedAt:result.verifiedAt,tables,
++  excluded:result.excluded,journalEqualsPackage:result.journalEqualsPackage,
++  attachments,work,attempt:result.attempt};
++ // Older runners omit diagnostics. Keep that absence honest and every existing result field intact.
++ if(diagnostics){
++  const {installationWork,baseline}=diagnostics;
++  note.diagnostics={scope:diagnostics.scope,conversationCount:diagnostics.conversationCount,
++   distinctDeltaSourceIds:diagnostics.distinctDeltaSourceIds,
++   incompleteDeltaRuns:diagnostics.incompleteDeltaRuns,
++   sampleConversationIds:diagnostics.sampleConversationIds,
++   ...(installationWork?{installationWork:{before:installationWork.before,
++    after:installationWork.after,qualification:installationWork.qualification}}:{}),
++   ...(baseline?{baseline:{kind:baseline.kind,at:baseline.at,
++    counts:baseline.counts,installation:baseline.installation}}:{})};
++ }
++ return JSON.stringify(note,null,2);
++}
+diff --git a/src/ui/native/pages/move-in.css b/src/ui/native/pages/move-in.css
+index 2872170..cd1db4d 100644
+--- a/src/ui/native/pages/move-in.css
++++ b/src/ui/native/pages/move-in.css
+@@ -6,3 +6,12 @@
+ .move-in-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 1rem 0; }
+ .import-source-note { margin: .3rem 0; color: var(--ink-soft); font-size: 14.5px; overflow-wrap: anywhere; }
+ .move-in-details > summary { min-height: 44px; padding-block: 10px; cursor: pointer; }
++
++.legacy-package { margin-top: 24px; font-size: 14.5px; }
++.legacy-package progress { width: 100%; height: 16px; accent-color: var(--bs-primary); }
++.legacy-identity { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 8px 16px; margin-top: 20px; }
++.legacy-identity dd { margin: 0; overflow-wrap: anywhere; }
++.legacy-identity code, .legacy-result pre { font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
++.legacy-table-scroll { overflow-x: auto; }
++.legacy-package .move-in-details { margin-block: 12px; }
++@media(max-width: 600px) { .legacy-identity { grid-template-columns: minmax(0,1fr); gap: 4px; } .legacy-identity dd { margin-bottom: 12px; } }
+diff --git a/tests/journeys/identity-browser.mjs b/tests/journeys/identity-browser.mjs
+index 4210910..b58afb9 100644
+--- a/tests/journeys/identity-browser.mjs
++++ b/tests/journeys/identity-browser.mjs
+@@ -1,10 +1,11 @@
+ import test from 'node:test'
+ import {launchBrowser} from './kit/browser.mjs'
+ import {securityBrowserJourney} from '../helpers/identity/security-browser.mjs'
++import {legacyMoveInAuthReturn} from '../move-in/legacy-package-upload/auth-return.mjs'
+ 
+ test('an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session',async()=>{
+  const browser=await launchBrowser()
+- try{await securityBrowserJourney(browser)}finally{await browser.close()}
++ try{await securityBrowserJourney(browser);await legacyMoveInAuthReturn(browser)}finally{await browser.close()}
+ })
+ 
+ import {assuranceBrowserJourney} from '../helpers/assurance/browser.mjs'
+diff --git a/tests/journeys/move-in-admission.mjs b/tests/journeys/move-in-admission.mjs
+index 65df45e..11b3b68 100644
+--- a/tests/journeys/move-in-admission.mjs
++++ b/tests/journeys/move-in-admission.mjs
+@@ -1,6 +1,7 @@
++import {legacyPackageAdmission} from '../move-in/legacy-package-upload/admission.mjs'
+ import test from 'node:test'
+ import {outcomesJourney} from '../move-in/outcomes.mjs'
+ import {vendorRepliesJourney} from '../move-in/vendor-replies.mjs'
+ import {reviewImportJourney} from '../move-in/review-import.mjs'
+ 
+-test('review an export, import its history and private notes, repeat and repackage without effects, then undo exactly',{timeout:360_000},async()=>{await reviewImportJourney();await outcomesJourney();await vendorRepliesJourney()})
++test('review an export, import its history and private notes, repeat and repackage without effects, then undo exactly',{timeout:360_000},async()=>{await reviewImportJourney();await outcomesJourney();await vendorRepliesJourney();await legacyPackageAdmission()})
+diff --git a/tests/journeys/move-in-browser.mjs b/tests/journeys/move-in-browser.mjs
+index 2b9b1df..d2cc005 100644
+--- a/tests/journeys/move-in-browser.mjs
++++ b/tests/journeys/move-in-browser.mjs
+@@ -1,3 +1,4 @@
++import {legacyPackageBrowserFlow} from '../move-in/legacy-package-upload/browser.mjs'
+ import {zendeskResumeBrowserFlow} from '../move-in/zendesk-resume-browser.mjs'
+ import {zendeskConnectBrowserFlow} from '../move-in/zendesk-connect-browser.mjs'
+ import {zendeskOfflineBrowserFlow} from '../move-in/zendesk-offline-browser.mjs'
+@@ -59,6 +60,7 @@ test('an owner connects Zendesk twice, reviews an export, imports and filters it
+  await reviewExplanations(page,runtime.origin,base,shot)
+  await configurationBrowser(1440)
+  await configurationBrowser(390)
++ await legacyPackageBrowserFlow({page,runtime,project,inspect})
+ }))
+ 
+ 
+diff --git a/tests/move-in/legacy-package-upload/admission.mjs b/tests/move-in/legacy-package-upload/admission.mjs
+new file mode 100644
+index 0000000..4617b8c
+--- /dev/null
++++ b/tests/move-in/legacy-package-upload/admission.mjs
+@@ -0,0 +1,70 @@
++import assert from 'node:assert/strict'
++import {mkdtemp,readFile,rm} from 'node:fs/promises'
++import {tmpdir} from 'node:os'
++import {join} from 'node:path'
++import {request as httpRequest} from 'node:http'
++import {startApp} from '../../journeys/kit/app.mjs'
++import {packageFixture,sha} from './fixture.mjs'
++export async function legacyPackageAdmission(){
++ const app=await startApp({captureQueue:true,cf:false,listen:true}),directory=await mkdtemp(join(tmpdir(),'legacy-intake-'))
++ try{
++  const owner=await app.seedWorkspace('legacy-intake'),foreign=await app.seedWorkspace('legacy-foreign'),p=await packageFixture(join(directory,'good'),owner.projectId)
++  const base=(digest=p.manifestSha256,project=owner.projectId)=>`/api/move-in/projects/${project}/legacy-import/${digest}`
++  const putManifest=async(bytes=p.bytes,{digest=sha(bytes),token=owner.tokens.owner,project=owner.projectId,headers={}}={})=>app.call(`${base(digest,project)}/manifest`,{method:'PUT',raw:true,body:bytes,token,headers:{'Content-Type':'application/json','X-Manifest-SHA256':digest,...headers}})
++  const file=async(part,bytes,{token=owner.tokens.owner,query='',name=part.file,digest=p.manifestSha256}={})=>app.call(`${base(digest)}/files/${name}${query}`,{method:'PUT',raw:true,body:bytes,token,headers:{'Content-Type':'application/octet-stream'}})
++  const counts=async()=>{const tables=['projects','users','memberships','contacts','conversations','messages','legacy_import_runs','legacy_import_rows','legacy_import_objects','legacy_import_state','legacy_import_holds','legacy_delta_leases','move_in_runs','conversation_outbox','email_deliveries','operator_notifications','native_integration_events','context_jobs','leads','workflow_events'];return Object.fromEntries(await Promise.all(tables.map(async t=>[t,(await app.first(`SELECT count(*) n FROM ${t}`)).n])))}
++  const before=await counts()
++  assert.equal((await putManifest(p.bytes,{token:null})).status,401)
++  assert.equal((await putManifest(p.bytes,{token:owner.tokens.operator})).status,403)
++  assert.equal((await putManifest(p.bytes,{token:foreign.tokens.owner})).status,404)
++  assert.equal((await putManifest(p.bytes,{headers:{'Origin':'https://foreign.example','Authorization':'',Cookie:'h2h_session='+owner.tokens.owner}})).status,403)
++  assert.equal((await putManifest(p.bytes,{digest:'0'.repeat(64)})).data.code,'digest_mismatch')
++  assert.equal((await putManifest(Buffer.concat([p.bytes,Buffer.from(' ')]),{digest:p.manifestSha256})).data.code,'digest_mismatch')
++  for(const mutation of [m=>m.chunks[0].file='../unsafe.json',m=>m.chunks[0].file='manifest.json',m=>m.chunks[0].bytes=4194305,m=>m.objects[0].size=16777217,m=>m.chunks=Array(20001).fill(null),m=>m.source.rowCounts.contacts++,m=>m.objects[0].key='legacy/../outside',m=>m.source.attachments.push(m.source.attachments[0])]){
++   const m=structuredClone(p.manifest);mutation(m);assert.equal((await putManifest(Buffer.from(JSON.stringify(m)))).status,400)
++  }
++  assert.equal((await putManifest(Buffer.alloc(2097153,32))).status,413)
++  const streamed=new ReadableStream({start(controller){for(let i=0;i<5;i++)controller.enqueue(new Uint8Array(512*1024));controller.close()}})
++  const oversized=await fetch(app.url+`${base()}/manifest`,{method:'PUT',body:streamed,duplex:'half',headers:{Authorization:'Bearer '+owner.tokens.owner,'Content-Type':'application/json','X-Manifest-SHA256':p.manifestSha256}});assert.equal(oversized.status,413);await oversized.body?.cancel()
++
++  assert.equal((await putManifest(p.bytes,{headers:{'X-Legacy-Contract-Version':'2'}})).status,422)
++  assert.equal((await putManifest()).status,201)
++  assert.equal((await putManifest(p.bytes,{token:owner.tokens.admin})).data.data.alreadyPresent,true)
++  assert.equal((await putManifest(p.bytes,{project:foreign.projectId,token:foreign.tokens.owner})).status,404)
++  const stored=await (await app.files).get(`legacy-package/${p.manifestSha256}/manifest.json`);assert.deepEqual(Buffer.from(await stored.arrayBuffer()),p.bytes)
++  const status=async(query='')=>(await app.ok(`${base()}/status${query}`,{token:owner.tokens.owner})).data
++  let scan=await status('?limit=1');assert.equal(scan.page.checkedFiles,1);assert.ok(scan.nextCursor);assert.equal(scan.excluded.ai_usages,1)
++  assert.equal((await app.call(`${base()}/status?excludeTables=&cursor=${encodeURIComponent(scan.nextCursor)}`,{token:owner.tokens.owner})).status,400)
++  let missing=[],pages=0;do{missing.push(...scan.missing);pages++;scan=scan.nextCursor?await status('?limit=1&cursor='+encodeURIComponent(scan.nextCursor)):null}while(scan);assert.ok(pages>1)
++  assert.equal(missing.some(part=>part.file===p.manifest.chunks.find(chunk=>chunk.table==='ai_usages').file),false)
++  const first=p.manifest.chunks[0],firstBytes=await readFile(join(p.root,first.file))
++  assert.equal((await file(first,firstBytes.subarray(1))).data.code,'size_mismatch')
++  assert.equal((await file(first,Buffer.alloc(firstBytes.length,32))).data.code,'digest_mismatch')
++  assert.equal((await file(first,firstBytes,{name:'unlisted.json'})).status,400)
++  assert.equal((await file(first,firstBytes,{name:'unsafe%2Ffile.json'})).status,400)
++  // Real TCP disconnect after a partial body: never publish accepted R2 bytes.
++  await new Promise(resolve=>{
++   const req=httpRequest(app.url+base()+`/files/${first.file}`,{method:'PUT',headers:{Authorization:'Bearer '+owner.tokens.owner,'Content-Type':'application/octet-stream','Content-Length':firstBytes.length}},res=>{res.resume();res.on('end',resolve)})
++   req.on('error',()=>resolve());req.on('close',resolve)
++   req.write(firstBytes.subarray(0,Math.max(1,firstBytes.length>>1)),()=>setTimeout(()=>req.destroy(),25))
++  })
++  assert.equal((await status()).missing.some(p=>p.file===first.file),true)
++  assert.equal((await file(first,firstBytes)).status,201);assert.equal((await file(first,firstBytes,{token:owner.tokens.admin})).data.data.alreadyPresent,true)
++  assert.equal((await file(first,Buffer.alloc(firstBytes.length,32))).data.code,'digest_mismatch')
++  // Multi-file interruption: status after a persistent runtime restart skips the accepted file.
++  await app.configure({});assert.equal((await status()).missing.some(p=>p.file===first.file),false)
++  for(const part of (await status()).missing)assert.equal((await file(part,await readFile(join(p.root,part.file)))).status,201)
++  assert.equal((await status()).missing.length,0)
++  const usage=p.manifest.chunks.find(p=>p.table==='ai_usages'),usageBytes=await readFile(join(p.root,usage.file));assert.equal((await file(usage,usageBytes)).data.code,'excluded_file');assert.equal((await status('?excludeTables=')).missing.length,1);assert.equal((await file(usage,usageBytes,{query:'?excludeTables='})).status,201)
++  const bad=await packageFixture(join(directory,'secret'),owner.projectId,{secret:true});assert.equal((await putManifest(bad.bytes)).status,201);const secretPart=bad.manifest.chunks.find(p=>p.table==='messages');assert.equal((await file(secretPart,await readFile(join(bad.root,secretPart.file)),{digest:bad.manifestSha256})).data.code,'source_policy_refused')
++  const malformed=await packageFixture(join(directory,'invalid-public-key'),owner.projectId,{invalidKey:true});assert.equal((await putManifest(malformed.bytes)).status,201);const invalidPart=malformed.manifest.chunks.find(p=>p.table==='messages');assert.equal((await file(invalidPart,await readFile(join(malformed.root,invalidPart.file)),{digest:malformed.manifestSha256})).data.code,'source_policy_refused')
++  // A custom admin with data.import removed cannot read or mutate this package.
++  const now=Date.now();await app.db.prepare("INSERT INTO project_roles(id,project_id,name,base,permissions_json,created_at,updated_at) VALUES('synthetic-import-restricted',?,'Synthetic restricted admin','admin','[]',?,?)").bind(owner.projectId,now,now).run();await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'synthetic-import-restricted',?)").bind(owner.projectId,owner.users.admin,now).run()
++  assert.equal((await app.call(`${base()}/status`,{token:owner.tokens.admin})).status,403);assert.equal((await file(first,firstBytes,{token:owner.tokens.admin})).status,403)
++  await app.db.prepare('DELETE FROM member_roles WHERE project_id=? AND user_id=?').bind(owner.projectId,owner.users.admin).run()
++  const rowManifest=structuredClone(p.manifest),rowBytes=Buffer.from('[]');rowManifest.chunks[0]={...first,bytes:rowBytes.length,sha256:sha(rowBytes)};const rowDigest=sha(JSON.stringify(rowManifest));assert.equal((await putManifest(Buffer.from(JSON.stringify(rowManifest)))).status,201);assert.equal((await file(first,rowBytes,{digest:rowDigest})).data.code,'row_count_mismatch')
++  assert.deepEqual(await counts(),before);assert.deepEqual(await app.takeJobs(),[])
++  // Successful message intake above exercised the exact Node classifier's public
++  // DKIM createPublicKey/Buffer branch in workerd, alongside credential refusal.
++ }finally{await app.close();await rm(directory,{recursive:true,force:true})}
++}
+diff --git a/tests/move-in/legacy-package-upload/auth-return.mjs b/tests/move-in/legacy-package-upload/auth-return.mjs
+new file mode 100644
+index 0000000..523072b
+--- /dev/null
++++ b/tests/move-in/legacy-package-upload/auth-return.mjs
+@@ -0,0 +1,78 @@
++import assert from 'node:assert/strict'
++import {randomBytes} from 'node:crypto'
++import {createRuntime} from '../../helpers/emitted-runtime.mjs'
++import {totp} from '../../helpers/identity/two-factor.mjs'
++import {loginDestination} from '../../../src/platform/dashboard-path.js'
++
++// Extend the existing identity browser registration through real password and TOTP doors.
++export async function legacyMoveInAuthReturn(browser,{width=1440,inspect=async()=>{}}={}){
++ const runtime=await createRuntime({vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}})
++ const contexts=[],owner={email:'synthetic-move-in-owner@example.test',password:randomBytes(24).toString('base64url')}
++ const continuation='/app/move-in?from=business&note=synthetic%20continuation'
++ let passed=false
++ try{
++  // Keep the existing relative-URL/origin/control-character refusals around the new entry.
++  for(const target of ['https://outside.example/app/move-in','//outside.example/app/move-in','/\\outside.example/app/move-in','/%5coutside.example/app/move-in','/app/move-in%0a','/app/move-in?x=%00','/app/move-in?x=%ZZ','/app/move-in/other','/app/other']){
++   assert.equal(loginDestination(target,runtime.origin),'/conversations')
++   assert.equal(loginDestination(target,runtime.origin,true),'/projects/create')
++  }
++  assert.equal(loginDestination(continuation,runtime.origin),continuation)
++  assert.equal(loginDestination(continuation,runtime.origin,true),continuation)
++  const assertContinuation=actual=>{
++   const target=new URL(actual,runtime.origin),expected=new URL(continuation,runtime.origin)
++   assert.equal(target.origin,expected.origin);assert.equal(target.pathname,expected.pathname)
++   // The router serializes query spaces as +; retain every decoded value, including encoded separators.
++   assert.deepEqual([...target.searchParams],[...expected.searchParams])
++  }
++  const setup=await fetch(runtime.origin+'/api/identity/bootstrap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...owner,name:'Synthetic Import Owner',allowedOrigin:runtime.origin})})
++  assert.equal(setup.status,201)
++  const {projectId}=await setup.json(),destination=`/projects/${projectId}/move-in?legacy=1`
++  const fresh=async()=>{
++   const context=await browser.newContext({viewport:{width,height:1000},bypassCSP:true});contexts.push(context)
++   const page=await context.newPage();page.setDefaultTimeout(20000);return page
++  }
++  const prepareLogin=async page=>{
++   await page.goto(runtime.origin+continuation)
++   await page.waitForURL(url=>url.pathname==='/login')
++   assertContinuation(new URL(page.url()).searchParams.get('returnTo'))
++   await page.getByLabel('Email',{exact:true}).fill(owner.email)
++   await page.getByLabel('Password',{exact:true}).fill(owner.password)
++   await inspect(page,`legacy-login-${width}`)
++  }
++  const resumed=page=>page.waitForRequest(request=>request.isNavigationRequest()&&new URL(request.url()).pathname==='/app/move-in').then(request=>assertContinuation(request.url()))
++  const ready=async(page,name)=>{
++   await page.waitForURL(url=>url.pathname+url.search===destination)
++   await page.getByRole('heading',{name:'HappyToHelp export',exact:true}).waitFor()
++   await inspect(page,`${name}-${width}`)
++  }
++  const passwordPage=await fresh();await prepareLogin(passwordPage)
++  const passwordReturn=resumed(passwordPage)
++  await passwordPage.getByRole('button',{name:'Login',exact:true}).click()
++  await passwordReturn;await ready(passwordPage,'legacy-password-return')
++  // Enrol through the native owner session; the secret stays only inside this synthetic test.
++  const enrolled=await passwordPage.evaluate(async()=>{
++   const response=await fetch('/api/identity/two-factor/totp',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
++   if(response.status!==201)throw Error('Synthetic TOTP enrolment refused')
++   return response.json()
++  })
++  const confirmed=await passwordPage.evaluate(async body=>(await fetch('/api/identity/two-factor/totp/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).status,{factorId:enrolled.factorId,code:totp(enrolled.secret)})
++  assert.equal(confirmed,201)
++  const factorPage=await fresh()
++  await prepareLogin(factorPage);await factorPage.getByRole('button',{name:'Login',exact:true}).click()
++  await factorPage.waitForURL(url=>url.pathname==='/two-factor')
++  assertContinuation(new URL(factorPage.url()).searchParams.get('returnTo'))
++  // A pending native session also follows the entry's own second-factor redirect with its query.
++  await factorPage.goto(runtime.origin+continuation)
++  await factorPage.waitForURL(url=>url.pathname==='/two-factor')
++  assertContinuation(new URL(factorPage.url()).searchParams.get('returnTo'))
++  await inspect(factorPage,`legacy-totp-${width}`)
++  await factorPage.getByLabel('Code from your authenticator app',{exact:true}).fill(totp(enrolled.secret,1))
++  const factorReturn=resumed(factorPage)
++  await factorPage.getByRole('button',{name:'Continue',exact:true}).click()
++  await factorReturn;await ready(factorPage,'legacy-totp-return')
++  passed=true
++ }finally{
++  for(const context of contexts)await context.close()
++  await runtime.close(passed)
++ }
++}
+diff --git a/tests/move-in/legacy-package-upload/browser.mjs b/tests/move-in/legacy-package-upload/browser.mjs
+new file mode 100644
+index 0000000..cb3afe1
+--- /dev/null
++++ b/tests/move-in/legacy-package-upload/browser.mjs
+@@ -0,0 +1,36 @@
++import assert from 'node:assert/strict'
++import {mkdtemp,readFile,writeFile,rm} from 'node:fs/promises'
++import {tmpdir} from 'node:os'
++import {join} from 'node:path'
++import {packageFixture} from './fixture.mjs'
++export async function legacyPackageBrowserFlow({page,runtime,project,inspect,width=1440}){
++ const directory=await mkdtemp(join(tmpdir(),'legacy-browser-')),puts=[]
++ const record=req=>{if(req.method()==='PUT'&&req.url().includes('/legacy-import/'))puts.push(new URL(req.url()).pathname)};page.on('request',record)
++ const shot=name=>inspect(`legacy-${name}-${width}`)
++ try{
++  await page.setViewportSize({width,height:1000})
++  await page.goto(runtime.origin+'/app/move-in');await page.waitForURL(`**/projects/${project}/move-in?legacy=1`)
++  await page.getByRole('heading',{name:'HappyToHelp export',exact:true}).waitFor()
++  const good=await packageFixture(join(directory,'good'),project,{large:true})
++  // Actual directory selection, then a changed local part is refused before acceptance.
++  const first=good.manifest.chunks[0],original=await readFile(join(good.root,first.file));await writeFile(join(good.root,first.file),Buffer.alloc(original.length,32))
++  await page.getByLabel('Export folder',{exact:true}).setInputFiles(good.root);await page.getByText('AI usage history omitted: 1 rows.',{exact:false}).waitFor();await page.getByText(`Review file inventory (${good.manifest.chunks.length+good.manifest.context.length+good.manifest.objects.length} files)`,{exact:false}).click();await shot('review')
++  await page.getByRole('button',{name:'Upload package',exact:true}).click();await page.getByRole('alert').filter({hasText:'File fingerprint differs'}).waitFor();await shot('tampered')
++  await writeFile(join(good.root,first.file),original)
++  await page.getByLabel('Export folder',{exact:true}).setInputFiles(good.root)
++  // Slow only this browser's real transport; never intercept successful replies.
++  const cdp=await page.context().newCDPSession(page);await cdp.send('Network.enable');await cdp.send('Network.emulateNetworkConditions',{offline:false,latency:20,downloadThroughput:2_000_000,uploadThroughput:400_000})
++  await page.getByRole('button',{name:'Continue upload',exact:true}).click();await page.getByRole('button',{name:'Interrupt upload',exact:true}).waitFor();await shot('progress')
++  await page.getByRole('button',{name:'Interrupt upload',exact:true}).click();await page.getByRole('alert').filter({hasText:'Upload interrupted'}).waitFor();await shot('interrupted')
++  await cdp.send('Network.emulateNetworkConditions',{offline:false,latency:0,downloadThroughput:-1,uploadThroughput:-1});await cdp.detach()
++  await page.reload();await page.getByRole('button',{name:'Refresh package status',exact:true}).waitFor();await page.getByText('Reselect the same export folder', {exact:false}).waitFor();await shot('resume')
++  await page.getByLabel('Export folder',{exact:true}).setInputFiles(good.root)
++  const held=await page.evaluate(async()=>{const url=new URL(location.href),sha=url.searchParams.get('legacyPackage'),project=location.pathname.split('/')[2];const r=await fetch(`/api/move-in/projects/${project}/legacy-import/${sha}/status`);return (await r.json()).data})
++  const accepted=new Set([...good.manifest.chunks,...good.manifest.context,...good.manifest.objects].map(p=>p.file).filter(file=>!held.missing.some(p=>p.file===file)&&!good.manifest.chunks.some(p=>p.file===file&&p.table==='ai_usages'))),start=puts.length
++  await page.getByRole('button',{name:'Continue upload',exact:true}).click();await page.getByText('All required package files are uploaded.',{exact:false}).waitFor({timeout:120000})
++  const sent=puts.slice(start).filter(path=>path.includes('/files/')).map(path=>decodeURIComponent(path.split('/').at(-1)));assert.equal(sent.some(file=>accepted.has(file)),false);assert.equal(sent.includes(good.manifest.chunks.find(p=>p.table==='ai_usages').file),false)
++  await page.getByRole('button',{name:'Import history',exact:true}).click();await page.getByText('Import runner unavailable or not yet installed.',{exact:false}).waitFor();await shot('uploaded-runner-unavailable')
++  // Server's unchanged secret classifier refuses a provider-shaped synthetic credential.
++  const bad=await packageFixture(join(directory,'policy-refusal'),project,{secret:true});await page.getByLabel('Export folder',{exact:true}).setInputFiles(bad.root);await page.getByRole('button',{name:/^(Upload package|Continue upload)$/}).click();await page.getByRole('alert').filter({hasText:'source secret policy'}).waitFor();await shot('policy-refused')
++ }finally{page.off('request',record);await rm(directory,{recursive:true,force:true})}
++}
+diff --git a/tests/move-in/legacy-package-upload/fixture.mjs b/tests/move-in/legacy-package-upload/fixture.mjs
+new file mode 100644
+index 0000000..4d32bdb
+--- /dev/null
++++ b/tests/move-in/legacy-package-upload/fixture.mjs
+@@ -0,0 +1,22 @@
++import {writeLegacyPackage} from '../../helpers/legacy-package.mjs'
++import {generateKeyPairSync,createHash} from 'node:crypto'
++import {readFile,writeFile,mkdir} from 'node:fs/promises'
++import {join} from 'node:path'
++export const sha=bytes=>createHash('sha256').update(bytes).digest('hex')
++export async function packageFixture(root,projectId,{large=false,secret=false,invalidKey=false}={}){
++ const {publicKey}=generateKeyPairSync('rsa',{modulusLength:1024});
++ const der=publicKey.export({format:'der',type:'spki'}),dkim='k=rsa; p='+(invalidKey?der.subarray(0,der.length-1):der).toString('base64');
++ const object=Buffer.from('Synthetic attachment bytes for importer intake.\n'.repeat(large?10000:1));
++ const key=`legacy/projects/${projectId}/media/synthetic-media`;
++ const source={format:'happytohelp-legacy-v1',source:{repository:'just-every/run-happytohelp',revision:'synthetic-importer-r1',exportedAt:'2026-11-12T00:00:00Z',projectId},tables:{
++  projects:[{id:projectId,name:'Synthetic support workspace'}],
++  contacts:[{id:'synthetic-contact',project_id:projectId,name:'Synthetic customer',email:'synthetic-customer@example.test'}],
++  conversations:[{id:'synthetic-conversation',project_id:projectId,contact_id:'synthetic-contact',subject:'Synthetic invoice question'}],
++  messages:[{id:'synthetic-message',project_id:projectId,conversation_id:'synthetic-conversation',content:secret?'Synthetic credential test: sk_test_'+'SYNTHETIC1234567890'.repeat(2):`Synthetic public DNS record ${dkim}`}],
++  ai_usages:[{id:'synthetic-usage',project_id:projectId,usage:{prompt_tokens:3,completion_tokens:2}}],
++  media:[{id:'synthetic-media',project_id:projectId,object_key:key,filename:'synthetic.txt'}],
++ },objects:[{key,dataBase64:object.toString('base64'),sha256:sha(object)}]};
++ const built=await writeLegacyPackage(root,source);
++ return {...built,root,bytes:await readFile(join(root,'manifest.json'))};
++}
++export async function modifiedPackage(root,manifest,files={}){await mkdir(root,{recursive:true});for(const [file,bytes]of Object.entries(files))await writeFile(join(root,file),bytes);const bytes=Buffer.from(JSON.stringify(manifest));await writeFile(join(root,'manifest.json'),bytes);return {root,manifest,bytes,manifestSha256:sha(bytes)}}
+diff --git a/tests/move-in/zendesk-door.mjs b/tests/move-in/zendesk-door.mjs
+index d9e8918..db29685 100644
+--- a/tests/move-in/zendesk-door.mjs
++++ b/tests/move-in/zendesk-door.mjs
+@@ -140,7 +140,7 @@ export async function zendeskDoorJourney(){
+   const token=claim.response.headers.get('Set-Cookie').match(/h2h_session=([^;]+)/)[1];clean.rememberSession('owner',token)
+   const actor=await clean.call('/api/identity/session');assert.equal((await clean.call(`/api/move-in/projects/${actor.projectId}/business-imports`)).enabled,true)
+  }finally{await clean.close()}
+- const catalogue=JSON.parse(await readFile('importers.json','utf8'));validateSchema(catalogue,JSON.parse(await readFile('src/modules/import-kit/schema/importers.schema.json','utf8')));const row=catalogue.importers[0];assert.equal(catalogue.importers.length,1);assert.equal(row.incumbent,'Zendesk');assert.equal(row.product,'HappyToHelp');assert.equal(row.status,'documented format');assert.equal(row.evidence.validation,'synthetic-only');assert.equal(row.evidence.realExport,'not-supplied')
++ const catalogue=JSON.parse(await readFile('importers.json','utf8'));validateSchema(catalogue,JSON.parse(await readFile('src/modules/import-kit/schema/importers.schema.json','utf8')));const row=catalogue.importers.find(row=>row.incumbent==='Zendesk'&&row.product==='HappyToHelp');assert.ok(row);assert.ok(catalogue.importers.some(row=>row.incumbent==='HappyToHelp'&&row.product==='HappyToHelp'));assert.equal(row.incumbent,'Zendesk');assert.equal(row.product,'HappyToHelp');assert.equal(row.status,'documented format');assert.equal(row.evidence.validation,'synthetic-only');assert.equal(row.evidence.realExport,'not-supplied')
+  const evidence=await readFile(row.evidence.link.replace(/^evidence:/,''));assert.equal(evidence.length,row.evidence.size);assert.equal(sha(evidence),row.evidence.sha256);assert.equal(sha(await readFile(row.evidence.sourcePath)),row.evidence.sourceSha256)
+ }
+ 

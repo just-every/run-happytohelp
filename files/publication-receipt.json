@@ -1,0 +1,6 @@
+{
+  "exit": 2,
+  "command": "node node_modules/@runeditrun/rer/scripts/publish-check.mjs --repo . --ref HEAD --public-base https://github.com/just-every/run-happytohelp#main --project just-every/happytohelp --repository https://github.com/just-every/run-happytohelp --timeout-seconds 300",
+  "status": "INCOMPLETE",
+  "local_lander_scan_required": true
+}

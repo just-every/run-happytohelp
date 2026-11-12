@@ -1,0 +1,176 @@
+{
+  "review_phase": "final exact-SHA CI completed; before evidence transport",
+  "explicit_files_reviewed": [
+    {
+      "file": "PLAN.md",
+      "bytes": 2589,
+      "sha256": "4896046a318d3dc7c9a9bfd96572e7b7a665a96bef12a2edba4dd7fc965f9c99"
+    },
+    {
+      "file": "REPORT.md",
+      "bytes": 10537,
+      "sha256": "8c418655e65dc7f1513b38aef5bc35005fd689ad825066eae9ecc9f6981c38bc"
+    },
+    {
+      "file": "RESULT.md",
+      "bytes": 10537,
+      "sha256": "8c418655e65dc7f1513b38aef5bc35005fd689ad825066eae9ecc9f6981c38bc"
+    },
+    {
+      "file": "after-runner.log",
+      "bytes": 4659,
+      "sha256": "8248f87c752168175a4b5d21f10f5bbae8526f09cc473f4893c60aad20276072"
+    },
+    {
+      "file": "baseline-receipt.json",
+      "bytes": 545,
+      "sha256": "bc3ba97d92810d155da0dfc6de909d0df52b445526b00ca2c555461ce4f9f39b"
+    },
+    {
+      "file": "baseline-runner.log",
+      "bytes": 1198,
+      "sha256": "00c78925e0c94f11bf6a620600bf4280428f9eed6e4aa5e0ca3301f69c8a346a"
+    },
+    {
+      "file": "build-receipt.json",
+      "bytes": 393,
+      "sha256": "3de195bab40e0201506f590b50cf75b7d7c791ac94bd6d311ffe888fafba8c61"
+    },
+    {
+      "file": "check-receipt.json",
+      "bytes": 2574,
+      "sha256": "7c7287d840a8278fbb467b03973b1690638a4a4684f16b8109735316a3307a78"
+    },
+    {
+      "file": "ci-discovery.json",
+      "bytes": 259,
+      "sha256": "d024f82218c8c1f75166e47a9ef0ec19ec5bd062f09d0228f1fa4543c25ffe88"
+    },
+    {
+      "file": "ci-receipt.json",
+      "bytes": 1296,
+      "sha256": "8c59963f14f543e2a17e9764fd01fa4a05dcc11b91246d0b810458516aeee7b5"
+    },
+    {
+      "file": "ci-watch.log",
+      "bytes": 3357,
+      "sha256": "2fdd55317e3747e40d55fa2d35aeebdaf2216f8cc6c2b9110d06193652f4487f"
+    },
+    {
+      "file": "contract-check.log",
+      "bytes": 70,
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "file": "first-party-after-lock.log",
+      "bytes": 136,
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "file": "first-party.log",
+      "bytes": 136,
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "file": "identity-check.log",
+      "bytes": 400,
+      "sha256": "6655d71cfba669afed87785cb4528b6799c09f55b021f45e2a690304dbb070cd"
+    },
+    {
+      "file": "identity-receipt.json",
+      "bytes": 305,
+      "sha256": "754d4d6f45fea96972f09b16e7101fd453988e4a7756bac180a9c6a147d2be26"
+    },
+    {
+      "file": "intake-admission.log",
+      "bytes": 1728,
+      "sha256": "e48a02f13e21a772104c4db9f6068a5293da406fb8d376cf3301df9ed57f792a"
+    },
+    {
+      "file": "product-push.log",
+      "bytes": 947,
+      "sha256": "865eff5c41c166ed93e22630db2b3b8014d22f36fc70d3909ae2f1b30649581c"
+    },
+    {
+      "file": "product-receipt.json",
+      "bytes": 1308,
+      "sha256": "8b1f3501f5a5846ebfb1614cac317f8c8f6bf1c9fb0b63582780a60775a7cf18"
+    },
+    {
+      "file": "product.diff",
+      "bytes": 86845,
+      "sha256": "f872531dd77e52ba5411024cc644a23fe0beb54e78ec1132892b9c1393fb1854"
+    },
+    {
+      "file": "publication-receipt.json",
+      "bytes": 355,
+      "sha256": "c12271fc421b11d6210584a166f6315b2bd6453ecf4d08a24115095f4718ae79"
+    },
+    {
+      "file": "publication-scan.json",
+      "bytes": 755,
+      "sha256": "b33aecc1435e45686c64bfb70c24c115e851f660cb67f4e35d825d83245bdbf3"
+    },
+    {
+      "file": "roles.log",
+      "bytes": 8216,
+      "sha256": "2f708db6bb495007b2a2aa030812c5e389b4934e5b283d30d61d519d7ebe445f"
+    },
+    {
+      "file": "scope-receipt.json",
+      "bytes": 1134,
+      "sha256": "8f7fc217e994ebe762a48dffcaf257fb44c90fb04d1ff1a25fb35ad5273c6d36"
+    },
+    {
+      "file": "seam-only.diff",
+      "bytes": 3711,
+      "sha256": "e521028f7ea3f83b36cbad67c42b695c74869b6bc3ed2a88afa5f7ccd9865cd9"
+    },
+    {
+      "file": "seam-probe.json",
+      "bytes": 2920,
+      "sha256": "6b181bd020bcb504c407e689debd93358f55d2492c4082239cd8bbebb74ef4f7"
+    },
+    {
+      "file": "seam-probe.mjs",
+      "bytes": 2910,
+      "sha256": "e37708aabbd58aa1cbc11e59db1413b554acc5aab05c3bc1007f09b6741c3aa6"
+    },
+    {
+      "file": "setup-receipt.json",
+      "bytes": 305,
+      "sha256": "2fb23c3b5cf69e577868417b21f71980a33221ef2e74fd559dcc2cdcf2c3788b"
+    },
+    {
+      "file": "source-check.log",
+      "bytes": 739348,
+      "sha256": "4a3f9bd25fec625c5d8818363421e8fa2baddd2f2c1a91a98895e54f4b77eaed"
+    },
+    {
+      "file": "source-lock.log",
+      "bytes": 739334,
+      "sha256": "eb4ede08b3128c9a9f8276c59d19ff3bb6c4fc275d72483a29995116855fa8c4"
+    },
+    {
+      "file": "source-receipt.json",
+      "bytes": 172,
+      "sha256": "e0a92fe4bb5562bd9a4d05afc38959d8334ba8c1e5371c27a4d9ed7409f297b3"
+    },
+    {
+      "file": "supplemental-intake-receipt.json",
+      "bytes": 734,
+      "sha256": "8828295fcc0ac3a3fde044db1f995ff3f9eeb251a708abe129ec63fc7654066e"
+    },
+    {
+      "file": "targeted-intake.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "typecheck.log",
+      "bytes": 253,
+      "sha256": "50d6a523a2a026117db371f04a932cb42722c81e0abff4348ad61b2f257207c9"
+    }
+  ],
+  "selection": "actual regular non-secret reports, proof scripts and receipts; excludes credentials, environment dumps, private setup output, private gate material and symlinks"
+}

@@ -1,0 +1,7 @@
+{
+  "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+  "log_sha256": "731b1d3986f46bc43934f7dcdb099d3c10262e3290b252edbbeb583d8b870a8c",
+  "success_marker": null,
+  "private_setup_log_not_published": true,
+  "hooks_reinstalled_after_setup": true
+}

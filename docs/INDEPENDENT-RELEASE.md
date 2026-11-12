@@ -23,11 +23,11 @@ yours.
 
 ## Update your installation
 
-### Release 0.4.22
+### Release 0.4.23
 
-Update from v0.4.21 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.110. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. v0.4.22 adds two migrations, so upgrade in order from v0.4.21 to v0.4.22: a v0.4.21 installation applies exactly 324_scheduler_outbox_reads.sql, then 325_knowledge_documents_version_url.sql, once each, BEFORE the new Worker serves traffic. Earlier installations apply every missing published migration once, in filename order, BEFORE the new Worker serves traffic (a v0.4.20 installation applies exactly 324, then 325; a v0.4.19 or v0.4.18 installation applies exactly 322_contact_address_lookup.sql, 323_business_retired.sql, 324, then 325; v0.4.17 also needs 321_legacy_import_files.sql, then `node scripts/legacy-import/upgrade.mjs --project <legacy project id>` once per workspace imported from legacy, as the v0.4.18 notes describe; v0.4.16 also needs 320_legacy_import_work_repair.sql); retain each migration's buyer steps. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. No reset, cutover or production deployment is part of this release. Live-provider qualification and owner cutover remain separate.
+Update from v0.4.22 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.112. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. Apply 327_legacy_import_worker.sql once BEFORE the new Worker serves traffic, in upgrade order v0.4.22 -> v0.4.23. A v0.4.21 installation applies 324_scheduler_outbox_reads.sql, then 325_knowledge_documents_version_url.sql, then 327, once each, retaining their published buyer steps; earlier installations first apply every other missing published migration in filename order. There is no migration 326 in this release. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. No reset, cutover or production deployment is part of this release. Fresh-workspace importer adoption, recovery adoption and live-provider qualification remain separate.
 
-See [the 0.4.22 release notes](../CHANGELOG.md#0422--2026-11-11) for the migrations 324 and 325 and what to expect from them, the roster corner for teammates erased by an older release, and the recovery limit for an account that belongs to more than one workspace.
+See [the 0.4.23 release notes](../CHANGELOG.md#0423--2026-11-12) for the corrected mail declaration, native mail choice, rer 0.2.112, the active importer and diagnostics with their limits, and migration 327.
 
 ### Keep your installation state
 

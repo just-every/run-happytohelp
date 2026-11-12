@@ -6,10 +6,11 @@ import {legacyKey,exportedObjectKey} from '../media-index'
 import {insertJson,jsonBytes} from '../d1'
 import {readRows} from './reader'
 import {checkpoint,cursor,limits,packageParts,type Run} from './state'
+import {jsonRows} from './json-rows'
 import {refuse} from './errors'
 /** Byte and row ceilings apply together. Oversized indivisible rows are refused. */
 export function sliceRows(rows:Row[],offset:number,maxRows:number=limits.rows){const selected:Row[]=[];let bytes=2
- for(const row of rows.slice(offset,offset+maxRows)){const n=jsonBytes(row);if(n>limits.bytes)refuse('row_too_large');if(selected.length&&bytes+n>limits.bytes)break;selected.push(row);bytes+=n+1}
+ for(const row of rows.slice(offset,offset+maxRows)){const n=jsonBytes(row);if(n+3>limits.bytes)refuse('row_too_large');if(selected.length&&bytes+n+1>limits.bytes)break;selected.push(row);bytes+=n+1}
  return {rows:selected,bytes}
 }
 export async function loadContext(env:Env,run:Run,manifest:LegacyPackageManifest){
@@ -35,8 +36,15 @@ export async function loadContext(env:Env,run:Run,manifest:LegacyPackageManifest
  // A full chunk enriches an earlier reduced context record; retain every link.
  if(messages.length){const statement=statements.pop()!;statements.push(env.DB.prepare(`DELETE FROM legacy_import_context_messages WHERE run_id=? AND id IN (SELECT json_extract(value,'$[1]') FROM json_each(?))`).bind(run.id,JSON.stringify(messages)),statement)}
  if(media.length){statements.push(env.DB.prepare(`DELETE FROM legacy_import_context_media WHERE run_id=? AND (media_id,link_id) IN (SELECT json_extract(value,'$[1]'),json_extract(value,'$[2]') FROM json_each(?))`).bind(run.id,JSON.stringify(media)),insertJson(env.DB,'INSERT INTO legacy_import_context_media(run_id,media_id,link_id,mediable_type,mediable_id,object_key,legacy_key,row_json)',8,media))}
- // Native identity ownership uses raw ID ordering, independently of transcript collation.
- for(const row of identities)statements.push(env.DB.prepare(`INSERT INTO legacy_import_context_identities(run_id,project_id,identity,contact_id,created_ms) VALUES(?,?,?,?,?) ON CONFLICT(run_id,project_id,identity) DO UPDATE SET contact_id=excluded.contact_id,created_ms=excluded.created_ms WHERE excluded.created_ms<legacy_import_context_identities.created_ms OR (excluded.created_ms=legacy_import_context_identities.created_ms AND excluded.contact_id<legacy_import_context_identities.contact_id)`).bind(run.id,String(row.project_id),contactIdentity(row),String(row.id),timestamp(row.created_at)))
+ // Identity ties use JavaScript's raw source-ID comparison, independently
+ // of SQLite's UTF-8 ordering and transcript localeCompare.
+ if(identities.length){
+  const existing=await env.DB.prepare('SELECT identity,contact_id,created_ms FROM legacy_import_context_identities WHERE run_id=? AND project_id=? AND identity IN (SELECT value FROM json_each(?))').bind(run.id,run.source_project_id,JSON.stringify(identities.map(contactIdentity))).all<{identity:string;contact_id:string;created_ms:number}>()
+  const owners=new Map(existing.results.map(row=>[row.identity,row])),changed=new Map<string,{contact_id:string;created_ms:number}>()
+  for(const row of identities){const key=contactIdentity(row)!,prior=owners.get(key),candidate={identity:key,contact_id:String(row.id),created_ms:timestamp(row.created_at)};if(!prior||candidate.created_ms<prior.created_ms||candidate.created_ms===prior.created_ms&&candidate.contact_id<prior.contact_id){owners.set(key,candidate);changed.set(key,candidate)}}
+  for(const [key,owner] of changed)statements.push(env.DB.prepare('INSERT INTO legacy_import_context_identities(run_id,project_id,identity,contact_id,created_ms) VALUES(?,?,?,?,?) ON CONFLICT(run_id,project_id,identity) DO UPDATE SET contact_id=excluded.contact_id,created_ms=excluded.created_ms').bind(run.id,run.source_project_id,key,owner.contact_id,owner.created_ms))
+ }
+
  const next=offset+selected.rows.length,done=next===original.length
  statements.push(env.DB.prepare('UPDATE legacy_import_worker_parts SET loaded_rows=? WHERE run_id=? AND file=?').bind(next,run.id,part.file))
  await checkpoint(env,run,{cursor_json:JSON.stringify({stage:'load',ordinal:done?ordinal+1:ordinal,file:done?null:part.file,row:done?0:next})},statements)
@@ -47,7 +55,7 @@ export async function loadContext(env:Env,run:Run,manifest:LegacyPackageManifest
 export async function indexTranscripts(env:Env,run:Run){
  const c=cursor(run),next=await env.DB.prepare(`SELECT conversation_id,created_ms FROM legacy_import_context_messages WHERE run_id=? AND deleted=0 AND (conversation_id>? OR (conversation_id=? AND created_ms>?)) ORDER BY conversation_id,created_ms LIMIT 1`).bind(run.id,c.conversation??'',c.conversation??'',c.created??-1).first<{conversation_id:string;created_ms:number}>()
  if(!next){await checkpoint(env,run,{cursor_json:JSON.stringify({stage:'datasets',after:''})});return {rows:0,bytes:0}}
- const rows=await env.DB.prepare('SELECT id,local_id,row_json FROM legacy_import_context_messages WHERE run_id=? AND conversation_id=? AND deleted=0 AND created_ms=? LIMIT 251').bind(run.id,next.conversation_id,next.created_ms).all<{id:string;local_id:string|null;row_json:string}>()
+ const rows=await jsonRows<{id:string;local_id:string|null;row_json:string}>(env.DB,'SELECT id,local_id,row_json FROM legacy_import_context_messages WHERE run_id=? AND conversation_id=? AND deleted=0 AND created_ms=?',[run.id,next.conversation_id,next.created_ms],['id','local_id','row_json'],250,limits.bytes)
  const bytes=jsonBytes(rows.results);if(rows.results.length>250||bytes>limits.bytes)refuse('row_too_large')
  rows.results.sort((a,b)=>a.id.localeCompare(b.id));const base=next.conversation_id===c.conversation?Number(c.revision??0):0,count=base+rows.results.length,last=rows.results.at(-1)!.id
  const revisions=rows.results.map((row,i)=>[row.id,base+i+1])
@@ -58,7 +66,7 @@ export async function indexTranscripts(env:Env,run:Run){
  return {rows:rows.results.length,bytes}
 }
 export async function indexDatasets(env:Env,run:Run){
- const c=cursor(run),rows=await env.DB.prepare(`SELECT source_id,row_json FROM legacy_import_context WHERE run_id=? AND kind='record' AND source_table='dataset_files' AND source_id>? ORDER BY source_id LIMIT ?`).bind(run.id,c.after??'',limits.rows).all<{source_id:string;row_json:string}>()
+ const c=cursor(run),rows=await env.DB.prepare(`SELECT source_id,row_json FROM legacy_import_context WHERE run_id=? AND kind='record' AND source_table='dataset_files' AND source_id>? ORDER BY source_id LIMIT ?`).bind(run.id,c.after??'',1).all<{source_id:string;row_json:string}>()
  if(!rows.results.length){await checkpoint(env,run,{cursor_json:JSON.stringify({stage:'earlier',created:-1,lastRun:''})});return {rows:0,bytes:0}}
  let bytes=0;const statements:D1PreparedStatement[]=[];let last=c.after
  for(const source of rows.results){bytes+=jsonBytes(source);if(bytes>limits.bytes)refuse('row_too_large');const file=JSON.parse(source.row_json),dataset=await env.DB.prepare("SELECT row_json FROM legacy_import_context WHERE run_id=? AND kind='record' AND source_table IN ('datasets','knowledge_datasets') AND source_id=? LIMIT 1").bind(run.id,String(file.dataset_id)).first<{row_json:string}>();last=source.source_id

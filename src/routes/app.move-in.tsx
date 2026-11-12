@@ -4,8 +4,8 @@ import {checkNativeSession} from '../ui/identity/loaders'
 /** Business's declared link continues through native sign-in and workspace choice. */
 export const Route=createFileRoute('/app/move-in')({
  headers:()=>({'Cache-Control':'no-store'}),
- beforeLoad:async()=>{
-  const returnTo='/app/move-in',headers={'Cache-Control':'no-store'}
+ beforeLoad:async({location})=>{
+  const returnTo=location.pathname+location.searchStr,headers={'Cache-Control':'no-store'}
   const session=await checkNativeSession()
   if(!session)throw redirect({to:'/login',search:{returnTo},replace:true,headers})
   if('busy' in session)throw new Error('Workspace is temporarily busy. Reload to continue to Move in.')

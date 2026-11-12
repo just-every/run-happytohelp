@@ -35,6 +35,7 @@ export async function sharedRecoveryJourney(){
   await app.ok(root+'/account/approve',{body:{requestId:next.requestId},token:second.tokens.owner})
   await app.ok('/api/identity/session',{method:'DELETE',token:second.tokens.owner})
   assert.equal((await app.call(root+'/enrol/totp',{body:{},headers:capabilityHeaders(next.capability)})).status,409)
+  assert.equal((await app.call(root+'/account/approve',{body:{requestId:next.requestId},token:owner.token})).status,403,'a revoked consent requires a new target request, not a silent renewed vote')
   const still=await app.first('SELECT secret_ciphertext FROM user_factors WHERE user_id=?',target.actor.id);assert.ok(still.secret_ciphertext)
   // First-owner identity and installation administrators have no generic consent route.
   assert.equal((await app.call(root+'/account/request',{body:{email:'owner@example.test',password}})).status,409)

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {mkdtemp,mkdir,writeFile,rm,symlink} from 'node:fs/promises'
+import {mkdtemp,mkdir,writeFile,appendFile,rm,symlink} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {resolve,join} from 'node:path'
 import {execFile} from 'node:child_process'
@@ -22,8 +22,11 @@ export async function recoveryRestoreJourney(){
   await promisify(execFile)('git',['clone','--quiet','--no-local','--depth','1',resolve('.'),checkout])
   await symlink(resolve('node_modules'),join(checkout,'node_modules'),'dir')
   await mkdir(join(checkout,'.seed'),{recursive:true})
-  await writeFile(join(checkout,'.seed/answers.json'),JSON.stringify({WORKSPACE_NAME:'Recovery restore support',WIDGET_ORIGIN:origin,OWNER_NAME:'Casey Owner',OWNER_PASSWORD:password,EMAIL_PROVIDER:'later',H2H_OWNER_RECOVERY_KEY:key}),{mode:0o600})
+  await writeFile(join(checkout,'.seed/answers.json'),JSON.stringify({WORKSPACE_NAME:'Recovery restore support',WIDGET_ORIGIN:origin,OWNER_NAME:'Casey Owner',OWNER_PASSWORD:password,EMAIL_PROVIDER:'later'}),{mode:0o600})
   await run(checkout,['setup','--owner-email',email,'--answers','.seed/answers.json','--port',String(port)])
+  // Set the documented private local binding as a synthetic test input. Setup
+  // owns generation of its hidden key; the test never reads that generated value.
+  await appendFile(join(checkout,'.dev.vars'),'\nH2H_OWNER_RECOVERY_KEY='+key+'\n',{mode:0o600})
   await start()
   const login=await ok('/api/identity/login',{email,password}),owner=login.actor
   // Spend a manual key through the real recovery transaction, leaving its fence portable.

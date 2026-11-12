@@ -11,6 +11,9 @@ import {archiveStorage} from '../../rer-archive.mjs'
 import {totp} from '../two-factor.mjs'
 const rootPath='/api/identity/owner-recovery'
 export async function recoveryRestoreJourney(){
+ // Local storage inspection must never fetch edge metadata from a provider.
+ const priorCfFetch=process.env.CLOUDFLARE_CF_FETCH_ENABLED
+ process.env.CLOUDFLARE_CF_FETCH_ENABLED='false'
  const scratch=await mkdtemp(join(tmpdir(),'h2h-identity-restore-')),checkout=join(scratch,'checkout'),email='recovery-restore@example.test',password='synthetic-recovery-restore-password',key=randomBytes(32).toString('hex')
  const reservation=createServer();await new Promise(done=>reservation.listen(0,'127.0.0.1',done));const port=reservation.address().port;await new Promise(done=>reservation.close(done))
  const origin=`http://127.0.0.1:${port}`;let server
@@ -43,8 +46,10 @@ export async function recoveryRestoreJourney(){
   const pendingFactor=await ok(rootPath+'/enrol/totp',{},undefined,pending.capability)
   assert.ok(pendingFactor.secret)
   await stop()
+  console.info('Recovery restore: offline snapshot')
   const before=await archiveStorage(checkout,async({DB})=>({members:(await DB.prepare('SELECT * FROM memberships ORDER BY user_id,project_id').all()).results,credentials:(await DB.prepare('SELECT * FROM credentials ORDER BY user_id').all()).results,spent:(await DB.prepare('SELECT * FROM owner_recoveries').all()).results,approvals:(await DB.prepare('SELECT count(*) n FROM identity_recovery_approvals').first()).n}))
   assert.equal(before.approvals,1);assert.equal(before.spent.length,1)
+  console.info('Recovery restore: public export/reset/import')
   await run(checkout,['export','--output','exports/recovery.rer'])
   await run(checkout,['reset','--yes'])
   await run(checkout,['import','--input','exports/recovery.rer','--yes'])
@@ -54,6 +59,7 @@ export async function recoveryRestoreJourney(){
    assert.deepEqual((await DB.prepare('SELECT * FROM credentials ORDER BY user_id').all()).results,before.credentials)
    assert.deepEqual((await DB.prepare('SELECT * FROM owner_recoveries').all()).results,before.spent)
   })
+  console.info('Recovery restore: restored access and fresh recovery')
   await start()
   assert.equal((await call(rootPath+'/status',undefined,undefined,pending.capability)).response.status,401)
   assert.equal((await call(rootPath+'/complete',{factorId:pendingFactor.factorId,code:totp(pendingFactor.secret)},undefined,pending.capability)).response.status,401)
@@ -67,6 +73,7 @@ export async function recoveryRestoreJourney(){
   assert.equal((await ok('/api/identity/login',{email:'shared-restore@example.test',password})).twoFactor,'verify')
   // The existing eligible member erase door retires pending credential state;
   // retained opaque recovery history does not keep a capability alive.
+  console.info('Recovery restore: guarded member erase')
   const retiring=await ok(rootPath+'/account/request',{email:'shared-restore@example.test',password})
   await ok(rootPath+'/account/approve',{requestId:retiring.requestId},restored.token)
   await ok(rootPath+'/enrol/totp',{},undefined,retiring.capability)
@@ -79,5 +86,5 @@ export async function recoveryRestoreJourney(){
    assert.equal((await DB.prepare('SELECT count(*) n FROM identity_recovery_approvals WHERE request_id=?').bind(retiring.requestId).first()).n,0)
    assert.ok((await DB.prepare('SELECT count(*) n FROM identity_recovery_events WHERE user_id=?').bind(target.actor.id).first()).n>0)
   })
- }finally{await stop();await rm(scratch,{recursive:true,force:true})}
+ }finally{try{await stop();await rm(scratch,{recursive:true,force:true})}finally{if(priorCfFetch===undefined)delete process.env.CLOUDFLARE_CF_FETCH_ENABLED;else process.env.CLOUDFLARE_CF_FETCH_ENABLED=priorCfFetch}}
 }

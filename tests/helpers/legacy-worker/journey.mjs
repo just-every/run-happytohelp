@@ -3,6 +3,7 @@ import {mkdtemp,readFile,rm} from 'node:fs/promises'
 import {join} from 'node:path'
 import {tmpdir} from 'node:os'
 import {createHash} from 'node:crypto'
+import {recordMeasurement} from './profiler.mjs'
 import {runnerRuntime} from './runtime.mjs'
 import {writeLegacyPackage} from '../legacy-package.mjs'
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex')
@@ -44,7 +45,7 @@ export async function workerRunnerJourney({packageRoot,interrupt=true,measure=tr
    assert.ok(queue.length,'durable continuation has a wake');const jobs=queue.splice(0,1),before=await readRun()
    const profiled=measure?await runtime.profile(()=>runtime.step(jobs,headers)): {value:await runtime.step(jobs,headers)}
    queue.push(...profiled.value.queue);const after=await readRun();invocations++;if(packageRoot&&invocations%250===0)console.log('LEGACY_WORKER_PROGRESS '+JSON.stringify({invocations,phase:after.phase,state:after.state,attempt:after.attempt}))
-   if(profiled.measurement){const m=profiled.measurement,prior=measurements[before.phase]??{invocations:0,maxCpuMs:0,maxHeapBytes:0,maxStatements:0,rows:0,bytes:0};prior.invocations++;const old=JSON.parse(before.metrics_json),next=JSON.parse(after.metrics_json),rows=(next.rows??0)-(old.rows??0),bytes=(next.bytes??0)-(old.bytes??0);if(m.sampledCpuMs>=prior.maxCpuMs)prior.worstCpu={ms:m.sampledCpuMs,rows,bytes,statements:profiled.value.metrics.statements};prior.maxCpuMs=Math.max(prior.maxCpuMs,m.sampledCpuMs);prior.maxHeapBytes=Math.max(prior.maxHeapBytes,m.maxHeapBytes);prior.maxStatements=Math.max(prior.maxStatements,profiled.value.metrics.statements);prior.rows=Math.max(prior.rows,rows);prior.bytes=Math.max(prior.bytes,bytes);prior.totalCpuMs=(prior.totalCpuMs??0)+m.sampledCpuMs;prior.totalRows=(prior.totalRows??0)+rows;prior.totalBytes=(prior.totalBytes??0)+bytes;prior.rowsPer30sCpu=30000*prior.totalRows/prior.totalCpuMs;prior.bytesPer30sCpu=30000*prior.totalBytes/prior.totalCpuMs;measurements[before.phase]=prior}
+   if(profiled.measurement)recordMeasurement(measurements,before.phase,JSON.parse(before.metrics_json),JSON.parse(after.metrics_json),profiled.measurement,profiled.value.metrics.statements)
    assert.notEqual(after.state,'paused',JSON.stringify({phase:after.phase,cursor:JSON.parse(after.cursor_json),error:after.error_code,failures:profiled.value.failures}));return after
   }
   const until=async(check)=>{for(let n=0;n<15000;n++){const run=await readRun();if(await check(run))return run;await runStep()}throw new Error('Runner did not settle')}
@@ -91,7 +92,7 @@ export async function workerRunnerJourney({packageRoot,interrupt=true,measure=tr
   await runtime.call(base+'/start',{token:readerToken,body:{approvedManifestSha256:sha,replay:true},status:202});queue=await runtime.take();await until(run=>run.state==='complete')
   const replay=(await runtime.call(base+'/result',{token:readerToken,status:200})).data.data
   assert.equal(replay.attempt.appliedRows,0);assert.equal(replay.attempt.replayedRows,first.attempt.appliedRows);assert.equal(replay.journalEqualsPackage,true);assert.deepEqual((await runtime.db.prepare('SELECT run_id,source_table,source_id,row_digest,status FROM legacy_import_rows ORDER BY run_id,source_table,source_id').all()).results,journal.results)
-  if(!packageRoot){const {deltaJourney}=await import('./delta-journey.mjs');Object.assign(facts,await deltaJourney(runtime,scratch,fixtureData.bundle,readerToken))}
+  if(!packageRoot){const {deltaJourney}=await import('./delta-journey.mjs');Object.assign(facts,await deltaJourney(runtime,scratch,fixtureData.bundle,readerToken,measurements,measure))}
   assert.equal(runtime.outbound.length,0)
   const report={...facts,rows:first.attempt.appliedRows,replayApplied:replay.attempt.appliedRows,objects:first.attachments,workUnchanged:first.work.unchanged,invocations,measurements,diagnostics:first.diagnostics}
   console.log('LEGACY_WORKER_RESULT '+JSON.stringify(report));return report

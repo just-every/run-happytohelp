@@ -24,3 +24,9 @@ export async function isolateProfiler(mf){
   return {value,measurement:{sampledCpuMs:cpuUs/1000,maxHeapBytes,samples:samples.length,idleMs:idleUs/1000,method:'workerd-inspector-v8-sampling-excluding-idle'}}
  },async close(){for(const wait of pending.values()){clearTimeout(wait.timer);wait.reject(new Error('Inspector closed'))}pending.clear();socket.terminate()}}
 }
+export function recordMeasurement(measurements,phase,before,after,m,statements){
+ const prior=measurements[phase]??{invocations:0,maxCpuMs:0,maxHeapBytes:0,maxStatements:0,rows:0,bytes:0},rows=(after.rows??0)-(before.rows??0),bytes=(after.bytes??0)-(before.bytes??0)
+ prior.invocations++;if(m.sampledCpuMs>=prior.maxCpuMs)prior.worstCpu={ms:m.sampledCpuMs,rows,bytes,statements}
+ prior.maxCpuMs=Math.max(prior.maxCpuMs,m.sampledCpuMs);prior.maxHeapBytes=Math.max(prior.maxHeapBytes,m.maxHeapBytes);prior.maxStatements=Math.max(prior.maxStatements,statements);prior.rows=Math.max(prior.rows,rows);prior.bytes=Math.max(prior.bytes,bytes)
+ prior.totalCpuMs=(prior.totalCpuMs??0)+m.sampledCpuMs;prior.totalRows=(prior.totalRows??0)+rows;prior.totalBytes=(prior.totalBytes??0)+bytes;prior.rowsPer30sCpu=30000*prior.totalRows/prior.totalCpuMs;prior.bytesPer30sCpu=30000*prior.totalBytes/prior.totalCpuMs;measurements[phase]=prior
+}

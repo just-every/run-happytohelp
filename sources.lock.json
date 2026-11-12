@@ -4624,6 +4624,26 @@
       "sha256": "9fdf47523297d5ba2f00aeb9fd39ed62de936c7551e89c4fde6eb4b4172afd40",
       "executable": false
     },
+    "src/modules/acceptance-diagnostics/c2/counts.ts": {
+      "sha256": "a64cfa2ca9161bb00ca508eb6542ac56bdab57f1ac7d722539a9b38d875f21a4",
+      "executable": false
+    },
+    "src/modules/acceptance-diagnostics/c2/projection.ts": {
+      "sha256": "1e6ef3e91fb0fa7f78115682de61143e04c3f007567983ea9160c420618d44b3",
+      "executable": false
+    },
+    "src/modules/acceptance-diagnostics/c2/receipts.ts": {
+      "sha256": "06d99033f59df2c5e507b101aee9132e8001bec7c8e333262241c52fce0d271e",
+      "executable": false
+    },
+    "src/modules/acceptance-diagnostics/c2/routes.ts": {
+      "sha256": "cf481943144a22b7bfe768d82da7aa6729d9db3d8385e096ee63a068491c6cea",
+      "executable": false
+    },
+    "src/modules/acceptance-diagnostics/c2/selectors.ts": {
+      "sha256": "8196e65443615ed38a5eb95ae83127fbf1ea09aaa2e39c0733588939c30187ea",
+      "executable": false
+    },
     "src/modules/access/assign.ts": {
       "sha256": "067fce4f0b80797ceb3c98a88b395d895092f69fadd5934329fe139c62a21454",
       "executable": false
@@ -8205,7 +8225,7 @@
       "executable": false
     },
     "src/modules/management/index.ts": {
-      "sha256": "214d4ddd71db560c883843ea42cd69613982316cd8c31dcf72b4a89cc65d35ca",
+      "sha256": "cc562e4a5338d32a9218899db591b48434970beca57af2e4b68bb163f86c2572",
       "executable": false
     },
     "src/modules/management/installation.ts": {
@@ -15724,6 +15744,30 @@
       "sha256": "8ee72e46caeba6834418c6ee6694f9455267c0ba509f36442f063a805559f205",
       "executable": false
     },
+    "tests/helpers/c2-diagnostics/delivery.mjs": {
+      "sha256": "554c5beb037a635b1fcacd496a00f875eb62792702ff574dbb6b2c84d73919b2",
+      "executable": false
+    },
+    "tests/helpers/c2-diagnostics/fixture.mjs": {
+      "sha256": "99c5ae8a0bfd5b989470c57917c59939b4d6d4b91bb6693198fb9df0edabd469",
+      "executable": false
+    },
+    "tests/helpers/c2-diagnostics/flow.mjs": {
+      "sha256": "2980b8432d2abcdc481b8b388313e8f8af56f4183e97efda40bce8c2989af25e",
+      "executable": false
+    },
+    "tests/helpers/c2-diagnostics/http.mjs": {
+      "sha256": "ab7f033bbe596a13456cf6c7b51ab11b1de7ffbc41da0cee32e8a730ea856b95",
+      "executable": false
+    },
+    "tests/helpers/c2-diagnostics/journey.mjs": {
+      "sha256": "76d9a6da7c4062be925a0ae97dd4bb576acf4118cc0f29dbdc3f0f5ed98d6583",
+      "executable": false
+    },
+    "tests/helpers/c2-diagnostics/refusals.mjs": {
+      "sha256": "778b5df8ffa954272236891378a35c270b57a2c61de8c3dd449684b2bd52cf8c",
+      "executable": false
+    },
     "tests/helpers/campaigns-portable.mjs": {
       "sha256": "082ab7822cc9fc643c751c1df3f0cb98e8fd54d8451987e7c66bf7322c7220fa",
       "executable": false
@@ -16873,7 +16917,7 @@
       "executable": false
     },
     "tests/journeys/knowledge.mjs": {
-      "sha256": "7cde67ba0fb2c4618c19e722524aa150566b9892fb5a2c9b2b979e6183ecfaa1",
+      "sha256": "26a736ca157e7bcf9acc8e1c3a4ac646a35745572234234b434553546776b0f4",
       "executable": false
     },
     "tests/journeys/legacy.mjs": {

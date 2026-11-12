@@ -1,9 +1,10 @@
 import test from 'node:test'
 import {authoringJourney} from '../helpers/knowledge/authoring.mjs'
 import {publishedKnowledgeJourney} from '../helpers/knowledge/published.mjs'
+import {c2DiagnosticsJourney} from '../helpers/c2-diagnostics/journey.mjs'
 import {customerPortalJourney} from '../helpers/customer-portal-journey.mjs'
 
-test('an owner publishes searchable help and removes it through article and workspace lifecycle while drafts and foreign records stay private',async()=>{await authoringJourney();await publishedKnowledgeJourney()})
+test('an owner publishes searchable help and removes it through article and workspace lifecycle while drafts and foreign records stay private',async()=>{await authoringJourney();await publishedKnowledgeJourney();await c2DiagnosticsJourney()})
 test('customers create, reply to and reopen their own requests, with company access and attachments revoked immediately when authority ends',customerPortalJourney)
 
 import {previewJourney} from '../helpers/knowledge/preview.mjs'

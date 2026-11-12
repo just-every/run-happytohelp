@@ -33,7 +33,9 @@ import {teammateSlackRoutes} from '../integrations/teammate-slack'
 import {teammateTeamsRoutes} from '../integrations/teammate-teams'
 import {collaborationRoutes} from '../collaboration/routes'
 import {conversationActionRoutes} from '../conversation-actions/routes'
+import {c2Diagnostics} from '../acceptance-diagnostics/c2/routes'
 export const routes=new Hono<AppEnv>()
+routes.route('/',c2Diagnostics)
 routes.route('/',customerRoutes).route('/',csvCustomerRoutes).route('/',activation).route('/',workspaceArtwork).route('/',projects).route('/',resources).route('/',contactErasure).route('/',widgetSettings).route('/',integrations).route('/',admin).route('/',invitations).route('/',githubOAuth).route('/',projectPolicy).route('/',auditRoutes).route('/',roles).route('/',twoFactorPolicy)
 export const dashboardRoutes=new Hono<AppEnv>()
 routes.route('/',triageRoutes).route('/',workflowRoutes).route('/',ticketRoutes).route('/',queueRoutes).route('/',macroRoutes).route('/',notificationRoutes).route('/',teammateSlackRoutes).route('/',teammateTeamsRoutes)

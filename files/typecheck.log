@@ -1,0 +1,4 @@
+
+> happytohelp@0.4.22 typecheck /home/agent/rer-consolidation/work/hh-importer-adopt-2/repo
+> node scripts/generate-routes.mjs && tsc --noEmit
+

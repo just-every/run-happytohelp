@@ -1,0 +1,148 @@
+{
+  "files": [
+    {
+      "blob": "9ce8ce956254cac586ce823e8bda6961ce9c1019",
+      "bytes": 9975,
+      "path": "API.md",
+      "sha256": "0a1eb818275dd1a547941ff64691aa9c4ddae82e00bdfa6dfcf6ddf8b341a3d0"
+    },
+    {
+      "blob": "6e1a2f803f37a0ff2be208193d53566d1c64632c",
+      "bytes": 3513,
+      "path": "PLAN.md",
+      "sha256": "df8a330a75ac4ea71fcd40d1649ea77e6138a3767e6a89219e0179e22f2d1f69"
+    },
+    {
+      "blob": "f342722928bb26323f57a3cdf9536e0ffaa0230f",
+      "bytes": 8333,
+      "path": "REPORT.md",
+      "sha256": "cae2f229e923fd4a293562a76734007193dd1a8e3f207c833c02a55e5546f5f9"
+    },
+    {
+      "blob": "7ef6ab909d0447f259e3bf68561fa2e07447a936",
+      "bytes": 594,
+      "path": "adoption-receipt.json",
+      "sha256": "d1b1ebf1d8068e7e3486f13fcb5fa13db393e6333a79b2f92bd0ae15fc8a5c4b"
+    },
+    {
+      "blob": "34543e01ef88f8a3d6a762862ac0a1917ef9c0a4",
+      "bytes": 540,
+      "path": "adoption.log",
+      "sha256": "e31d8b592efabf07103e8ae124f4c17665207e837336870614eb5969795f539c"
+    },
+    {
+      "blob": "ff76d0d3eb3d36987f14ab9158e438ec51c12dcb",
+      "bytes": 639,
+      "path": "boundary-receipt.json",
+      "sha256": "9044573e2f12f338d3ea765a51b536689198959fd455f3e6a80a558e2646e821"
+    },
+    {
+      "blob": "7160e636bce5f3f9e415c62a5d476f6f5e7bdd02",
+      "bytes": 496,
+      "path": "checks.json",
+      "sha256": "e1b1b8a25c540c4bad0e8d29218cb083ef83002e15659d2f50ae610180602a17"
+    },
+    {
+      "blob": "bc66128c46cb6fd219b52bc7496a25c9736d6039",
+      "bytes": 9070,
+      "path": "ci-build-failed.log",
+      "sha256": "f08f2d772efd00b634a5f64dc3adc1d6b6394e2908d39c88531865e741f0f8e6"
+    },
+    {
+      "blob": "7a41f533bd842a9d4ee550735e8c4d9e525d1a6a",
+      "bytes": 273,
+      "path": "ci-discovery.json",
+      "sha256": "2cc74adbadf606831b31f1bcd6759f5173fd54d2248082ffc8c9c1e5cb9a42e8"
+    },
+    {
+      "blob": "14102394bf2f4155b751dee0df44668296386463",
+      "bytes": 594,
+      "path": "ci-jobs.json",
+      "sha256": "31372ce2f222b64e3c3d94751a49b00bea661600748908491ac42a848f7b5ef1"
+    },
+    {
+      "blob": "5317176f8257ee04ea16645d616cabfae84e477b",
+      "bytes": 2857,
+      "path": "ci-verify-failed.log",
+      "sha256": "fc995f9b3972b2ead48a92cf393ccc725ab1df60e78a5fe79506f522ae4eb37f"
+    },
+    {
+      "blob": "23edf02d516be990fc97ced7f302017dc821742b",
+      "bytes": 1294,
+      "path": "ci.json",
+      "sha256": "f7f04b3c3f582948843c9378282a745a88dc3335a0b07db431166b5c1ff223b4"
+    },
+    {
+      "blob": "775a0f8a468663ed817cf04fc86b42f4eb759549",
+      "bytes": 325,
+      "path": "cli-node22-receipt.json",
+      "sha256": "85069db74e3824a880027f8bc9745f1ff635ce1e8cf2befaefa44a0ec074d354"
+    },
+    {
+      "blob": "b555f72040bc04f6da51ddac6f2c46850b90af1a",
+      "bytes": 7263,
+      "path": "deployment-spec.patch",
+      "sha256": "92e585cde7e8349a950988f6611edf84c7f1ff3070e60b8059151ea30b492222"
+    },
+    {
+      "blob": "e0746d82caf17348cdc04c253bcde3312f0717a8",
+      "bytes": 136,
+      "path": "first-party.log",
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "blob": "80eae09481ca6a86e3e67dbc85b2dc567aea3d93",
+      "bytes": 171,
+      "path": "identity.log",
+      "sha256": "fcc16c9193a62aa5030e7bc9606a2863da77c4d274ed9dba939dd21457fd575a"
+    },
+    {
+      "blob": "9e226556dfd5404086d372afa341511c92c49835",
+      "bytes": 1801,
+      "path": "provenance.json",
+      "sha256": "0336d9089b3469deb3683f1a19235f0b9b3cd81c885efc11597877f930ea8cee"
+    },
+    {
+      "blob": "dbcc6a6bb91c1b867cb83f6e36c96b455b00ebd4",
+      "bytes": 78,
+      "path": "remote-head.txt",
+      "sha256": "1f4bc53f6f48adcff29f3cae7ff074e81a7bd850c94d126c50e7a844f76a9dbe"
+    },
+    {
+      "blob": "1d8e7d0c3efb6d7e8511297811c2bc19cd57150b",
+      "bytes": 741556,
+      "path": "source-check.log",
+      "sha256": "cc0da4622ecbd1f649cb724d4c48635dbc6cdf0ec37fd2ed4aecf92bbc43ce44"
+    },
+    {
+      "blob": "851824f0c20ee4e2eac833003fc726ad0619a477",
+      "bytes": 741540,
+      "path": "source-lock.log",
+      "sha256": "c977a06186bfd7b3582623c642e9f27bf8e97376bd29c15cc69cf09aa25cf386"
+    },
+    {
+      "blob": "abfffa2506ee940536b1f35be52ae68df948ec8d",
+      "bytes": 144,
+      "path": "typecheck.log",
+      "sha256": "a19e5a028eea6b8ecb345b84cbd2d0022fa03c27ecb1e9d94178425878ffc8b6"
+    },
+    {
+      "blob": "625ab879bc9096b7c435750ca26b94762cbf5f06",
+      "bytes": 320,
+      "path": "v1-command.log",
+      "sha256": "87b4ef79b1d1cb1d20cb47ff1f44b3c45e79e20c972f35e29616cd5e7c396226"
+    },
+    {
+      "blob": "bf1047d8e5f91a1ade2568360a2c5fc319ab587f",
+      "bytes": 4949,
+      "path": "v1-worker.log",
+      "sha256": "3c7148aacfe8b5d4b97857c0b9849720ad15397986d1cf7e68c1ae0daa65fa10"
+    }
+  ],
+  "product_branch": "cloud/hh-importer-adopt-2",
+  "product_head": "357cc9e96b5c6cce77faa332f2a2ba9644824e56",
+  "ref": "refs/heads/evidence/hh-importer-adopt-2",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-importer-adopt-2"
+}

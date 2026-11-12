@@ -1,0 +1,23 @@
+Completed exact-SHA failed-job output; environment sections omitted from publication.
+verify	Require the plan and every selected check	﻿2026-11-12T16:51:55.7831822Z ##[group]Run set -euo pipefail
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7832816Z [36;1mset -euo pipefail[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7833646Z [36;1mtest "$PLAN" = success[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7834792Z [36;1mcase "$PUSH_PROOF:$NIGHTLY_PROOF" in *failure*|*cancelled*) exit 1 ;; esac[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7836040Z [36;1mcase "$COVERAGE:$TIER" in[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7836918Z [36;1m  reuse:push|reuse:nightly)[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7838100Z [36;1m    test "$SKIP:$BUILD:$CHECKS:$SLOW" = true:skipped:skipped:skipped ;;[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7839221Z [36;1m  light:push)[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7840404Z [36;1m    test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:skipped:skipped ;;[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7841527Z [36;1m  full:push)[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7842462Z [36;1m    test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:success:skipped[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7843878Z [36;1m    if [ "$GITHUB_EVENT_NAME" = push ]; then test "$PUSH_PROOF" = success; fi ;;[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7845042Z [36;1m  full:nightly)[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7846149Z [36;1m    test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:skipped:skipped:success ;;[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7847239Z [36;1m  full:all)[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7848300Z [36;1m    test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:success:success ;;[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7849517Z [36;1m  *) exit 1 ;;[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7850235Z [36;1mesac[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7851099Z [36;1mnode scripts/ci/verify-lifecycle.mjs --require-pr[0m
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7866502Z shell: /usr/bin/bash -e {0}
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7883244Z ##[endgroup]
+verify	Require the plan and every selected check	2026-11-12T16:51:55.7943683Z ##[error]Process completed with exit code 1.

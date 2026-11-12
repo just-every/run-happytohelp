@@ -1,0 +1,42 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-importer-adopt-2",
+  "head": "357cc9e96b5c6cce77faa332f2a2ba9644824e56",
+  "runId": 43262931063,
+  "discovery": {
+    "conclusion": null,
+    "event": "push",
+    "head_branch": "cloud/hh-importer-adopt-2",
+    "head_sha": "357cc9e96b5c6cce77faa332f2a2ba9644824e56",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43262931063",
+    "id": 43262931063,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "polls": [
+    {
+      "conclusion": "failure",
+      "head_sha": "357cc9e96b5c6cce77faa332f2a2ba9644824e56",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43262931063",
+      "status": "completed"
+    }
+  ],
+  "calls": 5,
+  "status": "completed",
+  "conclusion": "failure",
+  "failedJobs": [
+    {
+      "id": 131338897787,
+      "name": "build",
+      "reason": "Confirm build preserves source: generated deployment-spec.json drift for migration 328"
+    },
+    {
+      "id": 131339895874,
+      "name": "verify",
+      "reason": "required build failed; selected checks skipped"
+    }
+  ],
+  "scopeBoundary": "management/integration/deployment-spec.json is outside A exclusive owned paths",
+  "terminal": "BLOCKED",
+  "logsReadOncePerFailedJob": true
+}

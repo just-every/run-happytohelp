@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "sourceProjectId": "synthetic-adopted-workspace",
+  "setupUnchanged": true,
+  "businessLinkUnchanged": true,
+  "historicalStaffRows": 4,
+  "historicalMembershipRows": 4,
+  "nativeMembershipsAdded": 1,
+  "nativeUsersAdded": 0,
+  "firstSliceRows": 1,
+  "noteMediaBytes": 36,
+  "originalRows": 21,
+  "appliedRows": 20,
+  "replayedRows": 21,
+  "replayApplied": 0,
+  "workUnchanged": true,
+  "preflightAuthorityRefusals": true,
+  "transactionAuthorityRefusals": true,
+  "mountedProductAcceptance": "pending C",
+  "registration": "pending C/lane after index-drain terminal"
+}

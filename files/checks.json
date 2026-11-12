@@ -1,0 +1,35 @@
+[
+  {
+    "name": "typecheck",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "exitCode": 0,
+    "node": "v22.20.0"
+  },
+  {
+    "name": "source-check",
+    "command": [
+      "pnpm",
+      "run",
+      "source:check"
+    ],
+    "exitCode": 0,
+    "node": "v22.20.0"
+  },
+  {
+    "name": "first-party",
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "exitCode": 0,
+    "node": "v22.20.0"
+  }
+]

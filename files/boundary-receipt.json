@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "command": "git apply --check packet/deployment-spec.patch",
+  "target": "management/integration/deployment-spec.json",
+  "source": "exact-SHA Verify 43262931063 build job 131338897787 machine-generated diff",
+  "productApplied": false,
+  "patchSha256": "92e585cde7e8349a950988f6611edf84c7f1ff3070e60b8059151ea30b492222",
+  "failureLogs": "actual completed-job output with environment sections excluded",
+  "failedJobLogCalls": [
+    {
+      "runId": 43262931063,
+      "jobId": 131338897787,
+      "exitCode": 0
+    },
+    {
+      "runId": 43262931063,
+      "jobId": 131339895874,
+      "exitCode": 0
+    }
+  ]
+}

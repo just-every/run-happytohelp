@@ -208,4 +208,6 @@ test('the Worker package reader verifies immutable custody and chunk identity, w
 test('an owner runs a bounded legacy package through HTTP and queue, stops in-flight writes, resumes two real Worker deaths and replays zero rows',async()=>{
  const {workerRunnerJourney}=await import('../helpers/legacy-worker/journey.mjs')
  await workerRunnerJourney()
+ const {knowledgeIndexDrainJourney}=await import('../helpers/legacy-worker/index-drain.mjs')
+ await knowledgeIndexDrainJourney()
 })

@@ -70,10 +70,10 @@ function senderNeed({data, item, projectId}) {
  const records = data.facts?.senderRecords || [];
  return {
   title: 'Connect your email service',
-  copy: <>So replies and invitations leave from your own address. Add a key from Resend, then the DNS records we list. We’ll watch for them.</>,
+  copy: <>So replies and invitations leave from your own address. Choose an email provider in installation settings and verify your sender with that service.</>,
   actions: [{kind: 'how'}],
   how: <>
-   {item.state === 'unavailable' && <><p>Make an API key with your email service, then add it with the service’s name and your sending address. The <Link to={`/projects/${projectId}/email-settings`}>Email page</Link> lists the services.</p><SecretSteps installation={installationOf(data)} values={[{name: 'EMAIL_PROVIDER', example: 'resend'}, {name: 'EMAIL_FROM', example: 'support@example.com'}, {name: 'EMAIL_API_KEY', example: 'your-api-key'}]}/></>}
+   {item.state === 'unavailable' && <p>In this installation’s <b>Settings → App settings</b> or native setup, choose <b>Your email provider</b>, select the service, and add its credentials and sender address. Publish the configuration to turn email on; saved keys alone leave Off unchanged. Mailgun also needs its sending domain and region, and its separate webhook signing key to receive mail. The <a href="/docs/email">email setup guide</a> lists every input.</p>}
    {item.state !== 'unavailable' && !records.length && <p>Add your sending domain in your email service. Its DNS records will be listed here as soon as it exists.</p>}
    {records.length > 0 && <><p>Add these DNS records at your domain registrar. We’ll watch for them.</p>
     <ul className="sl-records">{records.map((record, index) => <li key={`${record.type}-${record.name}-${index}`}><code>{record.type}</code> <code>{record.name}</code> <code>{record.value}</code> <span>{record.status}</span></li>)}</ul></>}

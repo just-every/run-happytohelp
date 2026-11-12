@@ -8,6 +8,10 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## Unreleased
+
+- Add explicit off, own-provider and RER mail choices, including native Mailgun setup; mail off withholds sending and webhook credentials until a provider is explicitly selected.
+
 ## 0.4.22 — 2026-11-11
 
 - **Fixes — the every-minute scheduler, outbox delivery and message sends read only the work that is due:** on a large imported workspace with a growing outbox (every mail and chat message adds a row and none is ever removed), a backlog of workflow events waiting for a retry and tagged conversations, the scheduler's due-event pass and its refresh of rule and automation events, outbox delivery, a new conversation's live connection and each message's workflow and tag reads walked every outbox row, pending workflow event or tag link of the database: about 36,000 rows in a minute with nothing due, over a million once 20 events were due, and about 27,000 for each new chat's connection. They now search indexes of the undelivered outbox rows, the due and leased workflow events and each conversation's own tags, so this work reads about 15 rows in a minute with nothing due, under 50 for a message send and a handful for a new chat's connection, whatever the size of the outbox. The same events are claimed in the same order, the same messages are delivered in the same ticks, and every rule matches as before. One read is unchanged: the hourly pass of a time rule (such as closing solved tickets after four days) still reads the rule's whole status set, imported history included. The read of one conversation's pending workflow events and the bulk ticket workflow update read only the selected conversations' own events, in the same order as before, and the same rows are returned and updated.

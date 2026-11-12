@@ -4,29 +4,43 @@ Use **Settings → Email** to configure sending, forwarding and connected mailbo
 
 Forwarding uses the installation's email provider. Connected mailboxes receive and send through the account you authorize. Disconnecting stops intake and sending while keeping ticket history.
 
-## Outbound email off
+## Installation email choice
 
-An installation deployed with `MAIL_PROVIDER=none` sends nothing. Sign-in links, password resets, invitations, notifications, replies by email, the test send and surveys each report that outbound email is off, and **Settings → Email** and **Setup** say so. Receiving mail, importing and everything that does not send keep working. Owners get in with a one-time link from `node scripts/hosted-signin.mjs`, or their password.
+Choose **Email off**, **Your email provider** or **Run Edit Run managed email** in native setup. Platform installations use the existing **Settings → App settings** and owner Publish flow when the platform carries this mail-choice contract. Workspace **Settings → Email** manages mailboxes and senders; it does not store installation provider keys.
+
+| Choice | Selection bindings | Active provider bindings |
+| --- | --- | --- |
+| Off | Setup `MAIL_MODE=off`; deployed as `MAIL_MODE=off` and `MAIL_PROVIDER=none` (`MAIL_PROVIDER=disabled` is also accepted) | No sending credentials, sender or Mailgun signing key. Saved provider keys stay dormant. |
+| Own provider | `MAIL_MODE=own` (legacy `MAIL_PROVIDER=direct` remains accepted), plus `EMAIL_PROVIDER=resend`, `sendgrid`, `cloudflare` or `mailgun` | `EMAIL_FROM`; Resend/SendGrid: `EMAIL_API_KEY`; Cloudflare: `EMAIL_API_KEY` and `EMAIL_ACCOUNT_ID`; Mailgun: `MAILGUN_DOMAIN`, `MAILGUN_REGION`, `MAILGUN_SENDING_KEY`, and `MAILGUN_WEBHOOK_SIGNING_KEY` for receiving. |
+| RER | `MAIL_MODE=rer` | Platform-assigned `MAIL_FROM`, `MAIL_RELAY_URL`, `MAIL_API_KEY`, `H2H_RER_MAIL_VERSION`, `RER_MAILBOX_ID`, `RER_MAIL_ADDRESS`, `RER_MAIL_CONTROL_URL`, `RER_MAIL_INGRESS_KEY`. Own-provider keys stay dormant. |
+
+Native deployment also retains the existing `MAIL_API_KEY` and `MAIL_PROVIDER_API_KEY` aliases for Resend, SendGrid and Cloudflare, and `MAIL_ACCOUNT_ID` for Cloudflare. These aliases are withheld while Off. `INBOUND_EMAIL_TOKEN` may remain for other authenticated receiving paths; it grants no sending authority and the no-mail check explicitly permits it.
+
+Native Cloudflare setup calls its entered token `CLOUDFLARE_EMAIL_API_KEY`; deployment maps it to `EMAIL_API_KEY`. For Mailgun, `MAILGUN_REGION` is `us` or `eu`. `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY` remains compatible; omitting it selects the same binding. Mailgun never uses `EMAIL_API_KEY` as its sending key.
+
+### Outbound email off
+
+With Off selected, sign-in links, password resets, invitations, notifications, replies by email, the test send and surveys each report that outbound email is off. **Settings → Email** and **Setup** show the state. Imports and work that does not send remain available. Mailgun forwards are refused: Off withholds `MAILGUN_WEBHOOK_SIGNING_KEY` too. Owners use their password or a one-time link from `node scripts/hosted-signin.mjs`.
+
+You can keep provider values in private local configuration or the platform's encrypted store while Off is selected. Saving or rotating a key does not activate email. Activation requires changing the provider choice and publishing the installation configuration.
 
 ### Turn Mailgun on
 
-Run this from the checkout that deployed the installation, with `EMAIL_PROVIDER=mailgun`, `EMAIL_FROM`, `EMAIL_API_KEY_NAME=MAILGUN_SENDING_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_REGION` (`us` or `eu`, written out), `MAILGUN_SENDING_KEY` (a domain-scoped sending key) and `MAILGUN_WEBHOOK_SIGNING_KEY` (Mailgun's HTTP webhook signing key, which verifies mail Mailgun forwards to you) in your private `--env-file` and `MAIL_PROVIDER=none` removed from it. Nothing else changes. A secret change makes one new Worker version from the live one without rebuilding, so the installation must already run this release first:
+Choose **Your email provider**, then **Mailgun**, and enter the verified sending domain, region, sender address and domain-scoped sending key. Enter the separate HTTP webhook signing key to receive Mailgun forwards; incoming Mailgun mail refuses without it. The Routes administration key is not a sending or signing key.
+
+For a native deployment, set `MAIL_MODE=own`, `EMAIL_PROVIDER=mailgun`, `EMAIL_FROM`, `MAILGUN_DOMAIN`, `MAILGUN_REGION`, `MAILGUN_SENDING_KEY` and, for receiving, `MAILGUN_WEBHOOK_SIGNING_KEY` in your private `--env-file`. Run a full deployment from its checkout:
 
 ```sh
-rer deploy --environment production --env-file <file> --set-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY,MAILGUN_WEBHOOK_SIGNING_KEY
+rer deploy --environment production --env-file <file>
 ```
 
-Resend, SendGrid and Cloudflare Email Sending take their own inputs, listed in the provider table of [Email and integrations](../src/modules/integrations/README.md#choose-a-provider); they are set the same way, one `--set-secret` run naming those inputs.
+For a platform installation, save the choice and fields in **Settings → App settings**, then use the normal owner Publish flow. Stored values do not establish which bindings the currently published Worker holds. Platform adoption and installed proof remain separate from this seed's declarations.
+
+Resend, SendGrid and Cloudflare Email Sending use the inputs in the table above and the same explicit choice and publication step. A secret-only `--set-secret` command cannot turn an Off installation on.
 
 ### Turn sending off again
 
-Use this to stop all sending while keeping the installation. It removes the six sending inputs; Mailgun receiving continues. A plain redeploy keeps every secret the Worker holds, so redeploying with `MAIL_PROVIDER=none` alone does not stop sending. Run:
-
-```sh
-rer deploy --environment production --env-file <file> --unset-secret EMAIL_PROVIDER,EMAIL_FROM,EMAIL_API_KEY_NAME,MAILGUN_DOMAIN,MAILGUN_REGION,MAILGUN_SENDING_KEY
-```
-
-Then remove the six sending inputs from your `--env-file` and put `MAIL_PROVIDER=none` back in it for later deploys. `MAILGUN_WEBHOOK_SIGNING_KEY` may stay in the file, because it binds no way to send.
+Choose **Email off** and publish. For native deployment, put `MAIL_PROVIDER=none` in your private file and run the full deploy command above. It removes existing mail credential bindings, including `MAILGUN_WEBHOOK_SIGNING_KEY`; keeping their values saved does not bind them. Repoint a live Mailgun route before switching off: refused forwards are retried for 8 hours and then dropped.
 
 ### Stop Mailgun receiving
 
@@ -36,11 +50,11 @@ Use this to retire the signing key, for example when you leave Mailgun. First po
 rer deploy --environment production --env-file <file> --unset-secret MAILGUN_WEBHOOK_SIGNING_KEY
 ```
 
-Every forward is then refused. Mailgun retries a refused forward for 8 hours and then drops it, so move the route first. To rotate the key instead, put the new value in the file and run `--set-secret MAILGUN_WEBHOOK_SIGNING_KEY` alone.
+Every forward is then refused. Mailgun retries a refused forward for 8 hours and then drops it, so move the route first. To rotate the key on an active installation, put the new value in the file and run `--set-secret MAILGUN_WEBHOOK_SIGNING_KEY`. This does not override an Off provider choice.
 
 ### Mail through a Mailgun route
 
-With `MAILGUN_WEBHOOK_SIGNING_KEY` set, a Mailgun route can forward your support mail to `POST /api/integrations/email/mailgun/inbound`. Mailgun signs each forward, so the route URL carries no secret and none shows in the Mailgun dashboard or its logs. A forward is accepted when its signature verifies under the key, its timestamp is within five minutes ahead or nine hours behind, and its token has not been used before; anything else is refused without writing a record. Received, repeated and Suspended mail is answered 200, which is all Mailgun accepts; an address no workspace receives is not, so Mailgun retries it. Route setup is in [Email and integrations](../src/modules/integrations/README.md#option-3-mailgun-route).
+With an active provider choice and `MAILGUN_WEBHOOK_SIGNING_KEY` bound, a Mailgun route can forward your support mail to `POST /api/integrations/email/mailgun/inbound`. Mailgun signs each forward, so the route URL carries no secret and none shows in the Mailgun dashboard or its logs. A forward is accepted when its signature verifies under the key, its timestamp is within five minutes ahead or nine hours behind, and its token has not been used before; anything else is refused without writing a record. Received, repeated and Suspended mail is answered 200, which is all Mailgun accepts; an address no workspace receives is not, so Mailgun retries it. Route setup is in [Email and integrations](../src/modules/integrations/README.md#option-3-mailgun-route).
 
 ## Receive mail that Amazon SES stores in S3
 
@@ -112,7 +126,7 @@ The email settings read (`GET /api/management/projects/:projectId/email-settings
 
 ## Managed email
 
-A compatible Managed installation receives an address from Run Edit Run before its first workspace is created. Setup shows it under **What we’ve set**. There is no customer mail key, provider account or DNS task. Independent and Assisted installations keep their direct Resend, SendGrid or Cloudflare setup.
+A compatible installation that selects Run Edit Run managed email receives an address from Run Edit Run before its first workspace is created. Setup shows it under **What we’ve set**. There is no customer mail key, provider account or DNS task. Your own provider choice uses Resend, SendGrid, Cloudflare or Mailgun; Off keeps provider sending and Mailgun receiving credentials unbound.
 
 **Settings → Email** shows configuration, receiving-route activity and actual inbound observations separately. An active route is not proof that mail arrived. The last outbound timestamp means **provider acceptance**, not inbox delivery. Password recovery and sign-in links use this same sending service. A failed binding stays visible; **Retry connection** repeats the original allocation rather than inventing another address.
 

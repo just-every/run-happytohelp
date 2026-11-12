@@ -122,6 +122,6 @@ export const commandAdapter=createCommandAdapter(adapter,{
  site:{entry:'src/site/pages.ts',config:'vite.site.config.ts',output:'.rer/site',declaration:'deploy-site.json'},
  product:model.product.name,dev,preview,signInPath:'/login',mailOffSignIn,devIdentity:{entry:'src/dev/server.ts',output:['dist','delivery-artifact'],emailLinkTest:'tests/first-run/cli-sign-in.mjs'},verify:['pnpm',['run','verify:app']],deploy:hostedDeploy('deploy.json',hostedLifecycle),
  portability:{...portability,hostedExport:['node','scripts/installer/hosted-export.mjs']},
- setup:{get manifestFile(){return process.env.MAIL_PROVIDER==='rer'?'rer-setup.json':nativeSetupPath;}},browserModule:'scripts/installer/ui/seed.mjs',input:{names:{email:'OWNER_EMAIL',name:'OWNER_NAME'},defaults:localInputDefaults},
+ setup:{get manifestFile(){return (process.env.MAIL_MODE==='rer'||!process.env.MAIL_MODE&&process.env.MAIL_PROVIDER==='rer')?'rer-setup.json':nativeSetupPath;}},browserModule:'scripts/installer/ui/seed.mjs',input:{names:{email:'OWNER_EMAIL',name:'OWNER_NAME'},defaults:localInputDefaults},
  localPrerequisites:async({vars})=>vars.H2H_LOCAL==='true'&&vars.EMAIL_PROVIDER==='development',
 });

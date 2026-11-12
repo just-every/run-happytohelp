@@ -88,22 +88,27 @@
       "help": "At least 12 characters. Used to create your owner account."
     },
     {
-      "name": "MAIL_PROVIDER",
-      "label": "Email hosting",
+      "name": "MAIL_MODE",
+      "label": "Email delivery",
       "kind": "select",
-      "group": "managed-mail",
+      "group": "email",
       "required": true,
-      "default": "direct",
+      "default": "off",
       "options": [
         {
-          "value": "direct",
+          "value": "off",
+          "label": "Email off"
+        },
+        {
+          "value": "own",
           "label": "Your email provider"
         },
         {
           "value": "rer",
           "label": "Run Edit Run managed email"
         }
-      ]
+      ],
+      "help": "Off keeps saved provider keys dormant. Choose a provider and publish to turn email on."
     },
     {
       "name": "EMAIL_PROVIDER",
@@ -126,6 +131,10 @@
           "label": "SendGrid"
         },
         {
+          "value": "mailgun",
+          "label": "Mailgun"
+        },
+        {
           "value": "later",
           "label": "Set up email later"
         },
@@ -135,8 +144,8 @@
         }
       ],
       "when": {
-        "field": "MAIL_PROVIDER",
-        "equals": "direct"
+        "field": "MAIL_MODE",
+        "equals": "own"
       }
     },
     {
@@ -166,12 +175,19 @@
             "equals": "sendgrid"
           },
           "required": true
+        },
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "mailgun"
+          },
+          "required": true
         }
       ],
       "help": "Use an address on your verified sending domain.",
       "when": {
-        "field": "MAIL_PROVIDER",
-        "equals": "direct"
+        "field": "MAIL_MODE",
+        "equals": "own"
       }
     },
     {
@@ -181,8 +197,8 @@
       "group": "email",
       "required": false,
       "when": {
-        "field": "MAIL_PROVIDER",
-        "equals": "direct"
+        "field": "MAIL_MODE",
+        "equals": "own"
       },
       "presentations": [
         {
@@ -219,8 +235,8 @@
         }
       ],
       "when": {
-        "field": "MAIL_PROVIDER",
-        "equals": "direct"
+        "field": "MAIL_MODE",
+        "equals": "own"
       }
     },
     {
@@ -228,12 +244,12 @@
       "label": "Email Sending token",
       "kind": "secret",
       "group": "email",
-      "required": true,
+      "required": false,
       "ownerVisible": true,
       "input": "entered",
       "when": {
-        "field": "MAIL_PROVIDER",
-        "equals": "direct"
+        "field": "MAIL_MODE",
+        "equals": "own"
       },
       "presentations": [
         {
@@ -245,6 +261,105 @@
         }
       ],
       "help": "Cloudflare requires Email Sending: Edit permission."
+    },
+    {
+      "name": "MAILGUN_DOMAIN",
+      "label": "Mailgun sending domain",
+      "kind": "text",
+      "group": "email",
+      "required": false,
+      "when": {
+        "field": "MAIL_MODE",
+        "equals": "own"
+      },
+      "presentations": [
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "mailgun"
+          },
+          "required": true
+        }
+      ],
+      "placeholder": "mail.example.com",
+      "help": "Your verified Mailgun sending domain, without a URL or path."
+    },
+    {
+      "name": "MAILGUN_REGION",
+      "label": "Mailgun region",
+      "kind": "select",
+      "group": "email",
+      "required": false,
+      "default": "us",
+      "when": {
+        "field": "MAIL_MODE",
+        "equals": "own"
+      },
+      "presentations": [
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "mailgun"
+          },
+          "required": true
+        }
+      ],
+      "options": [
+        {
+          "value": "us",
+          "label": "United States"
+        },
+        {
+          "value": "eu",
+          "label": "Europe"
+        }
+      ]
+    },
+    {
+      "name": "MAILGUN_SENDING_KEY",
+      "label": "Mailgun domain sending key",
+      "kind": "secret",
+      "group": "email",
+      "required": false,
+      "ownerVisible": true,
+      "input": "entered",
+      "when": {
+        "field": "MAIL_MODE",
+        "equals": "own"
+      },
+      "presentations": [
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "mailgun"
+          },
+          "required": true
+        }
+      ],
+      "help": "Use a domain-scoped sending key for this domain, not an account or Routes key."
+    },
+    {
+      "name": "MAILGUN_WEBHOOK_SIGNING_KEY",
+      "label": "Mailgun webhook signing key",
+      "kind": "secret",
+      "group": "email",
+      "required": false,
+      "ownerVisible": true,
+      "input": "entered",
+      "when": {
+        "field": "MAIL_MODE",
+        "equals": "own"
+      },
+      "presentations": [
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "mailgun"
+          },
+          "required": false
+        }
+      ],
+      "help": "Required to receive Mailgun forwards. Copy the HTTP webhook signing key from Mailgun. Incoming Mailgun mail is refused without it."
     },
     {
       "name": "AI_PROVIDER",
@@ -404,7 +519,7 @@
       "group": "managed-mail",
       "required": true,
       "when": {
-        "field": "MAIL_PROVIDER",
+        "field": "MAIL_MODE",
         "equals": "rer"
       }
     },
@@ -415,7 +530,7 @@
       "group": "managed-mail",
       "required": true,
       "when": {
-        "field": "MAIL_PROVIDER",
+        "field": "MAIL_MODE",
         "equals": "rer"
       }
     },
@@ -426,7 +541,7 @@
       "group": "managed-mail",
       "required": true,
       "when": {
-        "field": "MAIL_PROVIDER",
+        "field": "MAIL_MODE",
         "equals": "rer"
       },
       "default": "1"
@@ -438,7 +553,7 @@
       "group": "managed-mail",
       "required": true,
       "when": {
-        "field": "MAIL_PROVIDER",
+        "field": "MAIL_MODE",
         "equals": "rer"
       }
     },
@@ -449,7 +564,7 @@
       "group": "managed-mail",
       "required": true,
       "when": {
-        "field": "MAIL_PROVIDER",
+        "field": "MAIL_MODE",
         "equals": "rer"
       }
     },
@@ -460,7 +575,7 @@
       "group": "managed-mail",
       "required": true,
       "when": {
-        "field": "MAIL_PROVIDER",
+        "field": "MAIL_MODE",
         "equals": "rer"
       }
     },
@@ -470,7 +585,7 @@
       "kind": "secret",
       "required": true,
       "when": {
-        "field": "MAIL_PROVIDER",
+        "field": "MAIL_MODE",
         "equals": "rer"
       },
       "ownerVisible": false,
@@ -483,7 +598,7 @@
       "kind": "secret",
       "required": true,
       "when": {
-        "field": "MAIL_PROVIDER",
+        "field": "MAIL_MODE",
         "equals": "rer"
       },
       "ownerVisible": false,

@@ -2,7 +2,7 @@ import {rerMail} from '../../integrations/rer-mail-contract'
 import type {Env} from '../../../platform/env'
 import {hashToken} from '../../../platform/auth'
 import {emailAddress} from '../../integrations/inbound-routing'
-import {emailMode,selectedEmailProvider} from '../../integrations/email-provider'
+import {emailExplicitlyOff,emailMode,selectedEmailProvider} from '../../integrations/email-provider'
 import {localMailOrigin} from '../../../edition/local-mail/configuration'
 import {inboundNeedsCustomDomain} from './inbound-domain'
 // @ts-ignore The installed runtime uses this same provider registry.
@@ -16,6 +16,15 @@ export function keyInstalled(env:Env,provider:string|null) {const value=rawKey(e
 export const modelProvider=(model:string):string|null=>model?String(getProviderFromModel(model)):null
 /** A loopback trial started by the local installer, as the local edition recognises it. A deployed installation is hosted. */
 export const activationEnvironment=(env:Env):Environment=>localMailOrigin(env)?'local':'hosted'
+
+/** Public configuration names only; keys saved while Off cannot activate the installation. */
+export function emailSetupRequirement(env:Env) {
+ if(emailExplicitlyOff(env))return 'Email is off for this installation. Choose your own provider or Run Edit Run in installation email settings, then publish. Saving a key alone does not turn email on.'
+ const fields=selectedEmailProvider(env)==='mailgun'
+  ? 'MAILGUN_DOMAIN, MAILGUN_REGION, MAILGUN_SENDING_KEY and EMAIL_FROM'
+  : selectedEmailProvider(env)==='cloudflare'?'EMAIL_ACCOUNT_ID, EMAIL_API_KEY and EMAIL_FROM':'EMAIL_PROVIDER, EMAIL_API_KEY and EMAIL_FROM'
+ return `CONFIGURATION_REQUIRED: ${fields}. Complete the selected email provider settings and publish the installation configuration.`
+}
 
 export async function activationConfiguration(env:Env, projectId:string) {
  const [project,email,owners] = await Promise.all([
@@ -37,10 +46,10 @@ export async function activationConfiguration(env:Env, projectId:string) {
  const proposedSender=rerMail(env)?null:emailAddress(settings.proposed_sender)
  const providerName=selectedEmailProvider(env)
  // Digests stay server-side. Never return credential material or its digest to the browser.
- const mailIdentity=[providerName,sender,email?.from_name||'',env.EMAIL_FROM,env.EMAIL_ACCOUNT_ID,env.EMAIL_API_KEY,...(rerMail(env)?[env.MAIL_API_KEY,env.RER_MAILBOX_ID]:[])]
+ const mailIdentity=[env.MAIL_MODE,env.MAIL_PROVIDER,providerName,sender,email?.from_name||'',env.EMAIL_FROM,...(providerName==='mailgun'?[env.EMAIL_API_KEY_NAME,env.MAILGUN_DOMAIN,env.MAILGUN_REGION,env.MAILGUN_SENDING_KEY]:[env.EMAIL_ACCOUNT_ID,env.EMAIL_API_KEY]),...(rerMail(env)?[env.MAIL_API_KEY,env.RER_MAILBOX_ID]:[])]
  const values:Record<StepId,unknown>={
   owner_mail:[mailIdentity,owners.results],sender_dns:proposedSender&&!senderOverridden?[mailIdentity,proposedSender]:mailIdentity,
-  inbound_address:[email?.inbound_address,email?.is_enabled,email?.updated_at,env.INBOUND_EMAIL_TOKEN,inboundNeedsCustomDomain(email?.inbound_address)],
+  inbound_address:[email?.inbound_address,email?.is_enabled,email?.updated_at,env.MAIL_MODE,env.MAIL_PROVIDER,env.INBOUND_EMAIL_TOKEN,env.MAILGUN_WEBHOOK_SIGNING_KEY,inboundNeedsCustomDomain(email?.inbound_address)],
   model_key:[assistantId,model,assistant?.is_enabled,provider,key],spend_ceilings:env.AI_DAILY_CEILINGS||null,
   published_article:null,widget_origin:project?.allowed_origin,widget_seen:[project?.allowed_origin,env.PREVIEW_ORIGIN],
  }

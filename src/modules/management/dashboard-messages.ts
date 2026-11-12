@@ -1,7 +1,7 @@
 import {channelStatuses} from '../support-channels/presentation'
 import {abandonedNotificationReason} from '../integrations/email-send-window'
 import type {Env} from '../../platform/env'
-import {emailConfigured} from '../integrations/email-provider'
+import {emailConfigured,emailExplicitlyOff} from '../integrations/email-provider'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
 import {messageNotificationRecipients,type NotificationContact} from '../integrations/notification-recipients'
 import {notificationContactsSql} from '../integrations/notification-contacts'
@@ -16,7 +16,7 @@ export async function messagesData(env:Env,rows:any[],channels?:ReadonlyMap<stri
  const selected='SELECT value FROM json_each(?)'
  const actors=(admitted:(row:any)=>boolean)=>JSON.stringify([...new Set(rows.filter(admitted).map(row=>row.actor_id).filter(id=>id!==null&&id!==undefined))])
  const mailRows=rows.filter(row=>!['contact','system'].includes(row.actor_role)&&!row.erased_at),mailIds=JSON.stringify(mailRows.map(row=>row.id))
- const suppressed=!!localMailOrigin(env),configured=emailConfigured(env),resolveRecipients=!!mailRows.length&&configured&&!suppressed
+ const suppressed=!!localMailOrigin(env)&&!emailExplicitlyOff(env),configured=emailConfigured(env),resolveRecipients=!!mailRows.length&&configured&&!suppressed
  const data=await env.DB.batch<any>([
   // Read through the values the (whole `messages`) rows hold, never by reading the messages again.
   env.DB.prepare('SELECT s.* FROM json_each(?) held CROSS JOIN move_in_message_sources s ON s.message_id=held.value->>0 AND s.project_id=held.value->>1').bind(JSON.stringify(rows.map(row=>[row.id,row.project_id]))),

@@ -7857,7 +7857,7 @@
       "executable": false
     },
     "src/modules/legacy-import/worker/runner.ts": {
-      "sha256": "6f363a4f267f989602c9a066e10bbe873903354ee8b2b584a2e4e5341bcf9308",
+      "sha256": "eb64d7eae2b063d419e8468f68b17b5f799c5720ef1610abefea51b8f74c284a",
       "executable": false
     },
     "src/modules/legacy-import/worker/state.ts": {
@@ -16625,7 +16625,7 @@
       "executable": false
     },
     "tests/helpers/legacy-worker/runtime.ts": {
-      "sha256": "cfa09b29df46a519407fb21fbbd4b4659809f080c142f5509eebc5831b8c3146",
+      "sha256": "c782ab8eecc8c81416d5f33cc9a4903f5c305d03accdb30115f7606e87cfa9d5",
       "executable": false
     },
     "tests/helpers/legacy-worker/worker.ts": {
@@ -17101,7 +17101,7 @@
       "executable": false
     },
     "tests/journeys/legacy.mjs": {
-      "sha256": "951deee436eeaac04641921d47637308364fe53a93c9fcaf6ebfe2f696fa3e89",
+      "sha256": "ea19dfc2250feebc7ba7292c3c5c68b36fdab08d89251492cd1ccdc01a3698d4",
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {

@@ -16568,6 +16568,10 @@
       "sha256": "2e01f7b02acb2d6192975e75f89c7d9352f85ef4d9716a2d75444594f0cb67b5",
       "executable": false
     },
+    "tests/helpers/legacy-worker/index-drain.mjs": {
+      "sha256": "7d163c0956008d873a7154c7dedb8d8f9e0347e267f188dc452ee65654b0ada2",
+      "executable": false
+    },
     "tests/helpers/legacy-worker/journey.mjs": {
       "sha256": "0b30156dc8e2db615ebb6e8227ffe2b8f2253a520eac77e1c7985fd10b874135",
       "executable": false

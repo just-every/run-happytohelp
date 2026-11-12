@@ -28,7 +28,12 @@ async function body(c:any){
 }
 function approval(input:Record<string,unknown>,sha:string){if(input.approvedManifestSha256!==sha)refuse('approval_mismatch')}
 function destination(source:string,target:string){if(source!==target)refuse('destination_policy_required')}
-async function controlCommit(c:any,run:Pick<Run,'id'|'project_id'|'actor_id'|'session_hash'>,statements:D1PreparedStatement[]){const a=runAuthority(run);await c.env.DB.batch([c.env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT (${a.sql})`).bind(...a.params),...statements,c.env.DB.prepare('DELETE FROM ik_d1_assertions')])}
+async function controlCommit(c:any,run:Pick<Run,'id'|'project_id'|'actor_id'|'session_hash'>,statements:D1PreparedStatement[],expected?:{version:number;state:string}){
+ const a=runAuthority(run),guard=expected?` AND EXISTS(SELECT 1 FROM legacy_import_worker_runs WHERE id=? AND version=? AND state=?)`:''
+ try{return await c.env.DB.batch([c.env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT (${a.sql})${guard}`).bind(...a.params,...(expected?[run.id,expected.version,expected.state]:[])),...statements,c.env.DB.prepare('DELETE FROM ik_d1_assertions')])}
+ catch(error){if(expected){const current=await getRun(c.env,run.id);if(current?.version!==expected.version||current?.state!==expected.state)refuse('run_state_conflict')}throw error}
+}
+
 legacyRunnerRoutes.post(`${root}/start`,async c=>{
  const {actor,sha,manifest,id}=await admission(c),input=await body(c);approval(input,sha);destination(manifest.source.projectId,actor.project_id)
  if(Object.keys(input).some(key=>!['approvedManifestSha256','excludeTables','replay'].includes(key))||input.replay!==undefined&&typeof input.replay!=='boolean')refuse('invalid_request',400)
@@ -39,7 +44,7 @@ legacyRunnerRoutes.post(`${root}/start`,async c=>{
   if(run.exclude_json!==JSON.stringify(exclude))refuse('run_options_conflict')
   if(run.contract_version!==1)refuse('unsupported_contract_version')
   if(run.state!=='complete'||!input.replay)return c.json({data:view(run)},200)
-  await controlCommit(c,{...run,...actor},[c.env.DB.prepare(`UPDATE legacy_import_worker_runs SET state='queued',phase='verify_package',cursor_json='{}',attempt=attempt+1,version=version+1,actor_id=?,session_hash=?,lease_token=NULL,lease_until=NULL,next_at=0,error_code=NULL,completed_at=NULL,verified_at=NULL,work_before_json=NULL,work_after_json=NULL,objects_json='{}',metrics_json='{}' WHERE id=? AND version=? AND state='complete'`).bind(actor.actor_id,actor.session_hash,id,run.version),c.env.DB.prepare('UPDATE legacy_import_worker_parts SET verified=0,loaded_rows=0,preflight_rows=0,applied_rows=0,checked_rows=0 WHERE run_id=?').bind(id),c.env.DB.prepare('UPDATE legacy_import_worker_counts SET journal_rows=0,mapped_rows=0,archived_rows=0,erased_rows=0,applied_rows=0,replayed_rows=0,holds=0 WHERE run_id=?').bind(id)])
+  await controlCommit(c,{...run,...actor},[c.env.DB.prepare(`UPDATE legacy_import_worker_runs SET state='queued',phase='verify_package',cursor_json='{}',attempt=attempt+1,version=version+1,actor_id=?,session_hash=?,lease_token=NULL,lease_until=NULL,next_at=0,error_code=NULL,completed_at=NULL,verified_at=NULL,work_before_json=NULL,work_after_json=NULL,objects_json='{}',metrics_json='{}' WHERE id=? AND version=? AND state='complete'`).bind(actor.actor_id,actor.session_hash,id,run.version),c.env.DB.prepare('UPDATE legacy_import_worker_parts SET verified=0,loaded_rows=0,preflight_rows=0,applied_rows=0,checked_rows=0 WHERE run_id=?').bind(id),c.env.DB.prepare('UPDATE legacy_import_worker_counts SET journal_rows=0,mapped_rows=0,archived_rows=0,erased_rows=0,applied_rows=0,replayed_rows=0,holds=0 WHERE run_id=?').bind(id)],{version:run.version,state:'complete'})
  }else{
   const other=await c.env.DB.prepare("SELECT 1 FROM legacy_import_worker_runs WHERE project_id=? AND state IN ('queued','running','paused')").bind(actor.project_id).first();if(other)refuse('run_state_conflict')
   const now=Date.now(),mode=manifest.source.delta!==undefined||manifest.source.since!==undefined?'delta':'full'
@@ -60,7 +65,7 @@ legacyRunnerRoutes.post(`${root}/stop`,async c=>{
  const {actor,id}=await admission(c,false);await body(c)
  const run=await getRun(c.env,id);if(!run||run.project_id!==actor.project_id)refuse('run_not_found',404)
  if(run.state==='complete'||run.state==='stopped')return c.json({data:view(run)},200)
- await controlCommit(c,{...run,...actor},[c.env.DB.prepare(`UPDATE legacy_import_worker_runs SET state='stopped',version=version+1,lease_token=NULL,lease_until=NULL,updated_at=${dbNow} WHERE id=? AND version=?`).bind(id,run.version)])
- return c.json({data:view((await getRun(c.env,id))!)},202)
+ const stopped=await controlCommit(c,{...run,...actor},[c.env.DB.prepare(`UPDATE legacy_import_worker_runs SET state='stopped',version=version+1,lease_token=NULL,lease_until=NULL,updated_at=${dbNow} WHERE id=? AND state NOT IN ('complete','stopped')`).bind(id)])
+ return c.json({data:view((await getRun(c.env,id))!)},stopped[1].meta.changes?202:200)
 })
 legacyRunnerRoutes.get(`${root}/result`,async c=>{const {actor,id}=await admission(c,false),run=await getRun(c.env,id);if(!run||run.project_id!==actor.project_id)refuse('run_not_found',404);return c.json({data:await result(c.env,run)})})

@@ -94,7 +94,7 @@ export async function importLegacy(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundl
  const summary={...plan.summary,holds:plan.rows.filter(source=>!withheld.has(source)).flatMap(r=>r.mapped.filter(m=>m.hold).map(m=>`${r.table}:${r.sourceId}: ${m.hold}`))}
  if(options.checkOnly)return {id:plan.id,...summary,applied:0,replayed,erased:0,d1Ms:0,maxBatchMs:0}
  // A batch the lease assertion refused stops the import with the lease's own message.
- const leased=async(statements:D1PreparedStatement[])=>env.DB.batch([lease!.assertion(env.DB),...normalization.statements,...statements,lease!.cleared(env.DB)]).catch(async error=>{await lease!.confirm();throw error})
+ const leased=async(statements:D1PreparedStatement[])=>env.DB.batch([lease!.assertion(env.DB),...normalization.statements,...statements,...(options.prepared?[lease!.assertion(env.DB)]:[]),lease!.cleared(env.DB)]).catch(async error=>{await lease!.confirm();throw error})
  await leased([env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(plan.id,stable(plan.source),plan.bundleDigest,Date.now())])
  await confirmReplayedState(env.DB,plan.id,replayedRows,columnsOf,leased)
  if(replayedRows.length&&options.prepared?.journalStatements)await leased(options.prepared.journalStatements(env.DB,replayedRows,false))

@@ -1,0 +1,35 @@
+verify	Require the plan and every selected check	﻿2026-11-12T16:41:25.0679569Z ##[group]Run set -euo pipefail
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0680140Z set -euo pipefail
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0680525Z test "$PLAN" = success
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0681023Z case "$PUSH_PROOF:$NIGHTLY_PROOF" in *failure*|*cancelled*) exit 1 ;; esac
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0681556Z case "$COVERAGE:$TIER" in
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0681924Z   reuse:push|reuse:nightly)
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0682426Z     test "$SKIP:$BUILD:$CHECKS:$SLOW" = true:skipped:skipped:skipped ;;
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0682920Z   light:push)
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0683362Z     test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:skipped:skipped ;;
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0683841Z   full:push)
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0684247Z     test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:success:skipped
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0684868Z     if [ "$GITHUB_EVENT_NAME" = push ]; then test "$PUSH_PROOF" = success; fi ;;
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0685405Z   full:nightly)
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0685876Z     test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:skipped:skipped:success ;;
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0686346Z   full:all)
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0686746Z     test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:success:success ;;
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0687221Z   *) exit 1 ;;
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0687713Z esac
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0688072Z node scripts/ci/verify-lifecycle.mjs --require-pr
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0711970Z shell: /usr/bin/bash -e {0}
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0712348Z env:
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0712632Z   WRANGLER_SEND_METRICS: false
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0712975Z   PLAYWRIGHT_SKIP_BROWSER_GC: 1
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0713304Z   PLAN: success
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0713578Z   SKIP: false
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0713842Z   TIER: push
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0714105Z   COVERAGE: full
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0714373Z   BUILD: failure
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0714666Z   CHECKS: skipped
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0714937Z   SLOW: skipped
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0715209Z   PUSH_PROOF: skipped
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0715542Z   NIGHTLY_PROOF: skipped
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0719437Z   GITHUB_TOKEN: ***
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0719750Z ##[endgroup]
+verify	Require the plan and every selected check	2026-11-12T16:41:25.0803904Z ##[error]Process completed with exit code 1.

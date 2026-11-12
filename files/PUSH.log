@@ -1,0 +1,19 @@
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+PUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/hh-importer-custody-2
+PUSH_CREDENTIAL sha256_16=8addacf6ac95b0bc bundle_file_age_seconds=1856 token_issue_age=unknown
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+All candidate identities and trailers passed, including side parents
+To https://github.com/just-every/run-happytohelp.git
+*	HEAD:refs/heads/cloud/hh-importer-custody-2	[new branch]
+Done
+remote: 
+remote: Create a pull request for 'cloud/hh-importer-custody-2' on GitHub by visiting:        
+remote:      https://github.com/just-every/run-happytohelp/pull/new/cloud/hh-importer-custody-2        
+remote: 
+remote: GitHub found 5 vulnerabilities on just-every/run-happytohelp's default branch (3 high, 2 moderate). To find out more, visit:        
+remote:      https://github.com/just-every/run-happytohelp/security/dependabot        
+remote: 
+PUSH_OK branch=cloud/hh-importer-custody-2

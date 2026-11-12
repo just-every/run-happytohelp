@@ -1,0 +1,67 @@
+TAP version 13
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# (node:4117) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Request failed Error
+# Request failed Error
+# ▲ [WARNING] \\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: https://developers.cloudflare.com/workers/wrangler/api\#supported-bindings
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# ▲ [WARNING] \\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: https://developers.cloudflare.com/workers/wrangler/api\#supported-bindings
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# ▲ [WARNING] \\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: https://developers.cloudflare.com/workers/wrangler/api\#supported-bindings
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# ▲ [WARNING] \\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: https://developers.cloudflare.com/workers/wrangler/api\#supported-bindings
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# ERASURE-001 outcomes: populated import D1/R2/export redaction; non-machine stale API/import refusal; offline archive remains unresolved; stale restore fenced by later journal; tombstones survive restore.
+# Subtest: an owner erases a populated customer, observes coherent redacted history and external deletion, and safely completes repeats and interrupted erasures
+ok 1 - an owner erases a populated customer, observes coherent redacted history and external deletion, and safely completes repeats and interrupted erasures
+  ---
+  duration_ms: 660169.605641
+  type: 'test'
+  ...
+# (node:8524) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Persisted job handler failed move-in 981712eb-1613-42fd-b4a2-e3bf27cf9eaf
+# Subtest: an admin reviews conflicts, loses and regains authority, resumes after a Worker stop and keeps later native work when undo refuses
+ok 2 - an admin reviews conflicts, loses and regains authority, resumes after a Worker stop and keeps later native work when undo refuses
+  ---
+  duration_ms: 43198.779052
+  type: 'test'
+  ...
+# (node:8642) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: erase an imported customer across reviewed, rejected and pending alias uploads; revoke their transcript and attachments while preserving the peer
+ok 3 - erase an imported customer across reviewed, rejected and pending alias uploads; revoke their transcript and attachments while preserving the peer
+  ---
+  duration_ms: 14237.31463
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 720747.305764

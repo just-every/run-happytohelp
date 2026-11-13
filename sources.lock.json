@@ -2969,7 +2969,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "ff2699e21edf96c7113fff4bbfc8a6553c992b74f421c1ddb587bb494a1ecc50",
+      "sha256": "3537eb03f3ae12c66a8959eb007f602038a242090ece1c38234e645ad3df8e52",
       "executable": false
     },
     "RELEASE.json": {
@@ -8601,7 +8601,7 @@
       "executable": false
     },
     "src/modules/management/tags.ts": {
-      "sha256": "fdb3fbfe16ab3d6f714db10475d7bd49b69304537f53703600f1e279318daf77",
+      "sha256": "bd655065cd9ef002a78713ffb166ee82ffcf15b535a0a87cb24e4cdb070cb9e4",
       "executable": false
     },
     "src/modules/management/tracked-transcript.ts": {
@@ -11397,7 +11397,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ConversationTags.jsx": {
-      "sha256": "88ed90c37115ff68537a9cd81992205b73506f6a53cfd0cedaa21b40659e3563",
+      "sha256": "e0975ef01e18efac17305ac3353e147e532d21bb7227bb089a739cd97edca10f",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/emailAddress.jsx": {
@@ -11445,7 +11445,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationHeader.jsx": {
-      "sha256": "9456585be15c74d281a1b38e96087a6b25184219655ee817a216b11586559059",
+      "sha256": "d842902c82f950978ccc32de53b1891c241c5ab0d341f26ea7a15577d4d26eb1",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationItem.jsx": {
@@ -11737,11 +11737,11 @@
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/TicketSummary.jsx": {
-      "sha256": "3ed038a616df452ad1d0ed297b2567e78606430617b369aa9731bef173a27c65",
+      "sha256": "69458e662675fc8f0499505a56d7266e60ab2ce81526a09450288faeea3270ad",
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/useTicketRecord.js": {
-      "sha256": "7ebfe0459849462d62b0894f20d36ddb38c3de3e38b4ffe490ae2cde4cbd8096",
+      "sha256": "7c0b673c1f9a9db5b81b8c63b6453d61b54631daca89cde79369f8e18814d6ae",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/handle-timer.css": {
@@ -16584,8 +16584,12 @@
       "sha256": "9a3f2178a21beda5d0fa1e421c372d9d6f85271961456f4fce0f20978e8368f0",
       "executable": false
     },
+    "tests/helpers/inbox/ticket-status-edits.mjs": {
+      "sha256": "457447c2a18811e8fae135cefc5993dcb249f779fb8e91513265af297ebd7eb9",
+      "executable": false
+    },
     "tests/helpers/inbox/tickets-browser.mjs": {
-      "sha256": "09a7d3ee20304e2b13e4714fc317b16a3d20d8a6b57bb62e7acdd2744429bac5",
+      "sha256": "c2285bb233313355d34ffdef02dfc89a4277b632dd980bb091cd1857ea2c1f33",
       "executable": false
     },
     "tests/helpers/inbox/tickets.mjs": {

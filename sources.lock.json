@@ -7909,7 +7909,7 @@
       "executable": false
     },
     "src/modules/legacy-import/worker/canonical-custody.ts": {
-      "sha256": "7015c16ca2b03bf7655bf482f3ecd5aded515a5abff68f276db03387453fd2b7",
+      "sha256": "a4b7762aec797598edae68e70435df4c18276f78eb3d92615015be5f5082307f",
       "executable": false
     },
     "src/modules/legacy-import/worker/context-load.ts": {
@@ -16769,7 +16769,7 @@
       "executable": false
     },
     "tests/helpers/legacy-worker/runtime.ts": {
-      "sha256": "c782ab8eecc8c81416d5f33cc9a4903f5c305d03accdb30115f7606e87cfa9d5",
+      "sha256": "93daa8d5694a8b75723a65aa903f327ecb4cffc97fae3cd3ae83ae1969f011bd",
       "executable": false
     },
     "tests/helpers/legacy-worker/worker.ts": {
@@ -17494,6 +17494,10 @@
     },
     "tests/move-in/legacy-adoption-integration/ordering.mjs": {
       "sha256": "2e2992235ab32a45ffafddf0164370e3b69fef6bdb3aecb29c1744538c4e22d3",
+      "executable": false
+    },
+    "tests/move-in/legacy-adoption-integration/reservation-attachments.mjs": {
+      "sha256": "7564d161f89d652810e3a2bed4f468adf6fda09aef239334fd6321200d010daa",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/reservations.mjs": {

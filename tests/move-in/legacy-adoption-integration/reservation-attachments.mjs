@@ -55,12 +55,31 @@ export async function reservationAttachments(){
     await app.call(old.base+'/stop',{token,body:{},status:202})
     await app.db.prepare('UPDATE legacy_package_custody SET expires_at=0 WHERE manifest_sha256=?').bind(old.sha).run()
    }
+   if(mode==='orphan'){
+    // Hold an actual R2 deletion in flight. Approval cannot hand its keys to
+    // a new package until the cleanup quantum has finished deleting them.
+    const contender=await stage('contender')
+    await app.scheduled()
+    const pending=app.runJobs((await app.takeJobs()).filter(j=>j.type==='legacy-package.cleanup'),{'x-legacy-barrier':'before_cleanup_delete'})
+    try{
+     await app.until(async()=>(await app.call('/_test/legacy/barrier')).data.barrier==='before_cleanup_delete',{message:'old canonical deletion in flight'})
+     await app.call(contender.base+'/adoption/approve',{token,body:contender.body,headers:{Origin:app.origin},status:409})
+     assert.ok(await app.first('SELECT 1 FROM legacy_workspace_adoptions WHERE manifest_sha256=?',old.sha),'in-flight cleanup prevents ownership transfer')
+    }finally{await app.call('/_test/legacy/barrier',{body:{}});await pending}
+   }
    if(order==='before'&&mode!=='signout')await drain(old.sha)
    if(mode==='orphan'){
     for(const key of keys)assert.equal(await files.head(key),null,'an unheld canonical copy is cleaned')
     facts.push({mode,cleaned:keys.length});continue
    }
-   const fresh=await stage('fresh');await approve(fresh)
+   let fresh=await stage('fresh');await approve(fresh)
+   const released=[old.sha]
+   if(mode==='signout'&&order==='after'){
+    // A replacement can itself be released before it ever starts copying.
+    // Its inherited deletion coordinates still transfer to the next owner.
+    await app.call(fresh.base+'/discard',{token,body:{},status:202});released.push(fresh.sha)
+    fresh=await stage('second-replacement');await approve(fresh)
+   }
    const transferred=await app.sql("SELECT key FROM legacy_package_keys WHERE manifest_sha256=? AND key IN (SELECT value FROM json_each(?))",fresh.sha,JSON.stringify(keys))
    assert.ok(transferred.length>0,'replacement owns the released canonical cleanup coordinates')
    assert.equal((await app.sql('SELECT key FROM legacy_package_keys WHERE manifest_sha256=? AND key IN (SELECT value FROM json_each(?))',old.sha,JSON.stringify(keys))).length,0)
@@ -83,7 +102,7 @@ export async function reservationAttachments(){
    }
    await bytes()
    const journal=await app.sql('SELECT * FROM legacy_import_rows ORDER BY run_id,source_table,source_id')
-   await drain(old.sha);await drain(old.sha) // Include the purged tombstone's next re-sweep.
+   for(const sha of released){await drain(sha);await drain(sha)} // Include the purged tombstone's next re-sweep.
    await bytes()
    const after=await result(fresh)
    assert.equal(after.journalEqualsPackage,true);assert.deepEqual(after.attachments,complete.attachments);assert.deepEqual(after.tables,complete.tables)

@@ -1,0 +1,15 @@
+    at Object.prepare (file:///workspace/run-happytohelp/script-0.mjs:10846:27)
+    at prepare3 (file:///workspace/run-happytohelp/script-0.mjs:201647:101)
+    at execute2 (file:///workspace/run-happytohelp/script-0.mjs:201669:28)
+    at Object.run (file:///workspace/run-happytohelp/script-0.mjs:201676:14)
+AUTOMATION-002: 48/96 business hours, four-day close, weekend/DST, interrupted cursor restart, reset, repeat refusal and automation actors passed
+STATUS-001: widget/email reopen and owner wakes; hidden holds in widget/portal/mail; custom Pending SLA/report; configured close; requester/CC/tag/field follow-up; forbidden role passed
+✔ a replacement request moves through scoped fields, a reviewed macro, shared queue work, private collaboration, routing, schedules and durable automations before closure and erasure (255211.298907ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 255644.100705

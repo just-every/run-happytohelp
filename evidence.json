@@ -1,0 +1,100 @@
+{
+  "files": [
+    {
+      "blob": "be4e677a9e302167bb39a96180112987ad46b994",
+      "bytes": 1348,
+      "path": "PLAN.md",
+      "sha256": "e3f9b4b2738a8df8eecabcb03f0b4b689fb2d497c7f2fc191f492c7a4bb0c447"
+    },
+    {
+      "blob": "dcc8e3bc1baa7b4b6268ca64e50064f8f30b71a3",
+      "bytes": 4241,
+      "path": "RECEIPT.json",
+      "sha256": "71f301d2c74af4b25e8591cd7b27fe310aa5db02f1dde2c8b11e04c8d9747501"
+    },
+    {
+      "blob": "67a0971419669af53f269012571affec5e01f921",
+      "bytes": 5615,
+      "path": "REPORT.md",
+      "sha256": "4a65af1678ab76f68d38ed24208788c238e6c92eff1c3086b5a957cd0feedc51"
+    },
+    {
+      "blob": "b985e011af047beabfb9b1bf2729aa900194e80a",
+      "bytes": 54742,
+      "path": "after-header-390.png",
+      "sha256": "03d1e91397770521f6f904a40f3005777ac781cebade40e7660aa769bc1f9815"
+    },
+    {
+      "blob": "c3dff4f3da8efac3ab4c7a43d16a91f0b50e3e18",
+      "bytes": 167565,
+      "path": "after-solved-1440.png",
+      "sha256": "41032799ec79f3aeb619656ef2128eb9f8a72668e26db5a21d2ea6da25ae62d0"
+    },
+    {
+      "blob": "ae11c8bd7fe5377b1d03fac3c78f871e9e05e0e8",
+      "bytes": 33647,
+      "path": "after-summary-390.png",
+      "sha256": "0ce8b75f75c729103b3e24dd9ee271c8f01254b307e19ed2645a14fcd16cb10a"
+    },
+    {
+      "blob": "6ce523d64aee199547913b897d74bcc7d1114f00",
+      "bytes": 166516,
+      "path": "before-solved-1440.png",
+      "sha256": "5a58797281b0cb1b0dc78f2924ffdb689ffcf61dd464ba68f176061d6eb76bb4"
+    },
+    {
+      "blob": "56947ee6bee5a26b061d86095cfffcc65b781c4b",
+      "bytes": 185930,
+      "path": "before-stale-1440.png",
+      "sha256": "1f047d254e9aa24fac4bf46ee041edc61abc82fce12e8500b95fb51b89b36ef2"
+    },
+    {
+      "blob": "1339f9613f6d4310553264148a7d44632ac77d90",
+      "bytes": 363,
+      "path": "before.json",
+      "sha256": "1e35d12014839ffce5f465c7f2ffe69fc894c6b177eed164e4dc1f05d1f997c3"
+    },
+    {
+      "blob": "8a3e36c584f92cf73fb45e89b35fc034d4432f23",
+      "bytes": 676,
+      "path": "browser-proof.json",
+      "sha256": "6e44ab59ec0c44e3388142d342d8f77d0ec3548a16f39d634f6faea88a85b26d"
+    },
+    {
+      "blob": "b8bf072a969f6f06db5d364b85b2ae589b6f27f6",
+      "bytes": 93,
+      "path": "browser-test.txt",
+      "sha256": "58b744a531902abfb7a7598512a69e410533156d0770d165d137a6ed5b64129b"
+    },
+    {
+      "blob": "cac1b3616db12b3e70963392fc999de2eef79f6d",
+      "bytes": 1180,
+      "path": "ci.json",
+      "sha256": "55b8afa6c964714530453397efada2001da05a118b84913aef317416cd830540"
+    },
+    {
+      "blob": "211dcccbf90f4c7cfe858564c99d7c4e1823438b",
+      "bytes": 961,
+      "path": "route-test-summary.txt",
+      "sha256": "ea81cab9d1f625d0f00a31f554482451a29db5e7aaebbf2ba797b0d6802426db"
+    },
+    {
+      "blob": "c8c0a4d447e3fb9ddbc29e7348459cc340c16428",
+      "bytes": 1281,
+      "path": "test-count.txt",
+      "sha256": "dbefd1758aa74989b1dff1d40be84d35a9f374a88b2c984fd82b29c3c46cc1b3"
+    },
+    {
+      "blob": "ff787fcb1ab39bcbdccdeb43eb33d06ad4813cb0",
+      "bytes": 217,
+      "path": "typecheck.txt",
+      "sha256": "13aa800cf77c5df788cce3bc2ac6eeef315770c9fe1295b117f4cb4bca5a94c5"
+    }
+  ],
+  "product_branch": "cloud/main-happytohelp-ticket-status-1",
+  "product_head": "ea30383aae21e1518b7c1cfea78d3a7f28fed82c",
+  "ref": "refs/heads/evidence/main-happytohelp-ticket-status-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "main-happytohelp-ticket-status-1"
+}

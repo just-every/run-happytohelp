@@ -1,0 +1,6 @@
+1. Reproduce consecutive priority/tag/status edits and the incorrect header lifecycle through native login and the operator inbox on main acdcff44b1dae61a4c5559807c33430fd0891dbd.
+2. Return the authoritative ticket from successful tag mutations and synchronize the summary with that response. Retain expected_version on summary saves and the server guard for genuinely intervening edits.
+3. Render each actual lifecycle category in the header, with Reopen for Solved and no lifecycle action for final Closed.
+4. Extend the existing ticket browser journey at 1440, covering consecutive edits, tag removal, lifecycle labels after save/reload, and an intervening update refusal. Capture the changed screen at 1440 and 390 without adding a test registration. Run the existing concurrent-change journey and typecheck.
+5. Fetch/rebase unpublished work against main, retain current contract judgments, regenerate/check source lock last, inspect commit identities/trailers, and push only the named cloud branch. If a save was published, merge main without rewriting it.
+6. Watch the candidate's exact-SHA Verify through REST within the ten-call budget and 300-second cadence. Publish actual non-secret reports, receipts and screenshots only to the separate evidence ref; relay main inbox lines in final output. The fleet owns publication scan and landing.

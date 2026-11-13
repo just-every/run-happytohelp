@@ -1,0 +1,17 @@
+{
+  "main": "acdcff44b1dae61a4c5559807c33430fd0891dbd",
+  "priority": "high",
+  "tags": [
+    {
+      "id": "eee325ec-ec00-4c74-9977-9e6916b1e065",
+      "name": "saturday-walk"
+    }
+  ],
+  "refusal": "Ticket changed. Reload before applying changes.",
+  "selected": "solved",
+  "header": [
+    "Closed"
+  ],
+  "pendingHeader": "Open",
+  "onHoldHeader": "Open"
+}

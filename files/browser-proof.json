@@ -1,0 +1,35 @@
+{
+  "head": "ea30383aae21e1518b7c1cfea78d3a7f28fed82c",
+  "viewports": [
+    1440,
+    390
+  ],
+  "assertionWidth": 1440,
+  "labels": [
+    {
+      "status": "pending",
+      "header": "Pending"
+    },
+    {
+      "status": "on_hold",
+      "header": "On-hold"
+    },
+    {
+      "status": "open",
+      "header": "Open"
+    },
+    {
+      "status": "solved",
+      "header": "Solved"
+    }
+  ],
+  "saved": {
+    "status_category": "solved",
+    "priority": "high",
+    "tags": [
+      "saturday-walk"
+    ]
+  },
+  "reloadHeader": "Solved",
+  "phone_summary": "Opened Ticket through the normal header panel control after the responsive breakpoint closed the desktop panel."
+}

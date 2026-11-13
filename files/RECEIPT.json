@@ -1,0 +1,119 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/main-happytohelp-ticket-status-1",
+  "baseline": "acdcff44b1dae61a4c5559807c33430fd0891dbd",
+  "head": "ea30383aae21e1518b7c1cfea78d3a7f28fed82c",
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --answers .rer/cloud-answers.json --non-interactive",
+      "exit": 0,
+      "note": "Earlier setup attempts requested private answers and a contained checkout path; both were supplied. Answers were never selected for evidence."
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "note": "Built main for reproduction and built changed application."
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run node --test --test-name-pattern='a replacement request' tests/journeys/inbox.mjs",
+      "exit": 0,
+      "tests": 1,
+      "fail": 0,
+      "duration_ms": 255644.100705,
+      "coverage": "Existing fields, tags, queue concurrency guards and status lifecycle journey."
+    },
+    {
+      "command": "pnpm run source:lock",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run source:check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium cloud_run node /tmp/hh-proof.mjs",
+      "head": "ea30383aae21e1518b7c1cfea78d3a7f28fed82c",
+      "exit": 0,
+      "coverage": "Candidate exact-SHA labels, same-operator priority/tag/status, persisted Solved; assertions at 1440 and final settled phone captures at 390."
+    }
+  ],
+  "browser_attempts": [
+    {
+      "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium cloud_run node /tmp/hh-ticket-browser.mjs",
+      "exit": 1,
+      "reason": "New assertion used title Solve conversation instead of accessible name Solve; fixed locator, product had already saved Solved and reloaded correctly."
+    },
+    {
+      "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium H2H_EVIDENCE_DIR=/tmp/hh-ticket-evidence cloud_run node /tmp/hh-ticket-browser.mjs",
+      "exit": 0,
+      "coverage": "Existing ticketsBrowser with consecutive versioned edits, lifecycle labels/actions, saved Solved after reload and competing-tab refusal; existing fields, bulk, final Closed and refusal coverage retained. Assertions at 1440."
+    }
+  ],
+  "counts": {
+    "test_registrations_before": 108,
+    "test_registrations_after": 108,
+    "test_registrations_added": 0,
+    "contract_before": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    },
+    "contract_after": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    }
+  },
+  "clauses": {
+    "STATUS-001": {
+      "before": "partial",
+      "after": "partial",
+      "claimed_points": []
+    }
+  },
+  "ci": [
+    {
+      "id": 43426535076,
+      "head": "ea30383aae21e1518b7c1cfea78d3a7f28fed82c",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/just-every/run-happytohelp/actions/runs/43426535076",
+      "api_calls": 4
+    }
+  ],
+  "pr": null,
+  "publication_scan": "Fleet Mac lander responsibility; no Mac scan available in cloud.",
+  "push": {
+    "status": "pushed",
+    "attempts": 1,
+    "branch": "cloud/main-happytohelp-ticket-status-1",
+    "head": "ea30383aae21e1518b7c1cfea78d3a7f28fed82c",
+    "identity_check": "All candidate authors and committers are Run Edit Run fleet <fleet@runeditrun.com>; no trailers, no OpenAI/Codex co-author lines."
+  },
+  "browser_proof": {
+    "head": "ea30383aae21e1518b7c1cfea78d3a7f28fed82c",
+    "exit": 0,
+    "assertion_width": 1440,
+    "capture_widths": [
+      1440,
+      390
+    ],
+    "screenshots": [
+      "after-solved-1440.png",
+      "after-summary-390.png",
+      "after-header-390.png"
+    ],
+    "note": "Retook phone proof after existing panel transitions settled; no product changes.",
+    "visual_review": "Reviewed desktop summary/header and both 390 screens. The phone Summary shows Solved, High and saturday-walk without clipping; the phone header shows Solved with Reopen. The panel was opened using its normal control after resizing."
+  }
+}

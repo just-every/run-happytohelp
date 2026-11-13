@@ -10,11 +10,11 @@ import {vendorRepliesJourney} from '../move-in/vendor-replies.mjs'
 import {reviewImportJourney} from '../move-in/review-import.mjs'
 
 test('review an export, import its history and private notes, repeat and repackage without effects, then undo exactly',{timeout:480_000},async()=>{
- // Every phase owns a separate installation. Keep two lanes; the measured
+ // Every phase owns a separate installation. Keep three bounded lanes; the measured
  // Worker uses its native V8 inspector session for profiling.
  const pending=[reviewImportJourney,adoptionIntegrationJourney,mountedErasureStates,vendorRepliesJourney,outcomesJourney,legacyPackageAdmission,legacyAdoptionJourney,mountedOrderingJourney]
  const failures=[]
- // Drain both lanes even on failure: no cleanup or outstanding assertions are
+ // Drain every lane even on failure: no cleanup or outstanding assertions are
  // abandoned because an independent phase failed first.
  const run=async journey=>{
    const started=performance.now()
@@ -25,6 +25,6 @@ test('review an export, import its history and private notes, repeat and repacka
    finally{console.log('IMPORT_ADMISSION_PHASE',JSON.stringify({journey:journey.name,duration_ms:Math.round(performance.now()-started)}))}
  }
  const lane=async()=>{while(pending.length)await run(pending.shift())}
- await Promise.all([lane(),lane()])
+ await Promise.all([lane(),lane(),lane()])
  if(failures.length)throw new AggregateError(failures,'Importer admission phase failed')
 })

@@ -39,8 +39,11 @@ export async function reservationAttachments(){
     await app.scheduled();const jobs=await take();pending.push(...jobs.filter(j=>j.type!=='legacy-package.cleanup'));await app.runJobs(jobs.filter(j=>j.type==='legacy-package.cleanup'))
    }
    const drain=async sha=>{
-    for(let n=0;n<12;n++)await cron(sha)
-    assert.equal((await app.first('SELECT status FROM legacy_package_custody WHERE manifest_sha256=?',sha)).status,'purged')
+    for(let n=0;n<12;n++){
+     await cron(sha)
+     if((await app.first('SELECT status FROM legacy_package_custody WHERE manifest_sha256=?',sha)).status==='purged')return
+    }
+    assert.fail('Old package cleanup did not finish')
    }
    const old=await stage('original');await approve(old)
    await app.call(old.base+'/start',{token,body:{approvedManifestSha256:old.sha},status:202})

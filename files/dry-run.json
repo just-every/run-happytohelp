@@ -1,0 +1,8 @@
+{
+  "command": "pnpm exec rer deploy --dry-run",
+  "baseline": "acdcff44b1dae61a4c5559807c33430fd0891dbd",
+  "exit": 0,
+  "seconds": 31.35,
+  "cloudflare_credentials_in_environment": false,
+  "provider_credentials_loaded": false
+}

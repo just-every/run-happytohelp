@@ -1,0 +1,77 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "head_sha": "468b2315286bc97f7781d5d0ea3e6da5d576633e",
+  "calls": 10,
+  "observations": [
+    {
+      "id": 43425743385,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "468b2315286bc97f7781d5d0ea3e6da5d576633e",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43425743385",
+      "observed_at": 1794573053.5577545
+    },
+    {
+      "id": 43425743385,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "468b2315286bc97f7781d5d0ea3e6da5d576633e",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43425743385",
+      "observed_at": 1794573355.1278472
+    },
+    {
+      "id": 43425743385,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "468b2315286bc97f7781d5d0ea3e6da5d576633e",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43425743385",
+      "observed_at": 1794573656.7215211
+    },
+    {
+      "id": 43425743385,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "468b2315286bc97f7781d5d0ea3e6da5d576633e",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43425743385",
+      "observed_at": 1794573958.3162355
+    },
+    {
+      "id": 43425743385,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "468b2315286bc97f7781d5d0ea3e6da5d576633e",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43425743385",
+      "observed_at": 1794574259.8637753
+    },
+    {
+      "id": 43425743385,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "468b2315286bc97f7781d5d0ea3e6da5d576633e",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43425743385",
+      "observed_at": 1794574561.4296734
+    },
+    {
+      "id": 43425743385,
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "468b2315286bc97f7781d5d0ea3e6da5d576633e",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43425743385",
+      "observed_at": 1794574862.940128
+    }
+  ],
+  "last_call_time": 1794574862.9392202,
+  "run_id": 43425743385,
+  "result": "rerun-requested-no-green-observed-api-budget-limit",
+  "diagnostic_call_time": 1794574878.1010962,
+  "log_command": "gh run view 43425743385 --repo just-every/run-happytohelp --job 131887254733 --log-failed",
+  "log_exit": 0,
+  "log_call_time": 1794574899.771474,
+  "rerun_command": "gh api --method POST repos/just-every/run-happytohelp/actions/runs/43425743385/rerun-failed-jobs",
+  "rerun_exit": 0,
+  "rerun_requested": true,
+  "rerun_request_time": 1794574943.428308,
+  "rerun_http_status": [
+    "HTTP/2.0 201 Created"
+  ]
+}

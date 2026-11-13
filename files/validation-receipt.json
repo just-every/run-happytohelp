@@ -1,0 +1,122 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/main-happytohelp-readme-truth-1",
+  "head": "468b2315286bc97f7781d5d0ea3e6da5d576633e",
+  "base": "acdcff44b1dae61a4c5559807c33430fd0891dbd",
+  "product_files": [
+    "README.md",
+    "sources.lock.json"
+  ],
+  "checks": {
+    "typecheck": {
+      "exit": 0,
+      "receipt": "typecheck.log"
+    },
+    "docs-link-check": {
+      "exit": 0,
+      "receipt": "docs-check.json"
+    },
+    "site-build": {
+      "exit": 0,
+      "receipt": "site-build.log"
+    },
+    "source-lock": {
+      "exit": 0,
+      "receipt": "source-lock.log"
+    },
+    "source-check": {
+      "exit": 0,
+      "receipt": "source-check.log"
+    },
+    "first-party-check": {
+      "exit": 0,
+      "receipt": "first-party-check.log"
+    },
+    "browser": {
+      "exit": 0,
+      "receipt": "browser-proof.json"
+    },
+    "credential-free-dry-run": {
+      "exit": 0,
+      "receipt": "dry-run.json"
+    }
+  },
+  "push": {
+    "exit": 0,
+    "attempts": 1,
+    "receipt": "product-push.log"
+  },
+  "counts": {
+    "broken_readme_guide_targets": {
+      "before": 1,
+      "after": 0
+    },
+    "readme_run_links": {
+      "before": 0,
+      "after": 1
+    },
+    "incorrect_dry_run_explanations": {
+      "before": 1,
+      "after": 0
+    },
+    "test_registrations_added": 0,
+    "test_registrations_removed": 0,
+    "contract_status_before": {
+      "partial": 71,
+      "done": 4
+    },
+    "contract_status_after": {
+      "partial": 71,
+      "done": 4
+    }
+  },
+  "target_clause_status_unchanged": {
+    "NATIVE-001": "partial",
+    "PUBLIC-005": "partial"
+  },
+  "contract_source_changed": false,
+  "acceptance_views_changed": false,
+  "pr": null,
+  "publication_scan": "Fleet Mac lander owns full publication scan; task-side product diff reviewed, no secrets introduced.",
+  "product_tree": "c800c9dacebdfd92497a9f18d7d92f6659eba5dd",
+  "tracked_worktree_clean": true,
+  "screenshots": [
+    {
+      "path": "readme-deploy-1440.png",
+      "sha256": "fb212da6cfb290f286601a18ed07dac41282c7f95d93f31414c2d35fd2f78d68"
+    },
+    {
+      "path": "readme-deploy-390.png",
+      "sha256": "19c077149c0555f2fc6419732118736d6a3f2dce02bdd0e2c169c6b28ac266ec"
+    },
+    {
+      "path": "readme-run-1440.png",
+      "sha256": "94b333608055a4e6a0ea382615a35458a36ce533e5a73d3e7b352128bef0f6ca"
+    },
+    {
+      "path": "readme-run-390.png",
+      "sha256": "b23433d4e6e325cc363037f052f003aedad1e05b2e9f862ce3c5c508a350eb9d"
+    }
+  ],
+  "browser_proof_script": "browser-proof.mjs",
+  "product_diff": "product-change.diff",
+  "ci": {
+    "run_id": 43425743385,
+    "head_sha": "468b2315286bc97f7781d5d0ea3e6da5d576633e",
+    "initial_conclusion": "failure",
+    "failed_job_id": 131887254733,
+    "failed_job_name": "Verify / import-and-reports",
+    "failed_step": "Run shard checks",
+    "dependent_failure_job_id": 131899319475,
+    "dependent_failed_step": "Require the plan and every selected check",
+    "failure_log_command_exit": 0,
+    "failure_log_bytes": 0,
+    "rerun_requested": true,
+    "rerun_http_status": [
+      "HTTP/2.0 201 Created"
+    ],
+    "final_green_observed": false,
+    "github_calls": 10,
+    "terminal_custody": "PUSHED"
+  }
+}

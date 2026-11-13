@@ -1,0 +1,34 @@
+[
+  {
+    "url": "https://happytohelp.com/docs/getting-started",
+    "exit": 0,
+    "result": "404 https://happytohelp.com/docs/getting-started",
+    "title": [
+      "Not Found"
+    ]
+  },
+  {
+    "url": "https://happytohelp.com/run",
+    "exit": 0,
+    "result": "200 https://happytohelp.com/run",
+    "title": [
+      "Run HappyToHelp"
+    ]
+  },
+  {
+    "url": "https://happytohelp.com/docs/run-locally",
+    "exit": 0,
+    "result": "200 https://happytohelp.com/docs/run-locally",
+    "title": [
+      "Run it on your computer \u00b7 HappyToHelp docs"
+    ]
+  },
+  {
+    "url": "https://happytohelp.com/docs/install",
+    "exit": 0,
+    "result": "200 https://happytohelp.com/docs/install",
+    "title": [
+      "Install HappyToHelp \u00b7 HappyToHelp docs"
+    ]
+  }
+]

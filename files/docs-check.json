@@ -1,0 +1,164 @@
+{
+  "command": "existing verifyDocs(process.cwd())",
+  "problems": [],
+  "pages": [
+    {
+      "source": "README.md",
+      "href": "/docs"
+    },
+    {
+      "source": "docs/getting-started.md",
+      "href": "/docs/getting-started"
+    },
+    {
+      "source": "docs/INSTALLER.md",
+      "href": "/docs/install"
+    },
+    {
+      "source": "docs/SETUP-WORKFLOW.md",
+      "href": "/docs/setup"
+    },
+    {
+      "source": "local-agent/README.md",
+      "href": "/docs/local-agent"
+    },
+    {
+      "source": "docs/AGENT-FIX.md",
+      "href": "/docs/agent-fix"
+    },
+    {
+      "source": "docs/AGENT-DOOR.md",
+      "href": "/docs/agent-door"
+    },
+    {
+      "source": "RUN-LOCALLY.md",
+      "href": "/docs/run-locally"
+    },
+    {
+      "source": "OPERATIONS.md",
+      "href": "/docs/operations"
+    },
+    {
+      "source": "docs/managed-conversation-mail.md",
+      "href": "/docs/managed-conversation-mail"
+    },
+    {
+      "source": "src/modules/integrations/README.md",
+      "href": "/docs/integrations"
+    },
+    {
+      "source": "docs/moving-in.md",
+      "href": "/docs/moving-in"
+    },
+    {
+      "source": "docs/PUBLIC-LIMITS.md",
+      "href": "/docs/limits"
+    },
+    {
+      "source": "docs/PRIVACY.md",
+      "href": "/docs/privacy"
+    },
+    {
+      "source": "docs/INDEPENDENT-RELEASE.md",
+      "href": "/docs/updates-and-recovery"
+    },
+    {
+      "source": "docs/INBOUND-EMAIL-RECOVERY.md",
+      "href": "/docs/inbound-email-recovery"
+    },
+    {
+      "source": "docs/legacy-entry-points.md",
+      "href": "/docs/legacy-entry-points"
+    },
+    {
+      "source": "docs/companies-and-csv.md",
+      "href": "/docs/companies-and-csv"
+    },
+    {
+      "source": "docs/website-knowledge.md",
+      "href": "/docs/website-knowledge"
+    },
+    {
+      "source": "docs/help-center.md",
+      "href": "/docs/help-center"
+    },
+    {
+      "source": "docs/request-forms.md",
+      "href": "/docs/request-forms"
+    },
+    {
+      "source": "docs/customer-portal.md",
+      "href": "/docs/customer-portal"
+    },
+    {
+      "source": "docs/customer-satisfaction.md",
+      "href": "/docs/customer-satisfaction"
+    },
+    {
+      "source": "docs/away.md",
+      "href": "/docs/away"
+    },
+    {
+      "source": "docs/tickets.md",
+      "href": "/docs/tickets"
+    },
+    {
+      "source": "docs/reports.md",
+      "href": "/docs/reports"
+    },
+    {
+      "source": "docs/email.md",
+      "href": "/docs/email"
+    },
+    {
+      "source": "docs/workflows.md",
+      "href": "/docs/workflows"
+    },
+    {
+      "source": "docs/help-before-they-ask.md",
+      "href": "/docs/help-before-they-ask"
+    },
+    {
+      "source": "docs/plugins.md",
+      "href": "/docs/plugins"
+    },
+    {
+      "source": "docs/connected-applications.md",
+      "href": "/docs/connected-applications"
+    },
+    {
+      "source": "docs/account-security.md",
+      "href": "/docs/account-security"
+    },
+    {
+      "source": "docs/macros-and-teamwork.md",
+      "href": "/docs/macros-and-teamwork"
+    },
+    {
+      "source": "docs/notifications.md",
+      "href": "/docs/notifications"
+    },
+    {
+      "source": "docs/triage.md",
+      "href": "/docs/triage"
+    },
+    {
+      "source": "docs/feedback-and-assurance.md",
+      "href": "/docs/feedback-and-assurance"
+    },
+    {
+      "source": "docs/support-channels.md",
+      "href": "/docs/support-channels"
+    },
+    {
+      "source": "SECURITY.md",
+      "href": "/docs/security"
+    },
+    {
+      "source": "CHANGELOG.md",
+      "href": "/docs/changelog"
+    }
+  ],
+  "readmeInstallLink": "/docs/install",
+  "readmeRunLink": "https://happytohelp.com/run"
+}

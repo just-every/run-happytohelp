@@ -1,0 +1,27 @@
+{
+  "source": ".rer/site emitted by rer build --site",
+  "browser": "system Chromium, headless",
+  "assertionWidth": 1440,
+  "visualWidths": [
+    1440,
+    390
+  ],
+  "rows": [
+    {
+      "width": 1440,
+      "status": 200,
+      "install": "/docs/install",
+      "run": "https://happytohelp.com/run"
+    },
+    {
+      "width": 390,
+      "status": 200,
+      "install": "/docs/install",
+      "run": "https://happytohelp.com/run"
+    },
+    {
+      "guideClick": "passed",
+      "destination": "/docs/install"
+    }
+  ]
+}

@@ -17493,7 +17493,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/reservations.mjs": {
-      "sha256": "49e0f4aed68283412d2821dd09f964716c4bc903ff466f7337e12a7c7bd8a30f",
+      "sha256": "f02b896f9fbc79876dd684633df4df03ac6ea44f67a37cbaee2e4358933b5fd5",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/runtime-worker.ts": {

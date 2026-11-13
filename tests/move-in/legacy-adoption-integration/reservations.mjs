@@ -66,7 +66,7 @@ export async function reservationRecovery({app,directory,setup,token,setupAdmin,
  const fencedSource='synthetic-reservation-erased',held=await stage(fencedSource,'erased-original');await approve(held,{status:202})
  await app.call(held.base+'/discard',{token,body:{},status:202})
  await app.db.prepare("INSERT INTO legacy_package_scope_fences(project_id,generation,reason,fenced_at) VALUES(?,1,'erasure',1)").bind(fencedSource).run()
- const next=await writeLegacyPackage(join(directory,'erased-fresh'),{format:'happytohelp-legacy-v1',source:{repository:'synthetic',revision:'fresh',projectId:fencedSource},tables:{projects:[{id:fencedSource,name:'Synthetic fenced workspace',website:'https://synthetic.example',created_at:1}]}})
+ const next=await writeLegacyPackage(join(directory,'erased-fresh'),{format:'happytohelp-legacy-v1',source:{repository:'synthetic',revision:'fresh',exportedAt:'2026-11-13T00:00:00Z',projectId:fencedSource},tables:{projects:[{id:fencedSource,name:'Synthetic fenced workspace',website:'https://synthetic.example',created_at:1}]}})
  await app.call(`/api/move-in/projects/${setup}/legacy-import/${next.manifestSha256}/manifest`,{token,method:'PUT',raw:true,body:await readFile(join(directory,'erased-fresh','manifest.json')),headers:{'X-Manifest-SHA256':next.manifestSha256},status:409})
  assert.ok(await app.first('SELECT 1 FROM legacy_workspace_adoptions WHERE manifest_sha256=?',held.sha))
  assert.deepEqual(await app.sql('SELECT * FROM users ORDER BY id'),before)

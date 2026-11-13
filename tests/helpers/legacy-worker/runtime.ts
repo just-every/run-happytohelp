@@ -1,5 +1,4 @@
 import common from './worker'
-import './inspector-session'
 export {ConversationSocket} from './worker'
 import {unchangedSinceImport} from '../../../src/modules/legacy-import/state'
 import {consumeQueue} from '../../../src/queue'

@@ -16764,10 +16764,6 @@
       "sha256": "ff02dd2e46508144b2c7cbedaa3a76b6d1a3034b0a496e0d6400bd7baf92029d",
       "executable": false
     },
-    "tests/helpers/legacy-worker/inspector-session.ts": {
-      "sha256": "8bc53cf06c58c17cb430c2dfd3bbad7e1b46188692e6d7f1a0fa1cbdab90e9e1",
-      "executable": false
-    },
     "tests/helpers/legacy-worker/journey.mjs": {
       "sha256": "a3780c6178d7d9b0f41c8fb5481645d61b796e6a2a4cab96a788237ba2179e01",
       "executable": false
@@ -16777,15 +16773,15 @@
       "executable": false
     },
     "tests/helpers/legacy-worker/profiler.mjs": {
-      "sha256": "30f198f5fce797d8e78587e66ddc87a5b8a60cee06bc3e95039d7f1991f3bd80",
+      "sha256": "517ae763a801ef713c3b69576add7afa430d5917ac0b8fbc76abb0af077e9f8a",
       "executable": false
     },
     "tests/helpers/legacy-worker/runtime.mjs": {
-      "sha256": "787cc7aa7ab929c33d294c9ea239fdba73ee81627fe8ec962029e4fa967afa12",
+      "sha256": "a79426a6c26c8bcdec668b5281e3f5a24a3d0d601931f64f2b44099994ac1654",
       "executable": false
     },
     "tests/helpers/legacy-worker/runtime.ts": {
-      "sha256": "c9d36c4694bd26883623cf843a495a3e9593263ab0e3126f6b6d46fb8e8f122d",
+      "sha256": "93daa8d5694a8b75723a65aa903f327ecb4cffc97fae3cd3ae83ae1969f011bd",
       "executable": false
     },
     "tests/helpers/legacy-worker/worker.ts": {
@@ -17269,7 +17265,7 @@
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {
-      "sha256": "912fcee706e1eb27a0e226613f57dc100019caa70d86e56e53b5229abf182716",
+      "sha256": "5b262bd96b288a6228b93e93a3261be8484c07e876479f63ff64524d08380b89",
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
@@ -17533,7 +17529,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/runtime.mjs": {
-      "sha256": "5561d9c093fbb13fdedb06b856c6e8db7551e365db80af1c60793b983837e499",
+      "sha256": "bc6255d4d5b241cfeacba2160f2f1837073daba504ff6a40f88a71eeb1a786e6",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/streamed-manifest.mjs": {

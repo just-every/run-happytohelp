@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
 import {join} from 'node:path'
 import {writeLegacyPackage} from '../../helpers/legacy-package.mjs'
-import {reservationAttachments} from './reservation-attachments.mjs'
+export {reservationAttachments} from './reservation-attachments.mjs'
 
 /** Extend the mounted adoption journey: recovery uses ordinary upload, review,
  * approval, worker and discard doors. Only elapsed time is arranged in D1. */
@@ -74,7 +74,7 @@ export async function reservationRecovery({app,directory,setup,token,setupAdmin,
  assert.deepEqual(await app.sql('SELECT * FROM memberships ORDER BY project_id,user_id'),members)
  for(const [i,table] of inertTables.entries())assert.deepEqual(await app.sql(`SELECT * FROM ${table} ORDER BY rowid`),inert[i],table+' unchanged by reservation recovery')
  console.log('RESERVATION_RECOVERY expired, discarded, failed: fresh approval wins once; stale SHA, actor, scope refusals; users/grants added=0')
- return {expired:true,discarded:true,failedBeforeCreation:true,concurrentWinners:1,nativeUsersAdded:0,membershipsAdded:0,attachments:await reservationAttachments()}
+ return {expired:true,discarded:true,failedBeforeCreation:true,concurrentWinners:1,nativeUsersAdded:0,membershipsAdded:0}
 }
 
 export async function createdReservationRefusal({app,directory,setup,token,source,originalSha}){

@@ -11,7 +11,8 @@ export function releaseSourceCommit(root) {
   let record;
   try { record=JSON.parse(upstream); } catch { throw Error('Invalid rer-upstream.json release provenance'); }
   if(record?.schema!==1 || typeof record.repository!=='string' || !record.repository
-   || typeof record.tag!=='string' || !record.tag || !/^[a-f0-9]{40}$/.test(record.commit)){
+   || typeof record.tag!=='string' || !record.tag
+   || typeof record.commit!=='string' || !/^[a-f0-9]{40}$/.test(record.commit)){
    throw Error('Invalid rer-upstream.json release provenance');
   }
   // Managed copies have installation commits of their own. The upstream tag's

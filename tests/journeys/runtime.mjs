@@ -1,3 +1,4 @@
+import {healthRequest} from '@runeditrun/rer/internal/modules/deploy-kit/health-request.mjs'
 import {mobileAdmission} from '../helpers/mobile.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -43,6 +44,8 @@ test('a native support session admits and replays one transcript with its own fi
   if(!upstream){try{sourceCommit=(await exec('git',['rev-parse','--verify','HEAD^{commit}'],{cwd:new URL('../..',import.meta.url)})).stdout.trim()}catch{}}
   assert.deepEqual(health.data.release,{version,sourceCommit},'built health reports its release source independently of deployment bindings')
   assert.deepEqual(health.data.deployment,deployment,'the deploy-kit identity body keeps the original binding values')
+  const compared=await healthRequest({origin:runtime.origin,expected:deployment,request:fetch,timeoutMs:5000,offsetMs:0})
+  assert.equal(compared.attempt.errorClass,null,'rer deploy accepts the actual additive health response')
   assert.deepEqual([health.data.ok,health.data.status,health.data.runtime,health.data.database,health.data.files],[true,'ok','native-rer','reachable','reachable'])
   for(const path of ['/login','/setup','/docs/install']){
    const response=await request(path);assert.equal(response.status,200)

@@ -1676,6 +1676,10 @@
       "sha256": "26c331a82ca6f4b96e701a168b87bfd5e1350018bc72137b202f561a183b7570",
       "executable": false
     },
+    "docs/contract/ANCHOR.json": {
+      "sha256": "1a6aa26f3c136f1a89df4bb2d7dcb9d87c0664f4cd307d10c339541d9c28e4b5",
+      "executable": false
+    },
     "docs/contract/COVERAGE.json": {
       "sha256": "04472193919de8cc10a39e146a89aee5b18a2a88ec6529e93c44594e5113cafb",
       "executable": false

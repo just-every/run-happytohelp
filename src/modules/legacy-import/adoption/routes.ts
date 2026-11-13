@@ -10,6 +10,7 @@ import {validateManifest,packageKey,hex256} from '../worker/manifest'
 import {refuse} from './errors'
 import {requireInstallationOwner} from './authority'
 import {approveAdoption,getAdoption} from './store'
+import {releasableReservation} from './reservation'
 
 /** C supplies B's current custody read/fence here. The default reads immutable
  * v2 manifest bytes only; this router is deliberately NOT mounted in the app. */
@@ -42,7 +43,7 @@ export function createLegacyAdoptionRoutes(readReview:AdoptionReviewReader=readA
   await requireInstallationOwner(c,c.req.param('projectId')!)
   const sha=c.req.param('sha')!,setup=c.req.param('projectId')!,{manifest,sourceRetentionDeadline}=await readReview(c.env,sha,setup)
   const adoption=await getAdoption(c.env.DB,sha),exists=!!await c.env.DB.prepare('SELECT 1 FROM projects WHERE id=?').bind(manifest.source.projectId).first()
-  const reserved=!!await c.env.DB.prepare('SELECT 1 FROM legacy_workspace_adoptions WHERE source_project_id=? AND manifest_sha256<>?').bind(manifest.source.projectId,sha).first()
+  const reserved=!!await c.env.DB.prepare(`SELECT 1 FROM legacy_workspace_adoptions a WHERE source_project_id=? AND manifest_sha256<>? AND NOT (${releasableReservation})`).bind(manifest.source.projectId,sha).first()
   return c.json({data:{manifestSha256:sha,custodyProjectId:setup,sourceProjectId:manifest.source.projectId,destinationProjectId:manifest.source.projectId,policyVersion:2,canApprove:!reserved&&(!exists||adoption?.state==='created'),collision:reserved||exists&&adoption?.state!=='created'?'destination_conflict':null,staffRows:manifest.source.rowCounts.users??0,historicalMembershipRows:(manifest.source.rowCounts.project_users??0)+(manifest.source.rowCounts.memberships??0),membershipPolicy:'historical memberships; no access created',sourceRetentionDeadline,adoption:publicApproval(adoption),erasedScopePolicy:'Legacy intake is unavailable after an erasure in an involved workspace'}})
  })
  routes.post(root+'/approve',async c=>{

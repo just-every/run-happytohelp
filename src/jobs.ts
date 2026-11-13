@@ -1,4 +1,4 @@
-import {sweepCanonicalNonces,cleanupCopyIntents} from './modules/legacy-import/worker/canonical-custody'
+import {cleanupCopyIntents} from './modules/legacy-import/worker/canonical-custody'
 import {CUSTODY_JOB,cleanupStep,discoverCleanup,getCustody} from './modules/legacy-import/custody'
 import type {LegacyCleanupJob} from './platform/env'
 import {advanceLegacy} from './modules/legacy-import/worker/runner'
@@ -46,7 +46,7 @@ import { pruneCounters } from './platform/usage-counters'
 import {dispatchSurveys} from './modules/outcomes/survey-delivery'
 
 export async function consumeJob(job:Job|LegacyCleanupJob,env:Env) {
- if(job.type===CUSTODY_JOB){if(/^[0-9a-f]{64}$/.test(job.id)&&Number.isSafeInteger(job.generation)){const c=await getCustody(env.DB,job.id);if(!c||c.generation!==job.generation||!['invalidated','purging','purged'].includes(c.status))return;const step=await cleanupStep(env,job.id,Number(job.generation));await sweepCanonicalNonces(env,job.id,100-step.keys);await cleanupCopyIntents(env,job.id,250-step.rows)};return}
+ if(job.type===CUSTODY_JOB){if(/^[0-9a-f]{64}$/.test(job.id)&&Number.isSafeInteger(job.generation)){const c=await getCustody(env.DB,job.id);if(!c||c.generation!==job.generation||!['invalidated','purging','purged'].includes(c.status))return;const step=await cleanupStep(env,job.id,Number(job.generation));await cleanupCopyIntents(env,job.id,250-step.rows)};return}
  if(!('projectId' in job))return
  if(job.type==='knowledge.upgrade'){await canonicaliseExistingProject(env,job.projectId);await dispatchKnowledgeUpgrades(env);return}
  if(job.type==='rer.mailbox.status'){await refreshRerMailbox(env,job.projectId);return}

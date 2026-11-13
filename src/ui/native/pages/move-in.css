@@ -27,3 +27,5 @@
 .legacy-result .legacy-table-scroll{max-width:100%;overflow-x:auto}
 .legacy-result table{min-width:640px}
 .legacy-result th{overflow-wrap:normal;word-break:normal;white-space:nowrap}
+
+.legacy-table-scroll:focus-visible{outline:2px solid var(--bs-primary);outline-offset:2px}

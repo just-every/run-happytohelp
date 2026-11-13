@@ -38,6 +38,15 @@ export async function legacyPackageBrowserFlow({page,runtime,project,inspect,wid
   await page.getByRole('button',{name:'Renew owner approval',exact:true}).click();await page.getByText('Destination approved.',{exact:false}).waitFor()
   await page.getByText('Replay retained source',{exact:true}).click();const replayed=page.waitForResponse(r=>r.url().endsWith('/start')&&r.request().postData()?.includes('\"replay\":true'));await page.getByRole('button',{name:'Replay verification',exact:true}).click();assert.equal((await replayed).status(),202);await page.getByText('Counts and verification details',{exact:true}).click();await page.waitForFunction(()=>{try{const note=JSON.parse(document.querySelector('.legacy-result pre').textContent);return note.state==='complete'&&note.attempt?.number===2}catch{return false}},{},{timeout:120000});const note=JSON.parse(await page.locator('.legacy-result pre').textContent());assert.equal(note.attempt.appliedRows,0);await shot('replayed')
 
+  // A fresh source with colliding row IDs must explain its real preflight pause.
+  const conflict=await packageFixture(join(directory,'conflicting-source'),'synthetic-conflict-'+project,{staff:[{id:'synthetic-browser-staff',name:'Former support teammate',email:'synthetic-former@example.test',created_at:1}]});
+  await page.getByLabel('Export folder',{exact:true}).setInputFiles(conflict.root);
+  await page.getByRole('button',{name:/^(Upload package|Continue upload)$/}).click();await page.getByText('All required package files are uploaded.',{exact:false}).waitFor({timeout:120000});await shot('single-member-review');
+  await page.getByRole('button',{name:'Approve this destination',exact:true}).click();await page.getByText('Destination approved.',{exact:false}).waitFor();
+  await page.getByRole('button',{name:'Import history',exact:true}).click();await page.locator('.legacy-result code').filter({hasText:'canonical_target_conflict'}).waitFor({timeout:120000});
+  await page.locator('.legacy-result summary').click();const paused=JSON.parse(await page.locator('.legacy-result pre').textContent());
+  assert.equal(paused.errorCode,'canonical_target_conflict');assert.equal(paused.state,'paused');await shot('conflict-paused');
+
   // Server's unchanged secret classifier refuses a provider-shaped synthetic credential.
   const bad=await packageFixture(join(directory,'policy-refusal'),'synthetic-policy-'+project,{secret:true});await page.getByLabel('Export folder',{exact:true}).setInputFiles(bad.root);await page.getByRole('button',{name:/^(Upload package|Continue upload)$/}).click();await page.getByRole('alert').filter({hasText:'source secret policy'}).waitFor();await shot('policy-refused')
  }finally{page.off('request',record);await rm(directory,{recursive:true,force:true})}

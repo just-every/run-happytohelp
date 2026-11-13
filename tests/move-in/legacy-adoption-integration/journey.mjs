@@ -4,9 +4,13 @@ import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 import {runnerRuntime} from './runtime.mjs'
 import {recordMeasurement} from '../../helpers/legacy-worker/profiler.mjs'
+import {reservationRecovery,createdReservationRefusal,reservationAttachments} from './reservations.mjs'
 import {packageFixture,sha} from './fixture.mjs'
 
 export async function adoptionIntegrationJourney({representative=true}={}){
+ // Independent installations must finish before opening this run's measured
+ // Worker and inspector. No idle parent inspector spans the recovery scenarios.
+ const attachments=await reservationAttachments()
  const app=await runnerRuntime(),directory=await mkdtemp(join(tmpdir(),'legacy-wire-'))
  app.ok=async(path,options={})=>{const r=await app.call(path,{...options,status:200});return r.data}
  const facts={states:[],uploads:0,maxStatements:0,measurements:{},kills:0,indexDrainSteps:0}
@@ -19,6 +23,7 @@ export async function adoptionIntegrationJourney({representative=true}={}){
   const setup=owner.projectId,token=owner.token,source='synthetic-wire-source',foreign=await app.seedWorkspace('wire-foreign')
   await app.db.prepare("INSERT INTO memberships(project_id,user_id,role) VALUES(?,?,'admin')").bind(setup,foreign.users.admin).run()
   const setupAdmin=(await app.call('/api/identity/switch-project',{token:foreign.tokens.admin,body:{projectId:setup},status:200})).data.token
+  facts.reservations={...await reservationRecovery({app,directory,setup,token,setupAdmin,foreign}),attachments}
   const audit=(await app.call(`/api/management/projects/${setup}/audit`,{token:setupAdmin,status:200})).data
   assert.equal(JSON.stringify(audit).includes('installation-setup'),false,'workspace audit reads cannot expose the private installation baseline')
   const p=await packageFixture(join(directory,'package'),source,{representative,large:representative,staff:[{id:owner.userId,name:'Historical owner',email:'synthetic-wire@example.test',created_at:1},{id:foreign.users.owner,name:'Historical foreign admin',email:'owner-wire-foreign@example.test',created_at:1}]}),base=`/api/move-in/projects/${setup}/legacy-import/${p.manifestSha256}`
@@ -122,11 +127,12 @@ export async function adoptionIntegrationJourney({representative=true}={}){
    if(r.run.state==='complete'){assert.equal(r.attempt.appliedRows,0);facts.replay=r.attempt;break}
    await app.runJobs((await app.takeJobs()).filter(j=>j.type==='legacy-import.step'))
   }
+  await createdReservationRefusal({app,directory,setup,token,source,originalSha:p.manifestSha256})
   const erase=`/api/management/projects/${source}/contacts/synthetic-contact/erase`
   for(let n=0;n<20;n++){
    const r=await app.call(erase,{token,body:{confirmation:'ERASE'}})
    if(r.status===200){facts.erased=true;break}
-   assert.equal(r.status,409,JSON.stringify(r.data));await app.drainJobs()
+   assert.equal(r.status,409,JSON.stringify(r.data));await app.runJobs(await app.takeJobs())
   }
   assert.equal(facts.erased,true)
   assert.equal((await app.first("SELECT count(*) n FROM legacy_import_runs WHERE source_json LIKE '%synthetic-private-package-metadata%'")).n,0,'arbitrary manifest metadata is not retained in package provenance')

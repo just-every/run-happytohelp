@@ -1,3 +1,4 @@
+import {sweepCanonicalNonces} from '../worker/canonical-custody'
 import {seedLegacyPage,seedLegacyInventory,seedLegacyScopeRun} from './seed'
 import type {Env} from '../../../platform/env'
 import {dbNow} from '../lease'
@@ -22,6 +23,7 @@ export async function cleanupStep(env:Pick<Env,'DB'|'FILES'>,sha:string,generati
    const page=await env.DB.prepare('SELECT key FROM legacy_package_keys WHERE manifest_sha256=? AND key>? ORDER BY key LIMIT 100').bind(sha,c.cleanup_after).all<{key:string}>()
    if(page.results.length){await env.FILES.delete(page.results.map(row=>row.key));keys=page.results.length;await batch(env.DB,c,token,[env.DB.prepare('UPDATE legacy_package_custody SET cleanup_after=? WHERE manifest_sha256=?').bind(page.results.at(-1)!.key,sha)])}
    else await batch(env.DB,c,token,[env.DB.prepare("UPDATE legacy_package_custody SET cleanup_after='' WHERE manifest_sha256=?").bind(sha)])
+   keys+=await sweepCanonicalNonces(env,sha,100-keys)
    return {keys,rows,pending:false}
   }
   const page=await env.DB.prepare('SELECT key FROM legacy_package_keys WHERE manifest_sha256=? AND cleanup_state=0 ORDER BY key LIMIT 100').bind(sha).all<{key:string}>()
@@ -45,6 +47,7 @@ export async function cleanupStep(env:Pick<Env,'DB'|'FILES'>,sha:string,generati
   const coordinates=c.cleanup_only?await env.DB.prepare('SELECT 1 FROM legacy_package_keys WHERE manifest_sha256=? LIMIT 1').bind(sha).first():null
   const done=tableIndex>=children.length&&!remaining&&!coordinates
   await batch(env.DB,c,token,[...(done?[env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT ${children.map(table=>`NOT EXISTS(SELECT 1 FROM ${table} WHERE run_id=?1)`).join(' AND ')} AND EXISTS(SELECT 1 FROM legacy_package_custody WHERE manifest_sha256=?2 AND seeding_complete=1 AND (cleanup_only=0 OR NOT EXISTS(SELECT 1 FROM legacy_package_keys WHERE manifest_sha256=?2))) AND NOT EXISTS(SELECT 1 FROM legacy_package_keys WHERE manifest_sha256=?2 AND cleanup_state=0)`).bind(`legacy-package:${sha}`,sha)]:[]),env.DB.prepare(`UPDATE legacy_package_custody SET cleanup_table=?,status=?,purged_at=CASE WHEN ? THEN ${dbNow} ELSE purged_at END WHERE manifest_sha256=? AND generation=?`).bind(tableIndex,done?'purged':'purging',done?1:0,sha,generation)])
+  keys+=await sweepCanonicalNonces(env,sha,100-keys)
   return {keys,rows,pending:!done}
  }finally{
   await env.DB.prepare(`UPDATE legacy_package_custody SET cleanup_token=NULL,cleanup_until=NULL,next_cleanup_at=${dbNow}+? WHERE manifest_sha256=? AND generation=? AND cleanup_token=?`).bind(c.status==='purged'?60000:1000,sha,generation,token).run()

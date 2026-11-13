@@ -72,7 +72,7 @@ function Bucket({ conversation, bucket, firstOnly = false, lastOnly = false, pre
                 <div className="transcript-message-header transcript-actor-heading">
                     <div className="transcript-message-byline">
                         { showActor && actorName && <span className="transcript-message-sender">{ actorName }</span> }
-                        { showActor && group.actor?.entity?.historical && <span>Historical { group.actor.entity.role || 'author' }</span> }
+                        { showActor && group.actor?.entity?.historical && <span>{ ['contact', 'ai', 'system'].includes(group.actor.entity.role) ? <>Historical { group.actor.entity.role }</> : 'Former staff' }</span> }
                         { showActor && <LocalAgentBadge agent={ messages[0]?.local_agent } /> }
                         { messages.length > 0 && <MessageTimestamp message={ messages[0] }
                             relatedMessages={ messages.slice(1) } conversation={ conversation } /> }

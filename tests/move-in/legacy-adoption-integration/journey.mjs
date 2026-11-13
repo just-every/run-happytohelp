@@ -129,7 +129,7 @@ export async function adoptionIntegrationJourney({representative=true}={}){
   for(let n=0;n<20;n++){
    const r=await app.call(erase,{token,body:{confirmation:'ERASE'}})
    if(r.status===200){facts.erased=true;break}
-   assert.equal(r.status,409,JSON.stringify(r.data));await app.drainJobs()
+   assert.equal(r.status,409,JSON.stringify(r.data));await app.runJobs(await app.takeJobs())
   }
   assert.equal(facts.erased,true)
   assert.equal((await app.first("SELECT count(*) n FROM legacy_import_runs WHERE source_json LIKE '%synthetic-private-package-metadata%'")).n,0,'arbitrary manifest metadata is not retained in package provenance')

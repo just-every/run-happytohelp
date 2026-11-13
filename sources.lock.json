@@ -17485,7 +17485,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/journey.mjs": {
-      "sha256": "9041db8ff91e356499b26550f79b57de1cb6a766448c172d4555a44d7c9dd8b7",
+      "sha256": "ea7eeb4f34f54d6bc4e3d8a5b6dd7e5e4a3d5b3914752987611e2a74176201c0",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/ordering.mjs": {

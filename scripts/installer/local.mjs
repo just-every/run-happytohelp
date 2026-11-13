@@ -8,6 +8,7 @@ import {installOperator} from '@runeditrun/rer/operator-install';
 import {selectLocalState} from '@runeditrun/rer/local/state';
 import {commandAdapter as createCommandAdapter} from '@runeditrun/rer/adapter';
 import {hostedDeploy} from './hosted-deploy.mjs';
+import {mailDeployPolicy} from './mail-deploy-policy.mjs';
 import {nativeSetupPath} from '../deployment/mail-declaration.mjs';
 import {localPortability} from '@runeditrun/rer/portability';
 import {localInputDefaults,localOwner,nativeOwner,prepareNativeLocal} from './native-local.mjs';
@@ -118,10 +119,11 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
 // Give rer its standard claim contract so it observes 303/409 and retires the token.
 const hostedLifecycle={...adapter,mailOffSignIn,hooks:{...adapter.hooks,owner:{path:'/auth/bootstrap',tokenKey:'H2H_SETUP_TOKEN',returnTo:'/setup'}}};
 export const commandAdapter=createCommandAdapter(adapter,{
+ deployPolicy:mailDeployPolicy,
  generatedOutputs:['.generated','migrations/core','delivery-artifact','management/integration/deployment-spec.json','management/integration/managed-deploy.json',nativeSetupPath,'public/downloads','public/widget.js'],
  site:{entry:'src/site/pages.ts',config:'vite.site.config.ts',output:'.rer/site',declaration:'deploy-site.json'},
  product:model.product.name,dev,preview,signInPath:'/login',mailOffSignIn,devIdentity:{entry:'src/dev/server.ts',output:['dist','delivery-artifact'],emailLinkTest:'tests/first-run/cli-sign-in.mjs'},verify:['pnpm',['run','verify:app']],deploy:hostedDeploy('deploy.json',hostedLifecycle),
  portability:{...portability,hostedExport:['node','scripts/installer/hosted-export.mjs']},
- setup:{get manifestFile(){return process.env.MAIL_PROVIDER==='rer'?'rer-setup.json':nativeSetupPath;}},browserModule:'scripts/installer/ui/seed.mjs',input:{names:{email:'OWNER_EMAIL',name:'OWNER_NAME'},defaults:localInputDefaults},
+ setup:{get manifestFile(){return (process.env.MAIL_MODE==='rer'||!process.env.MAIL_MODE&&process.env.MAIL_PROVIDER==='rer')?'rer-setup.json':nativeSetupPath;}},browserModule:'scripts/installer/ui/seed.mjs',input:{names:{email:'OWNER_EMAIL',name:'OWNER_NAME'},defaults:localInputDefaults},
  localPrerequisites:async({vars})=>vars.H2H_LOCAL==='true'&&vars.EMAIL_PROVIDER==='development',
 });

@@ -1,3 +1,4 @@
+import {validateRuntimeEnvironment} from '../deployment/environment.mjs';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {invalid,refuse} from '@runeditrun/rer/errors';
@@ -21,7 +22,11 @@ export async function offlineDeploy(path,lifecycle,context){
  const local=localOnlyBinding(declaration,localOnlyKeys);
  if(local)throw refuse('Local development bindings cannot be deployed.');
  const {env}=await deployEnvironment({root,options,declaration,setupManifest,settings:lifecycle.settings,localOnlyKeys});
- const {signIn}=await requireProductionAuth({root,declaration,env,setupManifest,setupSeed,adapter:lifecycle,declarationPath:path,options})??{};
+ const nativeMailgun=env.EMAIL_PROVIDER==='mailgun'&&env.MAIL_PROVIDER==='mailgun';
+ let signIn;
+ if(nativeMailgun){
+  try{validateRuntimeEnvironment(env);}catch(error){if(error?.constructor!==Error)throw error;signIn=error.message;}
+ }else ({signIn}=await requireProductionAuth({root,declaration,env,setupManifest,setupSeed,adapter:lifecycle,declarationPath:path,options})??{});
  const productDirectory=deployProductDirectory(declaration);
  await withoutLocalSettings(root,{settings:lifecycle.settings,operationToken},()=>lifecycle.run(root,{},store,()=>{},signal,{verb:'build',operationToken}));
  await checkBuild();
@@ -31,9 +36,13 @@ export async function offlineDeploy(path,lifecycle,context){
  const environment=options.environment??'production',worker=ownerWorkerName(declaration.project,environment);
  // This reserved origin is used only for local shape validation, never reported
  // as a reachable deployment or used for a request.
- ownerPlan({project:declaration.project,environment,worker,origin:`https://${worker}.example.invalid`},declaration,artifact,{localOnlyKeys,env});
+ const plan=ownerPlan({project:declaration.project,environment,worker,origin:`https://${worker}.example.invalid`},declaration,artifact,{localOnlyKeys,env});
+ const names=plan.secrets.filter(item=>!item.optional||typeof env[item.environment]==='string'&&env[item.environment].trim()).map(item=>item.binding).sort();
+ store.report(`deploy: secret bindings (${names.length}): ${names.join(', ')||'none'}`,{names});
+ const variables=Object.keys(plan.vars??{}).sort();
+ store.report(`deploy: public bindings (${variables.length}): ${variables.join(', ')||'none'}`,{names:variables});
  const needed=neededForRealDeploy({declaration,env,signIn});
  store.report('deploy: offline dry run complete; no provider requests, mail or deployment. Target resources, credentials and existing secret bindings were not checked.');
- for(const item of needed)store.report(`deploy: needed for a real deploy: ${item}`);
+ for(const item of needed)store.report(`deploy: needed for a real deploy: ${item}`,{names:item.match(/\b[A-Z][A-Z0-9_]+\b/g)??[]});
  return {dryRun:true,deployed:false,providerChecked:false};
 }

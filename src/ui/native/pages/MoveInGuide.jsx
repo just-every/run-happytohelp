@@ -48,6 +48,6 @@ export const vendorGuides = {
   <p className="sh-note">This script keeps attachment metadata only. You can explicitly supply bounded attachment bytes as described in the guide. Help articles come across with Knowledge, Import, Freshdesk. Details: <a href="/docs/moving-in#freshdesk">Freshdesk in the Move in guide</a>.</p>
  </>},
  happytohelp: {label: 'HappyToHelp (the original service)', guide: <>
-  <p>History from the original HappyToHelp service moves in with a command run on your computer, not an upload here. Follow <a href="/docs/operations#import-data-from-the-original-happytohelp-service">Import data from the original HappyToHelp service</a>.</p>
+  <p>Choose the chunked export folder below to review and upload support history. <a href="/docs/operations#import-data-from-the-original-happytohelp-service">Package instructions and limits</a>.</p>
  </>},
 };

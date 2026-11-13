@@ -1,3 +1,4 @@
+import {cleanupScopeStep,sourceCleanupAssertion,sourceCleanupStatus,CustodyError} from '../legacy-import/custody'
 import {eraseDoorContact} from '../move-in/door/erasure'
 import {redactionStatements,invalidateTransfersStatements} from '@runeditrun/rer/modules/portability/journal'
 import {csvErasureIdentities} from '../import-kit/csv/erasure'
@@ -36,6 +37,10 @@ export async function eraseContact(env: Env, projectId: string, contactId: strin
   const csvBeforeFence=await csvErasureIdentities(env,projectId,contactId,contactEmails(contact))
   const now = Date.now()
   const fenced=await fenceAndStage(env, projectId, contactId, now, contact)
+  try {
+    const source=await cleanupScopeStep(env,projectId)
+    if(source.cleanupPending)throw new CustodyError('source_cleanup_pending')
+  } catch {throw new CustodyError('source_cleanup_pending')}
   const legacy=await legacyPerson(env, projectId, contactId, lease)
   await lease.renew()
   await stageLegacyObjects(env, projectId, contactId, legacy.own_files)
@@ -46,7 +51,7 @@ export async function eraseContact(env: Env, projectId: string, contactId: strin
   const csvIdentities=[...new Set([...csvBeforeFence,...await csvErasureIdentities(env,projectId,contactId,emails)])]
   await eraseDoorContact(env,projectId,contactId,actorId,emails,sessionHash,async scoped=>({
     checkpoint:await redactionStatements(scoped.DB),
-    native:[...await invalidateTransfersStatements(scoped.DB),...await knowledgeErasureStatements(scoped,projectId,contactId,emails),...await erasureStatements(scoped,{projectId,contactId,actorId,now,emails,csvIdentities})],
+    native:[sourceCleanupAssertion(scoped.DB,projectId),...await invalidateTransfersStatements(scoped.DB),...await knowledgeErasureStatements(scoped,projectId,contactId,emails),...await erasureStatements(scoped,{projectId,contactId,actorId,now,emails,csvIdentities}),scoped.DB.prepare('DELETE FROM ik_d1_assertions')],
   }))
   return env.DB.prepare('SELECT * FROM contact_erasures WHERE project_id=? AND contact_id=?').bind(projectId, contactId).first<ContactErasure>()
 }
@@ -58,8 +63,12 @@ const busy = (c: Context<AppEnv>, message: string, seconds: number) => c.json({e
 /** The erasure record as both routes answer it: the record (read here unless given), its API inventory and provider requests. */
 async function erasureRecord(env: Env, projectId: string, contactId: string, erasure?: ContactErasure | null) {
   erasure ??= await env.DB.prepare('SELECT * FROM contact_erasures WHERE project_id=? AND contact_id=?').bind(projectId, contactId).first<ContactErasure>()
-  if (!erasure) throw new HTTPException(404)
-  return {data: {...erasure, api: await env.DB.prepare('SELECT requests,appends,notes,pending_payloads,held_requests FROM api_erasure_inventory WHERE project_id=? AND contact_id=?').bind(projectId, contactId).first(), providers: await providerRequests(env, projectId, contactId)}}
+  const sourceCustody=await sourceCleanupStatus(env,projectId)
+  if (!erasure) {
+    if(sourceCustody.cleanupPending&&await env.DB.prepare('SELECT 1 FROM contact_erasure_leases WHERE project_id=? AND contact_id=?').bind(projectId,contactId).first())return {data:{sourceCustody}}
+    throw new HTTPException(404)
+  }
+  return {data: {...erasure, sourceCustody, api: await env.DB.prepare('SELECT requests,appends,notes,pending_payloads,held_requests FROM api_erasure_inventory WHERE project_id=? AND contact_id=?').bind(projectId, contactId).first(), providers: await providerRequests(env, projectId, contactId)}}
 }
 
 /**
@@ -89,13 +98,16 @@ contactErasure.post('/projects/:projectId/contacts/:contactId/erase', async c =>
     erasure = await eraseContact(c.env, actor.projectId, contactId, actor.id, lease, await hashToken(token!))
     if (!erasure) throw new HTTPException(404)
     const now = Date.now()
-    await c.env.DB.batch([
+    await erasureEnvironment(c.env,actor.projectId,actor.id,await hashToken(token!)).DB.batch([
+      sourceCleanupAssertion(c.env.DB,actor.projectId),
       ...providerErasureStatements(c.env, {projectId: actor.projectId, contactId, externalId: reach.external_id ?? null, now, usedAi: Boolean(reach.ai), usedComputers: Boolean(reach.computers)}),
       auditStatement(c.env.DB, {projectId: actor.projectId, category: 'erasure', action: 'contact.erased', actor: {type: 'user', id: actor.id}, source: requestSource(c), target: {type: 'contact', id: contactId}, detail: {run: erasure.runs, conversations: erasure.conversations, messages: erasure.messages, attachments: erasure.attachments, trackedEvents: erasure.tracked_events, contextRecords: erasure.context_records, sessions: erasure.sessions, ticketRecords:erasure.ticket_records}}, now),
       leaseCompletion(c.env.DB, actor.projectId, contactId),
+      c.env.DB.prepare('DELETE FROM ik_d1_assertions'),
     ])
     completed = true
   } catch (error) {
+    if(error instanceof CustodyError&&error.code==='source_cleanup_pending')return c.json({error:'Staged source cleanup is pending. Retry to complete erasure.',code:'source_cleanup_pending',sourceCustody:await sourceCleanupStatus(c.env,actor.projectId)},409,{'Retry-After':'1'})
     if (error instanceof ErasureLeaseLost) return busy(c, 'This contact is already being erased. Try again in a minute to confirm it completed.', ERASURE_LEASE_MS / 1000)
     throw error
   } finally {

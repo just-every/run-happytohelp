@@ -8,7 +8,7 @@ import {writePrivateFile} from '@runeditrun/rer/private-files';
 
 const generatedTokens=['INBOUND_EMAIL_TOKEN','H2H_OWNER_RECOVERY_KEY'];
 export async function localInputDefaults(root){
- const defaults={target:'local',EMAIL_PROVIDER:'later'};
+ const defaults={target:'local',MAIL_MODE:'own',EMAIL_PROVIDER:'later'};
  // Rer fills localDefault before reading entered secrets from the environment.
  // Preserve that explicit input, while saved settings and private answers keep precedence.
  if(process.env.OWNER_PASSWORD&&!(await readSettings(root,{file:'.dev.vars'})).values.OWNER_PASSWORD)

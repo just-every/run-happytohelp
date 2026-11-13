@@ -1,7 +1,7 @@
 import {channelStatuses} from '../support-channels/presentation'
 import {abandonedNotificationReason} from '../integrations/email-send-window'
 import type {Env} from '../../platform/env'
-import {emailConfigured} from '../integrations/email-provider'
+import {emailConfigured,emailExplicitlyOff} from '../integrations/email-provider'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
 import {messageNotificationRecipients,type NotificationContact} from '../integrations/notification-recipients'
 import {notificationContactsSql} from '../integrations/notification-contacts'
@@ -16,7 +16,7 @@ export async function messagesData(env:Env,rows:any[],channels?:ReadonlyMap<stri
  const selected='SELECT value FROM json_each(?)'
  const actors=(admitted:(row:any)=>boolean)=>JSON.stringify([...new Set(rows.filter(admitted).map(row=>row.actor_id).filter(id=>id!==null&&id!==undefined))])
  const mailRows=rows.filter(row=>!['contact','system'].includes(row.actor_role)&&!row.erased_at),mailIds=JSON.stringify(mailRows.map(row=>row.id))
- const suppressed=!!localMailOrigin(env),configured=emailConfigured(env),resolveRecipients=!!mailRows.length&&configured&&!suppressed
+ const suppressed=!!localMailOrigin(env)&&!emailExplicitlyOff(env),configured=emailConfigured(env),resolveRecipients=!!mailRows.length&&configured&&!suppressed
  const data=await env.DB.batch<any>([
   // Read through the values the (whole `messages`) rows hold, never by reading the messages again.
   env.DB.prepare('SELECT s.* FROM json_each(?) held CROSS JOIN move_in_message_sources s ON s.message_id=held.value->>0 AND s.project_id=held.value->>1').bind(JSON.stringify(rows.map(row=>[row.id,row.project_id]))),
@@ -62,6 +62,6 @@ export async function messagesData(env:Env,rows:any[],channels?:ReadonlyMap<stri
   // Keep the durable mail-status precedence, including suppressed development
   // mail and unknown delivery. Reads never ask the provider to do work.
   const emailStatus=origin||row.actor_role==='contact'||row.actor_role==='system'||row.erased_at?null:suppressed?{state:'suppressed'}:attempt?.state?{state:attempt.state,updatedAt:attempt.updated_at,...(attempt.reason?{reason:attempt.reason}:{})}:!configured?{state:'not_configured'}:attempt?.is_enabled===0?{state:'disabled'}:{state:messageNotificationRecipients(recipients.get(String(row.id))||[],attempt?.sender_email?{id:row.actor_id,email:attempt.sender_email}:undefined,row.actor_role).state}
-  return {...row,...(reads.get(String(row.id))||{read_by_contacts:{},read_by_agents:{}}),email_status:channelStatus.has(String(row.id))?null:emailStatus,channel_status:channelStatus.get(String(row.id))??null,created_at:iso(row.created_at),source_time_provenance:origin?.time_provenance,source_author:sourceAuthor,bucket_id:row.bucket_id||row.conversation_id,agent:sourceAuthor&&sourceAuthor.role!=='contact'?person({id:row.actor_id,name:sourceAuthor.name||'Imported author'}):agent,agent_id:sourceAuthor&&sourceAuthor.role!=='contact'?row.actor_id:agent?.id,contact_id:row.actor_role==='contact'?row.actor_id:null,contact:row.actor_role==='contact'?person(contacts.get(String(row.actor_id))):null,media:(media.get(String(row.id))||[]).map(m=>({...m,filename_original:m.filename,url:`/api/conversations/${row.conversation_id}/media/${m.id}`,preview_url:`/api/conversations/${row.conversation_id}/media/${m.id}`,aggregate_type:m.content_type.startsWith('image/')?'image':'file'}))}
+  return {...row,...(reads.get(String(row.id))||{read_by_contacts:{},read_by_agents:{}}),email_status:channelStatus.has(String(row.id))?null:emailStatus,channel_status:channelStatus.get(String(row.id))??null,created_at:iso(row.created_at),source_time_provenance:origin?.time_provenance,source_author:sourceAuthor,bucket_id:row.bucket_id||row.conversation_id,agent:sourceAuthor&&sourceAuthor.role!=='contact'?person({id:row.actor_id,name:sourceAuthor.name||'Imported author',role:sourceAuthor.role,historical:true}):agent,agent_id:sourceAuthor&&sourceAuthor.role!=='contact'?row.actor_id:agent?.id,contact_id:row.actor_role==='contact'?row.actor_id:null,contact:row.actor_role==='contact'?person(contacts.get(String(row.actor_id))):null,media:(media.get(String(row.id))||[]).map(m=>({...m,filename_original:m.filename,url:`/api/conversations/${row.conversation_id}/media/${m.id}`,preview_url:`/api/conversations/${row.conversation_id}/media/${m.id}`,aggregate_type:m.content_type.startsWith('image/')?'image':'file'}))}
  })
 }

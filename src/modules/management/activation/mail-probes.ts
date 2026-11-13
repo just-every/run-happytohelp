@@ -2,7 +2,7 @@ import {rerMail} from '../../integrations/rer-mail-contract'
 import type {Env} from '../../../platform/env'
 import {sendEmail,emailConfigured} from '../../integrations/email'
 import {checkSenderDomain} from '../../integrations/sender-domain'
-import type {Configuration} from './configuration'
+import {emailSetupRequirement,type Configuration} from './configuration'
 import {senderDnsAddress} from './sender'
 import type {Probe,SenderRecord} from './types'
 import {providerJson,bearer} from './provider-http'
@@ -16,7 +16,7 @@ export async function sendOwnerTestMail(env:Env,config:Configuration,ownerId:str
  const existing=await env.DB.prepare('SELECT state FROM email_deliveries WHERE id=? AND project_id=?').bind(identity.id,config.projectId).first()
  if(existing)return checkOwnerMail(env,config,ownerId)
  if(!emailConfigured(env)&&rerMail(env))return {state:'unavailable',detail:'Run Edit Run is activating managed email. No customer email setup is needed.'}
- if(!emailConfigured(env))return {state:'unavailable',detail:'CONFIGURATION_REQUIRED: EMAIL_API_KEY and EMAIL_FROM. Add email secrets to the installation.'}
+ if(!emailConfigured(env))return {state:'unavailable',detail:emailSetupRequirement(env)}
  if(!config.sender)return {state:'pending',detail:'Save a sender email address in Email settings.'}
  try {
   await sendEmail(env,{projectId:config.projectId,to:identity.owner.email,idempotencyKey:identity.id,subject:'HappyToHelp activation test',text:'This is your HappyToHelp activation test. Delivery is confirmed separately using provider status.',headers:{'Auto-Submitted':'auto-generated','X-Auto-Response-Suppress':'All'}})
@@ -43,8 +43,8 @@ export async function checkSenderDns(env:Env,config:Pick<Configuration,'sender'|
  const address=senderDnsAddress(config)
  if(!address)return {state:'pending',detail:'Save a sender email address in Email settings.'}
  if(!config.providerName)return {state:'unavailable',detail:'Select an email provider in installation settings.'}
- if(!env.EMAIL_API_KEY)return {state:'unavailable',detail:'CONFIGURATION_REQUIRED: EMAIL_API_KEY. Install a provider key with domain read permission.'}
  if(config.providerName!=='resend')return {state:'unavailable',detail:`${config.providerName} domain verification is not available through this adapter. A supported authoritative domain-status API is required.`}
+ if(!env.EMAIL_API_KEY)return {state:'unavailable',detail:'CONFIGURATION_REQUIRED: EMAIL_API_KEY. Install a provider key with domain read permission.'}
  const domain=address.split('@')[1]
  const list=await providerJson('https://api.resend.com/domains',bearer(env.EMAIL_API_KEY))
  if(!Array.isArray(list.data))return {state:'unknown',detail:'Provider omitted its domain list.'}

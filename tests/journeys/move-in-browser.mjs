@@ -1,3 +1,4 @@
+import {legacyPackageBrowserFlow} from '../move-in/legacy-adoption-integration/browser.mjs'
 import {zendeskResumeBrowserFlow} from '../move-in/zendesk-resume-browser.mjs'
 import {zendeskConnectBrowserFlow} from '../move-in/zendesk-connect-browser.mjs'
 import {zendeskOfflineBrowserFlow} from '../move-in/zendesk-offline-browser.mjs'
@@ -59,6 +60,7 @@ test('an owner connects Zendesk twice, reviews an export, imports and filters it
  await reviewExplanations(page,runtime.origin,base,shot)
  await configurationBrowser(1440)
  await configurationBrowser(390)
+ await legacyPackageBrowserFlow({page,runtime,project,inspect})
 }))
 
 

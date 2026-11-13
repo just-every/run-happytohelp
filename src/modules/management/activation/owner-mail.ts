@@ -2,7 +2,7 @@ import {rerMail} from '../../integrations/rer-mail-contract'
 import type {Env} from '../../../platform/env'
 import {hashToken} from '../../../platform/auth'
 import {emailAddress} from '../../integrations/inbound-routing'
-import type {Configuration} from './configuration'
+import {emailSetupRequirement,type Configuration} from './configuration'
 import type {Probe} from './types'
 import {providerJson,bearer} from './provider-http'
 import {senderSwitch} from './sender'
@@ -63,7 +63,7 @@ export async function checkOwnerMail(env:Env,config:Configuration,ownerId?:strin
  const found=await latestOwnerDelivery(env,config,ownerId)
  if(!found) {
   if(config.mailMode==='unavailable'&&rerMail(env))return {state:'unavailable',detail:'Run Edit Run is activating managed email. No customer email setup is needed.'}
-  if(config.mailMode==='unavailable')return {state:'unavailable',detail:'CONFIGURATION_REQUIRED: EMAIL_API_KEY and EMAIL_FROM. Add the email provider settings to the installation; mail to you cannot be sent or confirmed until then.'}
+  if(config.mailMode==='unavailable')return {state:'unavailable',detail:emailSetupRequirement(env)}
   return {state:'pending',detail:'Not confirmed yet. Sign in once with an emailed link, or send yourself a test from Email settings.'}
  }
  const {delivery,kind}=found,name=kind==='welcome'?'welcome email':'test message'

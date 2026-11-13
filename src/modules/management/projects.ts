@@ -1,3 +1,4 @@
+import {scopeFenceStatements,scheduleScopeCleanup} from '../legacy-import/custody'
 import {withdrawDoorCustody} from '../move-in/door/erasure'
 import {erasureEnvironment} from './contact-erasure/authority'
 import {brandReports} from './brand-reports'
@@ -134,6 +135,7 @@ projects.delete('/projects/:projectId',async c=>{
  `).bind(a.projectId,a.projectId,a.projectId,a.projectId,now,now,now)
  await withdrawDoorCustody(erasureEnvironment(c.env,a.projectId,a.id,c.get('sessionHash')),a.projectId,a.id,{values:[`workspace:${a.projectId}`]},c.get('sessionHash'))
  await c.env.DB.batch<any>([
+  ...scopeFenceStatements(c.env.DB,a.projectId,'workspace_deleted'),
   archiveSettings,
   c.env.DB.prepare('DELETE FROM h2h_import_door_identities WHERE project_id=?').bind(a.projectId),
   c.env.DB.prepare('UPDATE email_settings SET inbound_address=NULL,is_enabled=0,updated_at=? WHERE project_id=?').bind(now,a.projectId),
@@ -146,5 +148,6 @@ projects.delete('/projects/:projectId',async c=>{
   c.env.DB.prepare("UPDATE ai_profiles SET is_enabled=0 WHERE project_id=?").bind(a.projectId),
   c.env.DB.prepare("UPDATE ai_generations SET state='cancelled',updated_at=? WHERE project_id=? AND state='queued'").bind(new Date().toISOString(),a.projectId)
  ])
+ await scheduleScopeCleanup(c.env,a.projectId)
  return c.json({deleted:true,retainedHistory:true})
 })

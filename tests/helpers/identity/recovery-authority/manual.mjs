@@ -12,4 +12,6 @@ export async function manualRecovery(app,owner,recoveryKey,password){
  assert.equal((await app.call('/api/identity/session',{token:session(result)})).status,200)
  assert.equal((await app.call(root+'/complete',{body:{factorId:options.factorId,code:totp(options.secret)},headers:capabilityHeaders(recovery.capability)})).status,409)
  assert.equal((await app.call(root,{body:{email:'owner@example.com',password,recoveryKey}})).status,409,'spent static key stays spent')
+ const security=await app.ok(`/api/management/projects/${owner.projectId}/audit/export?format=json`,{token:session(result)})
+ assert.ok(security.events.some(event=>event.action==='recovery.refused'&&event.detail.reason==='key_already_used'),'the owner can read the spent-key refusal in the Security log')
 }

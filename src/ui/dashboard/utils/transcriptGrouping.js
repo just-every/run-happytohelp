@@ -120,7 +120,7 @@ const itemActor = item => {
         : item.agent?.id;
     if (hasValue(agentId)) {
         return {
-            key: `agent:${agentId}`,
+            key: item.source_author ? `historical-agent:${JSON.stringify([item.project_id, item.source_author])}` : `agent:${agentId}`,
             kind: 'agent',
             id: agentId,
             entity: item.agent || null,

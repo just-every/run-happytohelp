@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict'
 import {generate} from '../../move-in/generator.mjs'
 import {completeMailEdge,customerMime} from './complete-mail-edge.mjs'
-import {validateRuntimeEnvironment,runtimeVariables,runtimeSecrets} from '../../../scripts/deployment/environment.mjs'
+import {validateRuntimeEnvironment,runtimeSecrets} from '../../../scripts/deployment/environment.mjs'
 
 // Official-schema HTTP-edge proof only. No account API, real key or live send:
 // https://documentation.mailgun.com/docs/mailgun/api-reference/send/mailgun/messages/post-v3--domain-name--messages
 // https://documentation.mailgun.com/docs/mailgun/user-manual/api-key-mgmt/rbac-mgmt
 export async function mailgunJourney(){
- const configured={EMAIL_PROVIDER:'mailgun',EMAIL_API_KEY_NAME:'MAILGUN_SENDING_KEY',MAILGUN_SENDING_KEY:'synthetic-hh-sending-secret',MAILGUN_DOMAIN:'mg.support.example',MAILGUN_REGION:'us',EMAIL_FROM:'support@support.example'}
+ const configured={MAIL_MODE:'own',MAIL_PROVIDER:'mailgun',EMAIL_PROVIDER:'mailgun',EMAIL_API_KEY_NAME:undefined,MAILGUN_SENDING_KEY:'synthetic-hh-sending-secret',MAILGUN_DOMAIN:'mg.support.example',MAILGUN_REGION:'us',EMAIL_FROM:'support@support.example'}
  const wires=[]
  let responseMode='accepted'
  const m=await completeMailEdge('forwarding',{outbound:async request=>{
@@ -33,15 +33,28 @@ export async function mailgunJourney(){
   // Runtime/deployment consume the same named secret, without copying it into
   // EMAIL_API_KEY or treating a name or an unrelated Routes key as a credential.
   validateRuntimeEnvironment(configured)
-  assert.equal(runtimeVariables(configured).EMAIL_API_KEY_NAME,'MAILGUN_SENDING_KEY')
   assert.equal(runtimeSecrets(configured).MAILGUN_SENDING_KEY,configured.MAILGUN_SENDING_KEY)
   assert.equal(runtimeSecrets(configured).EMAIL_API_KEY,undefined)
   await app.configure({...configured,EMAIL_API_KEY:'synthetic-hh-unrelated-key',MAILGUN_ROUTES_KEY:'synthetic-hh-unrelated-routes'})
   assert.equal((await ok(settings)).sending.provider,'mailgun')
   assert.equal(wires.length,0,'configuration alone never sends')
   const verify=idempotencyKey=>app.call(settings+'/test',{token,body:{idempotencyKey}})
+  // Saving complete credentials for later cannot activate an explicitly off
+  // installation. Both public settings and Setup report that limit before a send.
+  for(const mode of ['none','disabled','off','mail-mode']){
+   await app.configure({...configured,MAIL_MODE:mode==='mail-mode'?'off':undefined,MAIL_PROVIDER:mode==='mail-mode'?'rer':mode,EMAIL_API_KEY:'synthetic-dormant-provider-key',MAILGUN_WEBHOOK_SIGNING_KEY:'synthetic-dormant-signing-key'})
+   const state=await ok(settings),facts=(await ok(m.base+'/activation')).data.facts
+   assert.equal(state.configured,false);assert.equal(state.sending.mode,'unavailable');assert.equal(state.sending.provider,null)
+   assert.equal(facts.mail.mode,'unavailable');assert.equal(facts.mail.provider,null)
+   const before=app.requests.length,result=await verify('synthetic-hh-off-'+mode)
+   assert.equal(result.status,503);assert.match(JSON.stringify(result.data),/email is off/i)
+   assert.equal(app.requests.length,before,'explicit '+mode+' makes no provider request')
+   await app.drainJobs();await app.scheduled()
+   assert.equal(wires.length,0);assert.equal(m.edge.attempts,0,'scheduled work cannot send while off')
+   assert.equal((await app.first('SELECT count(*) n FROM email_deliveries')).n,0,'off creates no delivery attempt')
+  }
   const invalid=[
-   {EMAIL_API_KEY_NAME:undefined},{EMAIL_API_KEY_NAME:'UNKNOWN_SENDING_KEY'},{EMAIL_API_KEY_NAME:'EMAIL_API_KEY'},{EMAIL_API_KEY_NAME:'MAILGUN_ROUTES_KEY'},
+   {EMAIL_API_KEY_NAME:''},{EMAIL_API_KEY_NAME:'UNKNOWN_SENDING_KEY'},{EMAIL_API_KEY_NAME:'EMAIL_API_KEY'},{EMAIL_API_KEY_NAME:'MAILGUN_ROUTES_KEY'},
    {MAILGUN_SENDING_KEY:undefined},{MAILGUN_SENDING_KEY:''},{MAILGUN_SENDING_KEY:42},
    {MAILGUN_DOMAIN:undefined},{MAILGUN_DOMAIN:''},{MAILGUN_DOMAIN:'https://mg.support.example'},{MAILGUN_DOMAIN:'mg.support.example/other'},{MAILGUN_DOMAIN:'-invalid.example'},
    {MAILGUN_REGION:'other'},

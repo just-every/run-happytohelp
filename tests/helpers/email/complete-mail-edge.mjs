@@ -76,11 +76,11 @@ export async function completeMailEdge(kind,{outbound}={}){
   assert.equal(result.failed,0);if(!duplicate)assert.equal(result.received,1)
   return result
  }
- const reconnect=async()=>{
+ const reconnect=async({restoreAlias=true}={})=>{
   if(kind==='gmail'||kind==='microsoft')await oauth(`${boxes}/${box.id}/reconnect`)
   else await ok(`${boxes}/${box.id}/reconnect`,kind==='imap'?imap:{})
-  // DELETE deliberately removes aliases; restoring one is an explicit operator action.
-  await ok(`${boxes}/${box.id}/aliases`,{address:alias})
+  // DELETE removes aliases; permission loss retains them. Restore only after DELETE.
+  if(restoreAlias)await ok(`${boxes}/${box.id}/aliases`,{address:alias})
  }
  return {app,edge,kind,address,alias,workspace,projectId,token,base,boxes,box,ok,mailbox,deliver,reconnect,
   disconnect:()=>ok(`${boxes}/${box.id}`,undefined,'DELETE'),

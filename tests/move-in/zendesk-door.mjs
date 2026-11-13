@@ -140,7 +140,7 @@ export async function zendeskDoorJourney(){
   const token=claim.response.headers.get('Set-Cookie').match(/h2h_session=([^;]+)/)[1];clean.rememberSession('owner',token)
   const actor=await clean.call('/api/identity/session');assert.equal((await clean.call(`/api/move-in/projects/${actor.projectId}/business-imports`)).enabled,true)
  }finally{await clean.close()}
- const catalogue=JSON.parse(await readFile('importers.json','utf8'));validateSchema(catalogue,JSON.parse(await readFile('src/modules/import-kit/schema/importers.schema.json','utf8')));const row=catalogue.importers[0];assert.equal(catalogue.importers.length,1);assert.equal(row.incumbent,'Zendesk');assert.equal(row.product,'HappyToHelp');assert.equal(row.status,'documented format');assert.equal(row.evidence.validation,'synthetic-only');assert.equal(row.evidence.realExport,'not-supplied')
+ const catalogue=JSON.parse(await readFile('importers.json','utf8'));validateSchema(catalogue,JSON.parse(await readFile('src/modules/import-kit/schema/importers.schema.json','utf8')));const row=catalogue.importers.find(row=>row.incumbent==='Zendesk'&&row.product==='HappyToHelp');assert.ok(row);assert.ok(catalogue.importers.some(row=>row.incumbent==='HappyToHelp'&&row.product==='HappyToHelp'));assert.equal(row.incumbent,'Zendesk');assert.equal(row.product,'HappyToHelp');assert.equal(row.status,'documented format');assert.equal(row.evidence.validation,'synthetic-only');assert.equal(row.evidence.realExport,'not-supplied')
  const evidence=await readFile(row.evidence.link.replace(/^evidence:/,''));assert.equal(evidence.length,row.evidence.size);assert.equal(sha(evidence),row.evidence.sha256);assert.equal(sha(await readFile(row.evidence.sourcePath)),row.evidence.sourceSha256)
 }
 

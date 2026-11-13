@@ -147,3 +147,140 @@ original remains archived otherwise.
 `tests/journeys/legacy.mjs` exercises 33 table families with real local D1/R2, original transcript/bucket/knowledge IDs, exact minor-unit money, held operations, deterministic replay, conflict protection and corrupt-object denial. This fixture proof is not an import of a production dump, nor a claim that every archive-only historical system is already normalized.
 
 The public command uses the same `v3` local persistence layout as Wrangler/rer. Source `events` of type `INTERNAL_NOTE` become private notes; nullable category `published_at` retains drafts. Soft-deleted rows and their dependent transcripts remain archive-only.
+
+### Installed Worker runner (synthetic matched-workspace qualification)
+
+Apply `327_legacy_import_worker.sql` before this Worker serves traffic, after all
+missing published migrations and a complete D1/R2/DO/private-settings backup.
+The migration adds private run, part, indexed context and result-count stores.
+It does not reset native rows or change the release version.
+
+The owner/admin `data.import` doors under
+`/api/move-in/projects/:projectId/legacy-import/:sha` are `POST start`, `resume`,
+`stop` and `GET result`. Start binds the approved original manifest digest and
+fixed exclusions (AI usage is omitted by default); `replay:true` starts another
+attempt using the same chunk journals. The source workspace must equal the URL
+workspace. A mismatch returns `409 destination_policy_required`. Resume can
+explicitly replace a paused/stopped run's authority with the current owner/admin
+session. A revoked session pauses; Stop fences in-flight commits by run version.
+
+Each `legacy-import.step` JOBS wake reads its phase and cursor from D1, claims the
+run for 60 seconds using the DB clock, takes the separate nonwaiting workspace
+import/erasure fence, performs one bounded unit and persists the next wake before
+sending it. Minute cron only discovers/enqueues at most ten due runs, using
+unused credit within the existing jobs envelope. Duplicate/lost wakes and process
+death recover from those checkpoints and the original source-row journals.
+
+Preparation verifies every private package part, hydrates indexed context and
+preflights all source rows and objects before canonical writes. Mapping and
+full/delta application use the existing engine. Slices retain the ORIGINAL
+whole-part identity. Canonical rows, import state digests, reference/index writes,
+source journals, work cleanup and run/lease/current-authority guards share a
+transaction. A lost cursor after commit replays its unchanged journal.
+
+Knowledge planning is read-only. Imported transcript literals remain literal;
+other imported copied fields match destination knowledge only. Ordinary native
+message/note writes retain their existing knowledge protection. The reference
+plan commits with the canonical rows whose state digest it describes.
+
+Initial ceilings remain experimental until the accompanying workerd measurements
+qualify them: 25 mapped rows, 100 context-load rows, and 262,144 source bytes per unit,
+one 4 MiB part parse, one streamed 16 MiB object, 200 metered D1 statements and
+8 MiB relationship closure. Timestamp ties are sorted with the CLI's JavaScript
+collation in a bounded tie group (at most 250 rows); larger indivisible rows or
+closures pause `row_too_large`. No CPU limit is raised. Workload counts and wall
+duration are not CPU measurements; app results leave unavailable CPU/heap values
+null. The test harness uses the pinned workerd inspector for isolate sampling and
+heap measurements.
+
+Result reads durable table/journal equality, exclusions, canonical attachment
+size/stored SHA-256 equality, attempt apply/replay counts, released leases and
+whole-installation work deltas. Optional counts-only `diagnostics` adds workspace
+conversation count, distinct delta source IDs, incomplete delta runs, five
+ordered sample conversation IDs and the before-import work baseline. An original
+installation baseline is null when none was recorded. Concurrent native work is
+not attributed to the importer. Scratch is deleted in pages of at most 250 rows after result
+verification; runs, counts, original journals and private source packages remain.
+
+This round supports synthetic matched-workspace rehearsal only. Arbitrary fresh
+Business adoption and source-package retention/contact-erasure qualification are
+separate allocated rounds. Package originals and new scratch are not yet covered
+by native contact erasure. Do not treat local proof as Managed plan, installation,
+real-customer remote-use or release qualification. The runner supplies no upload
+endpoint, provider credential, CLI remote fallback or public source download.
+
+
+### Legacy package adoption and source custody (v2)
+
+New installed-app package uploads use the v2 custody registry. The original
+manifest and exporter ordinal filenames stay unchanged. The original native
+installation owner reviews the setup and source workspace IDs in Move in,
+explicitly approves that exact fingerprint with a recent sign-in proof, then
+starts bounded preflight. An existing destination without this package's
+adoption provenance conflicts even when its fields look equal. Missing native
+owner binding or schema refuses; a workspace admin or Business credential does
+not substitute for the original native owner.
+
+The source ID becomes a separate historical workspace. Setup, native accounts
+and the Business workspace link stay intact. Only the approving native owner
+receives a new membership. Source people and memberships are archived history;
+old roles, matching email addresses and original staff IDs grant no access.
+Normal native invitations remain the later access door.
+
+Source originals are private and have no download entitlement. Upload, paused,
+stopped and completed-source windows are at most 24 hours; committed progress
+is bounded by seven days from first admission. Polling never extends retention.
+Erasure invalidates the whole package across setup/source/destination scopes,
+including before start, and cleanup proceeds without the importing session or
+an active workspace. A source cleanup failure remains pending erasure. Same-SHA
+closure is terminal, and any erasure or unfinished erasure lease prevents a
+fresh legacy package in that scope. Canonical history for other contacts stays.
+Results distinguish historical verification from current source status and
+resume availability. Installation-wide work diagnostics are visible only to
+the original installation owner.
+
+Existing v1 artifacts retain their synthetic interpretation; they cannot gain
+historical-adoption authority merely through a Worker update. Real customer
+remote source remains held for combined ordering/restart/browser qualification,
+the independent lane gate, signed migration-before-Worker delivery and the
+fleet's COMPLETE publication scan. This integration is not release, deployment,
+mail activation, production import or cutover authorization.
+
+### Old synthetic v1 source cleanup and installation baseline
+
+Install additive migrations `331_legacy_cleanup_seeding.sql`, then
+`332_legacy_cleanup_inventory_lazy.sql`, before this Worker (330 remains reserved
+for platform recovery). Stop the old Worker during the
+upgrade and retain the D1/R2 backup. New uploads remain v2-only. The one-time
+bounded old-prefix inventory discovers pre-start v1 manifests; existing v1 runs
+retain their synthetic interpretation until an explicit cleanup or erasure.
+Native contact erasure also discovers old runs through their recorded scopes.
+Inventory is created lazily so a pristine native restore destination remains
+empty. Missing inventory is pending, never proof of completed cleanup; migration
+332 preserves existing progress and removes only an unused bootstrap marker
+where no package or run exists.
+A first installation owner with native step-up may explicitly request
+`POST /api/move-in/projects/:setupProjectId/legacy-import/:sha/cleanup-v1` with
+`{}` for a known old synthetic package. It closes that SHA permanently; it never
+adopts its bytes or creates users. There is no cleanup download or list endpoint.
+
+Cleanup-only registry rows remain invalidated while manifest descriptor pages
+and known-prefix listing pages are registered. Cursor and coordinates commit
+together, at most 100 coordinates per step. Neither manifest nor source objects
+are deleted until seeding completes. The normal bounded cleanup then removes
+at most 100 R2 keys and 250 scratch rows per step; duplicate/lost wakes and
+Worker replacement resume the durable cursor. Native erasure stays pending
+until old-prefix inventory, seeding and purge have all completed. An unreadable
+or orphaned old manifest keeps cleanup pending for investigation. No historical
+user/account backfill is performed.
+
+Fresh native owner setup records an immutable private counts-only installation baseline
+inside its existing guarded creation batch, before provisioning side effects.
+The private table is outside workspace audit reads and audit retention.
+Import diagnostics preserve the separate before-import baseline, deltas and
+sample IDs. Installation-wide diagnostics are available only to that original
+first owner in the setup workspace; workspace-admin takeover grants no global
+read. An installation created before this hook has no original baseline and
+continues to report `installation: null`; an upgrade never invents one.
+Historical note buckets, assignment attribution and macro creator snapshots are
+read as history. Historical people never enter native assignment/member lists.

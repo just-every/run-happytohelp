@@ -94,6 +94,7 @@ export default function ConversationAssignmentControl({ conversation }) {
                     ) }
                 </div> }
             </div>
+            { conversation.historical_assignment && <p className="mb-0 mt-2">Historical assignee: { conversation.historical_assignment.display_name || 'Imported author' }</p> }
             { error && <p role="alert" className="text-danger">{ error }</p> }
         </div>
     );

@@ -1,6 +1,7 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
+import {emailExplicitlyOff} from './email-provider'
 
 /**
  * Mailgun signs every route forward: `timestamp` (seconds), `token` (50 random
@@ -21,6 +22,7 @@ const refuse=()=>new HTTPException(403,{message:'Mailgun signature refused'})
 
 /** The signing key, or a refusal while it is unset or empty: nothing is accepted unsigned. */
 export function mailgunSigningKey(env:Env){
+ if(emailExplicitlyOff(env))throw refuse()
  const key=env.MAILGUN_WEBHOOK_SIGNING_KEY
  if(typeof key!=='string'||!key)throw refuse()
  return key

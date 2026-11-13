@@ -160,7 +160,10 @@ also works with outbound email off.
 
 For a separately controlled installation, the original owner may instead use
 their native password and a private one-time `H2H_OWNER_RECOVERY_KEY` of at least
-32 characters. Each key value works once. Both paths require proving a new
+32 characters. The deployer supplies it through the private deployment environment
+and runs `rer deploy --environment production --set-secret H2H_OWNER_RECOVERY_KEY`.
+On your own computer, `rer dev` signs the owner in directly; use Profile → Security
+to replace factors. Each key value works once. Both paths require proving a new
 factor **before** any new session is created. A new passkey is created and then
 used once to prove possession of its private key. Until completion, old credentials
 remain intact. Completion replaces factors and recovery codes, retires old

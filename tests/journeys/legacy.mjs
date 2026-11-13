@@ -198,3 +198,16 @@ test('imported storage URLs serve their files to who may read them, the widget k
   assert.deepEqual(others(upgraded),others(reset));assert.match(upgraded.settings[0].settings_json,/"logo_url":"\/api\/imported-files\/p\/logo-xl"/);assert.doesNotMatch(upgraded.settings[0].settings_json,/widget_team_display/)
  }finally{if(runtime)await runtime.close(true);await rm(scratch,{recursive:true,force:true})}
 })
+
+// Independent preparation for the bounded runner; native normalization remains a lane dependency.
+test('the Worker package reader verifies immutable custody and chunk identity, while legacy source journals remain byte-exact under the native knowledge boundary',async()=>{
+ const {workerPreparation}=await import('../helpers/legacy-worker/preparation.mjs')
+ await workerPreparation()
+})
+
+test('an owner runs a bounded legacy package through HTTP and queue, stops in-flight writes, resumes two real Worker deaths and replays zero rows',async()=>{
+ const {workerRunnerJourney}=await import('../helpers/legacy-worker/journey.mjs')
+ await workerRunnerJourney()
+ const {knowledgeIndexDrainJourney}=await import('../helpers/legacy-worker/index-drain.mjs')
+ await knowledgeIndexDrainJourney()
+})

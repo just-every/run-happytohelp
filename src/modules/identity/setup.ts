@@ -1,3 +1,4 @@
+import {installationBaselineStatement} from './installation-baseline'
 import {healImportDoor} from '../move-in/door/authority'
 import { Hono, type Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
@@ -102,6 +103,7 @@ export async function createNativeOwner(c: Context<AppEnv>, body: Record<string,
   // Only a password actually chosen by the owner supplies proof; an email claim still needs the mailbox.
   ...(password?[c.env.DB.prepare(`INSERT INTO session_factors(token_hash,user_id,method,verified_at) SELECT ?,?,'password',? WHERE ${guard}`).bind(await hashToken(token),userId,now,userId)]:[]),
   c.env.DB.prepare(`INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) SELECT ?,?,?,'access','owner.created','succeeded','user',?,'dashboard','member',?,'{}' WHERE ${guard}`).bind(crypto.randomUUID(),projectId,now,userId,userId,userId),
+  installationBaselineStatement(c.env.DB,claim,userId,now),
   ...defaults.statements,
  ])
  if (!results[0].meta.changes) throw new HTTPException(409, {message: 'Owner setup is already complete. Sign in with your existing account.'})

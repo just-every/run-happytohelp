@@ -1,4 +1,5 @@
 import {Hono} from 'hono'
+import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../../platform/env'
 import {hashToken} from '../../../platform/auth'
 import {verifyPassword} from '../credentials'
@@ -16,7 +17,10 @@ primaryRecovery.post('/',recoveryDoor(async c=>{
  const offered=await hashToken(`owner-recovery-key:${typeof body.recoveryKey==='string'?body.recoveryKey.trim():''}`),expected=await keyHash(c.env)
  if(owner.email.toLowerCase()!==email||offered!==expected||!credential||!await verifyPassword(body.password,credential.password_hash)){await audit(c.env,'refused','primary_invalid',{id:crypto.randomUUID(),user_id:owner.user_id});refuse()}
  const predicate=firstOwnerPredicate(c.env,owner.user_id,owner.project_id)
- const {row,capability}=await create(c,{mode:'manual',userId:owner.user_id,projectId:owner.project_id,predicate:{sql:`(${predicate.sql}) AND EXISTS(SELECT 1 FROM credentials WHERE user_id=? AND password_hash=?) AND NOT EXISTS(SELECT 1 FROM owner_recoveries WHERE key_hash=?)`,args:[...predicate.args,owner.user_id,credential.password_hash,expected]}})
+ const {row,capability}=await create(c,{mode:'manual',userId:owner.user_id,projectId:owner.project_id,predicate:{sql:`(${predicate.sql}) AND EXISTS(SELECT 1 FROM credentials WHERE user_id=? AND password_hash=?) AND NOT EXISTS(SELECT 1 FROM owner_recoveries WHERE key_hash=?)`,args:[...predicate.args,owner.user_id,credential.password_hash,expected]}}).catch(async error=>{
+  if(error instanceof HTTPException&&error.status===409&&await c.env.DB.prepare('SELECT 1 FROM owner_recoveries WHERE key_hash=?').bind(expected).first())await audit(c.env,'refused','key_already_used',{id:crypto.randomUUID(),user_id:owner.user_id,mode:'manual'})
+  throw error
+ })
  return c.json({requestId:row.id,capability,expiresAt:row.expires_at,state:'authorized'},201)
 }))
 primaryRecovery.post('/account/request',recoveryDoor(async c=>{

@@ -62,6 +62,7 @@
     ]
   },
   "vars": {
+    "MAIL_MODE": "",
     "MAIL_FROM": "",
     "MAIL_PROVIDER": "direct",
     "MAIL_RELAY_URL": "",

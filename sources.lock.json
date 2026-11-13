@@ -16773,7 +16773,7 @@
       "executable": false
     },
     "tests/helpers/legacy-worker/profiler.mjs": {
-      "sha256": "517ae763a801ef713c3b69576add7afa430d5917ac0b8fbc76abb0af077e9f8a",
+      "sha256": "117f303b297f179d7d9a4bdbe4397e1cff91669537b20ac9c767c11b34e2f395",
       "executable": false
     },
     "tests/helpers/legacy-worker/runtime.mjs": {

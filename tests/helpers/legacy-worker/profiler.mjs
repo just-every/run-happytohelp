@@ -12,11 +12,17 @@ export async function isolateProfiler(mf){
  const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence,error=new Error('Inspector timeout: '+method),timer=setTimeout(()=>{pending.delete(id);reject(error)},30000);pending.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}))})
  await send('Profiler.enable');await send('Profiler.setSamplingInterval',{interval:100})
  return {async measure(run){
-  let heap=await send('Runtime.getHeapUsage'),maxHeapBytes=heap.usedSize+(heap.backingStorageSize??0),screening=Promise.resolve()
+  let heap=await send('Runtime.getHeapUsage'),maxHeapBytes=heap.usedSize+(heap.backingStorageSize??0),screening=Promise.resolve(),busy=false,failed
   await send('Profiler.start')
-  const timer=setInterval(()=>{screening=screening.then(async()=>{heap=await send('Runtime.getHeapUsage');maxHeapBytes=Math.max(maxHeapBytes,heap.usedSize+(heap.backingStorageSize??0))})},20)
+  // A slow inspector exchange must not queue stale heap observations to drain
+  // after the application work. Keep one actual exchange in flight.
+  const timer=setInterval(()=>{
+   if(busy||failed)return
+   busy=true
+   screening=(async()=>{heap=await send('Runtime.getHeapUsage');maxHeapBytes=Math.max(maxHeapBytes,heap.usedSize+(heap.backingStorageSize??0))})().catch(error=>{failed=error}).finally(()=>{busy=false})
+  },20)
   let value,profile
-  try{value=await run()}finally{clearInterval(timer);await screening;profile=(await send('Profiler.stop')).profile}
+  try{value=await run()}finally{clearInterval(timer);await screening;if(failed)throw failed;profile=(await send('Profiler.stop')).profile}
   heap=await send('Runtime.getHeapUsage');maxHeapBytes=Math.max(maxHeapBytes,heap.usedSize+(heap.backingStorageSize??0))
   const nodes=new Map(profile.nodes.map(node=>[node.id,node])),samples=profile.samples??[],deltas=profile.timeDeltas??[]
   let cpuUs=0,idleUs=0;for(let index=0;index<samples.length;index++){const name=nodes.get(samples[index])?.callFrame.functionName,delta=deltas[index]??0;if(name==='(idle)')idleUs+=delta;else cpuUs+=delta}

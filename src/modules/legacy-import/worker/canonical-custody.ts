@@ -44,13 +44,13 @@ export function releaseCanonical(db:D1Database,run:Run,table:string,ids:string[]
  return [...(targets.length?[db.prepare("DELETE FROM legacy_package_keys WHERE manifest_sha256=?1 AND key IN (SELECT json_extract(value,'$.key') FROM json_each(?3) AS proposed WHERE json_extract(value,'$.kind')='media' AND EXISTS(SELECT 1 FROM media WHERE id=json_extract(proposed.value,'$.id') AND project_id=?2 AND object_key=json_extract(proposed.value,'$.key')) OR json_extract(value,'$.kind')='legacy_import_files' AND EXISTS(SELECT 1 FROM legacy_import_files WHERE project_id=?2 AND media_id=json_extract(proposed.value,'$.id') AND object_key=json_extract(proposed.value,'$.key')))").bind(run.manifest_sha256,run.source_project_id,JSON.stringify(targets))]:[]),db.prepare("DELETE FROM legacy_import_rows WHERE run_id=?1 AND (source_table=?3 AND source_id IN (SELECT value FROM json_each(?2)) OR ?3='media' AND source_table='mediables' AND json_extract(source_json,'$.media_id') IN (SELECT value FROM json_each(?2)))").bind(intent,encoded,table)]
 }
 /** Late reservations contain only a random nonce. Sweep them after staging's
- * quantum, sharing its 100-key ceiling; accepted native objects are never deleted. */
+ * quantum, sharing its 100-key ceiling and cleanup claim; transferred keys are never swept. */
 export async function sweepCanonicalNonces(env:Pick<Env,'DB'|'FILES'>,sha:string,room:number){
  if(room<=0)return 0
  if(!await env.DB.prepare("SELECT 1 FROM legacy_package_custody WHERE manifest_sha256=? AND status IN ('invalidated','purging','purged')").bind(sha).first())return 0
  const id=`legacy-package:${sha}`,run=await env.DB.prepare('SELECT cursor_json FROM legacy_import_worker_runs WHERE id=?').bind(id).first<{cursor_json:string}>()
  const after=run?JSON.parse(run.cursor_json).canonicalAfter??'':''
- const page=await env.DB.prepare('SELECT object_key FROM legacy_import_objects WHERE run_id=? AND object_key>? ORDER BY object_key LIMIT ?').bind(id,after,Math.min(100,room)).all<{object_key:string}>()
+ const page=await env.DB.prepare('SELECT object_key FROM legacy_import_objects WHERE run_id=?1 AND object_key>?2 AND EXISTS(SELECT 1 FROM legacy_package_keys WHERE manifest_sha256=?4 AND key=object_key AND kind='object') ORDER BY object_key LIMIT ?3').bind(id,after,Math.min(100,room),sha).all<{object_key:string}>()
  for(const {object_key:key} of page.results){const object=await env.FILES.head(key);if(object?.customMetadata?.canonicalReservation===id)await env.FILES.delete(key)}
  await env.DB.prepare("UPDATE legacy_import_worker_runs SET cursor_json=? WHERE id=? AND EXISTS(SELECT 1 FROM legacy_package_custody WHERE manifest_sha256=? AND status IN ('invalidated','purging','purged'))").bind(JSON.stringify({canonicalAfter:page.results.length?page.results.at(-1)!.object_key:''}),id,sha).run()
  return page.results.length

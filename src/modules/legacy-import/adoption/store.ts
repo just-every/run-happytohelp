@@ -32,7 +32,7 @@ export async function approveAdoption(db:D1Database,p:AdoptionPrincipal,sha:stri
  if(destination&&previous?.state!=='created')refuse('destination_conflict')
  try{
   await db.batch([assertion(db,owner),
-   ...(competing?releaseReservation(db,competing.manifest_sha256):[]),
+   ...(competing?releaseReservation(db,competing.manifest_sha256,sha):[]),
    db.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT NOT EXISTS(SELECT 1 FROM projects WHERE id=?) OR EXISTS(SELECT 1 FROM legacy_workspace_adoptions WHERE manifest_sha256=? AND source_project_id=? AND state='created')`).bind(sourceProjectId,sha,sourceProjectId),
    db.prepare(`INSERT INTO legacy_workspace_adoptions(manifest_sha256,custody_project_id,source_project_id,approver_id,session_hash,policy_version,approval_version,state,approved_at)
     VALUES(?,?,?,?,?,2,1,'reserved',${dbNow}) ON CONFLICT(manifest_sha256) DO UPDATE SET session_hash=excluded.session_hash,approval_version=legacy_workspace_adoptions.approval_version+1,approved_at=excluded.approved_at

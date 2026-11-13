@@ -8,8 +8,8 @@ import {writeLegacyPackage} from '../../helpers/legacy-package.mjs'
 export async function reservationRecovery({app,directory,setup,token,setupAdmin,foreign}){
  const inertTables=['credentials','sessions','local_grants','local_jobs'],inert=await Promise.all(inertTables.map(t=>app.sql(`SELECT * FROM ${t} ORDER BY rowid`)))
  const before=await app.sql('SELECT * FROM users ORDER BY id'),members=await app.sql('SELECT * FROM memberships ORDER BY project_id,user_id')
- const stage=async(source,revision,widget)=>{
-  const root=join(directory,revision),packet=await writeLegacyPackage(root,{format:'happytohelp-legacy-v1',source:{repository:'synthetic',revision,exportedAt:'2026-11-12T00:00:00Z',projectId:source},tables:{projects:[{id:source,name:'Synthetic reservation recovery',website:'https://synthetic-recovery.example',created_at:1,...(widget?{widget_key:widget}:{})}]}})
+ const stage=async(source,revision)=>{
+  const root=join(directory,revision),packet=await writeLegacyPackage(root,{format:'happytohelp-legacy-v1',source:{repository:'synthetic',revision,exportedAt:'2026-11-12T00:00:00Z',projectId:source},tables:{projects:[{id:source,name:'Synthetic reservation recovery',website:'https://synthetic-recovery.example',created_at:1}]}})
   const sha=packet.manifestSha256,base=`/api/move-in/projects/${setup}/legacy-import/${sha}`,bytes=await readFile(join(root,'manifest.json'))
   await app.call(base+'/manifest',{token,method:'PUT',raw:true,body:bytes,headers:{'Content-Type':'application/json','X-Manifest-SHA256':sha},status:201})
   const {missing}=(await app.call(base+'/status',{token,status:200})).data.data
@@ -18,7 +18,7 @@ export async function reservationRecovery({app,directory,setup,token,setupAdmin,
  }
  const approve=(p,options={})=>app.call(p.base+'/adoption/approve',{token,body:p.body,headers:{Origin:app.origin},...options})
  for(const mode of ['expired','discarded','failed']){
-  const source='synthetic-reservation-'+mode,old=await stage(source,mode+'-original',mode==='failed'?'synthetic-widget':undefined)
+  const source='synthetic-reservation-'+mode,old=await stage(source,mode+'-original')
   await approve(old,{status:202})
   const fresh=await stage(source,mode+'-fresh')
   assert.equal((await app.call(fresh.base+'/adoption',{token,status:200})).data.data.canApprove,false)
@@ -26,6 +26,10 @@ export async function reservationRecovery({app,directory,setup,token,setupAdmin,
   if(mode==='expired')await app.db.prepare('UPDATE legacy_package_custody SET expires_at=0 WHERE manifest_sha256=?').bind(old.sha).run()
   if(mode==='discarded')await app.call(old.base+'/discard',{token,body:{},status:202})
   if(mode==='failed'){
+   // A native widget already owns the source-derived widget key. The export
+   // itself uses only classified fields and must reach real preflight.
+   const nativeWidget=await app.first('SELECT widget_key FROM projects WHERE id=?',foreign.projectId)
+   await app.db.prepare('UPDATE projects SET widget_key=? WHERE id=?').bind(source,foreign.projectId).run()
    await app.call(old.base+'/start',{token,body:{approvedManifestSha256:old.sha},status:202})
    let paused
    for(let n=0;n<30;n++){
@@ -34,6 +38,7 @@ export async function reservationRecovery({app,directory,setup,token,setupAdmin,
     await app.runJobs((await app.takeJobs()).filter(j=>j.type==='legacy-import.step'))
    }
    assert.equal(paused.run.state,'paused');assert.equal(paused.run.errorCode,'canonical_target_conflict')
+   await app.db.prepare('UPDATE projects SET widget_key=? WHERE id=?').bind(nativeWidget.widget_key,foreign.projectId).run()
    assert.equal(await app.first('SELECT 1 FROM legacy_import_rows'),null,'preflight failure writes no journal')
   }
   assert.equal(await app.first('SELECT 1 FROM projects WHERE id=?',source),null)

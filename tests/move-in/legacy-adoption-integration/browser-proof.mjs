@@ -29,7 +29,7 @@ export async function browserProof(){
     await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:join(shots,label+'.png'),fullPage:true,animations:'disabled'})
     const region=page.getByRole('region',{name:'Source history reconciliation',exact:true})
     if(await region.count()){
-     await region.focus();assert.equal(await region.evaluate(e=>e===document.activeElement),true)
+     await region.focus();await page.keyboard.press('Tab');await page.keyboard.press('Shift+Tab');assert.equal(await region.evaluate(e=>e===document.activeElement),true)
      assert.equal(await region.evaluate(e=>getComputedStyle(e).outlineStyle),'solid')
      await region.evaluate(e=>{e.scrollLeft=0});await region.press('End');for(let n=0;n<8;n++)await region.press('ArrowRight');
      await page.waitForFunction(()=>{const e=document.querySelector('.legacy-result .legacy-table-scroll');return e.scrollWidth<=e.clientWidth||e.scrollLeft>0})

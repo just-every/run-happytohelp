@@ -46,5 +46,5 @@ export default function useTicketRecord(conversation, reads) {
         apply(result.data);
         return result.data;
     }, [ apply, path ]);
-    return { ticket, settings, error, save, reload, manage: Boolean(settings?.permissions?.manage) };
+    return { ticket, settings, error, save, reload, apply, manage: Boolean(settings?.permissions?.manage) };
 }

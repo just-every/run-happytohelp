@@ -47,7 +47,7 @@
   ],
   "pendingMigrations": [
     {
-      "name": "330_identity_recovery.sql",
+      "id": "330_identity_recovery.sql",
       "buyerSteps": "Back up D1, R2 and private installation encryption custody before updating. Apply 330_identity_recovery.sql once BEFORE the new Worker serves HTTP or queue traffic. On v0.4.24, apply this missing filename even though 331 and 332 are already recorded; retain every applied migration identity. Keep the durable recovery revocation watermark on rollback. Discard live recovery requests, approvals, pending factors and capabilities on restore; rebind Managed custody after a portable restore. This adds scoped first-owner and all-workspace consent recovery state and invalidation triggers without rewriting accounts, factors, memberships or spent-key history. Managed recovery remains unavailable until the separate declaration and custody round enables it. No reset or deployment is authorized."
     }
   ]

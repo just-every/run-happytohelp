@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {launchBrowser,evidence} from '../../journeys/kit/browser.mjs'
 import {seedTicketBrowser} from './ticket-browser-fixture.mjs'
+import {ticketStatusEdits} from './ticket-status-edits.mjs'
 
 async function ticketRuntime(){
  const reservation=createServer();await new Promise(resolve=>reservation.listen(0,'127.0.0.1',resolve));const port=reservation.address().port;await new Promise(resolve=>reservation.close(resolve))
@@ -36,6 +37,9 @@ export async function ticketsBrowser({count=8,installation}={}){
 
   await page.getByLabel('Priority',{exact:true}).selectOption('high');await page.getByText('Priority saved.',{exact:true}).waitFor({state:'attached'})
   assert.equal((await fixture.api(`${base}/conversations/${fixture.tickets[0].id}/ticket`)).data.priority,'high')
+  await ticketStatusEdits({page,fixture,origin:runtime.origin})
+  await page.locator('#ticket-section-fields-heading').click()
+  await page.getByLabel('Priority',{exact:true}).selectOption('high');await page.getByText('Priority saved.',{exact:true}).waitFor({state:'attached'})
   await page.getByLabel('Warehouse reference',{exact:true}).fill('WH-2048');
   await page.getByLabel('Subject',{exact:true}).fill('Replacement for a cracked lid');await page.getByRole('button',{name:'Save ticket',exact:true}).click();await page.getByText('Ticket saved.',{exact:true}).waitFor()
   const savedTicket=(await fixture.api(`${base}/conversations/${fixture.tickets[0].id}/ticket`)).data;assert.equal(savedTicket.subject,'Replacement for a cracked lid');assert.equal(savedTicket.priority,'high')

@@ -34,7 +34,7 @@ No full local `rer verify` or full local suite was run. No tests were deleted, s
 
 ## Before and after
 
-- Stranger findings addressed by the carried fix: 2 → 0 in the passing original public-door journey.
+- Supplied stranger report: 2 findings; the carried public-door journey now passes both fixes. This carry run did not repeat the original pre-fix reproduction on main.
 - Product diff: 8 files, 87 insertions, 15 deletions.
 - Direct top-level test/contract registration sites: 108 → 108; registrations added/removed: 0/0.
 - Recorded clause counts: DONE 4 → 4; PARTIAL 71 → 71; MISSING 16 → 16 (91 total).
@@ -49,4 +49,14 @@ Product push succeeded on the first guard attempt. Full author/committer/trailer
 
 ## Exact-SHA CI
 
-Verify run 43454222292 is in progress on exact SHA c1dcf0aefd7fc998468862f117e508bb998651de: https://github.com/just-every/run-happytohelp/actions/runs/43454222292. The first immediate discovery returned no run; the second discovery after 301 seconds found this run. One watcher enforces at least 300 seconds between reads and records its GitHub calls. Terminal results will be appended below and in RECEIPT.json before evidence publication.
+Verify run 43454222292: https://github.com/just-every/run-happytohelp/actions/runs/43454222292. Initial run failed in import-and-reports; the one requested failed-jobs rerun was accepted. Its result is unobserved because all ten GitHub calls were used. Terminal custody is PUSHED. Details follow.
+
+## Terminal CI and handoff
+
+Exact-SHA Verify run **43454222292** completed with **failure** on c1dcf0aefd7fc998468862f117e508bb998651de. Build, typecheck, all contract/source checks and seven of eight shards passed. Both **Verify / support-workflow-browser** (job 131984920716, including the carried ticketStatusEdits assertions) and **Verify / identity-and-desk** (job 131984920670, including the existing native ticket/queue concurrency guards) passed. Thus the optional local native startup stall did not prevent the native guard assertions from passing in CI on the exact candidate.
+
+The failing shard was **Verify / import-and-reports**, job **131984920734**, step **Run shard checks**, outside this round's changed files. The final aggregate `verify` job 132000343312 also failed because that selected shard failed; full-push-proof was skipped. The one authorized failed-job archive read, `gh run view 43454222292 --repo just-every/run-happytohelp --job 131984920734 --log-failed`, exited 0 with **zero bytes**. No assertion detail was available, so no failure cause or flake is invented and no blob redirect or repeated log read was attempted.
+
+Per the brief, the failed jobs were rerun **once** through `POST repos/just-every/run-happytohelp/actions/runs/43454222292/rerun-failed-jobs`; GitHub accepted the request. All ten allowed GitHub calls have now been used. The rerun result is unobserved, and this handoff is **PUSHED, not READY**. The fleet must observe a successful exact-SHA rerun before landing; there is no green full-Verify claim. See CI-RECEIPT.json, ci-jobs.json, ci-rerun-response.txt and the complete call ledger. No further product changes or commits were made, and no clause status changed.
+
+The original watcher was interrupted when the environment cycled; after runtime readiness was confirmed, only one watcher was resumed, using the existing call timestamps and budget. No short-interval GitHub polling occurred.

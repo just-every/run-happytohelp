@@ -16,5 +16,82 @@
       "--jq",
       "{workflow_runs:[.workflow_runs[]|{id,name,status,conclusion,head_sha,html_url}]}"
     ]
+  },
+  {
+    "at": 1794584763.9907727,
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43454222292",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": 1794585065.024568,
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43454222292",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": 1794585366.06777,
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43454222292",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": 1794585667.1185677,
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43454222292",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": 1794585968.1530492,
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43454222292",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": 1794585974.6000102,
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43454222292/jobs",
+      "--jq",
+      "{jobs:[.jobs[]|{id,name,status,conclusion,steps:[.steps[]|{name,status,conclusion}]}]}"
+    ]
+  },
+  {
+    "at": 1794585986.3917005,
+    "args": [
+      "run",
+      "view",
+      "43454222292",
+      "--repo",
+      "just-every/run-happytohelp",
+      "--job",
+      "131984920734",
+      "--log-failed"
+    ]
+  },
+  {
+    "at": 1794586036.8474343,
+    "args": [
+      "api",
+      "--method",
+      "POST",
+      "repos/just-every/run-happytohelp/actions/runs/43454222292/rerun-failed-jobs",
+      "--include"
+    ]
   }
 ]

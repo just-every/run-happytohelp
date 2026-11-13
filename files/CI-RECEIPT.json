@@ -1,0 +1,30 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "head_sha": "c1dcf0aefd7fc998468862f117e508bb998651de",
+  "run_id": 43454222292,
+  "initial_conclusion": "failure",
+  "failed_shard": {
+    "name": "Verify / import-and-reports",
+    "job_id": 131984920734,
+    "step": "Run shard checks"
+  },
+  "passed_shards": [
+    "identity-and-desk",
+    "assistant-and-knowledge",
+    "connections-and-computers",
+    "support-workflow-browser",
+    "support-and-recovery",
+    "identity-and-repair-browser",
+    "public-and-import-browser"
+  ],
+  "failed_log_command": "gh run view 43454222292 --repo just-every/run-happytohelp --job 131984920734 --log-failed",
+  "failed_log_exit": 0,
+  "failed_log_bytes": 0,
+  "failure_assertion_detail": "Unavailable: the single requested archive read returned zero bytes; no retry or direct blob download attempted.",
+  "rerun": "failed jobs rerun requested once and accepted",
+  "rerun_http": "HTTP/2.0 201 Created",
+  "rerun_result": "unobserved; GitHub call budget exhausted",
+  "github_calls_used": 10,
+  "terminal_custody": "PUSHED; not READY",
+  "product_blocker": "No failure was observed in the seven changed-scope/other passing shards; the import-and-reports shard must pass the rerun before landing."
+}

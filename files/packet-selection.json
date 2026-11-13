@@ -1,5 +1,8 @@
 {
   "files": [
+    "CI-RECEIPT.json",
+    "ci-import-and-reports-failed.log",
+    "ci-rerun-response.txt",
     "REPORT.md",
     "PLAN.md",
     "RECEIPT.json",
@@ -30,6 +33,12 @@
     "screenshots/ticket-summary-390.png",
     "screenshots/conversation-header-390.png",
     "ci-1794584463.json",
+    "ci-1794584764.json",
+    "ci-1794585065.json",
+    "ci-1794585366.json",
+    "ci-1794585667.json",
+    "ci-1794585968.json",
+    "ci-jobs.json",
     "packet-selection.json"
   ],
   "secret_scan": "pass; no injected values or GitHub token shapes in selected files",

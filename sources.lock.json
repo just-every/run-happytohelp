@@ -7752,6 +7752,10 @@
       "sha256": "20ecbe3ccab19c943c26bc5d7ecd41175541a3d911774457b283767d7bb7f3b0",
       "executable": false
     },
+    "src/modules/legacy-import/custody/scope.ts": {
+      "sha256": "751f183b30d69912a1862b78ca6418eead84a022dea0dfb3a311973d9aa3b8bd",
+      "executable": false
+    },
     "src/modules/legacy-import/custody/seed.ts": {
       "sha256": "ef94de7873f4c83149c199cb55ae205fa3cd84c78c6f9765049faa4b5a2d3ecc",
       "executable": false

@@ -1,7 +1,7 @@
 import {mountedErasureStates} from '../move-in/legacy-adoption-integration/erasure-states.mjs'
 import {mountedOrderingJourney} from '../move-in/legacy-adoption-integration/ordering.mjs'
 import {legacyAdoptionJourney} from '../helpers/legacy-adoption/journey.mjs'
-import {adoptionIntegrationJourney} from '../move-in/legacy-adoption-integration/process.mjs'
+import {adoptionIntegrationJourney} from '../move-in/legacy-adoption-integration/journey.mjs'
 import {legacyPackageAdmission} from '../move-in/legacy-adoption-integration/admission.mjs'
 import test from 'node:test'
 import {inspect} from 'node:util'
@@ -10,8 +10,8 @@ import {vendorRepliesJourney} from '../move-in/vendor-replies.mjs'
 import {reviewImportJourney} from '../move-in/review-import.mjs'
 
 test('review an export, import its history and private notes, repeat and repackage without effects, then undo exactly',{timeout:480_000},async()=>{
- // Every phase owns a separate installation. Measured adoption also owns its
- // Node process, keeping inspector commands off the API lane's event loop.
+ // Every phase owns a separate installation. Keep two lanes; the measured
+ // Worker uses its native V8 inspector session for profiling.
  const pending=[reviewImportJourney,adoptionIntegrationJourney,mountedErasureStates,vendorRepliesJourney,outcomesJourney,legacyPackageAdmission,legacyAdoptionJourney,mountedOrderingJourney]
  const failures=[]
  // Drain both lanes even on failure: no cleanup or outstanding assertions are

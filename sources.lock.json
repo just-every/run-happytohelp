@@ -17253,7 +17253,7 @@
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {
-      "sha256": "540c0ca953f821abe9f318281f446d7eab90855f0202e9b9d21148ff75c69e34",
+      "sha256": "a95f66f66105ec6a927578e52064707f8d1057d84abc7e14edbe58983c0aaa21",
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {

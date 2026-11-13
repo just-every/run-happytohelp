@@ -12,18 +12,17 @@ test('review an export, import its history and private notes, repeat and repacka
  // Each phase owns a separate installation. Start the two longest first and
  // overlap two phases, retaining their internal order and fresh-state checks.
  const pending=[reviewImportJourney,adoptionIntegrationJourney,mountedErasureStates,vendorRepliesJourney,outcomesJourney,legacyPackageAdmission,legacyAdoptionJourney,mountedOrderingJourney]
- async function run(){
+ // Drain both lanes even on failure: no cleanup or outstanding assertions are
+ // abandoned because an independent phase failed first.
+ const lane=async()=>{
   const failures=[]
-  for(const journey of pending.splice(0,1)){
-   const started=performance.now()
+  while(pending.length){
+   const journey=pending.shift(),started=performance.now()
    try{await journey()}catch(error){failures.push(error)}
    finally{console.log('IMPORT_ADMISSION_PHASE',JSON.stringify({journey:journey.name,duration_ms:Math.round(performance.now()-started)}))}
   }
   return failures
  }
- // Drain both lanes even on failure: no cleanup or outstanding assertions are
- // abandoned because an independent phase failed first.
- const lane=async()=>{const failures=[];while(pending.length)failures.push(...await run());return failures}
  const failures=(await Promise.all([lane(),lane()])).flat()
  if(failures.length)throw new AggregateError(failures,'Importer admission phase failed')
 })

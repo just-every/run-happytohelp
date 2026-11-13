@@ -140,30 +140,81 @@ Original managed MIME is encrypted with the installation’s stable integration 
 
 The Managed journeys replace only the external relay/edge network boundary. They establish application engineering behavior, not delivery through a real mail domain, provider account or deployed platform.
 
+## Hosted installation
+
+A local trial cannot receive or send email. Use the website chat to try conversations locally; do not configure DNS or mail routing for `localhost.test`, which is reserved for the trial.
+
+To use email, the installation owner needs a hosted HappyToHelp installation and a real mailbox or a receiving address on a domain they control. Choose one path:
+
+- **A mailbox at Google or Microsoft:** register an OAuth app and install its credentials using the steps below, then authorize the mailbox in **Settings → Email → Add mailbox**.
+- **An IMAP and SMTP mailbox:** allow its exact hosts and TLS ports using [IMAP and SMTP setup](#connect-imap-and-smtp), then enter the mailbox credentials in **Add mailbox**.
+- **Forwarding to HappyToHelp:** configure a hosted sending provider as described above, an inbound credential and a route to the hosted Worker. Follow [Receive email](../src/modules/integrations/README.md#receive-email) for Cloudflare Email Routing, SendGrid Inbound Parse or your own gateway. Use a dedicated subdomain to preserve your existing mail routing.
+
+Connecting a mailbox does not configure installation sign-in and invitation mail. Keep the installation's sending provider configured as described at the start of this guide. A provider account, permission to use the mailbox and a deployed configuration are prerequisites, not supplied by a local trial.
+
 ## Connect Gmail or Microsoft 365
 
-The person running the installation first registers an OAuth application with Google or Microsoft for this installation. Use your own application credentials and your own HappyToHelp origin; a connection on another installation does not authorize this one.
+The installation owner registers an OAuth application for this installation. Use your own application credentials and HappyToHelp origin; a connection on another installation does not authorize this one.
 
-Set `APP_ORIGIN` to your HTTPS HappyToHelp origin and configure these installation secrets through your private deployment configuration:
+### Installation settings
 
-| Provider | Settings | Registered redirect URI |
+The runtime reads `APP_ORIGIN` for its callback origin. On a native deployment, follow [Custom application origin](INSTALLER.md#custom-application-origin): attach your hostname and retain `H2H_PUBLIC_ORIGIN` in the private deployment env file. The deploy command writes `APP_ORIGIN` from it. If you use the default hosted workers.dev origin, register that actual HTTPS origin instead. Register the exact callback below, replacing `support.example.com` with your HappyToHelp host, without adding a trailing slash:
+
+| Provider | Installation inputs | Registered redirect URI |
 | --- | --- | --- |
-| Gmail / Google Workspace | `GOOGLE_MAIL_CLIENT_ID`, `GOOGLE_MAIL_CLIENT_SECRET` | `https://<your-origin>/api/management/mailboxes/oauth/gmail/callback` |
-| Microsoft 365 / Outlook | `MICROSOFT_MAIL_CLIENT_ID`, `MICROSOFT_MAIL_CLIENT_SECRET` | `https://<your-origin>/api/management/mailboxes/oauth/microsoft/callback` |
+| Gmail / Google Workspace | `GOOGLE_MAIL_CLIENT_ID`, `GOOGLE_MAIL_CLIENT_SECRET` | `https://support.example.com/api/management/mailboxes/oauth/gmail/callback` |
+| Microsoft 365 / Outlook | `MICROSOFT_MAIL_CLIENT_ID`, `MICROSOFT_MAIL_CLIENT_SECRET` | `https://support.example.com/api/management/mailboxes/oauth/microsoft/callback` |
 
-Keep the values in an owner-only private env file. The native deploy declaration accepts these names; install each with `rer deploy --environment YOUR-ENVIRONMENT --env-file private-mail.env --set-secret <setting>`, replacing `<setting>` with the name of the setting to install. The same command accepts the IMAP settings below.
+Both use `INTEGRATION_ENCRYPTION_KEY`, the installation's base64-encoded 32-byte encryption key. Retain the existing key; replacing it without migrating credentials makes existing connections unreadable. Native setup generates this key for a new installation. Back it up privately with your installation secrets.
 
-Both use `INTEGRATION_ENCRYPTION_KEY`, the installation's base64-encoded 32-byte encryption key. Keep that key available for existing connections; replacing it without migrating the encrypted credentials makes those credentials unreadable. Never paste secrets into ticket notes or commit them to the repository.
+Keep input values in an owner-only, mode 0600 private env file outside the repository. Preserve your existing owner, origin and sending-provider settings in that file. For your own provider, email must be explicitly enabled with `MAIL_MODE=own` and `EMAIL_PROVIDER` set to your configured sending provider, with its required inputs; an Off installation refuses mailbox input updates. Managed installations retain their existing managed configuration. Do not paste keys in ticket notes, shell arguments or source files.
 
-In **Mailboxes**, choose the connection type, enter a sender/brand name and select **Authorize mailbox**. Complete the provider's consent screen using the intended mailbox account. Authorization expires after ten minutes, works once and is tied to the signed-in administrator and workspace. Complete any requested security verification before continuing.
+For an already deployed installation, install each provider input from the private file, substituting the input name only for `SETTING_NAME`:
 
-Gmail requests read-only mail access, permission to send mail and basic mailbox settings access to discover accepted send-as aliases. Microsoft requests offline access, user profile, mail read and mail send access. Your provider or organization may require administrator consent. If authorization fails, resolve the displayed provider/configuration error; the application does not substitute a simulated connection.
+```sh
+pnpm exec rer deploy --environment production --env-file /path/to/private-mail.env --set-secret SETTING_NAME
+```
+
+Repeat for both client inputs and, only if not already installed, `INTEGRATION_ENCRYPTION_KEY`. The same command installs the IMAP settings below. A changed hostname or sending-provider choice requires a full deployment with the same private file, without `--set-secret`. Saving a secret alone does not enable an Off installation or change its origin.
+
+### Google Gmail setup
+
+1. Sign in to the [Google Cloud console](https://console.cloud.google.com/) with the account that will own the OAuth app. Create or select a project, then enable the **Gmail API** under **APIs & Services → Library**.
+2. Open **Google Auth Platform** (the OAuth consent screen under **APIs & Services** in some consoles). Set the app name, support email and developer contact. Choose **Internal** only for mailboxes in your Google Workspace organization; otherwise choose **External**. For External testing, add the intended mailbox account under **Audience → Test users**.
+3. Under **Data Access**, add these scopes that HappyToHelp requests:
+   - `https://www.googleapis.com/auth/gmail.readonly` to read mail and attachments.
+   - `https://www.googleapis.com/auth/gmail.send` to send replies.
+   - `https://www.googleapis.com/auth/gmail.settings.basic` to discover accepted send-as aliases.
+4. Under **Clients**, create an OAuth client with application type **Web application**. Add the Gmail callback from the table as an **Authorized redirect URI**. This is a server callback, not the website widget origin.
+5. Save the client ID as `GOOGLE_MAIL_CLIENT_ID` and its client secret as `GOOGLE_MAIL_CLIENT_SECRET` in your private env file. Install those inputs using the command above. Keep the secret private.
+6. As a workspace owner or admin, open **Settings → Email → Add mailbox → Google Gmail**, enter the sender/brand name and select **Authorize mailbox**. Complete any HappyToHelp security verification, sign in as the intended mailbox and approve the requested access. HappyToHelp requests offline access so sync can continue after the browser closes.
+
+Google Workspace administrators may need to trust the app before consent works. External apps using Gmail scopes can require Google verification before production use; testing grants can expire after seven days. Complete Google's applicable verification and publishing requirements before relying on unattended mail. A redirect mismatch means the registered URI must match this installation's actual callback exactly. If offline access was not granted or a grant expires, resolve it in Google and use **Reconnect** with the same mailbox account.
+
+### Microsoft 365 setup
+
+1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com/), then open **Identity → Applications → App registrations → New registration**. Name the app for this installation. To support Microsoft 365 and Outlook.com with this connector's `/common` authorization endpoint, choose **Accounts in any organizational directory and personal Microsoft accounts**.
+2. Under **Authentication**, add a **Web** platform with the Microsoft callback from the table as its redirect URI. Use the hosted HTTPS origin, not your widget website. This connector uses a confidential server app; leave public-client and implicit-grant flows disabled.
+3. Under **API permissions**, add **Microsoft Graph → Delegated permissions**: `User.Read`, `Mail.Read` and `Mail.Send`, plus `offline_access` for refresh tokens. The connector acts as the signed-in mailbox user; application permissions and client-credentials mail access are not used.
+4. Under **Certificates & secrets**, create a client secret. Copy its **Value**, not its Secret ID, into `MICROSOFT_MAIL_CLIENT_SECRET` in the private env file. Copy **Application (client) ID** from Overview into `MICROSOFT_MAIL_CLIENT_ID`. Record the secret's expiry privately and rotate it before it expires. Install both inputs using the command above.
+5. If the tenant blocks user consent, have its administrator review and grant the delegated permissions under **API permissions**. The account needs an accessible Exchange Online or Outlook mailbox; app registration alone does not create one.
+6. As a workspace owner or admin, open **Settings → Email → Add mailbox → Microsoft 365 / Graph**, enter the sender/brand name and select **Authorize mailbox**. Complete any HappyToHelp security verification and consent as the mailbox account you intend to connect.
+
+Resolve redirect mismatches, expired secrets and tenant consent restrictions in Entra before reconnecting. HappyToHelp requests `offline_access User.Read Mail.Read Mail.Send` and retains an encrypted refresh credential; it does not ask for a tenant ID input or provide an app-only/shared-mailbox grant. Use **Reconnect** with the original mailbox account after restoring access.
+
+Authorization expires after ten minutes, works once and is tied to the signed-in administrator and workspace. If configuration is missing, the connection remains unavailable; no simulated connection substitutes for provider consent.
 
 ## Connect IMAP and SMTP
 
-Choose **IMAP and SMTP** and supply the mailbox address, IMAP host, SMTP host and credentials. The installation operator must include both exact hostnames in `MAILBOX_SOCKET_HOSTS`, a comma-separated allowlist. Wildcards and numeric IP addresses are not accepted.
+The installation owner first allows the mailbox servers; a workspace user cannot add arbitrary network hosts from the connection form.
 
-Connections use TLS from the start: IMAP defaults to port **993**, SMTP to **465**. Custom numeric `imapPort` and `smtpPort` values are supported when included in the installation's comma-separated `MAILBOX_SOCKET_PORTS` allowlist, whose default is `993,465`. Plaintext and STARTTLS configuration are not supported by this connector. The Worker needs socket access to both hosts. Saving verifies access to IMAP and SMTP; a failed check must be resolved before the connection is usable. Separate SMTP credentials may be supplied when the server requires them. Set `MAILBOX_IMAP_AUTHSERV` to the receiving server's trusted authentication-service identity, so the connector can evaluate its authentication results. If unset, IMAP senders remain unverified and their messages require Suspended review. This value is installation configuration, not a message-supplied header or mailbox credential.
+1. Ask your mail provider for its **IMAP over TLS** and **SMTP over TLS** hostnames and ports, and whether an app password is required. The Worker must be able to open outbound TLS sockets to both hosts. IMAP defaults to **993** and SMTP to **465**. Plaintext and STARTTLS, including servers that offer only STARTTLS on port 587, are not supported by this connector.
+2. In the installation's private mode 0600 env file, set `MAILBOX_SOCKET_HOSTS` to both exact hostnames, separated by commas, for example `imap.example.com,smtp.example.com`. Use hostnames only, without URL schemes or ports. Wildcards and numeric IP addresses are refused. Retain any hosts needed by other connected mailboxes when editing this installation-wide list.
+3. Set `MAILBOX_SOCKET_PORTS` to the allowed numeric TLS ports if different from the default `993,465`. The connection form accepts only ports in this installation-wide list. Ask the provider for its trusted IMAP authentication-service identity and set `MAILBOX_IMAP_AUTHSERV` to that exact identity. Without it, IMAP senders remain unverified and their messages require Suspended review; do not copy an identity from an untrusted message header.
+4. Install `MAILBOX_SOCKET_HOSTS`, and any configured `MAILBOX_SOCKET_PORTS` and `MAILBOX_IMAP_AUTHSERV`, using the `--set-secret SETTING_NAME` command in [Installation settings](#installation-settings). Retain the installation's `INTEGRATION_ENCRYPTION_KEY` and enabled email configuration. Reload **Settings → Email** after the deployment finishes; an empty host list keeps the connector unavailable.
+5. Choose **Add mailbox → IMAP and SMTP**. Enter the mailbox address, allowed IMAP/SMTP hosts and TLS ports, and the IMAP username and password. Use an app password if required. Supply separate SMTP credentials only if they differ; otherwise the IMAP credentials are used for SMTP too. Select **Save mailbox**.
+
+Saving verifies access to both servers before the connection is usable. Resolve host/port refusals in the installation allowlists, and authentication or socket failures with your provider. Credentials are encrypted and never shown again. Then use **Sync now** and check connection errors before relying on mail intake. The first sync can read existing Inbox mail, so review that mailbox before starting.
 
 ## Forwarding, aliases and signatures
 

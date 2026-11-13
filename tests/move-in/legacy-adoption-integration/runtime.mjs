@@ -10,12 +10,19 @@ import {children,identifyWorkerd,assertOwnedWorkerd,assertWorkerdStopped} from '
 import {isolateProfiler} from '../../helpers/legacy-worker/profiler.mjs'
 const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[require.resolve('wrangler')]}))
 const hash=value=>createHash('sha256').update(value).digest('hex')
-let compiled
+let compiled,starting=Promise.resolve()
+/** Discover one new owned child at a time; migrations and journeys may overlap. */
+async function startOwned(start){
+ const prior=starting;let release
+ starting=new Promise(resolve=>{release=resolve})
+ await prior
+ try{return await start()}finally{release()}
+}
 /** Same app Worker and migration kit, with an exposed inspector and owned PID. */
 export async function runnerRuntime(){
  const directory=await mkdtemp(join(tmpdir(),'legacy-runner-')),outbound=[];let mf,db,pid,profiler
  const script=await (compiled??=build({entryPoints:[resolve('tests/move-in/legacy-adoption-integration/runtime-worker.ts')],bundle:true,write:false,format:'esm',platform:'node',conditions:['workerd'],target:'es2022',external:['node:*','cloudflare:*'],logLevel:'silent',banner:{js:"import {createRequire as kitRequire} from 'node:module';const require=kitRequire('/');"}}).then(result=>result.outputFiles[0].text))
- const start=async()=>{const before=await children();mf=new Miniflare(convertV4MiniflareOptions({name:'legacy-runner',cf:false,modules:true,script,inspectorPort:0,unsafeTriggerHandlers:true,compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{H2H_TEST_CAPTURE_QUEUE:'1'},d1Databases:{DB:'legacy-runner'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},queueProducers:{JOBS:'legacy-jobs'},queueConsumers:{'legacy-jobs':{maxBatchSize:1,maxRetries:0}},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async request=>{outbound.push({hostname:new URL(request.url).hostname,method:request.method});throw new Error('Provider requests prohibited')}}));db=await mf.getD1Database('DB');pid=await identifyWorkerd(before);profiler=await isolateProfiler(mf)}
+ const start=()=>startOwned(async()=>{const before=await children();mf=new Miniflare(convertV4MiniflareOptions({name:'legacy-runner',cf:false,modules:true,script,inspectorPort:0,unsafeTriggerHandlers:true,compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{H2H_TEST_CAPTURE_QUEUE:'1'},d1Databases:{DB:'legacy-runner'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},queueProducers:{JOBS:'legacy-jobs'},queueConsumers:{'legacy-jobs':{maxBatchSize:1,maxRetries:0}},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async request=>{outbound.push({hostname:new URL(request.url).hostname,method:request.method});throw new Error('Provider requests prohibited')}}));db=await mf.getD1Database('DB');pid=await identifyWorkerd(before);profiler=await isolateProfiler(mf)})
  await start();try{await applyMigrations(db)}catch(error){await mf.dispose();await rm(directory,{recursive:true,force:true});throw error}
  const request=(path,{token,body,raw=false,method=body===undefined?'GET':'POST',headers={}}={})=>mf.dispatchFetch('https://app.example'+path,{method,redirect:'manual',headers:{...(token?{Authorization:`Bearer ${token}`} :{}),...(body===undefined?{}:{'Content-Type':'application/json'}),...headers},body:body===undefined?undefined:raw?body:JSON.stringify(body)})
  const call=async(path,options={})=>{const response=await request(path,options);const text=await response.text();let data;try{data=JSON.parse(text)}catch{data=text};await response.waitUntil?.();if(options.status!==undefined)assert.equal(response.status,options.status,JSON.stringify({path,status:response.status,data}));return {status:response.status,data}}

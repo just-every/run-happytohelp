@@ -7,9 +7,7 @@ import {packageFixture} from './fixture.mjs'
 
 /** The same recovery door, with real copies before workspace creation. Each
  * installation is isolated so sign-out cannot revoke the parent journey. */
-export async function reservationAttachments(){
- const facts=[]
- for(const mode of ['stop-expiry','signout','orphan'])for(const order of mode==='orphan'?['before']:['before','after']){
+async function reservationAttachment(mode,order){
   const app=await runnerRuntime(),directory=await mkdtemp(join(tmpdir(),'legacy-reservation-'))
   try{
    const login={email:'synthetic-wire@example.test',password:'Synthetic wire password 42!'}
@@ -75,7 +73,7 @@ export async function reservationAttachments(){
    if(order==='before'&&mode!=='signout')await drain(old.sha)
    if(mode==='orphan'){
     for(const key of keys)assert.equal(await files.head(key),null,'an unheld canonical copy is cleaned')
-    facts.push({mode,cleaned:keys.length});continue
+    return {mode,cleaned:keys.length}
    }
    let fresh=await stage('fresh');await approve(fresh)
    const released=[old.sha]
@@ -126,9 +124,15 @@ export async function reservationAttachments(){
    const erasedMedia=media.find(m=>m.id==='synthetic-media')
    assert.equal((await app.request(`/api/conversations/${erasedMedia.conversation_id}/media/${erasedMedia.id}`,{token:adopted})).status,404)
    assert.equal(await (await files.get(keys[1])).text(),'Synthetic retained peer bytes','erasure retains the other contact attachment')
-   facts.push({mode,order,identical:keys.length,verified:true,erased:true})
+   return {mode,order,identical:keys.length,verified:true,erased:true}
   }finally{await app.close();await rm(directory,{recursive:true,force:true})}
- }
+}
+
+export async function reservationAttachments(){
+ const cases=['stop-expiry','signout','orphan'].flatMap(mode=>(mode==='orphan'?['before']:['before','after']).map(order=>[mode,order])),facts=[]
+ // Each installation has its own D1/R2 state. Bound parallelism while keeping
+ // every order, byte comparison, reconciliation and erasure assertion.
+ for(let i=0;i<cases.length;i+=2)facts.push(...await Promise.all(cases.slice(i,i+2).map(([mode,order])=>reservationAttachment(mode,order))))
  console.log('RESERVATION_ATTACHMENTS '+JSON.stringify(facts))
  return facts
 }

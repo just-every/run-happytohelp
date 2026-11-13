@@ -16769,7 +16769,7 @@
       "executable": false
     },
     "tests/helpers/legacy-worker/profiler.mjs": {
-      "sha256": "58a19f238cc5188b430f41520f693d7aaab495ea9ee52fa03dd06389844d72a8",
+      "sha256": "517ae763a801ef713c3b69576add7afa430d5917ac0b8fbc76abb0af077e9f8a",
       "executable": false
     },
     "tests/helpers/legacy-worker/runtime.mjs": {
@@ -17261,7 +17261,7 @@
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {
-      "sha256": "91509368c280de930b5ca8d143c0a7f70703067409d1888a8ae68ce86f54dc55",
+      "sha256": "5b262bd96b288a6228b93e93a3261be8484c07e876479f63ff64524d08380b89",
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {

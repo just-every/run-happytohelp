@@ -10,23 +10,24 @@ import {vendorRepliesJourney} from '../move-in/vendor-replies.mjs'
 import {reviewImportJourney} from '../move-in/review-import.mjs'
 
 test('review an export, import its history and private notes, repeat and repackage without effects, then undo exactly',{timeout:480_000},async()=>{
- // Each phase owns a separate installation. Start the two longest first and
- // overlap two phases, retaining their internal order and fresh-state checks.
- const pending=[reviewImportJourney,adoptionIntegrationJourney,mountedErasureStates,vendorRepliesJourney,outcomesJourney,legacyPackageAdmission,legacyAdoptionJourney,mountedOrderingJourney]
+ // Independent API phases own separate installations and can overlap. The
+ // inspector-measured adoption phase runs after both lanes have cleaned up.
+ // An inspector command timed out during that overlap; retain its profiling
+ // and deadline while removing the overlap.
+ const pending=[reviewImportJourney,mountedErasureStates,vendorRepliesJourney,outcomesJourney,legacyPackageAdmission,legacyAdoptionJourney,mountedOrderingJourney]
+ const failures=[]
  // Drain both lanes even on failure: no cleanup or outstanding assertions are
  // abandoned because an independent phase failed first.
- const lane=async()=>{
-  const failures=[]
-  while(pending.length){
-   const journey=pending.shift(),started=performance.now()
+ const run=async journey=>{
+   const started=performance.now()
    try{await journey()}catch(error){
     console.error('IMPORT_ADMISSION_FAILURE',journey.name,inspect(error,{depth:null,colors:false,maxArrayLength:null,maxStringLength:null}))
     failures.push(error)
    }
    finally{console.log('IMPORT_ADMISSION_PHASE',JSON.stringify({journey:journey.name,duration_ms:Math.round(performance.now()-started)}))}
-  }
-  return failures
  }
- const failures=(await Promise.all([lane(),lane()])).flat()
+ const lane=async()=>{while(pending.length)await run(pending.shift())}
+ await Promise.all([lane(),lane()])
+ await run(adoptionIntegrationJourney)
  if(failures.length)throw new AggregateError(failures,'Importer admission phase failed')
 })

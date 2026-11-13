@@ -34,7 +34,7 @@ Actual command results, candidate SHA, exact-SHA CI runs and screenshots are rec
 
 Product commits contain only code, the extended journey/helper and generated source lock. All reports, receipts and screenshots are published only through the evidence ref. The Mac fleet owns the full publication scan, merge/landing and generated acceptance views. No deployment or default-branch push is part of this run.
 
-Local result: touched route journey passed (1 registered test, 0 failures); the extended ticketsBrowser passed at 1440; typecheck, candidate build, source-lock check and first-party check all passed. Exact-SHA Verify run 43426535076 is being watched through REST with a minimum 300-second cadence.
+Local result: touched route journey passed (1 registered test, 0 failures); the extended ticketsBrowser passed at 1440; typecheck, candidate build, source-lock check and first-party check all passed. Exact-SHA Verify run 43426535076 completed successfully on the candidate, observed through REST with a minimum 300-second cadence (7 calls including discovery).
 
 Candidate browser proof passed on ea30383aae21e1518b7c1cfea78d3a7f28fed82c. Final 1440 and 390 screenshots show the saved summary and Solved header; phone captures wait for the existing panel animation to settle.
 
@@ -47,3 +47,9 @@ Visual review: the 390 Summary shows Solved, High and saturday-walk within the v
 | Ticket/header at 1440 | [Stale edit](before-stale-1440.png), [Solved shown as Closed](before-solved-1440.png) | [Saved Solved summary and header](after-solved-1440.png) |
 | Ticket summary at 390 | Not captured | [Solved, High and added tag](after-summary-390.png) |
 | Conversation header at 390 | Not captured | [Solved and Reopen](after-header-390.png) |
+
+## Terminal result
+
+READY branch=cloud/main-happytohelp-ticket-status-1 head=ea30383aae21e1518b7c1cfea78d3a7f28fed82c
+
+Verify: https://github.com/just-every/run-happytohelp/actions/runs/43426535076 — completed/success on ea30383aae21e1518b7c1cfea78d3a7f28fed82c. All local touched checks and exact-candidate browser proof passed. No blockers. No PR required or created. No contract status changes. The fleet owns publication scan and landing; no default branch was pushed.

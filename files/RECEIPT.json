@@ -85,10 +85,10 @@
     {
       "id": 43426535076,
       "head": "ea30383aae21e1518b7c1cfea78d3a7f28fed82c",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "url": "https://github.com/just-every/run-happytohelp/actions/runs/43426535076",
-      "api_calls": 4
+      "api_calls": 7
     }
   ],
   "pr": null,
@@ -115,5 +115,9 @@
     ],
     "note": "Retook phone proof after existing panel transitions settled; no product changes.",
     "visual_review": "Reviewed desktop summary/header and both 390 screens. The phone Summary shows Solved, High and saturday-walk without clipping; the phone header shows Solved with Reopen. The panel was opened using its normal control after resizing."
-  }
+  },
+  "custody": "READY",
+  "blockers": [],
+  "generated_views_committed": false,
+  "contract_status_changes": []
 }

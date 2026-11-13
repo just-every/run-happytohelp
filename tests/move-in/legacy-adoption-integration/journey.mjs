@@ -4,6 +4,7 @@ import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 import {runnerRuntime} from './runtime.mjs'
 import {recordMeasurement} from '../../helpers/legacy-worker/profiler.mjs'
+import {reservationRecovery} from './reservations.mjs'
 import {packageFixture,sha} from './fixture.mjs'
 
 export async function adoptionIntegrationJourney({representative=true}={}){
@@ -19,6 +20,7 @@ export async function adoptionIntegrationJourney({representative=true}={}){
   const setup=owner.projectId,token=owner.token,source='synthetic-wire-source',foreign=await app.seedWorkspace('wire-foreign')
   await app.db.prepare("INSERT INTO memberships(project_id,user_id,role) VALUES(?,?,'admin')").bind(setup,foreign.users.admin).run()
   const setupAdmin=(await app.call('/api/identity/switch-project',{token:foreign.tokens.admin,body:{projectId:setup},status:200})).data.token
+  facts.reservations=await reservationRecovery({app,directory,setup,token,setupAdmin,foreign})
   const audit=(await app.call(`/api/management/projects/${setup}/audit`,{token:setupAdmin,status:200})).data
   assert.equal(JSON.stringify(audit).includes('installation-setup'),false,'workspace audit reads cannot expose the private installation baseline')
   const p=await packageFixture(join(directory,'package'),source,{representative,large:representative,staff:[{id:owner.userId,name:'Historical owner',email:'synthetic-wire@example.test',created_at:1},{id:foreign.users.owner,name:'Historical foreign admin',email:'owner-wire-foreign@example.test',created_at:1}]}),base=`/api/move-in/projects/${setup}/legacy-import/${p.manifestSha256}`

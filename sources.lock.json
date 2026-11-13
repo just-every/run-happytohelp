@@ -7709,7 +7709,7 @@
       "executable": false
     },
     "src/modules/legacy-import/adoption/routes.ts": {
-      "sha256": "1d5eb5f7f4da331c7b89542316a641800c8a6443e16b8343b5991eb6a89fb30a",
+      "sha256": "a27a1b71bec0a1cad02b791a501466d7c79e3c91b63a08b8855d95268f008c8e",
       "executable": false
     },
     "src/modules/legacy-import/adoption/scope.ts": {
@@ -7717,7 +7717,7 @@
       "executable": false
     },
     "src/modules/legacy-import/adoption/store.ts": {
-      "sha256": "05ea8b47ab9020896716c8b06fec6bbe096c82a7881fd6e7a025d8157719dfbb",
+      "sha256": "4d48ef68d293b4060a5adcae98f3b275c35e74ecf15c339110f5c712b699e2b5",
       "executable": false
     },
     "src/modules/legacy-import/archive-only.ts": {
@@ -11265,7 +11265,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/Bucket.jsx": {
-      "sha256": "43a02d17e967471371afbdf11125c5667d10edd706c6dcb963dde46d95300a65",
+      "sha256": "acfd4faebc38adab15c8fe345fe3a78f2a171887043517f4429d8246f4ef2815",
       "executable": false
     },
     "src/ui/dashboard/components/BucketGroup.jsx": {
@@ -13377,15 +13377,15 @@
       "executable": false
     },
     "src/ui/native/pages/legacy-package/LegacyPackage.jsx": {
-      "sha256": "b8ee0f7ccc7f2d6e5a8f75aa7fac954f5c8b49de26806786421445dc0f83ddee",
+      "sha256": "e6da0f9bf42784ebf6e80489f74c831a89e3f0cf0167f1dfafdc1138498d78b2",
       "executable": false
     },
     "src/ui/native/pages/legacy-package/result-note.js": {
-      "sha256": "af9e963d3f81714d24e0f77fb88a9bbde84453486a579978c104f7eb99b644a2",
+      "sha256": "5003a2ac906f1390e3f6f36a1e4ac4f04f317f6177103edf98f8c3968948caab",
       "executable": false
     },
     "src/ui/native/pages/legacy-package/Result.jsx": {
-      "sha256": "32a7abab97b54f2fe863188cd1df3ae0f629905c3072a2c310aa42b8bdfb8bed",
+      "sha256": "7645d328b886c92be8f2bd4a3706317222d1046f881ec66274b363d8a12977ee",
       "executable": false
     },
     "src/ui/native/pages/LocalComputerAuthorize.jsx": {
@@ -13441,7 +13441,7 @@
       "executable": false
     },
     "src/ui/native/pages/move-in.css": {
-      "sha256": "b41da4d53312680cc0206fc3470de9c9ff27fa686d962fd790cc2472cb3e0b49",
+      "sha256": "691f08bfaf0e7f7d539563ea5211145ee46942429edea747519a4d308c9cb426",
       "executable": false
     },
     "src/ui/native/pages/MoveIn.jsx": {
@@ -17473,11 +17473,11 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/history-browser.mjs": {
-      "sha256": "c0ff165326b2d3ff0f5ddc3b9c1ea82b051f103e92baa3325ccb1f5b40f4c538",
+      "sha256": "75fb4ceadb2939a6452367a54649785714b2117af21dac5a1834d1ad04c8f232",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/journey.mjs": {
-      "sha256": "c5c6ae34fd98ef3cf7748ea31858bed0388f28833a3f085c9e4ff9082a1cfc6c",
+      "sha256": "a1da77450fd64b9f95913c3a148b1be977bdffe7a55e17d0b1ea5568d0f87b4d",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/ordering.mjs": {

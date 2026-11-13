@@ -9,6 +9,7 @@ import {refuse} from './errors'
 import {legacyWorkspaceDefaults} from '../../management/provisioning/legacy-workspace'
 import {readStates,stateKey,unchangedSinceImport} from '../state'
 import {sqlName} from '../d1'
+import {releaseReservation} from './reservation'
 
 export interface AdoptionRecord {
  manifest_sha256:string; custody_project_id:string; source_project_id:string
@@ -26,10 +27,12 @@ const clear=(db:D1Database)=>db.prepare('DELETE FROM ik_d1_assertions')
 export async function approveAdoption(db:D1Database,p:AdoptionPrincipal,sha:string,sourceProjectId:string){
  const owner=firstOwnerPredicate(p),previous=await getAdoption(db,sha)
  if(previous&&(previous.custody_project_id!==p.setupProjectId||previous.source_project_id!==sourceProjectId||previous.approver_id!==p.actorId))refuse('adoption_conflict')
+ const competing=await db.prepare('SELECT manifest_sha256 FROM legacy_workspace_adoptions WHERE source_project_id=? AND manifest_sha256<>?').bind(sourceProjectId,sha).first<{manifest_sha256:string}>()
  const destination=await db.prepare('SELECT 1 FROM projects WHERE id=?').bind(sourceProjectId).first()
  if(destination&&previous?.state!=='created')refuse('destination_conflict')
  try{
   await db.batch([assertion(db,owner),
+   ...(competing?releaseReservation(db,competing.manifest_sha256):[]),
    db.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT NOT EXISTS(SELECT 1 FROM projects WHERE id=?) OR EXISTS(SELECT 1 FROM legacy_workspace_adoptions WHERE manifest_sha256=? AND source_project_id=? AND state='created')`).bind(sourceProjectId,sha,sourceProjectId),
    db.prepare(`INSERT INTO legacy_workspace_adoptions(manifest_sha256,custody_project_id,source_project_id,approver_id,session_hash,policy_version,approval_version,state,approved_at)
     VALUES(?,?,?,?,?,2,1,'reserved',${dbNow}) ON CONFLICT(manifest_sha256) DO UPDATE SET session_hash=excluded.session_hash,approval_version=legacy_workspace_adoptions.approval_version+1,approved_at=excluded.approved_at

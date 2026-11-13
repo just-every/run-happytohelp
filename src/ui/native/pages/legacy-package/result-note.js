@@ -2,7 +2,7 @@
 export function resultNote(result){
  const {run,tables={},attachments,work,diagnostics}=result;
  const note={runId:run.runId,manifestSha256:run.manifestSha256,
-  projectId:run.projectId,sourceProjectId:run.sourceProjectId,state:run.state,
+  projectId:run.projectId,sourceProjectId:run.sourceProjectId,state:run.state,errorCode:run.errorCode,
   verification:result.verification,verifiedAt:result.verifiedAt,tables,
   excluded:result.excluded,journalEqualsPackage:result.journalEqualsPackage,
   attachments,work,attempt:result.attempt,sourceCustody:result.sourceCustody,adoption:result.adoption,syntheticOnly:result.syntheticOnly};

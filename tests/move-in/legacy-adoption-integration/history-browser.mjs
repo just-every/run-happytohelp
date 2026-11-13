@@ -13,7 +13,7 @@ export async function historyBrowserFlow({page,runtime,source,inspect}){
  while(await collapsed.count())await collapsed.first().press('Enter')
  await page.getByText('Historical escalation in the original thread.',{exact:true}).waitFor()
  await page.getByText('Historical note-only thread with its original author.',{exact:true}).waitFor()
- assert.ok(await page.getByText('Historical admin',{exact:true}).count()>0)
+ assert.ok(await page.getByText('Former staff',{exact:true}).count()>0)
  await page.getByText('Historical note-only thread with its original author.',{exact:true}).scrollIntoViewIfNeeded()
  await inspect('history-expanded')
  const ticket=page.getByRole('tab',{name:'Ticket',exact:true}),toggle=page.getByRole('button',{name:'Show conversation panel',exact:true})

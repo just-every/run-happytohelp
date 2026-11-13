@@ -17261,7 +17261,7 @@
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {
-      "sha256": "fe74097dc9f84234124c4d50f42ec589bd73130247cfd131aadac056a21356a6",
+      "sha256": "e5613c77c46d5b529f38c20124168c202740983715f01466061f7120d97f9ea6",
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
@@ -17461,7 +17461,7 @@
       "executable": false
     },
     "tests/move-in/harness.mjs": {
-      "sha256": "b69f2f55a703936bf2a648e7848358d981debdb978735203c42cb8ac0fbd9cd9",
+      "sha256": "e8259f5acf8f178da3c8155a20d3f23c0db05a27bf431ffaa1f966f19ad487f9",
       "executable": false
     },
     "tests/move-in/helpscout-fixtures.mjs": {

@@ -1,7 +1,7 @@
 import {mountedErasureStates} from '../move-in/legacy-adoption-integration/erasure-states.mjs'
 import {mountedOrderingJourney} from '../move-in/legacy-adoption-integration/ordering.mjs'
 import {legacyAdoptionJourney} from '../helpers/legacy-adoption/journey.mjs'
-import {adoptionIntegrationJourney} from '../move-in/legacy-adoption-integration/journey.mjs'
+import {adoptionIntegrationJourney} from '../move-in/legacy-adoption-integration/process.mjs'
 import {legacyPackageAdmission} from '../move-in/legacy-adoption-integration/admission.mjs'
 import test from 'node:test'
 import {inspect} from 'node:util'
@@ -10,11 +10,9 @@ import {vendorRepliesJourney} from '../move-in/vendor-replies.mjs'
 import {reviewImportJourney} from '../move-in/review-import.mjs'
 
 test('review an export, import its history and private notes, repeat and repackage without effects, then undo exactly',{timeout:480_000},async()=>{
- // Independent API phases own separate installations and can overlap. The
- // inspector-measured adoption phase runs after both lanes have cleaned up.
- // An inspector command timed out during that overlap; retain its profiling
- // and deadline while removing the overlap.
- const pending=[reviewImportJourney,mountedErasureStates,vendorRepliesJourney,outcomesJourney,legacyPackageAdmission,legacyAdoptionJourney,mountedOrderingJourney]
+ // Every phase owns a separate installation. Measured adoption also owns its
+ // Node process, keeping inspector commands off the API lane's event loop.
+ const pending=[reviewImportJourney,adoptionIntegrationJourney,mountedErasureStates,vendorRepliesJourney,outcomesJourney,legacyPackageAdmission,legacyAdoptionJourney,mountedOrderingJourney]
  const failures=[]
  // Drain both lanes even on failure: no cleanup or outstanding assertions are
  // abandoned because an independent phase failed first.
@@ -28,6 +26,5 @@ test('review an export, import its history and private notes, repeat and repacka
  }
  const lane=async()=>{while(pending.length)await run(pending.shift())}
  await Promise.all([lane(),lane()])
- await run(adoptionIntegrationJourney)
  if(failures.length)throw new AggregateError(failures,'Importer admission phase failed')
 })

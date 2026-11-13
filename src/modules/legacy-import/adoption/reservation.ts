@@ -1,5 +1,5 @@
 import {dbNow} from '../lease'
-import {scopeAllowed} from '../custody/authority'
+import {scopeAllowed} from '../custody/scope'
 
 /** Only unused reservations can be released. Custody tombstones retain the old
  * SHA, and scope erasure/deletion fences always outrank ordinary recovery. */

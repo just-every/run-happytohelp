@@ -7709,7 +7709,7 @@
       "executable": false
     },
     "src/modules/legacy-import/adoption/reservation.ts": {
-      "sha256": "bcb34e508ae3176516c912deec90e88156f3e951a77aec521c85b838b47821a2",
+      "sha256": "a099672477c36ce24b36b771cb4e1d0e24aca27f41657798b0317b5557dafbb1",
       "executable": false
     },
     "src/modules/legacy-import/adoption/routes.ts": {
@@ -7729,7 +7729,7 @@
       "executable": false
     },
     "src/modules/legacy-import/custody/authority.ts": {
-      "sha256": "ddf2b75451650a87940a386dc50a7f32942bf7127ed86d688d1854db019d3c27",
+      "sha256": "9f80590e04e8395a628ec20894a81435220e800e6f0f1d2259615433e996a124",
       "executable": false
     },
     "src/modules/legacy-import/custody/cleanup.ts": {

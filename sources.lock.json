@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "9d1110b5c9569a6739015abe7e6c6a2bcbbef681466552fc41784805867066fa",
+      "sha256": "377f64c4f7a6ecc63330cad751d88ba977d45b2d58626bf606b4156725f05c9d",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1733,7 +1733,7 @@
       "executable": false
     },
     "docs/INDEPENDENT-RELEASE.md": {
-      "sha256": "8908ba8dca7ed2a50a36fc76fcccd05095eadb842a8c99660924c4c8345cda0d",
+      "sha256": "bac4a1bea305a262b2463bb4c85fbc82ad7cfedffedc0b6748a6d2beb5e91ca6",
       "executable": false
     },
     "docs/INSTALLER.md": {
@@ -2889,7 +2889,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "b58ab3160894616af1b67132bd3a585f49b1e9b749b7dfee77760daa7a4368a6",
+      "sha256": "58f4d2b24c320a9efd5d447b68b0cbb037f2ce20c64fce6d6a44fc38d37a424b",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -2965,11 +2965,11 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "5483ddb9e5f071e5f23012776110bca7619a08e424166dd23e5839bc5bf30e55",
+      "sha256": "2b37c66810922da801566cb852333e53b22174fb48c3dea64656671fcc445bf4",
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "54e75d5a8a77ae0285402c463e9f0dbf95def9eb10eb2d7c20d5aaeaa63c7b1d",
+      "sha256": "120f08e2ec62ecb323f44c3fa09365d22184f7060672976537633530d403e7ec",
       "executable": false
     },
     "rer-project.json": {
@@ -4301,7 +4301,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "c283958a928aa9426e561fcf573ae88b967a107968cbb18fd5689692f93daa3d",
+      "sha256": "573d1f0fa88958a5cd5b15393d39fc9876b8a53d2973b2996644d8c898370ff2",
       "executable": false
     },
     "src/app.ts": {
@@ -17013,7 +17013,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-baselines.mjs": {
-      "sha256": "8336a2363d48d03c91b46ece01f04f5e13feddf941ea45f3e901db329ed70751",
+      "sha256": "d9937d8c28ae149f39cbd5e6777b14cbc78d7be0bf22617e8ec1c95564356704",
       "executable": false
     },
     "tests/helpers/upgrade-data-expectations.mjs": {
@@ -17033,7 +17033,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "cffc1bddf4736f247d0058f405b5614021f92cb748a055af0a73f56ae6c31975",
+      "sha256": "8624ee4f0c626f45c8708c00aa2390fc6cc5fd4a03cfcf7acb758a83fc287c79",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

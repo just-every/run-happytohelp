@@ -3,6 +3,8 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration: '328_legacy_workspace_adoption.sql', names: ['move_in_notes'], change: 'Adds only nullable bucket_id TEXT; every prior column definition and row is retained'},
+  {migration: '331_legacy_cleanup_seeding.sql', names: ['legacy_package_custody'], change: 'Adds only cleanup_only INTEGER NOT NULL DEFAULT 0 and seeding_complete INTEGER NOT NULL DEFAULT 1, each constrained to 0 or 1; every prior column definition and row is retained'},
   {migration: '302_move_in_zendesk_pull.sql', names: ['move_in_runs'], change: "SQL line 7 adds only source TEXT NOT NULL DEFAULT 'upload' with CHECK IN ('upload','zendesk-pull'); every prior column definition and row is retained"},
   {migration:'299_outbound_channel_tickets.sql',names:['operator_ticket_commands'],change:'Widens only the kind CHECK to SMS/WhatsApp and adds nullable support_thread_id with ON DELETE SET NULL; retains command keys, old values and the erasure trigger'},
   {migration: '290_native_reply_drafts.sql', names: ['macro_drafts'], change: 'Makes usage_id nullable, adds nullable draft_id and requires exactly one of them; all prior columns and rows retained'},
@@ -99,6 +101,8 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
+  {migration: '328_legacy_workspace_adoption.sql', table: 'move_in_notes', sql: 'ALTER TABLE move_in_notes ADD COLUMN bucket_id TEXT;'},
+  {migration: '331_legacy_cleanup_seeding.sql', table: 'legacy_package_custody', sql: 'ALTER TABLE legacy_package_custody ADD COLUMN cleanup_only INTEGER NOT NULL DEFAULT 0 CHECK(cleanup_only IN (0,1)); ALTER TABLE legacy_package_custody ADD COLUMN seeding_complete INTEGER NOT NULL DEFAULT 1 CHECK(seeding_complete IN (0,1));'},
   {migration: '302_move_in_zendesk_pull.sql', table: 'move_in_runs', sql: "ALTER TABLE move_in_runs ADD COLUMN source TEXT NOT NULL DEFAULT 'upload' CHECK(source IN ('upload','zendesk-pull'));"},
   {migration: '290_native_reply_drafts.sql', table: 'macro_drafts', sql: `CREATE TABLE native_reply_draft_upgrade(
  project_id TEXT NOT NULL,conversation_id TEXT NOT NULL,actor_id TEXT NOT NULL,

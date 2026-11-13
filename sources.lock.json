@@ -1885,7 +1885,7 @@
       "executable": false
     },
     "HANDOVER.md": {
-      "sha256": "45a2ba8500c48bdeab1349c299a626bf83b1c62f7f0a6ee529eb18c5b26453fc",
+      "sha256": "82d540bc8115765d1f9a329f541e966c9369101ccf7fbb344a80555e0f196efe",
       "executable": false
     },
     "importers.json": {
@@ -4309,7 +4309,7 @@
       "executable": false
     },
     "src/app.ts": {
-      "sha256": "1b00c8a76e799108941899d229a4053dc846882ff4e72abfa35d9ad0598f8131",
+      "sha256": "575e4177fff45b7eaec6874a5c3dd8609d44bc31ea659a134c657851ebf05fb2",
       "executable": false
     },
     "src/base/contract-anchor.mjs": {
@@ -4606,6 +4606,10 @@
     },
     "src/edition/module-preloads.ts": {
       "sha256": "259fcb5e5a47c24427e45f5a319ea4035c885015446d0b691378f6cc7ed14e83",
+      "executable": false
+    },
+    "src/edition/release-identity.ts": {
+      "sha256": "d5b78dcd91d3c5e95f75649966fe099ae1597987be854b7071aa5eb5e93f3b70",
       "executable": false
     },
     "src/editor/editor-icons.ts": {
@@ -17305,7 +17309,7 @@
       "executable": false
     },
     "tests/journeys/runtime.mjs": {
-      "sha256": "7f2a1ff76a6cae4c685e02ddc06bcf20ef38de4109efefc8d7cfb18a297b0633",
+      "sha256": "d8b8e876dea21e600ec44e839930a088fd8c29fb92d83455d46f3d8ec2bb45e5",
       "executable": false
     },
     "tests/journeys/upgrade-nightly.mjs": {

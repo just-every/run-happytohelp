@@ -78,6 +78,31 @@ the same visual language and current Markdown, with one page heading.
 
 ## Acceptance boundaries
 
+### Installed release identity
+
+Public `GET /health` includes `version` from the seed's root `package.json`,
+bundled by Vite through `src/edition/release-identity.ts`. Both healthy and
+unavailable responses carry it. It needs no Git checkout at runtime. Published
+source preserves `package.json`; managed project builds install the frozen
+dependencies and run `pnpm run build` through `rer-project.json`. The delivery
+packager carries the emitted Worker modules into its schema-2 artifact, so the
+installed Worker retains that seed version even without the source tree.
+
+`sourceSha` is the deployment producer's `RER_DEPLOY_SOURCE` Worker binding,
+also retained at `deployment.sourceSha` in the existing healthy response.
+Absent producer metadata stays JSON `null`; neither the version, the installed
+repository's HEAD, nor an artifact digest is substituted for a source commit.
+For managed provenance, the platform producer/deployer must bind
+`RER_DEPLOY_SOURCE` to the full source commit used to build the installed seed's
+Worker, from its verified build/release record. It must preserve that binding
+when installing the artifact, rather than use the platform/deployer commit.
+The seed's schema-2 artifact does not itself contain a source-SHA field, and
+its generated deployment spec does not declare this producer-owned binding.
+Population of that interface belongs to platform work (`pr`). Candidate route
+tests with supplied bindings prove consumption only; the released seed pin,
+managed installation and real managed `/health` observation remain separate
+release/stage proof (`sd`, `pr`, `bz`).
+
 Local command/native/browser/fixture results belong to the exact revision
 executed. They do not establish hosted installation, configured provider
 execution, public release, live Slack or compliance qualification. Jurisdiction,

@@ -3,6 +3,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {execFile} from 'node:child_process'
 import {promisify} from 'node:util'
+import {randomBytes} from 'node:crypto'
 import {mkdir,readFile,symlink} from 'node:fs/promises'
 import {join,resolve} from 'node:path'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
@@ -10,6 +11,21 @@ import {admissionRaces} from '../helpers/conversation/admission-races.mjs'
 import {proxyFaultProbe} from '../helpers/emitted-runtime-proxy-fault.mjs'
 import {client} from './kit/http.mjs'
 const exec=promisify(execFile)
+
+test('public health identifies the installed seed release and only supplied deployment source',async()=>{
+ const {version}=JSON.parse(await readFile(new URL('../../package.json',import.meta.url),'utf8'))
+ // Producer bindings are a network-edge fixture, not managed deployment proof.
+ for(const sourceSha of [null,randomBytes(20).toString('hex')]){
+  const runtime=await createRuntime({vars:sourceSha?{RER_DEPLOY_SOURCE:sourceSha}:{}});let success=false
+  try{
+   const response=await fetch(runtime.origin+'/health')
+   assert.equal(response.status,200);assert.equal(response.headers.get('set-cookie'),null)
+   assert.deepEqual(await response.json(),{status:'ok',ok:true,deployment:{sourceSha,fingerprint:null,versionId:null},version,sourceSha,runtime:'native-rer',database:'reachable',files:'reachable'})
+   assert.equal((await fetch(runtime.origin+'/api/management/projects')).status,401)
+   success=true
+  }finally{await runtime.close(success)}
+ }
+})
 
 // Real transport, with a pong barrier so absence/duplicate assertions see all replayed frames.
 async function deliverySocket(origin,conversationId,token,after=0){

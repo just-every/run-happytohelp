@@ -80,7 +80,7 @@ export default function TicketSummary({ conversation, record, workflows, escalat
                 <TicketChoice id="ticket-summary-priority" name="Priority" value={ ticket.priority } options={ priorities.map(value => ({ value, label: label(value) })) } disabled={ !record.manage || closed } onSave={ priority => record.save({ priority }) } />
             </> }
             { record && !ticket && !record.error && <Row label="Status"><span role="status">Loading ticket…</span></Row> }
-            <Row label="Tags"><ConversationTags conversation={ conversation } /></Row>
+            <Row label="Tags"><ConversationTags conversation={ conversation } onChanged={ record?.apply } /></Row>
             <Row label="Recipients"><ConversationParticipantsControl conversation={ conversation } /></Row>
             { (due || openAlerts.length > 0) && <Row label="SLA" className={ due?.breached || openAlerts.length ? 'is-alert' : '' }>
                 { due && <span className={ due.breached ? 'text-danger' : undefined }>{ due.text }</span> }

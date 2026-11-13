@@ -3,8 +3,8 @@ import {vendors,methods,vendorSource,evidence,replyContext,importedCases,delta} 
 
 // Public import review/apply, explicit ownership, inbound gateway, ticket and
 // transcript routes. The only provider fakes are mail, model and DNS at the edge.
-export async function vendorRepliesJourney(){
- for(const vendor of vendors){
+export async function vendorRepliesJourney(selectedVendors=vendors){
+ for(const vendor of selectedVendors){
   const source=vendorSource(vendor),c=await replyContext(source)
   try{
    const empty=await c.counts(),ready=await c.review();assert.deepEqual(await c.counts(),empty)

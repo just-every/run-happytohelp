@@ -12709,7 +12709,7 @@
       "executable": false
     },
     "src/ui/identity/recovery/recovery.css": {
-      "sha256": "6920255314802ccbe0a2d507ac9b8b87ab2a9526865ee7ceb174da9dfd22e6c5",
+      "sha256": "e4e9a09e523764844e9899ac590af5c4d43059c154352b10b9f6f7c96f4744c8",
       "executable": false
     },
     "src/ui/identity/recovery/Replacement.tsx": {

@@ -2,4 +2,5 @@
 
 .recovery-review p{margin:16px 0}.recovery-review .pill{margin-top:8px}
 
-.recovery-content>.id-lede{margin-bottom:24px}.recovery-content>p+.pill{margin-top:24px}.recovery-content~.id-links{align-items:baseline}.recovery-content~.id-links .recovery-link{padding:0;text-decoration:underline 3px var(--d-cyan-deep);text-underline-offset:8px;font-weight:600}
+.recovery-content>.id-lede{margin-bottom:24px}.recovery-content>p+.pill{margin-top:24px}.recovery-content~.id-links .recovery-link{padding:0;text-decoration:underline 3px var(--d-cyan-deep);text-underline-offset:8px;font-weight:600}
+@media(min-width:641px){.recovery-content~.id-links{align-items:baseline}}

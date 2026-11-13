@@ -6,14 +6,20 @@ export async function isolateProfiler(mf){
  const origin=await mf.getInspectorURL();origin.protocol='http:'
  const targets=await (await fetch(new URL('/json/list',origin))).json(),target=targets.find(row=>row.title?.includes('legacy-runner'))
  assert.ok(target,'application isolate inspector target')
- const socket=new WebSocket(target.webSocketDebuggerUrl),pending=new Map();let sequence=0
+ const socket=new WebSocket(target.webSocketDebuggerUrl),pending=new Map();let sequence=0,contextId
  await new Promise((resolve,reject)=>{socket.once('open',resolve);socket.once('error',reject)})
- socket.on('message',bytes=>{const message=JSON.parse(String(bytes)),wait=pending.get(message.id);if(!wait)return;pending.delete(message.id);clearTimeout(wait.timer);message.error?wait.reject(new Error(message.error.message)):wait.resolve(message.result)})
- const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence,error=new Error('Inspector timeout: '+method),timer=setTimeout(()=>{pending.delete(id);reject(error)},30000);pending.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}))})
- await send('Profiler.enable');await send('Profiler.setSamplingInterval',{interval:100})
+ socket.on('message',bytes=>{const message=JSON.parse(String(bytes));if(message.method==='Runtime.executionContextCreated'&&message.params.context.name==='Worker')contextId=message.params.context.id;const wait=pending.get(message.id);if(!wait)return;pending.delete(message.id);clearTimeout(wait.timer);message.error?wait.reject(new Error(message.error.message)):wait.resolve(message.result)})
+ const send=(method,params={},label=method)=>new Promise((resolve,reject)=>{const id=++sequence,error=new Error('Inspector timeout: '+label),timer=setTimeout(()=>{pending.delete(id);reject(error)},30000);pending.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}))})
+ const profileCommand=async(method,params={})=>{
+  const value=await send('Runtime.evaluate',{contextId,expression:`globalThis.__h2hProfilerCommand(${JSON.stringify(method)},${JSON.stringify(params)})`,awaitPromise:true,returnByValue:true},'V8 '+method)
+  if(value.exceptionDetails)throw new Error(`V8 ${method}: ${value.exceptionDetails.exception?.description??value.exceptionDetails.text}`)
+  return value.result.value
+ }
+ await send('Runtime.enable');assert.ok(Number.isInteger(contextId),'application isolate execution context')
+ await profileCommand('Profiler.enable');await profileCommand('Profiler.setSamplingInterval',{interval:100})
  return {async measure(run){
   let heap=await send('Runtime.getHeapUsage'),maxHeapBytes=heap.usedSize+(heap.backingStorageSize??0),screening=Promise.resolve(),busy=false,failed
-  await send('Profiler.start')
+  await profileCommand('Profiler.start')
   // A slow inspector exchange must not queue stale heap observations to drain
   // after the application work. Keep one actual exchange in flight.
   const timer=setInterval(()=>{
@@ -22,12 +28,12 @@ export async function isolateProfiler(mf){
    screening=(async()=>{heap=await send('Runtime.getHeapUsage');maxHeapBytes=Math.max(maxHeapBytes,heap.usedSize+(heap.backingStorageSize??0))})().catch(error=>{failed=error}).finally(()=>{busy=false})
   },20)
   let value,profile
-  try{value=await run()}finally{clearInterval(timer);await screening;if(failed)throw failed;profile=(await send('Profiler.stop')).profile}
+  try{value=await run()}finally{clearInterval(timer);await screening;if(failed)throw failed;profile=(await profileCommand('Profiler.stop')).profile}
   heap=await send('Runtime.getHeapUsage');maxHeapBytes=Math.max(maxHeapBytes,heap.usedSize+(heap.backingStorageSize??0))
   const nodes=new Map(profile.nodes.map(node=>[node.id,node])),samples=profile.samples??[],deltas=profile.timeDeltas??[]
   let cpuUs=0,idleUs=0;for(let index=0;index<samples.length;index++){const name=nodes.get(samples[index])?.callFrame.functionName,delta=deltas[index]??0;if(name==='(idle)')idleUs+=delta;else cpuUs+=delta}
   assert.ok(samples.length&&Number.isFinite(maxHeapBytes),'actual isolate profiler/heap measurements')
-  return {value,measurement:{sampledCpuMs:cpuUs/1000,maxHeapBytes,samples:samples.length,idleMs:idleUs/1000,method:'workerd-inspector-v8-sampling-excluding-idle'}}
+  return {value,measurement:{sampledCpuMs:cpuUs/1000,maxHeapBytes,samples:samples.length,idleMs:idleUs/1000,method:'v8-inspector-session-sampling-excluding-idle'}}
  },async close(){for(const wait of pending.values()){clearTimeout(wait.timer);wait.reject(new Error('Inspector closed'))}pending.clear();socket.terminate()}}
 }
 export function recordMeasurement(measurements,phase,before,after,m,statements){

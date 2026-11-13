@@ -6,6 +6,7 @@ import {legacyPackageAdmission} from '../move-in/legacy-adoption-integration/adm
 import test from 'node:test'
 import {outcomesJourney} from '../move-in/outcomes.mjs'
 import {vendorRepliesJourney} from '../move-in/vendor-replies.mjs'
+import {vendors} from '../move-in/vendor-reply-kit.mjs'
 import {reviewImportJourney} from '../move-in/review-import.mjs'
 
 // Each phase owns fresh installations. Await registrations as well as phases so
@@ -18,13 +19,13 @@ async function phases(journeys){
 }
 
 await test('review an export, import its history and private notes, repeat and repackage without effects, then undo exactly',{timeout:480_000},async()=>{
- await phases([reviewImportJourney])
+ await phases([reviewImportJourney,outcomesJourney,mountedOrderingJourney])
 })
 
-await test('admit a legacy package, recover mounted adoption and refuse unauthorized outcomes',{timeout:480_000},async()=>{
- await phases([legacyPackageAdmission,adoptionIntegrationJourney,outcomesJourney])
+await test('admit a legacy package, recover mounted adoption and preserve Zendesk and Help Scout replies',{timeout:480_000},async()=>{
+ await phases([legacyPackageAdmission,adoptionIntegrationJourney,async function zendeskAndHelpScoutReplies(){await vendorRepliesJourney(vendors.slice(0,2))}])
 })
 
-await test('erase mounted import states, preserve vendor replies and enforce legacy ordering',{timeout:480_000},async()=>{
- await phases([mountedErasureStates,vendorRepliesJourney,legacyAdoptionJourney,mountedOrderingJourney])
+await test('erase mounted import states, preserve Freshdesk and Intercom replies and adopt legacy history',{timeout:480_000},async()=>{
+ await phases([mountedErasureStates,async function freshdeskAndIntercomReplies(){await vendorRepliesJourney(vendors.slice(2))},legacyAdoptionJourney])
 })

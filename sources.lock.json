@@ -17261,7 +17261,7 @@
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {
-      "sha256": "e5613c77c46d5b529f38c20124168c202740983715f01466061f7120d97f9ea6",
+      "sha256": "abed5fa3cccbc07c155fcb55f1eb41675ac1cbc508600eda36332957c90cfe74",
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
@@ -17573,7 +17573,7 @@
       "executable": false
     },
     "tests/move-in/vendor-replies.mjs": {
-      "sha256": "8429d2863138dedc1d0c04906257882035074758c0ab5e65470949c6ae3f4ec5",
+      "sha256": "1b3e094a2e1cbf12954b61b0a76a5a5956b609be6e14f1ddc7bfa995e9ef4672",
       "executable": false
     },
     "tests/move-in/vendor-reply-kit.mjs": {

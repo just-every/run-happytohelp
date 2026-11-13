@@ -106,12 +106,15 @@ export async function reservationAttachments(){
     }
    }
    await bytes()
-   const journal=await app.sql('SELECT * FROM legacy_import_rows ORDER BY run_id,source_table,source_id')
+   const journalRows=()=>app.sql("SELECT rows.* FROM legacy_import_rows rows JOIN legacy_import_runs runs ON runs.id=rows.run_id WHERE json_extract(runs.source_json,'$.package')=? ORDER BY rows.run_id,rows.source_table,rows.source_id",fresh.sha)
+   const journal=await journalRows()
+   assert.ok(journal.length>0,'the recovered package has a real imported journal')
+   assert.equal(journal.length,Object.values(complete.tables).reduce((n,t)=>n+t.journalRows,0),'source journal and reconciled row counts agree')
    for(const sha of released){await drain(sha);await drain(sha)} // Include the purged tombstone's next re-sweep.
    await bytes()
    const after=await result(fresh)
    assert.equal(after.journalEqualsPackage,true);assert.deepEqual(after.attachments,complete.attachments);assert.deepEqual(after.tables,complete.tables)
-   assert.deepEqual(await app.sql('SELECT * FROM legacy_import_rows ORDER BY run_id,source_table,source_id'),journal)
+   assert.deepEqual(await journalRows(),journal)
    let erased=false
    for(let n=0;n<20;n++){
     const r=await app.call(`/api/management/projects/${source}/contacts/synthetic-contact/erase`,{token:adopted,body:{confirmation:'ERASE'}})

@@ -74,8 +74,9 @@ an existing 0.3 installation follows [Upgrading from 0.3.x](OPERATIONS.md#upgrad
 
 ## Run it on your computer
 
-The [install and run guide](https://happytohelp.com/docs/getting-started) covers
+The [install and run guide](docs/INSTALLER.md) covers
 installation, local sign-in and stopping the app, step by step.
+The [Run HappyToHelp page](https://happytohelp.com/run) has the quick-start command.
 
 Start it with one line. You need **Node.js 22 or later** (with npm) and Git; check
 with `node --version`.
@@ -126,36 +127,44 @@ git clone --branch v0.4.24 https://github.com/just-every/run-happytohelp
 cd run-happytohelp
 ```
 
-Read [deployment prerequisites](OPERATIONS.md#deploy-to-your-cloudflare-account).
+Start with a local build and validation:
+
+```sh
+rer deploy --dry-run
+```
+
+This needs no provider credentials, makes no Cloudflare requests, sends no mail
+and changes nothing remotely. It validates the deployment declaration and builds
+the application locally. The completion report lists any inputs needed for a
+real deploy; remote resources, credential validity, target secrets and remote
+readiness remain unchecked.
+
+For a real deployment, read
+[deployment prerequisites](OPERATIONS.md#deploy-to-your-cloudflare-account).
 When rer says **See the deploy-kit owner-account instructions**, it means
 [What you need first](OPERATIONS.md#what-you-need-first): how to make the
 Cloudflare API token and find the account ID. Configure the real declaration
 and private account credentials, then:
 
 ```sh
-rer deploy --dry-run
 rer deploy --environment production
 ```
 
-The contract requires two independent steps: a **zero-outbound dry-run** that
-explicitly reports no outbound requests, and a separately started **read-only
-provider preflight** with owner consent and the owner's scoped Cloudflare token.
-The preflight has its own acceptance: only the account's Workers subdomain and
-the Worker's settings and secret names (three GETs for an existing Worker), no
-mail and no mutations. Neither step is a mock of the other.
+The contract also requires a separately started **read-only provider preflight**
+with explicit owner consent and the owner's scoped Cloudflare token. For an
+existing Worker, that preflight permits only the account's Workers subdomain and
+the Worker's settings and secret names (three GETs), with no mail or mutations.
+That separate preflight is not yet implemented or live-qualified; the local dry
+run does not perform it or prove remote readiness.
 
-That split is not yet built or proved. Today's `rer deploy --dry-run` still needs
-the Cloudflare credentials described in the prerequisites and performs those
-read-only GETs; it refuses without credentials and when required secrets are
-neither held nor supplied. It builds locally, sends no mail and changes no
-resources. For a new installation also supply real `EMAIL_PROVIDER`, `EMAIL_FROM`,
-`EMAIL_API_KEY` and `OWNER_EMAIL` inputs in an owned 0600 `--env-file`; the owner
-email must receive sign-in mail. Existing installations retain held secrets.
-The seven optional mailbox settings can stay unset. Live preflight and remote
-provisioning remain separately unqualified.
+For a new installation with outbound email, also supply real `EMAIL_PROVIDER`,
+`EMAIL_FROM`, `EMAIL_API_KEY` and `OWNER_EMAIL` inputs in an owned 0600 `--env-file`;
+the owner email must receive sign-in mail. Existing installations retain held
+secrets. The seven optional mailbox settings can stay unset. Remote provisioning
+remains separately unqualified.
 
 ```sh
-rer deploy --dry-run --env-file ~/happytohelp-production.env
+rer deploy --environment production --env-file ~/happytohelp-production.env
 ```
 
 Deployment
@@ -168,8 +177,9 @@ hostname does not name your business: a `workers.dev` website defaults to
 **My workspace** regardless of owner email. An explicitly chosen native workspace
 name takes precedence; you can change it in Project settings.
 Deploy refuses the local placeholder `owner@run-happytohelp.test`: it has no mailbox.
-Supply a real `OWNER_EMAIL` privately in your environment or an owned 0600
-`--env-file` for both dry run and deployment.
+For a real deployment, supply `OWNER_EMAIL` privately in your environment or an
+owned 0600 `--env-file`. The local dry run can list missing production inputs
+without requiring them.
 `rer signin --environment production` directs you to this installation's `/login`
 page. HappyToHelp uses its native email/password sign-in; the command cannot mint
 an owner link. If mail fails, follow the working mail recovery in

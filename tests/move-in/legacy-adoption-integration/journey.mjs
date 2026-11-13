@@ -7,10 +7,15 @@ import {recordMeasurement} from '../../helpers/legacy-worker/profiler.mjs'
 import {reservationRecovery,createdReservationRefusal,reservationAttachments} from './reservations.mjs'
 import {packageFixture,sha} from './fixture.mjs'
 
-export async function adoptionIntegrationJourney({representative=true}={}){
- // Independent installations must finish before opening this run's measured
- // Worker and inspector. No idle parent inspector spans the recovery scenarios.
- const attachments=await reservationAttachments()
+export async function adoptionIntegrationJourney(options){
+ const attachments=await reservationAttachments(),facts=await mountedAdoptionJourney(options)
+ facts.reservations.attachments=attachments
+ return facts
+}
+
+// The attachment-recovery installations are independent of this mounted run.
+// Admission registers them separately; the command-line journey still runs both.
+export async function mountedAdoptionJourney({representative=true}={}){
  const app=await runnerRuntime(),directory=await mkdtemp(join(tmpdir(),'legacy-wire-'))
  app.ok=async(path,options={})=>{const r=await app.call(path,{...options,status:200});return r.data}
  const facts={states:[],uploads:0,maxStatements:0,measurements:{},kills:0,indexDrainSteps:0}
@@ -23,7 +28,7 @@ export async function adoptionIntegrationJourney({representative=true}={}){
   const setup=owner.projectId,token=owner.token,source='synthetic-wire-source',foreign=await app.seedWorkspace('wire-foreign')
   await app.db.prepare("INSERT INTO memberships(project_id,user_id,role) VALUES(?,?,'admin')").bind(setup,foreign.users.admin).run()
   const setupAdmin=(await app.call('/api/identity/switch-project',{token:foreign.tokens.admin,body:{projectId:setup},status:200})).data.token
-  facts.reservations={...await reservationRecovery({app,directory,setup,token,setupAdmin,foreign}),attachments}
+  facts.reservations=await reservationRecovery({app,directory,setup,token,setupAdmin,foreign})
   const audit=(await app.call(`/api/management/projects/${setup}/audit`,{token:setupAdmin,status:200})).data
   assert.equal(JSON.stringify(audit).includes('installation-setup'),false,'workspace audit reads cannot expose the private installation baseline')
   const p=await packageFixture(join(directory,'package'),source,{representative,large:representative,staff:[{id:owner.userId,name:'Historical owner',email:'synthetic-wire@example.test',created_at:1},{id:foreign.users.owner,name:'Historical foreign admin',email:'owner-wire-foreign@example.test',created_at:1}]}),base=`/api/move-in/projects/${setup}/legacy-import/${p.manifestSha256}`

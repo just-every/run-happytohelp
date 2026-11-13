@@ -128,11 +128,11 @@ async function reservationAttachment(mode,order){
   }finally{await app.close();await rm(directory,{recursive:true,force:true})}
 }
 
-export async function reservationAttachments(){
- const cases=['stop-expiry','signout','orphan'].flatMap(mode=>(mode==='orphan'?['before']:['before','after']).map(order=>[mode,order])),facts=[]
- // Each installation has its own D1/R2 state. Bound parallelism while keeping
- // every order, byte comparison, reconciliation and erasure assertion.
- for(let i=0;i<cases.length;i+=2)facts.push(...await Promise.all(cases.slice(i,i+2).map(([mode,order])=>reservationAttachment(mode,order))))
+export async function reservationAttachments(modes=['stop-expiry','signout','orphan']){
+ const cases=modes.flatMap(mode=>(mode==='orphan'?['before']:['before','after']).map(order=>[mode,order])),facts=[]
+ // Every case owns its installation. Finish cleanup before starting the next
+ // so this flow has no competing Workers on slower or contended runners.
+ for(const [mode,order] of cases)facts.push(await reservationAttachment(mode,order))
  console.log('RESERVATION_ATTACHMENTS '+JSON.stringify(facts))
  return facts
 }

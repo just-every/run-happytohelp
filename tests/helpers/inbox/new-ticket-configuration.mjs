@@ -6,6 +6,7 @@ import {tmpdir} from 'node:os'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {launchBrowser} from '../../journeys/kit/browser.mjs'
 import {newTicketBrandOrderings,ticketOrderingBrands} from './new-ticket-brand-orderings.mjs'
+import {noMailboxTicket} from './no-mailbox-ticket.mjs'
 
 export async function newTicketConfigurationBrowser(){
  const evidenceDir=join(process.env.H2H_EVIDENCE_DIR?resolve(process.env.H2H_EVIDENCE_DIR):tmpdir(),'outbound-tickets')
@@ -81,6 +82,7 @@ export async function newTicketConfigurationBrowser(){
    assert.equal(await dialog.getByLabel('Request form',{exact:true}).locator('option').count(),1,'late old-brand choices cannot repaint the empty workspace')
    assert.equal(await dialog.getByLabel('Send from mailbox',{exact:true}).locator('option').count(),1)
    await capture('empty-brand')
+   await noMailboxTicket({page,dialog,runtime,projectId:other.id,actorId:owner.actor.id,copies,capture})
    await dialog.getByLabel('Brand workspace',{exact:true}).selectOption(projectId)
    await dialog.getByLabel('Find requester by name, email or phone',{exact:true}).fill(requester)
    await dialog.getByRole('button',{name:new RegExp(`Synthetic parcel customer ${requester.replaceAll('.','\\.')}`)}).click()

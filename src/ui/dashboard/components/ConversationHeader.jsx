@@ -35,7 +35,9 @@ export default function ConversationHeader({
     const isAiAssigned = Boolean(conversation.ai_id);
     // A Closed ticket is final: nothing reopens it, and customer replies open a new ticket.
     const isFinal = conversation.status_category === 'closed';
-    const statusLabel = isFinal ? 'Closed · final' : conversation.resolved_at ? 'Closed' : 'Open';
+    const statusCategory = conversation.status_category || (conversation.resolved_at ? 'solved' : 'open');
+    const isSolved = statusCategory === 'solved';
+    const statusLabel = { new: 'New', open: 'Open', pending: 'Pending', on_hold: 'On-hold', solved: 'Solved', closed: 'Closed · final' }[statusCategory];
     const canManage = useCan(conversation.project_id, 'conversations.manage');
     const contactEmail = conversation.contact.email && conversation.contact.email !== conversation.contact.display_name
         ? conversation.contact.email
@@ -87,9 +89,9 @@ export default function ConversationHeader({
                     { isAiAssigned && <span className="conversation-header-status is-ai">AI</span> }
                 </div>
                 <div className="conversation-header-actions">
-                    { canManage && !isFinal && (conversation.resolved_at
+                    { canManage && !isFinal && (isSolved
                         ? <button type="button" className="btn btn-white conversation-header-reopen" title="Reopen conversation" onClick={ () => resolveConversation(conversation, false).catch(() => {}) }><i className="fe fe-rotate-ccw me-2" aria-hidden="true"></i>Reopen</button>
-                        : <button type="button" className="btn btn-white conversation-header-close" title="Close conversation" onClick={ () => resolveConversation(conversation).catch(() => {}) }><i className="fe fe-check-circle me-2" aria-hidden="true"></i>Close</button>) }
+                        : <button type="button" className="btn btn-white conversation-header-close" title="Solve conversation" onClick={ () => resolveConversation(conversation).catch(() => {}) }><i className="fe fe-check-circle me-2" aria-hidden="true"></i>Solve</button>) }
                     <button
                         type="button"
                         className={ `btn btn-white conversation-assistant-toggle${ showAlert ? ' has-alert' : '' }` }

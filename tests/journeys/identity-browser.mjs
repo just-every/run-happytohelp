@@ -16,7 +16,7 @@ test('an owner records a deployment profile and executed evidence, sees activati
 
 import {builtOutcomes} from '../helpers/first-run/outcomes.mjs'
 import {activationBrowserJourney} from '../helpers/first-run/activation-browser.mjs'
-test('a first owner and a signed-in owner reach Setup and install a working widget',builtOutcomes)
+test('a first owner and a signed-in owner reach Setup and install a working widget',async()=>{await builtOutcomes();await localEmailSetupBrowser()})
 test('Setup observes receipts, protects keys and preserves uncertain mail across restarts',activationBrowserJourney)
 
 import {widgetIdentitySwitchBrowser} from '../helpers/widget/identity-switch-browser.mjs'
@@ -29,3 +29,4 @@ import {recoveryBrowserJourney} from '../helpers/identity/recovery-browser/journ
 test('lost-factor recovery collects every workspace consent, proves a replacement, preserves access and exposes no session before completion',async()=>{
  const browser=await launchBrowser();try{await recoveryBrowserJourney(browser)}finally{await browser.close()}
 })
+import {localEmailSetupBrowser} from '../helpers/email/setup-browser.mjs'

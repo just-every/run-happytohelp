@@ -7708,6 +7708,10 @@
       "sha256": "d723f3ebf9978fc0387f2ddf8b71fe0a76f9a9c510902138722cf775abc4caf3",
       "executable": false
     },
+    "src/modules/legacy-import/adoption/reservation.ts": {
+      "sha256": "bcb34e508ae3176516c912deec90e88156f3e951a77aec521c85b838b47821a2",
+      "executable": false
+    },
     "src/modules/legacy-import/adoption/routes.ts": {
       "sha256": "a27a1b71bec0a1cad02b791a501466d7c79e3c91b63a08b8855d95268f008c8e",
       "executable": false
@@ -13380,6 +13384,10 @@
       "sha256": "e6da0f9bf42784ebf6e80489f74c831a89e3f0cf0167f1dfafdc1138498d78b2",
       "executable": false
     },
+    "src/ui/native/pages/legacy-package/pause-reason.js": {
+      "sha256": "0889c08a2cd419f431795486ed5753869cd4d74b9774f113a8e8ac08c4db1073",
+      "executable": false
+    },
     "src/ui/native/pages/legacy-package/result-note.js": {
       "sha256": "5003a2ac906f1390e3f6f36a1e4ac4f04f317f6177103edf98f8c3968948caab",
       "executable": false
@@ -17457,11 +17465,11 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/browser-proof.mjs": {
-      "sha256": "e023f7795a6ba5e165801844ffad7de52272ca7fb3a34cbb2c23998638653dfd",
+      "sha256": "8c39bd44c22c2a8875e996c5f5f2da9e04fc40fdbfe45ae0de0875fe872de596",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/browser.mjs": {
-      "sha256": "e35dc5d97804525343e4b6780d1e6e52ed2bf7f76ef6f6cc48162d0ba949c89c",
+      "sha256": "f900081f5d3cf013cde6b34eeeecc73945632732520db144ff9c3682132946c7",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/erasure-states.mjs": {
@@ -17482,6 +17490,10 @@
     },
     "tests/move-in/legacy-adoption-integration/ordering.mjs": {
       "sha256": "2e2992235ab32a45ffafddf0164370e3b69fef6bdb3aecb29c1744538c4e22d3",
+      "executable": false
+    },
+    "tests/move-in/legacy-adoption-integration/reservations.mjs": {
+      "sha256": "ac2ba51c745d30c791006e297ce7cb0fccca62a0fb64d2e63271a5c0e60fd232",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/runtime-worker.ts": {

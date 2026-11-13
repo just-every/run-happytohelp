@@ -1,0 +1,33 @@
+{
+  "requiredTouchedBrowserHelperPassed": true,
+  "optionalRouteHelperPassed": false,
+  "observedStartupState": "isolated Miniflare stores existed without application tables before termination",
+  "attempts": [
+    {
+      "attempt": "inherited cloud environment",
+      "helper": "tests/helpers/email/outbound-configuration.mjs#outboundConfigurationJourney",
+      "exit": 247,
+      "stdoutAndStderrFile": "optional-route-initial.log",
+      "bytes": 0,
+      "result": "startup did not complete; terminated; no passing assertion result"
+    },
+    {
+      "attempt": "NODE_USE_ENV_PROXY=0",
+      "helper": "tests/helpers/email/outbound-configuration.mjs#outboundConfigurationJourney",
+      "exit": 137,
+      "stdoutAndStderrFile": "optional-route-local.log",
+      "bytes": 0,
+      "result": "startup did not complete; terminated; no passing assertion result"
+    },
+    {
+      "attempt": "loopback-only environment with a 120-second timeout and 5-second kill bound",
+      "helper": "tests/helpers/email/outbound-configuration.mjs#outboundConfigurationJourney",
+      "exit": 247,
+      "stdoutAndStderrFile": "optional-route-loopback.log",
+      "bytes": 0,
+      "result": "startup did not complete; terminated; no passing assertion result"
+    }
+  ],
+  "productChangesForHarness": false,
+  "diagnosis": "cloud runtime startup failure; no assertion failure observed; full-suite behavior remains subject to exact-SHA Verify"
+}

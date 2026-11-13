@@ -1,0 +1,26 @@
+{
+  "command": "cloud_run env H2H_CHROMIUM_PATH=/usr/bin/chromium H2H_EVIDENCE_DIR=<packet>/browser node --input-type=module -e \"import {newTicketConfigurationBrowser} from './tests/helpers/inbox/new-ticket-configuration.mjs'; await newTicketConfigurationBrowser()\"",
+  "exit": 0,
+  "assertionWidth": 1440,
+  "proofWidths": [
+    1440,
+    390
+  ],
+  "newMailboxFreeRequester": 1,
+  "newMailboxFreeTicket": 1,
+  "teamOnlyNotes": 1,
+  "outboundQueue": 0,
+  "emailDeliveries": 0,
+  "sendOptions": 0,
+  "providerSendsForMailboxFreeFlow": 0,
+  "otherVerifiedFlows": [
+    "brand switch ordering",
+    "mailbox-connected public tickets",
+    "mailbox-connected internal-first ticket and explicit later Send",
+    "lost-response replay",
+    "configured fields and assignment",
+    "call logs",
+    "WhatsApp consent refusal and approved-template send",
+    "role refusal"
+  ]
+}

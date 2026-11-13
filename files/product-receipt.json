@@ -1,0 +1,15 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/main-happytohelp-internal-ticket-1",
+  "head": "9e388ffe74b59fb62b632c177d0651acffb45015",
+  "base": "acdcff44b1dae61a4c5559807c33430fd0891dbd",
+  "push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-happytohelp-internal-ticket-1",
+    "exit": 0,
+    "successMarker": "PUSH_OK branch=cloud/main-happytohelp-internal-ticket-1"
+  },
+  "workingTreeClean": true,
+  "productPushes": 1,
+  "pr": null,
+  "contractChanges": false
+}

@@ -1,0 +1,51 @@
+{
+  "checks": [
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "seconds": 21.79
+    },
+    {
+      "name": "source-lock",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit": 0,
+      "seconds": 0.89
+    },
+    {
+      "name": "source-check",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "seconds": 0.66,
+      "ok": true
+    },
+    {
+      "name": "first-party",
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "exit": 0,
+      "seconds": 2.58
+    }
+  ],
+  "baseHead": "acdcff44b1dae61a4c5559807c33430fd0891dbd",
+  "committedSourceHead": "9e388ffe74b59fb62b632c177d0651acffb45015",
+  "sourceChecksFollowedLastTrackedEdit": true
+}

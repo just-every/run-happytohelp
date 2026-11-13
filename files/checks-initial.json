@@ -1,0 +1,34 @@
+{
+  "base": "acdcff44b1dae61a4c5559807c33430fd0891dbd",
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --answers <private-checkout-file> --non-interactive",
+    "exit": 0,
+    "migrations": 195,
+    "privateAnswersPublished": false
+  },
+  "typecheck": {
+    "command": "cloud_run pnpm run typecheck",
+    "exit": 0
+  },
+  "sourceCheck": {
+    "command": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0,
+    "ok": true
+  },
+  "firstParty": {
+    "command": "pnpm exec rer check --profile first-party",
+    "exit": 0
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0
+  },
+  "counts": {
+    "journeyAndReportStaticRegistrationsBefore": 107,
+    "journeyAndReportStaticRegistrationsAfter": 107,
+    "inboxBrowserRegistrationsBefore": 5,
+    "inboxBrowserRegistrationsAfter": 5,
+    "addedRegistrations": 0
+  },
+  "contractJudgmentEdits": 0
+}

@@ -1,0 +1,93 @@
+[
+  {
+    "call": 1,
+    "time": 1794573287.8489137,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs?head_sha=9e388ffe74b59fb62b632c177d0651acffb45015&per_page=100",
+      "--jq",
+      "[.workflow_runs[] | {id,name,status,conclusion,head_sha,html_url}]"
+    ],
+    "exit": 0,
+    "ciPoll": true
+  },
+  {
+    "call": 2,
+    "time": 1794573587.8980308,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43426298677",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0,
+    "ciPoll": true
+  },
+  {
+    "call": 3,
+    "time": 1794573887.9411213,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43426298677",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0,
+    "ciPoll": true
+  },
+  {
+    "call": 4,
+    "time": 1794574188.016605,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43426298677",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0,
+    "ciPoll": true
+  },
+  {
+    "call": 5,
+    "time": 1794574488.0548277,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43426298677",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0,
+    "ciPoll": true
+  },
+  {
+    "call": 6,
+    "time": 1794574788.0926108,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43426298677",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0,
+    "ciPoll": true
+  },
+  {
+    "call": 7,
+    "time": 1794575088.1300268,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43426298677",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0,
+    "ciPoll": true
+  }
+]

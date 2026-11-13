@@ -1,0 +1,11 @@
+{
+  "baseHead": "acdcff44b1dae61a4c5559807c33430fd0891dbd",
+  "widths": [
+    1440,
+    390
+  ],
+  "internalCreateDisabled": true,
+  "apiStatus": 400,
+  "apiError": "Invalid mailboxId",
+  "mailboxes": 0
+}

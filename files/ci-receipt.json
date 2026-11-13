@@ -1,0 +1,12 @@
+{
+  "conclusion": "success",
+  "head_sha": "9e388ffe74b59fb62b632c177d0651acffb45015",
+  "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43426298677",
+  "status": "completed",
+  "run_id": 43426298677,
+  "repository": "just-every/run-happytohelp",
+  "apiCallsUsed": 7,
+  "exactShaVerified": true,
+  "jobAndStep": "Verify completed successfully; no failing job or step",
+  "fullPublicationScan": "reserved to fleet lander"
+}

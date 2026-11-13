@@ -17485,7 +17485,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/journey.mjs": {
-      "sha256": "a1da77450fd64b9f95913c3a148b1be977bdffe7a55e17d0b1ea5568d0f87b4d",
+      "sha256": "9041db8ff91e356499b26550f79b57de1cb6a766448c172d4555a44d7c9dd8b7",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/ordering.mjs": {
@@ -17493,7 +17493,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/reservations.mjs": {
-      "sha256": "ac2ba51c745d30c791006e297ce7cb0fccca62a0fb64d2e63271a5c0e60fd232",
+      "sha256": "7bc455072c2d05f598f5e8505c79d9259aa047730444b72dbdea49449b944d46",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/runtime-worker.ts": {

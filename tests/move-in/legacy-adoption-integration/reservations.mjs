@@ -6,6 +6,7 @@ import {writeLegacyPackage} from '../../helpers/legacy-package.mjs'
 /** Extend the mounted adoption journey: recovery uses ordinary upload, review,
  * approval, worker and discard doors. Only elapsed time is arranged in D1. */
 export async function reservationRecovery({app,directory,setup,token,setupAdmin,foreign}){
+ const inertTables=['credentials','sessions','local_grants','local_jobs'],inert=await Promise.all(inertTables.map(t=>app.sql(`SELECT * FROM ${t} ORDER BY rowid`)))
  const before=await app.sql('SELECT * FROM users ORDER BY id'),members=await app.sql('SELECT * FROM memberships ORDER BY project_id,user_id')
  const stage=async(source,revision,widget)=>{
   const root=join(directory,revision),packet=await writeLegacyPackage(root,{format:'happytohelp-legacy-v1',source:{repository:'synthetic',revision,exportedAt:'2026-11-12T00:00:00Z',projectId:source},tables:{projects:[{id:source,name:'Synthetic reservation recovery',website:'https://synthetic-recovery.example',created_at:1,...(widget?{widget_key:widget}:{})}]}})
@@ -65,6 +66,24 @@ export async function reservationRecovery({app,directory,setup,token,setupAdmin,
  assert.ok(await app.first('SELECT 1 FROM legacy_workspace_adoptions WHERE manifest_sha256=?',held.sha))
  assert.deepEqual(await app.sql('SELECT * FROM users ORDER BY id'),before)
  assert.deepEqual(await app.sql('SELECT * FROM memberships ORDER BY project_id,user_id'),members)
+ for(const [i,table] of inertTables.entries())assert.deepEqual(await app.sql(`SELECT * FROM ${table} ORDER BY rowid`),inert[i],table+' unchanged by reservation recovery')
  console.log('RESERVATION_RECOVERY expired, discarded, failed: fresh approval wins once; stale SHA, actor, scope refusals; users/grants added=0')
  return {expired:true,discarded:true,failedBeforeCreation:true,concurrentWinners:1,nativeUsersAdded:0,membershipsAdded:0}
+}
+
+export async function createdReservationRefusal({app,directory,setup,token,source,originalSha}){
+ const packet=await writeLegacyPackage(join(directory,'after-creation'),{format:'happytohelp-legacy-v1',source:{repository:'synthetic',revision:'after-creation',exportedAt:'2026-11-13T00:00:00Z',projectId:source},tables:{projects:[{id:source,name:'Synthetic later export',website:'https://synthetic-later.example',created_at:1}]}})
+ const sha=packet.manifestSha256,base=`/api/move-in/projects/${setup}/legacy-import/${sha}`
+ await app.call(base+'/manifest',{token,method:'PUT',raw:true,body:await readFile(join(directory,'after-creation','manifest.json')),headers:{'X-Manifest-SHA256':sha},status:201})
+ const previous=await app.first('SELECT * FROM legacy_workspace_adoptions WHERE manifest_sha256=?',originalSha),custody=await app.first('SELECT expires_at FROM legacy_package_custody WHERE manifest_sha256=?',originalSha),settings=await app.first('SELECT settings_json FROM project_settings WHERE project_id=?',source)
+ assert.equal(previous.state,'created')
+ for(const deleted of [false,true]){
+  if(deleted){await app.db.prepare("UPDATE project_settings SET settings_json=json_set(settings_json,'$.deleted_at',1) WHERE project_id=?").bind(source).run();await app.db.prepare('UPDATE legacy_package_custody SET expires_at=0 WHERE manifest_sha256=?').bind(originalSha).run()}
+  assert.equal((await app.call(base+'/adoption',{token,status:200})).data.data.canApprove,false)
+  await app.call(base+'/adoption/approve',{token,body:{approvedManifestSha256:sha,sourceProjectId:source,policyVersion:2},headers:{Origin:app.origin},status:409})
+  assert.deepEqual(await app.first('SELECT * FROM legacy_workspace_adoptions WHERE manifest_sha256=?',originalSha),previous,'created provenance survives expiry/deletion and cannot be stolen')
+ }
+ await app.db.prepare('UPDATE project_settings SET settings_json=? WHERE project_id=?').bind(settings.settings_json,source).run()
+ await app.db.prepare('UPDATE legacy_package_custody SET expires_at=? WHERE manifest_sha256=?').bind(custody.expires_at,originalSha).run()
+ await app.call(base+'/discard',{token,body:{},status:202})
 }

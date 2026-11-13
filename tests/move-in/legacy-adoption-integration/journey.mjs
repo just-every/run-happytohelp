@@ -4,7 +4,7 @@ import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 import {runnerRuntime} from './runtime.mjs'
 import {recordMeasurement} from '../../helpers/legacy-worker/profiler.mjs'
-import {reservationRecovery} from './reservations.mjs'
+import {reservationRecovery,createdReservationRefusal} from './reservations.mjs'
 import {packageFixture,sha} from './fixture.mjs'
 
 export async function adoptionIntegrationJourney({representative=true}={}){
@@ -124,6 +124,7 @@ export async function adoptionIntegrationJourney({representative=true}={}){
    if(r.run.state==='complete'){assert.equal(r.attempt.appliedRows,0);facts.replay=r.attempt;break}
    await app.runJobs((await app.takeJobs()).filter(j=>j.type==='legacy-import.step'))
   }
+  await createdReservationRefusal({app,directory,setup,token,source,originalSha:p.manifestSha256})
   const erase=`/api/management/projects/${source}/contacts/synthetic-contact/erase`
   for(let n=0;n<20;n++){
    const r=await app.call(erase,{token,body:{confirmation:'ERASE'}})

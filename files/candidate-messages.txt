@@ -1,0 +1,5 @@
+d0fee7f073e0d2128cfaf751ddd3fcad6236a8c0
+Report delta lease lapses from every guarded batch
+
+Use the existing confirm-on-error handling for run creation, prepared replay accounting, row groups and completion. Preserve each transaction and its journal so an expired lease stops with the operator-facing message and the same package can resume.
+

@@ -1,0 +1,129 @@
+TAP version 13
+# (node:5607) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m\\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:[0m
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api\#supported-bindings[0m
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m\\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:[0m
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api\#supported-bindings[0m
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m\\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:[0m
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api\#supported-bindings[0m
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m\\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:[0m
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api\#supported-bindings[0m
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m\\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:[0m
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api\#supported-bindings[0m
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# {"at":"2026-11-13T04:14:41.347Z","check":"delta","retry":1,"waitSeconds":2}
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m\\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:[0m
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api\#supported-bindings[0m
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# (node:9549) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# {"at":"2026-11-13T04:14:52.184Z","step":"target","target":"local /tmp/hh-delta-after/resume-stopped"}
+# {"at":"2026-11-13T04:14:52.187Z","step":"verify","manifestSha256":"86529028c79fbea79436e41ee2859bccee08876b2ba9b05eda220c2b3ac7dce5","chunks":7,"objects":5,"since":"2026-11-13T04:05:44.809956Z"}
+# {"at":"2026-11-13T04:14:52.238Z","step":"context","seconds":0.1}
+# {"at":"2026-11-13T04:14:52.301Z","step":"lease","seconds":0.1}
+# {"at":"2026-11-13T04:14:52.398Z","step":"plan","seconds":0.2,"heldConversations":1,"withheldObjects":3}
+# {"at":"2026-11-13T04:14:53.645Z","step":"objects","seconds":1.5}
+# {"at":"2026-11-13T04:14:53.957Z","chunk":"rows-000000.json","table":"projects","rows":1,"applied":1,"replayed":0,"ms":185,"conflicts":0,"d1Ms":7}
+# {"at":"2026-11-13T04:14:54.163Z","chunk":"rows-000004.json","table":"users","rows":2,"applied":2,"replayed":0,"ms":206,"conflicts":0,"d1Ms":0}
+# node:internal/process/task_queues:105
+#     runMicrotasks();
+#     ^
+# Error: D1_ERROR: refused by the resume fixture: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_TRIGGER)
+#     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+#     at async importDelta (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/src/modules/legacy-import/delta.ts:141:16)
+#     at async one (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/import-package.mjs:85:29)
+#     at async Promise.all (index 0)
+#     at async inWaves (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/package.mjs:59:102)
+#     at async importPackage (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/import-package.mjs:92:7)
+#     at async file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/import-legacy.mjs:59:17 {
+#   [cause]: Error: refused by the resume fixture: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_TRIGGER)
+#       at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:189:24)
+#       at async cloudflare-internal:d1-api:137:19
+#       at async \#fetch (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/workers/core/entry.worker.js:4911:18)
+#       at async ProxyServer.fetch (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/workers/core/entry.worker.js:4811:14) {
+#     [cause]: undefined
+#   }
+# }
+# Node.js v22.20.0
+# file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/retire-marker.mjs:16
+#     throw Error('--retire-marker needs the retire\\'s UTC time as YYYY-MM-DD HH:MM:SS or YYYY-MM-DDTHH:MM:SS[.fff]Z');
+#           ^
+# Error: --retire-marker needs the retire's UTC time as YYYY-MM-DD HH:MM:SS or YYYY-MM-DDTHH:MM:SS[.fff]Z
+#     at parseRetireMarker (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/retire-marker.mjs:16:11)
+#     at file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/import-legacy.mjs:15:53
+# Node.js v22.20.0
+# file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/retire-marker.mjs:16
+#     throw Error('--retire-marker needs the retire\\'s UTC time as YYYY-MM-DD HH:MM:SS or YYYY-MM-DDTHH:MM:SS[.fff]Z');
+#           ^
+# Error: --retire-marker needs the retire's UTC time as YYYY-MM-DD HH:MM:SS or YYYY-MM-DDTHH:MM:SS[.fff]Z
+#     at parseRetireMarker (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/retire-marker.mjs:16:11)
+#     at file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/import-legacy.mjs:15:53
+# Node.js v22.20.0
+# file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/import-legacy.mjs:16
+# if(retireMarker!==undefined&&file)throw new Error(usage)
+#                                         ^
+# Error: Usage: node scripts/import-legacy.mjs (--file export.json | --package package-directory) [--apply [--persist-to path | --remote --database D1-NAME --bucket R2-NAME]] [--expect-manifest-sha256 HEX] [--exclude-table TABLE ...] [--concurrency N] [--leave-unread] [--publish-default-rules] [--retire-marker "YYYY-MM-DD HH:MM:SS" (delta package only)]. --leave-unread and --publish-default-rules apply to a full package or --file export. Without --apply it validates and plans without writing.
+#     at file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/import-legacy.mjs:16:41
+# Node.js v22.20.0
+# file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/import-legacy.mjs:17
+# if(retireMarker!==undefined){const {readManifest}=await import('./legacy-import/package.mjs'),{isDelta}=await import('./legacy-import/delta-package.mjs');if(!isDelta((await readManifest(pkg)).manifest))throw new Error('--retire-marker applies only to a delta package (snapshot --since)')}
+#                                                                                                                                                                                                                 ^
+# Error: --retire-marker applies only to a delta package (snapshot --since)
+#     at file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/import-legacy.mjs:17:209
+# Node.js v22.20.0
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# Subtest: project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark
+not ok 1 - project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark
+  ---
+  duration_ms: 360001.772466
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/tests/legacy-export.mjs:16:1'
+  failureType: 'testTimeoutFailure'
+  error: 'test timed out after 360000ms'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# {"output":"/tmp/hh-delta-after","fixture":{"users":3,"ai_defaults":1,"password_resets":1,"projects":2,"project_users":4,"ais":2,"contacts":4,"conversations":4,"conversation_participants":2,"buckets":2,"messages":10,"events":8,"media":3,"mediables":3,"categories":6,"articles":4,"article_categories":6,"local_agent_grants":2,"local_agent_devices":2,"local_agent_device_project_settings":2,"support_delegations":2,"support_delegation_events":2,"asymmetric_keys":2,"contact_shared_keys":2,"connections":2,"collectors":2,"collector_actions":2,"collector_summaries":2,"project_github_connections":2,"plugins":2,"datasets":4,"dataset_files":2,"insights":4,"ai_usages":2,"ai_logs":2,"project_optimizations":2,"message_thinkings":2,"leads":2,"charges":2,"macros":2},"native":{"projects":2,"users":1,"memberships":2,"contacts":4,"conversations":4,"messages":8,"conversation_notes":2,"media":2,"legacy_import_files":1,"knowledge_categories":6,"knowledge_articles":4,"knowledge_article_categories":6,"macros":2,"project_settings":2,"knowledge_datasets":4,"knowledge_documents":2,"context_insights":4,"context_tracked_events":4,"local_devices":2,"local_grants":2,"local_device_settings":2,"local_jobs":2,"local_events":2,"email_settings":2,"public_project_aliases":2},"replayApplied":[0,0]}
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 0
+# cancelled 1
+# skipped 0
+# todo 0
+# duration_ms 375345.193862

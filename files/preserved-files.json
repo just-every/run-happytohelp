@@ -1,0 +1,32 @@
+[
+  {
+    "path": "tests/legacy-export.mjs",
+    "unchanged": true,
+    "sha256": "327e1e2e9c3e71b79aa11d2c6b54fb412a1973a8413e28d88d68775577375c60"
+  },
+  {
+    "path": "tests/legacy-export/delta.mjs",
+    "unchanged": true,
+    "sha256": "1374ad2c746ea7b9cdc662beebbe00d8029c6a4f46e731e1805e72947512f184"
+  },
+  {
+    "path": "CONTRACT.md",
+    "unchanged": true,
+    "sha256": "ae8feea8b7998aa729edadf621d7f3809aa83bbe073fd3e053e1c1fb8b9b04ec"
+  },
+  {
+    "path": "ACCEPTANCE.md",
+    "unchanged": true,
+    "sha256": "e3ba98cf208eacbe47e2afe32950250f7a8e610fd27bccedfe31942093224539"
+  },
+  {
+    "path": "docs/CLAIMS.md",
+    "unchanged": true,
+    "sha256": "1110fefab6395cc7c999c893edf6dd7bdd0ad8a5238c61f432d8786195534c13"
+  },
+  {
+    "path": "RELEASE.json",
+    "unchanged": true,
+    "sha256": "120f08e2ec62ecb323f44c3fa09365d22184f7060672976537633530d403e7ec"
+  }
+]

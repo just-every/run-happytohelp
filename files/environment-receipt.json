@@ -1,0 +1,46 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-delta-lapse-fix-1",
+  "main_at_clone": "1e2eed487d03c8c0badc75115960c4ab089a43db",
+  "main_after_fetch": "1e2eed487d03c8c0badc75115960c4ab089a43db",
+  "merge_result": "Already up to date.",
+  "full_history": true,
+  "baseline_node": "24.19.0",
+  "candidate_node": "22.20.0",
+  "pnpm": "10.12.4",
+  "mysql_image": "mysql:8.4",
+  "mysql_image_digest": "sha256:a81d043930e51745522bd5c430961cf8286f0a23f0a9a2a6e0108f7ea71b0902",
+  "contract_write": {
+    "exit_code": 0,
+    "documents_written": 0
+  },
+  "contract_check": {
+    "exit_code": 0,
+    "errors": 0,
+    "warnings": 0
+  },
+  "generated_views_restored": true,
+  "initial_setup": {
+    "exit_code": 3,
+    "reason": "required local WIDGET_ORIGIN and OWNER_PASSWORD answers absent"
+  },
+  "setup_retry": {
+    "exit_code": 4,
+    "reason": "real integration journey held checkout; retry after journey closes"
+  },
+  "publication_scan": "REMOTE-NEEDS-LOCAL: supported fleet scanner absent",
+  "setup_final_attempt": {
+    "exit_code": 4,
+    "reason": "private answers outside checkout rejected by setup path containment; no product change"
+  },
+  "setup_contained_retry": {
+    "exit_code": 0,
+    "answers_location": "ignored owner-only .rer file; values not selected for evidence",
+    "hooks_reinstalled": true
+  },
+  "candidate_build": {
+    "exit_code": 0,
+    "head": "d0fee7f073e0d2128cfaf751ddd3fcad6236a8c0",
+    "source_preserved": true
+  }
+}

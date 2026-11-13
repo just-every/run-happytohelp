@@ -1,0 +1,85 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m				You have defined bindings to the following internal Durable Objects:[0m
+
+  				- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+  				These will not work in local development, but they should work in production.
+  
+  				If you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+  				For detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api#supported-bindings[0m
+
+
+A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m				You have defined bindings to the following internal Durable Objects:[0m
+
+  				- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+  				These will not work in local development, but they should work in production.
+  
+  				If you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+  				For detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api#supported-bindings[0m
+
+
+A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+✖ project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark (278540.502616ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 279258.91244
+
+✖ failing tests:
+
+test at tests/legacy-export.mjs:16:1
+✖ project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark (278540.502616ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /delta lease lapsed/. Input:
+  
+  `A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.\n` +
+    '{"at":"2026-11-13T04:08:54.143Z","step":"target","target":"local /tmp/hh-delta-before/delta-1-lapse"}\n' +
+    '{"at":"2026-11-13T04:08:54.148Z","step":"verify","manifestSha256":"f92446b61ffa964053284e6570ba295c34c06b0a101c3627eee20adcd8c56a70","chunks":7,"objects":5,"since":"2026-11-13T04:00:43.560407Z"}\n' +
+    '{"at":"2026-11-13T04:08:54.179Z","step":"context","seconds":0}\n' +
+    '{"at":"2026-11-13T04:08:54.239Z","step":"lease","seconds":0.1}\n' +
+    '{"at":"2026-11-13T04:08:54.392Z","step":"plan","seconds":0.2,"heldConversations":1,"withheldObjects":3}\n' +
+    '{"at":"2026-11-13T04:08:55.676Z","step":"objects","seconds":1.5}\n' +
+    '{"at":"2026-11-13T04:08:55.925Z","chunk":"rows-000000.json","table":"projects","rows":1,"applied":1,"replayed":0,"ms":147,"conflicts":0,"d1Ms":9}\n' +
+    '{"at":"2026-11-13T04:08:56.093Z","chunk":"rows-000004.json","table":"users","rows":2,"applied":2,"replayed":0,"ms":168,"conflicts":0,"d1Ms":1}\n' +
+    'node:internal/process/task_queues:104\n' +
+    '    runMicrotasks();\n' +
+    '    ^\n' +
+    '\n' +
+    'Error: D1_ERROR: CHECK constraint failed: IMPORT_ATOMIC_GUARD: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_CHECK)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n' +
+    '    at async importDelta (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/src/modules/legacy-import/delta.ts:143:23)\n' +
+    '    at async one (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/import-package.mjs:85:29)\n' +
+    '    at async Promise.all (index 0)\n' +
+    '    at async inWaves (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/package.mjs:59:102)\n' +
+    '    at async importPackage (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/import-package.mjs:92:7)\n' +
+    '    at async file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/import-legacy.mjs:59:17 {\n' +
+    '  [cause]: Error: CHECK constraint failed: IMPORT_ATOMIC_GUARD: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_CHECK)\n' +
+    '      at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:189:24)\n' +
+    '      at async cloudflare-internal:d1-api:137:19\n' +
+    '      at async #fetch (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/workers/core/entry.worker.js:4911:18)\n' +
+    '      at async ProxyServer.fetch (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/workers/core/entry.worker.js:4811:14) {\n' +
+    '    [cause]: undefined\n' +
+    '  }\n' +
+    '}\n' +
+    '\n' +
+    'Node.js v24.19.0\n'
+  
+      at assertDeltaLeases (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/tests/legacy-export/delta.mjs:265:50)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async assertDeltaSweep (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/tests/legacy-export/delta.mjs:183:3)
+      at async TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/tests/legacy-export.mjs:120:17)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: `A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.\n{"at":"2026-11-13T04:08:54.143Z","step":"target","target":"local /tmp/hh-delta-before/delta-1-lapse"}\n{"at":"2026-11-13T04:08:54.148Z","step":"verify","manifestSha256":"f92446b61ffa964053284e6570ba295c34c06b0a101c3627eee20adcd8c56a70","chunks":7,"objects":5,"since":"2026-11-13T04:00:43.560407Z"}\n{"at":"2026-11-13T04:08:54.179Z","step":"context","seconds":0}\n{"at":"2026-11-13T04:08:54.239Z","step":"lease","seconds":0.1}\n{"at":"2026-11-13T04:08:54.392Z","step":"plan","seconds":0.2,"heldConversations":1,"withheldObjects":3}\n{"at":"2026-11-13T04:08:55.676Z","step":"objects","seconds":1.5}\n{"at":"2026-11-13T04:08:55.925Z","chunk":"rows-000000.json","table":"projects","rows":1,"applied":1,"replayed":0,"ms":147,"conflicts":0,"d1Ms":9}\n{"at":"2026-11-13T04:08:56.093Z","chunk":"rows-000004.json","table":"users","rows":2,"applied":2,"replayed":0,"ms":168,"conflicts":0,"d1Ms":1}\nnode:internal/process/task_queues:104\n    runMicrotasks();\n    ^\n\nError: D1_ERROR: CHECK constraint failed: IMPORT_ATOMIC_GUARD: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_CHECK)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async importDelta (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/src/modules/legacy-import/delta.ts:143:23)\n    at async one (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/import-package.mjs:85:29)\n    at async Promise.all (index 0)\n    at async inWaves (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/package.mjs:59:102)\n    at async importPackage (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/legacy-import/import-package.mjs:92:7)\n    at async file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/scripts/import-legacy.mjs:59:17 {\n  [cause]: Error: CHECK constraint failed: IMPORT_ATOMIC_GUARD: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_CHECK)\n      at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:189:24)\n      at async cloudflare-internal:d1-api:137:19\n      at async #fetch (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/workers/core/entry.worker.js:4911:18)\n      at async ProxyServer.fetch (file:///home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/workers/core/entry.worker.js:4811:14) {\n    [cause]: undefined\n  }\n}\n\nNode.js v24.19.0\n`,
+    expected: /delta lease lapsed/,
+    operator: 'match',
+    diff: 'simple'
+  }

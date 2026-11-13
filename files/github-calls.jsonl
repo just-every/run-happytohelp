@@ -1,0 +1,10 @@
+{"call": 1, "args": ["run", "view", "43332272798", "--repo", "just-every/run-happytohelp", "--job", "131579710755", "--log-failed"], "timestamp": "not captured; before budget wrapper installation"}
+{"call": 2, "args": ["api", "repos/just-every/run-happytohelp/actions/runs?head_sha=4dee2432081a64cee0bd12c59a31cb84371c3ab3&per_page=100"], "timestamp": "not captured; before budget wrapper installation"}
+{"call": 3, "args": ["api", "repos/just-every/run-happytohelp/actions/runs/43166501297/jobs"], "timestamp": "not captured; before budget wrapper installation"}
+{"call": 4, "args": ["run", "view", "43166501297", "--repo", "just-every/run-happytohelp", "--job", "131009567617", "--log"], "timestamp": "not captured; before budget wrapper installation"}
+{"call": 5, "args": ["workflow", "run", "verify.yml", "--repo", "just-every/run-happytohelp", "--ref", "cloud/hh-delta-lapse-fix-1", "-f", "tier=nightly"], "timestamp": "2026-11-13T04:16:56.875684+00:00"}
+{"call": 6, "args": ["api", "repos/just-every/run-happytohelp/actions/runs?head_sha=d0fee7f073e0d2128cfaf751ddd3fcad6236a8c0&per_page=100", "--jq", "[.workflow_runs[] | {id,name,event,head_sha,head_branch,status,conclusion,html_url}]"], "timestamp": "2026-11-13T04:23:20.228502+00:00"}
+{"call": 7, "args": ["api", "repos/just-every/run-happytohelp/actions/runs/43364463680", "--jq", "{status,conclusion,head_sha,html_url}"], "timestamp": "2026-11-13T04:28:20.228918+00:00"}
+{"call": 8, "args": ["api", "repos/just-every/run-happytohelp/actions/runs/43364490496/jobs?per_page=100", "--jq", "{total_count,jobs:[.jobs[]|{id,name,status,conclusion,head_sha,started_at,completed_at,html_url}]}"], "timestamp": "2026-11-13T04:28:44.989609+00:00"}
+{"call": 9, "args": ["api", "repos/just-every/run-happytohelp/actions/runs/43364463680", "--jq", "{status,conclusion,head_sha,html_url}"], "timestamp": "2026-11-13T04:50:00.054962+00:00"}
+{"call": 10, "args": ["api", "repos/just-every/run-happytohelp/actions/runs/43364490496", "--jq", "{status,conclusion,head_sha,html_url}"], "timestamp": "2026-11-13T05:00:00.054223+00:00"}

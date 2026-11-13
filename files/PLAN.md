@@ -1,0 +1,9 @@
+# hh-delta-lapse-fix-1 plan
+
+1. Refresh the fleet launcher; install bundle-backed Git credentials, push guard and commit cleanup hooks. Clone only just-every/run-happytohelp and branch from fresh main. Read the shipped rules, repository architecture/contract, workflow and release history.
+2. Compare v0.4.22 with main and the failing v0.4.23 run. Reproduce the unchanged real MySQL/local D1/R2 export/import integration journey before editing. Determine where the expiry trigger reaches the first unhandled lease guard.
+3. Apply the smallest delta importer change: use the existing confirm-on-error handling for every guarded D1 batch, preserving transaction boundaries, committed journals, rollback and unrelated errors. Keep the existing fixture and assertions unless their premise proves stale.
+4. Run the unchanged integration journey after the fix, typecheck, contract view write/check (restore generated views), first-party rer check, then regenerate and check the source lock last. Fetch fresh main and merge before the final candidate. No migrations or clause status/evidence edits.
+5. Inspect every unpublished author, committer and trailer; commit with explicit fleet identity and active hooks, publish immediately through the cloud push guard. Run the available supported publication check on full history, or record REMOTE-NEEDS-LOCAL if absent.
+6. Observe ordinary push Verify on the exact head with REST and bounded 300-second polling. Dispatch tier=nightly once if needed for exact-head slow coverage; report all slow jobs and distinguish unrelated failures. Keep within ten GitHub command calls.
+7. Save actual non-secret plan, results and receipts outside the product tree. Publish selected packet files solely on evidence/hh-delta-lapse-fix-1. Return branch, exact SHA, CI IDs, unchanged clause/test counts, claim and hh inbox relay. Do not update main, stage, release, provider or customer resources.

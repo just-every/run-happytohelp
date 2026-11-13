@@ -1,0 +1,1855 @@
+{
+  "fixture": {
+    "users": 3,
+    "ai_defaults": 1,
+    "password_resets": 1,
+    "projects": 2,
+    "project_users": 4,
+    "ais": 2,
+    "contacts": 4,
+    "conversations": 4,
+    "conversation_participants": 2,
+    "buckets": 2,
+    "messages": 10,
+    "events": 8,
+    "media": 3,
+    "mediables": 3,
+    "categories": 6,
+    "articles": 4,
+    "article_categories": 6,
+    "local_agent_grants": 2,
+    "local_agent_devices": 2,
+    "local_agent_device_project_settings": 2,
+    "support_delegations": 2,
+    "support_delegation_events": 2,
+    "asymmetric_keys": 2,
+    "contact_shared_keys": 2,
+    "connections": 2,
+    "collectors": 2,
+    "collector_actions": 2,
+    "collector_summaries": 2,
+    "project_github_connections": 2,
+    "plugins": 2,
+    "datasets": 4,
+    "dataset_files": 2,
+    "insights": 4,
+    "ai_usages": 2,
+    "ai_logs": 2,
+    "project_optimizations": 2,
+    "message_thinkings": 2,
+    "leads": 2,
+    "charges": 2,
+    "macros": 2
+  },
+  "native": {
+    "projects": 2,
+    "users": 1,
+    "memberships": 2,
+    "contacts": 4,
+    "conversations": 4,
+    "messages": 8,
+    "conversation_notes": 2,
+    "media": 2,
+    "legacy_import_files": 1,
+    "knowledge_categories": 6,
+    "knowledge_articles": 4,
+    "knowledge_article_categories": 6,
+    "macros": 2,
+    "project_settings": 2,
+    "knowledge_datasets": 4,
+    "knowledge_documents": 2,
+    "context_insights": 4,
+    "context_tracked_events": 4,
+    "local_devices": 2,
+    "local_grants": 2,
+    "local_device_settings": 2,
+    "local_jobs": 2,
+    "local_events": 2,
+    "email_settings": 2,
+    "public_project_aliases": 2
+  },
+  "imports": [
+    {
+      "projectId": "10000000-0000-4000-8000-000000000001",
+      "source": {
+        "projects": 1,
+        "project_users": 2,
+        "contacts": 2,
+        "conversations": 2,
+        "messages": 5,
+        "buckets": 1,
+        "ais": 1,
+        "categories": 3,
+        "articles": 2,
+        "macros": 1,
+        "datasets": 2,
+        "plugins": 1,
+        "collectors": 1,
+        "collector_actions": 1,
+        "collector_summaries": 1,
+        "insights": 2,
+        "ai_usages": 1,
+        "project_optimizations": 1,
+        "message_thinkings": 1,
+        "leads": 1,
+        "charges": 1,
+        "project_github_connections": 1,
+        "connections": 1,
+        "local_agent_device_project_settings": 1,
+        "support_delegations": 1,
+        "events": 3,
+        "conversation_participants": 1,
+        "dataset_files": 1,
+        "support_delegation_events": 1,
+        "local_agent_devices": 1,
+        "local_agent_grants": 1,
+        "article_categories": 3,
+        "users": 2,
+        "ai_defaults": 1,
+        "mediables": 2,
+        "media": 2
+      },
+      "first": {
+        "id": "legacy:77f0f0ba665aaf255e5d17c405367f639378ed88d5963edd180b68421219538e",
+        "sourceRows": 55,
+        "mappedRows": 53,
+        "archivedOnly": [
+          "users:22000000-0000-4000-8000-000000000001",
+          "project_users:24000000-0000-4000-8000-000000000001",
+          "messages:60000000-0000-4000-8000-000000000014",
+          "media:c4000000-0000-4000-8000-000000000001",
+          "collector_actions:95000000-0000-4000-8000-000000000001",
+          "collector_summaries:96000000-0000-4000-8000-000000000001",
+          "connections:fixture-connection-1",
+          "leads:a9000000-0000-4000-8000-000000000001",
+          "mediables:02ab584ebb5d62d91a716ef421951c8a4788e6671d9a570942d98e07ea6f7396",
+          "mediables:0e72064dc1a93f60abaa675208ebb71ba5ae53994ed9ff95a33097694b72d1c2",
+          "message_thinkings:a8000000-0000-4000-8000-000000000001",
+          "project_github_connections:97000000-0000-4000-8000-000000000001",
+          "project_optimizations:a7000000-0000-4000-8000-000000000001"
+        ],
+        "holds": [
+          "local_agent_grants:b1000000-0000-4000-8000-000000000001: Imported credentials revoked; pair devices again",
+          "local_agent_devices:b2000000-0000-4000-8000-000000000001: Imported device is inactive until re-paired",
+          "support_delegations:b3000000-0000-4000-8000-000000000001: Imported started delegation revoked; the legacy local outcome is unconfirmed"
+        ],
+        "objects": 2,
+        "mediaUrls": {
+          "rewritten": 2,
+          "left": 1
+        },
+        "widgetNotReproduced": {
+          "settings.show_glow.on_insight_reply": 1,
+          "text.errors.connection": 1,
+          "text.collect.placeholder_email": 1,
+          "text.prompt.placeholder_email": 1,
+          "app_logo": 1
+        },
+        "applied": 55,
+        "replayed": 0,
+        "erased": 0,
+        "d1Ms": 14,
+        "maxBatchMs": 14,
+        "knowledgeIndex": {
+          "sources": 0,
+          "pending": 0
+        }
+      },
+      "replay": {
+        "id": "legacy:77f0f0ba665aaf255e5d17c405367f639378ed88d5963edd180b68421219538e",
+        "sourceRows": 55,
+        "mappedRows": 53,
+        "archivedOnly": [
+          "users:22000000-0000-4000-8000-000000000001",
+          "project_users:24000000-0000-4000-8000-000000000001",
+          "messages:60000000-0000-4000-8000-000000000014",
+          "media:c4000000-0000-4000-8000-000000000001",
+          "collector_actions:95000000-0000-4000-8000-000000000001",
+          "collector_summaries:96000000-0000-4000-8000-000000000001",
+          "connections:fixture-connection-1",
+          "leads:a9000000-0000-4000-8000-000000000001",
+          "mediables:02ab584ebb5d62d91a716ef421951c8a4788e6671d9a570942d98e07ea6f7396",
+          "mediables:0e72064dc1a93f60abaa675208ebb71ba5ae53994ed9ff95a33097694b72d1c2",
+          "message_thinkings:a8000000-0000-4000-8000-000000000001",
+          "project_github_connections:97000000-0000-4000-8000-000000000001",
+          "project_optimizations:a7000000-0000-4000-8000-000000000001"
+        ],
+        "holds": [
+          "local_agent_grants:b1000000-0000-4000-8000-000000000001: Imported credentials revoked; pair devices again",
+          "local_agent_devices:b2000000-0000-4000-8000-000000000001: Imported device is inactive until re-paired",
+          "support_delegations:b3000000-0000-4000-8000-000000000001: Imported started delegation revoked; the legacy local outcome is unconfirmed"
+        ],
+        "objects": 2,
+        "mediaUrls": {
+          "rewritten": 2,
+          "left": 1
+        },
+        "widgetNotReproduced": {
+          "settings.show_glow.on_insight_reply": 1,
+          "text.errors.connection": 1,
+          "text.collect.placeholder_email": 1,
+          "text.prompt.placeholder_email": 1,
+          "app_logo": 1
+        },
+        "applied": 0,
+        "replayed": 55,
+        "erased": 0,
+        "d1Ms": 0,
+        "maxBatchMs": 0,
+        "knowledgeIndex": {
+          "sources": 0,
+          "pending": 0
+        }
+      },
+      "chunked": {
+        "id": "legacy-package:11729654242971a02cee5e44eb8e10ae4b98b2c2a01aa068cb5895edce500f50",
+        "manifestSha256": "11729654242971a02cee5e44eb8e10ae4b98b2c2a01aa068cb5895edce500f50",
+        "projectId": "10000000-0000-4000-8000-000000000001",
+        "sourceRows": 55,
+        "packageRows": 55,
+        "excluded": {},
+        "mappedRows": 53,
+        "archivedOnly": 13,
+        "holds": 3,
+        "applied": 55,
+        "replayed": 0,
+        "objects": 2,
+        "objectsUploaded": 2,
+        "objectsPresent": 0,
+        "objectsRemoved": 0,
+        "erased": 0,
+        "mediaUrls": {
+          "rewritten": 2,
+          "left": 1
+        },
+        "widgetNotReproduced": {
+          "settings.show_glow.on_insight_reply": 1,
+          "text.errors.connection": 1,
+          "text.collect.placeholder_email": 1,
+          "text.prompt.placeholder_email": 1,
+          "app_logo": 1
+        },
+        "mediaBytes": 9900029,
+        "seconds": 9.1,
+        "tables": {
+          "projects": {
+            "sourceRows": 1,
+            "mappedRows": 4,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "users": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "project_users": {
+            "sourceRows": 2,
+            "mappedRows": 1,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "ai_defaults": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "ais": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "datasets": {
+            "sourceRows": 2,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "dataset_files": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "contacts": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "conversations": {
+            "sourceRows": 2,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "buckets": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "messages": {
+            "sourceRows": 5,
+            "mappedRows": 8,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 5,
+            "replayed": 0,
+            "erased": 0
+          },
+          "events": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 3,
+            "replayed": 0,
+            "erased": 0
+          },
+          "conversation_participants": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "media": {
+            "sourceRows": 2,
+            "mappedRows": 1,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "categories": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 3,
+            "replayed": 0,
+            "erased": 0
+          },
+          "articles": {
+            "sourceRows": 2,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "article_categories": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 3,
+            "replayed": 0,
+            "erased": 0
+          },
+          "macros": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "plugins": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "collectors": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "collector_actions": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "insights": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "collector_summaries": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "local_agent_grants": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "local_agent_devices": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "local_agent_device_project_settings": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "support_delegations": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "support_delegation_events": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "charges": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "ai_usages": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "project_optimizations": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "message_thinkings": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "leads": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "project_github_connections": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "connections": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "mediables": {
+            "sourceRows": 2,
+            "mappedRows": 0,
+            "archivedOnly": 2,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          }
+        },
+        "knowledgeIndex": {
+          "sources": 2,
+          "pending": 0
+        }
+      },
+      "chunkReplay": {
+        "id": "legacy-package:11729654242971a02cee5e44eb8e10ae4b98b2c2a01aa068cb5895edce500f50",
+        "manifestSha256": "11729654242971a02cee5e44eb8e10ae4b98b2c2a01aa068cb5895edce500f50",
+        "projectId": "10000000-0000-4000-8000-000000000001",
+        "sourceRows": 55,
+        "packageRows": 55,
+        "excluded": {},
+        "mappedRows": 53,
+        "archivedOnly": 13,
+        "holds": 3,
+        "applied": 0,
+        "replayed": 55,
+        "objects": 2,
+        "objectsUploaded": 0,
+        "objectsPresent": 2,
+        "objectsRemoved": 0,
+        "erased": 0,
+        "mediaUrls": {
+          "rewritten": 2,
+          "left": 1
+        },
+        "widgetNotReproduced": {
+          "settings.show_glow.on_insight_reply": 1,
+          "text.errors.connection": 1,
+          "text.collect.placeholder_email": 1,
+          "text.prompt.placeholder_email": 1,
+          "app_logo": 1
+        },
+        "mediaBytes": 9900029,
+        "seconds": 5.4,
+        "tables": {
+          "projects": {
+            "sourceRows": 1,
+            "mappedRows": 4,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "users": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "project_users": {
+            "sourceRows": 2,
+            "mappedRows": 1,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "ai_defaults": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "ais": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "datasets": {
+            "sourceRows": 2,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "dataset_files": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "contacts": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "conversations": {
+            "sourceRows": 2,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "buckets": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "messages": {
+            "sourceRows": 5,
+            "mappedRows": 8,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 5,
+            "erased": 0
+          },
+          "events": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 3,
+            "erased": 0
+          },
+          "conversation_participants": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "media": {
+            "sourceRows": 2,
+            "mappedRows": 1,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "categories": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 3,
+            "erased": 0
+          },
+          "articles": {
+            "sourceRows": 2,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "article_categories": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 3,
+            "erased": 0
+          },
+          "macros": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "plugins": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "collectors": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "collector_actions": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "insights": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "collector_summaries": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "local_agent_grants": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "local_agent_devices": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "local_agent_device_project_settings": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "support_delegations": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "support_delegation_events": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "charges": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "ai_usages": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "project_optimizations": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "message_thinkings": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "leads": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "project_github_connections": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "connections": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "mediables": {
+            "sourceRows": 2,
+            "mappedRows": 0,
+            "archivedOnly": 2,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          }
+        },
+        "knowledgeIndex": {
+          "sources": 0,
+          "pending": 0
+        }
+      }
+    },
+    {
+      "projectId": "10000000-0000-4000-8000-000000000002",
+      "source": {
+        "projects": 1,
+        "project_users": 2,
+        "contacts": 2,
+        "conversations": 2,
+        "messages": 5,
+        "buckets": 1,
+        "ais": 1,
+        "categories": 3,
+        "articles": 2,
+        "macros": 1,
+        "datasets": 2,
+        "plugins": 1,
+        "collectors": 1,
+        "collector_actions": 1,
+        "collector_summaries": 1,
+        "insights": 2,
+        "ai_usages": 1,
+        "project_optimizations": 1,
+        "message_thinkings": 1,
+        "leads": 1,
+        "charges": 1,
+        "project_github_connections": 1,
+        "connections": 1,
+        "local_agent_device_project_settings": 1,
+        "support_delegations": 1,
+        "events": 3,
+        "conversation_participants": 1,
+        "dataset_files": 1,
+        "support_delegation_events": 1,
+        "local_agent_devices": 1,
+        "local_agent_grants": 1,
+        "article_categories": 3,
+        "users": 2,
+        "ai_defaults": 1,
+        "mediables": 1,
+        "media": 1
+      },
+      "first": {
+        "id": "legacy:6a0fdc65d20935f5ad9098872c77236977937fb2f080ff2e2dd62091dad28878",
+        "sourceRows": 53,
+        "mappedRows": 52,
+        "archivedOnly": [
+          "users:22000000-0000-4000-8000-000000000002",
+          "project_users:24000000-0000-4000-8000-000000000002",
+          "messages:60000000-0000-4000-8000-000000000024",
+          "collector_actions:95000000-0000-4000-8000-000000000002",
+          "collector_summaries:96000000-0000-4000-8000-000000000002",
+          "connections:fixture-connection-2",
+          "leads:a9000000-0000-4000-8000-000000000002",
+          "mediables:4e270bb2a3b9f406464cbdf0eae411c26beb8a9e615d4c1b6a87dbf26a8e84dd",
+          "message_thinkings:a8000000-0000-4000-8000-000000000002",
+          "project_github_connections:97000000-0000-4000-8000-000000000002",
+          "project_optimizations:a7000000-0000-4000-8000-000000000002"
+        ],
+        "holds": [
+          "local_agent_grants:b1000000-0000-4000-8000-000000000002: Imported credentials revoked; pair devices again",
+          "local_agent_devices:b2000000-0000-4000-8000-000000000002: Imported device is inactive until re-paired",
+          "support_delegations:b3000000-0000-4000-8000-000000000002: Imported started delegation revoked; the legacy local outcome is unconfirmed"
+        ],
+        "objects": 1,
+        "mediaUrls": {
+          "rewritten": 1,
+          "left": 1
+        },
+        "widgetNotReproduced": {
+          "settings.show_glow.on_insight_reply": 1,
+          "text.errors.connection": 1,
+          "text.collect.placeholder_email": 1,
+          "text.prompt.placeholder_email": 1,
+          "app_logo": 1
+        },
+        "applied": 53,
+        "replayed": 0,
+        "erased": 0,
+        "d1Ms": 11,
+        "maxBatchMs": 11,
+        "knowledgeIndex": {
+          "sources": 0,
+          "pending": 0
+        }
+      },
+      "replay": {
+        "id": "legacy:6a0fdc65d20935f5ad9098872c77236977937fb2f080ff2e2dd62091dad28878",
+        "sourceRows": 53,
+        "mappedRows": 52,
+        "archivedOnly": [
+          "users:22000000-0000-4000-8000-000000000002",
+          "project_users:24000000-0000-4000-8000-000000000002",
+          "messages:60000000-0000-4000-8000-000000000024",
+          "collector_actions:95000000-0000-4000-8000-000000000002",
+          "collector_summaries:96000000-0000-4000-8000-000000000002",
+          "connections:fixture-connection-2",
+          "leads:a9000000-0000-4000-8000-000000000002",
+          "mediables:4e270bb2a3b9f406464cbdf0eae411c26beb8a9e615d4c1b6a87dbf26a8e84dd",
+          "message_thinkings:a8000000-0000-4000-8000-000000000002",
+          "project_github_connections:97000000-0000-4000-8000-000000000002",
+          "project_optimizations:a7000000-0000-4000-8000-000000000002"
+        ],
+        "holds": [
+          "local_agent_grants:b1000000-0000-4000-8000-000000000002: Imported credentials revoked; pair devices again",
+          "local_agent_devices:b2000000-0000-4000-8000-000000000002: Imported device is inactive until re-paired",
+          "support_delegations:b3000000-0000-4000-8000-000000000002: Imported started delegation revoked; the legacy local outcome is unconfirmed"
+        ],
+        "objects": 1,
+        "mediaUrls": {
+          "rewritten": 1,
+          "left": 1
+        },
+        "widgetNotReproduced": {
+          "settings.show_glow.on_insight_reply": 1,
+          "text.errors.connection": 1,
+          "text.collect.placeholder_email": 1,
+          "text.prompt.placeholder_email": 1,
+          "app_logo": 1
+        },
+        "applied": 0,
+        "replayed": 53,
+        "erased": 0,
+        "d1Ms": 0,
+        "maxBatchMs": 0,
+        "knowledgeIndex": {
+          "sources": 0,
+          "pending": 0
+        }
+      },
+      "chunked": {
+        "id": "legacy-package:f201925933953a7ef2006e62ac172d272c397dc4a783225a68d8b067b7eaa8a6",
+        "manifestSha256": "f201925933953a7ef2006e62ac172d272c397dc4a783225a68d8b067b7eaa8a6",
+        "projectId": "10000000-0000-4000-8000-000000000002",
+        "sourceRows": 53,
+        "packageRows": 53,
+        "excluded": {},
+        "mappedRows": 52,
+        "archivedOnly": 11,
+        "holds": 3,
+        "applied": 53,
+        "replayed": 0,
+        "objects": 1,
+        "objectsUploaded": 1,
+        "objectsPresent": 0,
+        "objectsRemoved": 0,
+        "erased": 0,
+        "mediaUrls": {
+          "rewritten": 1,
+          "left": 1
+        },
+        "widgetNotReproduced": {
+          "settings.show_glow.on_insight_reply": 1,
+          "text.errors.connection": 1,
+          "text.collect.placeholder_email": 1,
+          "text.prompt.placeholder_email": 1,
+          "app_logo": 1
+        },
+        "mediaBytes": 39,
+        "seconds": 9.1,
+        "tables": {
+          "projects": {
+            "sourceRows": 1,
+            "mappedRows": 4,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "users": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "project_users": {
+            "sourceRows": 2,
+            "mappedRows": 1,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "ai_defaults": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "ais": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "datasets": {
+            "sourceRows": 2,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "dataset_files": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "contacts": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "conversations": {
+            "sourceRows": 2,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "buckets": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "messages": {
+            "sourceRows": 5,
+            "mappedRows": 8,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 5,
+            "replayed": 0,
+            "erased": 0
+          },
+          "events": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 3,
+            "replayed": 0,
+            "erased": 0
+          },
+          "conversation_participants": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "media": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "categories": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 3,
+            "replayed": 0,
+            "erased": 0
+          },
+          "articles": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "article_categories": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 3,
+            "replayed": 0,
+            "erased": 0
+          },
+          "macros": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "plugins": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "collectors": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "collector_actions": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "insights": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 2,
+            "replayed": 0,
+            "erased": 0
+          },
+          "collector_summaries": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "local_agent_grants": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "local_agent_devices": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "local_agent_device_project_settings": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "support_delegations": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "support_delegation_events": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "charges": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "ai_usages": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "project_optimizations": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "message_thinkings": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "leads": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "project_github_connections": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "connections": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          },
+          "mediables": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 1,
+            "replayed": 0,
+            "erased": 0
+          }
+        },
+        "knowledgeIndex": {
+          "sources": 2,
+          "pending": 0
+        }
+      },
+      "chunkReplay": {
+        "id": "legacy-package:f201925933953a7ef2006e62ac172d272c397dc4a783225a68d8b067b7eaa8a6",
+        "manifestSha256": "f201925933953a7ef2006e62ac172d272c397dc4a783225a68d8b067b7eaa8a6",
+        "projectId": "10000000-0000-4000-8000-000000000002",
+        "sourceRows": 53,
+        "packageRows": 53,
+        "excluded": {},
+        "mappedRows": 52,
+        "archivedOnly": 11,
+        "holds": 3,
+        "applied": 0,
+        "replayed": 53,
+        "objects": 1,
+        "objectsUploaded": 0,
+        "objectsPresent": 1,
+        "objectsRemoved": 0,
+        "erased": 0,
+        "mediaUrls": {
+          "rewritten": 1,
+          "left": 1
+        },
+        "widgetNotReproduced": {
+          "settings.show_glow.on_insight_reply": 1,
+          "text.errors.connection": 1,
+          "text.collect.placeholder_email": 1,
+          "text.prompt.placeholder_email": 1,
+          "app_logo": 1
+        },
+        "mediaBytes": 39,
+        "seconds": 5.1,
+        "tables": {
+          "projects": {
+            "sourceRows": 1,
+            "mappedRows": 4,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "users": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "project_users": {
+            "sourceRows": 2,
+            "mappedRows": 1,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "ai_defaults": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "ais": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "datasets": {
+            "sourceRows": 2,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "dataset_files": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "contacts": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "conversations": {
+            "sourceRows": 2,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "buckets": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "messages": {
+            "sourceRows": 5,
+            "mappedRows": 8,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 5,
+            "erased": 0
+          },
+          "events": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 3,
+            "erased": 0
+          },
+          "conversation_participants": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "media": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "categories": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 3,
+            "erased": 0
+          },
+          "articles": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "article_categories": {
+            "sourceRows": 3,
+            "mappedRows": 3,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 3,
+            "erased": 0
+          },
+          "macros": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "plugins": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "collectors": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "collector_actions": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "insights": {
+            "sourceRows": 2,
+            "mappedRows": 2,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 2,
+            "erased": 0
+          },
+          "collector_summaries": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "local_agent_grants": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "local_agent_devices": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "local_agent_device_project_settings": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "support_delegations": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 1,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "support_delegation_events": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "charges": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "ai_usages": {
+            "sourceRows": 1,
+            "mappedRows": 1,
+            "archivedOnly": 0,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "project_optimizations": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "message_thinkings": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "leads": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "project_github_connections": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "connections": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          },
+          "mediables": {
+            "sourceRows": 1,
+            "mappedRows": 0,
+            "archivedOnly": 1,
+            "holds": 0,
+            "applied": 0,
+            "replayed": 1,
+            "erased": 0
+          }
+        },
+        "knowledgeIndex": {
+          "sources": 0,
+          "pending": 0
+        }
+      }
+    }
+  ],
+  "files": [
+    "/tmp/hh-delta-after/project-1.import.json",
+    "/tmp/hh-delta-after/project-2.import.json"
+  ],
+  "persist": "/tmp/hh-delta-after/native-state",
+  "fullErasure": {
+    "sourceRows": 53,
+    "erased": 23,
+    "replayed": 12
+  },
+  "delta": {
+    "rows": {
+      "projects": 1,
+      "project_users": 0,
+      "contacts": 3,
+      "conversations": 4,
+      "messages": 6,
+      "buckets": 0,
+      "ais": 0,
+      "categories": 0,
+      "articles": 0,
+      "macros": 0,
+      "datasets": 0,
+      "plugins": 0,
+      "collectors": 0,
+      "collector_actions": 0,
+      "collector_summaries": 0,
+      "insights": 0,
+      "ai_usages": 0,
+      "project_optimizations": 0,
+      "message_thinkings": 0,
+      "leads": 0,
+      "charges": 0,
+      "project_github_connections": 0,
+      "connections": 0,
+      "local_agent_device_project_settings": 0,
+      "support_delegations": 0,
+      "events": 0,
+      "conversation_participants": 0,
+      "dataset_files": 0,
+      "support_delegation_events": 0,
+      "local_agent_devices": 0,
+      "local_agent_grants": 0,
+      "article_categories": 0,
+      "users": 2,
+      "ai_defaults": 0,
+      "mediables": 5,
+      "media": 5
+    },
+    "applied": {
+      "appended": 6,
+      "updated": 2,
+      "skipped": 5,
+      "conflicts": 4
+    },
+    "checked": {
+      "skipped": 5,
+      "code": 0
+    },
+    "resumed": {
+      "sourceRows": 131,
+      "runs": 8,
+      "runsAtStop": 4,
+      "replayed": 103
+    },
+    "previousTotal": 55,
+    "projectSourceRows": 74,
+    "retire": {
+      "marker": "2026-11-13 04:15:05",
+      "ignoredRetireMarker": 2,
+      "appended": 3,
+      "updated": 2,
+      "conflicts": 6,
+      "projectSourceRows": 78
+    }
+  }
+}

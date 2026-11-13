@@ -1,0 +1,23 @@
+{"conclusion":"success","id":131009500025,"name":"plan"}
+{"conclusion":"success","id":131009566903,"name":"build"}
+{"conclusion":"success","id":131009567617,"name":"slow / legacy-export"}
+{"conclusion":"success","id":131009567766,"name":"slow / Installer / readme-clone-and-restore"}
+{"conclusion":"success","id":131009567789,"name":"slow / Installer / delegation-fresh-clone-browser"}
+{"conclusion":"success","id":131009567793,"name":"slow / Installer / portable-installation-compatibility"}
+{"conclusion":"success","id":131009567815,"name":"slow / Installer / configured-live-provider"}
+{"conclusion":"success","id":131009567834,"name":"slow / Installer / native-command-and-portability"}
+{"conclusion":"success","id":131009567848,"name":"slow / Installer / reproducible-build"}
+{"conclusion":"success","id":131009567895,"name":"slow / Installer / release-upgrades"}
+{"conclusion":"success","id":131009567901,"name":"slow / Installer / import-and-report-scale"}
+{"conclusion":"success","id":131009568201,"name":"slow / Installer / offline-deployment-preflight"}
+{"conclusion":"success","id":131010044327,"name":"Verify / support-and-recovery"}
+{"conclusion":"success","id":131010044352,"name":"Verify / assistant-and-knowledge"}
+{"conclusion":"success","id":131010044371,"name":"Verify / connections-and-computers"}
+{"conclusion":"success","id":131010044409,"name":"Verify / import-and-reports"}
+{"conclusion":"success","id":131010044420,"name":"Verify / support-workflow-browser"}
+{"conclusion":"success","id":131010044424,"name":"Verify / identity-and-repair-browser"}
+{"conclusion":"success","id":131010044426,"name":"Verify / identity-and-desk"}
+{"conclusion":"success","id":131010044450,"name":"Verify / public-and-import-browser"}
+{"conclusion":"skipped","id":131017558205,"name":"full-push-proof"}
+{"conclusion":"success","id":131019704508,"name":"verify"}
+{"conclusion":"skipped","id":131019706282,"name":"nightly-proof"}

@@ -1,0 +1,16 @@
+{
+  "base": "1e2eed487d03c8c0badc75115960c4ab089a43db",
+  "diff_sha256": "4e18be6e5c106d2a8ef9dd94e0131c49b668b5fedd02a2934c72a3bf62108330",
+  "paths": [
+    "sources.lock.json",
+    "src/modules/legacy-import/delta.ts"
+  ],
+  "contract_counts": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "migration_001_status": "partial",
+  "test_registrations_changed": 0
+}

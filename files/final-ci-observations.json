@@ -1,0 +1,36 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-delta-lapse-fix-1",
+  "head": "d0fee7f073e0d2128cfaf751ddd3fcad6236a8c0",
+  "custody": "READY",
+  "run_observations": {
+    "push": {
+      "conclusion": "success",
+      "head_sha": "d0fee7f073e0d2128cfaf751ddd3fcad6236a8c0",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43364463680",
+      "status": "completed",
+      "run_id": 43364463680
+    },
+    "nightly": {
+      "conclusion": "success",
+      "head_sha": "d0fee7f073e0d2128cfaf751ddd3fcad6236a8c0",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43364490496",
+      "status": "completed",
+      "run_id": 43364490496
+    }
+  },
+  "legacy_export": {
+    "completed_at": "2026-11-13T04:23:23Z",
+    "conclusion": "success",
+    "head_sha": "d0fee7f073e0d2128cfaf751ddd3fcad6236a8c0",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43364490496/job/131685649936",
+    "id": 131685649936,
+    "name": "slow / legacy-export",
+    "started_at": "2026-11-13T04:17:14Z",
+    "status": "completed"
+  },
+  "github_calls": 10,
+  "last_nightly_job_observation": "nightly-jobs.json",
+  "publication_scan": "REMOTE-NEEDS-LOCAL",
+  "product_pushed": true
+}

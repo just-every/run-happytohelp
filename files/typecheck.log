@@ -1,0 +1,4 @@
+
+> happytohelp@0.4.23 typecheck /home/agent/rer-consolidation/work/hh-delta-lapse-fix-1/repo
+> node scripts/generate-routes.mjs && tsc --noEmit
+

@@ -60,7 +60,19 @@
       "exit": 0
     }
   ],
-  "ci": "pending exact-SHA Verify",
+  "ci": {
+    "call": 6,
+    "conclusion": "success",
+    "exact_sha": true,
+    "github_calls": 6,
+    "head_sha": "9901e11ad3145638b8f7fbe5c0a53d76b1ec042f",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43427307551",
+    "id": 43427307551,
+    "poll_interval_seconds": 300,
+    "status": "completed",
+    "utc": "2026-11-13T13:07:00Z"
+  },
+  "committed_checks_receipt": "CHECKS-COMMITTED.json",
   "contract_status_changed": false,
   "counts": {
     "contract": {
@@ -103,7 +115,9 @@
     ]
   },
   "created_at": "2026-11-13T12:41:53Z",
+  "custody": "READY; product branch pushed and exact-SHA Verify completed/success; landing and publication scan remain fleet-owned",
   "head": "9901e11ad3145638b8f7fbe5c0a53d76b1ec042f",
+  "initial_evidence_transport_receipt": "EVIDENCE-TRANSFER.json",
   "product_blobs": {
     "docs/email.md": "8de9461176ac9e8c22a95c081544eb6c1e9a713b",
     "sources.lock.json": "48b04978e9badaa0fc9418234760663076d72789",

@@ -47,7 +47,7 @@ An extra email-suite invocation during implementation failed in the existing loc
 
 ## Candidate custody
 
-Product candidate: 9901e11ad3145638b8f7fbe5c0a53d76b1ec042f. One real commit, no skip-CI marker, fleet author and committer, no trailers. The named branch is the only product push target. No PR is required by this repository’s shipped landing rules. The full first-owner journey and its new local email guidance assertions passed together (1 test, no skips), as did the focused regression and all 14 final browser captures. Product files are byte-identical to the recorded candidate blobs in RECEIPT.json. Full publication scanning and landing belong to the fleet Mac. Exact-SHA Verify is pending.
+Product candidate: 9901e11ad3145638b8f7fbe5c0a53d76b1ec042f. One real commit, no skip-CI marker, fleet author and committer, no trailers. The named branch is the only product push target. No PR is required by this repository’s shipped landing rules. The full first-owner journey and its new local email guidance assertions passed together (1 test, no skips), as did the focused regression and all 14 final browser captures. Product files are byte-identical to the recorded candidate blobs in RECEIPT.json. Full publication scanning and landing belong to the fleet Mac. Exact-SHA Verify 43427307551 completed successfully: https://github.com/just-every/run-happytohelp/actions/runs/43427307551.
 
 ## Browser evidence index
 
@@ -64,3 +64,15 @@ The settings captures contain synthetic local trial data only. Guide captures ar
 | IMAP and SMTP owner setup guide | [Desktop](after-guide-imap-1440.png) | [Phone](after-guide-imap-390.png) |
 
 Baseline: [local DNS instructions](before-local-1440.png), [Gmail](before-gmail-1440.png), [Microsoft](before-microsoft-1440.png), [IMAP and SMTP](before-imap-1440.png). Structured observations: [before.json](before.json) and [browser.json](browser.json). Final check receipt: [RECEIPT.json](RECEIPT.json). Full touched journey output: [first-owner-test.log](first-owner-test.log). Supplementary failed email harness output: [supplementary-email-test.log](supplementary-email-test.log).
+
+## Evidence transport
+
+The first report-only publication was e2c7dfbfa35d8d4ad3a5d9cf42426795ebca7223 at refs/heads/evidence/main-happytohelp-email-setup-guide-1. The provided evidence fetch entrypoint fetched that exact SHA into separate storage, verified the manifest and all 32 selected file hashes, and restored the packet successfully. EVIDENCE-TRANSFER.json is the actual round-trip receipt. This verifies report transport only. The final publication appends the final CI state and this receipt to the same evidence branch, without changing the product checkout or signaling acceptance or landing.
+
+## Final results
+
+Exact-SHA Verify run 43427307551 completed with conclusion success on 9901e11ad3145638b8f7fbe5c0a53d76b1ec042f, observed at 2026-11-13T13:07:00Z. The single watcher used six REST calls, each at least 300 seconds apart. No rerun or failed-job log calls were needed. CI.jsonl contains the actual observations. The product branch was pushed once, is clean and has no skip-CI marker. No PR was created because none is required by the shipped seed landing rules.
+
+All touched checks passed: build, typecheck, full first-owner browser journey including local email guidance, docs links, source lock/check, first-party check and clean-tree checks. CHECKS-COMMITTED.json records actual source/first-party/check exit codes on the committed SHA. The failed supplementary intermediate email harness invocation is retained honestly; the final exact-SHA Verify passed the full wall.
+
+No product blocker remains. MAIL-001 stays partial and no Status, Gap, Evidence, generated acceptance view or summary count was edited. No live provider or DONE claim is made. The fleet owns publication scanning and landing on main. All browser/server processes started by this run were stopped; final checkout removal follows the final evidence publication.

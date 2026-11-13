@@ -1,0 +1,35 @@
+{
+  "head": "9901e11ad3145638b8f7fbe5c0a53d76b1ec042f",
+  "checks": [
+    {
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "duration_seconds": 1.748
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "exit": 0,
+      "duration_seconds": 2.314
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code"
+      ],
+      "exit": 0,
+      "duration_seconds": 0.006
+    }
+  ]
+}

@@ -32,7 +32,14 @@ const receivingCopy = (receiving, domain) => ({
  dns_unknown: ['Unknown', <>We couldn’t check the mail records for <code>{domain}</code> just now. Reload the page to try again.</>],
 })[receiving.reason] || ['Waiting', 'The receiving route is being activated.'];
 
-function RoutingSteps({receiving, installation}) {
+function RoutingSteps({receiving, installation, localTrial}) {
+ if (localTrial || receiving.reason === 'local') return <details className="sh-guide" open data-guide="receiving">
+  <summary>How to receive email</summary>
+  <div className="sh-steps">
+   <p>A local trial cannot receive or send email. Use the website chat to try conversations on this computer.</p>
+   <p>When you are ready, follow the <a href="/docs/email#hosted-installation">hosted email setup guide</a> to deploy HappyToHelp and connect a real mailbox or a receiving address on a domain you own.</p>
+  </div>
+ </details>;
  // A workers.dev domain can never be routed, so its steps use a domain of your own.
  const domain = receiving.reason !== 'workers_dev' && domainOf(receiving.address) || 'in.yourcompany.com', local = (receiving.address || 'support@').split('@')[0] || 'support';
  return <details className="sh-guide" open={!['ready', 'local'].includes(receiving.reason)} data-guide="receiving">
@@ -59,7 +66,7 @@ function RoutingSteps({receiving, installation}) {
 export default function EmailSettings({data, status, field, role, projectId,onRefresh}) {
  if(status?.managed)return <ManagedEmail managed={status.managed} {...{field,role,projectId,onRefresh}}/>;
  const receiving = status?.receiving || {reason: 'no_address', address: null}, domain = domainOf(receiving.address);
- const [chip, copy] = receivingCopy(receiving, domain);
+ const [chip, copy] = receivingCopy(receiving, domain), localTrial = status?.sending?.mode === 'local' || receiving.reason === 'local';
  return <>
   <Section title="Send Email">
    <Sending sending={status?.sending} installation={status?.installation} role={role} projectId={projectId}/>
@@ -71,8 +78,8 @@ export default function EmailSettings({data, status, field, role, projectId,onRe
   <Section title="Receive Email">
    {field('inbound_address', 'Receiving address', 'email')}
    <div className="sh-state" data-receiving={receiving.reason}><span className={`h2h-chip${receiving.ready ? '' : ' h2h-chip--muted'}`}>{receiving.ready && <i className="fe fe-check" aria-hidden="true"/>}{chip}</span><p>{copy}</p></div>
-   {!receiving.ready && <p className="settings-note">Until receiving is ready, emails to customers carry no reply address: they ask the customer to answer in the chat on your website.</p>}
-   {receiving.reason !== 'no_token' && <RoutingSteps receiving={receiving} installation={status?.installation}/>}
+   {!receiving.ready && !localTrial && <p className="settings-note">Until receiving is ready, emails to customers carry no reply address: they ask the customer to answer in the chat on your website.</p>}
+   {(localTrial || receiving.reason !== 'no_token') && <RoutingSteps receiving={receiving} installation={status?.installation} localTrial={localTrial}/>}
   </Section>
   <Mailboxes projectId={projectId} role={role}/>
  </>;

@@ -1709,7 +1709,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "042048fd2ad4daefdc4d5b77b41450e84890e30d2eec910fbff146fdf47da4e3",
+      "sha256": "475af9a22246fe689be86bfc3ab0b423c35a2ed55ac42b0ea7484b22b0f3ed79",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -7221,7 +7221,7 @@
       "executable": false
     },
     "src/modules/integrations/README.md": {
-      "sha256": "01e064a0e48e60fc96aa57cbecaff10080b6143c63bcdfd428db03930fb41019",
+      "sha256": "29d8fe00234423dc0ff8ceab91535960d6d3e4a999f75d997ed249f63dc3d7dd",
       "executable": false
     },
     "src/modules/integrations/refused-email.ts": {
@@ -13229,7 +13229,7 @@
       "executable": false
     },
     "src/ui/native/pages/email/MailboxEditor.jsx": {
-      "sha256": "3bab4db46874a02beda98db23996a82285d60a26173314d924018e43e54d38f3",
+      "sha256": "362f1d12678e1473defcd5e25615d8aab43008aaa1f86e99eef025103a647d0a",
       "executable": false
     },
     "src/ui/native/pages/email/Mailboxes.jsx": {
@@ -13253,7 +13253,7 @@
       "executable": false
     },
     "src/ui/native/pages/EmailSettings.jsx": {
-      "sha256": "dd3f9bc5eca317dc89f56704080506eaaec0e14624e02893246095b5992fe5b1",
+      "sha256": "3a222fd9232978a2b90d1224db231fabc935e2b626858346446c0f579756a895",
       "executable": false
     },
     "src/ui/native/pages/forms.jsx": {
@@ -16248,6 +16248,10 @@
       "sha256": "3356eb158afca00e55b95a219971acc7874f8a65bbe7eadff47edf8b29fb867a",
       "executable": false
     },
+    "tests/helpers/email/setup-browser.mjs": {
+      "sha256": "08b27b0183eccb09f014a0246796277c2c797ac22e08fd427ff7a66351fa5067",
+      "executable": false
+    },
     "tests/helpers/email/transports.mjs": {
       "sha256": "ab6a9a5fe37a03264aade8e5bc8578a0484e04f6f6d41fa11a004a1302153218",
       "executable": false
@@ -17197,7 +17201,7 @@
       "executable": false
     },
     "tests/journeys/identity-browser.mjs": {
-      "sha256": "6405a1cd4749277d9d0a83d146114ae5fb11493bccfe28e116b9811da642b1e0",
+      "sha256": "b00f07c0c5af55b59f5a39e13b781a46c01b530e4656632dc208a183e5961c7e",
       "executable": false
     },
     "tests/journeys/identity.mjs": {

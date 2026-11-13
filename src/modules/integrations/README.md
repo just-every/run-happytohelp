@@ -105,6 +105,8 @@ twice; check with your provider before you try again.
 
 ## Receive email
 
+Connecting an existing mailbox instead? The [mailbox setup guide](../../../docs/email.md#connect-gmail-or-microsoft-365) walks the installation owner through Google and Microsoft OAuth registration, installation secrets and [IMAP/SMTP host allowances](../../../docs/email.md#connect-imap-and-smtp). For a local trial, start with [hosted email prerequisites](../../../docs/email.md#hosted-installation); the trial cannot send or receive email.
+
 Customers can email your support address, and their replies to HappyToHelp's emails
 land back in the same conversation.
 

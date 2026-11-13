@@ -1,0 +1,20 @@
+[
+  {
+    "at": 1794584161.870115,
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs?head_sha=c1dcf0aefd7fc998468862f117e508bb998651de&per_page=100",
+      "--jq",
+      "{workflow_runs:[.workflow_runs[]|{id,name,status,conclusion,head_sha,html_url}]}"
+    ]
+  },
+  {
+    "at": 1794584462.939639,
+    "args": [
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs?head_sha=c1dcf0aefd7fc998468862f117e508bb998651de&per_page=100",
+      "--jq",
+      "{workflow_runs:[.workflow_runs[]|{id,name,status,conclusion,head_sha,html_url}]}"
+    ]
+  }
+]

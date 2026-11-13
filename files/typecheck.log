@@ -1,0 +1,4 @@
+
+> happytohelp@0.4.24 typecheck /home/agent/rer-consolidation/work/main-happytohelp-ticket-status-1-c1/repo
+> node scripts/generate-routes.mjs && tsc --noEmit
+

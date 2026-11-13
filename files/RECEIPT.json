@@ -1,0 +1,66 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/main-happytohelp-ticket-status-1-c1",
+  "head": "c1dcf0aefd7fc998468862f117e508bb998651de",
+  "base": "822c4b74abd35869f68555227b4760da4b59d114",
+  "source_commit": "ea30383aae21e1518b7c1cfea78d3a7f28fed82c",
+  "source_parent": "acdcff44b1dae61a4c5559807c33430fd0891dbd",
+  "candidate_commits": 1,
+  "merge_commits": 0,
+  "adaptations": [],
+  "changes": {
+    "files": 8,
+    "insertions": 87,
+    "deletions": 15
+  },
+  "contract_files": {
+    "CONTRACT.md": {
+      "identical_to_origin_main": true,
+      "sha256": "ae8feea8b7998aa729edadf621d7f3809aa83bbe073fd3e053e1c1fb8b9b04ec"
+    },
+    "ACCEPTANCE.md": {
+      "identical_to_origin_main": true,
+      "sha256": "e3ba98cf208eacbe47e2afe32950250f7a8e610fd27bccedfe31942093224539"
+    },
+    "docs/CLAIMS.md": {
+      "identical_to_origin_main": true,
+      "sha256": "1110fefab6395cc7c999c893edf6dd7bdd0ad8a5238c61f432d8786195534c13"
+    }
+  },
+  "contract_status_counts_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "contract_status_counts_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "tests_added": 0,
+  "tests_removed": 0,
+  "direct_registration_sites_before": 108,
+  "direct_registration_sites_after": 108,
+  "local_checks": {
+    "setup_with_private_answers": "pass",
+    "typecheck": "pass",
+    "source_lock_check": true,
+    "first_party_check": "pass",
+    "contract_documents_check": "pass",
+    "ticketsBrowser_including_ticketStatusEdits": "pass",
+    "diff_check": "pass",
+    "changed_screen_browser_proof": "pass, 1440 and 390"
+  },
+  "native_optional_harness": "incomplete; see native-attempt.json",
+  "push": "success; cloud-push.py attempt 1",
+  "publication_scan": "Mac fleet lander owns full publication scan; product diff inspected locally",
+  "ci": {
+    "run_id": 43454222292,
+    "head_sha": "c1dcf0aefd7fc998468862f117e508bb998651de",
+    "status": "in_progress",
+    "conclusion": null,
+    "url": "https://github.com/just-every/run-happytohelp/actions/runs/43454222292"
+  },
+  "identity_audit": "sole candidate author and committer fleet identity; no trailers; no skip markers",
+  "clean_checkout": true
+}

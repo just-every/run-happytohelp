@@ -1,0 +1,10 @@
+{
+  "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --answers .seed/cloud-private-answers.json --non-interactive",
+  "result": "pass",
+  "migrations_applied": 195,
+  "owner_created": true,
+  "build": "pass (setup native application build)",
+  "first_attempt": "missing private WIDGET_ORIGIN and OWNER_PASSWORD answers; corrected",
+  "second_attempt": "answers outside contained checkout refused; moved to ignored private checkout path",
+  "secrets": "private answers and raw setup output excluded from packet"
+}

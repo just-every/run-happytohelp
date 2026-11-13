@@ -1,0 +1,14 @@
+{
+  "result": "pass",
+  "assertion_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "scenario": "priority normal → high, add tag, solve without reload; header Solved; summary and header phone proof",
+  "screenshots": [
+    "screenshots/ticket-and-header-1440.png",
+    "screenshots/ticket-summary-390.png",
+    "screenshots/conversation-header-390.png"
+  ]
+}

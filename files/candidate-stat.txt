@@ -1,0 +1,10 @@
+c1dcf0ae Keep consecutive ticket edits current and show lifecycle status
+ sources.lock.json                                  | 16 ++++---
+ src/modules/management/tags.ts                     |  4 +-
+ src/ui/dashboard/components/ConversationHeader.jsx |  8 ++--
+ .../components/conversation/ConversationTags.jsx   | 15 ++++++-
+ .../components/ticket-panel/TicketSummary.jsx      |  2 +-
+ .../components/ticket-panel/useTicketRecord.js     |  2 +-
+ tests/helpers/inbox/ticket-status-edits.mjs        | 51 ++++++++++++++++++++++
+ tests/helpers/inbox/tickets-browser.mjs            |  4 ++
+ 8 files changed, 87 insertions(+), 15 deletions(-)

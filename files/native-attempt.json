@@ -1,0 +1,20 @@
+{
+  "result": "not completed",
+  "reason": "optional direct native harness stalled before startup; no test output in six minutes; bounded startup probe also stalled; only the four PIDs started by these two attempts were stopped",
+  "started_pids": [
+    1603,
+    1624,
+    6674,
+    6699
+  ],
+  "required_concurrency_result": "passed through the original ticketsBrowser / ticketStatusEdits public-door journey",
+  "cleanup": "SIGTERM stopped workerd children; their Node parents retained shutdown handlers, so SIGKILL stopped only those two known Node PIDs and their subreapers reaped the children.",
+  "commands": [
+    "cloud_run node --input-type=module -e (import ticketsJourney; await ticketsJourney)",
+    "cloud_run env (proxy variables removed for loopback-only startup diagnostic) node --input-type=module -e (startApp startup probe)"
+  ],
+  "exit_codes": [
+    247,
+    247
+  ]
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "file": "src/modules/management/tags.ts",
+    "identical_to_source_commit": true,
+    "sha256": "bd655065cd9ef002a78713ffb166ee82ffcf15b535a0a87cb24e4cdb070cb9e4"
+  },
+  {
+    "file": "src/ui/dashboard/components/ConversationHeader.jsx",
+    "identical_to_source_commit": true,
+    "sha256": "d842902c82f950978ccc32de53b1891c241c5ab0d341f26ea7a15577d4d26eb1"
+  },
+  {
+    "file": "src/ui/dashboard/components/conversation/ConversationTags.jsx",
+    "identical_to_source_commit": true,
+    "sha256": "e0975ef01e18efac17305ac3353e147e532d21bb7227bb089a739cd97edca10f"
+  },
+  {
+    "file": "src/ui/dashboard/components/ticket-panel/TicketSummary.jsx",
+    "identical_to_source_commit": true,
+    "sha256": "69458e662675fc8f0499505a56d7266e60ab2ce81526a09450288faeea3270ad"
+  },
+  {
+    "file": "src/ui/dashboard/components/ticket-panel/useTicketRecord.js",
+    "identical_to_source_commit": true,
+    "sha256": "7c0b673c1f9a9db5b81b8c63b6453d61b54631daca89cde79369f8e18814d6ae"
+  },
+  {
+    "file": "tests/helpers/inbox/ticket-status-edits.mjs",
+    "identical_to_source_commit": true,
+    "sha256": "457447c2a18811e8fae135cefc5993dcb249f779fb8e91513265af297ebd7eb9"
+  },
+  {
+    "file": "tests/helpers/inbox/tickets-browser.mjs",
+    "identical_to_source_commit": true,
+    "sha256": "c2285bb233313355d34ffdef02dfc89a4277b632dd980bb091cd1857ea2c1f33"
+  }
+]

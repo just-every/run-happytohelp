@@ -17481,7 +17481,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/admission.mjs": {
-      "sha256": "a20ee1faf3cbfd080a0491e40e0805bc7def04bf8598aeab7dbf6a2467e29c8b",
+      "sha256": "cdda0bf601999276ae14efb33d27ad22995f8082e7f4cb4cbb318d9e8c10eee6",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/browser-proof.mjs": {
@@ -17526,6 +17526,10 @@
     },
     "tests/move-in/legacy-adoption-integration/runtime.mjs": {
       "sha256": "bc6255d4d5b241cfeacba2160f2f1837073daba504ff6a40f88a71eeb1a786e6",
+      "executable": false
+    },
+    "tests/move-in/legacy-adoption-integration/streamed-manifest.mjs": {
+      "sha256": "29815fbd161467c00f7d3e44286aefaea3e3dc3c583c1d8bf1104672ff70e4a0",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/v1-cleanup.mjs": {

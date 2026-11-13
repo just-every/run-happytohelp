@@ -5,6 +5,7 @@ import {join} from 'node:path'
 import {request as httpRequest} from 'node:http'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {packageFixture,sha} from './fixture.mjs'
+import {streamedManifestStatus} from './streamed-manifest.mjs'
 export async function legacyPackageAdmission(){
  const app=await startApp({captureQueue:true,cf:false,listen:true}),directory=await mkdtemp(join(tmpdir(),'legacy-intake-'))
  try{
@@ -24,8 +25,7 @@ export async function legacyPackageAdmission(){
    const m=structuredClone(p.manifest);mutation(m);assert.equal((await putManifest(Buffer.from(JSON.stringify(m)))).status,400)
   }
   assert.equal((await putManifest(Buffer.alloc(2097153,32))).status,413)
-  const streamed=new ReadableStream({start(controller){for(let i=0;i<5;i++)controller.enqueue(new Uint8Array(512*1024));controller.close()}})
-  const oversized=await fetch(app.url+`${base()}/manifest`,{method:'PUT',body:streamed,duplex:'half',headers:{Authorization:'Bearer '+owner.tokens.owner,'Content-Type':'application/json','X-Manifest-SHA256':p.manifestSha256}});assert.equal(oversized.status,413);await oversized.body?.cancel()
+  assert.equal(await streamedManifestStatus(app.url+`${base()}/manifest`,{Authorization:'Bearer '+owner.tokens.owner,'Content-Type':'application/json','X-Manifest-SHA256':p.manifestSha256}),413)
 
   assert.equal((await putManifest(p.bytes,{headers:{'X-Legacy-Contract-Version':'3'}})).status,422)
   assert.equal((await putManifest()).status,201)

@@ -23,18 +23,20 @@ export async function reservationAttachments(){
     return {...packet,sha,base,body:{approvedManifestSha256:sha,sourceProjectId:source,policyVersion:2}}
    }
    const approve=p=>app.call(p.base+'/adoption/approve',{token,body:p.body,headers:{Origin:app.origin},status:202})
+   const pending=[]
+   const take=async()=>[...pending.splice(0),...await app.takeJobs()]
    const result=async p=>(await app.call(p.base+'/result',{token,status:200})).data.data
    const advance=async(p,done)=>{
     for(let n=0;n<250;n++){
      const r=await result(p);if(await done(r))return r
      assert.ok(['queued','running'].includes(r.run.state),JSON.stringify(r.run))
-     await app.runJobs((await app.takeJobs()).filter(j=>j.type==='legacy-import.step'))
+     await app.runJobs((await take()).filter(j=>j.type==='legacy-import.step'))
     }
-    assert.fail('Recovery worker did not reach its end state')
+    assert.fail(`${mode}/${order}: recovery worker did not reach its end state: ${JSON.stringify((await result(p)).run)}`)
    }
    const cron=async sha=>{
     await app.db.prepare('UPDATE legacy_package_custody SET next_cleanup_at=0 WHERE manifest_sha256=?').bind(sha).run()
-    await app.scheduled();await app.runJobs((await app.takeJobs()).filter(j=>j.type==='legacy-package.cleanup'))
+    await app.scheduled();const jobs=await take();pending.push(...jobs.filter(j=>j.type!=='legacy-package.cleanup'));await app.runJobs(jobs.filter(j=>j.type==='legacy-package.cleanup'))
    }
    const drain=async sha=>{
     for(let n=0;n<12;n++)await cron(sha)
@@ -49,7 +51,7 @@ export async function reservationAttachments(){
    if(mode==='signout'){
     await app.call('/auth/signout',{token,method:'POST',headers:{Origin:app.origin}})
     token=(await app.call('/api/identity/login',{body:login,status:200})).data.token
-    await app.runJobs((await app.takeJobs()).filter(j=>j.type==='legacy-import.step'))
+    await app.runJobs((await take()).filter(j=>j.type==='legacy-import.step'))
     const paused=await result(old);assert.equal(paused.run.state,'paused');assert.equal(paused.run.errorCode,'import_authority_revoked')
    }else{
     await app.call(old.base+'/stop',{token,body:{},status:202})
@@ -60,7 +62,7 @@ export async function reservationAttachments(){
     // a new package until the cleanup quantum has finished deleting them.
     const contender=await stage('contender')
     await app.scheduled()
-    const pending=app.runJobs((await app.takeJobs()).filter(j=>j.type==='legacy-package.cleanup'),{'x-legacy-barrier':'before_cleanup_delete'})
+    const pending=app.runJobs((await take()).filter(j=>j.type==='legacy-package.cleanup'),{'x-legacy-barrier':'before_cleanup_delete'})
     try{
      await app.until(async()=>(await app.call('/_test/legacy/barrier')).data.barrier==='before_cleanup_delete',{message:'old canonical deletion in flight'})
      await app.call(contender.base+'/adoption/approve',{token,body:contender.body,headers:{Origin:app.origin},status:409})

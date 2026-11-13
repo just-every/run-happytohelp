@@ -8485,11 +8485,11 @@
       "executable": false
     },
     "src/modules/management/outbound-ticket-input.ts": {
-      "sha256": "ac263513fc0719d4d2c252df99c2835f9a7f094840e73c4147a2f3385aab1862",
+      "sha256": "2496715b5439d999ca40a774a870f94db1e7f109ee1b69c5164362e2890708bd",
       "executable": false
     },
     "src/modules/management/outbound-ticket-store.ts": {
-      "sha256": "c1f2c2ef4876c5fd0a290933023998a2b57a193497f524f42a57bafb6f77b3d0",
+      "sha256": "0d012053952a42885b32af2657c0af450a07cd18e60770508453c99889260bd9",
       "executable": false
     },
     "src/modules/management/outbound-tickets.ts": {
@@ -11481,7 +11481,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.jsx": {
-      "sha256": "1524b263dab59ff96e391af4e165f312be1bd20b757a5ca009bf82f2504759c9",
+      "sha256": "97f656d2983015d5fbd90421d00c262707eaac83c42449962d65f2a3698b7a1e",
       "executable": false
     },
     "src/ui/dashboard/components/DelegationAttachments.jsx": {
@@ -16525,7 +16525,11 @@
       "executable": false
     },
     "tests/helpers/inbox/new-ticket-configuration.mjs": {
-      "sha256": "dbf50e31b181c6b3aef56bb46e084caf6f6cdfad2b54fdbbaeaa8d3a8d83e49a",
+      "sha256": "632f365b48d60371c746d5c4b8374b533e8a192734ad38d62182d9ca4e25418a",
+      "executable": false
+    },
+    "tests/helpers/inbox/no-mailbox-ticket.mjs": {
+      "sha256": "e314a07f3c1f51304c071ae7028daa2725ffc75d199fd4f7a70673c6967f4d0c",
       "executable": false
     },
     "tests/helpers/inbox/problems.mjs": {

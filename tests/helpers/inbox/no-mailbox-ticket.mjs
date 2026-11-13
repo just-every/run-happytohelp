@@ -1,0 +1,63 @@
+import assert from 'node:assert/strict'
+
+/** Continue the real New ticket dialog in a workspace with no mailboxes. */
+export async function noMailboxTicket({page,dialog,runtime,projectId,actorId,copies,capture}){
+ const base=`/api/dashboard/projects/${projectId}`
+ const request=async(path,body)=>page.evaluate(async({path,body})=>{
+  const response=await fetch(path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)})
+  return {status:response.status,body:await response.json()}
+ },{path,body})
+ const mailboxes=await request(`/api/management/projects/${projectId}/mailboxes`)
+ assert.equal(mailboxes.status,200);assert.deepEqual(mailboxes.body.data,[])
+ const before=copies().length,requester='synthetic-happytohelp-no-mailbox@example.test',name='Synthetic private requester',subject='Private parcel investigation',content='Team-only parcel investigation before email setup.'
+ await dialog.getByLabel('Requester email',{exact:true}).fill(requester)
+ await dialog.getByLabel('Requester name',{exact:true}).fill(name)
+ await dialog.getByLabel('Subject',{exact:true}).fill(subject)
+ await dialog.getByLabel('Message',{exact:true}).fill(content)
+ assert.equal(await dialog.getByRole('button',{name:'Create and email',exact:true}).isDisabled(),true)
+ const settings=dialog.getByRole('link',{name:'Email settings',exact:true})
+ assert.equal(new URL(await settings.getAttribute('href'),page.url()).pathname,`/projects/${projectId}/email-settings`)
+ await capture('no-mailbox-public',dialog.getByLabel('First comment',{exact:true}))
+ await dialog.getByLabel('Ticket type',{exact:true}).selectOption('notice')
+ assert.equal(await dialog.getByRole('button',{name:'Preview recipients',exact:true}).isDisabled(),true)
+ assert.equal(await settings.count(),1)
+ await capture('no-mailbox-notice',dialog.getByLabel('Ticket type',{exact:true}))
+ await dialog.getByLabel('Ticket type',{exact:true}).selectOption('email')
+ await dialog.getByLabel('First comment',{exact:true}).selectOption('internal')
+ assert.equal(await settings.count(),0)
+ assert.equal(await dialog.getByLabel('Send from mailbox',{exact:true}).count(),0)
+ assert.equal(await dialog.getByLabel('CC',{exact:true}).count(),0)
+ assert.equal(await dialog.getByLabel('BCC',{exact:true}).count(),0)
+ assert.equal(await dialog.getByRole('button',{name:'Create ticket',exact:true}).isEnabled(),true)
+ await capture('no-mailbox-internal',dialog.getByLabel('First comment',{exact:true}))
+ const responseReady=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
+ await dialog.getByRole('button',{name:'Create ticket',exact:true}).click()
+ const response=await responseReady;assert.equal(response.status(),201,await response.text())
+ const ticket=await response.json(),command=response.request().postDataJSON(),id=ticket.conversation.id
+ assert.equal(ticket.conversation.mailbox_id,null);assert.equal(ticket.conversation.channel,'email')
+ assert.equal(ticket.conversation.requester_id,ticket.conversation.contact_id);assert.equal(ticket.conversation.submitter_id,actorId)
+ assert.equal(ticket.conversation.subject,subject);assert.equal(ticket.note.content,content);assert.equal(ticket.message,undefined)
+ await page.waitForURL(`**/conversations/${id}`)
+ await page.locator('.transcript-note-content').getByText(content,{exact:true}).waitFor()
+ await page.reload();await page.locator('.transcript-note-content').getByText(content,{exact:true}).waitFor()
+ const contact=await request(`/api/management/projects/${projectId}/contacts/${ticket.conversation.contact_id}`)
+ assert.equal(contact.status,200);assert.equal(contact.body.data.email,requester);assert.equal(contact.body.data.name,name)
+ const bucket=await request(`${base}/conversations/${id}/buckets/${id}`)
+ assert.equal(bucket.status,200);assert.deepEqual(bucket.body.data.messages,[])
+ assert.equal(bucket.body.data.events.filter(event=>event.type==='INTERNAL_NOTE'&&event.content===content).length,1)
+ const visitor=await request(`/api/conversations/${id}/messages`)
+ assert.equal(visitor.status,200);assert.deepEqual(visitor.body.messages,[],'team-only note is absent from customer messages')
+ const replay=await request(base+'/tickets',command)
+ assert.equal(replay.status,200);assert.equal(replay.body.conversation.id,id);assert.equal(replay.body.note.id,ticket.note.id)
+ assert.equal((await request(base+'/tickets',{...command,localId:command.localId+'-public',firstComment:'public'})).status,400,'public email still requires a mailbox')
+ assert.equal((await request(base+'/tickets/notices/preview',{kind:'email',localId:command.localId+'-notice',requesters:[requester,'synthetic-happytohelp-other@example.test'],subject,content,mailboxId:''})).status,400,'service notices still require a mailbox')
+ assert.equal((await request(base+'/tickets',{...command,localId:command.localId+'-invalid',mailboxId:'synthetic-happytohelp-unavailable'})).status,409,'a supplied mailbox must still be authorized and connected')
+ const queues=await runtime.execute(`SELECT (SELECT count(*) FROM conversation_outbox WHERE project_id='${projectId}') AS queued, (SELECT count(*) FROM email_deliveries WHERE project_id='${projectId}') AS deliveries, (SELECT count(*) FROM email_message_options WHERE project_id='${projectId}') AS send_options`)
+ for(const field of ['queued','deliveries','send_options'])assert.match(queues,new RegExp(`"${field}":\\s*0\\b`),'private ticket creates no outbound work')
+ assert.equal(copies().length,before,'no provider send for private creation, retries or refused email choices')
+ await capture('no-mailbox-created',page.locator('.transcript-note-content').getByText(content,{exact:true}))
+ // Return to the same workspace/dialog so the surrounding configuration journey continues.
+ await page.goto(`${runtime.origin}/projects/${projectId}/conversations`)
+ await page.getByRole('button',{name:'New ticket',exact:true}).click();await dialog.waitFor()
+ console.log('PROBE OUTBOUND-001 no mailbox: UI creates requester, email ticket and team-only note; reload/retry retain them; customer messages, outbound queue, deliveries, send options and provider sends stay empty; public email/notices refused; 1440 assertions with 1440/390 captures')
+}

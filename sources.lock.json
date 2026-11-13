@@ -7785,7 +7785,7 @@
       "executable": false
     },
     "src/modules/legacy-import/delta.ts": {
-      "sha256": "549a76dd5994bba7b934ec044d34b2c57209d5b6643ac10a01e12ccc725da09b",
+      "sha256": "209bad21e7b401b35d4b1da01bc766a1cc3e4566925d847eb579dcac37b41fa3",
       "executable": false
     },
     "src/modules/legacy-import/erased.ts": {

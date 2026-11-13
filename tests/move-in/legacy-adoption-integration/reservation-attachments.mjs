@@ -132,7 +132,12 @@ export async function reservationAttachments(){
  const cases=['stop-expiry','signout','orphan'].flatMap(mode=>(mode==='orphan'?['before']:['before','after']).map(order=>[mode,order])),facts=[]
  // Each installation has its own D1/R2 state. Bound parallelism while keeping
  // every order, byte comparison, reconciliation and erasure assertion.
- for(let i=0;i<cases.length;i+=2)facts.push(...await Promise.all(cases.slice(i,i+2).map(([mode,order])=>reservationAttachment(mode,order))))
+ for(let i=0;i<cases.length;i+=2){
+  const settled=await Promise.allSettled(cases.slice(i,i+2).map(([mode,order])=>reservationAttachment(mode,order)))
+  const failures=settled.filter(result=>result.status==='rejected').map(result=>result.reason)
+  if(failures.length)throw new AggregateError(failures,'Attachment recovery scenarios failed')
+  facts.push(...settled.map(result=>result.value))
+ }
  console.log('RESERVATION_ATTACHMENTS '+JSON.stringify(facts))
  return facts
 }

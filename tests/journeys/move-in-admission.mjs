@@ -4,6 +4,7 @@ import {legacyAdoptionJourney} from '../helpers/legacy-adoption/journey.mjs'
 import {adoptionIntegrationJourney} from '../move-in/legacy-adoption-integration/journey.mjs'
 import {legacyPackageAdmission} from '../move-in/legacy-adoption-integration/admission.mjs'
 import test from 'node:test'
+import {inspect} from 'node:util'
 import {outcomesJourney} from '../move-in/outcomes.mjs'
 import {vendorRepliesJourney} from '../move-in/vendor-replies.mjs'
 import {reviewImportJourney} from '../move-in/review-import.mjs'
@@ -18,7 +19,10 @@ test('review an export, import its history and private notes, repeat and repacka
   const failures=[]
   while(pending.length){
    const journey=pending.shift(),started=performance.now()
-   try{await journey()}catch(error){failures.push(error)}
+   try{await journey()}catch(error){
+    console.error('IMPORT_ADMISSION_FAILURE',journey.name,inspect(error,{depth:null,colors:false,maxArrayLength:null,maxStringLength:null}))
+    failures.push(error)
+   }
    finally{console.log('IMPORT_ADMISSION_PHASE',JSON.stringify({journey:journey.name,duration_ms:Math.round(performance.now()-started)}))}
   }
   return failures

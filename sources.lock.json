@@ -17261,7 +17261,7 @@
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {
-      "sha256": "abed5fa3cccbc07c155fcb55f1eb41675ac1cbc508600eda36332957c90cfe74",
+      "sha256": "46393709941c645d2d3754f64be3690f6b97db09dff347a6cee2e03030239a75",
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
@@ -17505,7 +17505,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/journey.mjs": {
-      "sha256": "1b7a8cf9591a95f06c85aff81b4172d96256444c41739c82a3579e39821bb943",
+      "sha256": "120756186661647ddf6a2763edba1d1c5f1d4bfc8f21a189ff6cc3b968e4b00a",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/ordering.mjs": {
@@ -17513,7 +17513,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/reservation-attachments.mjs": {
-      "sha256": "380e8f01e73fc506c8c309e81cfb053da2dd18d9ebbe6f19a59f452ad46dc9b9",
+      "sha256": "01f1843a4a4e75cfe1eb74c7ed4bdd48861b4bf00bc90bdf6e37b9c49983ef8e",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/reservations.mjs": {

@@ -1,7 +1,8 @@
 import {mountedErasureStates} from '../move-in/legacy-adoption-integration/erasure-states.mjs'
 import {mountedOrderingJourney} from '../move-in/legacy-adoption-integration/ordering.mjs'
 import {legacyAdoptionJourney} from '../helpers/legacy-adoption/journey.mjs'
-import {adoptionIntegrationJourney} from '../move-in/legacy-adoption-integration/journey.mjs'
+import {mountedAdoptionJourney} from '../move-in/legacy-adoption-integration/journey.mjs'
+import {reservationAttachments} from '../move-in/legacy-adoption-integration/reservation-attachments.mjs'
 import {legacyPackageAdmission} from '../move-in/legacy-adoption-integration/admission.mjs'
 import test from 'node:test'
 import {outcomesJourney} from '../move-in/outcomes.mjs'
@@ -19,13 +20,13 @@ async function phases(journeys){
 }
 
 await test('review an export, import its history and private notes, repeat and repackage without effects, then undo exactly',{timeout:480_000},async()=>{
- await phases([reviewImportJourney,outcomesJourney,mountedOrderingJourney])
+ await phases([reviewImportJourney,async function zendeskAndHelpScoutReplies(){await vendorRepliesJourney(vendors.slice(0,2))},async function expiredAttachmentRecovery(){await reservationAttachments(['stop-expiry'])}])
 })
 
-await test('admit a legacy package, recover mounted adoption and preserve Zendesk and Help Scout replies',{timeout:480_000},async()=>{
- await phases([legacyPackageAdmission,adoptionIntegrationJourney,async function zendeskAndHelpScoutReplies(){await vendorRepliesJourney(vendors.slice(0,2))}])
+await test('adopt mounted history, recover Worker stops, refuse unauthorized outcomes and enforce import ordering',{timeout:480_000},async()=>{
+ await phases([legacyPackageAdmission,mountedAdoptionJourney,outcomesJourney,mountedOrderingJourney])
 })
 
-await test('erase mounted import states, preserve Freshdesk and Intercom replies and adopt legacy history',{timeout:480_000},async()=>{
- await phases([mountedErasureStates,async function freshdeskAndIntercomReplies(){await vendorRepliesJourney(vendors.slice(2))},legacyAdoptionJourney])
+await test('erase mounted import states, preserve Freshdesk and Intercom replies and recover attachment custody',{timeout:480_000},async()=>{
+ await phases([mountedErasureStates,async function freshdeskAndIntercomReplies(){await vendorRepliesJourney(vendors.slice(2))},legacyAdoptionJourney,async function signedOutAndOrphanedAttachmentRecovery(){await reservationAttachments(['signout','orphan'])}])
 })

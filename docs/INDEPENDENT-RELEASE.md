@@ -23,11 +23,11 @@ yours.
 
 ## Update your installation
 
-### Release 0.4.23
+### Release 0.4.24
 
-Update from v0.4.22 without resetting. Back up D1, R2, Durable Object state and private settings first. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.112. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. Apply 327_legacy_import_worker.sql once BEFORE the new Worker serves traffic, in upgrade order v0.4.22 -> v0.4.23. A v0.4.21 installation applies 324_scheduler_outbox_reads.sql, then 325_knowledge_documents_version_url.sql, then 327, once each, retaining their published buyer steps; earlier installations first apply every other missing published migration in filename order. There is no migration 326 in this release. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. No reset, cutover or production deployment is part of this release. Fresh-workspace importer adoption, recovery adoption and live-provider qualification remain separate.
+Update from v0.4.23 without resetting; v0.4.22 and v0.4.21 are also upgrade baselines. Back up D1, R2, Durable Object state and private settings, then stop the old Worker. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.112. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. Apply 328_legacy_workspace_adoption.sql, 329_legacy_package_custody.sql, 331_legacy_cleanup_seeding.sql and 332_legacy_cleanup_inventory_lazy.sql once in that order BEFORE the new Worker serves HTTP or queue traffic. A v0.4.22 installation first applies 327_legacy_import_worker.sql; a v0.4.21 installation first applies 324_scheduler_outbox_reads.sql, then 325_knowledge_documents_version_url.sql, then 327, with their published buyer steps. Earlier installations first apply every other missing published migration in filename order. There is no migration 326 or 330 in this release. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. V1 source is cleanup-only and must never be relabeled v2; missing or incomplete cleanup remains pending. No reset, mail activation, recovery adoption, production import, cutover or production deployment is part of this preparation.
 
-See [the 0.4.23 release notes](../CHANGELOG.md#0423--2026-11-12) for the corrected mail declaration, native mail choice, rer 0.2.112, the active importer and diagnostics with their limits, and migration 327.
+See [the 0.4.24 release notes](../CHANGELOG.md#0424--2026-11-13) for the delta lease-lapse fix, importer v2 adoption and private custody, historical readers, old synthetic source cleanup and the four migration steps. The corrected mail declaration and rer 0.2.112 remain carried from v0.4.23.
 
 ### Keep your installation state
 

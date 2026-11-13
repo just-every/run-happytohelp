@@ -17460,6 +17460,10 @@
       "sha256": "6cb4086032dc4fef4b6b41299b166437eab55351afdbc42a51997f5fb0f98a15",
       "executable": false
     },
+    "tests/move-in/harness-migrations.mjs": {
+      "sha256": "2786f8bfd746a7d16bf68cf90133d3a073f916083cf4ecb0c7913210cc46f376",
+      "executable": false
+    },
     "tests/move-in/harness.mjs": {
       "sha256": "e8259f5acf8f178da3c8155a20d3f23c0db05a27bf431ffaa1f966f19ad487f9",
       "executable": false

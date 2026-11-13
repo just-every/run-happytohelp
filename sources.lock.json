@@ -2893,7 +2893,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "c3670a17ecf65a474d02af7740c88e008681ae83a2d396806d4a2d42c05b97a9",
+      "sha256": "c8f2ca370c9d0093bc01d74456bd4c0b2502520b26f29cabd07c1b7ce0d34260",
       "executable": false
     },
     "package.json": {
@@ -3178,6 +3178,10 @@
     },
     "scripts/delivery/README.md": {
       "sha256": "c0c579c6aac26cd10b5a6a27af672794f9e1cb81b2a5d9a25282cc4ce7bcc7f7",
+      "executable": false
+    },
+    "scripts/delivery/release-source.mjs": {
+      "sha256": "f58e262a8f9b3e0f878ad9469f57affcd6b0434e5d0491a8e2e73596af0cbf67",
       "executable": false
     },
     "scripts/delivery/reply-icons.ts": {
@@ -4317,7 +4321,7 @@
       "executable": false
     },
     "src/app.ts": {
-      "sha256": "1b00c8a76e799108941899d229a4053dc846882ff4e72abfa35d9ad0598f8131",
+      "sha256": "f6f217a68b8ce7435904e5ea2452f31b9992d31548fed9ebb334d94484f6ec2c",
       "executable": false
     },
     "src/base/contract-anchor.mjs": {
@@ -11004,6 +11008,10 @@
       "sha256": "351571d138deee92473db35849adcc04263b75f5a97bd7370898b40ce8924fd4",
       "executable": false
     },
+    "src/platform/release.ts": {
+      "sha256": "1d2bb3590dbd04bd36a148e7e311e96763d8457cff4df58d643f6878533e1b3e",
+      "executable": false
+    },
     "src/platform/reply-icon-assets.d.ts": {
       "sha256": "2db4594208b5f9995e30bafe2f3e3a743d47ddb0ef1f14f23b2bc0b87fb01c47",
       "executable": false
@@ -17425,7 +17433,7 @@
       "executable": false
     },
     "tests/journeys/runtime.mjs": {
-      "sha256": "7f2a1ff76a6cae4c685e02ddc06bcf20ef38de4109efefc8d7cfb18a297b0633",
+      "sha256": "65148ecc616f08acb67c232bacf2a1140ee29068dccf9f09b561a23e194a32bd",
       "executable": false
     },
     "tests/journeys/upgrade-nightly.mjs": {
@@ -17817,7 +17825,7 @@
       "executable": false
     },
     "vite.config.ts": {
-      "sha256": "49062d8ba151142fbf2008ee5c97311328809224c5a2a3ebcfd343057df218c0",
+      "sha256": "c949d123aaab818c32359bdbb7c505d93f0cae59758f5b0bfcb4f5d5ce645249",
       "executable": false
     },
     "vite.site.config.ts": {

@@ -2,6 +2,9 @@ import { cloudflare } from '@cloudflare/vite-plugin'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { fileURLToPath } from 'node:url'
+// @ts-expect-error Build provenance resolver is JavaScript without declarations.
+import { releaseSourceCommit } from './scripts/delivery/release-source.mjs'
 import { archiveOutputGuard } from '@runeditrun/rer/archive-output'
 import { reproducibleOutput } from './scripts/delivery/reproducible-output.ts'
 import { workspaceModulePreloads } from './scripts/delivery/module-preloads.ts'
@@ -165,7 +168,10 @@ export default defineConfig(({ command, isPreview }) => {
  const localOrigin = command === 'serve' && !isPreview ? process.env.RER_DEV_ORIGIN : undefined;
  if(localOrigin && (!/^http:\/\/(?:127\.0\.0\.1|localhost|\[::1\]):[0-9]+$/.test(localOrigin)))throw Error('Unsafe local development origin');
  return {
- define: { 'import.meta.env.RER_LOCAL_ORIGIN': JSON.stringify(localOrigin) },
+ define: {
+  'import.meta.env.RER_LOCAL_ORIGIN': JSON.stringify(localOrigin),
+  __H2H_RELEASE_SOURCE_COMMIT__: JSON.stringify(releaseSourceCommit(fileURLToPath(new URL('.', import.meta.url)))),
+ },
  // The runtime and common controls are needed together. Separate tiny helper
  // chunks add network waves to cold signed-in navigation.
  environments: { client: { build: { rolldownOptions: { output: {

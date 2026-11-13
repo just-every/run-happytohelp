@@ -17100,6 +17100,10 @@
       "sha256": "e907afc43e2f6b4bccd4125659d4dfef82b2b5d1fe67a37dea7c56fe0a6ca9b5",
       "executable": false
     },
+    "tests/helpers/workerd-start.mjs": {
+      "sha256": "557671a7655597eb350117d4b1d64abd764c6be875a5404bbd282e51b10d07b8",
+      "executable": false
+    },
     "tests/helpers/workflows/desk-flow.mjs": {
       "sha256": "6bb088a52900adcd8374e31a2b6dd38c8c205e41ef46b3b68fafff4823f62dda",
       "executable": false
@@ -17221,7 +17225,7 @@
       "executable": false
     },
     "tests/journeys/kit/app.mjs": {
-      "sha256": "a5a65ceb9b0c94fcea4b6eb941c5491363d03204f0d253f0fab380f61f938af4",
+      "sha256": "9207ac29e3fd4ba1c53f98e0a3668c1af209443a32077e37868a48ea38e77ade",
       "executable": false
     },
     "tests/journeys/kit/browser.mjs": {
@@ -17249,7 +17253,7 @@
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {
-      "sha256": "433f215001a615777acbb3b19a5d6bbaad138b43d63199dbcf12975e50411454",
+      "sha256": "540c0ca953f821abe9f318281f446d7eab90855f0202e9b9d21148ff75c69e34",
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
@@ -17448,8 +17452,12 @@
       "sha256": "6cb4086032dc4fef4b6b41299b166437eab55351afdbc42a51997f5fb0f98a15",
       "executable": false
     },
+    "tests/move-in/harness-migrations.mjs": {
+      "sha256": "2786f8bfd746a7d16bf68cf90133d3a073f916083cf4ecb0c7913210cc46f376",
+      "executable": false
+    },
     "tests/move-in/harness.mjs": {
-      "sha256": "4a7b23dffa7876c6809c6aaa5576e43c3fd29997c0f42a8daaa3ae9cdf8b83cb",
+      "sha256": "4f7bdf9546db6780bced696554526dc4569ee2a8a2c4b3d8b50a6987ab62625e",
       "executable": false
     },
     "tests/move-in/helpscout-fixtures.mjs": {
@@ -17509,7 +17517,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/runtime.mjs": {
-      "sha256": "add7f3ac466f9a0055067f32f9677e6616aa512828c05c8ecc1e11fac771e2c9",
+      "sha256": "bc6255d4d5b241cfeacba2160f2f1837073daba504ff6a40f88a71eeb1a786e6",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/v1-cleanup.mjs": {

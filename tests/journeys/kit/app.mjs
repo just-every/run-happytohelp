@@ -4,6 +4,7 @@ import {join,resolve} from 'node:path'
 import {tmpdir} from 'node:os'
 import {randomBytes,createHash} from 'node:crypto'
 import {build} from 'esbuild'
+import {startWorkerd} from '../../helpers/workerd-start.mjs'
 
 // The real application router (src/app) in workerd over real D1, R2, Durable
 // Objects and a queue, with every migration applied. Network is the only fake:
@@ -23,11 +24,11 @@ export async function startApp({bindings={},outbound,origin='https://app.example
  const directory=await mkdtemp(join(tmpdir(),'h2h-app-')),script=await bundle(entry,socketModule),requests=[]
  let current={...bindings},mf,db,url,port=0
  const outboundService=async request=>{const body=request.method==='GET'||request.method==='HEAD'?'':await request.clone().text();const entry={url:request.url,method:request.method,headers:Object.fromEntries(request.headers),body};requests.push(entry);if(!outbound)throw new Error('External calls prohibited: '+request.url);return outbound(request,entry)}
- const start=async()=>{
+ const start=()=>startWorkerd(async()=>{
   mf=new Miniflare(convertV4MiniflareOptions({name:'h2h-app',...(cf?{cf}:{}),...(listen?{host:'127.0.0.1',port}:{}),modules:true,script,unsafeTriggerHandlers:true,compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{...(captureQueue?{H2H_TEST_CAPTURE_QUEUE:'1'}:{}),...Object.fromEntries(Object.entries(current).filter(([,value])=>value!==undefined))},d1Databases:{DB:'h2h-app'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},queueProducers:{JOBS:'h2h-app-jobs'},queueConsumers:{'h2h-app-jobs':{maxBatchSize:1,maxRetries:0}},resourcePersistencePath:persist||join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService}))
   db=await mf.getD1Database('DB')
   if(listen){url=String(await mf.ready).replace(/\/$/,'');port=Number(new URL(url).port)}
- }
+ })
  await start()
  // `migrate` may name the migrations to apply, so a test can stage prior state between them.
  try{if(migrate)await applyMigrations(db,typeof migrate==='function'?migrate:undefined)}catch(error){await mf.dispose();await rm(directory,{recursive:true,force:true});throw error}

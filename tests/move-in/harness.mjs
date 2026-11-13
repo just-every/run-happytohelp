@@ -7,6 +7,7 @@ import {randomBytes,createHash} from 'node:crypto';
 import {build} from 'esbuild';
 import {snapshotDatabase} from './snapshot.mjs';
 import {migrateNativeHarness} from './harness-migrations.mjs';
+import {startWorkerd} from '../helpers/workerd-start.mjs';
 import {children,identifyWorkerd,assertOwnedWorkerd,assertWorkerdStopped} from './owned-workerd.mjs';
 const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[require.resolve('wrangler')]}));
 const workerBundles=new Map()
@@ -15,7 +16,7 @@ export async function nativeHarness({withConversations=false,fresh=false,binding
  const directory=await mkdtemp(join(tmpdir(),'move-in-check-'));let mf,db,outbound=0,maxStatements=0,lastWrites=0,workerdPid;
  const queued=[],tokens={},outboundRequests=[];
  const script=await compiledWorker(sourceRoot,workerEntry);
- async function start(){const before=await children();mf=new Miniflare(convertV4MiniflareOptions({name:'move-in-check',cf:false,modules:true,script,compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:randomBytes(32).toString('hex'),EMAIL_FROM:'test@example.test',OPENAI_API_KEY:randomBytes(32).toString('hex'),...bindings},d1Databases:{DB:'move-in-check'},r2Buckets:['FILES'],...(withConversations?{durableObjects:{CONVERSATIONS:'ConversationSocket'}}:{}),resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async request=>{outbound++;outboundRequests.push({hostname:new URL(request.url).hostname,method:request.method});if(network)return network(request);throw new Error('External calls prohibited')}}));try{db=await mf.getD1Database('DB');workerdPid=await identifyWorkerd(before)}catch(error){await mf.dispose();throw error}}
+ const start=()=>startWorkerd(async()=>{const before=await children();mf=new Miniflare(convertV4MiniflareOptions({name:'move-in-check',cf:false,modules:true,script,compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:randomBytes(32).toString('hex'),EMAIL_FROM:'test@example.test',OPENAI_API_KEY:randomBytes(32).toString('hex'),...bindings},d1Databases:{DB:'move-in-check'},r2Buckets:['FILES'],...(withConversations?{durableObjects:{CONVERSATIONS:'ConversationSocket'}}:{}),resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async request=>{outbound++;outboundRequests.push({hostname:new URL(request.url).hostname,method:request.method});if(network)return network(request);throw new Error('External calls prohibited')}}));try{db=await mf.getD1Database('DB');workerdPid=await identifyWorkerd(before)}catch(error){await mf.dispose();throw error}})
  await start();
  // Install the same ordered SQL in one D1 round trip, as the app journey kit does.
  try{await migrateNativeHarness(db,sourceRoot);

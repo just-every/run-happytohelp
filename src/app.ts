@@ -12,6 +12,7 @@ import {api as scopedApi} from './modules/api-integrations/routes'
 import {integrationSettings} from './modules/api-integrations/settings'
 import { notFoundResponse, rejectedResponse } from './base/rejected-response'
 import { deploymentHealth } from './base/deployment-health'
+import { release } from './platform/release'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from './platform/env'
@@ -93,8 +94,8 @@ app.onError(async(error,c) => {
  return rejectedResponse(c.req.raw,c.json({error:'Request failed. Check server diagnostics.'},500))
 })
 app.get('/health',async c=>{
- try { await Promise.all([c.env.DB.prepare('SELECT 1').first(),c.env.FILES.head('_health_probe')]);return c.json({status:'ok',...deploymentHealth(c.env),runtime:'native-rer',database:'reachable',files:'reachable'}) }
- catch { return c.json({status:'unavailable',runtime:'native-rer'},503) }
+ try { await Promise.all([c.env.DB.prepare('SELECT 1').first(),c.env.FILES.head('_health_probe')]);return c.json({status:'ok',...deploymentHealth(c.env),release,runtime:'native-rer',database:'reachable',files:'reachable'}) }
+ catch { return c.json({status:'unavailable',release,runtime:'native-rer'},503) }
 })
 app.route('/api/delegation/v1',delegation)
 app.route('/api/delegation',nativeDelegation)

@@ -473,6 +473,22 @@ Export what you need first: removal deletes the installation's data.
 
 ### What `/health` does and does not tell you
 
+Every `/health` response includes `release: {version, sourceCommit}`. `version`
+is the committed `package.json` release version, baked into the Worker bundle.
+At build time, a managed copy takes `sourceCommit` from the schema-1
+`rer-upstream.json` record's `commit` (the upstream release tag commit), rather
+than either of its installation commits. A publisher checkout uses its Git HEAD.
+A source archive without that record or its own Git history reports
+`sourceCommit: null`; a direct source harness without a Vite build does too.
+Malformed upstream provenance refuses the build instead of using installation
+history. Rebuild after changing source or release metadata; requests never read
+Git or the provenance file. These fields need no platform environment bindings.
+
+The existing `ok` and `deployment: {sourceSha, fingerprint, versionId}` fields
+retain rer deploy's binding-based comparison unchanged. Missing deployment
+bindings remain null, even when the baked release source is known. Release
+identity is available on the 503 response too; it does not imply healthy storage.
+
 Health means the native Worker can reach D1 and R2. It does not qualify queues,
 sockets, email delivery, provider access, custom domains, compliance or product
 acceptance. Confirm those through their public flows on the intended installation.

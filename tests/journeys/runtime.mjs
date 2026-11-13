@@ -29,9 +29,21 @@ async function deliverySocket(origin,conversationId,token,after=0){
 // One emitted application, exercised over its real HTTP and WebSocket transport.
 test('a native support session admits and replays one transcript with its own files, refuses foreign and stale writes, delivers live and pairs the shipped connector',async()=>{
  await mobileAdmission()
- const runtime=await createRuntime({});let success=false
+ const deployment={sourceSha:'synthetic-runtime-source',fingerprint:'synthetic-runtime-fingerprint',versionId:'synthetic-runtime-version'}
+ const runtime=await createRuntime({vars:{RER_DEPLOY_SOURCE:deployment.sourceSha,RER_DEPLOY_FINGERPRINT:deployment.fingerprint,RER_VERSION:{id:deployment.versionId}}});let success=false
  try{
   const {call,request}=client(runtime.origin)
+  const health=await call('/health',{status:200})
+  const {version}=JSON.parse(await readFile(new URL('../../package.json',import.meta.url),'utf8'))
+  // CI shares the built artifact with shallow checkouts: compare the app's
+  // baked identity to committed metadata, never a hard-coded release or hash.
+  let upstream
+  try{upstream=JSON.parse(await readFile(new URL('../../rer-upstream.json',import.meta.url),'utf8'))}catch(error){if(error.code!=='ENOENT')throw error}
+  let sourceCommit=upstream?.commit??null
+  if(!upstream){try{sourceCommit=(await exec('git',['rev-parse','--verify','HEAD^{commit}'],{cwd:new URL('../..',import.meta.url)})).stdout.trim()}catch{}}
+  assert.deepEqual(health.data.release,{version,sourceCommit},'built health reports its release source independently of deployment bindings')
+  assert.deepEqual(health.data.deployment,deployment,'the deploy-kit identity body keeps the original binding values')
+  assert.deepEqual([health.data.ok,health.data.status,health.data.runtime,health.data.database,health.data.files],[true,'ok','native-rer','reachable','reachable'])
   for(const path of ['/login','/setup','/docs/install']){
    const response=await request(path);assert.equal(response.status,200)
    assert.equal(response.headers.get('x-frame-options'),'SAMEORIGIN')

@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {mkdtemp,readdir,readFile,rm} from 'node:fs/promises';
+import {mkdtemp,rm} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {randomBytes,createHash} from 'node:crypto';
 import {build} from 'esbuild';
 import {snapshotDatabase} from './snapshot.mjs';
+import {migrateNativeHarness} from './harness-migrations.mjs';
 import {children,identifyWorkerd,assertOwnedWorkerd,assertWorkerdStopped} from './owned-workerd.mjs';
 const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[require.resolve('wrangler')]}));
 const workerBundles=new Map()
@@ -16,8 +17,8 @@ export async function nativeHarness({withConversations=false,fresh=false,binding
  const script=await compiledWorker(sourceRoot,workerEntry);
  async function start(){const before=await children();mf=new Miniflare(convertV4MiniflareOptions({name:'move-in-check',cf:false,modules:true,script,compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:randomBytes(32).toString('hex'),EMAIL_FROM:'test@example.test',OPENAI_API_KEY:randomBytes(32).toString('hex'),...bindings},d1Databases:{DB:'move-in-check'},r2Buckets:['FILES'],...(withConversations?{durableObjects:{CONVERSATIONS:'ConversationSocket'}}:{}),resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async request=>{outbound++;outboundRequests.push({hostname:new URL(request.url).hostname,method:request.method});if(network)return network(request);throw new Error('External calls prohibited')}}));try{db=await mf.getD1Database('DB');workerdPid=await identifyWorkerd(before)}catch(error){await mf.dispose();throw error}}
  await start();
- const applyMigration=async file=>{const source=(await readFile(join(sourceRoot,'migrations',file),'utf8')).replace(/^\s*--[^\n]*$/gm,'');await db.batch([...source.matchAll(/\s*(CREATE TRIGGER[\s\S]*?END;|[^;]+;)/g)].map(([,sql])=>db.prepare(sql)))};
- try{for(const file of (await readdir(join(sourceRoot,'migrations'))).filter(file=>file.endsWith('.sql')).sort())await applyMigration(file);
+ // Install the same ordered SQL in one D1 round trip, as the app journey kit does.
+ try{await migrateNativeHarness(db,sourceRoot);
  if(!fresh)for(const [project,user,role] of [['p','owner','owner'],['p','operator','operator'],['q','foreign','owner']]){if(role==='owner')await db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,?,?,?,1)').bind(project,project,`widget-${project}`,'https://example.test').run();await db.prepare('INSERT INTO users(id,email,name,created_at) VALUES(?,?,?,1)').bind(user,`${user}@example.test`,user).run();await db.prepare('INSERT INTO memberships VALUES(?,?,?)').bind(project,user,role).run();const token=randomBytes(32).toString('hex');tokens[user]=token;await db.prepare('INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,?,?,?)').bind(createHash('sha256').update(token).digest('hex'),user,project,role,Date.now()+86400000).run()}
  // The teammates signed in just now, once every migration (including two-factor) is in place.
  await db.prepare("INSERT INTO session_factors(token_hash,user_id,method,verified_at) SELECT token_hash,actor_id,'password',? FROM sessions WHERE role<>'contact'").bind(Date.now()).run()

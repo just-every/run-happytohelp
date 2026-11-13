@@ -17449,7 +17449,7 @@
       "executable": false
     },
     "tests/move-in/harness.mjs": {
-      "sha256": "b69f2f55a703936bf2a648e7848358d981debdb978735203c42cb8ac0fbd9cd9",
+      "sha256": "4a7b23dffa7876c6809c6aaa5576e43c3fd29997c0f42a8daaa3ae9cdf8b83cb",
       "executable": false
     },
     "tests/move-in/helpscout-fixtures.mjs": {

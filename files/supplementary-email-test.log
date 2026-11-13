@@ -1,0 +1,28 @@
+✖ a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome (181640.933826ms)
+Amazon SES reader attempt failed processing_failed 1
+Persisted job handler failed legacy-mail.s3 ses/acme/stuckinflight0010
+Amazon SES reader attempt failed processing_failed 1
+Persisted job handler failed legacy-mail.s3 ses/acme/stuckswept0013
+Amazon SES reader attempt failed processing_failed 1
+Amazon SES reader attempt failed processing_failed 12
+✔ mail that Amazon SES stores in S3 is read from its two prefixes and admitted by SES's own record of the recipient and sender, replayed mail is never authenticated, and nothing is read, written or sent without the reader's inputs (14017.012639ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 196448.482567
+
+✖ failing tests:
+
+test at tests/journeys/email.mjs:9:1
+✖ a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome (181640.933826ms)
+  Error: Journey server PID has no owned control socket
+      at stopOwnedServer (file:///workspace/run-happytohelp/tests/helpers/rer-command.mjs:17:19)
+      at async devEntry (file:///workspace/run-happytohelp/tests/helpers/email/local-mail.mjs:164:18)
+      at async localMailJourney (file:///workspace/run-happytohelp/tests/helpers/email/local-mail.mjs:19:2)
+      at async TestContext.<anonymous> (file:///workspace/run-happytohelp/tests/journeys/email.mjs:10:2)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)

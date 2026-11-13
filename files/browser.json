@@ -1,0 +1,51 @@
+{
+  "scope": "emitted candidate Worker, native first-owner setup and real Email settings; no provider accounts or requests",
+  "result": [
+    {
+      "width": 1440,
+      "state": "local",
+      "guide": "How to receive email\n\nA local trial cannot receive or send email. Use the website chat to try conversations on this computer.\n\nWhen you are ready, follow the hosted email setup guide to deploy HappyToHelp and connect a real mailbox or a receiving address on a domain you own."
+    },
+    {
+      "width": 1440,
+      "provider": "gmail",
+      "prerequisite": "The installation owner must first register a Google OAuth app and install its credentials. Google mailbox setup. This provider is not configured yet.",
+      "href": "/docs/email#google-gmail-setup"
+    },
+    {
+      "width": 1440,
+      "provider": "microsoft",
+      "prerequisite": "The installation owner must first register a Microsoft OAuth app and install its credentials. Microsoft mailbox setup. This provider is not configured yet.",
+      "href": "/docs/email#microsoft-365-setup"
+    },
+    {
+      "width": 1440,
+      "provider": "imap",
+      "prerequisite": "The installation owner must first allow both mail server hosts and TLS ports. IMAP and SMTP setup.",
+      "href": "/docs/email#connect-imap-and-smtp"
+    },
+    {
+      "width": 390,
+      "state": "local",
+      "guide": "How to receive email\n\nA local trial cannot receive or send email. Use the website chat to try conversations on this computer.\n\nWhen you are ready, follow the hosted email setup guide to deploy HappyToHelp and connect a real mailbox or a receiving address on a domain you own."
+    },
+    {
+      "width": 390,
+      "provider": "gmail",
+      "prerequisite": "The installation owner must first register a Google OAuth app and install its credentials. Google mailbox setup. This provider is not configured yet.",
+      "href": "/docs/email#google-gmail-setup"
+    },
+    {
+      "width": 390,
+      "provider": "microsoft",
+      "prerequisite": "The installation owner must first register a Microsoft OAuth app and install its credentials. Microsoft mailbox setup. This provider is not configured yet.",
+      "href": "/docs/email#microsoft-365-setup"
+    },
+    {
+      "width": 390,
+      "provider": "imap",
+      "prerequisite": "The installation owner must first allow both mail server hosts and TLS ports. IMAP and SMTP setup.",
+      "href": "/docs/email#connect-imap-and-smtp"
+    }
+  ]
+}

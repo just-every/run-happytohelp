@@ -1,0 +1,23 @@
+{
+  "base": "acdcff44b1dae61a4c5559807c33430fd0891dbd",
+  "entry": "rer dev private local owner entry to Setup, then Settings > Email",
+  "state": "local",
+  "guideText": "How to receive email\n\nMail reaches HappyToHelp through the receiving domain\u2019s MX records. Use a subdomain such as in.yourcompany.com so your main mail is untouched. Pick one way:\n\nCloudflare Email Routing (the domain\u2019s DNS is on Cloudflare)\n\nIn Cloudflare, open the domain, then Email, Email Routing, and turn it on for localhost.test. Cloudflare adds the MX records.\nUnder Routing rules, add the custom address local-support (or a catch-all) with the action Send to a Worker, and choose your HappyToHelp Worker.\nSave the receiving address above and send it a test email.\n\nSendGrid Inbound Parse (any DNS provider)\n\nAt your DNS provider, add an MX record: name localhost.test, value mx.sendgrid.net, priority 10.\nIn SendGrid, open Settings, Inbound Parse, and configure authenticated forwarding to this installation. The receiving setup guide has the endpoint and private-credential steps.\n\nMore detail, including your own gateway: Receive email.",
+  "choices": [
+    {
+      "provider": "gmail",
+      "text": "Connect a mailbox\nConnection\nEmail forwarding\nGoogle Gmail\nMicrosoft 365 / Graph\nIMAP and SMTP\nSender / brand name\n\nAuthorize this mailbox with Google. This connection is unavailable until the installation owner configures this provider.\n\nAuthorize mailbox\nCancel",
+      "links": []
+    },
+    {
+      "provider": "microsoft",
+      "text": "Connect a mailbox\nConnection\nEmail forwarding\nGoogle Gmail\nMicrosoft 365 / Graph\nIMAP and SMTP\nSender / brand name\n\nAuthorize this mailbox with Microsoft. This connection is unavailable until the installation owner configures this provider.\n\nAuthorize mailbox\nCancel",
+      "links": []
+    },
+    {
+      "provider": "imap",
+      "text": "Connect a mailbox\nConnection\nEmail forwarding\nGoogle Gmail\nMicrosoft 365 / Graph\nIMAP and SMTP\nSender / brand name\nMailbox address\nIMAP host\nSMTP host\nIMAP TLS port\nDefault (993)\n993\n465\nSMTP TLS port\nDefault (465)\n993\n465\nIMAP username\nIMAP password\nSMTP username (if different)\nSMTP password (if different)\n\nUse an app password where your provider requires one. Passwords are encrypted and are never shown again.\n\nIMAP and SMTP connections are unavailable until the installation owner allows the mail server hosts.\n\nSave mailbox\nCancel",
+      "links": []
+    }
+  ]
+}

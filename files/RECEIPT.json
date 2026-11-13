@@ -1,0 +1,126 @@
+{
+  "base": "acdcff44b1dae61a4c5559807c33430fd0891dbd",
+  "branch": "cloud/main-happytohelp-email-setup-guide-1",
+  "browser": {
+    "providers_executed": false,
+    "receipt": "browser.json",
+    "result": "pass",
+    "screenshots": 14,
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "buildSite(process.cwd()) via esbuild bundle of src/ui/docs/build/site.ts",
+      "exit": 0,
+      "log": "docs-links.log",
+      "pages": 39,
+      "problems": []
+    },
+    {
+      "command": "node --test --test-name-pattern=\"a first owner and a signed-in owner\" tests/journeys/identity-browser.mjs",
+      "exit": 0,
+      "failed": 0,
+      "log": "first-owner-test.log",
+      "passed": 1,
+      "skipped": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-check.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party.log"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit": 0
+    },
+    {
+      "command": "All-candidate author, committer and trailer inspection plus added-diff credential check",
+      "exit": 0
+    }
+  ],
+  "ci": "pending exact-SHA Verify",
+  "contract_status_changed": false,
+  "counts": {
+    "contract": {
+      "done": [
+        4,
+        4
+      ],
+      "missing": [
+        16,
+        16
+      ],
+      "partial": [
+        71,
+        71
+      ],
+      "total": [
+        91,
+        91
+      ]
+    },
+    "docs_pages": [
+      39,
+      39
+    ],
+    "local_domain_routing_instructions": [
+      2,
+      0
+    ],
+    "provider_links": [
+      0,
+      3
+    ],
+    "stranger_findings": [
+      2,
+      0
+    ],
+    "test_registrations": [
+      108,
+      108
+    ]
+  },
+  "created_at": "2026-11-13T12:41:53Z",
+  "head": "9901e11ad3145638b8f7fbe5c0a53d76b1ec042f",
+  "product_blobs": {
+    "docs/email.md": "8de9461176ac9e8c22a95c081544eb6c1e9a713b",
+    "sources.lock.json": "48b04978e9badaa0fc9418234760663076d72789",
+    "src/modules/integrations/README.md": "bf9104bd00d2af328f5f746925b42922dbb129f5",
+    "src/ui/native/pages/EmailSettings.jsx": "68372a22b913144c129634e3a4bda2f02206540e",
+    "src/ui/native/pages/email/MailboxEditor.jsx": "9f2c9de0d6f9973d6a7a15e61c1d9328ceb15f10",
+    "tests/helpers/email/setup-browser.mjs": "a04edc3cd1e4c3095848f9202d224e1723bf7091",
+    "tests/journeys/identity-browser.mjs": "e2ea95c4928c4484b2edd6e67f46b1377e96df39"
+  },
+  "publication_scan": "Fleet Mac lander required; not run in cloud",
+  "repository": "just-every/run-happytohelp",
+  "supplementary_check": {
+    "command": "node --test --test-concurrency=1 tests/journeys/email.mjs",
+    "error": "Journey server PID has no owned control socket",
+    "exit": 1,
+    "log": "supplementary-email-test.log",
+    "scope": "Intermediate implementation run; not passing candidate evidence"
+  },
+  "tag": "main-happytohelp-email-setup-guide-1"
+}

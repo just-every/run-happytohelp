@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: a local trial owner finds hosted email setup without DNS or routing steps for the trial domain
+ok 1 - a local trial owner finds hosted email setup without DNS or routing steps for the trial domain
+  ---
+  duration_ms: 170828.428692
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 174675.840285

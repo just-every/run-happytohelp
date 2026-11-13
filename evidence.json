@@ -1,0 +1,202 @@
+{
+  "files": [
+    {
+      "blob": "2e1aacce46339b0d43ed09bdcf4700adfffdf610",
+      "bytes": 747,
+      "path": "CI.jsonl",
+      "sha256": "f4d4457dea485d1b9ef893b0033cb07a5a5f3a62e21447697d81650329f31f20"
+    },
+    {
+      "blob": "f7640065389aeaf121f1ce38b91091d5f98595cc",
+      "bytes": 1023,
+      "path": "PUSH.log",
+      "sha256": "d7a5fa59c1e7c9accafc38cc9734fca55d9a2e6fd28b72416080e7adba44c14b"
+    },
+    {
+      "blob": "4b45599c72106e364514199fbeb51deebef123bd",
+      "bytes": 3269,
+      "path": "RECEIPT.json",
+      "sha256": "5fe7697773367a131ed20985abdeb687a5c72ab488196b75f5a146fda251c4e0"
+    },
+    {
+      "blob": "9bef05c55d21320d62fb391cc04b011d0663ae32",
+      "bytes": 7190,
+      "path": "REPORT.md",
+      "sha256": "99ef63d3622ae129e254d85554ba59ce3b8d3deb550f34df49d1192f1bebbaed"
+    },
+    {
+      "blob": "fd95045a61d44f17c4169fe1ff4115497ba1f9f7",
+      "bytes": 194982,
+      "path": "after-gmail-1440.png",
+      "sha256": "f4cf5c9d2be4072b9451d2705084183c6a970f83c695c9011ea9bdcf5c38e84a"
+    },
+    {
+      "blob": "b9ae45ff7f82d0c04960c87fa1d3ad5f52ff87f1",
+      "bytes": 154517,
+      "path": "after-gmail-390.png",
+      "sha256": "0c3f48000ca9da851da0e853f6a6aedca6edcfc297d5850b45d816c6a1128bc6"
+    },
+    {
+      "blob": "74d3ab2e924b56f7932f3809c3beed5a99130855",
+      "bytes": 6569667,
+      "path": "after-guide-gmail-1440.png",
+      "sha256": "1726da0dab39a22c9d133a19e7e12b513e057175f56d6da62df76b9885570738"
+    },
+    {
+      "blob": "05f1feea7ada512714a203c0849aeb74517c7843",
+      "bytes": 6570080,
+      "path": "after-guide-gmail-390.png",
+      "sha256": "b6e22b63ee26c05abeeb4bd495d70f8f53942604745ee9717929243482feac4e"
+    },
+    {
+      "blob": "f473815b60e0f0989665a97a0eb83a05e6c1cbf2",
+      "bytes": 6570895,
+      "path": "after-guide-imap-1440.png",
+      "sha256": "76123ddf7f743188e142e15b55add086ad30601c82a6619d8f67eae3d1d9734a"
+    },
+    {
+      "blob": "9d16034489c7a51ba247dc5217e4378d92eb6804",
+      "bytes": 6570259,
+      "path": "after-guide-imap-390.png",
+      "sha256": "d03198b15e0c2d78d88bb5e1a2c84b0e1ca63f4f045d9f93d263e24782aabac9"
+    },
+    {
+      "blob": "119e75b7513ba6f62f5e44c16223a9bc0284aaa0",
+      "bytes": 6570456,
+      "path": "after-guide-microsoft-1440.png",
+      "sha256": "67afb43c8bee048a8abcb14e913abb1f126f6812cf44a10b6b4b1eaebd771cd7"
+    },
+    {
+      "blob": "6cab7ddd93fbc72f936ab2ae82a97bb5700a2c64",
+      "bytes": 6569663,
+      "path": "after-guide-microsoft-390.png",
+      "sha256": "79e2e4e84bcf52c1ca779d3dee9419596c3e37a9726a8ad1a8bf84b3df6f01e5"
+    },
+    {
+      "blob": "38efd16fb418f60fc808f90344a510a6275aeacd",
+      "bytes": 228860,
+      "path": "after-imap-1440.png",
+      "sha256": "3105163a21457274424db88ad1e3e924d4119fa28697c55c0e2270971699731b"
+    },
+    {
+      "blob": "7ee218823b1ab607bafe7cb48c30b6ddb474d0f3",
+      "bytes": 191564,
+      "path": "after-imap-390.png",
+      "sha256": "5434a12cdfb025856358eddec88158df9371a2ee01e8d9efb9b9da48f192613f"
+    },
+    {
+      "blob": "ca1e5f983b8a59e3603d1bcc546ba0ac6af0545f",
+      "bytes": 165792,
+      "path": "after-local-1440.png",
+      "sha256": "8927c6aeb82f83ac62eec24c43627759e0cb667b360c7d18353fd9283a1971a1"
+    },
+    {
+      "blob": "b11391902812bf1ffe6d744dfdb680f8b7c3132a",
+      "bytes": 129334,
+      "path": "after-local-390.png",
+      "sha256": "7de3acc6bc3d218d55afd26341212569d2e26f86452da8d456e1102b308ce274"
+    },
+    {
+      "blob": "1f7f54927664b58a1b0b20c0ccec85a4a1b7dc2c",
+      "bytes": 196519,
+      "path": "after-microsoft-1440.png",
+      "sha256": "b6ba45f80663961e0b71885b97e377dd22ac3c112b9ea4a848c0ccac02578d71"
+    },
+    {
+      "blob": "3e257bae116aba857c8a423399f33432f6539d3c",
+      "bytes": 155201,
+      "path": "after-microsoft-390.png",
+      "sha256": "aae9833bfc1be394c03d2e5b709f6c23e0d2e870064efcd53eb61b1cf73b6f87"
+    },
+    {
+      "blob": "4b56f8de7ae2d40388c7efa8b70043c0885f4d15",
+      "bytes": 22557,
+      "path": "before-gmail-1440.png",
+      "sha256": "a01919a33596ab7d92bdaffc02e04075cc0151ed4ccaa6fbf368a6dd0601be35"
+    },
+    {
+      "blob": "fddbcadfde97338e3bce4d7e1e6f895e3915d6ec",
+      "bytes": 49800,
+      "path": "before-imap-1440.png",
+      "sha256": "aedc7e6635e9e67bd46d9cc1e10c2e9915e253ac8f2c299ba9c61439655adfe0"
+    },
+    {
+      "blob": "9abda3a76b72b5457c80216e1342f345675eba15",
+      "bytes": 228846,
+      "path": "before-local-1440.png",
+      "sha256": "dce9e6ca8528c8f3cbbcd015e4422a149f2b5b0dc9c18d648e4863b17468e45c"
+    },
+    {
+      "blob": "37bbf7a32f74fa4795f5ed73079ae2f48b93a46d",
+      "bytes": 23044,
+      "path": "before-microsoft-1440.png",
+      "sha256": "1b5e0be0f7d6bc9d4465e29bac564774669bd766ca4cb551520b13c3ed6824ca"
+    },
+    {
+      "blob": "33585f579ac3d4230b950675ece0cfcbf061e93e",
+      "bytes": 2513,
+      "path": "before.json",
+      "sha256": "6f0c4e71f637adb0800a8c921dcdd8fc8a0eef0563d2c2f0ffb7afe1f8b56087"
+    },
+    {
+      "blob": "d4c5ef4285e84239f6f7c52ca87faaa79217a548",
+      "bytes": 2472,
+      "path": "browser.json",
+      "sha256": "5268b7edb8144b178089b56b8bc479fe6485db8207606995412aad6fe426aaeb"
+    },
+    {
+      "blob": "c469052f67c37acd8b394ffb3ba0966756d58ec2",
+      "bytes": 90628,
+      "path": "build.log",
+      "sha256": "683a8417d6af8f34d9b8ef69be71e5a56e5d8b621f378e92ee0ce671077c1d3d"
+    },
+    {
+      "blob": "3d1044fc8dd0f947c09304bf4e853cf13774b3dc",
+      "bytes": 49,
+      "path": "docs-links.log",
+      "sha256": "53dd82bd231ebdeb2588187fc497646d67d168eba74844caf0f80defe0f4c394"
+    },
+    {
+      "blob": "8b13e48d88ed0e0e163c517281cc760497bdc937",
+      "bytes": 349,
+      "path": "first-owner-test.log",
+      "sha256": "7697770b42c017a407323e598425894c8098b8e14508d117e6251202a95b7938"
+    },
+    {
+      "blob": "e0746d82caf17348cdc04c253bcde3312f0717a8",
+      "bytes": 136,
+      "path": "first-party.log",
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "blob": "621f549554f1b92b6bfa9268a9c45504460517ba",
+      "bytes": 386,
+      "path": "local-guide-test.log",
+      "sha256": "19cab294fcb130a720eceb5a59dd1521d8c5655c22415c09ace991923022d736"
+    },
+    {
+      "blob": "48e5ca63784e4bb80d2744a198a2d6c3f0c46584",
+      "bytes": 748051,
+      "path": "source-check.log",
+      "sha256": "8ebb50130c687702420df78b7bc229c9034e3e2e8b657089959d7d414e33441d"
+    },
+    {
+      "blob": "5e6e1bc7b3e1f2f8236ca5f8121f4763e66b83e6",
+      "bytes": 1784,
+      "path": "supplementary-email-test.log",
+      "sha256": "7e2f2fac42bbcfa2223ca79610d32db00168b393af82335766208c9304dd51f4"
+    },
+    {
+      "blob": "ff787fcb1ab39bcbdccdeb43eb33d06ad4813cb0",
+      "bytes": 217,
+      "path": "typecheck.log",
+      "sha256": "13aa800cf77c5df788cce3bc2ac6eeef315770c9fe1295b117f4cb4bca5a94c5"
+    }
+  ],
+  "product_branch": "cloud/main-happytohelp-email-setup-guide-1",
+  "product_head": "9901e11ad3145638b8f7fbe5c0a53d76b1ec042f",
+  "ref": "refs/heads/evidence/main-happytohelp-email-setup-guide-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "main-happytohelp-email-setup-guide-1"
+}

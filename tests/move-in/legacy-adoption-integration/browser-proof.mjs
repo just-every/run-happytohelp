@@ -20,7 +20,7 @@ export async function browserProof(){
    for(const width of [1440,390]){
     await page.setViewportSize({width,height:1000});await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))))
     if(name.includes('history-assignment')){const show=page.getByRole('button',{name:'Show conversation panel',exact:true});if(await show.isVisible())await show.click();await page.getByRole('tab',{name:'Ticket',exact:true}).click();await page.getByText('Historical assignee: Retired billing manager',{exact:true}).scrollIntoViewIfNeeded()}
-    if(name.includes('history-collapsed')||name.includes('history-expanded'))await page.locator('#conversation-assistant').waitFor({state:'hidden'})
+    if(width===390&&(name.includes('history-collapsed')||name.includes('history-expanded')))await page.locator('#conversation-assistant').waitFor({state:'hidden'})
     await page.addScriptTag({content:axe})
     const result=await page.evaluate(async()=>{const r=await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return {width:innerWidth,violations:r.violations.filter(v=>['serious','critical'].includes(v.impact)).map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)})),overflow:document.documentElement.scrollWidth>innerWidth+1}})
     const targets=await page.locator('.legacy-package button,.legacy-package input[type=file]').evaluateAll(elements=>elements.filter(e=>e.getClientRects().length).map(e=>({label:e.textContent||e.getAttribute('aria-label')||e.id,height:e.getBoundingClientRect().height})));assert.ok(targets.every(t=>t.height>=44));result.targets=targets
@@ -31,13 +31,13 @@ export async function browserProof(){
     if(await region.count()){
      await region.focus();await page.keyboard.press('Tab');await page.keyboard.press('Shift+Tab');assert.equal(await region.evaluate(e=>e===document.activeElement),true)
      assert.equal(await region.evaluate(e=>getComputedStyle(e).outlineStyle),'solid')
-     await region.evaluate(e=>{e.scrollLeft=0});await region.press('End');for(let n=0;n<8;n++)await region.press('ArrowRight');
-     await page.waitForFunction(()=>{const e=document.querySelector('.legacy-result .legacy-table-scroll');return e.scrollWidth<=e.clientWidth||e.scrollLeft>0})
+     await region.evaluate(e=>{e.scrollLeft=0});await region.press('End');for(let n=0;n<24;n++)await region.press('ArrowRight');
+     await page.waitForFunction(()=>{const e=document.querySelector('.legacy-result .legacy-table-scroll');return e.scrollLeft+e.clientWidth>=e.scrollWidth-1})
      result.table=await region.evaluate(e=>({width:e.clientWidth,scrollWidth:e.scrollWidth,scrollLeft:e.scrollLeft,focused:e===document.activeElement}))
-     if(width===390)assert.ok(result.table.scrollLeft>0,'keyboard reaches the verification columns')
+     if(width===390)assert.ok(result.table.scrollLeft>0&&result.table.scrollLeft+result.table.width>=result.table.scrollWidth-1,'keyboard reaches all verification columns')
      await region.scrollIntoViewIfNeeded();await page.screenshot({path:join(shots,label+'-table-focus.png'),animations:'disabled'})
     }
-    for(const [section,selector] of [['destination','.legacy-adoption'],['result','.legacy-result'],['authors','.buckets']]){
+    for(const [section,selector] of [['destination','.legacy-adoption'],['result','.legacy-result'],['authors','.transcript-actor-heading']]){
      const target=page.locator(selector).first();if(await target.count()&&await target.isVisible()){await target.scrollIntoViewIfNeeded();await page.screenshot({path:join(shots,label+'-'+section+'.png'),animations:'disabled'})}
     }
     checks.push({name:label,...result})

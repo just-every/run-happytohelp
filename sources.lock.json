@@ -11269,7 +11269,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/Bucket.jsx": {
-      "sha256": "acfd4faebc38adab15c8fe345fe3a78f2a171887043517f4429d8246f4ef2815",
+      "sha256": "2344c5b75c9ecb2f845fb9eef67ccfdbaaab843d0207bec7a832bf8e1bc3c773",
       "executable": false
     },
     "src/ui/dashboard/components/BucketGroup.jsx": {
@@ -17465,7 +17465,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/browser-proof.mjs": {
-      "sha256": "b01311dfa7a4abc08f3a92e162e78331f68f81d127933f4619e5eb43e7dca56e",
+      "sha256": "12ad4cf98b43b8016637f6ff40d23247c9da730f527e8562b043d4099c440be6",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/browser.mjs": {

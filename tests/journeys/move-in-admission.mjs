@@ -20,13 +20,13 @@ async function phases(journeys){
 }
 
 await test('review an export, import its history and private notes, repeat and repackage without effects, then undo exactly',{timeout:480_000},async()=>{
- await phases([reviewImportJourney,async function zendeskAndHelpScoutReplies(){await vendorRepliesJourney(vendors.slice(0,2))},async function expiredAttachmentRecovery(){await reservationAttachments(['stop-expiry'])}])
+ await phases([reviewImportJourney,async function zendeskAndHelpScoutReplies(){await vendorRepliesJourney(vendors.slice(0,2))},legacyAdoptionJourney])
 })
 
-await test('adopt mounted history, recover Worker stops, refuse unauthorized outcomes and enforce import ordering',{timeout:480_000},async()=>{
- await phases([legacyPackageAdmission,mountedAdoptionJourney,outcomesJourney,mountedOrderingJourney])
+await test('adopt mounted history, recover Worker stops and expired or orphaned attachments, and enforce authority and ordering',{timeout:480_000},async()=>{
+ await phases([legacyPackageAdmission,mountedAdoptionJourney,outcomesJourney,mountedOrderingJourney,async function expiredAndOrphanedAttachmentRecovery(){await reservationAttachments(['stop-expiry','orphan'])}])
 })
 
-await test('erase mounted import states, preserve Freshdesk and Intercom replies and recover attachment custody',{timeout:480_000},async()=>{
- await phases([mountedErasureStates,async function freshdeskAndIntercomReplies(){await vendorRepliesJourney(vendors.slice(2))},legacyAdoptionJourney,async function signedOutAndOrphanedAttachmentRecovery(){await reservationAttachments(['signout','orphan'])}])
+await test('erase mounted import states, preserve Freshdesk and Intercom replies and recover signed-out attachment custody',{timeout:480_000},async()=>{
+ await phases([mountedErasureStates,async function freshdeskAndIntercomReplies(){await vendorRepliesJourney(vendors.slice(2))},async function signedOutAttachmentRecovery(){await reservationAttachments(['signout'])}])
 })

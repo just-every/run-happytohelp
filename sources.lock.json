@@ -2913,11 +2913,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "3265099b5ff9cdeccf275f3c54706c9be0a68144d6701d6bbf60af5757248856",
+      "sha256": "c7a2fb86873b35190d12fa70eb387aa08d1435e509fefa613537c4d9bb5f34f6",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "e0a2ef8c22f8fac2ad34e1a67a0575a95de67aa504c9f22ff6bddb81dd32e393",
+      "sha256": "33d0719c472b5106a31945e1cca990bcf12325755ae62445ecdea3578f0b267b",
       "executable": false
     },
     "public/fonts/fonts.css": {

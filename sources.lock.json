@@ -7700,6 +7700,10 @@
       "sha256": "8a8ae695d3dd0a39ac71b8e9c9e48fa2925c23bda8abfad8ed056613de03562f",
       "executable": false
     },
+    "src/modules/knowledge/reference-read.ts": {
+      "sha256": "a50060a5016907c0453feaed5e632c776670031e27d642aa9c7f77c6ab762b83",
+      "executable": false
+    },
     "src/modules/knowledge/reference-store.ts": {
       "sha256": "6a85dc57e56497652c87d06907ab5bcc4e9edf875c205ddd793225e1a98c4e48",
       "executable": false

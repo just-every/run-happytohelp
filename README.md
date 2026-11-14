@@ -383,9 +383,11 @@ The default 90 FROM-item/expression-depth margin and 10% + 200 rows growth check
 remain. Reports have initial engineering ceilings of 1M/1.5M rows and explicitly
 allow cohort growth because they aggregate a selected 90-day window. Those are
 budgets, not measured provider limits. Existing flows retain the historical
-working ceilings; added routes have initial engineering budgets. No credentials or real conversations are used. Queues are held:
-scheduled knowledge refresh and legacy importer discovery cover admission/wakes,
-not their consumers. The two legacy run rows are discovery fixtures without R2
+working ceilings; added routes have initial engineering budgets. No credentials or real conversations are used. The published command intends to
+hold queues, but 0.2.112 currently lets consumer work enter the meter. This
+adoption is blocked on that Base isolation fix and on the report statements that
+exceed the 90-item margin. Scheduled knowledge refresh and legacy importer
+fixtures target admission/wakes; consumer completion is not qualified. The two legacy run rows are discovery fixtures without R2
 package custody. The no-key draft flow expects 409 and does not qualify generation.
 
 Verify runs size once nightly and on query/migration changes, using its shared

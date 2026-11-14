@@ -17,6 +17,7 @@ export async function putCustody(env:Pick<Env,'DB'|'FILES'>,h:CustodyHandle,p:Cu
  if(prior&&accepted(prior)){await renewCustody(env,h,p,'upload');return {key,alreadyPresent:true}}
  if(prior&&prior.customMetadata?.custodyBody!=='reservation')throw new CustodyError('file_conflict')
  if(prior&&!input.takeover)throw new CustodyError('source_reservation_pending')
+ await assertCustody(env,h,p)
  const reservation=await env.FILES.put(key,crypto.randomUUID(),{onlyIf:prior?{etagMatches:prior.etag}:{etagDoesNotMatch:'*'},customMetadata:{custodyBody:'reservation'}})
  if(!reservation)throw new CustodyError('source_reservation_pending')
  await assertCustody(env,h,p)

@@ -1,3 +1,4 @@
+import {zendeskRehearsalJourney} from '../helpers/rehearsal/zendesk-authority.mjs'
 import {nativeSnapshot,assertRepeatSurvival} from '../helpers/zendesk-diagnostics/snapshot.mjs'
 import {diagnosticsAuthority} from '../helpers/zendesk-diagnostics/authority.mjs'
 import {boundedOriginPages} from '../helpers/zendesk-diagnostics/pagination.mjs'
@@ -245,6 +246,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.deepEqual(after,{state:'disconnected',access_ciphertext:null,refresh_ciphertext:null})
   assert.equal(h.outboundRequests.filter(r=>r.hostname!==`${SUBDOMAIN}.zendesk.com`).length,0,'nothing else was contacted: no mail, AI or notification')
  }finally{await h.close()}
+ await zendeskRehearsalJourney()
 })
 
 test('a refused record never holds back a valid one and a stopped batch is never left behind: credential refusals stay out of packed batches across resume and every valid record imports',{timeout:600_000},async()=>{

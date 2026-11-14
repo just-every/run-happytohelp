@@ -1,3 +1,5 @@
+import {rehearsalApply} from '../../rehearsal/legacy/authority'
+import {packageProfile} from '../../rehearsal/legacy/lineage'
 import type {Env} from '../../../platform/env'
 import type {DeltaLease} from '../lease'
 import type {LegacyBundle,MappedRow,Row} from '../types'
@@ -10,7 +12,9 @@ import {checkpoint,cursor,type Run} from './state'
 import {refuse} from './errors'
 
 export async function adoptionForRun(env:Env,run:Run,lease:DeltaLease):Promise<AdoptionApply>{
- const a=await getAdoption(env.DB,run.manifest_sha256),token=(lease as DeltaLease&{token?:string}).token
+ const token=(lease as DeltaLease&{token?:string}).token
+ if(run.authority_mode==='rehearsal'){if(!token)refuse('lease_lost');return rehearsalApply(env,run,token)}
+ const a=await getAdoption(env.DB,run.manifest_sha256)
  if(!a||!token)refuse('adoption_approval_required')
  return adoptionApply(env,run.manifest_sha256,{runId:run.id,version:run.version,leaseToken:run.lease_token!,workspaceToken:token,approvalVersion:a.approval_version})
 }
@@ -29,7 +33,7 @@ export async function preflightSlice(env:Env,run:Run,bundle:LegacyBundle,hydrate
   for(const group of groups.values()){group.sort((a,b)=>a.seq-b.seq);if(group.every(ref=>target.row[ref.from]!=null))wanted.add(identity(group[0].table,group.map(ref=>target.row[ref.from])))}
  }
  if(wanted.size){const found=await env.DB.prepare("SELECT source_id FROM legacy_import_context WHERE run_id=? AND kind='delta_plan' AND source_table='v2:targets' AND source_id IN (SELECT value FROM json_each(?))").bind(run.id,JSON.stringify([...wanted])).all<{source_id:string}>();for(const row of found.results)available.add(row.source_id)}
- await preflightAdoptionTargets(env.DB,adoption.profile,targets,available,true)
+ await preflightAdoptionTargets(env.DB,adoption.profile,targets,available,true,run.authority_mode==='rehearsal')
  const keys=targets.map(t=>identity(t.table,t.key.map(k=>t.row[k]))),prior=await env.DB.prepare("SELECT source_id,row_json FROM legacy_import_context WHERE run_id=? AND kind='delta_plan' AND source_table='v2:targets' AND source_id IN (SELECT value FROM json_each(?))").bind(run.id,JSON.stringify(keys)).all<{source_id:string;row_json:string}>(),proposed=new Map(prior.results.map(r=>[r.source_id,stable(JSON.parse(r.row_json))]))
  const indexes=new Map<string,string[][]>()
  for(const table of new Set(targets.map(t=>t.table))){
@@ -58,9 +62,9 @@ export async function preflightSlice(env:Env,run:Run,bundle:LegacyBundle,hydrate
 export async function preflightContextScope(env:Env,run:Run,manifest:import('../worker-contract').LegacyPackageManifest){
  const c=cursor(run),ordinal=Number(c.ordinal??0),part=manifest.context[ordinal]
  if(!part){await checkpoint(env,run,{cursor_json:JSON.stringify({stage:run.mode==='delta'?'delta':'rows',ordinal:0,row:0})});return {rows:0,bytes:0}}
- const rows=await readRows(env.FILES,run.manifest_sha256,run.project_id,'context',part,2,run.source_project_id),offset=Number(c.row??0),slice=sliceRows(rows,offset),hydrated=await hydrate(env,run,manifest,part.table,slice.rows),a=await getAdoption(env.DB,run.manifest_sha256)
- if(!a)refuse('adoption_approval_required')
- validateAdoptionScope(chunkBundle(manifest,run.manifest_sha256,part,slice.rows),hydrated.context,mappingProfile(a))
+ const rows=await readRows(env.FILES,run.manifest_sha256,run.project_id,'context',part,2,run.source_project_id),offset=Number(c.row??0),slice=sliceRows(rows,offset),hydrated=await hydrate(env,run,manifest,part.table,slice.rows),profile=await packageProfile(env.DB,run.manifest_sha256)
+ if(!profile)refuse('adoption_approval_required')
+ validateAdoptionScope(chunkBundle(manifest,run.manifest_sha256,part,slice.rows),hydrated.context,profile)
  const next=offset+slice.rows.length,done=next===rows.length
  await checkpoint(env,run,{cursor_json:JSON.stringify({stage:'scope',ordinal:done?ordinal+1:ordinal,row:done?0:next})})
  return {rows:slice.rows.length,bytes:slice.bytes}

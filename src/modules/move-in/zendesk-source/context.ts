@@ -2,7 +2,7 @@ import type {Env} from '../../../platform/env'
 import type {Phase,PullRow,PullState} from './pull-store'
 /** One invocation's view of a pull: what it read, what it will commit, and whether more follows. */
 export interface PullContext {
- env:Env;pull:PullRow;token:string
+ assertLive?:()=>Promise<void>;env:Env;pull:PullRow;token:string
  cursor:Record<string,any>;counts:Record<string,any>;incremental:number[];resume:Record<string,any>
  statements:D1PreparedStatement[];phase:Phase;state:PullState;patch:Partial<PullRow>
  requests:number;more:boolean;nextAt?:number

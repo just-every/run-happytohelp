@@ -237,6 +237,7 @@ rules[`POST ${P}/suspended/:id/recover`]='conversations.manage'
 rules[`DELETE ${P}/suspended/:id`]='conversations.manage'
 rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
+ if(path.startsWith('/api/move-in/projects/:setupProjectId/rehearsals'))return path.includes('/copy/')?'none':method==='POST'&&path.endsWith('/rehearsals')?'data.import':'self'
  const owned=apiIntegrationRule(method,path)??feedbackRouteRule(method,path)??assuranceRouteRule(method,path)
  if(owned)return owned
  if(path==='/api/voice/hooks/:numberId')return 'none'

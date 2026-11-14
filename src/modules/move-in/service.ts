@@ -7,10 +7,13 @@ import { parseFile,indexFile,type RecordPosition } from './readers/records'
 import { assertAuthority } from './context'
 import {approveReview,advanceBatch} from './batches'
 import { LIMITS,runLimits,type Run } from './types'
-import {failRun,getRun,getWorkRun,objectKey,touchRun,updateRun} from './run-store'
+import {failRun,getRun,getWorkRun as readWorkRun,objectKey,touchRun,updateRun} from './run-store'
 import {preparePlan} from './plan'
 import {notifyPull} from './zendesk-source/notify'
-export {getRun,getWorkRun} from './run-store'
+export {getRun} from './run-store'
+/** The compact worker projection intentionally omits consent. Load its explicit stored discriminator, never infer delegation from a session hash. */
+export async function getWorkRun(env:Env,id:string){const run=await readWorkRun(env,id);return run?withDurableAuthority(env,run):null}
+async function withDurableAuthority(env:Env,run:Run):Promise<Run>{const mode=await env.DB.prepare('SELECT authority_mode,rehearsal_id,rehearsal_generation FROM move_in_runs WHERE id=?').bind(run.id).first<Pick<Run,'authority_mode'|'rehearsal_id'|'rehearsal_generation'>>();if(!mode)throw new Error('import_run_missing');return {...run,...mode}}
 export async function enqueue(env:Env,run:Run,delaySeconds=0){const message={type:'move-in',id:run.id,projectId:run.project_id};if(delaySeconds>0)await env.JOBS.send(message,{delaySeconds});else await env.JOBS.send(message)}
 async function unpack(env:Env,run:Run){const original=await env.FILES.get(run.object_key);if(!original)throw new Error('original_upload_missing');const chunk=await archiveChunk(run.filename,new Uint8Array(await original.arrayBuffer()),run.cursor),files=chunk.files,descriptors=JSON.parse(run.files_json),written:string[]=[]
  for(let i=0;i<files.length;i++){const file=files[i],key=objectKey(run,`files/${run.cursor+i}`);await putPrivate(env,run,key,file.bytes,{httpMetadata:{contentType:'application/octet-stream'},customMetadata:{projectId:run.project_id,runId:run.id}});written.push(key);const index=indexFile(file,run.vendor);if(index.length+descriptors.reduce((n:number,f:any)=>n+(f.index?.length||0),0)>LIMITS.records)throw new Error('export_record_limit');descriptors.push({name:file.name,key,sha256:sha256(file.bytes),size:file.bytes.length,index})}
@@ -32,7 +35,7 @@ async function parseChunk(env:Env,run:Run){const files=JSON.parse(run.files_json
 export async function approve(env:Env,run:Run,fingerprint:string){await requireAuditedCustody(env,run);await approveReview(env,run,fingerprint);await enqueue(env,run)}
 /** A pulled batch whose step cannot run at all (its reviewer's session ended, say)
  * also hands control back to its pull, which then stops and names the reason. */
-export async function advanceImport(env:Env,run:Run){try{await advance(env,run)}catch(error){await notifyPull(env,run);throw error}}
+export async function advanceImport(env:Env,run:Run){try{await advance(env,await withDurableAuthority(env,run))}catch(error){await notifyPull(env,run);throw error}}
 const WORKING=['uploaded','parsing','planning','applying','undoing']
 /** A conditional private-custody write that found another delivery's bytes at its key.
  * That delivery moves the run on or stops it, unless this one started after it (it then

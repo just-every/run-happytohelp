@@ -1,0 +1,22 @@
+.rehearsal-panel { margin-block: 24px; font-size: 14.5px; min-width: 0; }
+.rehearsal-panel > summary { font-weight: 500; }
+.rehearsal-content { padding-top: 12px; min-width: 0; }
+.rehearsal-panel .form-group { margin-block: 16px; }
+.rehearsal-panel input,.rehearsal-panel select,.rehearsal-panel textarea { width: 100%; min-width: 0; max-width: 100%; min-height: 44px; font-size: 14px; }
+.rehearsal-panel button { min-height: 44px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.rehearsal-panel :is(summary,button,input,select,textarea):focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
+.rehearsal-panel code,.rehearsal-panel pre { font-size: 13px; overflow-wrap: anywhere; white-space: pre-wrap; word-break: normal; }
+.rehearsal-panel dd,.rehearsal-panel p { overflow-wrap: anywhere; }
+.rehearsal-facts { display: grid; grid-template-columns: minmax(0,180px) minmax(0,1fr); gap: 8px 16px; margin-block: 20px; }
+.rehearsal-facts dd { margin: 0; min-width: 0; }
+.rehearsal-facts pre { margin: 0; }
+.rehearsal-grant,.rehearsal-review,.rehearsal-credential,.rehearsal-form { margin-block: 20px; }
+.rehearsal-copies { padding-left: 20px; }
+.rehearsal-copies li { margin-block: 12px; }
+.rehearsal-copies p { margin-block: 4px; }
+.rehearsal-panel .alert p:last-child { margin-bottom: 0; }
+@media(max-width:600px) {
+ .rehearsal-facts { grid-template-columns: minmax(0,1fr); gap: 4px; }
+ .rehearsal-facts dd { margin-bottom: 12px; }
+ .rehearsal-panel .move-in-actions { align-items: stretch; }
+}

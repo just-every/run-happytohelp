@@ -1,4 +1,6 @@
 import type {Env} from '../../../platform/env'
+import {oauthAuthority} from '../../rehearsal/zendesk/authority'
+import {approveDelegatedReview} from '../../rehearsal/zendesk/review'
 import {ZendeskError} from '../zendesk-connection/errors'
 import {accessToken} from '../zendesk-connection/oauth'
 import {applyStep,reviewStep} from './approval'
@@ -20,12 +22,14 @@ export async function advancePull(env:Env,id:string,projectId:string){
  if(found.lease_until&&found.lease_until>now){const wait=found.lease_until-now+1000;await enqueuePull(env,found,found.state==='applying'?Math.min(1000,wait):wait);return}
  const pull=await claimPull(env,found,now,HOLD_MS);if(!pull)return
  if(!await pullAllowed(env,pull)){await stopPull(env,pull,'import_authority_revoked');return}
- const ctx:PullContext={env,pull,token:'',cursor:json(pull.cursor_json,{}),counts:{redacted:0,...json(pull.counts_json,{})},incremental:json(pull.incremental_json,[]),resume:json(pull.resume_json,{}),statements:[],phase:pull.phase,state:pull.state,patch:{},requests:0,more:false}
+ const assertLive=async()=>{if(!await pullAllowed(env,pull)||(await getPull(env,pull.id))?.version!==pull.version)throw new Error('import_authority_revoked')}
+ const ctx:PullContext={env,pull,assertLive,token:'',cursor:json(pull.cursor_json,{}),counts:{redacted:0,...json(pull.counts_json,{})},incremental:json(pull.incremental_json,[]),resume:json(pull.resume_json,{}),statements:[],phase:pull.phase,state:pull.state,patch:{},requests:0,more:false}
  try{
   const read=pull.state==='pulling'?reads[pull.phase]:undefined
-  if(read){if(pull.phase!=='packing'){const access=await accessToken(env,pull.project_id);if(access.connection.subdomain!==pull.subdomain)throw new ZendeskError('zendesk_connection_changed');ctx.token=access.token}await read(ctx)}
+  if(read){if(pull.phase!=='packing'){const access=await accessToken(env,pull.project_id,oauthAuthority(env,pull,assertLive));if(access.connection.subdomain!==pull.subdomain)throw new ZendeskError('zendesk_connection_changed');ctx.token=access.token}await read(ctx)}
   else if(pull.state==='reviewing')await reviewStep(ctx)
   else if(pull.state==='applying')await applyStep(ctx)
+  else if(pull.state==='ready'&&pull.authority_mode==='rehearsal')await approveDelegatedReview(ctx)
  }catch(error){
   if(error instanceof Deferred)ctx.nextAt=Date.now()+error.waitMs
   else{const code=error instanceof ZendeskError?(error.status?`${error.code}:${error.status}`:error.code):error instanceof Error?(error.message.startsWith('D1_')?'Pull database operation failed':error.message):'zendesk_pull_failed';await stopPull(env,pull,code);return}

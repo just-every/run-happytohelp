@@ -1,3 +1,4 @@
+import {ownsEarlierJournal} from '../../rehearsal/legacy/ownership'
 import type {LegacyBundle,MappedRow} from '../types'
 import type {MappingProfile} from './profile'
 import {relationships} from '../relationships'
@@ -33,7 +34,7 @@ export function validateAdoptionScope(bundle:LegacyBundle,context:LegacyBundle,p
 /** Extra unique keys (widget/aliases/mailbox/global IDs) and orphan FKs are
  * preflighted by the existing schema-derived guard. `available` contains mapped
  * parents validated by earlier package slices, not native authority grants. */
-export async function preflightAdoptionTargets(db:D1Database,profile:MappingProfile,targets:MappedRow[],available:Set<string>=new Set(),checkReferences=true){
+export async function preflightAdoptionTargets(db:D1Database,profile:MappingProfile,targets:MappedRow[],available:Set<string>=new Set(),checkReferences=true,delegated=false){
  const guard=await readGuard(db,targets,{identityIndexes:true})
  const states=await readStates(db,targets.map(t=>[t.table,targetKeyOf(t)])),bound=new Set<string>()
  for(const [shape,rows] of groupBy(targets,t=>t.table+'\0'+t.key.join(','),t=>t)){
@@ -42,11 +43,14 @@ export async function preflightAdoptionTargets(db:D1Database,profile:MappingProf
    const state=states.get(stateKey(table,targetKeyOf(target)))
    if(!state)refuse('canonical_target_conflict')
    if(!bound.has(state.run_id)){
-    if(!await db.prepare('SELECT 1 FROM legacy_import_mapping_profiles WHERE run_id=? AND profile_json=?').bind(state.run_id,stable(profile)).first())refuse('canonical_target_conflict')
+    if(!await ownsEarlierJournal(db,profile,state.run_id,delegated))refuse('canonical_target_conflict')
     bound.add(state.run_id)
    }
   }
  }
+ // Delta's public engine lists uniqueness, missing-parent and native-edit conflicts.
+ // Its transcript positions differ from a fresh full mapping; preflight proves ownership only.
+ if(delegated)return
  for(const target of targets){
   const clash=guard.clash(target.table,target.key,target.row),own=new Set([...available,...targets.map(t=>identity(t.table,t.key.map(k=>t.row[k])))])
   if(clash||checkReferences&&guard.missing(target.table,target.row,own))refuse('canonical_target_conflict')

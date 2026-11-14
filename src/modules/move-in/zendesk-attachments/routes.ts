@@ -11,7 +11,7 @@ const root='/projects/:projectId/zendesk/attachments',GOING='Zendesk files are a
 export const zendeskAttachmentRoutes=new Hono<AppEnv>()
 const audit=(c:Context<AppEnv>,actor:ImportActor,action:string,run:string,detail:Record<string,unknown>={})=>auditStatement(c.env.DB,{projectId:actor.project_id,category:'data',action,actor:{type:'user',id:actor.actor_id},source:requestSource(c),target:{type:'import',id:run},detail:{vendor:'zendesk',...detail}})
 // Every read settles a lost run first, so it shows its stop and Resume or a new run gets past it.
-async function workspaceRun(c:Context<AppEnv>){const actor=await importActor(c),run=await getRun(c.env,c.req.param('runId')!);if(!run||run.project_id!==actor.project_id)throw new HTTPException(404);return {actor,run:await settleLost(c.env,run)}}
+async function workspaceRun(c:Context<AppEnv>){const actor=await importActor(c),run=await getRun(c.env,c.req.param('runId')!);if(!run||run.project_id!==actor.project_id)throw new HTTPException(404);if(c.req.method!=='GET'&&run.authority_mode==='rehearsal')throw new HTTPException(403,{message:'Use the rehearsal copy controls'});return {actor,run:await settleLost(c.env,run)}}
 const view=async(c:Context<AppEnv>,id:string)=>attachmentView(c.env,(await getRun(c.env,id)) as AttachmentRun)
 
 zendeskAttachmentRoutes.get(root,async c=>{const actor=await importActor(c),run=await latestRun(c.env,actor.project_id);return c.json({data:run?await attachmentView(c.env,await settleLost(c.env,run)):null})})

@@ -11,6 +11,22 @@ const timestamp = '2026-01-15 09:30:00';
 const times = { created_at: timestamp, updated_at: timestamp };
 const json = JSON.stringify;
 
+/** Model successive recovery points while the clone's SQL clock is days later. The
+ * exporter still reads real MySQL; only wholly synthetic source rows are advanced. */
+export async function sourceCutoffFixture(connection,{projectId}){
+  await connection.query("SET time_zone='+00:00'");
+  const [[{clock}]]=await connection.query("SELECT DATE_FORMAT(UTC_TIMESTAMP(6),'%Y-%m-%dT%H:%i:%s.%fZ') clock");
+  const at=hours=>new Date(Date.parse(clock)+hours*60*60*1000).toISOString();
+  const initialCutoff=at(-48).slice(0,19)+'.123456Z',nextCutoff=at(-24).slice(0,19)+'.654321Z';
+  const ids=[uuid('e1',1),uuid('e1',2)],conversationId=uuid('40',2),contactId=uuid('30',2);
+  const addInterveningRows=async()=>{
+    for(const [i,id] of ids.entries())await connection.execute(
+      'INSERT INTO messages(id,project_id,conversation_id,contact_id,local_id,content,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)',
+      [id,projectId,conversationId,contactId,`cutoff-intervening-${i}`,'A customer reply between recovery points',at(-36).slice(0,-1).replace('T',' '),at(-36).slice(0,-1).replace('T',' ')]);
+  };
+  return {initialCutoff,nextCutoff,futureCutoff:at(24),interveningAt:at(-36),ids,addInterveningRows};
+}
+
 /** Seed a fresh, local MySQL database and an on-disk S3 object directory. */
 export async function seedLegacy(connection, { objectDirectory }) {
   if (!objectDirectory) throw new Error('objectDirectory is required for legacy attachment objects');

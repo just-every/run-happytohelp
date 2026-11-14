@@ -284,3 +284,60 @@ read. An installation created before this hook has no original baseline and
 continues to report `installation: null`; an upgrade never invents one.
 Historical note buckets, assignment attribution and macro creator snapshots are
 read as history. Historical people never enter native assignment/member lists.
+
+
+### Seed-owned delegated delta copies
+
+The native Daily copy consent under Move in delegates only the recorded created
+v2 adoption and existing Zendesk destination to one named copier for a finite
+period. It adds explicit `rehearsal` authority to new runs and custody rows;
+existing session imports keep their original live-session gates. The original
+adoption and its unique source reservation remain unchanged. Per-SHA lineage
+proves each immutable delta's origin, historical mapping policy, source clock
+chain and verified result after finite source purge. Native row edits/deletions,
+conflicts, historical people, erasure and the no-work invariant retain their
+existing meanings. There is no full/create/remap machine operation or MCP import
+tool. The consent and scoped machine doors are described below.
+
+
+### Owner-approved daily copies
+
+Daily copy consent lives in the folded **Daily copy** panel in Move in. It is
+available only to the original native installation owner, in the original setup
+workspace, after a verified v2 full adoption and an accepted pull on an existing
+seed-local Zendesk connection. Review both destination IDs, the original package
+SHA, source cutoff/watermark, Zendesk account/cursor, one named copier and a finite
+end time. Confirm a fresh native factor. The opaque copy credential appears once;
+it cannot create accounts, connect a vendor, send a reply or authorize MCP tools.
+
+The copy-only routes begin at
+`/api/move-in/projects/:setupProjectId/rehearsals/:id/copy`.
+Legacy `legacy/:sha/manifest`, `files/:file`, `status`, `start`, `resume` and
+`result` use the existing immutable package and bounded worker services. They
+admit deltas into the recorded adopted workspace, with an explicit UTC copy day
+and the last verified watermark. Full imports and remapping remain native
+interactive operations. Each delta needs externally established `sourceCutoff`
+provenance; a clone's current clock is insufficient. A new SHA waits until the
+previous copy is verified. Source purge retains the verified non-content lineage.
+
+Zendesk `zendesk` returns the accepted scoped cursor; `zendesk/pulls` starts a
+catch-up with that exact cursor and UTC day. Review/apply uses the current computed
+fingerprints under the native consent. Attachment and verification continuations
+stay on that pull. Only account-bound reads and the existing OAuth refresh run.
+A reconnect dependency stops the copy; the copier cannot reconnect or retarget it.
+No source/provider write permission is added.
+
+Owner Stop, copier self-stop (`POST copy/stop`), expiry, Agent Pause, Business
+Pause and revocation close the generation. Resume Agents and old queue wakes do
+not reopen it. Ordinary issuing-session expiry alone does not end the detached
+consent; explicitly revoking that session does. Recovery, owner identity/factor
+policy changes and ownership loss also end it. A read already dispatched cannot
+be recalled, but its result cannot commit after closure.
+
+Owner status and **Continue source cleanup** remain reduction-only after closure.
+They report bounded source/attachment cleanup separately from D5 draft cleanup,
+which this door does not implement. Portable restore carries only closed consent
+history and no usable copy bearer. These doors alone do not authorize rehearsal
+activation, production access, infrastructure spending, mail or cutover. The
+D4/D5/D11 release batch, renewable MCP access (D2), and operational source/spend
+readiness (D6/D7) remain separate prerequisites.

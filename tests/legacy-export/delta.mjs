@@ -10,9 +10,73 @@ import {importPackage} from '../../scripts/legacy-import/import-package.mjs';
 import {findDatabase,snapshot,bucketSnapshot} from '../helpers/upgrade-snapshot.mjs';
 import {assertRetireSweep} from './retire.mjs';
 import {assertResumedSweep,assertCheckRetry} from './resume.mjs';
+import {sourceCutoffFixture} from './fixture.mjs';
+import {assertSourceClockProvenance} from './assertions.mjs';
 
 const uuid=(group,number)=>`${group}000000-0000-4000-8000-${String(number).padStart(12,'0')}`;
 const work=['conversation_outbox','email_deliveries','magic_signins','operator_notifications','operator_notification_activity','native_integration_events','native_integration_intents','integration_deliveries','context_jobs','lead_jobs','leads','brand_generations','csat_surveys','workflow_events'];
+
+/** Public CLI proof of the restored-clone gap: a late wall clock must not skip rows
+ * committed between the first and the next externally established recovery points. */
+export async function assertSourceCutoff({admin,run,env,output,objectDirectory,projectId}){
+  const fixture=await sourceCutoffFixture(admin,{projectId});
+  const args=['snapshot','--project',projectId,'--revision','fixture-legacy-schema','--ai-model','gpt-5.6-luna','--mail-from-domain','example.test'];
+  const single=join(output,'cutoff-full.json'),singleImport=join(output,'cutoff-full.import.json'),full=join(output,'cutoff-full'),fullImport=join(output,'cutoff-full.import');
+  const manifest=async directory=>JSON.parse(await readFile(join(directory,'manifest.json'),'utf8'));
+  await run('scripts/export-legacy.mjs',[...args,'--source-cutoff',fixture.initialCutoff,'--output',single],env);
+  await run('scripts/export-legacy.mjs',[...args,'--source-cutoff',fixture.initialCutoff,'--chunk-bytes','4096','--output',full],env);
+  const originalBytes=await readFile(join(full,'manifest.json')),singleBytes=await readFile(single),original=await manifest(full),json=JSON.parse(singleBytes);
+  assert.equal(original.source.sourceCutoff,fixture.initialCutoff);
+  assert.equal(json.source.sourceCutoff,fixture.initialCutoff,'full JSON exports retain the same externally supplied bound');
+  assert.equal(original.source.watermark,json.source.watermark,'both formats derive the same safe next cursor');
+  assert.equal(original.source.watermark.slice(19),fixture.initialCutoff.slice(19),'microsecond cutoff precision survives the overlap');
+  assert.ok(Date.parse(original.source.snapshotClock)-Date.parse(fixture.initialCutoff)>24*60*60*1000,'the clone clock is much later than its recovery point');
+  assertSourceClockProvenance(original.source,original.source);
+
+  await run('scripts/export-legacy.mjs',['attachments','--input',single,'--objects-dir',objectDirectory,'--output',singleImport]);
+  assertSourceClockProvenance(JSON.parse(await readFile(singleImport,'utf8')).source,json.source);
+  await run('scripts/export-legacy.mjs',['attachments','--input',full,'--objects-dir',objectDirectory,'--output',fullImport]);
+  const attached=await manifest(fullImport),attachedBytes=await readFile(join(fullImport,'manifest.json'));
+  assertSourceClockProvenance(attached.source,original.source);
+  const repassed=join(output,'cutoff-repassed');
+  await run('scripts/export-legacy.mjs',['repass','--input',fullImport,'--policy-revision','fixture-policy','--output',repassed]);
+  assertSourceClockProvenance((await manifest(repassed)).source,original.source);
+  assert.deepEqual(await readFile(join(fullImport,'manifest.json')),attachedBytes,'repass cannot rewrite its completed input');
+
+  // An ordinary no-cutoff export remains available, and demonstrates why its clock is
+  // unsafe for restored sources: the next unbounded delta omits the intervening rows.
+  const unbounded=join(output,'cutoff-unbounded.json');
+  await run('scripts/export-legacy.mjs',[...args,'--output',unbounded],env);
+  const unsafe=JSON.parse(await readFile(unbounded,'utf8')).source;
+  assert.equal(unsafe.sourceCutoff,undefined);
+  assert.ok(Date.parse(unsafe.watermark)>Date.parse(fixture.interveningAt));
+  await fixture.addInterveningRows();
+  const skipped=join(output,'cutoff-unbounded-delta');
+  await run('scripts/export-legacy.mjs',[...args,'--since',unsafe.watermark,'--chunk-bytes','4096','--output',skipped],env);
+  assert.equal((await manifest(skipped)).source.rowCounts.messages,0,'late clone wall-clock cursor loses older intervening history');
+
+  const delta=join(output,'cutoff-fresh-delta'),deltaImport=join(output,'cutoff-fresh-delta.import');
+  await run('scripts/export-legacy.mjs',[...args,'--since',original.source.watermark,'--source-cutoff',fixture.nextCutoff,'--chunk-bytes','4096','--output',delta],env);
+  const fresh=await manifest(delta),messages=[];
+  for(const part of fresh.chunks.filter(p=>p.table==='messages'))messages.push(...JSON.parse(await readFile(join(delta,part.file),'utf8')));
+  assert.deepEqual(messages.map(row=>row.id).sort(),[...fixture.ids].sort(),'the next fresh recovery includes every intervening row');
+  assert.equal(fresh.source.sourceCutoff,fixture.nextCutoff);assert.equal(fresh.source.since,original.source.watermark);
+  assertSourceClockProvenance(fresh.source,fresh.source);
+  await run('scripts/export-legacy.mjs',['attachments','--input',delta,'--objects-dir',objectDirectory,'--output',deltaImport]);
+  assertSourceClockProvenance((await manifest(deltaImport)).source,fresh.source);
+
+  const invalid=['not-a-time','2026-02-30T09:30:00Z','2026-01-15T24:00:00Z','2026-01-15T09:30:00+00:00',fixture.futureCutoff,fixture.initialCutoff];
+  for(const [i,cutoff] of invalid.entries()){
+    const refused=join(output,`cutoff-refused-${i}`);
+    await assert.rejects(run('scripts/export-legacy.mjs',[...args,'--since',original.source.watermark,'--source-cutoff',cutoff,'--chunk-bytes','4096','--output',refused],env),/source-cutoff/);
+    assert.equal(existsSync(refused),false,'a refused cutoff publishes no completed artifact');
+  }
+  for(const command of ['attachments','repass'])await assert.rejects(run('scripts/export-legacy.mjs',[command,'--input',fullImport,'--source-cutoff',fixture.nextCutoff,'--output',join(output,`cutoff-rewrite-${command}`)]),/preserve the input source cutoff/);
+  await assert.rejects(run('scripts/export-legacy.mjs',[...args,'--source-cutoff',fixture.nextCutoff,'--chunk-bytes','4096','--output',full],env),/already exists/);
+  assert.deepEqual(await readFile(join(full,'manifest.json')),originalBytes,'a completed manifest stays immutable');
+  assert.deepEqual(await readFile(single),singleBytes,'JSON attachments leave the original source provenance immutable');
+  return {sourceCutoff:original.source.sourceCutoff,watermark:original.source.watermark,nextSourceCutoff:fresh.source.sourceCutoff,nextWatermark:fresh.source.watermark,interveningRows:messages.length};
+}
 
 /** After project 1's full import: legacy keeps taking chats, the seed team changes a conversation,
  * legacy retires the project; the operator sweeps everything since the full export's watermark

@@ -32,12 +32,18 @@ async function knowledgeArchiveSafety({db,tables}){
  }
  if(statements.length)await db.batch(statements);
 }
+// Keep only closed, credential-free rehearsal history across installation boundaries.
+function rehearsalArchiveRow(table,row){return table==='rehearsal_grants'?{...row,generation:row.generation+(row.state==='active'?1:0),state:'closed',credential_hash:null,issuing_session_hash:'',owner_email:'',configured_owner_email:'',legacy_enabled:0,zendesk_enabled:0,active_day:null,closure_reason:row.state==='closed'?row.closure_reason:'portable_restore',cleanup_state:'pending'}:row}
+async function rehearsalArchiveSafety({db,tables}){
+ if(tables.rehearsal_grants)await db.prepare(`UPDATE "${tables.rehearsal_grants.replaceAll('"','""')}" SET generation=generation+CASE WHEN state='active' THEN 1 ELSE 0 END,state='closed',credential_hash=NULL,issuing_session_hash='',owner_email='',configured_owner_email='',legacy_enabled=0,zendesk_enabled=0,active_day=NULL,closure_reason='portable_restore',cleanup_state='pending'`).run();
+}
 // Native identities and password hashes move with their referenced domain rows.
 // Live bearer grants, provider credentials and pending outbound deliveries do not.
 export const archivePolicy={
  // Enforce revocation at restore too, including an archive produced by an older
  // exporter or containing an unrevoked metadata row. Never revive bearer authority.
  importSafety:{
+  rehearsal_grants:{state:['closed'],credential_hash:[null],issuing_session_hash:[''],owner_email:[''],configured_owner_email:[''],legacy_enabled:[0],zendesk_enabled:[0],active_day:[null]},
   identity_recovery_authority:{acknowledged_generation:[null]},
   ik_door_settings:{enabled:[0]},
   integration_tokens:{revoked_at:[1]},api_credentials:{revoked_at:[1]},
@@ -45,10 +51,10 @@ export const archivePolicy={
   helpscout_connections:{secret_ciphertext:[null],claim:[null],claim_until:[null]},
   crm_mappings:{context_json:[null],state:['stale'],refreshed_at:[null],checked_at:[null]},
  },
- importRow:(table,original)=>{const row=recoveryArchiveRow(table,original);return table==='ik_door_settings'?{...row,enabled:0}:table==='knowledge_upgrade_reports'?{...row,completed_at:null}:table==='helpscout_connections'?{...row,secret_ciphertext:null,claim:null,claim_until:null}:table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:['integration_tokens','api_credentials'].includes(table)&&row.revoked_at==null?{...row,revoked_at:1}:row},
- product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await recoveryArchiveSafety(input);await voiceArchiveSafety(input);await supportChannelArchiveSafety(input);await feedbackArchiveSafety(input);await knowledgeArchiveSafety(input);await agentArchiveSafety(input);await rerMailArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
+ importRow:(table,original)=>{const row=rehearsalArchiveRow(table,recoveryArchiveRow(table,original));return table==='ik_door_settings'?{...row,enabled:0}:table==='knowledge_upgrade_reports'?{...row,completed_at:null}:table==='helpscout_connections'?{...row,secret_ciphertext:null,claim:null,claim_until:null}:table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:['integration_tokens','api_credentials'].includes(table)&&row.revoked_at==null?{...row,revoked_at:1}:row},
+ product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await rehearsalArchiveSafety(input);await recoveryArchiveSafety(input);await voiceArchiveSafety(input);await supportChannelArchiveSafety(input);await feedbackArchiveSafety(input);await knowledgeArchiveSafety(input);await agentArchiveSafety(input);await rerMailArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
  // Keep invitation history, but restored archives never restore a live survey link or queued send.
- exportRow:(table,source)=>{const original=recoveryArchiveRow(table,source);const row=table==='ik_door_settings'?{...original,enabled:0}:voiceArchiveRow(table,supportChannelArchiveRow(table,feedbackArchiveRow(table,agentArchiveRow(table,original))));
+ exportRow:(table,source)=>{const original=rehearsalArchiveRow(table,recoveryArchiveRow(table,source));const row=table==='ik_door_settings'?{...original,enabled:0}:voiceArchiveRow(table,supportChannelArchiveRow(table,feedbackArchiveRow(table,agentArchiveRow(table,original))));
   // The receipts are the arrival record a legacy delta reads and the reader's idempotency fence, so they travel; the
   // sender and the private copy's key do not.
   return table==='legacy_mail_s3_receipts'?{...row,raw_key:null,sender_address:null}:table==='helpscout_connections'?{...row,secret_ciphertext:null,claim:null,claim_until:null}:table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:rerMailArchiveRow(table,asyncWorkArchiveRow(table,trainingArchiveRow(table,triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='integration_tokens'?{...row,token_hash:'revoked:'+row.id,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_credentials'?{...row,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_requests'?{...row,response_json:null,erased:1}:table==='api_appends'?{...row,response_json:null}:table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}

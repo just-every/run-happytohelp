@@ -5,6 +5,7 @@ import path from 'node:path';
 import {extractProject} from './extract.mjs';
 import {enrichMedia} from './attachments.mjs';
 import {classifySnapshot} from './secrets.mjs';
+import {validateSourceClock} from './delta.mjs';
 
 export const PACKAGE_FORMAT='happytohelp-legacy-chunks-v1';
 export const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -21,7 +22,7 @@ export async function readPart(root,part){
   const file=await open(safeFile(root,part.file),constants.O_RDONLY|constants.O_NOFOLLOW|constants.O_NONBLOCK);
   try{const stat=await file.stat();if(!stat.isFile()||stat.size!==part.bytes)throw Error('Package chunk size mismatch');const bytes=Buffer.alloc(part.bytes);let offset=0;while(offset<bytes.length){const read=await file.read(bytes,offset,bytes.length-offset,offset);if(!read.bytesRead)throw Error('Package chunk changed during read');offset+=read.bytesRead;}if((await file.read(Buffer.alloc(1),0,1,offset)).bytesRead||sha(bytes)!==part.sha256)throw Error('Package chunk digest or size mismatch');return JSON.parse(bytes);}finally{await file.close();}
 }
-export async function readManifest(root){const manifest=JSON.parse(await readFile(path.join(root,'manifest.json'),'utf8'));if(manifest.format!==PACKAGE_FORMAT||!Array.isArray(manifest.chunks)||!Array.isArray(manifest.context))throw Error('Invalid chunked legacy package');return manifest;}
+export async function readManifest(root){const manifest=JSON.parse(await readFile(path.join(root,'manifest.json'),'utf8'));if(manifest.format!==PACKAGE_FORMAT||!Array.isArray(manifest.chunks)||!Array.isArray(manifest.context))throw Error('Invalid chunked legacy package');validateSourceClock(manifest.source);return manifest;}
 export async function writePart(root,file,value){const bytes=JSON.stringify(value);await writeFile(safeFile(root,file),bytes,{mode:0o600,flag:'wx'});return {file,bytes:Buffer.byteLength(bytes),sha256:sha(bytes)};}
 
 // Only relationships used by native mapping are held while importing. Payload

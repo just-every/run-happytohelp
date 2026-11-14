@@ -1,3 +1,4 @@
+import {rehearsalLifecycleJourney} from '../helpers/rehearsal/lifecycle.mjs'
 import test from 'node:test'
 import {nativeAccountJourney} from '../helpers/identity/native-account.mjs'
 import {retainedNativeIdentityJourney} from '../helpers/identity/retained-native.mjs'
@@ -14,7 +15,7 @@ test('an owner enrolls factors, enforces teammate enrollment, steps up to export
 test('a mailbox-only owner proves the account email, exports through the fresh session and installs a password without empowering a held session',emailStepUpJourney)
 test('custom roles restrict native and delegated knowledge and ticket actions, and security retention and legal holds preserve accountable history',rolesAuditJourney)
 
-test('an installation with outbound email off refuses every sign-in mail in words, contacts no provider, and admits an owner through a deploy-credential grant once',mailOffJourney)
+test('an installation with outbound email off refuses every sign-in mail in words, contacts no provider, and admits an owner through a deploy-credential grant once',async()=>{await mailOffJourney();await rehearsalLifecycleJourney()})
 test('while a knowledge upgrade is pending, setup, sign-in options and the emailed sign-in link answer normally and knowledge stays closed to anyone without a member session',upgradeFenceJourney)
 
 import {assuranceJourney} from '../helpers/assurance/journeys.mjs'

@@ -23,7 +23,8 @@ export const PULL_LIMITS = { recordBytes: 960 * 1024, shapeNodes: 32768, planCon
 export type RunSource = 'upload' | 'zendesk-pull'
 export type RecordLimits = { recordBytes:number; shapeNodes?:number; planContentBytes:number; planBytes:number;planBatch:number }
 export const runLimits = (run:{source?:string|null}):RecordLimits => run.source==='zendesk-pull' ? PULL_LIMITS : LIMITS
-export interface Run { id:string; source?:RunSource; identity_audited:number; project_id:string; actor_id:string; session_hash:string; vendor:Vendor; filename:string; artifact_hash:string; object_key:string; bytes:number; state:string; cursor:number; file_index:number; files_json:string; diagnostics_json:string; parsed_total:number; kit_job_id:string|null; review_fingerprint:string|null; total:number; plan_json:string|null; report_json:string|null; error:string|null; created_at:number; updated_at:number }
+export interface DurableAuthority {authority_mode?:'session'|'rehearsal';rehearsal_id?:string|null;rehearsal_generation?:number|null}
+export interface Run extends DurableAuthority { id:string; source?:RunSource; identity_audited:number; project_id:string; actor_id:string; session_hash:string; vendor:Vendor; filename:string; artifact_hash:string; object_key:string; bytes:number; state:string; cursor:number; file_index:number; files_json:string; diagnostics_json:string; parsed_total:number; kit_job_id:string|null; review_fingerprint:string|null; total:number; plan_json:string|null; report_json:string|null; error:string|null; created_at:number; updated_at:number }
 export interface MappingInput { projectId:string; actorId:string; vendor:Vendor; source:SourceBundle; tagIds:Map<string,string> }
 export interface SourceClaim {identity:string;source_hash:string;mapping_version:string;effects_hash:string;job_id:string}
 /** known: records an earlier import already holds without native effects; they stay out of new kit plans. */

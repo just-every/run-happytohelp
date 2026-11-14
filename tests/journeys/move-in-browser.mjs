@@ -1,3 +1,4 @@
+import {rehearsalBrowserJourney} from '../helpers/rehearsal/browser.mjs'
 import {legacyPackageBrowserFlow} from '../move-in/legacy-adoption-integration/browser.mjs'
 import {zendeskResumeBrowserFlow} from '../move-in/zendesk-resume-browser.mjs'
 import {zendeskConnectBrowserFlow} from '../move-in/zendesk-connect-browser.mjs'
@@ -61,6 +62,7 @@ test('an owner connects Zendesk twice, reviews an export, imports and filters it
  await configurationBrowser(1440)
  await configurationBrowser(390)
  await legacyPackageBrowserFlow({page,runtime,project,inspect})
+ await rehearsalBrowserJourney()
 }))
 
 

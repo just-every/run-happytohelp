@@ -1,4 +1,6 @@
-import {Hono} from 'hono'
+import {Hono,type Context} from 'hono'
+import type {CustodyPrincipal} from '../custody'
+import type {LegacyPackageManifest} from '../worker-contract'
 import {createMiddleware} from 'hono/factory'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../../platform/env'
@@ -34,22 +36,24 @@ const intake=createMiddleware<AppEnv>(async(c,next)=>{
  requireSha(c.req.param('sha')!)
  await next()
 })
-packageInRoutes.put(`${root}/manifest`,intake,async c=>{
+export async function uploadManifest(c:Context<AppEnv>,principal:CustodyPrincipal,projectId:string,beforeAdmit?:(manifest:LegacyPackageManifest)=>Promise<unknown>){
  if(c.req.header('Content-Type')?.split(';')[0].trim().toLowerCase()!=='application/json')refuse(415,'unsupported_media_type','Manifest must be application/json')
- const sha=c.req.param('sha')!,projectId=c.req.param('projectId')!
+ const sha=c.req.param('sha')!
  if(c.req.header('X-Manifest-SHA256')!==sha)refuse(409,'approval_mismatch','Approved manifest fingerprint differs')
  const {bytes,sha256}=await readBody(c.req.raw,LEGACY_LIMITS.manifestBytes,'manifest_too_large')
  if(sha256!==sha)refuse(422,'digest_mismatch','Manifest bytes differ from its fingerprint')
- const manifest=validateV2Manifest(validateManifest(parseJson(bytes))),principal=uploadPrincipal(c)
+ const manifest=validateV2Manifest(validateManifest(parseJson(bytes)))
+ if(beforeAdmit)await beforeAdmit(manifest)
  const handle=await admitCustody(c.env,{...principal,sha,sourceProjectId:manifest.source.projectId,destinationProjectId:manifest.source.projectId,mappingPolicyVersion:2})
  const {alreadyPresent}=await putCustody(c.env,handle,principal,{kind:'manifest',body:bytes,sha256:sha,bytes:bytes.length,takeover:true})
  return c.json({data:{manifestSha256:sha,runId:`legacy-package:${sha}`,projectId,sourceProjectId:manifest.source.projectId,alreadyPresent}},alreadyPresent?200:201)
-})
-packageInRoutes.put(`${root}/files/:file`,intake,async c=>{
+}
+packageInRoutes.put(`${root}/manifest`,intake,c=>uploadManifest(c,uploadPrincipal(c),c.req.param('projectId')!))
+export async function uploadFile(c:Context<AppEnv>,principal:CustodyPrincipal,projectId:string){
  if(c.req.header('Content-Type')?.split(';')[0].trim().toLowerCase()!=='application/octet-stream')refuse(415,'unsupported_media_type','Package files must be application/octet-stream')
- const sha=c.req.param('sha')!,projectId=c.req.param('projectId')!,file=c.req.param('file')!
+ const sha=c.req.param('sha')!,file=c.req.param('file')!
  if(!safeFile(file))refuse(400,'invalid_filename','Invalid package filename')
- const manifest=await readCustodyManifest(c.env,projectId,sha,uploadPrincipal(c)),part=descriptors(manifest).find(p=>p.file===file)
+ const manifest=await readCustodyManifest(c.env,projectId,sha,principal),part=descriptors(manifest).find(p=>p.file===file)
  if(!part)refuse(400,'invalid_filename','File is not listed in the manifest')
  if(part.kind==='chunk'&&exclusions(c.req.query('excludeTables')).includes(part.table!))refuse(409,'excluded_file','AI usage history is omitted from this upload')
  const {bytes,sha256}=await readBody(c.req.raw,part.kind==='object'?LEGACY_LIMITS.objectBytes:LEGACY_LIMITS.partBytes,part.kind==='object'?'object_too_large':'part_too_large',part.bytes)
@@ -60,18 +64,19 @@ packageInRoutes.put(`${root}/files/:file`,intake,async c=>{
   if(rows.some(row=>!row||typeof row!=='object'||Array.isArray(row)))refuse(422,'invalid_scope','Expected source rows')
   try{classifySnapshot({tables:{[part.table!]:rows}})}catch{refuse(422,'source_policy_refused','File refused by the source secret policy. Re-export with credentials omitted.')}
  }
- const handle=await packageCustody(c.env,projectId,sha,uploadPrincipal(c))
- const {alreadyPresent}=await putCustody(c.env,handle,uploadPrincipal(c),{kind:part.kind,ordinal:descriptorOrdinal(part.kind,file),body:bytes,sha256,bytes:bytes.length,takeover:true})
+ const handle=await packageCustody(c.env,projectId,sha,principal)
+ const {alreadyPresent}=await putCustody(c.env,handle,principal,{kind:part.kind,ordinal:descriptorOrdinal(part.kind,file),body:bytes,sha256,bytes:bytes.length,takeover:true})
  return c.json({data:{file,kind:part.kind,bytes:bytes.length,sha256,alreadyPresent}},alreadyPresent?200:201)
-})
-packageInRoutes.get(`${root}/status`,intake,async c=>{
- const sha=c.req.param('sha')!,projectId=c.req.param('projectId')!,exclude=exclusions(c.req.query('excludeTables'))
- const manifest=await readCustodyManifest(c.env,projectId,sha,uploadPrincipal(c)),{files,excluded}=inventory(manifest,exclude)
+}
+packageInRoutes.put(`${root}/files/:file`,intake,c=>uploadFile(c,uploadPrincipal(c),c.req.param('projectId')!))
+export async function packageStatus(c:Context<AppEnv>,principal:CustodyPrincipal,projectId:string){
+ const sha=c.req.param('sha')!,exclude=exclusions(c.req.query('excludeTables'))
+ const manifest=await readCustodyManifest(c.env,projectId,sha,principal),{files,excluded}=inventory(manifest,exclude)
  const rawLimit=c.req.query('limit'),limit=rawLimit===undefined?100:Number(rawLimit)
  if(!Number.isInteger(limit)||limit<1||limit>LEGACY_LIMITS.statusPage)refuse(400,'invalid_request','Invalid status page size')
  const binding=`${sha}:${exclude.join(',')}:`,raw=c.req.query('cursor');let offset=0
  if(raw){try{const decoded=atob(raw);if(!decoded.startsWith(binding)||!/^\d+$/.test(decoded.slice(binding.length)))throw Error();offset=Number(decoded.slice(binding.length));if(!Number.isSafeInteger(offset)||offset>files.length)throw Error()}catch{refuse(400,'invalid_cursor','Invalid package status cursor')}}
- const handle=await packageCustody(c.env,projectId,sha,uploadPrincipal(c)),slice=files.slice(offset,offset+limit)
+ const handle=await packageCustody(c.env,projectId,sha,principal),slice=files.slice(offset,offset+limit)
  const keys=await c.env.DB.prepare('SELECT key FROM legacy_package_keys WHERE manifest_sha256=? AND generation=? AND cleanup_state=0 AND key IN (SELECT value FROM json_each(?))').bind(sha,handle.generation,JSON.stringify(slice.map(part=>storageKey(sha,part)))).all<{key:string}>(),registered=new Set(keys.results.map(row=>row.key))
  const page={checkedFiles:0,presentFiles:0,presentBytes:0},missing=[]
  for(const part of slice){
@@ -79,7 +84,8 @@ packageInRoutes.get(`${root}/status`,intake,async c=>{
   if(object&&registered.has(object.key)&&object.customMetadata?.custodyBody==='accepted'&&object.customMetadata?.manifestSha256===sha&&object.customMetadata?.custodyProjectId===projectId&&object.customMetadata?.custodyGeneration===String(handle.generation)&&object.size===part.bytes&&checksum(object)===part.sha256){page.presentFiles++;page.presentBytes+=part.bytes}
   else missing.push({kind:part.kind,file:part.file,bytes:part.bytes,sha256:part.sha256,reason:!object||object.customMetadata?.custodyBody!=='accepted'?'missing':object.size!==part.bytes?'size_mismatch':'checksum_mismatch'})
  }
- await assertCustody(c.env,handle,uploadPrincipal(c))
+ await assertCustody(c.env,handle,principal)
  const next=offset+limit
  return c.json({data:{manifestSha256:sha,runId:`legacy-package:${sha}`,projectId,sourceProjectId:manifest.source.projectId,expectedFiles:files.length,expectedBytes:files.reduce((n,p)=>n+p.bytes,0),excluded,page,missing,nextCursor:next<files.length?btoa(binding+next):null}})
-})
+}
+packageInRoutes.get(`${root}/status`,intake,c=>packageStatus(c,uploadPrincipal(c),c.req.param('projectId')!))

@@ -1,3 +1,4 @@
+import {REHEARSAL_CLEANUP,cleanupRehearsal,discoverRehearsals} from './modules/rehearsal/lifecycle'
 import {cleanupCopyIntents} from './modules/legacy-import/worker/canonical-custody'
 import {CUSTODY_JOB,cleanupStep,discoverCleanup,getCustody} from './modules/legacy-import/custody'
 import type {LegacyCleanupJob} from './platform/env'
@@ -46,6 +47,7 @@ import { pruneCounters } from './platform/usage-counters'
 import {dispatchSurveys} from './modules/outcomes/survey-delivery'
 
 export async function consumeJob(job:Job|LegacyCleanupJob,env:Env) {
+ if(job.type===REHEARSAL_CLEANUP){await cleanupRehearsal(env,job.id);return}
  if(job.type===CUSTODY_JOB){if(/^[0-9a-f]{64}$/.test(job.id)&&Number.isSafeInteger(job.generation)){const c=await getCustody(env.DB,job.id);if(!c||c.generation!==job.generation||!['invalidated','purging','purged'].includes(c.status))return;const step=await cleanupStep(env,job.id,Number(job.generation));await cleanupCopyIntents(env,job.id,250-step.rows)};return}
  if(!('projectId' in job))return
  if(job.type==='knowledge.upgrade'){await canonicaliseExistingProject(env,job.projectId);await dispatchKnowledgeUpgrades(env);return}
@@ -110,6 +112,7 @@ export async function runScheduled(env:Env) {
  await visit('Lead',12,recoverLeadJobs)
  await visit('Counter',1,pruneCounters)
  // Discovery consumes only unused jobs credit, after all existing reservations.
+ if(scheduledReservations.jobs-budget.statements>=20)await discoverRehearsals(cronConsumer(env,18))
  const legacyRoom=scheduledReservations.jobs-budget.statements
  if(legacyRoom>=26)await discoverCleanup(cronConsumer(env,24),1)
  if(scheduledReservations.jobs-budget.statements>=2)await discoverLegacy(cronConsumer(env,2))

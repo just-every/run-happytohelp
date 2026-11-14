@@ -1,13 +1,15 @@
 import type {Env} from '../../../platform/env'
+import {assertRehearsal} from '../../rehearsal/authority'
+import type {DurableAuthority} from '../types'
 import {authority} from '../context'
 export type PullState='pulling'|'reviewing'|'ready'|'applying'|'applied'|'abandoned'
 export type Phase='fields'|'articles'|'organizations'|'users'|'tickets'|'comments'|'people'|'packing'|'review'|'apply'|'done'
-export interface PullRow {id:string;project_id:string;actor_id:string;session_hash:string;subdomain:string;state:PullState;phase:Phase;cursor_json:string;start_json:string;resume_json:string|null;next_at:number;incremental_json:string;counts_json:string;approval_json:string|null;approved_at:number|null;error:string|null;lease_until:number|null;version:number;created_at:number;updated_at:number}
+export interface PullRow extends DurableAuthority {id:string;project_id:string;actor_id:string;session_hash:string;subdomain:string;state:PullState;phase:Phase;cursor_json:string;start_json:string;resume_json:string|null;next_at:number;incremental_json:string;counts_json:string;approval_json:string|null;approved_at:number|null;error:string|null;lease_until:number|null;version:number;created_at:number;updated_at:number}
 export const getPull=(env:Env,id:string)=>env.DB.prepare('SELECT * FROM move_in_zendesk_pulls WHERE id=?').bind(id).first<PullRow>()
 export const latestPulls=(env:Env,projectId:string,limit=10)=>env.DB.prepare('SELECT * FROM move_in_zendesk_pulls WHERE project_id=? ORDER BY created_at DESC LIMIT ?').bind(projectId,limit).all<PullRow>()
 /** The reviewer's own session authorizes every background step, as for an upload. */
-export const pullAuthority=(pull:Pick<PullRow,'project_id'|'actor_id'|'session_hash'>)=>authority({id:'',project_id:pull.project_id,actor_id:pull.actor_id,session_hash:pull.session_hash})
-export async function pullAllowed(env:Env,pull:PullRow){const a=pullAuthority(pull);return !!(await env.DB.prepare(`SELECT (${a.sql}) allowed`).bind(...a.params!).first<{allowed:number}>())?.allowed}
+export const pullAuthority=(pull:Pick<PullRow,'project_id'|'actor_id'|'session_hash'> & DurableAuthority)=>authority({...pull,id:''})
+export async function pullAllowed(env:Env,pull:PullRow){if(pull.authority_mode==='rehearsal'){try{await assertRehearsal(env,{rehearsal_id:pull.rehearsal_id!,rehearsal_generation:pull.rehearsal_generation!},pull.project_id,'zendesk')}catch{return false}}const a=pullAuthority(pull);return !!(await env.DB.prepare(`SELECT (${a.sql}) allowed`).bind(...a.params!).first<{allowed:number}>())?.allowed}
 // Ten Zendesk reads of at most 30 seconds each finish inside one hold.
 export const HOLD_MS=6*60*1000
 /** One invocation holds the pull while it reads; a duplicate queue message finds it held. */

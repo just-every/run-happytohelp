@@ -1,3 +1,6 @@
+import {legacyDailyCopies} from '../../helpers/rehearsal/legacy.mjs'
+import {fakeZendesk} from '../zendesk-pull-fixture.mjs'
+import {randomBytes} from 'node:crypto'
 import assert from 'node:assert/strict'
 import {mkdtemp,readFile,rm,writeFile,mkdir} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
@@ -16,7 +19,7 @@ export async function adoptionIntegrationJourney(options){
 // The attachment-recovery installations are independent of this mounted run.
 // Admission registers them separately; the command-line journey still runs both.
 export async function mountedAdoptionJourney({representative=true}={}){
- const app=await runnerRuntime(),directory=await mkdtemp(join(tmpdir(),'legacy-wire-'))
+ const zendesk=fakeZendesk(),app=await runnerRuntime({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}}),directory=await mkdtemp(join(tmpdir(),'legacy-wire-'))
  app.ok=async(path,options={})=>{const r=await app.call(path,{...options,status:200});return r.data}
  const facts={states:[],uploads:0,maxStatements:0,measurements:{},kills:0,indexDrainSteps:0}
  try{
@@ -133,6 +136,7 @@ export async function mountedAdoptionJourney({representative=true}={}){
    await app.runJobs((await app.takeJobs()).filter(j=>j.type==='legacy-import.step'))
   }
   await createdReservationRefusal({app,directory,setup,token,source,originalSha:p.manifestSha256})
+  facts.rehearsal=await legacyDailyCopies(app,{directory,owner,setup,source,origin:p,zendesk})
   const erase=`/api/management/projects/${source}/contacts/synthetic-contact/erase`
   for(let n=0;n<20;n++){
    const r=await app.call(erase,{token,body:{confirmation:'ERASE'}})

@@ -1,6 +1,7 @@
 export const CUSTODY_JOB='legacy-package.cleanup' as const
 export const DAY=86_400_000
 export interface Custody {
+ authority_mode:'session'|'rehearsal';rehearsal_id:string|null;rehearsal_generation:number|null
  manifest_sha256:string;custody_project_id:string;source_project_id:string;destination_project_id:string|null
  cleanup_only:number;seeding_complete:number
  generation:number;custody_generation:number;source_generation:number;destination_generation:number
@@ -9,7 +10,7 @@ export interface Custody {
  purge_reason:'erasure'|'workspace_deleted'|'expired'|'discarded'|null;closed_at:number|null;purged_at:number|null
  cleanup_table:number;cleanup_after:string;cleanup_token:string|null;cleanup_until:number|null;next_cleanup_at:number
 }
-export interface CustodyPrincipal {projectId:string;actorId:string;sessionHash:string}
+export interface CustodyPrincipal {projectId:string;actorId:string;sessionHash:string;authorityMode?:'session'|'rehearsal';rehearsalId?:string;rehearsalGeneration?:number;rehearsalProjectId?:string}
 export interface CustodyHandle {sha:string;generation:number}
 export interface CleanupWake {type:typeof CUSTODY_JOB;id:string;generation:number}
 export class CustodyError extends Error {

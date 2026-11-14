@@ -25,16 +25,18 @@ function owned(value:string,base:URL|undefined,allowed:string[]){
  * Retry-After, defer the run; 401 from the account host asks for a reconnect. The body
  * is never held whole: it streams through with its known length (`size` is Zendesk's,
  * used when no Content-Length is declared). */
-export async function downloadAttachment(subdomain:string,contentUrl:unknown,size:unknown,token:string):Promise<Download>{
+export async function downloadAttachment(subdomain:string,contentUrl:unknown,size:unknown,token:string,assertLive?:()=>Promise<void>):Promise<Download>{
  const account=zendeskOrigin(subdomain),files=attachmentOrigin(subdomain)
  if(typeof contentUrl!=='string'||!contentUrl)return {refused:'attachment_url_missing'}
  let url=owned(contentUrl,undefined,[account]);if(!url)return {refused:'attachment_host_not_owned'}
  const signal=AbortSignal.timeout(TIMEOUT_MS)
  for(let hop=0;hop<=HOPS;hop++){
   const own=url.origin===account
+  await assertLive?.()
   let response:Response
   try{response=await fetch(url,{method:'GET',redirect:'manual',signal,headers:own?{Authorization:`Bearer ${token}`}:{}})}
   catch{return {refused:'attachment_unreachable'}}
+  try{await assertLive?.()}catch(error){await response.body?.cancel();throw error}
   if(REDIRECTS.has(response.status)){
    const location=response.headers.get('Location');await response.body?.cancel()
    if(!location)return {refused:'attachment_redirect_invalid'}

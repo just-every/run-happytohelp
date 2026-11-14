@@ -98,7 +98,7 @@ export async function packBatch(ctx:PullContext){
  if(!batch){await finishPacking(ctx);return}
  if(!credentialSafe(ctx,batch)){ctx.more=true;return}
  const bytes=await admissible(ctx,batch.lines)
- const result=await admitExport(ctx.env,{project_id:ctx.pull.project_id,actor_id:ctx.pull.actor_id,session_hash:ctx.pull.session_hash},'zendesk',`zendesk-pull-${ctx.pull.id.slice(0,8)}-${ordinal+1}.jsonl`,bytes,'zendesk-pull')
+ const result=await admitExport(ctx.env,{project_id:ctx.pull.project_id,actor_id:ctx.pull.actor_id,session_hash:ctx.pull.session_hash,authority_mode:ctx.pull.authority_mode,rehearsal_id:ctx.pull.rehearsal_id,rehearsal_generation:ctx.pull.rehearsal_generation},'zendesk',`zendesk-pull-${ctx.pull.id.slice(0,8)}-${ordinal+1}.jsonl`,bytes,'zendesk-pull')
  if(result.status===200||result.status===201){
   const runId=String(result.body.data.id)
   ctx.statements.push(ctx.env.DB.prepare('INSERT INTO move_in_zendesk_pull_runs(pull_id,ordinal,run_id) VALUES(?,?,?) ON CONFLICT(pull_id,ordinal) DO NOTHING').bind(ctx.pull.id,ordinal,runId))
@@ -124,8 +124,9 @@ const CARRIES=['ready','completed'],PREPARING=['uploading','uploaded','parsing',
 async function admissible(ctx:PullContext,lines:string[]){
  for(let blank=0;blank<READMISSIONS;blank++){
   const bytes=new TextEncoder().encode(lines.join('\n')+'\n'+'\n'.repeat(blank))
-  const prior=await ctx.env.DB.prepare("SELECT actor_id,state,error,session_hash FROM move_in_runs WHERE project_id=? AND vendor='zendesk' AND artifact_hash=?").bind(ctx.pull.project_id,sha256(bytes)).first<{actor_id:string;state:string;error:string|null;session_hash:string}>()
-  if(!prior||prior.actor_id===ctx.pull.actor_id&&!prior.error&&(CARRIES.includes(prior.state)||PREPARING.includes(prior.state)&&prior.session_hash===ctx.pull.session_hash))return bytes
+  const prior=await ctx.env.DB.prepare("SELECT actor_id,state,error,session_hash,authority_mode,rehearsal_id,rehearsal_generation FROM move_in_runs WHERE project_id=? AND vendor='zendesk' AND artifact_hash=?").bind(ctx.pull.project_id,sha256(bytes)).first<{actor_id:string;state:string;error:string|null;session_hash:string;authority_mode:string;rehearsal_id:string|null;rehearsal_generation:number|null}>()
+  const sameAuthority=prior&&(prior.authority_mode??'session')===(ctx.pull.authority_mode??'session')&&(prior.authority_mode!=='rehearsal'||prior.rehearsal_id===ctx.pull.rehearsal_id&&prior.rehearsal_generation===ctx.pull.rehearsal_generation)
+  if(!prior||sameAuthority&&prior.actor_id===ctx.pull.actor_id&&!prior.error&&(CARRIES.includes(prior.state)||PREPARING.includes(prior.state)&&prior.session_hash===ctx.pull.session_hash))return bytes
  }
  throw new ZendeskError('zendesk_batch_readmission_limit')
 }

@@ -41,6 +41,7 @@ export async function copyObject(env:Env,run:Run,manifest:LegacyPackageManifest,
     await reserveCanonical(env,run,object,lease)
     const prior=await env.FILES.head(object.key)
     if(prior&&prior.customMetadata?.canonicalReservation!==run.id)refuse('object_conflict')
+    await lease.confirm()
     reservation=await env.FILES.put(object.key,crypto.randomUUID(),{onlyIf:prior?{etagMatches:prior.etag}:{etagDoesNotMatch:'*'},customMetadata:{canonicalReservation:run.id}})
     if(!reservation)refuse('source_reservation_pending')
     await lease.confirm()

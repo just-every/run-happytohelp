@@ -3,7 +3,7 @@ import {assertCustody,getCustody,sourceReady,descriptorOrdinal,CustodyError,type
 import type {LegacyPackageManifest} from '../worker-contract'
 import {readManifest} from '../worker/reader'
 import {refuse} from './errors'
-export function uploadPrincipal(c:any):CustodyPrincipal {const a=c.get('actor');return {projectId:c.req.param('projectId'),actorId:a.id,sessionHash:c.get('sessionHash')}}
+export function uploadPrincipal(c:any):CustodyPrincipal {const a=c.get('actor');return {projectId:c.req.param('projectId'),actorId:a.id,sessionHash:c.get('sessionHash'),authorityMode:'session'}}
 export function validateV2Manifest(m:LegacyPackageManifest){
  if(m.source.rowCounts.projects!==1||m.chunks.filter(p=>p.table==='projects').reduce((n,p)=>n+p.count,0)!==1)refuse(422,'invalid_scope','Expected exactly one source workspace')
  for(const [kind,parts] of [['chunk',m.chunks],['context',m.context],['object',m.objects]] as const)for(const p of parts)descriptorOrdinal(kind,p.file)

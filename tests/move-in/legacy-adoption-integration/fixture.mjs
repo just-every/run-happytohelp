@@ -9,7 +9,7 @@ export async function packageFixture(root,projectId,{large=false,secret=false,in
  const historical=Array.from({length:120},()=> 'A synthetic archive preserves the original customer account history across every import and verifies each relationship before any write.').join(' ')
  const object=Buffer.from('Synthetic attachment bytes for importer intake.\n'.repeat(large?10000:1));
  const key=`legacy/projects/${projectId}/media/synthetic-media`;
- const source={format:'happytohelp-legacy-v1',source:{repository:'just-every/run-happytohelp',revision:'synthetic-importer-r1',exportedAt:'2026-11-12T00:00:00Z',projectId,operatorNote:'synthetic-private-package-metadata'},tables:{
+ const source={format:'happytohelp-legacy-v1',source:{repository:'just-every/run-happytohelp',revision:'synthetic-importer-r1',exportedAt:'2026-11-12T00:00:00Z',projectId,snapshotClock:'2026-11-12T00:00:00.000000Z',sourceCutoff:'2026-11-12T00:00:00.000000Z',watermark:'2026-11-11T23:55:00.000000Z',watermarkOverlapSeconds:300,operatorNote:'synthetic-private-package-metadata'},tables:{
   projects:[{id:projectId,name:'Synthetic support workspace',website:'https://synthetic-history.example',created_at:1}],
   users:staff,
   project_users:staff.map((u,i)=>({id:'synthetic-membership-'+i,project_id:projectId,user_id:u.id,role:i===0?'owner':'admin'})),

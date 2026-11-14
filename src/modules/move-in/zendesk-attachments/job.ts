@@ -1,4 +1,5 @@
 import type {Env} from '../../../platform/env'
+import {oauthAuthority} from '../../rehearsal/zendesk/authority'
 import {ZendeskError} from '../zendesk-connection/errors'
 import {accessToken} from '../zendesk-connection/oauth'
 import {getConnection,markReconnect} from '../zendesk-connection/store'
@@ -29,10 +30,11 @@ async function advance(env:Env,id:string,projectId:string){
  if(found.lease_until){await settleLost(env,found,now);return}
  const run=await claimRun(env,found,now,HOLD_MS);if(!run)return
  if(!await runAllowed(env,run)){await stopRun(env,run,'import_authority_revoked');return}
- const step:Step={cursor:cursorOf(run),source:{env,pull:{subdomain:run.subdomain,project_id:run.project_id},token:'',requests:0,incremental:[]},subdomain:run.subdomain,downloads:0,bytes:0,started:now,refusals:[],done:false,more:false}
+ const assertLive=async()=>{if(!await runAllowed(env,run))throw new Error('import_authority_revoked')}
+ const step:Step={cursor:cursorOf(run),source:{env,assertLive,pull:{subdomain:run.subdomain,project_id:run.project_id},token:'',requests:0,incremental:[]},subdomain:run.subdomain,downloads:0,bytes:0,started:now,refusals:[],done:false,more:false}
  let nextAt:number|undefined
  try{
-  const access=await accessToken(env,run.project_id)
+  const access=await accessToken(env,run.project_id,oauthAuthority(env,run,assertLive))
   if(access.connection.subdomain!==run.subdomain)throw new ZendeskError('zendesk_connection_changed')
   step.source.token=access.token
   await work(env,run,step)
@@ -77,13 +79,13 @@ async function work(env:Env,run:AttachmentRun,step:Step){
    if(spent(step)){step.more=true;return}
    // Bytes already in R2 (a step that died between storing them and recording them) are recorded without a request.
    const key=fileKey(run,held.conversation,file),kept=await env.FILES.head(key)
-   let size=kept?.size
+   let size=kept?.customMetadata?.moveInReservation?undefined:kept?.size
    if(size===undefined){
     step.downloads++
-    const result=await downloadAttachment(step.subdomain,file.contentUrl,file.size,step.source.token)
+    const result=await downloadAttachment(step.subdomain,file.contentUrl,file.size,step.source.token,step.source.assertLive)
     if('refused' in result){step.refusals.push({a:file.attachmentId,r:result.refused});continue}
     step.bytes+=result.length
-    const failed=await putFile(env,key,file,result)
+    const failed=await putFile(env,key,file,result,run)
     if(failed){step.refusals.push({a:file.attachmentId,r:failed});continue}
     size=result.length
    }

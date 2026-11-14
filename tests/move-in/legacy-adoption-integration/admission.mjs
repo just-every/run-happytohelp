@@ -28,7 +28,7 @@ export async function legacyPackageAdmission(){
   const oversized=await fetch(app.url+`${base()}/manifest`,{method:'PUT',body:streamed,duplex:'half',headers:{Authorization:'Bearer '+owner.tokens.owner,'Content-Type':'application/json','X-Manifest-SHA256':p.manifestSha256}});assert.equal(oversized.status,413);await oversized.body?.cancel()
 
   assert.equal((await putManifest(p.bytes,{headers:{'X-Legacy-Contract-Version':'3'}})).status,422)
-  assert.equal((await putManifest()).status,201)
+  {const accepted=await putManifest();assert.equal(accepted.status,201,JSON.stringify(accepted))}
   assert.equal((await putManifest(p.bytes,{token:owner.tokens.admin})).data.data.alreadyPresent,true)
   assert.equal((await putManifest(p.bytes,{project:foreign.projectId,token:foreign.tokens.owner})).status,404)
   const stored=await (await app.files).get(`legacy-package/${p.manifestSha256}/manifest.json`);assert.deepEqual(Buffer.from(await stored.arrayBuffer()),p.bytes)

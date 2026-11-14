@@ -12,6 +12,7 @@ export async function admitCustody(env:Pick<Env,'DB'>,input:Admission):Promise<C
  const prior=await getCustody(env.DB,input.sha)
  if(prior){
   if(prior.custody_project_id!==input.projectId)throw new CustodyError('custody_conflict',404)
+  if(prior.authority_mode!==(input.authorityMode??'session')||prior.rehearsal_id!==(input.rehearsalId??null)||prior.rehearsal_generation!==(input.rehearsalGeneration??null))throw new CustodyError('custody_conflict')
   if(prior.source_project_id!==input.sourceProjectId||prior.destination_project_id!==(input.destinationProjectId??null))throw new CustodyError('custody_conflict')
   const h={sha:input.sha,generation:prior.generation};await assertCustody(env,h,input);return h
  }
@@ -21,8 +22,8 @@ export async function admitCustody(env:Pick<Env,'DB'>,input:Admission):Promise<C
  await env.DB.batch([
   env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT (${a.sql})`).bind(...a.params),
   env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT (${scopePredicate})`).bind(...scopes),
-  env.DB.prepare(`INSERT OR IGNORE INTO legacy_package_custody(manifest_sha256,custody_project_id,source_project_id,destination_project_id,status,mapping_policy_version,created_at,last_explicit_activity_at,expires_at,absolute_expires_at) VALUES(?,?,?,?,'admitting',2,${dbNow},${dbNow},${dbNow}+?,${dbNow}+?)`).bind(input.sha,input.projectId,input.sourceProjectId,input.destinationProjectId??null,DAY,7*DAY),
-  env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT EXISTS(SELECT 1 FROM legacy_package_custody c WHERE manifest_sha256=? AND custody_project_id=? AND source_project_id=? AND destination_project_id IS ? AND ${activeCustody})`).bind(input.sha,input.projectId,input.sourceProjectId,input.destinationProjectId??null),
+  env.DB.prepare(`INSERT OR IGNORE INTO legacy_package_custody(manifest_sha256,custody_project_id,source_project_id,destination_project_id,authority_mode,rehearsal_id,rehearsal_generation,status,mapping_policy_version,created_at,last_explicit_activity_at,expires_at,absolute_expires_at) VALUES(?,?,?,?,?,?,?,'admitting',2,${dbNow},${dbNow},${dbNow}+?,${dbNow}+?)`).bind(input.sha,input.projectId,input.sourceProjectId,input.destinationProjectId??null,input.authorityMode??'session',input.rehearsalId??null,input.rehearsalGeneration??null,DAY,7*DAY),
+  env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT EXISTS(SELECT 1 FROM legacy_package_custody c WHERE manifest_sha256=? AND custody_project_id=? AND source_project_id=? AND destination_project_id IS ? AND c.authority_mode=? AND c.rehearsal_id IS ? AND c.rehearsal_generation IS ? AND ${activeCustody})`).bind(input.sha,input.projectId,input.sourceProjectId,input.destinationProjectId??null,input.authorityMode??'session',input.rehearsalId??null,input.rehearsalGeneration??null),
   env.DB.prepare("INSERT OR IGNORE INTO legacy_package_keys(manifest_sha256,key,kind,ordinal,generation) VALUES(?,?,'manifest',0,1)").bind(input.sha,`legacy-package/${input.sha}/manifest.json`),
   env.DB.prepare('DELETE FROM ik_d1_assertions'),
  ])

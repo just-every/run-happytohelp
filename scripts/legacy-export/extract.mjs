@@ -6,12 +6,12 @@ import {enrichMedia} from './attachments.mjs';
 import {classifyColumns,classifyValue,omitStructured} from './secrets.mjs';
 import {readWatermark,deltaScope,inDelta} from './delta.mjs';
 
-export async function extractProject(connection,{projectId,revision,aiModel,mailFromDomain,maxBytes=256*1024*1024,sink,deferMailDomain=false,since}) {
+export async function extractProject(connection,{projectId,revision,aiModel,mailFromDomain,maxBytes=256*1024*1024,sink,deferMailDomain=false,since,sourceCutoff}) {
   if(!projectId||!revision)throw Error('Explicit --project and --revision are required');
   if(since&&!sink)throw Error('--since writes a chunked package; add --chunk-bytes');
   return snapshot(connection,async()=>{
     // First read inside the snapshot: the database clock, recorded as the next delta's --since.
-    const clock=await readWatermark(connection);
+    const clock=await readWatermark(connection,{sourceCutoff,since});
     const [inventory]=await connection.execute("SELECT TABLE_NAME name,ENGINE engine FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE'");
     const [columns]=await connection.execute('SELECT TABLE_NAME name,COLUMN_NAME col,DATA_TYPE type FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() ORDER BY ORDINAL_POSITION');
     const [primary]=await connection.execute("SELECT TABLE_NAME name,COLUMN_NAME col FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND INDEX_NAME='PRIMARY'");
@@ -56,6 +56,7 @@ export async function extractProject(connection,{projectId,revision,aiModel,mail
     if((rowCounts.ais||rowCounts.ai_defaults)&&!aiModel)throw Error('AI rows require an explicit --ai-model for native use');
     const source={repository:'happytohelp',revision,exportedAt:new Date().toISOString(),projectId,...(aiModel?{aiModel}:{}),...(mailFromDomain?{mailFromDomain:mailFromDomain.toLowerCase()}:{mailboxPending:true}),omittedJsonPaths:structuredOmissions,omittedJsonValueCounts,omittedTextValueCounts,repeatedCredentialValueCounts,snapshot:'REPEATABLE READ; CONSISTENT SNAPSHOT; READ ONLY; UTC',omittedColumns,excludedTables:inventory.map(t=>t.name).filter(t=>skippedTables.includes(t)),eventTypes:supportEventTypes,rowCounts,cloneCounts,rowBytes:bytes,
       watermark:clock.watermark,snapshotClock:clock.clock,watermarkOverlapSeconds:clock.watermarkOverlapSeconds,
+      ...(clock.sourceCutoff?{sourceCutoff:clock.sourceCutoff}:{}),
       ...(delta?{since:since.iso,scopedCounts,deltaParents:{conversations:delta.scope.parents.size,media:delta.scope.media.size}}:{})};
     const bundle={format:'happytohelp-legacy-v1',source,tables};if(!sink)source.attachments=enrichMedia(tables);return bundle;
   });

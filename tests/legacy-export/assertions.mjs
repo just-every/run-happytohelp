@@ -20,6 +20,14 @@ export async function assertArtifact(file,secrets) {
   return bundle;
 }
 
+export function assertSourceClockProvenance(source,original){
+  for(const field of ['sourceCutoff','snapshotClock','watermark','watermarkOverlapSeconds','since'])assert.deepEqual(source[field],original[field],`source clock provenance survives attachment/text-policy passes: ${field}`);
+  const cutoff=Date.parse(source.sourceCutoff),clock=Date.parse(source.snapshotClock),watermark=Date.parse(source.watermark);
+  assert.ok(Number.isFinite(cutoff)&&Number.isFinite(clock)&&Number.isFinite(watermark),'explicit UTC source times are retained');
+  assert.ok(watermark<=Math.min(cutoff,clock)-source.watermarkOverlapSeconds*1000,'the next cursor cannot jump past recoverable data');
+  if(source.since)assert.ok(watermark>Date.parse(source.since),'the bounded chain advances');
+}
+
 export async function assertAllNativeStores(env,secrets,persist) {
   // D1 refuses reads of its internal _cf_METADATA via the API. Inspect the real
   // persisted databases directly so no table is exempt from the leak assertion.

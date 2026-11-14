@@ -1,3 +1,4 @@
+import {rehearsalRoutes} from './modules/rehearsal/routes'
 import {packageInRoutes} from './modules/legacy-import/package-in/routes'
 import {handleImportDoor} from './modules/move-in/door'
 import {businessProject} from './edition/agent-door/project.ts'
@@ -135,6 +136,7 @@ app.route('/api/dashboard',dashboardRoutes)
 app.route('/api/dashboard',tags)
 app.route('/api/dashboard',createOutboundTicketRoutes(applyMessageEffects))
 app.route('/api/management',createOutboundTicketRoutes(applyMessageEffects))
+app.route('/api/move-in',rehearsalRoutes)
 app.route('/api/move-in',packageInRoutes)
 app.route('/api/move-in',moveInRoutes)
 app.route('/api/widget',publicWidget)

@@ -1,0 +1,7 @@
+import type {Env} from '../../platform/env'
+import type {RehearsalGrant} from './types'
+import {cleanupStatus} from './lifecycle'
+export async function grantStatus(env:Env,g:RehearsalGrant){
+ const copies=await env.DB.prepare(`SELECT c.day,c.legacy_verified legacyVerified,c.zendesk_verified zendeskVerified,c.verified_at verifiedAt,coalesce(c.legacy_conflicts,(SELECT count(*) FROM legacy_import_conflicts f JOIN legacy_import_worker_parts p ON p.journal_run_id=f.run_id WHERE p.run_id='legacy-package:'||c.legacy_sha)) conflicts,coalesce(c.legacy_rows,(SELECT coalesce(sum(required_rows),0) FROM (SELECT package_rows-excluded_rows required_rows FROM legacy_import_worker_counts WHERE run_id='legacy-package:'||c.legacy_sha))) legacyRows,coalesce(c.zendesk_refusals,(SELECT count(*) FROM move_in_zendesk_refusals WHERE pull_id=c.zendesk_pull_id)) zendeskRefusals FROM rehearsal_copies c WHERE c.grant_id=? ORDER BY c.day DESC LIMIT 20`).bind(g.id).all()
+ return {id:g.id,generation:g.generation,state:g.state,expiresAt:g.expiry_at,copierId:g.copier_id,originManifestSha256:g.origin_sha,legacyProjectId:g.legacy_project_id,zendeskProjectId:g.zendesk_project_id,zendeskSubdomain:g.zendesk_subdomain,legacyWatermark:g.legacy_watermark_iso,legacyCutoff:g.legacy_cutoff_iso,activeDay:g.active_day,closureReason:g.closure_reason,legacyEnabled:!!g.legacy_enabled,zendeskEnabled:!!g.zendesk_enabled,cleanup:await cleanupStatus(env,g),copies:copies.results.map((r:any)=>({...r,counts:{legacyRows:r.legacyRows,zendeskRefusals:r.zendeskRefusals}}))}
+}

@@ -1,3 +1,4 @@
+import {countScopedWork} from '../../rehearsal/legacy/work'
 import {releaseCanonical,type CanonicalTarget} from './canonical-custody'
 import type {Env} from '../../../platform/env'
 import type {LegacyPackageManifest} from '../worker-contract'
@@ -48,7 +49,7 @@ export async function rowStep(env:Env,run:Run,manifest:LegacyPackageManifest,lea
 export async function preflightObjects(env:Env,run:Run,manifest:LegacyPackageManifest,lease:DeltaLease){
  const c=cursor(run),ordinal=Number(c.ordinal??0),object=manifest.objects[ordinal]
  if(object){const scope=await objectScope(env,run,manifest,object);if(!scope.withheld)await inspectObject(env,run,object);await checkpoint(env,run,{cursor_json:JSON.stringify({stage:'objects',ordinal:ordinal+1})});return {rows:0,bytes:0}}
- const before=await countWork(env)
+ const before=run.authority_mode==='rehearsal'?await countScopedWork(env,run.source_project_id):await countWork(env)
  // Snapshot each original journal's existing row identities for this attempt,
  // without copying source JSON. A resumed tick can distinguish replay/applied.
  await checkpoint(env,run,{phase:'objects',cursor_json:'{}',work_before_json:JSON.stringify(before),metrics_json:JSON.stringify({...json<any>(run.metrics_json,{}),beforeAt:Date.now()})},[

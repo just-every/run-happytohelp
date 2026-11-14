@@ -5,7 +5,7 @@ import {identifier} from './mysql.mjs';
 // guards are unchanged. Only rows created, updated or deleted at or after `since` go to
 // its row chunks, plus the rows the importer needs to apply them (below).
 
-/** Margin subtracted from the database clock when recording a watermark. Rows a request
+/** Margin subtracted from the source time bound when recording a watermark. Rows a request
  * timestamped before the snapshot began but committed after it carry a time slightly
  * before the clock read; the next delta re-includes them instead of missing them. */
 export const watermarkOverlapSeconds=300;
@@ -13,18 +13,49 @@ const timeColumns=['created_at','updated_at','deleted_at'];
 const conversationChildren=['messages','events','conversation_participants','buckets'];
 const iso=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z$/;
 
-/** An explicit ISO-8601 UTC time (`2026-11-08T09:30:00Z`), as MySQL text and epoch ms. */
-export function parseSince(value){
-  if(typeof value!=='string'||!iso.test(value)||!Number.isFinite(Date.parse(value)))throw Error('--since needs an ISO-8601 UTC time such as 2026-11-08T09:30:00Z (a previous export\'s source.watermark)');
-  return {iso:value,ms:Date.parse(value),sql:value.slice(0,-1).replace('T',' ')};
+function utcTime(value,label){
+  const ms=typeof value==='string'&&iso.test(value)?Date.parse(value):NaN;
+  // Date.parse normalizes dates such as February 30; source bounds must never do so.
+  if(!Number.isFinite(ms)||new Date(ms).toISOString().slice(0,19)!==value.slice(0,19))throw Error(`${label} needs a valid ISO-8601 UTC time such as 2026-11-08T09:30:00Z`);
+  const fraction=(value.split('.')[1]?.slice(0,-1)||'').padEnd(6,'0');
+  return {iso:value,ms,sql:value.slice(0,-1).replace('T',' '),micros:BigInt(Math.floor(ms/1000))*1000000n+BigInt(fraction)};
+}
+function isoMicros(micros){
+  const seconds=micros>=0n?micros/1000000n:(micros-999999n)/1000000n;
+  return new Date(Number(seconds)*1000).toISOString().replace(/\.\d{3}Z$/,`.${String(micros-seconds*1000000n).padStart(6,'0')}Z`);
 }
 
+/** An explicit ISO-8601 UTC time (`2026-11-08T09:30:00Z`), as MySQL text and epoch ms. */
+export function parseSince(value){
+  return utcTime(value,'--since (a previous export\'s source.watermark)');
+}
+export const parseSourceCutoff=value=>utcTime(value,'--source-cutoff');
+
 /** The database clock inside the open snapshot: the raw read and the watermark the next
- * delta passes as --since. */
-export async function readWatermark(connection){
+ * delta passes as --since. A restored clone's wall clock does not describe its recovery
+ * point: an externally established cutoff bounds that clock before overlap is subtracted. */
+export async function readWatermark(connection,{sourceCutoff,since}={}){
   const format="'%Y-%m-%dT%H:%i:%s.%fZ'";
-  const [[clock]]=await connection.query(`SELECT DATE_FORMAT(UTC_TIMESTAMP(6),${format}) AS clock,DATE_FORMAT(UTC_TIMESTAMP(6) - INTERVAL ${watermarkOverlapSeconds} SECOND,${format}) AS watermark`);
-  return {clock:String(clock.clock),watermark:String(clock.watermark),watermarkOverlapSeconds};
+  const [[row]]=await connection.query(`SELECT DATE_FORMAT(UTC_TIMESTAMP(6),${format}) AS clock`);
+  const clock=utcTime(String(row.clock),'Snapshot clock');
+  if(sourceCutoff&&sourceCutoff.micros>clock.micros)throw Error('--source-cutoff is later than the snapshot clock');
+  const bound=sourceCutoff&&sourceCutoff.micros<clock.micros?sourceCutoff.micros:clock.micros;
+  const watermark=utcTime(isoMicros(bound-BigInt(watermarkOverlapSeconds)*1000000n),'Source watermark');
+  if(sourceCutoff&&since&&watermark.micros<=since.micros)throw Error('--source-cutoff does not advance the watermark beyond --since after overlap');
+  return {clock:clock.iso,watermark:watermark.iso,watermarkOverlapSeconds,...(sourceCutoff?{sourceCutoff:sourceCutoff.iso}:{})};
+}
+
+/** Attachment and text-policy passes preserve the source clock provenance of their input;
+ * refuse a broken bounded chain rather than publish another artifact with it. Old ordinary
+ * CLI exports without an externally established cutoff keep their existing behavior. */
+export function validateSourceClock(source){
+  if(!source||!Object.hasOwn(source,'sourceCutoff'))return;
+  const cutoff=utcTime(source.sourceCutoff,'source.sourceCutoff'),clock=utcTime(source.snapshotClock,'source.snapshotClock'),watermark=utcTime(source.watermark,'source.watermark');
+  if(source.watermarkOverlapSeconds!==watermarkOverlapSeconds)throw Error('Invalid source watermark overlap');
+  if(cutoff.micros>clock.micros)throw Error('Source cutoff is later than the snapshot clock');
+  const bound=cutoff.micros<clock.micros?cutoff.micros:clock.micros;
+  if(watermark.micros>bound-BigInt(watermarkOverlapSeconds)*1000000n)throw Error('Source watermark exceeds the cutoff less overlap');
+  if(source.since!==undefined&&watermark.micros<=utcTime(source.since,'source.since').micros)throw Error('Source cutoff does not advance the watermark beyond source.since');
 }
 
 const touchedSql=(info,since)=>{const present=timeColumns.filter(col=>info.columns.some(c=>c.col===col));return present.length?{sql:present.map(col=>`${identifier(col)}>=?`).join(' OR '),args:present.map(()=>since.sql)}:null;};

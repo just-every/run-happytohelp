@@ -9,7 +9,7 @@ import {randomBytes} from 'node:crypto';
 import {seedLegacy} from './legacy-export/fixture.mjs';
 import {assertArtifact,assertAllNativeStores,assertMappedBusinessState} from './legacy-export/assertions.mjs';
 import {assertCredentialRefusals} from './legacy-export/refusals.mjs';
-import {assertDeltaSweep} from './legacy-export/delta.mjs';
+import {assertDeltaSweep,assertSourceCutoff} from './legacy-export/delta.mjs';
 import {assertFullErasure} from './legacy-export/resume.mjs';
 
 // One public-command integration flow, using real MySQL and local D1/R2.
@@ -120,7 +120,8 @@ test('project snapshot → attachment bytes → native import → safe replay �
     const delta=await assertDeltaSweep({admin,run,status,env,output,persist,objectDirectory,projectId:fixture.projectIds[0],
       snapshotArgs:['snapshot','--project',fixture.projectIds[0],'--revision','fixture-legacy-schema','--ai-model','gpt-5.6-luna','--mail-from-domain','example.test'],
       fullSnapshot:join(output,'project-1.snapshot'),fullImport:join(output,'project-1.import')});
-    await writeFile(join(output,'results.json'),JSON.stringify({fixture:fixture.counts,native,imports:results,files,persist,fullErasure,delta},null,2));
+    const sourceCutoff=await assertSourceCutoff({admin,run,env,output,objectDirectory,projectId:fixture.projectIds[1]});
+    await writeFile(join(output,'results.json'),JSON.stringify({fixture:fixture.counts,native,imports:results,files,persist,fullErasure,delta,sourceCutoff},null,2));
     console.log(JSON.stringify({output,fixture:fixture.counts,native,replayApplied:results.map(r=>r.replay.applied)}));success=true;
   }finally{
     await admin.query(`DROP DATABASE IF EXISTS \`${database}\``);await admin.query(`DROP USER IF EXISTS '${reader}'@'%'`);await admin.end();

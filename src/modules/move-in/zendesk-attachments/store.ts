@@ -1,4 +1,6 @@
 import type {Env} from '../../../platform/env'
+import type {DurableAuthority} from '../types'
+import {assertRehearsal} from '../../rehearsal/authority'
 import {HOLD_MS,pullAuthority} from '../zendesk-source/pull-store'
 export const ATTACHMENTS_JOB='move-in.zendesk.attachments'
 /** The stop recorded for a run whose step died or whose queue message never arrived. */
@@ -6,15 +8,15 @@ export const STEP_LOST='attachments_step_lost'
 export type RunState='running'|'done'
 /** Where a run is: the last ticket finished, the ticket being read and its comment page. */
 export interface Cursor {after?:string|null;ticket?:string|null;page?:string|null}
-export interface AttachmentRun {id:string;project_id:string;actor_id:string;session_hash:string;subdomain:string;state:RunState;cursor_json:string;next_at:number;error:string|null;lease_until:number|null;version:number;created_at:number;updated_at:number}
+export interface AttachmentRun extends DurableAuthority {id:string;project_id:string;actor_id:string;session_hash:string;subdomain:string;state:RunState;cursor_json:string;next_at:number;error:string|null;lease_until:number|null;version:number;created_at:number;updated_at:number}
 export const getRun=(env:Env,id:string)=>env.DB.prepare('SELECT * FROM move_in_zendesk_attachment_pulls WHERE id=?').bind(id).first<AttachmentRun>()
 /** The workspace's run that has not finished, stopped or not. */
 export const unfinishedRun=(env:Env,projectId:string)=>env.DB.prepare("SELECT * FROM move_in_zendesk_attachment_pulls WHERE project_id=? AND state='running'").bind(projectId).first<AttachmentRun>()
 export const latestRun=(env:Env,projectId:string)=>env.DB.prepare('SELECT * FROM move_in_zendesk_attachment_pulls WHERE project_id=? ORDER BY created_at DESC LIMIT 1').bind(projectId).first<AttachmentRun>()
 export const cursorOf=(run:AttachmentRun):Cursor=>{try{return JSON.parse(run.cursor_json)||{}}catch{return {}}}
 /** The member who started or resumed the run authorizes every background step. */
-export const runAuthority=(run:Pick<AttachmentRun,'project_id'|'actor_id'|'session_hash'>)=>pullAuthority(run)
-export async function runAllowed(env:Env,run:AttachmentRun){const a=runAuthority(run);return !!(await env.DB.prepare(`SELECT (${a.sql}) allowed`).bind(...a.params!).first<{allowed:number}>())?.allowed}
+export const runAuthority=(run:Pick<AttachmentRun,'project_id'|'actor_id'|'session_hash'> & DurableAuthority & Partial<Pick<AttachmentRun,'id'|'version'>>)=>{const a=pullAuthority(run);return run.authority_mode==='rehearsal'?{sql:`(${a.sql}) AND EXISTS(SELECT 1 FROM move_in_zendesk_attachment_pulls WHERE id=? AND version=? AND error IS NULL AND state='running')`,params:[...a.params!,run.id??'',run.version??-1]}:a}
+export async function runAllowed(env:Env,run:AttachmentRun){if(run.authority_mode==='rehearsal'){try{await assertRehearsal(env,{rehearsal_id:run.rehearsal_id!,rehearsal_generation:run.rehearsal_generation!},run.project_id,'zendesk')}catch{return false}}const a=runAuthority(run);return !!(await env.DB.prepare(`SELECT (${a.sql}) allowed`).bind(...a.params!).first<{allowed:number}>())?.allowed}
 /** A statement that fails the whole batch unless the run's member may still act. */
 export function authorityAssertion(env:Env,run:AttachmentRun){const a=runAuthority(run);return env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN (${a.sql}) THEN 1 ELSE 0 END`).bind(...a.params!)}
 export const clearAssertions=(env:Env)=>env.DB.prepare('DELETE FROM ik_d1_assertions')

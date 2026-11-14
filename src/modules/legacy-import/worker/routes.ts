@@ -23,6 +23,7 @@ async function admission(c:any,readPackage=true){
  if(!access?.permissions.has('data.import'))throw new HTTPException(403)
  const sha=c.req.param('sha');if(!/^[a-f0-9]{64}$/.test(sha))refuse('invalid_request',400)
  const held=await getCustody(c.env.DB,sha),stored=await getRun(c.env,`legacy-package:${sha}`),v2=held!==null&&!held.cleanup_only
+ if(held?.authority_mode==='rehearsal'||stored?.authority_mode==='rehearsal')refuse('run_not_found',404)
  if(held&&held.custody_project_id!==actor.project_id)refuse('run_not_found',404)
  if(held?.cleanup_only&&readPackage)refuse('source_invalidated')
  if(v2)await requireInstallationOwner(c,actor.project_id)

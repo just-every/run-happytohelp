@@ -15,7 +15,7 @@ const root='/projects/:projectId/zendesk/pulls'
 export const zendeskPullRoutes=new Hono<AppEnv>()
 zendeskPullRoutes.route('/',zendeskDiagnosticsRoutes)
 /** The workspace's pull, whoever started it: every owner and admin sees it. */
-async function workspacePull(c:Context<AppEnv>){const actor=await importActor(c),pull=await getPull(c.env,c.req.param('pullId')!);if(!pull||pull.project_id!==actor.project_id)throw new HTTPException(404);return {actor,pull}}
+async function workspacePull(c:Context<AppEnv>){const actor=await importActor(c),pull=await getPull(c.env,c.req.param('pullId')!);if(!pull||pull.project_id!==actor.project_id)throw new HTTPException(404);if(c.req.method!=='GET'&&pull.authority_mode==='rehearsal')throw new HTTPException(403,{message:'Use the rehearsal copy controls'});return {actor,pull}}
 const view=async(c:Context<AppEnv>,actor:ImportActor,id:string)=>{const pull=(await getPull(c.env,id))!;return pullView(c.env,pull,await access(c.env,pull,actor))}
 const othersPull=()=>new HTTPException(403,{message:'This pull was started by another member of this workspace'})
 const audit=(c:Context<AppEnv>,actor:ImportActor,action:string,pull:string,detail:Record<string,unknown>={})=>auditStatement(c.env.DB,{projectId:actor.project_id,category:'data',action,actor:{type:'user',id:actor.actor_id},source:requestSource(c),target:{type:'import',id:pull},detail:{vendor:'zendesk',...detail}})

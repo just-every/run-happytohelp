@@ -16169,7 +16169,7 @@
       "executable": false
     },
     "tests/helpers/conversation/erased-transcript.mjs": {
-      "sha256": "9e84579ad8d9f3bbcf084bc277ec3a5ce5afc3f8b89764ea2de0aab70112fc72",
+      "sha256": "d8530782622288717a1e549e39b25a2d3015223cb519d6ba18f2a7e25b4cf015",
       "executable": false
     },
     "tests/helpers/conversation/import-races.mjs": {

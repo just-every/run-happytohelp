@@ -6,7 +6,7 @@ on:
     tags: ['v*']
   pull_request:
   schedule:
-    - cron: '47 4 * * 1,4'
+    - cron: '47 4 * * *'
   workflow_dispatch:
     inputs:
       tier:
@@ -38,10 +38,12 @@ jobs:
       tier: ${{ steps.plan.outputs.tier }}
       coverage: ${{ steps.plan.outputs.coverage }}
       readers: ${{ steps.plan.outputs.readers }}
+      size_check: ${{ steps.plan.outputs.size_check }}
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          # Complete push/PR rename-aware diff for the size path filter.
+          fetch-depth: 0
           persist-credentials: false
       - name: Look up complete nightly marker
         id: nightly
@@ -49,7 +51,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/nightly-green
-          key: h2h-nightly-green-v1-${{ github.sha }}
+          key: h2h-nightly-green-v2-${{ github.sha }}
           lookup-only: true
       - id: plan
         env:
@@ -60,7 +62,7 @@ jobs:
 
   build:
     needs: plan
-    if: ${{ needs.plan.outputs.coverage != 'reuse' && needs.plan.outputs.tier != 'nightly' }}
+    if: ${{ needs.plan.outputs.coverage != 'reuse' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     # Only generated, public build output is shared; no local state or secrets.
@@ -237,6 +239,57 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  size-check:
+    needs: [plan, build]
+    if: ${{ needs.plan.outputs.size_check == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.4
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+      - name: Set runner-owned dependency cache
+        run: pnpm config set store-dir "$RUNNER_TEMP/pnpm-store"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/pnpm-store
+          key: h2h-size-pnpm-v1-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
+      - run: pnpm install --frozen-lockfile
+      - name: Record the published rer artifact identity
+        id: rer
+        run: |
+          version="$(pnpm exec rer --version)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+          mkdir -p "$RUNNER_TEMP/happytohelp-size/statements"
+          printf 'sha=%s\nrer=%s\nrun=%s\nattempt=%s\n' "$GITHUB_SHA" "$version" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > "$RUNNER_TEMP/happytohelp-size/identity.txt"
+      - uses: actions/download-artifact@v4
+        with:
+          name: verify-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/verify-build
+      - name: Restore the build from this workflow's exact checkout
+        run: tar -xzf "$RUNNER_TEMP/verify-build/happytohelp-build.tar.gz"
+      - name: Check migration statements and real small/large flows
+        run: pnpm exec rer size --write-statements "$RUNNER_TEMP/happytohelp-size/statements"
+      - name: Upload statement handoff and identity, including failed checks
+        if: ${{ always() && steps.rer.outputs.version != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: size-statements-${{ github.sha }}-rer-${{ steps.rer.outputs.version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/happytohelp-size
+          if-no-files-found: error
+          retention-days: 14
+      - name: Confirm size checks preserve source
+        if: ${{ !cancelled() }}
+        run: git diff --exit-code && test -z "$(git ls-files --others --exclude-standard)"
+
   slow:
     needs: plan
     if: ${{ needs.plan.outputs.coverage == 'full' && needs.plan.outputs.tier != 'push' }}
@@ -245,16 +298,16 @@ jobs:
     uses: ./.github/workflows/installer-journeys.yml
 
   full-push-proof:
-    needs: [plan, build, checks]
-    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') && needs.plan.outputs.tier == 'push' && needs.plan.outputs.coverage == 'full' && needs.build.result == 'success' && needs.checks.result == 'success' }}
+    needs: [plan, build, checks, size-check]
+    if: ${{ !cancelled() && github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') && needs.plan.outputs.tier == 'push' && needs.plan.outputs.coverage == 'full' && needs.build.result == 'success' && needs.checks.result == 'success' && (needs.plan.outputs.size_check != 'true' || needs.size-check.result == 'success') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
       - run: test '${{ needs.build.result }}:${{ needs.checks.result }}' = success:success
 
   nightly-proof:
-    needs: [plan, slow]
-    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.plan.outputs.tier == 'nightly' || needs.plan.outputs.tier == 'all') && needs.plan.outputs.coverage == 'full' && needs.slow.result == 'success' }}
+    needs: [plan, build, slow, size-check]
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.plan.outputs.tier == 'nightly' || needs.plan.outputs.tier == 'all') && needs.plan.outputs.coverage == 'full' && needs.build.result == 'success' && needs.slow.result == 'success' && needs.size-check.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
@@ -263,10 +316,10 @@ jobs:
       - uses: actions/cache/save@v4
         with:
           path: ${{ runner.temp }}/nightly-green
-          key: h2h-nightly-green-v1-${{ github.sha }}
+          key: h2h-nightly-green-v2-${{ github.sha }}
 
   verify:
-    needs: [plan, build, checks, slow, full-push-proof, nightly-proof]
+    needs: [plan, build, checks, size-check, slow, full-push-proof, nightly-proof]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 1
@@ -283,6 +336,8 @@ jobs:
           SKIP: ${{ needs.plan.outputs.skip }}
           TIER: ${{ needs.plan.outputs.tier }}
           COVERAGE: ${{ needs.plan.outputs.coverage }}
+          SIZE_SELECTED: ${{ needs.plan.outputs.size_check }}
+          SIZE: ${{ needs.size-check.result }}
           BUILD: ${{ needs.build.result }}
           CHECKS: ${{ needs.checks.result }}
           SLOW: ${{ needs.slow.result }}
@@ -292,6 +347,10 @@ jobs:
         run: |
           set -euo pipefail
           test "$PLAN" = success
+          case "$SIZE_SELECTED:$SIZE" in
+            true:success|false:skipped) ;;
+            *) exit 1 ;;
+          esac
           case "$PUSH_PROOF:$NIGHTLY_PROOF" in *failure*|*cancelled*) exit 1 ;; esac
           case "$COVERAGE:$TIER" in
             reuse:push|reuse:nightly)
@@ -302,7 +361,7 @@ jobs:
               test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:success:skipped
               if [ "$GITHUB_EVENT_NAME" = push ]; then test "$PUSH_PROOF" = success; fi ;;
             full:nightly)
-              test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:skipped:skipped:success ;;
+              test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:skipped:success ;;
             full:all)
               test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:success:success ;;
             *) exit 1 ;;

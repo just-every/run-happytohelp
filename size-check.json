@@ -1,0 +1,530 @@
+{
+  "schema": 1,
+  "about": "Synthetic HappyToHelp current-schema workspace (migrations through 332), refreshed 14 Nov 2026. Counts only from K26 11 Nov 07:53-08:40Z and K24 03:17-03:23Z, M2 media count; no customer contents. Large: 162000 contacts,161893 conversations,27000 messages/outbox,2835 media,3034 pending events. Small: one hundredth rounded down/up as declared. Both retain 644 documents,373 reply blocks and 92231 source occurrences (worst 16 blocks/4080 occurrences); measured historical occurrences were 95147/4209. Text lengths and media byte-size distributions are missing; constant synthetic text and 2048-byte metadata are placeholders. Queue consumers and configured AI/provider work are outside this local meter. Window budget 3900000 is the historical working line, not a measured D1 limit.",
+  "database": "DB",
+  "budget": {
+    "windowRows": 3900000,
+    "growthPercent": 10,
+    "growthRows": 200,
+    "timeoutSeconds": 600
+  },
+  "personas": {
+    "owner": {
+      "kind": "owner"
+    },
+    "visitor": {
+      "kind": "signin",
+      "requests": [
+        {
+          "method": "POST",
+          "path": "/api/identity/widget/session",
+          "body": {
+            "widgetKey": "size-widget"
+          },
+          "capture": {
+            "token": "/token"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/conversations",
+          "headers": {
+            "Authorization": "Bearer {{token}}"
+          },
+          "body": {
+            "projectId": "size-p1"
+          },
+          "capture": {
+            "conversation": "/id"
+          }
+        }
+      ],
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      }
+    }
+  },
+  "shape": {
+    "tables": [
+      {
+        "table": "projects",
+        "rows": 1,
+        "values": {
+          "id": "'size-p1'",
+          "name": "'Size check'",
+          "widget_key": "'size-widget'",
+          "allowed_origin": "'https://rer-hosted-check.invalid'",
+          "created_at": ":now"
+        }
+      },
+      {
+        "table": "memberships",
+        "rows": 1,
+        "values": {
+          "project_id": "'size-p1'",
+          "user_id": "(SELECT id FROM users WHERE email = :owner_email)",
+          "role": "'owner'"
+        }
+      },
+      {
+        "table": "project_settings",
+        "rows": 1,
+        "values": {
+          "project_id": "'size-p1'",
+          "settings_json": "json_object('timezone','UTC','ai_reply_mode','draft')",
+          "updated_at": ":now"
+        }
+      },
+      {
+        "table": "contacts",
+        "rows": {
+          "small": 1620,
+          "large": 162000
+        },
+        "chunk": 10000,
+        "values": {
+          "id": "printf('c%06d', n)",
+          "project_id": "'size-p1'",
+          "name": "printf('Contact %d', n)",
+          "email": "printf('c%06d@customer.example.test', n)",
+          "metadata_json": "'{}'",
+          "created_at": ":now - 7776000000",
+          "is_verified": "0"
+        }
+      },
+      {
+        "table": "conversations",
+        "rows": {
+          "small": 1619,
+          "large": 161893
+        },
+        "chunk": 10000,
+        "parent": {
+          "table": "contacts",
+          "per": 1
+        },
+        "values": {
+          "id": "printf('v%06d', n)",
+          "project_id": "'size-p1'",
+          "contact_id": "printf('c%06d', p)",
+          "requester_id": "printf('c%06d', p)",
+          "subject": "'Synthetic question'",
+          "channel": "'widget'",
+          "status_id": "CASE WHEN n % 52 = 0 THEN 'solved' ELSE 'new' END",
+          "status_category": "CASE WHEN n % 52 = 0 THEN 'solved' ELSE 'new' END",
+          "resolved_at": "CASE WHEN n % 52 = 0 THEN :now - 7200000 END",
+          "created_at": ":now - 3600000 - ((n - 1) % 9000) * 432000",
+          "updated_at": ":now - 3600000 - ((n - 1) % 9000) * 432000",
+          "last_message_id": "NULL"
+        }
+      },
+      {
+        "table": "knowledge_datasets",
+        "rows": 1,
+        "values": {
+          "id": "'size-dataset'",
+          "project_id": "'size-p1'",
+          "name": "'Help center'",
+          "status": "'published'",
+          "created_at": ":now",
+          "published_version": "'size-version'"
+        }
+      },
+      {
+        "table": "knowledge_versions",
+        "rows": 1,
+        "values": {
+          "id": "'size-version'",
+          "dataset_id": "'size-dataset'",
+          "fingerprint": "'size'",
+          "created_at": ":now"
+        }
+      },
+      {
+        "table": "knowledge_documents",
+        "rows": 644,
+        "values": {
+          "id": "printf('size-doc-%04d', n - 1)",
+          "version_id": "'size-version'",
+          "url": "printf('https://help.example.test/doc-%04d', n - 1)",
+          "title": "printf('Document %d', n)",
+          "content": "printf('Synthetic help document number %d. Shipping instructions for test orders.', n)"
+        }
+      },
+      {
+        "table": "knowledge_reply_blocks",
+        "rows": 373,
+        "parent": {
+          "table": "conversations",
+          "histogram": {
+            "16": 1,
+            "13": 1,
+            "12": 1,
+            "11": 1,
+            "10": 3,
+            "9": 8,
+            "8": 7,
+            "7": 19,
+            "6": 1,
+            "5": 3,
+            "3": 3
+          }
+        },
+        "values": {
+          "id": "printf('a1a1%028x', n)",
+          "project_id": "'size-p1'",
+          "kind": "'copy'",
+          "payload_json": "json_object('text', printf('Synthetic copied passage %d', n))",
+          "sources_json": {
+            "jsonArray": {
+              "length": "CASE WHEN n <= 16 THEN 255 WHEN n <= 246 THEN 354 ELSE 53 END",
+              "item": "printf('knowledge:size-doc-%04d', (((n % 9) * 19 + k) % 410) * 644 / 410)"
+            }
+          },
+          "generation_id": "'ticket:' || printf('v%06d', p)",
+          "author_contact_id": "NULL",
+          "created_at": ":now - 3600000",
+          "fingerprint": "printf('size-block-%d', n)"
+        }
+      },
+      {
+        "table": "messages",
+        "rows": {
+          "small": 270,
+          "large": 27000
+        },
+        "chunk": 1500,
+        "parent": {
+          "table": "conversations",
+          "per": 3
+        },
+        "values": {
+          "id": "printf('m%07d', n)",
+          "project_id": "'size-p1'",
+          "conversation_id": "printf('v%06d', p)",
+          "local_id": "printf('size-local-%07d', n)",
+          "actor_id": "CASE (n - 1) % 3 WHEN 0 THEN printf('c%06d', p) WHEN 1 THEN 'system' ELSE (SELECT id FROM users WHERE email = :owner_email) END",
+          "actor_role": "CASE (n - 1) % 3 WHEN 0 THEN 'contact' WHEN 1 THEN 'system' ELSE 'operator' END",
+          "content": "CASE WHEN n=1 THEN 'sizeuniquesearchtoken customer question' WHEN (n - 1) % 3 = 2 THEN 'See ' || coalesce((SELECT group_concat('\u27e6k:' || id || '\u27e7', ' ') FROM knowledge_reply_blocks WHERE generation_id = 'ticket:' || printf('v%06d', p)), 'our help center') ELSE 'Synthetic message' END",
+          "revision": "(n - 1) % 3 + 1",
+          "created_at": ":now - 3600000 - (p - 1) * 432000 + (n - 1) % 3"
+        }
+      },
+      {
+        "table": "conversation_outbox",
+        "rows": {
+          "small": 270,
+          "large": 27000
+        },
+        "chunk": 3000,
+        "parent": {
+          "table": "messages",
+          "per": 1
+        },
+        "values": {
+          "project_id": "'size-p1'",
+          "conversation_id": "printf('v%06d', (p - 1) / 3 + 1)",
+          "message_id": "printf('m%07d', p)",
+          "created_at": ":now - 3600000 - (((p - 1) / 3)) * 432000",
+          "delivered_at": "CASE WHEN n<=3 THEN NULL ELSE :now - 3500000 END"
+        }
+      },
+      {
+        "table": "media",
+        "rows": {
+          "small": 28,
+          "large": 2835
+        },
+        "parent": {
+          "table": "messages",
+          "per": 1
+        },
+        "values": {
+          "id": "printf('media-%06d', n)",
+          "project_id": "'size-p1'",
+          "conversation_id": "printf('v%06d', (p - 1) / 3 + 1)",
+          "uploaded_by": "printf('c%06d', (p - 1) / 3 + 1)",
+          "object_key": "printf('size/media-%06d', n)",
+          "filename": "printf('file-%d.png', n)",
+          "content_type": "'image/png'",
+          "size": "2048",
+          "message_id": "printf('m%07d', p)",
+          "created_at": ":now - 3600000"
+        }
+      },
+      {
+        "table": "workflow_events",
+        "rows": {
+          "small": 30,
+          "large": 3034
+        },
+        "parent": {
+          "table": "conversations",
+          "per": 1
+        },
+        "values": {
+          "event_key": "printf('size-event-%06d', n)",
+          "project_id": "'size-p1'",
+          "conversation_id": "printf('v%06d', p)",
+          "kind": "'changed'",
+          "at": ":now - 3600000",
+          "source": "'dashboard'",
+          "revision": "3",
+          "ticket_version": "1",
+          "after_json": "'{}'",
+          "state": "'pending'",
+          "next_attempt_at": "CASE WHEN n<=2 THEN 0 ELSE :now + 86400000 END",
+          "last_message_id": "printf('m%07d', p * 3)"
+        }
+      },
+      {
+        "table": "knowledge_datasets",
+        "rows": 1,
+        "values": {
+          "id": "'size-refresh'",
+          "project_id": "'size-p1'",
+          "name": "'Synthetic scheduled document import'",
+          "status": "'empty'",
+          "source_input": "json_object('documents',json_array(json_object('url','https://example.test/synthetic','title','Synthetic refresh','content','Only generated test text.')),'semantic',json('false'))",
+          "next_refresh_at": "0",
+          "created_at": ":now"
+        }
+      },
+      {
+        "table": "mailbox_connections",
+        "rows": 1,
+        "values": {
+          "id": "'size-mailbox'",
+          "project_id": "'size-p1'",
+          "provider": "'forwarding'",
+          "address": "'support@example.test'",
+          "status": "'connected'",
+          "connected_by": "(SELECT id FROM users WHERE email=:owner_email)",
+          "created_at": ":now",
+          "updated_at": ":now"
+        }
+      },
+      {
+        "table": "ai_profiles",
+        "rows": 1,
+        "values": {
+          "id": "'size-assistant'",
+          "project_id": "'size-p1'",
+          "name": "'Synthetic draft assistant'",
+          "role": "'support'",
+          "prompt": "'Answer synthetic questions.'",
+          "model": "'gpt-4o-mini'",
+          "is_enabled": "1",
+          "created_at": ":now"
+        }
+      },
+      {
+        "table": "conversation_ai",
+        "rows": 1,
+        "values": {
+          "conversation_id": "'v000003'",
+          "ai_id": "'size-assistant'"
+        }
+      }
+    ],
+    "after": [
+      "UPDATE sessions SET project_id='size-p1',role='owner' WHERE actor_id=(SELECT id FROM users WHERE email=:owner_email) AND role<>'contact'",
+      "UPDATE conversations SET revision=3,last_message_id=printf('m%07d',CAST(substr(id,2) AS INTEGER)*3) WHERE project_id='size-p1' AND EXISTS(SELECT 1 FROM messages m WHERE m.id=printf('m%07d',CAST(substr(conversations.id,2) AS INTEGER)*3))",
+      "DELETE FROM workflow_events WHERE project_id='size-p1' AND event_key NOT LIKE 'size-event-%'",
+      "DELETE FROM knowledge_index_dirty WHERE project_id='size-p1'"
+    ]
+  },
+  "flows": [
+    {
+      "name": "inbox-list",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/dashboard/projects/size-p1/conversations"
+      },
+      "ceiling": 5000,
+      "callsInRow": 3
+    },
+    {
+      "name": "inbox-counts",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/dashboard/projects/size-p1/conversations/counts"
+      },
+      "ceiling": 1000,
+      "callsInRow": 3
+    },
+    {
+      "name": "inbox-search",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/dashboard/projects/size-p1/conversations?q=sizeuniquesearchtoken"
+      },
+      "ceiling": 5000,
+      "callsInRow": 3
+    },
+    {
+      "name": "open-worst-conversation",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/dashboard/projects/size-p1/conversations/v000001"
+      },
+      "ceiling": 25000,
+      "callsInRow": 3
+    },
+    {
+      "name": "transcript-worst",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/conversations/v000001/messages"
+      },
+      "ceiling": 6000,
+      "callsInRow": 3
+    },
+    {
+      "name": "owner-reply",
+      "persona": "owner",
+      "request": {
+        "method": "POST",
+        "path": "/api/conversations/v000002/messages",
+        "body": {
+          "content": "Thanks for waiting.",
+          "localId": "size-owner-reply",
+          "expectedRevision": 3,
+          "expectedLastMessageId": "m0000006"
+        }
+      },
+      "ceiling": 15000
+    },
+    {
+      "name": "visitor-message",
+      "persona": "visitor",
+      "request": {
+        "method": "POST",
+        "path": "/api/conversations/{{visitor.conversation}}/messages",
+        "body": {
+          "content": "Hello",
+          "localId": "size-visitor-1",
+          "expectedRevision": 0,
+          "expectedLastMessageId": null
+        }
+      },
+      "ceiling": 12000
+    },
+    {
+      "name": "visitor-socket-open",
+      "persona": "visitor",
+      "request": {
+        "method": "GET",
+        "path": "/api/conversations/{{visitor.conversation}}/socket?token={{visitor.token}}",
+        "websocket": true
+      },
+      "ceiling": 2000,
+      "callsInRow": 2
+    },
+    {
+      "name": "dashboard-socket",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/projects/size-p1/socket",
+        "websocket": true
+      },
+      "ceiling": 2000,
+      "callsInRow": 2
+    },
+    {
+      "name": "reports-summary",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/dashboard/projects/size-p1/reports?period=90"
+      },
+      "ceiling": 1000000,
+      "growth": {
+        "allowed": true,
+        "why": "A 90-day report intentionally aggregates every eligible conversation in that fixed calendar window; the absolute ceiling still limits the complete request."
+      }
+    },
+    {
+      "name": "reports-team",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/dashboard/projects/size-p1/reports/team?period=90"
+      },
+      "ceiling": 1500000,
+      "growth": {
+        "allowed": true,
+        "why": "The team report intentionally aggregates the selected 90-day cohort and current workload; the absolute ceiling still limits the complete request."
+      }
+    },
+    {
+      "name": "knowledge-search",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/knowledge/size-p1/search?q=shipping&mode=lexical&view=editor"
+      },
+      "ceiling": 10000
+    },
+    {
+      "name": "knowledge-datasets",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/knowledge/size-p1/datasets"
+      },
+      "ceiling": 2000
+    },
+    {
+      "name": "workflow-runs",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/dashboard/projects/size-p1/workflow-runs?limit=200&conversation_id=v000001"
+      },
+      "ceiling": 5000
+    },
+    {
+      "name": "outbound-ticket",
+      "persona": "owner",
+      "request": {
+        "method": "POST",
+        "path": "/api/dashboard/projects/size-p1/tickets",
+        "body": {
+          "kind": "email",
+          "localId": "size-outbound-1",
+          "requesterId": "c000004",
+          "subject": "Synthetic follow-up",
+          "content": "Synthetic outbound message.",
+          "mailboxId": "size-mailbox"
+        }
+      },
+      "status": 201,
+      "ceiling": 15000
+    },
+    {
+      "name": "ai-draft-unconfigured",
+      "persona": "owner",
+      "request": {
+        "method": "POST",
+        "path": "/api/ai-support/projects/size-p1/conversations/v000003/suggestions",
+        "body": {
+          "expectedRevision": 3
+        }
+      },
+      "status": 409,
+      "ceiling": 1000
+    },
+    {
+      "name": "minute-tick",
+      "scheduled": "* * * * *",
+      "ceiling": 40000
+    }
+  ]
+}

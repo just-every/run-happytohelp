@@ -1,4 +1,5 @@
 import {validateHappyToHelpVariables} from './environment';
+import {normalizePublicMailSettings} from './mail-environment';
 import recipe from './recipe.json';
 import type {IntegrationHost,ResourcePlan,Environment} from './contract';
 function origin(value:unknown,name:string):string {
@@ -29,7 +30,7 @@ export function createPlanGenerator({sha256,validatePlan}:IntegrationHost){retur
   if(!Array.isArray(config.controlledProviders)||!config.controlledProviders.length||config.controlledProviders.some(value=>typeof value!=='string'||!value.trim()))throw new Error('Preview requires controlledProviders');
   plan.schedules=[];plan.queueConsumers=[];plan.previewEffects={schedulesDisabled:true,controlledProviders:config.controlledProviders as string[]};
  }
- const result:ResourcePlan={...plan,workerName:prefix+'happytohelp',publicVariables,secretNames};
+ const result:ResourcePlan={...plan,workerName:prefix+'happytohelp',publicVariables:normalizePublicMailSettings(publicVariables),secretNames};
  await validatePlan(result);
  return result;
 }

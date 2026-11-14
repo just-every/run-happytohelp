@@ -2061,11 +2061,15 @@
       "executable": false
     },
     "management/integration/environment.ts": {
-      "sha256": "bc9f1988917f6ecff6e4e65b30718e021d56bec67ad65e6894e2db11b64a646e",
+      "sha256": "dfbe3a780072928137646a4290b3c16259dd5054b76656ab38b2580a999e3ec7",
       "executable": false
     },
     "management/integration/index.ts": {
       "sha256": "690528f8d17e4837d6ba76cc1e030d6829739e8ae2c72bbd19ed2634204b729e",
+      "executable": false
+    },
+    "management/integration/mail-environment.ts": {
+      "sha256": "583cecec457c5d27dd93c6b403c549cd52e4490ce2bbd9e098c4c11bce62f54a",
       "executable": false
     },
     "management/integration/managed-deploy.json": {
@@ -2077,7 +2081,7 @@
       "executable": false
     },
     "management/integration/plan.ts": {
-      "sha256": "e62c5848d925a3834d90d539145bdf522f4fadbf3420e6292ab1daa64f950548",
+      "sha256": "9cd03d4db401c860d22a1e0ebfb2dd1c07d06eee15101219efb1438b245ae7d3",
       "executable": false
     },
     "management/integration/profile.json": {
@@ -2089,7 +2093,7 @@
       "executable": false
     },
     "management/integration/revision.ts": {
-      "sha256": "2230637cd584787bd9dbd683e727cc3333a265bbf6b0d959839b37b38cfa90c5",
+      "sha256": "6dba54692871620056d679d9648a86c0293fb84b16bd72360088a55a941e6f35",
       "executable": false
     },
     "management/README.md": {
@@ -2101,7 +2105,7 @@
       "executable": false
     },
     "management/tooling/refresh-recipe.mjs": {
-      "sha256": "750d8bded6fd13d98aac6bf4b784a6230e1e719eef7be808b9c730e00d014f4c",
+      "sha256": "9e86b37ca19e6803f4f99fec6a096a927bb5982d8b1930c27596346a3f7cf134",
       "executable": false
     },
     "migrations/0001_identity.sql": {
@@ -3185,7 +3189,7 @@
       "executable": false
     },
     "scripts/delivery/generate-spec.mjs": {
-      "sha256": "d1213c45ded52ce32280357f60f11b2292fdd1a212b7ddc825e402e410fa18aa",
+      "sha256": "3a2d06fbdfb2f5d82a88839c51ff5acd6fbfcc46654f37bfabf3467038e3391a",
       "executable": false
     },
     "scripts/delivery/module-preloads.ts": {
@@ -16769,7 +16773,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "01c90dcdd3bfd6a28e5e6c2327d50762e42259c8d32e11ea949b34ad45c26059",
+      "sha256": "ec73b58a3b08f81e08564a9f856707bf8a66095a298107c47b06837df6d291f3",
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {

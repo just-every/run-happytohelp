@@ -4,6 +4,7 @@ import {pathToFileURL} from 'node:url';
 import {managedMailDeclaration,managedDeployPath,nativeMailSetupManifest,nativeSetupPath} from '../deployment/mail-declaration.mjs';
 import {deploymentSpec} from './base/spec.mjs';
 import {assertSecretDeclarations} from './secret-declarations.mjs';
+import {refreshRecipe} from '../../management/tooling/refresh-recipe.mjs';
 
 /** Keep the importable contract identical to the delivery artifact's generated spec. */
 export async function generateDeploymentSpec(root=process.cwd()) {
@@ -16,6 +17,7 @@ export async function generateDeploymentSpec(root=process.cwd()) {
  await writeFile(resolve(root,managedDeployPath),JSON.stringify(managedMailDeclaration(declaration),null,2)+'\n');
  const setupManifest=JSON.parse(await readFile(resolve(root,'rer-setup.json'),'utf8'));
  await writeFile(resolve(root,nativeSetupPath),JSON.stringify(nativeMailSetupManifest(setupManifest),null,2)+'\n');
+ await refreshRecipe(root);
  return output;
 }
 

@@ -17013,7 +17013,7 @@
       "executable": false
     },
     "tests/helpers/notify/slack-browser.mjs": {
-      "sha256": "a92ea5e7d78420e06a54b71ee4cafbfea43e349217aa8b6735c5fce28036689b",
+      "sha256": "4ae99130120b7e9162c66781049ae7ca650fed925f828a303d1a65fb15c8c324",
       "executable": false
     },
     "tests/helpers/notify/slack-edge.mjs": {
@@ -17021,7 +17021,7 @@
       "executable": false
     },
     "tests/helpers/notify/slack-notices.mjs": {
-      "sha256": "e519851c7dd502e0476711110ed133c1b0bf4959fa71f0fe83faf9edb734f29b",
+      "sha256": "f717dc5d44f600fd29afae2725a32944e65d2be0007057028c7334129ae367f8",
       "executable": false
     },
     "tests/helpers/notify/teammates.mjs": {

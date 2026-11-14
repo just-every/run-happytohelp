@@ -41,7 +41,7 @@ export async function slackNoticeJourney(){
   await settle()
 
   // Off by default: no consent means no link, and an existing enabled Slack connection confers nothing.
-  const destination=(await req(`${base}/connections/slack`,{...admin,body:{name:'Support Slack',mode:'bot',token:'xoxb-synthetic-bot-1',channel:'C0SYNTH1'}})).id
+  const destination=(await req(`${base}/connections/slack`,{...admin,body:{name:'Support Slack',mode:'bot',token:'xoxb-example-1',channel:'C0SYNTH1'}})).id
   edge.members.U0OPERATOR1=edge.installTeam
   assert.equal((await app.call(slack+'/link',{...opTok,body:{slack_user_id:'U0OPERATOR1'}})).status,409,'no consent, no link')
   assert.equal((await req(slack,opTok)).available,false);assert.match((await req(slack,opTok)).unavailable_reason,/not enabled/)
@@ -96,7 +96,7 @@ export async function slackNoticeJourney(){
   probe('P1 audiences',seen)
   const payloads=edge.notices()
   for(const call of payloads){
-   assert.equal(call.token,'xoxb-synthetic-bot-1');assert.deepEqual(Object.keys(call.params).sort(),['blocks','channel','mrkdwn','text','unfurl_links','unfurl_media'])
+   assert.equal(call.token,'xoxb-example-1');assert.deepEqual(Object.keys(call.params).sort(),['blocks','channel','mrkdwn','text','unfurl_links','unfurl_media'])
    const text=JSON.stringify(call.params)
    assert.match(text,new RegExp(`${origin}/projects/${p}/conversations/${t2}`));assert.ok(text.includes(t2))
    for(const secret of ['Private subject','Dana','order 1234','customer-slack@example.test','private details','Customer update'])assert.ok(!text.includes(secret),'payload carries no '+secret)
@@ -175,7 +175,7 @@ export async function slackNoticeJourney(){
   await req(slack+'/consent',{...owner,method:'PUT',body:{destination_id:null}})
   await quiet('revoked consent stops the send',()=>customer(t4))
   assert.equal((await app.first('SELECT count(*) n FROM teammate_slack_links')).n,0,'revoking consent removes every link')
-  const second=(await req(`${base}/connections/slack`,{...admin,body:{name:'Second Slack',mode:'bot',token:'xoxb-synthetic-bot-2',channel:'C0SYNTH2'}})).id
+  const second=(await req(`${base}/connections/slack`,{...admin,body:{name:'Second Slack',mode:'bot',token:'xoxb-example-2',channel:'C0SYNTH2'}})).id
   const relink=async()=>{await req(slack+'/link',{...opTok,body:{slack_user_id:'U0OPERATOR1'}});await req(slack+'/link/verify',{...opTok,body:{code:edge.lastCode()}});await prefs(true)}
   await app.db.prepare('DELETE FROM teammate_slack_links').run()
   await req(slack+'/consent',{...owner,method:'PUT',body:{destination_id:second}});await relink()
@@ -183,7 +183,7 @@ export async function slackNoticeJourney(){
   await app.db.prepare('UPDATE teammate_slack_links SET created_at=1').run()
   await req(`${base}/agents/${adminId}`,{...owner,method:'DELETE'})
   await quiet('lost installer authority stops the send',()=>customer(t4))
-  const third=(await req(`${base}/connections/slack`,{...owner,body:{name:'Third Slack',mode:'bot',token:'xoxb-synthetic-bot-3',channel:'C0SYNTH3'}})).id
+  const third=(await req(`${base}/connections/slack`,{...owner,body:{name:'Third Slack',mode:'bot',token:'xoxb-example-3',channel:'C0SYNTH3'}})).id
   await req(slack+'/consent',{...owner,method:'PUT',body:{destination_id:third}});await relink()
   assert.equal((await count(()=>customer(t4))).length,1)
   await req(`${base}/connections/slack/${third}`,{...owner,method:'DELETE'})

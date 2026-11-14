@@ -17349,7 +17349,7 @@
       "executable": false
     },
     "tests/journeys/erasure.mjs": {
-      "sha256": "8a61a632c43125cc0be59ab88214a33d999addf343576728dba40aa61fdc4772",
+      "sha256": "712f6d3766c56c76736885611433e76f9368239c1f4b8c297191f7e960bcf963",
       "executable": false
     },
     "tests/journeys/first-run.mjs": {

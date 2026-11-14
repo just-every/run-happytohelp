@@ -123,7 +123,9 @@ async function outsideScope(){
   contacts:await all("SELECT * FROM contacts WHERE id<>'ct' ORDER BY id"),
   sessions:await all("SELECT * FROM sessions WHERE contact_id IS NULL OR contact_id<>'ct' ORDER BY token_hash"),
   conversations:await all('SELECT * FROM conversations ORDER BY id'),
-  outbox:await all('SELECT * FROM conversation_outbox ORDER BY id'),
+  // Retain every event identity and delivery field; raw replay projections of
+  // erased conversations deliberately follow their redacted source rows.
+  outbox:(await all('SELECT * FROM conversation_outbox ORDER BY id')).map(row=>{if(['conv1','conv2'].includes(row.conversation_id)){const {message_json,media_json,...event}=row;return event}return row}),
   messages:await all("SELECT * FROM messages WHERE conversation_id NOT IN ('conv1','conv2') ORDER BY id"),
   media:await all("SELECT * FROM media WHERE id NOT IN ('md1','md2') ORDER BY id"),
   notes:await all("SELECT * FROM conversation_notes WHERE conversation_id NOT IN ('conv1','conv2') ORDER BY id"),
@@ -252,7 +254,7 @@ let first,opAfter
   {id:'seed-in-sender',automatic:0,evidence_json:'{"reasons":[]}',local_id:'email:seed-2',message_id:null},
  ])
  assert.deepEqual(erased.staged,[])
- const dump=JSON.stringify(await Promise.all(['contacts','conversation_buckets','messages','media','conversation_notes','context_evidence','context_profiles','context_insights','context_summaries','context_tracked_events','context_jobs','context_job_events','ai_generations','ai_attempt_events','local_jobs','local_events','local_result_effects','local_receipts','email_deliveries','legacy_import_rows'].map(table=>all(`SELECT * FROM ${table}`))))
+ const dump=JSON.stringify(await Promise.all(['contacts','conversation_buckets','messages','conversation_outbox','media','conversation_notes','context_evidence','context_profiles','context_insights','context_summaries','context_tracked_events','context_jobs','context_job_events','ai_generations','ai_attempt_events','local_jobs','local_events','local_result_effects','local_receipts','email_deliveries','legacy_import_rows'].map(table=>all(`SELECT * FROM ${table}`))))
  for(const fragment of ['Alice','alice','4471','4242','Sydney','crm-alice','203.0.113.9','Private Lane','Second conversation secret'])assert.equal(dump.includes(fragment),false,`${fragment} remains in D1`)
  // The contact search index follows the erasure: nothing finds the identity, the index still agrees
  // with contacts, and no term of the erased contact's row remains in it.

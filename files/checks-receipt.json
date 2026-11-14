@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "output_file": "contract-check.txt",
+      "output_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check",
+      "exit_code": 0,
+      "output_file": "contract-entry-check.txt",
+      "output_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit_code": 0,
+      "output_file": "first-party-check.txt",
+      "output_sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0,
+      "output_file": "source-lock.txt",
+      "output_sha256": "0f97312fad14e7cf6f18d8657af7d173333784ef49ded62ef65a3568e8cfd7ed"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "output_file": "source-check.txt",
+      "output_sha256": "5c2657f31c58ffaaf17896abe5778adca595ac61e396780cee30d1ede1bf368c"
+    },
+    {
+      "command": "cloud_run pnpm exec rer build --site",
+      "exit_code": 0,
+      "output_file": "docs-build.txt",
+      "output_sha256": "996fdbc5858491b76b2600acafabf7a4fa51401f05fb631a2003d8bd145bb932"
+    }
+  ],
+  "node": "24.19.0",
+  "pnpm": "10.12.4",
+  "typecheck": "not run: copy-only brief",
+  "new_tests": 0,
+  "size_proof": "not rerun: used supplied qualification counts and repository assertions/history",
+  "source_lock_generated": true
+}

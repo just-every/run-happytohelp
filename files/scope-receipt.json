@@ -1,0 +1,18 @@
+{
+  "readme_replacement_only": true,
+  "all_other_readme_bytes_unchanged": true,
+  "lock_change_only_readme_sha256": true,
+  "size_declaration_sha256": "b35c1a1c172c997bdf0902374ebad9c076209e8e5c5354d84448f5665f1a0c5a",
+  "flows_before": 17,
+  "flows_after": 17,
+  "contract_status_changes": 0,
+  "changed_files": [
+    "README.md",
+    "sources.lock.json"
+  ],
+  "control_rows_supplied": [
+    2359,
+    2403
+  ],
+  "size_proof_rerun": false
+}

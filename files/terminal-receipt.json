@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-happytohelp",
+  "tag": "hh-size-readme-c-1",
+  "branch": "cloud/hh-size-readme-c-1",
+  "head": "76a98f37da9003a14e5e2c7bfd9df03b1588ab51",
+  "product_push": "success-first-attempt",
+  "verify_run_id": 43633158646,
+  "verify_url": "https://github.com/just-every/run-happytohelp/actions/runs/43633158646",
+  "verify_status": "completed",
+  "verify_conclusion": "success",
+  "github_calls_used": 6,
+  "product_commits": 1,
+  "worktree_clean": true,
+  "clause_status_changes": 0,
+  "declared_flows_before": 17,
+  "declared_flows_after": 17,
+  "contract_counts_before_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "pr": null,
+  "landing": "fleet only; sd release lock and full-history publication scan remain",
+  "terminal_line": "READY branch=cloud/hh-size-readme-c-1 head=76a98f37da9003a14e5e2c7bfd9df03b1588ab51"
+}

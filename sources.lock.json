@@ -2057,7 +2057,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "5769212c4a86249110ad74d3aaac382fb8848fdef6ca891ca79e3bdc50139bbb",
+      "sha256": "37a71460148b5d1668b20ac63ffbde0f1427c62eedcde5d228b2fae5272472d1",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2977,7 +2977,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "3cf85d9e742da47642e11c37816bd981f4455409d4e617de4e09a6fa0469c83f",
+      "sha256": "ef6ad15b94b9ea0adc97f9031a62f4b09a1587a19e3bc5c4b8e66d44f6f4bf3d",
       "executable": false
     },
     "rer-project.json": {
@@ -5521,7 +5521,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "e24f4fb24614ef9467c7fc65dfe762782bc03a37e2a8b91682a4057b6bec9257",
+      "sha256": "ecdbf07485964836aa87bda8a69e509c7183805bb5ce0917c2c6cb36575fbb4b",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
@@ -7697,7 +7697,7 @@
       "executable": false
     },
     "src/modules/knowledge/reference-store.ts": {
-      "sha256": "a05a70fedd3472fd4c82df67e8253a5b27501103562d0efbc2165b08a822af71",
+      "sha256": "195365eb1f9bcd4c059804f4c6c0e6f2c9a7dca5a40f69a0d8900c0e1f66bc68",
       "executable": false
     },
     "src/modules/knowledge/result-fields.ts": {
@@ -16849,7 +16849,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/references.mjs": {
-      "sha256": "e4c6e1a67df705f7e3243fd611eecb461041f893a9d98db2f431505e86578a37",
+      "sha256": "1847f7fbbb6d397e0bfa815216fb1146d2bfae42c239d9d76a63ff38d34dfb09",
       "executable": false
     },
     "tests/helpers/knowledge/settle-upgrade.mjs": {
@@ -17241,7 +17241,7 @@
       "executable": false
     },
     "tests/helpers/widget/socket.mjs": {
-      "sha256": "3a3011892fd2770bc00899eaec98c3c8f8a22696652e639bfd0acc51d6cfcb72",
+      "sha256": "1352e0d472611695979e30de9d68c89d81e196e5009cc295b7c69fe49165a3ab",
       "executable": false
     },
     "tests/helpers/widget/sockets.mjs": {

@@ -91,11 +91,17 @@ export async function renderKnowledgeFields<T>(env:Env,projectId:string,value:T,
  }
  return value
 }
-// The blocks' source ids drive the join and each article is found by its primary key. Matching
-// 'article:'||a.id against the source ids cannot use an index, so it visited every article of the
-// workspace. ORDER BY slug is the order that scan produced (the (project_id, slug) index), kept so a
-// block's first article stays the same one.
-export const articleSourcesSql=`SELECT DISTINCT source.block_id,a.id,a.title FROM (SELECT b.id block_id,s.value source_id FROM knowledge_reply_blocks b,json_each(b.sources_json) s WHERE b.project_id=?1 AND b.id IN (SELECT value FROM json_each(?2)) UNION SELECT b.id block_id,gs.source_id FROM knowledge_reply_blocks b JOIN knowledge_generation_sources gs ON gs.project_id=b.project_id AND gs.generation_id=b.generation_id WHERE b.project_id=?1 AND b.id IN (SELECT value FROM json_each(?2))) source CROSS JOIN knowledge_articles a ON a.id=substr(source.source_id,9) AND a.project_id=?1 WHERE substr(source.source_id,1,8)='article:' ORDER BY a.slug,source.block_id`
+// Requested ids drive primary-key block lookups, then only those blocks' sources are expanded.
+// The generation ledger's (project_id,generation_id,source_id,source_version) primary key also
+// bounds its read to the exact article: prefix, skipping unrelated document sources. CROSS JOIN
+// keeps both lookups driven by the selection rather than a workspace scan. Slug/block order
+// preserves the first article used for an editor's reference title.
+export const articleSourcesSql=`WITH selected AS MATERIALIZED (
+ SELECT b.id,b.sources_json,b.generation_id FROM json_each(?2) requested CROSS JOIN knowledge_reply_blocks b ON b.id=requested.value AND b.project_id=?1
+), source AS MATERIALIZED (
+ SELECT b.id block_id,s.value source_id FROM selected b CROSS JOIN json_each(b.sources_json) s WHERE substr(s.value,1,8)='article:'
+ UNION SELECT b.id,gs.source_id FROM selected b CROSS JOIN knowledge_generation_sources gs ON gs.project_id=?1 AND gs.generation_id=b.generation_id AND gs.source_id>='article:' AND gs.source_id<'article;'
+) SELECT DISTINCT source.block_id,a.id,a.title FROM source CROSS JOIN knowledge_articles a ON a.id=substr(source.source_id,9) AND a.project_id=?1 ORDER BY a.slug,source.block_id`
 export async function referenceVisibility(env:Env,projectId:string,text:string,operatorId:string,readers:Readers){
  const ids=referenceIds(text);if(!ids.length)return []
  const policy=referenceAdmissionPolicy(ids,literal(projectId),memberReaders(operatorId))

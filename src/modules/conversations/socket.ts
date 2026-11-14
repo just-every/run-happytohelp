@@ -30,9 +30,16 @@ export class ConversationSocket extends DurableObject<Env>{
   const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
   if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return false}
   const rows=await this.env.DB.prepare(`SELECT o.id eventId,m.* FROM conversation_outbox o CROSS JOIN messages m ON m.id=o.message_id CROSS JOIN conversations c ON c.id=o.conversation_id AND c.project_id=o.project_id WHERE ${a.projectId?'o.project_id':'o.conversation_id'}=? AND o.id>? ${actor.role==='contact'?'':`AND ${ticketScopeSql('?')}`} ORDER BY o.id LIMIT 500`).bind(a.projectId||a.conversationId,a.cursor,...(actor.role==='contact'?[]:[actor.actor_id])).all()
+  // One indexed lookup for the replay page (at most 500 messages). Keep each
+  // message's original table order and strip the grouping key from its payload.
+  const media=new Map<string,Record<string,unknown>[]>()
+  if(rows.results.length){
+   const files=await this.env.DB.prepare('SELECT id,message_id,filename,content_type,size FROM media WHERE message_id IN (SELECT value FROM json_each(?)) ORDER BY rowid').bind(JSON.stringify(rows.results.map(row=>row.id))).all()
+   for(const {message_id,...file} of files.results){const id=String(message_id);if(!media.has(id))media.set(id,[]);media.get(id)!.push(file)}
+  }
   for(const row of rows.results){
    if(actor.role==='contact')delete row.content_raw
-   row.media=(await this.env.DB.prepare('SELECT id,filename,content_type,size FROM media WHERE message_id=?').bind(row.id).all()).results
+   row.media=media.get(String(row.id))||[]
    const projectId=String(row.project_id),readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id),rendered=await renderKnowledgeFields(this.env,projectId,row,readers);if(actor.role!=='contact')(rendered as any).knowledgeReferences=await referenceVisibility(this.env,projectId,String(row.content||''),actor.actor_id,currentTicketReaders(projectId,String(row.conversation_id),{}));if(actor.role!=='contact'){if(!await this.authorized(a)){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return false}if(!await this.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${ticketScopeSql('?')}`).bind(row.conversation_id,row.project_id,actor.actor_id).first())continue}ws.send(JSON.stringify({type:a.projectId?'conversation':'message',eventId:row.eventId,conversationId:row.conversation_id,message:rendered}));a.cursor=Number(row.eventId)
   }
   const latest=ws.deserializeAttachment() as Attachment

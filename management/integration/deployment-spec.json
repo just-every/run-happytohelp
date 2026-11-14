@@ -1194,6 +1194,12 @@
       "name": "332_legacy_cleanup_inventory_lazy.sql",
       "sha256": "b0e22ac88fd234758bb2f26c6def7e1ba3392dbdd0eaea6171f96e5b75aa7fc3",
       "sql": "-- Keep a fresh restore destination empty: inventory is operational state, created\n-- lazily by the first bounded discovery. Missing state remains cleanup-pending.\n-- Never discard a cursor or an installation's existing package/run inventory.\nDELETE FROM legacy_package_v1_inventory\nWHERE singleton=1 AND complete=0 AND list_cursor=''\n AND NOT EXISTS(SELECT 1 FROM legacy_package_custody)\n AND NOT EXISTS(SELECT 1 FROM legacy_import_worker_runs);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "334_media_message_reads.sql",
+      "sha256": "6d3c1d009945493314e73d773216da39c883ba2e0df0101572e472981d90d181",
+      "sql": "-- Message assembly and durable replay read only attachments for the selected messages.\nCREATE INDEX media_message ON media(message_id);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

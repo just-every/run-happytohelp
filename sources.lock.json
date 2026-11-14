@@ -2888,6 +2888,10 @@
       "sha256": "b0e22ac88fd234758bb2f26c6def7e1ba3392dbdd0eaea6171f96e5b75aa7fc3",
       "executable": false
     },
+    "migrations/334_media_message_reads.sql": {
+      "sha256": "6d3c1d009945493314e73d773216da39c883ba2e0df0101572e472981d90d181",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -7697,7 +7701,7 @@
       "executable": false
     },
     "src/modules/knowledge/reference-store.ts": {
-      "sha256": "195365eb1f9bcd4c059804f4c6c0e6f2c9a7dca5a40f69a0d8900c0e1f66bc68",
+      "sha256": "4dbbd8e50b6b49de2e8e9158535d1524c01be56544c83cbd2c4b5c9d05d023b3",
       "executable": false
     },
     "src/modules/knowledge/result-fields.ts": {
@@ -16849,7 +16853,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/references.mjs": {
-      "sha256": "1847f7fbbb6d397e0bfa815216fb1146d2bfae42c239d9d76a63ff38d34dfb09",
+      "sha256": "d22ffbee69c823f66f928b02f47499f279a850431d32276f069c477d570952e8",
       "executable": false
     },
     "tests/helpers/knowledge/settle-upgrade.mjs": {

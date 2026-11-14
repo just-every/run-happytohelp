@@ -95,11 +95,12 @@ export async function renderKnowledgeFields<T>(env:Env,projectId:string,value:T,
 // The generation ledger's (project_id,generation_id,source_id,source_version) primary key also
 // bounds its read to the exact article: prefix, skipping unrelated document sources. CROSS JOIN
 // keeps both lookups driven by the selection rather than a workspace scan. Slug/block order
-// preserves the first article used for an editor's reference title.
+// preserves the first article used for an editor's reference title. Direct arrays without an
+// article prefix or a JSON escape cannot hold article sources, so skip their expansion.
 export const articleSourcesSql=`WITH selected AS MATERIALIZED (
  SELECT b.id,b.sources_json,b.generation_id FROM json_each(?2) requested CROSS JOIN knowledge_reply_blocks b ON b.id=requested.value AND b.project_id=?1
 ), source AS MATERIALIZED (
- SELECT b.id block_id,s.value source_id FROM selected b CROSS JOIN json_each(b.sources_json) s WHERE substr(s.value,1,8)='article:'
+ SELECT b.id block_id,s.value source_id FROM selected b CROSS JOIN json_each(CASE WHEN b.sources_json LIKE '%article:%' OR instr(b.sources_json,char(92))>0 THEN b.sources_json END) s WHERE substr(s.value,1,8)='article:'
  UNION SELECT b.id,gs.source_id FROM selected b CROSS JOIN knowledge_generation_sources gs ON gs.project_id=?1 AND gs.generation_id=b.generation_id AND gs.source_id>='article:' AND gs.source_id<'article;'
 ) SELECT DISTINCT source.block_id,a.id,a.title FROM source CROSS JOIN knowledge_articles a ON a.id=substr(source.source_id,9) AND a.project_id=?1 ORDER BY a.slug,source.block_id`
 export async function referenceVisibility(env:Env,projectId:string,text:string,operatorId:string,readers:Readers){

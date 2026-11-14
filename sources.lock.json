@@ -2057,7 +2057,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "5769212c4a86249110ad74d3aaac382fb8848fdef6ca891ca79e3bdc50139bbb",
+      "sha256": "a110249db5ae6ddaa6a011387e51db99268002cc5e04a91ad8f2d199331d8353",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -17785,7 +17785,7 @@
       "executable": false
     },
     "tests/reports/cohort-projection.mjs": {
-      "sha256": "9d75b7292b4f250efbd6f2a40ff3e83df544cc3d4f19dee9e75dcd4258a23030",
+      "sha256": "7eb42075e2346977591a2b4491acf8991b23e4b0ffeb3e452c509353e98d4b26",
       "executable": false
     },
     "tests/reports/figures.mjs": {

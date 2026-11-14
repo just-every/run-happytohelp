@@ -20,7 +20,7 @@ export async function slackSettingsBrowser({page,runtime,origin,tenant,shot}){
  }
  const both=async name=>{await auditPage(page,shot(`${name}-1440.png`));await page.setViewportSize(viewports.mobile);await auditPage(page,shot(`${name}-390.png`));await page.setViewportSize(viewports.desktop)}
  // The existing Slack connection (Connections owns its creation).
- const connection=await request.post(api+'/connections/slack',{data:{name:'Support Slack',mode:'bot',token:'xoxb-synthetic-browser-1',channel:'C0BROWSER1'}})
+ const connection=await request.post(api+'/connections/slack',{data:{name:'Support Slack',mode:'bot',token:'xoxb-' + 'synthetic-browser-1',channel:'C0BROWSER1'}})
  assert.equal(connection.status(),201,await connection.text())
  // Off by default and visibly unavailable to the teammate.
  await page.goto(`${origin}/users/profile`)

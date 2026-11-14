@@ -1,0 +1,23 @@
+{
+  "status": "PUSHED",
+  "branch": "cloud/hh-health-version-1",
+  "head": "146143b9466352f0ad30619247b55f0088eef8e2",
+  "ciRunId": 43530842220,
+  "ciStatus": "in_progress",
+  "ciConclusion": null,
+  "ciUrl": "https://github.com/just-every/run-happytohelp/actions/runs/43530842220",
+  "githubCalls": 10,
+  "localChecks": "passed",
+  "managedCompleteSourceOperations": "4/4 passed",
+  "managedHealth": "passed",
+  "publicationScan": "REMOTE-NEEDS-LOCAL",
+  "exactMacFixture": "NOT RUN: unavailable",
+  "clauseChanges": [],
+  "topLevelJourneyRegistrations": {
+    "before": 103,
+    "after": 103
+  },
+  "defaultBranchUpdated": false,
+  "pr": null,
+  "observedAt": "2026-11-14T00:18:53.801667+00:00"
+}

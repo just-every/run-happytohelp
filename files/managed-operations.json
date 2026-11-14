@@ -1,0 +1,26 @@
+[
+  {
+    "operation": "setup",
+    "command": "node scripts/independent/setup-build.mjs",
+    "exit": 0,
+    "seconds": 9.554
+  },
+  {
+    "operation": "build",
+    "command": "export PATH=\"$PWD/.rer-tools/node_modules/.bin:$PATH\" && pnpm run build",
+    "exit": 0,
+    "seconds": 22.175
+  },
+  {
+    "operation": "verify",
+    "command": "export PATH=\"$PWD/.rer-tools/node_modules/.bin:$PATH\" && pnpm run verify:build",
+    "exit": 0,
+    "seconds": 18.042
+  },
+  {
+    "operation": "artifact",
+    "command": "node scripts/delivery/build.mjs --clean",
+    "exit": 0,
+    "seconds": 0.415
+  }
+]

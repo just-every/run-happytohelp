@@ -1,0 +1,19 @@
+
+Interrupted while running:
+
+⚠ tests/journeys/runtime.mjs (tests/journeys/runtime.mjs:1:1)
+✖ tests/journeys/runtime.mjs (159793.146014ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 0
+ℹ cancelled 1
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 159797.878231
+
+✖ failing tests:
+
+test at tests/journeys/runtime.mjs:1:1
+✖ tests/journeys/runtime.mjs (159793.146014ms)
+  'Promise resolution is still pending but the event loop has already resolved'

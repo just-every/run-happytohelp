@@ -1,0 +1,21 @@
+{
+  "top_level_journey_registrations": {
+    "origin/main": 103,
+    "HEAD": 103
+  },
+  "delta": 0,
+  "scope": "same existing runtime registration extended; no new registration",
+  "contract_status_counts": {
+    "origin/main": {
+      "partial": 71,
+      "done": 4,
+      "missing": 16
+    },
+    "HEAD": {
+      "partial": 71,
+      "done": 4,
+      "missing": 16
+    }
+  },
+  "clause_changes": []
+}

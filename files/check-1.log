@@ -1,0 +1,4 @@
+
+> happytohelp@0.4.25 typecheck /home/agent/rer-consolidation/work/hh-health-version-1/repo
+> node scripts/generate-routes.mjs && tsc --noEmit
+

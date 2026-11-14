@@ -1,0 +1,8 @@
+{
+  "operation": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --answers .seed/cloud-answers.json --non-interactive",
+  "exit": 0,
+  "firstAttemptExit": 3,
+  "firstAttemptReason": "Missing WIDGET_ORIGIN and OWNER_PASSWORD; supplied generated local-only private answers on retry",
+  "privateLogPublished": false,
+  "note": "No provider or deploy operation ran. Private setup log and answer bytes excluded."
+}

@@ -1,0 +1,3 @@
+{"operation": "setup", "command": "node scripts/independent/setup-build.mjs", "exit": 0, "seconds": 5.722}
+{"operation": "build", "command": "export PATH=\"$PWD/.rer-tools/node_modules/.bin:$PATH\" && pnpm run build", "exit": 0, "seconds": 26.879}
+{"operation": "verify", "command": "export PATH=\"$PWD/.rer-tools/node_modules/.bin:$PATH\" && pnpm run verify:build", "exit": 1, "seconds": 1.769}

@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "productHead": "146143b9466352f0ad30619247b55f0088eef8e2",
+  "upstream": {
+    "schema": 1,
+    "repository": "just-every/run-happytohelp",
+    "tag": "v0.4.25",
+    "commit": "146143b9466352f0ad30619247b55f0088eef8e2"
+  },
+  "copiedHead": "95246e06e61c0c8cf76fad3abafbb405882b8dda",
+  "installationHead": "28cf134c627fc5740993296022a981a1e57f7272",
+  "commitCount": 2,
+  "adaptation": [
+    "copied the complete candidate archive without original Git history",
+    "committed platform-shaped rer-upstream.json and refreshed the copy source lock through its existing command"
+  ],
+  "exactMacFixture": "NOT AVAILABLE; equivalent two-commit complete-source fixture",
+  "automationFilter": "Not applied. A separate filtered fixture encountered pre-existing offline copy-check drift for two missing .github workflow copies; that observation is retained in managed-filtered-verify.log.",
+  "operations": [
+    {
+      "operation": "setup",
+      "command": "node scripts/independent/setup-build.mjs",
+      "exit": 0,
+      "seconds": 9.554
+    },
+    {
+      "operation": "build",
+      "command": "export PATH=\"$PWD/.rer-tools/node_modules/.bin:$PATH\" && pnpm run build",
+      "exit": 0,
+      "seconds": 22.175
+    },
+    {
+      "operation": "verify",
+      "command": "export PATH=\"$PWD/.rer-tools/node_modules/.bin:$PATH\" && pnpm run verify:build",
+      "exit": 0,
+      "seconds": 18.042
+    },
+    {
+      "operation": "artifact",
+      "command": "node scripts/delivery/build.mjs --clean",
+      "exit": 0,
+      "seconds": 0.415
+    }
+  ],
+  "healthExit": 0,
+  "health": {
+    "status": 200,
+    "health": {
+      "status": "ok",
+      "ok": true,
+      "deployment": {
+        "sourceSha": null,
+        "fingerprint": null,
+        "versionId": null
+      },
+      "release": {
+        "version": "0.4.25",
+        "sourceCommit": "146143b9466352f0ad30619247b55f0088eef8e2"
+      },
+      "runtime": "native-rer",
+      "database": "reachable",
+      "files": "reachable"
+    },
+    "upstream": {
+      "schema": 1,
+      "repository": "just-every/run-happytohelp",
+      "tag": "v0.4.25",
+      "commit": "146143b9466352f0ad30619247b55f0088eef8e2"
+    },
+    "runtimeSourceFilesAbsent": true,
+    "assertions": "release matches upstream tag/commit; default deployment unchanged; same built response without Git or provenance file"
+  },
+  "worktreeCleanAfterHealth": true
+}

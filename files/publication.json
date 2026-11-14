@@ -1,0 +1,6 @@
+{
+  "status": "REMOTE-NEEDS-LOCAL",
+  "reason": "Supported publish-check.sh is absent in this cloud launcher and product checkout; COMPLETE full-history publication scan belongs to Mac lander. No substitute scan claimed.",
+  "upstream": "https://github.com/just-every/run-happytohelp#main",
+  "edition": "just-every/happytohelp"
+}

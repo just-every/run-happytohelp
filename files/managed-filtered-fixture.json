@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "productHead": "146143b9466352f0ad30619247b55f0088eef8e2",
+  "upstream": {
+    "schema": 1,
+    "repository": "just-every/run-happytohelp",
+    "tag": "v0.4.25",
+    "commit": "146143b9466352f0ad30619247b55f0088eef8e2"
+  },
+  "copiedHead": "2835781f268dfa704a0ecd41b8d4f3db4fdfbfea",
+  "installationHead": "72768169de4545329f4dbb56fefafaf09fb5126b",
+  "commitCount": 2,
+  "adaptation": [
+    "omitted .github as in platform copies",
+    "generated the copied tree source lock using its existing lock command"
+  ],
+  "exactMacFixture": "NOT AVAILABLE; equivalent locally constructed fixture",
+  "correctedFixture": "repository is owner/name, as required by rer managed-record recognition; initial URL-form fixture correctly failed REPORTS-001 publisher workflow evidence check"
+}

@@ -1,0 +1,91 @@
+
+added 1 package in 522ms
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +524
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 524, reused 524, downloaded 0, added 521
+Progress: resolved 524, reused 524, downloaded 0, added 524, done
+
+dependencies:
++ @anthropic-ai/sdk 0.111.0
++ @floating-ui/react 0.26.28
++ @fortawesome/fontawesome-svg-core 6.7.2
++ @fortawesome/free-solid-svg-icons 6.7.2
++ @fortawesome/react-fontawesome 0.2.6
++ @google/genai 2.11.0
++ @tanstack/react-router 1.170.41
++ @tanstack/react-start 1.168.60
++ autosize 6.0.1
++ bootstrap 5.3.8
++ classnames 2.5.1
++ css-color-names 1.0.1
++ date-fns 2.30.0
++ feather-icons 4.29.2
++ h2h-widget-external-links <- remark-external-links 9.0.1
++ h2h-widget-gfm <- remark-gfm 4.0.1
++ h2h-widget-markdown <- react-markdown 9.1.0
++ highlight.js 10.7.3
++ hono 4.13.11
++ html-to-text 10.0.1
++ i18n-iso-countries 6.8.0
++ initials 3.1.2
++ khroma 1.4.1
++ moment 2.31.0
++ moment-timezone 0.5.48
++ object-merge-advanced 14.2.4
++ openai 6.46.0
++ postal-mime 4.0.8
++ pretty-bytes 5.6.0
++ prop-types 15.8.1
++ react 19.2.8
++ react-bootstrap 2.10.10
++ react-cool-onclickoutside 1.7.0
++ react-dom 19.2.8
++ react-dropzone 14.4.1
++ react-hook-form 7.88.0
++ react-infinite-scroll-hook 4.1.1
++ react-markdown 6.0.3
++ react-scroll-to-bottom 4.2.0
++ react-shadow 20.6.0
++ react-textarea-autosize 8.5.9
++ react-timeago 7.2.0
++ remark-external-links 8.0.0
++ remark-gfm 1.0.0
++ turndown 7.2.4
++ ua-parser-js 1.0.41
++ uqr 0.1.2
++ use-file-input 1.0.0
++ use-window-focus 1.5.0
++ uuid 14.0.1
++ ws 8.21.0
++ zod 4.6.6
+
+devDependencies:
++ @cloudflare/vite-plugin 1.54.5
++ @cloudflare/workers-types 5.20260908.1
++ @runeditrun/rer 0.2.112
++ @tanstack/router-generator 1.167.40
++ @types/react 19.2.18
++ @types/react-dom 19.2.7
++ @vitejs/plugin-react 6.1.1
++ axe-core 4.13.0
++ esbuild 0.28.1
++ miniflare 5.20260907.0-alpha
++ mysql2 3.24.6
++ playwright 1.63.0-alpha-2026-08-31
++ sass 1.104.1
++ typescript 5.9.3
++ vite 8.2.4
++ wrangler 4.129.1
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: @google/genai, @parcel/watcher, core-js,            │
+│   core-js-pure, protobufjs.                                                  │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Done in 8.8s using pnpm v10.12.4

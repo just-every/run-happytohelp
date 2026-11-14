@@ -1,0 +1,7 @@
+{
+  "base": "333af4b0580c4284616783f1d79fcc9aad3aefc5",
+  "command": "node scripts/edition-authoring/cli.mjs verify-base --offline",
+  "exit": 1,
+  "fixture": "main source archive with .github omitted, no original Git history",
+  "scope": "pre-existing filtered-copy offline verification comparison only"
+}

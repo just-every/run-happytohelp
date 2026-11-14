@@ -1,3 +1,4 @@
+import {createReferenceReadScope} from './reference-read'
 import {resolveHelpAccess} from './access'
 import {accessReaders} from './door'
 import type {Context} from 'hono'
@@ -56,17 +57,18 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  // references when the text was written (write boundary, upgrade), so a GET creates no block and refreshes no index.
  const readOnly=c.req.method==='GET'||c.req.method==='HEAD'
  if(!readOnly&&!sourceRead&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseResponse(rawEnv,projectId,data,conversation,privateComposer)
+ const referenceScope=await createReferenceReadScope(rawEnv,projectId,referenceIds(JSON.stringify(data)))
  async function render(value:any,inherited:Readers,cid?:string):Promise<any>{
   if(Array.isArray(value))return Promise.all(value.map(row=>render(row,inherited,cid)))
-  if(!value||typeof value!=='object')return renderKnowledgeFields(rawEnv,projectId!,value,inherited)
+  if(!value||typeof value!=='object')return renderKnowledgeFields(rawEnv,projectId!,value,inherited,'body',referenceScope)
   const ownConversation=responseConversation(value,cid,privateComposer)
   const readers=authority&&ownConversation?currentTicketReaders(projectId!,ownConversation,{}):inherited
-  if(typeof value.knowledge_provenance==='string'||typeof value.knowledge_citation==='string')return renderKnowledgeFields(rawEnv,projectId!,value,readers)
+  if(typeof value.knowledge_provenance==='string'||typeof value.knowledge_citation==='string')return renderKnowledgeFields(rawEnv,projectId!,value,readers,'body',referenceScope)
   const output:any={}
-  for(const [key,entry] of Object.entries(value))output[await renderKnowledgeFields(rawEnv,projectId!,key,readers)]=member&&value.reason==='knowledge_access_denied'&&['content','blockedReferences'].includes(key)?entry:privateComposer&&['content','actions_json','actions'].includes(key)?entry:await render(entry,readers,ownConversation)
+  for(const [key,entry] of Object.entries(value))output[await renderKnowledgeFields(rawEnv,projectId!,key,readers,'body',referenceScope)]=member&&value.reason==='knowledge_access_denied'&&['content','blockedReferences'].includes(key)?entry:privateComposer&&['content','actions_json','actions'].includes(key)?entry:await render(entry,readers,ownConversation)
   if(member){
    const text=typeof value.content==='string'?value.content:typeof value.text==='string'?value.text:''
-   if(referenceIds(text).length){const refs=await referenceVisibility(rawEnv,projectId!,text,actor.id,ownConversation?currentTicketReaders(projectId!,ownConversation,{}):readers);if(privateComposer)output.references=refs;else output.knowledgeReferences=refs}
+   if(referenceIds(text).length){const refs=await referenceVisibility(rawEnv,projectId!,text,actor.id,ownConversation?currentTicketReaders(projectId!,ownConversation,{}):readers,referenceScope);if(privateComposer)output.references=refs;else output.knowledgeReferences=refs}
   }
   return output
  }

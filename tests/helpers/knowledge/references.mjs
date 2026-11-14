@@ -61,6 +61,27 @@ export async function referenceJourney(){
   await (await import('./reference-ai.mjs')).referenceAi({k,body,article,category,a,b,c,send,grants,call,app,p,insert,issued,mail})
   await (await import('./reference-erasure.mjs')).referenceErasure()
   await (await import('./reference-disclosure.mjs')).referenceDisclosure({body,article,category,a,b,c,send,grants,call,app,p,issued})
+  // Editor metadata retains direct and generated articles, in slug/block order,
+  // while document sources never become article names. Duplicate requests and
+  // retained publication versions still name each article only once per block.
+  const dataset=crypto.randomUUID(),version=crypto.randomUUID(),generation=crypto.randomUUID(),documents=[crypto.randomUUID(),crypto.randomUUID()],blockIds=Array.from({length:4},()=>crypto.randomUUID().replaceAll('-','')).sort()
+  const sourceLists=[JSON.stringify(['article:'+article,'knowledge:'+documents[0]]),JSON.stringify(['knowledge:'+documents[1]]),JSON.stringify(['knowledge:'+documents[1]]),'["\\u0061rticle:'+article+'"]']
+  await app.db.batch([
+   app.db.prepare("INSERT INTO knowledge_datasets(id,project_id,name,published_version,created_at) VALUES(?,?,'Reference metadata',?,0)").bind(dataset,p,version),
+   app.db.prepare("INSERT INTO knowledge_versions(id,dataset_id,fingerprint,created_at) VALUES(?,?,'reference-metadata',0)").bind(version,dataset),
+   ...documents.map((id,i)=>app.db.prepare("INSERT INTO knowledge_documents(id,version_id,url,title,content) VALUES(?,?,?,'Document metadata','Document source')").bind(id,version,`https://source.example.test/reference-${i}`)),
+   ...blockIds.map((id,i)=>app.db.prepare("INSERT INTO knowledge_reply_blocks(id,project_id,kind,payload_json,sources_json,generation_id,created_at,fingerprint) VALUES(?,?,'text',?,?,?,0,?)").bind(id,p,JSON.stringify({text:'Mixed reference sources'}),sourceLists[i],i<2?generation:null,id)),
+   ...[['article:'+publicArticle,'v1'],['article:'+article,'v1'],['article:'+article,'v2'],['knowledge:'+documents[1],'v1']].map(([source,revision])=>app.db.prepare('INSERT INTO knowledge_generation_sources(generation_id,project_id,source_id,source_version) VALUES(?,?,?,?)').bind(generation,p,source,revision)),
+  ])
+  const statements=(await app.call('/_test/knowledge-sql',{status:200})).data
+  const ordered=(await app.db.prepare(statements.articleSources).bind(p,JSON.stringify([...blockIds].reverse().concat(blockIds[0],'missing-reference'))).all()).results
+  assert.deepEqual(ordered,[...blockIds.slice(0,2).map(block_id=>({block_id,id:publicArticle,title:'Reader guide'})),...[blockIds[0],blockIds[1],blockIds[3]].map(block_id=>({block_id,id:article,title:'Account restoration'}))],'mixed and escaped sources preserve the exact article rows and global slug/block order')
+  const preview=(await call(`/api/knowledge/${p}/references/preview`,{body:{content:blockIds.map(id=>`⟦k:${id}⟧`).join(' '),conversationId:a.conversation.id},status:200})).data
+  for(const id of blockIds){
+   const reference=preview.references.find(row=>row.token===`⟦k:${id}⟧`)
+   assert.ok(reference&&!reference.withheld,'published document and article sources remain readable by the granted recipient')
+   assert.deepEqual(reference.articles,id===blockIds[2]?[]:id===blockIds[3]?[{id:article,title:'Account restoration'}]:[{id:publicArticle,title:'Reader guide'},{id:article,title:'Account restoration'}],'the editor sees the same ordered source titles for direct, escaped and generated articles')
+  }
   await (await import('./reference-readback.mjs')).referenceReadback({app,p})
  }finally{await k.close()}
 }

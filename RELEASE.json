@@ -37,6 +37,14 @@
     {
       "id": "333_report_cohorts.sql",
       "buyerSteps": "Apply after all currently published migrations and before serving the updated Worker. Adds and backfills trigger-maintained report cohort membership, current workload dimension items and a historical bucket-presence inventory, plus a brand lookup index. No prior table definition or business row is rewritten. Back up the installation first; retain the projections and maintenance triggers while this Worker is in use. The projections are excluded from portable archives and rebuilt by the updated installer after source rows and write triggers are restored."
+    },
+    {
+      "id": "334_media_message_reads.sql",
+      "buyerSteps": "Apply 334_media_message_reads.sql once before the new Worker serves traffic, after all missing published migrations. It adds only the media(message_id) read index; every existing table definition, attachment and message remains unchanged. No backfill, reset or provider action is required."
+    },
+    {
+      "id": "335_socket_replay_projection.sql",
+      "buyerSteps": "Apply 335_socket_replay_projection.sql once after 334_media_message_reads.sql and every missing published migration, before serving the new Worker. It adds raw message/media replay columns to conversation_outbox, fills them from retained native rows, and adds database triggers that keep corrections, attachment moves/deletes and erasure synchronized. Existing columns, message identities, files, sessions and permissions remain unchanged. Knowledge visibility and socket authorization are still evaluated live; no reset or provider action is required."
     }
   ]
 }

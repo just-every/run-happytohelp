@@ -1,5 +1,6 @@
 import {ticketScopeSql} from '../access/ticket-scope'
-import {renderKnowledgeFields,referenceVisibility} from '../knowledge/reference-store'
+import {createReferenceReadScope} from '../knowledge/reference-read'
+import {referenceIds,renderKnowledgeFields,referenceVisibility} from '../knowledge/reference-store'
 import {canonicaliseFields} from '../knowledge/canonicaliser'
 import {memberReaders,readerSet} from '../knowledge/door'
 import {currentTicketReaders} from '../knowledge/readers'
@@ -29,11 +30,38 @@ export class ConversationSocket extends DurableObject<Env>{
  async replay(ws:WebSocket){
   const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
   if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return false}
-  const rows=await this.env.DB.prepare(`SELECT o.id eventId,m.* FROM conversation_outbox o CROSS JOIN messages m ON m.id=o.message_id CROSS JOIN conversations c ON c.id=o.conversation_id AND c.project_id=o.project_id WHERE ${a.projectId?'o.project_id':'o.conversation_id'}=? AND o.id>? ${actor.role==='contact'?'':`AND ${ticketScopeSql('?')}`} ORDER BY o.id LIMIT 500`).bind(a.projectId||a.conversationId,a.cursor,...(actor.role==='contact'?[]:[actor.actor_id])).all()
-  for(const row of rows.results){
-   if(actor.role==='contact')delete row.content_raw
-   row.media=(await this.env.DB.prepare('SELECT id,filename,content_type,size FROM media WHERE message_id=?').bind(row.id).all()).results
-   const projectId=String(row.project_id),readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id),rendered=await renderKnowledgeFields(this.env,projectId,row,readers);if(actor.role!=='contact')(rendered as any).knowledgeReferences=await referenceVisibility(this.env,projectId,String(row.content||''),actor.actor_id,currentTicketReaders(projectId,String(row.conversation_id),{}));if(actor.role!=='contact'){if(!await this.authorized(a)){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return false}if(!await this.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${ticketScopeSql('?')}`).bind(row.conversation_id,row.project_id,actor.actor_id).first())continue}ws.send(JSON.stringify({type:a.projectId?'conversation':'message',eventId:row.eventId,conversationId:row.conversation_id,message:rendered}));a.cursor=Number(row.eventId)
+  const unrestricted=async()=>!!(a.projectId&&await this.env.DB.prepare("SELECT 1 FROM memberships m LEFT JOIN member_roles mr ON mr.project_id=m.project_id AND mr.user_id=m.user_id LEFT JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE m.project_id=? AND m.user_id=? AND (m.role='owner' OR pr.ticket_scope_json IS NULL)").bind(a.projectId,actor.actor_id).first())
+  const wholeProject=await unrestricted()
+  // An unrestricted project page needs only the outbox and its messages. Live
+  // conversation membership and authority are checked together before delivery.
+  const page=await this.env.DB.prepare(`SELECT o.id eventId,o.message_json,o.media_json FROM conversation_outbox o ${wholeProject?'':'CROSS JOIN conversations c ON c.id=o.conversation_id AND c.project_id=o.project_id'} WHERE ${a.projectId?'o.project_id':'o.conversation_id'}=? AND o.id>? ${actor.role==='contact'||wholeProject?'':`AND ${ticketScopeSql('?')}`} ORDER BY o.id LIMIT 500`).bind(a.projectId||a.conversationId,a.cursor,...(actor.role==='contact'||wholeProject?[]:[actor.actor_id])).all<{eventId:number;message_json:string;media_json:string}>()
+  // Migration-maintained raw projections hydrate messages and their ordered media
+  // in this one bounded page statement. Current knowledge and authority stay live.
+  const rows={results:page.results.map(row=>{if(!row.message_json||!row.media_json)throw new Error('Socket replay projection is missing');return {eventId:row.eventId,...JSON.parse(row.message_json),media:JSON.parse(row.media_json)}})}
+  if(actor.role==='contact')for(const row of rows.results)delete row.content_raw
+  const scopes=new Map<string,Awaited<ReturnType<typeof createReferenceReadScope>>>()
+  for(const projectId of new Set(rows.results.map(row=>String(row.project_id))))scopes.set(projectId,await createReferenceReadScope(this.env,projectId,referenceIds(JSON.stringify(rows.results.filter(row=>row.project_id===projectId)))))
+  const prepared=await Promise.all(rows.results.map(async row=>{
+   const projectId=String(row.project_id),readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id),scope=scopes.get(projectId)
+   const rendered=await renderKnowledgeFields(this.env,projectId,row,readers,'body',scope)
+   if(actor.role!=='contact')(rendered as any).knowledgeReferences=await referenceVisibility(this.env,projectId,String(row.content||''),actor.actor_id,currentTicketReaders(projectId,String(row.conversation_id),{}),scope)
+   return {row,rendered}
+  }))
+  if(!await this.authorized(a)){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return false}
+  let allowed:Set<string>|undefined
+  if(actor.role!=='contact'&&rows.results.length){
+   // Current unrestricted membership covers every conversation in this project;
+   // scoped roles still validate the page's distinct conversations by key.
+   if(!await unrestricted()){
+    const pairs=[...new Map(rows.results.map(row=>[String(row.conversation_id),[row.conversation_id,row.project_id]])).values()]
+    const permitted=await this.env.DB.prepare(`SELECT c.id FROM json_each(?) requested CROSS JOIN conversations c ON c.id=requested.value->>0 AND c.project_id=requested.value->>1 WHERE ${ticketScopeSql('?')}`).bind(JSON.stringify(pairs),actor.actor_id).all<{id:string}>()
+    allowed=new Set(permitted.results.map(row=>row.id))
+   }
+  }
+  // No await separates this current authority check from any frame in the page.
+  for(const {row,rendered} of prepared){
+   if(allowed&&!allowed.has(String(row.conversation_id)))continue
+   ws.send(JSON.stringify({type:a.projectId?'conversation':'message',eventId:row.eventId,conversationId:row.conversation_id,message:rendered}));a.cursor=Number(row.eventId)
   }
   const latest=ws.deserializeAttachment() as Attachment
   ws.serializeAttachment({...latest,cursor:Math.max(latest.cursor,a.cursor)})

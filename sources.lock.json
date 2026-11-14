@@ -2909,11 +2909,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "64c77607226a9f28c44b020efd1b94af10d9e5d59dd3961c35dbf8d907b981ee",
+      "sha256": "3265099b5ff9cdeccf275f3c54706c9be0a68144d6701d6bbf60af5757248856",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "22be0cf17cfe758e5d17d7649f24c073047a51b50155c7fcbae68e6726673fb3",
+      "sha256": "e0a2ef8c22f8fac2ad34e1a67a0575a95de67aa504c9f22ff6bddb81dd32e393",
       "executable": false
     },
     "public/fonts/fonts.css": {

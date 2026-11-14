@@ -17849,7 +17849,7 @@
       "executable": false
     },
     "tests/size-check/proof.mjs": {
-      "sha256": "74c612f55014d5061f7cc92304d488330bdb9412d4a49564977d0905465ae740",
+      "sha256": "828a643f8b0ce721e072720182f9b406c3d4bf7263af2bf76c45186b28c4375b",
       "executable": false
     },
     "tests/size-check/public-cli.mjs": {

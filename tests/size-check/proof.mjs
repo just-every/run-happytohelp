@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { disposableBuild, probeSql } from './disposable-build.mjs';
@@ -8,12 +8,18 @@ import { runSize } from './public-cli.mjs';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const args = process.argv.slice(2);
 if (args[0] === '--help') {
-  console.log('Usage: node tests/size-check/proof.mjs [--declaration size-check.json]');
+  console.log('Usage: node tests/size-check/proof.mjs [--declaration size-check.json] [--output DIR]');
   console.log('Requires an existing production build. Runs the full public size check twice on disposable local D1.');
   process.exit(0);
 }
-if (args.length && (args.length !== 2 || args[0] !== '--declaration')) throw new Error('Use --declaration FILE or --help.');
-const declaration = resolve(root, args[1] ?? 'size-check.json');
+const options = new Map();
+for (let index = 0; index < args.length; index += 2) {
+  const flag = args[index];
+  if (!['--declaration', '--output'].includes(flag) || !args[index + 1] || options.has(flag)) throw new Error('Use --declaration FILE, --output DIR or --help.');
+  options.set(flag, args[index + 1]);
+}
+const declaration = resolve(root, options.get('--declaration') ?? 'size-check.json');
+const output = options.has('--output') ? resolve(root, options.get('--output')) : undefined;
 const controller = new AbortController();
 const interrupt = () => controller.abort();
 process.on('SIGINT', interrupt);
@@ -34,9 +40,11 @@ const summary = (name, run, flow) => console.log(`${name}: exit ${run.exitCode};
 let fixture;
 try {
   fixture = await disposableBuild(root, declaration);
+  if (output) await mkdir(output, { recursive: true });
   console.log('Running control through pnpm exec rer size --declaration FILE --write-statements DIR --json');
-  const controlDirectory = join(fixture.directory, 'control-statements');
+  const controlDirectory = join(output ?? fixture.directory, 'control-statements');
   const control = await runSize(root, declaration, controlDirectory, controller.signal);
+  if (output) await writeFile(join(output, 'control.json'), JSON.stringify(control, null, 2) + '\n');
   assert.equal(control.exitCode, 0, 'The unchanged application must pass before the fault is tested.');
   assert.equal(control.result.ok, true, 'The public control verdict must pass.');
   assert.ok(control.result.flows?.length > 0, 'The control must measure declared flows.');
@@ -50,8 +58,9 @@ try {
   summary('Control', control, clean);
 
   console.log('Running copied build with the deliberate unbounded query through the same public command');
-  const faultDirectory = join(fixture.directory, 'fault-statements');
+  const faultDirectory = join(output ?? fixture.directory, 'fault-statements');
   const fault = await runSize(root, fixture.declaration, faultDirectory, controller.signal);
+  if (output) await writeFile(join(output, 'fault.json'), JSON.stringify(fault, null, 2) + '\n');
   assert.equal(fault.exitCode, 1, 'The public size command must reject the deliberate fault.');
   assert.equal(fault.result.ok, false, 'The public fault verdict must fail.');
   const broken = fault.result.flows?.find(flow => flow.name === fixture.flow);

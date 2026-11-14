@@ -1,6 +1,14 @@
 const nativeProviders=['resend','cloudflare','sendgrid','mailgun'];
 const configured=(env:Record<string,string>,name:string)=>typeof env[name]==='string'&&env[name].trim()!=='';
 
+/** Match native deployment's explicit-off public settings; private names remain selected separately. */
+export function normalizePublicMailSettings(env:Record<string,string>):Record<string,string>{
+ if(env.MAIL_MODE!=='off'&&!['off','none','disabled'].includes(env.MAIL_PROVIDER))return {...env};
+ const result:Record<string,string>={...env,MAIL_MODE:'off',MAIL_PROVIDER:'none'};
+ for(const name of ['EMAIL_PROVIDER','EMAIL_API_KEY_NAME','EMAIL_ACCOUNT_ID','MAILGUN_DOMAIN','MAILGUN_REGION','MAIL_FROM','MAIL_RELAY_URL','H2H_RER_MAIL_VERSION','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL'])delete result[name];
+ return result;
+}
+
 /** Public selection only. Private bindings are selected by name and checked by the delivery broker. */
 export function validatePublicMailSettings(env:Record<string,string>){
  if(configured(env,'MAIL_MODE')&&!['off','own','rer'].includes(env.MAIL_MODE))throw new Error('MAIL_MODE must be off, own or rer');

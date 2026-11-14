@@ -2069,7 +2069,7 @@
       "executable": false
     },
     "management/integration/mail-environment.ts": {
-      "sha256": "4b5c5d262684e67a58cf4325c3b1d327b7fe2ea5fbae6737732c38956cc18278",
+      "sha256": "583cecec457c5d27dd93c6b403c549cd52e4490ce2bbd9e098c4c11bce62f54a",
       "executable": false
     },
     "management/integration/managed-deploy.json": {
@@ -2081,7 +2081,7 @@
       "executable": false
     },
     "management/integration/plan.ts": {
-      "sha256": "e62c5848d925a3834d90d539145bdf522f4fadbf3420e6292ab1daa64f950548",
+      "sha256": "9cd03d4db401c860d22a1e0ebfb2dd1c07d06eee15101219efb1438b245ae7d3",
       "executable": false
     },
     "management/integration/profile.json": {
@@ -2093,7 +2093,7 @@
       "executable": false
     },
     "management/integration/revision.ts": {
-      "sha256": "2230637cd584787bd9dbd683e727cc3333a265bbf6b0d959839b37b38cfa90c5",
+      "sha256": "6dba54692871620056d679d9648a86c0293fb84b16bd72360088a55a941e6f35",
       "executable": false
     },
     "management/README.md": {
@@ -16737,7 +16737,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "81ca814457699952a587aae0548c7ea37b730b93a342d42b9b23e4aee479c3b7",
+      "sha256": "ec73b58a3b08f81e08564a9f856707bf8a66095a298107c47b06837df6d291f3",
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {

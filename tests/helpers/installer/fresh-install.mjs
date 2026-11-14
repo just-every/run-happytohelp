@@ -48,6 +48,9 @@ async function selectedMailConfiguration(root,scratch,execute){
  const entry=join(scratch,'integration.mjs');
  await build({entryPoints:[join(output,'index.ts')],outfile:entry,bundle:true,platform:'node',format:'esm',logLevel:'silent'});
  const {createIntegration}=await import(pathToFileURL(entry));
+ const runtime=join(scratch,'mail-runtime.mjs');
+ await build({stdin:{contents:"export {emailExplicitlyOff,selectedEmailProvider} from './src/modules/integrations/email-provider.ts'; export {deploymentMailEnvironment} from './scripts/deployment/environment.mjs';",resolveDir:root},outfile:runtime,bundle:true,platform:'node',format:'esm',logLevel:'silent'});
+ const {emailExplicitlyOff,selectedEmailProvider,deploymentMailEnvironment}=await import(pathToFileURL(runtime));
  const integration=createIntegration({sha256:async value=>createHash('sha256').update(value).digest('hex'),validatePlan:async plan=>{
   for(const migration of plan.migrations)assert.equal(createHash('sha256').update(migration.sql).digest('hex'),migration.sha256);
  }});
@@ -65,6 +68,7 @@ async function selectedMailConfiguration(root,scratch,execute){
   {publicVariables:relay,secretNames:['MAIL_API_KEY','RER_MAIL_INGRESS_KEY','INBOUND_EMAIL_TOKEN','INTEGRATION_ENCRYPTION_KEY','H2H_OWNER_RECOVERY_KEY']},
   ...['resend','sendgrid','cloudflare','mailgun'].map(provider=>({publicVariables:{MAIL_MODE:'own',MAIL_PROVIDER:'own',EMAIL_PROVIDER:provider,...(provider==='cloudflare'?{EMAIL_ACCOUNT_ID:'a'.repeat(32)}:{}),...(provider==='mailgun'?{MAILGUN_DOMAIN:'mail.example.test',MAILGUN_REGION:'eu',EMAIL_API_KEY_NAME:'MAILGUN_SENDING_KEY'}:{})},secretNames:[provider==='mailgun'?'MAILGUN_SENDING_KEY':'EMAIL_API_KEY','EMAIL_FROM']})),
   {publicVariables:{MAIL_MODE:'',MAIL_PROVIDER:'direct',EMAIL_PROVIDER:'sendgrid'},secretNames:['EMAIL_API_KEY','EMAIL_FROM']},
+  {publicVariables:{MAIL_MODE:'',MAIL_PROVIDER:'',EMAIL_PROVIDER:''},secretNames:[]},
   {publicVariables:{MAIL_MODE:'own',MAIL_PROVIDER:'mailgun',EMAIL_PROVIDER:'mailgun',MAILGUN_DOMAIN:'mail.example.test'},secretNames:['MAILGUN_SENDING_KEY','EMAIL_FROM']},
   {publicVariables:{MAIL_PROVIDER:'cloudflare',EMAIL_ACCOUNT_ID:'b'.repeat(32)},secretNames:['EMAIL_API_KEY','EMAIL_FROM']},
   {publicVariables:{MAIL_MODE:'off',MAIL_PROVIDER:'none'},secretNames:[]},
@@ -77,6 +81,22 @@ async function selectedMailConfiguration(root,scratch,execute){
    for(const [name,value] of Object.entries(publicVariables))assert.equal(result.publicVariables[name]??'',value,'selected public configuration survives');
    assert.deepEqual([...result.secretNames].sort(),[...initial.secretNames,...secretNames].sort(),'only selected private names are retained');
    for(const name of secretNames)assert.equal(Object.hasOwn(result.publicVariables,name),false);
+   assert.equal(emailExplicitlyOff(result.publicVariables),publicVariables.MAIL_MODE==='off');
+   assert.equal(selectedEmailProvider(result.publicVariables),publicVariables.MAIL_MODE==='off'?null:publicVariables.EMAIL_PROVIDER||(['cloudflare','mailgun'].includes(publicVariables.MAIL_PROVIDER)?publicVariables.MAIL_PROVIDER:publicVariables.MAIL_MODE==='rer'?'rer':'resend'));
+  }
+ }
+ const own={MAIL_MODE:'own',MAIL_PROVIDER:'own',EMAIL_PROVIDER:'resend'};
+ const saved=await generate({...own,secretNames:['EMAIL_API_KEY','EMAIL_FROM']});
+ for(const choice of [{MAIL_PROVIDER:'off'},{MAIL_PROVIDER:'none'},{MAIL_PROVIDER:'disabled'},{MAIL_MODE:'off'}]){
+  const revised=structuredClone(saved);
+  await integration.revisePlan(revised,{publicVariables:choice,secretNames:[]});
+  const fresh=await generate({...own,...choice,secretNames:['EMAIL_API_KEY','EMAIL_FROM']});
+  for(const result of [fresh,revised]){
+   assert.deepEqual(result.publicVariables,deploymentMailEnvironment({...saved.publicVariables,...choice}),'accepted off choices match native deployment normalization');
+   assert.equal(emailExplicitlyOff(result.publicVariables),true,'the native runtime honors the emitted off choice');
+   assert.equal(selectedEmailProvider(result.publicVariables),null,'off cannot retain an active provider');
+   assert.deepEqual(result.secretNames,saved.secretNames,'off preserves only the already selected private names');
+   for(const name of result.secretNames)assert.equal(Object.hasOwn(result.publicVariables,name),false);
   }
  }
  const invalid=[

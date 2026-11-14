@@ -1,7 +1,7 @@
+import {validatePublicMailSettings} from './mail-environment';
 /** Shared validation for initial setup and later managed configuration. */
 export function validateHappyToHelpVariables(publicVariables:Record<string,string>){
- if(publicVariables.EMAIL_PROVIDER&&!['resend','cloudflare'].includes(publicVariables.EMAIL_PROVIDER))throw new Error('EMAIL_PROVIDER must be resend or cloudflare');
- if(publicVariables.EMAIL_PROVIDER==='cloudflare'&&!/^[a-f0-9]{32}$/i.test(publicVariables.EMAIL_ACCOUNT_ID??''))throw new Error('Cloudflare email requires EMAIL_ACCOUNT_ID');
+ validatePublicMailSettings(publicVariables);
  for(const key of ['REGISTRATION_ENABLED','ENABLE_SYNTHETIC_EVALUATION'])if(publicVariables[key]&&!['true','false'].includes(publicVariables[key]))throw new Error(`${key} must be true or false`);
  if(publicVariables.PREVIEW_ORIGIN){publicVariables.PREVIEW_ORIGIN=checkedOrigin(publicVariables.PREVIEW_ORIGIN);if(publicVariables.PREVIEW_ORIGIN===publicVariables.APP_ORIGIN)throw new Error('Preview requires separate origin');}
  if(publicVariables.QDRANT_URL){const url=new URL(publicVariables.QDRANT_URL);if(url.protocol!=='https:'||url.username||url.password||url.hash)throw new Error('QDRANT_URL must be HTTPS without embedded credentials');}

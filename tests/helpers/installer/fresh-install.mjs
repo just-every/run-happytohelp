@@ -9,7 +9,10 @@ import {mkdtemp,mkdir,readFile,writeFile,rm,stat,access} from 'node:fs/promises'
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
-import {randomBytes} from 'node:crypto';
+import {randomBytes,createHash} from 'node:crypto';
+import {build} from 'esbuild';
+import {generateIntegrationBundle} from '../../../scripts/delivery/base/generators/integration.mjs';
+import {happytohelpPlan} from '../../../management/tooling/compile-plan.mjs';
 import {createServer} from 'node:net';
 import {command,run,stopOwnedServer} from '../rer-command.mjs';
 import {waitForServingCapacity} from '../serving-capacity.mjs';
@@ -35,6 +38,73 @@ function compareRestoredDevEntry(before,after){
   return copy;
  };
  compareDevEntryArchive(stable(before),stable(after));
+}
+
+// Use the same committed bundle that platform adoption consumes, through its public API.
+async function selectedMailConfiguration(root,scratch,execute){
+ const revision=(await execute('git',['rev-parse','HEAD'],{cwd:root})).stdout.trim();
+ const output=join(scratch,'integration');
+ await generateIntegrationBundle({projectRoot:root,repository:'just-every/run-happytohelp',revision,output});
+ const entry=join(scratch,'integration.mjs');
+ await build({entryPoints:[join(output,'index.ts')],outfile:entry,bundle:true,platform:'node',format:'esm',logLevel:'silent'});
+ const {createIntegration}=await import(pathToFileURL(entry));
+ const integration=createIntegration({sha256:async value=>createHash('sha256').update(value).digest('hex'),validatePlan:async plan=>{
+  for(const migration of plan.migrations)assert.equal(createHash('sha256').update(migration.sql).digest('hex'),migration.sha256);
+ }});
+ const base={H2H_PUBLIC_ORIGIN:'https://support.example.test',RER_MANAGEMENT_ORIGIN:'https://business.example.test',H2H_SETUP_OWNER_EMAIL:'owner@example.test'};
+ const generate=config=>integration.generatePlan('installer-mail','production',{...base,...config});
+ const native=await happytohelpPlan({root:pathToFileURL(root+'/'),installationId:'installer-mail',environment:'production',variables:base});
+ const initial=await generate({});
+ assert.deepEqual(initial.migrations,native.migrations,'emitted integration retains native migration names, hashes and SQL');
+ const spec=JSON.parse(await readFile(join(root,'management/integration/deployment-spec.json'),'utf8'));
+ assert.deepEqual(initial.migrations,spec.migrations,'the generated contracts describe the same installed source');
+ assert.deepEqual(initial.resources,native.resources,'resource identities are unchanged');
+ assert.deepEqual(initial.secretNames,native.secretNames,'optional private names are not automatically selected');
+ const relay={MAIL_MODE:'rer',MAIL_PROVIDER:'rer',MAIL_FROM:'support@mail.example.test',MAIL_RELAY_URL:'https://mail.example.test/happytohelp/v1/send',H2H_RER_MAIL_VERSION:'1',RER_MAILBOX_ID:'installer-mailbox',RER_MAIL_ADDRESS:'support@mail.example.test',RER_MAIL_CONTROL_URL:'https://mail.example.test/happytohelp/v1/mailboxes'};
+ const selections=[
+  {publicVariables:relay,secretNames:['MAIL_API_KEY','RER_MAIL_INGRESS_KEY','INBOUND_EMAIL_TOKEN','INTEGRATION_ENCRYPTION_KEY','H2H_OWNER_RECOVERY_KEY']},
+  ...['resend','sendgrid','cloudflare','mailgun'].map(provider=>({publicVariables:{MAIL_MODE:'own',MAIL_PROVIDER:'own',EMAIL_PROVIDER:provider,...(provider==='cloudflare'?{EMAIL_ACCOUNT_ID:'a'.repeat(32)}:{}),...(provider==='mailgun'?{MAILGUN_DOMAIN:'mail.example.test',MAILGUN_REGION:'eu',EMAIL_API_KEY_NAME:'MAILGUN_SENDING_KEY'}:{})},secretNames:[provider==='mailgun'?'MAILGUN_SENDING_KEY':'EMAIL_API_KEY','EMAIL_FROM']})),
+  {publicVariables:{MAIL_MODE:'',MAIL_PROVIDER:'direct',EMAIL_PROVIDER:'sendgrid'},secretNames:['EMAIL_API_KEY','EMAIL_FROM']},
+  {publicVariables:{MAIL_MODE:'own',MAIL_PROVIDER:'mailgun',EMAIL_PROVIDER:'mailgun',MAILGUN_DOMAIN:'mail.example.test'},secretNames:['MAILGUN_SENDING_KEY','EMAIL_FROM']},
+  {publicVariables:{MAIL_PROVIDER:'cloudflare',EMAIL_ACCOUNT_ID:'b'.repeat(32)},secretNames:['EMAIL_API_KEY','EMAIL_FROM']},
+  {publicVariables:{MAIL_MODE:'off',MAIL_PROVIDER:'none'},secretNames:[]},
+ ];
+ for(const {publicVariables,secretNames} of selections){
+  const plan=await generate({...publicVariables,secretNames});
+  const revised=structuredClone(initial);
+  await integration.revisePlan(revised,{publicVariables,secretNames});
+  for(const result of [plan,revised]){
+   for(const [name,value] of Object.entries(publicVariables))assert.equal(result.publicVariables[name]??'',value,'selected public configuration survives');
+   assert.deepEqual([...result.secretNames].sort(),[...initial.secretNames,...secretNames].sort(),'only selected private names are retained');
+   for(const name of secretNames)assert.equal(Object.hasOwn(result.publicVariables,name),false);
+  }
+ }
+ const invalid=[
+  {EMAIL_PROVIDER:'unknown-provider'},{MAIL_PROVIDER:'unknown-provider'},{MAIL_MODE:'unknown-mode'},
+  {EMAIL_PROVIDER:'cloudflare',EMAIL_ACCOUNT_ID:'wrong-account'},
+  {EMAIL_PROVIDER:'mailgun',MAILGUN_DOMAIN:'not a domain'},
+  {EMAIL_PROVIDER:'mailgun',MAILGUN_DOMAIN:'mail.example.test',MAILGUN_REGION:'unknown-region'},
+  {EMAIL_PROVIDER:'mailgun',MAILGUN_DOMAIN:'mail.example.test',EMAIL_API_KEY_NAME:'MAILGUN_ROUTES_KEY'},
+  {MAIL_PROVIDER:'sendgrid',EMAIL_PROVIDER:'resend'},
+  {...relay,MAIL_RELAY_URL:'http://mail.example.test/send'},
+  {...relay,RER_MAIL_ADDRESS:'different@mail.example.test'},
+  {REGISTRATION_ENABLED:'yes'},{QDRANT_URL:'http://vectors.example.test'},
+  {TRAINING_PRICE_CEILINGS:'[]'},{RATE_LIMITS:'{"unknown":1}'},
+ ];
+ for(const publicVariables of invalid){
+  await assert.rejects(generate(publicVariables));
+  await assert.rejects(integration.revisePlan(structuredClone(initial),{publicVariables,secretNames:[]}));
+ }
+ await assert.rejects(generate({secretNames:['UNDECLARED_PRIVATE_NAME']}));
+ await assert.rejects(integration.revisePlan(structuredClone(initial),{publicVariables:{},secretNames:['UNDECLARED_PRIVATE_NAME']}));
+ const marker=randomBytes(24).toString('hex');
+ for(const name of new Set(selections.flatMap(selection=>selection.secretNames))){
+  const noLeak=error=>{assert.equal(String(error).includes(marker),false,'refusals never echo private values');return true;};
+  await assert.rejects(generate({[name]:marker}),noLeak);
+  await assert.rejects(integration.revisePlan(structuredClone(initial),{publicVariables:{[name]:marker},secretNames:[]}),noLeak);
+ }
+ console.log('Emitted integration generate/revise retained selected relay and native-provider public inputs and private names; invalid public settings and private values refused without provider requests.');
+ return initial.migrations;
 }
 
 // The fresh-clone rer command journey: install, setup, dev, export/import, reset and fresh owner.
@@ -83,9 +153,11 @@ try{
  await run(root,['describe']);
  await run(root,['check','--profile','first-party']);
  await run(root,['install']);
+ const integrationMigrations=await selectedMailConfiguration(root,scratch,execute);
  await mkdir(join(root,'.seed'),{mode:0o700,recursive:true});
  await writeFile(join(root,'.seed/local-answers.json'),JSON.stringify({WORKSPACE_NAME:'Rer support',WIDGET_ORIGIN:'https://example.test',PRIMARY_COLOR:'#7c3aed',OWNER_NAME:'Rer owner',OWNER_PASSWORD:password,EMAIL_PROVIDER:'later'}),{mode:0o600});
  await run(root,setup);
+ await archiveStorage(root,async({DB})=>assert.deepEqual((await DB.prepare('SELECT name FROM d1_migrations ORDER BY name').all()).results.map(row=>row.name),integrationMigrations.map(migration=>migration.name),'native setup applies the emitted integration migration inventory'));
  await assert.rejects(fetch(origin+'/health',{signal:AbortSignal.timeout(2000)}),'setup must leave no runtime');
  await run(root,['setup','--owner-email','other-owner@example.test','--answers','.seed/local-answers.json','--port',String(port)],4); // A different owner is refused before any change.
  const privateBefore=await readFile(join(root,'.dev.vars'));

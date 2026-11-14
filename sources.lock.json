@@ -2061,11 +2061,15 @@
       "executable": false
     },
     "management/integration/environment.ts": {
-      "sha256": "bc9f1988917f6ecff6e4e65b30718e021d56bec67ad65e6894e2db11b64a646e",
+      "sha256": "dfbe3a780072928137646a4290b3c16259dd5054b76656ab38b2580a999e3ec7",
       "executable": false
     },
     "management/integration/index.ts": {
       "sha256": "690528f8d17e4837d6ba76cc1e030d6829739e8ae2c72bbd19ed2634204b729e",
+      "executable": false
+    },
+    "management/integration/mail-environment.ts": {
+      "sha256": "4b5c5d262684e67a58cf4325c3b1d327b7fe2ea5fbae6737732c38956cc18278",
       "executable": false
     },
     "management/integration/managed-deploy.json": {
@@ -2085,7 +2089,7 @@
       "executable": false
     },
     "management/integration/recipe.json": {
-      "sha256": "dd3787d38355a8c4a03211af9bbbfee31a59f5e13aad1bef39f4a13ac7ac84db",
+      "sha256": "ae75109c14514fde06e31407eef2ac8aebdecfca4f9fab205a781d139a1eb9d1",
       "executable": false
     },
     "management/integration/revision.ts": {
@@ -2101,7 +2105,7 @@
       "executable": false
     },
     "management/tooling/refresh-recipe.mjs": {
-      "sha256": "750d8bded6fd13d98aac6bf4b784a6230e1e719eef7be808b9c730e00d014f4c",
+      "sha256": "9e86b37ca19e6803f4f99fec6a096a927bb5982d8b1930c27596346a3f7cf134",
       "executable": false
     },
     "migrations/0001_identity.sql": {
@@ -3169,7 +3173,7 @@
       "executable": false
     },
     "scripts/delivery/generate-spec.mjs": {
-      "sha256": "d1213c45ded52ce32280357f60f11b2292fdd1a212b7ddc825e402e410fa18aa",
+      "sha256": "3a2d06fbdfb2f5d82a88839c51ff5acd6fbfcc46654f37bfabf3467038e3391a",
       "executable": false
     },
     "scripts/delivery/module-preloads.ts": {
@@ -16733,7 +16737,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "01c90dcdd3bfd6a28e5e6c2327d50762e42259c8d32e11ea949b34ad45c26059",
+      "sha256": "81ca814457699952a587aae0548c7ea37b730b93a342d42b9b23e4aee479c3b7",
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {

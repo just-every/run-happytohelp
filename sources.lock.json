@@ -2085,7 +2085,7 @@
       "executable": false
     },
     "management/integration/recipe.json": {
-      "sha256": "dd3787d38355a8c4a03211af9bbbfee31a59f5e13aad1bef39f4a13ac7ac84db",
+      "sha256": "cdfda43cff8b92d53ded7f188fe8fbfe08e94ae51717536e2f51004db3f49448",
       "executable": false
     },
     "management/integration/revision.ts": {
@@ -2913,11 +2913,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "c7a2fb86873b35190d12fa70eb387aa08d1435e509fefa613537c4d9bb5f34f6",
+      "sha256": "f479bbf01a948c0c7022df74bfddc999c6c4842470b1e991218b7e9b74a3488e",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "33d0719c472b5106a31945e1cca990bcf12325755ae62445ecdea3578f0b267b",
+      "sha256": "9c6346eda46a938daf4610036eee95889d9737dc264de95aae0e5483e04b5640",
       "executable": false
     },
     "public/fonts/fonts.css": {

@@ -178,8 +178,8 @@ importers:
         specifier: 5.20260908.1
         version: 5.20260908.1
       '@runeditrun/rer':
-        specifier: file:/tmp/hh-size-integrate-1-base-9de808d45b9463eb4e691e7a36d502add3d9f4ef/runeditrun-rer-0.2.117.tgz
-        version: file:../../../../../../../tmp/hh-size-integrate-1-base-9de808d45b9463eb4e691e7a36d502add3d9f4ef/runeditrun-rer-0.2.117.tgz
+        specifier: 0.2.117
+        version: 0.2.117
       '@tanstack/router-generator':
         specifier: 1.167.40
         version: 1.167.40
@@ -1038,9 +1038,8 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@runeditrun/rer@file:../../../../../../../tmp/hh-size-integrate-1-base-9de808d45b9463eb4e691e7a36d502add3d9f4ef/runeditrun-rer-0.2.117.tgz':
-    resolution: {integrity: sha512-QLf+RtnSFbduVXYhYEM+GVRYXcuQ2mzvBLy0cuJeznYTQx/iQKlGkaPdz/8DS01puXqSNpiWUzlYyG+J4EQSRg==, tarball: file:../../../../../../../tmp/hh-size-integrate-1-base-9de808d45b9463eb4e691e7a36d502add3d9f4ef/runeditrun-rer-0.2.117.tgz}
-    version: 0.2.117
+  '@runeditrun/rer@0.2.117':
+    resolution: {integrity: sha512-QLf+RtnSFbduVXYhYEM+GVRYXcuQ2mzvBLy0cuJeznYTQx/iQKlGkaPdz/8DS01puXqSNpiWUzlYyG+J4EQSRg==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -3546,7 +3545,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@runeditrun/rer@file:../../../../../../../tmp/hh-size-integrate-1-base-9de808d45b9463eb4e691e7a36d502add3d9f4ef/runeditrun-rer-0.2.117.tgz': {}
+  '@runeditrun/rer@0.2.117': {}
 
   '@selderee/plugin-htmlparser2@0.12.0(selderee@0.12.0)':
     dependencies:

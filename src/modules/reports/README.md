@@ -37,3 +37,10 @@ bucket-presence inventory retains historical empty buckets without visiting
 older closed tickets. Assignment, team, brand, channel, requester-company, tags,
 import fences and merge changes refresh only the affected tickets. Labels stay
 live, so renaming a team or account never requires a history scan.
+
+Workload items retain the current team/brand/import selection and one row per
+ticket dimension (one per tag for tagged tickets). Their inventory stores only
+presence counts and the earliest creation instant for each selection and bucket.
+It supplies empty buckets; date-indexed items supply the actual figures.
+Historical archive inventories skip these derived backfills when their original
+subsystems are absent, and the installer reconstructs them from restored data.

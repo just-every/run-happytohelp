@@ -4145,7 +4145,7 @@
       "executable": false
     },
     "scripts/installer/workflow-archive-upgrade.mjs": {
-      "sha256": "8c5163b5df80892dd0f6fe0195dc885045143c8d0696fa97d02169780cab1036",
+      "sha256": "e637480c25c7061d8241462e1ae5ea47da767ccf027a4d55c8b4ef32fc09c049",
       "executable": false
     },
     "scripts/legacy-export/attachments.mjs": {
@@ -9733,7 +9733,7 @@
       "executable": false
     },
     "src/modules/reports/README.md": {
-      "sha256": "5fbd30a3ce38d977c0ac3c82729f9a0bfaf2933d92a2d85e41426f0cf2992fd4",
+      "sha256": "4cd2637b9e7c179afc850ba9bf62ffca808c992308916fe0ff4d4acba63c6ad4",
       "executable": false
     },
     "src/modules/reports/routes.ts": {
@@ -17785,7 +17785,7 @@
       "executable": false
     },
     "tests/reports/cohort-projection.mjs": {
-      "sha256": "7eb42075e2346977591a2b4491acf8991b23e4b0ffeb3e452c509353e98d4b26",
+      "sha256": "e55e7e41bb3805c57c75651da8c84c250ac3b50d3022561d7b5cf38cd029ea57",
       "executable": false
     },
     "tests/reports/figures.mjs": {

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {reportProjectionRebuildSql} from '../../scripts/installer/reports-rebuild.mjs'
 
 export async function assertReportProjection(db){
  const {results:direct}=await db.prepare(`SELECT c.id conversation_id,c.project_id,c.created_at,c.status_category FROM conversations c
@@ -79,4 +80,9 @@ export async function projectionMutations(h,path){
  assert.equal((await h.call(path)).volume,before.volume+1)
  await h.db.prepare("DELETE FROM messages WHERE id='projection-returned'").run()
  await assertReportProjection(h.db)
+ const beforeRebuild=await h.call(path)
+ await h.db.batch(reportProjectionRebuildSql.split(';').map(sql=>sql.trim()).filter(Boolean).map(sql=>h.db.prepare(sql)))
+ await assertReportProjection(h.db)
+ assert.deepEqual(await h.call(path),beforeRebuild,'the restore rebuild retains every report figure')
+
 }

@@ -6,6 +6,7 @@ import {unstable_splitSqlQuery} from 'wrangler';
 import {policy,schemaIdentity,excludedTable} from '@runeditrun/rer/modules/portability/catalogue';
 import {r4Tables} from './r4-tables.mjs';
 import {emailArchiveTables} from './email-archive-tables.mjs';
+import {reportProjectionTables} from './reports-rebuild.mjs';
 const {changesData}=await import(new URL('./migration-statements.mjs',import.meta.resolve('@runeditrun/rer/modules/portability/migration-history')));
 const {tokens,identifier,folded}=await import(new URL('./generated.mjs',import.meta.resolve('@runeditrun/rer/modules/portability/migration-history')));
 
@@ -45,6 +46,9 @@ function omittedSchemaChange(sql,omitted,omittedTriggers,migration){
  // Migration 318 fills the contacts' live tally and rebuilds contact_search; every import rebuilds both from the restored rows instead.
  if(words[0]==='insert'&&words[1]==='into'&&folded(identifier(list[2]))==='contact_tallies')return true;
  if(words[0]==='insert'&&words[1]==='into'&&folded(identifier(list[2]))==='contact_search'&&/'rebuild'/.test(sql))return true;
+ // Report projections are rebuilt after import. Their backfills cannot run
+ // against a historical inventory that deliberately omits merge/ticket stores.
+ if(words[0]==='insert'&&words[1]==='into'&&reportProjectionTables.includes(folded(identifier(list[2]))))return true;
  // Migration 320 only deletes the legacy import's trigger-written rows (the workflow journal among them) and changes no schema; an archive carries
  // whatever rows remain, so a historical schema is not made unreadable by it.
  if(migration==='320_legacy_import_work_repair.sql'&&words[0]==='delete')return true;

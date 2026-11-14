@@ -1,0 +1,9 @@
+PROBE NOTIFY-001 slack P1 audiences: {"assignment":1,"customer_updated":1,"mention":1,"follower":1,"group":1}
+PROBE NOTIFY-001 slack P1 outcomes: ["accepted","accepted","accepted","accepted","accepted","accepted","accepted","accepted"]
+PROBE NOTIFY-001 slack P2b relation: {"unfollowed":0,"reassigned":0}
+PROBE NOTIFY-001 slack P2 sources: {"blocked":4}
+PROBE NOTIFY-001 slack P3 scope: {"noticeRowsMadeByFrozenLeg":2,"slack":0}
+PROBE NOTIFY-001 slack P4 outcomes: {"retry":"rate-limit only, 5 max","lost":"uncertain, not replayed after restart"}
+PROBE NOTIFY-001 slack P5 authority: {"consent":"revoked","installer":"removed","destination":"disabled"}
+PROBE NOTIFY-001 slack P6 erasure: {"deliveriesBeforeContactErasure":22,"afterContactErasure":0,"memberRowsAfter":0}
+PASS slackNoticeJourney

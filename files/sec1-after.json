@@ -1,0 +1,8 @@
+{
+  "head": "27a7aaebbdf6ad2f75c359f1dd6848df33597bf8",
+  "version": "0.2.117",
+  "scanner": "published credential_literals.mjs exact-format patterns (comment identifies SEC-1)",
+  "files": 4103,
+  "rules": 10,
+  "hits": []
+}

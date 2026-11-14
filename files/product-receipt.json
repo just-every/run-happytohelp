@@ -1,0 +1,23 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-fixture-token-shape-2",
+  "head": "27a7aaebbdf6ad2f75c359f1dd6848df33597bf8",
+  "tree": "1a96bcb0f1428a3aa64ec3bdb1db2003524f8f41",
+  "product_commit_count": 1,
+  "push": "success",
+  "push_attempts": 1,
+  "guard": "cloud-push.py",
+  "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "trailers": [],
+  "skip_marker_on_head": false,
+  "published_history_rewritten": false,
+  "PR": null,
+  "main_pushed": false,
+  "readiness": "READY",
+  "verify_run_id": 43639274738,
+  "verify_conclusion": "success",
+  "publication_status": "PASS",
+  "publication_complete": true,
+  "publication_findings": 0
+}

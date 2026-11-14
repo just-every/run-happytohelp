@@ -1,0 +1,89 @@
+{
+  "head": "27a7aaebbdf6ad2f75c359f1dd6848df33597bf8",
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --answers .rer/private-answers.json --non-interactive",
+      "exit": 0,
+      "note": "Private local answers are excluded from evidence; initial two invocations refused missing inputs and an outside-checkout answers path before successful contained-file setup."
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium node --test --test-concurrency=1 tests/journeys/identity-browser.mjs",
+      "scope": "first subtest, securityBrowserJourney including slackSettingsBrowser and legacyMoveInAuthReturn",
+      "result": "ok 1",
+      "duration_ms": 647359.952494,
+      "note": "Stopped the subsequent unrelated browser subtests after the affected subtest completed successfully. No full-file pass claimed. Six Slack screenshots cover 1440 and 390."
+    },
+    {
+      "command": "cloud_run node /tmp/hh-slack-journey.mjs",
+      "scope": "existing slackNoticeJourney export, unchanged assertions",
+      "exit": 0,
+      "result": "PASS slackNoticeJourney",
+      "evidence": "slack-notification-result.txt"
+    },
+    {
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "rer 0.2.117 scripts/publish-check.mjs on the raw committed-source mirror",
+      "exit": 0,
+      "status": "PASS",
+      "complete": true,
+      "head": "27a7aaebbdf6ad2f75c359f1dd6848df33597bf8",
+      "findings": 0,
+      "evidence": "publication-scan.json"
+    },
+    {
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-happytohelp/actions/runs/43639274738",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "scope": "GitHub Verify exact terminal SHA",
+      "run_id": 43639274738,
+      "status": "completed",
+      "conclusion": "success",
+      "head": "27a7aaebbdf6ad2f75c359f1dd6848df33597bf8",
+      "url": "https://github.com/just-every/run-happytohelp/actions/runs/43639274738"
+    }
+  ],
+  "pending": [],
+  "scope_adjustment": "Stopped tests/journeys/email.mjs before a result because its initial localMailJourney launches unrelated installer scenarios; replaced with the existing affected notificationOutcomesJourney export. No failure or pass is claimed for the canceled broad entry. The encompassing notificationOutcomesJourney was likewise stopped without a result; the exact affected existing slackNoticeJourney export is the selected notification check.",
+  "previous_unpublished_head": "1ec2c9e76db78450430e626751e10f058bf4b049",
+  "rebase_note": "Fresh main added README narrative correction and its source-lock hash only. Both changed fixture blobs are byte-identical before/after rebase; running touched tests remain applicable. Source lock regenerated and checked after the clean rebase.",
+  "harness_correction": "The original stdin --input-type=module invocation prevented Miniflare synchronous worker startup. A normal .mjs entry point ran the identical existing journey successfully. No dependency or product source was modified."
+}

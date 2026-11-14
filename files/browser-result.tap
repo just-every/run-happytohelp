@@ -1,0 +1,6 @@
+# Subtest: an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session
+ok 1 - an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session
+  ---
+  duration_ms: 647359.952494
+  type: 'test'
+  ...

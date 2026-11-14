@@ -1,0 +1,33 @@
+{
+  "version": "0.2.117",
+  "scanner": "published credential_literals.mjs exact-format patterns (comment identifies SEC-1)",
+  "files": 4103,
+  "rules": 10,
+  "hits": [
+    {
+      "path": "tests/helpers/notify/slack-browser.mjs",
+      "line": 23,
+      "rule": "SEC-1 Slack token"
+    },
+    {
+      "path": "tests/helpers/notify/slack-notices.mjs",
+      "line": 44,
+      "rule": "SEC-1 Slack token"
+    },
+    {
+      "path": "tests/helpers/notify/slack-notices.mjs",
+      "line": 99,
+      "rule": "SEC-1 Slack token"
+    },
+    {
+      "path": "tests/helpers/notify/slack-notices.mjs",
+      "line": 178,
+      "rule": "SEC-1 Slack token"
+    },
+    {
+      "path": "tests/helpers/notify/slack-notices.mjs",
+      "line": 186,
+      "rule": "SEC-1 Slack token"
+    }
+  ]
+}

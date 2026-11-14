@@ -1,0 +1,166 @@
+{
+  "files": [
+    {
+      "blob": "5d8a709bfccdba442d07a82e6c960abbaaa7d525",
+      "bytes": 1838,
+      "path": "PLAN.md",
+      "sha256": "52d42b7e680441a7c4dac6b48f44354c7efbde1b30b2cc5f5fac1b5441ae627b"
+    },
+    {
+      "blob": "39c6b0cd315132f1fa02ccd94300d630af938eef",
+      "bytes": 6295,
+      "path": "REPORT.md",
+      "sha256": "b2f97a793a2e590fb2e9fca3705ce099a9426da3d572d87a437e83d8430d4493"
+    },
+    {
+      "blob": "87e689e1337e068fc0f900431188c7cee4be4e69",
+      "bytes": 1179,
+      "path": "SCAN.mjs",
+      "sha256": "093132e0304909a4ae74433b30954caebb66c09b218fc665c394f3410807b09d"
+    },
+    {
+      "blob": "6f90a83aabe7b6fa5333bf50e0af13f1154d4890",
+      "bytes": 408,
+      "path": "browser-result.tap",
+      "sha256": "485ba4670478a1ed31e19fa3d1bc8cb97b34e10f387846ff9223e0dedf01442c"
+    },
+    {
+      "blob": "31aff003c7ab254a9ca78ccc014435a1469745ba",
+      "bytes": 3776,
+      "path": "checks.json",
+      "sha256": "c6957ce8a87957263d779df27759f926902b76ed2285a7020df3f474bbd0aec4"
+    },
+    {
+      "blob": "27cd5640c981dd22ea710ead56b3d8a4b2910af9",
+      "bytes": 20618,
+      "path": "ci-receipt.json",
+      "sha256": "5d52bc7d581112ba73a33d4e83e25e74766aa743055e1475042de789b8bfc6dc"
+    },
+    {
+      "blob": "011cc7813863a6f5e3e21b2fe5e438e55800d19d",
+      "bytes": 1741,
+      "path": "fixture-receipt.json",
+      "sha256": "a8d653a031f962e43ddd53b44458220b12460da2f8648b9e7932c0975ed7311b"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "identity-check.txt",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "44f53ebc4819f2af69570cfbb6cad930f9846b1c",
+      "bytes": 4923,
+      "path": "packet-hygiene-receipt.json",
+      "sha256": "ebe9ab3ad29a3dfad0ccaab2b21ec67fa6b34d14bb2bbf85052549c8c60a35ee"
+    },
+    {
+      "blob": "13e5ff3fce2f98d718be4fd2bb8606ea297a25b5",
+      "bytes": 957,
+      "path": "product-push.log",
+      "sha256": "da52f170a3d1723d8c1c2cdf87f606e6c0bf9cec9c011fa003613bc717e71f4f"
+    },
+    {
+      "blob": "a9ca17a9f1fa9c2caedfc31cbe1a6368280483b5",
+      "bytes": 731,
+      "path": "product-receipt.json",
+      "sha256": "fde39ace23c4b7c3b9f02faf7ef28d7210cd1fbcfde7d8772704982392321631"
+    },
+    {
+      "blob": "25fd9d35817357fd70b2d0ee77d2f732fdb5fd8d",
+      "bytes": 1208204,
+      "path": "publication-scan.json",
+      "sha256": "d2fd01b0b4c8bbd2e481ce0640f76f08e74af19a843c6ea2f55563c5ce51134f"
+    },
+    {
+      "blob": "81874ea61fcdd7fc54d07ed4f496933489c954df",
+      "bytes": 1215898,
+      "path": "publication-working-tree.json",
+      "sha256": "f25e5465d5c21f59786c6b62190bc5d9904d78a4e49b29622023a15c337329f1"
+    },
+    {
+      "blob": "b68a18b127c1a611786d1fd524428780345e8866",
+      "bytes": 226,
+      "path": "sec1-after.json",
+      "sha256": "60fb5ff90a6da1f45f06976f50c04953e4a4f690001d43c77fcb8cc6129970f4"
+    },
+    {
+      "blob": "2cca9b757c762367633e4369bd47ea7be973182b",
+      "bytes": 781,
+      "path": "sec1-before.json",
+      "sha256": "4d7e5c7ffda577547223d25a4a83a232e671f6cb9044d6811a6d6d89ad7669fa"
+    },
+    {
+      "blob": "93f7341dcbdb49516b816f5282e434262f10081b",
+      "bytes": 88,
+      "path": "sec3-after.json",
+      "sha256": "26d78bf14db4658f34d6b834508f0d8e6b4ffce1bd5416fae7bf52f9d304c05e"
+    },
+    {
+      "blob": "5989bbb1bd92bd69303694e9a7871c4d4a25a979",
+      "bytes": 201257,
+      "path": "slack-consent-1440.png",
+      "sha256": "035e8300213af33ea5ead589ab00bb3d57f788b9deb80433fb5da9d494862770"
+    },
+    {
+      "blob": "b86f3f1252e3225d32cbd31db6fc566c86d885aa",
+      "bytes": 146624,
+      "path": "slack-consent-390.png",
+      "sha256": "336e3a088cd176e6127b2f196fb1fdffd2bca3b1b75600dfcf31d77ea302d3ae"
+    },
+    {
+      "blob": "d94b843eff57c5072f8a4791dbbd88fe5a98863d",
+      "bytes": 170,
+      "path": "slack-journey-runner.mjs",
+      "sha256": "ce2308abd759353ab271c9b4136ac2f6beb93dde9c822de929a9284f10e1752d"
+    },
+    {
+      "blob": "5e8df62a3cdf938c508666898e55b99cdb4d3730",
+      "bytes": 132031,
+      "path": "slack-linked-1440.png",
+      "sha256": "dc53d8d7117224fad2c77779d991d8350605b3e077305353509ee1aff9781e6c"
+    },
+    {
+      "blob": "1350bb472e3a9944dcdb7f7481de58cf34f92eb3",
+      "bytes": 100604,
+      "path": "slack-linked-390.png",
+      "sha256": "88caf0723be4f81f3b5d5521354c8e68ca28ad52e805b900f6774c185898e82c"
+    },
+    {
+      "blob": "b934c9563eec0a4131cce998db23b995537fbcb2",
+      "bytes": 794,
+      "path": "slack-notification-result.txt",
+      "sha256": "26c6df98ed1f2cfe042fce9872524224eaa561283577064a54ccaa9748604e47"
+    },
+    {
+      "blob": "eee9a3ef6f7763b8daca3a60639e3c7863e39e21",
+      "bytes": 111991,
+      "path": "slack-unavailable-1440.png",
+      "sha256": "0277175581663fe8acafbb239853ec888187afe410cb7c2ad2556551d9cc39ee"
+    },
+    {
+      "blob": "006200964c3d2e529a647542f05e45f1c5061b6a",
+      "bytes": 85075,
+      "path": "slack-unavailable-390.png",
+      "sha256": "310c9a0a001af17e3e797dcf2fa262c5390133d307b50cee80d4500cb172e964"
+    },
+    {
+      "blob": "367756ae6b40f3391185f84c666fb1b7a31d2699",
+      "bytes": 897,
+      "path": "source-staging-receipt.json",
+      "sha256": "1e5212cc961908b74ecf6319f05859cd5e9ca129a7d5f35fc46e6088acd041e9"
+    },
+    {
+      "blob": "59263462cc84b359853bcfd2f7ec7f3cee2e9068",
+      "bytes": 246,
+      "path": "validator-receipt.txt",
+      "sha256": "121b54a497ecd03e98b416a32961562249eb8ebcdbb918b080c21040a3519933"
+    }
+  ],
+  "product_branch": "cloud/hh-fixture-token-shape-2",
+  "product_head": "27a7aaebbdf6ad2f75c359f1dd6848df33597bf8",
+  "ref": "refs/heads/evidence/hh-fixture-token-shape-2",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-fixture-token-shape-2"
+}

@@ -1,0 +1,46 @@
+{
+  "head": "27a7aaebbdf6ad2f75c359f1dd6848df33597bf8",
+  "rer_version": "0.2.117",
+  "credential_rules_file": "scripts/publish-check/credential_literals.mjs",
+  "credential_rules_sha256": "ca574cea3cc0da8087c0f2fc0934649a436dd6604228066cecb9851a6782afdf",
+  "connection_validation": "src/modules/api-integrations/destinations.ts:26 calls resolveSlackBot; src/vendor/base/modules/integrations/slack/protocol.ts:27 accepts the unchanged bot prefix plus one or more alphanumeric/hyphen characters, max 4096",
+  "replacement_validation": {
+    "command": "node --input-type=module (call unchanged resolveSlackBot with each of the four literals)",
+    "exit": 0,
+    "accepted_literals": 4
+  },
+  "source_inventory": 4103,
+  "SEC1_before": 5,
+  "SEC1_after": 0,
+  "SEC3_after": 0,
+  "fixture_occurrences_changed": 5,
+  "fixture_files_changed": 2,
+  "source_lock_hashes_updated": 2,
+  "contract_statuses_changed": 0,
+  "contract_before_after": {
+    "core": {
+      "done": 4,
+      "partial": 71,
+      "missing": 11,
+      "total": 86
+    },
+    "agent_surface": {
+      "done": 0,
+      "partial": 0,
+      "missing": 5,
+      "total": 5
+    },
+    "full_target": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    }
+  },
+  "no_new_tests": true,
+  "runtime_token_assembly": false,
+  "scanner_or_validator_modified": false,
+  "forbidden_product_metadata_modified": false,
+  "previous_unpublished_head": "1ec2c9e76db78450430e626751e10f058bf4b049",
+  "rebase_note": "Fresh main added README narrative correction and its source-lock hash only. Both changed fixture blobs are byte-identical before/after rebase; running touched tests remain applicable. Source lock regenerated and checked after the clean rebase."
+}

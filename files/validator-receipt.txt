@@ -1,0 +1,3 @@
+head=1ec2c9e76db78450430e626751e10f058bf4b049
+Unchanged resolveSlackBot accepted all four replacement fixture literals. No scanner/validator configuration changed.
+Fixture blobs unchanged on rebased head 27a7aaebbdf6ad2f75c359f1dd6848df33597bf8.

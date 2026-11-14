@@ -45,6 +45,10 @@
     {
       "id": "335_socket_replay_projection.sql",
       "buyerSteps": "Apply 335_socket_replay_projection.sql once after 334_media_message_reads.sql and every missing published migration, before serving the new Worker. It adds raw message/media replay columns to conversation_outbox, fills them from retained native rows, and adds database triggers that keep corrections, attachment moves/deletes and erasure synchronized. Existing columns, message identities, files, sessions and permissions remain unchanged. Knowledge visibility and socket authorization are still evaluated live; no reset or provider action is required."
+    },
+    {
+      "id": "336_solved_time_rule_reads.sql",
+      "buyerSteps": "Apply once after 335_socket_replay_projection.sql and every missing published migration, before serving the updated Worker. Adds only the solved-at time-rule read index; ticket rows, current-authority checks, cursor order and rule eligibility episodes remain unchanged. No backfill, reset or provider action is required."
     }
   ]
 }

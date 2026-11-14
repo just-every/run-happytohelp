@@ -361,6 +361,45 @@ and full verification run on the designated remote runner. Provider fixtures
 prove local protocol behavior; hosted acceptance and paid-provider execution
 require separate evidence. Preserve [the current holds](HANDOVER.md#acceptance-boundaries).
 
+### Local size check
+
+After `pnpm run build`, run `pnpm exec rer size --write-statements .local-evidence/size/statements`.
+The seed-owned [declaration](size-check.json) uses disposable local D1 installs of
+the built application, native owner and widget sessions, and the declared minute
+schedule. It checks inbox/list/search, conversation and transcript reads, message
+admission, sockets, reports, knowledge, outbound tickets and the AI draft route.
+`pnpm exec rer check --profile first-party` validates the declaration.
+
+The large fixture carries 162,000 contacts, 161,893 conversations, 27,000 messages
+and outbox rows, 2,835 media rows and 3,034 pending workflow events. The small
+fixture carries roughly one hundredth; both retain 644 published documents and
+373 reply blocks with the historical source-occurrence skew. These are synthetic
+counts from the 11 November K24/K26/M2 observations, refreshed against migrations
+through 332. Document text lengths and attachment byte-size distributions remain
+missing; generated text and 2,048-byte media metadata are placeholders.
+The fixture moves the bootstrapped owner's native session to its synthetic workspace.
+
+The default 90 FROM-item/expression-depth margin and 10% + 200 rows growth check
+remain. Reports have initial engineering ceilings of 1M/1.5M rows and explicitly
+allow cohort growth because they aggregate a selected 90-day window. Those are
+budgets, not measured provider limits. Existing flows retain the historical
+working ceilings; added routes have initial engineering budgets. No credentials or real conversations are used. Queues are held:
+scheduled knowledge refresh and legacy importer discovery cover admission/wakes,
+not their consumers. The two legacy run rows are discovery fixtures without R2
+package custody. The no-key draft flow expects 409 and does not qualify generation.
+
+Verify runs size once nightly and on query/migration changes, using its shared
+build. External **statement-only** handoff: download
+`size-statements-<full-commit>-rer-<installed-version>-<run-id>-<attempt>`;
+`identity.txt` identifies the exact checkout and package, and
+`statements/{small,large}.json` are the stable inputs for separately credentialed
+real-D1 statement checks. Do not transfer application data.
+
+To prove rejection, run `node tests/size-check/proof.mjs` after building. It requires
+all original flows to pass, then adds an unbounded conversation read only to a
+disposable built Worker copy and requires the same public `rer size` command to
+fail the inbox growth and ceiling checks. Application source stays clean.
+
 ## Where to go next
 
 Development lives in [just-every/run-happytohelp](https://github.com/just-every/run-happytohelp); the private repository is retained for research and evidence only.

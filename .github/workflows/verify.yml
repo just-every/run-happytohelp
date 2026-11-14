@@ -243,7 +243,7 @@ jobs:
     needs: [plan, build]
     if: ${{ needs.plan.outputs.size_check == 'true' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -265,7 +265,7 @@ jobs:
       - name: Record the published rer artifact identity
         id: rer
         run: |
-          version="$(pnpm exec rer --version)"
+          version="$(node -p "require('./node_modules/@runeditrun/rer/package.json').version")"
           [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]
           printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
           mkdir -p "$RUNNER_TEMP/happytohelp-size/statements"
@@ -277,7 +277,7 @@ jobs:
       - name: Restore the build from this workflow's exact checkout
         run: tar -xzf "$RUNNER_TEMP/verify-build/happytohelp-build.tar.gz"
       - name: Check migration statements and real small/large flows
-        run: pnpm exec rer size --write-statements "$RUNNER_TEMP/happytohelp-size/statements"
+        run: pnpm exec rer size --no-queue --write-statements "$RUNNER_TEMP/happytohelp-size/statements"
       - name: Upload statement handoff and identity, including failed checks
         if: ${{ always() && steps.rer.outputs.version != '' }}
         uses: actions/upload-artifact@v4

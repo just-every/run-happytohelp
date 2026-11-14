@@ -120,14 +120,16 @@
       },
       {
         "table": "knowledge_datasets",
-        "rows": 1,
+        "rows": 2,
         "values": {
-          "id": "'size-dataset'",
-          "project_id": "'size-p1'",
-          "name": "'Help center'",
-          "status": "'published'",
-          "created_at": ":now",
-          "published_version": "'size-version'"
+          "id": "CASE WHEN n=1 THEN 'size-dataset' ELSE 'size-refresh' END",
+          "project_id": "CASE WHEN n=1 THEN 'size-p1' ELSE 'size-p1' END",
+          "name": "CASE WHEN n=1 THEN 'Help center' ELSE 'Synthetic scheduled document import' END",
+          "status": "CASE WHEN n=1 THEN 'published' ELSE 'empty' END",
+          "created_at": "CASE WHEN n=1 THEN :now ELSE :now END",
+          "published_version": "CASE WHEN n=1 THEN 'size-version' ELSE NULL END",
+          "next_refresh_at": "CASE WHEN n=1 THEN NULL ELSE 0 END",
+          "source_input": "CASE WHEN n=1 THEN NULL ELSE json_object('documents',json_array(json_object('url','https://example.test/synthetic','title','Synthetic refresh','content','Only generated test text.')),'semantic',json('false')) END"
         }
       },
       {
@@ -278,19 +280,6 @@
         }
       },
       {
-        "table": "knowledge_datasets",
-        "rows": 1,
-        "values": {
-          "id": "'size-refresh'",
-          "project_id": "'size-p1'",
-          "name": "'Synthetic scheduled document import'",
-          "status": "'empty'",
-          "source_input": "json_object('documents',json_array(json_object('url','https://example.test/synthetic','title','Synthetic refresh','content','Only generated test text.')),'semantic',json('false'))",
-          "next_refresh_at": "0",
-          "created_at": ":now"
-        }
-      },
-      {
         "table": "mailbox_connections",
         "rows": 1,
         "values": {
@@ -324,6 +313,26 @@
         "values": {
           "conversation_id": "'v000003'",
           "ai_id": "'size-assistant'"
+        }
+      },
+      {
+        "table": "legacy_import_worker_runs",
+        "rows": 2,
+        "values": {
+          "id": "'legacy-package:' || printf('%064x', n)",
+          "contract_version": "2",
+          "manifest_sha256": "printf('%064x', n)",
+          "project_id": "'size-p1'",
+          "source_project_id": "'size-p1'",
+          "actor_id": "(SELECT id FROM users WHERE email=:owner_email)",
+          "session_hash": "(SELECT token_hash FROM sessions WHERE actor_id=(SELECT id FROM users WHERE email=:owner_email) AND revoked_at IS NULL ORDER BY expires_at DESC LIMIT 1)",
+          "mode": "'full'",
+          "exclude_json": "'[\"ai_usages\"]'",
+          "state": "CASE WHEN n=1 THEN 'queued' ELSE 'complete' END",
+          "phase": "CASE WHEN n=1 THEN 'verify_package' ELSE 'done' END",
+          "next_at": "0",
+          "created_at": ":now",
+          "updated_at": ":now"
         }
       }
     ],

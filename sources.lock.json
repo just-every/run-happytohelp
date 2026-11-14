@@ -1573,7 +1573,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "cb8feedd71956159111b54582a2b09ce0c03e182ef8c1918514077cf2c798cdb",
+      "sha256": "ea11c193a458c25e4a3ffd9901f8fb692252f1767058a8b6ddad7a1003c01643",
       "executable": false
     },
     ".gitignore": {
@@ -2973,7 +2973,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "45a28e31326188246e4a21014e0e332589246fb14b34726572a6b972d1071628",
+      "sha256": "4a72fb61f3adc2507b553d0f588076b8c5299dcc1e77e9459aa0933c19959aa1",
       "executable": false
     },
     "RELEASE.json": {
@@ -4318,6 +4318,10 @@
     },
     "seed.json": {
       "sha256": "321e3d3d615cbcdefdbc925aef675e78112d6a478351e6599f2dfeecd0f6032c",
+      "executable": false
+    },
+    "size-check.json": {
+      "sha256": "c58795d396b8ba01cce0143fee47747d4ff03f35e1d6994b9044713fce7c7171",
       "executable": false
     },
     "src/app.ts": {
@@ -17806,6 +17810,18 @@
     },
     "tests/reports/worker.ts": {
       "sha256": "4c2f24c32b5b675bc765405ff459525fb3be891aabc2a36c813abd7f21d1661d",
+      "executable": false
+    },
+    "tests/size-check/disposable-build.mjs": {
+      "sha256": "596f14a0b5467b434863fc2c9d5c05e1b095567cdd5e24e3cce1c8454e85c552",
+      "executable": false
+    },
+    "tests/size-check/proof.mjs": {
+      "sha256": "74c612f55014d5061f7cc92304d488330bdb9412d4a49564977d0905465ae740",
+      "executable": false
+    },
+    "tests/size-check/public-cli.mjs": {
+      "sha256": "665335ad6b710d114738349df259e49d17c57aa782d1be90cfdb639d3ab72b62",
       "executable": false
     },
     "tests/training/fixture.cjs": {

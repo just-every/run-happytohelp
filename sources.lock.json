@@ -2888,6 +2888,10 @@
       "sha256": "b0e22ac88fd234758bb2f26c6def7e1ba3392dbdd0eaea6171f96e5b75aa7fc3",
       "executable": false
     },
+    "migrations/333_report_cohorts.sql": {
+      "sha256": "295c93f3860078d88ad59a3dd5c310b788fcea56dd81052f87d59537c64c1043",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2977,7 +2981,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "3cf85d9e742da47642e11c37816bd981f4455409d4e617de4e09a6fa0469c83f",
+      "sha256": "f772c5b4cb21a28aa5ebd5dca8ccb761491784ff7734d70e667d743825368ed0",
       "executable": false
     },
     "rer-project.json": {
@@ -9716,12 +9720,16 @@
       "sha256": "d0e7c7f21186aa6d1ae8aa29f32ab9c4b2b4ec80164225e61031b3b58e0e68a9",
       "executable": false
     },
+    "src/modules/reports/read-calendar.ts": {
+      "sha256": "ca7ccb48a9d817573c032323162467ad0c4a7f3d159cdc739da426dea9ca1cfa",
+      "executable": false
+    },
     "src/modules/reports/read.ts": {
-      "sha256": "e5fd8405f9e7b4a5621001b68ebb5376e510420f3aa92ca4a65d522b01bb022d",
+      "sha256": "8112a6ce477912ec114823da0eec443c86622e7aaa61ed565004040de618e6e7",
       "executable": false
     },
     "src/modules/reports/README.md": {
-      "sha256": "9d1382d6156e6352c593e2810c941b8023f02499051a06d2e6a5dcca055d227a",
+      "sha256": "0ab5e9a9fe88f09dd0791a32984bae0292538659a7c32dcb2ba8f8d8afdc060f",
       "executable": false
     },
     "src/modules/reports/routes.ts": {
@@ -9753,7 +9761,7 @@
       "executable": false
     },
     "src/modules/reports/team-breakdowns.ts": {
-      "sha256": "dfe880b6d0d62af25c72bcbbee297a4a61cacc58de06726317a359d66519c935",
+      "sha256": "654240f0d0e15a49f2968f376d7d13407210f73313523ba7431203797593bca4",
       "executable": false
     },
     "src/modules/reports/team-containment.ts": {
@@ -9764,12 +9772,16 @@
       "sha256": "7d96f2953a9d62b0d2b25f6f1649e1d8e74b6cc2704ed2a799751e52c74793a4",
       "executable": false
     },
+    "src/modules/reports/team-distributions.ts": {
+      "sha256": "87a17c98408066b501bba79411cab47c5b05370b2b980c75ec3ff7f5198345cb",
+      "executable": false
+    },
     "src/modules/reports/team-handle-time.ts": {
-      "sha256": "8a139b344231644430b6d0682e42e9d8294f60bb252718a37f7149843b773266",
+      "sha256": "0347a9ebcdf89e5485f24e7066ec9f595a244ee8076fdc1385d5f33d159185b8",
       "executable": false
     },
     "src/modules/reports/team-read.ts": {
-      "sha256": "5a76cf890214d449b0df991e6deb701f6bf9a693b5f0a26db73a20cc3c333158",
+      "sha256": "a1409c79b4c5eb7444d12b703ab311079baed2b0aefacda7611d445d081165ec",
       "executable": false
     },
     "src/modules/reports/team-routes.ts": {
@@ -9777,7 +9789,7 @@
       "executable": false
     },
     "src/modules/reports/team-scope.ts": {
-      "sha256": "c6af469dd4f3b701ddb6545d49070a71a556a205881a008223e9af6322750c36",
+      "sha256": "e5ea75cb1917d901cbaf00ce0d1e3c74a27afae1e30bc01a945c6fb0fe2d2f15",
       "executable": false
     },
     "src/modules/reports/team-service.ts": {
@@ -9785,7 +9797,7 @@
       "executable": false
     },
     "src/modules/reports/team-workload.ts": {
-      "sha256": "46a6a7d0a014bcb754183dea0705f2650d7e11dde8af2f5207da7a4ee2a5bec8",
+      "sha256": "62b16d2084c4dd0731d74102d0d445db131acc0f2858dc1d6a29dfface2c4889",
       "executable": false
     },
     "src/modules/reports/timers.ts": {
@@ -17768,8 +17780,12 @@
       "sha256": "c6412fd19880e92f797e9ef16eee02f44a2ad95eee1c594140ea5ce99f482ef0",
       "executable": false
     },
+    "tests/reports/cohort-projection.mjs": {
+      "sha256": "f1b2ffd1a6b425729e29f8e89914e682c72b6b52edce3816c425011b41913eb6",
+      "executable": false
+    },
     "tests/reports/figures.mjs": {
-      "sha256": "b2c9336b04b4ed66f1ae38aefd51af658ae98a0914e666303f6d0ee980117cdd",
+      "sha256": "2d5e6fa41c59449bd1ec31e66c6e187e861a2667ac4cedb62bf5bacb5874c3fe",
       "executable": false
     },
     "tests/reports/harness.mjs": {
@@ -17797,15 +17813,15 @@
       "executable": false
     },
     "tests/reports/scale.mjs": {
-      "sha256": "a33b224145eb600fe6d14eff18d58d4bdc116bc247a64996488127c53c0086dc",
+      "sha256": "608d969d15320f413fd800521d8a6f9e5e653409aea1d84a692d326fa28ef3ee",
       "executable": false
     },
     "tests/reports/support-outcomes.mjs": {
-      "sha256": "f9fecd082e106c6bfc6dd2f0641af11d483fe93b5d8fb5c02065e24dbf590b21",
+      "sha256": "48111695770731bea9f35c12bd2a71361fbb0c514fed20511e121b05b4f6300c",
       "executable": false
     },
     "tests/reports/team-journey.mjs": {
-      "sha256": "edbf0d6823e13847e080cd921997b4fb1bee30e383fd274156b3a213e0a1a533",
+      "sha256": "6e0fc9931a76de6b716b6a5dcf1074eba3b6567193703618cd9e2d7587194bc0",
       "executable": false
     },
     "tests/reports/worker.ts": {

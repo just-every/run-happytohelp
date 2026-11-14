@@ -10,7 +10,10 @@ import {containmentRule} from './team-containment'
 async function reportOptions({env,projectId}:TeamReportContext){
  const [teams,brands,agents]=await Promise.all([
   env.DB.prepare('SELECT id,name FROM ticket_groups WHERE project_id=? ORDER BY name,id').bind(projectId).all<{id:string;name:string}>(),
-  env.DB.prepare(`SELECT id,name FROM projects WHERE id=?1 UNION SELECT DISTINCT c.brand_id id,c.brand_id name FROM conversations c WHERE c.project_id=?1 AND c.brand_id IS NOT NULL AND c.brand_id<>?1 ORDER BY name,id`).bind(projectId).all<{id:string;name:string}>(),
+  env.DB.prepare(`WITH RECURSIVE brands(id) AS (
+   SELECT MIN(brand_id) FROM conversations WHERE project_id=?1
+   UNION ALL SELECT (SELECT MIN(brand_id) FROM conversations WHERE project_id=?1 AND brand_id>brands.id) FROM brands WHERE id IS NOT NULL
+  ) SELECT id,name FROM projects WHERE id=?1 UNION SELECT id,id name FROM brands WHERE id IS NOT NULL AND id<>?1 ORDER BY name,id`).bind(projectId).all<{id:string;name:string}>(),
   env.DB.prepare('SELECT u.id,u.name FROM users u JOIN memberships m ON m.user_id=u.id WHERE m.project_id=? ORDER BY u.name,u.id').bind(projectId).all<{id:string;name:string}>()
  ])
  return {teams:teams.results,brands:brands.results,agents:agents.results}

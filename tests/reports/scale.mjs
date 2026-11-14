@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {assertReportProjection} from './cohort-projection.mjs'
 import {harness} from './harness.mjs'
 import {proveScaleOracles} from './scale-oracles.mjs'
 
@@ -24,5 +25,6 @@ export async function reportScaleJourney(){
   assert.doesNotMatch(summary,/bulk-|"ID","Created|Latest comment/);
   assert.equal(h.external,0);
   await proveScaleOracles(h);
+  await assertReportProjection(h.db);
  }finally{await h.close()}
 }

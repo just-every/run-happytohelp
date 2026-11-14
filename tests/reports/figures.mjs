@@ -1,5 +1,6 @@
 import {reportTicketScopeAssertions} from '../helpers/reports/ticket-scope.mjs'
 import assert from 'node:assert/strict';
+import {assertReportProjection,projectionMutations} from './cohort-projection.mjs';
 import {harness} from './harness.mjs';
 const time=Date.parse;
 async function seedQuestions(h){await h.db.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) SELECT 'question-'||c.id,c.project_id,c.id,'question-'||c.id,c.contact_id,'contact','Question',1,c.created_at FROM conversations c WHERE NOT EXISTS(SELECT 1 FROM messages m WHERE m.conversation_id=c.id)").run()}
@@ -71,6 +72,8 @@ export async function calendarReportsJourney(){
  assert.equal((await h.raw(brandsPath.replace('p,q','p,unavailable'))).status,403);
  await h.db.prepare("DELETE FROM memberships WHERE project_id='q' AND user_id='owner'").run();assert.equal((await h.raw(brandsPath)).status,403,'revocation ends aggregate access immediately');
  await proveTranscriptExport(h);
+ await assertReportProjection(h.db);
+ await projectionMutations(h,path);
  await h.call('/api/management/projects/p/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:'Asia/Kathmandu'})});
  for(const [id,at] of [['zone-before','2025-12-31T18:14:59Z'],['zone-first','2025-12-31T18:15:00Z'],['zone-last','2026-01-01T18:14:59Z'],['zone-after','2026-01-01T18:15:00Z']])await h.db.prepare('INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES(?,?,?,?,?)').bind(id,'p','visitor',time(at),time(at)).run();
  await seedQuestions(h);
@@ -88,6 +91,7 @@ export async function calendarReportsJourney(){
   assert.equal(denied.status,403);assert.doesNotMatch(await denied.text(),/foreign-visitor|"volume"/);
  }
  assert.equal((await h.raw('/api/dashboard/projects/p/reports?period=7')).status,200);
+ await assertReportProjection(h.db);
 
  }finally{await h.close()}
  await reportTicketScopeAssertions()

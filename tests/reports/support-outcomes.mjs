@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {assertReportProjection} from './cohort-projection.mjs'
 import {assistantApp} from '../helpers/ai/app.mjs'
 import {openaiToolCall} from '../helpers/openai-stream.mjs'
 import {resolutionFeedbackHistory} from './resolution-feedback.mjs'
@@ -187,6 +188,7 @@ export async function supportOutcomesJourney(){
   await app.call(base+url,{token:handed.token,status:401})
   await resolutionFeedbackHistory()
 
+ await assertReportProjection(app.db)
  }finally{await a.close()}
 }
 
@@ -293,5 +295,6 @@ export async function publicCohort(){
   const failed=await a.visitor('AI unavailable');await failed.say('Please track my parcel.');await app.drainJobs();ai.reject=false
   const pending=await a.visitor('AI queued');await pending.say('Please check delivery.')
   assert.deepEqual(await containment(),{contained:0,notContained:2,unknown:2,denominator:4,rate:0,customerConfirmed:0},'failed and queued work stay visible in the participating denominator')
+ await assertReportProjection(app.db)
  }finally{await a.close()}
 }

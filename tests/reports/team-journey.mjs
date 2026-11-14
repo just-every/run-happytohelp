@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {assertReportProjection} from './cohort-projection.mjs'
 import {startApp} from '../journeys/kit/app.mjs'
 import {seedReportFixture,reportDates,reportStart,reportEnd,insert} from '../helpers/reports-team-fixture.mjs'
 
@@ -15,6 +16,7 @@ export async function teamReportsJourney(){
   const company=(await app.ok(`/api/dashboard/projects/${p}/companies`,{token:w.tokens.owner,body:{name:'Ridgeline account'}})).company
   const accountTickets=fixture.tickets.slice(0,3)
   for(const t of accountTickets)await app.ok(`/api/dashboard/projects/${p}/companies/${company.id}/members/${t.contact_id}`,{token:w.tokens.owner,method:'PUT',body:{}})
+  await assertReportProjection(app.db)
   const report=await get()
   const accountRows=report.workload.account
   const linked=accountRows.find(row=>row.id===company.id)
@@ -120,6 +122,7 @@ export async function teamReportsJourney(){
   await app.ok(`/api/management/projects/${p}/contacts/${erasedContact}/erase`,{token:w.tokens.owner,body:{}})
   assert.equal((await app.first('SELECT count(*) n FROM ticket_handle_sessions WHERE conversation_id=?',ticket.id)).n,0)
   assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE project_id=? AND action LIKE 'reports.schedule.%'",p)).n>=3)
+  await assertReportProjection(app.db)
   console.log(JSON.stringify({proof:'R10 team reconciliation',tickets:raw.length,workload:report.workload,backlog:report.backlog,sla:report.sla,reopens:report.reopens,handleTimeMs:totalMs,scheduledMail:reportMail.length,deliveryStates:deliveries.map(r=>r.state)}))
  }finally{await app.close()}
 }

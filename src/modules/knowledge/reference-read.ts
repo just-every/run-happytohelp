@@ -33,7 +33,7 @@ class ScopedReferenceRead implements ReferenceReadScope {
  }
 
  private async fetch(ids:string[]):Promise<void>{
-  const result=await this.env.DB.prepare('SELECT b.* FROM json_each(?1) requested CROSS JOIN knowledge_reply_blocks b ON b.id=requested.value AND b.project_id=?2 ORDER BY CAST(requested.key AS INTEGER)').bind(JSON.stringify(ids),this.projectId).all<KnowledgeBlock>()
+  const result=await this.env.DB.prepare('SELECT b.* FROM json_each(?1) requested CROSS JOIN knowledge_reply_blocks b ON b.id=requested.value AND b.project_id=?2').bind(JSON.stringify(ids),this.projectId).all<KnowledgeBlock>()
   const candidates=new Map<string,string>()
   for(const block of result.results){
    // Unknown source representations remain candidates for the SQL source lookup.

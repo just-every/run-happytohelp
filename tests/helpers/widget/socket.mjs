@@ -30,7 +30,7 @@ export async function socketJourney(){
   assert.equal((await socketTo(`${path}?token=${other.token}&after=${replay.eventId}`,{Origin:'https://widget.example'})).status,404,'a durable cursor conveys no replay authority to another visitor')
   // The operator project stream announces conversation activity; a visitor token cannot open it.
   const project=await socketTo(`/api/projects/${p}/socket`,{Cookie:`h2h_session=${owner}`,Origin:'https://app.example'});assert.equal(project.status,101)
-  const projectFrame=await project.next();assert.equal(projectFrame.type,'conversation');assert.equal(projectFrame.conversationId,conversation.id);assert.deepEqual(projectFrame.message.media,files.map(metadata),'dashboard replay has the same attachments');project.socket.close()
+  const projectFrame=await project.next();assert.equal(projectFrame.type,'conversation');assert.equal(projectFrame.conversationId,conversation.id);assert.equal(projectFrame.message.content_raw,'Private original email body');assert.deepEqual(projectFrame.message.media,files.map(metadata),'dashboard replay has the same attachments');project.socket.close()
   assert.equal((await socketTo(`/api/projects/${p}/socket?token=${contact.token}`,{Origin:'https://app.example'})).status,403)
   const cookie=await socketTo(`${path}?after=${replay.eventId}`,{Cookie:`h2h_session=${owner}`,Origin:'https://app.example'});assert.equal(cookie.status,101);cookie.socket.close()
   // A private note reaches the teammate's socket at once, never the visitor's; its content stays behind the bucket route.
@@ -63,6 +63,17 @@ export async function socketJourney(){
   const full=await socketTo(`${path}?token=${contact.token}`,{Origin:'https://widget.example'}),frames=[await full.next(frame=>frame.type==='message'),await full.next(frame=>frame.type==='message')]
   assert.deepEqual(frames.map(frame=>frame.message.media),[files.map(metadata),[metadata(replyFile)]],'one replay page groups attachments by message')
   assert.deepEqual(frames.map(frame=>frame.message.id),[first.message.id,reply.message.id]);assert.deepEqual(frames.map(frame=>frame.message.revision),[1,2]);assert.ok(Number(frames[1].eventId)>Number(frames[0].eventId));assert.equal(frames[1].conversationId,conversation.id);full.socket.close()
+  // Replays use current stored message and media metadata after correction or
+  // erasure; a cached raw projection must never retain the earlier bytes.
+  await app.db.batch([
+   app.db.prepare('UPDATE media SET filename=? WHERE id=?').bind('corrected-trace.txt',files[0].id),
+   app.db.prepare('DELETE FROM media WHERE id=?').bind(files[1].id),
+   app.db.prepare('UPDATE messages SET content=?,content_raw=NULL,erased_at=? WHERE id=?').bind('[Erased]',Date.now(),first.message.id),
+  ])
+  const corrected=await socketTo(`${path}?token=${contact.token}`,{Origin:'https://widget.example'})
+  const erasedFrame=await corrected.next(frame=>frame.type==='message')
+  assert.equal(erasedFrame.message.content,'[Erased]');assert.ok(erasedFrame.message.erased_at)
+  assert.deepEqual(erasedFrame.message.media,[{...metadata(files[0]),filename:'corrected-trace.txt'}]);corrected.socket.close()
   const offline=(await app.call(`/api/conversations/${conversation.id}/messages`,{token:owner,body:{localId:'offline-reply',content:'Corrected invoice sent while offline.',expectedRevision:2,expectedLastMessageId:reply.message.id},status:200})).data
   const resumed=await socketTo(`${path}?token=${contact.token}&after=${frames[1].eventId}`,{Origin:'https://widget.example'}),caught=await resumed.next(frame=>frame.type==='message');assert.equal(caught.message.id,offline.message.id);assert.equal(caught.message.revision,3);assert.deepEqual(caught.message.media,[]);assert.ok(Number(caught.eventId)>Number(frames[1].eventId));assert.equal(resumed.frames.filter(frame=>frame.type==='message').length,0);resumed.socket.close()
   const transcript=(await app.call(`/api/conversations/${conversation.id}/messages`,{token:contact.token,status:200})).data;assert.deepEqual(transcript.messages.map(message=>message.revision),[1,2,3]);assert.equal(transcript.lastMessageId,offline.message.id)

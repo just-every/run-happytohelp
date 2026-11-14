@@ -3,6 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration: '335_socket_replay_projection.sql', names: ['conversation_outbox'], change: 'Adds only nullable message_json TEXT and media_json TEXT; every prior column definition and row is retained'},
   {migration: '328_legacy_workspace_adoption.sql', names: ['move_in_notes'], change: 'Adds only nullable bucket_id TEXT; every prior column definition and row is retained'},
   {migration: '331_legacy_cleanup_seeding.sql', names: ['legacy_package_custody'], change: 'Adds only cleanup_only INTEGER NOT NULL DEFAULT 0 and seeding_complete INTEGER NOT NULL DEFAULT 1, each constrained to 0 or 1; every prior column definition and row is retained'},
   {migration: '302_move_in_zendesk_pull.sql', names: ['move_in_runs'], change: "SQL line 7 adds only source TEXT NOT NULL DEFAULT 'upload' with CHECK IN ('upload','zendesk-pull'); every prior column definition and row is retained"},
@@ -101,6 +102,7 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
+  {migration: '335_socket_replay_projection.sql', table: 'conversation_outbox', sql: 'ALTER TABLE conversation_outbox ADD COLUMN message_json TEXT; ALTER TABLE conversation_outbox ADD COLUMN media_json TEXT;'},
   {migration: '328_legacy_workspace_adoption.sql', table: 'move_in_notes', sql: 'ALTER TABLE move_in_notes ADD COLUMN bucket_id TEXT;'},
   {migration: '331_legacy_cleanup_seeding.sql', table: 'legacy_package_custody', sql: 'ALTER TABLE legacy_package_custody ADD COLUMN cleanup_only INTEGER NOT NULL DEFAULT 0 CHECK(cleanup_only IN (0,1)); ALTER TABLE legacy_package_custody ADD COLUMN seeding_complete INTEGER NOT NULL DEFAULT 1 CHECK(seeding_complete IN (0,1));'},
   {migration: '302_move_in_zendesk_pull.sql', table: 'move_in_runs', sql: "ALTER TABLE move_in_runs ADD COLUMN source TEXT NOT NULL DEFAULT 'upload' CHECK(source IN ('upload','zendesk-pull'));"},

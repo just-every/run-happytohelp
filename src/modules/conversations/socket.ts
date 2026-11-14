@@ -34,19 +34,14 @@ export class ConversationSocket extends DurableObject<Env>{
   const wholeProject=await unrestricted()
   // An unrestricted project page needs only the outbox and its messages. Live
   // conversation membership and authority are checked together before delivery.
-  const rows=await this.env.DB.prepare(`SELECT o.id eventId,m.* FROM conversation_outbox o CROSS JOIN messages m ON m.id=o.message_id ${wholeProject?'':'CROSS JOIN conversations c ON c.id=o.conversation_id AND c.project_id=o.project_id'} WHERE ${a.projectId?'o.project_id':'o.conversation_id'}=? AND o.id>? ${actor.role==='contact'||wholeProject?'':`AND ${ticketScopeSql('?')}`} ORDER BY o.id LIMIT 500`).bind(a.projectId||a.conversationId,a.cursor,...(actor.role==='contact'||wholeProject?[]:[actor.actor_id])).all()
-  // One indexed lookup for the replay page (at most 500 messages). Keep each
-  // message's original table order and strip the grouping key from its payload.
-  const media=new Map<string,Record<string,unknown>[]>()
-  if(rows.results.length){
-   const files=await this.env.DB.prepare('SELECT id,message_id,filename,content_type,size FROM media WHERE message_id IN (SELECT value FROM json_each(?)) ORDER BY rowid').bind(JSON.stringify(rows.results.map(row=>row.id))).all()
-   for(const {message_id,...file} of files.results){const id=String(message_id);if(!media.has(id))media.set(id,[]);media.get(id)!.push(file)}
-  }
+  const page=await this.env.DB.prepare(`SELECT o.id eventId,o.message_json,o.media_json FROM conversation_outbox o ${wholeProject?'':'CROSS JOIN conversations c ON c.id=o.conversation_id AND c.project_id=o.project_id'} WHERE ${a.projectId?'o.project_id':'o.conversation_id'}=? AND o.id>? ${actor.role==='contact'||wholeProject?'':`AND ${ticketScopeSql('?')}`} ORDER BY o.id LIMIT 500`).bind(a.projectId||a.conversationId,a.cursor,...(actor.role==='contact'||wholeProject?[]:[actor.actor_id])).all<{eventId:number;message_json:string;media_json:string}>()
+  // Migration-maintained raw projections hydrate messages and their ordered media
+  // in this one bounded page statement. Current knowledge and authority stay live.
+  const rows={results:page.results.map(row=>{if(!row.message_json||!row.media_json)throw new Error('Socket replay projection is missing');return {eventId:row.eventId,...JSON.parse(row.message_json),media:JSON.parse(row.media_json)}})}
   if(actor.role==='contact')for(const row of rows.results)delete row.content_raw
   const scopes=new Map<string,Awaited<ReturnType<typeof createReferenceReadScope>>>()
   for(const projectId of new Set(rows.results.map(row=>String(row.project_id))))scopes.set(projectId,await createReferenceReadScope(this.env,projectId,referenceIds(JSON.stringify(rows.results.filter(row=>row.project_id===projectId)))))
   const prepared=await Promise.all(rows.results.map(async row=>{
-   row.media=media.get(String(row.id))||[]
    const projectId=String(row.project_id),readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id),scope=scopes.get(projectId)
    const rendered=await renderKnowledgeFields(this.env,projectId,row,readers,'body',scope)
    if(actor.role!=='contact')(rendered as any).knowledgeReferences=await referenceVisibility(this.env,projectId,String(row.content||''),actor.actor_id,currentTicketReaders(projectId,String(row.conversation_id),{}),scope)
@@ -55,9 +50,13 @@ export class ConversationSocket extends DurableObject<Env>{
   if(!await this.authorized(a)){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return false}
   let allowed:Set<string>|undefined
   if(actor.role!=='contact'&&rows.results.length){
-   const pairs=[...new Map(rows.results.map(row=>[String(row.conversation_id),[row.conversation_id,row.project_id]])).values()],wholeProjectNow=await unrestricted()
-   const permitted=await this.env.DB.prepare(`SELECT c.id FROM json_each(?) requested CROSS JOIN conversations c ON c.id=requested.value->>0 AND c.project_id=requested.value->>1 ${wholeProjectNow?'':`WHERE ${ticketScopeSql('?')}`}`).bind(JSON.stringify(pairs),...(wholeProjectNow?[]:[actor.actor_id])).all<{id:string}>()
-   allowed=new Set(permitted.results.map(row=>row.id))
+   // Current unrestricted membership covers every conversation in this project;
+   // scoped roles still validate the page's distinct conversations by key.
+   if(!await unrestricted()){
+    const pairs=[...new Map(rows.results.map(row=>[String(row.conversation_id),[row.conversation_id,row.project_id]])).values()]
+    const permitted=await this.env.DB.prepare(`SELECT c.id FROM json_each(?) requested CROSS JOIN conversations c ON c.id=requested.value->>0 AND c.project_id=requested.value->>1 WHERE ${ticketScopeSql('?')}`).bind(JSON.stringify(pairs),actor.actor_id).all<{id:string}>()
+    allowed=new Set(permitted.results.map(row=>row.id))
+   }
   }
   // No await separates this current authority check from any frame in the page.
   for(const {row,rendered} of prepared){

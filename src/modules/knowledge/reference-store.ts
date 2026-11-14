@@ -1,3 +1,4 @@
+import type {ReferenceReadScope} from './reference-read'
 import {canonicaliseKnowledge} from './canonicaliser'
 import {htmlReference} from './html-reference'
 import {modelReferenceLabels} from './model-labels'
@@ -62,32 +63,32 @@ export async function createBlocks(env:Env,projectId:string,blocks:BlockInput[])
  return tokens
 }
 export const referencesAdmittedSql=(content:string,project:string,readers:Readers)=>referenceSetAdmittedSql(referenceIds(content),project,readers)
-export async function renderKnowledge(env:Env,projectId:string,text:string,readers:Readers,mode:'body'|'model'|'html'='body',seen:ReadonlySet<string>=new Set()):Promise<string>{
+export async function renderKnowledge(env:Env,projectId:string,text:string,readers:Readers,mode:'body'|'model'|'html'='body',seen:ReadonlySet<string>=new Set(),scope?:ReferenceReadScope):Promise<string>{
  const ids=referenceIds(text);if(!ids.length)return text
  const policy=referenceAdmissionPolicy(ids,literal(projectId),readers)
- const rows=await env.DB.prepare(`${policy.prefix}SELECT block.*,visible.id IS NOT NULL visible FROM selected block LEFT JOIN visible_blocks visible ON visible.id=block.id`).bind(...policy.params).all<KnowledgeBlock&{visible:number}>()
+ const rows={results:scope?await scope.rows(ids,readers):(await env.DB.prepare(`${policy.prefix}SELECT block.*,visible.id IS NOT NULL visible FROM selected block LEFT JOIN visible_blocks visible ON visible.id=block.id`).bind(...policy.params).all<KnowledgeBlock&{visible:number}>()).results}
  const labels=mode==='model'?await modelReferenceLabels(env,projectId,rows.results.filter(row=>row.visible).map(row=>row.id),readers):new Map<string,string>()
  const values=new Map<string,string>()
  for(const row of rows.results){
   if(!row.visible||seen.has(row.id)||seen.size>=32){values.set(row.id,unavailableKnowledge);continue}
   const payload=JSON.parse(row.payload_json),value=mode==='model'?(payload.url?`[${payload.title||'Knowledge source'}](${payload.url})`:labels.get(row.id)||'[Knowledge source]'):mode==='html'?htmlReference(row.kind,payload):payload.text
-  values.set(row.id,await renderKnowledge(env,projectId,value,readers,mode,new Set([...seen,row.id])))
+  values.set(row.id,await renderKnowledge(env,projectId,value,readers,mode,new Set([...seen,row.id]),scope))
  }
  return text.replace(tokenPattern,(_token,id)=>values.get(id)??unavailableKnowledge)
 }
-export async function renderKnowledgeFields<T>(env:Env,projectId:string,value:T,readers:Readers,mode:'body'|'model'|'html'='body'):Promise<T>{
+export async function renderKnowledgeFields<T>(env:Env,projectId:string,value:T,readers:Readers,mode:'body'|'model'|'html'='body',scope?:ReferenceReadScope):Promise<T>{
  if(typeof value==='string'){
   // JSON columns are returned as strings by several APIs. Render their values
   // without losing the enclosing JSON representation.
-  if(/^[\[{]/.test(value)){let parsed:any;try{parsed=JSON.parse(value)}catch{}if(parsed!==undefined)return JSON.stringify(await renderKnowledgeFields(env,projectId,parsed,readers,mode)) as T}
-  return await renderKnowledge(env,projectId,value,readers,mode) as T
+  if(/^[\[{]/.test(value)){let parsed:any;try{parsed=JSON.parse(value)}catch{}if(parsed!==undefined)return JSON.stringify(await renderKnowledgeFields(env,projectId,parsed,readers,mode,scope)) as T}
+  return await renderKnowledge(env,projectId,value,readers,mode,new Set(),scope) as T
  }
- if(Array.isArray(value)){const rendered=await Promise.all(value.map(v=>renderKnowledgeFields(env,projectId,v,readers,mode)));return (value.every(v=>v&&typeof v==='object'&&'knowledge_citation' in v)?rendered.filter(v=>v!==null):rendered) as T}
+ if(Array.isArray(value)){const rendered=await Promise.all(value.map(v=>renderKnowledgeFields(env,projectId,v,readers,mode,scope)));return (value.every(v=>v&&typeof v==='object'&&'knowledge_citation' in v)?rendered.filter(v=>v!==null):rendered) as T}
  if(value&&typeof value==='object'){
-  if(typeof (value as any).knowledge_citation==='string'){const rendered=await renderKnowledge(env,projectId,(value as any).knowledge_citation,readers,mode);if(mode==='model')return rendered as T;try{return JSON.parse(rendered) as T}catch{return null as T}}
+  if(typeof (value as any).knowledge_citation==='string'){const rendered=await renderKnowledge(env,projectId,(value as any).knowledge_citation,readers,mode,new Set(),scope);if(mode==='model')return rendered as T;try{return JSON.parse(rendered) as T}catch{return null as T}}
   const provenance=(value as any).knowledge_provenance
   if(typeof provenance==='string'&&referenceIds(provenance).length){const policy=referenceAdmissionPolicy(referenceIds(provenance),literal(projectId),readers);if(!await env.DB.prepare(`${policy.prefix}SELECT 1 WHERE ${policy.sql}`).bind(...policy.params).first())return withheldResult(value) as T}
-  return Object.fromEntries(await Promise.all(Object.entries(value).filter(([key])=>key!=='knowledge_provenance').map(async([key,v])=>[await renderKnowledge(env,projectId,key,readers,mode),await renderKnowledgeFields(env,projectId,v,readers,mode)]))) as T
+  return Object.fromEntries(await Promise.all(Object.entries(value).filter(([key])=>key!=='knowledge_provenance').map(async([key,v])=>[await renderKnowledge(env,projectId,key,readers,mode,new Set(),scope),await renderKnowledgeFields(env,projectId,v,readers,mode,scope)]))) as T
  }
  return value
 }
@@ -103,17 +104,18 @@ export const articleSourcesSql=`WITH selected AS MATERIALIZED (
  SELECT b.id block_id,s.value source_id FROM selected b CROSS JOIN json_each(CASE WHEN b.sources_json LIKE '%article:%' OR instr(b.sources_json,char(92))>0 THEN b.sources_json END) s WHERE substr(s.value,1,8)='article:'
  UNION SELECT b.id,gs.source_id FROM selected b CROSS JOIN knowledge_generation_sources gs ON gs.project_id=?1 AND gs.generation_id=b.generation_id AND gs.source_id>='article:' AND gs.source_id<'article;'
 ) SELECT DISTINCT source.block_id,a.id,a.title FROM source CROSS JOIN knowledge_articles a ON a.id=substr(source.source_id,9) AND a.project_id=?1 ORDER BY a.slug,source.block_id`
-export async function referenceVisibility(env:Env,projectId:string,text:string,operatorId:string,readers:Readers){
+export async function referenceVisibility(env:Env,projectId:string,text:string,operatorId:string,readers:Readers,scope?:ReferenceReadScope){
  const ids=referenceIds(text);if(!ids.length)return []
  const policy=referenceAdmissionPolicy(ids,literal(projectId),memberReaders(operatorId))
  const [rows,recipients]=await Promise.all([
-  env.DB.prepare(`${policy.prefix}SELECT b.*,v.id IS NOT NULL visible FROM selected b LEFT JOIN visible_blocks v ON v.id=b.id`).bind(...policy.params).all<KnowledgeBlock&{visible:number}>(),
+  scope?scope.rows(ids,memberReaders(operatorId),true).then(results=>({results})):env.DB.prepare(`${policy.prefix}SELECT b.*,v.id IS NOT NULL visible FROM selected b LEFT JOIN visible_blocks v ON v.id=b.id`).bind(...policy.params).all<KnowledgeBlock&{visible:number}>(),
   describeReaders(env,projectId,readers)
  ])
- const visibility=await Promise.all(recipients.map(async recipient=>{const current=referenceAdmissionPolicy(ids,literal(projectId),readerSet([recipient]));return new Set((await env.DB.prepare(`${current.prefix}SELECT id FROM visible_blocks`).bind(...current.params).all<{id:string}>()).results.map(row=>row.id))}))
- const sources=await env.DB.prepare(articleSourcesSql).bind(projectId,JSON.stringify(ids)).all<{block_id:string;id:string;title:string}>()
+ const visibility=await Promise.all(recipients.map(async recipient=>{const current=referenceAdmissionPolicy(ids,literal(projectId),readerSet([recipient]));return new Set(scope?(await scope.rows(ids,readerSet([recipient]),true)).filter(row=>row.visible).map(row=>row.id):(await env.DB.prepare(`${current.prefix}SELECT id FROM visible_blocks`).bind(...current.params).all<{id:string}>()).results.map(row=>row.id))}))
+ const articleBlocks=scope?await scope.articleBlocks(ids):ids
+ const sources={results:articleBlocks.length?(await env.DB.prepare(articleSourcesSql).bind(projectId,JSON.stringify(articleBlocks)).all<{block_id:string;id:string;title:string}>()).results:[]}
  // Titles are editor metadata. Previews still obey the current read predicate.
- const {memberAccess}=await import('../access/gate'),access=await memberAccess(env.DB,projectId,operatorId),canName=(id:string)=>access?.base!=='collaborator'&&access?.permissions.has('knowledge.edit')&&(access.knowledgeArticleIds===null||access.knowledgeArticleIds.includes(id))
+ const {memberAccess}=await import('../access/gate'),access=sources.results.length?await memberAccess(env.DB,projectId,operatorId):null,canName=(id:string)=>access?.base!=='collaborator'&&access?.permissions.has('knowledge.edit')&&(access.knowledgeArticleIds===null||access.knowledgeArticleIds.includes(id))
  return rows.results.map(block=>{
   const payload=block.visible?JSON.parse(block.payload_json):{},articles=sources.results.filter(article=>article.block_id===block.id&&canName(article.id)).map(({id,title})=>({id,title})),states=recipients.map((recipient,index)=>({...recipient,visible:visibility[index].has(block.id),reason:visibility[index].has(block.id)?null:'Current knowledge access required'}))
   return {token:referenceToken(block.id),title:payload.title||articles[0]?.title||'Knowledge',articleId:articles[0]?.id,articles,mode:block.kind,preview:payload.text||unavailableKnowledge,recipients:states,withheld:!block.visible}

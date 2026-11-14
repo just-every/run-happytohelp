@@ -5525,7 +5525,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "ecdbf07485964836aa87bda8a69e509c7183805bb5ce0917c2c6cb36575fbb4b",
+      "sha256": "b16956694af75e02577513cee661d2853a34e23625601e30cba95093b32ea1e4",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
@@ -7593,7 +7593,7 @@
       "executable": false
     },
     "src/modules/knowledge/http-door.ts": {
-      "sha256": "cd162c0f5893ef8c691d6febf47422564a6ed64f718f7034b103dbe3d50330f7",
+      "sha256": "c3ee363050960efe59f05bf44d921bc77ced095c10f15d3cf3d5f0f10eb8026c",
       "executable": false
     },
     "src/modules/knowledge/import-jobs.ts": {
@@ -7701,7 +7701,7 @@
       "executable": false
     },
     "src/modules/knowledge/reference-store.ts": {
-      "sha256": "4dbbd8e50b6b49de2e8e9158535d1524c01be56544c83cbd2c4b5c9d05d023b3",
+      "sha256": "6a85dc57e56497652c87d06907ab5bcc4e9edf875c205ddd793225e1a98c4e48",
       "executable": false
     },
     "src/modules/knowledge/result-fields.ts": {
@@ -17245,7 +17245,7 @@
       "executable": false
     },
     "tests/helpers/widget/socket.mjs": {
-      "sha256": "1352e0d472611695979e30de9d68c89d81e196e5009cc295b7c69fe49165a3ab",
+      "sha256": "86b52a76265093d7ec9e2758ed00b7c95bbd8ae3a195ebf0138bc0974a19c217",
       "executable": false
     },
     "tests/helpers/widget/sockets.mjs": {

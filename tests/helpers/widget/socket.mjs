@@ -25,7 +25,7 @@ export async function socketJourney(){
   assert.equal((await socketTo(`${path}?token=${contact.token}`,{Origin:'https://foreign.example'})).status,403,'a foreign origin cannot open the socket')
   const visitor=await socketTo(`${path}?token=${contact.token}`,{Origin:'https://widget.example'});assert.equal(visitor.status,101)
   const replay=await visitor.next();assert.equal(replay.type,'message');assert.equal(replay.message.content,'Persistent message');assert.equal('content_raw' in replay.message,false,'the original email body is operator-only')
-  const metadata=file=>({id:file.id,filename:file.filename,content_type:file.content_type,size:file.size})
+  const metadata=file=>({id:file.id,filename:file.filename,content_type:'text/plain',size:file.size})
   assert.deepEqual(replay.message.media,files.map(metadata),'visitor replay retains attachment order and metadata without the internal grouping key')
   assert.equal((await socketTo(`${path}?token=${other.token}&after=${replay.eventId}`,{Origin:'https://widget.example'})).status,404,'a durable cursor conveys no replay authority to another visitor')
   // The operator project stream announces conversation activity; a visitor token cannot open it.

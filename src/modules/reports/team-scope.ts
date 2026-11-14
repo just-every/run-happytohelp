@@ -11,7 +11,7 @@ export function teamReportFilters(query:Record<string,string>):TeamReportFilters
 
 /** All scans are tenant scoped and complete. The date cohort is distinct from the
  * current backlog, which also includes tickets older than the selected start. */
-type Population='cohort'|'history'|'backlog'|'sessions'
+type Population='cohort'|'backlog'|'sessions'
 const teamScopeSQL=(population:Population)=>`WITH candidates AS (
  SELECT c.*,CASE WHEN EXISTS(SELECT 1 FROM move_in_conversations i WHERE i.project_id=c.project_id AND i.conversation_id=c.id)
  OR EXISTS(SELECT 1 FROM reporting_legacy_conversations i WHERE i.project_id=c.project_id AND i.conversation_id=c.id) THEN 1 ELSE 0 END imported

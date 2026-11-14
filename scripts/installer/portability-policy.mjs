@@ -1,3 +1,4 @@
+import {reportProjectionTables} from './reports-rebuild.mjs';
 import {recoveryPrivateTables,recoveryArchiveRow,recoveryArchiveSafety} from './identity-recovery-archive.mjs';
 import {voiceArchiveRow,voiceArchiveSafety} from './voice-archive.mjs';
 import {supportChannelArchiveRow,supportChannelArchiveSafety} from './support-channel-archive.mjs';
@@ -58,6 +59,7 @@ export const archivePolicy={
  // Reconstruct the full-text indexes from retained messages, contacts and inbox entries after restore.
  derivedTables:['inbox_message_search','inbox_contact_search','contact_search','inbox_subject_search'],
  excludeTables:[
+  ...reportProjectionTables,
   ...recoveryPrivateTables,
   // Derived by triggers and rebuilt from the restored rows after every import (inbox-entries-sql, cutover-bounds-sql,
   // contact-bounds-sql): the inbox's entries, tallies, unread and waiting rows and their facets and counts (313, 314, 319), the contacts' tally and the

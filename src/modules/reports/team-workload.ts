@@ -1,10 +1,10 @@
 import {statement,type TeamReportContext} from './team-scope'
 
 export type WorkloadRow={id:string|null;label:string;incoming:number;resolved:number;backlog:number;oldest_age_ms:number|null;ageBuckets:{id:string;count:number}[]}
-export const teamDimensionsSQL=(population='cohort')=>`, dimensions AS (
+export const teamDimensionsSQL=(population='cohort',fields='')=>`, dimensions AS (
  SELECT c.id conversation_id,c.created_at,c.status_category,d.value dimension,
  CASE d.value WHEN 'agent' THEN c.assigned_to WHEN 'team' THEN c.group_id WHEN 'channel' THEN c.channel WHEN 'brand' THEN COALESCE(c.brand_id,c.project_id) WHEN 'account' THEN a.id ELSE t.id END key,
- CASE d.value WHEN 'agent' THEN COALESCE(u.name,c.assigned_to,'Unassigned') WHEN 'team' THEN COALESCE(g.name,c.group_id,'No team') WHEN 'channel' THEN c.channel WHEN 'brand' THEN CASE WHEN COALESCE(c.brand_id,c.project_id)=p.id THEN p.name ELSE c.brand_id END WHEN 'account' THEN COALESCE(a.name,'No account') ELSE COALESCE(t.name,'Untagged') END label
+ CASE d.value WHEN 'agent' THEN COALESCE(u.name,c.assigned_to,'Unassigned') WHEN 'team' THEN COALESCE(g.name,c.group_id,'No team') WHEN 'channel' THEN c.channel WHEN 'brand' THEN CASE WHEN COALESCE(c.brand_id,c.project_id)=p.id THEN p.name ELSE c.brand_id END WHEN 'account' THEN COALESCE(a.name,'No account') ELSE COALESCE(t.name,'Untagged') END label${fields}
  FROM ${population} c CROSS JOIN json_each('["agent","team","channel","brand","account","tag"]') d
  JOIN projects p ON p.id=c.project_id
  LEFT JOIN users u ON d.value='agent' AND u.id=c.assigned_to
@@ -16,7 +16,35 @@ export const teamDimensionsSQL=(population='cohort')=>`, dimensions AS (
  )`
 const active="status_category NOT IN ('solved','closed')"
 export async function teamWorkload(context:TeamReportContext){
- const {results}=await statement(context,`${teamDimensionsSQL('scoped')} SELECT dimension,key id,label,SUM(created_at>=?2) incoming,SUM(created_at>=?2 AND status_category IN ('solved','closed')) resolved,SUM(${active}) backlog,MIN(CASE WHEN ${active} THEN created_at END) oldest,COALESCE(SUM(${active} AND ?7-created_at<86400000),0) under_1d,COALESCE(SUM(${active} AND ?7-created_at>=86400000 AND ?7-created_at<259200000),0) days_1_3,COALESCE(SUM(${active} AND ?7-created_at>=259200000 AND ?7-created_at<604800000),0) days_3_7,COALESCE(SUM(${active} AND ?7-created_at>=604800000 AND ?7-created_at<2592000000),0) days_7_30,COALESCE(SUM(${active} AND ?7-created_at>=2592000000),0) days_30_plus FROM dimensions GROUP BY dimension,key,label ORDER BY dimension,incoming DESC,backlog DESC,label,key`,'history').bind(context.projectId,context.range.startAt,context.range.endAt,context.filters.teamId,context.filters.brandId,context.filters.includeImported?1:0,context.now).all<any&{dimension:'agent'|'team'|'channel'|'brand'|'tag'|'account'}>()
+ const filter=`project_id=?1 AND (?4 IS NULL OR team_id=?4) AND (?5 IS NULL OR brand_id=?5) AND (?6=1 OR imported=0)`
+ const {results}=await context.env.DB.prepare(`WITH inventory AS (
+  SELECT dimension,item_key FROM reporting_workload_keys WHERE ${filter} AND first_created_at<?3 GROUP BY dimension,item_key
+ ), selected AS (
+  SELECT dimension,item_key,created_at,status_category FROM reporting_workload_items WHERE ${filter} AND created_at>=?2 AND created_at<?3
+  UNION ALL SELECT dimension,item_key,created_at,status_category FROM reporting_workload_items WHERE ${filter} AND created_at<?2 AND created_at<?3 AND ${active}
+ ), counts AS (
+  SELECT dimension,item_key,SUM(created_at>=?2) incoming,SUM(created_at>=?2 AND status_category IN ('solved','closed')) resolved,SUM(${active}) backlog,
+   MIN(CASE WHEN ${active} THEN created_at END) oldest,
+   COALESCE(SUM(${active} AND ?7-created_at<86400000),0) under_1d,
+   COALESCE(SUM(${active} AND ?7-created_at>=86400000 AND ?7-created_at<259200000),0) days_1_3,
+   COALESCE(SUM(${active} AND ?7-created_at>=259200000 AND ?7-created_at<604800000),0) days_3_7,
+   COALESCE(SUM(${active} AND ?7-created_at>=604800000 AND ?7-created_at<2592000000),0) days_7_30,
+   COALESCE(SUM(${active} AND ?7-created_at>=2592000000),0) days_30_plus
+  FROM selected GROUP BY dimension,item_key
+ ) SELECT i.dimension,i.item_key id,
+  CASE i.dimension WHEN 'agent' THEN COALESCE(u.name,i.item_key,'Unassigned') WHEN 'team' THEN COALESCE(g.name,i.item_key,'No team')
+   WHEN 'channel' THEN i.item_key WHEN 'brand' THEN CASE WHEN i.item_key=p.id THEN p.name ELSE i.item_key END
+   WHEN 'account' THEN COALESCE(a.name,'No account') ELSE COALESCE(t.name,'Untagged') END label,
+  COALESCE(n.incoming,0) incoming,COALESCE(n.resolved,0) resolved,COALESCE(n.backlog,0) backlog,n.oldest,
+  COALESCE(n.under_1d,0) under_1d,COALESCE(n.days_1_3,0) days_1_3,COALESCE(n.days_3_7,0) days_3_7,COALESCE(n.days_7_30,0) days_7_30,COALESCE(n.days_30_plus,0) days_30_plus
+  FROM inventory i LEFT JOIN counts n ON n.dimension=i.dimension AND n.item_key IS i.item_key
+  JOIN projects p ON p.id=?1
+  LEFT JOIN users u ON i.dimension='agent' AND u.id=i.item_key
+  LEFT JOIN ticket_groups g ON i.dimension='team' AND g.project_id=?1 AND g.id=i.item_key
+  LEFT JOIN companies a ON i.dimension='account' AND a.project_id=?1 AND a.id=i.item_key
+  LEFT JOIN workspace_tags t ON i.dimension='tag' AND t.project_id=?1 AND t.id=i.item_key
+  ORDER BY i.dimension,incoming DESC,backlog DESC,label,i.item_key`)
+ .bind(context.projectId,context.range.startAt,context.range.endAt,context.filters.teamId,context.filters.brandId,context.filters.includeImported?1:0,context.now).all<any&{dimension:'agent'|'team'|'channel'|'brand'|'tag'|'account'}>()
  const workload:{agent:WorkloadRow[];team:WorkloadRow[];channel:WorkloadRow[];brand:WorkloadRow[];tag:WorkloadRow[];account:WorkloadRow[]}={agent:[],team:[],channel:[],brand:[],tag:[],account:[]}
  for(const {dimension,oldest,under_1d,days_1_3,days_3_7,days_7_30,days_30_plus,...row} of results)workload[dimension as keyof typeof workload].push({...row,oldest_age_ms:oldest===null?null:Math.max(0,context.now-oldest),ageBuckets:Object.entries({under_1d,days_1_3,days_3_7,days_7_30,days_30_plus}).map(([id,count])=>({id,count:count as number}))})
  return workload

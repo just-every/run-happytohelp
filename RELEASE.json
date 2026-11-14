@@ -36,7 +36,7 @@
   "pendingMigrations": [
     {
       "id": "333_report_cohorts.sql",
-      "buyerSteps": "Apply after all currently published migrations and before serving the updated Worker. Adds and backfills a date-indexed, trigger-maintained membership table for message-bearing report conversations, plus a brand lookup index. No report figures, message content, permissions or prior table definitions are rewritten. Back up the installation first; retain the table and maintenance triggers while this Worker is in use. Existing portable archives replay the membership backfill after source rows are restored."
+      "buyerSteps": "Apply after all currently published migrations and before serving the updated Worker. Adds and backfills trigger-maintained report cohort membership, current workload dimension items and a historical bucket-presence inventory, plus a brand lookup index. No prior table definition or business row is rewritten. Back up the installation first; retain the projections and maintenance triggers while this Worker is in use. The projections are excluded from portable archives and rebuilt by the updated installer after source rows and write triggers are restored."
     }
   ]
 }

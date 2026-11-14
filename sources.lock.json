@@ -2889,7 +2889,7 @@
       "executable": false
     },
     "migrations/333_report_cohorts.sql": {
-      "sha256": "295c93f3860078d88ad59a3dd5c310b788fcea56dd81052f87d59537c64c1043",
+      "sha256": "156fb324a6e535f53e19f927da582d9b2e0fcb41cbf461eae80e1b5ad4965e52",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -2981,7 +2981,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "f772c5b4cb21a28aa5ebd5dca8ccb761491784ff7734d70e667d743825368ed0",
+      "sha256": "1566aa9db5c84e592aed9b271d73f52c83466e36d7ce65522bef4b12c1d03ddb",
       "executable": false
     },
     "rer-project.json": {
@@ -4025,7 +4025,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "54b61dd6785baf4eb078f3c816d59978f801d37e4d0d014e4d58a3b23683418c",
+      "sha256": "eef31e42e7a3e32490c3eae78b7be6128ac2c7a85d332c0dabfe6cbe401631d7",
       "executable": false
     },
     "scripts/installer/mail-deploy-policy.mjs": {
@@ -4053,7 +4053,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "4c43998781792d4a165d82e8f641778a85a2128d8d0b542a784b341e62196e63",
+      "sha256": "32e5304dbfa5294daeb51a5536c6eaac2a7e301e9addcc8467ad515fe4a6147e",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -4074,6 +4074,10 @@
     },
     "scripts/installer/report-archive.mjs": {
       "sha256": "4b8cd7829c46394d7cc131f99294dff6a3b517cb914159d6abf3d9095bbb941a",
+      "executable": false
+    },
+    "scripts/installer/reports-rebuild.mjs": {
+      "sha256": "aef776e074087c6f118082af4c49b85200fadfd8ca83b25543a8e33a6d4d1244",
       "executable": false
     },
     "scripts/installer/rer-mail-archive.mjs": {
@@ -9729,7 +9733,7 @@
       "executable": false
     },
     "src/modules/reports/README.md": {
-      "sha256": "0ab5e9a9fe88f09dd0791a32984bae0292538659a7c32dcb2ba8f8d8afdc060f",
+      "sha256": "5fbd30a3ce38d977c0ac3c82729f9a0bfaf2933d92a2d85e41426f0cf2992fd4",
       "executable": false
     },
     "src/modules/reports/routes.ts": {
@@ -9761,7 +9765,7 @@
       "executable": false
     },
     "src/modules/reports/team-breakdowns.ts": {
-      "sha256": "654240f0d0e15a49f2968f376d7d13407210f73313523ba7431203797593bca4",
+      "sha256": "b6ff153aec86fabf787faacabdc45487838ca116fd560e9c9a02e56213250dba",
       "executable": false
     },
     "src/modules/reports/team-containment.ts": {
@@ -9773,7 +9777,7 @@
       "executable": false
     },
     "src/modules/reports/team-distributions.ts": {
-      "sha256": "87a17c98408066b501bba79411cab47c5b05370b2b980c75ec3ff7f5198345cb",
+      "sha256": "370499e93f3a914f919405a7ed4621788ee621012ab1f7aaa2a459e56fc2fa67",
       "executable": false
     },
     "src/modules/reports/team-handle-time.ts": {
@@ -9789,7 +9793,7 @@
       "executable": false
     },
     "src/modules/reports/team-scope.ts": {
-      "sha256": "e5ea75cb1917d901cbaf00ce0d1e3c74a27afae1e30bc01a945c6fb0fe2d2f15",
+      "sha256": "636e548de2986edbc08c695afa336e2924444af79cefd75c57709a31a7511466",
       "executable": false
     },
     "src/modules/reports/team-service.ts": {
@@ -9797,7 +9801,7 @@
       "executable": false
     },
     "src/modules/reports/team-workload.ts": {
-      "sha256": "62b16d2084c4dd0731d74102d0d445db131acc0f2858dc1d6a29dfface2c4889",
+      "sha256": "26a44cd60ff43cdd1aa5ab2b16713e3dafcc65bc59e7062e459f7d4d406222c8",
       "executable": false
     },
     "src/modules/reports/timers.ts": {
@@ -17445,7 +17449,7 @@
       "executable": false
     },
     "tests/journeys/restore.mjs": {
-      "sha256": "25af30861718e9addfdc969f20faf32ad28130ac61111034c4eac04c6a114b7b",
+      "sha256": "e0659ebbfa2e8481a2cf0c1543d3e38b14ee2abfbc7d986e7c5a0010dbf6d1b9",
       "executable": false
     },
     "tests/journeys/runtime.mjs": {
@@ -17781,7 +17785,7 @@
       "executable": false
     },
     "tests/reports/cohort-projection.mjs": {
-      "sha256": "f1b2ffd1a6b425729e29f8e89914e682c72b6b52edce3816c425011b41913eb6",
+      "sha256": "9d75b7292b4f250efbd6f2a40ff3e83df544cc3d4f19dee9e75dcd4258a23030",
       "executable": false
     },
     "tests/reports/figures.mjs": {

@@ -19,9 +19,8 @@ interface Breakdown {
  * replies, cycles, ratings and clocks would multiply both counts and timings. */
 export async function teamBreakdowns(context:TeamReportContext){
  const [counts,responses,resolutions,services]=await Promise.all([
-  statement(context,`${teamDimensionsSQL()},
- raw_evidence AS (
- SELECT c.id,c.created_at,
+  statement(context,`, raw_evidence AS MATERIALIZED (
+ SELECT c.*,
  CASE WHEN c.resolved_at IS NOT NULL OR t.first_resolved_at IS NOT NULL OR EXISTS(SELECT 1 FROM ticket_history h WHERE h.project_id=c.project_id AND h.conversation_id=c.id AND (json_extract(h.changes_json,'$.status_category.to') IN ('solved','closed') OR json_extract(h.changes_json,'$.status_category.from') IN ('solved','closed'))) THEN 1 ELSE 0 END was_resolved,
  (SELECT COUNT(*) FROM ticket_history h WHERE h.project_id=c.project_id AND h.conversation_id=c.id AND json_extract(h.changes_json,'$.status_category.from') IN ('solved','closed') AND json_extract(h.changes_json,'$.status_category.to') IN ('new','open','pending','on_hold')) reopen_events,
  CASE WHEN c.imported=1 AND NOT EXISTS(SELECT 1 FROM ticket_history h WHERE h.project_id=c.project_id AND h.conversation_id=c.id AND json_extract(h.changes_json,'$.status_category.from') IS NOT json_extract(h.changes_json,'$.status_category.to') AND (json_extract(h.changes_json,'$.status_category.from') IN ('solved','closed') OR json_extract(h.changes_json,'$.status_category.to') IN ('solved','closed')) AND (h.actor_id IS NOT NULL OR h.source NOT IN ('legacy','import','move-in'))) THEN 1 ELSE 0 END history_unknown,
@@ -37,13 +36,14 @@ export async function teamBreakdowns(context:TeamReportContext){
  LEFT JOIN conversation_resolutions r ON r.project_id=c.project_id AND r.conversation_id=c.id AND r.ordinal=(SELECT MAX(ordinal) FROM conversation_resolutions WHERE project_id=c.project_id AND conversation_id=c.id)
  LEFT JOIN csat_responses v ON v.project_id=c.project_id AND v.resolution_id=r.id LEFT JOIN conversation_ratings legacy ON legacy.resolution_id=r.id
  ), evidence AS MATERIALIZED (SELECT *,${containmentClassificationSQL} containment FROM raw_evidence)
+ ${teamDimensionsSQL('evidence',',c.was_resolved,c.history_unknown,c.reopen_events,c.recovery,c.score,c.scale,c.outcome,c.handoff,c.ai_handoff,c.failed,c.uncertain,c.containment')}
  SELECT d.dimension,d.key id,d.label,COUNT(*) tickets,
- SUM(e.was_resolved) resolved,COALESCE(SUM(e.was_resolved=1 AND e.history_unknown=0),0) reopenDenominator,SUM(e.reopen_events>0 AND e.history_unknown=0) reopened,SUM(e.reopen_events) reopenEvents,SUM(e.history_unknown) historyUnknown,
- SUM(e.recovery='recovered') recovered,SUM(e.recovery='not_recovered') notRecovered,SUM(e.recovery='unknown') recoveryUnknown,
- SUM(e.score IS NOT NULL) rated,COALESCE(SUM(e.scale='thumbs' AND e.score=1 OR e.scale='five' AND e.score>=4),0) positive,
- COALESCE(SUM(e.outcome='ai'),0) closed,COALESCE(SUM(e.handoff),0) assignmentHandoffs,COALESCE(SUM(e.ai_handoff),0) handedOff,COALESCE(SUM(e.failed),0) failed,COALESCE(SUM(e.uncertain),0) uncertain,COALESCE(SUM(e.outcome IS NULL OR e.outcome='unknown'),0) outcomeUnknown,
- SUM(e.containment='contained') contained,SUM(e.containment='not_contained') notContained,SUM(e.containment='unknown') containmentUnknown,SUM(e.containment='contained' AND e.recovery='recovered') confirmedContained
- FROM dimensions d JOIN evidence e ON e.id=d.conversation_id GROUP BY d.dimension,d.key,d.label ORDER BY d.dimension,tickets DESC,d.label,d.key`)
+ SUM(d.was_resolved) resolved,COALESCE(SUM(d.was_resolved=1 AND d.history_unknown=0),0) reopenDenominator,SUM(d.reopen_events>0 AND d.history_unknown=0) reopened,SUM(d.reopen_events) reopenEvents,SUM(d.history_unknown) historyUnknown,
+ SUM(d.recovery='recovered') recovered,SUM(d.recovery='not_recovered') notRecovered,SUM(d.recovery='unknown') recoveryUnknown,
+ SUM(d.score IS NOT NULL) rated,COALESCE(SUM(d.scale='thumbs' AND d.score=1 OR d.scale='five' AND d.score>=4),0) positive,
+ COALESCE(SUM(d.outcome='ai'),0) closed,COALESCE(SUM(d.handoff),0) assignmentHandoffs,COALESCE(SUM(d.ai_handoff),0) handedOff,COALESCE(SUM(d.failed),0) failed,COALESCE(SUM(d.uncertain),0) uncertain,COALESCE(SUM(d.outcome IS NULL OR d.outcome='unknown'),0) outcomeUnknown,
+ SUM(d.containment='contained') contained,SUM(d.containment='not_contained') notContained,SUM(d.containment='unknown') containmentUnknown,SUM(d.containment='contained' AND d.recovery='recovered') confirmedContained
+ FROM dimensions d GROUP BY d.dimension,d.key,d.label ORDER BY d.dimension,tickets DESC,d.label,d.key`)
  .all<any>(),
   teamDurations(context,'response'),teamDurations(context,'resolution'),teamDimensionSla(context)
  ])

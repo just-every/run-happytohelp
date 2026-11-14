@@ -1,3 +1,4 @@
+import {reportProjectionRebuildSql} from './reports-rebuild.mjs';
 import {asyncWorkRestoreSql} from './async-work-archive.mjs';
 import {refuse} from '@runeditrun/rer/errors';
 import {PortabilityError} from '@runeditrun/rer/modules/portability';
@@ -111,6 +112,7 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
   await d1(context,'Rebuilding the inbox',inboxRebuildSql);
   await d1(context,'Rebuilding the cutover counts',cutoverRebuildSql);
   await d1(context,'Counting contacts',contactTallyRebuildSql);
+  await d1(context,'Rebuilding report cohorts and workload',reportProjectionRebuildSql);
  }
  // The receipt names the Durable Object storage the archive carries (exported) or carried (restored).
  return {...result,durableObjects:snapshots.map(({namespace,className,records,digest})=>({namespace,className,records:Array.isArray(records)?records.length:records,digest}))};

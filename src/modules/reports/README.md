@@ -24,14 +24,16 @@ formula prefixes are neutralized. See `docs/reports.md` for product definitions.
 least one same-workspace message, including erased and imported messages. Its
 date and active-backlog indexes avoid inspecting empty drafts and unrelated
 history. Message insert/delete/move and conversation date/status/workspace
-updates reconcile it transactionally. Migration backfill and portable archive
-replay derive the same four fields directly from conversations and messages.
+updates reconcile it transactionally. Migration backfill derives the same four fields directly from conversations
+and messages. Portable archives exclude all three projections; the installer
+rebuilds them after restoring source rows and current triggers.
 All actual report evidence and access decisions remain live reads.
 
 Team counts, each duration distribution, and SLA breakdowns are independent
 statements keyed by dimension and ID. Evidence always starts from the selected
 date cohort. Backlog separately includes older active tickets; overlapping handle
-sessions include older tickets with work in the interval. Workload retains the
-historical empty buckets required by its existing response, so that inventory
-alone still visits older message-bearing tickets. It never enriches those older
-tickets with response, lifecycle, rating, AI or SLA evidence.
+sessions include older tickets with work in the interval. Workload counts scan the date cohort plus older active items. An incremental
+bucket-presence inventory retains historical empty buckets without visiting
+older closed tickets. Assignment, team, brand, channel, requester-company, tags,
+import fences and merge changes refresh only the affected tickets. Labels stay
+live, so renaming a team or account never requires a history scan.

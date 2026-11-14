@@ -13,6 +13,7 @@ import {archivePolicy} from '../../scripts/installer/portability-policy.mjs'
 import {inboxRebuildSql} from '../../scripts/installer/inbox-entries-sql.mjs'
 import {cutoverRebuildSql} from '../../scripts/installer/cutover-bounds-sql.mjs'
 import {contactTallyRebuildSql} from '../../scripts/installer/contact-bounds-sql.mjs'
+import {reportProjectionRebuildSql} from '../../scripts/installer/reports-rebuild.mjs'
 
 test('a populated packaged install restores from its documented credential-free backup into a fresh destination with every row, object and metadata equal, sessions and password sign-in working, setup closed and delegated credentials gone',{timeout:20*60_000},async()=>{
  const scratch=await mkdtemp(join(tmpdir(),'h2h-recovery-')),output=process.env.H2H_EVIDENCE_DIR?await mkdtemp(join(resolve(process.env.H2H_EVIDENCE_DIR),'recovery-')):scratch
@@ -29,7 +30,7 @@ test('a populated packaged install restores from its documented credential-free 
 
 // A table every import rebuilds from the restored rows must not travel: its rows follow write history, so a restored export would order them differently.
 test('every derived table an import rebuilds stays out of the archive, so a restored export equals its source',()=>{
- const rebuilt=[...new Set([inboxRebuildSql,cutoverRebuildSql,contactTallyRebuildSql].flatMap(sql=>[...sql.matchAll(/DELETE FROM (\w+)/g)].map(match=>match[1])))]
+ const rebuilt=[...new Set([inboxRebuildSql,cutoverRebuildSql,contactTallyRebuildSql,reportProjectionRebuildSql].flatMap(sql=>[...sql.matchAll(/DELETE FROM (\w+)/g)].map(match=>match[1])))]
  assert.ok(rebuilt.length,'the rebuild statements name the derived tables')
  for(const table of rebuilt)assert.ok(excludedTable(table,archivePolicy),table+' is rebuilt by import and is not archived')
 })

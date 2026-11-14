@@ -23,11 +23,13 @@ yours.
 
 ## Update your installation
 
-### Release 0.4.27
+### Release 0.4.28
+
+This release includes the content of the tagged but unreleased v0.4.27. Credential-shaped notification test fixtures blocked source scanning for that tag; they now use short example markers. The local size documentation also reflects the qualified rer 0.2.117 results. v0.4.26 remains the previous public release.
 
 Update from v0.4.26 without resetting; v0.4.25 and v0.4.24 are also upgrade baselines. Back up D1, R2, Durable Object state, private settings and installation encryption custody, then stop the old Worker. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.117. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. On v0.4.26 apply 333_report_cohorts.sql, 334_media_message_reads.sql, 335_socket_replay_projection.sql and 336_solved_time_rule_reads.sql once in that order. On v0.4.25 or v0.4.24 first apply the missing 330_identity_recovery.sql once even though 331 and 332 are already recorded, then apply 333 through 336 in filename order. Retain earlier published buyer steps, including 332’s conditional cleanup; older installations first apply every other missing published migration in filename order. Finish all missing migrations BEFORE the new Worker serves HTTP or queue traffic. Report and replay backfills run during migration; report projections are rebuilt after portable restore. There is no migration 326. Keep the durable recovery revocation watermark on rollback, and require fresh Managed custody binding after portable restore. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. Legacy v1 remains cleanup-only and incomplete cleanup remains pending. No reset, mail activation, recovery adoption, production import, cutover or production deployment is authorized by this preparation.
 
-See [the 0.4.27 release notes](../CHANGELOG.md#0427--2026-11-14) for report cohorts, bounded replay reads, restore reconstruction, mail-off normalization and local size tooling. Migrations 333 and 335 add schema and immediately backfill derived data; 334 and 336 add indexes only. A fresh empty install has no historical data to backfill. The inventory is 200 files; rer is pinned to 0.2.117. Managed recovery still requires custody and a verified platform assertion; legacy import stays inert until a package is imported. The release activates no mail provider.
+See [the 0.4.28 release notes](../CHANGELOG.md#0428--2026-11-14) for report cohorts, bounded replay reads, restore reconstruction, mail-off normalization and local size tooling. Migrations 333 and 335 add schema and immediately backfill derived data; 334 and 336 add indexes only. A fresh empty install has no historical data to backfill. The inventory is 200 files; rer is pinned to 0.2.117. Managed recovery still requires custody and a verified platform assertion; legacy import stays inert until a package is imported. The release activates no mail provider.
 
 ### Keep your installation state
 

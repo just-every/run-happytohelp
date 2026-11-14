@@ -8,7 +8,9 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
-## 0.4.27 — 2026-11-14
+## 0.4.28 — 2026-11-14
+
+This release includes the content of the tagged but unreleased v0.4.27. Credential-shaped notification test fixtures blocked source scanning for that tag; they now use short example markers. The local size documentation also reflects the qualified rer 0.2.117 results. v0.4.26 remains the previous public release.
 
 - **Reports:** summary and team reports read indexed, message-bearing date cohorts, with separate timing distributions and SLA breakdowns. Workload reads the selected cohort and older active backlog while a maintained inventory preserves historical empty buckets. Overlapping handle sessions still include older tickets worked in the interval. Report evidence, labels and permissions remain live reads; these projections are not cached report totals.
 - **Conversations and knowledge:** transcript assembly reuses article references within a response and skips article-free source arrays. Socket replay reads bounded pages of raw message and ordered attachment projections, then renders current knowledge and rechecks authority before sending. Message corrections, attachment changes and erasure update the replay data while retaining event identities. An attachment index narrows message reads, and a solved-time index narrows the scheduler’s due cohort without changing rule eligibility or cursor order.

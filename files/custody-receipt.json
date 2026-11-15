@@ -1,0 +1,27 @@
+{
+  "recordedAt": "2026-11-15T18:34:24.783720+00:00",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-slow-delegation-1",
+  "head": "85bd29235181c90e7626cbebb6c1fe6b2564756d",
+  "parent": "a7e05db8c6b5787328d56657453f551229d57405",
+  "productPush": "first attempt succeeded via cloud-push.py",
+  "cleanWorktree": true,
+  "candidateCommitCount": 1,
+  "committedFileSha256": {
+    "tests/helpers/delegation-journey/browser.mjs": "a0f4e837b966f37997b8ab1ea5468d4a6059cafcd7b9a7fcf1a918225fadb0dd",
+    "sources.lock.json": "f896fac1ef4d85b6193d72aa65e9d76811f1d350fdcb1f05cc6de42438d4ec91"
+  },
+  "matchesPassingJourneyFiles": true,
+  "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "trailers": "",
+  "pr": null,
+  "ciRunId": 43747400009,
+  "ciStatus": "completed",
+  "remoteRefVerified": true,
+  "remoteHead": "85bd29235181c90e7626cbebb6c1fe6b2564756d",
+  "ciConclusion": "success",
+  "ciExactHeadVerified": true,
+  "ready": true,
+  "ciObservedAt": "2026-11-15T19:08:28.538884+00:00"
+}

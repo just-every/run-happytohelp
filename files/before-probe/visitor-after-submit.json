@@ -1,0 +1,45 @@
+{
+  "baseline": "837b8cbe2279c20c0054c7bf1970a13fa7b2597a",
+  "probe": "same retained disposable installation after baseline failure",
+  "messagePostCount": 0,
+  "state": [
+    {
+      "text": null,
+      "fields": [
+        {
+          "name": "keyword",
+          "type": "search",
+          "placeholder": "Search the Help Center",
+          "visible": true,
+          "value": ""
+        }
+      ]
+    },
+    {
+      "text": "JOJourney owner•Human•Responds within 24 hoursSubmit a request formHi! How can we help you today?Please enter a valid email addressEdit your contact details belowI cannot turn on the Spanish version of my store. Please investigate.",
+      "fields": [
+        {
+          "name": "",
+          "type": "file",
+          "placeholder": "",
+          "visible": true,
+          "value": ""
+        },
+        {
+          "name": "email",
+          "type": "email",
+          "placeholder": "you@example.com",
+          "visible": true,
+          "value": ""
+        },
+        {
+          "name": "content",
+          "type": "textarea",
+          "placeholder": "Message...",
+          "visible": true,
+          "value": "I cannot turn on the Spanish version of my store. Please investigate."
+        }
+      ]
+    }
+  ]
+}

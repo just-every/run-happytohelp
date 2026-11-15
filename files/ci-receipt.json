@@ -1,0 +1,122 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "head": "85bd29235181c90e7626cbebb6c1fe6b2564756d",
+  "runId": 43747400009,
+  "apiCallsUsed": 7,
+  "apiCallBudget": 10,
+  "failedJobLogCalls": 0,
+  "observations": [
+    {
+      "call": 1,
+      "time": "2026-11-15T18:33:21.363271+00:00",
+      "epoch": 1794767600.7478817,
+      "method": "GET",
+      "path": "repos/just-every/run-happytohelp/actions/runs?head_sha=85bd29235181c90e7626cbebb6c1fe6b2564756d&per_page=100",
+      "exitCode": 0,
+      "result": {
+        "total_count": 1,
+        "workflow_runs": [
+          {
+            "conclusion": null,
+            "created_at": "2026-11-15T18:33:11Z",
+            "event": "push",
+            "head_branch": "cloud/hh-slow-delegation-1",
+            "head_sha": "85bd29235181c90e7626cbebb6c1fe6b2564756d",
+            "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43747400009",
+            "id": 43747400009,
+            "name": "Verify",
+            "status": "in_progress"
+          }
+        ]
+      }
+    },
+    {
+      "call": 2,
+      "time": "2026-11-15T18:38:22.327713+00:00",
+      "epoch": 1794767901.7485845,
+      "method": "GET",
+      "path": "repos/just-every/run-happytohelp/actions/runs/43747400009",
+      "exitCode": 0,
+      "result": {
+        "conclusion": null,
+        "head_sha": "85bd29235181c90e7626cbebb6c1fe6b2564756d",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43747400009",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 3,
+      "time": "2026-11-15T18:43:23.385784+00:00",
+      "epoch": 1794768202.7495518,
+      "method": "GET",
+      "path": "repos/just-every/run-happytohelp/actions/runs/43747400009",
+      "exitCode": 0,
+      "result": {
+        "conclusion": null,
+        "head_sha": "85bd29235181c90e7626cbebb6c1fe6b2564756d",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43747400009",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 4,
+      "time": "2026-11-15T18:48:24.635823+00:00",
+      "epoch": 1794768504.0697145,
+      "method": "GET",
+      "path": "repos/just-every/run-happytohelp/actions/runs/43747400009",
+      "exitCode": 0,
+      "result": {
+        "conclusion": null,
+        "head_sha": "85bd29235181c90e7626cbebb6c1fe6b2564756d",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43747400009",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 5,
+      "time": "2026-11-15T18:53:26.058843+00:00",
+      "epoch": 1794768805.3597918,
+      "method": "GET",
+      "path": "repos/just-every/run-happytohelp/actions/runs/43747400009",
+      "exitCode": 0,
+      "result": {
+        "conclusion": null,
+        "head_sha": "85bd29235181c90e7626cbebb6c1fe6b2564756d",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43747400009",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 6,
+      "time": "2026-11-15T18:58:27.201142+00:00",
+      "epoch": 1794769106.655186,
+      "method": "GET",
+      "path": "repos/just-every/run-happytohelp/actions/runs/43747400009",
+      "exitCode": 0,
+      "result": {
+        "conclusion": null,
+        "head_sha": "85bd29235181c90e7626cbebb6c1fe6b2564756d",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43747400009",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 7,
+      "time": "2026-11-15T19:08:28.538884+00:00",
+      "epoch": 1794769707.9565482,
+      "method": "GET",
+      "path": "repos/just-every/run-happytohelp/actions/runs/43747400009",
+      "exitCode": 0,
+      "result": {
+        "conclusion": "success",
+        "head_sha": "85bd29235181c90e7626cbebb6c1fe6b2564756d",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43747400009",
+        "status": "completed"
+      }
+    }
+  ],
+  "status": "completed",
+  "conclusion": "success",
+  "pollSpacingVerified": true,
+  "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43747400009"
+}

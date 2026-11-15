@@ -1,0 +1,46 @@
+{
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "startedAt": "2026-11-15T18:32:19.654763+00:00",
+      "finishedAt": "2026-11-15T18:32:44.746740+00:00",
+      "exitCode": 0,
+      "outputSha256": "a09d457a6b3dce93e29da1a3cd99ce1e7befd8e91bed19a89bee490832220e13"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "startedAt": "2026-11-15T18:32:44.748786+00:00",
+      "finishedAt": "2026-11-15T18:32:47.587677+00:00",
+      "exitCode": 0,
+      "outputSha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "startedAt": "2026-11-15T18:32:47.588334+00:00",
+      "finishedAt": "2026-11-15T18:32:48.464796+00:00",
+      "exitCode": 0,
+      "outputSha256": "9632d6307fb132bb93ad1db0a93f9dcc5c2af9bf217e2509f4133f0156fddb80"
+    },
+    {
+      "command": "node src/site/base/contract-docs.mjs check",
+      "startedAt": "2026-11-15T18:32:48.466065+00:00",
+      "finishedAt": "2026-11-15T18:32:48.625562+00:00",
+      "exitCode": 0,
+      "outputSha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check",
+      "startedAt": "2026-11-15T18:32:48.625960+00:00",
+      "finishedAt": "2026-11-15T18:32:48.826924+00:00",
+      "exitCode": 0,
+      "outputSha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": "git diff --check",
+      "startedAt": "2026-11-15T18:32:48.830607+00:00",
+      "finishedAt": "2026-11-15T18:32:48.874938+00:00",
+      "exitCode": 0,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "stage": "operator and visitor journey 1440",
+  "error": {
+    "name": "TimeoutError",
+    "message": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.transcript-message-content').getByText('I cannot turn on the Spanish version of my store. Please investigate.', { exact: true }) to be visible\u001b[22m\n",
+    "stack": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.transcript-message-content').getByText('I cannot turn on the Spanish version of my store. Please investigate.', { exact: true }) to be visible\u001b[22m\n\n    at Object.open (/home/agent/rer-consolidation/work/hh-slow-delegation-1/run-happytohelp/tests/helpers/delegation-journey/browser-ui.mjs:16:86)\n    at async runCase (/home/agent/rer-consolidation/work/hh-slow-delegation-1/run-happytohelp/tests/helpers/delegation-journey/case.mjs:37:18)\n    at async browserJourney (/home/agent/rer-consolidation/work/hh-slow-delegation-1/run-happytohelp/tests/helpers/delegation-journey/browser.mjs:71:30)"
+  },
+  "rerErrors": [],
+  "retainedPrivateScratch": "/tmp/h2h-agent-fix-rer-a4m3jf"
+}

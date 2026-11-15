@@ -1,0 +1,47 @@
+::group::pnpm run test:installer-nightly --test-name-pattern=agent.fix
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> happytohelp@0.4.29 test:installer-nightly /home/agent/rer-consolidation/work/hh-slow-delegation-1/run-happytohelp
+> node scripts/installer/qualify.mjs --test-name-pattern\=agent.fix
+
+✔ tests/journeys/deploy-nightly.mjs (820.234393ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ an agent fix from a fresh clone: rer install, setup and dev, the automatic owner entry, then pairing, investigation, approved resolve, independent observation and Send in the browser at 1440 (275791.932139ms)
+✔ tests/journeys/upgrade-nightly.mjs (641.261563ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 279687.807457
+
+✖ failing tests:
+
+test at tests/journeys/installer-nightly.mjs:12:1
+✖ an agent fix from a fresh clone: rer install, setup and dev, the automatic owner entry, then pairing, investigation, approved resolve, independent observation and Send in the browser at 1440 (275791.932139ms)
+  locator.waitFor: Timeout 30000ms exceeded.
+  Call log:
+  [2m  - waiting for locator('.transcript-message-content').getByText('I cannot turn on the Spanish version of my store. Please investigate.', { exact: true }) to be visible[22m
+  
+      at Object.open (/home/agent/rer-consolidation/work/hh-slow-delegation-1/run-happytohelp/tests/helpers/delegation-journey/browser-ui.mjs:16:86)
+      at async runCase (/home/agent/rer-consolidation/work/hh-slow-delegation-1/run-happytohelp/tests/helpers/delegation-journey/case.mjs:37:18)
+      at async browserJourney (/home/agent/rer-consolidation/work/hh-slow-delegation-1/run-happytohelp/tests/helpers/delegation-journey/browser.mjs:71:30) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for locator('.transcript-message-content').getByText('I cannot turn on the Spanish version of my store. Please investigate.', { exact: true }) to be visible" ]
+  }
+ ELIFECYCLE  Command failed with exit code 1.
+::endgroup::
+{
+  "failures": [
+    {
+      "command": "pnpm run test:installer-nightly --test-name-pattern=agent.fix",
+      "code": 1,
+      "signal": null
+    }
+  ],
+  "interrupted": false
+}

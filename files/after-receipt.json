@@ -1,0 +1,19 @@
+{
+  "exitCode": 0,
+  "finishedAt": "2026-11-15T18:31:56.856678+00:00",
+  "command": "pnpm run test:installer-nightly --test-name-pattern=agent.fix",
+  "runner": "dedicated cloud VM; cloud_run node scripts/ci/run-checks.mjs",
+  "runtimeBase": "a7e05db8c6b5787328d56657453f551229d57405",
+  "node": "v22.20.0",
+  "pnpm": "10.12.4",
+  "chromium": "/usr/bin/chromium --no-sandbox",
+  "workingTreeFiles": {
+    "tests/helpers/delegation-journey/browser.mjs": "a0f4e837b966f37997b8ab1ea5468d4a6059cafcd7b9a7fcf1a918225fadb0dd",
+    "sources.lock.json": "f896fac1ef4d85b6193d72aa65e9d76811f1d350fdcb1f05cc6de42438d4ec91"
+  },
+  "assertionWidths": [
+    1440
+  ],
+  "additionalScreenshotWidth": 390,
+  "proofHook": "external screenshot wrapper captures step-a at 390 then restores 1440; no changes to assertions or network"
+}

@@ -1,0 +1,15 @@
+{
+  "recordedAt": "2026-11-15T18:28:22.815422+00:00",
+  "commands": [
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exitCode": 0
+    }
+  ],
+  "diff": "one test file hash updated; selected Base source mappings unchanged",
+  "sourceLockSha256": "f896fac1ef4d85b6193d72aa65e9d76811f1d350fdcb1f05cc6de42438d4ec91"
+}

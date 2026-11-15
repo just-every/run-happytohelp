@@ -1,0 +1,6 @@
+{
+  "exitCode": 1,
+  "finishedAt": "2026-11-15T18:21:17.546834+00:00",
+  "command": "pnpm run test:installer-nightly --test-name-pattern=agent.fix",
+  "runner": "dedicated cloud VM; cloud_run node scripts/ci/run-checks.mjs"
+}

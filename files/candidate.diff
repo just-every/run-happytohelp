@@ -1,0 +1,25 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index fe3b105f..323535fb 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -16273,7 +16273,7 @@
+       "executable": false
+     },
+     "tests/helpers/delegation-journey/browser.mjs": {
+-      "sha256": "6c061da30ca7fb448d8d98d516943c748cfba0332fb7e9efbdbfae5ad29095db",
++      "sha256": "a0f4e837b966f37997b8ab1ea5468d4a6059cafcd7b9a7fcf1a918225fadb0dd",
+       "executable": false
+     },
+     "tests/helpers/delegation-journey/case.mjs": {
+diff --git a/tests/helpers/delegation-journey/browser.mjs b/tests/helpers/delegation-journey/browser.mjs
+index 1463bf0a..108df07f 100644
+--- a/tests/helpers/delegation-journey/browser.mjs
++++ b/tests/helpers/delegation-journey/browser.mjs
+@@ -57,6 +57,7 @@ export async function browserJourney(evidence){
+     visitor.on('websocket',socket=>socket.on('framereceived',event=>{try{frames.push(JSON.parse(event.payload))}catch{}}));
+     const mount=async()=>{await visitor.addScriptTag({url:origin+'/widget.js'});await visitor.evaluate(options=>window.h2h('init',options),{widgetKey:project.widget_key,apiOrigin:origin,open:true,settings:{collector:{enabled:false}}})};
+     await visitor.goto(origin+'/help/'+actor.projectId);await mount();
++    await visitor.locator('input[name=email]').fill('visitor@example.test');
+     await visitor.locator('textarea[name=content]').fill(report);await visitor.locator('button[name=submit]').click();
+     visitorSession=await until(()=>visitor.evaluate(key=>JSON.parse(localStorage.getItem(key)||'null'),`rer-widget:${origin}:${project.widget_key}`),s=>s?.conversationId,'widget session');
+     const transcript=()=>client(origin,visitorSession.token)('/api/conversations/'+visitorSession.conversationId+'/messages');

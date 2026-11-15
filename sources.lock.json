@@ -1889,7 +1889,7 @@
       "executable": false
     },
     "importers.json": {
-      "sha256": "bd57cdb5fec26f8594676b8d622a1991551b62b94caa10e1b613ac0192767f5b",
+      "sha256": "fdf42172b704b85cb05552701d2a0fee7f7600b633dbbaab3ec608361534fc29",
       "executable": false
     },
     "LICENSE": {
@@ -11153,7 +11153,7 @@
       "executable": false
     },
     "src/routes/app.move-in.tsx": {
-      "sha256": "8bee63e7555e23a6f6bd25c3e442321b16a97087bf0e0915bcadab73ae33de5d",
+      "sha256": "c0228e511732a7e33764d9c14e2108e106386864c05fd1c7a76fd0eb4e9fcab9",
       "executable": false
     },
     "src/routes/docs.$slug.tsx": {

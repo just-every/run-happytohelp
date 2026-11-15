@@ -16,5 +16,5 @@ export const sourceAllowsForms=`NOT EXISTS(
   AND json_extract(record.record_json,'$.kind')='ticket_field'
   AND json_extract(record.record_json,'$.sourceId')=json_extract(provenance.record_json,'$.sourceId')
   AND json_extract(record.record_json,'$.payloadHash')=json_extract(provenance.record_json,'$.sourceHash')
-  AND json_extract(record.record_json,'$.payload.visible_in_portal')=1
+  AND json_type(record.record_json,'$.payload.visible_in_portal')='true'
  ))`

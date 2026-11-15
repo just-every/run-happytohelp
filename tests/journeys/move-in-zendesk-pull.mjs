@@ -118,6 +118,9 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.ok(imported.every(r=>r.assigned_to===null),'imports assign nobody')
   const [staffField]=(await h.call('/api/dashboard/projects/p/ticket-fields')).data.filter(field=>field.name==='Synthetic agent note')
   assert.ok(staffField,'the internal field imports into the staff catalogue')
+  const formSettings=await h.call('/api/forms/projects/p/forms')
+  assert.ok(!formSettings.fields.some(field=>field.id===staffField.id),'pulled agents-only fields are absent from native form choices')
+  assert.equal((await h.raw('/api/forms/projects/p/forms',post({title:'Internal request',fields:[{fieldId:staffField.id}],enabled:true}))).response.status,400,'pulled staff fields cannot be published by a direct form write')
   for(const [sourceId,value] of [['101','synthetic-hh-72 internal order review'],['102','synthetic-hh-72 closed review']]){
    const conversation=imported.find(row=>row.source_id===sourceId)
    const ticket=(await h.call(`/api/dashboard/projects/p/conversations/${conversation.id}/ticket`)).data

@@ -26,6 +26,7 @@ export function zendeskField(record:SourceRecord,projectId:string,portal=true):S
 export function zendeskFields(record:SourceRecord,projectId:string,records:Map<string,SourceRecord>,omissions:string[]):{kind:string;target:string;tables:NativeValue['tables']}|null{
  if(record.kind==='ticket_field'){
   const field=zendeskField(record,projectId,false),p=record.payload as any
+  if(p.visible_in_portal!==true)omissions.push('field_agents_only_not_enforced_on_forms')
   if(p.visible_in_portal===true&&p.editable_in_portal!==true)omissions.push('field_portal_read_only_not_carried')
   if(p.required)omissions.push('field_solve_requirement_requires_native_review')
   if(['tagger','multiselect','checkbox'].includes(p.type))omissions.push('field_tag_side_effects_not_activated')

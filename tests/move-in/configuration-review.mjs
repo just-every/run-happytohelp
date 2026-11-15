@@ -4,7 +4,7 @@ import {json,rows} from './journey-kit.mjs'
 // Inspect exactly the configuration imported with the source tickets. Previewing
 // a translated rule is pure; publication remains a separate owner decision.
 export async function configurationReview(h,plan){
- const dashboard='/api/dashboard/projects/p',forms=(await h.call('/api/forms/projects/p/forms')).data,definitions=(await h.call(dashboard+'/ticket-fields')).data
+ const dashboard='/api/dashboard/projects/p',settings=await h.call('/api/forms/projects/p/forms'),forms=settings.data,definitions=(await h.call(dashboard+'/ticket-fields')).data
  assert.equal(forms.length,2);assert.ok(forms.every(form=>form.enabled===false))
  assert.equal(definitions.length,6)
  assert.equal(definitions.find(field=>field.name==='Order number').required,false)
@@ -13,7 +13,13 @@ export async function configurationReview(h,plan){
  const ticket=(await h.call(`${dashboard}/conversations/${imported.conversation_id}/ticket`)).data
  assert.deepEqual(Object.fromEntries(definitions.map(field=>[field.name,ticket.fields[field.id]])),{'Order number':'ORDER-187',Items:2,'Replacement requested':false,Reason:'shipping','Internal triage':'synthetic-hh-305 internal triage','Portal reference':'synthetic-hh-306 portal reference'})
  const decision=(kind,id)=>plan.decisions.find(row=>row.kind===kind&&row.sourceId===id)
+ assert.ok(decision('ticket_field','305').omissions.some(item=>item.reason==='field_agents_only_not_enforced_on_forms'))
  assert.ok(decision('ticket_field','306').omissions.some(item=>item.reason==='field_portal_read_only_not_carried'))
+ const internal=definitions.find(field=>field.name==='Internal triage')
+ assert.ok(!settings.fields.some(field=>field.id===internal.id),'agents-only fields are absent from native form choices')
+ assert.ok(settings.fields.some(field=>field.name==='Order number'),'public imported fields remain available')
+ assert.ok(settings.fields.some(field=>field.name==='Portal reference'),'read-only portal fields keep their existing native form behaviour')
+ assert.equal((await h.raw('/api/forms/projects/p/forms',json({title:'Internal request',fields:[{fieldId:internal.id}],enabled:true}))).response.status,400,'a direct form write cannot bypass field eligibility')
  for(const [kind,id] of [['ticket_field','307'],['ticket_form','404'],['ticket_form','405']])assert.equal(decision(kind,id).rejection,'field_permissions_require_native_review')
  const ticketOmissions=decision('ticket','10001').omissions.map(item=>item.reason)
  assert.ok(ticketOmissions.includes('ticket_custom_field_unsupported:307'))

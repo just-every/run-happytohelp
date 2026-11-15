@@ -2,7 +2,7 @@ import {HTTPException} from 'hono/http-exception'
 import {object} from '../tickets/model'
 import {validateFieldValue} from '../tickets/fields'
 import type {FormConfig,FormField,FormTranslation,StoredField} from './types'
-export const publicField=(f:StoredField)=>JSON.parse(f.read_roles_json).length===0&&JSON.parse(f.write_roles_json).length===0
+export const publicField=(f:StoredField)=>f.form_eligible!==0&&JSON.parse(f.read_roles_json).length===0&&JSON.parse(f.write_roles_json).length===0
 const bad=(message:string):never=>{throw new HTTPException(400,{message})}
 function text(value:unknown,max:number,empty=false){if(typeof value!=='string'||value.length>max||!empty&&!value.trim())bad(`Enter text ${empty?'up to':'of 1–'} ${max} characters`);return (value as string).trim()}
 const locale=(value:unknown)=>{if(typeof value!=='string'||!/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$/.test(value))bad('Invalid locale');return value as string}

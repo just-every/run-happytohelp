@@ -55,6 +55,12 @@
       "sha256": "c06429f2f5d9f0f1d352c55aed9c6cb9ef7f814ce2b5257385abbc3ddc579ea2"
     },
     {
+      "blob": "486ce2b0243776c6bc2a7c7288ff7bbaba134fee",
+      "bytes": 29841,
+      "path": "evidence-transfer-receipts.json",
+      "sha256": "0d1243e31c9fcedd589e80d95ffdf77906c26dbc63a161e1204c0acb9bdec9a2"
+    },
+    {
       "blob": "c9b1bd5169a68c05e11797f79371fa9b7561f2e1",
       "bytes": 38,
       "path": "generate.log",

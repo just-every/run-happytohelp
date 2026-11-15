@@ -109,6 +109,12 @@
       "sha256": "9bdc20cf0fe849c8e068170acc36b27049eaba41819c04163603ef7d999853e0"
     },
     {
+      "blob": "1be2a1d43235b4b2dc3b3f5ff7860fb417a33f74",
+      "bytes": 11975,
+      "path": "evidence-publication-receipt.json",
+      "sha256": "ffb97398e5492f164496b61cc9a60aed7ebcd60bd99c7d4d52047b492c565373"
+    },
+    {
       "blob": "274830e5cdfbb5d6bc83f1643fec03d61cc66ccf",
       "bytes": 1003,
       "path": "exact-after.log",

@@ -10,6 +10,7 @@ import {rows} from '../move-in/journey-kit.mjs'
 import {assertCutoverCounts,assertCutoverDerived} from '../helpers/cutover/oracle.mjs'
 import {cutoverRebuildSql} from '../../scripts/installer/cutover-bounds-sql.mjs'
 import {fakeZendesk,largeComments,SUBDOMAIN,CLIENT_ID,PATH_TOKEN,QUERY_TOKEN,ATTACHMENT_BYTES} from '../move-in/zendesk-pull-fixture.mjs'
+import {assignmentSource,assertPullAssignments,assertPullAssignmentReview} from '../move-in/zendesk-pull-assignment.mjs'
 
 const api='/api/move-in/projects/p',post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
 const secretish=/synthetic-(?:access|refresh|code)-\d|synthetic-hh-(?:path|query)-token/
@@ -57,7 +58,7 @@ async function addMember(h,actor,role){
 }
 
 test('an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo',{timeout:600_000},async()=>{
- const zendesk=fakeZendesk(),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
+ const zendesk=assignmentSource(fakeZendesk()),h=await nativeHarness({network:zendesk.handler,bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:'https://app.example'}})
  try{
   const empty=await nativeSnapshot(h)
   assert.ok(empty.complete);assert.deepEqual(empty.tickets,[]);assert.deepEqual(empty.articles,[])
@@ -94,7 +95,9 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.ok(zendesk.state.requests.filter(r=>r.path==='/api/v2/tickets/101/comments.json').length>=2,'429 is retried after Retry-After')
   assert.deepEqual(pull.totals.tickets,{seen:5,deleted:1,imported:0,refused:0,alreadyImported:0})
   assert.deepEqual(pull.totals.articles,{seen:3,published:1,draft:1,heldBack:1})
-  assert.equal(pull.totals.users,5);assert.equal(pull.totals.organizations,1)
+  assert.equal(pull.totals.users,8);assert.equal(pull.totals.organizations,1)
+  assert.ok(pull.refusals.some(row=>row.kind==='user'&&row.sourceId==='22'&&row.reason==='user_size_limit'),'an unreadable assignee profile is refused without rejecting its ticket')
+  await assertPullAssignmentReview(h,pull)
   const refusedOnly=pull.batches.filter(b=>b.summary.refused&&!b.covered)
   assert.deepEqual(refusedOnly.map(b=>[b.summary.refused,b.nothingToImport]),[[1,true]],'only the unsupported system field remains in the refused-only batch')
   assert.ok(pull.batches.filter(b=>!b.nothingToImport).every(b=>b.covered),'the approval covers every batch with something to import')
@@ -115,7 +118,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
 
   const imported=await rows(h,'SELECT s.source_id,c.id,c.assigned_to FROM move_in_conversations s JOIN conversations c ON c.id=s.conversation_id ORDER BY CAST(s.source_id AS INTEGER)')
   assert.deepEqual(imported.map(r=>r.source_id),['101','102','104','105'],'deleted ticket 103 is a tombstone, not imported')
-  assert.ok(imported.every(r=>r.assigned_to===null),'imports assign nobody')
+  await assertPullAssignments(h,imported)
   const [staffField]=(await h.call('/api/dashboard/projects/p/ticket-fields')).data.filter(field=>field.name==='Synthetic agent note')
   assert.ok(staffField,'the internal field imports into the staff catalogue')
   const formSettings=await h.call('/api/forms/projects/p/forms')
@@ -192,11 +195,14 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   const replies=await messagesOf('101'),privateNotes=await notesOf('101'),first101=await conversationOf('101')
   const [person3]=await rows(h,"SELECT target_id id FROM move_in_origins WHERE target_kind='contact' AND source_id='3'")
   const keptRecords={tickets:1,users:1,organizations:1}
+  const catchupReads=zendesk.state.requests.length
   zendesk.state.repeat=true
   const again=(await h.call(`${api}/zendesk/pulls`,post({}))).data
   let budget=await drain(h)
   let repeat=await pullOf(h,again.id)
   assert.equal(repeat.state,'ready',JSON.stringify({error:repeat.error}))
+  await assertPullAssignmentReview(h,repeat,{106:false,107:true})
+  assert.ok(zendesk.state.requests.slice(catchupReads).some(row=>row.path==='/api/v2/users/show_many.json'&&new URLSearchParams(row.search).get('ids').split(',').includes('20')),'catch-up fetches the unchanged assignee absent from incremental users')
   assert.deepEqual(repeat.totals.tickets,{seen:4,deleted:0,imported:0,refused:0,alreadyImported:1},'101 gained only a reply; 102 is kept as imported')
   assert.deepEqual(repeat.totals.replies,{seen:2,imported:0,refused:0})
   assert.deepEqual(repeat.totals.keptAsImported,keptRecords,'changed in Zendesk, kept as imported')
@@ -217,6 +223,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.notEqual(nativeBefore.tupleFingerprint,nativeAfter.tupleFingerprint,'legitimate new replies and sources change tuple observations')
   const everyTicket=[['101',1],['102',1],['104',1],['105',1],['106',1],['107',1]]
   assert.deepEqual(await sourceIds(),everyTicket)
+  await assertPullAssignments(h,(await rows(h,'SELECT s.source_id,c.id FROM move_in_conversations s JOIN conversations c ON c.id=s.conversation_id')),['101','106','107'])
   assert.equal(await messagesOf('101'),replies+1,'the reply on 101 imports as one more message')
   assert.equal(await notesOf('101'),privateNotes+1,'and the private comment as one more private note')
   const caughtUp=await conversationOf('101'),[reply]=await rows(h,"SELECT m.id,m.revision,m.actor_role,m.local_id FROM messages m WHERE m.conversation_id=? ORDER BY m.revision DESC LIMIT 1",caughtUp.id)
@@ -253,6 +260,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.deepEqual(await sourceIds(),everyTicket)
   assert.deepEqual([await messagesOf('101'),await notesOf('101')],[replies+1,privateNotes+1])
   assert.deepEqual(await staffValues(),preservedStaff,'reimport after undo retains internal values without duplication')
+  await assertPullAssignments(h,(await rows(h,'SELECT s.source_id,c.id FROM move_in_conversations s JOIN conversations c ON c.id=s.conversation_id')),['101','106'])
   assert.equal((await conversationOf('107')).contact_id,person3.id)
 
   // Every source read was a GET; the only POSTs went to the token endpoint.

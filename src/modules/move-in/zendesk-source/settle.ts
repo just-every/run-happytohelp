@@ -86,7 +86,10 @@ async function stageReplies(ctx:PullContext,tickets:{id:string;ticket:any}[],tal
 /** Refusals the pull already holds for what these records depend on. */
 async function dependencyRefusals(ctx:PullContext,kind:StagedKind,rows:Row[]):Promise<(row:Row)=>string|null>{
  if(kind!=='ticket'&&kind!=='ticket_comment')return ()=>null
- const refs=(row:Row)=>(JSON.parse(row.refs_json||'{"users":[]}') as {users:string[]}).users,ids=new Set(rows.flatMap(refs))
+ // Assignment-only identities help mapping but never make a requester or author
+ // invalid. Older staged tickets and individual replies already list only those
+ // required people in users.
+ const refs=(row:Row)=>{const refs=JSON.parse(row.refs_json||'{"users":[]}') as {users:string[];requiredUsers?:string[]};return refs.requiredUsers??refs.users},ids=new Set(rows.flatMap(refs))
  const people=ids.size?new Set((await ctx.env.DB.prepare("SELECT source_id FROM move_in_zendesk_refusals WHERE pull_id=? AND kind='user' AND source_id IN (SELECT value FROM json_each(?))").bind(ctx.pull.id,list(ids)).all<{source_id:string}>()).results.map(r=>r.source_id)):new Set<string>()
  return row=>row.link&&people.has(row.link)?'conversation_contact_rejected':refs(row).some(id=>people.has(id))?'comment_author_conflict':null
 }

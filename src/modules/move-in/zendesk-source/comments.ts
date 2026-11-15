@@ -11,8 +11,10 @@ export function ticketRefs(ticket:any){
  const add=(set:Set<string>,value:unknown)=>{try{set.add(zendeskId(value))}catch{}}
  add(users,ticket.requester_id)
  for(const comment of Array.isArray(ticket.comments)?ticket.comments:[])add(users,comment?.author_id)
+ const requiredUsers=[...users].sort()
+ add(users,ticket.assignee_id)
  for(const value of Array.isArray(ticket.custom_fields)?ticket.custom_fields:[])if(value&&value.value!==null&&value.value!=='')add(fields,value.id)
- return {users:[...users].sort(),fields:[...fields].sort()}
+ return {users:[...users].sort(),requiredUsers,fields:[...fields].sort()}
 }
 /** Every comment page of each ticket, with inline images listed, until the ticket
  * is complete. A ticket the engine cannot carry whole is refused by name. */

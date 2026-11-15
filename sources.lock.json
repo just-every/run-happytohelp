@@ -9149,7 +9149,7 @@
       "executable": false
     },
     "src/modules/move-in/zendesk-source/comments.ts": {
-      "sha256": "d39b0c2bf0f949c51bd84c74a26c787d60a6a3f44def01b9f3eca50bd6cbc639",
+      "sha256": "a3a2c60910353c4a88de86324e27e0e20bdc3437ff37ddc68aab9ce006aef531",
       "executable": false
     },
     "src/modules/move-in/zendesk-source/context.ts": {
@@ -9189,7 +9189,7 @@
       "executable": false
     },
     "src/modules/move-in/zendesk-source/settle.ts": {
-      "sha256": "6c205bb5928cae0e00f2cd6aa7d7a6815bf7f68a0f35ef52b94f465e970e88fb",
+      "sha256": "4b233ceb977a3bf1107139a3ea7fa9df9119d99d712d7e63a548c04691550599",
       "executable": false
     },
     "src/modules/move-in/zendesk-source/staging.ts": {
@@ -17489,7 +17489,7 @@
       "executable": false
     },
     "tests/journeys/move-in-zendesk-pull.mjs": {
-      "sha256": "386aa81e8d8971b3ee374e9ca03dffa1863798a8c52769ff057adcb4b7ccd47f",
+      "sha256": "95ddeec087d9cc130db1e19ed932c55baaac104704f04f36c5b35e18edcf7b9d",
       "executable": false
     },
     "tests/journeys/public-browser.mjs": {
@@ -17814,6 +17814,10 @@
     },
     "tests/move-in/zendesk-offline.mjs": {
       "sha256": "2a56bcad8c0e540279f437289060624e91069850ead0e3459f31c7f464af05b9",
+      "executable": false
+    },
+    "tests/move-in/zendesk-pull-assignment.mjs": {
+      "sha256": "24e8afde436b1d3423316fb1c6743bb4699127c5999e46095e741c09f4598b74",
       "executable": false
     },
     "tests/move-in/zendesk-pull-fixture.mjs": {

@@ -1,5 +1,6 @@
+import {isNoRequester} from '../customers/no-requester'
 import {mailboxAddress} from '../../platform/mailbox'
-export type NotificationContact={id:string;email:string|null;metadata_json?:string;is_verified?:number;external_id?:string|null;notice_grant_proven?:number;notice_eligible?:number;widget_contact_id?:string}
+export type NotificationContact={id:string;project_id?:string;email:string|null;metadata_json?:string;is_verified?:number;external_id?:string|null;notice_grant_proven?:number;notice_eligible?:number;widget_contact_id?:string}
 const mailbox=(value:unknown)=>typeof value==='string'&&value.length<=254&&/^[^\s@<>(),:;"\\]+@[^\s@<>(),:;"\\]+\.[^\s@<>(),:;"\\]+$/.test(value.trim())?value.trim().toLowerCase():null
 const metadata=(contact:NotificationContact)=>JSON.parse(contact.metadata_json||'{}')
 
@@ -7,13 +8,14 @@ const metadata=(contact:NotificationContact)=>JSON.parse(contact.metadata_json||
  * customerNoticeAddress instead. Neither changes canonical identity or authority.
  * Mail with no usable From names nobody to answer: its contact is notified only at
  * an address an operator chose for it. */
-export function notificationAddress(contact:NotificationContact){const flags=metadata(contact);return mailbox(flags.provided_email)||(flags.unusable_from?null:mailbox(contact.email))}
+export function notificationAddress(contact:NotificationContact){if(isNoRequester(contact))return null;const flags=metadata(contact);return mailbox(flags.provided_email)||(flags.unusable_from?null:mailbox(contact.email))}
 
 /** Automatic ticket notices cannot inherit an unproven reply preference. A signed
  * widget identity proves its canonical address, even after it types a preference.
  * K3 also allows the widget's own canonical address on its own widget ticket. Old
  * preferences with no recorded source stay available for human replies only. */
 export function customerNoticeAddress(contact:NotificationContact,widgetContactId?:string){
+ if(isNoRequester(contact))return null
  const flags=metadata(contact)
  if(flags.provided_email_source==='operator')return mailboxAddress(flags.provided_email)
  const signed=contact.is_verified===1&&mailbox(contact.external_id)===mailbox(contact.email)
@@ -38,7 +40,7 @@ export function notificationRecipients(contacts:NotificationContact[],sender:Not
  let senderAddress=false
  for(const contact of contacts){
   const flags=metadata(contact)
-  if(contact.id===senderContactId||flags.is_erasing||flags.is_erased||flags.is_deleted||flags.is_blocked||flags.portal_notification_emails===0)continue
+  if(isNoRequester(contact)||contact.id===senderContactId||flags.is_erasing||flags.is_erased||flags.is_deleted||flags.is_blocked||flags.portal_notification_emails===0)continue
   const email=address(contact)
   if(email&&senderEmails.has(email))senderAddress=true
   if(email&&!excluded.has(email)){recipients.push({id:contact.id,email});excluded.add(email)}

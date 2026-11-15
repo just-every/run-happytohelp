@@ -4,14 +4,15 @@ import {actorOrigin,historicalPrincipal,sourceActor,type MappingProfile} from '.
 import {relationships} from '../relationships'
 
 /** Extend the existing mapper's targets; source/journal bytes stay unchanged. */
-export function historicalTargets(table:string,source:Row,bundle:LegacyBundle,targets:MappedRow[],profile:MappingProfile):MappedRow[]{
+export function historicalTargets(table:string,source:Row,bundle:LegacyBundle,targets:MappedRow[],profile:MappingProfile,assignees?:Map<string,string>):MappedRow[]{
  const result:MappedRow[]=[]
- for(const target of targets){
+ for(let target of targets){
   if(['users','memberships','user_settings','credentials','sessions','identity_tokens','identity_tokens_account','platform_admins'].includes(target.table))throw new Error('historical_access_target_refused')
   const row={...target.row},origins:MappedRow[]=[]
   if(target.table==='conversations'){
    origins.push(...actorOrigin(profile,bundle,'conversations',row.id,'assigned_to',row.assigned_to))
-   row.assigned_to=null
+   row.assigned_to=row.assigned_to==null?null:assignees?.get(String(row.assigned_to))??null
+   if(target.row.assigned_to!=null&&!row.assigned_to)target={...target,hold:[target.hold,'Historical assignee could not be matched to one native workspace member; left unassigned'].filter(Boolean).join('; ')}
   }
   if(target.table==='macros'){
    origins.push(...actorOrigin(profile,bundle,'macros',row.id,'created_by',row.created_by))

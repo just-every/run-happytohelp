@@ -58,7 +58,7 @@ export default function TicketEditor({ conversation, record }) {
                     <TicketField id="ticket-channel" field={{ type: 'text', name: 'Channel' }} value={draft.channel} onChange={value => change('channel', value)}/>
                     {select('brand_id', 'Brand', settings.brands.map(brand => ({ value: brand.id, label: brand.name })))}
                     {select('group_id', 'Group', settings.groups.map(group => ({ value: group.id, label: group.name })), true)}
-                    <TicketIdentityPicker id="ticket-requester_id" label="Requester" projectId={conversation.project_id} value={draft.requester_id} currentContact={conversation.contact} disabled={disabled} onChange={value => change('requester_id', value)}/>
+                    <TicketIdentityPicker id="ticket-requester_id" label="Requester" requesterStatus={ticket.requester_status} projectId={conversation.project_id} value={draft.requester_id} currentContact={conversation.contact} disabled={disabled} onChange={value => change('requester_id', value)}/>
                     {select('submitter_type', 'Submitter type', ['contact', 'agent', 'system'].map(value => ({ value, label: label(value) })))}
                     <TicketIdentityPicker key={draft.submitter_type} id="ticket-submitter_id" label="Submitter" type={draft.submitter_type} projectId={conversation.project_id} value={draft.submitter_id} currentContact={conversation.contact} agents={agents} disabled={disabled} onChange={value => change('submitter_id', value)}/>
                     {(settings.fields || []).filter(field => !field.write_roles.includes('triage-system')).map(field => <React.Fragment key={field.id}>

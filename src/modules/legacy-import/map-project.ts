@@ -1,3 +1,4 @@
+import {legacyNeedsRequester,legacySystemRequester} from './no-requester'
 import { type Row,type LegacyBundle,type MappedRow,timestamp,text,stable } from './types'
 import {columns,truth} from './mapping-shared'
 import {legacyWidgetProjectSettings} from './legacy-widget'
@@ -27,6 +28,7 @@ export function mapProject(r:Row,b:LegacyBundle):MappedRow[]{
  const id=text(r.id,'projects.id'),name=text(r.name,'projects.name'),updated=timestamp(r.updated_at||r.created_at)
  const result:MappedRow[]=[{table:'projects',row:{id,name,widget_key:r.widget_key||r.public_key||id,allowed_origin:new URL(text(r.allowed_origin||r.website||r.website_url||r.url,'projects.allowed_origin')).origin,created_at:timestamp(r.created_at),verification_secret:r.verification_secret??null},key:['id']}]
  result.push(projectSettings(r))
+ if(legacyNeedsRequester(b,id))result.push(...legacySystemRequester(id))
  // Legacy mail settings are never verified here, so they always arrive disabled.
  // A package exported without the legacy MAIL_FROM_DOMAIN keeps the sender and
  // holds the inbound mailbox until an operator supplies and verifies the domain.

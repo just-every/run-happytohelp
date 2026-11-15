@@ -376,7 +376,7 @@
   background: #fff;
   color: #c70000;
   padding: 0 20px 19px 5px;
-  font-size: 0.9em;
+  font-size: max(13px, 0.9em);
   cursor: pointer;
   position: relative;
   z-index: 2;

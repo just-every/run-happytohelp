@@ -1,4 +1,5 @@
 import {zendeskOfflineJourney} from './zendesk-offline.mjs'
+import {ticketIdentityJourney} from './ticket-identity.mjs'
 import assert from 'node:assert/strict'
 import {nativeHarness} from './harness.mjs'
 import {generate} from './generator.mjs'
@@ -15,6 +16,7 @@ import {root,json,encode,review,apply,undo,rows} from './journey-kit.mjs'
 // history, inert repetition and whole-import undo. This is a format data table.
 export async function reviewImportJourney(){
  await zendeskOfflineJourney()
+ await ticketIdentityJourney()
  const sources=[
   {vendor:'zendesk',body:generate('zendesk',6),conversations:6,messages:12,notes:6,articles:2,macros:1,reply:'Historical reply 1',private:'Private note 1'},
   {vendor:'intercom',body:generate('intercom',2),conversations:2,messages:4,notes:2,articles:2,macros:1,reply:'Historical reply 1',private:'Private note 1'},

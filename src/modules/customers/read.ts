@@ -1,12 +1,13 @@
+import {realContactSql} from './no-requester'
 import type {Env} from '../../platform/env'
-import {contactWritable} from '../../platform/contact-state'
+import {contactWritableSql} from '../../platform/contact-state'
 import {HTTPException} from 'hono/http-exception'
 import {clauses,inboxAccess} from '../management/inbox-entries'
 import {companyData,fields,fieldData,type CompanyRow,type CompanySnapshot} from './model'
 
 export async function companyList(env:Env,projectId:string){
  const [rows,definitions]=await Promise.all([
-  env.DB.prepare(`SELECT c.*,(SELECT json_group_array(domain) FROM (SELECT domain FROM company_domains WHERE project_id=c.project_id AND company_id=c.id ORDER BY domain)) domains_json,(SELECT count(*) FROM contact_companies cc JOIN contacts co ON co.project_id=cc.project_id AND co.id=cc.contact_id WHERE cc.project_id=c.project_id AND cc.company_id=c.id AND coalesce(json_extract(co.metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(co.metadata_json,'$.is_erased'),0)!=1) member_count FROM companies c WHERE c.project_id=? AND c.merged_into IS NULL ORDER BY c.name,c.id`).bind(projectId).all<any>(),
+  env.DB.prepare(`SELECT c.*,(SELECT json_group_array(domain) FROM (SELECT domain FROM company_domains WHERE project_id=c.project_id AND company_id=c.id ORDER BY domain)) domains_json,(SELECT count(*) FROM contact_companies cc JOIN contacts co ON co.project_id=cc.project_id AND co.id=cc.contact_id WHERE cc.project_id=c.project_id AND cc.company_id=c.id AND ${realContactSql('co')} AND coalesce(json_extract(co.metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(co.metadata_json,'$.is_erased'),0)!=1) member_count FROM companies c WHERE c.project_id=? AND c.merged_into IS NULL ORDER BY c.name,c.id`).bind(projectId).all<any>(),
   fields(env,projectId),
  ])
  return {companies:rows.results.map(row=>{const {domains_json,member_count,...company}=row;return {...companyData({company,domains:JSON.parse(domains_json),members:[]}),memberCount:member_count}}),fields:definitions.map(fieldData)}
@@ -32,7 +33,7 @@ export async function companyDetail(env:Env,projectId:string,id:string,userId:st
  const access=clauses(inboxAccess('c',userId,{deleted:false}))
  const [definitions,memberships,conversations,history]=await Promise.all([
   fields(env,projectId),
-  env.DB.prepare(`SELECT cc.contact_id,member.id,member.name,member.email,member.external_id,member.created_at,member.id IS NOT NULL AND ${contactWritable} listed FROM contact_companies cc INDEXED BY contact_companies_company LEFT JOIN contacts member ON member.project_id=cc.project_id AND member.id=cc.contact_id WHERE cc.project_id=? AND cc.company_id=? ORDER BY member.name,member.email,member.id`).bind(projectId,id).all<Membership>(),
+  env.DB.prepare(`SELECT cc.contact_id,member.id,member.name,member.email,member.external_id,member.created_at,member.id IS NOT NULL AND ${contactWritableSql('member')} listed FROM contact_companies cc INDEXED BY contact_companies_company LEFT JOIN contacts member ON member.project_id=cc.project_id AND member.id=cc.contact_id WHERE cc.project_id=? AND cc.company_id=? ORDER BY member.name,member.email,member.id`).bind(projectId,id).all<Membership>(),
   env.DB.prepare(`SELECT c.id,c.contact_id,c.subject,c.status_id,c.status_category,c.priority,c.assigned_to,c.created_at,c.updated_at FROM contact_companies cc INDEXED BY contact_companies_company CROSS JOIN conversations c INDEXED BY conversations_contact_history WHERE cc.project_id=? AND cc.company_id=? AND c.project_id=cc.project_id AND c.contact_id=cc.contact_id AND ${access.sql} ORDER BY c.updated_at DESC,c.id`).bind(projectId,id,...access.params).all<{contact_id:string}>(),
   // The entries naming this company, through both of its indexes (the planner may otherwise walk the workspace's history).
   env.DB.prepare('SELECT history.*,users.name actor_name FROM company_history history LEFT JOIN users ON users.id=history.actor_id WHERE history.rowid IN (SELECT rowid FROM company_history INDEXED BY company_history_company WHERE project_id=? AND company_id=? UNION SELECT rowid FROM company_history INDEXED BY company_history_source WHERE project_id=? AND source_company_id=?) ORDER BY history.at DESC,history.id DESC LIMIT 200').bind(projectId,id,projectId,id).all<any>(),

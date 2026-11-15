@@ -1,3 +1,5 @@
+import {legacyNeedsRequester} from './no-requester'
+import {noRequesterStatements} from '../customers/no-requester'
 import type { Env } from '../../platform/env'
 import { type LegacyBundle,type Row,type MappedRow,stable } from './types'
 import {planImport,writtenColumns,canonicalRows,normalizeImportPlan,canonicalAssertions,type PreparedSlice} from './importer'
@@ -37,7 +39,8 @@ function positioned(mapped:MappedRow,plan:DeltaPlan):MappedRow{
  * delta lease (`lease`, lease.ts): every batch asserts it, and a lapsed lease stops the delta. */
 export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle,options:{context:LegacyBundle;objectKeys?:Set<string>;media?:MediaIndex;checkOnly?:boolean;plan:DeltaPlan;projectId:string;lease?:DeltaLease;prepared?:PreparedSlice;adoption?:AdoptionApply}){
  if(options.adoption&&options.projectId!==options.adoption.profile.sourceProjectId)throw new Error('invalid_scope')
- const plan=await planImport(bundle,{...options,identity:options.prepared?.identity,mappingProfile:options.adoption?.profile}),{plan:delta,context}=options
+ if(!options.checkOnly&&legacyNeedsRequester(bundle,options.projectId)){if(!options.lease)throw new Error('A legacy delta writes only under its workspace lease');await env.DB.batch([options.lease.assertion(env.DB),...noRequesterStatements(env,options.projectId),options.lease.cleared(env.DB)])}
+ const plan=await planImport(bundle,{...options,identity:options.prepared?.identity,mappingProfile:options.adoption?.profile,db:env.DB}),{plan:delta,context}=options
  const profileBinding=await checkMappingProfile(env.DB,plan.id,options.adoption?.profile)
  const existing=await env.DB.prepare('SELECT bundle_digest,state FROM legacy_import_runs WHERE id=?').bind(plan.id).first<{bundle_digest:string;state:string}>()
  if(existing&&existing.bundle_digest!==plan.bundleDigest)throw new Error('Import digest conflict')

@@ -7,6 +7,7 @@ export function completeImportedTicket(value:NativeValue){
  const source=value.tables.move_in_conversations?.[0]
  for(const row of value.tables.conversations??[]){
   row.subject??=source?.subject??''
+  if(value.source.ticket_fields===1){row.priority??='normal';row.submitter_id??=row.contact_id;row.submitter_type??='contact'}
   if(!source)throw Error('imported_ticket_source_required')
   const states:Record<string,Record<string,string>>={
    zendesk:{new:'new',open:'open',pending:'pending',hold:'on_hold',solved:'solved',closed:'closed'},

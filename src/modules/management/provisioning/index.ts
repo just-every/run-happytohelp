@@ -8,6 +8,7 @@ import {creationCondition} from './condition'
 import {inboundMailbox, proposedSender} from './inbound-mailbox'
 import {starterAssistant} from './starter-assistant'
 import {ownerAlerts} from './owner-alerts'
+import {publicContact} from './public-contact'
 
 export {starterModels, defaultStarterProvider, installedProvider, providerKeyInstalled, starterModel, modelReady, modelReadiness} from './models'
 export type {ModelProvider} from './models'
@@ -30,7 +31,7 @@ export type WorkspaceSeed = {projectId: string; name: string; website: string; o
 export function workspaceDefaults(env: Env, seed: WorkspaceSeed, guard?: SqlGuard): {statements: D1PreparedStatement[]; after: () => Promise<void>} {
  const now = Date.now(), when = creationCondition(seed.projectId, guard)
  return {
-  statements: [...starterAssistant(env, seed.projectId, now, when), ...proposedSender(env, seed, now, when), ...(rerMail(env)?rerMailboxSeed(env,seed,now,when):inboundMailbox(env, seed, now, when)), ...ownerAlerts(env, seed.projectId, when)],
+  statements: [...starterAssistant(env, seed.projectId, now, when), ...proposedSender(env, seed, now, when), ...(rerMail(env)?rerMailboxSeed(env,seed,now,when):inboundMailbox(env, seed, now, when)), ...ownerAlerts(env, seed.projectId, when), ...publicContact(env,seed.projectId,now,when)],
   after: async () => {
    if(rerMail(env))try{await processRerMailbox(env,seed.projectId)}catch{console.error('Managed mailbox binding remains queued')}
    try { await enqueueSiteRead(env, seed.projectId) } catch (error) {

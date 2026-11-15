@@ -1,15 +1,16 @@
+import { isNoRequester } from '../../../../modules/customers/no-requester';
 import React, { useEffect, useState } from 'react';
 import { nativeRequest } from '../../../native/transport';
 
-const contactData = contact => contact.metadata_json ? { ...contact, ...JSON.parse(contact.metadata_json) } : contact;
+const contactData = contact => contact.metadata_json ? { ...contact, ...JSON.parse(contact.metadata_json), id: contact.id, project_id: contact.project_id } : contact;
 const contactLabel = contact => {
     const name = contact.provided_name || contact.name || contact.display_name;
     const email = contact.provided_email || contact.email;
     return name && email && name !== email ? `${name} (${email})` : name || email || contact.external_id || 'Unnamed contact';
 };
-const available = contact => !['is_deleted', 'is_erased', 'is_erasing', 'is_blocked'].some(key => Boolean(contact[key]));
+const available = contact => !isNoRequester(contact) && !['is_deleted', 'is_erased', 'is_erasing', 'is_blocked'].some(key => Boolean(contact[key]));
 
-function ContactPicker({ id, label, projectId, value, onChange, currentContact, disabled }) {
+function ContactPicker({ id, label, projectId, value, onChange, currentContact, disabled, requesterStatus }) {
     const [selected, setSelected] = useState(currentContact?.id === value ? contactData(currentContact) : null);
     // Previous and Next ask for the page before the first contact shown or after the last one, with the page number it shows.
     const [query, setQuery] = useState(''), [cursor, setCursor] = useState({ page: 1 }), [result, setResult] = useState(null);
@@ -42,13 +43,13 @@ function ContactPicker({ id, label, projectId, value, onChange, currentContact, 
     const page = result?.pagination.page || cursor.page, shown = result?.data || [];
     return <div className="form-group ticket-field">
         <label className="form-label" htmlFor={id}>{label}</label>
-        <select id={id} className="form-select" value={value || ''} required disabled={disabled} onChange={event => {
+        <select id={id} className="form-select" value={value || ''} required={requesterStatus !== 'none'} disabled={disabled} onChange={event => {
             const selectedId = event.target.value;
             if (!selectedId) { setSelected(null); onChange(''); return; }
             const contact = [current, ...(result?.data || [])].find(item => item?.id === selectedId);
             setSelected(contact); onChange(selectedId);
         }}>
-            <option value="">Choose a contact</option>
+            <option value="" disabled={requesterStatus === 'none'}>{requesterStatus === 'none' ? 'No requester' : 'Choose a contact'}</option>
             {value && <option value={value}>{current ? contactLabel(current) : loadError ? 'Contact unavailable' : 'Loading contact…'}</option>}
             {contacts.map(contact => <option key={contact.id} value={contact.id}>{contactLabel(contact)}</option>)}
         </select>

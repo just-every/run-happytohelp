@@ -6,7 +6,7 @@ import {totp,encryptionKey} from './two-factor.mjs'
 // One installation, its owner, invited teammate and signed visitor. Mail is the only fake.
 export async function nativeAccountJourney(){
  const mail=[],setupToken='synthetic-happytohelp-owner-claim',origin='https://app.example'
- const app=await startApp({bindings:{H2H_SETUP_TOKEN:setupToken,APP_ORIGIN:origin,INTEGRATION_ENCRYPTION_KEY:encryptionKey(),EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-mail-edge',EMAIL_FROM:'support@example.test',REGISTRATION_ENABLED:'true'},outbound:async request=>{
+ const app=await startApp({bindings:{H2H_SETUP_TOKEN:setupToken,APP_ORIGIN:origin,WORKSPACE_NAME:'Cedar Works',OWNER_NAME:'Mara Chen',INTEGRATION_ENCRYPTION_KEY:encryptionKey(),EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-mail-edge',EMAIL_FROM:'support@example.test',REGISTRATION_ENABLED:'true'},outbound:async request=>{
   assert.equal(new URL(request.url).host,'api.resend.com');mail.push(await request.json());return Response.json({id:'synthetic-mail-'+mail.length})
  }})
  try{
@@ -19,8 +19,18 @@ export async function nativeAccountJourney(){
   const claims=await Promise.all([identity('/bootstrap',entry),identity('/bootstrap',entry)])
   assert.deepEqual(claims.map(r=>r.status).sort(),[201,409])
   const owner=claims.find(r=>r.status===201).data,project=owner.projectId
+  const initial=(await manage('/bootstrap',owner.token)).data
+  assert.equal(initial.project.name,app.bindings.WORKSPACE_NAME)
+  assert.equal(initial.currentAgent.name,app.bindings.OWNER_NAME)
   assert.equal((await identity('/setup')).data.available,false)
   assert.equal((await identity('/bootstrap',entry)).status,409)
+  assert.equal((await manage('/profile',owner.token,{name:'Mara C.'},'PUT')).status,200)
+  assert.equal((await manage(`/projects/${project}/settings`,owner.token,{name:'Cedar Care'},'PUT')).status,200)
+  await app.configure({WORKSPACE_NAME:'Replacement installation name',OWNER_NAME:'Replacement owner name'})
+  assert.equal((await identity('/bootstrap',{...entry,name:'Unwanted workspace',ownerName:'Unwanted owner'})).status,409)
+  const retained=(await manage('/bootstrap',owner.token)).data
+  assert.equal(retained.project.name,'Cedar Care','repeated setup and new installer defaults preserve the edited workspace')
+  assert.equal(retained.currentAgent.name,'Mara C.','repeated setup and new installer defaults preserve the edited owner')
   assert.equal((await identity('/password',{currentPassword:entry.password,password:'synthetic-owner-chosen-password'},owner.token)).status,200)
   assert.equal((await identity('/session',undefined,owner.token)).status,401)
   assert.equal((await identity('/login',{email:entry.email,password:entry.password})).status,401)

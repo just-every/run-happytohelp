@@ -1,3 +1,4 @@
+import { isNoRequester } from '../../../modules/customers/no-requester';
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -55,6 +56,7 @@ export default function ConversationHeader({
         conversation.contact.country_code && { key: 'country', node: <span className="conversation-header-meta-fixed"><CountryName code={ conversation.contact.country_code } prefix /></span> },
     ].filter(Boolean);
     const contactName = conversation.contact.display_name;
+    const noRequester = isNoRequester(conversation.contact);
     const panelLabel = isPanelVisible ? 'Hide conversation panel' : 'Show conversation panel';
     // While the panel is closed, a small dot says the ticket summary has an alert (an SLA alert or a customer update to review).
     const showAlert = Boolean(hasPanelAlert) && !isPanelVisible;
@@ -66,10 +68,10 @@ export default function ConversationHeader({
                     <button type="button" className="conversation-header-back nav-link d-xl-none" { ...tooltip('Show conversations', 'right') } onClick={ () => setIsMainVisible(false) }>
                         <i className="icon-md fe fe-chevron-left" aria-hidden="true"></i>
                     </button>
-                    <ContactAvatar contact={ conversation.contact } href={ `/projects/${conversation.project_id}/contacts/${conversation.contact_id}` } label="View contact" className="avatar avatar-sm" presentation="conversation-profile" />
+                    <ContactAvatar contact={ conversation.contact } href={ noRequester ? undefined : `/projects/${conversation.project_id}/contacts/${conversation.contact_id}` } label={ noRequester ? undefined : "View contact" } className="avatar avatar-sm" presentation="conversation-profile" />
                     <div className="conversation-header-identity-copy">
                         <div className="conversation-header-name-row">
-                            <a className="chat-header-title" href={ `/projects/${conversation.project_id}/contacts/${conversation.contact_id}` } title={ contactName }>{ contactName }</a>
+                            { noRequester ? <span className="chat-header-title">{contactName}</span> : <a className="chat-header-title" href={ `/projects/${conversation.project_id}/contacts/${conversation.contact_id}` } title={ contactName }>{ contactName }</a> }
                         </div>
                         <div className="conversation-header-meta">
                             { metaItems.map((item, index) => <React.Fragment key={ item.key }>
@@ -80,9 +82,9 @@ export default function ConversationHeader({
                     </div>
                 </div>
                 <div className="conversation-header-chips">
-                    { conversation.contact.unverified_sender
+                    { !noRequester && (conversation.contact.unverified_sender
                         ? <span className="badge text-bg-danger-subtle" title="This email's From address was not authenticated, so it is kept apart from the customer who uses that address. Replies go only to that address.">Unverified sender</span>
-                        : conversation.contact.is_verified ? <span className="badge text-bg-primary">Verified</span> : <span className="badge text-bg-secondary-subtle">Unverified</span> }
+                        : conversation.contact.is_verified ? <span className="badge text-bg-primary">Verified</span> : <span className="badge text-bg-secondary-subtle">Unverified</span>) }
                     { conversation.resolved_at
                         ? <OverlayTrigger placement="bottom" overlay={ <Tooltip id={ `${conversation.id}-resolved-at` }><TimeAgo date={ conversation.resolved_at } /></Tooltip> }><span className={ `conversation-header-status is-closed${ isFinal ? ' is-final' : '' }` } title={ isFinal ? 'Closed tickets are final. A customer reply opens a new ticket.' : undefined }>{ statusLabel }</span></OverlayTrigger>
                         : <span className="conversation-header-status is-open">{ statusLabel }</span> }

@@ -1,4 +1,5 @@
 import {clauses,contactLive,contactSearchable,contactSorts,type Clause,type ContactPage,type ContactQuery} from './contact-order'
+import {noRequesterId,realContactSql} from '../customers/no-requester'
 
 /** A page that walks its order's index (migrations 313, 318) and stops after its rows: by number with OFFSET, or
  * from a boundary contact. With a term it walks the index of the contacts a term can match, so hidden drafts are
@@ -9,7 +10,7 @@ export async function walkedPage(q:ContactQuery,known?:number):Promise<ContactPa
  const where=clauses([{sql:'project_id=?',params:[projectId]},contactLive,...(term?[contactSearchable,term]:[])])
  const count=async()=>{
   if(known!==undefined)return known
-  if(!term)return Number((await db.prepare('SELECT coalesce((SELECT total FROM contact_tallies WHERE project_id=?),0) total').bind(projectId).first<{total:number}>())?.total)||0
+  if(!term)return Number((await db.prepare(`SELECT max(0,coalesce((SELECT total FROM contact_tallies WHERE project_id=?),0)-(SELECT count(*) FROM contacts WHERE id=? AND +project_id=? AND NOT (${realContactSql()}) AND coalesce(json_extract(metadata_json,'$.is_deleted'),0)!=1)) total`).bind(projectId,noRequesterId(projectId),projectId).first<{total:number}>())?.total)||0
   return Number((await db.prepare(`SELECT count(*) total FROM contacts INDEXED BY ${index} WHERE ${where.sql}`).bind(...where.params).first<{total:number}>())?.total)||0
  }
  // Rows tied on the key are ordered by id alone, so their index range is read in order without a sort.

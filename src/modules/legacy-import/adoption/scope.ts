@@ -1,3 +1,4 @@
+import {isNoRequester,noRequesterId} from '../../customers/no-requester'
 import type {LegacyBundle,MappedRow} from '../types'
 import type {MappingProfile} from './profile'
 import {relationships} from '../relationships'
@@ -40,7 +41,7 @@ export async function preflightAdoptionTargets(db:D1Database,profile:MappingProf
   const [table,columns]=shape.split('\0'),keys=columns.split(','),found=await lookupRows(db,table,keys,rows.map(t=>keys.map(k=>t.row[k])))
   for(const target of rows)if(found.get(identity(table,keys.map(k=>target.row[k])))){
    const state=states.get(stateKey(table,targetKeyOf(target)))
-   if(!state)refuse('canonical_target_conflict')
+   if(!state){if(target.table==='contacts'&&isNoRequester(target.row)||target.table==='context_subjects'&&target.row.subject_id===noRequesterId(profile.sourceProjectId))continue;refuse('canonical_target_conflict')}
    if(!bound.has(state.run_id)){
     if(!await db.prepare('SELECT 1 FROM legacy_import_mapping_profiles WHERE run_id=? AND profile_json=?').bind(state.run_id,stable(profile)).first())refuse('canonical_target_conflict')
     bound.add(state.run_id)
@@ -49,6 +50,9 @@ export async function preflightAdoptionTargets(db:D1Database,profile:MappingProf
  }
  for(const target of targets){
   const clash=guard.clash(target.table,target.key,target.row),own=new Set([...available,...targets.map(t=>identity(t.table,t.key.map(k=>t.row[k])))])
+  // A missing-requester dependency is the native workspace resource created
+  // under the import lease before conversation writes, not a source person.
+  if(target.table==='conversations'&&target.row.contact_id===noRequesterId(profile.sourceProjectId))own.add(identity('contacts',[target.row.contact_id]))
   if(clash||checkReferences&&guard.missing(target.table,target.row,own))refuse('canonical_target_conflict')
   guard.take(target.table,target.key,target.row)
  }

@@ -2,7 +2,7 @@
     position: relative;
     z-index: 2;
     padding: 10px 16px;
-    font-size: 12px;
+    font-size: max(13px, 12px);
     line-height: 1.5;
     background: #f4f7f8;
     color: #24343d;

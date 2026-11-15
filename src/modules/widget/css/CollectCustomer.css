@@ -22,7 +22,7 @@
   font-size: 13px;
 }
 #happytohelp-root .happytohelp-collect-customer .happytohelp-collect-notify-email {
-  font-size: 0.8em;
+  font-size: max(13px, 0.8em);
   color: #b9b9b9;
 }
 #happytohelp-root .happytohelp-collect-customer input {

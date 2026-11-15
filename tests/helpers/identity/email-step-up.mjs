@@ -4,13 +4,18 @@ import {startApp,sha} from '../../journeys/kit/app.mjs'
 
 /** No-password accounts prove their mailbox; a held session can request mail but gains no authority. */
 export async function emailStepUpJourney(){
- const mail=[],app=await startApp({bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-mail-edge-key',EMAIL_FROM:'support@example.test',OWNER_EMAIL:'owner-mailbox@example.test',H2H_SETUP_TOKEN:'synthetic-email-owner-claim'},outbound:async(request)=>{
+ const mail=[],app=await startApp({bindings:{APP_ORIGIN:'https://app.example',WORKSPACE_NAME:'Cedar Works',OWNER_NAME:'Installer owner',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-mail-edge-key',EMAIL_FROM:'support@example.test',OWNER_EMAIL:'owner-mailbox@example.test',H2H_SETUP_TOKEN:'synthetic-email-owner-claim'},outbound:async(request)=>{
   assert.equal(new URL(request.url).host,'api.resend.com');const message=await request.json();if(message.subject==='Confirm your HappyToHelp sign-in')mail.push(message);return Response.json({id:'synthetic-mail-'+mail.length})
  }})
  try{
-  const claimed=await app.request('/auth/bootstrap',{body:{token:'synthetic-email-owner-claim'},headers:{origin:app.origin}});assert.equal(claimed.status,303)
+  const displayName='Mara Chen',claimed=await app.request('/auth/bootstrap',{body:{token:'synthetic-email-owner-claim',displayName},headers:{origin:app.origin}});assert.equal(claimed.status,303)
   const owner=claimed.headers.get('set-cookie').match(/h2h_session=([^;]+)/)[1],actor=(await app.call('/api/identity/session',{token:owner})).data,w={projectId:actor.projectId,users:{owner:actor.id}},exportPath=`/api/dashboard/projects/${w.projectId}/reports?format=conversations.csv`,password='synthetic-mailbox-first-password'
   const call=(path,body,token=owner)=>app.call(path,{body,token})
+  const identity=(await call('/api/management/bootstrap')).data
+  assert.equal(identity.project.name,app.bindings.WORKSPACE_NAME)
+  assert.equal(identity.currentAgent.name,displayName,'the owner’s submitted claim name wins over the installer default')
+  assert.equal((await call('/auth/bootstrap',{token:'synthetic-email-owner-claim',displayName:'Replacement owner'})).status,409)
+  assert.equal((await call('/api/management/profile')).data.data.name,displayName)
   await app.db.prepare('UPDATE session_factors SET verified_at=verified_at-? WHERE user_id=?').bind(20*60*1000,w.users.owner).run()
   const blocked=await call(exportPath);assert.equal(blocked.status,403);assert.equal(blocked.data.code,'step_up_required');assert.deepEqual(blocked.data.methods,['email_link']);assert.equal(blocked.data.accountId,w.users.owner)
   assert.equal((await call('/api/management/profile')).data.data.has_password,0)

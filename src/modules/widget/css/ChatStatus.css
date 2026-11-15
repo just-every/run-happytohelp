@@ -1,6 +1,6 @@
 #happytohelp-root .happytohelp-chat-box-status {
   display: block;
-  font-size: 0.7em;
+  font-size: max(13px, 0.7em);
   padding-top: 2px;
   width: 100%;
   box-sizing: border-box;

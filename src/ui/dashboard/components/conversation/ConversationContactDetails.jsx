@@ -1,3 +1,4 @@
+import { isNoRequester } from '../../../../modules/customers/no-requester';
 import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import TimeAgo from 'react-timeago';
@@ -30,6 +31,10 @@ export default function ConversationContactDetails({ conversation, onEdit, onEma
         setActionsOpen(false);
         actionsButtonRef.current?.focus();
     };
+
+    if (isNoRequester(contact)) return <ConversationDetailSection className="conversation-details-contact" title="Requester">
+        <ConversationDetailField icon="user" label="Requester" value="No requester" />
+    </ConversationDetailSection>;
 
     return <><ConversationDetailSection className="conversation-details-contact" title="Contact">
         { name && <ConversationDetailField className="conversation-detail-field--primary" icon="user" label="Name">

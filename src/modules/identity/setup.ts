@@ -67,7 +67,7 @@ setup.post('/bootstrap', async c => {
 
 /** Both installer entry points share the same atomic native account, workspace and session creation. */
 export async function createNativeOwner(c: Context<AppEnv>, body: Record<string, unknown>, {emailClaim=false}:{emailClaim?:boolean}={}) {
- // Name, owner name and colour are optional: what is missing is derived, what is given is used as given. An explicit empty value is still refused.
+ // Explicit answers win over installer defaults; only unanswered identity is derived. An explicit empty value is still refused.
  const primaryColor = body.primaryColor
  if (primaryColor !== undefined && (typeof primaryColor !== 'string' || !/^#[0-9a-f]{6}$/i.test(primaryColor))) {
   throw new HTTPException(400, {message: 'Choose a six-digit brand colour'})
@@ -84,9 +84,13 @@ export async function createNativeOwner(c: Context<AppEnv>, body: Record<string,
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw new Error()
   allowedOrigin = url.origin
  } catch { throw new HTTPException(400, {message: 'Website URL must be a valid http:// or https:// URL'}) }
- const derivedName = body.name === undefined ? deriveWorkspaceName(allowedOrigin, email) : null
- const name = derivedName ?? requiredString(body.name, 'name', 200).trim()
- const ownerName = body.ownerName === undefined ? deriveOwnerName(email) : requiredString(body.ownerName, 'ownerName', 200).trim()
+ const installationName = typeof c.env.WORKSPACE_NAME === 'string' && c.env.WORKSPACE_NAME.trim() ? c.env.WORKSPACE_NAME : undefined
+ const installationOwner = typeof c.env.OWNER_NAME === 'string' && c.env.OWNER_NAME.trim() ? c.env.OWNER_NAME : undefined
+ const selectedName = body.name === undefined ? installationName : body.name
+ const selectedOwner = body.ownerName === undefined ? installationOwner : body.ownerName
+ const derivedName = selectedName === undefined ? deriveWorkspaceName(allowedOrigin, email) : null
+ const name = derivedName ?? requiredString(selectedName, 'name', 200).trim()
+ const ownerName = selectedOwner === undefined ? deriveOwnerName(email) : requiredString(selectedOwner, 'ownerName', 200).trim()
  const password = emailClaim ? null : await passwordHash(body.password as string)
  const projectId = id(), userId = id(), token = id() + id(), now = Date.now()
  const claim = 'SELECT 1 FROM owner_setup WHERE singleton=1 AND claim_id=?', guard = `EXISTS(${claim})`

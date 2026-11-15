@@ -14,6 +14,8 @@ export async function legacyAdoptionJourney(){
   const owner=(await app.call('/api/identity/bootstrap',{body:{setupToken:'synthetic-adoption-setup',email:'synthetic-owner@example.test',password:'Synthetic adoption password 42!',allowedOrigin:'https://synthetic-setup.example'},headers:{Origin:app.origin},status:201})).data
   const token=owner.token,setup=owner.projectId,source='synthetic-adopted-workspace',nativeId=owner.userId
   const foreign=await app.seedWorkspace('adoption-foreign')
+  // Another member of the custody workspace is not a member of the adopted one.
+  await app.db.prepare("INSERT INTO memberships(project_id,user_id,role) VALUES(?,?,'operator')").bind(setup,foreign.users.owner).run()
   await app.call('/api/rer/business-project',{token,body:{projectId:setup},headers:{Origin:app.origin},status:200})
   const setupBefore=await app.first('SELECT p.*,ps.settings_json FROM projects p JOIN project_settings ps ON ps.project_id=p.id WHERE p.id=?',setup)
   const linkBefore=await app.first('SELECT * FROM h2h_business_project')
@@ -22,10 +24,15 @@ export async function legacyAdoptionJourney(){
   const attachment=Buffer.from('Synthetic historical note attachment'),objectKey=`legacy/projects/${source}/media/synthetic-note-media`
   const raw={format:'happytohelp-legacy-v1',source:{repository:'synthetic-happytohelp',revision:'synthetic-adoption-v2',exportedAt:date,projectId:source,mailFromDomain:'synthetic-mail.example'},tables:{
    projects:[{id:source,name:'Synthetic historical support',website:'https://synthetic-history.example',slug:'synthetic-history',email_from_address:'synthetic-support@example.test',created_at:date}],
-   users:[{id:staff,name:'Historical source admin',email:'synthetic-staff@example.test',created_at:date},{id:nativeId,name:'Historical owner snapshot',email:'synthetic-owner@example.test',created_at:date},{id:foreign.users.owner,name:'Historical foreign snapshot',email:'owner-adoption-foreign@example.test',created_at:date},{id:'synthetic-deleted-staff',name:'Deleted staff',email:'synthetic-deleted@example.test',deleted_at:date,created_at:date}],
+   users:[{id:staff,name:'Historical source admin',email:'synthetic-owner@example.test',created_at:date},{id:nativeId,name:'Historical owner snapshot',email:'synthetic-former-owner@example.test',created_at:date},{id:foreign.users.owner,name:'Historical foreign snapshot',email:'owner-adoption-foreign@example.test',created_at:date},{id:'synthetic-deleted-staff',name:'Deleted staff',email:'synthetic-deleted@example.test',deleted_at:date,created_at:date}],
    project_users:[{id:'synthetic-staff-member',project_id:source,user_id:staff,role:'admin'},{id:'synthetic-native-member',project_id:source,user_id:nativeId,role:'owner'},{id:'synthetic-foreign-member',project_id:source,user_id:foreign.users.owner,role:'owner'},{id:'synthetic-deleted-member',project_id:source,user_id:'synthetic-deleted-staff',role:'owner',deleted_at:date}],
    contacts:[{id:'synthetic-historical-contact',project_id:source,name:'Historical visitor',created_at:date}],
-   conversations:[{id:conversation,project_id:source,contact_id:'synthetic-historical-contact',agent_id:staff,created_at:date}],
+   conversations:[
+    {id:conversation,project_id:source,contact_id:'synthetic-historical-contact',agent_id:staff,priority:'urgent',created_at:date},
+    {id:'synthetic-foreign-assignment',project_id:source,contact_id:'synthetic-historical-contact',agent_id:foreign.users.owner,priority:'high',created_at:date},
+    {id:'synthetic-no-requester',project_id:source,contact_id:null,priority:'high',created_at:date},
+    {id:'synthetic-unmatched-assignment',project_id:source,contact_id:'synthetic-historical-contact',agent_id:nativeId,priority:'low',created_at:date},
+   ],
    messages:[{id:'synthetic-historical-reply',project_id:source,conversation_id:conversation,agent_id:staff,content:'A retained human reply',created_at:date},{id:'synthetic-overlapping-author',project_id:source,conversation_id:conversation,agent_id:nativeId,content:'Original author differs from current owner profile',created_at:'2026-01-01T00:00:01.000Z'}],
    events:[{id:'synthetic-history-note',conversation_id:conversation,agent_id:staff,type:'INTERNAL_NOTE',payload:'A retained private note',created_at:date}],
    macros:[{id:'synthetic-history-macro',project_id:source,title:'Historical saved reply',content:'Saved historical answer',created_by_id:staff,created_at:date}],
@@ -102,8 +109,30 @@ export async function legacyAdoptionJourney(){
   await app.configure({})
   const full=(await drive({})).data
   assert.deepEqual(full.after,full.before,'inert provisioning/import starts no work')
+  // The source assignee ID differs from the native principal. Only its exact
+  // staff email can map it; a real user in another workspace stays historical.
+  const ticketFields=async()=>{
+   for(const [id,priority,assignee,name] of [[conversation,'urgent',nativeId,'Historical source admin'],['synthetic-foreign-assignment','high',null,'Historical foreign snapshot'],['synthetic-unmatched-assignment','low',null,'Historical owner snapshot']]){
+    const ticket=(await app.call(`/api/dashboard/projects/${source}/conversations/${id}`,{token,status:200})).data.data
+    assert.equal(ticket.priority,priority,'source ticket priority is preserved through the native dashboard')
+    assert.equal(ticket.assigned_to,assignee,'historical assignment needs an exact current workspace member email')
+    assert.equal(ticket.agent?.id??null,assignee)
+    assert.equal(ticket.historical_assignment.display_name,name,'native assignment does not replace historical staff attribution')
+   }
+  }
+  const missingRequester=async()=>{
+   const ticket=(await app.call(`/api/dashboard/projects/${source}/conversations/synthetic-no-requester`,{token,status:200})).data.data
+   assert.equal(ticket.requester_id,null);assert.equal(ticket.requester_status,'none');assert.equal(ticket.contact.email,null)
+   const customers=(await app.call(`/api/management/projects/${source}/contacts`,{token,status:200})).data
+   assert.equal(customers.pagination.total,raw.tables.contacts.length);assert.ok(customers.data.every(contact=>contact.id!==ticket.contact.id))
+   assert.equal((await app.first('SELECT count(*) n FROM contacts WHERE project_id=? AND id=?',source,ticket.contact.id)).n,1)
+   assert.equal(await app.first('SELECT 1 FROM sessions WHERE contact_id=?',ticket.contact.id),null)
+  }
+  await missingRequester()
+  await ticketFields()
   const replay=(await drive({})).data
   assert.equal(replay.applied,0);assert.ok(replay.replayed>0)
+  await ticketFields();await missingRequester()
   await drive({swapProfile:true,refused:true})
   assert.deepEqual(await app.sql('SELECT * FROM users ORDER BY id'),userBefore)
   assert.deepEqual(await app.sql('SELECT * FROM credentials ORDER BY user_id'),credentialsBefore)
@@ -111,7 +140,7 @@ export async function legacyAdoptionJourney(){
   assert.deepEqual(await app.first('SELECT p.*,ps.settings_json FROM projects p JOIN project_settings ps ON ps.project_id=p.id WHERE p.id=?',setup),setupBefore)
   assert.deepEqual(await app.first('SELECT * FROM h2h_business_project'),linkBefore)
   assert.equal(await app.first('SELECT 1 FROM user_settings WHERE user_id=?',staff),null)
-  assert.equal((await app.first('SELECT assigned_to FROM conversations WHERE id=?',conversation)).assigned_to,null)
+  assert.equal((await app.first('SELECT assigned_to FROM conversations WHERE id=?',conversation)).assigned_to,nativeId)
   assert.equal((await app.first('SELECT source_user_id FROM legacy_actor_origins WHERE project_id=? AND target_table=\'conversations\' AND target_id=?',source,conversation)).source_user_id,staff)
   assert.equal((await app.first('SELECT created_by FROM macros WHERE id=\'synthetic-history-macro\'')).created_by,nativeId)
   assert.equal((await app.first("SELECT source_user_id FROM legacy_actor_origins WHERE project_id=? AND target_table='macros'",source)).source_user_id,staff)

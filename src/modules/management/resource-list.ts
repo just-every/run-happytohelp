@@ -1,3 +1,4 @@
+import {realContactSql} from '../customers/no-requester'
 import {requireActor} from '../../platform/auth'
 import {ticketScopeSql} from '../access/ticket-scope'
 import type {Context} from 'hono'
@@ -10,7 +11,7 @@ export function resourcePage(c:Context<AppEnv>){
 }
 export async function contactConversations(c:Context<AppEnv>,projectId:string){
  const contactId=c.req.param('resourceId'),{page,limit}=resourcePage(c)
- const contact=await c.env.DB.prepare('SELECT id FROM contacts WHERE id=? AND project_id=?').bind(contactId,projectId).first()
+ const contact=await c.env.DB.prepare(`SELECT id FROM contacts WHERE id=? AND project_id=? AND ${realContactSql()}`).bind(contactId,projectId).first()
  if(!contact)throw new HTTPException(404)
  const actor=await requireActor(c)
  // The contact's own conversations and the ones it takes part in, each through its own key, never every conversation.

@@ -18,7 +18,7 @@ export async function adoptionForRun(env:Env,run:Run,lease:DeltaLease):Promise<A
  * the all-package barrier across invocations without materializing a package.
  * B's normal/erasure cleanup removes these rows with every other context kind. */
 export async function preflightSlice(env:Env,run:Run,bundle:LegacyBundle,hydrated:{context:LegacyBundle;media:any},prepared:PreparedSlice,adoption:AdoptionApply,objectKeys:Set<string>){
- const plan=await planImport(bundle,{context:hydrated.context,media:hydrated.media,objectKeys,identity:prepared.identity,mappingProfile:adoption.profile})
+ const plan=await planImport(bundle,{context:hydrated.context,media:hydrated.media,objectKeys,identity:prepared.identity,mappingProfile:adoption.profile,db:env.DB})
  await normalizeImportPlan(plan,env,prepared)
  const targets=plan.rows.flatMap(row=>row.mapped),available=new Set<string>(),wanted=new Set<string>()
  const references=new Map<string,Array<{id:number;seq:number;table:string;from:string;to:string|null}>>()

@@ -1,3 +1,4 @@
+import {requesterReadFields} from '../customers/no-requester'
 import {ticketScopeSql} from '../access/ticket-scope'
 import {nativeAgentAuthority,type NativeAgentAuthority} from '../../platform/agent-authority'
 import {workspaceAccountOptions} from './account-options'
@@ -55,18 +56,19 @@ export async function getTicket(env:Env,actor:Actor,id:string,tokenAuthority?:To
  const access=tokenAuthority?null:await ticketReadAccess(env,actor)
  const token=tokenAuthority?tokenGuard(tokenAuthority,actor.projectId,tokenAuthority.scope):null
  const row=await env.DB.prepare(`SELECT c.* FROM conversations c WHERE c.project_id=? AND c.id=? ${token?`AND EXISTS(${token.sql})`:`AND ${ticketScopeSql('?')}`} AND ${contactAvailableSql()} AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`).bind(actor.projectId,id,...(token?.params??[actor.id])).first<any>();if(!row)throw new HTTPException(404)
- const [fields,history,status,tags,api]=await Promise.all([
+ const [fields,history,status,tags,api,requester]=await Promise.all([
   env.DB.prepare('SELECT f.*,v.value_json FROM ticket_fields f LEFT JOIN ticket_field_values v ON v.project_id=f.project_id AND v.field_id=f.id AND v.conversation_id=? WHERE f.project_id=?').bind(id,actor.projectId).all<any>(),
   env.DB.prepare("SELECT h.*,op.agent_name,op.sponsor_name,op.approvers_json FROM ticket_history h LEFT JOIN h2h_agent_operations op ON op.project_id=h.project_id AND json_extract(op.result_json,'$.history_id')=h.id WHERE h.project_id=? AND h.conversation_id=? ORDER BY h.at DESC,h.id DESC LIMIT 200").bind(actor.projectId,id).all<any>(),
   env.DB.prepare('SELECT id,name,category FROM ticket_statuses WHERE project_id=? AND id=?').bind(actor.projectId,row.status_id).first(),
   // The ticket's own links (the primary key), never the workspace's.
   env.DB.prepare('SELECT t.id,t.name FROM conversation_tags ct JOIN workspace_tags t ON t.project_id=ct.project_id AND t.id=ct.tag_id WHERE +ct.project_id=? AND ct.conversation_id=? ORDER BY t.name').bind(actor.projectId,id).all<any>(),
   env.DB.prepare('SELECT credential_name,source_product,source_ref,source_url FROM api_conversations WHERE project_id=? AND conversation_id=?').bind(actor.projectId,id).first(),
+  requesterReadFields(env,row),
  ])
  const visible=new Set(fields.results.filter(f=>fieldAllowed(f,access)).map(f=>f.id))
  const historyRows=history.results.map(h=>{const changes=JSON.parse(h.changes_json);if(changes.fields)for(const key of Object.keys(changes.fields))if(!visible.has(key))delete changes.fields[key];const {changes_json,agent_name,sponsor_name,approvers_json,...rest}=h;return {...rest,changes,...(agent_name?{prepared_by:{agent:agent_name,sponsor:sponsor_name,approvers:JSON.parse(approvers_json)}}:{})}})
  const {ticket_actor_id,ticket_actor_type,ticket_source,...ticket}=row
- return {...ticket,status,api,tags:tags.results,fields:Object.fromEntries(fields.results.filter(f=>visible.has(f.id)&&f.value_json!=null).map(f=>[f.id,JSON.parse(f.value_json)])),history:historyRows}
+ return {...ticket,...requester,status,api,tags:tags.results,fields:Object.fromEntries(fields.results.filter(f=>visible.has(f.id)&&f.value_json!=null).map(f=>[f.id,JSON.parse(f.value_json)])),history:historyRows}
 }
 export async function ticketSettings(env:Env,actor:Actor){
  const access=await ticketReadAccess(env,actor)

@@ -6,9 +6,20 @@ wordmark, no raster images). The mark's SVG and favicon files, and the PNGs rend
 `public/homepage/media/brands`.
 It retains links to native workspace, setup and login. This module serves dynamic,
 project-scoped published help centers. Former pricing, resources, legal, waitlist,
-referrer-personalized and public homepage-widget behavior remains retired. The
-customer support widget remains an independent owner-configured product surface
-served from its own `/widget.js` build.
+referrer-personalized behavior remains retired. The native `/widget.js` customer
+support widget is published on the installation’s homepage, docs, Run pages and
+its own Help Center. `/contact` opens the native request page and chat. The
+original installation-owner binding selects this inbox; arbitrary tenants are
+never selected. Anonymous chat asks for email without treating it as mailbox
+proof, and page collection stays disabled. Native request forms retain their
+separate verification and spam checks. New workspaces receive a published native
+contact form; existing installations receive it once through the original owner’s
+authenticated Setup check. Existing form and widget choices are retained.
+
+`runtime-pages.ts` serves `/run` and `/contract` in the app using the same
+renderers and contract source as the static site build.
+
+— Codex, 15 November 2026.
 
 `index.ts` dispatches the canonical help-center routes; `/` belongs to the native
 React router.

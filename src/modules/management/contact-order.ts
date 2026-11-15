@@ -1,4 +1,5 @@
 import {contactBands,type Bands} from './contact-bands'
+import {realContactSql} from '../customers/no-requester'
 const meta=(key:string)=>`json_extract(metadata_json,'$.${key}')`
 export type Clause={sql:string;params:unknown[]}
 export const clauses=(list:Clause[]):Clause=>({sql:list.map(clause=>clause.sql).join(' AND '),params:list.flatMap(clause=>clause.params)})
@@ -17,7 +18,7 @@ export const contactSorts:Record<string,ContactSort>=Object.fromEntries(Object.e
  searchable:{asc:`contacts_searchable_${name}_asc`,desc:`contacts_searchable_${name}_desc`},
  column:`${name}_key`,bandColumn:`${name}_band`,bands:contactBands(key,integer)}]}))
 /** Exactly the list's count without a term (and contact_tallies' rule, migration 318). */
-export const contactLive:Clause={sql:`coalesce(${meta('is_deleted')},0)!=1`,params:[]}
+export const contactLive:Clause={sql:`coalesce(${meta('is_deleted')},0)!=1 AND ${realContactSql()}`,params:[]}
 const fields=['name','email',meta('provided_name'),meta('provided_email')]
 /** A contact a non-empty term can match: one of the four values is not empty. Written exactly as the searchable
  * indexes' predicate (migration 318), so a term's statement that adds it may use them; a match implies it. */

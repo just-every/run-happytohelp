@@ -255,7 +255,7 @@
 }
 #happytohelp-root .happytohelp-insight-footer .happytohelp-insight-agent {
   opacity: 0.3;
-  font-size: 12px;
+  font-size: max(13px, 12px);
   line-height: 19px;
   display: inline-block;
   margin: 0;

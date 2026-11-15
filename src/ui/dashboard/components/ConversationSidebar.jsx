@@ -1,3 +1,4 @@
+import { isNoRequester } from '../../../modules/customers/no-requester';
 import FeedbackPanel from '../../../modules/feedback/ui/FeedbackPanel';
 import ExecutionTrace from './conversation/ExecutionTrace';
 import ProductionTrace from './conversation/ProductionTrace';
@@ -158,18 +159,20 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
                 <ResolutionSummary resolution={ conversation.resolution } history={ conversation.resolutionHistory } />
             </>, historyCount) }
             { section('production-trace', 'Production AI trace', <ExecutionTrace key={conversation.id} projectId={conversation.project_id} conversationId={conversation.id} shown={isShown&&open.has('production-trace')}/> ) }
-            { section('customer', 'Customer', <>
+            { section('customer', isNoRequester(conversation.contact) ? 'Requester' : 'Customer', <>
                 <ConversationContactDetails
                     conversation={ conversation }
                     onEdit={ () => setIsContactModalVisible(true) }
                     onEmailTranscript={ () => setIsEmailConversationTranscriptModalVisible(true) }
                     onToggleBlock={ handleBlock }
                 />
+                { !isNoRequester(conversation.contact) && <>
                 <PossiblySameCustomer projectId={ conversation.project_id } contact={ { ...conversation.contact, id: conversation.contact_id } } active={ open.has('customer') } />
                 <ConversationEnvironmentDetails contact={ conversation.contact } />
                 { conversation.contact.metadata && <ConversationDetailSection className="conversation-details-metadata" title="Metadata">
                     { Object.entries(conversation.contact.metadata).map(([ key, value ]) => <MetadataItem key={ key } name={ key } value={ value } />) }
                 </ConversationDetailSection> }
+                </> }
             </>) }
             { plugins.map((plugin, index) => section(`plugin-${ plugin.id }`, plugin.name, <iframe
                 id={ `plugin-${ plugin.id }` }

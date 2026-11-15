@@ -4,13 +4,14 @@ import type {Actor,AppEnv,Env} from '../../platform/env'
 import {scope} from '../management/common'
 import {ticketAuthority} from '../tickets/model'
 import {mailboxProofSql} from '../identity/mailbox'
-import {contactWritable} from '../../platform/contact-state'
+import {contactWritableSql} from '../../platform/contact-state'
 import {fingerprint} from './model'
 import {object} from './validation'
 
 export const identityLinkRoutes=new Hono<AppEnv>()
 const prefix='/projects/:projectId/contacts/:contactId/identity-links'
-const available=`${contactWritable} AND coalesce(json_extract(metadata_json,'$.is_blocked'),0)!=1 AND coalesce(json_extract(metadata_json,'$.is_deleted'),0)!=1`
+const availableAs=(alias='')=>{const prefix=alias?alias+'.':'';return `${contactWritableSql(alias)} AND coalesce(json_extract(${prefix}metadata_json,'$.is_blocked'),0)!=1 AND coalesce(json_extract(${prefix}metadata_json,'$.is_deleted'),0)!=1`}
+const available=availableAs()
 // A signed widget identifier or independently proven mailbox is identity proof.
 // A typed/imported address, metadata assertion or operator label is not.
 const proof=`CASE WHEN is_verified=1 AND external_id IS NOT NULL AND length(trim(external_id))>0 THEN 'signed_widget' WHEN ${mailboxProofSql('contacts')} THEN 'mailbox' ELSE NULL END`
@@ -34,7 +35,7 @@ async function preview(env:Env,p:string,id:string,input:any){
 }
 async function access(c:any){const actor=await scope(c) as Actor;const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'contacts.manage');return {actor,guard}}
 // Links and decisions about the opened customer, each naming the other identity and its reviewer.
-const related=(table:string,columns:string,order:string)=>`SELECT ${columns},(SELECT name FROM users WHERE users.id=r.actor_id) actor_name,contacts.id,contacts.name,contacts.email,contacts.external_id,${proof} proof FROM ${table} r JOIN contacts ON contacts.project_id=r.project_id AND contacts.id=CASE WHEN r.contact_id=? THEN r.linked_contact_id ELSE r.contact_id END WHERE r.project_id=? AND (r.contact_id=? OR r.linked_contact_id=?) AND ${available.replaceAll('metadata_json','contacts.metadata_json')} AND EXISTS(%GUARD%) ORDER BY ${order}`
+const related=(table:string,columns:string,order:string)=>`SELECT ${columns},(SELECT name FROM users WHERE users.id=r.actor_id) actor_name,contacts.id,contacts.name,contacts.email,contacts.external_id,${proof} proof FROM ${table} r JOIN contacts ON contacts.project_id=r.project_id AND contacts.id=CASE WHEN r.contact_id=? THEN r.linked_contact_id ELSE r.contact_id END WHERE r.project_id=? AND (r.contact_id=? OR r.linked_contact_id=?) AND ${availableAs('contacts')} AND EXISTS(%GUARD%) ORDER BY ${order}`
 const linksSql=related('customer_identity_links','r.provenance,r.actor_id,r.created_at','r.created_at,r.contact_id,r.linked_contact_id')
 const historySql=related('customer_identity_link_history','r.id history_id,r.action,r.provenance,r.actor_id,r.at','r.at DESC,r.rowid DESC LIMIT 100')
 identityLinkRoutes.get(prefix,async c=>{

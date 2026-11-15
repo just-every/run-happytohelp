@@ -1,7 +1,7 @@
 import type {Actor,Env} from '../../platform/env.ts'
 import {portalMailboxSql,signedMailboxSql} from '../identity/mailbox'
 import {id} from '../../platform/db.ts'
-import {contactWritable} from '../../platform/contact-state.ts'
+import {contactWritableSql} from '../../platform/contact-state.ts'
 import {mayReplySql} from '../access/reply-sql'
 
 // A Symbol cannot arrive in a public JSON message command. Admission rechecks the
@@ -11,7 +11,7 @@ export const inboundAuthority=Symbol('authenticated inbound email')
  * conversation (issued to exactly this sender), when the mail arrived through it.
  * `authenticated`: the ingress verified the From address. */
 export interface InboundAuthority {sender:string;receiptId:string;claimToken:string;raw:string;cc:string[];authenticated:boolean;grant?:string;mailboxId?:string;mailboxAddress?:string}
-const availableAs=(alias:string)=>`${contactWritable.replaceAll('metadata_json',`${alias}.metadata_json`)} AND coalesce(json_extract(${alias}.metadata_json,'$.is_blocked'),0)!=1 AND coalesce(json_extract(${alias}.metadata_json,'$.is_deleted'),0)!=1`,available=availableAs('contacts')
+const availableAs=(alias:string)=>`${contactWritableSql(alias)} AND coalesce(json_extract(${alias}.metadata_json,'$.is_blocked'),0)!=1 AND coalesce(json_extract(${alias}.metadata_json,'$.is_deleted'),0)!=1`,available=availableAs('contacts')
 
 /** A contact's address is proven, so mail from that address is theirs, when mail
  * this desk received created the contact, or a widget signature names exactly that

@@ -111,7 +111,7 @@ export async function mountedAdoptionJourney({representative=true}={}){
   assert.equal(transcript.messages.find(m=>m.id==='synthetic-message').agent.name,'Historical owner')
   assert.deepEqual(transcript.events.map(n=>n.id),['synthetic-wire-note'],'root read does not pull non-root historical notes into the root')
   const detail=(await app.call('/api/dashboard/conversations/synthetic-conversation',{token:adopted.token,status:200})).data.data
-  assert.equal(detail.agent,null);assert.equal(detail.historical_assignment.display_name,'Historical owner')
+  assert.equal(detail.assigned_to,owner.userId,'the recorded staff email matches the current native custodian');assert.equal(detail.agent.id,owner.userId);assert.equal(detail.historical_assignment.display_name,'Historical owner')
   const buckets=(await app.call('/api/dashboard/conversations/synthetic-conversation/buckets',{token:adopted.token,status:200})).data.data
   for(const [bucketId,noteId,author] of [['synthetic-history-thread','synthetic-thread-note','Historical foreign admin'],['synthetic-note-only-thread','synthetic-note-only','Historical owner']]){
    const b=buckets.find(b=>b.id===bucketId);assert.ok(b);assert.equal(b.counts.agent_events_internal_note,1);assert.equal(b.events[0].id,noteId);assert.equal(b.events[0].agent.name,author)

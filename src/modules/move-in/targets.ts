@@ -36,7 +36,7 @@ const entities:Record<string,Table[]>={
   {...table('move_in_note_media','note_id','note_id,media_id','media_id'),nativeOnly:true}
  ],
  conversation:[
-  table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id,subject,status_id,status_category,channel,group_id'),
+  table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id,subject,status_id,status_category,channel,group_id,priority,submitter_id,submitter_type'),
   table('move_in_conversations','conversation_id','conversation_id,project_id,vendor,source_id,subject,source_state,source_channel'),
   table('email_threading_keys','conversation_id','project_id,conversation_id,key_kind,key_value,source,source_ref,created_at',"key_kind||':'||key_value"),
   table('messages','conversation_id','id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at,intent_hash,bucket_id,erased_at,citations_json','id'),
@@ -73,7 +73,13 @@ const bound:Ref={project:'?',id:'?'}
 function where(t:Table,{project,id}:Ref=bound){if(t.direct)return `project_id=${project} AND ${t.key}=${id}`;if(t.name==='macro_heads')return `macro_id=${id} AND macro_id IN (SELECT id FROM macros WHERE project_id=${project})`;if(t.name==='move_in_note_media')return `note_id=${id} AND note_id IN (SELECT id FROM move_in_notes WHERE project_id=${project})`;if(t.name==='message_authorship')return `message_id IN (SELECT id FROM messages WHERE conversation_id=${id} AND project_id=${project})`;if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return `resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=${id} AND project_id=${project})`;if(t.nativeOnly)return `conversation_id=${id} AND conversation_id IN (SELECT id FROM conversations WHERE project_id=${project})`;if(t.name==='move_in_message_sources')return `project_id=${project} AND message_id IN (SELECT id FROM messages WHERE project_id=${project} AND conversation_id=${id})`;if(t.name==='knowledge_article_categories')return `article_id=${id} AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=${project})`;return `project_id=${project} AND ${t.key}=${id}`}
 function params(t:Table,destination:string,id:string){return t.direct?[destination,id]:t.nativeOnly?[id,destination]:t.name==='move_in_message_sources'?[destination,destination,id]:['knowledge_article_categories','macro_heads'].includes(t.name)?[id,destination]:[destination,id]}
 const realPolicyColumns=new Set(['first_response_minutes','next_response_minutes','resolution_minutes','approaching_minutes','unattended_minutes'])
-function select(t:Table,ref:Ref=bound){const columns=t.columns.map(c=>t.name==='sla_policies'&&realPolicyColumns.has(c)?`CASE WHEN ${c}=CAST(${c} AS INTEGER) THEN CAST(${c} AS INTEGER) ELSE ${c} END`:c);return `(SELECT COALESCE(json_group_array(json_array(${columns.join(',')})),'[]') FROM (SELECT ${t.columns.join(',')} FROM ${t.name} WHERE ${where(t,ref)} ORDER BY ${t.order}))`}
+function readColumn(t:Table,column:string){
+ if(t.name==='conversations'&&['priority','submitter_id','submitter_type'].includes(column))return "CASE WHEN EXISTS(SELECT 1 FROM move_in_origins owned WHERE owned.project_id=native.project_id AND owned.target_id=native.id AND owned.target_kind='conversation' AND json_extract(owned.source_json,'$.ticket_fields')=1) THEN native."+column+" ELSE NULL END"
+ return t.name==='sla_policies'&&realPolicyColumns.has(column)?`CASE WHEN ${column}=CAST(${column} AS INTEGER) THEN CAST(${column} AS INTEGER) ELSE ${column} END`:column
+}
+function select(t:Table,ref:Ref=bound){const columns=t.columns.map(c=>readColumn(t,c));return `(SELECT COALESCE(json_group_array(json_array(${columns.join(',')})),'[]') FROM (SELECT * FROM ${t.name} WHERE ${where(t,ref)} ORDER BY ${t.order}) AS native)`}
+function priorityShape(kind:string,value:NativeValue){if(kind==='conversation'&&value.source.ticket_fields!==1)for(const row of value.tables.conversations??[]){delete row.priority;delete row.submitter_id;delete row.submitter_type}return value}
+
 function orderKey(t:Table,row:Record<string,any>){return t.name==='email_threading_keys'?`${row.key_kind}:${row.key_value}`:String(row[t.order])}
 function expected(t:Table,value:NativeValue){return JSON.stringify([...(value.tables[t.name]??[])].sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0).map(row=>t.columns.map(column=>column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null)))}
 function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sql {
@@ -88,7 +94,7 @@ function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sq
  else {clauses.push('NOT EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?)');bindings.push(destination,kind,id)}
  return {sql:`(${clauses.join(' AND ')})`,params:bindings}
 }
-export function nativeStatementCount(kind:string,value:NativeValue){return definitions(kind).filter(t=>!t.nativeOnly).reduce((n,t)=>n+(value.tables[t.name]?.length??0),0)+1+(kind==='conversation'?2:kind==='reply'?4:kind==='article'||kind==='contact'?1:0)}
+export function nativeStatementCount(kind:string,value:NativeValue){return definitions(kind).filter(t=>!t.nativeOnly).reduce((n,t)=>n+(value.tables[t.name]?.length??0),0)+1+(kind==='conversation'?(value.source.ticket_fields===1&&value.tables.conversations[0]?.assigned_to?3:2):kind==='reply'?4:kind==='article'||kind==='contact'?1:0)}
 export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
  if(kind==='conversation')completeImportedTicket(value)
  if(kind==='macro'){
@@ -103,7 +109,7 @@ export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
  if(kind==='contact'&&!value.tables.contact_companies.length)delete value.tables.contact_companies
  if(kind==='conversation'&&!value.tables.move_in_attachment_bytes.length)delete value.tables.move_in_attachment_bytes
  if(kind==='reply')withoutEmptyFiles(value.tables)
- return value
+ return priorityShape(kind,value)
 }
 /** One read's row, as returned by either read path: the rows of each table the
  * kind owns, the source the import recorded and its revision. An unowned native
@@ -115,7 +121,7 @@ function decodeRead(destination:string,kind:string,id:string,row:any):TargetRow|
  if(kind==='reply')withoutEmptyFiles(tables)
  if(!row.source&&kind==='contact'&&tables.contacts[0]&&JSON.parse(tables.contacts[0].metadata_json||'{}').is_erased===1)return undefined
  if(!row.source&&!Object.values(tables).some(rows=>rows.length))return undefined
- return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:{tables,source:row.source?JSON.parse(row.source):{}} as any}
+ return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:priorityShape(kind,{tables,source:row.source?JSON.parse(row.source):{}}) as any}
 }
 /** Selected keys, one result per key in input order. Each key's tables are the
  * single read's own subqueries (same predicates, order and column decoding),
@@ -153,7 +159,8 @@ export const nativeTargets:D1TargetAdapter={
  write(row){const value=row.value as unknown as NativeValue,statements:D1Sql[]=[]
   if(row.targetKind==='reply')return replyWrite(row.destination,row.targetId,value,row.revision)
   if(row.targetKind==='conversation')statements.push({sql:'INSERT INTO move_in_native_fences(project_id,conversation_id) VALUES(?,?)',params:[row.destination,row.targetId]})
-  for(const t of definitions(row.targetKind).filter(t=>!t.nativeOnly&&!['macro_heads','macro_versions'].includes(t.name)))for(const item of value.tables[t.name]??[]){if(item.project_id!==undefined&&item.project_id!==row.destination)throw new Error('native_destination_mismatch');const columns=t.columns.filter(c=>!t.generated?.includes(c));statements.push({sql:`INSERT ${t.name==='context_subjects'?'OR REPLACE ':''}INTO ${t.name}(${columns.join(',')}) VALUES(${columns.map(()=>'?').join(',')})`,params:columns.map(c=>item[c]??null)})}
+  if(row.targetKind==='conversation'&&value.source.ticket_fields===1&&value.tables.conversations[0].assigned_to)statements.push({sql:'INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(SELECT 1 FROM memberships WHERE project_id=? AND user_id=?) THEN 1 ELSE 0 END',params:[row.destination,value.tables.conversations[0].assigned_to]})
+  for(const t of definitions(row.targetKind).filter(t=>!t.nativeOnly&&!['macro_heads','macro_versions'].includes(t.name)))for(const item of value.tables[t.name]??[]){if(item.project_id!==undefined&&item.project_id!==row.destination)throw new Error('native_destination_mismatch');const columns=t.columns.filter(c=>!t.generated?.includes(c)&&!(t.name==='conversations'&&['priority','submitter_id','submitter_type'].includes(c)&&value.source.ticket_fields!==1));statements.push({sql:`INSERT ${t.name==='context_subjects'?'OR REPLACE ':''}INTO ${t.name}(${columns.join(',')}) VALUES(${columns.map(()=>'?').join(',')})`,params:columns.map(c=>item[c]??null)})}
   if(row.targetKind==='macro'){const version=value.tables.macro_versions[0];statements.push({sql:'UPDATE macro_versions SET actions_json=?,scope_json=? WHERE macro_id=? AND project_id=? AND version=1',params:[version.actions_json,version.scope_json,row.targetId,row.destination]})}
   // A contact with no email has no contact-key row to index.
   if(row.targetKind==='contact'&&typeof value.tables.contacts[0].email==='string'){const contact=value.tables.contacts[0];statements.push({sql:'UPDATE move_in_contact_keys SET email_digest=? WHERE project_id=? AND contact_id=? AND EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND id=? AND email IS ?)',params:[emailKey(row.destination,contact.email),row.destination,row.targetId,row.destination,row.targetId,contact.email]})}
@@ -228,8 +235,8 @@ function matchesOwnedSet(rows:TargetRow[],destination:string):D1Sql[]{
    const expectedRows=owned.flatMap(row=>(row.value as unknown as NativeValue).tables[t.name]??[]).map(row=>t.columns.map(column=>row[column]??null))
    // Compare a sorted multiset of JSON arrays, preserving NULL, numeric types,
    // Unicode and every owned column, including attachments and private notes.
-   const images=expectedRows.map(row=>JSON.stringify(row)).sort(),columns=t.columns.map(column=>t.name==='sla_policies'&&realPolicyColumns.has(column)?`CASE WHEN ${column}=CAST(${column} AS INTEGER) THEN CAST(${column} AS INTEGER) ELSE ${column} END`:column)
-   guards.push({sql:`(WITH scope(project,ids) AS (VALUES(?,?)) SELECT COALESCE(json_group_array(json(image)),'[]') FROM (SELECT json_array(${columns.join(',')}) image FROM (${snapshotQuery(t).replaceAll('?1','(SELECT project FROM scope)').replaceAll('?2','(SELECT ids FROM scope)')}) ORDER BY image))=?`,params:[destination,ids,JSON.stringify(images.map(image=>JSON.parse(image)))]})
+   const images=expectedRows.map(row=>JSON.stringify(row)).sort(),columns=t.columns.map(column=>readColumn(t,column))
+   guards.push({sql:`(WITH scope(project,ids) AS (VALUES(?,?)) SELECT COALESCE(json_group_array(json(image)),'[]') FROM (SELECT json_array(${columns.join(',')}) image FROM (${snapshotQuery(t).replaceAll('?1','(SELECT project FROM scope)').replaceAll('?2','(SELECT ids FROM scope)')}) AS native ORDER BY image))=?`,params:[destination,ids,JSON.stringify(images.map(image=>JSON.parse(image)))]})
   }
  }
  return guards

@@ -221,7 +221,7 @@
   }
   #happytohelp-root .happytohelp-interact-container .happytohelp-insight-agent .happytohelp-insight-agent-role {
     display: block;
-    font-size: 0.8em;
+    font-size: max(13px, 0.8em);
     color: #b9b9b9;
     line-height: 1.6em;
   }
@@ -306,7 +306,7 @@
   #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header-title-agents .happytohelp-chat-header-agent .happytohelp-insight-agent .happytohelp-insight-agent-role {
     display: block;
     color: #002c46;
-    font-size: 0.8em;
+    font-size: max(13px, 0.8em);
     line-height: 1em;
   }
   #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header-title-agents .happytohelp-chat-header-agent .happytohelp-insight-agent .happytohelp-insight-agent-info {

@@ -122,7 +122,7 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
     const fetchSettings = useCallback((configuration) => {
         if (configuration) {
             const collector = configuration.settings?.collector;
-            const settings = {...configuration.settings, collector: {...collector, enabled: collector?.enabled !== false && collectorPreference.current}};
+            const settings = {...configuration.settings, collector: {...collector, enabled: collector?.enabled !== false && collectorPreference.current}, ...(config.requireEmail ? {collect: {...configuration.settings?.collect, require_email: true}} : {})};
             setContextValues(current => mergeAdvanced(current, {...configuration, settings}, {hardMergeEverything: true}));
             return;
         }

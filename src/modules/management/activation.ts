@@ -12,6 +12,7 @@ import {runChecks} from './activation/checks'
 import {reconcileStarter} from './activation/starter'
 import {sendOwnerTestMail} from './activation/mail-probes'
 import {ProbeFailure} from './activation/provider-http'
+import {ensureOwnerContact} from './provisioning/public-contact'
 
 export const activation=new Hono<AppEnv>()
 const path='/projects/:projectId/activation'
@@ -32,6 +33,7 @@ activation.get(path,async c=>snapshotResponse(c,(await ownerScope(c)).projectId)
 activation.post(`${path}/check`,async c=>{
  const actor=await ownerScope(c),body=await c.req.json()
  if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(key=>key!=='step'&&key!=='auto')||body.step!==undefined&&!stepIds.includes(body.step)||body.auto!==undefined&&body.auto!==true)throw new HTTPException(400,{message:'Choose a checklist step to check, optionally with auto: true; completion cannot be set manually.'})
+ if(actor.role==='owner')await ensureOwnerContact(c.env,actor.id,actor.projectId)
  const ids:StepId[]=body.step?[body.step]:stepIds
  let config=await activationConfiguration(c.env,actor.projectId)
  // An untouched starter follows the provider whose key is installed before its key is validated.

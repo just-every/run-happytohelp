@@ -1,4 +1,5 @@
 import {Hono} from 'hono'
+import {realContactSql} from '../customers/no-requester'
 import type {Actor,AppEnv} from '../../platform/env'
 import {scope} from './common'
 import {ticketAuthority,fieldAllowed,fieldData} from '../tickets/model'
@@ -27,7 +28,7 @@ export function outboundOptionsRoutes(){
  routes.get('/projects/:projectId/tickets/requesters',async c=>{
   const actor=await scope(c) as Actor,guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.reply'),query=(c.req.query('q')??'').trim().slice(0,320)
   if(!query)return c.json({data:[]})
-  const rows=await c.env.DB.prepare(`SELECT ct.id,ct.name,ct.email,json_extract(ct.metadata_json,'$.phone') phone FROM contacts ct WHERE ct.project_id=? AND (instr(lower(coalesce(ct.name,'')),lower(?))>0 OR instr(lower(coalesce(ct.email,'')),lower(?))>0 OR instr(coalesce(json_extract(ct.metadata_json,'$.phone'),''),?)>0) AND coalesce(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1 AND EXISTS(${guard.sql}) ORDER BY ct.name,ct.id LIMIT 20`).bind(actor.projectId,query,query,query,...guard.params).all()
+  const rows=await c.env.DB.prepare(`SELECT ct.id,ct.name,ct.email,json_extract(ct.metadata_json,'$.phone') phone FROM contacts ct WHERE ct.project_id=? AND ${realContactSql('ct')} AND (instr(lower(coalesce(ct.name,'')),lower(?))>0 OR instr(lower(coalesce(ct.email,'')),lower(?))>0 OR instr(coalesce(json_extract(ct.metadata_json,'$.phone'),''),?)>0) AND coalesce(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1 AND EXISTS(${guard.sql}) ORDER BY ct.name,ct.id LIMIT 20`).bind(actor.projectId,query,query,query,...guard.params).all()
   c.header('Cache-Control','no-store');return c.json({data:rows.results})
  })
  return routes

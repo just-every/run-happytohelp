@@ -33,8 +33,7 @@ ownerClaim.post('/bootstrap', async c => {
  try {
   await createNativeOwner(c, {
    email, allowedOrigin: c.env.WIDGET_ORIGIN || c.env.APP_ORIGIN || new URL(c.req.url).origin,
-   // Rer's hosted claim has no owner answers and supplies a generic "Owner".
-   // Derive the native name from the actual owner email configured on this Worker.
+   ownerName: body.displayName,
   }, {emailClaim:true})
  } catch (error) {
   if (error instanceof HTTPException && error.status === 409){await healImportDoor(c.env);return c.json({error: 'already_initialized'}, 409)}

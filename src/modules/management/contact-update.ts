@@ -1,3 +1,4 @@
+import {isNoRequester} from '../customers/no-requester'
 import {apiContactIdentityGuard} from './contact-identity'
 import type {SqlGuard} from '../../platform/integration-authority'
 import {HTTPException} from 'hono/http-exception'
@@ -6,6 +7,7 @@ import {text} from './common'
 import {contactWritable} from '../../platform/contact-state'
 import {providedEmail} from '../../platform/mailbox'
 export async function updateContactResource(env:Env,projectId:string,id:string,body:Record<string,unknown>,existing:any,setBy:{type:'user'|'api';id:string},guard?:SqlGuard){
+ if(isNoRequester(existing))throw new HTTPException(409,{message:'The no-requester resource cannot be edited'})
  const metadata=JSON.parse(existing.metadata_json||'{}')
  if(metadata.is_erased||metadata.is_erasing)throw new HTTPException(409,{message:'This contact is being erased or was erased'})
  const fields:string[]=[],values:(string|null)[]=[]

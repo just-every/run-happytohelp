@@ -11,6 +11,7 @@ import {createRuntime} from '../helpers/emitted-runtime.mjs'
 import {client} from './kit/http.mjs'
 import {generate} from '../move-in/generator.mjs'
 import {publicSiteOverloadProof,readEffectsOnceProof} from '../helpers/public-site/overload.mjs'
+import {publicContactProof} from '../helpers/public-site/contact.mjs'
 
 const root=fileURLToPath(new URL('../..',import.meta.url))
 async function withRuntime(options,body){const runtime=await createRuntime(options);let success=false;try{await body(runtime,client(runtime.origin));success=true}finally{await runtime.close(success)}}
@@ -22,6 +23,7 @@ test('a published help center: Markdown rendered safely, complete summary search
   const host=path=>fetch(new URL(path,helpOrigin))
   assert.equal((await host('/')).status,404,'a configured host with an unknown project exposes no center')
   const tenant=await runtime.seedTenant({name:'Retained support',email:'retained-help@example.test',allowedOrigin:runtime.origin}),other=await runtime.seedTenant({name:'Other support',email:'other-help@example.test',allowedOrigin:runtime.origin})
+  await publicContactProof(runtime,request,tenant,other)
   const signIn=/href="[^"]*\?access=signin/
   const edit=async(path,body,method='POST')=>{const response=await request(`/api/knowledge/${tenant.projectId}/${path}`,{body,method,token:tenant.token});assert.ok(response.ok,await response.clone().text());return response.json()}
   await edit('categories',{title:'Public guides'})

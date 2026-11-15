@@ -1,3 +1,5 @@
+import {noRequesterId} from '../../customers/no-requester'
+import {importedPriority,importedAssignee} from '../ticket-import'
 import {zendeskOffline} from './zendesk-offline'
 import {sourceOwnership} from '../source-ownership'
 import {mapCompanies} from './companies'
@@ -63,12 +65,14 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
    }else if(vendor==='zendesk'&&record.kind==='ticket'||vendor==='intercom'&&record.kind==='conversation'){
     kind='conversation';target=id(kind,record.sourceId)
     const created=time(p.created_at,vendor==='zendesk'?'iso':'unix'),updated=time(p.updated_at,vendor==='zendesk'?'iso':'unix')
-    const contactSource=vendor==='zendesk'?sourceId(p.requester_id,vendor):(()=>{if(p.contacts?.type!=='contact.list'||!Array.isArray(p.contacts.contacts)||p.contacts.contacts.length!==1)throw new Error('exactly_one_conversation_contact_required');return sourceId(p.contacts.contacts[0]?.id,vendor)})()
+    const missingRequester=vendor==='zendesk'&&p.requester_id==null
+    const contactSource=vendor==='zendesk'?(missingRequester?null:sourceId(p.requester_id,vendor)):(()=>{if(p.contacts?.type!=='contact.list'||!Array.isArray(p.contacts.contacts)||p.contacts.contacts.length!==1)throw new Error('exactly_one_conversation_contact_required');return sourceId(p.contacts.contacts[0]?.id,vendor)})()
     const contact=records.get(`${vendor==='zendesk'?'user':'contact'}/${contactSource}`)
     // A Zendesk requester is a customer (with or without an email) or a staff member,
     // who comes across as an inert contact of their own. Intercom requires an email.
     const requesterRole=(contact?.payload as any)?.role
-    if(!contact||(vendor==='zendesk'?requesterRole!=='end-user'&&!staffRole(requesterRole):!email((contact.payload as any)?.email)))throw new Error('conversation_contact_unavailable')
+    if(!missingRequester&&(!contact||(vendor==='zendesk'?requesterRole!=='end-user'&&!staffRole(requesterRole):!email((contact.payload as any)?.email))))throw new Error('conversation_contact_unavailable')
+    if(missingRequester)omissions.push('requester_absent_system_contact')
     if(vendor==='zendesk'&&staffRole(requesterRole))omissions.push('staff_requester_imported_as_inert_contact')
     const state=vendor==='zendesk'?p.status:p.state;if(!(vendor==='zendesk'?['new','open','pending','hold','solved','closed']:['open','closed','snoozed']).includes(state))throw new Error('conversation_state_unsupported')
     const rows:Record<string,any>[]=[],notes:Record<string,any>[]=[],sources:Record<string,any>[]=[],seen=new Set<string>()
@@ -94,12 +98,12 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
     }
     rows.sort((a,b)=>a.created_at-b.created_at||a.local_id.localeCompare(b.local_id));rows.forEach((row,index)=>{row.revision=index+1})
     const resolved=['closed','solved'].includes(state)?closedAt([],p.updated_at,omissions,vendor==='zendesk'?'iso':'unix'):null
-    tables.conversations=[{id:target,project_id:projectId,contact_id:id('contact',contactSource),revision:rows.length,last_message_id:rows.at(-1)?.id??null,assigned_to:null,resolved_at:resolved,created_at:created,updated_at:updated}]
+    tables.conversations=[{id:target,project_id:projectId,contact_id:missingRequester?noRequesterId(projectId):id('contact',contactSource!),...(missingRequester?{submitter_id:'system',submitter_type:'system'}:{}),revision:rows.length,last_message_id:rows.at(-1)?.id??null,assigned_to:vendor==='zendesk'?importedAssignee(p.assignee_id,input.agentIds,omissions):null,...(vendor==='zendesk'?{priority:importedPriority(p.priority,omissions)}:{}),resolved_at:resolved,created_at:created,updated_at:updated}]
     tables.move_in_conversations=[{conversation_id:target,project_id:projectId,vendor,source_id:record.sourceId,subject:typeof p.subject==='string'?p.subject:typeof p.title==='string'?p.title:typeof p.source?.subject==='string'?p.source.subject:'',source_state:state,source_channel:vendor==='zendesk'?(p.via?.channel??'unknown'):p.channel.initial}]
     tables.messages=rows;tables.move_in_message_sources=sources;tables.move_in_notes=notes
     tables.conversation_tags=[...new Set(tags(record).map(tagKey))].map(name=>({project_id:projectId,conversation_id:target,tag_id:tagIds.get(name)??id('tag',name)}))
     if(vendor==='zendesk'){tables.ticket_field_values=zendeskTicketFields(record,projectId,target,records,omissions);if(p.custom_status_id!=null)omissions.push('zendesk_custom_status_not_mapped:'+p.custom_status_id)}
-    if(p.assignee_id||p.admin_assignee_id||p.team_assignee_id)omissions.push('historical_assignment_not_activated')
+    if(vendor!=='zendesk'&&(p.assignee_id||p.admin_assignee_id||p.team_assignee_id))omissions.push('historical_assignment_not_activated')
    }else if(vendor==='zendesk'&&record.kind==='ticket_comment'){
     // One reply on a conversation an earlier import holds. Its native message (or
     // private note) has the ID the ticket's own comments use, so a comment is
@@ -155,7 +159,7 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
    }else{result.effects.set(key,[]);result.omissions.set(key,[`unsupported_record_kind:${record.kind}`]);continue}
    if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,vendor,record,tables.conversations[0].created_at)
    const history=vendor==='zendesk'&&kind==='conversation'?zendeskOffline(p,projectId,target,tables,omissions):undefined
-   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,...(kind==='reply'?{conversation:tables.messages?.[0]?.conversation_id??tables.move_in_notes[0].conversation_id}:{}),...(vendor==='zendesk'&&Array.isArray(p._offline_provenance)?{packedProvenance:p._offline_provenance}:{}),...(history?{history}:{}),...(kind==='conversation'?{ownership:sourceOwnership(vendor,p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
+   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,...(vendor==='zendesk'&&kind==='conversation'?{ticket_fields:1}:{}),...(kind==='reply'?{conversation:tables.messages?.[0]?.conversation_id??tables.move_in_notes[0].conversation_id}:{}),...(vendor==='zendesk'&&Array.isArray(p._offline_provenance)?{packedProvenance:p._offline_provenance}:{}),...(history?{history}:{}),...(kind==='conversation'?{ownership:sourceOwnership(vendor,p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit');result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}]);if(omissions.length)result.omissions.set(key,omissions)
   }catch(error){result.rejections.set(key,error instanceof Error?error.message:'record_mapping_failed');result.effects.set(key,[]);if(omissions.length)result.omissions.set(key,omissions)}
  }

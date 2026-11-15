@@ -1,5 +1,6 @@
 import {contactMatch,contactSorts,type ContactPage,type ContactQuery} from './contact-order'
 import {keyOrder,orderable,type Keyed} from './contact-key-order'
+import {noRequesterId,realContactSql} from '../customers/no-requester'
 
 /** The contact_search query for a term's matches in the workspace, within a band of the page's sort if given
  * (contact-bands.ts). */
@@ -12,8 +13,8 @@ export function matchQuery(q:ContactQuery,band?:{value:string;level:number}){
  * entry), one row each: every match, at most `most + 1` of them, or those within a band of the page's sort. */
 export async function keyedMatches(q:ContactQuery,{most,band}:{most?:number;band?:{value:string;level:number}}={}){
  const column=contactSorts[q.sort].column
- const sql=`SELECT contact_id id,typeof(${column}) type,CAST(${column} AS TEXT) key FROM contact_search WHERE contact_search MATCH ?${most===undefined?'':' LIMIT ?'}`
- const params:unknown[]=[matchQuery(q,band),...(most===undefined?[]:[most+1])]
+ const sql=`SELECT contact_id id,typeof(${column}) type,CAST(${column} AS TEXT) key FROM contact_search WHERE contact_search MATCH ? AND contact_id IS NOT (SELECT id FROM contacts WHERE id=? AND NOT (${realContactSql()}))${most===undefined?'':' LIMIT ?'}`
+ const params:unknown[]=[matchQuery(q,band),noRequesterId(q.projectId),...(most===undefined?[]:[most+1])]
  return (await q.db.prepare(sql).bind(...params).all<Keyed>()).results
 }
 

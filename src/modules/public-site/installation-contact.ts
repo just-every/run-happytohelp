@@ -1,0 +1,31 @@
+import {loopbackHostnames} from '../../platform/local-host'
+import type {Env} from '../../platform/env'
+import {anchorState} from '../identity/recovery-authority/first-owner'
+import {escapeHtml as e} from './html'
+
+/** Only the retained installation owner can select the product's public inbox. */
+export async function installationContact(env:Env){
+ const explicit=await env.DB.prepare(`SELECT p.id,p.widget_key FROM h2h_business_project b JOIN projects p ON p.id=b.project_id JOIN users u ON u.id=b.owner_user_id JOIN memberships m ON m.project_id=p.id AND m.user_id=u.id AND m.role='owner' WHERE b.singleton=1 AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND (json_extract(s.settings_json,'$.deleted_at') IS NOT NULL OR json_extract(s.settings_json,'$.suspended_at') IS NOT NULL))`).first<{id:string;widget_key:string}>()
+ if(explicit)return explicit
+ const state=await anchorState(env)
+ if(!state.owner)return null
+ return env.DB.prepare(`SELECT p.id,p.widget_key FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND (json_extract(s.settings_json,'$.deleted_at') IS NOT NULL OR json_extract(s.settings_json,'$.suspended_at') IS NOT NULL))`).bind(state.owner.project_id).first<{id:string;widget_key:string}>()
+}
+
+/** Mount the native visitor UI; typed email remains unproven and collection stays off. */
+export async function withInstallationContact(request:Request,response:Response,env:Env,helpDocument=false){
+ const path=new URL(request.url).pathname
+ if(request.method!=='GET'||response.status!==200||!response.headers.get('Content-Type')?.includes('text/html')||!(helpDocument||path==='/'||path==='/run'||path==='/contract'||path==='/docs'||path.startsWith('/docs/')))return response
+ const address=new URL(request.url)
+ // Publish only where the native widget transport accepts the document's origin.
+ if(address.protocol!=='https:'&&!(address.protocol==='http:'&&loopbackHostnames.includes(address.hostname)))return response
+ const contact=await installationContact(env)
+ if(!contact)return response
+ let html=await response.text()
+ if(helpDocument&&!html.includes(`data-help-project="${e(contact.id)}"`))return new Response(html,response)
+ const config={requireEmail:true,settings:{collect:{require_email:true},collector:{enabled:false}}}
+ const script=`<script src="/widget.js" data-api-origin="${e(new URL(request.url).origin)}" data-widget-key="${e(contact.widget_key)}" data-config="${e(JSON.stringify(config))}" defer></script>`
+ const headers=new Headers(response.headers);headers.delete('Content-Length');headers.set('Cache-Control','private, no-store');headers.set('Vary','Cookie, Authorization')
+ if(helpDocument)html=html.replace('</main>','<p class="help-center-request-link"><a href="#launch-chat">Contact support in chat</a></p></main>')
+ return new Response(html.replace('</body>',script+'</body>'),{status:response.status,headers})
+}

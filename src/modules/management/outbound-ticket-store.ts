@@ -1,4 +1,5 @@
 import {outboundChannel} from './outbound-ticket-channel'
+import {realContactSql} from '../customers/no-requester'
 import {requireTicketScope,ticketScopeSql} from '../access/ticket-scope'
 import {destinationScopeSql} from '../access/destination-scope'
 import {prepareOutboundConfiguration} from './outbound-configuration'
@@ -11,7 +12,7 @@ import {trackingStatement} from '../outcomes/state'
 import {emailThreadingStatements} from '../integrations/email-threading'
 import {emailAddress} from '../integrations/inbound-routing'
 import {noticeCommand,type OutboundTicketInput} from './outbound-ticket-input'
-const writableContact=`COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1`
+const writableContact=`${realContactSql('ct')} AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1`
 async function outboundTicketAuthority(env:Env,actor:Actor,sessionHash:string){
  return ticketAuthority(env,actor,{sessionHash,source:'dashboard'},'conversations.reply')
 }

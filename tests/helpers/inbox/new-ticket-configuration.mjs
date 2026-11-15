@@ -79,7 +79,9 @@ export async function newTicketConfigurationBrowser(){
    assert.equal(await dialog.getByLabel('Requester email',{exact:true}).inputValue(),'')
    releaseOld();await page.waitForTimeout(100)
    await dialog.getByLabel('Request form',{exact:true}).waitFor()
-   assert.equal(await dialog.getByLabel('Request form',{exact:true}).locator('option').count(),1,'late old-brand choices cannot repaint the empty workspace')
+   const otherForms=(await call(`/api/forms/${other.id}`,undefined,owner.token)).data
+   assert.deepEqual((await dialog.getByLabel('Request form',{exact:true}).locator('option').evaluateAll(options=>options.map(option=>option.value))).sort(),['',...otherForms.map(form=>form.id)].sort(),'late old-brand choices cannot replace the selected workspace’s published forms')
+   assert.equal(await dialog.getByLabel('Request form',{exact:true}).locator(`option[value="${form.id}"]`).count(),0,'the previous workspace’s custom form stays unavailable')
    assert.equal(await dialog.getByLabel('Send from mailbox',{exact:true}).locator('option').count(),1)
    await capture('empty-brand')
    await noMailboxTicket({page,dialog,runtime,projectId:other.id,actorId:owner.actor.id,copies,capture})

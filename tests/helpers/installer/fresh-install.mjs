@@ -185,6 +185,8 @@ try{
  await start();
  const actor=await signIn();assert.equal(actor.role,'owner');assert.ok(actor.id);
  const login=await json('/api/identity/login',{email,password});assert.equal(login.actor.id,actor.id);
+ const installed=await json('/api/management/bootstrap',undefined,login.token);
+ assert.equal(installed.project.name,'Rer support');assert.equal(installed.currentAgent.name,'Rer owner');
  const project=await json('/api/management/projects',{name:'Retained workspace',allowedOrigin:origin},login.token);
  await run(root,['reset','--yes'],4); // Active-state refusal.
  await stop();await run(root,setup);

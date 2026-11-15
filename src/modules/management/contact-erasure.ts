@@ -1,3 +1,4 @@
+import {realContactSql,isNoRequester} from '../customers/no-requester'
 import {cleanupScopeStep,sourceCleanupAssertion,sourceCleanupStatus,CustodyError} from '../legacy-import/custody'
 import {eraseDoorContact} from '../move-in/door/erasure'
 import {redactionStatements,invalidateTransfersStatements} from '@runeditrun/rer/modules/portability/journal'
@@ -32,8 +33,9 @@ export interface ContactErasure {project_id: string; contact_id: string; erased_
  */
 export async function eraseContact(env: Env, projectId: string, contactId: string, actorId: string, lease: ErasureLease, sessionHash?:string) {
   if(sessionHash)env=erasureEnvironment(env,projectId,actorId,sessionHash)
-  const contact = await env.DB.prepare('SELECT email,external_id,metadata_json FROM contacts WHERE project_id=? AND id=?').bind(projectId, contactId).first<{email: string | null; external_id:string|null; metadata_json: string | null}>()
+  const contact = await env.DB.prepare('SELECT id,project_id,email,external_id,metadata_json FROM contacts WHERE project_id=? AND id=?').bind(projectId, contactId).first<{email: string | null; external_id:string|null; metadata_json: string | null}>()
   if (!contact) return null
+  if (isNoRequester(contact)) throw new HTTPException(409,{message:'The no-requester resource cannot be erased'})
   const csvBeforeFence=await csvErasureIdentities(env,projectId,contactId,contactEmails(contact))
   const now = Date.now()
   const fenced=await fenceAndStage(env, projectId, contactId, now, contact)
@@ -82,7 +84,7 @@ async function erasureRecord(env: Env, projectId: string, contactId: string, era
 contactErasure.post('/projects/:projectId/contacts/:contactId/erase', async c => {
   const actor = await scope(c, true), contactId = c.req.param('contactId')
   const token=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]
-  if (!await c.env.DB.prepare('SELECT 1 FROM contacts WHERE project_id=? AND id=?').bind(actor.projectId, contactId).first()) throw new HTTPException(404)
+  if (!await c.env.DB.prepare(`SELECT 1 FROM contacts WHERE project_id=? AND id=? AND ${realContactSql()}`).bind(actor.projectId, contactId).first()) throw new HTTPException(404)
   await requireStepUp(c, actor, 'contact.erase')
   let lease: ErasureLease
   try {

@@ -1,3 +1,4 @@
+import {isNoRequester} from '../customers/no-requester'
 import type {Env} from '../../platform/env'
 import {memberAccess} from '../access/gate'
 import {fieldAllowed} from './model'
@@ -16,11 +17,13 @@ export async function ticketPresentation(env:Env,rows:any[],userId?:string,{tags
   env.DB.prepare('SELECT page.value->>0 id,s.name,s.category FROM json_each(?) page CROSS JOIN ticket_statuses s ON s.project_id=page.value->>1 AND s.id=page.value->>2').bind(held('status_id')),
   env.DB.prepare('SELECT page.value->>0 id,g.id group_id,g.name FROM json_each(?) page CROSS JOIN ticket_groups g ON g.project_id=page.value->>1 AND g.id=page.value->>2').bind(held('group_id')),
   ...(tags?[env.DB.prepare('SELECT ct.conversation_id,t.id,t.name FROM conversation_tags ct JOIN workspace_tags t ON t.project_id=ct.project_id AND t.id=ct.tag_id WHERE ct.conversation_id IN (SELECT value FROM json_each(?)) ORDER BY t.name,t.id').bind(ids)]:[]),
+  env.DB.prepare("SELECT page.value->>0 conversation_id,c.id,c.project_id,c.metadata_json FROM json_each(?) page CROSS JOIN contacts c ON c.id=page.value->>2 AND +c.project_id=page.value->>1 WHERE page.value->>2=('no-requester:'||(page.value->>1))").bind(held('requester_id')),
  ])
  // Each field the values name is read once, then joined to its values in their order.
  const fieldKeys=[...new Map(results[0].results.map((value:any)=>[JSON.stringify([value.project_id,value.field_id]),[value.project_id,value.field_id]])).values()]
  const fields=new Map(fieldKeys.length?(await env.DB.prepare('SELECT f.* FROM json_each(?) held CROSS JOIN ticket_fields f ON f.project_id=held.value->>0 AND f.id=held.value->>1').bind(JSON.stringify(fieldKeys)).all<any>()).results.map(field=>[JSON.stringify([field.project_id,field.id]),field]):[])
  const data=new Map<string,any>(rows.map(r=>[r.id,{fields:{},tags:[],status:{id:r.status_id,category:r.status_category,name:r.status_category},group:null}]))
+ for(const requester of results[tags?4:3].results)if(isNoRequester(requester))Object.assign(data.get(requester.conversation_id),{requester_id:null,requester_status:'none'})
  for(const value of results[0].results){
   const field=fields.get(JSON.stringify([value.project_id,value.field_id]))
   if(field&&fieldAllowed(field,access.get(field.project_id)??null))data.get(value.conversation_id).fields[field.id]=JSON.parse(value.value_json)

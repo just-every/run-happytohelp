@@ -9,10 +9,12 @@ import { helpCenterRoutes, reserved, resolvePublicProject } from './help-center'
 import { missingHelpCenterPage } from './not-found'
 import { answerOverloads } from '../../platform/d1-overload'
 import { readEffects } from '../../platform/read-effects'
+import {installationContact,withInstallationContact} from './installation-contact'
+import {shell} from './shell'
 export { publicHelpHostResponse } from './help-host'
 
 export async function isPublicSitePath(path: string, env: Env) {
- if (path.startsWith('/portal/') || path.startsWith('/help/') || path.startsWith('/api/public-site/')) return true
+ if (path==='/contact'||path.startsWith('/portal/') || path.startsWith('/help/') || path.startsWith('/api/public-site/')) return true
  const parts = path.split('/').filter(Boolean)
  if (!parts.length || parts.length > 2 || reserved.has(parts[0])) return false
  let key: string
@@ -31,7 +33,12 @@ publicSiteRoutes.use('*',async(c,next)=>{
  if(!key)return
  const project=await resolvePublicProject(c.env,decodeURIComponent(key))
  if(!project)return
- const body=await renderPublicKnowledgeHtml(c.env,project.id,c.req.raw,await c.res.text()),headers=new Headers(c.res.headers);headers.delete('Content-Length');c.res=new Response(body,{status:c.res.status,headers})
+ const body=await renderPublicKnowledgeHtml(c.env,project.id,c.req.raw,await c.res.text()),headers=new Headers(c.res.headers);headers.delete('Content-Length');c.res=await withInstallationContact(c.req.raw,new Response(body,{status:c.res.status,headers}),c.env,true)
+})
+publicSiteRoutes.get('/contact',async c=>{
+ const contact=await installationContact(c.env)
+ c.header('Cache-Control','private, no-store')
+ return contact?c.redirect(`/help/${encodeURIComponent(contact.id)}/requests#launch-chat`,303):c.html(shell({name:'Support'},'','<h1>Contact support unavailable</h1><p>The installation owner has not published a support contact yet.</p>',{search:false,noindex:true}),503)
 })
 publicSiteRoutes.route('/',requestFormPages)
 publicSiteRoutes.route('/',portalPages)

@@ -9,7 +9,7 @@ import {demoOnboarding} from './demo.mjs'
 // model metadata/completion, mail acceptance/status and the website are edges.
 export async function provisioningJourney(){
  const mail=[],modelCalls=[],state={delivered:false,uncertain:false,modelStatus:200}
- const app=await startApp({origin:'http://127.0.0.1:8787',captureQueue:true,bindings:{H2H_LOCAL:'true',H2H_SETUP_TOKEN:'synthetic-happytohelp-1',APP_ORIGIN:'http://127.0.0.1:8787',EMAIL_FROM:'support@local.test',EMAIL_PROVIDER:'development',INBOUND_EMAIL_TOKEN:'synthetic-happytohelp-2'},outbound:async(request)=>{
+ const app=await startApp({origin:'http://127.0.0.1:8787',captureQueue:true,bindings:{H2H_LOCAL:'true',H2H_SETUP_TOKEN:'synthetic-happytohelp-1',APP_ORIGIN:'http://127.0.0.1:8787',WORKSPACE_NAME:'Installer workspace',OWNER_NAME:'Installer owner',EMAIL_FROM:'support@local.test',EMAIL_PROVIDER:'development',INBOUND_EMAIL_TOKEN:'synthetic-happytohelp-2'},outbound:async(request)=>{
   const url=new URL(request.url)
   if(url.hostname==='api.openai.com'){
    if(url.pathname.startsWith('/v1/models/'))return Response.json(state.modelStatus===200?{id:decodeURIComponent(url.pathname.split('/').at(-1)),object:'model'}:{error:'Rejected model credential'},{status:state.modelStatus})
@@ -27,13 +27,15 @@ export async function provisioningJourney(){
   throw new Error('Unexpected first-run provider '+url.hostname)
  }})
  try{
-  const owner=(await app.call('/api/identity/bootstrap',{body:{name:'Returns desk',email:'owner@owner.example',password:'synthetic-happytohelp-6',allowedOrigin:'https://owner.example',setupToken:'synthetic-happytohelp-1'},status:201})).data
+  const owner=(await app.call('/api/identity/bootstrap',{body:{name:'Returns desk',ownerName:'Returns owner',email:'owner@owner.example',password:'synthetic-happytohelp-6',allowedOrigin:'https://owner.example',setupToken:'synthetic-happytohelp-1'},status:201})).data
   const p=owner.projectId,token=owner.token,manage=`/api/management/projects/${p}`
   const get=async suffix=>(await app.call(manage+suffix,{token,status:200})).data.data
   const setup=async(suffix='',body)=>getSetup(suffix,body)
   const getSetup=async(suffix='',body)=>(await app.call(manage+'/activation'+suffix,{token,body,status:200})).data.data
   const row=(data,id)=>data.steps.find(item=>item.id===id)
   const settings=await get('/settings'),assistants=await get('/ais'),mailbox=await get('/email-settings')
+  assert.equal(settings.name,'Returns desk','the explicit workspace answer wins over the installer default')
+  assert.equal((await app.call('/api/management/profile',{token,status:200})).data.data.name,'Returns owner','the explicit owner answer wins over the installer default')
   assert.equal(assistants.length,1);const starter=assistants[0]
   assert.ok(starter.is_enabled);assert.equal(settings.default_visitor_ai_id,starter.id);assert.equal((await get('/ai')).assistant.id,starter.id)
   assert.ok(mailbox.inbound_address,'the workspace has a provisioned mailbox; local transport suppression is checked through sends below')

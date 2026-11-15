@@ -122,5 +122,14 @@ export async function customerPortalJourney(){
   assert.equal((await app.call(P+`/tickets/${id}`,rosa)).status,401)
   assert.equal(await (await app.files).get(objectKey),null)
   assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='portal.preferences.updated'",p))
+  await app.configure({MAIL_MODE:'off'})
+  const linksBefore=(await app.first('SELECT count(*) n FROM portal_links')).n,mailBefore=mail.length
+  const unavailable=await app.request(`/portal/${p}`,{headers:{'x-test-door':'public'}})
+  assert.equal(unavailable.status,200)
+  const unavailableHtml=await unavailable.text();assert.match(unavailableHtml,/role="status"/);assert.doesNotMatch(unavailableHtml,/<form[^>]+action="[^\"]*access\/request/)
+  assert.equal((await app.call(P+'/access/request',{body:{email:'mail-off@example.test'}})).status,503)
+  assert.equal((await app.first('SELECT count(*) n FROM portal_links')).n,linksBefore);assert.equal(mail.length,mailBefore)
+  await app.configure({MAIL_MODE:undefined,APP_ORIGIN:'https://app.example/invalid-path'})
+  const noOrigin=await app.request(`/portal/${p}`,{headers:{'x-test-door':'public'}});assert.equal(noOrigin.status,200);assert.doesNotMatch(await noOrigin.text(),/<form[^>]+action="[^\"]*access\/request/)
  }finally{await app.close()}
 }

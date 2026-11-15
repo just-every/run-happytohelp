@@ -5,7 +5,8 @@ export function portalTools(key:string,projectId:string,signedIn:boolean){
  const base=portalBase(key)
  return `<div class="help-center-controls"><a href="/help/${encodeURIComponent(key)}">Help center</a>${signedIn?`<a href="${base}/requests">My requests</a><a href="${base}/requests/new">New request</a><a href="${base}/preferences">Preferences</a><form method="post" action="/api/portal/${encodeURIComponent(projectId)}/access/logout"><button type="submit">Sign out</button></form>`:`<a href="${base}">Sign in</a>`}</div>`
 }
-export function portalSignIn(projectId:string,returnTo:string,sent:boolean){
+export function portalSignIn(projectId:string,returnTo:string,sent:boolean,available=true){
+ if(!available)return `<h1>Your support requests</h1><p role="status">Email sign-in is unavailable because this installation cannot send sign-in links. Ask the support team to enable outbound email and a valid installation address.</p><p><a href="/help/${encodeURIComponent(projectId)}">Browse the Help Center</a></p>`
  return `<h1>Your support requests</h1><p>Sign in with the email address you use for support to view and reply to your requests.</p>${sent?'<p role="status">If delivery is available, a sign-in link is on its way. Open it within 15 minutes.</p>':''}<form method="post" action="/api/portal/${encodeURIComponent(projectId)}/access/request" class="help-center-signin"><input type="hidden" name="returnTo" value="${e(returnTo)}"><label for="portal-email">Email address</label><input id="portal-email" type="email" name="email" autocomplete="email" maxlength="320" required><button type="submit">Email a sign-in link</button></form>`
 }
 const date=(value:number)=>new Date(value).toISOString().slice(0,10)

@@ -1,3 +1,4 @@
+import {isNoRequester} from '../customers/no-requester'
 import {workflowPresentation} from '../workflows/presentation'
 import {pastResolutionFeedback} from '../outcomes/operator-feedback'
 import type {Env} from '../../platform/env'
@@ -9,8 +10,9 @@ export {messagesData} from './dashboard-messages'
 export const iso=(n:any)=>n?new Date(n).toISOString():null
 export const person=(p:any)=>{
  if(!p)return null
+ if(isNoRequester(p))return {...p,system_contact:'no_requester',name:'No requester',display_name:'No requester',email:null,external_id:null,is_verified:0,is_online:false,initials:'',provided_name:null,provided_email:null}
  const metadata=JSON.parse(p.metadata_json||'{}'),blocked=metadata.is_blocked===false||metadata.is_blocked===0?false:Boolean(metadata.is_blocked||metadata.blocked_at)
- return {...p,...metadata,is_blocked:blocked,blocked_at:blocked?metadata.blocked_at||null:null,is_online:Date.now()-Number(metadata.last_seen_at||0)<90000,display_name:p.name||p.email||(p.is_erased||metadata.is_erased?'Erased contact':'Visitor'),initials:(p.name||p.email||'V').split(/\s+/).map((s:string)=>s[0]).slice(0,2).join('').toUpperCase()}
+ return {...p,...metadata,id:p.id,project_id:p.project_id,is_blocked:blocked,blocked_at:blocked?metadata.blocked_at||null:null,is_online:Date.now()-Number(metadata.last_seen_at||0)<90000,display_name:p.name||p.email||(p.is_erased||metadata.is_erased?'Erased contact':'Visitor'),initials:(p.name||p.email||'V').split(/\s+/).map((s:string)=>s[0]).slice(0,2).join('').toUpperCase()}
 }
 export async function messageData(env:Env,row:any,channel?:string){return (await messagesData(env,[row],new Map([[String(row.conversation_id),channel]])))[0]}
 

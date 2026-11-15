@@ -16273,7 +16273,7 @@
       "executable": false
     },
     "tests/helpers/delegation-journey/browser.mjs": {
-      "sha256": "6c061da30ca7fb448d8d98d516943c748cfba0332fb7e9efbdbfae5ad29095db",
+      "sha256": "a0f4e837b966f37997b8ab1ea5468d4a6059cafcd7b9a7fcf1a918225fadb0dd",
       "executable": false
     },
     "tests/helpers/delegation-journey/case.mjs": {

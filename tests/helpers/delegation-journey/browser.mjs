@@ -57,6 +57,7 @@ export async function browserJourney(evidence){
     visitor.on('websocket',socket=>socket.on('framereceived',event=>{try{frames.push(JSON.parse(event.payload))}catch{}}));
     const mount=async()=>{await visitor.addScriptTag({url:origin+'/widget.js'});await visitor.evaluate(options=>window.h2h('init',options),{widgetKey:project.widget_key,apiOrigin:origin,open:true,settings:{collector:{enabled:false}}})};
     await visitor.goto(origin+'/help/'+actor.projectId);await mount();
+    await visitor.locator('input[name=email]').fill('visitor@example.test');
     await visitor.locator('textarea[name=content]').fill(report);await visitor.locator('button[name=submit]').click();
     visitorSession=await until(()=>visitor.evaluate(key=>JSON.parse(localStorage.getItem(key)||'null'),`rer-widget:${origin}:${project.widget_key}`),s=>s?.conversationId,'widget session');
     const transcript=()=>client(origin,visitorSession.token)('/api/conversations/'+visitorSession.conversationId+'/messages');

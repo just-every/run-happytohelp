@@ -110,7 +110,7 @@
     "head_sha": "837b8cbe2279c20c0054c7bf1970a13fa7b2597a",
     "url": "https://github.com/just-every/run-happytohelp/actions/runs/43732093648",
     "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43732093648",
-    "last_observed_utc": "2026-11-15T16:00:44.336771+00:00"
+    "last_observed_utc": "2026-11-15T16:10:47.418187+00:00"
   },
   "publication_scan": {
     "status": "DEFERRED_TO_FLEET_MAC",
@@ -540,5 +540,9 @@
       "selected_source": "local"
     }
   ],
-  "lock_regenerated_last": true
+  "lock_regenerated_last": true,
+  "terminal_status": "PUSHED",
+  "terminal_line": "PUSHED branch=cloud/sd-hh-combined-next-release head=837b8cbe2279c20c0054c7bf1970a13fa7b2597a",
+  "github_calls_used": 6,
+  "github_budget": 10
 }

@@ -1,0 +1,24 @@
+{
+  "status": "PUSHED",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/sd-hh-combined-next-release",
+  "head": "837b8cbe2279c20c0054c7bf1970a13fa7b2597a",
+  "tree": "c52cd1087ef578ef844d13eff15594fff5927b5c",
+  "verify": {
+    "id": 43732093648,
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "837b8cbe2279c20c0054c7bf1970a13fa7b2597a",
+    "url": "https://github.com/just-every/run-happytohelp/actions/runs/43732093648",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43732093648",
+    "last_observed_utc": "2026-11-15T16:10:47.418187+00:00"
+  },
+  "github_calls_used": 6,
+  "github_call_budget": 10,
+  "local_checks": "PASS",
+  "ci_pending": true,
+  "ready_claimed": false,
+  "blockers": [],
+  "reason": "Verify remains in progress after twenty minutes of bounded observation; pending CI is reported honestly. No failed conclusion was observed.",
+  "line": "PUSHED branch=cloud/sd-hh-combined-next-release head=837b8cbe2279c20c0054c7bf1970a13fa7b2597a"
+}

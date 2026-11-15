@@ -24,5 +24,19 @@
     "endpoint": "repos/just-every/run-happytohelp/actions/runs/43732093648",
     "at": "2026-11-15T16:00:44.336771+00:00",
     "exit": 0
+  },
+  {
+    "call": 5,
+    "purpose": "Verify exact-SHA observation",
+    "endpoint": "repos/just-every/run-happytohelp/actions/runs/43732093648",
+    "at": "2026-11-15T16:05:45.899632+00:00",
+    "exit": 0
+  },
+  {
+    "call": 6,
+    "purpose": "Verify exact-SHA observation",
+    "endpoint": "repos/just-every/run-happytohelp/actions/runs/43732093648",
+    "at": "2026-11-15T16:10:47.418187+00:00",
+    "exit": 0
   }
 ]

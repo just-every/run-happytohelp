@@ -85,6 +85,16 @@ Update from v0.4.28 without resetting. Back up D1, R2, Durable Object state, pri
 _Run Edit Run fleet, 2026-11-15._
 
 
-## Final CI observation
+## Earlier CI observation (initial evidence publication)
 
 Observed at 2026-11-15T16:00:44.336771+00:00: Verify run 43732093648 is in_progress with conclusion None on exact SHA 837b8cbe2279c20c0054c7bf1970a13fa7b2597a. GitHub calls used: 4/10. Product custody is PUSHED while Verify is pending; no green or landing claim is made.
+
+## Terminal result
+
+Observed at 2026-11-15T16:10:47.418187+00:00: Verify run 43732093648 remains **in_progress**, conclusion null, on exact SHA 837b8cbe2279c20c0054c7bf1970a13fa7b2597a. The watcher made four REST observations after discovery, each at least 300 seconds after its preceding observation/discovery. It used 6/10 total GitHub calls including release discovery; the budget was not exhausted. This report makes no green, READY, acceptance, landing or RELEASED claim. Local touched checks all passed. No completed red check or product blocker was observed.
+
+The terminal state is PUSHED with Verify pending after twenty minutes. The lane and guarded lander must independently read the run's terminal result and execute the mandatory Mac publication scan before any landing. No workflow was re-run or dispatched. PR: none. The initial evidence ref was read back successfully, verifying all 24 manifest file hashes and the matching product provenance; evidence-initial-readback.json records that earlier publication. The final evidence publication updates this packet without changing the product head, branch or index.
+
+At the clean pushed end, only this task's owned clone and its dependencies at /workspace/run-happytohelp are scheduled for removal, after the final evidence ref readback; the complete packet remains outside it. No server or browser was started.
+
+PUSHED branch=cloud/sd-hh-combined-next-release head=837b8cbe2279c20c0054c7bf1970a13fa7b2597a

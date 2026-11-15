@@ -11,6 +11,8 @@ export const Route=createFileRoute('/app/move-in')({
   if('busy' in session)throw new Error('Workspace is temporarily busy. Reload to continue to Move in.')
   if(session.twoFactor)throw redirect({href:`/two-factor?returnTo=${encodeURIComponent(returnTo)}`,replace:true,headers})
   if(!session.projectId)throw redirect({href:'/projects?returnTo='+encodeURIComponent(returnTo),replace:true,headers})
-  throw redirect({href:`/projects/${encodeURIComponent(session.projectId)}/move-in?legacy=1`,replace:true,headers})
+  // Business links each tool's step here (importers.json): Zendesk's step opens Zendesk, every other the HappyToHelp export.
+  const zendesk=new URLSearchParams(location.searchStr).get('from')==='zendesk'
+  throw redirect({href:`/projects/${encodeURIComponent(session.projectId)}/move-in${zendesk?'':'?legacy=1'}`,replace:true,headers})
  },
 })

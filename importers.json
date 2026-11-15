@@ -5,6 +5,12 @@
     {
       "incumbent": "Zendesk",
       "product": "HappyToHelp",
+      "moveIn": "/app/move-in?from=zendesk",
+      "accepts": [
+        "key",
+        "file"
+      ],
+      "export": "Connect Zendesk with your subdomain and an OAuth client to pull tickets, people and help center articles, or upload the files of a Zendesk export.",
       "status": "documented format",
       "evidence": {
         "link": "evidence:docs/moving-in.md",

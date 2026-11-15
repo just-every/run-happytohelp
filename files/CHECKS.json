@@ -1,0 +1,544 @@
+{
+  "tag": "sd-hh-combined-next-release",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/sd-hh-combined-next-release",
+  "product_head": "837b8cbe2279c20c0054c7bf1970a13fa7b2597a",
+  "product_tree": "c52cd1087ef578ef844d13eff15594fff5927b5c",
+  "qualified_main": "2a85237383ce828b0fcc81f3a2801cd3bfe7cb2e",
+  "previous_release": {
+    "version": "0.4.28",
+    "commit": "41fb40246d2e69f928be397c48d952d147c39160"
+  },
+  "version": "0.4.29",
+  "rer_pin": "0.2.117",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "utc": "2026-11-15T15:51:11.732754+00:00",
+  "product_ref_verified": "837b8cbe2279c20c0054c7bf1970a13fa7b2597a",
+  "clean_worktree": true,
+  "full_history": true,
+  "changes": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "migration_count_before": 200,
+  "migration_count_after": 200,
+  "clause_counts_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "clause_counts_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "clause_status_changes": [],
+  "tests_added": 0,
+  "tests_removed": 0,
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "log": "dependency-install.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "node": "24.19.0",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "node": "22.20.0",
+      "exit": 0,
+      "log": "typecheck-node22.log"
+    },
+    {
+      "command": "release metadata and migration byte integrity check",
+      "exit": 0,
+      "log": "metadata-validation.log"
+    },
+    {
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "source-lock.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check (committed candidate after rebase)",
+      "exit": 0,
+      "log": "source-check-final.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party-check.log"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "git fetch origin main && git rebase origin/main",
+      "exit": 0,
+      "result": "already up to date"
+    },
+    {
+      "command": "inspect all origin/main..HEAD candidate identities and trailers",
+      "exit": 0,
+      "commits": 1,
+      "log": "candidate-identities.txt"
+    }
+  ],
+  "verify": {
+    "id": 43732093648,
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "837b8cbe2279c20c0054c7bf1970a13fa7b2597a",
+    "url": "https://github.com/just-every/run-happytohelp/actions/runs/43732093648",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43732093648",
+    "last_observed_utc": "2026-11-15T16:00:44.336771+00:00"
+  },
+  "publication_scan": {
+    "status": "DEFERRED_TO_FLEET_MAC",
+    "reason": "The cloud brief states this cloud cannot run the fleet publication scan. It remains a mandatory guarded landing gate."
+  },
+  "product_push": {
+    "status": "success",
+    "attempts": 1,
+    "guard": "cloud-push.py",
+    "log": "product-push-receipt.txt"
+  },
+  "pr": null,
+  "release_publication": "NOT_PERFORMED",
+  "tag_created": false,
+  "provider_actions": false,
+  "signer_actions": false,
+  "self_submission": false,
+  "browser_proof": "NOT_APPLICABLE: release metadata only; no UI source edits",
+  "full_local_suite": "NOT_RUN: brief requires touched checks and typecheck; full wall is exact-SHA branch Verify",
+  "blockers": [],
+  "source_pins": [
+    {
+      "id": "runeditrun/base",
+      "origin": {
+        "repository": "https://github.com/runeditrun/base.git",
+        "revision": "6de49b6407d6f5711705b149f94e075622c3a3d3",
+        "paths": [
+          "default-seed/public/fonts/outfit/LICENSE.txt",
+          "default-seed/public/fonts/outfit/outfit-latin-ext-wght-normal.woff2",
+          "default-seed/public/fonts/outfit/outfit-latin-wght-normal.woff2",
+          "edition-authoring/README.md",
+          "edition-authoring/base-copies.mjs",
+          "edition-authoring/cli.mjs",
+          "edition-authoring/files.mjs",
+          "edition-authoring/manifest.mjs",
+          "edition-authoring/parent-comparison.mjs",
+          "edition-authoring/projection-lock.mjs",
+          "edition-authoring/release.mjs",
+          "edition-authoring/sources.mjs",
+          "edition-authoring/updates.mjs",
+          "foundation/runtime/deployment-health.ts",
+          "foundation/runtime/dispatch.ts",
+          "foundation/runtime/font-head.ts",
+          "foundation/runtime/font-response.ts",
+          "foundation/runtime/page-style.ts",
+          "foundation/runtime/rejected-response.ts",
+          "foundation/runtime/setup.ts",
+          "foundation/runtime/static-assets.ts",
+          "foundation/runtime/theme-frame.ts"
+        ]
+      },
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/hydration",
+      "origin": {
+        "repository": "https://github.com/runeditrun/base.git",
+        "revision": "6de49b6407d6f5711705b149f94e075622c3a3d3",
+        "paths": [
+          "foundation/runtime/hydration"
+        ]
+      },
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/sendgrid-email",
+      "origin": {
+        "repository": "https://github.com/runeditrun/base.git",
+        "revision": "6de49b6407d6f5711705b149f94e075622c3a3d3",
+        "paths": [
+          "modules/sendgrid-email/LICENSE",
+          "modules/sendgrid-email/README.md",
+          "modules/sendgrid-email/src/sender.ts"
+        ]
+      },
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/mail",
+      "origin": {
+        "repository": "https://github.com/runeditrun/base.git",
+        "revision": "6de49b6407d6f5711705b149f94e075622c3a3d3",
+        "paths": [
+          "modules/mail/LICENSE",
+          "modules/mail/src/adapters/messaging/contract.mjs",
+          "modules/mail/src/adapters/rer/contract.mjs",
+          "modules/mail/src/adapters/rer/list-headers.mjs",
+          "modules/mail/src/adapters/sendgrid/index.mjs",
+          "modules/mail/src/adapters/sendgrid/serialize.mjs",
+          "modules/mail/src/core/errors.mjs",
+          "modules/mail/src/core/transport.mjs",
+          "modules/mail/src/core/validation.mjs",
+          "modules/mail/src/development/schema.sql",
+          "modules/mail/src/sendgrid-email/index.d.mts",
+          "modules/mail/src/sendgrid-email/index.mjs"
+        ]
+      },
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/conversation",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/widget",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/ai-support",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/knowledge",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/customer-context",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/local-computer",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/training-runs",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/plugin-sdk",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/site-preview",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "just-every/happytohelp",
+      "origin": {
+        "repository": "https://github.com/runeditrun/base.git",
+        "revision": "6de49b6407d6f5711705b149f94e075622c3a3d3",
+        "paths": [
+          "live-proofs/git.mjs",
+          "modules/editor/src/widget/editor-surface.ts",
+          "modules/editor/src/widget/live-edit-contracts.ts",
+          "modules/editor/src/widget/live-edit-dom.ts",
+          "modules/editor/src/widget/visual-style.ts"
+        ]
+      },
+      "selected_source": "local"
+    },
+    {
+      "id": "just-every/happytohelp-management-integration",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/delivery-producer",
+      "origin": {
+        "repository": "https://github.com/runeditrun/base.git",
+        "revision": "6de49b6407d6f5711705b149f94e075622c3a3d3",
+        "paths": [
+          "modules/delivery-producer/artifact.mjs",
+          "modules/delivery-producer/bindings.mjs",
+          "modules/delivery-producer/capabilities.mjs",
+          "modules/delivery-producer/cli.mjs",
+          "modules/delivery-producer/declarations.mjs",
+          "modules/delivery-producer/export.mjs",
+          "modules/delivery-producer/generators/integration.mjs",
+          "modules/delivery-producer/generators/managed.mjs",
+          "modules/delivery-producer/generators/project.mjs",
+          "modules/delivery-producer/generators/validation.mjs",
+          "modules/delivery-producer/mail.mjs",
+          "modules/delivery-producer/migrations.mjs",
+          "modules/delivery-producer/native-export.mjs",
+          "modules/delivery-producer/package.mjs",
+          "modules/delivery-producer/paths.mjs",
+          "modules/delivery-producer/payloads.mjs",
+          "modules/delivery-producer/setup-manifest.mjs",
+          "modules/delivery-producer/sign-in.mjs",
+          "modules/delivery-producer/spec.mjs",
+          "modules/delivery-producer/sql-statements.mjs",
+          "schema/SETUP.schema.json",
+          "schema/dependencies.mjs",
+          "schema/json-schema.mjs",
+          "schema/setup-validation.mjs"
+        ]
+      },
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/delivery-declarations",
+      "origin": {
+        "repository": "https://github.com/runeditrun/base.git",
+        "revision": "6de49b6407d6f5711705b149f94e075622c3a3d3",
+        "paths": [
+          "modules/delivery-producer/declarations.mjs"
+        ]
+      },
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/d1-transport",
+      "origin": {
+        "repository": "https://github.com/runeditrun/base.git",
+        "revision": "6de49b6407d6f5711705b149f94e075622c3a3d3",
+        "paths": [
+          "modules/d1-transport/index.d.mts",
+          "modules/d1-transport/index.mjs"
+        ]
+      },
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/import-kit",
+      "origin": {
+        "repository": "https://github.com/runeditrun/base.git",
+        "revision": "6de49b6407d6f5711705b149f94e075622c3a3d3",
+        "paths": [
+          "modules/import-kit/CONTRACT.md",
+          "modules/import-kit/FIXTURES.md",
+          "modules/import-kit/README.md",
+          "modules/import-kit/schema/importer-verification-receipt.schema.json",
+          "modules/import-kit/schema/importers.schema.json",
+          "modules/import-kit/src/d1/README.md",
+          "modules/import-kit/src/d1/apply.ts",
+          "modules/import-kit/src/d1/budget.ts",
+          "modules/import-kit/src/d1/compressed-plan.ts",
+          "modules/import-kit/src/d1/creation.ts",
+          "modules/import-kit/src/d1/custody-state-schema.ts",
+          "modules/import-kit/src/d1/database.ts",
+          "modules/import-kit/src/d1/erased-artifacts.ts",
+          "modules/import-kit/src/d1/erased-custody.ts",
+          "modules/import-kit/src/d1/erased-plan.ts",
+          "modules/import-kit/src/d1/erased-reversal.ts",
+          "modules/import-kit/src/d1/erasure-bounded.ts",
+          "modules/import-kit/src/d1/erasure-claims.ts",
+          "modules/import-kit/src/d1/erasure-compiler.ts",
+          "modules/import-kit/src/d1/erasure-disposition.ts",
+          "modules/import-kit/src/d1/erasure-fragments.ts",
+          "modules/import-kit/src/d1/erasure-index.ts",
+          "modules/import-kit/src/d1/erasure-pages.ts",
+          "modules/import-kit/src/d1/erasure-progress-schema.ts",
+          "modules/import-kit/src/d1/erasure-progress.ts",
+          "modules/import-kit/src/d1/erasure-related.ts",
+          "modules/import-kit/src/d1/erasure-report.ts",
+          "modules/import-kit/src/d1/erasure-schema.ts",
+          "modules/import-kit/src/d1/erasure-selection.ts",
+          "modules/import-kit/src/d1/erasure-snapshot.ts",
+          "modules/import-kit/src/d1/erasure-stage.ts",
+          "modules/import-kit/src/d1/erasure-step.ts",
+          "modules/import-kit/src/d1/erasure-values.ts",
+          "modules/import-kit/src/d1/erasure-writes.ts",
+          "modules/import-kit/src/d1/erasure.ts",
+          "modules/import-kit/src/d1/evolutions/0001-preserved-undo.ts",
+          "modules/import-kit/src/d1/expected-state.ts",
+          "modules/import-kit/src/d1/field-redaction.ts",
+          "modules/import-kit/src/d1/guards.ts",
+          "modules/import-kit/src/d1/history.ts",
+          "modules/import-kit/src/d1/index.ts",
+          "modules/import-kit/src/d1/integrity.ts",
+          "modules/import-kit/src/d1/inventory-snapshot.ts",
+          "modules/import-kit/src/d1/jobs.ts",
+          "modules/import-kit/src/d1/native-staging-admission.ts",
+          "modules/import-kit/src/d1/native-staging-context.ts",
+          "modules/import-kit/src/d1/native-staging-lifecycle.ts",
+          "modules/import-kit/src/d1/native-staging-offset.ts",
+          "modules/import-kit/src/d1/native-staging-publication.ts",
+          "modules/import-kit/src/d1/native-staging-rows.ts",
+          "modules/import-kit/src/d1/native-staging-schema.ts",
+          "modules/import-kit/src/d1/native-staging-state.ts",
+          "modules/import-kit/src/d1/native-staging.ts",
+          "modules/import-kit/src/d1/original-copies.ts",
+          "modules/import-kit/src/d1/original-storage.ts",
+          "modules/import-kit/src/d1/originals.ts",
+          "modules/import-kit/src/d1/plan-dictionary.ts",
+          "modules/import-kit/src/d1/plans.ts",
+          "modules/import-kit/src/d1/preparation-fingerprint.ts",
+          "modules/import-kit/src/d1/preparation-header.ts",
+          "modules/import-kit/src/d1/preparation-reader.ts",
+          "modules/import-kit/src/d1/preparation-schema.ts",
+          "modules/import-kit/src/d1/preparation-state.ts",
+          "modules/import-kit/src/d1/preparation-step-combine.ts",
+          "modules/import-kit/src/d1/preparation-step-control.ts",
+          "modules/import-kit/src/d1/preparation-step-hash.ts",
+          "modules/import-kit/src/d1/preparation-step-pages.ts",
+          "modules/import-kit/src/d1/preparation-steps-schema.ts",
+          "modules/import-kit/src/d1/preparation-steps.ts",
+          "modules/import-kit/src/d1/preparations.ts",
+          "modules/import-kit/src/d1/preserved-reverse.ts",
+          "modules/import-kit/src/d1/provenance-set.ts",
+          "modules/import-kit/src/d1/publication-fence.ts",
+          "modules/import-kit/src/d1/publication-receipt-schema.ts",
+          "modules/import-kit/src/d1/published-stream.ts",
+          "modules/import-kit/src/d1/read-fence.ts",
+          "modules/import-kit/src/d1/read-results.ts",
+          "modules/import-kit/src/d1/redacted-custody.ts",
+          "modules/import-kit/src/d1/redaction-step.ts",
+          "modules/import-kit/src/d1/retained-values.ts",
+          "modules/import-kit/src/d1/retirement-bounded.ts",
+          "modules/import-kit/src/d1/retirement-schema.ts",
+          "modules/import-kit/src/d1/retirement-scope.ts",
+          "modules/import-kit/src/d1/retirement-steps.ts",
+          "modules/import-kit/src/d1/retirement-tally.ts",
+          "modules/import-kit/src/d1/retirement.ts",
+          "modules/import-kit/src/d1/reversal-fence-schema.ts",
+          "modules/import-kit/src/d1/reversal-fence.ts",
+          "modules/import-kit/src/d1/reverse.ts",
+          "modules/import-kit/src/d1/reviewed-source.ts",
+          "modules/import-kit/src/d1/sets.ts",
+          "modules/import-kit/src/d1/staging-admission.ts",
+          "modules/import-kit/src/d1/staging-control.ts",
+          "modules/import-kit/src/d1/staging-erasure.ts",
+          "modules/import-kit/src/d1/staging-lifecycle.ts",
+          "modules/import-kit/src/d1/staging-plan.ts",
+          "modules/import-kit/src/d1/staging-privacy.ts",
+          "modules/import-kit/src/d1/staging-publication.ts",
+          "modules/import-kit/src/d1/staging-schema.ts",
+          "modules/import-kit/src/d1/staging-statements.ts",
+          "modules/import-kit/src/d1/staging-transport.ts",
+          "modules/import-kit/src/d1/stream-boundary.ts",
+          "modules/import-kit/src/d1/stream-create.ts",
+          "modules/import-kit/src/d1/stream-identity-admission.ts",
+          "modules/import-kit/src/d1/stream-input.ts",
+          "modules/import-kit/src/d1/stream-layout.ts",
+          "modules/import-kit/src/d1/stream-origin.ts",
+          "modules/import-kit/src/d1/stream-page-integrity.ts",
+          "modules/import-kit/src/d1/stream-partition.ts",
+          "modules/import-kit/src/d1/stream-plan.ts",
+          "modules/import-kit/src/d1/stream-receipt.ts",
+          "modules/import-kit/src/d1/stream-revision-schema.ts",
+          "modules/import-kit/src/d1/stream-snapshot.ts",
+          "modules/import-kit/src/d1/stream-stage.ts",
+          "modules/import-kit/src/d1/stream-state.ts",
+          "modules/import-kit/src/d1/stream-working-set.ts",
+          "modules/import-kit/src/d1/streams.ts",
+          "modules/import-kit/src/d1/target-guards.ts",
+          "modules/import-kit/src/d1/target-identities.ts",
+          "modules/import-kit/src/d1/transport.ts",
+          "modules/import-kit/src/d1/types.ts",
+          "modules/import-kit/src/d1/undo-observations.ts",
+          "modules/import-kit/src/d1/undo-report.ts",
+          "modules/import-kit/src/d1/undo-snapshot.ts",
+          "modules/import-kit/src/d1/undo-state.ts",
+          "modules/import-kit/src/d1/undo-types.ts",
+          "modules/import-kit/src/journal/authority.ts",
+          "modules/import-kit/src/plan/budget.ts",
+          "modules/import-kit/src/plan/index.ts",
+          "modules/import-kit/src/plan/size.ts",
+          "modules/import-kit/src/provenance/canonical-hash.ts",
+          "modules/import-kit/src/provenance/canonical-stream.ts",
+          "modules/import-kit/src/provenance/credentials.ts",
+          "modules/import-kit/src/provenance/identity.ts",
+          "modules/import-kit/src/provenance/json-snapshot.ts",
+          "modules/import-kit/src/provenance/resumable-sha256.ts",
+          "modules/import-kit/src/provenance/validate-json.ts",
+          "modules/import-kit/src/readers/README.md",
+          "modules/import-kit/src/storage/originals.ts",
+          "modules/import-kit/src/storage/provenance.ts",
+          "modules/import-kit/src/storage/schema.ts",
+          "modules/import-kit/src/types.ts"
+        ]
+      },
+      "selected_source": "local"
+    },
+    {
+      "id": "happytohelp/outcomes",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "happytohelp/reports",
+      "origin": null,
+      "selected_source": "local"
+    },
+    {
+      "id": "runeditrun/integrations-core",
+      "origin": {
+        "repository": "https://github.com/runeditrun/base.git",
+        "revision": "6de49b6407d6f5711705b149f94e075622c3a3d3",
+        "paths": [
+          "modules/integrations/README.md",
+          "modules/integrations/core/CONTRACT.md",
+          "modules/integrations/core/README.md",
+          "modules/integrations/core/crypto.ts",
+          "modules/integrations/core/database.ts",
+          "modules/integrations/core/delivery.ts",
+          "modules/integrations/core/destination.ts",
+          "modules/integrations/core/index.ts",
+          "modules/integrations/core/node-transport.ts",
+          "modules/integrations/core/public-address.ts",
+          "modules/integrations/core/repository.ts",
+          "modules/integrations/core/schema.sql",
+          "modules/integrations/core/sqlite.ts",
+          "modules/integrations/core/timestamped-body-signature.ts",
+          "modules/integrations/core/tokens.ts",
+          "modules/integrations/core/types.ts",
+          "modules/integrations/core/upgrade-token-usage-context.sql",
+          "modules/integrations/core/webhook.ts",
+          "modules/integrations/egress/README.md",
+          "modules/integrations/egress/configuration.ts",
+          "modules/integrations/egress/declaration.ts",
+          "modules/integrations/egress/index.ts",
+          "modules/integrations/index.ts",
+          "modules/integrations/receiver.md",
+          "modules/integrations/slack/README.md",
+          "modules/integrations/slack/classify.ts",
+          "modules/integrations/slack/index.ts",
+          "modules/integrations/slack/message.ts",
+          "modules/integrations/slack/notifier.ts",
+          "modules/integrations/slack/protocol.ts"
+        ]
+      },
+      "selected_source": "local"
+    },
+    {
+      "id": "happytohelp/api-integrations",
+      "origin": null,
+      "selected_source": "local"
+    }
+  ],
+  "lock_regenerated_last": true
+}

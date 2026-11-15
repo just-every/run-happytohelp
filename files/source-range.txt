@@ -1,0 +1,8 @@
+2a85237383ce828b0fcc81f3a2801cd3bfe7cb2e Carry Zendesk assignees with each pulled ticket batch
+d238ffca60042b19b277d77af246863330ddde91 Complete public contact journeys and allow the contract source in local dev
+5c2b3857eb596d3fcf1e56c41ad37dd24d05a7d7 Preserve imported ticket identity and publish native support contact
+1e2aaf87653740749ac15cd7882018f1e7af4b52 Align installation and deployment docs with released behavior
+6c9727736090d31ca7eb0cff86aa3462e9cd235b Require explicit source visibility for imported form fields
+baa129ef215684f089141b904f02fac885aaa6b1 Regenerate source lock for form eligibility fix
+d39e14e255fcb4d9b8579d64881a1ebdcd000483 Keep imported agents-only fields out of native request forms
+d44ec03a88f985ce688d2ad475e8e97039fc5fd6 Preserve internal Zendesk fields and document mail-off owner entry

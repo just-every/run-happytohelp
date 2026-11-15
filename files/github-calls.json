@@ -1,0 +1,28 @@
+[
+  {
+    "call": 1,
+    "purpose": "published release/version discovery",
+    "endpoint": "repos/just-every/run-happytohelp/releases?per_page=10"
+  },
+  {
+    "call": 2,
+    "purpose": "exact-SHA workflow discovery",
+    "endpoint": "repos/just-every/run-happytohelp/actions/runs?head_sha=837b8cbe2279c20c0054c7bf1970a13fa7b2597a&per_page=100",
+    "at": "2026-11-15T15:50:29.106932+00:00",
+    "exit": 0
+  },
+  {
+    "call": 3,
+    "purpose": "Verify exact-SHA observation",
+    "endpoint": "repos/just-every/run-happytohelp/actions/runs/43732093648",
+    "at": "2026-11-15T15:55:42.762137+00:00",
+    "exit": 0
+  },
+  {
+    "call": 4,
+    "purpose": "Verify exact-SHA observation",
+    "endpoint": "repos/just-every/run-happytohelp/actions/runs/43732093648",
+    "at": "2026-11-15T16:00:44.336771+00:00",
+    "exit": 0
+  }
+]

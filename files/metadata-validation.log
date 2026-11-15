@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-11-15T15:51:11.206487+00:00",
+  "check": "release-metadata-and-migration-integrity",
+  "status": "PASS",
+  "baseline_tag": "v0.4.28",
+  "baseline_commit": "41fb40246d2e69f928be397c48d952d147c39160",
+  "qualified_main": "2a85237383ce828b0fcc81f3a2801cd3bfe7cb2e",
+  "version_before": "0.4.28",
+  "version_after": "0.4.29",
+  "rer_before": "0.2.117",
+  "rer_after": "0.2.117",
+  "migration_count_before": 200,
+  "migration_count_after": 200,
+  "migration_added": [],
+  "migration_removed": [],
+  "migration_modified": [],
+  "highest_migration": "336_solved_time_rule_reads.sql",
+  "missing_326": true,
+  "files_changed": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "clause_status_changes": [],
+  "contract_status_counts": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "clause_count": 91,
+  "notes_match_changelog": true,
+  "historical_changelog_retained": true,
+  "dependencies_unchanged": true,
+  "required_commits_are_ancestors": true
+}

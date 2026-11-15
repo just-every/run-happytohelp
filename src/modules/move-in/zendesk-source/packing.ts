@@ -66,7 +66,11 @@ async function ticketBatch(ctx:PullContext,limit:number):Promise<Batch|null>{
  }
  const of=(kind:StagedKind)=>chosen.filter(c=>c.kind===kind).map(c=>c.id)
  const [t,c,u,o,f]=await Promise.all([bodies(ctx,'ticket',of('ticket')),bodies(ctx,'ticket_comment',of('ticket_comment')),bodies(ctx,'user',[...people]),bodies(ctx,'organization',[...companies]),bodies(ctx,'ticket_field',[...fields])])
- const lines=[...[...companies].map(id=>`{"organization":${o.get(id)}}`),...[...fields].map(id=>`{"ticket_field":${f.get(id)}}`),...[...people].map(id=>`{"user":${u.get(id)}}`),...chosen.map(({kind,id})=>`{"${kind}":${(kind==='ticket'?t:c).get(id)}}`)]
+ const refused=(await ctx.env.DB.prepare("SELECT source_id,reason FROM move_in_zendesk_refusals WHERE pull_id=? AND kind='user' AND source_id IN (SELECT value FROM json_each(?))").bind(ctx.pull.id,ids([...new Set([...t.values()].map(body=>String(JSON.parse(body).assignee_id)))])).all<{source_id:string;reason:string}>()).results
+ // Review context does not change the source field hash used by catch-up.
+ const packedTickets=new Map(t)
+ for(const [id,body] of t){const ticket=JSON.parse(body),refusal=refused.find(row=>row.source_id===String(ticket.assignee_id));if(refusal)packedTickets.set(id,JSON.stringify({...ticket,_assignee_refusal:{sourceId:refusal.source_id,reason:refusal.reason}}))}
+ const lines=[...[...companies].map(id=>`{"organization":${o.get(id)}}`),...[...fields].map(id=>`{"ticket_field":${f.get(id)}}`),...[...people].map(id=>`{"user":${u.get(id)}}`),...chosen.map(({kind,id})=>`{"${kind}":${(kind==='ticket'?packedTickets:c).get(id)}}`)]
  return {lines,primary:chosen,packed:{user:[...people],organization:[...companies],ticket_field:[...fields]},tickets:t}
 }
 /** After every ticket: people no ticket referenced (with their companies), then

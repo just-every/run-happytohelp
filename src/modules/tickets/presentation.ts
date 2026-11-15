@@ -23,7 +23,7 @@ export async function ticketPresentation(env:Env,rows:any[],userId?:string,{tags
  const fieldKeys=[...new Map(results[0].results.map((value:any)=>[JSON.stringify([value.project_id,value.field_id]),[value.project_id,value.field_id]])).values()]
  const fields=new Map(fieldKeys.length?(await env.DB.prepare('SELECT f.* FROM json_each(?) held CROSS JOIN ticket_fields f ON f.project_id=held.value->>0 AND f.id=held.value->>1').bind(JSON.stringify(fieldKeys)).all<any>()).results.map(field=>[JSON.stringify([field.project_id,field.id]),field]):[])
  const data=new Map<string,any>(rows.map(r=>[r.id,{fields:{},tags:[],status:{id:r.status_id,category:r.status_category,name:r.status_category},group:null}]))
- for(const requester of results[tags?4:3].results)if(isNoRequester(requester))Object.assign(data.get(requester.conversation_id),{requester_id:null,requester_status:'none'})
+ for(const requester of results[tags?4:3].results)if(isNoRequester(requester))Object.assign(data.get(requester.conversation_id),{contact_id:null,requester_id:null,requester_status:'none'})
  for(const value of results[0].results){
   const field=fields.get(JSON.stringify([value.project_id,value.field_id]))
   if(field&&fieldAllowed(field,access.get(field.project_id)??null))data.get(value.conversation_id).fields[field.id]=JSON.parse(value.value_json)

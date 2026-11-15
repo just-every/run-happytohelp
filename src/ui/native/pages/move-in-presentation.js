@@ -33,7 +33,8 @@ const patterns=[
 ];
 export const kindLabel=kind=>labels[kind]||String(kind).replaceAll('_',' ');
 export function reasonLabel(reason){
- const text=String(reason);if(reasons[text])return reasons[text];
+ const text=String(reason);if(text.startsWith('historical_assignment_profile_refused:')){const [,id,code]=text.split(':');return `The source assignee’s profile (user ${id}) was refused: ${reasons[code]||code.replaceAll('_',' ')} The ticket stays unassigned. See Refused records in the Zendesk pull.`;}
+ if(reasons[text])return reasons[text];
  for(const [pattern,words] of patterns){const match=text.match(pattern);if(match)return words(match)}
  return text.replaceAll('_',' ');
 }

@@ -6,7 +6,7 @@ import {getTicket,ticketReadAccess,fieldAllowed} from '../tickets/model'
 export async function loadMacroContext(env:Env,actor:Actor,conversationId:string){
  const ticket=batchTicket(env,conversationId)??await getTicket(env,actor,conversationId),access=await ticketReadAccess(env,actor)
  const [contact,assignee,agent,brand,fields]=await Promise.all([
-  batchContact(env,conversationId)??env.DB.prepare('SELECT name,email,metadata_json FROM contacts WHERE id=? AND project_id=?').bind(ticket.contact_id,actor.projectId).first<any>(),
+  ticket.requester_status==='none'?null:batchContact(env,conversationId)??env.DB.prepare('SELECT name,email,metadata_json FROM contacts WHERE id=? AND project_id=?').bind(ticket.contact_id,actor.projectId).first<any>(),
   ticket.assigned_to?env.DB.prepare('SELECT u.name,u.email FROM users u JOIN memberships m ON m.user_id=u.id WHERE u.id=? AND m.project_id=?').bind(ticket.assigned_to,actor.projectId).first<any>():null,
   batchRead(env,`user:${actor.id}`,()=>env.DB.prepare('SELECT name,email FROM users WHERE id=?').bind(actor.id).first<any>()),
   batchRead(env,`brand:${actor.projectId}`,()=>env.DB.prepare('SELECT id,name FROM projects WHERE id=?').bind(actor.projectId).first<any>()),

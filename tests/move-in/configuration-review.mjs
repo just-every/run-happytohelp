@@ -59,3 +59,18 @@ export async function configurationConfidentiality(h){
  assert.doesNotMatch(JSON.stringify(await h.call(`/api/conversations/${id}/messages`,{actor:'field-customer'})),/synthetic-hh-30[567]/,'internal values never reach the customer transcript')
  assert.deepEqual((await h.call('/api/forms/p',{actor:'field-customer'})).data,[],'no imported field is published to a customer form')
 }
+
+export async function configurationErasure(h){
+ const definitions=(await h.call('/api/dashboard/projects/p/ticket-fields')).data,internal=definitions.find(field=>field.name==='Internal triage'),visible=definitions.find(field=>field.name==='Order number')
+ const [{contact_id:contact}]=await rows(h,"SELECT c.contact_id FROM conversations c JOIN move_in_conversations m ON m.conversation_id=c.id WHERE m.source_id='10001'")
+ const peer=await rows(h,'SELECT * FROM ticket_field_values WHERE conversation_id IN (SELECT id FROM conversations WHERE contact_id<>?) ORDER BY conversation_id,field_id',contact)
+ assert.equal((await h.raw(`/api/management/projects/p/contacts/${contact}/erase`,json({}))).response.status,200)
+ const settings=await h.call('/api/forms/projects/p/forms')
+ assert.ok(!settings.fields.some(field=>field.id===internal.id),'erasure preserves the imported agents-only fact')
+ assert.ok(settings.fields.some(field=>field.id===visible.id),'erasure preserves visible definitions')
+ assert.equal((await h.raw('/api/forms/projects/p/forms',json({title:'Internal after erasure',fields:[{fieldId:internal.id}],enabled:false}))).response.status,400)
+ assert.deepEqual((await h.call('/api/dashboard/projects/p/ticket-fields')).data,definitions,'staff definitions stay exact')
+ assert.deepEqual(await rows(h,'SELECT * FROM ticket_field_values WHERE conversation_id IN (SELECT id FROM conversations WHERE contact_id<>?) ORDER BY conversation_id,field_id',contact),peer,'peer values stay exact')
+ const tombstones=await rows(h,"SELECT source_id,source_json,revision FROM move_in_origins WHERE target_kind='field'")
+ assert.ok(tombstones.length>0);for(const row of tombstones){assert.equal(row.source_id,'');assert.equal(row.revision,'erased-visibility');assert.deepEqual(Object.keys(JSON.parse(row.source_json)),['visible_in_portal'])}
+}

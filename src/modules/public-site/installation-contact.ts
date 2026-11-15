@@ -27,5 +27,6 @@ export async function withInstallationContact(request:Request,response:Response,
  const script=`<script src="/widget.js" data-api-origin="${e(new URL(request.url).origin)}" data-widget-key="${e(contact.widget_key)}" data-config="${e(JSON.stringify(config))}" defer></script>`
  const headers=new Headers(response.headers);headers.delete('Content-Length');headers.set('Cache-Control','private, no-store');headers.set('Vary','Cookie, Authorization')
  if(helpDocument)html=html.replace('</main>','<p class="help-center-request-link"><a href="#launch-chat">Contact support in chat</a></p></main>')
+ if(path==='/run')html=html.replace('</head>','<style>@media(max-width:500px){main{padding-right:85px}}</style></head>')
  return new Response(html.replace('</body>',script+'</body>'),{status:response.status,headers})
 }

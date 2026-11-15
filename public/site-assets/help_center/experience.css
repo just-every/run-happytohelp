@@ -18,6 +18,8 @@
 .help-center-translation-note {font-size:.875rem; color:#4c5f55; padding:.75rem; background:#f3f6f4;}
 @media(max-width:480px){.help-center-controls {justify-content:flex-start;}.help-center-controls>a{flex-basis:100%;}.help-center-signin input{width:100%;}}
 
-.help-center-request-link a{display:inline-flex;align-items:center;min-height:44px}
+.help-center-request-link a{display:inline-flex;align-items:center;min-height:44px;color:var(--help-center-link);text-decoration:none}
 
 .help-center-controls > a{display:inline-flex;align-items:center;min-height:44px;min-width:44px}
+
+.help-center-request-link a:hover{color:var(--help-center-link-hover);text-decoration:underline;text-underline-offset:.15em}

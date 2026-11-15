@@ -16,9 +16,9 @@ export function importedPriority(value:unknown,omissions:string[]){
  omissions.push(value===undefined||value===null?'priority_unrecorded_default_normal':'priority_not_mapped_default_normal')
  return 'normal'
 }
-export function importedAssignee(value:unknown,matches:Map<string,string>|undefined,omissions:string[]){
+export function importedAssignee(value:unknown,matches:Map<string,string>|undefined,omissions:string[],refusal?:{sourceId?:unknown;reason?:unknown}){
  if(value===undefined||value===null)return null
  const target=matches?.get(String(value))
- if(!target)omissions.push('historical_assignment_not_matched')
+ if(!target)omissions.push(refusal?.sourceId===String(value)&&typeof refusal.reason==='string'?'historical_assignment_profile_refused:'+String(value)+':'+refusal.reason:'historical_assignment_not_matched')
  return target??null
 }

@@ -60,7 +60,7 @@ export type ActivationFacts = {
  ceilings:{repliesPerProject:number; repliesPerInstallation:number; spendUsdPerProject:number; contextRunsPerProject:number; resetUtc:'00:00'; source:'defaults'|'installation'}|null
  /** From the last sender_dns observation still valid for the current configuration (Resend domain detail). */
  senderRecords:SenderRecord[]
- widget:{key:string; scriptUrl:string; apiOrigin:string}
+ widget:{requireEmail:boolean;key:string; scriptUrl:string; apiOrigin:string}
 }
 
 /** `GET /api/management/projects/:id/activation` and every `POST .../check` / `.../test-mail` / `.../skip` / `.../local-trial` response (`{data}`). */

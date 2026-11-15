@@ -1,3 +1,4 @@
+import {noRequesterId} from '../../modules/customers/no-requester'
 import type {Env,Actor} from '../../platform/env'
 import {ToolRefusal,type Principal,type ClassAndFacts} from '../../vendor/agent-base/modules/agent-door/index.ts'
 import {memberAccess} from '../../modules/access/gate'
@@ -52,7 +53,7 @@ export async function articleRead(env:Env,who:Who,id:string){
 export async function contextRead(env:Env,who:Who,id:string){
  const actor=await actorFor(env,who),conversation=await conversationRead(env,who,id)
  // Match the native JSON packet, which omits an absent subject revision.
- return redacted(JSON.parse(JSON.stringify(await getContextPacket(env,actor.projectId,conversation.ticket.contact_id,actor.id))))
+ return redacted(JSON.parse(JSON.stringify(await getContextPacket(env,actor.projectId,conversation.ticket.requester_status==='none'?noRequesterId(actor.projectId):conversation.ticket.contact_id,actor.id))))
 }
 export async function jobRead(env:Env,who:Who,id:string){
  const actor=await actorFor(env,who)

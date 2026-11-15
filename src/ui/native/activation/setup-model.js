@@ -13,10 +13,10 @@ export const pages = {
  workspace: ['settings', 'Settings'], widget: ['widget-settings', 'Widget settings'], email: ['email-settings', 'Email settings'],
  ai: ['ais', 'AI settings'],
 };
-const rowPage = {workspace: 'workspace', widget_origin: 'widget', colour: 'widget', widget_seen: 'widget', owner_mail: 'email', inbound_address: 'email', sender_dns: 'email', spend_ceilings: 'ai', starter_assistant: 'ai', model_key: 'ai'};
-const rowOrder = ['workspace', 'widget_origin', 'colour', 'widget_seen', 'owner_mail', 'sender_dns', 'inbound_address', 'model_key', 'spend_ceilings', 'starter_assistant'];
+const rowPage = {visitor_email:'widget',workspace: 'workspace', widget_origin: 'widget', colour: 'widget', widget_seen: 'widget', owner_mail: 'email', inbound_address: 'email', sender_dns: 'email', spend_ceilings: 'ai', starter_assistant: 'ai', model_key: 'ai'};
+const rowOrder = ['workspace', 'widget_origin', 'visitor_email', 'colour', 'widget_seen', 'owner_mail', 'sender_dns', 'inbound_address', 'model_key', 'spend_ceilings', 'starter_assistant'];
 export const rowLabels = {
- workspace: 'Workspace', widget_origin: 'Website', colour: 'Colour', widget_seen: 'Widget', owner_mail: 'Email to you', sender_dns: 'Sending address',
+ visitor_email:'Visitor email', workspace: 'Workspace', widget_origin: 'Website', colour: 'Colour', widget_seen: 'Widget', owner_mail: 'Email to you', sender_dns: 'Sending address',
  inbound_address: 'Replies by email', model_key: 'AI service', spend_ceilings: 'AI limits', starter_assistant: 'Starter assistant',
 };
 const stateLabels = {confirmed: 'Confirmed', set: 'Set', waiting: 'Waiting', checking: 'Checking', unknown: 'Unknown', off: 'Off', unchecked: 'Not checked', problem: 'Problem', unavailable: 'Not available'};
@@ -108,6 +108,7 @@ function rowFor(data, id) {
  const base = {id, label: rowLabels[id], change: pages[rowPage[id]], state: 'set', value: ''};
  const withObservation = (fallback, value) => ({...base, value, state: observed ? 'confirmed' : problem ? 'problem' : own?.state === 'unavailable' ? 'unavailable' : own?.state === 'pending' || own?.state === 'checking' || own?.state === 'unknown' ? 'waiting' : fallback});
  switch (id) {
+  case 'visitor_email': return {...base,value:facts.widget?.requireEmail ? 'Your widget asks visitors for an email before chat. Turn off Require email in Settings → Widget settings → Settings → Required contact details to allow anonymous chat.' : 'Your widget allows chat without an email. Change Require email in Settings → Widget settings → Settings → Required contact details.',change:[...pages.widget,'settings']};
   case 'workspace': return facts.workspaceName ? {...base, value: facts.workspaceNamed === false ? `${facts.workspaceName}. We chose this name; change it to your business name, which your help centre and emails show.` : facts.workspaceName} : null;
   case 'colour': return facts.colour?.hex ? {...base, value: facts.colour.source === 'site' ? `Picked from ${hostOf(facts.website)}` : 'Your workspace colour', swatch: facts.colour.hex} : null;
   case 'starter_assistant': return facts.starterAssistant ? {...base, value: `${facts.starterAssistant.name}. ${['confirmed', 'unchecked', 'checking', 'unknown', 'blocked'].includes(modelKeyState(data)) ? 'Answers visitors by itself, within your daily limits.' : 'Answers visitors by itself once AI is connected, within your daily limits.'}`} : null;
@@ -154,5 +155,5 @@ function rowFor(data, id) {
 /** Rows under "What we've set", in reading order: the facts, then any need that has been resolved. */
 export function setRows(data) {
  const visible = new Set(data.steps.filter(item => item.placement === 'set' || (['needs_you', 'skipped'].includes(item.placement) && !ownerStep(data, item))).map(item => item.id));
- return rowOrder.filter(id => ['workspace', 'colour', 'starter_assistant'].includes(id) || visible.has(id)).map(id => rowFor(data, id)).filter(Boolean).map(row => ({...row, stateLabel: stateLabels[row.state]}));
+ return rowOrder.filter(id => ['workspace', 'visitor_email', 'colour', 'starter_assistant'].includes(id) || visible.has(id)).map(id => rowFor(data, id)).filter(Boolean).map(row => ({...row, stateLabel: stateLabels[row.state]}));
 }

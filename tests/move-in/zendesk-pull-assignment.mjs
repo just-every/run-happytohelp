@@ -27,11 +27,12 @@ export async function assertPullAssignments(h,imported,ids=['101','102','104','1
  }
 }
 
-export async function assertPullAssignmentReview(h,pull,expected={101:false,102:false,104:true,105:true}){
+export async function assertPullAssignmentReview(h,pull,expected={101:false,102:false,104:true,105:false}){
  const omissions=new Map()
  for(const batch of pull.batches){
   const run=(await h.call(`/api/move-in/projects/p/imports/${batch.runId}`)).data
   for(const decision of run.plan.decisions)if(decision.kind==='ticket')omissions.set(decision.sourceId,decision.omissions.map(row=>row.reason))
  }
+ if(omissions.has('105'))assert.ok(omissions.get('105').includes('historical_assignment_profile_refused:22:user_size_limit'),'the ticket points to its actual source-user refusal')
  for(const [id,unmatched] of Object.entries(expected))assert.equal(omissions.get(id).includes('historical_assignment_not_matched'),unmatched,`source ticket ${id} reports only genuine unmatched assignments`)
 }

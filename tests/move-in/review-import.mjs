@@ -9,7 +9,7 @@ import {suppliedFreshdesk,publicBytes,privateBytes} from './supplied-attachments
 import {assertBusinessEquality} from './business-equality.mjs'
 import {zip} from './zip.mjs'
 import {configurationSource,fieldValues,withCompany} from './configuration-source.mjs'
-import {configurationReview,configurationConfidentiality} from './configuration-review.mjs'
+import {configurationReview,configurationConfidentiality,configurationErasure} from './configuration-review.mjs'
 import {root,json,encode,review,apply,undo,rows} from './journey-kit.mjs'
 
 // Each document follows the same migration, from a bad upload to reviewed native
@@ -111,7 +111,7 @@ export async function reviewImportJourney(){
    assertBusinessEquality(initial,await h.snapshot())
    if(source.vendor==='zendesk'){
     const privacy=await review(h,'zendesk',source.body+' \n','synthetic-hh-field-privacy.ndjson')
-    await apply(h,privacy);await configurationConfidentiality(h)
+    await apply(h,privacy);await configurationConfidentiality(h);await configurationErasure(h)
    }
    assert.equal(h.outbound,0,'review, publication, repeat, undo and confidentiality checks make no provider requests')
   }finally{await h.close()}

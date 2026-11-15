@@ -32,5 +32,5 @@ export function noRequesterStatements(env:Pick<Env,'DB'>,projectId:string,guard?
 export async function requesterReadFields(env:Pick<Env,'DB'>,ticket:{project_id:string;requester_id?:string|null}){
  if(ticket.requester_id!==noRequesterId(ticket.project_id))return {}
  const contact=await env.DB.prepare('SELECT id,project_id,metadata_json FROM contacts WHERE id=? AND +project_id=?').bind(ticket.requester_id,ticket.project_id).first()
- return isNoRequester(contact)?{requester_id:null,requester_status:'none'}:{}
+ return isNoRequester(contact)?{contact_id:null,requester_id:null,requester_status:'none'}:{}
 }

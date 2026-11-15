@@ -36,9 +36,11 @@ async function noRequester(h,run,id,system){
  const conversationId=target(run,id),thread=await detail(h,conversationId)
  assert.equal(thread.contact.id,system)
  assert.equal(thread.contact.email,null)
+ assert.equal(thread.contact_id,null)
  assert.equal(thread.requester_id,null)
  assert.equal(thread.requester_status,'none')
  const fields=(await h.call(`${dashboard}/conversations/${conversationId}/ticket`)).data
+ assert.equal(fields.contact_id,null)
  assert.equal(fields.requester_id,null)
  assert.equal(fields.requester_status,'none')
  const buckets=(await h.call(`${dashboard}/conversations/${conversationId}/buckets`)).data
@@ -95,9 +97,9 @@ export async function ticketIdentityJourney(){
   await excludedCustomer(h,system,2)
   assert.deepEqual((await rows(h,'SELECT id,email FROM users ORDER BY id')),initial.users.map(({id,email})=>({id,email})).sort((a,b)=>a.id.localeCompare(b.id)),'historical staff receive no native account')
   const rawListed=(await h.call('/api/conversations')).conversations
-  for(const id of [107,108]){const raw=await h.call(`/api/conversations/${target(ready,id)}`),listedRaw=rawListed.find(row=>row.id===raw.id);assert.equal(raw.requester_id,null);assert.equal(raw.requester_status,'none');assert.equal(listedRaw.requester_id,null);assert.equal(listedRaw.requester_status,'none')}
+  for(const id of [107,108]){const raw=await h.call(`/api/conversations/${target(ready,id)}`),listedRaw=rawListed.find(row=>row.id===raw.id);assert.equal(raw.contact_id,null);assert.equal(listedRaw.contact_id,null);assert.equal(raw.requester_id,null);assert.equal(raw.requester_status,'none');assert.equal(listedRaw.requester_id,null);assert.equal(listedRaw.requester_status,'none')}
   const listed=(await h.call(`${dashboard}/conversations`)).data
-  for(const id of [107,108]){const thread=listed.find(row=>row.id===target(ready,id));assert.ok(thread);assert.equal(thread.requester_id,null);assert.equal(thread.requester_status,'none')}
+  for(const id of [107,108]){const thread=listed.find(row=>row.id===target(ready,id));assert.ok(thread);assert.equal(thread.contact_id,null);assert.equal(thread.requester_id,null);assert.equal(thread.requester_status,'none')}
   const landed=await h.snapshot()
   noAccessOrDelivery(initial,landed)
   const repeated=await h.call(`${root}?vendor=zendesk`,{method:'POST',headers:{'X-Import-Filename':'synthetic-hh-ticket-identity.ndjson'},body})
@@ -128,6 +130,13 @@ export async function ticketIdentityJourney(){
   assert.equal((await state(h,editedRun)).error,'NATIVE_EDIT_CONFLICT','priority is import-owned and a later operator change blocks destructive undo')
   assert.equal((await detail(h,editedId)).priority,'low')
   assertBusinessEquality(edited,await h.snapshot())
+  const machine=await h.call(`${management}/connections/tokens`,json({name:'Ticket identity reader',scopes:['conversations:read']}))
+  const absentRun=await review(h,'zendesk',encode([records[1],ticket(111,{requester_id:null,priority:'high'})]),'synthetic-hh-api-identity.ndjson')
+  await apply(h,absentRun)
+  const apiRead=path=>h.call(path,{headers:{Authorization:`Bearer ${machine.token}`}}),absentId=target(absentRun,111),apiList=(await apiRead('/api/v1/conversations')).data
+  for(const row of [apiList.find(row=>row.id===absentId),(await apiRead('/api/v1/conversations/'+absentId)).data]){assert.ok(row);assert.equal(row.contact_id,null);assert.equal(row.requester_id,null);assert.equal(row.requester_status,'none')}
+  const real=(await apiRead('/api/v1/conversations/'+editedId)).data
+  assert.equal(real.contact_id,real.requester_id);assert.notEqual(real.contact_id,null,'a real customer retains a resolvable contact id')
   assert.equal(h.outbound,0,'review, import, catchup, repeat, undo and native priority editing contact no provider')
  }finally{await h.close()}
 }

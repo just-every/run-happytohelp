@@ -1,3 +1,5 @@
+import {retirementScope} from '../import-kit/src/d1/retirement-scope'
+import {fieldVisibilityErasure} from './field-visibility-erasure'
 import {HTTPException} from 'hono/http-exception'
 import {auditLegacyCustody} from './legacy-identities'
 import {messages as erasedMessages} from '../management/contact-erasure/scope'
@@ -61,12 +63,17 @@ export async function fenceImportErasure(env:Env,projectId:string,contactId:stri
  }
  return contact as ErasureIdentity|null
 }
-export function importErasureStatements(env:Env,projectId:string,contactId:string){
+export async function importErasureStatements(env:Env,projectId:string,contactId:string,emails:string[]=[]){
  const jobs=`SELECT j.id FROM ik_jobs j JOIN move_in_erasure_runs e ON j.id=e.job_id OR ((j.operation_key=e.run_id OR substr(j.operation_key,1,length(e.run_id)+1)=e.run_id||'/') AND j.destination=e.project_id) WHERE e.project_id=?1 AND e.contact_id=?2`,runs='SELECT run_id FROM move_in_erasure_runs WHERE project_id=?1 AND contact_id=?2',conversations='SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2',bind=(sql:string)=>env.DB.prepare(sql).bind(projectId,contactId)
+ const operations=(await env.DB.prepare(`SELECT j.operation_key FROM ik_jobs j WHERE j.destination=?1 AND
+  (j.id IN (${jobs}) OR EXISTS(SELECT 1 FROM ik_door_plans p WHERE (p.job_id=j.id OR (p.job_id IS NULL AND j.operation_key='door:'||p.id)) AND p.bundle_sha256 IN
+   (SELECT l.bundle_sha256 FROM h2h_import_door_identities l JOIN move_in_erased_identities e ON e.project_id=l.project_id AND e.digest=l.digest WHERE l.project_id=?1)))`).bind(projectId,contactId).all<{operation_key:string}>()).results.map(row=>row.operation_key)
+ const fieldJobs=(await retirementScope(env.DB,projectId,[...emails,...operations])).jobs
  return [
+  ...await fieldVisibilityErasure(env,projectId,fieldJobs),
   bind(`DELETE FROM move_in_message_sources WHERE project_id=?1 AND message_id IN (SELECT id FROM messages WHERE ${erasedMessages})`),
   bind(`DELETE FROM move_in_notes WHERE project_id=?1 AND (conversation_id IN (${conversations}) OR (json_extract(author_json,'$.role')='contact' AND EXISTS(SELECT 1 FROM move_in_origins o JOIN move_in_conversations c ON c.conversation_id=move_in_notes.conversation_id AND c.project_id=o.project_id AND c.vendor=o.vendor WHERE o.project_id=?1 AND o.target_kind='contact' AND o.target_id=?2 AND o.source_id=json_extract(move_in_notes.author_json,'$.id'))))`),
-  bind(`DELETE FROM move_in_origins WHERE project_id=?1 AND ((target_kind='contact' AND target_id=?2) OR (target_kind='conversation' AND target_id IN (${conversations})) OR (NOT(target_kind='contact' AND target_id<>?2) AND (target_kind,target_id) IN (SELECT target_kind,target_id FROM ik_provenance WHERE job_id IN (${jobs}))))`),
+  bind(`DELETE FROM move_in_origins WHERE project_id=?1 AND ((target_kind='contact' AND target_id=?2) OR (target_kind='conversation' AND target_id IN (${conversations})) OR (NOT(target_kind='field' AND revision='erased-visibility') AND NOT(target_kind='contact' AND target_id<>?2) AND (target_kind,target_id) IN (SELECT target_kind,target_id FROM ik_provenance WHERE job_id IN (${jobs}))))`),
   bind(`UPDATE ik_d1_creation_plans SET released=1 WHERE released=0 AND job_id IN (${jobs})`),
   ...['ik_d1_plan_index','ik_d1_indexed_jobs','ik_d1_stream_pages','ik_d1_reversal_reports','ik_d1_creation_plans','ik_d1_history','ik_d1_entries','ik_provenance','ik_stages','ik_sources','ik_batches','ik_d1_plan_chunks','ik_d1_original_chunks','ik_originals','ik_original_sets'].map(table=>bind(`DELETE FROM ${table} WHERE job_id IN (${jobs})`)),
   bind(`DELETE FROM ik_jobs WHERE id IN (${jobs})`),bind(`DELETE FROM move_in_batches WHERE run_id IN (${runs})`),bind(`DELETE FROM move_in_identity_links WHERE run_id IN (${runs})`),bind(`DELETE FROM move_in_records WHERE run_id IN (${runs})`),

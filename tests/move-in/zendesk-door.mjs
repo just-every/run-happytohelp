@@ -1,3 +1,4 @@
+import {withDoorFields,doorFieldVisibility} from './door-field-visibility.mjs'
 import assert from 'node:assert/strict'
 import {webcrypto,randomUUID,createHash} from 'node:crypto'
 import {readFile} from 'node:fs/promises'
@@ -16,7 +17,7 @@ export async function zendeskDoorJourney(){
   return signed+'.'+Buffer.from(await webcrypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},signer,Buffer.from(signed))).toString('base64url')
  }
  const network=async request=>{assert.equal(new URL(request.url).hostname,'api.sendgrid.com');return new Response(null,{status:202})}
- const fixture=generateDoorZendesk();assert.ok(fixture.byKind.ticket>300);assert.ok(fixture.archived.length>=30);assert.ok(Buffer.byteLength(fixture.body)<2*1024*1024);for(const record of fixture.records)if(record.ticket)for(const comment of record.ticket.comments)assert.ok(!comment.body.includes(String(record.ticket.id)),'source-id search cannot pass through matching message prose')
+ const fixture=withDoorFields(generateDoorZendesk());assert.ok(fixture.byKind.ticket>300);assert.ok(fixture.archived.length>=30);assert.ok(Buffer.byteLength(fixture.body)<2*1024*1024);for(const record of fixture.records)if(record.ticket)for(const comment of record.ticket.comments)assert.ok(!comment.body.includes(String(record.ticket.id)),'source-id search cannot pass through matching message prose')
  async function closed(h){for(const action of actions){const r=await h.raw('/api/rer/import/'+action,{...json({}),headers:{'Content-Type':'application/json',Authorization:'Bearer '+await grant(action)}});assert.equal(r.response.status,404);assert.equal(h.lastWrites,0)}}
  // Before claim, and without exactly "on", every grant door stays closed.
  for(const flag of [undefined,'off','ON']){
@@ -74,6 +75,7 @@ export async function zendeskDoorJourney(){
   assert.equal((await call('apply',{planId:preview.planId,reviewedFingerprint:'0'.repeat(64)},approval)).response.status,403);assert.deepEqual(await snapshot(),initial)
   async function apply(plan=preview){let job;for(let count=0;count<100;count++){job=(await ok('apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},{...approval,fingerprint:plan.fingerprint})).job;if(job.state==='completed')return job;assert.ok(['queued','applying'].includes(job.state),JSON.stringify(job))}assert.fail('bounded apply never completed')}
   await apply()
+  await doorFieldVisibility(h,project)
   const catchup=await call('plan',{uploadId:uploaded.uploadId,catchup:true});assert.equal(catchup.response.status,409);assert.equal(catchup.data.error,'happytohelp_catchup_requires_proposal')
   const status=await ok('status',{planId:preview.planId});assert.equal(status.job.state,'completed');assert.equal(status.approval.approval_id,approval.approvalRecordId);assert.equal(status.failureCode,null);assert.deepEqual(status.job.counts,preview.counts)
   const reconciled=await ok('reconcile',{planId:preview.planId});assert.equal(reconciled.ok,true);assert.equal(reconciled.fingerprint,preview.fingerprint);assert.deepEqual(reconciled.counts.byKind,preview.counts.byKind);assert.equal(reconciled.counts.present+reconciled.counts.explained,preview.summary.sourceRecords)
@@ -121,7 +123,7 @@ export async function zendeskDoorJourney(){
   // separate untouched import for exact undo so no native reference is destroyed.
   assert.equal((await call('undo',{planId:preview.planId})).response.status,409)
   assert.equal((await h.call(management+'/contacts/'+contact.id)).data.name,'synthetic-hh-native-edit')
-  await h.call(management+'/contacts/'+contact.id+'/erase',json({}))
+  await h.call(management+'/contacts/'+contact.id+'/erase',json({}));await doorFieldVisibility(h,project)
   for(const item of media)assert.equal((await h.download(`/api/conversations/${thread.id}/media/${item.id}`)).status,404)
   assert.equal((await h.raw(`/api/conversations/${thread.id}/imported-history`)).response.status,404)
   assert.doesNotMatch(JSON.stringify(await h.call(`/api/conversations/${thread.id}/messages`)),/historical reply|private note/)

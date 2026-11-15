@@ -2,9 +2,9 @@ import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {requireActiveProject} from '../../platform/project-status'
 import {publicField} from './definition'
-import {sourceAllowsForms} from './source-eligibility'
+import {fieldVisibility} from './source-eligibility'
 import type {PublicForm,PublicField,RequestForm,StoredField} from './types'
-export async function fieldCatalogue(env:Env,projectId:string){return (await env.DB.prepare(`SELECT f.*,${sourceAllowsForms} AS form_eligible FROM ticket_fields f WHERE f.project_id=? ORDER BY f.name,f.id`).bind(projectId).all<StoredField>()).results}
+export const fieldCatalogue=fieldVisibility
 export function decodeForm(row:any):RequestForm{return {...JSON.parse(row.config_json),id:row.id,projectId:row.project_id,enabled:!!row.enabled,updatedAt:row.updated_at}}
 export async function storedForm(env:Env,projectId:string,formId:string){const row=await env.DB.prepare('SELECT * FROM request_forms WHERE project_id=? AND id=?').bind(projectId,formId).first<any>();if(!row)throw new HTTPException(404,{message:'Request form not found'});return decodeForm(row)}
 function publicDefinition(form:RequestForm,catalogue:StoredField[],env:Env,requested?:string):PublicForm|null{

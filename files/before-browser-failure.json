@@ -1,0 +1,10 @@
+{
+  "stage": "operator and visitor journey 1440",
+  "error": {
+    "name": "Error",
+    "message": "one visitor socket delivery did not reach its expected state",
+    "stack": "Error: one visitor socket delivery did not reach its expected state\n    at until (file:///home/agent/rer-consolidation/work/hh-slow-delegation-2/run-happytohelp/tests/helpers/delegation-journey/case.mjs:11:8)\n    at async ui.received (file:///home/agent/rer-consolidation/work/hh-slow-delegation-2/run-happytohelp/tests/helpers/delegation-journey/browser.mjs:66:64)\n    at async runCase (file:///home/agent/rer-consolidation/work/hh-slow-delegation-2/run-happytohelp/tests/helpers/delegation-journey/case.mjs:88:3)\n    at async browserJourney (file:///home/agent/rer-consolidation/work/hh-slow-delegation-2/run-happytohelp/tests/helpers/delegation-journey/browser.mjs:72:30)\n    at async Test.run (node:internal/test_runner/test:1389:7)\n    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)"
+  },
+  "rerErrors": [],
+  "retainedPrivateScratch": "/tmp/h2h-agent-fix-rer-f0zW4B"
+}

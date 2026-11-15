@@ -1,0 +1,13 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-slow-delegation-2",
+  "head": "bc12fd6c76c6e66d73c04e8e4733976656627589",
+  "run_id": 43768761382,
+  "conclusion": "success",
+  "head_sha": "bc12fd6c76c6e66d73c04e8e4733976656627589",
+  "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43768761382",
+  "status": "completed",
+  "observed_at": "2026-11-15T22:59:16.144390+00:00",
+  "github_calls_used": 9,
+  "github_call_limit": 10
+}

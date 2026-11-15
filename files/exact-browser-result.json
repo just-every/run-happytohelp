@@ -1,0 +1,456 @@
+{
+  "success": true,
+  "stage": "operator and visitor journey 1440",
+  "cleanupSucceeded": true,
+  "layer": "LOCAL TEST",
+  "provider": "scripted Codex CLI boundary",
+  "liveProvider": false,
+  "customerSystem": "loopback fixture only",
+  "freshInstalledRer": true,
+  "automaticOwnerEntry": true,
+  "checks": [
+    {
+      "width": 1440,
+      "projectId": "c1264269-3c55-4dbf-b080-2fb93ffc4eb1",
+      "conversationId": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+      "deviceId": "500031e1-858a-4744-8b60-5921198c9098",
+      "investigationId": "fedb5490-7ea6-4512-86d7-e57768094519",
+      "childId": "b1649ee8-b9de-40ab-835a-0ba535be1f8c",
+      "observationId": "87a9cc79-2f25-4467-9900-1628df9c1a98",
+      "messageId": "2b00644a-a4b3-461d-a832-03c59834fefd",
+      "jobs": [
+        {
+          "id": "87a9cc79-2f25-4467-9900-1628df9c1a98",
+          "project_id": "c1264269-3c55-4dbf-b080-2fb93ffc4eb1",
+          "conversation_id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+          "operator_id": "5926e791-ca6d-40fb-8419-1d0b4955399e",
+          "device_id": "500031e1-858a-4744-8b60-5921198c9098",
+          "request_id": "57e5abf8-d064-4d1b-a059-4f6e473b9d94",
+          "mode": "investigate",
+          "instructions": "Independently read the Spanish setting from the disposable customer system. Do not rely on the resolve report. Do not write.",
+          "status": "completed",
+          "claim_id": "adbd5224-f62c-4b2f-b2a9-f5d9fea6e6f0",
+          "run_id": "c0701612-2f2b-4185-9e17-80c1b152f26a",
+          "context": {
+            "workspace": {
+              "id": "c1264269-3c55-4dbf-b080-2fb93ffc4eb1",
+              "name": "Agent fix journey"
+            },
+            "conversation": {
+              "id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+              "last_message_id": "b7aaf7ab-21ac-4835-8634-f305c7d318e2",
+              "resolved": false
+            },
+            "contact": {
+              "id": "b50667de-7c0a-4c35-b167-a19bd06a8496",
+              "name": null,
+              "email": "visitor@example.test"
+            },
+            "messages": [
+              {
+                "id": "b7aaf7ab-21ac-4835-8634-f305c7d318e2",
+                "author": "contact",
+                "content": "I cannot turn on the Spanish version of my store. Please investigate.",
+                "created_at": 1794781443428
+              }
+            ],
+            "internal_notes": [
+              {
+                "id": "delegation:fedb5490-7ea6-4512-86d7-e57768094519",
+                "content": "Spanish is disabled; no customer setting has been changed.\nRead the customer setting directly: GET /settings: enabled=false; observation=1cce6b97-29ee-497c-ab50-9a924020b8fd",
+                "created_at": 1794781458959
+              },
+              {
+                "id": "delegation:b1649ee8-b9de-40ab-835a-0ba535be1f8c",
+                "content": "Spanish was enabled; independent investigation is still required before calling the case fixed.\nRead the customer setting directly: GET /settings: enabled=false; observation=466500d3-4c6f-446a-8816-af52fa2f2d43",
+                "created_at": 1794781467545
+              }
+            ],
+            "omissions": {
+              "messages_omitted": 0,
+              "excluded": [
+                "secrets",
+                "authentication tokens",
+                "arbitrary project metadata"
+              ]
+            },
+            "parent_result": null,
+            "workspace_folders": []
+          },
+          "expected_last_message_id": "b7aaf7ab-21ac-4835-8634-f305c7d318e2",
+          "session_id": "journey-thread",
+          "result": {
+            "summary": "Independent observation confirms Spanish is enabled.",
+            "actions": [
+              {
+                "description": "Read the customer setting directly",
+                "evidence": "GET /settings: enabled=true; observation=504a6a74-a0a9-4813-b944-c46bd283741c"
+              }
+            ],
+            "reply_draft": "",
+            "attachment_ids": [],
+            "replies": [
+              {
+                "id": "confirmed",
+                "title": "Confirmed Spanish fix",
+                "body": "Spanish is now enabled. A separate check confirmed the setting, so you can use the Spanish version of your store.",
+                "attachment_ids": [],
+                "status": "available",
+                "attachments": []
+              }
+            ],
+            "follow_up_actions": [],
+            "verified": true,
+            "attachments": []
+          },
+          "cancel_requested": false,
+          "delivery_state": null,
+          "parent_delegation_id": null,
+          "source_proposal_id": null,
+          "created_at": "2026-11-15T22:24:34.370Z",
+          "started_at": "2026-11-15T22:24:34.678Z",
+          "completed_at": "2026-11-15T22:24:35.013Z",
+          "progress": [
+            {
+              "id": "c0701612-2f2b-4185-9e17-80c1b152f26a:progress:1",
+              "created_at": "2026-11-15T22:24:34.727Z",
+              "message": "codex is starting the delegated session.",
+              "session_id": null
+            }
+          ],
+          "input_messages": []
+        },
+        {
+          "id": "b1649ee8-b9de-40ab-835a-0ba535be1f8c",
+          "project_id": "c1264269-3c55-4dbf-b080-2fb93ffc4eb1",
+          "conversation_id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+          "operator_id": "5926e791-ca6d-40fb-8419-1d0b4955399e",
+          "device_id": "500031e1-858a-4744-8b60-5921198c9098",
+          "request_id": "fedb5490-7ea6-4512-86d7-e57768094519:enable",
+          "mode": "resolve",
+          "instructions": "Enable Spanish on the disposable customer fixture only. Leave the customer reply for the operator.",
+          "status": "completed",
+          "claim_id": "f9291305-b0e8-40bf-a8e5-be11da0d46e4",
+          "run_id": "ebdf3167-c57e-4571-9c95-f0f0b4ac31fa",
+          "context": {
+            "workspace": {
+              "id": "c1264269-3c55-4dbf-b080-2fb93ffc4eb1",
+              "name": "Agent fix journey"
+            },
+            "conversation": {
+              "id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+              "last_message_id": "b7aaf7ab-21ac-4835-8634-f305c7d318e2",
+              "resolved": false
+            },
+            "contact": {
+              "id": "b50667de-7c0a-4c35-b167-a19bd06a8496",
+              "name": null,
+              "email": "visitor@example.test"
+            },
+            "messages": [
+              {
+                "id": "b7aaf7ab-21ac-4835-8634-f305c7d318e2",
+                "author": "contact",
+                "content": "I cannot turn on the Spanish version of my store. Please investigate.",
+                "created_at": 1794781443428
+              }
+            ],
+            "internal_notes": [
+              {
+                "id": "delegation:fedb5490-7ea6-4512-86d7-e57768094519",
+                "content": "Spanish is disabled; no customer setting has been changed.\nRead the customer setting directly: GET /settings: enabled=false; observation=1cce6b97-29ee-497c-ab50-9a924020b8fd",
+                "created_at": 1794781458959
+              }
+            ],
+            "omissions": {
+              "messages_omitted": 0,
+              "excluded": [
+                "secrets",
+                "authentication tokens",
+                "arbitrary project metadata"
+              ]
+            },
+            "parent_result": {
+              "delegation_id": "fedb5490-7ea6-4512-86d7-e57768094519",
+              "source_proposal_id": "enable",
+              "summary": "Spanish is disabled; no customer setting has been changed.",
+              "action": {
+                "id": "enable",
+                "title": "Enable Spanish",
+                "instructions": "Enable Spanish on the disposable customer fixture only. Leave the customer reply for the operator.",
+                "mode": "resolve",
+                "attachment_ids": []
+              },
+              "attachments": []
+            },
+            "workspace_folders": []
+          },
+          "expected_last_message_id": "b7aaf7ab-21ac-4835-8634-f305c7d318e2",
+          "session_id": "journey-thread",
+          "result": {
+            "summary": "Spanish was enabled; independent investigation is still required before calling the case fixed.",
+            "actions": [
+              {
+                "description": "Read the customer setting directly",
+                "evidence": "GET /settings: enabled=false; observation=466500d3-4c6f-446a-8816-af52fa2f2d43"
+              }
+            ],
+            "reply_draft": "",
+            "attachment_ids": [],
+            "replies": [],
+            "follow_up_actions": [],
+            "verified": true,
+            "attachments": []
+          },
+          "cancel_requested": false,
+          "delivery_state": null,
+          "parent_delegation_id": "fedb5490-7ea6-4512-86d7-e57768094519",
+          "source_proposal_id": "enable",
+          "created_at": "2026-11-15T22:24:23.441Z",
+          "started_at": "2026-11-15T22:24:27.274Z",
+          "completed_at": "2026-11-15T22:24:27.529Z",
+          "progress": [
+            {
+              "id": "ebdf3167-c57e-4571-9c95-f0f0b4ac31fa:progress:1",
+              "created_at": "2026-11-15T22:24:27.348Z",
+              "message": "codex is starting the delegated session.",
+              "session_id": null
+            }
+          ],
+          "input_messages": []
+        },
+        {
+          "id": "fedb5490-7ea6-4512-86d7-e57768094519",
+          "project_id": "c1264269-3c55-4dbf-b080-2fb93ffc4eb1",
+          "conversation_id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+          "operator_id": "5926e791-ca6d-40fb-8419-1d0b4955399e",
+          "device_id": "500031e1-858a-4744-8b60-5921198c9098",
+          "request_id": "c607925b-a81b-4eb5-92b9-50d225da8d27",
+          "mode": "investigate",
+          "instructions": "Investigate the Spanish setting on the disposable fixture. Read only; propose any change for my approval.",
+          "status": "completed",
+          "claim_id": "a9ab287a-2318-4093-ab91-ed2a4aca0879",
+          "run_id": "5bc57b83-a4d0-48fc-94c3-826e7138f665",
+          "context": {
+            "workspace": {
+              "id": "c1264269-3c55-4dbf-b080-2fb93ffc4eb1",
+              "name": "Agent fix journey"
+            },
+            "conversation": {
+              "id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+              "last_message_id": "b7aaf7ab-21ac-4835-8634-f305c7d318e2",
+              "resolved": false
+            },
+            "contact": {
+              "id": "b50667de-7c0a-4c35-b167-a19bd06a8496",
+              "name": null,
+              "email": "visitor@example.test"
+            },
+            "messages": [
+              {
+                "id": "b7aaf7ab-21ac-4835-8634-f305c7d318e2",
+                "author": "contact",
+                "content": "I cannot turn on the Spanish version of my store. Please investigate.",
+                "created_at": 1794781443428
+              }
+            ],
+            "internal_notes": [],
+            "omissions": {
+              "messages_omitted": 0,
+              "excluded": [
+                "secrets",
+                "authentication tokens",
+                "arbitrary project metadata"
+              ]
+            },
+            "parent_result": null,
+            "workspace_folders": []
+          },
+          "expected_last_message_id": "b7aaf7ab-21ac-4835-8634-f305c7d318e2",
+          "session_id": "journey-thread",
+          "result": {
+            "summary": "Spanish is disabled; no customer setting has been changed.",
+            "actions": [
+              {
+                "description": "Read the customer setting directly",
+                "evidence": "GET /settings: enabled=false; observation=1cce6b97-29ee-497c-ab50-9a924020b8fd"
+              }
+            ],
+            "reply_draft": "",
+            "attachment_ids": [],
+            "replies": [
+              {
+                "id": "finding",
+                "title": "Investigation finding",
+                "body": "I found that Spanish is disabled. I am checking the correction before confirming it.",
+                "attachment_ids": [],
+                "status": "available",
+                "attachments": []
+              }
+            ],
+            "follow_up_actions": [
+              {
+                "id": "enable",
+                "title": "Enable Spanish",
+                "instructions": "Enable Spanish on the disposable customer fixture only. Leave the customer reply for the operator.",
+                "mode": "resolve",
+                "attachment_ids": [],
+                "job_id": "fedb5490-7ea6-4512-86d7-e57768094519",
+                "proposal_id": "enable",
+                "kind": "follow_up",
+                "status": "queued",
+                "message_id": null,
+                "child_delegation_id": "b1649ee8-b9de-40ab-835a-0ba535be1f8c",
+                "review_message": null,
+                "expected_revision": null,
+                "expected_last_message_id": null,
+                "attachments": []
+              }
+            ],
+            "verified": true,
+            "attachments": []
+          },
+          "cancel_requested": false,
+          "delivery_state": null,
+          "parent_delegation_id": null,
+          "source_proposal_id": null,
+          "created_at": "2026-11-15T22:24:17.764Z",
+          "started_at": "2026-11-15T22:24:18.548Z",
+          "completed_at": "2026-11-15T22:24:18.919Z",
+          "progress": [
+            {
+              "id": "5bc57b83-a4d0-48fc-94c3-826e7138f665:progress:1",
+              "created_at": "2026-11-15T22:24:18.646Z",
+              "message": "codex is starting the delegated session.",
+              "session_id": null
+            }
+          ],
+          "input_messages": []
+        }
+      ],
+      "notes": [
+        {
+          "id": "delegation:fedb5490-7ea6-4512-86d7-e57768094519",
+          "type": "INTERNAL_NOTE",
+          "payload": "Spanish is disabled; no customer setting has been changed.\nRead the customer setting directly: GET /settings: enabled=false; observation=1cce6b97-29ee-497c-ab50-9a924020b8fd",
+          "content": "Spanish is disabled; no customer setting has been changed.\nRead the customer setting directly: GET /settings: enabled=false; observation=1cce6b97-29ee-497c-ab50-9a924020b8fd",
+          "media": [],
+          "conversation_id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+          "bucket_id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+          "agent": {
+            "id": "5926e791-ca6d-40fb-8419-1d0b4955399e",
+            "name": "Journey owner",
+            "is_blocked": false,
+            "blocked_at": null,
+            "is_online": false,
+            "display_name": "Journey owner",
+            "initials": "JO"
+          },
+          "agent_id": "5926e791-ca6d-40fb-8419-1d0b4955399e",
+          "created_at": "2026-11-15T22:24:18.959Z"
+        },
+        {
+          "id": "delegation:b1649ee8-b9de-40ab-835a-0ba535be1f8c",
+          "type": "INTERNAL_NOTE",
+          "payload": "Spanish was enabled; independent investigation is still required before calling the case fixed.\nRead the customer setting directly: GET /settings: enabled=false; observation=466500d3-4c6f-446a-8816-af52fa2f2d43",
+          "content": "Spanish was enabled; independent investigation is still required before calling the case fixed.\nRead the customer setting directly: GET /settings: enabled=false; observation=466500d3-4c6f-446a-8816-af52fa2f2d43",
+          "media": [],
+          "conversation_id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+          "bucket_id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+          "agent": {
+            "id": "5926e791-ca6d-40fb-8419-1d0b4955399e",
+            "name": "Journey owner",
+            "is_blocked": false,
+            "blocked_at": null,
+            "is_online": false,
+            "display_name": "Journey owner",
+            "initials": "JO"
+          },
+          "agent_id": "5926e791-ca6d-40fb-8419-1d0b4955399e",
+          "created_at": "2026-11-15T22:24:27.545Z"
+        },
+        {
+          "id": "delegation:87a9cc79-2f25-4467-9900-1628df9c1a98",
+          "type": "INTERNAL_NOTE",
+          "payload": "Independent observation confirms Spanish is enabled.\nRead the customer setting directly: GET /settings: enabled=true; observation=504a6a74-a0a9-4813-b944-c46bd283741c",
+          "content": "Independent observation confirms Spanish is enabled.\nRead the customer setting directly: GET /settings: enabled=true; observation=504a6a74-a0a9-4813-b944-c46bd283741c",
+          "media": [],
+          "conversation_id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+          "bucket_id": "95edabe6-82b3-4f53-8b12-df2ae78b05a3",
+          "agent": {
+            "id": "5926e791-ca6d-40fb-8419-1d0b4955399e",
+            "name": "Journey owner",
+            "is_blocked": false,
+            "blocked_at": null,
+            "is_online": false,
+            "display_name": "Journey owner",
+            "initials": "JO"
+          },
+          "agent_id": "5926e791-ca6d-40fb-8419-1d0b4955399e",
+          "created_at": "2026-11-15T22:24:35.030Z"
+        }
+      ],
+      "fixtureEvents": [
+        {
+          "id": "1cce6b97-29ee-497c-ab50-9a924020b8fd",
+          "method": "GET",
+          "path": "/settings",
+          "at": "2026-11-15T22:24:18.768Z",
+          "enabled": false
+        },
+        {
+          "id": "466500d3-4c6f-446a-8816-af52fa2f2d43",
+          "method": "GET",
+          "path": "/settings",
+          "at": "2026-11-15T22:24:27.473Z",
+          "enabled": false
+        },
+        {
+          "id": "9ad11bee-e0e1-419a-a9d6-97b65a9a3eb9",
+          "method": "POST",
+          "path": "/enable",
+          "at": "2026-11-15T22:24:27.482Z",
+          "enabled": true
+        },
+        {
+          "id": "504a6a74-a0a9-4813-b944-c46bd283741c",
+          "method": "GET",
+          "path": "/settings",
+          "at": "2026-11-15T22:24:34.961Z",
+          "enabled": true
+        }
+      ],
+      "operatorId": "5926e791-ca6d-40fb-8419-1d0b4955399e"
+    }
+  ],
+  "socketDeliveries": [
+    {
+      "width": 1440,
+      "messageId": "2b00644a-a4b3-461d-a832-03c59834fefd",
+      "socketCount": 1,
+      "matchingFrameCount": 1,
+      "pageTextCount": 1,
+      "frames": [
+        {
+          "type": "resolution"
+        },
+        {
+          "type": "message",
+          "eventId": 1,
+          "messageId": "b7aaf7ab-21ac-4835-8634-f305c7d318e2"
+        },
+        {
+          "type": "message",
+          "eventId": 2,
+          "messageId": "2b00644a-a4b3-461d-a832-03c59834fefd"
+        },
+        {
+          "type": "resolution"
+        },
+        {
+          "type": "resolution"
+        }
+      ]
+    }
+  ]
+}

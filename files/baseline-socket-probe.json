@@ -1,0 +1,33 @@
+{
+  "width": 1440,
+  "messageId": "ebb50fd6-dce5-4f5c-86ce-504312cd6641",
+  "socketCount": 1,
+  "sockets": [
+    {
+      "path": "/api/conversations/dbd42ed3-1ad5-4380-86bf-092970f43d1d/socket",
+      "frames": [
+        {
+          "type": "resolution"
+        },
+        {
+          "type": "message",
+          "eventId": 1,
+          "messageId": "a69bc9f0-e93a-473a-8fe8-951259fb1501"
+        },
+        {
+          "type": "message",
+          "eventId": 2,
+          "messageId": "ebb50fd6-dce5-4f5c-86ce-504312cd6641"
+        },
+        {
+          "type": "resolution"
+        },
+        {
+          "type": "resolution"
+        }
+      ]
+    }
+  ],
+  "matchingFrameCount": 1,
+  "pageTextCount": 1
+}

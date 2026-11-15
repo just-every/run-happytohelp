@@ -1,0 +1,47 @@
+{
+  "completed_at": "2026-11-15T22:21:32.667794+00:00",
+  "base": "efea73943b4995e951aa9c2e7a2577eaacfd5042",
+  "results": [
+    {
+      "command": "cloud_run pnpm exec rer build",
+      "exit_code": 0,
+      "log": "build.log",
+      "sha256": "94203c987b0aee88c38a0338e0dd24b3294b15cfa663566b26ed866247c05fbe"
+    },
+    {
+      "command": "cloud_run pnpm run typecheck",
+      "exit_code": 0,
+      "log": "typecheck.log",
+      "sha256": "01a142d648ccec911ec7fd03889049f9c7e6eee1afdf80121b140da8ee7e9372"
+    },
+    {
+      "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 tests/journeys/widget.mjs tests/journeys/runtime.mjs tests/journeys/delegation-browser.mjs",
+      "exit_code": 0,
+      "log": "touched.log",
+      "sha256": "f65d52298df1a21b04e1c49418e5a02f20a5aba3123c620e4bef9a26b4655700"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0,
+      "log": "source-lock.log",
+      "sha256": "04d56d98303bb1a2953396c0c7ab6e339d015eea8d612d8cb8c15be51ac58643"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "log": "source-check.log",
+      "sha256": "db163debc05f2b62176c18c211b621cc7cc1b2c655250f5ae5e7649a87f1adc2"
+    },
+    {
+      "command": "cloud_run pnpm exec rer check --profile first-party",
+      "exit_code": 0,
+      "log": "first-party.log",
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    }
+  ],
+  "touched_tests": {
+    "passed": 3,
+    "failed": 0,
+    "duration_ms": 423931.00157
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "limit": 10,
+  "calls": [
+    {
+      "n": 1,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43764365668",
+      "receipt": "tag-run.json"
+    },
+    {
+      "n": 2,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43764365668/jobs?per_page=100",
+      "receipt": "tag-jobs.json"
+    },
+    {
+      "n": 3,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43764365668/jobs?per_page=100",
+      "receipt": "tag-jobs-final.json"
+    },
+    {
+      "n": 4,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs?head_sha=bc12fd6c76c6e66d73c04e8e4733976656627589&per_page=100",
+      "receipt": "candidate-runs.json",
+      "fetched_at": "2026-11-15T22:24:46.247121+00:00"
+    },
+    {
+      "n": 5,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43768761382 --jq {status,conclusion,head_sha,html_url}",
+      "receipt": "verify-poll-1.json",
+      "fetched_at": "2026-11-15T22:30:27.406729+00:00"
+    },
+    {
+      "n": 6,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43764365668/jobs?per_page=100",
+      "receipt": "tag-jobs-conclusions.json",
+      "fetched_at": "2026-11-15T22:33:46.430574+00:00"
+    },
+    {
+      "n": 7,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43768761382 --jq {status,conclusion,head_sha,html_url}",
+      "receipt": "verify-poll-2.json",
+      "fetched_at": "2026-11-15T22:35:28.888144+00:00"
+    },
+    {
+      "n": 8,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43768761382 --jq {status,conclusion,head_sha,html_url}",
+      "receipt": "verify-poll-3.json",
+      "fetched_at": "2026-11-15T22:44:50.257119+00:00"
+    },
+    {
+      "n": 9,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43768761382 --jq {status,conclusion,head_sha,html_url}",
+      "receipt": "verify-poll-4.json",
+      "fetched_at": "2026-11-15T22:58:43.622960+00:00"
+    }
+  ]
+}

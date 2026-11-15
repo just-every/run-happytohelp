@@ -1,0 +1,20 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> happytohelp@0.4.28 test:installer-nightly /home/agent/rer-consolidation/work/hh-slow-delegation-2/run-happytohelp
+> node scripts/installer/qualify.mjs --test-name-pattern\=agent.fix
+
+✔ tests/journeys/deploy-nightly.mjs (115.001348ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Fresh rer install/setup/dev owner-entry agent-fix browser journey passed at 1440 with operator and widget screenshots for all seven steps.
+✔ an agent fix from a fresh clone: rer install, setup and dev, the automatic owner entry, then pairing, investigation, approved resolve, independent observation and Send in the browser at 1440 (258311.388341ms)
+✔ tests/journeys/upgrade-nightly.mjs (159.725308ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 260235.540317

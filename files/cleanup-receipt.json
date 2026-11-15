@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-15T22:27:31.526407+00:00",
+  "owned_before_failure_scratch": "/tmp/h2h-agent-fix-rer-f0zW4B",
+  "removed": true,
+  "private_scratch_published": false,
+  "candidate_checkout_preserved": true,
+  "journey_cleanup_succeeded": [
+    "before",
+    "baseline",
+    "after",
+    "exact-after"
+  ],
+  "manual_server_processes_started": 0,
+  "background_ci_watchers": 0
+}

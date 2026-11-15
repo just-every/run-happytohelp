@@ -1,0 +1,57 @@
+{
+  "width": 1440,
+  "messageId": "80499855-5d24-4717-a7cf-9aca3d8cdc4e",
+  "socketCount": 2,
+  "sockets": [
+    {
+      "path": "/api/conversations/07ca0414-4de7-47d7-a392-302a0de373ea/socket",
+      "frames": [
+        {
+          "type": "resolution"
+        },
+        {
+          "type": "message",
+          "eventId": 1,
+          "messageId": "0548677d-2c2e-4681-bae6-d282d4295027"
+        },
+        {
+          "type": "resolution"
+        },
+        {
+          "type": "message",
+          "eventId": 2,
+          "messageId": "80499855-5d24-4717-a7cf-9aca3d8cdc4e"
+        },
+        {
+          "type": "resolution"
+        }
+      ]
+    },
+    {
+      "path": "/api/conversations/07ca0414-4de7-47d7-a392-302a0de373ea/socket",
+      "frames": [
+        {
+          "type": "resolution"
+        },
+        {
+          "type": "message",
+          "eventId": 1,
+          "messageId": "0548677d-2c2e-4681-bae6-d282d4295027"
+        },
+        {
+          "type": "message",
+          "eventId": 2,
+          "messageId": "80499855-5d24-4717-a7cf-9aca3d8cdc4e"
+        },
+        {
+          "type": "resolution"
+        },
+        {
+          "type": "resolution"
+        }
+      ]
+    }
+  ],
+  "matchingFrameCount": 2,
+  "pageTextCount": 1
+}

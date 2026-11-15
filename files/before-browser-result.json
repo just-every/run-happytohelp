@@ -1,0 +1,12 @@
+{
+  "success": false,
+  "stage": "operator and visitor journey 1440",
+  "cleanupSucceeded": true,
+  "layer": "LOCAL TEST",
+  "provider": "scripted Codex CLI boundary",
+  "liveProvider": false,
+  "customerSystem": "loopback fixture only",
+  "freshInstalledRer": true,
+  "automaticOwnerEntry": true,
+  "checks": []
+}

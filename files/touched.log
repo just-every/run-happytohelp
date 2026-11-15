@@ -1,0 +1,11 @@
+✔ a paired computer publishes the requested help article; the operator reviews its draft with Use, sends once, and the visitor receives the same reply after reload (187160.46041ms)
+✔ a native support session admits and replays one transcript with its own files, refuses foreign and stale writes, delivers live and pairs the shipped connector (223679.225404ms)
+✔ visitor and teammate sockets replay their durable cursor, exchange first reads and private activity only within current authority, and close on revocation (8830.837087ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 423931.00157

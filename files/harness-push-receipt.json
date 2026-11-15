@@ -1,0 +1,16 @@
+{
+  "repository": "runeditrun/harness",
+  "branch": "cloud/harness-starting-points-1",
+  "head": "d97b1b3290f1456e463ea2be14fa75e437258ffc",
+  "advertised_head": "d97b1b3290f1456e463ea2be14fa75e437258ffc",
+  "push_verified": true,
+  "utc": "2026-11-15T06:20:20.057643+00:00",
+  "product_files": [
+    "README.md",
+    "data/README.md",
+    "data/seed-index.json",
+    "data/seed-index.schema.json",
+    "scripts/seed-index.py"
+  ],
+  "new_commits": 1
+}

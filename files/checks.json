@@ -1,0 +1,21 @@
+{
+  "generator": "passed",
+  "json_schema": "passed",
+  "python_syntax": "passed",
+  "excerpt_provenance_checks": 646,
+  "credential_shaped_diff_check": {
+    "token-prefix": 0,
+    "private-key": 0,
+    "credential-url": 0
+  },
+  "source_scan": "Fleet publication gate remains required; no complete Base publication scan is claimed.",
+  "seed_count": 6,
+  "setup_fields": 113,
+  "files": [
+    "README.md",
+    "data/README.md",
+    "data/seed-index.schema.json",
+    "data/seed-index.json",
+    "scripts/seed-index.py"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "checked_utc": "2026-11-15T06:27:24.175753+00:00",
+  "repositories": [
+    {
+      "repository": "runeditrun/harness",
+      "product_ref": "refs/heads/cloud/harness-starting-points-1",
+      "advertised_head": "d97b1b3290f1456e463ea2be14fa75e437258ffc",
+      "expected_head": "d97b1b3290f1456e463ea2be14fa75e437258ffc",
+      "matched": true,
+      "tracked_tree_clean": true,
+      "candidate_identities_and_trailers": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>"
+    },
+    {
+      "repository": "just-every/run-happytohelp",
+      "product_ref": "refs/heads/cloud/harness-starting-points-1",
+      "advertised_head": "d44ec03a88f985ce688d2ad475e8e97039fc5fd6",
+      "expected_head": "d44ec03a88f985ce688d2ad475e8e97039fc5fd6",
+      "matched": true,
+      "tracked_tree_clean": true,
+      "candidate_identities_and_trailers": "No new commits relative to sampled main."
+    },
+    {
+      "repository": "just-every/run-lamp",
+      "product_ref": "refs/heads/cloud/harness-starting-points-1",
+      "advertised_head": "a3ab249f53fc8923fea5215a72d2cd41b4a9c7b6",
+      "expected_head": "a3ab249f53fc8923fea5215a72d2cd41b4a9c7b6",
+      "matched": true,
+      "tracked_tree_clean": true,
+      "candidate_identities_and_trailers": "No new commits relative to sampled main."
+    },
+    {
+      "repository": "just-every/run-oncall",
+      "product_ref": "refs/heads/cloud/harness-starting-points-1",
+      "advertised_head": "b30412d15c5049718e9b19d307cfb3348e08079c",
+      "expected_head": "b30412d15c5049718e9b19d307cfb3348e08079c",
+      "matched": true,
+      "tracked_tree_clean": true,
+      "candidate_identities_and_trailers": "No new commits relative to sampled main."
+    },
+    {
+      "repository": "just-every/run-orbit",
+      "product_ref": "refs/heads/cloud/harness-starting-points-1",
+      "advertised_head": "3b6296cbd5e6b0c10f93a9c84277c9b88373e906",
+      "expected_head": "3b6296cbd5e6b0c10f93a9c84277c9b88373e906",
+      "matched": true,
+      "tracked_tree_clean": true,
+      "candidate_identities_and_trailers": "No new commits relative to sampled main."
+    },
+    {
+      "repository": "just-every/run-spool",
+      "product_ref": "refs/heads/cloud/harness-starting-points-1",
+      "advertised_head": "f651887172e7d74a09af89f9eb059cfd13d72c61",
+      "expected_head": "f651887172e7d74a09af89f9eb059cfd13d72c61",
+      "matched": true,
+      "tracked_tree_clean": true,
+      "candidate_identities_and_trailers": "No new commits relative to sampled main."
+    },
+    {
+      "repository": "just-every/run-uptime",
+      "product_ref": "refs/heads/cloud/harness-starting-points-1",
+      "advertised_head": "fef01b15e0205f1c53c4e362a3729afc66a0b20b",
+      "expected_head": "fef01b15e0205f1c53c4e362a3729afc66a0b20b",
+      "matched": true,
+      "tracked_tree_clean": true,
+      "candidate_identities_and_trailers": "No new commits relative to sampled main."
+    }
+  ]
+}

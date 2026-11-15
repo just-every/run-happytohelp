@@ -1,0 +1,119 @@
+{
+  "schema": "passed",
+  "generator": "passed",
+  "seed_count": 6,
+  "rows": [
+    {
+      "seed": "HappyToHelp",
+      "repository": "just-every/run-happytohelp",
+      "commit": "d44ec03a88f985ce688d2ad475e8e97039fc5fd6",
+      "setup_fields": 35,
+      "health_path": "/health",
+      "importer_records": 6,
+      "missing_importer_metadata": [
+        {
+          "record": 0,
+          "kind": "declaration",
+          "fields": [
+            "format",
+            "command"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "Lamp",
+      "repository": "just-every/run-lamp",
+      "commit": "a3ab249f53fc8923fea5215a72d2cd41b4a9c7b6",
+      "setup_fields": 29,
+      "health_path": "/health",
+      "importer_records": 2,
+      "missing_importer_metadata": [
+        {
+          "record": 0,
+          "kind": "declaration",
+          "fields": [
+            "format",
+            "command"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "Oncall",
+      "repository": "just-every/run-oncall",
+      "commit": "b30412d15c5049718e9b19d307cfb3348e08079c",
+      "setup_fields": 13,
+      "health_path": "/health",
+      "importer_records": 3,
+      "missing_importer_metadata": [
+        {
+          "record": 2,
+          "kind": "documentation",
+          "fields": [
+            "format"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "Orbit",
+      "repository": "just-every/run-orbit",
+      "commit": "3b6296cbd5e6b0c10f93a9c84277c9b88373e906",
+      "setup_fields": 10,
+      "health_path": "/health",
+      "importer_records": 3,
+      "missing_importer_metadata": [
+        {
+          "record": 0,
+          "kind": "documentation",
+          "fields": [
+            "command"
+          ]
+        },
+        {
+          "record": 1,
+          "kind": "documentation",
+          "fields": [
+            "command"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "Spool",
+      "repository": "just-every/run-spool",
+      "commit": "f651887172e7d74a09af89f9eb059cfd13d72c61",
+      "setup_fields": 11,
+      "health_path": "/health",
+      "importer_records": 6,
+      "missing_importer_metadata": [
+        {
+          "record": 2,
+          "kind": "documentation",
+          "fields": [
+            "format",
+            "command"
+          ]
+        },
+        {
+          "record": 5,
+          "kind": "documentation",
+          "fields": [
+            "format",
+            "command"
+          ]
+        }
+      ]
+    },
+    {
+      "seed": "Uptime",
+      "repository": "just-every/run-uptime",
+      "commit": "fef01b15e0205f1c53c4e362a3729afc66a0b20b",
+      "setup_fields": 15,
+      "health_path": "/health",
+      "importer_records": 2,
+      "missing_importer_metadata": []
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "utc": "2026-11-15T06:30:25.494063+00:00",
+  "selected_regular_files": [
+    {
+      "path": "PLAN.md",
+      "bytes": 2170,
+      "sha256": "bb6a50788b72160b440ff747c422365eee17fd6190735806c5e16fd77153f362"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 6600,
+      "sha256": "0b76cff6cd3cfe56b3e59b2309b09b215893364fd5f024170a5ae5059b23d9a2"
+    },
+    {
+      "path": "checks.json",
+      "bytes": 527,
+      "sha256": "96aa4fb8668b225c210b58c028cb6a6c988531ca153a2a00b24071432cdd0f76"
+    },
+    {
+      "path": "ci-receipt.json",
+      "bytes": 19324,
+      "sha256": "8fe61059e0ea982bdd410dbdc221e73f3f24af6654355f9201164d0105e33fa2"
+    },
+    {
+      "path": "ci-run-happytohelp-43684870172.json",
+      "bytes": 198,
+      "sha256": "f4cba55cc05e325638a000642102cbbcb0f59e4c2b2ba86ca4e1992dc6d35465"
+    },
+    {
+      "path": "ci-run-lamp-43684871744.json",
+      "bytes": 191,
+      "sha256": "86cd97e8b91cf6ba59d2799f283f15312632d4aa44d55c67a0dea3cc92183331"
+    },
+    {
+      "path": "ci-run-uptime-43684879645.json",
+      "bytes": 193,
+      "sha256": "8fde91022d172aba652d9dff1c5ad5aa63a6b699f2b9723b206028e1701eb3de"
+    },
+    {
+      "path": "ci-summary.json",
+      "bytes": 2244,
+      "sha256": "b4b0c286642166a272bb3a1a0d8c89891f93a9dd50dd37d9cac6515885c63c64"
+    },
+    {
+      "path": "custody-receipt.json",
+      "bytes": 2950,
+      "sha256": "c06429f2f5d9f0f1d352c55aed9c6cb9ef7f814ce2b5257385abbc3ddc579ea2"
+    },
+    {
+      "path": "generate.log",
+      "bytes": 38,
+      "sha256": "94d7cd45d0dd4ab0308a7f66387aa743e42926371c90920fb4c395d63675cfb0"
+    },
+    {
+      "path": "harness-push-receipt.json",
+      "bytes": 453,
+      "sha256": "4c7c0ed879894ba14bb5e12505ddcab0a574181c6cd524104a62f6beb6aec638"
+    },
+    {
+      "path": "regenerated-index.json",
+      "bytes": 888391,
+      "sha256": "38879fe47016a26cf42795df24b2ab0d7730ff4b3bf24bc5b923594112d022a0"
+    },
+    {
+      "path": "regeneration-receipt.json",
+      "bytes": 173,
+      "sha256": "14bb5dafd7f1bec37da80ae70dbcc780b90d0ca061c700216fb9372ea396e5e4"
+    },
+    {
+      "path": "scope-receipt.json",
+      "bytes": 1966,
+      "sha256": "e8bfc5d101b8e7f268bd643ee68f7de8a8e3124e755ea45b288f3ecc0f0217df"
+    },
+    {
+      "path": "seed-push-receipts.json",
+      "bytes": 1630,
+      "sha256": "5350ced66265701678ec2fda037607eb9c160510be9ee0e6b592b85523355d09"
+    },
+    {
+      "path": "validation-receipt.json",
+      "bytes": 2747,
+      "sha256": "c6db918db9f35a7ad1c348d8d77c2f12d9412339504bd89d1ccceb7fef4be41a"
+    }
+  ],
+  "credential_patterns": "zero matches",
+  "selection": "Explicit non-secret reports, actual product/check receipts, public generated index and workflow metadata; no environment dumps, held-out gates or symlinks."
+}

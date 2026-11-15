@@ -1,0 +1,169 @@
+{
+  "base": "6c9727736090d31ca7eb0cff86aa3462e9cd235b",
+  "blockers": [],
+  "bootstrap_attempt": {
+    "cause": "Node 24 was initially on PATH; required exact Node 22 acquisition was denied by the proof network guard before the dry-run could start",
+    "exit": 3,
+    "receipt": "dry-run-bootstrap-attempt.log",
+    "resolution": "Installed exact Node 22.20.0 from npm as toolchain preparation, then reran command successfully; no product edits needed"
+  },
+  "boundaries": {
+    "code_changes": false,
+    "full_local_suite": false,
+    "generated_views_committed": false,
+    "permanent_tests_added": false,
+    "pr_created": false,
+    "provider_actions": false,
+    "publication_scanner_run_in_cloud": false
+  },
+  "branch": "cloud/hh-docs-truth-1",
+  "checks": [
+    {
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exit": 0,
+      "receipt": "contract-check.log",
+      "result": "Contract prose: 0 errors, 0 warnings; documents current"
+    },
+    {
+      "command": "verifyDocs(process.cwd()) exported by tests/helpers/public-docs-journey.mjs",
+      "exit": 0,
+      "receipt": "docs-links.json",
+      "result": {
+        "pages": 39,
+        "problems": [],
+        "result": "pass",
+        "sections": 4
+      }
+    },
+    {
+      "command": "python3 /tmp/hh-docs-copy-check.py",
+      "exit": 0,
+      "receipt": "copy-check.json",
+      "result": {
+        "contradiction_groups_after": 0,
+        "contradiction_groups_before": 4,
+        "documents": 4,
+        "mail_off_section": "byte-identical to origin/main",
+        "pin": "0.2.117",
+        "primary_command": "curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp",
+        "result": "pass"
+      }
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "receipt": "source-lock.log",
+      "result": "Only four edited documentation hashes changed"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "receipt": "source-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs verify-base --offline",
+      "exit": 0,
+      "receipt": "copy-origin-check.log",
+      "result": "Recorded Base copies and acknowledged adaptations match their source provenance offline"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "receipt": "rer-check.log"
+    },
+    {
+      "command": "pnpm exec rer deploy --dry-run",
+      "completion": "deploy: local dry run complete; no credentials were needed, no Cloudflare requests were made and nothing was changed remotely. Target secrets and remote readiness were not checked.",
+      "deployed": false,
+      "exit": 0,
+      "fetch_attempts": 0,
+      "fetch_guard": "globalThis.fetch refused and counted each attempt, inherited by command children through NODE_OPTIONS",
+      "inputs": "Isolated allowlisted command environment; no provider credentials, mail inputs or OWNER_EMAIL; no local setup or private answers",
+      "receipt": "dry-run.log",
+      "remote_readiness": "unchecked"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+      "exit": 0,
+      "receipt": "identity.txt",
+      "result": "One candidate commit; fleet author/committer; no trailers"
+    },
+    {
+      "attempts": 1,
+      "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/hh-docs-truth-1",
+      "exit": 0,
+      "receipt": "product-push.log"
+    }
+  ],
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "1e2aaf87653740749ac15cd7882018f1e7af4b52",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43693967238",
+    "observed_at": "2026-11-15T08:50:09.440534+00:00",
+    "receipt": "ci-result.json",
+    "run_id": 43693967238,
+    "status": "completed"
+  },
+  "ci_repository_api_calls": 7,
+  "counts": {
+    "clause_status_changes": [],
+    "contract": {
+      "after": {
+        "done": 4,
+        "missing": 16,
+        "partial": 71,
+        "total": 91
+      },
+      "before": {
+        "done": 4,
+        "missing": 16,
+        "partial": 71,
+        "total": 91
+      }
+    },
+    "contradiction_groups": {
+      "after": 0,
+      "before": 4
+    },
+    "current_stale_0_2_77_references": {
+      "after": 0,
+      "before": 3
+    },
+    "node_first_entry_sections": {
+      "after": 0,
+      "before": 3
+    }
+  },
+  "finalized_at": "2026-11-15T08:51:11Z",
+  "head": "1e2aaf87653740749ac15cd7882018f1e7af4b52",
+  "product_diff": {
+    "deletions": 64,
+    "insertions": 135
+  },
+  "product_files": [
+    "OPERATIONS.md",
+    "README.md",
+    "docs/INDEPENDENT-RELEASE.md",
+    "docs/INSTALLER.md",
+    "sources.lock.json"
+  ],
+  "recorded_at": "2026-11-15T08:20:44.579565+00:00",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "setup_receipts": {
+    "exact_node_preparation": "node-toolchain-install.log",
+    "frozen_dependencies": "dependency-install.log"
+  },
+  "tag": "hh-docs-truth-1",
+  "terminal_status": "READY",
+  "tools": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.117"
+  },
+  "working_tree": "clean"
+}

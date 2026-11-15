@@ -1,0 +1,239 @@
+# Actual source excerpts read for hh-docs-truth-1
+Tracked files are from product base 6c9727736090d31ca7eb0cff86aa3462e9cd235b (unchanged in the candidate). node_modules excerpts are from the frozen @runeditrun/rer 0.2.117 dependency.
+
+## package.json:130
+130:     "zod": "4.6.6"
+131:   },
+132:   "devDependencies": {
+133:     "@cloudflare/vite-plugin": "1.54.5",
+134:     "@cloudflare/workers-types": "5.20260908.1",
+135:     "@runeditrun/rer": "0.2.117",
+136:     "@tanstack/router-generator": "1.167.40",
+137:     "@types/react": "19.2.18",
+138:     "@types/react-dom": "19.2.7",
+139:     "@vitejs/plugin-react": "6.1.1",
+140:     "axe-core": "4.13.0",
+
+## pnpm-lock.yaml:176
+176:         version: 1.54.5(@types/node@26.5.1)(vite@8.2.4(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.104.1))(wrangler@4.129.1(@cloudflare/workers-types@5.20260908.1)(@types/node@26.5.1))
+177:       '@cloudflare/workers-types':
+178:         specifier: 5.20260908.1
+179:         version: 5.20260908.1
+180:       '@runeditrun/rer':
+181:         specifier: 0.2.117
+182:         version: 0.2.117
+183:       '@tanstack/router-generator':
+184:         specifier: 1.167.40
+
+## src/site/base/run-site.ts:67
+67: /** Chooser copy and destinations, reading prices from RunData; shared with /docs/hosting. */
+68: export const PATHS = {
+69:   title: (n: string) => `Run ${n}`,
+70:   heading: (n: string) => `Run ${n}.`,
+71:   meta: (n: string) => `Three ways to run ${n}: on your own computer, Assisted or Managed.`,
+72:   self: {
+73:     badge: 'On your computer', title: 'Run it yourself',
+74:     body: (n: string) => `One line in your terminal gets ${n} running on your computer, with you as its owner.`,
+75:     command: (repo: string) => `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev ${shellArgument(repo)}`,
+76:     copy: { idle: 'Copy', done: 'Copied', ms: 1600 },
+77:     alt: 'Have Node 22 or later?',
+78:     requirements: `macOS, Linux or Windows with WSL2. ${runRequirements}`,
+79:     email: 'This free copy runs only on your computer: nobody else can open it, and it sends no email until you set up a mail provider.',
+80:     guide: { label: 'Walk me through it', href: '/docs/getting-started' },
+
+## src/site/run.json:1
+1: {
+2:   "name": "HappyToHelp",
+3:   "repository": "https://github.com/just-every/run-happytohelp",
+4:   "clone": "npx -y @runeditrun/rer dev just-every/run-happytohelp",
+5:   "licence": "MIT",
+6:   "docs": true,
+7:   "paths": { "product": null }
+8: }
+
+## scripts/installer/local.mjs:30
+30: 
+31: const environment=context=>({...process.env,...context.vars,APP_ORIGIN:context.origin,WRANGLER_SEND_METRICS:'false',CLOUDFLARE_INCLUDE_PROCESS_ENV:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false',X_LOCAL_EXPLORER:'false'});
+32: const preview=context=>{
+33:  const [command,args,options]=previewTarget(context);
+34:  return [command,args,{...options,env:{...environment(context),...options.env,APP_ORIGIN:context.origin,RER_ORIGIN_KEY:'APP_ORIGIN'}}];
+35: };
+36: const dev=async context=>{
+37:  const env={...environment(context),RER_DEV_ORIGIN:context.origin};
+38:  await context.run('Building development assets','pnpm',['run','build:assets'],{step:'build',cwd:context.root,signal:context.signal,env});
+39:  const [command,args,options]=developmentTarget(context);
+40:  return [command,args,{...options,env:{...env,...options.env,APP_ORIGIN:context.origin}}];
+41: };
+42: export const adapter=localInstaller({
+43:  node:'22.20.0',features:{...model.features,hosting:false,github:false},
+44:  guard:async({root})=>{await selectLocalState(root);},prepare:prepareNativeLocal,
+45:  migrate:async context=>{
+46:   // Existing dev installs reuse their build. Collect newly added source SQL
+47:   // before the migration phase, including an upgrade started with rer dev.
+48:   // Copying SQL is lightweight filesystem work, not a second heavy job.
+49:   await context.run('Collecting local migrations',process.execPath,['scripts/migrations.mjs'],{step:'setup',cwd:context.root,signal:context.signal,heavy:false});
+50:   return ['pnpm',['exec','wrangler','d1','migrations','apply','DB','--local','--persist-to',context.demo?.state??'.wrangler/state','--config','wrangler.jsonc']];
+51:  },
+52:  // Add only missing keys: settings saved by 0.3 (setup token, local mail, optional
+53:  // provider settings) are kept byte-for-byte while this release's local keys are added.
+54:  secrets:{originKey:'APP_ORIGIN',values:context=>({APP_ORIGIN:context.origin,H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'})},
+55:  build:['pnpm',['run','build:app']],
+56:  start:preview,owner:nativeOwner,localOwner,signIn:{returnTo:'/setup'},
+57: });
+
+## scripts/installer/local.mjs:120
+120: // Local setup keeps the entered-password hook; hosted deploy has no installer input.
+121: // Give rer its standard claim contract so it observes 303/409 and retires the token.
+122: const hostedLifecycle={...adapter,mailOffSignIn,hooks:{...adapter.hooks,owner:{path:'/auth/bootstrap',tokenKey:'H2H_SETUP_TOKEN',returnTo:'/setup'}}};
+123: export const commandAdapter=createCommandAdapter(adapter,{
+124:  deployPolicy:mailDeployPolicy,
+125:  generatedOutputs:['.generated','migrations/core','delivery-artifact','management/integration/deployment-spec.json','management/integration/managed-deploy.json',nativeSetupPath,'public/downloads','public/widget.js'],
+126:  site:{entry:'src/site/pages.ts',config:'vite.site.config.ts',output:'.rer/site',declaration:'deploy-site.json'},
+127:  product:model.product.name,dev,preview,signInPath:'/login',mailOffSignIn,devIdentity:{entry:'src/dev/server.ts',output:['dist','delivery-artifact'],emailLinkTest:'tests/first-run/cli-sign-in.mjs'},verify:['pnpm',['run','verify:app']],deploy:hostedDeploy('deploy.json',hostedLifecycle),
+128:  portability:{...portability,hostedExport:['node','scripts/installer/hosted-export.mjs']},
+129:  setup:{get manifestFile(){return (process.env.MAIL_MODE==='rer'||!process.env.MAIL_MODE&&process.env.MAIL_PROVIDER==='rer')?'rer-setup.json':nativeSetupPath;}},browserModule:'scripts/installer/ui/seed.mjs',input:{names:{email:'OWNER_EMAIL',name:'OWNER_NAME'},defaults:localInputDefaults},
+130:  localPrerequisites:async({vars})=>vars.H2H_LOCAL==='true'&&vars.EMAIL_PROVIDER==='development',
+131: });
+
+## scripts/installer/hosted-deploy.mjs:35
+35:    const env=refusal(()=>deploymentMailEnvironment(inputs));
+36:    // MAIL_PROVIDER=none is the deploy's explicit choice to bind nothing that can send.
+37:    // Owners then sign in with scripts/hosted-signin.mjs, declared as mailOffSignIn.
+38:    const off=outboundEmailOff(env);
+39:    // Native credentials must be real inputs, never the managed key generator's
+40:    // output. Managed generated keys are resolved later by ownerDeploy. A dry run
+41:    // goes ahead without them and lists what a real deploy needs.
+42:    if(env.MAIL_PROVIDER!=='rer'&&!context.options.dryRun)refusal(()=>validateRuntimeEnvironment(inputs));
+43:    const email=String(env.OWNER_EMAIL||'').trim();
+44:    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||/@(?:[^@]+\.)?(?:test|invalid|localhost|example)$/i.test(email)||/@(?:example\.(?:com|net|org))$/i.test(email))
+45:     throw missing(`Deploy needs a real OWNER_EMAIL${off?', the owner this installation is claimed for':' that can receive sign-in mail'}. The local trial owner (owner@run-happytohelp.test) has no mailbox and cannot own a hosted workspace. Set OWNER_EMAIL privately in your environment or an owned 0600 --env-file, then run the same deploy command again. Nothing was deployed.`);
+46:    if(env.MAIL_PROVIDER!=='rer'&&!off&&!context.options.dryRun&&!env.EMAIL_PROVIDER?.trim())throw missing('Production sign-in needs native outbound email: EMAIL_PROVIDER (resend, sendgrid, cloudflare or mailgun), EMAIL_FROM, EMAIL_API_KEY. Cloudflare also requires EMAIL_ACCOUNT_ID. Set these privately in your environment or an owned 0600 --env-file, then run the same deploy command again. Nothing was built or uploaded.');
+47:    // Rer already validated and imported the private file. Consume those resolved
+48:    // inputs once so rereading it cannot put the setup discriminator `direct`
+49:    // back over the actual provider during preflight or the final report.
+50:    Object.assign(process.env,env);
+51:    for(const name of Object.keys(inputs))if(!(name in env))delete process.env[name];
+52:    if(env.MAIL_PROVIDER===undefined)delete process.env.MAIL_PROVIDER;
+53:    context.options.envFile=undefined;
+54:    // Keep the explicit off switch in the upload; saving credentials alone cannot enable mail.
+55:    const custom=await hostedDeclaration(context.root,declaration,env.H2H_PUBLIC_ORIGIN,env);
+56:    if(context.options.dryRun)return offlineDeploy(custom||path,lifecycle,context);
+57:    await transitionMailBindings(context,declaration,env);
+58:    if(env.EMAIL_PROVIDER==='mailgun'&&!off&&env.MAIL_PROVIDER!=='rer')return nativeMailgunDeploy(custom||path,lifecycle,context);
+59:    if(custom)return ownerDeploy(custom,lifecycle)(context);
+60:   }
+
+## scripts/installer/offline-deploy.mjs:32
+32:  await checkBuild();
+33:  await refuseLocalEnvOutput(root);
+34:  await deployProductArguments(root,productDirectory);
+35:  const artifact=await packageBuild({root,source:{sha:'0'.repeat(40),tree:'0'.repeat(40)},runIdentity:{id:'0',attempt:'1'},productDirectory:productDirectory??''});
+36:  const environment=options.environment??'production',worker=ownerWorkerName(declaration.project,environment);
+37:  // This reserved origin is used only for local shape validation, never reported
+38:  // as a reachable deployment or used for a request.
+39:  const plan=ownerPlan({project:declaration.project,environment,worker,origin:`https://${worker}.example.invalid`},declaration,artifact,{localOnlyKeys,env});
+40:  const names=plan.secrets.filter(item=>!item.optional||typeof env[item.environment]==='string'&&env[item.environment].trim()).map(item=>item.binding).sort();
+41:  store.report(`deploy: secret bindings (${names.length}): ${names.join(', ')||'none'}`,{names});
+42:  const variables=Object.keys(plan.vars??{}).sort();
+43:  store.report(`deploy: public bindings (${variables.length}): ${variables.join(', ')||'none'}`,{names:variables});
+44:  const needed=neededForRealDeploy({declaration,env,signIn});
+45:  store.report('deploy: offline dry run complete; no provider requests, mail or deployment. Target resources, credentials and existing secret bindings were not checked.');
+46:  for(const item of needed)store.report(`deploy: needed for a real deploy: ${item}`,{names:item.match(/\b[A-Z][A-Z0-9_]+\b/g)??[]});
+47:  return {dryRun:true,deployed:false,providerChecked:false};
+48: }
+
+## scripts/independent/setup-build.mjs:1
+1: import {execFileSync} from 'node:child_process';
+2: import {resolve} from 'node:path';
+3: 
+4: // Project mode supplies Node, but intentionally supplies no edition tooling.
+5: // Keep this project's declared package manager inside the candidate workspace.
+6: const run=(file,args)=>execFileSync(file,args,{stdio:'inherit'});
+7: run('npm',['install','--prefix','.rer-tools','--no-package-lock','--ignore-scripts','--no-audit','--no-fund','pnpm@10.12.4']);
+8: const pnpm=resolve('.rer-tools/node_modules/pnpm/bin/pnpm.cjs');
+9: run(process.execPath,[pnpm,'install','--frozen-lockfile']);
+
+## node_modules/@runeditrun/rer/install.sh:1
+1: #!/bin/sh
+2: # Install the rer command (@runeditrun/rer) for this user:
+3: #
+4: #   curl -fsSL https://runeditrun.com/install.sh | sh
+5: #   curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev owner/repo
+6: #
+7: # It reads the version, tarball and sha512 integrity from the npm registry
+8: # (npm_config_registry, default https://registry.npmjs.org; RER_VERSION=X pins an
+9: # exact version, otherwise latest), verifies the download, refuses archives with
+10: # absolute paths, .. entries, links or devices (and anything tar could read
+11: # differently from this script's own check), and installs through the
+12: # package's own `rer cli install`: the same layout as
+13: # `npx -y @runeditrun/rer cli install`. A failure leaves any previous install
+14: # selected and working. It never edits shell profiles: when ~/.local/bin is not
+15: # on PATH, the absolute launcher works now, and a run that supplied a command ends
+16: # with the one PATH line to run and keep.
+17: #
+18: # Needs curl and tar. If Node 22 or later is absent, installs the pinned official
+19: # Node release in rer's own data directory. macOS/Linux x64/arm64; Windows: WSL2.
+20: 
+21: # Everything runs from main, so a partly downloaded script does nothing.
+
+## node_modules/@runeditrun/rer/install.sh:52
+52: 
+53:  # Bootstrap before reading npm metadata; no npm global install or PATH links.
+54:  node_binary=$(command -v node) || node_binary=
+55:  if [ -z "$node_binary" ] || ! "$node_binary" -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 22 ? 0 : 1)' >/dev/null 2>&1; then
+56:   install_node
+57:  fi
+58: 
+59:  curl -fsSL --proto '=http,https' -H 'Accept: application/json' "$registry/@runeditrun%2frer" -o "$work/metadata.json" \
+60:   || fail "could not read $package from $registry."
+
+## node_modules/@runeditrun/rer/cli/lifecycle.mjs:101
+101:    try {
+102:     const { dependencyEnvironment } = await shared('dependency-environment.mjs');
+103:     if (!options.json) out.progress('Installing frozen dependencies\n');
+104:     installingFrozen = true;
+105:     await store.run('Installing frozen dependencies', 'pnpm', ['install', '--frozen-lockfile'], { cwd: project.root, signal, env: { ...dependencyEnvironment(), CI: 'true' }, display: 'pnpm install --frozen-lockfile' });
+106:     installingFrozen = false;
+107:     // The test browser downloads on first need (verify), not here. Package
+108:     // scripts run with the pinned pnpm through rer run, which keeps pnpm off PATH.
+109:     if (!options.json) store.report('Run this project\'s package scripts with rer run SCRIPT (it uses the pnpm this project pins).');
+110:     return {};
+111:    } catch (error) { if (signal.aborted) throw error; throw await installStepError(error, store, project.root); } finally { installingFrozen = false; }
+112:   }
+113:   if (options.verb === 'verify') {
+114:    const target = adapter.verify;
+115:    if (!Array.isArray(target)) throw refuse('A complete internal verification target is missing.');
+116:    await ensureChromium(project.root, store, signal);
+117:    await store.run('Verifying application', target[0], target[1], { cwd: project.root, signal, env: { ...process.env, RER_LOCAL_OPERATION: operation.token } });
+118:    await store.step('Serving the production build as rer deploy hosts it');
+119:    const declaration = adapter.deployDeclaration ?? adapter.deploy?.declaration;
+120:    const hosted = await (await import('./hosted-output.mjs')).checkHostedOutput(project.root, { declaration });
+121:    await store.step('Checking that page sections hydrate as separate units');
+
+## node_modules/@runeditrun/rer/cli/deploy-command.mjs:85
+85:  // Required secrets have been checked; retain the production sign-in guidance.
+86:  const dryRun = async (result, { planned = true, extraNeeded } = {}) => {
+87:   const production = await deployEnvironment({ root, options, declaration, setupManifest, settings, localOnlyKeys });
+88:   const plan = result?.plan ?? (!planned ? undefined : (await owner(['local-plan', '--declaration', path, '--environment', options.environment ?? 'production', ...await deployProductArguments(root, deployProductDirectory(declaration))], production.env, { cwd: root, localOnlyKeys })).plan);
+89:   result = { ...result, dryRun: true, deployed: false, providerChecked: false, plan };
+90:   const { signIn, mailOff } = await requireProductionAuth({ root, declaration, env: production.env, setupManifest, setupSeed: context.setupSeed, adapter, declarationPath: path, options }) ?? {};
+91:   if (mailOff) store.report(mailOffNotice(mailOff, options.environment ?? 'production'), { names: mailOff.credentialNames });
+92:   // The one completion line: rer's own plan step (or its deliberate skip) succeeded. A hook's own line says only that the hook finished.
+93:   store.report('deploy: local dry run complete; no credentials were needed, no Cloudflare requests were made and nothing was changed remotely. Target secrets and remote readiness were not checked.');
+94:   const needed = [...new Set([...neededForRealDeploy({ declaration, env: production.env, signIn, secretsChecked: false }), ...(result.neededForRealDeploy ?? []), ...(extraNeeded ?? [])])];
+95:   reportNeeded(store, needed);
+96:   if (declaration.secrets?.some(item => item.binding === 'INSTALLATION_KEY')) store.report('deploy: INSTALLATION_KEY is a private generated binding; INSTALLATION_KEY_PREVIOUS is optional and managed only during rotation or an explicit retired-key reopen. Values are withheld.');
+97:   return needed.length && result && typeof result === 'object' ? { ...result, neededForRealDeploy: needed } : result;
+98:  };
+99:  const runHook = hookContext => options.dryRun ? withLocalDeployPlan(async () => {
+100:   try { return await adapter.deploy(hookContext); }
+101:   catch (error) {
+102:    // Production-only owner/input preflights may refuse before the hook builds.
+103:    // An offline plan defers those inputs, retaining the refusal as guidance.
+104:    if (!(error instanceof RerError) || error.code !== 'missing_input') throw error;
+105:    const result = await ownerDeploy(path, adapter)(hookContext);
+106:    return { ...result, neededForRealDeploy: [error.message] };
+107:   }
+108:  }) : adapter.deploy(hookContext);
+109:  // Custom hooks historically ignored these flags. Only the ownership controller
+110:  // may perform them; neither a build nor a custom upload runs here.

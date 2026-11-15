@@ -1,0 +1,9 @@
+{
+  "result": "pass",
+  "documents": 4,
+  "pin": "0.2.117",
+  "primary_command": "curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp",
+  "mail_off_section": "byte-identical to origin/main",
+  "contradiction_groups_before": 4,
+  "contradiction_groups_after": 0
+}

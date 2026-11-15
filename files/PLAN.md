@@ -1,0 +1,8 @@
+# hh-docs-truth-1 plan
+
+1. Confirm fresh main contains predecessor 6c9727736090d31ca7eb0cff86aa3462e9cd235b and establish cloud/hh-docs-truth-1 with fleet identity and preserved repository hooks.
+2. Read repository requirements, installer documentation, /run source, setup/launch/deployment implementation, package.json and pnpm-lock.yaml. Verify each reported contradiction before editing; search all documentation for equivalent current claims and preserve historical release records.
+3. Make one copy-only documentation correction: combined installer first, npx alternative; separate setup/launch from browser verification downloads; refer current rer pin to package.json and lockfile; separate local dry-run from live deployment credentials. Preserve mail-off sign-in text and all clause statuses.
+4. Run the repository's contract, documentation-link and relevant copy checks, plus rer check --profile first-party. Verify the documented dry-run command/output against the implementation without provider credentials or remote changes. No full suite, permanent tests, UI changes or publication scanner.
+5. Fetch fresh main before the single candidate publication, rebase only while unpublished if necessary, retain main clause judgments; regenerate sources.lock.json last, check it, inspect the final diff and every candidate commit's identity/trailers, and push through the required cloud guard.
+6. Observe exact-head Verify through REST within the ten-call budget and five-minute polling interval. Save full non-secret results and actual receipts to this packet. Publish only selected packet files to evidence/hh-docs-truth-1. Return branch/head, run IDs/result, before/after findings and signed hh POST line; READY only under the prescribed green contract.

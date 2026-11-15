@@ -1,0 +1,12 @@
+Validated predecessor transcript: [{"id":"f4dc59be-d492-4572-9d87-613b495f3126","local_id":"upgrade-03-0","actor_role":"contact","actor_id":"30260377-8c7e-4920-990a-dff56fe133ec","content":"My order arrived damaged; receipt attached.","revision":1,"mediaIds":["fbaf8ae7-b820-41d7-b7a4-376f86d44ff9"]},{"id":"b6dd7e17-bc54-4b4b-b16f-21543dd21aaf","local_id":"away:reply","actor_role":"system","actor_id":"away","content":"Thanks for your message. Upgrade Desk is away right now. We'll reply here. Responds within 24 hours","revision":2,"mediaIds":[]},{"id":"ee0456d4-28be-4cbb-90b8-c72f128387a9","local_id":"upgrade-03-1","actor_role":"owner","actor_id":"3cb0447f-dfa1-4bff-9086-b69635f6d4d8","content":"Sorry about that. A replacement is on its way.","revision":3,"mediaIds":[]},{"id":"8bc4b020-fbdb-4cde-a8dc-74a1a1e17dd6","local_id":"upgrade-03-2","actor_role":"contact","actor_id":"30260377-8c7e-4920-990a-dff56fe133ec","content":"Thank you!","revision":4,"mediaIds":[]},{"id":"5852ad91-069f-4edc-bc33-8c189ddbdb01","local_id":"upgrade-03-3","actor_role":"owner","actor_id":"3cb0447f-dfa1-4bff-9086-b69635f6d4d8","content":"Glad to help. Closing this for now.","revision":5,"mediaIds":[]}]
+Native runtime failure artifacts retained: /tmp/h2h-native-runtime-KkMDo2
+0.4.28: 541 tables / 200 migrations -> 541 / 200; 540/540 prior tables identical, 540/540 as expected; 1 stored files identical; read back on this Worker in 263s
+✔ every published release, populated through its own API, upgrades in place to this source with exactly the missing migrations in order and every prior row and file kept (264909.797722ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 265989.588299

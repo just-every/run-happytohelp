@@ -1,0 +1,3960 @@
+{
+  "baseline": "0.4.28",
+  "baselineCommit": "41fb40246d2e69f928be397c48d952d147c39160",
+  "baselineTree": "bbef357df6a94dc92f84c94774143e030eb343fb",
+  "sourceCommit": "efea73943b4995e951aa9c2e7a2577eaacfd5042",
+  "populatedThroughApi": [
+    "owner",
+    "member",
+    "pendingEmail",
+    "appearance",
+    "contactId",
+    "visitor",
+    "attachment",
+    "article"
+  ],
+  "baselineTables": 541,
+  "baselineMigrations": 200,
+  "finalTables": 541,
+  "finalMigrations": 200,
+  "appliedByUpgrade": [],
+  "appliedOrder": [],
+  "appliedMigrationBytesUnchanged": 200,
+  "rowsWithData": {
+    "abuse_counters": 13,
+    "ai_profiles": 2,
+    "audit_events": 12,
+    "contact_search": 2,
+    "contact_search_config": 2,
+    "contact_search_data": 5,
+    "contact_search_docsize": 2,
+    "contact_search_idx": 3,
+    "contact_tallies": 1,
+    "contacts": 2,
+    "context_subjects": 2,
+    "context_tracked_events": 1,
+    "conversation_handoffs": 1,
+    "conversation_outbox": 5,
+    "conversation_tracking": 1,
+    "conversations": 1,
+    "credentials": 2,
+    "cutover_tallies": 1,
+    "cutover_widget_arrivals": 1,
+    "d1_migrations": 200,
+    "edition_audiences": 2,
+    "email_message_options": 2,
+    "h2h_business_project": 1,
+    "identity_recovery_authority": 1,
+    "identity_recovery_epochs": 2,
+    "identity_tokens": 2,
+    "inbox_contact_search": 2,
+    "inbox_contact_search_config": 2,
+    "inbox_contact_search_data": 4,
+    "inbox_contact_search_docsize": 2,
+    "inbox_contact_search_idx": 2,
+    "inbox_counts": 63,
+    "inbox_entries": 1,
+    "inbox_field_tallies": 1,
+    "inbox_message_search": 5,
+    "inbox_message_search_config": 2,
+    "inbox_message_search_data": 7,
+    "inbox_message_search_docsize": 5,
+    "inbox_message_search_idx": 5,
+    "inbox_subject_search": 1,
+    "inbox_subject_search_config": 2,
+    "inbox_subject_search_data": 4,
+    "inbox_subject_search_docsize": 1,
+    "inbox_subject_search_idx": 2,
+    "inbox_tallies": 1,
+    "inbox_unread": 2,
+    "inbox_unread_tallies": 2,
+    "inbox_visitor_waiting": 1,
+    "installation_work_baseline": 1,
+    "integration_authority_epoch": 1,
+    "knowledge_article_categories": 1,
+    "knowledge_article_history": 1,
+    "knowledge_article_publications": 4,
+    "knowledge_articles": 1,
+    "knowledge_categories": 1,
+    "knowledge_shingles": 4,
+    "knowledge_source_index": 6,
+    "knowledge_upgrade_reports": 2,
+    "media": 1,
+    "memberships": 3,
+    "message_authorship": 4,
+    "messages": 5,
+    "move_in_contact_keys": 2,
+    "native_integration_events": 12,
+    "notification_inbox": 1,
+    "notification_trigger_claims": 4,
+    "operator_notification_activity": 2,
+    "owner_setup": 1,
+    "project_settings": 2,
+    "projects": 2,
+    "reporting_conversations": 1,
+    "reporting_workload_items": 6,
+    "reporting_workload_keys": 6,
+    "session_factors": 1,
+    "sessions": 2,
+    "sqlite_sequence": 3,
+    "ticket_history": 3,
+    "ticket_statuses": 12,
+    "user_project_preferences": 2,
+    "users": 2,
+    "workflow_event_sequence": 1,
+    "workflow_events": 4,
+    "workflow_queue_turns": 1,
+    "workflow_rule_versions": 2,
+    "workflow_rules": 2
+  },
+  "comparison": [
+    {
+      "table": "abuse_counters",
+      "beforeRows": 13,
+      "afterRows": 13,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "activation_inbound_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "activation_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "activation_widget_pings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "advice_procedure_versions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "agent_door_agents",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "agent_door_approvals",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "agent_door_audit",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "agent_door_calls",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "agent_door_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "agent_door_relay",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "agent_door_replay_aliases",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "agent_door_retired_refs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "agent_door_reviews",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "agent_door_state",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "agent_door_usage",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ai_attempt_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ai_attempts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ai_defaults",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ai_generation_sources",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ai_generations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ai_handoff_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ai_profiles",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ai_round_usage",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ai_tool_traces",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_appends",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_conversations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_credentials",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_denial_counts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_erased_keys",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_erasure_inventory",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_note_media",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_notes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_requester_keys",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_requests",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_upload_disposals",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "api_uploads",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "assurance_evidence",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "assurance_profiles",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "audit_events",
+      "beforeRows": 12,
+      "afterRows": 12,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "audit_holds",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "audit_purges",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "billing_accounts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "billing_ledger",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "billing_operations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "billing_project_usage_checkpoints",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "billing_usage_history",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "billing_usage_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "billing_webhook_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "brand_assets",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "brand_generations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "bs_assert",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "bs_audit",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "bs_logo",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "bs_overrides",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "bs_retired",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "bs_settings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "bs_team",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "companies",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "company_attribute_definitions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "company_domains",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "company_history",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "contact_companies",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "contact_erasure_leases",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "contact_erasure_objects",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "contact_erasures",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "contact_search",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "contact_search_config",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "contact_search_data",
+      "beforeRows": 5,
+      "afterRows": 5,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "contact_search_docsize",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "contact_search_idx",
+      "beforeRows": 3,
+      "afterRows": 3,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "contact_tallies",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "contacts",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "context_actions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "context_collectors",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "context_evidence",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "context_insights",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "context_job_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "context_jobs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "context_profiles",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "context_subjects",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "context_summaries",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "context_tracked_events",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "context_write_guards",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_ai",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_buckets",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_followers",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_handoffs",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_merges",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_note_media",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_note_mentions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_notes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_outbox",
+      "beforeRows": 5,
+      "afterRows": 5,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_participants",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_rating_history",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_ratings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_reads",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_resolutions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_tags",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversation_tracking",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "conversations",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "credentials",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "crm_changes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "crm_connections",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "crm_mappings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "csat_optouts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "csat_response_history",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "csat_responses",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "csat_settings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "csat_surveys",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "csv_customer_assertions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "csv_customer_import_rows",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "csv_customer_imports",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "customer_identity_link_history",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "customer_identity_links",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "cutover_legacy_conversations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "cutover_legacy_runs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "cutover_steps",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "cutover_tallies",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "cutover_widget_arrivals",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "cutover_zendesk_conversations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "durable_object_snapshots",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "edition_audiences",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "edition_clients",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "edition_codes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "edition_consents",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "edition_effect_guards",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "edition_grants",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "edition_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "email_deliveries",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "email_followup_links",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "email_message_options",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "email_reply_grants",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "email_sender_rules",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "email_settings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "email_threading_keys",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "erasure_requests",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "escalation_attachment_grants",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "escalation_connections",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "escalation_deliveries",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "escalation_drafts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "escalation_handoffs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "escalation_issues",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "escalation_links",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "escalation_operations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "escalation_teams_connections",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "feedback_connections",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "feedback_handoffs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "feedback_penny_connections",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "feedback_penny_requesters",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "feedback_release_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "feedback_sources",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "feedback_updates",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "followup_changes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "followup_obligations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "github_connections",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "github_oauth_states",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "github_settings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "h2h_agent_operations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "h2h_business_project",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "h2h_import_door_claim",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "h2h_import_door_identities",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "helpscout_connections",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "helpscout_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "identity_recovery_approvals",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "identity_recovery_assertions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "identity_recovery_authority",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "identity_recovery_epochs",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "identity_recovery_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "identity_recovery_limits",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "identity_recovery_nonces",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "identity_recovery_requests",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "identity_tokens",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_batches",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_assertions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_creation_plans",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_custody_revisions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_custody_states",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_entries",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_erased_sources",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_erased_targets",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_erasure_journal",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_erasure_progress",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_erasure_tally",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_history",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_indexed_jobs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_native_staging",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_native_staging_index",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_native_staging_values",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_original_chunks",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_plan_chunks",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_plan_index",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_preparation_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_preparation_steps",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_publication_fences",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_retirements",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_reversal_fences",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_reversal_reports",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_staging",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_staging_chunks",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_staging_headers",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_staging_index",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_staging_originals",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_staging_pages",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_stream_origins",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_stream_pages",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_stream_revisions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_stream_sources",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_d1_streams",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_apply_failures",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_approvals",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_archive_chunks",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_archives",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_chunks",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_grants",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_namespaces",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_plan_chunks",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_plans",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_revoked_keys",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_scopes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_settings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_door_uploads",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_jobs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_original_sets",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_originals",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_provenance",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_sources",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_stages",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ik_targets",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbound_emails",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_contact_search",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_contact_search_config",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_contact_search_data",
+      "beforeRows": 4,
+      "afterRows": 4,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_contact_search_docsize",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_contact_search_idx",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_counts",
+      "beforeRows": 63,
+      "afterRows": 63,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_entries",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_facets",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_field_tallies",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_message_search",
+      "beforeRows": 5,
+      "afterRows": 5,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_message_search_config",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_message_search_data",
+      "beforeRows": 7,
+      "afterRows": 7,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_message_search_docsize",
+      "beforeRows": 5,
+      "afterRows": 5,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_message_search_idx",
+      "beforeRows": 5,
+      "afterRows": 5,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_subject_search",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_subject_search_config",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_subject_search_data",
+      "beforeRows": 4,
+      "afterRows": 4,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_subject_search_docsize",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_subject_search_idx",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_tag_tallies",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_tallies",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_unread",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_unread_tallies",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "inbox_visitor_waiting",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "installation_work_baseline",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "integration_attempts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "integration_authority_epoch",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "integration_deliveries",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "integration_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "integration_replays",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "integration_resolutions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "integration_token_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "integration_token_usage",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "integration_tokens",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_article_categories",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_article_history",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_article_publications",
+      "beforeRows": 4,
+      "afterRows": 4,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_articles",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_canonicalisation_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_categories",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_collection_entitlements",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_company_entitlements",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_corrections",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_datasets",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_documents",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_experience",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_feedback",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_generation_sources",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_help_links",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_help_sessions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_import_origins",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_imports",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_index_dirty",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_proposal_reviews",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_proposals",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_read_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_reply_blocks",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_retired_articles",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_shingles",
+      "beforeRows": 4,
+      "afterRows": 4,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_slug_redirects",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_source_index",
+      "beforeRows": 6,
+      "afterRows": 6,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_translation_history",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_translation_publications",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_translations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_upgrade_permits",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_upgrade_progress",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_upgrade_reports",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_versions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "knowledge_write_guards",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "lead_jobs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "leads",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_actor_origins",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_delta_leases",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_conflicts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_context",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_context_identities",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_context_media",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_context_messages",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_files",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_holds",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_mapping_profiles",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_marks",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_objects",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_rows",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_runs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_state",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_worker_counts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_worker_parts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_import_worker_runs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_mail_s3_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_mail_s3_state",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_package_custody",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_package_keys",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_package_scope_fences",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_package_v1_inventory",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_package_v1_seeds",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "legacy_workspace_adoptions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "local_attachment_grants",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "local_attachments",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "local_authorizations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "local_device_settings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "local_devices",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "local_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "local_grants",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "local_jobs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "local_pairings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "local_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "local_result_effects",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "login_attempts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "macro_attachment_copies",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "macro_drafts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "macro_heads",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "macro_usage",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "macro_versions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "macros",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "magic_signins",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mailbox_addresses",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mailbox_connections",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mailbox_contact_aliases",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mailbox_message_attempts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mailbox_oauth_states",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mailbox_sends",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mailbox_signatures",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mailbox_sync_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mailgun_inbound_tokens",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "management_audit",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "media",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "member_roles",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "memberships",
+      "beforeRows": 3,
+      "afterRows": 3,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "message_authorship",
+      "beforeRows": 4,
+      "afterRows": 4,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "messages",
+      "beforeRows": 5,
+      "afterRows": 5,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mobile_commands",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mobile_devices",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mobile_frontiers",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "mobile_links",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_attachment_bytes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_batches",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_contact_keys",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_conversations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_erased_identities",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_erasure_objects",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_erasure_runs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_identity_links",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_message_sources",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_native_fences",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_note_media",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_notes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_origins",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_records",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_runs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_zendesk_attachment_pulls",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_zendesk_attachment_tickets",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_zendesk_attachments",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_zendesk_authorizations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_zendesk_connections",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_zendesk_pull_runs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_zendesk_pulls",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_zendesk_refusals",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_zendesk_staged",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "move_in_zendesk_ticket_fields",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "native_integration_audit",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "native_integration_destinations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "native_integration_dispatch_cursor",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "native_integration_events",
+      "beforeRows": 12,
+      "afterRows": 12,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "native_integration_intents",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "notification_inbox",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "notification_preferences",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "notification_trigger_claims",
+      "beforeRows": 4,
+      "afterRows": 4,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "notification_triggers",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "operator_notification_activity",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "operator_notifications",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "operator_presence",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "operator_ticket_commands",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "outbound_notice_commands",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "owner_recoveries",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "owner_setup",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "partner_forwards",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "partner_replies",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "partner_reply_files",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "platform_admins",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "plugins",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "portal_identities",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "portal_links",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "portal_preferences",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "portal_session_proofs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "preview_grants",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "preview_limits",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "procedure_attribution_reviews",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "procedure_cohort",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "procedure_generation",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "procedure_releases",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "procedure_reviews",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "procedure_revocations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "procedure_versions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "project_roles",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "project_settings",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "projects",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "public_project_aliases",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "public_waitlist",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "recovery_codes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "registrations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "report_schedule_deliveries",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "report_schedule_recipients",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "report_schedules",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "reporting_conversations",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "reporting_legacy_conversations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "reporting_workload_items",
+      "beforeRows": 6,
+      "afterRows": 6,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "reporting_workload_keys",
+      "beforeRows": 6,
+      "afterRows": 6,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "request_form_submissions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "request_forms",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_mail_commands",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_mail_development_outbox",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_mail_ingress",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_mail_raw_objects",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_mailbox_outbox",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_mailboxes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_portability_epochs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_portability_guard",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_portability_jobs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_portability_journal",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_portability_owned",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_portability_parts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_portability_segments",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "rer_portability_state",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "routing_decisions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "routing_operators",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "routing_state",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "session_factors",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "sessions",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "sla_alerts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "sla_policies",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "sla_scheduler_cursors",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "sqlite_sequence",
+      "beforeRows": 3,
+      "afterRows": 3,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_accounts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_actions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_attachment_grants",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_changes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_connections",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_consent",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_fences",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_installations",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_link_codes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_members",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_sends",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "support_channel_threads",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "suspended_emails",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "teammate_slack_consent",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "teammate_slack_deliveries",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "teammate_slack_links",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "teammate_slack_preferences",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "teammate_teams_codes",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "teammate_teams_consent",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "teammate_teams_deliveries",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "teammate_teams_links",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "teammate_teams_preferences",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_batch_jobs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_field_values",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_fields",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_followups",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_group_members",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_groups",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_handle_sessions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_history",
+      "beforeRows": 3,
+      "afterRows": 3,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_problem_attempts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_problem_incidents",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_problem_previews",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_problems",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_sla_state",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_statuses",
+      "beforeRows": 12,
+      "afterRows": 12,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "ticket_views",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "training_cases",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "training_model_events",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "training_model_rounds",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "training_runs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "training_workspaces",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "triage_jobs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "triage_labels",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "triage_settings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "triage_usage",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "user_factors",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "user_project_preferences",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "user_settings",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "users",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "voice_calls",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "voice_commands",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "voice_context_links",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "voice_identities",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "voice_numbers",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "voice_steps",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "voice_transcript_segments",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "webauthn_challenges",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "widget_campaign_impressions",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "widget_campaign_visits",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "widget_campaigns",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_action_receipts",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_calendars",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_clock",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_event_sequence",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_events",
+      "beforeRows": 4,
+      "afterRows": 4,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_notifications",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_queue_turns",
+      "beforeRows": 1,
+      "afterRows": 1,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_rule_versions",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_rules",
+      "beforeRows": 2,
+      "afterRows": 2,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_runs",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_scheduler_cursors",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_schedules",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workflow_time_state",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    },
+    {
+      "table": "workspace_tags",
+      "beforeRows": 0,
+      "afterRows": 0,
+      "identical": true,
+      "matchesExpected": true
+    }
+  ],
+  "failures": [],
+  "migrationExceptions": [
+    {
+      "migration": "Wrangler migration ledger",
+      "table": "sqlite_sequence",
+      "columns": [
+        "seq"
+      ],
+      "rows": "name = d1_migrations only, advances by the number of newly applied migrations"
+    }
+  ],
+  "schema": {
+    "definitions": 1527,
+    "changedOutsideExceptions": [],
+    "exceptions": []
+  },
+  "files": {
+    "objects": 1,
+    "blobs": 1,
+    "identical": true
+  },
+  "readBack": {
+    "ownerSignIn": {
+      "role": "owner",
+      "projectId": "32d4d4bc-88e8-4dc9-a5af-8154cfb9e7df"
+    },
+    "transcript": {
+      "dashboard": 5,
+      "widget": 5
+    },
+    "article": {
+      "api": true,
+      "helpCenter": true
+    },
+    "memberSignIn": "operator",
+    "pendingInvitation": "pending-03@example.test",
+    "appearance": [
+      "brand_name",
+      "welcome_message",
+      "primary_color",
+      "color",
+      "timezone",
+      "display_mode"
+    ],
+    "secondWorkspace": true,
+    "attachmentBytes": true,
+    "category": true,
+    "newFeatures": {
+      "moveInImports": 0,
+      "reportVolume": 1,
+      "reportAiResolutions": 0,
+      "reportRatings": 0,
+      "connectionTokens": 0,
+      "deliveries": 0
+    },
+    "newConversation": "114c97cf-67b5-49bf-be39-ec9ce19744b1",
+    "inertTables": [
+      "move_in_runs",
+      "ik_jobs",
+      "native_integration_destinations",
+      "native_integration_intents",
+      "integration_deliveries",
+      "integration_tokens",
+      "rer_portability_jobs"
+    ],
+    "retainedMailRows": 0
+  },
+  "seconds": 246
+}

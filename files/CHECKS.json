@@ -1,0 +1,94 @@
+{
+  "head": "efea73943b4995e951aa9c2e7a2577eaacfd5042",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "rer": "0.2.117",
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "logPrivate": true
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party-check.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "H2H_UPGRADE_RELEASES=0.4.28 H2H_EVIDENCE_DIR=<packet> cloud_run node --test --test-concurrency=1 tests/journeys/upgrade-nightly.mjs",
+      "exit": 0,
+      "log": "upgrade-0.4.28.log",
+      "receipt": "upgrade-0.4.28.json"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "source-lock.log",
+      "node": "24.19.0",
+      "note": "Regenerated last after tracked edits; byte check repeated on 22.20.0."
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-check.log"
+    },
+    {
+      "command": "git diff --check origin/main HEAD",
+      "exit": 0
+    },
+    {
+      "command": "git status --porcelain",
+      "exit": 0,
+      "clean": true
+    }
+  ],
+  "upgradeSummary": {
+    "sourceCommit": "efea73943b4995e951aa9c2e7a2577eaacfd5042",
+    "baseline": "0.4.28",
+    "baselineTables": 541,
+    "baselineMigrations": 200,
+    "finalTables": 541,
+    "finalMigrations": 200,
+    "appliedByUpgrade": [],
+    "appliedOrder": [],
+    "failures": [],
+    "schema": {
+      "definitions": 1527,
+      "changedOutsideExceptions": [],
+      "exceptions": []
+    },
+    "files": {
+      "objects": 1,
+      "blobs": 1,
+      "identical": true
+    },
+    "seconds": 246,
+    "identicalApplicationTables": 540
+  },
+  "initialSupplementaryRuntime": "24.19.0",
+  "initialSupplementaryEvidence": "node24/",
+  "ci": {
+    "id": 43757709571,
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "efea73943b4995e951aa9c2e7a2577eaacfd5042",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43757709571"
+  },
+  "explicitGithubCallsUsed": 7,
+  "terminalProductCustody": "PUSHED",
+  "generatedAt": "2026-11-15T20:47:50.999318+00:00"
+}

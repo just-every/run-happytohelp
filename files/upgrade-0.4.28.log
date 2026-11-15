@@ -1,0 +1,21 @@
+TAP version 13
+# (node:4175) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Validated predecessor transcript: [{"id":"93370db3-0119-4cbd-9c51-7733f7d3fa87","local_id":"upgrade-03-0","actor_role":"contact","actor_id":"3f0469de-6623-44d9-aeb0-a390a56f1359","content":"My order arrived damaged; receipt attached.","revision":1,"mediaIds":["e8505958-b6e9-4d52-bdb2-07cb6374bc4e"]},{"id":"d4289dc4-f6fd-4d8e-ada5-bfeb2fe1d610","local_id":"away:reply","actor_role":"system","actor_id":"away","content":"Thanks for your message. Upgrade Desk is away right now. We'll reply here. Responds within 24 hours","revision":2,"mediaIds":[]},{"id":"2632d4f1-69d3-4ac6-8a04-960136f46b2c","local_id":"upgrade-03-1","actor_role":"owner","actor_id":"6ea88afe-6a0f-4d1e-94ef-495c7a73309a","content":"Sorry about that. A replacement is on its way.","revision":3,"mediaIds":[]},{"id":"d1270d63-7178-485a-8ccd-e7a555c6160e","local_id":"upgrade-03-2","actor_role":"contact","actor_id":"3f0469de-6623-44d9-aeb0-a390a56f1359","content":"Thank you!","revision":4,"mediaIds":[]},{"id":"350e6932-a37b-450c-8aae-a1dc94efdd74","local_id":"upgrade-03-3","actor_role":"owner","actor_id":"6ea88afe-6a0f-4d1e-94ef-495c7a73309a","content":"Glad to help. Closing this for now.","revision":5,"mediaIds":[]}]
+# Native runtime failure artifacts retained: /tmp/h2h-native-runtime-yAy2ft
+# 0.4.28: 541 tables / 200 migrations -> 541 / 200; 540/540 prior tables identical, 540/540 as expected; 1 stored files identical; read back on this Worker in 246s
+# Subtest: every published release, populated through its own API, upgrades in place to this source with exactly the missing migrations in order and every prior row and file kept
+ok 1 - every published release, populated through its own API, upgrades in place to this source with exactly the missing migrations in order and every prior row and file kept
+  ---
+  duration_ms: 248209.694556
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 249512.024004

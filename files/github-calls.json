@@ -1,0 +1,36 @@
+{
+  "usedBeforeWatcher": 1,
+  "watcherCalls": [
+    {
+      "at": "2026-11-15T20:22:26.316922+00:00",
+      "endpoint": "repos/just-every/run-happytohelp/actions/runs?head_sha=efea73943b4995e951aa9c2e7a2577eaacfd5042&per_page=100",
+      "exit": 0
+    },
+    {
+      "at": "2026-11-15T20:27:26.322614+00:00",
+      "endpoint": "repos/just-every/run-happytohelp/actions/runs?head_sha=efea73943b4995e951aa9c2e7a2577eaacfd5042&per_page=100",
+      "exit": 0
+    },
+    {
+      "at": "2026-11-15T20:32:26.880236+00:00",
+      "endpoint": "repos/just-every/run-happytohelp/actions/runs/43757709571",
+      "exit": 0
+    },
+    {
+      "at": "2026-11-15T20:37:27.478589+00:00",
+      "endpoint": "repos/just-every/run-happytohelp/actions/runs/43757709571",
+      "exit": 0
+    },
+    {
+      "at": "2026-11-15T20:42:28.113747+00:00",
+      "endpoint": "repos/just-every/run-happytohelp/actions/runs/43757709571",
+      "exit": 0
+    },
+    {
+      "at": "2026-11-15T20:47:28.739453+00:00",
+      "endpoint": "repos/just-every/run-happytohelp/actions/runs/43757709571",
+      "exit": 0
+    }
+  ],
+  "remaining": 3
+}

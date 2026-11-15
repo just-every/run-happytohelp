@@ -2,27 +2,34 @@
 
 ## Run it on your computer
 
-Start it with one line. You need **Node.js 22 or later** (with npm) and Git; check
-with `node --version`.
+Start the free local app with this single copy-and-run command. You do not need
+Node.js or npm installed first; the installer brings its own. Git is required.
+
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
+```
+
+That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
+Node and pnpm, installs dependencies, sets up a local owner and starts the app.
+To start it again later, run `cd run-happytohelp && rer dev`.
+
+If you already have **Node.js 22 or later** (with npm) and Git, the alternative is:
 
 ```sh
 npx -y @runeditrun/rer dev just-every/run-happytohelp
 ```
 
-That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
-Node and pnpm, installs dependencies, sets up a local owner and starts the app. To
-set it up without starting it, use `npx -y @runeditrun/rer setup just-every/run-happytohelp`.
-Without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp`
-brings its own. To start it again later, run `cd run-happytohelp && rer dev`.
+To set it up without starting it, use
+`npx -y @runeditrun/rer setup just-every/run-happytohelp`.
 
 Dev uses its local address for the chat widget and generates a private owner
 password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
 real local owner and reach **Setup**. No private answers, email service or AI
 account are needed. Use `rer dev --stop` from the checkout to stop the managed app.
 
-The checkout pins **`@runeditrun/rer` 0.2.77** in `package.json` and
-`pnpm-lock.yaml`. The launcher you run (npx or a global install) may have a different
-version; inside the checkout it provisions the tools and delegates to the pinned
+The checkout pins **`@runeditrun/rer`** to the version in
+[`package.json`](package.json), resolved in `pnpm-lock.yaml`. The launcher you run
+(npx or a global install) may have a different version; inside the checkout it provisions the tools and delegates to the pinned
 local package. Updating the launcher does not change the project's pin.
 For scripted setup, prepare [private answers](docs/INSTALLER.md#private-setup-answers),
 then run `rer setup --owner-email you@example.com --answers .seed/local-answers.json`.
@@ -160,17 +167,42 @@ fixtures establish the command boundary, not a live hosted-provider receipt.
 
 ## Deploy to your Cloudflare account
 
-Use the real `deploy.json` declaration with Base deploy-kit. The command derives
-resource names and the application origin from the project/environment and the
-owner's account. Configure private `CLOUDFLARE_ACCOUNT_ID` and
-`CLOUDFLARE_API_TOKEN` in the process environment; never pass or print token
-values. The token needs the declared Workers, D1, R2 and Queues capabilities.
-Enable R2 before provisioning. Commit source before a real deployment.
+Use the real `deploy.json` declaration with Base deploy-kit. Start with local
+validation before configuring a live deployment.
+
+### Credential-free dry run
+
+From the installed checkout, stop dev first (`rer dev --stop`), then run:
+
+```sh
+rer deploy --dry-run
+```
+
+This validates the declaration and builds locally. It needs no Cloudflare account
+or token, mail provider, verified sender, sending token or real `OWNER_EMAIL`.
+It sends no mail and changes nothing remotely. The completion report says:
+
+```text
+deploy: local dry run complete; no credentials were needed, no Cloudflare requests were made and nothing was changed remotely. Target secrets and remote readiness were not checked.
+```
+
+Missing production inputs are listed as **needed for a real deploy**, without
+blocking the dry run. Remote resources, credential validity and existing secret
+bindings remain unchecked. NATIVE-001 separately requires an explicitly started,
+owner-consented read-only provider preflight; that step still needs implementation
+and live qualification. The dry run does not establish remote readiness.
 
 ### What you need first
 
-These are the deploy-kit owner-account instructions that rer's deploy message
-points to.
+These prerequisites apply to a **live deployment**. They are the deploy-kit
+owner-account instructions that rer's deploy message points to.
+
+The command derives resource names and the application origin from the
+project/environment and the owner's account. Configure private
+`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` in the process environment;
+never pass or print token values. The token needs the declared Workers, D1, R2
+and Queues capabilities. Enable R2 before provisioning. Commit source before a
+real deployment.
 
 1. In the [Cloudflare dashboard](https://dash.cloudflare.com/), open the
    account you will deploy to, then **Manage Account → Account API Tokens →
@@ -214,16 +246,19 @@ not a prerequisite for an account-owned token or a reason to broaden its scope.
 The declaration names DB, FILES, CONVERSATIONS, JOBS, its dead-letter queue and
 scheduled recovery. Declared secret bindings include `OWNER_EMAIL`,
 `H2H_SETUP_TOKEN`, `INTEGRATION_ENCRYPTION_KEY`, `INBOUND_EMAIL_TOKEN`,
-`EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`. Before a deployment dry run
-or real deployment, supply the mail provider (`resend`, `sendgrid` or `cloudflare`),
-verified sender address and sending token in private environment variables or an
-owned 0600 `--env-file`. Provider and
+`EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`. For a live deployment with
+outbound email, supply the selected mail provider, verified sender address and
+sending token in private environment variables or an owned 0600 `--env-file`;
+see the [email state table](docs/email.md#installation-email-choice) for each
+provider's inputs. To deploy without sending, use
+[Deploy with outbound email off](#deploy-with-outbound-email-off). Provider and
 sender are stored as secret bindings too, so the deployment declaration contains
 no account-specific values. Rer supplies the owner email (`OWNER_EMAIL`) from real local setup, or from the environment
 when you set it. Deploy refuses the local placeholder `owner@run-happytohelp.test`
 and other reserved trial domains because they cannot receive sign-in mail. Supply
-a real mailbox privately in `OWNER_EMAIL` or an owned 0600 `--env-file` for both
-dry run and deployment. Rer generates missing setup/encryption secrets. It also deploys
+a real owner email privately in `OWNER_EMAIL` or an owned 0600 `--env-file` for
+live deployment. The credential-free dry run can list that missing input without
+requiring it. Rer generates missing setup/encryption secrets. It also deploys
 the generated `INBOUND_EMAIL_TOKEN` for reply-mailbox authentication. Existing
 Worker secrets are retained except provider credentials explicitly switched Off; use `rer deploy --set-secret <name>` to change one
 deliberately. Rer keeps the values it generates (`INBOUND_EMAIL_TOKEN`,
@@ -260,9 +295,9 @@ next to `MAIL_ACCOUNT_ID`, the same value under rer's shared mail name, which th
 Worker itself does not read. Supply the account ID privately before deploying with
 Cloudflare mail; with `EMAIL_PROVIDER=cloudflare` and no account ID the Worker
 reports outbound mail unavailable. It is optional, so Resend and SendGrid deploys
-and rer 0.2.77's rule that a new Worker needs every declared non-optional secret are
-unaffected. `node scripts/delivery/secret-declarations.mjs` (part of `verify:build`)
-fails when an `EMAIL_*` name the Worker reads is not bound in `deploy.json` or
+and the pinned rer's rule that a new Worker needs every declared non-optional
+secret for a live deployment are unaffected.
+`node scripts/delivery/secret-declarations.mjs` (part of `verify:build`) fails when an `EMAIL_*` name the Worker reads is not bound in `deploy.json` or
 `management/integration/managed-deploy.json`.
 
 ### Deploy with outbound email off
@@ -394,7 +429,8 @@ and [regional endpoints](https://documentation.mailgun.com/docs/mailgun/api-refe
 Preserve existing keys and owner data. Configure other optional mail/model inputs
 through the supported runtime declaration and native workspace settings. Local
 development needs no mail account: its development transport suppresses email
-without storing it or sending externally. Deployment requires a real sender.
+without storing it or sending externally. A live deployment with outbound email
+requires a real sender; the explicit Off path above sends nothing.
 
 ```sh
 rer deploy --dry-run

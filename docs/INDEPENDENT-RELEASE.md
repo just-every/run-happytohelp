@@ -276,18 +276,25 @@ give consent again. Otherwise, normal sign-in sessions work as before.
 
 ### On your computer
 
-Start it with one line. You need **Node.js 22 or later** (with npm) and Git; check
-with `node --version`.
+Start the free local app with this single copy-and-run command. You do not need
+Node.js or npm installed first; the installer brings its own. Git is required.
+
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
+```
+
+That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
+Node and pnpm, installs dependencies, sets up a local owner and starts the app.
+To start it again later, run `cd run-happytohelp && rer dev`.
+
+If you already have **Node.js 22 or later** (with npm) and Git, the alternative is:
 
 ```sh
 npx -y @runeditrun/rer dev just-every/run-happytohelp
 ```
 
-That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
-Node and pnpm, installs dependencies, sets up a local owner and starts the app. To
-set it up without starting it, use `npx -y @runeditrun/rer setup just-every/run-happytohelp`.
-Without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp`
-brings its own. To start it again later, run `cd run-happytohelp && rer dev`.
+To set it up without starting it, use
+`npx -y @runeditrun/rer setup just-every/run-happytohelp`.
 
 Dev uses its local address for the chat widget and generates a private owner
 password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
@@ -312,17 +319,23 @@ To hand support work to your own computer, use the local agent's pairing steps
 Use `pnpm exec rer deploy --environment production` with the real
 `deploy.json` declaration and private owner-account credentials.
 [Deploy to your Cloudflare account](../OPERATIONS.md#deploy-to-your-cloudflare-account)
-covers prerequisites, secret custody and health boundaries. Today's
-pinned rer 0.2.77 `pnpm exec rer deploy --dry-run` combines local validation/build
-with credentialed read-only Cloudflare GETs for the account's Workers subdomain
-and the Worker's settings and secret names (three GETs for an existing Worker).
-It refuses without Cloudflare credentials, validates supplied private mail inputs
-and refuses a required secret neither held nor supplied; it sends no mail and
-changes no provider resources. The required zero-outbound dry-run with an explicit
-no-outbound report and the separately started, owner-consented read-only preflight
-using the owner's scoped token remain an unbuilt, unproved split. The preflight's
-own acceptance permits only those three GETs, no mail and no mutations; live
-qualification remains separate.
+covers live-deployment prerequisites, secret custody and health boundaries. The
+rer version pinned in [`package.json`](../package.json) supports a credential-free
+local check:
+
+```sh
+pnpm exec rer deploy --dry-run
+```
+
+Stop dev first (`rer dev --stop`). This validates the declaration and builds
+locally without Cloudflare credentials, mail inputs or a real `OWNER_EMAIL`. Its
+completion report explicitly says no Cloudflare requests were made and nothing
+was changed remotely; inputs still needed for a real deploy are listed separately.
+Remote resources, credential validity and existing secret bindings remain unchecked.
+The separately started, owner-consented read-only preflight using the owner's
+scoped token still needs implementation and live qualification. Its own acceptance
+permits only the account's Workers subdomain and the Worker's settings and secret
+names (three GETs for an existing Worker), no mail and no mutations.
 
 **Website preview** lets owners and admins see their website with the chat
 widget on it. It needs its own custom-domain origin (`PREVIEW_ORIGIN`), pointed
@@ -346,7 +359,8 @@ HappyToHelp to that service:
   at a pinned commit. HappyToHelp's own commands that this build runs receive
   no deployment credentials; the delivery service does the publishing itself.
 - `node scripts/independent/setup-build.mjs` prepares that build: it installs
-  pnpm into `.rer-tools`, then the frozen application dependencies and Chromium.
+  pnpm into `.rer-tools`, then the frozen application dependencies. Browser
+  verification downloads the checkout's Playwright Chromium when needed.
   The trusted build provides Node but no global pnpm, so the build and verify
   commands put `.rer-tools/node_modules/.bin` first on `PATH` before running the
   package scripts.

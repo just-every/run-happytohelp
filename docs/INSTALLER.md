@@ -211,10 +211,19 @@ account's Workers subdomain and the Worker's settings and secret names (three
 GETs for an existing Worker), no mail and no mutations. Neither step is a mock of
 the other. The zero-outbound dry-run is implemented in this candidate. The separately started preflight still needs implementation and live qualification.
 
-`rer deploy --dry-run` validates the input shape and builds locally. It makes no
-provider requests, sends no mail and makes no deployment. Cloudflare credentials
-are not required. Remote resources, credential validity and existing secret
-bindings remain unchecked until a real deployment. `rer deploy --environment
+From the installed checkout, run the credential-free local check:
+
+```sh
+rer deploy --dry-run
+```
+
+It validates the input shape and builds locally. It makes no provider requests,
+sends no mail and makes no deployment. No Cloudflare credentials, mail provider,
+verified sender, sending token or real `OWNER_EMAIL` are required. The completion
+report explicitly says no Cloudflare requests were made and nothing was changed
+remotely; missing production inputs are listed as needed for a real deploy.
+Remote resources, credential validity and existing secret bindings remain unchecked
+until a real deployment. `rer deploy --environment
 production` requires owner authorization and the private credentials/declaration
 in Operations. Local development still needs no email account.
 Stop `rer dev` first (`rer dev --stop`): while it runs it owns the checkout's local

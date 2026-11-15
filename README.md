@@ -81,24 +81,36 @@ The [install and run guide](docs/INSTALLER.md) covers
 installation, local sign-in and stopping the app, step by step.
 The [Run HappyToHelp page](https://happytohelp.com/run) has the quick-start command.
 
-Start it with one line. You need **Node.js 22 or later** (with npm) and Git; check
-with `node --version`.
+Start the free local app with this single copy-and-run command. You do not need
+Node.js or npm installed first; the installer brings its own. Git is required.
+
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
+```
+
+That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
+Node and pnpm, installs dependencies, sets up a local owner and starts the app.
+To start it again later, run `cd run-happytohelp && rer dev`.
+
+If you already have **Node.js 22 or later** (with npm) and Git, the alternative is:
 
 ```sh
 npx -y @runeditrun/rer dev just-every/run-happytohelp
 ```
 
-That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
-Node and pnpm, installs dependencies, sets up a local owner and starts the app. To
-set it up without starting it, use `npx -y @runeditrun/rer setup just-every/run-happytohelp`.
-Without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp`
-brings its own. To start it again later, run `cd run-happytohelp && rer dev`.
+To set it up without starting it, use
+`npx -y @runeditrun/rer setup just-every/run-happytohelp`.
 
-The install also downloads Chromium (about 280 MB, into your user cache) the
-first time: `rer verify` and the browser checks run in it. Dev uses its local
+Normal setup and launch install the app's dependencies and build its local assets;
+they do not download Chromium. Dev uses its local
 address for the chat widget and generates a private owner password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
 real local owner and reach **Setup**. No private answers, email service or AI
 account are needed. Use `rer dev --stop` from the checkout to stop the managed app.
+
+**Browser verification:** `rer verify` downloads the Chromium and headless shell
+pinned by the checkout's Playwright into your user cache when first needed.
+See [Verify, reset and move data](docs/INSTALLER.md#verify-reset-and-move-data)
+for running browser checks directly.
 
 Already running 0.3? Keep your checkout and data, and follow
 [Upgrading from 0.3.x](OPERATIONS.md#upgrading-from-03x) instead.

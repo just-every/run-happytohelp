@@ -1737,11 +1737,11 @@
       "executable": false
     },
     "docs/INDEPENDENT-RELEASE.md": {
-      "sha256": "fe25363b43dfce39bea67d66e09fb9620fa7bc3393d6632e69fd7c123dc4c779",
+      "sha256": "860ba495b7d37258c87233f1521b2eb897828de425a83e20e98cb5d0cb8cddb6",
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "5e57be0516a893599c12b69747082a8ff2753b79648790908e0508124906d6ea",
+      "sha256": "dd2211672284b02199054f132d509842e011cb5dfc1921bdb692e3dff35a6985",
       "executable": false
     },
     "docs/knowledge-upgrade-report.md": {
@@ -2913,7 +2913,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "318ff8816e8cc55d9aa3910ce91246b2e290a6f1dcc766a0d02b3ffb4e1577c3",
+      "sha256": "985fd2daf47d67e769ff6497e0a12679806dca9a39e62868228f876156d17cad",
       "executable": false
     },
     "package.json": {
@@ -2993,7 +2993,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "9260e012d46d3779a398ef8693a6eb963efe2b051ae11a9dd7a5b2a2fc3afd55",
+      "sha256": "022f2ad37fee04ef72146d5f049454b840fd2bb4b8bcd6f99f5afdcac3faa4d7",
       "executable": false
     },
     "RELEASE.json": {

@@ -46,7 +46,11 @@ export function command(root,args,{timeout=1200000,env={}}={}){
   const code=/^[a-z_]+$/.test(event?.code??'')?event.code:'unknown';
   const detail=event?.message??'';
   const reason=detail.includes('machine load')?'machine load':detail.includes('15 GiB')?'disk space':detail.includes('Server limit')?'server capacity':detail.includes('active local operation')?'active operation':'see private capture';
-  return Error(`Rer ${args[0]} ${message}; ${code}, ${reason}`);
+  // Rer approves and redacts these event messages at its command boundary. Keep
+  // only the headline and structural exception lines, never stderr or full captures.
+  const safe=text=>text.replace(/\x1b\[[0-9;]*m/g,'').replace(/(?:https?|wss?):\/\/\S+/g,'[address]').replace(/[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@[A-Za-z0-9.-]+/g,'[email]').replace(/\b[A-Za-z0-9_-]{24,}\b/g,'[private]').slice(0,400);
+  const headline=safe(detail.split('\n')[0]),causes=[...new Set(detail.split('\n').filter(line=>/(?:\b[A-Za-z]*Error:|\bERR_[A-Z_]+\b|\bCannot (?:find|resolve)|\bCould not resolve)/.test(line)).map(safe))].slice(-3);
+  return Error(`Rer ${args[0]} ${message}; ${code}, ${reason}${headline?'; '+headline:''}${causes.length?'; '+causes.join(' | '):''}`);
  };
  async function stop(){
   if(!exited){child.kill('SIGTERM');let timer;try{await Promise.race([completion,new Promise(resolve=>{timer=setTimeout(resolve,30000);})]);}finally{clearTimeout(timer);}}

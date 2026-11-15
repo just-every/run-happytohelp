@@ -102,7 +102,7 @@ async function localMailRoutes(){
 
 async function devEntry(){
  const source=resolve(new URL('../../..',import.meta.url).pathname),scratch=await mkdtemp(join(tmpdir(),'h2h-local-mail-')),root=join(scratch,'checkout')
- let server
+ let server,serverReady=false
  try{
   // Isolate command-owned state and dependencies: rer setup may relink packages.
   const {stdout}=await promisify(execFile)('git',['ls-files','-z'],{cwd:source,maxBuffer:4*1024*1024})
@@ -115,6 +115,7 @@ async function devEntry(){
   await run(root,['setup','--owner-email','local-owner@example.test','--answers','.seed/local-mail-answers.json','--port',String(port)])
   server=command(root,['dev'])
   await server.waitFor(event=>event.event==='ready',180000)
+  serverReady=true
   const key=await readDevKey(root)
   const request=(path,headers={},options={})=>fetch(origin+path,{redirect:'manual',headers,...options})
   for(const path of ['/auth/dev/enter','/__dev/personas']){
@@ -140,7 +141,7 @@ async function devEntry(){
   assert.equal(crossSite.status,404);await crossSite.body?.cancel()
   for(const path of ['/__dev/mail','/__dev/mail/messages']){const response=await request(path,{Cookie:identity.header});assert.equal(response.status,404);await response.body?.cancel()}
  }finally{
-  if(server){try{await stopOwnedServer(server.child)}finally{await server.stop()}}
+  if(server){try{if(serverReady)await stopOwnedServer(server.child)}finally{await server.stop()}}
   await rm(scratch,{recursive:true,force:true})
  }
 }

@@ -15,7 +15,7 @@ export function sitePages({ contract, hosting = null, styles = [] }: Partial<Sit
   const docs = buildSite(process.cwd())
   if (docs.problems.length) throw Error(docs.problems.join('\n'))
   const document = (body: string, title: string) => '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-    + `<title>${title}</title>` + styles.map(href => `<link rel="stylesheet" href="${href}">`).join('') + '</head><body>' + body.replace(/href="\/(login|projects|setup|downloads(?:\/[^"]*)?)"/g, (_, path: string) => `href="https://happytohelp.com/${path}"`) + '</body></html>'
+    + `<title>${title}</title>` + styles.map(href => `<link rel="stylesheet" href="${href}">`).join('') + '</head><body>' + body.replace(/href="\/(contact|login|projects|setup|downloads(?:\/[^"]*)?)"/g, (_, path: string) => `href="https://happytohelp.com/${path}"`) + '</body></html>'
   return {
     pages: [
       { path: '/', html: document(renderToStaticMarkup(createElement(Homepage)), 'HappyToHelp — Customer Support, Solved.') },

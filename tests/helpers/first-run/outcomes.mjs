@@ -127,6 +127,7 @@ export async function builtOutcomes(){
    await widget.goto('https://acme.example.com/support-proof')
    await widget.waitForFunction(()=>typeof window.h2h==='function'&&window.h2hQueue?.length===0)
    await widget.evaluate(()=>window.h2h('open'))
+   await widget.locator('input[name=email]').fill('visitor@acme.example.test')
    const sent=widget.waitForResponse(response=>/\/api\/conversations\/[^/]+\/messages$/.test(new URL(response.url()).pathname)&&response.request().method()==='POST')
    await widget.locator('textarea[name=content]').fill('Please help with my order')
    await widget.locator('button[name=submit]').click()

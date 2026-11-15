@@ -185,7 +185,7 @@ export default defineConfig(({ command, isPreview }) => {
  server: {
   host: '127.0.0.1', allowedHosts: ['localhost', '127.0.0.1', '[::1]'],
   fs: {
-   allow: ['src', 'public', 'node_modules', 'package.json', 'local-agent/lib/provider-error.mjs'],
+   allow: ['src', 'public', 'node_modules', 'package.json', 'CONTRACT.md', 'CONTRACT.md?raw', 'local-agent/lib/provider-error.mjs'],
    deny: ['**/.rer/**', '**/.seed/**', '**/exports/**', '**/*.rer'],
   },
  },

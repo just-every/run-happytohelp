@@ -1,0 +1,12 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "rer",
+    "check",
+    "--profile",
+    "first-party"
+  ],
+  "exit": 0,
+  "node": "22.20.0"
+}

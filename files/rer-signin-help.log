@@ -1,0 +1,4 @@
+Usage: rer signin [FLAGS]
+Flags: --help, --cwd, --non-interactive, --json, --environment, --env-file
+A one-time sign-in link for the hosted owner, without mail. Uses the Cloudflare credentials that deployed --environment (default production; from the environment or --env-file) to write a single-use grant for the recorded owner into that deployment's auth database, then prints the link once to this terminal; it is never saved. The link works once, only for that owner, expires within 15 minutes, and its use is recorded in the owner's audit log. Signed in this way, the owner can correct a wrong email in settings.
+

@@ -1,0 +1,68 @@
+{
+  "counts": {
+    "input": 42,
+    "unique": 42,
+    "duplicates": 0,
+    "mapped": 32,
+    "unmapped": 21,
+    "rejected": 7,
+    "effects": 32,
+    "byKind": {
+      "ticket_field": 7,
+      "ticket_form": 5,
+      "trigger": 2,
+      "article": 4,
+      "organization": 1,
+      "tag-name": 4,
+      "user": 7,
+      "group": 2,
+      "schedule": 1,
+      "ticket": 6,
+      "macro": 1,
+      "automation": 1,
+      "view": 1
+    }
+  },
+  "findings": [
+    {
+      "kind": "ticket_field",
+      "sourceId": "305",
+      "message": "field_permissions_require_native_review"
+    },
+    {
+      "kind": "ticket_field",
+      "sourceId": "306",
+      "message": "field_permissions_require_native_review"
+    },
+    {
+      "kind": "ticket_field",
+      "sourceId": "307",
+      "message": "field_permissions_require_native_review"
+    },
+    {
+      "kind": "ticket_form",
+      "sourceId": "404",
+      "message": "form_field_unavailable"
+    },
+    {
+      "kind": "ticket_form",
+      "sourceId": "405",
+      "message": "form_field_unavailable"
+    },
+    {
+      "kind": "ticket",
+      "sourceId": "10001",
+      "message": "ticket_custom_field_unsupported:305"
+    },
+    {
+      "kind": "ticket",
+      "sourceId": "10001",
+      "message": "ticket_custom_field_unsupported:306"
+    },
+    {
+      "kind": "ticket",
+      "sourceId": "10001",
+      "message": "ticket_custom_field_unsupported:307"
+    }
+  ]
+}

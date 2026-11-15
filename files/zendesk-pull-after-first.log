@@ -1,0 +1,36 @@
+TAP version 13
+# (node:1941) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo
+not ok 1 - an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo
+  ---
+  duration_ms: 14524.989095
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/hh-run1-faults-1/repo/tests/journeys/move-in-zendesk-pull.mjs:59:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    staff retain populated internal values, including closed history
+    + actual - expected
+    
+    + undefined
+    - 'synthetic-hh-72 internal order review'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'synthetic-hh-72 internal order review'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/hh-run1-faults-1/repo/tests/journeys/move-in-zendesk-pull.mjs:124:11)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14980.881675

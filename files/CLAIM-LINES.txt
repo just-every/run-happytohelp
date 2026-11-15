@@ -1,0 +1,11 @@
+CLAIM MOVE-IN-002 PARTIAL points=none tests=tests/journeys/move-in-zendesk-pull.mjs#an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo
+CLAIM MOVE-IN-004 PARTIAL points=none tests=tests/journeys/move-in-admission.mjs#review an export, import its history and private notes, repeat and repackage without effects, then undo exactly
+CLAIM ZENDESK-IMPORT-001 PARTIAL points=none tests=tests/journeys/move-in-admission.mjs#review an export, import its history and private notes, repeat and repackage without effects, then undo exactly
+CLAIM NATIVE-001 PARTIAL points=none tests=tests/journeys/identity.mjs#an installation with outbound email off refuses every sign-in mail in words, contacts no provider, and admits an owner through a deploy-credential grant once
+CLAIM IDENTITY-002 PARTIAL points=none tests=tests/journeys/identity.mjs#an installation with outbound email off refuses every sign-in mail in words, contacts no provider, and admits an owner through a deploy-credential grant once
+DEFAULT MOVE-IN-004: Preserve native staff fields and typed values without publishing a customer form; retain portal and agent edit refusals.
+GAP MOVE-IN-004: Full cross-vendor configuration acceptance and the independent migration/data gate remain pending.
+GAP MOVE-IN-002: This synthetic defect candidate does not establish live imports, full vendor qualification or channel cutover.
+GAP ZENDESK-IMPORT-001: No whole-clause promotion or new capacity/hosted qualification is claimed.
+GAP NATIVE-001: Remote provisioning and the separate read-only provider preflight remain outside this repair.
+GAP IDENTITY-002: Pinned rer native-account sign-in dispatch remains runtime-owned; the supported native script is documented and no live hosted grant was issued.

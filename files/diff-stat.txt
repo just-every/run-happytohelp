@@ -1,0 +1,10 @@
+ OPERATIONS.md                                 | 52 ++++++++++++++++++++-------
+ sources.lock.json                             | 16 ++++-----
+ src/modules/move-in/readers/zendesk-fields.ts | 11 +++---
+ src/modules/move-in/zendesk-source/packing.ts |  2 +-
+ tests/journeys/move-in-zendesk-pull.mjs       | 28 ++++++++++++---
+ tests/move-in/configuration-review.mjs        | 24 +++++++++++--
+ tests/move-in/configuration-source.mjs        |  4 ++-
+ tests/move-in/review-import.mjs               | 10 ++++--
+ tests/move-in/zendesk-pull-fixture.mjs        |  4 +--
+ 9 files changed, 114 insertions(+), 37 deletions(-)

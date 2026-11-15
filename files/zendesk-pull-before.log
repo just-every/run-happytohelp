@@ -1,0 +1,56 @@
+✖ an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo (12213.195641ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12866.731592
+
+✖ failing tests:
+
+test at tests/journeys/move-in-zendesk-pull.mjs:59:1
+✖ an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo (12213.195641ms)
+  AssertionError [ERR_ASSERTION]: the field batch now contains a supported internal field as well as a refusal
+  + actual - expected
+  
+  + [
+  +   {
+  +     covered: false,
+  +     error: null,
+  +     filename: 'zendesk-pull-a916d3a7-2.jsonl',
+  +     nothingToImport: true,
+  +     ordinal: 1,
+  +     runId: 'da2ae685-3ba2-4bcb-b8be-6aa017fdd405',
+  +     state: 'ready',
+  +     stopped: false,
+  +     summary: {
+  +       articles: {
+  +         draft: 0,
+  +         heldBack: 0,
+  +         published: 0
+  +       },
+  +       organizations: 0,
+  +       refused: 2,
+  +       replies: 0,
+  +       tickets: 0,
+  +       ticketsNew: 0,
+  +       ticketsRefused: 0,
+  +       users: 0
+  +     }
+  +   }
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/hh-run1-faults-1/repo/tests/journeys/move-in-zendesk-pull.mjs:99:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ { ordinal: 1, runId: 'da2ae685-3ba2-4bcb-b8be-6aa017fdd405', filename: 'zendesk-pull-a916d3a7-2.jsonl', state: 'ready', error: null, summary: [Object], covered: false, stopped: false, nothingToImport: true } ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

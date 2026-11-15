@@ -1,0 +1,401 @@
+diff --git a/OPERATIONS.md b/OPERATIONS.md
+index 1a301fe..cf1881d 100644
+--- a/OPERATIONS.md
++++ b/OPERATIONS.md
+@@ -289,9 +289,11 @@ rer deploy --environment production --env-file ~/happytohelp-deploy.env --unset-
+ 
+ ### Sign in without mail
+ 
+-An installation that sends no mail has no emailed sign-in link, and a moved-in
+-owner has no password. From the checkout that deployed it, with the Cloudflare
+-credentials that deployed it, mint a one-time link:
++An installation that sends no mail cannot email a sign-in link. An owner who
++already set a native password can use it; otherwise use the supported native
++command below from the checkout that deployed it, with the Cloudflare credentials
++that deployed it. Supply them through an owned 0600 `--env-file` (never command
++arguments), and mint a one-time link:
+ 
+ ```sh
+ node scripts/hosted-signin.mjs --environment production --project <workspaceId> [--open] [--json] [--env-file ~/happytohelp-deploy.env]
+@@ -309,7 +311,20 @@ prints the native link once to stdout. `--json` prints
+ `--open` opens the link in your default browser and prints only the email and
+ expiry. The link is never written to disk, a log or a receipt, nothing is sent,
+ and its use appears in the member's security log like an emailed link. It works
+-whether mail is on or off.
++whether mail is on or off. Treat the link as a credential: do not copy it into
++reports, shell logs or support messages, or pipe stdout/JSON to a log or receipt.
++Use `--open` on a machine with your browser when you want no link on stdout.
++
++The pinned rer 0.2.117 advertises `rer signin` for mail-off owner access, but its
++grant writer requires the shared `oa_owner_signins`/`oa_operators` tables. This
++edition uses native `magic_signins`/`users` instead. The native `mailOffSignIn`
++adapter declaration permits mail-off deployment; it does not make `rer signin`
++call this script. After deployment and credential checks, `rer signin` refuses
++with exit 4 and directs this edition to `/login` without issuing a grant. Native
++account dispatch through that rer command remains a runtime-owned gap; the
++script above is the supported native door and needs no sending provider.
++
++_Run Edit Run fleet, 2026-11-15._
+ 
+ ### Mailgun domain sending
+ 
+@@ -426,19 +441,32 @@ There is nothing to claim by hand. After a healthy deploy, `rer deploy` claims t
+ owner named by `OWNER_EMAIL` on the hosted app with the one-time `H2H_SETUP_TOKEN`
+ and then removes the token. It prints the address and a line such as
+ *Claimed the hosted owner (the OWNER_EMAIL already set on the Worker)*. Open that
+-address and **sign in by email** as the owner: the sign-in message goes through your
+-configured mail sender, so the mail variables above must be right before you deploy.
+-Sign-in opens **Setup**. The owner's name is derived from that actual email, and a
++address and sign in as the owner. With outbound email enabled, choose **Email me
++a sign-in link** and open the message in that owner's mailbox. With
++`MAIL_PROVIDER=none`, use [Sign in without mail](#sign-in-without-mail) with the
++original owner's email; a native password already set also works. No sender
++repair or mail provider is needed for that command. Sign-in opens **Setup**.
++The owner's name is derived from that actual email, and a
+ `workers.dev` website defaults to **My workspace** regardless of the owner email.
+ An explicitly chosen native workspace name takes precedence. You can set the
+ business website and name in Project settings. Running `rer deploy` again preserves the existing owner and workspace.
+ 
+-`rer signin --environment production` directs you to this deployment's `/login`
+-page and exits 4 because HappyToHelp uses native accounts. It does not issue or
+-print a sign-in link. On that page choose **Email me a sign-in link**, then open
+-the message in the owner's mailbox. A password set in the native app also works.
++For an installation with mail off, run the native command from the deploying
++checkout, selecting the existing owner by email:
++
++```sh
++node scripts/hosted-signin.mjs --environment production --email <ownerEmail> --env-file ~/happytohelp-deploy.env
++```
++
++Open the printed link privately within 15 minutes and complete its explicit
++sign-in confirmation; it works once. Do not save its stdout in logs or receipts.
++The rer 0.2.117 native-account limitation and the `--open` option are explained
++in [Sign in without mail](#sign-in-without-mail).
++
++_Run Edit Run fleet, 2026-11-15._
+ 
+-If sign-in mail fails after the owner was claimed, repair the sender using the
++If you intend to send sign-in mail and it fails after the owner was claimed,
++repair the sender using the
+ same Cloudflare credentials and checkout that deployed it. Supply the correct
+ private `MAIL_MODE=own`, `EMAIL_PROVIDER`, `EMAIL_FROM` and the selected provider key in an owned
+ 0600 environment file, then run a full deployment:
+diff --git a/sources.lock.json b/sources.lock.json
+index 92121d0..31c704b 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -2913,7 +2913,7 @@
+       "executable": false
+     },
+     "OPERATIONS.md": {
+-      "sha256": "c8f2ca370c9d0093bc01d74456bd4c0b2502520b26f29cabd07c1b7ce0d34260",
++      "sha256": "318ff8816e8cc55d9aa3910ce91246b2e290a6f1dcc766a0d02b3ffb4e1577c3",
+       "executable": false
+     },
+     "package.json": {
+@@ -8981,7 +8981,7 @@
+       "executable": false
+     },
+     "src/modules/move-in/readers/zendesk-fields.ts": {
+-      "sha256": "a163b7455532806e2867e56f4b51d356a25ad8af5fc20a3b272c34f5ec10e348",
++      "sha256": "a7758fc2dcd865f374843a03f59ac421c139b83af7943f7ef77fd16e28706cba",
+       "executable": false
+     },
+     "src/modules/move-in/readers/zendesk-macro.ts": {
+@@ -9141,7 +9141,7 @@
+       "executable": false
+     },
+     "src/modules/move-in/zendesk-source/packing.ts": {
+-      "sha256": "b55de3099f7a89073b261681b473c068fec4ae6301d0f3c57c13353e99d0cee3",
++      "sha256": "6983a0b0920a279318b7854cd80d60c6d53c0829141c1001af22e7e4df4d5a07",
+       "executable": false
+     },
+     "src/modules/move-in/zendesk-source/pull-store.ts": {
+@@ -17453,7 +17453,7 @@
+       "executable": false
+     },
+     "tests/journeys/move-in-zendesk-pull.mjs": {
+-      "sha256": "059a768896ec82243c84310360b860ad67a2246c5d55aaf97d86764f949486ac",
++      "sha256": "57cc49ded274c583c3e3d499e66bbc9c1d7eb19fc0b6271232087a83c5b9b1aa",
+       "executable": false
+     },
+     "tests/journeys/public-browser.mjs": {
+@@ -17605,7 +17605,7 @@
+       "executable": false
+     },
+     "tests/move-in/configuration-review.mjs": {
+-      "sha256": "07762a89510534c97258fc2eac746a1cf14d9287adbfedf66c6baf48d518e573",
++      "sha256": "ed72f2a8be2fe26a0310fc41fd3c11ae2271ecb572f98879b9ad1cfbf0753819",
+       "executable": false
+     },
+     "tests/move-in/configuration-sla.mjs": {
+@@ -17613,7 +17613,7 @@
+       "executable": false
+     },
+     "tests/move-in/configuration-source.mjs": {
+-      "sha256": "8ca0f999ec1e324c94da1849e55f542dfa547587cf7a223f09dfb544d26632b1",
++      "sha256": "98b6f1ea7df461bc9aaebf91db80a3fc873ed81eb3a4b4c85a09f28122ed4b8c",
+       "executable": false
+     },
+     "tests/move-in/custody-journey.mjs": {
+@@ -17733,7 +17733,7 @@
+       "executable": false
+     },
+     "tests/move-in/review-import.mjs": {
+-      "sha256": "3c9ebcfaf484008770c9255fbe35b0ec962a8dbed81e6e5c218bfdab4c2b62db",
++      "sha256": "cf350426a7f48818181323917df882adafa6f8903fa873c0b8a10e41b16bd00a",
+       "executable": false
+     },
+     "tests/move-in/snapshot.mjs": {
+@@ -17777,7 +17777,7 @@
+       "executable": false
+     },
+     "tests/move-in/zendesk-pull-fixture.mjs": {
+-      "sha256": "22648107b0c9099d8d1353cdd9357fa0ad16cb30d65729a26857961a98473215",
++      "sha256": "64d7e65c40c91b44ca22efd7c38994fe5725f576066d3905c57d330a5d546c83",
+       "executable": false
+     },
+     "tests/move-in/zendesk-resume-browser.mjs": {
+diff --git a/src/modules/move-in/readers/zendesk-fields.ts b/src/modules/move-in/readers/zendesk-fields.ts
+index 2a485db..ca8df2e 100644
+--- a/src/modules/move-in/readers/zendesk-fields.ts
++++ b/src/modules/move-in/readers/zendesk-fields.ts
+@@ -7,11 +7,13 @@ import {nativeId,sourceId,text,time,object} from './common'
+ 
+ const supported:Record<string,string>={text:'text',textarea:'text',integer:'number',decimal:'decimal',date:'date',checkbox:'checkbox',tagger:'dropdown',multiselect:'multiselect',regexp:'regex'}
+ const system=new Set(['subject','description'])
+-export function zendeskField(record:SourceRecord,projectId:string):StoredField{
++export function zendeskField(record:SourceRecord,projectId:string,portal=true):StoredField{
+  const p=record.payload as any,type=supported[p.type]
+  if(!type)throw Error('field_type_not_supported')
+  if(p.active!==true)throw Error('inactive_field_not_imported')
+- if(p.visible_in_portal!==true||p.editable_in_portal!==true||p.agent_can_edit===false)throw Error('field_permissions_require_native_review')
++ // Ticket values are staff-only. Portal permissions apply only when carrying
++ // the field into a customer request form; agent edit restrictions still refuse.
++ if(p.agent_can_edit===false||(portal&&(p.visible_in_portal!==true||p.editable_in_portal!==true)))throw Error('field_permissions_require_native_review')
+  const options:string[]=[]
+  if(['tagger','multiselect'].includes(p.type)){
+   if(!Array.isArray(p.custom_field_options))throw Error('field_options_required')
+@@ -23,7 +25,8 @@ export function zendeskField(record:SourceRecord,projectId:string):StoredField{
+ 
+ export function zendeskFields(record:SourceRecord,projectId:string,records:Map<string,SourceRecord>,omissions:string[]):{kind:string;target:string;tables:NativeValue['tables']}|null{
+  if(record.kind==='ticket_field'){
+-  const field=zendeskField(record,projectId),p=record.payload as any
++  const field=zendeskField(record,projectId,false),p=record.payload as any
++  if(p.visible_in_portal===true&&p.editable_in_portal!==true)omissions.push('field_portal_read_only_not_carried')
+   if(p.required)omissions.push('field_solve_requirement_requires_native_review')
+   if(['tagger','multiselect','checkbox'].includes(p.type))omissions.push('field_tag_side_effects_not_activated')
+   if(p.default_value!=null&&p.default_value!=='')omissions.push('field_default_value_requires_native_review')
+@@ -64,7 +67,7 @@ export function zendeskTicketFields(record:SourceRecord,projectId:string,convers
+   const definition=records.get('ticket_field/'+source)
+   if(!definition){omissions.push('ticket_custom_field_definition_missing:'+source);continue}
+   let field:StoredField
+-  try{field=zendeskField(definition,projectId)}catch{omissions.push('ticket_custom_field_unsupported:'+source);continue}
++  try{field=zendeskField(definition,projectId,false)}catch{omissions.push('ticket_custom_field_unsupported:'+source);continue}
+   // Do not coerce a vendor value: the original numeric/boolean/string type is
+   // part of its meaning and must pass the same native validation as an edit.
+   const checked=validateFieldValue(field,value.value)
+diff --git a/src/modules/move-in/zendesk-source/packing.ts b/src/modules/move-in/zendesk-source/packing.ts
+index fd96bed..fffa5a4 100644
+--- a/src/modules/move-in/zendesk-source/packing.ts
++++ b/src/modules/move-in/zendesk-source/packing.ts
+@@ -46,7 +46,7 @@ async function bodies(ctx:PullContext,kind:StagedKind,wanted:string[]){
+  * omission. Every definition is still reviewed in the fields batch. */
+ async function acceptedFields(ctx:PullContext,wanted:string[]){
+  const accepted=new Set<string>()
+- for(const [id,body] of await bodies(ctx,'ticket_field',wanted)){try{zendeskField({sourceId:id,payload:JSON.parse(body)} as any,ctx.pull.project_id);accepted.add(id)}catch{}}
++ for(const [id,body] of await bodies(ctx,'ticket_field',wanted)){try{zendeskField({sourceId:id,payload:JSON.parse(body)} as any,ctx.pull.project_id,false);accepted.add(id)}catch{}}
+  return accepted
+ }
+ /** New tickets first, then replies on tickets earlier imports hold, with what they reference. */
+diff --git a/tests/journeys/move-in-zendesk-pull.mjs b/tests/journeys/move-in-zendesk-pull.mjs
+index d5b54df..9670ee7 100644
+--- a/tests/journeys/move-in-zendesk-pull.mjs
++++ b/tests/journeys/move-in-zendesk-pull.mjs
+@@ -96,9 +96,9 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
+   assert.deepEqual(pull.totals.articles,{seen:3,published:1,draft:1,heldBack:1})
+   assert.equal(pull.totals.users,5);assert.equal(pull.totals.organizations,1)
+   const refusedOnly=pull.batches.filter(b=>b.summary.refused&&!b.covered)
+-  assert.deepEqual(refusedOnly.map(b=>[b.summary.refused,b.nothingToImport]),[[2,true]],'only the field definitions batch, whose every record was refused, has nothing to import')
++  assert.deepEqual(refusedOnly.map(b=>[b.summary.refused,b.nothingToImport]),[[1,true]],'only the unsupported system field remains in the refused-only batch')
+   assert.ok(pull.batches.filter(b=>!b.nothingToImport).every(b=>b.covered),'the approval covers every batch with something to import')
+-  assert.deepEqual(pull.refusals.filter(r=>r.kind==='ticket_field').map(r=>[r.sourceId,r.reason]),[['71','field_type_not_supported'],['72','field_permissions_require_native_review']])
++  assert.deepEqual(pull.refusals.filter(r=>r.kind==='ticket_field').map(r=>[r.sourceId,r.reason]),[['71','field_type_not_supported']])
+   assert.doesNotMatch(JSON.stringify(pull),secretish)
+   const conversationsBefore=(await rows(h,'SELECT COUNT(*) n FROM conversations'))[0].n
+   assert.equal(conversationsBefore,0,'review alone has no native effect')
+@@ -110,12 +110,29 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
+   pull=await pullOf(h,started.id)
+   assert.equal(pull.state,'applied',JSON.stringify({error:pull.error}))
+   assert.equal(pull.totals.tickets.imported,4)
+-  assert.equal(pull.batches.find(b=>b.nothingToImport).state,'ready','a batch whose every record was refused has nothing to apply')
++  assert.equal(pull.batches.find(b=>b.nothingToImport).state,'ready','the batch containing only the unsupported system field has nothing to apply')
+   assert.ok(Math.max(first.maxStatements,applying.maxStatements)<=980,'every invocation stays inside the D1 statement budget')
+ 
+   const imported=await rows(h,'SELECT s.source_id,c.id,c.assigned_to FROM move_in_conversations s JOIN conversations c ON c.id=s.conversation_id ORDER BY CAST(s.source_id AS INTEGER)')
+   assert.deepEqual(imported.map(r=>r.source_id),['101','102','104','105'],'deleted ticket 103 is a tombstone, not imported')
+   assert.ok(imported.every(r=>r.assigned_to===null),'imports assign nobody')
++  const [staffField]=(await h.call('/api/dashboard/projects/p/ticket-fields')).data.filter(field=>field.name==='Synthetic agent note')
++  assert.ok(staffField,'the internal field imports into the staff catalogue')
++  for(const [sourceId,value] of [['101','synthetic-hh-72 internal order review'],['102','synthetic-hh-72 closed review']]){
++   const conversation=imported.find(row=>row.source_id===sourceId)
++   const ticket=(await h.call(`/api/dashboard/projects/p/conversations/${conversation.id}/ticket`)).data
++   assert.equal(ticket.fields[staffField.id],value,'staff retain populated internal values, including closed history')
++   if(sourceId==='102')assert.equal(ticket.status.category,'closed')
++   const [{contact_id:contact}]=await rows(h,'SELECT contact_id FROM conversations WHERE id=?',conversation.id)
++   await h.contactSession('field-customer','p',contact)
++   assert.equal((await h.raw(`/api/dashboard/projects/p/conversations/${conversation.id}/ticket`,{actor:'field-customer'})).response.status,403)
++   assert.equal((await h.raw(`/api/dashboard/projects/p/conversations/${conversation.id}/ticket`,{actor:'foreign'})).response.status,404)
++   assert.doesNotMatch(JSON.stringify(await h.call(`/api/conversations/${conversation.id}/messages`,{actor:'field-customer'})),/synthetic-hh-72/)
++  }
++  assert.equal(staffField.updated_at,Date.parse('2024-01-01T00:00:00Z'))
++  const staffValues=()=>rows(h,'SELECT conversation_id,value_json FROM ticket_field_values WHERE field_id=? ORDER BY conversation_id',staffField.id),preservedStaff=await staffValues()
++  assert.equal(preservedStaff.length,2,'one internal value per source ticket')
++  assert.deepEqual((await h.call('/api/forms/p')).data,[],'pulling internal fields creates no customer form')
+   const large=imported.find(r=>r.source_id==='104').id
+   const sanitizedBytes=Buffer.byteLength(JSON.stringify({ticket:{...zendesk.tickets[104].record,comments:largeComments()}}))
+   assert.ok(sanitizedBytes>=400*1024,`large ticket is ${sanitizedBytes} bytes`)
+@@ -181,7 +198,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
+   assert.deepEqual(repeat.totals.replies,{seen:2,imported:0,refused:0})
+   assert.deepEqual(repeat.totals.keptAsImported,keptRecords,'changed in Zendesk, kept as imported')
+   assert.deepEqual(repeat.refusals.filter(r=>r.kind!=='ticket_field'),[],'nothing new is refused')
+-  assert.deepEqual(repeat.batches.filter(b=>b.summary.refused).map(b=>[b.summary.refused,b.nothingToImport]),[[2,true]],'only the field definitions are refused again, and they have nothing to import')
++  assert.deepEqual(repeat.batches.filter(b=>b.summary.refused).map(b=>[b.summary.refused,b.nothingToImport]),[[1,true]],'only the unsupported system field is refused again, and it has nothing to import')
+   assert.ok(repeat.batches.filter(b=>b.summary.tickets||b.summary.replies).every(b=>b.covered),'no ticket or reply batch waits')
+   await h.call(`${api}/zendesk/pulls/${again.id}/approve`,post({fingerprint:repeat.fingerprint}))
+   budget=await drain(h)
+@@ -205,6 +222,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
+   assert.equal((await conversationOf('107')).contact_id,person3.id,'107 links to person 3’s existing contact')
+   assert.equal((await rows(h,'SELECT name FROM contacts WHERE id=?',person3.id))[0].name,'synthetic-hh person 3','the renamed person is kept as imported')
+   assert.equal((await conversationOf('102')).source_state,'closed','the changed ticket is kept as imported')
++  assert.deepEqual(await staffValues(),preservedStaff,'repeat retains every internal value exactly once')
+   assert.equal((await rows(h,'SELECT COUNT(*) n FROM contacts'))[0].n,4,'returning people are not duplicated')
+ 
+   // Undo the repeat pull's batch, then pull again: the same records import again, and the pull reports them.
+@@ -215,6 +233,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
+   assert.deepEqual(await sourceIds(),everyTicket.filter(([id])=>!['106','107'].includes(id)))
+   assert.deepEqual([await messagesOf('101'),await notesOf('101')],[replies,privateNotes],'undo takes the reply and the note out')
+   assert.deepEqual(await conversationOf('101'),first101,'and returns 101 to its imported state')
++  assert.deepEqual(await staffValues(),preservedStaff,'undoing later replies retains original internal values')
+   const third=(await h.call(`${api}/zendesk/pulls`,post({}))).data
+   budget=await drain(h)
+   let back=await pullOf(h,third.id)
+@@ -230,6 +249,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
+   assert.ok(budget.maxStatements<=980)
+   assert.deepEqual(await sourceIds(),everyTicket)
+   assert.deepEqual([await messagesOf('101'),await notesOf('101')],[replies+1,privateNotes+1])
++  assert.deepEqual(await staffValues(),preservedStaff,'reimport after undo retains internal values without duplication')
+   assert.equal((await conversationOf('107')).contact_id,person3.id)
+ 
+   // Every source read was a GET; the only POSTs went to the token endpoint.
+diff --git a/tests/move-in/configuration-review.mjs b/tests/move-in/configuration-review.mjs
+index ee6957f..5b23e92 100644
+--- a/tests/move-in/configuration-review.mjs
++++ b/tests/move-in/configuration-review.mjs
+@@ -6,12 +6,21 @@ import {json,rows} from './journey-kit.mjs'
+ export async function configurationReview(h,plan){
+  const dashboard='/api/dashboard/projects/p',forms=(await h.call('/api/forms/projects/p/forms')).data,definitions=(await h.call(dashboard+'/ticket-fields')).data
+  assert.equal(forms.length,2);assert.ok(forms.every(form=>form.enabled===false))
+- assert.equal(definitions.length,4)
++ assert.equal(definitions.length,6)
+  assert.equal(definitions.find(field=>field.name==='Order number').required,false)
+  assert.ok(plan.decisions.find(row=>row.kind==='ticket_field'&&row.sourceId==='301').omissions.some(item=>item.reason==='field_solve_requirement_requires_native_review'))
+  const imported=(await rows(h,"SELECT conversation_id FROM move_in_conversations WHERE source_id='10001'"))[0]
+  const ticket=(await h.call(`${dashboard}/conversations/${imported.conversation_id}/ticket`)).data
+- assert.deepEqual(Object.fromEntries(definitions.map(field=>[field.name,ticket.fields[field.id]])),{'Order number':'ORDER-187',Items:2,'Replacement requested':false,Reason:'shipping'})
++ assert.deepEqual(Object.fromEntries(definitions.map(field=>[field.name,ticket.fields[field.id]])),{'Order number':'ORDER-187',Items:2,'Replacement requested':false,Reason:'shipping','Internal triage':'synthetic-hh-305 internal triage','Portal reference':'synthetic-hh-306 portal reference'})
++ const decision=(kind,id)=>plan.decisions.find(row=>row.kind===kind&&row.sourceId===id)
++ assert.ok(decision('ticket_field','306').omissions.some(item=>item.reason==='field_portal_read_only_not_carried'))
++ for(const [kind,id] of [['ticket_field','307'],['ticket_form','404'],['ticket_form','405']])assert.equal(decision(kind,id).rejection,'field_permissions_require_native_review')
++ const ticketOmissions=decision('ticket','10001').omissions.map(item=>item.reason)
++ assert.ok(ticketOmissions.includes('ticket_custom_field_unsupported:307'))
++ assert.ok(!ticketOmissions.some(reason=>/^ticket_custom_field_unsupported:30[56]$/.test(reason)))
++ assert.ok(definitions.every(field=>field.updated_at===Date.parse('2024-01-02T00:00:00Z')),'field source timestamps survive')
++ assert.equal((await h.raw(`${dashboard}/conversations/${imported.conversation_id}/ticket`,{actor:'foreign'})).response.status,404)
++ assert.deepEqual((await h.call('/api/forms/p')).data,[],'import publishes no customer form')
+  for(const form of forms)assert.equal((await h.raw('/api/forms/p/'+form.id)).response.status,404)
+  const rules=(await h.call(dashboard+'/workflow-rules')).rules.filter(rule=>['Escalate normal work','Pending after one hour'].includes(rule.name))
+  assert.equal(rules.length,2);assert.ok(rules.every(rule=>rule.state==='draft'&&rule.version===0))
+@@ -33,3 +42,14 @@ export async function configurationReview(h,plan){
+  assert.equal(plan.decisions.find(row=>row.kind==='trigger'&&row.sourceId==='78').rejection,'configuration_action_unsupported:notification_user')
+  assert.ok(plan.decisions.find(row=>row.kind==='ticket_form'&&row.sourceId==='403').rejection)
+ }
++
++// Customer admission changes authority state and deliberately fences whole-import
++// undo. Probe it after the same journey has already proved exact repeat/undo.
++export async function configurationConfidentiality(h){
++ const [{conversation_id:id}]=await rows(h,"SELECT conversation_id FROM move_in_conversations WHERE source_id='10001'")
++ const [{contact_id:contact}]=await rows(h,'SELECT contact_id FROM conversations WHERE id=?',id)
++ await h.contactSession('field-customer','p',contact)
++ assert.equal((await h.raw(`/api/dashboard/projects/p/conversations/${id}/ticket`,{actor:'field-customer'})).response.status,403)
++ assert.doesNotMatch(JSON.stringify(await h.call(`/api/conversations/${id}/messages`,{actor:'field-customer'})),/synthetic-hh-30[567]/,'internal values never reach the customer transcript')
++ assert.deepEqual((await h.call('/api/forms/p',{actor:'field-customer'})).data,[],'no imported field is published to a customer form')
++}
+diff --git a/tests/move-in/configuration-source.mjs b/tests/move-in/configuration-source.mjs
+index f69f2e3..a3d3567 100644
+--- a/tests/move-in/configuration-source.mjs
++++ b/tests/move-in/configuration-source.mjs
+@@ -1,9 +1,11 @@
+ const dates={created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z'}
+ const field=(id,type,title,extra={})=>({ticket_field:{id,type,title,title_in_portal:title,description:'From the previous desk',active:true,required:false,visible_in_portal:true,editable_in_portal:true,required_in_portal:true,agent_can_edit:true,...dates,...extra}})
+ const form=(id,name,ids,extra={})=>({ticket_form:{id,name,display_name:name,active:true,default:false,end_user_visible:true,in_all_brands:true,restricted_brand_ids:[],ticket_field_ids:ids,agent_conditions:[],end_user_conditions:[],...dates,...extra}})
+-export const fieldValues=[{id:301,value:'ORDER-187'},{id:302,value:2},{id:303,value:false},{id:304,value:'shipping'}]
++export const fieldValues=[{id:301,value:'ORDER-187'},{id:302,value:2},{id:303,value:false},{id:304,value:'shipping'},{id:305,value:'synthetic-hh-305 internal triage'},{id:306,value:'synthetic-hh-306 portal reference'},{id:307,value:'synthetic-hh-307 protected'}]
+ export function configurationSource(){return [
+  field(301,'text','Order number',{required:true}),field(302,'integer','Items'),field(303,'checkbox','Replacement requested'),field(304,'tagger','Reason',{custom_field_options:[{id:1,name:'Refund requested',value:'refund'},{id:2,name:'Shipment question',value:'shipping'}]}),
++ field(305,'text','Internal triage',{visible_in_portal:false,editable_in_portal:false}),field(306,'text','Portal reference',{editable_in_portal:false}),field(307,'text','Protected agent field',{agent_can_edit:false}),
++ form(404,'Internal field request',[301,305]),form(405,'Read-only portal request',[301,306]),
+  form(401,'Order question',[301,302,303,304]),form(402,'Refund request',[301,304]),form(403,'Conditional request',[301],{end_user_conditions:[{parent_field_id:301,value:'urgent'}]}),
+  {group:{id:71,name:'Billing',deleted:false,default:true,...dates}},{group:{id:72,name:'Technical',deleted:false,default:false,...dates}},
+  {schedule:{id:73,name:'Eastern business hours',time_zone:'Eastern Time (US & Canada)',intervals:[{start_time:1980,end_time:2460}],holidays:[{id:74,name:'Winter holiday',start_date:'2024-12-25',end_date:'2024-12-26'}],...dates}},
+diff --git a/tests/move-in/review-import.mjs b/tests/move-in/review-import.mjs
+index 2328f5a..600c963 100644
+--- a/tests/move-in/review-import.mjs
++++ b/tests/move-in/review-import.mjs
+@@ -8,7 +8,7 @@ import {suppliedFreshdesk,publicBytes,privateBytes} from './supplied-attachments
+ import {assertBusinessEquality} from './business-equality.mjs'
+ import {zip} from './zip.mjs'
+ import {configurationSource,fieldValues,withCompany} from './configuration-source.mjs'
+-import {configurationReview} from './configuration-review.mjs'
++import {configurationReview,configurationConfidentiality} from './configuration-review.mjs'
+ import {root,json,encode,review,apply,undo,rows} from './journey-kit.mjs'
+ 
+ // Each document follows the same migration, from a bad upload to reviewed native
+@@ -43,7 +43,7 @@ export async function reviewImportJourney(){
+    assert.equal((await (await h.files).list()).objects.length,0)
+    assertBusinessEquality(initial,await h.snapshot())
+    const ready=await review(h,source.vendor,source.body)
+-   assert.equal(ready.plan.counts.rejected,source.vendor==='zendesk'?2:0,JSON.stringify(ready.plan))
++   assert.equal(ready.plan.counts.rejected,source.vendor==='zendesk'?5:0,JSON.stringify(ready.plan))
+    if(source.vendor==='zendesk')for(const id of ['60003','60004']){const decision=ready.plan.decisions.find(row=>row.kind==='article'&&row.sourceId===id);assert.equal(decision.rejection,undefined);assert.ok(decision.omissions.some(item=>item.reason==='restricted_article_held_back'));assert.deepEqual(decision.targets,[])}
+    assert.ok(ready.plan.decisions.every(item=>item.sourceId&&item.location.artifact==='history.jsonl'&&item.location.row>0))
+    assert.ok(ready.plan.decisions.some(item=>item.targets.some(target=>target.kind==='conversation')))
+@@ -107,7 +107,11 @@ export async function reviewImportJourney(){
+    }
+    await undo(h,repacked);await undo(h,ready)
+    assertBusinessEquality(initial,await h.snapshot())
+-   assert.equal(h.outbound,0,'review, publication, repeat and undo make no provider requests')
++   if(source.vendor==='zendesk'){
++    const privacy=await review(h,'zendesk',source.body+' \n','synthetic-hh-field-privacy.ndjson')
++    await apply(h,privacy);await configurationConfidentiality(h)
++   }
++   assert.equal(h.outbound,0,'review, publication, repeat, undo and confidentiality checks make no provider requests')
+   }finally{await h.close()}
+  }
+ }
+diff --git a/tests/move-in/zendesk-pull-fixture.mjs b/tests/move-in/zendesk-pull-fixture.mjs
+index 3cae3da..3114a63 100644
+--- a/tests/move-in/zendesk-pull-fixture.mjs
++++ b/tests/move-in/zendesk-pull-fixture.mjs
+@@ -41,9 +41,9 @@ export function fakeZendesk({edgeCases=false,credentialTicket=false,attachments=
+  const state={authorizations:new Map(),grants:new Map(),access:new Set(),refresh:new Set(),tokenRequests:[],requests:[],throttled:false,issued:0,repeat:false,downloads:[],downloadThrottled:false,gone:new Set(),again:0,hold:null}
+  const users=[user(1,'end-user',{organization_id:7}),user(2,'agent'),user(3,'end-user'),user(4,'end-user'),user(5,'end-user'),...(edgeCases?[user(8,'end-user',{email:null})]:[])]
+  const tickets={
+-  101:{record:ticket(101,1,'open','synthetic-hh open order question',{custom_fields:[{id:70,value:true},{id:72,value:null}]}),comments:[comment(10101,1,2,'synthetic-hh where is my order',true,attachments?{attachments:[file(81001,'synthetic-hh-report.zip','application/zip',ATTACHMENT_BYTES[81001].length),{...file(81003,'synthetic-hh-elsewhere.pdf','application/pdf',10),content_url:`${FOREIGN_ORIGIN}/attachments/token/${attachmentToken(81003)}/?name=elsewhere.pdf`}]}:{}),comment(10102,2,3,'synthetic-hh internal check',false,attachments?{attachments:[file(81002,'synthetic-hh-internal.csv','text/csv',ATTACHMENT_BYTES[81002].length)]}:{})]},
++  101:{record:ticket(101,1,'open','synthetic-hh open order question',{custom_fields:[{id:70,value:true},{id:72,value:'synthetic-hh-72 internal order review'}]}),comments:[comment(10101,1,2,'synthetic-hh where is my order',true,attachments?{attachments:[file(81001,'synthetic-hh-report.zip','application/zip',ATTACHMENT_BYTES[81001].length),{...file(81003,'synthetic-hh-elsewhere.pdf','application/pdf',10),content_url:`${FOREIGN_ORIGIN}/attachments/token/${attachmentToken(81003)}/?name=elsewhere.pdf`}]}:{}),comment(10102,2,3,'synthetic-hh internal check',false,attachments?{attachments:[file(81002,'synthetic-hh-internal.csv','text/csv',ATTACHMENT_BYTES[81002].length)]}:{})]},
+   // Archived: closed long ago. Listing Tickets omits these; the incremental export returns them.
+-  102:{record:ticket(102,3,'closed','synthetic-hh archived refund'),comments:[comment(10201,3,2,'synthetic-hh refund please',true,attachments?{attachments:[file(81004,'synthetic-hh-moved.png','image/png',10),file(81005,'synthetic-hh-deleted.png','image/png',10,{deleted:true})]}:{}),comment(10202,2,3,'synthetic-hh refunded on page two')]},
++  102:{record:ticket(102,3,'closed','synthetic-hh archived refund',{custom_fields:[{id:72,value:'synthetic-hh-72 closed review'}]}),comments:[comment(10201,3,2,'synthetic-hh refund please',true,attachments?{attachments:[file(81004,'synthetic-hh-moved.png','image/png',10),file(81005,'synthetic-hh-deleted.png','image/png',10,{deleted:true})]}:{}),comment(10202,2,3,'synthetic-hh refunded on page two')]},
+   103:{record:ticket(103,3,'deleted','synthetic-hh deleted spam'),comments:[]},
+   104:{record:ticket(104,4,'solved','synthetic-hh very long thread'),comments:largeComments()},
+   105:{record:ticket(105,5,'pending','synthetic-hh screenshot attached'),comments:[comment(10501,5,2,`synthetic-hh see screenshot ${ORIGIN}/attachments/token/${PATH_TOKEN}/?name=inline.png`,true,{attachments:[inline(70501)]})]},

@@ -1,0 +1,14 @@
+{
+  "range": "origin/main..HEAD",
+  "all_parents": true,
+  "commits": [
+    {
+      "sha": "d44ec03a88f985ce688d2ad475e8e97039fc5fd6",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": "",
+      "message": "Preserve internal Zendesk fields and document mail-off owner entry\n\nKeep portal permissions strict for request forms while retaining staff definitions and typed values in upload and pull batches. Extend the existing journeys for private values, closed history and repeat/undo. Document the supported native mail-off command and the pinned rer dispatch gap. Clean upstream typecheck passes with Node 22.20.0; dashboard authentication is unchanged."
+    }
+  ],
+  "result": "pass"
+}

@@ -1,0 +1,10 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-run1-faults-1",
+  "head": "d44ec03a88f985ce688d2ad475e8e97039fc5fd6",
+  "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/hh-run1-faults-1",
+  "attempts": 1,
+  "result": "PUSH_OK",
+  "identity_receipt": "identity-receipt.json",
+  "worktree_clean": true
+}

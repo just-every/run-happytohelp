@@ -1,0 +1,11 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "--test-name-pattern=^an installation with outbound email off",
+    "tests/journeys/identity.mjs"
+  ],
+  "exit": 0,
+  "node": "22.20.0"
+}

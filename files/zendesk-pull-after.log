@@ -1,0 +1,75 @@
+TAP version 13
+# (node:2233) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo
+not ok 1 - an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo
+  ---
+  duration_ms: 20119.901863
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/hh-run1-faults-1/repo/tests/journeys/move-in-zendesk-pull.mjs:59:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    only the field definitions are refused again, and they have nothing to import
+    + actual - expected
+    
+      [
+        [
+    +     1,
+    -     2,
+          true
+        ]
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      0: 2
+      1: true
+  actual:
+    0:
+      0: 1
+      1: true
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/hh-run1-faults-1/repo/tests/journeys/move-in-zendesk-pull.mjs:198:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Persisted job handler failed move-in f33b7e12-827f-439c-a2ca-369abd5a0bfc
+# Persisted job handler failed move-in 1a117ba2-ab18-4c7a-a346-5a39c3d3b2d9
+# Subtest: a refused record never holds back a valid one and a stopped batch is never left behind: credential refusals stay out of packed batches across resume and every valid record imports
+ok 2 - a refused record never holds back a valid one and a stopped batch is never left behind: credential refusals stay out of packed batches across resume and every valid record imports
+  ---
+  duration_ms: 17230.738434
+  type: 'test'
+  ...
+# Persisted job handler failed move-in 59279d9d-8c4b-4186-8a50-37bd749017f3
+# Subtest: any owner or admin pulls and the next pull by any of them works; every owner and admin sees the workspace pull, and an owner stops or takes over another member’s stopped pull, or stops an approved pull that stopped or whose admin was removed
+ok 3 - any owner or admin pulls and the next pull by any of them works; every owner and admin sees the workspace pull, and an owner stops or takes over another member’s stopped pull, or stops an approved pull that stopped or whose admin was removed
+  ---
+  duration_ms: 25698.862828
+  type: 'test'
+  ...
+# Subtest: an owner reads the Cutover sources with their live Zendesk counts after a pull applies, records steps that follow newest first with the source state, and an agent is refused
+ok 4 - an owner reads the Cutover sources with their live Zendesk counts after a pull applies, records steps that follow newest first with the source state, and an agent is refused
+  ---
+  duration_ms: 19456.848114
+  type: 'test'
+  ...
+# Subtest: an owner fetches every imported comment's files over the Zendesk connection into private storage: shown in place, private notes stay private, refusals by id, Retry-After honoured, and a second run fetches nothing already stored; undoing a later pull keeps its replies and notes with files
+ok 5 - an owner fetches every imported comment's files over the Zendesk connection into private storage: shown in place, private notes stay private, refusals by id, Retry-After honoured, and a second run fetches nothing already stored; undoing a later pull keeps its replies and notes with files
+  ---
+  duration_ms: 25456.110046
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 4
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 108396.201375

@@ -1,0 +1,83 @@
+TAP version 13
+# (node:2129) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo
+not ok 1 - an owner connects Zendesk with PKCE, pulls the whole account, approves once, finds tickets by id, catches up new replies and tickets, and pulls again after an undo
+  ---
+  duration_ms: 12799.261105
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/hh-run1-faults-1/repo/tests/journeys/move-in-zendesk-pull.mjs:59:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    the field batch now contains a supported internal field as well as a refusal
+    + actual - expected
+    
+    + [
+    +   {
+    +     covered: false,
+    +     error: null,
+    +     filename: 'zendesk-pull-408cf9c9-2.jsonl',
+    +     nothingToImport: true,
+    +     ordinal: 1,
+    +     runId: '478d762f-0447-4b75-81c0-4f5092af2fcd',
+    +     state: 'ready',
+    +     stopped: false,
+    +     summary: {
+    +       articles: {
+    +         draft: 0,
+    +         heldBack: 0,
+    +         published: 0
+    +       },
+    +       organizations: 0,
+    +       refused: 1,
+    +       replies: 0,
+    +       tickets: 0,
+    +       ticketsNew: 0,
+    +       ticketsRefused: 0,
+    +       users: 0
+    +     }
+    +   }
+    + ]
+    - []
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    0:
+      ordinal: 1
+      runId: '478d762f-0447-4b75-81c0-4f5092af2fcd'
+      filename: 'zendesk-pull-408cf9c9-2.jsonl'
+      state: 'ready'
+      error: ~
+      summary:
+        tickets: 0
+        ticketsNew: 0
+        ticketsRefused: 0
+        replies: 0
+        users: 0
+        organizations: 0
+        articles:
+          published: 0
+          draft: 0
+          heldBack: 0
+        refused: 1
+      covered: false
+      stopped: false
+      nothingToImport: true
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/hh-run1-faults-1/repo/tests/journeys/move-in-zendesk-pull.mjs:99:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13297.074563

@@ -1,0 +1,11 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "--test-name-pattern=^review an export",
+    "tests/journeys/move-in-admission.mjs"
+  ],
+  "exit": 0,
+  "node": "22.20.0"
+}

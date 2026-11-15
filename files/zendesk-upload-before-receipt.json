@@ -1,0 +1,1 @@
+{"command": "node --test --test-concurrency=1 --test-name-pattern='^review an export' tests/journeys/move-in-admission.mjs", "exit": 1, "product_head": "41fb40246d2e69f928be397c48d952d147c39160", "journey": "extended assertions against unchanged main implementation"}

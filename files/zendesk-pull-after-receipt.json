@@ -1,0 +1,10 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "tests/journeys/move-in-zendesk-pull.mjs"
+  ],
+  "exit": 1,
+  "node": "22.20.0"
+}

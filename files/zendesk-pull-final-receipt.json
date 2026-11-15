@@ -1,0 +1,11 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "--test-name-pattern=^an owner connects Zendesk",
+    "tests/journeys/move-in-zendesk-pull.mjs"
+  ],
+  "exit": 0,
+  "node": "22.20.0"
+}

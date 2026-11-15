@@ -1,0 +1,142 @@
+{
+  "tag": "hh-run1-faults-1",
+  "repository": "just-every/run-happytohelp",
+  "base": "41fb40246d2e69f928be397c48d952d147c39160",
+  "clause_status_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "clause_status_changes": [],
+  "typecheck": {
+    "before_node22_exit": 0,
+    "before_node24_exit": 0,
+    "dashboard_change": false,
+    "reported_TS2322": "not reproduced on exact clean upstream source"
+  },
+  "scope": {
+    "schema_migrations": 0,
+    "new_test_registrations": 0,
+    "real_imports": 0,
+    "live_signin_grants": 0,
+    "trial_contact": false,
+    "production_changes": false
+  },
+  "publication": {
+    "status": "fleet publication scan pending",
+    "supported_shell_entrypoint": "unavailable in cloud launcher/product",
+    "lookup": "gh api repos/runeditrun/base/contents/scripts/publish-check.sh --jq .content: HTTP 404 on five attempts after bundle refresh, delays 15/45/90/150 seconds",
+    "substitute_scanner_used": false
+  },
+  "gate": "independent migration/data gate required before fleet landing",
+  "github_api_calls_used": 10,
+  "head": "d44ec03a88f985ce688d2ad475e8e97039fc5fd6",
+  "branch": "cloud/hh-run1-faults-1",
+  "product_push": "successful first attempt",
+  "pr": null,
+  "clause_status_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "counts": {
+    "upload_staff_definitions_before": 4,
+    "upload_staff_definitions_after": 6,
+    "upload_typed_values_before": 4,
+    "upload_typed_values_after": 6,
+    "upload_rejections_before": 7,
+    "upload_rejections_after": 5,
+    "pull_internal_values_before": 0,
+    "pull_internal_values_after": 2,
+    "pull_field_refusals_before": 2,
+    "pull_field_refusals_after": 1,
+    "affected_registrations_before": 18,
+    "affected_registrations_after": 18
+  },
+  "checks": {
+    "zendesk-pull-final": {
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^an owner connects Zendesk",
+        "tests/journeys/move-in-zendesk-pull.mjs"
+      ],
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    "zendesk-upload-final3": {
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^review an export",
+        "tests/journeys/move-in-admission.mjs"
+      ],
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    "mail-off-after": {
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^an installation with outbound email off",
+        "tests/journeys/identity.mjs"
+      ],
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    "typecheck-after": {
+      "command": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    "rer-check-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    "pull_other_four_cases": {
+      "receipt": "zendesk-pull-after-receipt.json",
+      "result": "four other cases passed on unchanged final product source; its first case had an old 2-refusal expectation, fixed and rerun successfully in zendesk-pull-final"
+    }
+  },
+  "source": {
+    "lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    "check": {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  },
+  "ci": {
+    "head": "d44ec03a88f985ce688d2ad475e8e97039fc5fd6",
+    "run_id": 43674128179,
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43674128179"
+  },
+  "terminal_product_custody": {
+    "branch": "cloud/hh-run1-faults-1",
+    "head": "d44ec03a88f985ce688d2ad475e8e97039fc5fd6",
+    "exact_sha_verify": "in_progress (no conclusion)",
+    "terminal": "PUSHED",
+    "independent_migration_data_gate": "pending fleet",
+    "publication_scan": "pending fleet; supported cloud shell entrypoint unavailable",
+    "landing": "not performed"
+  },
+  "finished_utc": "2026-11-15T04:16:25Z"
+}

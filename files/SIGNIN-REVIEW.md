@@ -1,0 +1,11 @@
+# Mail-off sign-in implementation review
+
+Run Edit Run fleet, 2026-11-15 UTC. No provider call or live sign-in grant was issued.
+
+The frozen package is @runeditrun/rer 0.2.117 (package.json / pnpm-lock.yaml). Its cli/signin.mjs invokes modules/deploy-kit/owner-signin.mjs using the deploying checkout's receipt and Cloudflare credentials. The latter searches the recorded D1 databases for oa_owner_signins, and refuses owner-signin-unsupported before writing when absent. cli/signin.mjs maps that refusal to safety_refusal / exit 4 and uses the adapter's signInPath (/login). Help's advertised generic mail-off capability does not imply native-account dispatch.
+
+HappyToHelp scripts/installer/local.mjs declares mailOffSignIn='node scripts/hosted-signin.mjs' and signInPath='/login'. scripts/installer/hosted-deploy.mjs explicitly directs mail-off owners to the script. The declaration permits deployment without outbound mail, but rer signin does not execute that string. migrations/0109_magic_signins.sql creates this edition's native magic_signins rather than oa_owner_signins.
+
+scripts/hosted-signin.mjs accepts exactly one of --project or --email, plus --environment and optional owned --env-file, --open, --json. scripts/hosted-signin/deployment.mjs checks Cloudflare inputs, an existing completed deployment receipt, unchanged live Worker identity, one recorded D1, and the native magic_signins table. scripts/hosted-signin/grant.mjs selects a current existing owner/admin in a live workspace, rechecks membership in the grant write, stores only SHA-256, expires after 15 minutes, and generates a /login/magic fragment link. The script prints once or opens a local browser; its output must never be captured in a report/log. This review reads implementation only and creates no real grant.
+
+The existing mailOffJourney in tests/helpers/identity/mail-off.mjs, registered in tests/journeys/identity.mjs, provides synthetic D1/public-door proof of no mail and one-use native consumption. It does not establish a live hosted sign-in. Runtime-owned gap: rer signin cannot dispatch to this native grant writer. The working documented supported door is node scripts/hosted-signin.mjs from the deploying checkout with that deployment's existing credentials and original owner email. No new fallback, deployment or provider configuration is introduced.

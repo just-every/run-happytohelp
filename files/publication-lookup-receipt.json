@@ -1,0 +1,9 @@
+{
+  "command": "gh api repos/runeditrun/base/contents/scripts/publish-check.sh --jq .content",
+  "first_attempt": {"exit": 1, "http_status": 404, "response": "gh: Not Found (HTTP 404)"},
+  "total_attempts": 5,
+  "retry_delays_seconds": [15, 45, 90, 150],
+  "retry_log": "publication-door-lookup.log",
+  "credential_source": "approved launcher decrypted bundle only",
+  "result": "supported shell entrypoint unavailable; no scanner result claimed"
+}

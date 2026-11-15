@@ -7,11 +7,13 @@ import {nativeId,sourceId,text,time,object} from './common'
 
 const supported:Record<string,string>={text:'text',textarea:'text',integer:'number',decimal:'decimal',date:'date',checkbox:'checkbox',tagger:'dropdown',multiselect:'multiselect',regexp:'regex'}
 const system=new Set(['subject','description'])
-export function zendeskField(record:SourceRecord,projectId:string):StoredField{
+export function zendeskField(record:SourceRecord,projectId:string,portal=true):StoredField{
  const p=record.payload as any,type=supported[p.type]
  if(!type)throw Error('field_type_not_supported')
  if(p.active!==true)throw Error('inactive_field_not_imported')
- if(p.visible_in_portal!==true||p.editable_in_portal!==true||p.agent_can_edit===false)throw Error('field_permissions_require_native_review')
+ // Ticket values are staff-only. Portal permissions apply only when carrying
+ // the field into a customer request form; agent edit restrictions still refuse.
+ if(p.agent_can_edit===false||(portal&&(p.visible_in_portal!==true||p.editable_in_portal!==true)))throw Error('field_permissions_require_native_review')
  const options:string[]=[]
  if(['tagger','multiselect'].includes(p.type)){
   if(!Array.isArray(p.custom_field_options))throw Error('field_options_required')
@@ -23,7 +25,8 @@ export function zendeskField(record:SourceRecord,projectId:string):StoredField{
 
 export function zendeskFields(record:SourceRecord,projectId:string,records:Map<string,SourceRecord>,omissions:string[]):{kind:string;target:string;tables:NativeValue['tables']}|null{
  if(record.kind==='ticket_field'){
-  const field=zendeskField(record,projectId),p=record.payload as any
+  const field=zendeskField(record,projectId,false),p=record.payload as any
+  if(p.visible_in_portal===true&&p.editable_in_portal!==true)omissions.push('field_portal_read_only_not_carried')
   if(p.required)omissions.push('field_solve_requirement_requires_native_review')
   if(['tagger','multiselect','checkbox'].includes(p.type))omissions.push('field_tag_side_effects_not_activated')
   if(p.default_value!=null&&p.default_value!=='')omissions.push('field_default_value_requires_native_review')
@@ -64,7 +67,7 @@ export function zendeskTicketFields(record:SourceRecord,projectId:string,convers
   const definition=records.get('ticket_field/'+source)
   if(!definition){omissions.push('ticket_custom_field_definition_missing:'+source);continue}
   let field:StoredField
-  try{field=zendeskField(definition,projectId)}catch{omissions.push('ticket_custom_field_unsupported:'+source);continue}
+  try{field=zendeskField(definition,projectId,false)}catch{omissions.push('ticket_custom_field_unsupported:'+source);continue}
   // Do not coerce a vendor value: the original numeric/boolean/string type is
   // part of its meaning and must pass the same native validation as an edit.
   const checked=validateFieldValue(field,value.value)

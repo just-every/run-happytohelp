@@ -8,7 +8,7 @@ import {suppliedFreshdesk,publicBytes,privateBytes} from './supplied-attachments
 import {assertBusinessEquality} from './business-equality.mjs'
 import {zip} from './zip.mjs'
 import {configurationSource,fieldValues,withCompany} from './configuration-source.mjs'
-import {configurationReview} from './configuration-review.mjs'
+import {configurationReview,configurationConfidentiality} from './configuration-review.mjs'
 import {root,json,encode,review,apply,undo,rows} from './journey-kit.mjs'
 
 // Each document follows the same migration, from a bad upload to reviewed native
@@ -43,7 +43,7 @@ export async function reviewImportJourney(){
    assert.equal((await (await h.files).list()).objects.length,0)
    assertBusinessEquality(initial,await h.snapshot())
    const ready=await review(h,source.vendor,source.body)
-   assert.equal(ready.plan.counts.rejected,source.vendor==='zendesk'?2:0,JSON.stringify(ready.plan))
+   assert.equal(ready.plan.counts.rejected,source.vendor==='zendesk'?5:0,JSON.stringify(ready.plan))
    if(source.vendor==='zendesk')for(const id of ['60003','60004']){const decision=ready.plan.decisions.find(row=>row.kind==='article'&&row.sourceId===id);assert.equal(decision.rejection,undefined);assert.ok(decision.omissions.some(item=>item.reason==='restricted_article_held_back'));assert.deepEqual(decision.targets,[])}
    assert.ok(ready.plan.decisions.every(item=>item.sourceId&&item.location.artifact==='history.jsonl'&&item.location.row>0))
    assert.ok(ready.plan.decisions.some(item=>item.targets.some(target=>target.kind==='conversation')))
@@ -107,7 +107,11 @@ export async function reviewImportJourney(){
    }
    await undo(h,repacked);await undo(h,ready)
    assertBusinessEquality(initial,await h.snapshot())
-   assert.equal(h.outbound,0,'review, publication, repeat and undo make no provider requests')
+   if(source.vendor==='zendesk'){
+    const privacy=await review(h,'zendesk',source.body+' \n','synthetic-hh-field-privacy.ndjson')
+    await apply(h,privacy);await configurationConfidentiality(h)
+   }
+   assert.equal(h.outbound,0,'review, publication, repeat, undo and confidentiality checks make no provider requests')
   }finally{await h.close()}
  }
 }

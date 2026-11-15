@@ -289,9 +289,11 @@ rer deploy --environment production --env-file ~/happytohelp-deploy.env --unset-
 
 ### Sign in without mail
 
-An installation that sends no mail has no emailed sign-in link, and a moved-in
-owner has no password. From the checkout that deployed it, with the Cloudflare
-credentials that deployed it, mint a one-time link:
+An installation that sends no mail cannot email a sign-in link. An owner who
+already set a native password can use it; otherwise use the supported native
+command below from the checkout that deployed it, with the Cloudflare credentials
+that deployed it. Supply them through an owned 0600 `--env-file` (never command
+arguments), and mint a one-time link:
 
 ```sh
 node scripts/hosted-signin.mjs --environment production --project <workspaceId> [--open] [--json] [--env-file ~/happytohelp-deploy.env]
@@ -309,7 +311,20 @@ prints the native link once to stdout. `--json` prints
 `--open` opens the link in your default browser and prints only the email and
 expiry. The link is never written to disk, a log or a receipt, nothing is sent,
 and its use appears in the member's security log like an emailed link. It works
-whether mail is on or off.
+whether mail is on or off. Treat the link as a credential: do not copy it into
+reports, shell logs or support messages, or pipe stdout/JSON to a log or receipt.
+Use `--open` on a machine with your browser when you want no link on stdout.
+
+The pinned rer 0.2.117 advertises `rer signin` for mail-off owner access, but its
+grant writer requires the shared `oa_owner_signins`/`oa_operators` tables. This
+edition uses native `magic_signins`/`users` instead. The native `mailOffSignIn`
+adapter declaration permits mail-off deployment; it does not make `rer signin`
+call this script. After deployment and credential checks, `rer signin` refuses
+with exit 4 and directs this edition to `/login` without issuing a grant. Native
+account dispatch through that rer command remains a runtime-owned gap; the
+script above is the supported native door and needs no sending provider.
+
+_Run Edit Run fleet, 2026-11-15._
 
 ### Mailgun domain sending
 
@@ -426,19 +441,32 @@ There is nothing to claim by hand. After a healthy deploy, `rer deploy` claims t
 owner named by `OWNER_EMAIL` on the hosted app with the one-time `H2H_SETUP_TOKEN`
 and then removes the token. It prints the address and a line such as
 *Claimed the hosted owner (the OWNER_EMAIL already set on the Worker)*. Open that
-address and **sign in by email** as the owner: the sign-in message goes through your
-configured mail sender, so the mail variables above must be right before you deploy.
-Sign-in opens **Setup**. The owner's name is derived from that actual email, and a
+address and sign in as the owner. With outbound email enabled, choose **Email me
+a sign-in link** and open the message in that owner's mailbox. With
+`MAIL_PROVIDER=none`, use [Sign in without mail](#sign-in-without-mail) with the
+original owner's email; a native password already set also works. No sender
+repair or mail provider is needed for that command. Sign-in opens **Setup**.
+The owner's name is derived from that actual email, and a
 `workers.dev` website defaults to **My workspace** regardless of the owner email.
 An explicitly chosen native workspace name takes precedence. You can set the
 business website and name in Project settings. Running `rer deploy` again preserves the existing owner and workspace.
 
-`rer signin --environment production` directs you to this deployment's `/login`
-page and exits 4 because HappyToHelp uses native accounts. It does not issue or
-print a sign-in link. On that page choose **Email me a sign-in link**, then open
-the message in the owner's mailbox. A password set in the native app also works.
+For an installation with mail off, run the native command from the deploying
+checkout, selecting the existing owner by email:
 
-If sign-in mail fails after the owner was claimed, repair the sender using the
+```sh
+node scripts/hosted-signin.mjs --environment production --email <ownerEmail> --env-file ~/happytohelp-deploy.env
+```
+
+Open the printed link privately within 15 minutes and complete its explicit
+sign-in confirmation; it works once. Do not save its stdout in logs or receipts.
+The rer 0.2.117 native-account limitation and the `--open` option are explained
+in [Sign in without mail](#sign-in-without-mail).
+
+_Run Edit Run fleet, 2026-11-15._
+
+If you intend to send sign-in mail and it fails after the owner was claimed,
+repair the sender using the
 same Cloudflare credentials and checkout that deployed it. Supply the correct
 private `MAIL_MODE=own`, `EMAIL_PROVIDER`, `EMAIL_FROM` and the selected provider key in an owned
 0600 environment file, then run a full deployment:

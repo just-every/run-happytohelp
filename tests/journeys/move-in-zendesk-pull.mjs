@@ -96,9 +96,9 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.deepEqual(pull.totals.articles,{seen:3,published:1,draft:1,heldBack:1})
   assert.equal(pull.totals.users,5);assert.equal(pull.totals.organizations,1)
   const refusedOnly=pull.batches.filter(b=>b.summary.refused&&!b.covered)
-  assert.deepEqual(refusedOnly.map(b=>[b.summary.refused,b.nothingToImport]),[[2,true]],'only the field definitions batch, whose every record was refused, has nothing to import')
+  assert.deepEqual(refusedOnly.map(b=>[b.summary.refused,b.nothingToImport]),[[1,true]],'only the unsupported system field remains in the refused-only batch')
   assert.ok(pull.batches.filter(b=>!b.nothingToImport).every(b=>b.covered),'the approval covers every batch with something to import')
-  assert.deepEqual(pull.refusals.filter(r=>r.kind==='ticket_field').map(r=>[r.sourceId,r.reason]),[['71','field_type_not_supported'],['72','field_permissions_require_native_review']])
+  assert.deepEqual(pull.refusals.filter(r=>r.kind==='ticket_field').map(r=>[r.sourceId,r.reason]),[['71','field_type_not_supported']])
   assert.doesNotMatch(JSON.stringify(pull),secretish)
   const conversationsBefore=(await rows(h,'SELECT COUNT(*) n FROM conversations'))[0].n
   assert.equal(conversationsBefore,0,'review alone has no native effect')
@@ -110,12 +110,29 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   pull=await pullOf(h,started.id)
   assert.equal(pull.state,'applied',JSON.stringify({error:pull.error}))
   assert.equal(pull.totals.tickets.imported,4)
-  assert.equal(pull.batches.find(b=>b.nothingToImport).state,'ready','a batch whose every record was refused has nothing to apply')
+  assert.equal(pull.batches.find(b=>b.nothingToImport).state,'ready','the batch containing only the unsupported system field has nothing to apply')
   assert.ok(Math.max(first.maxStatements,applying.maxStatements)<=980,'every invocation stays inside the D1 statement budget')
 
   const imported=await rows(h,'SELECT s.source_id,c.id,c.assigned_to FROM move_in_conversations s JOIN conversations c ON c.id=s.conversation_id ORDER BY CAST(s.source_id AS INTEGER)')
   assert.deepEqual(imported.map(r=>r.source_id),['101','102','104','105'],'deleted ticket 103 is a tombstone, not imported')
   assert.ok(imported.every(r=>r.assigned_to===null),'imports assign nobody')
+  const [staffField]=(await h.call('/api/dashboard/projects/p/ticket-fields')).data.filter(field=>field.name==='Synthetic agent note')
+  assert.ok(staffField,'the internal field imports into the staff catalogue')
+  for(const [sourceId,value] of [['101','synthetic-hh-72 internal order review'],['102','synthetic-hh-72 closed review']]){
+   const conversation=imported.find(row=>row.source_id===sourceId)
+   const ticket=(await h.call(`/api/dashboard/projects/p/conversations/${conversation.id}/ticket`)).data
+   assert.equal(ticket.fields[staffField.id],value,'staff retain populated internal values, including closed history')
+   if(sourceId==='102')assert.equal(ticket.status.category,'closed')
+   const [{contact_id:contact}]=await rows(h,'SELECT contact_id FROM conversations WHERE id=?',conversation.id)
+   await h.contactSession('field-customer','p',contact)
+   assert.equal((await h.raw(`/api/dashboard/projects/p/conversations/${conversation.id}/ticket`,{actor:'field-customer'})).response.status,403)
+   assert.equal((await h.raw(`/api/dashboard/projects/p/conversations/${conversation.id}/ticket`,{actor:'foreign'})).response.status,404)
+   assert.doesNotMatch(JSON.stringify(await h.call(`/api/conversations/${conversation.id}/messages`,{actor:'field-customer'})),/synthetic-hh-72/)
+  }
+  assert.equal(staffField.updated_at,Date.parse('2024-01-01T00:00:00Z'))
+  const staffValues=()=>rows(h,'SELECT conversation_id,value_json FROM ticket_field_values WHERE field_id=? ORDER BY conversation_id',staffField.id),preservedStaff=await staffValues()
+  assert.equal(preservedStaff.length,2,'one internal value per source ticket')
+  assert.deepEqual((await h.call('/api/forms/p')).data,[],'pulling internal fields creates no customer form')
   const large=imported.find(r=>r.source_id==='104').id
   const sanitizedBytes=Buffer.byteLength(JSON.stringify({ticket:{...zendesk.tickets[104].record,comments:largeComments()}}))
   assert.ok(sanitizedBytes>=400*1024,`large ticket is ${sanitizedBytes} bytes`)
@@ -181,7 +198,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.deepEqual(repeat.totals.replies,{seen:2,imported:0,refused:0})
   assert.deepEqual(repeat.totals.keptAsImported,keptRecords,'changed in Zendesk, kept as imported')
   assert.deepEqual(repeat.refusals.filter(r=>r.kind!=='ticket_field'),[],'nothing new is refused')
-  assert.deepEqual(repeat.batches.filter(b=>b.summary.refused).map(b=>[b.summary.refused,b.nothingToImport]),[[2,true]],'only the field definitions are refused again, and they have nothing to import')
+  assert.deepEqual(repeat.batches.filter(b=>b.summary.refused).map(b=>[b.summary.refused,b.nothingToImport]),[[1,true]],'only the unsupported system field is refused again, and it has nothing to import')
   assert.ok(repeat.batches.filter(b=>b.summary.tickets||b.summary.replies).every(b=>b.covered),'no ticket or reply batch waits')
   await h.call(`${api}/zendesk/pulls/${again.id}/approve`,post({fingerprint:repeat.fingerprint}))
   budget=await drain(h)
@@ -205,6 +222,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.equal((await conversationOf('107')).contact_id,person3.id,'107 links to person 3’s existing contact')
   assert.equal((await rows(h,'SELECT name FROM contacts WHERE id=?',person3.id))[0].name,'synthetic-hh person 3','the renamed person is kept as imported')
   assert.equal((await conversationOf('102')).source_state,'closed','the changed ticket is kept as imported')
+  assert.deepEqual(await staffValues(),preservedStaff,'repeat retains every internal value exactly once')
   assert.equal((await rows(h,'SELECT COUNT(*) n FROM contacts'))[0].n,4,'returning people are not duplicated')
 
   // Undo the repeat pull's batch, then pull again: the same records import again, and the pull reports them.
@@ -215,6 +233,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.deepEqual(await sourceIds(),everyTicket.filter(([id])=>!['106','107'].includes(id)))
   assert.deepEqual([await messagesOf('101'),await notesOf('101')],[replies,privateNotes],'undo takes the reply and the note out')
   assert.deepEqual(await conversationOf('101'),first101,'and returns 101 to its imported state')
+  assert.deepEqual(await staffValues(),preservedStaff,'undoing later replies retains original internal values')
   const third=(await h.call(`${api}/zendesk/pulls`,post({}))).data
   budget=await drain(h)
   let back=await pullOf(h,third.id)
@@ -230,6 +249,7 @@ test('an owner connects Zendesk with PKCE, pulls the whole account, approves onc
   assert.ok(budget.maxStatements<=980)
   assert.deepEqual(await sourceIds(),everyTicket)
   assert.deepEqual([await messagesOf('101'),await notesOf('101')],[replies+1,privateNotes+1])
+  assert.deepEqual(await staffValues(),preservedStaff,'reimport after undo retains internal values without duplication')
   assert.equal((await conversationOf('107')).contact_id,person3.id)
 
   // Every source read was a GET; the only POSTs went to the token endpoint.

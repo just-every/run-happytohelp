@@ -46,7 +46,7 @@ async function bodies(ctx:PullContext,kind:StagedKind,wanted:string[]){
  * omission. Every definition is still reviewed in the fields batch. */
 async function acceptedFields(ctx:PullContext,wanted:string[]){
  const accepted=new Set<string>()
- for(const [id,body] of await bodies(ctx,'ticket_field',wanted)){try{zendeskField({sourceId:id,payload:JSON.parse(body)} as any,ctx.pull.project_id);accepted.add(id)}catch{}}
+ for(const [id,body] of await bodies(ctx,'ticket_field',wanted)){try{zendeskField({sourceId:id,payload:JSON.parse(body)} as any,ctx.pull.project_id,false);accepted.add(id)}catch{}}
  return accepted
 }
 /** New tickets first, then replies on tickets earlier imports hold, with what they reference. */

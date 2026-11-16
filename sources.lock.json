@@ -17253,7 +17253,7 @@
       "executable": false
     },
     "tests/helpers/stranger11-browser.mjs": {
-      "sha256": "b020eecb7ba40da9d68ba6564a518faf242395a9bae14c8662f71019f785bba4",
+      "sha256": "872362b5f3af27fb10e737ed3a9dbf714481e4f72f4a1499eb4248e18c75408d",
       "executable": false
     },
     "tests/helpers/support-channels/browser-network.mjs": {

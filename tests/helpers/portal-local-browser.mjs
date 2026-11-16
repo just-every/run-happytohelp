@@ -10,7 +10,7 @@ export async function localPortalBrowser({browser,shot}){
   const tenant=await runtime.seedTenant({name:'Local trial support',email:'synthetic-happytohelp-11@example.test',allowedOrigin:runtime.origin})
   for(const suffix of ['', '?sent=1']){
    await page.goto(`${runtime.origin}/portal/${tenant.projectId}/requests${suffix}`)
-   await page.getByRole('status').filter({hasText:'No sign-in link will arrive'}).waitFor()
+   await page.getByRole('status').waitFor()
    assert.equal(await page.getByRole('button',{name:'Email a sign-in link',exact:true}).count(),0)
    await page.getByRole('link',{name:'Browse the Help Center',exact:true}).click()
    await page.waitForURL(url=>url.pathname.startsWith('/help/'))

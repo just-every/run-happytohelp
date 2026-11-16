@@ -95,5 +95,14 @@
   "tree": "0250442e104df792cf44c8786c1f6ff269a08933",
   "final_push": "success on first guarded attempt",
   "recovery_probe": "success: reachable 503 triggers one reload, at 1440 and 390",
-  "supplemental_comparison_interruption": "First pinned confirmation was interrupted during environment reconnect before a result; retained partial log and completed a fresh retry."
+  "supplemental_comparison_interruption": "First pinned confirmation was interrupted during environment reconnect before a result; retained partial log and completed a fresh retry.",
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "e16adff519a241389cda942d133eb1da532eedbe",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43970764732",
+    "id": 43970764732,
+    "status": "completed"
+  },
+  "verify_observed_at": "2026-11-16T23:04:03.748234+00:00",
+  "github_api_calls_used": 9
 }

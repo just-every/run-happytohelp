@@ -14,5 +14,14 @@
   "publication_scan": "fleet Mac independent gate; not available in cloud",
   "contract_status_changes": [],
   "generated_views_committed": false,
-  "new_test_registrations_in_c1": 0
+  "new_test_registrations_in_c1": 0,
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "e16adff519a241389cda942d133eb1da532eedbe",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43970764732",
+    "id": 43970764732,
+    "status": "completed"
+  },
+  "verify_observed_at": "2026-11-16T23:04:03.748584+00:00",
+  "github_api_calls_used": 9
 }

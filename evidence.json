@@ -7,10 +7,10 @@
       "sha256": "1efc65718abed29b855cd7f832ee1239c98c01c6f5a45e56219e0871775a7391"
     },
     {
-      "blob": "d6b4a8884d6ba001fe24d8c17d6a2c200e296083",
-      "bytes": 2104,
+      "blob": "b3dd698e9d941630d4ecc9ee494bcb288bec3cd5",
+      "bytes": 2226,
       "path": "PACKET-FILES.json",
-      "sha256": "35369a0f455f2bfcd75952dd9a918ecd735b7f7818216a8e81ac45fd1b27baff"
+      "sha256": "6259a01835fbeaadad64f8b9f3b0cb155c6a1b484271a68be94d9f5a8401356a"
     },
     {
       "blob": "610f796d36e4db8e29241d74e3d6f913515b20d3",
@@ -19,22 +19,22 @@
       "sha256": "3899efc0f20a0632ecb2732506d3d07276412e031f379b46e4802532bb20dac4"
     },
     {
-      "blob": "a8b7f45e67d51b7da33d660dbfea5c451bf1c0e5",
-      "bytes": 718,
+      "blob": "c678d3ed7dc985d511e7df02810a7d737ec9ebe4",
+      "bytes": 1055,
       "path": "PROVENANCE.json",
-      "sha256": "e0f70307d2c095f7ae91d7303ccb8cb1cf8e05a16ff680eefa70380f6cba07de"
+      "sha256": "1f3fe29c73002009e5e3e9de4e2f9b16011ef4a67c72aa76eaee7bb7d47c4fe3"
     },
     {
-      "blob": "8297cafdfe5d45be275be0234225b171867f72f4",
-      "bytes": 13753,
+      "blob": "9a5e757b4acc03c6c57b9c5e3ad383ee4c2b8498",
+      "bytes": 13754,
       "path": "REPORT.md",
-      "sha256": "4c761c0f6e70627cad9de2b94c1fee4b3c44e8bec67ad14c574e10c2dbd47fa8"
+      "sha256": "084b6a39190c59e222ea29546225f37c3fe69a316a57ff0ed8c50f5814ec58f5"
     },
     {
-      "blob": "e6ec196d898f8ae97caf3a8a35007672021a7d50",
-      "bytes": 3015,
+      "blob": "09b50c9ea25853d05210c51858e17dd8d456f2c3",
+      "bytes": 3352,
       "path": "RESULTS.json",
-      "sha256": "9f37362d2085227cb1cd8b01398c31c617470f8dd14f9efecbad68eb3999e06c"
+      "sha256": "95436414b787a17f2bdde76815d9d43471f1f7b955214f73082f6ebadceb5039"
     },
     {
       "blob": "e3193fdb8ccb5292df3b7d97ad667942b5ae5627",
@@ -223,16 +223,34 @@
       "sha256": "feec6bb802d251b1d269ec09c8e46e534485dc6c0dd57a1cb025ec1f63707f93"
     },
     {
+      "blob": "98fe30bd2ddd7884e7355d7c5ab4072ab4e66e25",
+      "bytes": 201,
+      "path": "ci-43970764732-poll-6.json",
+      "sha256": "836c9c1836e7bd71e6f6ebd41e1993ae9b023ab224645279b04a20170d081fa9"
+    },
+    {
+      "blob": "83f116f89e2785e4a66c6e033460b868364fe805",
+      "bytes": 11014,
+      "path": "evidence-intermediate-publication.log",
+      "sha256": "ade34b80343e28cbe43e720bdd6de8692df25dd6e20ff2c1015d6df804806e0a"
+    },
+    {
+      "blob": "1b61acb35bf9571d5443dc4d93a42e2702ae218c",
+      "bytes": 438,
+      "path": "evidence-product-identity-audit.log",
+      "sha256": "55a502c741740eb5c411f967df8ff7a64caaacd723f1da3be3ed866ae6b4d700"
+    },
+    {
       "blob": "6dc0e6cf4b388f34f4ab90a9580bc3dcabd63868",
       "bytes": 282,
       "path": "final-ci-discovery.json",
       "sha256": "6015e29c8bb7aebca98a7f4219096823c66ea35c41844ad6d367fb719ea87e51"
     },
     {
-      "blob": "c8c15b7d581f4b3524422a18b46ee42aff7c8814",
-      "bytes": 198,
+      "blob": "98fe30bd2ddd7884e7355d7c5ab4072ab4e66e25",
+      "bytes": 201,
       "path": "final-ci-status.json",
-      "sha256": "feec6bb802d251b1d269ec09c8e46e534485dc6c0dd57a1cb025ec1f63707f93"
+      "sha256": "836c9c1836e7bd71e6f6ebd41e1993ae9b023ab224645279b04a20170d081fa9"
     },
     {
       "blob": "1b61acb35bf9571d5443dc4d93a42e2702ae218c",
@@ -247,10 +265,10 @@
       "sha256": "d0b2828172bc0e6c7edcfafe63316c8db25a47edfa2ee2ff2dec424885ff585d"
     },
     {
-      "blob": "654f63ea90d13ba1f318c39bfa992cfbad5de757",
-      "bytes": 1899,
+      "blob": "93af19cea72ee8e07bf879be5cc8f1453b38a7e8",
+      "bytes": 2120,
       "path": "github-api-calls.json",
-      "sha256": "8f728e87f14b97473a80a18f5814bb105105d22a4ae0e9710ceec2140ac1c1d6"
+      "sha256": "22ad5995361299c134fb83a40dc636b049d9181158b2a28c78c4c03783e5f3d7"
     },
     {
       "blob": "47a5cd12200a55c76e04d13d9d980399e11bd060",
@@ -313,10 +331,10 @@
       "sha256": "425dfb45e0887f180b8e9d361d5ecdd316ce8cf8442b71ae767347ac5fb8cc0f"
     },
     {
-      "blob": "8297cafdfe5d45be275be0234225b171867f72f4",
-      "bytes": 13753,
+      "blob": "9a5e757b4acc03c6c57b9c5e3ad383ee4c2b8498",
+      "bytes": 13754,
       "path": "reports/hh-stranger11-followups-1-c1.md",
-      "sha256": "4c761c0f6e70627cad9de2b94c1fee4b3c44e8bec67ad14c574e10c2dbd47fa8"
+      "sha256": "084b6a39190c59e222ea29546225f37c3fe69a316a57ff0ed8c50f5814ec58f5"
     },
     {
       "blob": "e0746d82caf17348cdc04c253bcde3312f0717a8",

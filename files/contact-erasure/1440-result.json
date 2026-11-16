@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "erasure requires an exact typed confirmation and cancel changes nothing",
+    "dashboard control erases the contact and shows the erased record",
+    "D1/R2 state: identity, content and attachment gone; session revoked; other visitor intact",
+    "contact list hides the erased contact; transcript is redacted and never requests the erased saved draft",
+    "a failed erasure, at its final batch or after recording it, shows a pending notice first on a fresh load at 1440 and 390, and its erase action completes it"
+  ],
+  "removed": {
+    "conversations": 1,
+    "messages": 4,
+    "attachments": 1
+  },
+  "erasedDraftRequests": 0
+}

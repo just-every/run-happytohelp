@@ -1,0 +1,158 @@
+{
+  "method": "AST identifier calls test/it/contract in tracked tests; table registrations checked separately",
+  "total": 116,
+  "files": [
+    {
+      "path": "tests/journeys/ai-live.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/journeys/ai.mjs",
+      "count": 6
+    },
+    {
+      "path": "tests/journeys/connections.mjs",
+      "count": 8
+    },
+    {
+      "path": "tests/journeys/connector.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/journeys/context.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/journeys/customers.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/journeys/delegation-browser.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/delegation-computers.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/journeys/delegation.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/journeys/deploy-nightly.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/email.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/journeys/erasure-browser.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/erasure.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/first-run.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/journeys/identity-browser.mjs",
+      "count": 6
+    },
+    {
+      "path": "tests/journeys/identity.mjs",
+      "count": 10
+    },
+    {
+      "path": "tests/journeys/inbox-browser.mjs",
+      "count": 6
+    },
+    {
+      "path": "tests/journeys/inbox.mjs",
+      "count": 3
+    },
+    {
+      "path": "tests/journeys/installer-nightly.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/journeys/knowledge.mjs",
+      "count": 6
+    },
+    {
+      "path": "tests/journeys/legacy.mjs",
+      "count": 6
+    },
+    {
+      "path": "tests/journeys/move-in-admission.mjs",
+      "count": 3
+    },
+    {
+      "path": "tests/journeys/move-in-browser.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/move-in-capacity.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/move-in-custody.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/move-in-erasure.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/move-in-zendesk-pull.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/journeys/public-browser.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/journeys/public.mjs",
+      "count": 3
+    },
+    {
+      "path": "tests/journeys/reports.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/journeys/restore.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/journeys/runtime.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/upgrade-nightly.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/upgrade.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/widget.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/journeys/workflows-browser.mjs",
+      "count": 8
+    },
+    {
+      "path": "tests/legacy-export.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/reports/nightly.mjs",
+      "count": 3
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "baseline": true,
+  "checks": [
+    {
+      "setting": "default",
+      "eligible": false
+    },
+    {
+      "setting": "empty read list, default edit list",
+      "eligible": false
+    }
+  ]
+}

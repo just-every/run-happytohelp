@@ -1,0 +1,231 @@
+[
+  {
+    "name": "typecheck",
+    "head": "b2f1e36aa6da95724d1f9d1f593e911b20871610",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "started": "2026-11-16T16:23:52Z",
+    "ended": "2026-11-16T16:24:04.672190+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-typecheck-final.log"
+  },
+  {
+    "name": "rer-check",
+    "head": "b2f1e36aa6da95724d1f9d1f593e911b20871610",
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "started": "2026-11-16T16:24:04Z",
+    "ended": "2026-11-16T16:24:05.866222+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-rer-check-final.log"
+  },
+  {
+    "name": "build",
+    "head": "b2f1e36aa6da95724d1f9d1f593e911b20871610",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "build"
+    ],
+    "started": "2026-11-16T16:24:05Z",
+    "ended": "2026-11-16T16:24:23.588571+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-build-after.log"
+  },
+  {
+    "name": "source-check",
+    "head": "b2f1e36aa6da95724d1f9d1f593e911b20871610",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "started": "2026-11-16T16:24:23Z",
+    "ended": "2026-11-16T16:24:24.181959+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-source-check-after.log"
+  },
+  {
+    "name": "browser-regressions",
+    "head": "b2f1e36aa6da95724d1f9d1f593e911b20871610",
+    "command": [
+      "env",
+      "H2H_CHROMIUM_PATH=/usr/bin/chromium",
+      "H2H_EVIDENCE_DIR=/home/agent/rer-consolidation/work/hh-stranger11-behaviour-1/packet",
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "--test-name-pattern=an owner previews a shared macro handoff|a lead adds a readable ticket field|at 1440px an owner erases",
+      "tests/journeys/erasure-browser.mjs",
+      "tests/journeys/inbox-browser.mjs",
+      "tests/journeys/workflows-browser.mjs"
+    ],
+    "started": "2026-11-16T16:24:24Z",
+    "ended": "2026-11-16T16:29:23.454648+00:00",
+    "exit": 1,
+    "log": "/tmp/hh-browsers-interrupted.log",
+    "reason": "Intentionally stopped after erasure passed so phone proof could use the native Hide panel control; repeat covers updated capture framing."
+  },
+  {
+    "name": "typecheck",
+    "head": "41161dd7c4bb83ddab63317c167fe0fed3102543",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "started": "2026-11-16T16:30:21Z",
+    "ended": "2026-11-16T16:30:33.737295+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-typecheck-final.log"
+  },
+  {
+    "name": "rer-check",
+    "head": "41161dd7c4bb83ddab63317c167fe0fed3102543",
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "started": "2026-11-16T16:30:33Z",
+    "ended": "2026-11-16T16:30:35.009338+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-rer-check-final.log"
+  },
+  {
+    "name": "build",
+    "head": "41161dd7c4bb83ddab63317c167fe0fed3102543",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "build"
+    ],
+    "started": "2026-11-16T16:30:35Z",
+    "ended": "2026-11-16T16:30:52.803858+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-build-after.log"
+  },
+  {
+    "name": "source-check",
+    "head": "41161dd7c4bb83ddab63317c167fe0fed3102543",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "started": "2026-11-16T16:30:52Z",
+    "ended": "2026-11-16T16:30:53.397999+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-source-check-after.log"
+  },
+  {
+    "name": "browser-regressions",
+    "head": "41161dd7c4bb83ddab63317c167fe0fed3102543",
+    "command": [
+      "env",
+      "H2H_CHROMIUM_PATH=/usr/bin/chromium",
+      "H2H_EVIDENCE_DIR=/home/agent/rer-consolidation/work/hh-stranger11-behaviour-1/packet",
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "--test-name-pattern=an owner previews a shared macro handoff|a lead adds a readable ticket field|at 1440px an owner erases",
+      "tests/journeys/erasure-browser.mjs",
+      "tests/journeys/inbox-browser.mjs",
+      "tests/journeys/workflows-browser.mjs"
+    ],
+    "started": "2026-11-16T16:30:53Z",
+    "ended": "2026-11-16T16:38:56.296800+00:00",
+    "exit": 1,
+    "log": null,
+    "reason": "Erasure and form flows passed; macro handoff and edited Send passed, but the final takeover step used an exact Owner menu name that omitted its visible avatar initial. Selector corrected, macro journey rerun separately.",
+    "diagnostic": "Three selected flows: erasure and fields passed. Macro handoff/send assertions passed; explicit takeover selector timed out waiting for exact accessible name Owner. Native avatar contributes its initial to that name. Fixed selector, then full macro flow passed on final head. Original full stdout was overwritten by that rerun; observed failure excerpt is preserved in LOCAL_DIAGNOSTICS.md."
+  },
+  {
+    "name": "typecheck",
+    "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "started": "2026-11-16T16:39:40Z",
+    "ended": "2026-11-16T16:39:52.145170+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-typecheck-final.log"
+  },
+  {
+    "name": "rer-check",
+    "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "started": "2026-11-16T16:39:52Z",
+    "ended": "2026-11-16T16:39:53.341271+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-rer-check-final.log"
+  },
+  {
+    "name": "build",
+    "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "build"
+    ],
+    "started": "2026-11-16T16:39:53Z",
+    "ended": "2026-11-16T16:40:11.108197+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-build-after.log"
+  },
+  {
+    "name": "source-check",
+    "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "started": "2026-11-16T16:40:11Z",
+    "ended": "2026-11-16T16:40:11.532960+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-source-check-after.log"
+  },
+  {
+    "name": "macro-browser-regression",
+    "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+    "command": [
+      "env",
+      "H2H_CHROMIUM_PATH=/usr/bin/chromium",
+      "H2H_EVIDENCE_DIR=/home/agent/rer-consolidation/work/hh-stranger11-behaviour-1/packet",
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "--test-name-pattern=an owner previews a shared macro handoff",
+      "tests/journeys/inbox-browser.mjs"
+    ],
+    "started": "2026-11-16T16:40:11Z",
+    "ended": "2026-11-16T16:42:37.245531+00:00",
+    "exit": 0,
+    "log": "/tmp/hh-browsers-after.log"
+  }
+]

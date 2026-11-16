@@ -1,0 +1,65 @@
+{
+  "author": "Run Edit Run fleet",
+  "at": "2026-11-16T16:46:09.826551+00:00",
+  "screens": [
+    {
+      "item": "9",
+      "stage": "before",
+      "files": [
+        "stranger11-before-macro/1440-preview.png",
+        "stranger11-before-macro/1440-sent.png",
+        "stranger11-before-macro/390-sent.png"
+      ],
+      "visuallyInspected": true
+    },
+    {
+      "item": "9",
+      "stage": "after",
+      "files": [
+        "stranger11-after-macro/1440-preview.png",
+        "stranger11-after-macro/390-preview.png",
+        "stranger11-after-macro/1440-sent.png",
+        "stranger11-after-macro/390-sent.png"
+      ],
+      "visuallyInspected": true
+    },
+    {
+      "item": "10",
+      "stage": "before",
+      "files": [
+        "stranger11-before-fields/1440-empty-read.png",
+        "stranger11-before-fields/390-empty-read.png"
+      ],
+      "visuallyInspected": true
+    },
+    {
+      "item": "10",
+      "stage": "after",
+      "files": [
+        "stranger11-after-fields/1440-empty-read.png",
+        "stranger11-after-fields/390-empty-read.png"
+      ],
+      "visuallyInspected": true
+    },
+    {
+      "item": "13",
+      "stage": "before",
+      "files": [
+        "stranger11-before-erasure/1440-transcript.png",
+        "stranger11-before-erasure/390-transcript.png"
+      ],
+      "visuallyInspected": true
+    },
+    {
+      "item": "13",
+      "stage": "after",
+      "files": [
+        "contact-erasure/1440-erased.png",
+        "contact-erasure/1440-transcript.png",
+        "contact-erasure/390-transcript.png"
+      ],
+      "visuallyInspected": true
+    }
+  ],
+  "notes": "Candidate captures inspected at 1440 and 390. Native Hide panel used for unobstructed phone transcript views. Baseline phone images retain their originally observed panel state."
+}

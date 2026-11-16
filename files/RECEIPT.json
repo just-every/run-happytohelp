@@ -1,0 +1,111 @@
+{
+  "tag": "hh-stranger11-behaviour-1",
+  "repository": "just-every/run-happytohelp",
+  "baseline": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "baselineObservations": {
+    "9": {
+      "assignmentPreserved": false,
+      "ordinarySendAssignee": "Owner",
+      "steps": "Native UI invitation, join and login as Lena; UI shared macro creation and handoff preview; UI edited ordinary Send and reload."
+    },
+    "10": {
+      "defaultFieldEligible": false,
+      "emptyReadListEligible": false,
+      "steps": "Native Tickets Fields create Order number, request-form selector, clear all read-role checkboxes, save, fresh request-form selector."
+    },
+    "13": {
+      "draftRequests": 1,
+      "errorShown": true,
+      "redactedMessages": 4,
+      "steps": "Native Contacts list -> Noah -> Erase personal data -> ERASE -> retained Inbox thread, observed the 404 draft error."
+    }
+  },
+  "candidate": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+  "checks": [
+    {
+      "name": "ticket macro journey",
+      "result": "passed",
+      "head": "eb36e485f34a7a20bfdf6d7a70027417d54bb1c7",
+      "driver": "node /tmp/run-hh-apis.mjs",
+      "note": "All affected ticket/macro assertions passed, including retained assignment after subsequent Send and explicit takeover."
+    },
+    {
+      "name": "request form journey",
+      "result": "passed",
+      "head": "eb36e485f34a7a20bfdf6d7a70027417d54bb1c7 plus the subsequently committed lookup test correction",
+      "driver": "node /tmp/run-hh-forms.mjs",
+      "note": "Both public read encodings admit typed submissions; staff editing remains restricted; membership and read-revocation races still deny."
+    },
+    {
+      "name": "erasure route journey",
+      "result": "passed",
+      "tests": 1,
+      "durationMs": 580345.260276,
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "tests/journeys/erasure.mjs"
+      ],
+      "note": "Ran during documentation-only changes; erasure source unchanged from published save. Exact final SHA is separately covered by candidate browser proof and CI."
+    }
+  ],
+  "ci": {
+    "runId": 43910753765,
+    "status": "in_progress",
+    "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+    "url": "https://github.com/just-every/run-happytohelp/actions/runs/43910753765"
+  },
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "saves": [
+    "eb36e485f34a7a20bfdf6d7a70027417d54bb1c7"
+  ],
+  "testRegistrationCounts": {
+    "before": 114,
+    "after": 116,
+    "newRegistrations": 2
+  },
+  "clauseStatuses": {
+    "MACRO-001": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "FORMS-001": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "ERASURE-001": {
+      "before": "partial",
+      "after": "partial"
+    }
+  },
+  "after": {
+    "9": {
+      "ordinarySendAssignee": "Lena Patel",
+      "assignmentPreserved": true,
+      "explicitTakeoverVerified": true
+    },
+    "10": {
+      "defaultFieldEligible": true,
+      "emptyReadListEligible": true,
+      "publicTypedSubmissionVerified": true,
+      "staffWriteRestrictionRetained": true
+    },
+    "13": {
+      "draftRequests": 0,
+      "errorShown": false,
+      "removed": {
+        "conversations": 1,
+        "messages": 4,
+        "attachments": 1
+      }
+    }
+  },
+  "updatedAt": "2026-11-16T16:44:41.389388+00:00",
+  "localBrowserProvenance": {
+    "erasureAndFields": "41161dd7c4bb83ddab63317c167fe0fed3102543",
+    "macroAndTakeover": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+    "srcDiffBetweenHeads": []
+  }
+}

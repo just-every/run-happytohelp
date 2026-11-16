@@ -1,0 +1,15 @@
+# Subtest: an owner erases a populated customer, observes coherent redacted history and external deletion, and safely completes repeats and interrupted erasures
+ok 1 - an owner erases a populated customer, observes coherent redacted history and external deletion, and safely completes repeats and interrupted erasures
+  ---
+  duration_ms: 579568.308978
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 580345.260276

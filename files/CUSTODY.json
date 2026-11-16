@@ -1,0 +1,38 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger11-behaviour-1",
+  "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+  "productPush": {
+    "entrypoint": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/hh-stranger11-behaviour-1",
+    "result": "success",
+    "attempts": 1,
+    "force": false
+  },
+  "remoteRefVerified": {
+    "ref": "refs/heads/cloud/hh-stranger11-behaviour-1",
+    "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981"
+  },
+  "identityAudit": "All origin/main..HEAD authors, committers and complete messages checked before the push; fleet identity throughout; no coauthor trailers.",
+  "main": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "updatedMain": "fetch completed; merge already up to date",
+  "at": "2026-11-16T16:45:36.123107+00:00",
+  "candidateCommits": [
+    {
+      "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+      "authorName": "Run Edit Run fleet",
+      "authorEmail": "fleet@runeditrun.com",
+      "committerName": "Run Edit Run fleet",
+      "committerEmail": "fleet@runeditrun.com",
+      "subject": "Document macro handoffs and public field read permissions"
+    },
+    {
+      "head": "eb36e485f34a7a20bfdf6d7a70027417d54bb1c7",
+      "authorName": "Run Edit Run fleet",
+      "authorEmail": "fleet@runeditrun.com",
+      "committerName": "Run Edit Run fleet",
+      "committerEmail": "fleet@runeditrun.com",
+      "subject": "Preserve macro handoffs, readable form fields and erased transcripts [skip ci]"
+    }
+  ],
+  "productSourceEqualToPriorBrowserHead": true
+}

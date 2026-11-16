@@ -34,5 +34,19 @@
       "subject": "Preserve macro handoffs, readable form fields and erased transcripts [skip ci]"
     }
   ],
-  "productSourceEqualToPriorBrowserHead": true
+  "productSourceEqualToPriorBrowserHead": true,
+  "initialEvidencePublication": {
+    "ref": "refs/heads/evidence/hh-stranger11-behaviour-1",
+    "head": "30696935ab9fb21e92b90bc50c9d5d2d858b569f",
+    "status": "published while Verify remained in progress; not a READY claim"
+  },
+  "qualification": {
+    "status": "READY",
+    "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+    "verifyRunId": 43910753765,
+    "verifyStatus": "completed",
+    "verifyConclusion": "success"
+  },
+  "productLanded": false,
+  "independentGate": "follows this builder terminal; no self-submission or main push"
 }

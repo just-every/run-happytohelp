@@ -52,9 +52,11 @@
   ],
   "ci": {
     "runId": 43910753765,
-    "status": "in_progress",
-    "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
-    "url": "https://github.com/just-every/run-happytohelp/actions/runs/43910753765"
+    "conclusion": "success",
+    "head_sha": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43910753765",
+    "status": "completed",
+    "apiCalls": 6
   },
   "author": "Run Edit Run fleet",
   "date": "2026-11-16",
@@ -102,10 +104,16 @@
       }
     }
   },
-  "updatedAt": "2026-11-16T16:44:41.389388+00:00",
+  "updatedAt": "2026-11-16T17:12:44.367180+00:00",
   "localBrowserProvenance": {
     "erasureAndFields": "41161dd7c4bb83ddab63317c167fe0fed3102543",
     "macroAndTakeover": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
     "srcDiffBetweenHeads": []
-  }
+  },
+  "terminalCustody": {
+    "status": "READY",
+    "branch": "cloud/hh-stranger11-behaviour-1",
+    "head": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981"
+  },
+  "blockers": []
 }

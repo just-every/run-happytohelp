@@ -25,7 +25,7 @@ Candidate: 3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981. Initial published save: eb3
 
 ## Validation status
 
-The affected ticket/macro route journey passed, including a later ordinary reply after its saved draft was consumed and explicit native takeover. The request-form journey passed after updating its pre-existing lookup expectation from staff-write restrictions to customer-readable fields. It still denies later read restrictions and lost membership, including races at the write boundary. The existing erasure route journey also passed (one registration, 580345 ms), including native/imported redaction, export/restore fencing and interrupted erasures. Typecheck, rer check --profile first-party, build and source-check passed on the final candidate. All three targeted browser flows passed; exact-SHA Verify is pending and is recorded before evidence publication.
+The affected ticket/macro route journey passed, including a later ordinary reply after its saved draft was consumed and explicit native takeover. The request-form journey passed after updating its pre-existing lookup expectation from staff-write restrictions to customer-readable fields. It still denies later read restrictions and lost membership, including races at the write boundary. The existing erasure route journey also passed (one registration, 580345 ms), including native/imported redaction, export/restore fencing and interrupted erasures. Typecheck, rer check --profile first-party, build and source-check passed on the final candidate. All three targeted browser flows passed. Verify 43910753765 completed successfully on the exact final head; CI.json contains all six cadence-limited observations.
 
 One initial rer setup refused missing private answers, and one refused an answers file outside the checkout. Setup then succeeded using a contained, ignored, mode-0600 synthetic answers file: all 200 existing migrations applied and a native local owner was created. No migration bytes or release metadata changed. Inline-eval local test drivers stalled before obtaining their D1 binding; only their recorded processes were stopped. The file-based local driver completed. No product or shared test-runtime change was made for that environment issue.
 
@@ -65,3 +65,13 @@ CLAIM FORMS-001 PARTIAL points=none tests=tests/journeys/workflows-browser.mjs#a
 CLAIM ERASURE-001 PARTIAL points=none tests=tests/journeys/erasure.mjs#an owner erases a populated customer, observes coherent redacted history and external deletion, and safely completes repeats and interrupted erasures
 
 These claims are scoped to this builder's work. The form selector and erased composer fixes are narrower than those clauses' complete acceptance obligations; no broader status promotion is requested. The erased composer assertion and 1440/390 captures are in tests/journeys/erasure-browser.mjs, whose existing registration begins “at 1440px an owner erases a contact only after typing ERASE”.
+
+## Final result
+
+READY branch=cloud/hh-stranger11-behaviour-1 head=3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981
+
+Verify 43910753765: completed / success on that exact SHA. URL: https://github.com/just-every/run-happytohelp/actions/runs/43910753765. The watcher used six GitHub API calls, with at least 300 seconds between observations. No workflow was dispatched or rerun. The source publication scan and independent gate/landing remain with the fleet; this builder neither pushed main nor submitted/landed the candidate. No PR was created because this repository supplies a branch-push Verify entry point.
+
+All requested defects are fixed. There are no remaining blockers for this candidate. The report-only evidence publication is separate from product READY custody; the final evidence ref/head is supplied in the terminal. Product ref and report ref are verified before the owned product clone is removed. Actual reports, receipts and inspected screenshots remain under the fleet work packet and on the evidence ref.
+
+Final signed by Run Edit Run fleet, 16 November 2026 UTC.

@@ -1,0 +1,157 @@
+{
+  "screens": [
+    {
+      "name": "channels-sms",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "channels-sms",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "channels-whatsapp",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "channels-whatsapp",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "channels-messenger",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "channels-messenger",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "channels-instagram",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "channels-instagram",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "channels-slack",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "channels-slack",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "channels-teams",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "channels-teams",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "telephone-twilio",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "telephone-twilio",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "telephone-aircall",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "telephone-aircall",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "telephone-aircall-webhook",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "telephone-aircall-webhook",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "hubspot",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "hubspot",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "workflow-preview",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "workflow-preview",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "security-log",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "security-log",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "portal-local",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "portal-local",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "run-live-before",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "run-live-before",
+      "width": 390,
+      "fits": true
+    },
+    {
+      "name": "run-candidate",
+      "width": 1440,
+      "fits": true
+    },
+    {
+      "name": "run-candidate",
+      "width": 390,
+      "fits": true
+    }
+  ],
+  "errors": [],
+  "localPortalHelpLinkWorks": true,
+  "passed": true
+}

@@ -1,0 +1,52 @@
+✖ a connected product opens and appends one scoped support request, receives signed events and a safe team notification, then loses access on expiry, erasure and revocation without replaying uncertain delivery (61710.320793ms)
+CONTEXT baseline: native operator GET ticket/customer CRM -> identical fresh owner cache; six mutations 403; provider requests and CRM writes unchanged
+PROBE CRM-001 1: GET native ticket/customer CRM with no inbox permission -> two 403 permission_denied responses, exactly one permission.denied audit event each with native route/actor/role shape
+CONTEXT baseline: native CRM reads after ticket-scope narrowing -> 404; permission removal -> 403; membership revocation -> 401; foreign/customer doors refused
+PROBE CRM-001 2: GET cached CRM before connect/after disconnect -> connected false; connected unmapped -> connected true; reads call no provider
+✔ mapped HubSpot records refresh read-only customer context while current identity and grant authority fence every read (4530.087232ms)
+✔ support channels: credentials (2881.855029ms)
+✔ support channels: exchange (81671.560281ms)
+✔ support channels: slack (4284.159545ms)
+PROBE OUTBOUND-001 B1: signed inbound -> POST agent reply -> signed START/agreement -> POST operator ticket and reply -> POST contact/erase: all 3 sends per SMS/WhatsApp customer retain records with provider_id NULL and contact_erased; other customers unchanged; native solve/scheduled-close -> signed follow-up -> erase also scrubs both conversations
+PROBE OUTBOUND-001-PERF P6: native solve -> scheduled close -> signed SMS follow-up -> reply -> contact/erase: closed and follow-up sends both provider_id NULL/contact_erased
+✔ support channels: erasure (7751.839987ms)
+PROBE OUTBOUND-001 A1: signed SMS START / WhatsApp agreement -> POST tickets -> POST earlier conversation/messages: exactly one provider send with accepted receipt, channel panel present, WhatsApp templates GET 200; new and earlier operator tickets send once; signed inbound stays on newest ticket; unrelated conversation has no channel link
+PROBE OUTBOUND-001-PERF P3: signed SMS/WhatsApp inbound -> create ticket -> earlier/new replies: exactly once, accepted receipt and panel, templates 200, newest inbound routing; original A1/B1 assertions retained
+PROBE OUTBOUND-001 C1: GET management/dashboard tickets/channels and channels/:id/templates -> Collaborator and custom no-reply agent 403 permission_denied with route audit and zero provider requests; owner/admin/agent/custom reply role 200 with unchanged bodies, exactly one live template fetch per authorized GET; POST tickets uses the same conversations.reply permission
+PROBE OUTBOUND-001 E1: POST tickets kind=whatsapp with live SMS / unknown / revoked WhatsApp connection -> 409 with "That connection is not a WhatsApp channel" / "Channel not found" / "Channel disconnected; reconnect in Settings → Support channels" respectively; no ticket/send/customer/thread or provider request
+PROBE OUTBOUND-001 1: POST tickets opted-in WhatsApp -> one ticket/send, existing customer/thread; SMS START -> accepted
+PROBE OUTBOUND-001 2: POST tickets no consent, STOP, unapproved/missing template, disconnected, A2P, denied role -> refused with no ticket/send; uncertain -> retained, no replay
+PROBE OUTBOUND-001 3: POST tickets duplicate/concurrent commands -> one claim per ticket, one thread/customer; erased requester -> refused; no money authority added
+PROBE OUTBOUND-001-PERF P1: GET channel conversation + POST reply on seeded D1 -> {"plan":["MATERIALIZE requested","SEARCH conversations USING INDEX sqlite_autoindex_conversations_1 (id=?)","MATERIALIZE served","MERGE (UNION)","LEFT","MERGE (UNION)","LEFT","SCAN conv","SEARCH message USING COVERING INDEX move_in_native_messages (project_id=? AND conversation_id=?)","SEARCH event USING COVERING INDEX support_channel_event_message (message_id=?)","SEARCH linked USING INDEX sqlite_autoindex_support_channel_threads_1 (id=?)","USE TEMP B-TREE FOR ORDER BY","RIGHT","SCAN conv","SEARCH cmd USING INDEX sqlite_autoindex_operator_ticket_commands_1 (conversation_id=?)","USE TEMP B-TREE FOR ORDER BY","RIGHT","SCAN conv","SEARCH pointer USING INDEX support_channel_conversation (project_id=? AND conversation_id=?)","USE TEMP B-TREE FOR ORDER BY","SCAN conv","SCAN served","SEARCH t USING INDEX sqlite_autoindex_support_channel_threads_1 (id=?)","SEARCH c USING INDEX sqlite_autoindex_support_channel_connections_1 (id=?)","SEARCH privacy_contact EXISTS USING INDEX sqlite_autoindex_contacts_1 (id=?)"]}; indexed message receipts, no connection-wide/per-thread event scan
+PROBE OUTBOUND-001-PERF P2: 1 SMS connection / 2000 customers / 10 inbound each -> {"open":{"lookup":{"rows":66,"ms":4.71,"messages":10},"routeMs":6.94,"status":200},"reply":{"lookup":{"rows":64,"ms":4.3,"messages":10},"routeMs":36.3,"accepted":true}}
+PROBE OUTBOUND-001-PERF P4: seeded desk -> open, reply, ticket move, historical receipt/command/pointer lookup accepted; existing channel journeys retained; only migration 299 edited
+✔ support channels: uncertainty (17050.727653ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 180154.58492
+
+✖ failing tests:
+
+test at tests/journeys/connections.mjs:7:1
+✖ a connected product opens and appends one scoped support request, receives signed events and a safe team notification, then loses access on expiry, erasure and revocation without replaying uncertain delivery (61710.320793ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  403 !== 404
+  
+      at routingProof (file:///workspace/run-happytohelp/tests/helpers/voice/journeys.mjs:63:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///workspace/run-happytohelp/tests/journeys/connections.mjs:7:280)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 403,
+    expected: 404,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

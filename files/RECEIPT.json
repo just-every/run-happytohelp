@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-happytohelp",
+  "tag": "hh-stranger11-copy-1",
+  "branch": "cloud/hh-stranger11-copy-1",
+  "head": "d4bf215d803259f04b81c238bc836e441fb6e005",
+  "baseline": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "productPushed": true,
+  "pr": null,
+  "commits": [
+    "d4bf215d803259f04b81c238bc836e441fb6e005 Keep the local portal journey focused on sign-in availability",
+    "226f6bb4fe64fe5da1f9c826470070e665d2c099 Finish newcomer run guidance and readable permission-scoped activity",
+    "292c700208f3706aefe419264420b6c302cddf90 Make integration setup and workflow explanations usable by newcomers [skip ci]"
+  ],
+  "identityAndTrailerInspection": "All candidate commits, including ancestry, have fleet author/committer and no co-author trailers. Inspection repeated before every guarded push. Published history not rewritten.",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive --answers <private local file>",
+      "result": "pass",
+      "notes": "The first invocation required WIDGET_ORIGIN and OWNER_PASSWORD; generated private answers were used, with no secret content in this packet."
+    },
+    {
+      "command": "pnpm run typecheck",
+      "result": "pass"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "result": "pass",
+      "node": "22.20.0"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build --site",
+      "result": "pass",
+      "pages": 44,
+      "files": 54
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "result": "pass",
+      "notes": "Source lock regenerated last; final check repeated for the test-selector cleanup."
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "result": "pass"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='a connected product|mapped HubSpot|support channels:' tests/journeys/connections.mjs",
+      "result": "6 passed, 1 failed initially",
+      "notes": "Only failure: newly added cross-workspace assertion expected 404; established authorization door returned 403. Corrected; focused voice routing and erasure helpers passed afterward."
+    },
+    {
+      "command": "routingProof(); erasureProof() from tests/helpers/voice/journeys.mjs",
+      "result": "pass"
+    },
+    {
+      "command": "automationOutcomes() from tests/helpers/workflows/outcomes.mjs",
+      "result": "pass",
+      "notes": "Includes built browser simulation/execution, named preview/audit links and durableAutomationOutcomes. The same wrapper later failed in the first new portal navigation assertion; its complete output is retained."
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='custom roles restrict' tests/journeys/identity.mjs",
+      "result": "pass",
+      "tests": 1
+    },
+    {
+      "command": "portalBrowser() from tests/helpers/portal-browser.mjs",
+      "result": "pass",
+      "notes": "Local suppression guidance, Help Center navigation and existing hosted verified customer portal flow; new assertion waits for navigation. Final cleanup replaces a wording-specific status locator with a role-only readiness locator; no behavioral assertion removed."
+    },
+    {
+      "command": "Browser proof through native emitted Worker and actual built Run site",
+      "result": "pass",
+      "screenshots": 30,
+      "widths": [
+        1440,
+        390
+      ],
+      "pageErrors": 0,
+      "horizontalOverflow": false
+    },
+    {
+      "command": "Duplicate standalone durableAutomationOutcomes retries",
+      "result": "stalled_then_stopped",
+      "notes": "Not passes. See recovery-repeat.json. Earlier integrated invocation passed; exact-SHA Verify is required."
+    }
+  ],
+  "contractCountsBefore": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "contractCountsAfter": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "clauseJudgmentsChanged": false,
+  "registeredTestsAdded": 0,
+  "excludedFilesChanged": false,
+  "coldReadiness": "External rer-owned gap; no cold installer rerun",
+  "liveRunSite": "Fleet publication pending after landing",
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "d4bf215d803259f04b81c238bc836e441fb6e005",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43908677051",
+    "status": "completed",
+    "id": 43908677051
+  },
+  "publicationScan": "Fleet Mac gate; not run in cloud",
+  "signedBy": "Run Edit Run fleet",
+  "createdAt": "2026-11-16T16:33:57.934385+00:00",
+  "ciRunId": 43908677051,
+  "ciUrl": "https://github.com/just-every/run-happytohelp/actions/runs/43908677051",
+  "visualReview": "VISUAL-REVIEW.json",
+  "finalWorktreeClean": true,
+  "custody": "READY",
+  "ciExactHeadVerified": true,
+  "githubCallsTotal": 7,
+  "completedAt": "2026-11-16T16:59:13.671867+00:00"
+}

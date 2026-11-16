@@ -1,0 +1,56 @@
+# HappyToHelp stranger-11 setup and wording
+
+Run Edit Run fleet · 2026-11-16
+
+Repository: just-every/run-happytohelp. Branch: cloud/hh-stranger11-copy-1.
+Baseline: origin/main 2044dfa31d6b5e43dea1224bca08e0b509e48396 (confirmed by the initial clone; final ancestry recorded in RECEIPT.json).
+Final product head: d4bf215d803259f04b81c238bc836e441fb6e005. Exact-SHA Verify run: 43908677051, completed/success on this exact head: https://github.com/just-every/run-happytohelp/actions/runs/43908677051. The receipt records full custody. No deployment, live provider account, mail account, DNS or company data was changed.
+
+## Plan and implementation
+
+The complete executed plan is PLAN.md. Work stayed in the existing native settings, workflow and portal screens, with no new page type, migration, release metadata, size policy, scanner settings or generated contract view changes. No CONTRACT.md status, gap or evidence cells changed. The only new behavior beyond display is saving the provider-issued Aircall webhook token through the existing guarded number-update route; its hash uses the existing webhook_hash column. Provider credentials remain private and are never read back.
+
+## Per-item evidence
+
+| Item | Before | Candidate result | Screen evidence (each at 1440 and 390) |
+| --- | --- | --- | --- |
+| 1 /run | Fetching https://happytohelp.com/run returned HTTP 200 and the old “Two lines” instructions. Current origin/main’s selected shared Run source already generates the combined installer command, so the live mismatch is stale publication. | Built the actual seed Run site and added a seed-owned lead sentence explicitly stating one command installs and starts the workspace. Its self-run command is the same combined curl/install/dev path as README and INSTALLER.md. The live site still needs the fleet’s normal main-only Run site publication after landing. No shared Base source was patched. | run-live-before-1440.png, run-live-before-390.png; run-candidate-1440.png, run-candidate-390.png |
+| 3 Support channels | Settings.jsx required account, sender, access/signing tokens, Messaging Service and A2P registration, with no value-by-value provider onboarding. | Visibly underlined provider links and provider-specific instructions cover Twilio, WhatsApp, Messenger, Instagram, Slack and Teams. They link official app registration, credential retrieval, channel/account IDs and webhook setup. Explain public HTTPS reachability, Slack membership/scopes, Twilio verified campaign and service, Meta app review and Teams tenant qualification. No provider connection was made. | channels-sms, channels-whatsapp, channels-messenger, channels-instagram, channels-slack, channels-teams, each suffixed -1440.png / -390.png |
+| 4 Telephone | The connection form asked for number/account/token values without acquisition/routing steps. The old Aircall instruction said to copy a locally generated webhook token into Aircall, but Aircall’s documented creation flow issues its own token. | Twilio instructions explain Account SID/Auth Token, PN number ID, voice-capable number and incoming-call POST routing. Aircall instructions explain API keys, number/user lookup, provider-owned hours/routing and webhook creation. After creating the Aircall webhook, the owner can paste its provider-issued token into Edit routing; the existing guarded route saves only its hash. Blank retains it, former tokens lose authority, foreign workspaces cannot change it. Live consent and emergency/provider qualification remain separate. | telephone-twilio, telephone-aircall, telephone-aircall-webhook, each at both widths |
+| 5 HubSpot | The page listed scopes but did not explain app/token/account ID acquisition. | Linked current app creation, private/static configuration, installation and token retrieval, plus Hub ID instructions. Existing legacy private apps have a separate Auth → Show token path. The documentation read on this date says new legacy apps cannot be created after 26 October 2026, so the instructions do not send newcomers down that retired path. No HubSpot account was accessed or changed. | hubspot-1440.png, hubspot-390.png |
+| 6 Workflows/security | Preview links used raw conversation IDs; recursive explanation printed field/operator codes and unrounded hours. Audit targets printed table name + ID; action fallback printed POST/codes. | Preview/history links use ticket subjects, with a human fallback. Conditions, time anchors, timing values, tag/recipient/routing selections use names and readable comparisons. Audit target ticket titles and workflow preview titles retain the requesting teammate’s existing ticket scope and customer-erasure fences. Audit targets resolve current workspace names for calendars, SLA policies, workflows, numbers, companies, teammates and tickets; known actions use ordinary verbs. Raw provenance remains available in collapsed Technical details and exports. Existing actor handling remains. | workflow-preview-1440.png, workflow-preview-390.png; security-log-1440.png, security-log-390.png |
+| 11 Local portal | The local trial offered “Email a sign-in link” and the generic receipt even though its development mail is discarded without an outbox. | Trusted local mail configuration selects a clear no-email/no-outbox screen before either the form or sent receipt. It directs the owner to the private rer entry and the customer to public Help Center content, and explains hosted email, spam protection and verified customer identity. Hosted verification and request-admission rules are preserved. | portal-local-1440.png, portal-local-390.png |
+| 15 Readiness | The shipped stranger receipt observed a busy phase after RER_READY/RER_OPEN; /health and persona availability are not usable Setup. | Traced the pinned launcher and seed boundary. No seed-owned readiness announcement was found: rer owns emission and its devReady only reads resolvePersona, then prints an entry link. The exact external gap and warm-check limits are below; do not claim a repaired fresh-install readiness guarantee. | readiness-receipt.json (source diagnosis; no cold-install rerun); source locations below |
+
+All screenshots are under screenshots/. Before evidence for items 3–6 and 11 is the shipped stranger finding and the baseline source; no fabricated “before” screenshot is claimed.
+
+## Official documentation
+
+provider-links.json records actual resolved HTTP statuses and URLs. Initial retired/redirected pages remain recorded as research history; final UI uses the current resolved official pages. Twilio IAM/messaging/A2P/number/voice docs, Meta business messaging/app settings docs, Slack OAuth/signature/auth.test docs, Azure bot registration, Aircall authentication/number/webhook reference and HubSpot current/legacy app/account docs were fetched and read. No external credential was supplied to these requests. No provider success or live qualification is inferred from reading documentation.
+
+## Exact rer-side readiness gap
+
+Pinned package: @runeditrun/rer 0.2.119. cli/managed-server.mjs:185 devReady calls resolvePersona and returns identity/openUrl; cli/dev-identity.mjs:60 resolvePersona performs only the authenticated /__dev/personas JSON read. The managed server calls this after adapter.run and emits readiness at managed-server.mjs:158. It does not exchange a separate probe owner session, follow /auth/dev/enter to /setup, load/hydrate that screen or wait until Setup’s real controls and reads are usable. The seed’s src/dev/server.ts owns the safe native owner session and 303 destination, not the launcher’s readiness emission. The client pending/recovery screens truthfully display loading/busy while initial modules and reads finish. Suppressing those screens or adding a fixed sleep would not prove readiness.
+
+Requested rer follow-up: before announcing RER_READY/RER_OPEN, qualify a separate key-gated owner entry through the actual intended destination and meaningful usable state within the existing bounded startup window; preserve the owner’s printed entry, native session/permission rules and private key custody. Include a cold first-entry regression that cannot pass merely because /health and /__dev/personas answer. This repository neither owns that launcher implementation nor has write scope to its repository. No selected Base source or dependency pin was changed.
+
+## Validation and counts
+
+Actual commands, exit statuses, candidate identity, CI run IDs and screenshot dimensions are recorded in RECEIPT.json, browser-receipt.json and the selected check logs. No full local suite was run. One repeated recovery invocation stalled before its isolated D1 database opened and its owned process tree was stopped; a Node 22.20.0 standalone retry also stalled and was stopped. The earlier integrated automationOutcomes invocation passed, including recovery; these duplicate standalone retries are not claimed as passes, and exact-SHA Verify is the final gate. Earlier Node 24 helper results are distinguished in the receipt. Existing public-door helpers were extended for local portal suppression guidance, named preview/audit links and Aircall provider-token custody. No test registration was added, removed or skipped. A navigation wait was added to the new local portal assertion after its first run observed the pre-navigation URL. A quoted SQL literal caught by typecheck/build while adding the privacy filter was corrected before final validation. The initial connection run’s only failure was a new foreign-workspace assertion expecting 404 when the established authorization door returns 403; the expectation was corrected and the focused routing/erasure helpers rerun.
+
+Contract judgment counts remain 4 done / 71 partial / 16 missing before and after. Clause statuses are unchanged. Candidate scope addresses six of the seven reported trips; item 15 remains a specifically identified rer-owned gap, and item 1’s public-live result awaits the fleet’s normal publication. Full provider qualification, HubSpot commercial/account availability and customer-form admission are not newly claimed.
+
+DEFAULT NATIVE-001: Preserve the pinned rer implementation and report its owner-entry readiness gap; do not modify another repository or byte-exact Base sources.
+GAP NATIVE-001: Fresh no-Node first-entry usable-state readiness remains unqualified and requires the rer launcher follow-up above.
+GAP VOICE-001: Provider sandbox, emergency routing and jurisdiction/consent qualification remain outstanding.
+GAP CHANNELS-001: Official documentation and network-edge fixtures do not prove live provider acceptance.
+GAP CHANNELS-002: Live Slack/Teams tenant installation qualification remains outstanding.
+GAP CRM-001: No live HubSpot account/token was supplied; full multi-provider CRM and held-policy acceptance remain outside this round.
+
+## Publication custody
+
+Product and evidence refs are separate. The first real product save was pushed with [skip ci]; final candidate identity, source checks and exact-SHA Verify are in RECEIPT.json. The fleet’s Mac owns publication scanning, landing and main-only Run site publication. The evidence branch is report-only and grants no READY or landing authority.
+
+Signed: Run Edit Run fleet · 2026-11-16.
+
+Final result: READY branch=cloud/hh-stranger11-copy-1 head=d4bf215d803259f04b81c238bc836e441fb6e005

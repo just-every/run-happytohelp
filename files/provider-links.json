@@ -1,0 +1,137 @@
+[
+  {
+    "url": "https://www.twilio.com/docs/iam/api",
+    "result": "200 https://www.twilio.com/docs/iam/api",
+    "exit": 0,
+    "file": "/tmp/provider-doc-0.html"
+  },
+  {
+    "url": "https://www.twilio.com/docs/messaging/services",
+    "result": "200 https://www.twilio.com/docs/messaging/services",
+    "exit": 0,
+    "file": "/tmp/provider-doc-1.html"
+  },
+  {
+    "url": "https://www.twilio.com/docs/messaging/compliance/a2p-10dlc",
+    "result": "200 https://www.twilio.com/docs/messaging/compliance/a2p-10dlc",
+    "exit": 0,
+    "file": "/tmp/provider-doc-2.html"
+  },
+  {
+    "url": "https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource",
+    "result": "200 https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource",
+    "exit": 0,
+    "file": "/tmp/provider-doc-3.html"
+  },
+  {
+    "url": "https://www.twilio.com/docs/voice/tutorials/how-to-respond-to-incoming-phone-calls",
+    "result": "200 https://www.twilio.com/docs/voice/tutorials/how-to-respond-to-incoming-phone-calls",
+    "exit": 0,
+    "file": "/tmp/provider-doc-4.html"
+  },
+  {
+    "url": "https://developers.facebook.com/docs/whatsapp/cloud-api/get-started",
+    "result": "200 https://developers.facebook.com/documentation/business-messaging/whatsapp/get-started",
+    "exit": 0,
+    "file": "/tmp/provider-doc-5.html"
+  },
+  {
+    "url": "https://developers.facebook.com/docs/messenger-platform/get-started",
+    "result": "200 https://developers.facebook.com/documentation/business-messaging/messenger-platform/get-started",
+    "exit": 0,
+    "file": "/tmp/provider-doc-6.html"
+  },
+  {
+    "url": "https://developers.facebook.com/docs/messenger-platform/instagram/get-started",
+    "result": "200 https://developers.facebook.com/documentation/business-messaging/instagram-messaging/get-started",
+    "exit": 0,
+    "file": "/tmp/provider-doc-7.html"
+  },
+  {
+    "url": "https://docs.slack.dev/authentication/installing-with-oauth/",
+    "result": "200 https://docs.slack.dev/authentication/installing-with-oauth/",
+    "exit": 0,
+    "file": "/tmp/provider-doc-8.html"
+  },
+  {
+    "url": "https://docs.slack.dev/authentication/verifying-requests-from-slack/",
+    "result": "200 https://docs.slack.dev/authentication/verifying-requests-from-slack/",
+    "exit": 0,
+    "file": "/tmp/provider-doc-9.html"
+  },
+  {
+    "url": "https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/create-a-bot-for-teams",
+    "result": "200 https://learn.microsoft.com/en-us/microsoftteams/platform/",
+    "exit": 0,
+    "file": "/tmp/provider-doc-10.html"
+  },
+  {
+    "url": "https://developer.aircall.io/api-references/",
+    "result": "200 https://developers.aircall.io/api-references",
+    "exit": 0,
+    "file": "/tmp/provider-doc-11.html"
+  },
+  {
+    "url": "https://developers.hubspot.com/docs/api/private-apps",
+    "result": "200 https://developers.hubspot.com/docs/apps/legacy-apps/private-apps/overview",
+    "exit": 0,
+    "file": "/tmp/provider-doc-12.html"
+  },
+  {
+    "url": "https://knowledge.hubspot.com/account-management/manage-multiple-hubspot-accounts",
+    "result": "200 https://knowledge.hubspot.com/account-management/manage-multiple-hubspot-accounts",
+    "exit": 0,
+    "file": "/tmp/provider-doc-13.html"
+  },
+  {
+    "url": "https://happytohelp.com/run",
+    "result": "200 https://happytohelp.com/run",
+    "exit": 0,
+    "file": "/tmp/provider-doc-14.html"
+  },
+  {
+    "url": "https://www.twilio.com/docs/usage/requests-to-twilio",
+    "result": "200 https://www.twilio.com/docs/usage/requests-to-twilio",
+    "exit": 0
+  },
+  {
+    "url": "https://developers.facebook.com/documentation/development/create-an-app/app-dashboard/basic-settings",
+    "result": "200 https://developers.facebook.com/documentation/development/create-an-app/app-dashboard/basic-settings",
+    "exit": 0
+  },
+  {
+    "url": "https://developers.aircall.io/api-references",
+    "result": "200 https://developers.aircall.io/api-references",
+    "exit": 0
+  },
+  {
+    "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app",
+    "result": "200 https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app",
+    "exit": 0
+  },
+  {
+    "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/app-configuration",
+    "result": "200 https://developers.hubspot.com/docs/apps/developer-platform/build-apps/app-configuration",
+    "exit": 0
+  },
+  {
+    "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/manage-apps-in-hubspot",
+    "result": "200 https://developers.hubspot.com/docs/apps/developer-platform/build-apps/manage-apps-in-hubspot",
+    "exit": 0
+  },
+  {
+    "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/overview",
+    "result": "200 https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/overview",
+    "exit": 0
+  },
+  {
+    "url": "https://learn.microsoft.com/en-us/azure/bot-service/bot-service-quickstart-registration?view=azure-bot-service-4.0",
+    "result": "200 https://learn.microsoft.com/en-us/azure/bot-service/bot-service-quickstart-registration?view=azure-bot-service-4.0",
+    "exit": 0
+  },
+  {
+    "url": "https://docs.slack.dev/reference/methods/auth.test/",
+    "result": "200 https://docs.slack.dev/reference/methods/auth.test/",
+    "exit": 0
+  }
+]

@@ -1,0 +1,25 @@
+AUTOMATION-001 sandbox Route refunds {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+AUTOMATION-001 sandbox Tag VIP refunds {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+AUTOMATION-001 sandbox Set refund status {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+AUTOMATION-001 sandbox Remind refund assignee {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+Workflow simulation, execution and named security targets passed
+Native runtime failure artifacts retained: /tmp/h2h-native-runtime-yTXr1W
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: local customer can continue to public help
+    at localPortalBrowser (file:///workspace/run-happytohelp/tests/helpers/portal-local-browser.mjs:16:11)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:502:9)
+    at async portalBrowser (file:///workspace/run-happytohelp/tests/helpers/portal-browser.mjs:11:2)
+    at async file:///tmp/hh-touched-browser.mjs:6:5 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

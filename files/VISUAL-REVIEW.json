@@ -1,0 +1,222 @@
+{
+  "reviewer": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "widths": [
+    1440,
+    390
+  ],
+  "screens": [
+    {
+      "file": "screenshots/channels-instagram-1440.png",
+      "width": 1440,
+      "height": 1591,
+      "sha256": "9ab66d75ebf48bb93b3c292bda06419e484bb7b52a7a88147c8eae7bd6ae9aad",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/channels-instagram-390.png",
+      "width": 390,
+      "height": 2287,
+      "sha256": "112109731cf916ffbb3ed1cf4c01dc170600ccdef50809ceaf593571ac22585d",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/channels-messenger-1440.png",
+      "width": 1440,
+      "height": 1543,
+      "sha256": "4e3ce42f6cd40303bf90c84c1a5863339f398a4e799f66e061b238225f970e25",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/channels-messenger-390.png",
+      "width": 390,
+      "height": 2187,
+      "sha256": "f635c766f319b320721693b88b3c4164071fa29214290d82e11b62cc01ca5daf",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/channels-slack-1440.png",
+      "width": 1440,
+      "height": 1697,
+      "sha256": "ef169dcec2dfc7953a16b8a2fbc3676c1e16c731fa73a546373f0ee5ded3f4b5",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/channels-slack-390.png",
+      "width": 390,
+      "height": 2505,
+      "sha256": "fa915079c97e54714f568453ae30163f356da066aebedc8c41870c0db54f5e87",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/channels-sms-1440.png",
+      "width": 1440,
+      "height": 1759,
+      "sha256": "400c0202ebf67ed1230b351c3c5847c20e9fe02a325cac0fe99f48f4a474aeb7",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/channels-sms-390.png",
+      "width": 390,
+      "height": 2543,
+      "sha256": "18a1486dd9bf95ce2c935524b42fd6942208a0dce13e9cc041bb806167668fce",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/channels-teams-1440.png",
+      "width": 1440,
+      "height": 1639,
+      "sha256": "13d4d4daeecb041e396e50f5dccfaabfa2379586551dfc0e87eaeac82097a5e5",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/channels-teams-390.png",
+      "width": 390,
+      "height": 2359,
+      "sha256": "113b02a41656b50f1d2101ead04f82e4865c6e30d82f3c9d64da5f0478727a35",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/channels-whatsapp-1440.png",
+      "width": 1440,
+      "height": 1615,
+      "sha256": "4dae7c85aff8ac3c7f813254b90e0dd5d9e2036e0625c8028f91e9ed67c21c7d",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/channels-whatsapp-390.png",
+      "width": 390,
+      "height": 2379,
+      "sha256": "831d67f71230ddbb4b030a2350cce26ab7ecfe5738ca3cf03df17d0817d5048b",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/hubspot-1440.png",
+      "width": 1440,
+      "height": 1445,
+      "sha256": "a41e21b556c9f51b923c398fbbc46c0141dc95f000dea67d4901a91084272d4e",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/hubspot-390.png",
+      "width": 390,
+      "height": 2265,
+      "sha256": "4b69d53b25a97d5598158eb9466323e1c8dc2f1e382c97ef75f3a722f5865602",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/portal-local-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "829439bde6ee9462e7f1a8b837636fdf8003970ccc599ff723f742d5c3946abb",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/portal-local-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "0079f7eb6a05b06f2f849ed257634753e9dd1e8465d7421e89150e57e349ffde",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/run-candidate-1440.png",
+      "width": 1440,
+      "height": 1268,
+      "sha256": "3d7bf8bf273aa78b62a307b44bd5fd39157b9b820c3881bc92bc199bcd4a7a09",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/run-candidate-390.png",
+      "width": 390,
+      "height": 1745,
+      "sha256": "4188bd702620e7a301560ce94261b7ed40cd8e43582cc40ad29321a40536da86",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/run-live-before-1440.png",
+      "width": 1440,
+      "height": 1159,
+      "sha256": "9ace7e35faf32db9ee240924c02cc263c14989cfab48b4dfc608db8b26934929",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/run-live-before-390.png",
+      "width": 390,
+      "height": 1414,
+      "sha256": "7387cb1e72f70c8c731edb74e3f6c3c2248bf13de16f614fdea72b2a70f4ba8b",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/security-log-1440.png",
+      "width": 1440,
+      "height": 2139,
+      "sha256": "1fc1f3fa27e862a16e80b4defe8c2170d8d28ad82bc9e68ec0db2296261059e7",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/security-log-390.png",
+      "width": 390,
+      "height": 4950,
+      "sha256": "6eef49ee90c02b3c4363f6e7bf7124218f56dea228e27da8a67ba6803538648e",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/telephone-aircall-1440.png",
+      "width": 1440,
+      "height": 2247,
+      "sha256": "b0b89ba47c07d845b9b61206e590f9f08be47bea79b9d8df4b0f7264d5291ac3",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/telephone-aircall-390.png",
+      "width": 390,
+      "height": 3297,
+      "sha256": "92b40d0d4d3c45b6a101f716e9f13feece741706b708aec7e059ecc14ad9046b",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/telephone-aircall-webhook-1440.png",
+      "width": 1440,
+      "height": 1959,
+      "sha256": "570a89c5ce0005af740c7d4b2b1996c7175086f09cdf331ebf4d76b24343d81d",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/telephone-aircall-webhook-390.png",
+      "width": 390,
+      "height": 2727,
+      "sha256": "7fb0c6b97d9e7e0ba6b9c22f1815c01a00592329d866a5468d42fb12bd7f23c6",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/telephone-twilio-1440.png",
+      "width": 1440,
+      "height": 2198,
+      "sha256": "dcadf7242e8144712ba6df62ed6b4cbcdf7f40f8c8a9e53b7406b33777a3d897",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/telephone-twilio-390.png",
+      "width": 390,
+      "height": 3128,
+      "sha256": "7002619185476ef587a5831896cdc60fd72a92098755a0723046e086bef6a8d4",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/workflow-preview-1440.png",
+      "width": 1440,
+      "height": 1789,
+      "sha256": "26500b7042215f4e5b4efdad70c43939bbef4c9951c3e1937d668cf113b83c44",
+      "inspected": true
+    },
+    {
+      "file": "screenshots/workflow-preview-390.png",
+      "width": 390,
+      "height": 2481,
+      "sha256": "478ec106827b3d9f35c8bfd8eb046ecbf1600c7de36b4ecad7f93464ef9e9eda",
+      "inspected": true
+    }
+  ],
+  "result": "30 captures inspected; provider and named ticket links visibly underlined; final notification labels show processing started / delivery recorded; no horizontal overflow or browser errors. Native bounded preview scroll retained.",
+  "productSourceTree": "6a49d176741cd04b543ae00b820ac8260c485cf6"
+}

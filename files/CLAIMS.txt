@@ -1,0 +1,11 @@
+CLAIM PUBLIC-005 PARTIAL points=none tests=tests/journeys/public-browser.mjs#a new owner finds the source and installation guide from the public product page, and recovers from a missing documentation page
+CLAIM NATIVE-001 PARTIAL points=none tests=tests/journeys/identity-browser.mjs#a first owner and a signed-in owner reach Setup and install a working widget
+CLAIM CHANNELS-001 PARTIAL points=none tests=tests/journeys/connections.mjs#support channels: exchange
+CLAIM CHANNELS-002 PARTIAL points=none tests=tests/journeys/connections.mjs#support channels: slack
+CLAIM VOICE-001 PARTIAL points=none tests=tests/journeys/connections.mjs#a connected product opens and appends one scoped support request, receives signed events and a safe team notification, then loses access on expiry, erasure and revocation without replaying uncertain delivery
+CLAIM CRM-001 PARTIAL points=none tests=tests/journeys/connections.mjs#mapped HubSpot records refresh read-only customer context while current identity and grant authority fence every read
+CLAIM AUTOMATION-001 PARTIAL points=1,3 tests=tests/journeys/workflows-browser.mjs#a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow
+CLAIM AUTOMATION-002 PARTIAL points=none tests=tests/journeys/workflows-browser.mjs#a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow
+CLAIM AUDIT-001 PARTIAL points=none tests=tests/journeys/workflows-browser.mjs#a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow
+CLAIM LOCAL-MAIL-001 PARTIAL points=none tests=tests/journeys/public-browser.mjs#a lead publishes two approved help hosts, scoped reviewed translations and a cited editorial proposal, with an attributed request template
+CLAIM PORTAL-001 PARTIAL points=none tests=tests/journeys/public-browser.mjs#a lead publishes two approved help hosts, scoped reviewed translations and a cited editorial proposal, with an attributed request template

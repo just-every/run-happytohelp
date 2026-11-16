@@ -7,3 +7,5 @@
 .voice-call pre { font: inherit; }
 .voice-report table { width: 100%; }
 .voice-report th, .voice-report td { padding: .5rem; text-align: left; }
+
+.voice-controls [aria-label="Telephone provider setup"] a { text-decoration: underline; text-underline-offset: 3px; }

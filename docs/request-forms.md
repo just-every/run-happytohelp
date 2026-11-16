@@ -29,9 +29,12 @@ using the same custom ticket fields your team uses in the inbox.
    it unpublished to keep a draft. Deleting a form removes it from customer use;
    requests already submitted remain in the inbox.
 
-Only owners and admins manage forms. A public form can use only fields available
-to every role; fields with restricted read or write roles cannot be added. If a
-field becomes restricted later, its form is no longer offered publicly.
+Only owners and admins manage forms. A public form can use fields readable by
+every workspace role, including Workspace API and any custom roles. Select all
+read roles, or leave the read-role list empty to allow every role. Staff edit
+roles can remain restricted: publishing a question lets customers submit an
+answer without granting teammates additional edit permission. If a field's read
+access becomes restricted later, its form is no longer offered publicly.
 
 ## Send a request
 
@@ -132,3 +135,5 @@ old ticket values from disappearing when a lead changes their forms.
 Order/account lookup fields and a form version-history management screen are not
 available. Form fields reuse the current ticket-field permissions and validation; they do not introduce a separate field
 catalogue or grant access to company requests.
+
+Read-permission clarification: Run Edit Run fleet, 16 November 2026.

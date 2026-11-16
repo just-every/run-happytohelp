@@ -85,6 +85,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     // the agent's view stays as approved.
     const canReply = useCan(conversationProjectId, 'conversations.reply'), canFollow = useCan(conversationProjectId, 'conversations.follow');
     const canManage = useCan(conversationProjectId, 'conversations.manage');
+    const isContactErased = Boolean(conversation?.contact?.is_erased || conversation?.contact?.is_erasing);
     // Ticket and workflow tools stay hidden in a demo project.
     const isDemo = Boolean((settings.projects?.[conversationProjectId] || settings.project)?.is_demo);
     const {
@@ -236,6 +237,13 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
 
     useEffect(() => {
         if (!isConversationReady) return;
+        // Erasure removes saved drafts and closes their ticket door. The retained
+        // transcript is still readable, so do not request that unavailable draft.
+        if (isContactErased) {
+            macroDraftUsageRef.current = null;
+            setDraftError(''); setContent(''); setFiles([]); setNoteMacro(null);
+            return;
+        }
         let active = true;
         const editVersion = draftEditVersion.current;
         nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft`)
@@ -246,7 +254,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 else { macroDraftUsageRef.current = draft.usage_id; setContent(draft.content); setKnowledgeReferences(draft.references || []); setFiles(draft.media || []); }
             }).catch(error => { if (active) setDraftError(`Couldn’t load your saved macro draft: ${error.message}`); });
         return () => { active = false; };
-    }, [conversationProjectId,conversationId,isConversationReady]);
+    }, [conversationProjectId,conversationId,isConversationReady,isContactErased]);
 
     const updateDraftContent = (nextContent, attachments, origin) => {
         draftEditVersion.current++;

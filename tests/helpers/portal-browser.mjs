@@ -1,3 +1,4 @@
+import {localPortalBrowser} from './portal-local-browser.mjs'
 import assert from 'node:assert/strict'
 import {mkdtemp,readFile,rm} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
@@ -7,6 +8,7 @@ import {createRuntime} from './emitted-runtime.mjs'
 
 // Called by the existing public browser journey, without another registration.
 export async function portalBrowser({browser,shot}){
+ await localPortalBrowser({browser,shot})
  const directory=await mkdtemp(join(tmpdir(),'h2h-portal-mail-')),capture=join(directory,'mail.jsonl')
  const network=new URL('./portal-browser-mail.mjs',import.meta.url);network.searchParams.set('capture',capture)
  const runtime=await createRuntime({outboundFixture:network.href,vars:{APP_ORIGIN:'http://127.0.0.1',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-provider-key',EMAIL_FROM:'support@example.test'}})

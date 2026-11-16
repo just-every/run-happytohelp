@@ -1,3 +1,4 @@
+import {everyRoleReads} from './field-access'
 import type {Env} from '../../platform/env'
 import type {StoredField} from './types'
 import {ownerHeads,loadReferencedPlans} from '../import-kit/src/d1/referenced-plans'
@@ -14,7 +15,8 @@ const states=new WeakMap<StoredField,string>()
 export const fieldSourceSnapshot=(field:StoredField)=>states.get(field)
 
 export async function fieldVisibility(env:Pick<Env,'DB'>,projectId:string){
- const rows=(await env.DB.prepare(`SELECT f.*,${fieldSourceState} AS source_state FROM ticket_fields f WHERE f.project_id=? ORDER BY f.name,f.id`).bind(projectId).all<StoredField&{source_state:string}>()).results
+ const [customRoles,loaded]=await Promise.all([env.DB.prepare('SELECT id FROM project_roles WHERE project_id=?').bind(projectId).all<{id:string}>(),env.DB.prepare(`SELECT f.*,${fieldSourceState} AS source_state FROM ticket_fields f WHERE f.project_id=? ORDER BY f.name,f.id`).bind(projectId).all<StoredField&{source_state:string}>()])
+ const rows=loaded.results
  const proofs=rows.flatMap(row=>{const origin=JSON.parse(row.source_state);return origin?.[0]==='zendesk'&&origin[3]!=='erased-visibility'?origin[4]:[]})
  const plans=await loadReferencedPlans(await ownerHeads(env.DB,[...new Set<string>(proofs.map(p=>p.job_id))]),proofs,env.DB)
  return rows.map(({source_state,...field})=>{
@@ -31,6 +33,6 @@ export async function fieldVisibility(env:Pick<Env,'DB'>,projectId:string){
      &&sha256(canonicalJson(effect.value))===provenance.valueHash&&(source.payload as any).visible_in_portal===true
    })
   }
-  field.form_eligible=visible?1:0;states.set(field,source_state);return field
+  field.form_eligible=visible&&everyRoleReads(JSON.parse(field.read_roles_json),customRoles.results.map(role=>role.id))?1:0;states.set(field,source_state);return field
  })
 }

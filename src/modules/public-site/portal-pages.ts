@@ -11,6 +11,7 @@ import {readPortalPreferences} from '../portal/preferences'
 import {portalBase,portalTools,portalSignIn,portalList,portalDetail,portalPreferences} from './portal-content'
 import {escapeHtml as e} from './html'
 import {emailConfigured} from '../integrations/email'
+import {localMailOrigin} from '../../edition/local-mail/configuration'
 import {linkOrigin} from '../identity/magic-link'
 
 export const portalPages=new Hono<AppEnv>()
@@ -24,7 +25,7 @@ async function render(c:any,view:'home'|'requests'|'detail'|'preferences'){
  if(!project)return c.html(shell({name:'Support'},'', '<h1>Support portal unavailable</h1>',{search:false,noindex:true}),404)
  const base=portalBase(key),identity=await resolvePortalActor(c.env,project.id,c.req.raw),tools=portalTools(key,project.id,Boolean(identity))
  let content:string
- if(!identity)content=portalSignIn(project.id,c.req.query('returnTo')||(view==='home'?`/portal/${encodeURIComponent(project.id)}/requests`:c.req.path),c.req.query('sent')==='1',emailConfigured(c.env)&&Boolean(linkOrigin(c.env)))
+ if(!identity)content=portalSignIn(project.id,c.req.query('returnTo')||(view==='home'?`/portal/${encodeURIComponent(project.id)}/requests`:c.req.path),c.req.query('sent')==='1',emailConfigured(c.env)&&Boolean(linkOrigin(c.env)),Boolean(localMailOrigin(c.env)))
  else if(view==='detail'){
   try{content=portalDetail(project.id,await portalRequestDetail(c.env,identity,c.req.param('ticketId')))}catch(error){if(!(error instanceof HTTPException)||error.status!==404)throw error;return c.html(shell(project,`/help/${encodeURIComponent(key)}`,`<h1>Request not found</h1><p><a href="${e(base)}/requests">View your requests</a></p>`,{tools,search:false,noindex:true}),404)}
  }else if(view==='preferences')content=portalPreferences(project.id,await readPortalPreferences(c.env,identity),c.req.query('saved')==='1')

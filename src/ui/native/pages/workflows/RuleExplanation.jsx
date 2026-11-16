@@ -1,13 +1,17 @@
 import React from 'react';
-import { dateTime, label } from './workflow-model';
-export default function RuleExplanation({ value }) {
-    if(value==null)return null;
-    if(typeof value==='string'){
-        if(value.startsWith('{')||value.startsWith('[')){try{return <RuleExplanation value={JSON.parse(value)}/>;}catch{}}
-        return <span>{value}</span>;
-    }
-    if(typeof value==='boolean')return <span>{value?'Yes':'No'}</span>;
-    if(typeof value==='number')return <span>{value}</span>;
-    if(Array.isArray(value))return <ul>{value.map((row,index)=><li key={index}><RuleExplanation value={row}/></li>)}</ul>;
-    return <dl className="workflow-explanation">{Object.entries(value).map(([key,detail])=><React.Fragment key={key}><dt>{label(key)}</dt><dd>{key==='due_at'&&typeof detail==='number'?dateTime(detail):<RuleExplanation value={detail}/>}</dd></React.Fragment>)}</dl>;
+import {dateTime,label} from './workflow-model';
+import {comparison,fieldName} from './rule-language';
+const names={user_id:'Teammate',group_id:'Queue',overflow_group_id:'Overflow queue',strategy:'Selection method',skills:'Required skills',conditions:'Conditions',all:'All required conditions',any:'Alternative conditions',event_matches:'Event matches',time:'Timing',matched:'Requirement met',due_at:'Due',explanation:'Reason',conflict_order:'Rule order',stop_condition:'Stop after this rule',routing:'Routing',field:'Ticket field',op:'Comparison'};
+export default function RuleExplanation({value,settings={},agents=[]}) {
+ if(value==null)return null;
+ const render=value=><RuleExplanation value={value} settings={settings} agents={agents}/>;
+ if(typeof value==='string'){
+  if(value.startsWith('{')||value.startsWith('[')){try{return render(JSON.parse(value));}catch{}}
+  return <span>{value}</span>;
+ }
+ if(typeof value==='boolean')return <span>{value?'Yes':'No'}</span>;
+ if(typeof value==='number')return <span>{new Intl.NumberFormat(undefined,{maximumFractionDigits:1}).format(value)}</span>;
+ if(Array.isArray(value))return value.length?<ul>{value.map((row,index)=><li key={index}>{render(row)}</li>)}</ul>:<span>None</span>;
+ if(value.field&&value.op)return <span>{fieldName(value.field,settings)} {comparison[value.op]||label(value.op)}: {value.matched?'Matched':'Not matched'}</span>;
+ return <dl className="workflow-explanation">{Object.entries(value).map(([key,detail])=><React.Fragment key={key}><dt>{names[key]||label(key)}</dt><dd>{key==='due_at'&&typeof detail==='number'?dateTime(detail):key==='field'?fieldName(detail,settings):['user_id','group_id','overflow_group_id'].includes(key)?(key==='user_id'?agents:settings.groups||[]).find(row=>row.id===detail)?.name||'Unavailable selection':key==='strategy'?label(detail):render(detail)}</dd></React.Fragment>)}</dl>;
 }

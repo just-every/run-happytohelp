@@ -10,12 +10,16 @@ export function undoReferencesClear(run:Run,jobId?:string):D1Sql {
  const categoryReferences=`EXISTS(SELECT 1 FROM knowledge_articles a WHERE a.project_id=p.destination AND (a.category_id=p.target_id OR EXISTS(SELECT 1 FROM knowledge_article_categories linked WHERE linked.article_id=a.id AND linked.category_id=p.target_id)) AND NOT ${ownedArticle}) OR EXISTS(SELECT 1 FROM knowledge_categories c WHERE c.project_id=p.destination AND c.parent_id=p.target_id AND NOT ${ownedCategory})`
  const ownedForm=owned.replace("owned.target_kind='conversation'","owned.target_kind='form'").replace('owned.target_id=c.id','owned.target_id=f.id')
  const ownedContact=owned.replace("owned.target_kind='conversation'","owned.target_kind='contact'").replace('owned.target_id=c.id','owned.target_id=linked.contact_id')
- const fieldReferences=`EXISTS(SELECT 1 FROM ticket_field_values v JOIN conversations c ON c.project_id=v.project_id AND c.id=v.conversation_id WHERE v.project_id=p.destination AND v.field_id=p.target_id AND NOT ${owned}) OR EXISTS(SELECT 1 FROM request_forms f,json_each(f.config_json,'$.fields') ref WHERE f.project_id=p.destination AND json_extract(ref.value,'$.fieldId')=p.target_id AND NOT ${ownedForm})`
+ const fieldReferences=`EXISTS(SELECT 1 FROM ticket_field_values v CROSS JOIN conversations c ON c.project_id=v.project_id AND c.id=v.conversation_id WHERE v.project_id=p.destination AND v.field_id=p.target_id AND NOT ${owned}) OR EXISTS(SELECT 1 FROM request_forms f,json_each(f.config_json,'$.fields') ref WHERE f.project_id=p.destination AND json_extract(ref.value,'$.fieldId')=p.target_id AND NOT ${ownedForm})`
+ // Keep the referencing row first. With an ordinary JOIN, SQLite may walk
+ // every workspace conversation and its sibling-job ownership for each contact
+ // before checking an empty participant set or an author's contact ID. CROSS
+ // JOIN preserves the same predicate while making the keyed/empty set lead.
  const references=[
   `SELECT 1 FROM conversations c WHERE c.project_id=p.destination AND c.contact_id=p.target_id AND NOT ${owned}`,
-  `SELECT 1 FROM conversation_participants participant JOIN conversations c ON c.id=participant.conversation_id WHERE participant.contact_id=p.target_id AND c.project_id=p.destination AND NOT ${owned}`,
-  `SELECT 1 FROM messages authored JOIN conversations c ON c.id=authored.conversation_id WHERE authored.actor_role='contact' AND authored.actor_id=p.target_id AND c.project_id=p.destination AND NOT ${owned}`,
-  `SELECT 1 FROM conversation_tags tagged JOIN conversations c ON c.id=tagged.conversation_id WHERE tagged.tag_id=p.target_id AND tagged.project_id=p.destination AND NOT ${owned}`,
+  `SELECT 1 FROM conversation_participants participant CROSS JOIN conversations c ON c.id=participant.conversation_id WHERE participant.contact_id=p.target_id AND c.project_id=p.destination AND NOT ${owned}`,
+  `SELECT 1 FROM messages authored CROSS JOIN conversations c ON c.id=authored.conversation_id WHERE authored.actor_role='contact' AND authored.actor_id=p.target_id AND c.project_id=p.destination AND NOT ${owned}`,
+  `SELECT 1 FROM conversation_tags tagged CROSS JOIN conversations c ON c.id=tagged.conversation_id WHERE tagged.tag_id=p.target_id AND tagged.project_id=p.destination AND NOT ${owned}`,
   // Customer access established after import belongs to the customer, not to
   // the import journal. Refuse reversal before any child is removed; deleting
   // the contact would otherwise fail its session foreign key mid-undo.

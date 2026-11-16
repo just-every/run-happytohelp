@@ -8809,7 +8809,7 @@
       "executable": false
     },
     "src/modules/move-in/batches.ts": {
-      "sha256": "ef1b0a77dcf5d34ae9c6ab09ba8065f71a05052b69570c1ec5dced06346cac86",
+      "sha256": "f2f2b15c364aa07508854653e7e00d5d9b58a6429a73406c57fc51d90d240b72",
       "executable": false
     },
     "src/modules/move-in/category-publication.ts": {
@@ -8893,7 +8893,7 @@
       "executable": false
     },
     "src/modules/move-in/partial-undo.ts": {
-      "sha256": "efdf182a06a0af07a8bf20125efaa4602a80904657a1dcb39ca881ff52f4f18c",
+      "sha256": "912cb7cced82708c284658c0e8965fb17229f579601d81286eeac29fccf19b6a",
       "executable": false
     },
     "src/modules/move-in/plan.ts": {
@@ -9033,7 +9033,7 @@
       "executable": false
     },
     "src/modules/move-in/routes.ts": {
-      "sha256": "a1b68a9c307e706ebe003c7429d34b2b6b39abaa78d60df8bfd1a404f9c2555d",
+      "sha256": "e7ea188eb8a7aad29375068300801e4eef01ed8a489f2401acc44ea44ffd8bbf",
       "executable": false
     },
     "src/modules/move-in/run-store.ts": {
@@ -9069,7 +9069,7 @@
       "executable": false
     },
     "src/modules/move-in/undo-references.ts": {
-      "sha256": "356b26db9d3145bc6191245ef5ca818b7337f76aaba12dfa2f7e7df7b5f7c843",
+      "sha256": "ad830c79b2836b78e0fb30fde082f59179d42125c86945b8b90dd8ed1ea836a7",
       "executable": false
     },
     "src/modules/move-in/uninterpreted-identities.ts": {
@@ -13621,7 +13621,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveIn.jsx": {
-      "sha256": "c21339ce34e2540149fcd5dc78f0c33f3220bbab2b75e7aba4c721b59f2027bb",
+      "sha256": "417c9bcfd0089674fb81044470e21778fdff07173bd6eb4451e57a5722cc2216",
       "executable": false
     },
     "src/ui/native/pages/MoveInGuide.jsx": {
@@ -13637,7 +13637,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInReview.jsx": {
-      "sha256": "15954b2ada55b06abf75a9d8c5630451189d5a5203beb7ee2057e85a3c57699c",
+      "sha256": "b5c55e494ab5b8b85e9cf9bf0dabeffb4e2d917a66098de0e095b15618035ca6",
       "executable": false
     },
     "src/ui/native/pages/MoveInZendesk.jsx": {

@@ -10,6 +10,7 @@ import {readReview,verifyGroupCustody,verifyApprovedCustody} from './review-cust
 import {reconcileContactKeys} from './contact-keys'
 import {publicationPredicates,publicationDatabase,reviewedContacts,checkPublication} from './publication'
 import {skipUnstartedUndo} from './partial-undo'
+import {undoProgress} from './undo-progress'
 import {applyStep} from './apply-step'
 interface Batch {run_id:string;ordinal:number;plan_key:string;fingerprint:string;total:number;kit_job_id:string|null;state:string;checkpoint:number}
 export async function approveReview(env:Env,run:Run,fingerprint:string){
@@ -21,14 +22,14 @@ export async function approveReview(env:Env,run:Run,fingerprint:string){
 async function publishCheckpoint(env:Env,run:Run,batch:Batch,job:ImportJob){
  const undo=run.state==='undoing',nextState=['undone','rolled_back'].includes(job.state)?'undone':job.state==='completed'?'completed':undo?'undoing':'applying'
  const other=await env.DB.prepare("SELECT COALESCE(SUM(checkpoint),0) checkpoint,COUNT(*) total,COALESCE(SUM(state=?1),0) finished,(SELECT json_extract(plan_json,'$.counts') FROM move_in_runs WHERE id=?2) counts FROM move_in_batches WHERE run_id=?2 AND ordinal<>?3").bind(undo?'undone':'completed',run.id,batch.ordinal).first<any>()
- const progress=undo?await env.DB.prepare('SELECT COUNT(*) total,COALESCE(SUM(reversed),0) checkpoint FROM ik_provenance WHERE job_id IN (SELECT kit_job_id FROM move_in_batches WHERE run_id=?)').bind(run.id).first<any>():{checkpoint:other.checkpoint+job.checkpoint,total:run.total}
+ const progress=undo?await undoProgress(env,run):{checkpoint:other.checkpoint+job.checkpoint,total:run.total}
  const done=nextState===(undo?'undone':'completed')&&other.finished===other.total,state=done?undo?'undone':'completed':run.state
- await updateRun(env,run,{state,cursor:progress.checkpoint,kit_job_id:job.id,report_json:JSON.stringify({state,checkpoint:progress.checkpoint,total:progress.total,counts:JSON.parse(other.counts)}),error:job.error??null},[env.DB.prepare('UPDATE move_in_batches SET kit_job_id=?,state=?,checkpoint=? WHERE run_id=? AND ordinal=?').bind(job.id,nextState,job.checkpoint,run.id,batch.ordinal)])
+ await updateRun(env,run,{state,cursor:progress.checkpoint,kit_job_id:job.id,report_json:JSON.stringify({state,...progress,...undo?{referencesChecked:true}:{counts:JSON.parse(other.counts)}}),error:job.error??null},[env.DB.prepare('UPDATE move_in_batches SET kit_job_id=?,state=?,checkpoint=? WHERE run_id=? AND ordinal=?').bind(job.id,nextState,job.checkpoint,run.id,batch.ordinal)])
 }
 export async function advanceBatch(env:Env,run:Run){
  if(run.state!=='undoing'&&!await reconcileContactKeys(env,run))return
  const review=await readReview(env,run,run.review_fingerprint!);await verifyApprovedCustody(env,run,review)
- const undo=run.state==='undoing';if(undo&&JSON.parse(run.report_json||'{}').state!=='undoing')await assertUndoReferences(env,run)
+ const undo=run.state==='undoing';if(undo&&JSON.parse(run.report_json||'{}').referencesChecked!==true)await assertUndoReferences(env,run)
  const batch=await env.DB.prepare(`SELECT * FROM move_in_batches WHERE run_id=? AND state<>? ORDER BY ordinal ${undo?'DESC':'ASC'} LIMIT 1`).bind(run.id,undo?'undone':'completed').first<Batch>();if(!batch)throw new Error('import_batch_missing')
  if(undo&&!batch.kit_job_id){await skipUnstartedUndo(env,run,batch.ordinal);return}
  if(undo)await assertUndoReferences(env,run,batch.kit_job_id??undefined)

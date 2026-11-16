@@ -1,0 +1,5 @@
+CLAIM MOVE-IN-001 PARTIAL points=none tests=tests/journeys/move-in-admission.mjs#review an export, import its history and private notes, repeat and repackage without effects, then undo exactly; tests/journeys/move-in-browser.mjs#an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import
+CLAIM FORMS-001 PARTIAL points=none tests=tests/journeys/move-in-browser.mjs#an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import
+CLAIM MACRO-001 PARTIAL points=none tests=tests/journeys/inbox-browser.mjs#an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over
+CLAIM SLA-001 PARTIAL points=none tests=tests/journeys/inbox.mjs#SLA field conditions admit only fields readable by every current workspace role
+CLAIM OUTBOUND-001 PARTIAL points=none tests=tests/journeys/inbox-browser.mjs#two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening

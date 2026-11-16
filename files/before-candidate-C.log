@@ -1,0 +1,31 @@
+TAP version 13
+# Zendesk Connect: both presses POSTed and navigated to their returned authorize URL from the same page load
+# Subtest: an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import
+not ok 1 - an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import
+  ---
+  duration_ms: 241196.709575
+  type: 'test'
+  location: '/workspace/run-happytohelp/tests/journeys/move-in-browser.mjs:52:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.click: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('link', { name: 'Review form “Order request 144021”', exact: true })[22m
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    configurationBrowser (/workspace/run-happytohelp/tests/journeys/move-in-browser.mjs:94:105)
+    async file:///workspace/run-happytohelp/tests/journeys/move-in-browser.mjs:61:2
+    async TestContext.<anonymous> (/workspace/run-happytohelp/tests/journeys/move-in-browser.mjs:28:35)
+  ...
+# Native runtime failure artifacts retained: /tmp/h2h-native-runtime-khLWyT
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 244802.430571

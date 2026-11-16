@@ -1,0 +1,99 @@
+{
+  "original_candidate": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "main_at_clone": "ece2172a9463acbd6cbf998189ab18a4fa66c693",
+  "original": {
+    "A": {
+      "result": "failure",
+      "actual_rejected": 7,
+      "expected_rejected": 5,
+      "log": "before-candidate-A.log"
+    },
+    "B": {
+      "result": "success",
+      "duration_ms": 158407.234889,
+      "log": "before-candidate-B.log"
+    },
+    "C": {
+      "result": "failure",
+      "reason": "Review form Order request 144021 link absent",
+      "duration_ms": 244802.430571,
+      "log": "before-candidate-C.log"
+    },
+    "A_node22": {
+      "result": "failure",
+      "actual_rejected": 7,
+      "expected_rejected": 5,
+      "duration_ms": 145820.715979,
+      "log": "before-candidate-A-node22.log",
+      "source": "git archive of exact original candidate; same Node 22.20.0/pnpm 10.12.4 dependency pin; no product checkout changes"
+    }
+  },
+  "scope": "synthetic isolated Workerd/D1/R2 and headless Chromium only",
+  "test_registration_delta": 0,
+  "contract_status_changes": [],
+  "main": {
+    "A": {
+      "result": "success",
+      "duration_ms": 196564.193938,
+      "log": "before-main-A.log"
+    },
+    "B": {
+      "result": "success",
+      "duration_ms": 158786.958328,
+      "log": "before-main-B.log"
+    },
+    "C": {
+      "result": "success",
+      "duration_ms": 270207.625363,
+      "log": "before-main-C.log"
+    }
+  },
+  "merged_main": "ece2172a9463acbd6cbf998189ab18a4fa66c693",
+  "save_head": "b8b397b38d4bac44616814ac0e1719415f8b8329",
+  "save_push": "success on first guarded attempt",
+  "checks": {
+    "source_check": "success",
+    "typecheck": "success",
+    "rer_check_first_party": "success",
+    "build": "success"
+  },
+  "after": {
+    "A": {
+      "result": "success",
+      "duration_ms": 200749.314522,
+      "log": "after-A.log"
+    },
+    "B": {
+      "result": "success",
+      "duration_ms": 157721.838077,
+      "log": "after-B.log"
+    },
+    "C": {
+      "result": "success",
+      "duration_ms": 266838.654467,
+      "log": "after-C.log"
+    },
+    "SLA": {
+      "result": "success",
+      "duration_ms": 6158.844859,
+      "log": "after-SLA.log"
+    },
+    "new_ticket": {
+      "result": "success",
+      "log": "after-new-ticket.log",
+      "execution": "complete newTicketConfigurationBrowser helper through public UI/API doors"
+    }
+  },
+  "browser": "Chromium 154.0.8037.57 (Debian 13), /usr/bin/chromium, headless --no-sandbox",
+  "node_for_final_checks": "22.20.0",
+  "pnpm": "10.12.4",
+  "local_touched_journeys": {
+    "passed": 5,
+    "failed": 0
+  },
+  "head": "e16adff519a241389cda942d133eb1da532eedbe",
+  "tree": "0250442e104df792cf44c8786c1f6ff269a08933",
+  "final_push": "success on first guarded attempt",
+  "recovery_probe": "success: reachable 503 triggers one reload, at 1440 and 390",
+  "supplemental_comparison_interruption": "First pinned confirmation was interrupted during environment reconnect before a result; retained partial log and completed a fresh retry."
+}

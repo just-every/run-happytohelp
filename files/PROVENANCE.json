@@ -1,0 +1,18 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger11-followups-1-c1",
+  "head": "e16adff519a241389cda942d133eb1da532eedbe",
+  "tree": "0250442e104df792cf44c8786c1f6ff269a08933",
+  "parents": [
+    "b8b397b38d4bac44616814ac0e1719415f8b8329"
+  ],
+  "original_candidate": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "merged_main": "ece2172a9463acbd6cbf998189ab18a4fa66c693",
+  "clean_worktree": true,
+  "recorded_at": "2026-11-16T22:31:41.976689+00:00",
+  "product_push": "success, first guarded attempt",
+  "publication_scan": "fleet Mac independent gate; not available in cloud",
+  "contract_status_changes": [],
+  "generated_views_committed": false,
+  "new_test_registrations_in_c1": 0
+}

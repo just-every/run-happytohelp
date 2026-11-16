@@ -1,0 +1,21 @@
+/workspace/run-happytohelp/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1748
+  let error = new Error(text);
+              ^
+
+Error: Build failed with 1 error:
+src/ui/native/drawings/Drawing.tsx:5:7: ERROR: Cannot import "src/ui/native/drawings/drawings.css" into a JavaScript file without an output path configured
+    at failureErrorWithLog (/workspace/run-happytohelp/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1748:15)
+    at /workspace/run-happytohelp/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1207:25
+    at /workspace/run-happytohelp/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1159:52
+    at buildResponseToResult (/workspace/run-happytohelp/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1205:7)
+    at /workspace/run-happytohelp/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1232:16
+    at responseCallbacks.<computed> (/workspace/run-happytohelp/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/workspace/run-happytohelp/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/workspace/run-happytohelp/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:561:12) {
+  errors: [Getter/Setter],
+  warnings: [Getter/Setter]
+}
+
+Node.js v22.20.0

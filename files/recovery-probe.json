@@ -1,0 +1,24 @@
+{
+  "scenario": "Interrupted native document, reachable HTTP 503 health endpoint, completed retry",
+  "rows": [
+    {
+      "width": 1440,
+      "documentRequests": 2,
+      "healthStatuses": [
+        503
+      ],
+      "waitingCopy": "Opening your workspace… We’ll continue automatically.",
+      "recovered": true
+    },
+    {
+      "width": 390,
+      "documentRequests": 2,
+      "healthStatuses": [
+        503,
+        503
+      ],
+      "waitingCopy": "Opening your workspace… We’ll continue automatically.",
+      "recovered": true
+    }
+  ]
+}

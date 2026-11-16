@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: SLA field conditions admit only fields readable by every current workspace role
+ok 1 - SLA field conditions admit only fields readable by every current workspace role
+  ---
+  duration_ms: 6158.844859
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6478.836215

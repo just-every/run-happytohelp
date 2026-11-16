@@ -1,0 +1,86 @@
+[
+  {
+    "at": "2026-11-16T22:08:39Z",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43948782221/jobs?per_page=100",
+      "--jq",
+      ".jobs[] | {id,name,conclusion,head_sha}"
+    ]
+  },
+  {
+    "at": "2026-11-16T22:09:26Z",
+    "command": [
+      "gh",
+      "run",
+      "view",
+      "43948782221",
+      "--repo",
+      "just-every/run-happytohelp",
+      "--job",
+      "133617757316",
+      "--log-failed"
+    ]
+  },
+  {
+    "at": "2026-11-16T22:31:41Z",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs?head_sha=e16adff519a241389cda942d133eb1da532eedbe&per_page=100",
+      "--jq",
+      ".workflow_runs | map({id,name,event,head_sha,head_branch,status,conclusion,html_url})"
+    ]
+  },
+  {
+    "at": "2026-11-16T22:36:44Z",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43970764732",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": "2026-11-16T22:42:18Z",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43970764732",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": "2026-11-16T22:47:21Z",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43970764732",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": "2026-11-16T22:52:36Z",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43970764732",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": "2026-11-16T22:57:42Z",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-happytohelp/actions/runs/43970764732",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  }
+]

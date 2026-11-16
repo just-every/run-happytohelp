@@ -74,7 +74,12 @@ export async function ticketsJourney(){
   assert.doesNotMatch(visible.messages.at(-1).content,/{{|}}/)
   const reloaded=await get(id)
   assert.equal(reloaded.group_id,group.id);assert.ok(reloaded.tags.some(value=>value.id===tag.id))
-  assert.equal(reloaded.status_id,pending.id);assert.equal(reloaded.assigned_to,w.users.owner,'sending claims the ticket for the replying operator');assert.equal(reloaded.fields[field.id],'RMA-456')
+  assert.equal(reloaded.status_id,pending.id);assert.equal(reloaded.assigned_to,w.users.operator,'ordinary Send preserves the explicit macro assignment to the other operator');assert.equal(reloaded.fields[field.id],'RMA-456')
+  await app.ok(`/api/conversations/${id}/messages`,{token:w.tokens.owner,body:{localId:'replacement-follow-up',content:'The photo will help us review the damage.',expectedRevision:reloaded.revision}})
+  assert.equal((await get(id)).assigned_to,w.users.operator,'the macro handoff survives later sends after its draft was consumed')
+  await ok(`/conversations/${id}`,{agent_id:w.users.owner},'owner','PUT')
+  await app.ok(`/api/conversations/${id}/messages`,{token:w.tokens.owner,body:{localId:'replacement-takeover',content:'I have taken over this replacement request.',expectedRevision:(await get(id)).revision}})
+  assert.equal((await get(id)).assigned_to,w.users.owner,'the native assignment control still permits explicit takeover')
   await deskCollaboration(f)
 
   const second=await queueWork(f,{field,pending,tag})

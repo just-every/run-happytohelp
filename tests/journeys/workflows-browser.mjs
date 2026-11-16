@@ -63,3 +63,6 @@ test('support-channel settings, original-channel replies and shared customer con
   passed=true
  }finally{await browser.close();await runtime.close(passed)}
 })
+
+import {formFieldBrowser} from '../helpers/stranger11-browser.mjs'
+test('a lead adds a readable ticket field to a public request form with default permissions and an empty read-role list',formFieldBrowser)

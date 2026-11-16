@@ -1,3 +1,4 @@
+import {publicFieldReadSql} from './field-access'
 import type {Env} from '../../platform/env'
 import type {PublicForm} from './types'
 import {fieldCatalogue,storedForm} from './store'
@@ -13,7 +14,7 @@ export function accountChoiceGuard(projectId:string,contactId:string,accountId:s
 // Publication grants disclosure of the eligible identifier and label only.
 function publicationGuard(form:PublicForm,fieldIds:string[]){
  // One JSON parameter preserves the form's 50-field capacity under D1's bind limit.
- return {sql:`EXISTS(SELECT 1 FROM request_forms published WHERE published.project_id=? AND published.id=? AND published.enabled=1 AND published.updated_at=? AND NOT EXISTS(SELECT 1 FROM json_each(?) expected LEFT JOIN ticket_fields field ON field.project_id=published.project_id AND field.id=expected.value WHERE field.id IS NULL OR field.type<>'account' OR field.read_roles_json<>'[]' OR field.write_roles_json<>'[]' OR NOT EXISTS(SELECT 1 FROM json_each(published.config_json,'$.fields') ref WHERE json_extract(ref.value,'$.fieldId')=expected.value)))`,args:[form.projectId,form.id,form.updatedAt,JSON.stringify(fieldIds)]}
+ return {sql:`EXISTS(SELECT 1 FROM request_forms published WHERE published.project_id=? AND published.id=? AND published.enabled=1 AND published.updated_at=? AND NOT EXISTS(SELECT 1 FROM json_each(?) expected LEFT JOIN ticket_fields field ON field.project_id=published.project_id AND field.id=expected.value WHERE field.id IS NULL OR field.type<>'account' OR NOT ${publicFieldReadSql('field')} OR NOT EXISTS(SELECT 1 FROM json_each(published.config_json,'$.fields') ref WHERE json_extract(ref.value,'$.fieldId')=expected.value)))`,args:[form.projectId,form.id,form.updatedAt,JSON.stringify(fieldIds)]}
 }
 export async function validateAccountPublication(env:Env,projectId:string,formId:string,body:unknown){
  const values=body&&typeof body==='object'?(body as any).fields:null

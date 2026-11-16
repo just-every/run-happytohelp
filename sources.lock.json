@@ -1773,7 +1773,7 @@
       "executable": false
     },
     "docs/macros-and-teamwork.md": {
-      "sha256": "546a95a3400634e6dc7813211253e4a46f2acaf42562d6c30de5dee24974576b",
+      "sha256": "3c21394d0399d86d2c9704f095008f467bcc43ca4745a54e372a5bdd4d528584",
       "executable": false
     },
     "docs/managed-conversation-mail.md": {
@@ -1825,7 +1825,7 @@
       "executable": false
     },
     "docs/request-forms.md": {
-      "sha256": "2adc278663813081f09bdf6b479ca4efa4225bfee07626a81327516e796d2a25",
+      "sha256": "9b6f4748c34ce7a34cd98fd4511d9fa3fe89e7642491f50883cb0408ea7431e7",
       "executable": false
     },
     "docs/SETUP-WORKFLOW.md": {
@@ -15985,7 +15985,7 @@
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {
-      "sha256": "ed3ddae27f164a4aec54206366059bcb982abaeed7fb89f7c5bce965f1c2e7a1",
+      "sha256": "2e936dd0b8031d4c03d1705516917b4abf0780b4cb92754be051835bb9a2a86b",
       "executable": false
     },
     "tests/helpers/agent-door/custody.mjs": {
@@ -17229,7 +17229,7 @@
       "executable": false
     },
     "tests/helpers/stranger11-browser.mjs": {
-      "sha256": "e0e0a2a7e2955ed135af0125c228fa6848040c87f4ec387e528dcf2b3d983d3b",
+      "sha256": "b020eecb7ba40da9d68ba6564a518faf242395a9bae14c8662f71019f785bba4",
       "executable": false
     },
     "tests/helpers/support-channels/browser-network.mjs": {
@@ -17429,7 +17429,7 @@
       "executable": false
     },
     "tests/journeys/erasure-browser.mjs": {
-      "sha256": "6093eb6dd3c4ec0711679d0f76c13ad613bda2c16427a7ebd4a888122df15635",
+      "sha256": "dcc63420b4a07efd50c4221cc6defad9273020f8b870217f5a1633b1b2aa562d",
       "executable": false
     },
     "tests/journeys/erasure.mjs": {

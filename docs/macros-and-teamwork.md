@@ -6,6 +6,8 @@ Open a saved reply to edit its actions and choose who can use it: just you, sele
 
 From a ticket, open **+ (Actions) → Saved replies**. Read the rendered text and action preview, then apply. Review and edit the resulting draft before sending. Applying a macro never sends a reply or note. A simple text-only saved reply inserts at your cursor and preserves the rest of your draft.
 
+If a macro explicitly assigns a teammate or leaves the ticket unassigned, **Send** keeps that assignment after you edit the reply. To take over, choose your own name under **Ticket → Summary → Assignee**.
+
 Use placeholders such as `{{requester.first_name | there}}`, `{{requester.email}}`, `{{ticket.id}}`, `{{ticket.subject}}`, `{{ticket.link}}`, `{{assignee.name}}`, `{{brand.name}}` and `{{organisation.name}}`. Custom values use `{{ticket.custom.FIELD_ID}}` and `{{contact.custom.FIELD_KEY}}`. A value after `|` is an explicit fallback. A missing value stays visible in the preview and blocks sending until you resolve it. Private custom fields stay subject to their read permissions.
 
 To apply a macro in bulk, select tickets in the inbox, choose the macro and use **Preview all tickets**. Inspect each result, then apply the reviewed macro. A stale, unavailable or forbidden ticket has its own result; the others can succeed. Every resulting reply or note is saved as a draft for its operator to review separately.
@@ -27,3 +29,5 @@ The surviving operator thread includes the source histories. Customer access sta
 Open **Merge history → Undo merge** to restore the source to the queue. Undo is refused if either ticket changed or partner activity advanced after the merge. Review the retained history when undo is unsafe.
 
 Use **Forward to partner** to select customer-visible messages and files for an external partner. Preview the recipient and exact content first. Internal notes are never forwarded. The partner receives its own reply address; replies and files return to **Private partner threads** in the ticket. They do not enter customer history or trigger customer acknowledgements. Revoke partner replies when that collaboration ends. A delivery whose outcome is uncertain is shown as uncertain and is never automatically resent.
+
+Handoff clarification: Run Edit Run fleet, 16 November 2026.

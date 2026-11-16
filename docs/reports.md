@@ -32,7 +32,7 @@ Conversations CSV contains the ID, creation timestamp, first-response duration, 
 
 Open **Reports → Team report** to see workload by agent, team, channel, brand, account or tag. Choose a calendar range, team and brand, then apply the filters. **Include imported history** is off initially. Turning it on includes imported tickets in this panel and its export, with separate native and imported counts. It does not change the original daily-volume report above.
 
-Incoming tickets were created in the selected range and have a message. Workload uses their current assignment and status. Resolved means currently Solved or Closed. A ticket with several tags counts under each tag; unassigned and untagged tickets have their own rows. Merged-away source tickets are excluded.
+Incoming tickets were created in the selected range and have a persisted public message. Incoming, workload and backlog exclude internal-note-only tickets and call logs without a public message, even when those tickets are assigned and visible in Inbox. Private notes and call notes do not qualify a ticket; a later public message does. This is the message-bearing cohort required by REPORTS-001, rather than every assigned Inbox item. Workload uses their current assignment and status. Resolved means currently Solved or Closed. A ticket with several tags counts under each tag; unassigned and untagged tickets have their own rows. Merged-away source tickets are excluded.
 
 The current backlog includes unresolved tickets created before the range's end, including tickets older than its start. Its age buckets use the report's generation time. This is the backlog now, rather than a reconstruction of what the queue looked like on a past date.
 

@@ -18,7 +18,7 @@ export default function TeamReports({projectId}) {
         <TeamReportFilters {...state} options={report?.options}/>
         {error && <p className="text-danger" role="alert">{error}</p>}{loading && <p role="status">Loading team report…</p>}
         {report && !loading && <>
-            <p className="team-report-scope">{report.range.start} through {report.range.end} (exclusive) · <strong>{report.range.timezone}</strong> · <Link to={`/projects/${projectId}/edit`}>Workspace timezone</Link><br/>{reportCount(report.denominators.cohort)} tickets in the creation cohort · {reportCount(report.denominators.native)} native · {reportCount(report.denominators.imported)} imported included · {reportCount(report.denominators.excludedImported)} imported excluded.</p>
+            <p className="team-report-scope">{report.range.start} through {report.range.end} (exclusive) · <strong>{report.range.timezone}</strong> · <Link to={`/projects/${projectId}/edit`}>Workspace timezone</Link><br/>{reportCount(report.denominators.cohort)} tickets in the creation cohort · {reportCount(report.denominators.native)} native · {reportCount(report.denominators.imported)} imported included · {reportCount(report.denominators.excludedImported)} imported excluded.<br/>Incoming, workload and backlog count tickets with a public message. Internal-note-only tickets and call logs without a public message are excluded, even when assigned in Inbox.</p>
             <div className="team-report-metrics">
                 <Metric title="Incoming tickets" value={reportCount(report.denominators.cohort)} detail="Created in this range"/>
                 <Metric title="Current backlog" value={reportCount(report.backlog.total)} detail={`Oldest ${reportDuration(report.backlog.oldest_age_ms)}`}/>

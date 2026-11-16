@@ -129,6 +129,28 @@ export async function requestFormsJourney(){
   const {accountLookupJourney}=await import('./account-lookup-journey.mjs')
   await accountLookupJourney(f,customer)
 
+  // Fields created with the UI defaults, or its documented empty read list,
+  // can be published without widening staff edit permission.
+  const defaults=['owner','admin','operator','collaborator','api'],edits=['owner']
+  const readable=(await app.ok(`${dashboard}/ticket-fields`,{...owner,body:{name:'Public order reference',type:'text',read_roles:defaults,write_roles:edits}})).data
+  const fieldPathPublic=`${dashboard}/ticket-fields/${readable.id}`
+  const formConfig={title:'Order reference',enabled:true,fields:[{fieldId:readable.id,required:true}]}
+  for(const [index,read_roles] of [defaults,[]].entries()){
+   if(index)await app.ok(fieldPathPublic,{...owner,method:'PATCH',body:{read_roles}})
+   assert.ok((await app.ok(admin,owner)).fields.some(field=>field.id===readable.id),'the same eligible catalogue feeds the native selector')
+   const published=(await app.ok(admin,{...owner,body:formConfig})).data
+   const publicDefinition=(await app.ok(`${api}/${published.id}`,customer)).data
+   assert.ok(publicDefinition.fields.some(field=>field.id===readable.id))
+   const submitted=await app.ok(`${api}/${published.id}/submissions`,{...customer,body:{localId:`public-order-${index}`,subject:'Order reference',message:'Please check this order.',fields:{[readable.id]:'synthetic-happytohelp-order'}}})
+   assert.equal((await app.ok(`${dashboard}/conversations/${submitted.ticket.id}/ticket`,owner)).data.fields[readable.id],'synthetic-happytohelp-order')
+   const operator=(await app.ok(`${dashboard}/ticket-fields`,{token:f.workspace.tokens.operator})).data.find(field=>field.id===readable.id)
+   assert.equal(operator.writable,false,'publishing a form preserves staff edit restrictions')
+   await app.ok(fieldPathPublic,{...owner,method:'PATCH',body:{read_roles:['owner']}})
+   assert.ok(!(await app.ok(admin,owner)).fields.some(field=>field.id===readable.id),'restricted fields leave the selector')
+   assert.equal((await app.call(`${api}/${published.id}`,customer)).status,404,'later read restriction withdraws the public form')
+   assert.equal((await app.call(admin,{...owner,body:formConfig})).status,400,'a lead cannot publish an internal field')
+  }
+
   await app.configure({FORMS_TURNSTILE_SECRET_KEY:undefined})
   assert.equal((await app.call(path,{body:{...valid,localId:'not-configured'},status:503})).data.code,'verification_unavailable')
   // A verified mailbox can still use the portal when anonymous submissions are disabled.

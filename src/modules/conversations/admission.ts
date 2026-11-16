@@ -21,6 +21,7 @@ import {requiredToSolve,solving} from '../tickets/fields.ts'
 import {memberAccess} from '../access/gate.ts'
 import {resolvePublicCitations,readKnowledgeSource,knowledgeRetrievalAdmissionGuard,activeSourceProjectSql,type PublicReference} from '../knowledge/public-sources.ts'
 import type { Actor,Env } from '../../platform/env'
+import {preservesMacroAssignment} from '../macros/assignment'
 import {assertPublicReplyPlaceholders} from '../macros/placeholders'
 import {writableConversationSql} from '../conversation-actions/merge-read'
 import {customerAiSql} from '../ai-support/reply-mode'
@@ -105,7 +106,7 @@ export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput
  if(scope.status_category==='closed'&&!followup)return {accepted:false,reason:'ticket_closed_followup_required'}
  const targetId=followup?await followupId(projectId,conversationId,actor.id,localId):conversationId
  if(followup){const replay=await env.DB.prepare('SELECT * FROM messages WHERE project_id=? AND conversation_id=? AND local_id=?').bind(projectId,targetId,localId).first<any>();if(replay){if(replay.actor_id!==writerId||replay.intent_hash!==intentHash)return {accepted:false,reason:'local_id_conflict'};return replayAdmitted(replay,targetId)}}
- const autoAssign=input[preserveAssignment]!==true&&actor.role!=='contact'&&!input.generationId&&!input.tokenAuthority&&(!scope.group_id||!!await env.DB.prepare('SELECT 1 FROM ticket_group_members WHERE project_id=? AND group_id=? AND user_id=?').bind(projectId,scope.group_id,actor.id).first())
+ const autoAssign=input[preserveAssignment]!==true&&actor.role!=='contact'&&!input.generationId&&!input.tokenAuthority&&!await preservesMacroAssignment(env,projectId,conversationId,scope.assigned_to)&&(!scope.group_id||!!await env.DB.prepare('SELECT 1 FROM ticket_group_members WHERE project_id=? AND group_id=? AND user_id=?').bind(projectId,scope.group_id,actor.id).first())
  const authorship=await authoringSource(env,actor,conversationId,input.authoring,input.generationId)
  const issued=input.generationId?(await env.DB.prepare('SELECT source_id id,source_version sourceVersion FROM ai_generation_sources WHERE generation_id=? AND project_id=?').bind(input.generationId,projectId).all<PublicReference>()).results:[]
  for(const source of issued)if(!await readKnowledgeSource(env,projectId,source,currentTicketReaders(projectId,conversationId,{contacts:email?.cc,localId})))return {accepted:false,reason:'knowledge_authority_changed'}

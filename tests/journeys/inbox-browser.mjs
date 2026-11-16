@@ -16,3 +16,6 @@ import {outcomesJourney} from '../helpers/widget/outcomes.mjs'
 
 test('installed widget availability, provider-edge answers and consent-aware proactive outcomes',outcomesJourney)
 test('knowledge references remain reviewable in saved replies, ticket insertion, recipient refusals and collection grants at 1440 and 390',async()=>{const {referenceBrowser}=await import('../helpers/knowledge/reference-browser.mjs');await referenceBrowser()})
+
+import {macroHandoffBrowser} from '../helpers/stranger11-browser.mjs'
+test('an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over',macroHandoffBrowser)

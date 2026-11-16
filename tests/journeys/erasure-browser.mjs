@@ -24,8 +24,13 @@ test(`at 1440px an owner erases a contact only after typing ERASE; identity, con
  const conversation=await request('/api/conversations',{token:visitor.token,body:{projectId}}),keptConversation=await request('/api/conversations',{token:kept.token,body:{projectId}});
  const upload=await request(`/api/conversations/${conversation.id}/media`,{token:visitor.token,body:new TextEncoder().encode('scan of a passport'),headers:{'Content-Type':'text/plain','X-Filename':'passport.txt'}});
  assert.equal((await request(`/api/conversations/${conversation.id}/messages`,{token:visitor.token,body:{localId:'erase-1',content:secret,expectedRevision:0,mediaIds:[upload.id]}})).accepted,true);
+ for(let index=1;index<4;index++)assert.equal((await request(`/api/conversations/${conversation.id}/messages`,{token:visitor.token,body:{localId:`erase-${index+1}`,content:`Synthetic order detail ${index}`,expectedRevision:index}})).accepted,true);
  assert.equal((await request(`/api/conversations/${keptConversation.id}/messages`,{token:kept.token,body:{localId:'keep-1',content:'I am staying',expectedRevision:0}})).accepted,true);
 
+ // Save a real composer draft before erasure; erasure removes it with the contact's other content.
+ const macro=(await request(`/api/dashboard/projects/${projectId}/macros`,{token:login.token,body:{title:'Erasure follow-up',content:'Synthetic private composer draft'}})).data;
+ const ticket=(await request(`/api/dashboard/projects/${projectId}/conversations/${conversation.id}/ticket`,{token:login.token})).data;
+ assert.equal((await request(`/api/dashboard/projects/${projectId}/macros/${macro.id}/apply`,{token:login.token,body:{version:macro.version,command_id:'erasure-draft',tickets:[{id:conversation.id,expected_version:ticket.ticket_version}]}})).data.results[0].status,'applied');
  const page=await browser.newPage({viewport});const errors=[],checks=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(origin+'/login?returnTo='+encodeURIComponent(`/projects/${projectId}/conversations`));await page.getByLabel('Email',{exact:true}).fill(owner.email);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Login',exact:true}).click();await page.waitForURL('**/conversations');
  await page.goto(`${origin}/projects/${projectId}/contacts`);await page.getByRole('link',{name:'Erasure Visitor',exact:true}).click();
@@ -39,22 +44,30 @@ test(`at 1440px an owner erases a contact only after typing ERASE; identity, con
  await start.click();await typed.fill('ERASE');await page.screenshot({path:shot(`${viewport.width}-confirm.png`),fullPage:true});
  const erased=page.waitForResponse(response=>new URL(response.url()).pathname===`/api/management/projects/${projectId}/contacts/${visitor.contactId}/erase`);
  await confirm.click();const response=await erased;assert.equal(response.status(),200);
- await page.getByText('Personal data erased.',{exact:false}).waitFor();assert.equal(await page.getByText('Erasure Visitor').count(),0);await page.screenshot({path:shot(`${viewport.width}-erased.png`),fullPage:true});
+ const erasedRecord=(await response.json()).data;const removed={conversations:erasedRecord.conversations,messages:erasedRecord.messages,attachments:erasedRecord.attachments};assert.deepEqual(removed,{conversations:1,messages:4,attachments:1});
+ await page.getByText('Personal data erased.',{exact:false}).waitFor();assert.equal(await page.getByText('Erasure Visitor').count(),0);await page.locator('.erasure-stores').waitFor();await page.screenshot({path:shot(`${viewport.width}-erased.png`),fullPage:true});
  checks.push('dashboard control erases the contact and shows the erased record');
 
  const record=(await request(`/api/management/projects/${projectId}/contacts/${visitor.contactId}`,{token:login.token})).data;
  assert.deepEqual([record.name,record.email,JSON.parse(record.metadata_json).is_erased],[null,null,1]);
  const transcript=await request(`/api/conversations/${conversation.id}/messages`,{token:login.token});
- assert.deepEqual(transcript.messages.map(m=>[m.content,Boolean(m.erased_at),m.media.length]),[['',true,0]]);assert.equal(transcript.revision,1);
+ assert.deepEqual(transcript.messages.map(m=>[m.content,Boolean(m.erased_at),m.media.length]),Array.from({length:4},()=>['',true,0]));assert.equal(transcript.revision,4);
  assert.equal((await request(`/api/conversations/${conversation.id}/media/${upload.id}`,{token:login.token,raw:true})).status,404);
  assert.equal((await request(`/api/conversations/${conversation.id}/messages`,{token:visitor.token,raw:true})).status,401);
  const keptTranscript=await request(`/api/conversations/${keptConversation.id}/messages`,{token:kept.token});assert.equal(keptTranscript.messages[0].content,'I am staying');
  checks.push('D1/R2 state: identity, content and attachment gone; session revoked; other visitor intact');
 
  await page.goto(`${origin}/projects/${projectId}/contacts`);await page.getByRole('link',{name:'Kept Visitor',exact:true}).waitFor();assert.equal(await page.getByRole('link',{name:'Erasure Visitor',exact:true}).count(),0);
- await page.goto(`${origin}/projects/${projectId}/conversations/${conversation.id}`);await page.getByText('Message erased',{exact:true}).waitFor();
+ let erasedDraftRequests=0;
+ page.on('request',request=>{if(new URL(request.url()).pathname===`/api/dashboard/projects/${projectId}/conversations/${conversation.id}/macro-draft`)erasedDraftRequests++;});
+ await page.goto(`${origin}/projects/${projectId}/conversations/${conversation.id}`);await page.getByText('Message erased',{exact:true}).first().waitFor();
  assert.equal(await page.getByText(secret).count(),0);assert.ok(await page.getByText('Erased contact').count()>0);await page.screenshot({path:shot(`${viewport.width}-transcript.png`),fullPage:true});
- checks.push('contact list hides the erased contact; transcript shows erased messages without content');
+ await page.getByRole('textbox',{name:'Reply to conversation'}).waitFor();await page.waitForLoadState('networkidle');
+ assert.equal(erasedDraftRequests,0,'the retained erased thread never asks for the removed composer draft');
+ assert.equal(await page.getByText(/Couldn’t load your saved macro draft/).count(),0);
+ assert.equal(await page.getByRole('textbox',{name:'Reply to conversation'}).inputValue(),'');
+ await page.setViewportSize(viewports.mobile);await page.screenshot({path:shot('390-transcript.png'),fullPage:true});await page.setViewportSize(viewport);
+ checks.push('contact list hides the erased contact; transcript is redacted and never requests the erased saved draft');
 
  // An erasure that failed (a synthetic outage) is pending: on a fresh load, at 1440 and 390 wide, the contact's erasure
  // section comes first with a status notice in the first screen; its erase action completes it. It fails at its final batch
@@ -95,7 +108,7 @@ test(`at 1440px an owner erases a contact only after typing ERASE; identity, con
  await phone.close();
  checks.push('a failed erasure, at its final batch or after recording it, shows a pending notice first on a fresh load at 1440 and 390, and its erase action completes it');
  assert.deepEqual(errors,[]);
- await writeFile(shot(`${viewport.width}-result.json`),JSON.stringify({checks},null,2));
+ await writeFile(shot(`${viewport.width}-result.json`),JSON.stringify({checks,removed,erasedDraftRequests},null,2));
  console.log(`Contact erasure browser passed: ${checks.length} checks.\n- ${checks.join('\n- ')}`);success=true;
 }finally{await runtime.close(success)}
 })

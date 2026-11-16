@@ -7,7 +7,7 @@ export function actionDescription(action, settings, agents) {
     if(action.type==='priority')return `Set priority: ${label(action.priority)}`;
     if(action.type==='assign')return `Assign: ${action.user_id?name(agents,action.user_id):'Unassigned'}${action.group_id?` · ${name(settings.groups,action.group_id)}`:''}`;
     if(action.type==='tags')return `Tags: add ${(action.add||[]).map(id=>name(settings.tags,id)).join(', ')||'none'}; remove ${(action.remove||[]).map(id=>name(settings.tags,id)).join(', ')||'none'}`;
-    if(action.type==='notify')return `Notify ${label(action.kind)}${action.message?`: ${action.message}`:''}`;
+    if(action.type==='notify')return `Notify ${action.recipient_id?name(action.kind==='group'?settings.groups:agents,action.recipient_id):label(action.kind)}${action.message?`: ${action.message}`:''}`;
     if(action.type==='note')return `Internal note: ${action.content}`;
     if(action.type==='fields')return `Update fields: ${Object.keys(action.values||{}).map(id=>name(settings.fields,id)).join(', ')}`;
     return action.type==='route'?'Route to an eligible operator':label(action.type);

@@ -22,7 +22,7 @@ const holdList=(db:D1Database,projectId:string)=>db.prepare('SELECT h.*,u.name c
 
 auditRoutes.get(P,async c=>{
  const actor=await scope(c,true),limit=Math.min(200,Math.max(1,Number(c.req.query('limit'))||50))
- const page=await auditPage(c.env,actor.projectId,filter(c,limit))
+ const page=await auditPage(c.env,actor.projectId,filter(c,limit),actor.id)
  const settings=await c.env.DB.prepare("SELECT json_extract(settings_json,'$.audit_retention_days') days FROM project_settings WHERE project_id=?").bind(actor.projectId).first<{days:number|null}>()
  c.header('Cache-Control','no-store')
  return c.json({data:page.rows,next:page.next,holds:(await holdList(c.env.DB,actor.projectId)).results,retentionDays:settings?.days??null})
@@ -33,7 +33,7 @@ auditRoutes.get(`${P}/export`,async c=>{
  const actor=await scope(c,true),format=c.req.query('format')==='json'?'json':'csv'
  await requireStepUp(c,actor,'audit.export')
  const rows=[],query=filter(c,500)
- for(;;){const page=await auditPage(c.env,actor.projectId,query);rows.push(...page.rows);if(!page.next||rows.length>=50000)break;query.before=parseCursor(page.next)}
+ for(;;){const page=await auditPage(c.env,actor.projectId,query,actor.id);rows.push(...page.rows);if(!page.next||rows.length>=50000)break;query.before=parseCursor(page.next)}
  await afterReads(c,auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'audit.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{format,rows:rows.length}}))
  const stamp=new Date().toISOString().slice(0,10)
  c.header('Cache-Control','no-store')

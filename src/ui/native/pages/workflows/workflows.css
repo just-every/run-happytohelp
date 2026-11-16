@@ -11,3 +11,5 @@
 @media(max-width:600px){.workflow-settings .workflow-explanation{grid-template-columns:minmax(0,1fr);overflow-wrap:anywhere}}
 
 @media(max-width:600px){body:has(:is(.connections-page,.sla-policy-settings,.workflow-panel)) :is(button,a[href],input:not([type=checkbox]):not([type=radio]),select,textarea,summary,[role=button],[role=tab]){min-height:44px!important;min-width:44px!important}body:has(:is(.connections-page,.sla-policy-settings,.workflow-panel)) a[href]{display:inline-flex;align-items:center}}
+
+.workflow-preview a, .workflow-history a { text-decoration: underline; text-underline-offset: 3px; }

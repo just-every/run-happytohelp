@@ -5405,7 +5405,7 @@
       "executable": false
     },
     "src/modules/audit/read.ts": {
-      "sha256": "0bf48b59c7aadbee574c3ce6e5cb086be6b29697a50afeca3683f3423e555107",
+      "sha256": "1e488cae3d5a258758375b8e49f7c485acaa38ee562f0b2c6c904bd326162f01",
       "executable": false
     },
     "src/modules/audit/README.md": {
@@ -5421,7 +5421,11 @@
       "executable": false
     },
     "src/modules/audit/routes.ts": {
-      "sha256": "264dfbd36c54dccf86d10d637d774bf9055fc70b42a7561dbdeb0541b34cb4d6",
+      "sha256": "5ada277c4f8d8f60937fa6c5c8112ec05499500bc806acfd8a61a93fa2ea850e",
+      "executable": false
+    },
+    "src/modules/audit/targets.ts": {
+      "sha256": "3b2ddb1381242263e090b0db78a5cc6fe205a65956d79a0f0471c1b256d7e005",
       "executable": false
     },
     "src/modules/collaboration/authority.ts": {
@@ -9952,6 +9956,10 @@
       "sha256": "735a023ae69f2bb0912eda10aeece024f91b7a90689479d685e9e558a4ea1b4a",
       "executable": false
     },
+    "src/modules/support-channels/ProviderSetup.jsx": {
+      "sha256": "3778e3fd15d9fa863e8d33f62a51b91d5dc16db1d9c8bf0df431facb4f8ac4a7",
+      "executable": false
+    },
     "src/modules/support-channels/request.ts": {
       "sha256": "002439490585d7ffb3da4507abe91e6f9669744c28ddeb87863437aa93c614d9",
       "executable": false
@@ -9961,7 +9969,7 @@
       "executable": false
     },
     "src/modules/support-channels/settings.css": {
-      "sha256": "bb61b3f89c9d197b2d1dacb1993117984e35f89c6dd2e224b4b65a14e3bf58ac",
+      "sha256": "edeac6f4aca0f2d2cc107b120e66c5b29397fa32673d538871aab1548661b450",
       "executable": false
     },
     "src/modules/support-channels/Settings.jsx": {
@@ -10841,7 +10849,7 @@
       "executable": false
     },
     "src/modules/workflows/routes-rules.ts": {
-      "sha256": "9b2dd9f6d9b7a511d4f79a1ab70cc73ea3d73750cd075a004ea1b294d76ceb25",
+      "sha256": "731f12d9432b762c44b6b4a7ccc88de6dbf9da4f6f94741c5112d6f499609cb0",
       "executable": false
     },
     "src/modules/workflows/routes-schedules.ts": {
@@ -10889,7 +10897,7 @@
       "executable": false
     },
     "src/modules/workflows/rule-preview.ts": {
-      "sha256": "cd96d3c0fd6e7559d69a22aa204482c6029bebb75f55cc3fe3011287054a98bc",
+      "sha256": "4c9582169d17eef18d125edaf7dd345cc88e2bd99539fb478b2dcb5bc2a729ee",
       "executable": false
     },
     "src/modules/workflows/rule-run.ts": {
@@ -11333,7 +11341,7 @@
       "executable": false
     },
     "src/site/run.json": {
-      "sha256": "e463bd4801061be5116f26823b3fe9fb33bc4d57412f3fc0b73e38155b885859",
+      "sha256": "0386997b28bda8f6fd7ea7adea95f6a5dc434c6c419f6b6dd393f11f75c73ed2",
       "executable": false
     },
     "src/site/run.ts": {
@@ -12945,7 +12953,7 @@
       "executable": false
     },
     "src/ui/native/crm/crm.css": {
-      "sha256": "b419da455b44043bbfdb1c2d08b16e29bd608992fe2453670a378e2abe10a447",
+      "sha256": "64d5c6f799cfcd8f2ff92899cb23bdf0b348cdd3037874c0c6f53fe7ce63040b",
       "executable": false
     },
     "src/ui/native/crm/HubSpotConnection.jsx": {
@@ -13817,11 +13825,11 @@
       "executable": false
     },
     "src/ui/native/pages/security/security.css": {
-      "sha256": "5685cad565539978b459274257e2f4abc613c471715cc7db81173fab2916981d",
+      "sha256": "1a8ce5931b7a4f18e27513b2e3eb4f2a961b0eff6e74450869a429b3e628271e",
       "executable": false
     },
     "src/ui/native/pages/security/SecurityLog.jsx": {
-      "sha256": "4105afedf3eca0cb4d0f62afda04760c6657bc1845c80d69f49cda285068fed5",
+      "sha256": "d8ec679d856f1bbe67ad9243f9e55eb63ee13a06bae766957f1a2fa7c163c5ff",
       "executable": false
     },
     "src/ui/native/pages/security/SecurityPage.jsx": {
@@ -13904,8 +13912,12 @@
       "sha256": "fa87d1a71e85e187ed42c241ad07bc744867380e875901bf970f45dc2035e87b",
       "executable": false
     },
+    "src/ui/native/pages/voice/ProviderSetup.jsx": {
+      "sha256": "e74cf1795cccdce905b81f0e31ca4185aaa2cdc01b768dd068cadc4dbd02c5f0",
+      "executable": false
+    },
     "src/ui/native/pages/voice/voice.css": {
-      "sha256": "e1fc19f389ee9f94ce4d6dd0c2f4c58724d781f7f980d427812a98c143b4b14e",
+      "sha256": "50d01a13fe765cc47bffa145c3145c660a4ef463c930dbdcb310750676342a90",
       "executable": false
     },
     "src/ui/native/pages/voice/VoiceReport.jsx": {
@@ -13936,6 +13948,10 @@
       "sha256": "ee30a0369fcabde16900808022402cd2a898b6df1a296237675f6b5ac1910f31",
       "executable": false
     },
+    "src/ui/native/pages/workflows/rule-language.js": {
+      "sha256": "5f8a9298de1c74f8876e9f62c59ac17bf56fa2fb86780c58b239c3e1559abcbc",
+      "executable": false
+    },
     "src/ui/native/pages/workflows/rule-payload.js": {
       "sha256": "07153b62f5d480b2a1e01ce783349538db4c4cfe953b3ccb4000f0ec24b14a10",
       "executable": false
@@ -13949,7 +13965,7 @@
       "executable": false
     },
     "src/ui/native/pages/workflows/RuleExplanation.jsx": {
-      "sha256": "e792f2c4930d14973e731740517b65ec4ef13dd1e0a6cc3ca303a612fcd5416b",
+      "sha256": "fb6a0a7b52c02096b267365be9d8d4f2eaceb9c0669d7f17c4ccba77ddf7ef75",
       "executable": false
     },
     "src/ui/native/pages/workflows/RuleFieldActions.jsx": {
@@ -13965,11 +13981,11 @@
       "executable": false
     },
     "src/ui/native/pages/workflows/RuleSettings.jsx": {
-      "sha256": "de73a961bd3440539eb0d3b2ef9cb78c8b25db7d9a985f6a593e4dab089e2d18",
+      "sha256": "f4f8741c61418845f45d6a18050d12e6a231ba83a341ab2d340038f47afea261",
       "executable": false
     },
     "src/ui/native/pages/workflows/RuleSummary.jsx": {
-      "sha256": "ca69399ea821559c32951678ca1ebecfa550c5cdb93158742304dee94a76ba25",
+      "sha256": "ecf870281b08eaa7eadda7ae77b88e513c4544e0f3e928aad854e21788888bee",
       "executable": false
     },
     "src/ui/native/pages/workflows/workflow-model.js": {
@@ -13977,7 +13993,7 @@
       "executable": false
     },
     "src/ui/native/pages/workflows/workflows.css": {
-      "sha256": "7e7f0ef4f03cc3a44d32f686e0b846e5cbd4727d5e290790fddb7351ad957fe7",
+      "sha256": "d6d8ffa2a58503b573749ab52dd9531edffed75fd4a0eca90a83ebc880d29e67",
       "executable": false
     },
     "src/ui/native/pages/workflows/WorkflowSettings.jsx": {
@@ -17104,6 +17120,10 @@
       "sha256": "422f95ccb223c4ee9c49159197079e53825a13c8ef3a143092847f601e8cfee9",
       "executable": false
     },
+    "tests/helpers/portal-local-browser.mjs": {
+      "sha256": "5b78dc5590e7144e17c222d9a2c94d50289536d4246609e811425adc417a1aa2",
+      "executable": false
+    },
     "tests/helpers/portal-outcomes.mjs": {
       "sha256": "b1d2b1a6383b4b67381d9df24a97add097029fe80d8f1eb1f7790308e663d745",
       "executable": false
@@ -17293,7 +17313,7 @@
       "executable": false
     },
     "tests/helpers/voice/journeys.mjs": {
-      "sha256": "fc0c00165c7a074c06222a8af02d987a404c0feeb35863199277140c1ef54155",
+      "sha256": "24d64fb6cabf8b677b0dd365a92e65b1619901f6cb283ca570c4d0c447d7270a",
       "executable": false
     },
     "tests/helpers/voice/portable.mjs": {

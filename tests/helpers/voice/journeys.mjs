@@ -60,7 +60,7 @@ export async function routingProof(){const h=await voiceHarness();try{
  // while consent cannot be attested for importing provider media.
  const air=(await app.ok(base+'/numbers',{token,body:{provider:'aircall',provider_id:'8',account_id:account,token:secret,settings}})).data
  const providerWebhookToken='synthetic-happytohelp-63'
- assert.equal((await app.call(base+'/numbers/'+air.id,{token:h.foreign.tokens.owner,method:'PATCH',body:{version:air.version,settings,webhook_token:providerWebhookToken}})).status,404)
+ assert.equal((await app.call(base+'/numbers/'+air.id,{token:h.foreign.tokens.owner,method:'PATCH',body:{version:air.version,settings,webhook_token:providerWebhookToken}})).status,403)
  await app.ok(base+'/numbers/'+air.id,{token,method:'PATCH',body:{version:air.version,settings,webhook_token:providerWebhookToken}})
  const event={token:providerWebhookToken,event:'call.ended',data:{id:8,number:{id:8},direction:'inbound',raw_digits:callerPhone,answered_at:null,recording:'https://example.test/never-import-without-consent'}}
  assert.equal((await app.call('/api/voice/hooks/'+air.id,{body:{...event,token:air.webhook_token}})).status,401,'old locally generated token loses webhook authority')

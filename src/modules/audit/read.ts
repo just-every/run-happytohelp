@@ -14,7 +14,7 @@ UNION ALL SELECT id,created_at,'integration',action,'succeeded','user',actor_id,
 UNION ALL SELECT 'erasure:'||contact_id,last_erased_at,'erasure','contact.erased','succeeded','user',erased_by,'dashboard','contact',contact_id,NULL,json_object('runs',runs,'conversations',conversations,'messages',messages,'attachments',attachments) FROM contact_erasures e WHERE project_id=?1
  AND NOT EXISTS(SELECT 1 FROM audit_events a WHERE a.project_id=e.project_id AND a.action='contact.erased' AND a.target_id=e.contact_id)`
 
-export async function auditPage(env:Env,projectId:string,filter:AuditFilter){
+export async function auditPage(env:Env,projectId:string,filter:AuditFilter,actorId:string){
  const where:string[]=[],args:unknown[]=[projectId]
  const arg=(value:unknown)=>{args.push(value);return `?${args.length}`}
  if(filter.category)where.push(`category=${arg(filter.category)}`)
@@ -24,11 +24,11 @@ export async function auditPage(env:Env,projectId:string,filter:AuditFilter){
  if(filter.before)where.push(`(at<${arg(filter.before.at)} OR at=?${args.length} AND id<${arg(filter.before.id)})`)
  const rows=(await env.DB.prepare(`SELECT * FROM (${events})${where.length?' WHERE '+where.join(' AND '):''} ORDER BY at DESC,id DESC LIMIT ${arg(filter.limit+1)}`).bind(...args).all<AuditRow>()).results
  const page=rows.slice(0,filter.limit),last=page.at(-1)
- return {rows:await labelled(env,projectId,page),next:rows.length>filter.limit&&last?`${last.at}:${last.id}`:null}
+ return {rows:await labelled(env,projectId,page,actorId),next:rows.length>filter.limit&&last?`${last.at}:${last.id}`:null}
 }
 
 /** Names are read now, never stored: removing a teammate's account leaves its events with an opaque id. */
-async function labelled(env:Env,projectId:string,rows:AuditRow[]){
+async function labelled(env:Env,projectId:string,rows:AuditRow[],actorId:string){
  const ids=[...new Set(rows.filter(row=>row.actor_type==='user'&&row.actor_id).map(row=>row.actor_id!))]
  const people=new Map<string,{name:string;email:string}>()
  for(let i=0;i<ids.length;i+=50){
@@ -36,7 +36,7 @@ async function labelled(env:Env,projectId:string,rows:AuditRow[]){
   for(const person of (await env.DB.prepare(`SELECT id,name,email FROM users WHERE id IN (${chunk.map(()=>'?').join(',')})`).bind(...chunk).all<{id:string;name:string;email:string}>()).results)people.set(person.id,person)
  }
  const holds=(await env.DB.prepare('SELECT starts_at,ends_at FROM audit_holds WHERE project_id=? AND released_at IS NULL').bind(projectId).all<{starts_at:number;ends_at:number|null}>()).results
- const targets=await auditTargets(env,projectId,rows)
+ const targets=await auditTargets(env,projectId,rows,actorId)
  return rows.map(row=>{
   const person=row.actor_id?people.get(row.actor_id):undefined
   const actor=row.actor_type==='installation'?'Installation owner (rer)':row.actor_type==='system'?'HappyToHelp':row.actor_type==='api'?'API token':person&&!person.email.startsWith('erased:')?`${person.name} <${person.email}>`:'Former teammate'

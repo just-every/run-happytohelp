@@ -13,6 +13,7 @@ export async function localPortalBrowser({browser,shot}){
    await page.getByRole('status').filter({hasText:'No sign-in link will arrive'}).waitFor()
    assert.equal(await page.getByRole('button',{name:'Email a sign-in link',exact:true}).count(),0)
    await page.getByRole('link',{name:'Browse the Help Center',exact:true}).click()
+   await page.waitForURL(url=>url.pathname.startsWith('/help/'))
    assert.ok(new URL(page.url()).pathname.startsWith('/help/'),'local customer can continue to public help')
   }
   passed=true

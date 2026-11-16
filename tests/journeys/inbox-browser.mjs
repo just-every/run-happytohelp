@@ -19,3 +19,6 @@ test('knowledge references remain reviewable in saved replies, ticket insertion,
 
 import {macroHandoffBrowser} from '../helpers/stranger11-browser.mjs'
 test('an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over',macroHandoffBrowser)
+
+import {internalTicketInboxBrowser} from '../helpers/inbox/internal-ticket-browser.mjs'
+test('an assigned internal-only ticket stays in Yours with matching counts after leaving and reloading Inbox',internalTicketInboxBrowser)

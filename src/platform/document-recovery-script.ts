@@ -32,7 +32,7 @@ const css = `@font-face{font-family:Outfit;font-style:normal;font-weight:100 900
 @keyframes h2h-recovery-pen{from{stroke-dashoffset:1.02}to{stroke-dashoffset:0}}`;
 const markup = `<style>${css}</style><header class="h2h-recovery__header"><a class="h2h-recovery__brand" href="/">${markSvg().trim()}${wordSvg()}<span class="h2h-recovery__name">HappyToHelp</span></a></header>`
     + `<div class="h2h-recovery__body"><svg class="h2h-recovery__pen" viewBox="0 0 240 60" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path pathLength="1" d="${penLoop}"/></svg>`
-    + `<p class="h2h-recovery__message" role="status">The workspace is busy. Trying again in a few seconds…</p></div>`;
+    + `<p class="h2h-recovery__message" role="status">Opening your workspace… We’ll continue automatically.</p></div>`;
 
 /** Script text is never closed early: every `<` is written as an escape. */
 const scriptJson = (value: unknown) => JSON.stringify(value).replaceAll('<', '\\u003c');
@@ -64,7 +64,7 @@ function check(){
  if(quiet<stall||probing||Date.now()<next)return;
  probing=true;next=Date.now()+1000;
  var abort=new AbortController(),limit=setTimeout(function(){abort.abort()},3000);
- fetch('/health',{cache:'no-store',signal:abort.signal}).then(function(r){return r.ok||r.status===503},function(){return false}).then(function(up){
+ fetch('/health',{cache:'no-store',signal:abort.signal}).then(function(r){return r.ok},function(){return false}).then(function(up){
   clearTimeout(limit);probing=false;
   if(!up||done||Date.now()-last<stall)return;
   finish();location.reload();

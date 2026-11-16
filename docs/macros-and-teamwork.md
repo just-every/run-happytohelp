@@ -29,5 +29,3 @@ The surviving operator thread includes the source histories. Customer access sta
 Open **Merge history → Undo merge** to restore the source to the queue. Undo is refused if either ticket changed or partner activity advanced after the merge. Review the retained history when undo is unsafe.
 
 Use **Forward to partner** to select customer-visible messages and files for an external partner. Preview the recipient and exact content first. Internal notes are never forwarded. The partner receives its own reply address; replies and files return to **Private partner threads** in the ticket. They do not enter customer history or trigger customer acknowledgements. Revoke partner replies when that collaboration ends. A delivery whose outcome is uncertain is shown as uncertain and is never automatically resent.
-
-Handoff clarification: Run Edit Run fleet, 16 November 2026.

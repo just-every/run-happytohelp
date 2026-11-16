@@ -1773,7 +1773,7 @@
       "executable": false
     },
     "docs/macros-and-teamwork.md": {
-      "sha256": "3c21394d0399d86d2c9704f095008f467bcc43ca4745a54e372a5bdd4d528584",
+      "sha256": "321837e0c5062428015531b5191f9f2e1bba0453dc04a6b02e91e9d55a8effcd",
       "executable": false
     },
     "docs/managed-conversation-mail.md": {
@@ -1825,7 +1825,7 @@
       "executable": false
     },
     "docs/request-forms.md": {
-      "sha256": "9b6f4748c34ce7a34cd98fd4511d9fa3fe89e7642491f50883cb0408ea7431e7",
+      "sha256": "59bb8caeaf3cc5157d634e60064e3bc7428531cfbbc65a0bcd55b24d7f857380",
       "executable": false
     },
     "docs/SETUP-WORKFLOW.md": {
@@ -5921,7 +5921,7 @@
       "executable": false
     },
     "src/modules/forms/definition.ts": {
-      "sha256": "a4c095fc4c70f2d12c10d84b2e9e98074afe0c6483e0bc9c0ae5a7d32476ad85",
+      "sha256": "16cc7fbeb8c5dc65da9fd7197f6d02663004c24d8d3ee4823f21d313b5a4d692",
       "executable": false
     },
     "src/modules/forms/erasure.ts": {
@@ -10865,7 +10865,7 @@
       "executable": false
     },
     "src/modules/workflows/routes-sla.ts": {
-      "sha256": "22bc6da1a7bf0ab90d07f5580b5878f155c80a21da8da0a1227c851cca7d28ce",
+      "sha256": "72d6c18c793b86a12105dc9ef4885752fb82f9d54212f7a940b85abfbf6f0cbb",
       "executable": false
     },
     "src/modules/workflows/routes.ts": {
@@ -11049,7 +11049,7 @@
       "executable": false
     },
     "src/platform/document-recovery-script.ts": {
-      "sha256": "7dfc0a8ed7b9e54512da2f240272b4d9e836e17debfb745668edf22f58ea72db",
+      "sha256": "d6795c6f44197ea49b4885eb52dd3cf8fe7b9afc02cfd74aca2ad418dc2899a4",
       "executable": false
     },
     "src/platform/document-recovery.ts": {
@@ -13005,7 +13005,7 @@
       "executable": false
     },
     "src/ui/native/Dashboard.tsx": {
-      "sha256": "fe41daaa562fb36f998929b6b955463df7c8a86e15b0b63249d7a6b2880181fa",
+      "sha256": "7d1deff70b559e691f9a85298e380b7dfb6fdf0d4f6738bdb506c54fa8aa04fe",
       "executable": false
     },
     "src/ui/native/DashboardClient.d.ts": {
@@ -17469,11 +17469,11 @@
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {
-      "sha256": "7c8af0cc8fdabbf85e0bc6122685a78b5e7dce1a92f326ab06e5a5d00b73723f",
+      "sha256": "bc41304cf95af1dd03b71afc6b7245214d3309913937e9e51ee5ea28746e82e8",
       "executable": false
     },
     "tests/journeys/inbox.mjs": {
-      "sha256": "db35f9e4b32cf6b56ae4cf08d62c1041e712014f0623ff71df74e7090629a604",
+      "sha256": "f5e8fd7b99d5b3e93bb578d98ec1eb6e0be0ac939946a68512998d34128bd858",
       "executable": false
     },
     "tests/journeys/installer-nightly.mjs": {

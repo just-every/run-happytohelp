@@ -10,6 +10,8 @@ import {calendarData,calendarDefinition} from './calendars'
 import {policyData,policyDefinition} from './sla-policy'
 import {validateFieldValue} from '../tickets/fields'
 import {publicField} from '../forms/definition'
+import {fieldVisibility} from '../forms/source-eligibility'
+import {publicFieldReadSql} from '../forms/field-access'
 import {ticketSla,liveSlaTicketSql} from './sla'
 
 export const workflowSlaRoutes=new Hono<AppEnv>()
@@ -41,10 +43,10 @@ for(const kind of ['workflow-calendars','sla-policies'] as const){
    }
    const conditions=JSON.parse(policy.conditions_json),fieldIds=Object.keys(conditions.fields??{})
    if(fieldIds.length){
-    const fields=(await c.env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id IN (SELECT value FROM json_each(?))').bind(actor.projectId,JSON.stringify(fieldIds)).all<any>()).results
+    const fields=(await fieldVisibility(c.env,actor.projectId)).filter(field=>fieldIds.includes(field.id))
     if(fields.length!==fieldIds.length||fields.some(f=>!publicField(f)))invalid('SLA conditions require customer-visible workspace fields')
     for(const field of fields){if(validateFieldValue(field,conditions.fields[field.id])===null)invalid('SLA field conditions require a typed value')}
-    extra.push("NOT EXISTS(SELECT 1 FROM json_each(?) ref WHERE NOT EXISTS(SELECT 1 FROM ticket_fields f WHERE f.project_id=? AND f.id=json_extract(ref.value,'$[0]') AND f.updated_at=json_extract(ref.value,'$[1]')))");args.push(JSON.stringify(fields.map(f=>[f.id,f.updated_at])),actor.projectId)
+    extra.push(`NOT EXISTS(SELECT 1 FROM json_each(?) ref WHERE NOT EXISTS(SELECT 1 FROM ticket_fields f WHERE f.project_id=? AND f.id=json_extract(ref.value,'$[0]') AND f.updated_at=json_extract(ref.value,'$[1]') AND ${publicFieldReadSql('f')}))`);args.push(JSON.stringify(fields.map(f=>[f.id,f.updated_at])),actor.projectId)
    }
    const formIds=conditions.form_ids??[]
    if(formIds.length){

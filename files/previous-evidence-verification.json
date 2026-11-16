@@ -1,0 +1,12 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "evidenceRef": "refs/heads/evidence/hh-stranger11-behaviour-1",
+  "evidenceHead": "6a54f58a34b561f71f4ff022b288ffdea456e715",
+  "productHead": "3c3580d07bb9fb4cb32455f71e7c7a44ea8c9981",
+  "filesVerified": 41,
+  "manifestSha256": "065e9793a846833621c873eb6b773a54e53a83c5f964156996a61d67d370ed75",
+  "productCheckoutUnchanged": true,
+  "evidenceIdentitiesVerified": true,
+  "at": "2026-11-16T17:14:30.369175+00:00",
+  "scope": "Verification of the preceding evidence snapshot; the final transport head is given in the terminal and independently verified by the fleet collector."
+}

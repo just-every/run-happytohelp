@@ -115,6 +115,12 @@
       "sha256": "cde924242378a7425dc797c5c3fc55ec0250bc54878afd354ddedca087959be3"
     },
     {
+      "blob": "dcd091ea54d0a8fd536e217bb385033df5a877f1",
+      "bytes": 631,
+      "path": "previous-evidence-verification.json",
+      "sha256": "04fa42be8d3da07b7594f0e40f562daa37863e7da94b204f965456c8602f5a58"
+    },
+    {
       "blob": "d4b917b167e99a16789fc189346b6628cc12209f",
       "bytes": 180118,
       "path": "stranger11-after-fields/1440-default.png",

@@ -1,0 +1,80 @@
+{
+  "head": "654419a28cc71d7e62c34b5c8af59411100f49af",
+  "sla": {
+    "status": 201,
+    "body": {
+      "data": {
+        "project_id": "p-synthetic-happytohelp-11",
+        "id": "877ea71b-bff1-4e29-8808-07c61c06234e",
+        "name": "Stock commitment",
+        "calendar_id": "06569eb4-1816-4c61-ad9d-cec20bee5bad",
+        "position": 0,
+        "first_response_minutes": 60,
+        "next_response_minutes": null,
+        "resolution_minutes": 480,
+        "pause_on_hold": true,
+        "approaching_minutes": 15,
+        "unattended_minutes": null,
+        "active": true,
+        "updated_at": 1794857462794,
+        "slack_destination_id": null,
+        "conditions": {
+          "priorities": [],
+          "plans": [],
+          "channels": [],
+          "brands": [],
+          "form_ids": [],
+          "fields": {
+            "48d4ff92-4d53-4b46-99dd-534095e6ee0f": "SN-2"
+          }
+        },
+        "backup_user_ids": []
+      }
+    },
+    "customRole": "role_804f0435-d444-4a0a-82a2-1d1ed4e02225"
+  },
+  "internal": {
+    "id": "ticket-13b8c40eb6b50b38a422be112e426248cd5e133dbff576f17d5b5e6914285b82",
+    "assigned": "owner-synthetic-happytohelp-11",
+    "lists": {
+      "/api/dashboard/projects/p-synthetic-happytohelp-11/conversations?view=mine": {
+        "ids": [
+          "ticket-13b8c40eb6b50b38a422be112e426248cd5e133dbff576f17d5b5e6914285b82"
+        ],
+        "total": 1,
+        "containsTicket": true
+      },
+      "/api/dashboard/conversations?view=mine": {
+        "ids": [
+          "ticket-13b8c40eb6b50b38a422be112e426248cd5e133dbff576f17d5b5e6914285b82"
+        ],
+        "total": 1,
+        "containsTicket": true
+      },
+      "/api/dashboard/projects/p-synthetic-happytohelp-11/conversations?view=open": {
+        "ids": [
+          "ticket-13b8c40eb6b50b38a422be112e426248cd5e133dbff576f17d5b5e6914285b82"
+        ],
+        "total": 1,
+        "containsTicket": true
+      },
+      "/api/dashboard/projects/p-synthetic-happytohelp-11/conversations?view=mine&q=Casey": {
+        "ids": [
+          "ticket-13b8c40eb6b50b38a422be112e426248cd5e133dbff576f17d5b5e6914285b82"
+        ],
+        "total": 1,
+        "containsTicket": true
+      }
+    },
+    "counts": {
+      "mine": 1,
+      "open": 1,
+      "unassigned": 0,
+      "ai": 0,
+      "closed": 0,
+      "unread": 0,
+      "snoozed": 0,
+      "suspended": 0
+    }
+  }
+}

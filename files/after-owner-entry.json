@@ -1,0 +1,17 @@
+{
+  "stage": "after",
+  "head": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "worktreeDirty": false,
+  "path": "Setup",
+  "elapsedMs": 15248,
+  "notices": [
+    "Opening your workspace… We’ll continue automatically.",
+    "Loading your workspace…"
+  ],
+  "failures": [],
+  "viewportAssertions": 1440,
+  "screenshots": [
+    "after-setup-1440.png",
+    "after-setup-390.png"
+  ]
+}

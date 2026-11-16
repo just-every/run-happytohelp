@@ -1,0 +1,24 @@
+{
+  "candidateHead": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "forbiddenPaths": [],
+  "addedDiffCredentialShapeMatches": 0,
+  "changedPaths": [
+    "base-copies.json",
+    "deploy.json",
+    "docs/macros-and-teamwork.md",
+    "docs/request-forms.md",
+    "management/integration/managed-deploy.json",
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json",
+    "src/modules/forms/definition.ts",
+    "src/modules/forms/source-eligibility.ts",
+    "src/modules/workflows/routes-sla.ts",
+    "src/platform/document-recovery-script.ts",
+    "src/ui/native/Dashboard.tsx",
+    "tests/helpers/inbox/new-ticket-configuration.mjs",
+    "tests/helpers/workflows/sla-field-access.mjs",
+    "tests/journeys/inbox.mjs"
+  ],
+  "fullPublicationScan": "reserved for fleet Mac"
+}

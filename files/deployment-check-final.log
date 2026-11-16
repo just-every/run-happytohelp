@@ -1,0 +1,1 @@
+Runtime secret declarations match packaging and the emitted deployment spec; the deploy declaration binds every EMAIL_* name the Worker reads

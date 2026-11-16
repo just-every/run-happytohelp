@@ -1,0 +1,8 @@
+{
+  "journeyRegistrationCountBefore": 109,
+  "journeyRegistrationCountAfter": 110,
+  "addedSlaRegistrations": 1,
+  "extendedInternalEmailJourney": 1,
+  "defaultCap": 200,
+  "note": "Top-level journey registrations. The passing separate internal-ticket prototype was consolidated into the existing internal-email flow to avoid another 166-second emitted runtime setup. Assertions were retained; no main test was removed, skipped or weakened."
+}

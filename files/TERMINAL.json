@@ -1,0 +1,20 @@
+{
+  "branch": "cloud/hh-stranger11-followups-1",
+  "head": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "remoteHead": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "custody": "PUSHED",
+  "ready": false,
+  "ci": {
+    "runId": 43948782221,
+    "conclusion": null,
+    "head_sha": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43948782221",
+    "status": "in_progress"
+  },
+  "pr": null,
+  "blockers": [],
+  "pending": [
+    "Exact-SHA Verify still in progress"
+  ],
+  "clauseStatusesChanged": false
+}

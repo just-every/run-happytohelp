@@ -1,0 +1,32 @@
+{
+  "head": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "commits": [
+    {
+      "sha": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+      "author": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "committer": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "trailers": "",
+      "message": "Pin rer 0.2.121 and align SLA field visibility at commit\n\nRefresh Base copy provenance at f2737d02a5f77be042cfdfd237a7dce4689cbe2f and declare the switchable public mail-provider default. Reuse request-form visibility snapshots for selected SLA fields. Keep assigned internal-only Inbox reload coverage in the existing private-email browser flow."
+    },
+    {
+      "sha": "d4164e6041092867cdcd7c13703f51bea3a788cd",
+      "author": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "committer": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "trailers": "",
+      "message": "Fix workspace field eligibility and clarify entry recovery [skip ci]"
+    }
+  ],
+  "validated": true
+}

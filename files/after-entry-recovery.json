@@ -1,0 +1,13 @@
+{
+  "head": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "worktreeDirty": false,
+  "networkEdgeFixture": "actual dashboard prefix with cut document and two or more 503 health responses",
+  "health503": 2,
+  "documentRequests": 6,
+  "automaticSetupRecovery": true,
+  "viewportAssertions": 1440,
+  "screenshots": [
+    "after-entry-recovery-1440.png",
+    "after-entry-recovery-390.png"
+  ]
+}

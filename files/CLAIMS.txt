@@ -1,0 +1,7 @@
+CLAIM SLA-001 PARTIAL points=none tests=tests/journeys/inbox.mjs#SLA field conditions admit only fields readable by every current workspace role
+CLAIM FORMS-001 PARTIAL points=none tests=tests/journeys/knowledge.mjs#a translated request admits typed conditional values and attributes its prior article view exactly once through replay; tests/journeys/workflows-browser.mjs#a lead adds a readable ticket field to a public request form with default permissions and an empty read-role list
+CLAIM OUTBOUND-001 PARTIAL points=none tests=tests/helpers/inbox/new-ticket-configuration.mjs#newTicketConfigurationBrowser
+CLAIM DESK-001 PARTIAL points=none tests=tests/helpers/inbox/new-ticket-configuration.mjs#newTicketConfigurationBrowser
+CLAIM NATIVE-001 PARTIAL points=none tests=packet/owner-entry-probe.mjs#nativeOwnerEntryAndRecovery
+CLAIM PUBLIC-005 PARTIAL points=none tests=packet/docs-proof.mjs#publishedDocumentationAttribution
+CLAIM SOURCE-001 PARTIAL points=none tests=scripts/edition-authoring/cli.mjs#check

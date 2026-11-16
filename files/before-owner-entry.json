@@ -1,0 +1,14 @@
+{
+  "stage": "before",
+  "path": "Setup",
+  "elapsedMs": 16683,
+  "notices": [
+    "Loading your workspace…"
+  ],
+  "failures": [],
+  "viewportAssertions": 1440,
+  "screenshots": [
+    "before-setup-1440.png",
+    "before-setup-390.png"
+  ]
+}

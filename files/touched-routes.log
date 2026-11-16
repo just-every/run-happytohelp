@@ -1,0 +1,10 @@
+✔ SLA field conditions admit only fields readable by every current workspace role (10090.0696ms)
+✔ a translated request admits typed conditional values and attributes its prior article view exactly once through replay (27302.85049ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 38573.468859

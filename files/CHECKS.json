@@ -1,0 +1,62 @@
+{
+  "candidateHead": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "branch": "cloud/hh-stranger11-followups-1",
+  "checks": [
+    {
+      "check": "source lock/check",
+      "exit": 0,
+      "log": "source-check-candidate.log"
+    },
+    {
+      "check": "offline Base copy check",
+      "exit": 0,
+      "log": "base-check-final.log"
+    },
+    {
+      "check": "first-party rer check",
+      "exit": 0,
+      "log": "rer-check-candidate.log"
+    },
+    {
+      "check": "typecheck",
+      "exit": 0,
+      "log": "typecheck-final.log"
+    },
+    {
+      "check": "SLA and translated request-form route journeys",
+      "exit": 0,
+      "log": "touched-routes-final.log"
+    },
+    {
+      "check": "published-field browser journey and internal prototype",
+      "exit": 0,
+      "log": "touched-browser-final.log"
+    },
+    {
+      "check": "consolidated internal-email browser journey",
+      "exit": 0,
+      "log": "internal-email-browser-final.log"
+    },
+    {
+      "check": "deployment secret/binding declarations",
+      "exit": 0,
+      "log": "deployment-check-final.log"
+    },
+    {
+      "check": "rer build",
+      "exit": 0,
+      "log": "build-final.log"
+    }
+  ],
+  "consolidatedBrowserExit": {
+    "exit": 0,
+    "finished": "2026-11-16T20:19:00Z",
+    "journey": "newTicketConfigurationBrowser"
+  },
+  "setup": {
+    "resetExit": 0,
+    "setupExit": 0,
+    "privateLogsNotTransferred": true
+  },
+  "fullLocalSuite": "not run; scoped checks per brief, full Verify runs on exact pushed SHA"
+}

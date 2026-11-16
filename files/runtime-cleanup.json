@@ -1,0 +1,9 @@
+{
+  "candidateHead": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "productWorktreeClean": true,
+  "stoppedOwnDevCliPid": 47807,
+  "signal": "SIGINT",
+  "devWrapperExit": 130,
+  "remainingRecordedLiveRuntimePids": [],
+  "browsers": "closed by each probe finally block"
+}

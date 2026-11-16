@@ -1,0 +1,29 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+Progress: resolved 0, reused 1, downloaded 0, added 0
+ WARN  deprecated @fortawesome/react-fontawesome@0.2.6: v0.2.x is no longer supported. Unless you are still using FontAwesome 5, please update to v3.1.1 or greater.
+Progress: resolved 499, reused 482, downloaded 0, added 0
+Progress: resolved 562, reused 513, downloaded 1, added 0
+Progress: resolved 609, reused 523, downloaded 1, added 0
+ WARN  2 deprecated subdependencies found: core-js@3.18.3, node-domexception@1.0.0
+Packages: +1
++
+Progress: resolved 609, reused 523, downloaded 3, added 1, done
+ WARN  Issues with peer dependencies found
+.
+└─┬ react-timeago 7.2.0
+  └── ✕ unmet peer react@"^16.0.0 || ^17.0.0 || ^18.0.0": found 19.2.8
+
+devDependencies:
+- @runeditrun/rer 0.2.119
++ @runeditrun/rer 0.2.121
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: @google/genai, @parcel/watcher, core-js,            │
+│   core-js-pure, protobufjs.                                                  │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Done in 8.4s using pnpm v10.12.4

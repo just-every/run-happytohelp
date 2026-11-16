@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-16T11:29:20Z",
+  "status": "READY",
+  "branch": "cloud/hh-rer-0219-adopt-1",
+  "head": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "run_id": 43847690039,
+  "ci_status": "completed",
+  "ci_conclusion": "success",
+  "ci_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039",
+  "clause_changes": [],
+  "counts_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "counts_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "product_pr": null,
+  "blocker": "None for this candidate. The fleet still performs its independent publication scan, integration checks and landing on its own machine.",
+  "status_line": "READY branch=cloud/hh-rer-0219-adopt-1 head=2044dfa31d6b5e43dea1224bca08e0b509e48396"
+}

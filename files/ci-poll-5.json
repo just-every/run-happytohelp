@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-16T10:51:44.035338+00:00",
+  "epoch": 1794826304.0354197,
+  "command": [
+    "gh",
+    "api",
+    "repos/just-every/run-happytohelp/actions/runs/43847690039",
+    "--jq",
+    "{status,conclusion,head_sha,html_url}"
+  ],
+  "exit": 0,
+  "run": {
+    "conclusion": "cancelled",
+    "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039",
+    "status": "completed"
+  }
+}

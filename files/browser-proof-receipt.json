@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-16T11:03:32.730Z",
+  "head": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "browser": "/usr/bin/chromium",
+  "args": [
+    "--no-sandbox"
+  ],
+  "boundary": "Browser render proof of copied upstream handler outputs using test-only inputs and the unchanged seed theme. The one-click error is injected by a fixture account adapter. No native workspace, live owner entry, provider or hosted installation is exercised. Assertions run at 1440 only; 390 is separate visual proof.",
+  "proofs": [
+    {
+      "screen": "gate-owner-only",
+      "width": 1440,
+      "file": "browser/gate-owner-only-1440.png",
+      "source": "src/modules/operator-auth/dev-gate.mjs",
+      "asserted": true
+    },
+    {
+      "screen": "gate-owner-only",
+      "width": 390,
+      "file": "browser/gate-owner-only-390.png",
+      "source": "src/modules/operator-auth/dev-gate.mjs",
+      "asserted": false
+    },
+    {
+      "screen": "gate-invited",
+      "width": 1440,
+      "file": "browser/gate-invited-1440.png",
+      "source": "src/modules/operator-auth/dev-gate.mjs",
+      "asserted": true
+    },
+    {
+      "screen": "gate-invited",
+      "width": 390,
+      "file": "browser/gate-invited-390.png",
+      "source": "src/modules/operator-auth/dev-gate.mjs",
+      "asserted": false
+    },
+    {
+      "screen": "one-click-refused",
+      "width": 1440,
+      "file": "browser/one-click-refused-1440.png",
+      "source": "src/modules/operator-auth/routes.mjs",
+      "asserted": true
+    },
+    {
+      "screen": "one-click-refused",
+      "width": 390,
+      "file": "browser/one-click-refused-390.png",
+      "source": "src/modules/operator-auth/routes.mjs",
+      "asserted": false
+    }
+  ],
+  "exit": 0
+}

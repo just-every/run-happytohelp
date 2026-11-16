@@ -1,0 +1,90 @@
+[
+  {
+    "name": "installed-source-check",
+    "command": [
+      "node",
+      "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "exit": 0,
+    "seconds": 0.84,
+    "log": "installed-source-check.log",
+    "at": "2026-11-16T10:13:40.746740+00:00"
+  },
+  {
+    "name": "seed-source-check",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "exit": 0,
+    "seconds": 0.54,
+    "log": "seed-source-check.log",
+    "at": "2026-11-16T10:13:41.289270+00:00"
+  },
+  {
+    "name": "base-origin-offline",
+    "command": [
+      "node",
+      "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+      "verify-base",
+      "--offline"
+    ],
+    "exit": 0,
+    "seconds": 0.33,
+    "log": "base-origin-offline.log",
+    "at": "2026-11-16T10:13:41.615720+00:00"
+  },
+  {
+    "name": "contract-docs-source",
+    "command": [
+      "node",
+      "src/site/base/contract-docs.mjs",
+      "check"
+    ],
+    "exit": 0,
+    "seconds": 0.17,
+    "log": "contract-docs-source.log",
+    "at": "2026-11-16T10:13:41.782334+00:00"
+  },
+  {
+    "name": "contract-docs-entry",
+    "command": [
+      "node",
+      "scripts/contract-docs.mjs",
+      "check"
+    ],
+    "exit": 0,
+    "seconds": 0.15,
+    "log": "contract-docs-entry.log",
+    "at": "2026-11-16T10:13:41.935100+00:00"
+  },
+  {
+    "name": "typecheck",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 14.42,
+    "log": "typecheck.log",
+    "at": "2026-11-16T10:13:56.358568+00:00"
+  },
+  {
+    "name": "first-party-check",
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "exit": 0,
+    "seconds": 1.69,
+    "log": "first-party-check.log",
+    "at": "2026-11-16T10:13:58.048908+00:00"
+  }
+]

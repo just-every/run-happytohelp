@@ -1,0 +1,91 @@
+{
+  "at": "2026-11-16T10:47:51.714086+00:00",
+  "action": "SIGINT to owned rer verify after recorded email failure; exact-SHA assistant-and-knowledge CI shard passed; stop remaining local broad tests before isolated pinned-Node retry",
+  "root": 35539,
+  "processes": [
+    {
+      "pid": 35539,
+      "parent": 35528,
+      "comm": "node",
+      "start_ticks": "161797"
+    },
+    {
+      "pid": 35551,
+      "parent": 35539,
+      "comm": "esbuild",
+      "start_ticks": "161941"
+    },
+    {
+      "pid": 35645,
+      "parent": 35539,
+      "comm": "MainThread",
+      "start_ticks": "163369"
+    },
+    {
+      "pid": 35657,
+      "parent": 35645,
+      "comm": "sh",
+      "start_ticks": "163394"
+    },
+    {
+      "pid": 36005,
+      "parent": 35657,
+      "comm": "MainThread",
+      "start_ticks": "167649"
+    },
+    {
+      "pid": 36017,
+      "parent": 36005,
+      "comm": "sh",
+      "start_ticks": "167675"
+    },
+    {
+      "pid": 36018,
+      "parent": 36017,
+      "comm": "MainThread",
+      "start_ticks": "167675"
+    },
+    {
+      "pid": 47506,
+      "parent": 36018,
+      "comm": "MainThread",
+      "start_ticks": "300295"
+    },
+    {
+      "pid": 51906,
+      "parent": 36018,
+      "comm": "MainThread",
+      "start_ticks": "340321"
+    },
+    {
+      "pid": 51918,
+      "parent": 51906,
+      "comm": "esbuild",
+      "start_ticks": "340355"
+    },
+    {
+      "pid": 53620,
+      "parent": 51906,
+      "comm": "workerd",
+      "start_ticks": "362499"
+    },
+    {
+      "pid": 53655,
+      "parent": 47506,
+      "comm": "MainThread",
+      "start_ticks": "362839"
+    },
+    {
+      "pid": 53668,
+      "parent": 53655,
+      "comm": "esbuild",
+      "start_ticks": "362937"
+    },
+    {
+      "pid": 53673,
+      "parent": 53655,
+      "comm": "workerd",
+      "start_ticks": "362946"
+    }
+  ]
+}

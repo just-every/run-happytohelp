@@ -1,0 +1,89 @@
+{
+  "manual_gh_limit": 10,
+  "manual_source_inventory_reads": 1,
+  "ci_gh_invocations": [
+    {
+      "file": "ci-discovery.json",
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-happytohelp/actions/runs?head_sha=2044dfa31d6b5e43dea1224bca08e0b509e48396&per_page=100"
+      ]
+    },
+    {
+      "file": "ci-poll-1.json",
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-happytohelp/actions/runs/43847690039",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    },
+    {
+      "file": "ci-poll-2.json",
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-happytohelp/actions/runs/43847690039",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    },
+    {
+      "file": "ci-poll-3.json",
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-happytohelp/actions/runs/43847690039",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    },
+    {
+      "file": "ci-poll-4.json",
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-happytohelp/actions/runs/43847690039",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    },
+    {
+      "file": "ci-jobs-1.json",
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-happytohelp/actions/runs/43847690039/jobs?per_page=100"
+      ]
+    },
+    {
+      "file": "ci-poll-5.json",
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-happytohelp/actions/runs/43847690039",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    },
+    {
+      "file": "ci-rerun-request.json",
+      "command": [
+        "gh",
+        "api",
+        "--method",
+        "POST",
+        "repos/just-every/run-happytohelp/actions/jobs/133232682548/rerun",
+        "--include"
+      ]
+    }
+  ],
+  "task_level_gh_invocations_used": 10,
+  "remaining": 0,
+  "final_read_not_before_epoch": 1794828517.8925996,
+  "final_read_not_before": "2026-11-16T11:28:37.892600+00:00",
+  "note": "The mandatory official refresh acquires immutable Base objects using its own provider reader. The final task-level observation is reserved until after the rerun job timeout window, including a queue/gate allowance.",
+  "terminal_observation": "ci-terminal.json"
+}

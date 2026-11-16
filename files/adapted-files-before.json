@@ -1,0 +1,7 @@
+{
+  ".github/workflows/verify.yml": "ea11c193a458c25e4a3ffd9901f8fb692252f1767058a8b6ddad7a1003c01643",
+  "scripts/ci/verify-evidence.mjs": "57a7a8b3c15eeb10bc204f41995943e284f1fc8b4696d506ec09427fdb91cd43",
+  "scripts/ci/verify-light.mjs": "2c3fe9c0a256074f09b84cdfc94e58c656a67ac079f6dc4001a23867ee5ca86b",
+  "scripts/ci/verify-plan.mjs": "345e82c52ff6f251a94b4382db3fd4e6b4960cd53e2cdac53f60ba593b7b284a",
+  "scripts/delivery/base/schema/generate-business-role.mjs": "189c4f2d52294314749049c97a3f25b4276f58de6bcc1fe3eb03d918ab16b9dc"
+}

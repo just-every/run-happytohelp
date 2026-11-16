@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-16T10:57:07.892582+00:00",
+  "epoch": 1794826627.8925996,
+  "command": [
+    "gh",
+    "api",
+    "--method",
+    "POST",
+    "repos/just-every/run-happytohelp/actions/jobs/133232682548/rerun",
+    "--include"
+  ],
+  "exit": 0,
+  "http_status": 201,
+  "run_id": 43847690039,
+  "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "job_id": 133232682548,
+  "job": "Verify / import-and-reports",
+  "scope": "rerun the cancelled job and dependent gates, retaining successful exact-head jobs"
+}

@@ -1,0 +1,66 @@
+{
+  "build": {
+    "if": "${{ needs.plan.outputs.coverage != 'reuse' }}",
+    "matrix_shards": 0,
+    "needs": "plan"
+  },
+  "checks": {
+    "if": "${{ needs.plan.outputs.coverage == 'full' && needs.plan.outputs.tier != 'nightly' }}",
+    "matrix_shards": 8,
+    "needs": [
+      "plan",
+      "build"
+    ]
+  },
+  "full-push-proof": {
+    "if": "${{ !cancelled() && github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') && needs.plan.outputs.tier == 'push' && needs.plan.outputs.coverage == 'full' && needs.build.result == 'success' && needs.checks.result == 'success' && (needs.plan.outputs.size_check != 'true' || needs.size-check.result == 'success') }}",
+    "matrix_shards": 0,
+    "needs": [
+      "plan",
+      "build",
+      "checks",
+      "size-check"
+    ]
+  },
+  "nightly-proof": {
+    "if": "${{ !cancelled() && github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.plan.outputs.tier == 'nightly' || needs.plan.outputs.tier == 'all') && needs.plan.outputs.coverage == 'full' && needs.build.result == 'success' && needs.slow.result == 'success' && needs.size-check.result == 'success' }}",
+    "matrix_shards": 0,
+    "needs": [
+      "plan",
+      "build",
+      "slow",
+      "size-check"
+    ]
+  },
+  "plan": {
+    "if": null,
+    "matrix_shards": 0,
+    "needs": []
+  },
+  "size-check": {
+    "if": "${{ needs.plan.outputs.size_check == 'true' }}",
+    "matrix_shards": 0,
+    "needs": [
+      "plan",
+      "build"
+    ]
+  },
+  "slow": {
+    "if": "${{ needs.plan.outputs.coverage == 'full' && needs.plan.outputs.tier != 'push' }}",
+    "matrix_shards": 0,
+    "needs": "plan"
+  },
+  "verify": {
+    "if": "${{ always() }}",
+    "matrix_shards": 0,
+    "needs": [
+      "plan",
+      "build",
+      "checks",
+      "size-check",
+      "slow",
+      "full-push-proof",
+      "nightly-proof"
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "head": "e5fb53dc305f53a71ff0b6db81d5eec7dfd0104f",
+  "rer": "0.2.117",
+  "base_revisions": [
+    "47a3a3f3300dd861fa9d05fa33a88f1e7b73e7d8"
+  ],
+  "contract_sha256": "ae8feea8b7998aa729edadf621d7f3809aa83bbe073fd3e053e1c1fb8b9b04ec",
+  "copy_count": 437,
+  "copy_files": 988,
+  "counts": {
+    "core": {
+      "done": 4,
+      "partial": 71,
+      "missing": 11,
+      "total": 86
+    },
+    "agent_surface": {
+      "done": 0,
+      "partial": 0,
+      "missing": 5,
+      "total": 5
+    },
+    "all": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    }
+  }
+}

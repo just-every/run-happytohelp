@@ -1,0 +1,30 @@
+commit 2044dfa31d6b5e43dea1224bca08e0b509e48396
+Author: Run Edit Run fleet <fleet@runeditrun.com>
+Commit: Run Edit Run fleet <fleet@runeditrun.com>
+
+    Adopt rer 0.2.119 and isolate contract docs verification
+
+ .github/workflows/verify.yml                       |  32 +-
+ base-copies.json                                   | 915 +++++++++++----------
+ package.json                                       |   2 +-
+ pnpm-lock.yaml                                     |  10 +-
+ scripts/edition-authoring/README.md                |   2 +-
+ scripts/edition-authoring/lock.mjs                 |  30 +-
+ sources.lock.json                                  |  50 +-
+ src/modules/d1-transport/limits.mjs                |   6 +-
+ src/modules/operator-auth/accounts/one-click.mjs   |   2 +
+ src/modules/operator-auth/dev-gate.mjs             |   5 +-
+ src/modules/operator-auth/routes.mjs               |   4 +
+ .../agent-base/modules/agent-door/ADOPTING.md      |   9 +
+ .../modules/agent-door/conformance/audit.mjs       |   3 +
+ src/vendor/agent-base/modules/agent-door/index.ts  |   3 +-
+ .../agent-base/modules/agent-door/policy-event.ts  |  19 +
+ .../modules/operator-auth/accounts/one-click.mjs   |   2 +
+ .../agent-base/modules/operator-auth/dev-gate.mjs  |   5 +-
+ .../agent-base/modules/operator-auth/dev/index.mjs |   8 +-
+ .../modules/operator-auth/dev/invited.mjs          |  11 +
+ .../agent-base/modules/operator-auth/routes.mjs    |   4 +
+ .../modules/operator-auth/accounts/one-click.mjs   |   2 +
+ src/vendor/base/modules/operator-auth/dev-gate.mjs |   5 +-
+ src/vendor/base/modules/operator-auth/routes.mjs   |   4 +
+ 23 files changed, 635 insertions(+), 498 deletions(-)

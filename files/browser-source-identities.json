@@ -1,0 +1,8 @@
+{
+  "src/modules/operator-auth/dev-gate.mjs": "0c15ecce5ad4ef154fc1d2c633f57d9316f2b0e95703b69bcd8b2c62b0edcb53",
+  "src/vendor/base/modules/operator-auth/dev-gate.mjs": "0c15ecce5ad4ef154fc1d2c633f57d9316f2b0e95703b69bcd8b2c62b0edcb53",
+  "src/vendor/agent-base/modules/operator-auth/dev-gate.mjs": "0c15ecce5ad4ef154fc1d2c633f57d9316f2b0e95703b69bcd8b2c62b0edcb53",
+  "src/modules/operator-auth/routes.mjs": "e6e8d6055140836085ffb272fd9cf720088d877c76d4da35fe1120a7406ec4de",
+  "src/vendor/base/modules/operator-auth/routes.mjs": "e6e8d6055140836085ffb272fd9cf720088d877c76d4da35fe1120a7406ec4de",
+  "src/vendor/agent-base/modules/operator-auth/routes.mjs": "e6e8d6055140836085ffb272fd9cf720088d877c76d4da35fe1120a7406ec4de"
+}

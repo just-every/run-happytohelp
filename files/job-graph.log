@@ -1,0 +1,2 @@
+PASS: both generator commands and full-history inputs preserved; contract-docs is independent; build and all shard/proof jobs unchanged; aggregate rejects failure/skipped/cancelled.
+Graph proof: contract-docs failure has no dependency path to build or checks; a selected full-tier shard still runs when only the generated-view check fails. Existing light/reuse selection is retained; this is structural evidence, not a synthetic GitHub run with clause edits.

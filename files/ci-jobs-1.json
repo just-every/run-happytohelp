@@ -1,0 +1,166 @@
+{
+  "at": "2026-11-16T10:46:31.352492+00:00",
+  "epoch": 1794825991.3525128,
+  "command": [
+    "gh",
+    "api",
+    "repos/just-every/run-happytohelp/actions/runs/43847690039/jobs?per_page=100"
+  ],
+  "exit": 0,
+  "jobs": [
+    {
+      "id": 133231896866,
+      "name": "contract-docs",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:18:44Z",
+      "completed_at": "2026-11-16T10:19:17Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133231896866",
+      "failed_steps": []
+    },
+    {
+      "id": 133231897517,
+      "name": "plan",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:18:44Z",
+      "completed_at": "2026-11-16T10:18:56Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133231897517",
+      "failed_steps": []
+    },
+    {
+      "id": 133232023611,
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:18:58Z",
+      "completed_at": "2026-11-16T10:20:14Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133232023611",
+      "failed_steps": []
+    },
+    {
+      "id": 133232025849,
+      "name": "slow",
+      "status": "completed",
+      "conclusion": "skipped",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:18:57Z",
+      "completed_at": "2026-11-16T10:18:57Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133232025849",
+      "failed_steps": []
+    },
+    {
+      "id": 133232682280,
+      "name": "size-check",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:20:16Z",
+      "completed_at": "2026-11-16T10:23:09Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133232682280",
+      "failed_steps": []
+    },
+    {
+      "id": 133232682414,
+      "name": "Verify / support-workflow-browser",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:20:16Z",
+      "completed_at": "2026-11-16T10:30:46Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133232682414",
+      "failed_steps": []
+    },
+    {
+      "id": 133232682423,
+      "name": "Verify / connections-and-computers",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:20:16Z",
+      "completed_at": "2026-11-16T10:32:21Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133232682423",
+      "failed_steps": []
+    },
+    {
+      "id": 133232682439,
+      "name": "Verify / identity-and-desk",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:20:16Z",
+      "completed_at": "2026-11-16T10:41:53Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133232682439",
+      "failed_steps": []
+    },
+    {
+      "id": 133232682442,
+      "name": "Verify / public-and-import-browser",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:20:16Z",
+      "completed_at": "2026-11-16T10:29:44Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133232682442",
+      "failed_steps": []
+    },
+    {
+      "id": 133232682467,
+      "name": "Verify / assistant-and-knowledge",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:20:16Z",
+      "completed_at": "2026-11-16T10:35:40Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133232682467",
+      "failed_steps": []
+    },
+    {
+      "id": 133232682477,
+      "name": "Verify / identity-and-repair-browser",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:20:16Z",
+      "completed_at": "2026-11-16T10:33:58Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133232682477",
+      "failed_steps": []
+    },
+    {
+      "id": 133232682548,
+      "name": "Verify / import-and-reports",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:20:16Z",
+      "completed_at": null,
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133232682548",
+      "failed_steps": []
+    },
+    {
+      "id": 133232682582,
+      "name": "Verify / support-and-recovery",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:20:16Z",
+      "completed_at": "2026-11-16T10:45:03Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133232682582",
+      "failed_steps": []
+    },
+    {
+      "id": 133234186082,
+      "name": "nightly-proof",
+      "status": "completed",
+      "conclusion": "skipped",
+      "head_sha": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+      "started_at": "2026-11-16T10:23:10Z",
+      "completed_at": "2026-11-16T10:23:10Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43847690039/job/133234186082",
+      "failed_steps": []
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+TAP version 13
+# Request failed Error
+# Request failed Error
+# PROBE OUTBOUND-001-NOTE N1/N2/N3/N4: private email + restart/replay -> 1 note, 0 public messages/outbox/email before human Send; 1 public reply + 1 threaded customer reply; public default/call/configuration retained; no migrations
+# PROBE Mailgun: native workspace and forwarding mailbox ready
+# PROBE POINT2: missing/unknown key names, unavailable key, domain and region errors refused before sending
+# PROBE POINT1: owner inbox reply reaches Mailgun EU multipart HTTP edge with named key, support From, recipients, thread headers and attachment
+# PROBE POINT3: reviewed Zendesk history imported through the native door with no sends or notices
+# PROBE POINT2: rejected, rate-limited, server-error, lost-response, missing-receipt and redirect outcomes visible; retries never replay
+# PROBE POINT3: anonymous and foreign-tenant sends refused; native reply threading and duplicate protection retained
+# Held managed mail remains pending
+# Inbound email already received Inbound email identity conflict
+# Inbound email already received Inbound email identity conflict
+# MAIL_HOLD_BUDGET {"pass":1,"statements":160,"calls":145,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":2,"statements":137,"calls":112,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":3,"statements":427,"calls":372,"refused":0}
+# Held managed mail remains pending
+# Held managed mail remains pending
+# Held managed mail remains pending
+# MAIL_HOLD_BUDGET {"pass":4,"statements":302,"calls":260,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":5,"statements":210,"calls":183,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":6,"statements":87,"calls":82,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":7,"statements":129,"calls":115,"refused":0}
+# Held managed mail remains pending
+# Held managed mail remains pending
+# Held managed mail remains pending
+# MAIL_HOLD_BUDGET {"pass":8,"statements":282,"calls":241,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":9,"statements":281,"calls":243,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":10,"statements":294,"calls":259,"refused":0}
+# Held managed mail remains pending
+# Held managed mail remains pending
+# Held managed mail remains pending
+# MAIL_HOLD_BUDGET {"pass":11,"statements":388,"calls":307,"refused":0}
+# Persisted job handler failed outbox.recover 1a2f7699-fb44-43a9-a71c-eb5fee9ee2ca
+# Held managed mail remains pending
+# Persisted job handler failed outbox.recover fcf36f0c-6acb-44cd-8726-96a0c76b6b38
+# Held managed mail remains pending
+# Persisted job handler failed outbox.recover e330a490-a740-45a5-a503-5821dc504487
+# MAIL_HOLD_BUDGET {"pass":12,"statements":90,"calls":85,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":13,"statements":90,"calls":85,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":14,"statements":90,"calls":85,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":15,"statements":180,"calls":157,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":16,"statements":227,"calls":199,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":17,"statements":90,"calls":85,"refused":0}
+# Request failed Error
+# Request failed Error
+# PROBE ACCESS-001 P1: assign visible ticket; narrow before assignment dispatch -> {"status":200,"email":0,"inbox":0,"state":"complete"}
+# PROBE ACCESS-001 P6: assign scoped-out operator -> {"status":200,"assigned":"operator-synthetic-hh-200","notices":0,"inbox":0,"email":0}
+# PROBE ACCESS-001 P7: hidden assigned activity -> {"newNotices":0,"email":0}
+# PROBE ACCESS-001 P7: hidden unassigned activity, opted-in operator -> {"newNotices":0,"email":0}
+# PROBE ACCESS-001 P7: narrow scope during unread rendering -> {"email":0,"pending":0}
+# PROBE ACCESS-001 P9: notification compatibility -> {"null":"assignment email retained","otherTenant":"foreign recipients are refused by existing teammate journey","ownerRecovery":"shared S1 term defaults true"}
+# PROBE NOTIFY-001 slack P1 audiences: {"assignment":1,"customer_updated":1,"mention":1,"follower":1,"group":1}
+# PROBE NOTIFY-001 slack P1 outcomes: ["accepted","accepted","accepted","accepted","accepted","accepted","accepted","accepted"]
+# PROBE NOTIFY-001 slack P2b relation: {"unfollowed":0,"reassigned":0}
+# PROBE NOTIFY-001 slack P2 sources: {"blocked":4}
+# PROBE NOTIFY-001 slack P3 scope: {"noticeRowsMadeByFrozenLeg":2,"slack":0}
+# PROBE NOTIFY-001 slack P4 outcomes: {"retry":"rate-limit only, 5 max","lost":"uncertain, not replayed after restart"}
+# PROBE NOTIFY-001 slack P5 authority: {"consent":"revoked","installer":"removed","destination":"disabled"}
+# PROBE NOTIFY-001 slack P6 erasure: {"deliveriesBeforeContactErasure":22,"afterContactErasure":0,"memberRowsAfter":0}
+# PROBE NOTIFY-001 teams link: {"authenticated":true,"hashed":true,"singleUse":true,"expires":true,"sessionBound":true,"noIntake":true}
+# PROBE NOTIFY-001 teams audiences: {"assignment":1,"customer_updated":1,"mention":1,"follower":1,"group":1}
+# PROBE NOTIFY-001 teams guards: {"preference":true,"relation":true,"source":true,"scope":true,"revokedMember":true,"foreignWorkspace":true}
+# PROBE NOTIFY-001 teams outcomes: {"rateAttempts":5,"retryAfter":true,"unknown":"terminal across restart","beforeSendFailure":"failed","preSendRecheck":true}
+# PROBE NOTIFY-001 teams authority-erasure: {"consentRevoked":true,"missingInstallerUnavailable":true,"installerRevoked":true,"connectionRevoked":true,"memberRows":0}
+# Subtest: a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome
+ok 1 - a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome
+  ---
+  duration_ms: 587689.031606
+  type: 'test'
+  ...
+# Amazon SES reader attempt failed processing_failed 1
+# Persisted job handler failed legacy-mail.s3 ses/acme/stuckinflight0010
+# Amazon SES reader attempt failed processing_failed 1
+# Persisted job handler failed legacy-mail.s3 ses/acme/stuckswept0013
+# Amazon SES reader attempt failed processing_failed 1
+# Amazon SES reader attempt failed processing_failed 12
+# Subtest: mail that Amazon SES stores in S3 is read from its two prefixes and admitted by SES's own record of the recipient and sender, replayed mail is never authenticated, and nothing is read, written or sent without the reader's inputs
+ok 2 - mail that Amazon SES stores in S3 is read from its two prefixes and admitted by SES's own record of the recipient and sender, replayed mail is never authenticated, and nothing is read, written or sent without the reader's inputs
+  ---
+  duration_ms: 12847.659351
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 601197.007286

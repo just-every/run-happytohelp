@@ -1,0 +1,13 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "rer",
+    "verify"
+  ],
+  "exit": 130,
+  "seconds": 2016.64,
+  "at": "2026-11-16T10:47:53.090094+00:00",
+  "browser": "/usr/bin/chromium with --no-sandbox through repository launchBrowser helper",
+  "log": "rer-verify.log"
+}

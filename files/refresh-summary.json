@@ -1,0 +1,80 @@
+{
+  "target": "bbab5d84b72e333ff1e9a6f234c0512e5721b1d9",
+  "copies": 437,
+  "added": [
+    "src/vendor/agent-base/modules/agent-door/policy-event.ts",
+    "src/vendor/agent-base/modules/operator-auth/dev/invited.mjs"
+  ],
+  "removed": [],
+  "retired": [],
+  "adapted": [
+    {
+      "path": ".github/workflows/verify.yml",
+      "originPath": "export/verify.yml",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891",
+      "conflict": false
+    },
+    {
+      "path": "scripts/ci/verify-evidence.mjs",
+      "originPath": "export/verify-evidence.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891",
+      "conflict": false
+    },
+    {
+      "path": "scripts/ci/verify-light.mjs",
+      "originPath": "export/verify-light.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891",
+      "conflict": false
+    },
+    {
+      "path": "scripts/ci/verify-plan.mjs",
+      "originPath": "export/verify-plan.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891",
+      "conflict": false
+    },
+    {
+      "path": "scripts/delivery/base/schema/generate-business-role.mjs",
+      "originPath": "schema/generate-business-role.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891",
+      "conflict": false
+    }
+  ],
+  "relocated": [],
+  "withheld": [],
+  "packageDependencies": [
+    {
+      "package": "react",
+      "version": "19.2.8",
+      "baseVersion": "19.3.1",
+      "conflict": true,
+      "files": [
+        "src/vendor/agent-base/foundation/runtime/hydration/unit.tsx",
+        "src/vendor/base/hydration/unit.tsx"
+      ]
+    },
+    {
+      "package": "miniflare",
+      "version": "5.20260907.0-alpha",
+      "baseVersion": "5.20260907.0-alpha",
+      "conflict": false,
+      "files": [
+        "src/vendor/agent-base/modules/agent-door/conformance/network-runtime.mjs"
+      ]
+    },
+    {
+      "package": "wrangler",
+      "version": "4.129.1",
+      "baseVersion": "4.129.1",
+      "conflict": false,
+      "files": [
+        "src/vendor/agent-base/modules/agent-door/conformance/network-runtime.mjs"
+      ]
+    }
+  ],
+  "editionMigrations": [],
+  "templateAdoptions": [],
+  "notices": [
+    ".github/workflows/verify.yml: preserved seed-owned workflow. The current template pins Ubuntu 24.04 and moves browser and apt caches to the runner temporary directory. To adopt, merge export/verify.yml from Base bbab5d84b72e333ff1e9a6f234c0512e5721b1d9 into .github/workflows/verify.yml, then run node node_modules/@runeditrun/rer/edition-authoring/cli.mjs record-base .github/workflows/verify.yml export/verify.yml bbab5d84b72e333ff1e9a6f234c0512e5721b1d9 --base <base-checkout> and repeat rer refresh-base --ref bbab5d84b72e333ff1e9a6f234c0512e5721b1d9 --base <base-checkout>."
+  ],
+  "acquisition": "Official pnpm exec rer refresh-base --ref FULL_SHA --from-api; authenticated immutable commit/tree/blob reads with Git blob identity validation. No other repository clone."
+}

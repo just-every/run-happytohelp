@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "--test-concurrency=1",
+    "tests/journeys/email.mjs"
+  ],
+  "node": "22.20.0",
+  "exit": 0,
+  "seconds": 601.32,
+  "at": "2026-11-16T10:58:13.494509+00:00",
+  "log": "email-pinned-node.log"
+}

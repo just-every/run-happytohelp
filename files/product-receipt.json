@@ -1,0 +1,20 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-rer-0219-adopt-1",
+  "head": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "main_at_rebase": "e5fb53dc305f53a71ff0b6db81d5eec7dfd0104f",
+  "tree": "4e0c40c69c79a34b94485e59322fd25b70060b8a",
+  "product_push": "succeeded on first guarded attempt",
+  "pr": null,
+  "copy_count": 437,
+  "copy_files": 990,
+  "workflow_jobs": 9,
+  "push_shards": 8,
+  "clauses": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "at": "2026-11-16T10:19:32.884369+00:00"
+}

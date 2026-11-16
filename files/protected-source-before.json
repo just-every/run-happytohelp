@@ -1,0 +1,10 @@
+{
+  ".github/workflows/installer-journeys.yml": "890640763fa57331f735990cc0721de9c26b4673c320ea3c29821e3109bddf12",
+  "ACCEPTANCE.md": "e3ba98cf208eacbe47e2afe32950250f7a8e610fd27bccedfe31942093224539",
+  "CONTRACT.md": "ae8feea8b7998aa729edadf621d7f3809aa83bbe073fd3e053e1c1fb8b9b04ec",
+  "RELEASE.json": "3f029ed2a5f78a29c7ffd0387a4a686ac76ecee6e5a65807c7c55cf8cfd3dc49",
+  "docs/CLAIMS.md": "1110fefab6395cc7c999c893edf6dd7bdd0ad8a5238c61f432d8786195534c13",
+  "scripts/ci/verify-inventory.mjs": "30c7e0d58f0b2cafb0aa1c74c6450b1f175a2e7052c65f6ba812df50554e9d47",
+  "scripts/ci/verify-plan.mjs": "345e82c52ff6f251a94b4382db3fd4e6b4960cd53e2cdac53f60ba593b7b284a",
+  "size-check.json": "b35c1a1c172c997bdf0902374ebad9c076209e8e5c5354d84448f5665f1a0c5a"
+}

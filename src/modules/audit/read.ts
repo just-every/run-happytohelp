@@ -1,3 +1,4 @@
+import {auditTargets} from './targets'
 import type {Env} from '../../platform/env'
 
 export interface AuditFilter {category?:string;actorId?:string;since?:number;until?:number;before?:{at:number;id:string};limit:number}
@@ -35,10 +36,11 @@ async function labelled(env:Env,projectId:string,rows:AuditRow[]){
   for(const person of (await env.DB.prepare(`SELECT id,name,email FROM users WHERE id IN (${chunk.map(()=>'?').join(',')})`).bind(...chunk).all<{id:string;name:string;email:string}>()).results)people.set(person.id,person)
  }
  const holds=(await env.DB.prepare('SELECT starts_at,ends_at FROM audit_holds WHERE project_id=? AND released_at IS NULL').bind(projectId).all<{starts_at:number;ends_at:number|null}>()).results
+ const targets=await auditTargets(env,projectId,rows)
  return rows.map(row=>{
   const person=row.actor_id?people.get(row.actor_id):undefined
   const actor=row.actor_type==='installation'?'Installation owner (rer)':row.actor_type==='system'?'HappyToHelp':row.actor_type==='api'?'API token':person&&!person.email.startsWith('erased:')?`${person.name} <${person.email}>`:'Former teammate'
-  return {...row,detail:JSON.parse(row.detail_json||'{}'),actor,held:holds.some(hold=>row.at>=hold.starts_at&&(hold.ends_at===null||row.at<=hold.ends_at))}
+  return {...row,target:targets.get(`${row.target_type}:${row.target_id}`)||null,detail:JSON.parse(row.detail_json||'{}'),actor,held:holds.some(hold=>row.at>=hold.starts_at&&(hold.ends_at===null||row.at<=hold.ends_at))}
  })
 }
 

@@ -23,7 +23,15 @@ const LABELS={
  'audit.purged':'Old entries removed by retention','audit.retention_changed':'Retention changed','audit.hold_placed':'Legal hold placed','audit.hold_released':'Legal hold released',
 };
 const REASONS={code_invalid:'wrong or reused code',recovery_code_invalid:'unknown or used recovery code',passkey_invalid:'passkey not accepted',rate_limited:'too many attempts',password_incorrect:'wrong password',key_incorrect:'wrong recovery key',key_already_used:'recovery key already used',not_owner:'not an owner'};
-const describe=row=>LABELS[row.action]||row.action.replace(/[._]/g,' ').replace(/^./,letter=>letter.toUpperCase());
+const RESOURCES={'sla-policies':'SLA policy','workflow-calendars':'Business calendar'};
+const ACTIONS={'workflow.rule.created':'Workflow draft created','workflow.rule.updated':'Workflow draft updated','workflow.rule.published':'Workflow published','workflow.rule.publish':'Workflow published','workflow.rule.pause':'Workflow paused','workflow.rule.cancel':'Workflow cancelled','notifications.event.claimed':'Notification queued for processing','notifications.event.completed':'Notification processing completed'};
+const TARGETS={workflow_calendars:'Business calendar',sla_policies:'SLA policy',workflow:'Workflow',member:'Teammate',user:'Teammate',contact:'Customer',conversation:'Ticket',email_delivery:'Email delivery',notification_event:'Notification',integration:'Integration',hold:'Legal hold',voice_number:'Support number'};
+const human=value=>String(value||'').replace(/[._-]/g,' ').replace(/\b(post|patch|put|delete)\b/gi,word=>({post:'created',patch:'updated',put:'saved',delete:'removed'}[word.toLowerCase()])).replace(/^./,letter=>letter.toUpperCase());
+const describe=row=>{
+ if(LABELS[row.action]||ACTIONS[row.action])return LABELS[row.action]||ACTIONS[row.action];
+ const [resource,method]=row.action.split('.');
+ return RESOURCES[resource]?`${RESOURCES[resource]} ${{post:'created',patch:'updated',put:'saved',delete:'removed'}[method]||human(method)}`:human(row.action);
+};
 const explain=row=>{const detail=row.detail||{};return [detail.reason&&(REASONS[detail.reason]||detail.reason),detail.permission&&`needs ${detail.permission}`,detail.from&&detail.to&&`${detail.fromName||detail.from} → ${detail.toName||detail.to}`,detail.method&&`with ${detail.method}`,detail.removed!==undefined&&`${detail.removed} removed, ${detail.keptUnderHold} kept under hold`].filter(Boolean).join(' · ')};
 
 /** Settings → Security log: the workspace's append-only record, its export, retention and legal holds. */
@@ -52,8 +60,8 @@ export default function SecurityLog({projectId,role}){
    </form>
    {rows===null?<p>Loading…</p>:rows.length===0?<p className="settings-note">Nothing recorded for this filter yet.</p>:<div className="table-responsive"><table className="table stack-table security-events"><thead><tr><th>When</th><th>What</th><th>Who</th><th>Result</th></tr></thead><tbody>
     {rows.map(row=><tr key={row.id}><td data-label="When"><time dateTime={new Date(row.at).toISOString()}>{when(row.at)}</time></td>
-     <td data-label="What"><span><strong>{describe(row)}</strong>{explain(row)&&<><br/><small>{explain(row)}</small></>}{row.target_type&&<><br/><small className="text-muted">{row.target_type} {row.target_id}</small></>}{row.purpose&&<><br/><small className="text-muted">{row.purpose}</small></>}</span></td>
-     <td data-label="Who"><span>{row.actor}<br/><small className="text-muted">{row.source}</small></span></td>
+     <td data-label="What"><span><strong>{describe(row)}</strong>{explain(row)&&<><br/><small>{explain(row)}</small></>}{row.target_type&&<><br/>{row.target?.href?<a href={row.target.href}>{row.target.name}</a>:<span>{row.target?.name||TARGETS[row.target_type]||human(row.target_type)}</span>}<details><summary>Technical details</summary><small>{row.action}<br/>{row.target_type} {row.target_id}</small></details></>}{row.purpose&&<><br/><small className="text-muted">{row.purpose}</small></>}</span></td>
+     <td data-label="Who"><span>{row.actor}<br/><small className="text-muted">{human(row.source)}</small></span></td>
      <td data-label="Result"><span className={`security-badge security-badge--${row.outcome}`}>{row.outcome}</span>{row.held&&<span className="security-badge security-badge--held" title="Protected by a legal hold">held</span>}</td></tr>)}
    </tbody></table></div>}
    {next&&<button type="button" className="btn btn-white" disabled={busy} onClick={()=>load(next)}>Show older entries</button>}

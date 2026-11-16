@@ -71,7 +71,7 @@ for(const state of ['pause','cancel'] as const)workflowRuleRoutes.post(`${base}/
 })
 workflowRuleRoutes.get('/projects/:projectId/workflow-runs',async c=>{
  const actor=await workflowScope(c),limit=Math.min(500,Math.max(1,Number(c.req.query('limit'))||200)),conversation=c.req.query('conversation_id'),[rows,visible]=await Promise.all([
-  c.env.DB.prepare(`SELECT r.*,v.definition_json FROM workflow_runs r LEFT JOIN workflow_rule_versions v ON v.rule_id=r.rule_id AND v.version=r.version JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id WHERE r.project_id=? AND ${availableTicketSql()} AND ${ticketScopeSql('?')} ${conversation?'AND r.conversation_id=?':''} ORDER BY r.created_at DESC,r.id DESC LIMIT ?`).bind(actor.projectId,actor.id,...(conversation?[conversation]:[]),limit).all<any>(),
+  c.env.DB.prepare(`SELECT r.*,c.subject ticket_name,v.definition_json FROM workflow_runs r LEFT JOIN workflow_rule_versions v ON v.rule_id=r.rule_id AND v.version=r.version JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id WHERE r.project_id=? AND ${availableTicketSql()} AND ${ticketScopeSql('?')} ${conversation?'AND r.conversation_id=?':''} ORDER BY r.created_at DESC,r.id DESC LIMIT ?`).bind(actor.projectId,actor.id,...(conversation?[conversation]:[]),limit).all<any>(),
   workflowVisibleFields(c.env,actor.projectId,actor.id)
  ])
  const allowed=new Set(visible.fields.filter(f=>fieldAllowed(f,visible.access)).map(f=>f.id))

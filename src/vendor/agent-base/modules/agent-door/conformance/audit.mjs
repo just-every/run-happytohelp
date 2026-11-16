@@ -159,6 +159,9 @@ export async function auditPhase(c) {
   const applicable = type === 'policy.adopted' || rows.some(row => row.approval);
   if (applicable) c.add(`BASE-AGENT-010.6.${type}`, [...events, ...c.effectEvents ?? []].some(event => event.type === type), `Missing ${type} event while readable, including before native erasure.`);
  }
+ // The newest adoption carries the classes it covers and a decision reference to its revision, and nothing but policy metadata.
+ const adopted = [...events, ...c.effectEvents ?? []].filter(event => event.type === 'policy.adopted').at(-1);
+ if (adopted) c.add('BASE-AGENT-010.6.policy.adopted.shape', Array.isArray(adopted.classes) && adopted.classes.every(item => item?.class && Object.keys(item).join() === 'class') && adopted.decision?.revision === adopted.revision && Object.keys(adopted).every(key => ['id', 'type', 'uri', 'actor', 'at', 'seq', 'revision', 'classes', 'decision'].includes(key)), 'policy.adopted must carry the adopted classes as {class} entries and a decision reference to its revision, and nothing else.');
  const writeTools = new Set(rows.filter(row => row.tool !== 'resources/read' && ['done', 'replayed'].includes(row.outcome) && c.surface.tools.find(tool => tool.name === row.tool)?.readOnly === false).map(row => row.tool));
  c.add('BASE-AGENT-010.1.effects', !writeTools.size || [...events, ...c.effectEvents ?? []].some(event => event.actor?.kind === 'agent' && !['policy.decision', 'approval.pending', 'approval.decided'].includes(event.type)), 'Completed writes must produce record-change events attributed to the agent while their native resources are readable.');
  if (events.length > 1) {

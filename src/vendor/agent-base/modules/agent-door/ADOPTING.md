@@ -617,6 +617,15 @@ Seeds with a native initializer or a different owner binding declare this in
 }
 ```
 
+For seeds without agent tools, this may be the entire file: its only top-level
+key must be `verification`, whose value is an object. No schema or version
+metadata is required. `rer verify` then reports
+`Agent door conformance: undeclared (verification-only agent-surface.json)` and
+returns `{declared:false}` for the agent-door step. Adding any other top-level
+key retains full agent validation and conformance. The size runner still reads
+`verification.owner` and `verification.publicHosts`; offline `rer check` still
+validates a present file as a full agent declaration.
+
 For a native setup-token binding, set `verification.owner.tokenField` to its
 environment binding name, for example `H2H_SETUP_TOKEN`.
 

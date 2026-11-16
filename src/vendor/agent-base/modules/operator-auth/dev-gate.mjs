@@ -94,7 +94,8 @@ export function devGate({ key, origin, local }) {
     admitsSession: admitted,
     setCookie,
     // GET serves the exchange page with the seed's productName, mark and theme; POST trades the key for the cookie.
-    async exchange(request, branding) {
+    // `invited` says whether the app has a person beyond the owner and its personas for `rer dev --as <email>` to take.
+    async exchange(request, branding, { invited = false } = {}) {
       if (new URL(request.url).pathname !== DEV_KEY_PATH) return null;
       if (request.method === 'GET' || request.method === 'HEAD') {
         const { script, logo, style } = await exchangeHashes();
@@ -103,7 +104,7 @@ export function devGate({ key, origin, local }) {
         const theme = brand?.theme;
         const mark = brand?.mark ? `<img src="${escapeHtml(brand.mark)}" alt="${escapeHtml(brand.productName)}" width="40" height="40" decoding="async">` : '';
         const themeLogo = theme && !brand.mark;
-        const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Open the local app</title>${iconHead}${theme ? `<link rel="stylesheet" href="${escapeHtml(theme)}">` : ''}<style>${PAGE_STYLE}</style></head><body><main>${brand ? `<p class="brand">${mark}<span>${escapeHtml(brand.productName)}</span></p>` : ''}<h1>This app runs on your own computer</h1><p>It opens only from that computer. Use the link printed in the terminal where <code>rer dev</code> is running, or run <code>rer dev --as owner</code> from the project folder.</p><p>To sign in as someone who was invited, run <code>rer dev --as</code> followed by their email address.</p></main>${themeLogo ? `<script>${LOGO_SCRIPT}</script>` : ''}<script>${EXCHANGE_SCRIPT}</script></body></html>`;
+        const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Open the local app</title>${iconHead}${theme ? `<link rel="stylesheet" href="${escapeHtml(theme)}">` : ''}<style>${PAGE_STYLE}</style></head><body><main>${brand ? `<p class="brand">${mark}<span>${escapeHtml(brand.productName)}</span></p>` : ''}<h1>This app runs on your own computer</h1><p>It opens only from that computer. Use the link printed in the terminal where <code>rer dev</code> is running, or run <code>rer dev --as owner</code> from the project folder.</p>${invited ? '<p>To sign in as someone who was invited, run <code>rer dev --as</code> followed by their email address.</p>' : ''}</main>${themeLogo ? `<script>${LOGO_SCRIPT}</script>` : ''}<script>${EXCHANGE_SCRIPT}</script></body></html>`;
         return new Response(request.method === 'HEAD' ? null : body, { headers: { ...privateHeaders, 'content-type': 'text/html; charset=utf-8',
           'content-security-policy': `default-src 'none'; img-src 'self'; script-src ${script}${themeLogo ? ` ${logo}` : ''}; style-src ${theme ? "'self' " : ''}${style}${theme ? "; font-src 'self'" : ''}; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'` } });
       }

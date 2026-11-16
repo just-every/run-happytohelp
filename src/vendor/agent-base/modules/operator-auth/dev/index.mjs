@@ -18,6 +18,7 @@ import { signInRefusal } from './refusal.mjs';
 import { representation } from '../representation.mjs';
 import { decorateLabel } from '../../demo/label.mjs';
 import { oneClickPage } from '../signin/one-click.mjs';
+import { hasInvitedPeople } from './invited.mjs';
 
 export const DEV_LAYER_MARKER = 'rer-dev-layer:local-only-never-deploy';
 const headers = { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff', 'x-robots-tag': 'noindex, nofollow', 'x-rer-dev-layer': DEV_LAYER_MARKER };
@@ -51,7 +52,12 @@ export function withDevIdentity(worker, { bindings = env => env, config: authCon
       const gate = devGate({ key: env.RER_DEV_KEY, origin: env.AUTH_ORIGIN, local: env.AUTH_LOCAL === 'true' });
       registerDevAdmission(gate && env.RER_DEV_IDENTITY !== 'off' ? r => gate.admitsSession(r) : null);
       const path = new URL(request.url).pathname;
-      if (path === '/__dev/key') return gate ? gate.exchange(request, authConfig(env).branding) : devNotFound();
+      if (path === '/__dev/key') {
+        if (!gate) return devNotFound();
+        // The guidance names `rer dev --as <email>` only when the app has someone to take.
+        const context = request.method === 'GET' || request.method === 'HEAD' ? identity(env, authConfig, declared) : null;
+        return gate.exchange(request, authConfig(env).branding, { invited: context ? await hasInvitedPeople({ store: context.store, config: context.config, declared }) : false });
+      }
       if (path === '/signin' && gate && env.RER_DEV_IDENTITY !== 'off' && ['GET', 'HEAD'].includes(request.method)) {
         if (!await gate.admits(request)) return new Response(null, { status: 303, headers: { ...headers, location: '/__dev/key' } });
         const context = identity(env, authConfig, declared);

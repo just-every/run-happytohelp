@@ -467,7 +467,7 @@ notice with the template changes and explicit merge/record instructions.
 An absent workflow is not automatically installed by this adoption step. With
 `--base-archive`, unrecorded workflows are preserved without requesting Git
 history; explicitly recorded workflows still update. See [adoption and historical
-0.2.82 recovery](../ADOPTING.md).
+0.2.82 recovery](../archive/2026-11-15/ADOPTING.md).
 
 Authoring refresh closes relative imports from every recorded authoring module,
 including singleton copies and modules whose Base origin is another maintained

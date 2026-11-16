@@ -34,6 +34,8 @@ export function oneClickAccounts({ config, store, clock, sessions, authorizedLin
     return operator.status === 'active';
   }
   return {
+    // Only a local run's refusal can point at `rer dev`.
+    local: config.local === true,
     async people(request) {
       if (!await mode(request)) return null;
       requireOrigin(request, config);

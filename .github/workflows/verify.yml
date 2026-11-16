@@ -60,6 +60,32 @@ jobs:
           NIGHTLY_CACHE_HIT: ${{ steps.nightly.outputs.cache-hit }}
         run: node scripts/ci/verify-lifecycle.mjs --plan
 
+  contract-docs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # Keep generated-view failures independent of the shared build and shards.
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.4
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+      - name: Set runner-owned dependency cache
+        run: pnpm config set store-dir "$RUNNER_TEMP/pnpm-store"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/pnpm-store
+          key: h2h-contract-docs-pnpm-v1-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
+      - run: pnpm install --frozen-lockfile
+      - run: node src/site/base/contract-docs.mjs check
+      - run: node scripts/contract-docs.mjs check
+
   build:
     needs: plan
     if: ${{ needs.plan.outputs.coverage != 'reuse' }}
@@ -94,9 +120,7 @@ jobs:
           key: h2h-ubuntu24-temp-v1-${{ runner.arch }}-browser-false-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec rer describe
-      - run: node src/site/base/contract-docs.mjs check
       - run: node scripts/edition-authoring/cli.mjs check
-      - run: node scripts/contract-docs.mjs check
       - run: pnpm run typecheck
       - run: pnpm exec rer check --profile first-party
       - run: pnpm run build
@@ -319,7 +343,7 @@ jobs:
           key: h2h-nightly-green-v2-${{ github.sha }}
 
   verify:
-    needs: [plan, build, checks, size-check, slow, full-push-proof, nightly-proof]
+    needs: [plan, contract-docs, build, checks, size-check, slow, full-push-proof, nightly-proof]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 1
@@ -333,6 +357,7 @@ jobs:
       - name: Require the plan and every selected check
         env:
           PLAN: ${{ needs.plan.result }}
+          CONTRACT_DOCS: ${{ needs.contract-docs.result }}
           SKIP: ${{ needs.plan.outputs.skip }}
           TIER: ${{ needs.plan.outputs.tier }}
           COVERAGE: ${{ needs.plan.outputs.coverage }}
@@ -347,6 +372,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$PLAN" = success
+          test "$CONTRACT_DOCS" = success
           case "$SIZE_SELECTED:$SIZE" in
             true:success|false:skipped) ;;
             *) exit 1 ;;

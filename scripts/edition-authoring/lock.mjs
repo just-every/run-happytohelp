@@ -14,6 +14,30 @@ function toolsIdentity() {
 function includes(files, selected) {
   return Object.keys(files).some(p => p === selected || p.startsWith(selected + '/'));
 }
+// Regenerate projected identities with the same hashing/serialization as normal source locks.
+export function fileIdentities(files) {
+  return Object.fromEntries(Object.entries(files).sort(([a], [b]) => a.localeCompare(b)).map(([name, value]) => [name, {
+    sha256: hash(Buffer.from(value.data, 'base64')), executable: value.executable,
+  }]));
+}
+
+// Managed copies retain the publisher's toolchain and source pins. Only the installation's
+// changed metadata/automation is regenerated; unchanged application identities stay bound.
+export function installationLock(lock, {removed, changed, recipe}) {
+  if (lock.schemaVersion !== 1 || !lock.files || Array.isArray(lock.files) ||
+      Object.values(lock.files).some(value => !value || !/^[a-f0-9]{64}$/.test(value.sha256) || typeof value.executable !== 'boolean'))
+    throw Error('Unsupported source lock; provide an edition-authoring file lock.');
+  const files = Object.fromEntries(Object.entries(lock.files).filter(([name]) => !removed(name)));
+  Object.assign(files, fileIdentities(changed));
+  lock = {...lock, files: Object.fromEntries(Object.entries(files).sort(([a], [b]) => a.localeCompare(b)))};
+  if (recipe && 'manifest' in lock) lock.manifest = hash(json(recipe));
+  if (recipe && Array.isArray(lock.components)) lock.components = lock.components.map(component => {
+    const selected = recipe.components.find(entry => entry.id === component?.id);
+    return selected && 'source' in component ? {...component, source: selected.source} : component;
+  });
+  return lock;
+}
+
 export function resolveSources(root, retain = false, diagnostics = false, additionalFiles = {}) {
   const recipe = manifest(root);
   const files = Object.assign(tracked(root, diagnostics), additionalFiles);
@@ -37,12 +61,10 @@ export function resolveSources(root, retain = false, diagnostics = false, additi
     components.push({id: component.id, source: selected, baseline: baseline ? {key: baseline.key, digest: baseline.digest, sha256: hash(json(baseline))} : null});
   }
   const parent = recipe.parent ? snapshot(root, {...recipe.parent, excludeSnapshots: true}, retain) : null;
-  const identities = Object.entries(files).sort(([a], [b]) => a.localeCompare(b)).map(([name, value]) => [name, {
-    sha256: hash(Buffer.from(value.data, 'base64')), executable: value.executable,
-  }]);
+  const identities = fileIdentities(files);
   return {
     schemaVersion: 1, parent: parent ? {key: parent.key, digest: parent.digest, sha256: hash(json(parent))} : null,
     edition: recipe.id, manifest: hash(json(recipe)), toolchain: toolsIdentity(),
-    components, files: Object.fromEntries(identities),
+    components, files: identities,
   };
 }

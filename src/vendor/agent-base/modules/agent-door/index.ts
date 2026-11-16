@@ -11,6 +11,7 @@ import { callTool } from './pipeline.ts'
 import { revoked } from './execution.ts'
 import { json } from './errors.ts'
 import { relayDecisions } from './relay.ts'
+import { policyAdoptedData } from './policy-event.ts'
 
 export { REPLAY_WINDOW_MS, expireReplayCalls, agentErasureStatements, checkAgentArtifacts } from './erasure.ts'
 export type { AgentArtifactMap, AgentArtifact, Tombstone } from './erasure.ts'
@@ -44,7 +45,7 @@ export function createAgentDoor(options: AgentDoorOptions): AgentDoor {
         const response = await adoptPolicy(rt, request)
         if (response.ok) {
           const state = await policyState(rt)
-          await appendEvents(rt, [{ type: 'policy.adopted', uri: `${options.origin}/agents/policy/${state.seq}`, actor: { kind: 'business' }, data: { seq: state.seq, revision: state.revision } }])
+          await appendEvents(rt, [{ type: 'policy.adopted', uri: `${options.origin}/agents/policy/${state.seq}`, actor: { kind: 'business' }, data: await policyAdoptedData(state) }])
         }
         return response
       }

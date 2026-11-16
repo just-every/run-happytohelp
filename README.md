@@ -37,23 +37,15 @@ work delegated to your own Codex or Claude. It works with human replies without
 an AI provider. The editable React application runs on Cloudflare Workers with
 Hono, D1, R2, Queues and Durable Objects.
 
-## Release 0.4.28
+## Releases and upgrades
 
-Deploy version 0.4.28, tagged **`v0.4.28`** once published. v0.4.26 is the upgrade baseline; the release upgrade checks cover v0.4.26, v0.4.25 and v0.4.24. The pinned installer is rer 0.2.117.
-
-This release includes the content of the tagged but unreleased v0.4.27. Credential-shaped notification test fixtures blocked source scanning for that tag; they now use short example markers. The local size documentation also reflects the qualified rer 0.2.117 results. v0.4.26 remains the previous public release.
-
-- **Reports:** summary and team reports read indexed, message-bearing date cohorts, with separate timing distributions and SLA breakdowns. Workload reads the selected cohort and older active backlog while a maintained inventory preserves historical empty buckets. Overlapping handle sessions still include older tickets worked in the interval. Report evidence, labels and permissions remain live reads; these projections are not cached report totals.
-- **Conversations and knowledge:** transcript assembly reuses article references within a response and skips article-free source arrays. Socket replay reads bounded pages of raw message and ordered attachment projections, then renders current knowledge and rechecks authority before sending. Message corrections, attachment changes and erasure update the replay data while retaining event identities. An attachment index narrows message reads, and a solved-time index narrows the scheduler’s due cohort without changing rule eligibility or cursor order.
-- **Backup and restore:** derived report projections are excluded from portable archives and rebuilt after source rows and current write triggers are restored. Historical archive handling skips these derived backfills when the original inventory lacks their source subsystems. Keep normal backups and the installation’s existing custody and recovery requirements.
-- **Installer and mail settings:** the managed integration recipe now carries the complete native migration inventory and current binding declarations. Public mail validation covers native SendGrid and Mailgun as well as Resend, Cloudflare and the managed relay. Explicit off, none or disabled selections normalize to mail off and remove stale public provider settings from emitted plans; private bindings remain separately selected and checked. This does not activate mail or establish provider readiness.
-- **Local size tooling:** the pinned rer installer advances from 0.2.112 to 0.2.117. A seed-owned declaration exercises the built application with disposable synthetic local installations, exports SQL statement artifacts and supports a deliberate unbounded-read rejection exercise. Selected source and migration changes and daily scheduled verification use the shared build with queue consumers disabled for size measurement. This local tooling does not qualify live-provider limits or real-customer scale; synthetic text and attachment distributions and scheduled-consumer completion remain limitations.
-- **Fresh hosted installs:** after the full migration inventory and this Worker are installed, normal writes maintain the new report and replay projections and existing reads use the new indexes. On an empty database there is no historical cohort or replay data to backfill. Managed recovery still requires compatible platform custody and a verified assertion; SQL alone enables no recovery authority. Legacy import and adoption remain inert until a package is imported through the approved flow. Updating starts no import and activates no mail provider; live hosted delivery and provider qualification remain separate.
-- **Migrations:** four since v0.4.26, bringing the inventory from 196 to 200 files. `333_report_cohorts.sql` is additive: it creates report tables, a view, indexes and maintenance triggers and immediately backfills derived membership, workload and bucket-presence rows without rewriting business rows. `334_media_message_reads.sql` adds only the media-message read index. `335_socket_replay_projection.sql` is additive to the outbox schema: it adds nullable raw-message and media columns, immediately fills existing outbox rows from retained native data, and installs synchronization triggers. It therefore writes derived data on upgrade. `336_solved_time_rule_reads.sql` adds only the solved-time expression index. Apply missing migrations once in filename order before the new Worker serves HTTP or queue traffic. Migration 326 remains absent.
-
-Update from v0.4.26 without resetting; v0.4.25 and v0.4.24 are also upgrade baselines. Back up D1, R2, Durable Object state, private settings and installation encryption custody, then stop the old Worker. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.117. Retain native owners, permissions, support history, files, erasure fences and every applied migration identity. On v0.4.26 apply 333_report_cohorts.sql, 334_media_message_reads.sql, 335_socket_replay_projection.sql and 336_solved_time_rule_reads.sql once in that order. On v0.4.25 or v0.4.24 first apply the missing 330_identity_recovery.sql once even though 331 and 332 are already recorded, then apply 333 through 336 in filename order. Retain earlier published buyer steps, including 332’s conditional cleanup; older installations first apply every other missing published migration in filename order. Finish all missing migrations BEFORE the new Worker serves HTTP or queue traffic. Report and replay backfills run during migration; report projections are rebuilt after portable restore. There is no migration 326. Keep the durable recovery revocation watermark on rollback, and require fresh Managed custody binding after portable restore. Run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. Legacy v1 remains cleanup-only and incomplete cleanup remains pending. No reset, mail activation, recovery adoption, production import, cutover or production deployment is authorized by this preparation.
-
-See [RELEASE.json](RELEASE.json), [Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
+For a new deployment, use the [latest published release](https://github.com/just-every/run-happytohelp/releases/latest),
+following the acquisition commands below. Read the release notes on that page
+and `RELEASE.json` in the selected release checkout for its version-specific
+buyer steps. This README does not pin a deployment version. For an existing installation, follow
+[Updates and recovery](docs/INDEPENDENT-RELEASE.md), keep your backups and apply
+the selected release's buyer steps before its Worker serves traffic. See
+[the changelog](CHANGELOG.md) for release history.
 
 Version 0.4.0 adds Move in for reviewed support-history imports, resolution
 feedback with workspace-calendar Reports, Connections with scoped API tokens,
@@ -134,13 +126,25 @@ own operating contract; this seed's CLI is not a platform admission requirement.
 
 ## Deploy to your own Cloudflare account
 
-For a new installation, acquire **`v0.4.28` once published**,
-after installing `rer` as shown above:
+For a **new** installation, select the latest published release after installing
+`rer` as shown above. These commands work from the folder where you ran the local
+quick start, or from inside its checkout: they create a separate
+`run-happytohelp-release` folder, leaving the local trial available. Run them
+once in a folder without an existing `run-happytohelp-release` directory.
+Git and curl are needed, as for the quick start. Stop your local trial before
+building or deploying. For an existing hosted installation, use
+[Updates and recovery](docs/INDEPENDENT-RELEASE.md) instead.
 
 ```sh
-git clone --branch v0.4.28 https://github.com/just-every/run-happytohelp
-cd run-happytohelp
+release_url="$(curl --fail --silent --show-error --location --output /dev/null --write-out '%{url_effective}' https://github.com/just-every/run-happytohelp/releases/latest)"
+release_tag="${release_url##*/}"
+git clone --branch "$release_tag" https://github.com/just-every/run-happytohelp run-happytohelp-release
+cd run-happytohelp-release
 ```
+
+The release tag comes from GitHub's latest **published** release, rather than the
+newest tag or the installer's later main. Keep running the following commands
+inside `run-happytohelp-release`.
 
 Start with a local build and validation:
 
@@ -235,10 +239,10 @@ confirms is counted ("N of M confirmed", without what you skipped): mail to you,
 sender DNS, inbound mail, model access, spend ceilings, widget origin and an
 authenticated widget visit. Saved settings alone do not complete them. Add the widget through **Settings →
 Widget**, set its exact [website origin](docs/SETUP-WORKFLOW.md#the-widget-website-origin),
-publish useful articles and invite teammates through **Settings → Agents**. By default the widget does not ask
-for an email. For visitors to receive replies by email, enable **Settings → Widget
-→ Settings → Required contact details → Require email**. The visitor enters their
-address before sending a message; operator replies can then use it on a hosted
+publish useful articles and invite teammates through **Settings → Agents**. Fresh installs ask widget visitors
+for an email before sending a message. To turn this off, open **Settings → Widget
+→ Settings → Required contact details** and disable **Require email**. An explicitly
+saved choice is retained. When an address is collected, operator replies can then use it on a hosted
 installation with email sending configured.
 
 ## Set up AI replies

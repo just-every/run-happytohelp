@@ -1741,7 +1741,7 @@
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "dd2211672284b02199054f132d509842e011cb5dfc1921bdb692e3dff35a6985",
+      "sha256": "f45217d612cca5fe8a3773d81fc5381d7d2e1a4ffbc1a85b66e135173cc40de5",
       "executable": false
     },
     "docs/knowledge-upgrade-report.md": {
@@ -1821,7 +1821,7 @@
       "executable": false
     },
     "docs/reports.md": {
-      "sha256": "384072573fb3e32ae461318697c3e3c019fdebe90d19144f7616da7adf1e1a73",
+      "sha256": "3bba841dd0dd3654f57704acc862b6807c3801c4afa0b3596948ebf8518b5181",
       "executable": false
     },
     "docs/request-forms.md": {
@@ -2917,11 +2917,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "db4934fcc5fcae762f3fc9f9eaf5de209f2cfda9579a2fcca788271c5aaaf03d",
+      "sha256": "ecd73a2438f418ac8855d030e8f6b68716955569f617477c18146e195c8e3a3b",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "89ab65be7d58f54b288660e9e1f2290e589333a566d1602ef1ee83923b2577f6",
+      "sha256": "f7825f4e3ac1ccc9dca8186b16fe0b11f00a0f5f21c276ea147890a60aa30585",
       "executable": false
     },
     "public/fonts/fonts.css": {
@@ -2993,7 +2993,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "022f2ad37fee04ef72146d5f049454b840fd2bb4b8bcd6f99f5afdcac3faa4d7",
+      "sha256": "b442b2a988aba2092e1c8ce63cb0934298ebb5150e882df99ad437aa3afaec1d",
       "executable": false
     },
     "RELEASE.json": {
@@ -9857,7 +9857,7 @@
       "executable": false
     },
     "src/modules/reports/team-read.ts": {
-      "sha256": "a1409c79b4c5eb7444d12b703ab311079baed2b0aefacda7611d445d081165ec",
+      "sha256": "50993301db3187068a5714ef17d00a4805a25689b1ced0af6c12b0ec1bb166b3",
       "executable": false
     },
     "src/modules/reports/team-routes.ts": {
@@ -12101,7 +12101,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/widget-settings/WidgetBehaviorFields.jsx": {
-      "sha256": "9cd80b4a0c74c6751e62fe45b6a8642d883dd349bb0f0b3f7ef8a505c4756acc",
+      "sha256": "916e9a4be6de41fa16d34a74a71b680f045fc34e7edc2cebb5d83af29456539f",
       "executable": false
     },
     "src/ui/dashboard/components/widget-settings/WidgetFieldSection.jsx": {
@@ -13749,7 +13749,7 @@
       "executable": false
     },
     "src/ui/native/pages/Reports.jsx": {
-      "sha256": "cb168840cd131a7d63783ed29ea4471c5e3d8adcc553a063c2294484a0d42c2c",
+      "sha256": "4dd62ba08c32ad34ce250676299db7cad0f0aad60474f6640b69a4267fac24bd",
       "executable": false
     },
     "src/ui/native/pages/reports/BacklogPanel.jsx": {
@@ -13785,7 +13785,7 @@
       "executable": false
     },
     "src/ui/native/pages/reports/TeamReports.jsx": {
-      "sha256": "a2b61216fd832c0ef10fc7a50634b328472996502264a494d5372473951dd365",
+      "sha256": "592176bd537c6d9d48399b9a83af4eae366144e5e28eaeba2d46ac9c8066bf0a",
       "executable": false
     },
     "src/ui/native/pages/reports/useReportSchedules.js": {

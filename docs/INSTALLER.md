@@ -157,9 +157,10 @@ Use a real page to send a customer message, then reply from your workspace inbox
    address it printed, such as `http://127.0.0.1:52817`, and save. Use the actual origin if your server differs:
    scheme, hostname and optional port, without a path. `localhost` and `127.0.0.1`
    are different hosts, and different ports are different origins.
-   The widget has no email field by default. To collect an address for emailed
-   operator replies, enable **Required contact details → Require email** on this
-   same settings page and save. Visitors then enter their email before sending.
+   Fresh installs ask widget visitors for an email before sending a message.
+   To turn this off, open **Settings → Widget → Settings → Required contact
+   details** and disable **Require email**, then save. An explicitly saved choice
+   is retained.
 4. Open that address in another browser profile or private window. Open
    the widget and send a message. In your signed-in app,
    open **Inbox**, choose the conversation and reply. Check the reply in the

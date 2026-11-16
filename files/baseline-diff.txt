@@ -1,0 +1,256 @@
+CHANGELOG.md                                       |  30 +++
+ OPERATIONS.md                                      | 144 ++++++++---
+ README.md                                          |  30 ++-
+ RELEASE.json                                       |  77 +++---
+ docs/INDEPENDENT-RELEASE.md                        |  52 ++--
+ docs/INSTALLER.md                                  |  17 +-
+ package.json                                       |   2 +-
+ public/site-assets/help_center/experience.css      |   4 +-
+ seed.json                                          |   2 +-
+ sources.lock.json                                  | 278 ++++++++++++---------
+ src/edition/agent-door/read.ts                     |   3 +-
+ src/modules/api-integrations/api-resources.ts      |   5 +-
+ src/modules/conversations/routes.ts                |   7 +-
+ src/modules/customers/identity-links.ts            |   7 +-
+ src/modules/customers/no-requester.ts              |  36 +++
+ src/modules/customers/read.ts                      |   7 +-
+ src/modules/forms/definition.ts                    |   2 +-
+ src/modules/forms/field-guard.ts                   |   3 +-
+ src/modules/forms/source-eligibility.ts            |  36 +++
+ src/modules/forms/store.ts                         |   3 +-
+ src/modules/forms/types.ts                         |   2 +-
+ src/modules/identity/owner-claim.ts                |   3 +-
+ src/modules/identity/setup.ts                      |  12 +-
+ src/modules/integrations/inbound-authority.ts      |   4 +-
+ .../integrations/notification-recipients.ts        |   8 +-
+ src/modules/legacy-import/adoption/historical.ts   |   7 +-
+ src/modules/legacy-import/adoption/scope.ts        |   6 +-
+ src/modules/legacy-import/delta.ts                 |   5 +-
+ src/modules/legacy-import/importer.ts              |  13 +-
+ src/modules/legacy-import/map-core.ts              |   5 +-
+ src/modules/legacy-import/map-project.ts           |   2 +
+ src/modules/legacy-import/mapping.ts               |   4 +-
+ src/modules/legacy-import/no-requester.ts          |  12 +
+ src/modules/legacy-import/ticket-fields.ts         |  20 ++
+ src/modules/legacy-import/worker/v2.ts             |   2 +-
+ src/modules/macros/context.ts                      |   2 +-
+ src/modules/management/activation.ts               |   2 +
+ src/modules/management/activation/facts.ts         |   2 +-
+ src/modules/management/activation/types.ts         |   2 +-
+ src/modules/management/contact-erasure.ts          |   6 +-
+ .../management/contact-erasure/statements.ts       |   2 +-
+ src/modules/management/contact-matches.ts          |   5 +-
+ src/modules/management/contact-order.ts            |   3 +-
+ src/modules/management/contact-update.ts           |   2 +
+ src/modules/management/contact-walk.ts             |   3 +-
+ src/modules/management/dashboard-data.ts           |   4 +-
+ src/modules/management/outbound-options.ts         |   3 +-
+ src/modules/management/outbound-ticket-store.ts    |   3 +-
+ src/modules/management/provisioning/index.ts       |   3 +-
+ .../management/provisioning/public-contact.ts      |  26 ++
+ src/modules/management/resource-list.ts            |   3 +-
+ src/modules/management/resources.ts                |   5 +-
+ src/modules/move-in/erasure.ts                     |  11 +-
+ src/modules/move-in/field-visibility-erasure.ts    |  15 ++
+ src/modules/move-in/preparation.ts                 |   9 +-
+ src/modules/move-in/readers/normalise.ts           |  14 +-
+ src/modules/move-in/readers/shapes.ts              |   4 +-
+ src/modules/move-in/readers/zendesk-fields.ts      |  12 +-
+ src/modules/move-in/targets.ts                     |  23 +-
+ src/modules/move-in/ticket-import.ts               |  24 ++
+ src/modules/move-in/ticket-state.ts                |   1 +
+ src/modules/move-in/types.ts                       |   4 +-
+ src/modules/move-in/zendesk-source/comments.ts     |   4 +-
+ src/modules/move-in/zendesk-source/packing.ts      |   8 +-
+ src/modules/move-in/zendesk-source/settle.ts       |   5 +-
+ src/modules/portal/identity.ts                     |   2 +-
+ src/modules/public-site/README.md                  |  17 +-
+ src/modules/public-site/help-center.tsx            |   2 +-
+ src/modules/public-site/index.ts                   |  11 +-
+ src/modules/public-site/installation-contact.ts    |  32 +++
+ src/modules/public-site/portal-content.ts          |   3 +-
+ src/modules/public-site/portal-pages.ts            |   4 +-
+ src/modules/public-site/request-pages.ts           |   4 +
+ src/modules/public-site/runtime-pages.ts           |  15 ++
+ src/modules/tickets/model.ts                       |   6 +-
+ src/modules/tickets/mutate-validation.ts           |   6 +-
+ src/modules/tickets/presentation.ts                |   3 +
+ src/modules/widget/css/App.css                     |  32 +--
+ src/modules/widget/css/ChatHeader.css              |   4 +-
+ src/modules/widget/css/ChatList.css                |   6 +-
+ src/modules/widget/css/ChatStatus.css              |   2 +-
+ src/modules/widget/css/CollectCustomer.css         |   2 +-
+ src/modules/widget/css/Insight.css                 |   2 +-
+ src/modules/widget/css/Interact.css                |   2 +-
+ src/modules/widget/css/MonitoringConsent.css       |   2 +-
+ src/modules/widget/css/Root.css                    |  24 +-
+ src/modules/widget/css/SendMessage.css             |   6 +-
+ src/modules/widget/js/App.jsx                      |   2 +-
+ src/platform/contact-state.ts                      |   5 +-
+ src/server.ts                                      |   6 +-
+ src/site/pages.ts                                  |   2 +-
+ src/ui/dashboard/components/ConversationHeader.jsx |  10 +-
+ .../dashboard/components/ConversationSidebar.jsx   |   5 +-
+ .../conversation/ConversationContactDetails.jsx    |   5 +
+ .../dashboard/components/tickets/TicketEditor.jsx  |   2 +-
+ .../components/tickets/TicketIdentityPicker.jsx    |  11 +-
+ .../dashboard/components/tickets/TicketViews.jsx   |   3 +-
+ src/ui/homepage/SiteFooter.tsx                     |   2 +-
+ src/ui/native/activation/setup-model.js            |   9 +-
+ src/ui/native/pages/MoveIn.jsx                     |   2 +-
+ src/ui/native/pages/move-in-presentation.js        |   3 +-
+ src/ui/native/pages/move-in-reasons.js             |   4 +-
+ tests/helpers/customer-portal-journey.mjs          |   9 +
+ tests/helpers/delegation-journey/browser.mjs       |  23 +-
+ tests/helpers/email/local-mail.mjs                 |   5 +-
+ tests/helpers/first-run/outcomes.mjs               |   1 +
+ tests/helpers/first-run/provisioning.mjs           |   6 +-
+ tests/helpers/identity/email-step-up.mjs           |   9 +-
+ tests/helpers/identity/native-account.mjs          |  12 +-
+ tests/helpers/inbox/new-ticket-configuration.mjs   |   4 +-
+ tests/helpers/installer/fresh-install.mjs          |   2 +
+ tests/helpers/legacy-adoption/journey.mjs          |  35 ++-
+ tests/helpers/public-site/contact.mjs              |  40 +++
+ tests/helpers/rer-command.mjs                      |   6 +-
+ tests/helpers/upgrade-baselines.mjs                |   3 +-
+ tests/journeys/move-in-zendesk-pull.mjs            |  45 +++-
+ tests/journeys/public.mjs                          |   2 +
+ tests/move-in/configuration-review.mjs             |  47 +++-
+ tests/move-in/configuration-source.mjs             |   4 +-
+ tests/move-in/door-field-visibility.mjs            |  15 ++
+ .../legacy-adoption-integration/journey.mjs        |   2 +-
+ tests/move-in/review-import.mjs                    |  12 +-
+ tests/move-in/ticket-identity.mjs                  | 142 +++++++++++
+ tests/move-in/zendesk-door.mjs                     |   6 +-
+ tests/move-in/zendesk-pull-assignment.mjs          |  38 +++
+ tests/move-in/zendesk-pull-fixture.mjs             |   4 +-
+ vite.config.ts                                     |   2 +-
+ 127 files changed, 1370 insertions(+), 422 deletions(-)
+
+M	CHANGELOG.md
+M	OPERATIONS.md
+M	README.md
+M	RELEASE.json
+M	docs/INDEPENDENT-RELEASE.md
+M	docs/INSTALLER.md
+M	package.json
+M	public/site-assets/help_center/experience.css
+M	seed.json
+M	sources.lock.json
+M	src/edition/agent-door/read.ts
+M	src/modules/api-integrations/api-resources.ts
+M	src/modules/conversations/routes.ts
+M	src/modules/customers/identity-links.ts
+A	src/modules/customers/no-requester.ts
+M	src/modules/customers/read.ts
+M	src/modules/forms/definition.ts
+M	src/modules/forms/field-guard.ts
+A	src/modules/forms/source-eligibility.ts
+M	src/modules/forms/store.ts
+M	src/modules/forms/types.ts
+M	src/modules/identity/owner-claim.ts
+M	src/modules/identity/setup.ts
+M	src/modules/integrations/inbound-authority.ts
+M	src/modules/integrations/notification-recipients.ts
+M	src/modules/legacy-import/adoption/historical.ts
+M	src/modules/legacy-import/adoption/scope.ts
+M	src/modules/legacy-import/delta.ts
+M	src/modules/legacy-import/importer.ts
+M	src/modules/legacy-import/map-core.ts
+M	src/modules/legacy-import/map-project.ts
+M	src/modules/legacy-import/mapping.ts
+A	src/modules/legacy-import/no-requester.ts
+A	src/modules/legacy-import/ticket-fields.ts
+M	src/modules/legacy-import/worker/v2.ts
+M	src/modules/macros/context.ts
+M	src/modules/management/activation.ts
+M	src/modules/management/activation/facts.ts
+M	src/modules/management/activation/types.ts
+M	src/modules/management/contact-erasure.ts
+M	src/modules/management/contact-erasure/statements.ts
+M	src/modules/management/contact-matches.ts
+M	src/modules/management/contact-order.ts
+M	src/modules/management/contact-update.ts
+M	src/modules/management/contact-walk.ts
+M	src/modules/management/dashboard-data.ts
+M	src/modules/management/outbound-options.ts
+M	src/modules/management/outbound-ticket-store.ts
+M	src/modules/management/provisioning/index.ts
+A	src/modules/management/provisioning/public-contact.ts
+M	src/modules/management/resource-list.ts
+M	src/modules/management/resources.ts
+M	src/modules/move-in/erasure.ts
+A	src/modules/move-in/field-visibility-erasure.ts
+M	src/modules/move-in/preparation.ts
+M	src/modules/move-in/readers/normalise.ts
+M	src/modules/move-in/readers/shapes.ts
+M	src/modules/move-in/readers/zendesk-fields.ts
+M	src/modules/move-in/targets.ts
+A	src/modules/move-in/ticket-import.ts
+M	src/modules/move-in/ticket-state.ts
+M	src/modules/move-in/types.ts
+M	src/modules/move-in/zendesk-source/comments.ts
+M	src/modules/move-in/zendesk-source/packing.ts
+M	src/modules/move-in/zendesk-source/settle.ts
+M	src/modules/portal/identity.ts
+M	src/modules/public-site/README.md
+M	src/modules/public-site/help-center.tsx
+M	src/modules/public-site/index.ts
+A	src/modules/public-site/installation-contact.ts
+M	src/modules/public-site/portal-content.ts
+M	src/modules/public-site/portal-pages.ts
+M	src/modules/public-site/request-pages.ts
+A	src/modules/public-site/runtime-pages.ts
+M	src/modules/tickets/model.ts
+M	src/modules/tickets/mutate-validation.ts
+M	src/modules/tickets/presentation.ts
+M	src/modules/widget/css/App.css
+M	src/modules/widget/css/ChatHeader.css
+M	src/modules/widget/css/ChatList.css
+M	src/modules/widget/css/ChatStatus.css
+M	src/modules/widget/css/CollectCustomer.css
+M	src/modules/widget/css/Insight.css
+M	src/modules/widget/css/Interact.css
+M	src/modules/widget/css/MonitoringConsent.css
+M	src/modules/widget/css/Root.css
+M	src/modules/widget/css/SendMessage.css
+M	src/modules/widget/js/App.jsx
+M	src/platform/contact-state.ts
+M	src/server.ts
+M	src/site/pages.ts
+M	src/ui/dashboard/components/ConversationHeader.jsx
+M	src/ui/dashboard/components/ConversationSidebar.jsx
+M	src/ui/dashboard/components/conversation/ConversationContactDetails.jsx
+M	src/ui/dashboard/components/tickets/TicketEditor.jsx
+M	src/ui/dashboard/components/tickets/TicketIdentityPicker.jsx
+M	src/ui/dashboard/components/tickets/TicketViews.jsx
+M	src/ui/homepage/SiteFooter.tsx
+M	src/ui/native/activation/setup-model.js
+M	src/ui/native/pages/MoveIn.jsx
+M	src/ui/native/pages/move-in-presentation.js
+M	src/ui/native/pages/move-in-reasons.js
+M	tests/helpers/customer-portal-journey.mjs
+M	tests/helpers/delegation-journey/browser.mjs
+M	tests/helpers/email/local-mail.mjs
+M	tests/helpers/first-run/outcomes.mjs
+M	tests/helpers/first-run/provisioning.mjs
+M	tests/helpers/identity/email-step-up.mjs
+M	tests/helpers/identity/native-account.mjs
+M	tests/helpers/inbox/new-ticket-configuration.mjs
+M	tests/helpers/installer/fresh-install.mjs
+M	tests/helpers/legacy-adoption/journey.mjs
+A	tests/helpers/public-site/contact.mjs
+M	tests/helpers/rer-command.mjs
+M	tests/helpers/upgrade-baselines.mjs
+M	tests/journeys/move-in-zendesk-pull.mjs
+M	tests/journeys/public.mjs
+M	tests/move-in/configuration-review.mjs
+M	tests/move-in/configuration-source.mjs
+A	tests/move-in/door-field-visibility.mjs
+M	tests/move-in/legacy-adoption-integration/journey.mjs
+M	tests/move-in/review-import.mjs
+A	tests/move-in/ticket-identity.mjs
+M	tests/move-in/zendesk-door.mjs
+A	tests/move-in/zendesk-pull-assignment.mjs
+M	tests/move-in/zendesk-pull-fixture.mjs
+M	vite.config.ts

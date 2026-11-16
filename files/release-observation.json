@@ -1,0 +1,12 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "latest_published_release": {
+    "tag_name": "v0.4.28",
+    "name": "HappyToHelp 0.4.28",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2026-11-15T03:25:11Z",
+    "html_url": "https://github.com/just-every/run-happytohelp/releases/tag/v0.4.28"
+  },
+  "source": "Actual gh api repos/just-every/run-happytohelp/releases?per_page=10 observation in this task"
+}

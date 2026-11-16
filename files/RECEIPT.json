@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "tag": "sd-hh-release-0-4-31",
+  "repository": "just-every/run-happytohelp",
+  "author": "Run Edit Run fleet",
+  "recorded_at": "2026-11-16T00:02:17.710928+00:00",
+  "branch": "cloud/sd-hh-release-0-4-31",
+  "head": "e5fb53dc305f53a71ff0b6db81d5eec7dfd0104f",
+  "tree": "7320cd7b8f75dd9a297b6dad2168e932774708bf",
+  "parent": "bc12fd6c76c6e66d73c04e8e4733976656627589",
+  "base_main": "bc12fd6c76c6e66d73c04e8e4733976656627589",
+  "version_before": "0.4.30",
+  "version_after": "0.4.31",
+  "previous_version": "0.4.28",
+  "published_baseline_commit": "41fb40246d2e69f928be397c48d952d147c39160",
+  "rer_pin": "0.2.117",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "migrations_before": 200,
+  "migrations_after": 200,
+  "migrations_added": 0,
+  "migrations_modified": 0,
+  "clauses_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "clauses_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "clause_status_changes": [],
+  "test_registrations_changed": 0,
+  "files": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "log": "dependency-install.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log",
+      "node": "22.20.0"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party.log",
+      "node": "22.20.0"
+    },
+    {
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "source-lock.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-check.log",
+      "node": "22.20.0"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "metadata consistency review",
+      "exit": 0,
+      "findings": [
+        "release notes match CHANGELOG section exactly",
+        "buyer steps preserved byte-for-byte",
+        "SQL inventory unchanged from published baseline",
+        "pnpm-lock.yaml and rer pin unchanged",
+        "0.4.28 previous:true upgrade baseline retained",
+        "CONTRACT.md and generated views unchanged"
+      ]
+    }
+  ],
+  "prepush_identity_check": {
+    "all_candidate_commits": [
+      "e5fb53dc305f53a71ff0b6db81d5eec7dfd0104f"
+    ],
+    "result": "pass",
+    "trailers": "absent"
+  },
+  "product_push": {
+    "guard": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-hh-release-0-4-31",
+    "exit": 0,
+    "log": "product-push.log",
+    "remote_head_verified": "e5fb53dc305f53a71ff0b6db81d5eec7dfd0104f"
+  },
+  "pr": null,
+  "tag_created": false,
+  "release_created": false,
+  "deployment_performed": false,
+  "publication_scan": "Fleet Mac prerequisite; cloud task cannot run the fleet publication scan. Product diff reviewed for credential-shaped content; no secret material added.",
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "e5fb53dc305f53a71ff0b6db81d5eec7dfd0104f",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43775677537",
+    "status": "completed",
+    "run_id": 43775677537,
+    "observed_at": "2026-11-16T00:02:17.710928+00:00",
+    "github_calls_used": 7
+  },
+  "status": "READY",
+  "blockers": []
+}

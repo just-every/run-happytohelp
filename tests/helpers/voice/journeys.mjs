@@ -59,7 +59,14 @@ export async function routingProof(){const h=await voiceHarness();try{
  // Aircall's provider-owned routing contributes an idempotent missed-call receipt,
  // while consent cannot be attested for importing provider media.
  const air=(await app.ok(base+'/numbers',{token,body:{provider:'aircall',provider_id:'8',account_id:account,token:secret,settings}})).data
- const event={token:air.webhook_token,event:'call.ended',data:{id:8,number:{id:8},direction:'inbound',raw_digits:callerPhone,answered_at:null,recording:'https://example.test/never-import-without-consent'}}
+ const providerWebhookToken='synthetic-happytohelp-63'
+ assert.equal((await app.call(base+'/numbers/'+air.id,{token:h.foreign.tokens.owner,method:'PATCH',body:{version:air.version,settings,webhook_token:providerWebhookToken}})).status,403)
+ await app.ok(base+'/numbers/'+air.id,{token,method:'PATCH',body:{version:air.version,settings,webhook_token:providerWebhookToken}})
+ const event={token:providerWebhookToken,event:'call.ended',data:{id:8,number:{id:8},direction:'inbound',raw_digits:callerPhone,answered_at:null,recording:'https://example.test/never-import-without-consent'}}
+ assert.equal((await app.call('/api/voice/hooks/'+air.id,{body:{...event,token:air.webhook_token}})).status,401,'old locally generated token loses webhook authority')
+ const listed=(await app.ok(base+'/numbers',{token})).data.find(n=>n.id===air.id)
+ assert.ok(!JSON.stringify(listed).includes(providerWebhookToken),'webhook token is never read back')
+ await app.ok(base+'/numbers/'+air.id,{token,method:'PATCH',body:{version:listed.version,settings,webhook_token:''}})
  for(let i=0;i<2;i++)assert.equal((await app.call('/api/voice/hooks/'+air.id,{body:event})).status,200)
  const receipts=(await h.calls(call.conversation_id)).filter(c=>c.provider==='aircall');assert.equal(receipts.length,1);assert.equal(receipts[0].state,'missed');assert.equal(receipts[0].follow_up,1);assert.equal(receipts[0].has_recording,0)
 }finally{await h.close()}}

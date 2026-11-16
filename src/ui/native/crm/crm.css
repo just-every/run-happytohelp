@@ -5,3 +5,5 @@
 @container(max-width:400px){.crm-facts>div{grid-template-columns:minmax(0,1fr)}.crm-facts dd{margin-bottom:.5rem}}
 
 .crm-panel .crm-link{text-decoration:underline;text-underline-offset:3px;color:var(--bs-link-color,#176c78)}
+
+.crm-panel [aria-label="HubSpot setup instructions"] a { text-decoration: underline; text-underline-offset: 3px; }

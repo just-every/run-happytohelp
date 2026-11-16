@@ -4,5 +4,6 @@
   "clone": "npx -y @runeditrun/rer dev just-every/run-happytohelp",
   "licence": "MIT",
   "docs": true,
-  "paths": { "product": null }
+  "paths": { "product": null },
+  "leadLine": "One command installs and starts your local workspace."
 }

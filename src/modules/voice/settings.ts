@@ -49,8 +49,9 @@ settingsRoutes.patch(base+'/numbers/:numberId',async c=>{
  const b=object(await c.req.json()),settings=settingsInput(b.settings),id=c.req.param('numberId')!,now=Date.now()
  if(!Number.isSafeInteger(b.version)||b.version<1)invalid('Reload the number before updating it')
  if(settings.group_id&&!await c.env.DB.prepare('SELECT id FROM ticket_groups WHERE project_id=? AND id=?').bind(actor.projectId,settings.group_id).first())invalid('Choose a workspace queue')
+ const webhook=typeof b.webhook_token==='string'&&b.webhook_token.trim()?await hashToken(named(b.webhook_token,10000)):null
  const result=await c.env.DB.batch([
- c.env.DB.prepare(`UPDATE voice_numbers SET settings_json=?,version=version+1,updated_at=? WHERE id=? AND project_id=? AND version=? AND enabled=1 AND EXISTS(${guard.sql})`).bind(JSON.stringify(settings),now,id,actor.projectId,b.version,...guard.params),
+ c.env.DB.prepare(`UPDATE voice_numbers SET settings_json=?,webhook_hash=CASE WHEN provider='aircall' THEN coalesce(?,webhook_hash) ELSE webhook_hash END,version=version+1,updated_at=? WHERE id=? AND project_id=? AND version=? AND enabled=1 AND EXISTS(${guard.sql})`).bind(JSON.stringify(settings),webhook,now,id,actor.projectId,b.version,...guard.params),
  auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:'voice.number_configured',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'voice_number',id}},now,{sql:'EXISTS(SELECT 1 FROM voice_numbers WHERE id=? AND project_id=? AND version=? AND updated_at=?)',params:[id,actor.projectId,b.version+1,now]}),
  ])
  if(!result[0].meta.changes)throw new HTTPException(409,{message:'Number or authority changed; reload'})

@@ -2,6 +2,7 @@ import React,{useEffect,useState} from 'react';
 import {nativeRequest} from '../../ui/native/transport';
 import '../../ui/native/pages/connections/connections.css';
 import './settings.css';
+import ProviderSetup from './ProviderSetup';
 const names={sms:'Twilio US SMS',whatsapp:'WhatsApp Business',instagram:'Instagram Direct',messenger:'Facebook Messenger',slack:'Slack customer channels',teams:'Microsoft Teams customer channels'};
 export default function ChannelSettings({projectId,role}){
  const allowed=['owner','admin'].includes(role);
@@ -20,6 +21,7 @@ export default function ChannelSettings({projectId,role}){
   <p>Install an authorized provider app first. Use only the account and customer channels it can access. Slack needs chat:write, channels:history, files:read and im:history for the selected shared channels; notifications alone do not provide intake.</p>
   <form onSubmit={save} className="d-grid gap-3">
    <label>Provider<select className="form-select" value={provider} onChange={e=>setProvider(e.target.value)}>{Object.entries(names).map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
+   <ProviderSetup provider={provider}/>
    <label>{provider==='teams'?'Microsoft tenant ID':'Provider account ID'}<input className="form-control" name="account" required maxLength={200}/></label>
    <label>{provider==='sms'?'US sender number (+1)':provider==='slack'?'App bot user ID':provider==='teams'?'Bot application ID':'Page or phone number ID'}<input className="form-control" name="sender" required maxLength={200}/></label>
    <label>{provider==='teams'?'Bot application client secret':'Provider access token'}<input className="form-control" name="token" type="password" autoComplete="new-password" required/></label>

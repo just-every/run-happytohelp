@@ -24,7 +24,7 @@ export async function automationOutcomes(){
   const create=async priority=>{
    const ticket=await request('/api/conversations',{projectId:owner.projectId,contactId:customer.contactId})
    await request(`/api/conversations/${ticket.id}/messages`,{localId:crypto.randomUUID(),content:'Please review my return.',expectedRevision:0},customer.token)
-   await api(`/conversations/${ticket.id}/ticket`,{priority},'PATCH')
+   await api(`/conversations/${ticket.id}/ticket`,{priority,subject:'Refund return request'},'PATCH')
    return ticket.id
   }
   const historical=await create('high'),tag=(await api(`/conversations/${historical}/tags`,{name:'VIP refund'})).data
@@ -86,6 +86,10 @@ export async function automationOutcomes(){
     const response=page.waitForResponse(r=>r.url().endsWith(`/workflow-rules/${stored.id}/preview`))
     await card.getByRole('button',{name:'Preview draft',exact:true}).click()
     const preview=await (await response).json()
+    const rendered=page.locator('.workflow-preview');
+    await rendered.getByRole('link',{name:'Refund return request',exact:true}).first().waitFor();
+    assert.ok(!(await rendered.innerText()).includes(historical),'preview names the ticket instead of its internal ID');
+    assert.equal(await rendered.getByRole('link',{name:'Refund return request',exact:true}).first().getAttribute('href'),`/projects/${owner.projectId}/conversations/${historical}`);
     assert.equal(preview.side_effects,false);assert.ok(preview.results.some(row=>row.conversation_id===historical&&row.matched))
     assert.deepEqual(snapshot(),before,`${definition.name}: preview writes zero ticket, notification or webhook rows`)
     assert.deepEqual(await edges(),network,`${definition.name}: preview makes zero external requests`)
@@ -100,6 +104,12 @@ export async function automationOutcomes(){
     assert.deepEqual(snapshot(),before,'publishing never replays historical tickets')
     rules.push(published)
    }
+   await page.goto(`${runtime.origin}/projects/${owner.projectId}/security-log`)
+   const activity=page.locator('.security-events');
+   await activity.getByRole('link',{name:'Route refunds',exact:true}).first().waitFor();
+   assert.equal(await activity.getByRole('link',{name:'Route refunds',exact:true}).first().getAttribute('href'),`/projects/${owner.projectId}/workflow-settings?tab=rules`);
+   assert.ok(!(await activity.innerText()).includes(rules[0].id),'audit target IDs stay behind technical details');
+   await page.goto(`${runtime.origin}/projects/${owner.projectId}/workflow-settings?tab=rules`)
    await page.reload()
    for(const rule of rules)await page.getByRole('heading',{name:`${rule.position}. ${rule.name}`,exact:true}).waitFor()
    const nonmatching=await create('normal'),unchanged=await get(nonmatching),matching=await create('high')

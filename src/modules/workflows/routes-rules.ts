@@ -43,7 +43,7 @@ workflowRuleRoutes.patch(`${base}/:id`,async c=>{
  await commitWorkflowSettings(c,actor,'workflow.rule.drafted',row.id,(accepted,args)=>[c.env.DB.prepare(`UPDATE workflow_rules SET draft_json=?,updated_at=? WHERE id=? AND project_id=? AND ${accepted}`).bind(JSON.stringify(definition),Math.max(workflowNow(c.env),row.updated_at+1),row.id,actor.projectId,...args)],andWorkflowGuards(references,{sql:'EXISTS(SELECT 1 FROM workflow_rules WHERE id=? AND project_id=? AND updated_at=?)',params:[row.id,actor.projectId,row.updated_at]}))
  return c.json({rule:ruleData(await getRule(c,actor.projectId))})
 })
-workflowRuleRoutes.post(`${base}/:id/preview`,async c=>{const actor=await workflowScope(c,true),row=await getRule(c,actor.projectId),definition=checkedRule(JSON.parse(row.draft_json));await validateRuleReferences(c.env,actor.projectId,definition,actor.id);await emptyCommand(c);return c.json(await previewRule(c.env,actor.projectId,definition))})
+workflowRuleRoutes.post(`${base}/:id/preview`,async c=>{const actor=await workflowScope(c,true),row=await getRule(c,actor.projectId),definition=checkedRule(JSON.parse(row.draft_json));await validateRuleReferences(c.env,actor.projectId,definition,actor.id);await emptyCommand(c);return c.json(await previewRule(c.env,actor.projectId,definition,actor.id))})
 workflowRuleRoutes.post(`${base}/:id/publish`,async c=>{
  const actor=await workflowScope(c,true),row=await getRule(c,actor.projectId);if(row.state==='cancelled')throw new HTTPException(409,{message:'A cancelled rule cannot be published'})
  await emptyCommand(c)
@@ -71,7 +71,7 @@ for(const state of ['pause','cancel'] as const)workflowRuleRoutes.post(`${base}/
 })
 workflowRuleRoutes.get('/projects/:projectId/workflow-runs',async c=>{
  const actor=await workflowScope(c),limit=Math.min(500,Math.max(1,Number(c.req.query('limit'))||200)),conversation=c.req.query('conversation_id'),[rows,visible]=await Promise.all([
-  c.env.DB.prepare(`SELECT r.*,v.definition_json FROM workflow_runs r LEFT JOIN workflow_rule_versions v ON v.rule_id=r.rule_id AND v.version=r.version JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id WHERE r.project_id=? AND ${availableTicketSql()} AND ${ticketScopeSql('?')} ${conversation?'AND r.conversation_id=?':''} ORDER BY r.created_at DESC,r.id DESC LIMIT ?`).bind(actor.projectId,actor.id,...(conversation?[conversation]:[]),limit).all<any>(),
+  c.env.DB.prepare(`SELECT r.*,c.subject ticket_name,v.definition_json FROM workflow_runs r LEFT JOIN workflow_rule_versions v ON v.rule_id=r.rule_id AND v.version=r.version JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id WHERE r.project_id=? AND ${availableTicketSql()} AND ${ticketScopeSql('?')} ${conversation?'AND r.conversation_id=?':''} ORDER BY r.created_at DESC,r.id DESC LIMIT ?`).bind(actor.projectId,actor.id,...(conversation?[conversation]:[]),limit).all<any>(),
   workflowVisibleFields(c.env,actor.projectId,actor.id)
  ])
  const allowed=new Set(visible.fields.filter(f=>fieldAllowed(f,visible.access)).map(f=>f.id))

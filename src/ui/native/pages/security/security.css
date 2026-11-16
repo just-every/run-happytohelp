@@ -35,3 +35,5 @@
  .roles-form .form-check-input { float: none; margin: 0; flex: 0 0 auto; }
  .roles-form .form-check-label { padding-block: 10px; flex: 1; }
 }
+
+.security-events td[data-label="What"] a { text-decoration: underline; text-underline-offset: 3px; }

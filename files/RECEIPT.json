@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "tag": "hh-stranger11-undo-1-c1",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger11-undo-1-c1",
+  "head": "e94e233147486723e92d25460a8921ed6efc3fc4",
+  "parents": [
+    "43bce0be0601d47bda9a37ea5271ea4241686951",
+    "d4bf215d803259f04b81c238bc836e441fb6e005"
+  ],
+  "gated_head": "43bce0be0601d47bda9a37ea5271ea4241686951",
+  "gated_base": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "merged_main": "d4bf215d803259f04b81c238bc836e441fb6e005",
+  "before_diff_count": "13 files changed, 179 insertions(+), 30 deletions(-)",
+  "after_diff_count": "13 files changed, 179 insertions(+), 30 deletions(-)",
+  "merge_conflicts": [],
+  "merge_count": 1,
+  "product_push_count": 1,
+  "checks": [
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "local_toolchain": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4",
+    "note": "The supplied toolchain script keeps an available newer Node; CI uses repository-pinned Node 22.20.0."
+  },
+  "product_worktree_clean": true,
+  "contract_status_changes": [],
+  "generated_views_changed": false,
+  "release_metadata_changed": false,
+  "follow_ups_implemented": false,
+  "pr": null,
+  "ci_run_id": 43928347510,
+  "ci_head": "e94e233147486723e92d25460a8921ed6efc3fc4",
+  "ci_status": "completed",
+  "ci_conclusion": "success",
+  "github_calls_used": 6,
+  "created_at": "2026-11-16T18:24:32.499795+00:00",
+  "clause_counts_before": {
+    "Core": {
+      "done": 4,
+      "partial": 71,
+      "missing": 11,
+      "total": 86
+    },
+    "Agent surface": {
+      "done": 0,
+      "partial": 0,
+      "missing": 5,
+      "total": 5
+    },
+    "Later": {
+      "done": 0,
+      "partial": 0,
+      "missing": 0,
+      "total": 0
+    },
+    "Full target": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    }
+  },
+  "clause_counts_after": {
+    "Core": {
+      "done": 4,
+      "partial": 71,
+      "missing": 11,
+      "total": 86
+    },
+    "Agent surface": {
+      "done": 0,
+      "partial": 0,
+      "missing": 5,
+      "total": 5
+    },
+    "Later": {
+      "done": 0,
+      "partial": 0,
+      "missing": 0,
+      "total": 0
+    },
+    "Full target": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    }
+  },
+  "gated_diff_equal": true,
+  "product_patch_sha256": "90ceca84d0220588d46d25d8455c945e95a5f6e3ba54e0edc2c49e7ddbc45293",
+  "source_lock_semantic_delta_equal": true,
+  "no_proof_directory_in_candidate_diff": true,
+  "remote_ref_verified": true,
+  "ci_url": "https://github.com/just-every/run-happytohelp/actions/runs/43928347510",
+  "ci_run_attempt": 1,
+  "ci_rerun_requested": false,
+  "terminal_status": "READY",
+  "blockers": [],
+  "finished_at": "2026-11-16T18:54:54.050581+00:00"
+}

@@ -1,0 +1,334 @@
+diff --git a/src/modules/move-in/batches.ts b/src/modules/move-in/batches.ts
+index f70ddb0..408e962 100644
+--- a/src/modules/move-in/batches.ts
++++ b/src/modules/move-in/batches.ts
+@@ -10,6 +10,7 @@ import {readReview,verifyGroupCustody,verifyApprovedCustody} from './review-cust
+ import {reconcileContactKeys} from './contact-keys'
+ import {publicationPredicates,publicationDatabase,reviewedContacts,checkPublication} from './publication'
+ import {skipUnstartedUndo} from './partial-undo'
++import {undoProgress} from './undo-progress'
+ import {applyStep} from './apply-step'
+ interface Batch {run_id:string;ordinal:number;plan_key:string;fingerprint:string;total:number;kit_job_id:string|null;state:string;checkpoint:number}
+ export async function approveReview(env:Env,run:Run,fingerprint:string){
+@@ -21,14 +22,14 @@ export async function approveReview(env:Env,run:Run,fingerprint:string){
+ async function publishCheckpoint(env:Env,run:Run,batch:Batch,job:ImportJob){
+  const undo=run.state==='undoing',nextState=['undone','rolled_back'].includes(job.state)?'undone':job.state==='completed'?'completed':undo?'undoing':'applying'
+  const other=await env.DB.prepare("SELECT COALESCE(SUM(checkpoint),0) checkpoint,COUNT(*) total,COALESCE(SUM(state=?1),0) finished,(SELECT json_extract(plan_json,'$.counts') FROM move_in_runs WHERE id=?2) counts FROM move_in_batches WHERE run_id=?2 AND ordinal<>?3").bind(undo?'undone':'completed',run.id,batch.ordinal).first<any>()
+- const progress=undo?await env.DB.prepare('SELECT COUNT(*) total,COALESCE(SUM(reversed),0) checkpoint FROM ik_provenance WHERE job_id IN (SELECT kit_job_id FROM move_in_batches WHERE run_id=?)').bind(run.id).first<any>():{checkpoint:other.checkpoint+job.checkpoint,total:run.total}
++ const progress=undo?await undoProgress(env,run):{checkpoint:other.checkpoint+job.checkpoint,total:run.total}
+  const done=nextState===(undo?'undone':'completed')&&other.finished===other.total,state=done?undo?'undone':'completed':run.state
+- await updateRun(env,run,{state,cursor:progress.checkpoint,kit_job_id:job.id,report_json:JSON.stringify({state,checkpoint:progress.checkpoint,total:progress.total,counts:JSON.parse(other.counts)}),error:job.error??null},[env.DB.prepare('UPDATE move_in_batches SET kit_job_id=?,state=?,checkpoint=? WHERE run_id=? AND ordinal=?').bind(job.id,nextState,job.checkpoint,run.id,batch.ordinal)])
++ await updateRun(env,run,{state,cursor:progress.checkpoint,kit_job_id:job.id,report_json:JSON.stringify({state,...progress,...undo?{referencesChecked:true}:{counts:JSON.parse(other.counts)}}),error:job.error??null},[env.DB.prepare('UPDATE move_in_batches SET kit_job_id=?,state=?,checkpoint=? WHERE run_id=? AND ordinal=?').bind(job.id,nextState,job.checkpoint,run.id,batch.ordinal)])
+ }
+ export async function advanceBatch(env:Env,run:Run){
+  if(run.state!=='undoing'&&!await reconcileContactKeys(env,run))return
+  const review=await readReview(env,run,run.review_fingerprint!);await verifyApprovedCustody(env,run,review)
+- const undo=run.state==='undoing';if(undo&&JSON.parse(run.report_json||'{}').state!=='undoing')await assertUndoReferences(env,run)
++ const undo=run.state==='undoing';if(undo&&JSON.parse(run.report_json||'{}').referencesChecked!==true)await assertUndoReferences(env,run)
+  const batch=await env.DB.prepare(`SELECT * FROM move_in_batches WHERE run_id=? AND state<>? ORDER BY ordinal ${undo?'DESC':'ASC'} LIMIT 1`).bind(run.id,undo?'undone':'completed').first<Batch>();if(!batch)throw new Error('import_batch_missing')
+  if(undo&&!batch.kit_job_id){await skipUnstartedUndo(env,run,batch.ordinal);return}
+  if(undo)await assertUndoReferences(env,run,batch.kit_job_id??undefined)
+diff --git a/src/modules/move-in/partial-undo.ts b/src/modules/move-in/partial-undo.ts
+index 17d6c2c..0b06807 100644
+--- a/src/modules/move-in/partial-undo.ts
++++ b/src/modules/move-in/partial-undo.ts
+@@ -1,15 +1,14 @@
+ import type {Env} from '../../platform/env'
+ import type {Run} from './types'
+ import {updateRun} from './run-store'
++import {undoProgress} from './undo-progress'
+ /** Reviewed children that never acquired a job have no native effects to
+  * reverse. Record that fact so undo can reach the already committed children. */
+ export async function skipUnstartedUndo(env:Env,run:Run,ordinal:number){
+- const progress=await env.DB.prepare(`SELECT COUNT(*) total,COALESCE(SUM(reversed),0) checkpoint,
+- (SELECT COUNT(*) FROM move_in_batches WHERE run_id=?1 AND ordinal<>?2 AND state<>'undone') remaining,
+- (SELECT json_extract(plan_json,'$.counts') FROM move_in_runs WHERE id=?1) counts
+- FROM ik_provenance WHERE job_id IN (SELECT kit_job_id FROM move_in_batches WHERE run_id=?1)`).bind(run.id,ordinal).first<any>()
+- const state=progress.remaining?'undoing':'undone'
+- await updateRun(env,run,{state,cursor:progress.checkpoint,error:null,report_json:JSON.stringify({state,checkpoint:progress.checkpoint,total:progress.total,counts:JSON.parse(progress.counts)})},[
++ const progress=await undoProgress(env,run)
++ const remaining=await env.DB.prepare("SELECT COUNT(*) total FROM move_in_batches WHERE run_id=? AND ordinal<>? AND state<>'undone'").bind(run.id,ordinal).first<{total:number}>()
++ const state=remaining?.total?'undoing':'undone'
++ await updateRun(env,run,{state,cursor:progress.checkpoint,error:null,report_json:JSON.stringify({state,...progress,referencesChecked:true})},[
+   env.DB.prepare("UPDATE move_in_batches SET state='undone',checkpoint=0 WHERE run_id=? AND ordinal=? AND kit_job_id IS NULL").bind(run.id,ordinal)
+  ])
+ }
+diff --git a/src/modules/move-in/routes.ts b/src/modules/move-in/routes.ts
+index 3a921aa..b6b8213 100644
+--- a/src/modules/move-in/routes.ts
++++ b/src/modules/move-in/routes.ts
+@@ -15,6 +15,7 @@ import {approve,enqueue,getRun} from './service'
+ import {guarded} from './context'
+ import {putPrivate} from './private-custody'
+ import {updateRun} from './run-store'
++import {undoProgress} from './undo-progress'
+ import {requireAuditedCustody} from './legacy-identities'
+ import {AdmissionError} from './readers/admission-error'
+ import {uploadIdentities,erasedUpload,identityStatements} from './identities'
+@@ -29,7 +30,7 @@ import {zendeskAttachmentRoutes} from './zendesk-attachments/routes'
+ export async function importActor(c:Context<AppEnv>){const actor=await requireActor(c),project=c.req.param('projectId')!;if(actor.role==='contact')throw new HTTPException(403);const membership=await c.env.DB.prepare(`SELECT m.role FROM memberships m JOIN projects p ON p.id=m.project_id WHERE m.project_id=? AND m.user_id=? AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`).bind(project,actor.id).first<{role:string}>();if(!membership)throw new HTTPException(404);if(!['owner','admin'].includes(membership.role))throw new HTTPException(403,{message:'Workspace owner or admin required'});const token=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1];return {project_id:project,actor_id:actor.id,session_hash:await hashToken(token!),role:membership.role as 'owner'|'admin'}}
+ async function owned(c:Context<AppEnv>){const actor=await importActor(c),run=await getRun(c.env,c.req.param('runId')!);if(!run||run.project_id!==actor.project_id||run.actor_id!==actor.actor_id)throw new HTTPException(404);return {run,actor}}
+ /** One run with its full review report; the list returns summaries. */
+-async function runView(env:Env,run:Run){return {...publicRun(run),plan:await reviewPlan(env,run)}}
++async function runView(env:Env,run:Run){return {...publicRun(run),plan:await reviewPlan(env,run),...(['undoing','undone'].includes(run.state)?{report:{state:run.state,...await undoProgress(env,run)}}:{})}}
+ export function publicRun(run:Run){return {id:run.id,vendor:run.vendor,filename:run.filename,bytes:run.bytes,state:run.state,cursor:run.cursor,parsed:run.parsed_total,error:run.error,createdAt:run.created_at,plan:planSummary(run.plan_json),report:run.report_json?JSON.parse(run.report_json):null}}
+ async function uploadBytes(request:Request){if(Number(request.headers.get('content-length'))>LIMITS.inputBytes)throw new HTTPException(413,{message:'Upload limit is 2 MiB'});const reader=request.body?.getReader();if(!reader)return new Uint8Array(0);let length=0;const chunks:Uint8Array[]=[];try{for(;;){const next=await reader.read();if(next.done)break;length+=next.value.length;if(length>LIMITS.inputBytes){await reader.cancel();throw new HTTPException(413,{message:'Upload limit is 2 MiB'})}chunks.push(next.value)}}finally{reader.releaseLock()}const result=new Uint8Array(length);let offset=0;for(const chunk of chunks){result.set(chunk,offset);offset+=chunk.length}return result}
+ export const moveInRoutes=new Hono<AppEnv>()
+@@ -76,7 +77,7 @@ export async function admitExport(env:Env,actor:ImportActor,vendor:Vendor,filena
+ moveInRoutes.get(`${root}/:runId`,async c=>{const {run}=await owned(c);return c.json({data:await runView(c.env,run)})})
+ moveInRoutes.post(`${root}/:runId/apply`,async c=>{const {run,actor}=await owned(c),body=await c.req.json();if(run.state!=='ready'||typeof body.fingerprint!=='string'||JSON.parse(run.plan_json!).fingerprint!==body.fingerprint)throw new HTTPException(409,{message:'Review the current import plan before approving'});if(!run.total)throw new HTTPException(409,{message:'Nothing in this file can be imported. Fix the rejected records shown in the review, then upload the corrected file.'});await approve(c.env,{...run,...actor},body.fingerprint);return c.json({data:await runView(c.env,(await getRun(c.env,run.id))!)},202)})
+ moveInRoutes.post(`${root}/:runId/resume`,async c=>{const {run,actor}=await owned(c);if(!['uploaded','parsing','planning','applying','undoing'].includes(run.state))throw new HTTPException(409);await guarded(c.env,{...run,...actor},[c.env.DB.prepare('UPDATE move_in_runs SET error=NULL,session_hash=? WHERE id=?').bind(actor.session_hash,run.id)]);await enqueue(c.env,run);return c.json({data:await runView(c.env,(await getRun(c.env,run.id))!)},202)})
+-moveInRoutes.post(`${root}/:runId/undo`,async c=>{const {run,actor}=await owned(c);if(run.state!=='completed'&&!(run.state==='applying'&&run.error))throw new HTTPException(409,{message:'Only a completed or stopped import can be undone'});await guarded(c.env,{...run,...actor},[c.env.DB.prepare("UPDATE move_in_runs SET state='undoing',error=NULL,session_hash=? WHERE id=? AND state=?").bind(actor.session_hash,run.id,run.state)]);await enqueue(c.env,run);return c.json({data:await runView(c.env,(await getRun(c.env,run.id))!)},202)})
++moveInRoutes.post(`${root}/:runId/undo`,async c=>{const {run,actor}=await owned(c);if(run.state!=='completed'&&!(run.state==='applying'&&run.error))throw new HTTPException(409,{message:'Only a completed or stopped import can be undone'});const progress=await undoProgress(c.env,run);await updateRun(c.env,{...run,...actor},{state:'undoing',cursor:progress.checkpoint,error:null,session_hash:actor.session_hash,report_json:JSON.stringify({state:'undoing',...progress,referencesChecked:false})});await enqueue(c.env,run);return c.json({data:await runView(c.env,(await getRun(c.env,run.id))!)},202)})
+ 
+ moveInRoutes.get(`${root}/:runId/ownership`,async c=>{const {run}=await owned(c);return c.json(await ownershipOptions(c.env,run))})
+ moveInRoutes.post(`${root}/:runId/ownership/preview`,async c=>{const {run,actor}=await owned(c);return c.json(await previewOwnership(c.env,{...run,...actor},await c.req.json()))})
+diff --git a/src/modules/move-in/undo-progress.ts b/src/modules/move-in/undo-progress.ts
+new file mode 100644
+index 0000000..0e20403
+--- /dev/null
++++ b/src/modules/move-in/undo-progress.ts
+@@ -0,0 +1,13 @@
++import type {Env} from '../../platform/env'
++import type {Run} from './types'
++/** Undo counts committed native changes, not source records (staff and unmapped
++ * records have no native effect). Unstarted children contribute nothing. The
++ * same journal query is used at admission, checkpoints and reload after a stop. */
++export async function undoProgress(env:Env,run:Pick<Run,'id'>){
++ const progress=await env.DB.prepare(`SELECT COUNT(*) total,COALESCE(SUM(reversed),0) checkpoint,
++ COALESCE(SUM(reversed=1 AND json_extract(record_json,'$.before') IS NULL),0) removed,
++ COALESCE(SUM(reversed=1 AND json_extract(record_json,'$.before') IS NOT NULL),0) restored
++ FROM ik_provenance WHERE job_id IN (SELECT kit_job_id FROM move_in_batches WHERE run_id=?)`).bind(run.id).first<{total:number;checkpoint:number;removed:number;restored:number}>()
++ if(!progress)throw new Error('import_undo_progress_missing')
++ return {...progress,retained:progress.total-progress.checkpoint}
++}
+diff --git a/src/modules/move-in/undo-references.ts b/src/modules/move-in/undo-references.ts
+index 6cd7b99..b602414 100644
+--- a/src/modules/move-in/undo-references.ts
++++ b/src/modules/move-in/undo-references.ts
+@@ -10,12 +10,16 @@ export function undoReferencesClear(run:Run,jobId?:string):D1Sql {
+  const categoryReferences=`EXISTS(SELECT 1 FROM knowledge_articles a WHERE a.project_id=p.destination AND (a.category_id=p.target_id OR EXISTS(SELECT 1 FROM knowledge_article_categories linked WHERE linked.article_id=a.id AND linked.category_id=p.target_id)) AND NOT ${ownedArticle}) OR EXISTS(SELECT 1 FROM knowledge_categories c WHERE c.project_id=p.destination AND c.parent_id=p.target_id AND NOT ${ownedCategory})`
+  const ownedForm=owned.replace("owned.target_kind='conversation'","owned.target_kind='form'").replace('owned.target_id=c.id','owned.target_id=f.id')
+  const ownedContact=owned.replace("owned.target_kind='conversation'","owned.target_kind='contact'").replace('owned.target_id=c.id','owned.target_id=linked.contact_id')
+- const fieldReferences=`EXISTS(SELECT 1 FROM ticket_field_values v JOIN conversations c ON c.project_id=v.project_id AND c.id=v.conversation_id WHERE v.project_id=p.destination AND v.field_id=p.target_id AND NOT ${owned}) OR EXISTS(SELECT 1 FROM request_forms f,json_each(f.config_json,'$.fields') ref WHERE f.project_id=p.destination AND json_extract(ref.value,'$.fieldId')=p.target_id AND NOT ${ownedForm})`
++ const fieldReferences=`EXISTS(SELECT 1 FROM ticket_field_values v CROSS JOIN conversations c ON c.project_id=v.project_id AND c.id=v.conversation_id WHERE v.project_id=p.destination AND v.field_id=p.target_id AND NOT ${owned}) OR EXISTS(SELECT 1 FROM request_forms f,json_each(f.config_json,'$.fields') ref WHERE f.project_id=p.destination AND json_extract(ref.value,'$.fieldId')=p.target_id AND NOT ${ownedForm})`
++ // Keep the referencing row first. With an ordinary JOIN, SQLite may walk
++ // every workspace conversation and its sibling-job ownership for each contact
++ // before checking an empty participant set or an author's contact ID. CROSS
++ // JOIN preserves the same predicate while making the keyed/empty set lead.
+  const references=[
+   `SELECT 1 FROM conversations c WHERE c.project_id=p.destination AND c.contact_id=p.target_id AND NOT ${owned}`,
+-  `SELECT 1 FROM conversation_participants participant JOIN conversations c ON c.id=participant.conversation_id WHERE participant.contact_id=p.target_id AND c.project_id=p.destination AND NOT ${owned}`,
+-  `SELECT 1 FROM messages authored JOIN conversations c ON c.id=authored.conversation_id WHERE authored.actor_role='contact' AND authored.actor_id=p.target_id AND c.project_id=p.destination AND NOT ${owned}`,
+-  `SELECT 1 FROM conversation_tags tagged JOIN conversations c ON c.id=tagged.conversation_id WHERE tagged.tag_id=p.target_id AND tagged.project_id=p.destination AND NOT ${owned}`,
++  `SELECT 1 FROM conversation_participants participant CROSS JOIN conversations c ON c.id=participant.conversation_id WHERE participant.contact_id=p.target_id AND c.project_id=p.destination AND NOT ${owned}`,
++  `SELECT 1 FROM messages authored CROSS JOIN conversations c ON c.id=authored.conversation_id WHERE authored.actor_role='contact' AND authored.actor_id=p.target_id AND c.project_id=p.destination AND NOT ${owned}`,
++  `SELECT 1 FROM conversation_tags tagged CROSS JOIN conversations c ON c.id=tagged.conversation_id WHERE tagged.tag_id=p.target_id AND tagged.project_id=p.destination AND NOT ${owned}`,
+   // Customer access established after import belongs to the customer, not to
+   // the import journal. Refuse reversal before any child is removed; deleting
+   // the contact would otherwise fail its session foreign key mid-undo.
+diff --git a/src/ui/native/pages/MoveIn.jsx b/src/ui/native/pages/MoveIn.jsx
+index 774903c..d5570ec 100644
+--- a/src/ui/native/pages/MoveIn.jsx
++++ b/src/ui/native/pages/MoveIn.jsx
+@@ -29,14 +29,15 @@ function MoveInWorkspace({projectId}){
+  useEffect(()=>{if(!selected||!active.includes(selected.state)||selected.error)return;let cancelled=false;const id=selected.id,timer=setInterval(()=>nativeRequest(`${base}/${id}`).then(r=>{if(!cancelled&&selectedId.current===id)showRun(r.data)}).catch(e=>{if(!cancelled&&selectedId.current===id)setError(e.message)}),1500);return()=>{cancelled=true;clearInterval(timer)}},[base,selected?.id,selected?.state,selected?.error]);
+  const upload=async event=>{event.preventDefault();if(!file)return;setBusy(true);setError('');setRepeated(false);try{const result=await nativeRequest(`${base}?vendor=${vendor}`,{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Import-Filename':encodeURIComponent(file.name),'X-Import-Schema':vendor==='intercom'?'2.16':''},body:file});showRun(result.data);setRepeated(result.alreadyImported===true);await reload()}catch(e){setError(e.message)}finally{setBusy(false)}};
+  const action=async name=>{setBusy(true);setError('');try{const result=await nativeRequest(`${base}/${selected.id}/${name}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fingerprint:selected.plan?.fingerprint})});showRun(result.data);setRepeated(false)}catch(e){setError(e.message)}finally{setBusy(false)}};
++ const undoing=selected?.state==='undoing',undone=selected?.state==='undone',reversing=undoing||undone,progress=selected?.report;
+  const plan=selected?.plan,decisions=plan?.decisions||[],links=decisions.flatMap(d=>d.targets),importable=decisions.some(d=>d.targets.length);
+  if(access!=='ready')return <div className="move-in-page">{access==='loading'?<p role="status">Checking import access…</p>:access==='denied'?<p role="alert">Only a workspace owner or admin can move in support history. Ask your workspace owner to review the export.</p>:<><Feedback error={error}/><button className="btn btn-white" onClick={reload}>Check import access</button></>}</div>;
+  return <div className="move-in-page"><p>Bring your support history into this workspace. Imports preserve source details and stay out of Reports. Importing does not send messages, run AI, or notify customers. Switching a source over? Record it in <Link to={`/projects/${encodeURIComponent(projectId)}/cutover`}>Cutover</Link>.</p><Feedback error={error}/>
+  <Section title="Choose an export"><label htmlFor="move-in-vendor" className="form-label">Export format</label><select id="move-in-vendor" className="form-select" value={vendor} onChange={e=>{if(e.target.value!==vendor){setVendor(e.target.value);setFile(null)}}}>{Object.entries(vendorGuides).map(([value,{label}])=><option key={value} value={value}>{label}</option>)}</select>{vendor==='zendesk'&&<MoveInZendesk projectId={projectId} onOpenRun={openRun}/>}{vendor==='happytohelp'?<LegacyPackage projectId={projectId}/>:<div className="sh-steps mt-3" data-guide={vendor}><p><b>{vendor==='zendesk'?'Or upload Zendesk files':`Get the file from ${vendorGuides[vendor].label}`}</b></p>{vendorGuides[vendor].guide}</div>}{vendorGuides[vendor].accept&&<form onSubmit={upload}><label htmlFor="move-in-file" className="form-label">Export file</label><input key={vendor} id="move-in-file" className="form-control" type="file" accept={vendorGuides[vendor].accept} onChange={e=>setFile(e.target.files?.[0]||null)}/><p className="mt-2 settings-note">Each file can be up to 2 MiB. A file we can’t read completely is refused before anything is saved, with the file, line and field to fix. Export files stay private to you. Uploading a file again, or one that overlaps an earlier file, is safe: records already imported are recognised and left as they are. <a href="/docs/moving-in#files-and-limits">All limits</a></p>{file?.size>2*1024*1024&&<p role="alert">This file exceeds the 2 MiB upload limit. Make smaller batches with the script above.</p>}<button className="btn btn-primary" disabled={busy||!file||file.size>2*1024*1024}>{busy?'Working…':'Upload and review'}</button></form>}</Section>
+- {selected&&<Section title={`${label[selected.state]||selected.state}: ${selected.filename}`}><p role="status">{active.includes(selected.state)?`${label[selected.state]}. ${selected.state==='applying'||selected.state==='undoing'?`${selected.cursor} of ${selected.report?.total||plan?.counts.unique||0} source records processed.`:`${selected.parsed} source records read.`}`:label[selected.state]}</p>{repeated&&<p role="status">This export was already processed. Its accepted records are already imported. No data or import bookkeeping was changed.</p>}{selected.error&&<p role="alert">{reasonLabel(selected.error)} Records already imported stay imported. Fix the problem, then choose Resume import, or undo the whole import.</p>}
+- {plan?.decisions?<MoveInReview key={selected.id} plan={plan} projectId={projectId} vendor={selected.vendor} state={selected.state}/>:plan&&<p role="status">Loading the review…</p>}
++ {selected&&<Section title={`${label[selected.state]||selected.state}: ${selected.filename}`}><p role="status">{reversing?`${undone?'Undo complete.':'Undoing import.'} ${progress?.checkpoint??0} of ${progress?.total??0} imported changes reversed. ${progress?.removed??0} records removed, ${progress?.restored??0} prior records restored; ${progress?.retained??0} imported changes ${undone?'retained':'remaining'}.`:active.includes(selected.state)?`${label[selected.state]}. ${selected.state==='applying'?`${selected.cursor} of ${selected.report?.total||plan?.counts.unique||0} source records processed.`:`${selected.parsed} source records read.`}`:label[selected.state]}</p>{repeated&&<p role="status">This export was already processed. Its accepted records are already imported. No data or import bookkeeping was changed.</p>}{selected.error&&<p role="alert">{reasonLabel(selected.error)} {undoing?'Remaining imported changes are kept. Resolve the conflict, then choose Resume undo.':'Records already imported stay imported. Fix the problem, then choose Resume import, or undo the whole import.'}</p>}
++ {plan?.decisions&&reversing?<details className="move-in-details"><summary>Original import review</summary><MoveInReview key={selected.id} plan={plan} projectId={projectId} vendor={selected.vendor} state={selected.state}/></details>:plan?.decisions?<MoveInReview key={selected.id} plan={plan} projectId={projectId} vendor={selected.vendor} state={selected.state}/>:plan&&<p role="status">Loading the review…</p>}
+  {selected.state==='ready'&&plan?.decisions&&!importable&&<p role="alert">Nothing in this file can be imported yet. Fix the records listed under Needs fixing, then upload the corrected file.</p>}
+- <div className="move-in-actions">{selected.state==='ready'&&plan?.decisions&&importable&&<button className="btn btn-primary" disabled={busy} onClick={()=>action('apply')}>Approve and import</button>}{active.includes(selected.state)&&<button className="btn btn-white" disabled={busy} onClick={()=>action('resume')}>Resume import</button>}{(selected.state==='completed'||selected.state==='applying'&&selected.error)&&<button className="btn btn-outline-danger" disabled={busy} onClick={()=>action('undo')}>Undo whole import</button>}</div>
++ <div className="move-in-actions">{selected.state==='ready'&&plan?.decisions&&importable&&<button className="btn btn-primary" disabled={busy} onClick={()=>action('apply')}>Approve and import</button>}{active.includes(selected.state)&&<button className="btn btn-white" disabled={busy} onClick={()=>action('resume')}>{undoing?'Resume undo':'Resume import'}</button>}{(selected.state==='completed'||selected.state==='applying'&&selected.error)&&<button className="btn btn-outline-danger" disabled={busy} onClick={()=>action('undo')}>Undo whole import</button>}</div>
+  {selected.state==='completed'&&<><MoveInReport projectId={projectId} links={links}/><MoveInOwnership key={selected.id} projectId={projectId} runId={selected.id}/></>}{selected.state==='erased'&&<p>Contact erasure removed this import’s source custody. This export cannot be resumed, replayed, or undone.</p>}</Section>}
+  <Section title="Your imports">{runs.length?<ul>{runs.map(run=><li key={run.id}><button className="btn btn-link" onClick={()=>open(run)}>{run.filename} — {label[run.state]||run.state}</button></li>)}</ul>:<p>{vendor==='happytohelp'?'HappyToHelp package imports are listed in Package import history above.':'No imports yet.'}</p>}</Section></div>
+ }
+diff --git a/src/ui/native/pages/MoveInReview.jsx b/src/ui/native/pages/MoveInReview.jsx
+index 3c7fa63..3aa8536 100644
+--- a/src/ui/native/pages/MoveInReview.jsx
++++ b/src/ui/native/pages/MoveInReview.jsx
+@@ -17,11 +17,11 @@ export default function MoveInReview({plan,vendor,state,projectId}){
+  const [page,setPage]=useState(0),decisions=plan.decisions||[],rejected=decisions.filter(d=>d.rejection),importing=decisions.filter(d=>d.targets.length).length,targets=decisions.flatMap(d=>d.targets),kept=keptBehind(decisions),fileNotes=(plan.diagnostics||[]).filter(d=>d.sourceId==null&&d.kind==null);
+  // A conflicting duplicate is reported where it repeats; show those lines beside the rejected record.
+  const repeats=new Map();for(const d of plan.diagnostics||[])if(d.code==='conflicting_duplicate_id'&&d.sourceId!=null){const k=`${d.kind}/${d.sourceId}`;repeats.set(k,[...(repeats.get(k)||[]),d.location])}
+- const published=targets.filter(t=>t.kind==='article'&&t.status==='published').length,drafts=targets.filter(t=>t.kind==='article'&&t.status==='draft').length,ready=state==='ready';
++ const published=targets.filter(t=>t.kind==='article'&&t.status==='published').length,drafts=targets.filter(t=>t.kind==='article'&&t.status==='draft').length,ready=state==='ready',reversed=state==='undoing'||state==='undone';
+  return <>
+-  <h3>{ready?'Review before importing':'Import summary'}</h3>
++  <h3>{reversed?'Original import review':ready?'Review before importing':'Import summary'}</h3>
+   <ul>{Object.entries(plan.counts.byKind||{}).map(([kind,count])=><li key={kind}>{kindLabel(kind)}: {count}</li>)}</ul>
+-  <p>{importing} of {decisions.length} records {ready?'will be':state==='completed'?'were':'are'} imported. {rejected.length?`${rejected.length} ${rejected.length===1?'needs':'need'} fixing first.`:'None need fixing.'}{plan.duplicateRecords>0&&` ${plan.duplicateRecords} repeated ${plan.duplicateRecords===1?'record was':'records were'} counted once.`}{published+drafts>0&&` Articles: ${published} will be published, ${drafts} will stay ${drafts===1?'a draft':'drafts'}.`}</p>
++  {reversed?<p>The approved plan included {importing} of {decisions.length} source records with native changes. This is the original review; the undo progress above reports what remains.</p>:<p>{importing} of {decisions.length} records {ready?'will be':state==='completed'?'were':'are'} imported. {rejected.length?`${rejected.length} ${rejected.length===1?'needs':'need'} fixing first.`:'None need fixing.'}{plan.duplicateRecords>0&&` ${plan.duplicateRecords} repeated ${plan.duplicateRecords===1?'record was':'records were'} counted once.`}{published+drafts>0&&` Articles: ${published} will be published, ${drafts} will stay ${drafts===1?'a draft':'drafts'}.`}</p>}
+   <p className="settings-note">Customers are not contacted. People who were staff in {vendorNames[vendor]||'the source'} stay as the authors of their messages and get no access here.{vendor==='intercom'&&' Intercom exports have no time for a conversation’s first message, so it shows the conversation’s start time.'} Your original files are kept privately, including any fields that aren’t imported.</p>
+   {vendor==='zendesk'&&targets.some(t=>t.transcript)&&<details className="move-in-details"><summary>Ticket contents ({targets.filter(t=>t.transcript).length})</summary><ul>{targets.filter(t=>t.transcript).slice(contentsPage*PAGE,contentsPage*PAGE+PAGE).map(t=><li key={t.id}>{t.label} — {t.transcript.status}: {t.transcript.comments} public comments, {t.transcript.notes} internal notes, {t.transcript.tags} tags, {t.transcript.fields} typed fields. {t.history?`${t.history.events} imported history events; metric file ${t.history.metrics}, audit file ${t.history.audits}.`:'Historical events unavailable: no offline history supplied.'}</li>)}</ul>{targets.filter(t=>t.transcript).length>PAGE&&<div><button type="button" className="btn btn-white" disabled={!contentsPage} onClick={()=>setContentsPage(contentsPage-1)}>Previous tickets</button><button type="button" className="btn btn-white" disabled={(contentsPage+1)*PAGE>=targets.filter(t=>t.transcript).length} onClick={()=>setContentsPage(contentsPage+1)}>Next tickets</button></div>}<p>History stays inert. Missing files never imply an SLA result.</p></details>}
+   {targets.some(t=>t.attachments?.length>0)&&<details className="move-in-details"><summary style={{minHeight:44}}>Supplied attachments ({targets.reduce((n,t)=>n+(t.attachments?.length||0),0)})</summary><p>Each attachment stays with its source message or private note. SHA-256 verifies the supplied bytes; no attachment links are fetched.</p><ul>{targets.flatMap(t=>t.attachments||[]).slice(0,PAGE).map(a=><li key={a.id}>{a.filename} — {a.visibility}<br/><code className="text-break">{a.sha256}</code></li>)}</ul>{targets.reduce((n,t)=>n+(t.attachments?.length||0),0)>PAGE&&<p>The first {PAGE} attachments are shown. Open imported conversations to inspect the rest.</p>}</details>}
+diff --git a/tests/journeys/move-in-browser.mjs b/tests/journeys/move-in-browser.mjs
+index db1a843..b426636 100644
+--- a/tests/journeys/move-in-browser.mjs
++++ b/tests/journeys/move-in-browser.mjs
+@@ -9,6 +9,7 @@ import {randomBytes} from 'node:crypto'
+ import {createRuntime} from '../helpers/emitted-runtime.mjs'
+ import {reviewExplanations} from '../move-in/outcomes-policy.mjs'
+ import {generate} from '../move-in/generator.mjs'
++import {undoBrowser} from '../move-in/undo-browser.mjs'
+ import {launchBrowser,evidence} from './kit/browser.mjs'
+ 
+ // Move in in a real browser against the emitted Worker: one owner workspace, every
+@@ -24,7 +25,7 @@ before(async()=>{
+  browser=await launchBrowser();context=await browser.newContext({viewport:{width:1440,height:1000},bypassCSP:true});page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',error=>errors.push(error.message));page.on('dialog',async dialog=>{errors.push('Unexpected script dialog');await dialog.dismiss()})
+  await page.goto(runtime.origin+'/login?returnTo='+encodeURIComponent(base+'/conversations'));await page.getByLabel('Email',{exact:true}).fill(owner.email);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Login',exact:true}).click();await page.waitForURL('**/conversations')
+ })
+-after(async()=>{await writeFile(shot('checks.json'),JSON.stringify({checks:results,errors},null,2)).catch(()=>{});await browser?.close();await runtime?.close(success)})
++after(async()=>{await writeFile(shot('checks.json'),JSON.stringify({head:process.env.H2H_CANDIDATE_SHA??null,checks:results,errors},null,2)).catch(()=>{});await browser?.close();await runtime?.close(success)})
+ const guarded=body=>async()=>{try{await body();assert.deepEqual(errors,[])}catch(error){success=false;throw error}}
+ 
+ async function vendorJourney(width,vendor){
+@@ -44,7 +45,7 @@ async function vendorJourney(width,vendor){
+   await page.evaluate(()=>document.querySelectorAll('.conversation-item').forEach(row=>{row.dataset.beforeFilter='1'}));await filter.selectOption({label:'Priority'});
+   await page.waitForFunction(()=>document.querySelectorAll('.conversation-item').length===3&&!document.querySelector('.conversation-item[data-before-filter]')&&[...document.querySelectorAll('.conversation-item .conversation-tag')].filter(tag=>tag.textContent.includes('Priority')).length===3);
+   assert.equal(await page.locator('.conversation-item').count(),3);assert.equal(await page.locator('.conversation-item .conversation-tag').filter({hasText:'Priority'}).count(),3);await inspect(`${label}-tag-filter`);
+-  await page.goto(runtime.origin+base+'/move-in');await page.getByRole('button',{name:`${filename} — Complete`,exact:true}).click();await page.getByRole('button',{name:'Undo whole import',exact:true}).click();await page.getByRole('heading',{name:`Undone: ${filename}`,exact:true}).waitFor({timeout:120000});await inspect(`${label}-undone`);
++  await page.goto(runtime.origin+base+'/move-in');await page.getByRole('button',{name:`${filename} — Complete`,exact:true}).click();await undoBrowser({page,filename,shot});await inspect(`${label}-undone`);
+   const listed=await request(`/api/dashboard/projects/${project}/conversations?view=all`,{token});assert.equal(listed.meta.pagination.total,0);
+ 
+ }
+diff --git a/tests/journeys/move-in-large-undo.mjs b/tests/journeys/move-in-large-undo.mjs
+new file mode 100644
+index 0000000..cd2a3ee
+--- /dev/null
++++ b/tests/journeys/move-in-large-undo.mjs
+@@ -0,0 +1,9 @@
++import test from 'node:test'
++import {largeUndoJourney,partialUndoJourney} from '../move-in/large-undo.mjs'
++
++// Targeted scale qualification outside push Verify; the same undo flow includes
++// a real Worker stop and a stopped apply with unstarted reviewed children.
++test('a 1,000-customer Zendesk import repeats exactly, undoes responsively across restart and reverses only committed partial work',{timeout:300_000},async()=>{
++ await largeUndoJourney()
++ await partialUndoJourney()
++})
+diff --git a/tests/move-in/large-undo-fixture.mjs b/tests/move-in/large-undo-fixture.mjs
+new file mode 100644
+index 0000000..e8d2bbe
+--- /dev/null
++++ b/tests/move-in/large-undo-fixture.mjs
+@@ -0,0 +1,9 @@
++// Synthetic documented Zendesk JSONL, generated independently of the reader.
++// 1,000 distinct requesters expose reference-query scaling hidden by shared contacts.
++export function largeUndoFixture(count=1000){
++const stamp='2024-01-01T00:00:00Z',records=[{user:{id:900001,role:'agent',name:'synthetic-hh-900001',email:'synthetic-hh-900001@example.test',created_at:stamp}}];
++for(let i=1;i<=count;i++)records.push({user:{id:i,role:'end-user',name:`synthetic-hh-${i}`,email:`synthetic-hh-${i}@example.test`,created_at:stamp}});
++for(let i=1;i<=count;i++)records.push({ticket:{id:10000+i,requester_id:i,subject:`synthetic-hh-${10000+i}`,status:['new','open','pending','hold','solved','closed'][(i-1)%6],created_at:stamp,updated_at:stamp,tags:['Billing','Priority'],via:{channel:'email'},comment_count:2,comments:[{id:i*10+1,author_id:i,public:true,body:`synthetic-hh-${i} public comment`,created_at:stamp},{id:i*10+2,author_id:900001,public:false,body:`synthetic-hh-${i} private note`,created_at:stamp}]}});
++records.push({macro:{id:50001,title:'synthetic-hh-50001',restriction:null,created_at:stamp,updated_at:stamp,actions:[{field:'comment_value',value:'Hello, how can we help?'}]}},{article:{id:60001,title:'synthetic-hh-60001',body:'Public guide',draft:false,user_segment_id:null,created_at:stamp,updated_at:stamp}});
++let source=records.map(JSON.stringify).join('\n')+'\n';const padding=count===1000?794723-Buffer.byteLength(source):0;if(padding<0)throw Error('oversize');for(let i=0;i<count;i++)records[count+1+i].ticket.comments[0].body+='x'.repeat(Math.floor(padding/count)+(i<padding%count?1:0));source=records.map(JSON.stringify).join('\n')+'\n';return source;
++}
+diff --git a/tests/move-in/large-undo.mjs b/tests/move-in/large-undo.mjs
+new file mode 100644
+index 0000000..944fd3d
+--- /dev/null
++++ b/tests/move-in/large-undo.mjs
+@@ -0,0 +1,65 @@
++import assert from 'node:assert/strict'
++import {createHash} from 'node:crypto'
++import {mkdir,writeFile} from 'node:fs/promises'
++import {join} from 'node:path'
++import {nativeHarness} from './harness.mjs'
++import {largeUndoFixture} from './large-undo-fixture.mjs'
++import {assertBusinessEquality,businessSnapshot} from './business-equality.mjs'
++import {root,json,upload,state,review} from './journey-kit.mjs'
++
++const hash=snapshot=>createHash('sha256').update(JSON.stringify(businessSnapshot(snapshot))).digest('hex')
++export async function largeUndoJourney(){
++ const h=await nativeHarness({withConversations:true}),source=largeUndoFixture(),steps=[],reads=[]
++ try{
++  await h.db.batch([h.db.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES('native-contact','p','Native','native@example.test',1)"),h.db.prepare("INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES('native-conversation','p','native-contact',1,1)")])
++  const before=await h.snapshot(),run=await upload(h,'zendesk',source,'synthetic-hh-large-undo.jsonl')
++  await h.drain();console.log('LARGE_UNDO_PHASE reviewed');const ready=await state(h,run);assert.equal(ready.state,'ready');assert.equal(ready.plan.counts.rejected,0)
++  await h.call(`${root}/${run.id}/apply`,json({fingerprint:ready.plan.fingerprint}));await h.drain()
++  console.log('LARGE_UNDO_PHASE applied');const applied=await state(h,run);assert.equal(applied.state,'completed')
++  for(const [table,count] of [['contacts',1001],['conversations',1001],['messages',1000],['move_in_notes',1000],['workspace_tags',2],['macros',1],['knowledge_articles',1]])assert.equal((await h.db.prepare(`SELECT COUNT(*) n FROM ${table}`).first()).n,count,table)
++  const after=await h.snapshot(),repeat=await upload(h,'zendesk',source,'synthetic-hh-large-undo.jsonl')
++  assert.equal(repeat.id,run.id);assert.equal(h.lastWrites,0);const repeated=await h.snapshot();assertBusinessEquality(after,repeated)
++  const {data:initial}=await h.call(`${root}/${run.id}/undo`,json({})),total=ready.plan.counts.effects
++  assert.equal(initial.report.total,total);assert.equal(initial.report.checkpoint,0);assert.equal(initial.cursor,0);assert.equal(initial.report.retained,total)
++  let previous=0,restarted=false,checks=0
++  while(h.queued.length){
++   const start=performance.now()
++   const pending=h.step()
++   // An ordinary owner read must finish even while the reversal is executing.
++   const readAt=performance.now();await h.call('/api/dashboard/projects/p/conversations');reads.push(performance.now()-readAt)
++   const result=await pending;steps.push(performance.now()-start);assert.deepEqual(result.retried,[]);assert.deepEqual(result.effects,{widget:0});assert.ok(result.statements<=1000)
++   const current=await state(h,run);assert.equal(current.error,null);assert.equal(current.report.total,total);assert.ok(current.report.checkpoint>=previous);assert.ok(current.report.checkpoint-previous<=20,'one delivery reverses at most one native batch');assert.equal(current.report.retained,total-current.report.checkpoint);assert.equal(current.report.removed+current.report.restored,current.report.checkpoint);previous=current.report.checkpoint
++   if(++checks%50===0)console.log('LARGE_UNDO_PHASE reversing',previous,total);
++   if(checks%20===0){await h.call('/api/dashboard/projects/p/contacts');await h.call('/api/dashboard/projects/p/contacts/native-contact');await h.call('/api/dashboard/projects/p/conversations/native-conversation/triage');await h.call('/health')}
++   if(!restarted&&previous>20&&previous<total){
++    await h.crashDuringStep();const recovered=await state(h,run);assert.equal(recovered.report.total,total);assert.ok(recovered.report.checkpoint>=previous);previous=recovered.report.checkpoint
++    await h.call(`${root}/${run.id}/resume`,json({}));restarted=true
++   }
++   assert.ok(checks<2000)
++  }
++  const undone=await state(h,run);assert.equal(undone.state,'undone');assert.deepEqual(undone.report,{state:'undone',total,checkpoint:total,removed:total,restored:0,retained:0});assert.ok(restarted)
++  const end=await h.snapshot();assertBusinessEquality(before,end);assert.equal(h.outbound,0)
++  assert.ok(Math.max(...steps)<5000,'undo yields in under five seconds per delivery');assert.ok(Math.max(...reads)<5000,'ordinary inbox reads remain usable during undo')
++  const receipt={head:process.env.H2H_CANDIDATE_SHA??null,sourceBytes:Buffer.byteLength(source),customers:1000,tickets:1000,reviewRecords:ready.plan.counts.unique,nativeEffects:total,undo:undone.report,undoSteps:steps.length,maxUndoStepMs:Math.max(...steps),maxConcurrentReadMs:Math.max(...reads),maxStatements:h.maxStatements,restarted,businessTables:Object.keys(businessSnapshot(before)),beforeImportHash:hash(before),afterUndoHash:hash(end),beforeRepeatHash:hash(after),afterRepeatHash:hash(repeated),repeatWrites:0,outbound:h.outbound}
++  const directory=process.env.H2H_EVIDENCE_DIR||'test-results';await mkdir(directory,{recursive:true});await writeFile(join(directory,'large-undo-business-equality.json'),JSON.stringify(receipt,null,2)+'\n');console.log('LARGE_UNDO',JSON.stringify(receipt))
++ }finally{await h.close()}
++}
++
++export async function partialUndoJourney(){
++ const h=await nativeHarness()
++ try{
++  const before=await h.snapshot(),source=largeUndoFixture(25),run=await review(h,'zendesk',source,'synthetic-hh-partial-undo.jsonl')
++  await h.call(`${root}/${run.id}/apply`,json({fingerprint:run.plan.fingerprint}))
++  while(!(await h.db.prepare('SELECT 1 FROM contacts LIMIT 1').first()))await h.step()
++  // A database failure after a committed child is a real stopped partial apply.
++  await h.db.prepare("CREATE TRIGGER synthetic_stop BEFORE INSERT ON contacts BEGIN SELECT RAISE(ABORT,'synthetic interruption'); END").run()
++  await h.drain();assert.equal((await state(h,run)).state,'applying');assert.ok((await state(h,run)).error)
++  await h.db.prepare('DROP TRIGGER synthetic_stop').run()
++  const {data:initial}=await h.call(`${root}/${run.id}/undo`,json({}));assert.ok(initial.report.total>0&&initial.report.total<run.plan.counts.effects)
++  const total=initial.report.total
++  while(h.queued.length){await h.step();assert.equal((await state(h,run)).report.total,total)}
++  const done=await state(h,run);assert.equal(done.state,'undone');assert.equal(done.report.removed,total);assert.equal(done.report.retained,0);const after=await h.snapshot();assertBusinessEquality(before,after);assert.equal(h.outbound,0)
++  const directory=process.env.H2H_EVIDENCE_DIR||'test-results';await mkdir(directory,{recursive:true});await writeFile(join(directory,'partial-undo-business-equality.json'),JSON.stringify({head:process.env.H2H_CANDIDATE_SHA??null,plannedEffects:run.plan.counts.effects,undo:done.report,beforeImportHash:hash(before),afterUndoHash:hash(after),outbound:h.outbound},null,2)+'\n')
++  console.log('PARTIAL_UNDO',JSON.stringify(done.report))
++ }finally{await h.close()}
++}
+diff --git a/tests/move-in/undo-browser.mjs b/tests/move-in/undo-browser.mjs
+new file mode 100644
+index 0000000..d64a321
+--- /dev/null
++++ b/tests/move-in/undo-browser.mjs
+@@ -0,0 +1,26 @@
++import assert from 'node:assert/strict'
++
++/** The existing desktop import journey asserts undo once. The phone images are
++ * visual proof of these same native screens, without another scenario matrix. */
++export async function undoBrowser({page,filename,shot}){
++ const request=page.waitForResponse(response=>response.request().method()==='POST'&&response.url().endsWith('/undo'))
++ await page.getByRole('button',{name:'Undo whole import',exact:true}).click()
++ const {data:started}=await (await request).json(),total=started.report.total
++ assert.ok(started.report.checkpoint<=total);assert.equal(started.report.retained,total-started.report.checkpoint)
++ const heading=page.getByRole('heading',{name:`Undoing import: ${filename}`,exact:true});await heading.waitFor();await heading.scrollIntoViewIfNeeded()
++ const status=heading.locator('../..').getByRole('status').first()
++ assert.match(await status.innerText(),new RegExp(`[0-9]+ of ${total} imported changes reversed`));assert.doesNotMatch(await status.innerText(),/source records processed/)
++ await page.screenshot({path:shot('undo-progress-1440.png')})
++ await page.setViewportSize({width:390,height:900});await heading.scrollIntoViewIfNeeded().catch(()=>{});await page.screenshot({path:shot('undo-progress-390.png')})
++ await page.setViewportSize({width:1440,height:1000})
++ const done=page.getByRole('heading',{name:`Undone: ${filename}`,exact:true});await done.waitFor({timeout:120000});await done.scrollIntoViewIfNeeded()
++ const summary=done.locator('../..'),text=await summary.innerText()
++ assert.match(text,new RegExp(`${total} of ${total} imported changes reversed`));assert.match(text,new RegExp(`${total} records removed, 0 prior records restored; 0 imported changes retained`));assert.doesNotMatch(text,/records are imported|will be published/)
++ await page.getByText('Original import review',{exact:true}).first().click()
++ assert.doesNotMatch(await summary.innerText(),/records are imported|will be published/)
++ await page.getByText('Original import review',{exact:true}).first().click()
++ await page.screenshot({path:shot('undo-complete-1440.png')})
++ await page.setViewportSize({width:390,height:900});await done.scrollIntoViewIfNeeded();await page.screenshot({path:shot('undo-complete-390.png')})
++ await page.setViewportSize({width:1440,height:1000})
++ return {total,removed:total,restored:0,retained:0}
++}

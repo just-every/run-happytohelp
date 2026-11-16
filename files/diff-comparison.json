@@ -1,0 +1,255 @@
+{
+  "gated_head": "43bce0be0601d47bda9a37ea5271ea4241686951",
+  "current_main": "d4bf215d803259f04b81c238bc836e441fb6e005",
+  "gated_base": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "gated_files": [
+    "sources.lock.json",
+    "src/modules/move-in/batches.ts",
+    "src/modules/move-in/partial-undo.ts",
+    "src/modules/move-in/routes.ts",
+    "src/modules/move-in/undo-progress.ts",
+    "src/modules/move-in/undo-references.ts",
+    "src/ui/native/pages/MoveIn.jsx",
+    "src/ui/native/pages/MoveInReview.jsx",
+    "tests/journeys/move-in-browser.mjs",
+    "tests/journeys/move-in-large-undo.mjs",
+    "tests/move-in/large-undo-fixture.mjs",
+    "tests/move-in/large-undo.mjs",
+    "tests/move-in/undo-browser.mjs"
+  ],
+  "merged_files": [
+    "sources.lock.json",
+    "src/modules/move-in/batches.ts",
+    "src/modules/move-in/partial-undo.ts",
+    "src/modules/move-in/routes.ts",
+    "src/modules/move-in/undo-progress.ts",
+    "src/modules/move-in/undo-references.ts",
+    "src/ui/native/pages/MoveIn.jsx",
+    "src/ui/native/pages/MoveInReview.jsx",
+    "tests/journeys/move-in-browser.mjs",
+    "tests/journeys/move-in-large-undo.mjs",
+    "tests/move-in/large-undo-fixture.mjs",
+    "tests/move-in/large-undo.mjs",
+    "tests/move-in/undo-browser.mjs"
+  ],
+  "file_sets_equal": true,
+  "product_patch_byte_equal": true,
+  "gated_patch_sha256": "90ceca84d0220588d46d25d8455c945e95a5f6e3ba54e0edc2c49e7ddbc45293",
+  "merged_patch_sha256": "90ceca84d0220588d46d25d8455c945e95a5f6e3ba54e0edc2c49e7ddbc45293",
+  "product_files": [
+    {
+      "path": "src/modules/move-in/batches.ts",
+      "gated_blob": "408e9625502a5608e2459bc17a77ebaf779017a0",
+      "merged_blob": "408e9625502a5608e2459bc17a77ebaf779017a0",
+      "equal": true
+    },
+    {
+      "path": "src/modules/move-in/partial-undo.ts",
+      "gated_blob": "0b0680749a9dc9455053994f9d41210fa9e12f56",
+      "merged_blob": "0b0680749a9dc9455053994f9d41210fa9e12f56",
+      "equal": true
+    },
+    {
+      "path": "src/modules/move-in/routes.ts",
+      "gated_blob": "b6b82138b8bce788a39bbcb56ad3b62d116a6d11",
+      "merged_blob": "b6b82138b8bce788a39bbcb56ad3b62d116a6d11",
+      "equal": true
+    },
+    {
+      "path": "src/modules/move-in/undo-progress.ts",
+      "gated_blob": "0e204035aac641466069fe8c1aa20fd84f1b32c5",
+      "merged_blob": "0e204035aac641466069fe8c1aa20fd84f1b32c5",
+      "equal": true
+    },
+    {
+      "path": "src/modules/move-in/undo-references.ts",
+      "gated_blob": "b602414439e76bf001d2fdf666e3a6c42ef06741",
+      "merged_blob": "b602414439e76bf001d2fdf666e3a6c42ef06741",
+      "equal": true
+    },
+    {
+      "path": "src/ui/native/pages/MoveIn.jsx",
+      "gated_blob": "d5570ec4330e325da41d3681709f355270b32111",
+      "merged_blob": "d5570ec4330e325da41d3681709f355270b32111",
+      "equal": true
+    },
+    {
+      "path": "src/ui/native/pages/MoveInReview.jsx",
+      "gated_blob": "3aa8536d9708caf54c44e70533f57ba0f505f313",
+      "merged_blob": "3aa8536d9708caf54c44e70533f57ba0f505f313",
+      "equal": true
+    },
+    {
+      "path": "tests/journeys/move-in-browser.mjs",
+      "gated_blob": "b42663626a2bf608fc7beb0e5fa6b81f7a8f60e2",
+      "merged_blob": "b42663626a2bf608fc7beb0e5fa6b81f7a8f60e2",
+      "equal": true
+    },
+    {
+      "path": "tests/journeys/move-in-large-undo.mjs",
+      "gated_blob": "cd2a3ee69029f78f4080d6e86838612015809df8",
+      "merged_blob": "cd2a3ee69029f78f4080d6e86838612015809df8",
+      "equal": true
+    },
+    {
+      "path": "tests/move-in/large-undo-fixture.mjs",
+      "gated_blob": "e8d2bbed9de11a0facc1446d4cbfad8162a1de86",
+      "merged_blob": "e8d2bbed9de11a0facc1446d4cbfad8162a1de86",
+      "equal": true
+    },
+    {
+      "path": "tests/move-in/large-undo.mjs",
+      "gated_blob": "944fd3dc8c8eaadfae30e67e64594364789d6401",
+      "merged_blob": "944fd3dc8c8eaadfae30e67e64594364789d6401",
+      "equal": true
+    },
+    {
+      "path": "tests/move-in/undo-browser.mjs",
+      "gated_blob": "d64a3211587c900254087b009957ab17ece3845a",
+      "merged_blob": "d64a3211587c900254087b009957ab17ece3845a",
+      "equal": true
+    }
+  ],
+  "source_lock_changed_json_paths": [
+    "/files/src/modules/audit/read.ts/sha256",
+    "/files/src/modules/audit/routes.ts/sha256",
+    "/files/src/modules/audit/targets.ts",
+    "/files/src/modules/public-site/portal-content.ts/sha256",
+    "/files/src/modules/public-site/portal-pages.ts/sha256",
+    "/files/src/modules/support-channels/ProviderSetup.jsx",
+    "/files/src/modules/support-channels/Settings.jsx/sha256",
+    "/files/src/modules/support-channels/settings.css/sha256",
+    "/files/src/modules/voice/settings.ts/sha256",
+    "/files/src/modules/workflows/routes-rules.ts/sha256",
+    "/files/src/modules/workflows/rule-preview.ts/sha256",
+    "/files/src/modules/workflows/rule-time.ts/sha256",
+    "/files/src/site/run.json/sha256",
+    "/files/src/ui/native/crm/HubSpotConnection.jsx/sha256",
+    "/files/src/ui/native/crm/crm.css/sha256",
+    "/files/src/ui/native/pages/security/SecurityLog.jsx/sha256",
+    "/files/src/ui/native/pages/security/security.css/sha256",
+    "/files/src/ui/native/pages/voice/ProviderSetup.jsx",
+    "/files/src/ui/native/pages/voice/VoiceSettings.jsx/sha256",
+    "/files/src/ui/native/pages/voice/voice.css/sha256",
+    "/files/src/ui/native/pages/workflows/RuleExplanation.jsx/sha256",
+    "/files/src/ui/native/pages/workflows/RuleSettings.jsx/sha256",
+    "/files/src/ui/native/pages/workflows/RuleSummary.jsx/sha256",
+    "/files/src/ui/native/pages/workflows/rule-language.js",
+    "/files/src/ui/native/pages/workflows/workflows.css/sha256",
+    "/files/tests/helpers/portal-browser.mjs/sha256",
+    "/files/tests/helpers/portal-local-browser.mjs",
+    "/files/tests/helpers/voice/journeys.mjs/sha256",
+    "/files/tests/helpers/workflows/outcomes.mjs/sha256"
+  ],
+  "source_lock_note": "Regenerated from accepted candidate plus current main; lock hashes must describe the merged source tree, so whole-lock bytes cannot equal the earlier candidate lock.",
+  "source_lock_delta_equal": true,
+  "source_lock_delta": {
+    "src/modules/move-in/partial-undo.ts": {
+      "before": {
+        "sha256": "efdf182a06a0af07a8bf20125efaa4602a80904657a1dcb39ca881ff52f4f18c",
+        "executable": false
+      },
+      "after": {
+        "sha256": "912cb7cced82708c284658c0e8965fb17229f579601d81286eeac29fccf19b6a",
+        "executable": false
+      }
+    },
+    "tests/journeys/move-in-browser.mjs": {
+      "before": {
+        "sha256": "e3dc3e1bdacdd3da74be3041b1ce290eb4f02b50fd9ccbd8caa887ebea07ce19",
+        "executable": false
+      },
+      "after": {
+        "sha256": "d38e51f586a90e289574f393cddf4cc5dbcfc2dbc6a06a4d11328a1239e14f18",
+        "executable": false
+      }
+    },
+    "src/modules/move-in/batches.ts": {
+      "before": {
+        "sha256": "ef1b0a77dcf5d34ae9c6ab09ba8065f71a05052b69570c1ec5dced06346cac86",
+        "executable": false
+      },
+      "after": {
+        "sha256": "f2f2b15c364aa07508854653e7e00d5d9b58a6429a73406c57fc51d90d240b72",
+        "executable": false
+      }
+    },
+    "tests/move-in/large-undo.mjs": {
+      "before": null,
+      "after": {
+        "sha256": "c5f23b046c1182cb1b0a3185459e99d9fa4c238b81581b98b9328a4a31f21e36",
+        "executable": false
+      }
+    },
+    "src/modules/move-in/routes.ts": {
+      "before": {
+        "sha256": "a1b68a9c307e706ebe003c7429d34b2b6b39abaa78d60df8bfd1a404f9c2555d",
+        "executable": false
+      },
+      "after": {
+        "sha256": "e7ea188eb8a7aad29375068300801e4eef01ed8a489f2401acc44ea44ffd8bbf",
+        "executable": false
+      }
+    },
+    "src/modules/move-in/undo-progress.ts": {
+      "before": null,
+      "after": {
+        "sha256": "b25d31cf93ac4732aba767bb4d88ecd85f559bece0b2aadfdfcb83b483eab22b",
+        "executable": false
+      }
+    },
+    "src/ui/native/pages/MoveInReview.jsx": {
+      "before": {
+        "sha256": "15954b2ada55b06abf75a9d8c5630451189d5a5203beb7ee2057e85a3c57699c",
+        "executable": false
+      },
+      "after": {
+        "sha256": "b5c55e494ab5b8b85e9cf9bf0dabeffb4e2d917a66098de0e095b15618035ca6",
+        "executable": false
+      }
+    },
+    "tests/journeys/move-in-large-undo.mjs": {
+      "before": null,
+      "after": {
+        "sha256": "08df924895ff10a711a6549d09d420e3b7ec9b1a84f688ddb24a0d28872c4a27",
+        "executable": false
+      }
+    },
+    "tests/move-in/large-undo-fixture.mjs": {
+      "before": null,
+      "after": {
+        "sha256": "5ba2fea4e84b0d2ec149970278635ba21b2a4739ffc4abcba4e184dcbc40747f",
+        "executable": false
+      }
+    },
+    "src/ui/native/pages/MoveIn.jsx": {
+      "before": {
+        "sha256": "c21339ce34e2540149fcd5dc78f0c33f3220bbab2b75e7aba4c721b59f2027bb",
+        "executable": false
+      },
+      "after": {
+        "sha256": "417c9bcfd0089674fb81044470e21778fdff07173bd6eb4451e57a5722cc2216",
+        "executable": false
+      }
+    },
+    "tests/move-in/undo-browser.mjs": {
+      "before": null,
+      "after": {
+        "sha256": "eb72f69dd632b5ddd6b69c078c47f5b70d70288a807cd9ec3eb63524faa20179",
+        "executable": false
+      }
+    },
+    "src/modules/move-in/undo-references.ts": {
+      "before": {
+        "sha256": "356b26db9d3145bc6191245ef5ca818b7337f76aaba12dfa2f7e7df7b5f7c843",
+        "executable": false
+      },
+      "after": {
+        "sha256": "ad830c79b2836b78e0fb30fde082f59179d42125c86945b8b90dd8ed1ea836a7",
+        "executable": false
+      }
+    }
+  },
+  "whole_patch_byte_equal": false,
+  "whole_patch_note": "Only lock blob IDs/context positions differ; all lock before/after file-entry changes equal the gated changes. The complete 13-file semantic diff equals the gated diff."
+}

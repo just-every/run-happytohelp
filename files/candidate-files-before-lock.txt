@@ -1,0 +1,13 @@
+sources.lock.json
+src/modules/move-in/batches.ts
+src/modules/move-in/partial-undo.ts
+src/modules/move-in/routes.ts
+src/modules/move-in/undo-progress.ts
+src/modules/move-in/undo-references.ts
+src/ui/native/pages/MoveIn.jsx
+src/ui/native/pages/MoveInReview.jsx
+tests/journeys/move-in-browser.mjs
+tests/journeys/move-in-large-undo.mjs
+tests/move-in/large-undo-fixture.mjs
+tests/move-in/large-undo.mjs
+tests/move-in/undo-browser.mjs

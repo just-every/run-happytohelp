@@ -1,0 +1,178 @@
+{
+  "files": [
+    {
+      "blob": "35080b55c8cf9c492b0febe2afe3a312f9453f72",
+      "bytes": 506,
+      "path": "INBOX-RETURN.txt",
+      "sha256": "e5cf5d2307705474adc599b4cffe6fb12deabab0fa19873426518ad1b955bce3"
+    },
+    {
+      "blob": "7151103b99718f1caaf8c8d4a9744502e1aa95b1",
+      "bytes": 1373,
+      "path": "PLAN.md",
+      "sha256": "79dc3145cb8e55afe6bddb8124e1cdf783b696e57aa05fab7a2727762dede906"
+    },
+    {
+      "blob": "b2240b3d0aec447e716a1fbcbfdcf25de8eec782",
+      "bytes": 3133,
+      "path": "RECEIPT.json",
+      "sha256": "2d28fa5957f1ae1605f4232143b463dfbb9f7d303e32797c7757a3901b55bafa"
+    },
+    {
+      "blob": "2ab84f053775de4fcfbe88549e8e516693838b01",
+      "bytes": 4981,
+      "path": "REPORT.md",
+      "sha256": "4c717a088bc9637cd0f40f1d92b61e13fb2f5e2bd27d202cef1db746f4d607f9"
+    },
+    {
+      "blob": "7f7bf88c64363b42fc8901f58752435fb1a65dc8",
+      "bytes": 429,
+      "path": "candidate-files-before-lock.txt",
+      "sha256": "dec2d3e537f6240afacde9b5a819e1efaec48b43f224501d11a782b23cf4246a"
+    },
+    {
+      "blob": "d6a6a93d334f687397cbc8ee4e471e20e5abd192",
+      "bytes": 331,
+      "path": "candidate-messages.txt",
+      "sha256": "3eb90e855688740f0c04c5282b3c30e7c95c2b0b2adf1bbf7d84b5a2d67a2dde"
+    },
+    {
+      "blob": "515bfb9766ed149570a63c786db010825d696955",
+      "bytes": 13165,
+      "path": "ci-discovery.json",
+      "sha256": "d5684651e8a835f8418067d6b2bf09c9611ada065259d1e824fb1dca173c2d98"
+    },
+    {
+      "blob": "f12d98758ca2f032d8d5c340e8174ee04481811a",
+      "bytes": 181,
+      "path": "ci-poll-1.json",
+      "sha256": "68f363fa57df9faaccbfd3be3408e7cbaba10623ef3c0aab1c628be708fa2b1b"
+    },
+    {
+      "blob": "f12d98758ca2f032d8d5c340e8174ee04481811a",
+      "bytes": 181,
+      "path": "ci-poll-2.json",
+      "sha256": "68f363fa57df9faaccbfd3be3408e7cbaba10623ef3c0aab1c628be708fa2b1b"
+    },
+    {
+      "blob": "f12d98758ca2f032d8d5c340e8174ee04481811a",
+      "bytes": 181,
+      "path": "ci-poll-3.json",
+      "sha256": "68f363fa57df9faaccbfd3be3408e7cbaba10623ef3c0aab1c628be708fa2b1b"
+    },
+    {
+      "blob": "f12d98758ca2f032d8d5c340e8174ee04481811a",
+      "bytes": 181,
+      "path": "ci-poll-4.json",
+      "sha256": "68f363fa57df9faaccbfd3be3408e7cbaba10623ef3c0aab1c628be708fa2b1b"
+    },
+    {
+      "blob": "3150c01981d9e86885e27c38ddf2a72677572d5e",
+      "bytes": 184,
+      "path": "ci-poll-5.json",
+      "sha256": "f631686b710227971f9a7d02e33c4a0c8c69534a6264f933cc2eef84c30795b2"
+    },
+    {
+      "blob": "ba37b0c16b17c712a6935927985ab007f1ed133e",
+      "bytes": 9680,
+      "path": "diff-comparison.json",
+      "sha256": "adfb1bc56d6bd122e9bcc248a89b519979b63b06bed66ce763f1ff0776b011b5"
+    },
+    {
+      "blob": "1deb593a7521cf007ef573e78d5f539e53fc6249",
+      "bytes": 4449,
+      "path": "gated-lock.patch",
+      "sha256": "d51af72668a38e49fdd88f92935ecd70fcb5fb414556cbb2a2a25e8af8368334"
+    },
+    {
+      "blob": "15e11a8313f4c050f389f5e5753405df003938cc",
+      "bytes": 45741,
+      "path": "gated-product.patch",
+      "sha256": "90ceca84d0220588d46d25d8455c945e95a5f6e3ba54e0edc2c49e7ddbc45293"
+    },
+    {
+      "blob": "586bb4bcfb69318399b8c5ccb179badfff95a145",
+      "bytes": 255,
+      "path": "identity-audit.txt",
+      "sha256": "c25a9c829a41ff3b6938f4311bbea40664474a5d0bc965f03084b9b336738113"
+    },
+    {
+      "blob": "84bd913722fab077be5c04531127ecfa46a5a7a7",
+      "bytes": 4645,
+      "path": "install.log",
+      "sha256": "427633c653856ca95f1614b1cfc4949311428d5d695495a6a41d30d10eff9dd2"
+    },
+    {
+      "blob": "4b93668408d94b277425e0ff416da1d6d0716e66",
+      "bytes": 4449,
+      "path": "merged-lock-diff-before-regeneration.patch",
+      "sha256": "e1e6d23bb9d7e53cf85dc9d56192f39ed82a34db9630e914aee054073c840412"
+    },
+    {
+      "blob": "4b93668408d94b277425e0ff416da1d6d0716e66",
+      "bytes": 4449,
+      "path": "merged-lock.patch",
+      "sha256": "e1e6d23bb9d7e53cf85dc9d56192f39ed82a34db9630e914aee054073c840412"
+    },
+    {
+      "blob": "15e11a8313f4c050f389f5e5753405df003938cc",
+      "bytes": 45741,
+      "path": "merged-product.patch",
+      "sha256": "90ceca84d0220588d46d25d8455c945e95a5f6e3ba54e0edc2c49e7ddbc45293"
+    },
+    {
+      "blob": "b8763b5b7c558a454805d08b0a194ff52842b019",
+      "bytes": 840,
+      "path": "packet-scan.json",
+      "sha256": "626a89ab2746f9dab85a0b5633ae1cddf833ada55f78cc7d4a6e5491893d21d6"
+    },
+    {
+      "blob": "faebf52679e143989e1a73808cf7f7d5e94e61f8",
+      "bytes": 1216,
+      "path": "precommit-status.txt",
+      "sha256": "bf0f92edbd0a468436265af7fe8199c0aaea685bacd313c8b35cf2a3afdfadc7"
+    },
+    {
+      "blob": "eb989a40391ecac4133b9a0b6a59e108ec27b2d8",
+      "bytes": 961,
+      "path": "product-push.log",
+      "sha256": "cd744869d968d97ecbb6b4c4482a3d7cf1d557e64b91826e09c0a4a192c79774"
+    },
+    {
+      "blob": "3ef917cc2a498d1e77380ff1c8cddfee5a8bb9c9",
+      "bytes": 82,
+      "path": "product-remote-ref.txt",
+      "sha256": "635f374b268817cf4b9da52a686c02132612bc6a9d2792e58158a59c77c4cca2"
+    },
+    {
+      "blob": "e0746d82caf17348cdc04c253bcde3312f0717a8",
+      "bytes": 136,
+      "path": "rer-check.log",
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "blob": "87c9c59d902612f411981ac8cead6ecdd4913a34",
+      "bytes": 760740,
+      "path": "source-check.log",
+      "sha256": "65861465eaf14232fae78c6403880645fc680c0d4d024b900a447ccafb41b3af"
+    },
+    {
+      "blob": "6cd7ba16f1914d09d84c7b0794639f2315446ba5",
+      "bytes": 760726,
+      "path": "source-lock.log",
+      "sha256": "85cbe11023b0aa660bd1d4540aac1d7d4879244e029a7303501da30fdec691b6"
+    },
+    {
+      "blob": "7c44f6992b1c982294a90c262d8401547b0f0b68",
+      "bytes": 254,
+      "path": "typecheck.log",
+      "sha256": "d92cb0870beca169eb3efd6081df97c24bbb2c976c14793066f6a5011019edea"
+    }
+  ],
+  "product_branch": "cloud/hh-stranger11-undo-1-c1",
+  "product_head": "e94e233147486723e92d25460a8921ed6efc3fc4",
+  "ref": "refs/heads/evidence/hh-stranger11-undo-1-c1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-stranger11-undo-1-c1"
+}

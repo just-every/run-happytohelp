@@ -66,6 +66,7 @@ test(`at 1440px an owner erases a contact only after typing ERASE; identity, con
  assert.equal(erasedDraftRequests,0,'the retained erased thread never asks for the removed composer draft');
  assert.equal(await page.getByText(/Couldn’t load your saved macro draft/).count(),0);
  assert.equal(await page.getByRole('textbox',{name:'Reply to conversation'}).inputValue(),'');
+ const hidePanel=page.getByRole('button',{name:'Hide conversation panel',exact:true});if(await hidePanel.isVisible())await hidePanel.click();
  await page.setViewportSize(viewports.mobile);await page.screenshot({path:shot('390-transcript.png'),fullPage:true});await page.setViewportSize(viewport);
  checks.push('contact list hides the erased contact; transcript is redacted and never requests the erased saved draft');
 

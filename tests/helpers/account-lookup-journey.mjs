@@ -35,16 +35,19 @@ export async function accountLookupJourney(f,customer){
 
  assert.deepEqual((await app.ok(read)).data.fields.find(row=>row.id===field.id).options,[],'anonymous definitions expose no account names')
  assert.deepEqual((await app.ok(api,customer)).data.find(row=>row.id===form.id).fields.find(row=>row.id===field.id).options,expected,'the list door applies the same scope')
+ // Staff edit permission is independent of the published customer's question.
+ await app.db.prepare('UPDATE ticket_fields SET write_roles_json=? WHERE project_id=? AND id=?').bind('["owner"]',p,field.id).run()
+ assert.deepEqual((await app.ok(read,customer)).data.fields.find(row=>row.id===field.id).options,expected,'owner-only staff editing does not hide an explicitly published account choice')
  // Revoke between loading the public definition and selecting offered choices.
  for(const sql of [
   `DELETE FROM contact_companies WHERE project_id='${p}' AND contact_id='${contact}'`,
   `UPDATE request_forms SET enabled=0 WHERE project_id='${p}' AND id='${form.id}'`,
-  `UPDATE ticket_fields SET write_roles_json='["owner"]' WHERE project_id='${p}' AND id='${field.id}'`
+  `UPDATE ticket_fields SET read_roles_json='["owner"]' WHERE project_id='${p}' AND id='${field.id}'`
  ]){
   const offered=await app.ok(read,{...customer,headers:{...customer.headers,'x-test-statement':'SELECT candidate.id','x-test-before-statement':sql}})
   assert.deepEqual(offered.data.fields.find(row=>row.id===field.id).options,[],'offer rechecks current membership, publication and field permissions')
   await app.ok(member,{...owner,method:'PUT',body:{}})
-  await app.db.prepare('UPDATE ticket_fields SET write_roles_json=? WHERE project_id=? AND id=?').bind('[]',p,field.id).run()
+  await app.db.prepare('UPDATE ticket_fields SET read_roles_json=? WHERE project_id=? AND id=?').bind('[]',p,field.id).run()
   await save({enabled:true})
  }
 

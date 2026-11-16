@@ -1,0 +1,15 @@
+{
+  "head": "43bce0be0601d47bda9a37ea5271ea4241686951",
+  "plannedEffects": 54,
+  "undo": {
+    "state": "undone",
+    "total": 9,
+    "checkpoint": 9,
+    "removed": 9,
+    "restored": 0,
+    "retained": 0
+  },
+  "beforeImportHash": "8c9c04c468cd5118ab7e53397bd7aa5429fcebc71be6e09a1c8ea1ff8ee43499",
+  "afterUndoHash": "8c9c04c468cd5118ab7e53397bd7aa5429fcebc71be6e09a1c8ea1ff8ee43499",
+  "outbound": 0
+}

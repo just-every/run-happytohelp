@@ -1,0 +1,17 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "widths": [
+    1440,
+    390
+  ],
+  "screens": [
+    "undo-progress",
+    "undo-complete"
+  ],
+  "inspected": true,
+  "result": "Native layout fits both widths. Undo-specific progress and resume label are readable; completed undo reports removed/restored/retained counts without active import/publication claims. Original review stays collapsed and labeled as historical.",
+  "scale": "Visual fixture has six tickets; the separate API scale journey has 1000 distinct customers and 1000 tickets.",
+  "head": "43bce0be0601d47bda9a37ea5271ea4241686951",
+  "exactHeadBrowserResult": "passed: 77 checks, no page errors"
+}

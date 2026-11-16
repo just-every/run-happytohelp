@@ -1,0 +1,83 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "localChecks": [
+    {
+      "command": "node /tmp/hh-touched-checks.mjs",
+      "result": "passed",
+      "journeys": [
+        {
+          "journey": "reviewImportJourney",
+          "result": "passed",
+          "durationMs": 111866
+        },
+        {
+          "journey": "custodyJourney",
+          "result": "passed",
+          "durationMs": 19432
+        },
+        {
+          "journey": "importErasureJourney",
+          "result": "passed",
+          "durationMs": 3353
+        }
+      ],
+      "duplicateApplyUndoFences": "passed"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "result": "passed"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "result": "passed"
+    }
+  ],
+  "browserInitial": {
+    "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium node --test --test-concurrency=1 tests/journeys/move-in-browser.mjs",
+    "result": "passed",
+    "durationMs": 241859.373826
+  },
+  "fullLocalSuite": "not run per brief",
+  "publicationScan": "Mac lander responsibility; unavailable in this cloud",
+  "candidateHead": "43bce0be0601d47bda9a37ea5271ea4241686951",
+  "scaleExact": {
+    "command": "H2H_CANDIDATE_SHA=<HEAD> node --test --test-concurrency=1 tests/journeys/move-in-large-undo.mjs",
+    "result": "passed",
+    "durationMs": 68831.91332,
+    "receipt": "large-undo-business-equality.json",
+    "partialReceipt": "partial-undo-business-equality.json"
+  },
+  "pushes": [
+    {
+      "head": "348a001ab3f293eb9a17d19818ccdf5b820d5832",
+      "result": "pushed",
+      "skipCI": true
+    },
+    {
+      "head": "43bce0be0601d47bda9a37ea5271ea4241686951",
+      "result": "pushed",
+      "skipCI": false
+    }
+  ],
+  "browserExact": {
+    "command": "H2H_CANDIDATE_SHA=<HEAD> H2H_CHROMIUM_PATH=/usr/bin/chromium node --test --test-concurrency=1 tests/journeys/move-in-browser.mjs",
+    "result": "passed",
+    "head": "43bce0be0601d47bda9a37ea5271ea4241686951",
+    "checks": 77,
+    "pageErrors": 0,
+    "durationMs": 243549.964189
+  }
+}

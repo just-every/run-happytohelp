@@ -1,0 +1,22 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger11-undo-1",
+  "head": "43bce0be0601d47bda9a37ea5271ea4241686951",
+  "base": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "productPush": "succeeded",
+  "productCheckout": "clean",
+  "identityAudit": "all candidate authors and committers fleet; no trailers",
+  "productSourceMatchesBuiltParent": "348a001ab3f293eb9a17d19818ccdf5b820d5832",
+  "pr": null,
+  "scan": "Mac lander responsibility",
+  "gate": "required independent fleet gate; not self-gated",
+  "ready": false,
+  "browserExact": "passed",
+  "scaleExact": "passed",
+  "businessTablesCompared": 474,
+  "removed": 2004,
+  "restored": 0,
+  "retained": 0
+}

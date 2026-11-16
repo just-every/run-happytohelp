@@ -1,0 +1,27 @@
+{
+  "phase": "before",
+  "sourceBytes": 794723,
+  "sourceRecords": 2003,
+  "reviewRecords": 2005,
+  "nativeEffects": 2004,
+  "observedAt": "2026-11-16T15:50:01Z",
+  "state": "undoing",
+  "checkpointAtUndoRequest": 2005,
+  "firstUndoQueueDelivery": "did not finish before stop",
+  "workerdPid": 3128,
+  "cpuPercent": 98.7,
+  "rssKiB": 680832,
+  "action": "Stopped only recorded fixture workerd PID 3128 after reproducing stall",
+  "nativeChangeBreakdown": {
+    "contacts": 1000,
+    "conversationBundles": 1000,
+    "tags": 2,
+    "macros": 1,
+    "articles": 1
+  },
+  "nestedConversationRows": {
+    "publicMessages": 1000,
+    "privateNotes": 1000
+  },
+  "head": "2044dfa31d6b5e43dea1224bca08e0b509e48396"
+}

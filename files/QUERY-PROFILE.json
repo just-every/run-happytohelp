@@ -1,0 +1,1198 @@
+{
+  "baselinePlan": [
+    {
+      "id": 1,
+      "parent": 0,
+      "notused": 0,
+      "detail": "SCAN CONSTANT ROW"
+    },
+    {
+      "id": 4,
+      "parent": 0,
+      "notused": 0,
+      "detail": "SCALAR SUBQUERY 41"
+    },
+    {
+      "id": 9,
+      "parent": 4,
+      "notused": 62,
+      "detail": "SEARCH p USING INDEX ik_active_target (destination=?)"
+    },
+    {
+      "id": 19,
+      "parent": 4,
+      "notused": 0,
+      "detail": "LIST SUBQUERY 1"
+    },
+    {
+      "id": 23,
+      "parent": 19,
+      "notused": 62,
+      "detail": "SEARCH move_in_batches USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 34,
+      "parent": 19,
+      "notused": 0,
+      "detail": "CREATE BLOOM FILTER"
+    },
+    {
+      "id": 45,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 4"
+    },
+    {
+      "id": 49,
+      "parent": 45,
+      "notused": 53,
+      "detail": "SEARCH c USING COVERING INDEX conversations_contact_history (project_id=? AND contact_id=?)"
+    },
+    {
+      "id": 56,
+      "parent": 45,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 3"
+    },
+    {
+      "id": 61,
+      "parent": 56,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 74,
+      "parent": 56,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 2"
+    },
+    {
+      "id": 78,
+      "parent": 74,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 82,
+      "parent": 74,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 105,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 7"
+    },
+    {
+      "id": 110,
+      "parent": 105,
+      "notused": 53,
+      "detail": "SEARCH c USING COVERING INDEX conversations_solved_time_rule_due (project_id=?)"
+    },
+    {
+      "id": 116,
+      "parent": 105,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 6"
+    },
+    {
+      "id": 121,
+      "parent": 116,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 134,
+      "parent": 116,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 5"
+    },
+    {
+      "id": 138,
+      "parent": 134,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 142,
+      "parent": 134,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 159,
+      "parent": 105,
+      "notused": 45,
+      "detail": "SEARCH participant USING COVERING INDEX sqlite_autoindex_conversation_participants_2 (conversation_id=? AND contact_id=?)"
+    },
+    {
+      "id": 171,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 10"
+    },
+    {
+      "id": 177,
+      "parent": 171,
+      "notused": 53,
+      "detail": "SEARCH c USING COVERING INDEX conversations_solved_time_rule_due (project_id=?)"
+    },
+    {
+      "id": 183,
+      "parent": 171,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 9"
+    },
+    {
+      "id": 188,
+      "parent": 183,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 201,
+      "parent": 183,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 8"
+    },
+    {
+      "id": 205,
+      "parent": 201,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 209,
+      "parent": 201,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 226,
+      "parent": 171,
+      "notused": 61,
+      "detail": "SEARCH authored USING INDEX sqlite_autoindex_messages_3 (conversation_id=?)"
+    },
+    {
+      "id": 244,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 11"
+    },
+    {
+      "id": 248,
+      "parent": 244,
+      "notused": 216,
+      "detail": "SCAN session"
+    },
+    {
+      "id": 265,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 14"
+    },
+    {
+      "id": 270,
+      "parent": 265,
+      "notused": 62,
+      "detail": "SEARCH linked USING INDEX contact_companies_company (project_id=? AND company_id=?)"
+    },
+    {
+      "id": 278,
+      "parent": 265,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 13"
+    },
+    {
+      "id": 283,
+      "parent": 278,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 295,
+      "parent": 278,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 12"
+    },
+    {
+      "id": 299,
+      "parent": 295,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 303,
+      "parent": 295,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 328,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 17"
+    },
+    {
+      "id": 333,
+      "parent": 328,
+      "notused": 56,
+      "detail": "SEARCH tagged USING COVERING INDEX conversation_tags_filter (project_id=? AND tag_id=?)"
+    },
+    {
+      "id": 339,
+      "parent": 328,
+      "notused": 44,
+      "detail": "SEARCH c USING COVERING INDEX sqlite_autoindex_conversations_1 (id=?)"
+    },
+    {
+      "id": 344,
+      "parent": 328,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 16"
+    },
+    {
+      "id": 349,
+      "parent": 344,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 362,
+      "parent": 344,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 15"
+    },
+    {
+      "id": 366,
+      "parent": 362,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 370,
+      "parent": 362,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 395,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 18"
+    },
+    {
+      "id": 400,
+      "parent": 395,
+      "notused": 216,
+      "detail": "SCAN b"
+    },
+    {
+      "id": 402,
+      "parent": 395,
+      "notused": 0,
+      "detail": "SCAN s VIRTUAL TABLE INDEX 1:"
+    },
+    {
+      "id": 418,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 19"
+    },
+    {
+      "id": 422,
+      "parent": 418,
+      "notused": 216,
+      "detail": "SCAN knowledge_generation_sources"
+    },
+    {
+      "id": 434,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 20"
+    },
+    {
+      "id": 438,
+      "parent": 434,
+      "notused": 215,
+      "detail": "SCAN ai_generation_sources USING COVERING INDEX sqlite_autoindex_ai_generation_sources_1"
+    },
+    {
+      "id": 450,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 21"
+    },
+    {
+      "id": 454,
+      "parent": 450,
+      "notused": 54,
+      "detail": "SEARCH knowledge_translations USING COVERING INDEX sqlite_autoindex_knowledge_translations_1 (article_id=?)"
+    },
+    {
+      "id": 464,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 22"
+    },
+    {
+      "id": 469,
+      "parent": 464,
+      "notused": 61,
+      "detail": "SEARCH knowledge_article_history USING INDEX knowledge_history_article (project_id=? AND article_id=?)"
+    },
+    {
+      "id": 484,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 23"
+    },
+    {
+      "id": 488,
+      "parent": 484,
+      "notused": 55,
+      "detail": "SEARCH knowledge_feedback USING COVERING INDEX sqlite_autoindex_knowledge_feedback_1 (project_id=? AND article_id=?)"
+    },
+    {
+      "id": 500,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 24"
+    },
+    {
+      "id": 505,
+      "parent": 500,
+      "notused": 62,
+      "detail": "SEARCH knowledge_events USING INDEX knowledge_events_project (project_id=?)"
+    },
+    {
+      "id": 520,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 25"
+    },
+    {
+      "id": 524,
+      "parent": 520,
+      "notused": 216,
+      "detail": "SCAN knowledge_read_receipts"
+    },
+    {
+      "id": 539,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 26"
+    },
+    {
+      "id": 544,
+      "parent": 539,
+      "notused": 62,
+      "detail": "SEARCH knowledge_slug_redirects USING INDEX sqlite_autoindex_knowledge_slug_redirects_1 (project_id=?)"
+    },
+    {
+      "id": 561,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 30"
+    },
+    {
+      "id": 566,
+      "parent": 561,
+      "notused": 62,
+      "detail": "SEARCH a USING INDEX sqlite_autoindex_knowledge_articles_2 (project_id=?)"
+    },
+    {
+      "id": 576,
+      "parent": 561,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 27"
+    },
+    {
+      "id": 580,
+      "parent": 576,
+      "notused": 39,
+      "detail": "SEARCH linked USING COVERING INDEX sqlite_autoindex_knowledge_article_categories_1 (article_id=? AND category_id=?)"
+    },
+    {
+      "id": 591,
+      "parent": 561,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 29"
+    },
+    {
+      "id": 596,
+      "parent": 591,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 609,
+      "parent": 591,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 28"
+    },
+    {
+      "id": 613,
+      "parent": 609,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 617,
+      "parent": 609,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 640,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 33"
+    },
+    {
+      "id": 645,
+      "parent": 640,
+      "notused": 62,
+      "detail": "SEARCH c USING INDEX sqlite_autoindex_knowledge_categories_2 (project_id=?)"
+    },
+    {
+      "id": 655,
+      "parent": 640,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 32"
+    },
+    {
+      "id": 660,
+      "parent": 655,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 673,
+      "parent": 655,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 31"
+    },
+    {
+      "id": 677,
+      "parent": 673,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 681,
+      "parent": 673,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 706,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 36"
+    },
+    {
+      "id": 711,
+      "parent": 706,
+      "notused": 53,
+      "detail": "SEARCH c USING COVERING INDEX conversations_solved_time_rule_due (project_id=?)"
+    },
+    {
+      "id": 717,
+      "parent": 706,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 35"
+    },
+    {
+      "id": 722,
+      "parent": 717,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 735,
+      "parent": 717,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 34"
+    },
+    {
+      "id": 739,
+      "parent": 735,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 743,
+      "parent": 735,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 764,
+      "parent": 706,
+      "notused": 45,
+      "detail": "SEARCH v USING COVERING INDEX sqlite_autoindex_ticket_field_values_1 (project_id=? AND conversation_id=? AND field_id=?)"
+    },
+    {
+      "id": 781,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 39"
+    },
+    {
+      "id": 787,
+      "parent": 781,
+      "notused": 62,
+      "detail": "SEARCH f USING INDEX request_forms_public (project_id=?)"
+    },
+    {
+      "id": 794,
+      "parent": 781,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 38"
+    },
+    {
+      "id": 799,
+      "parent": 794,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 811,
+      "parent": 794,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 37"
+    },
+    {
+      "id": 815,
+      "parent": 811,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 819,
+      "parent": 811,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 836,
+      "parent": 781,
+      "notused": 0,
+      "detail": "SCAN ref VIRTUAL TABLE INDEX 3:"
+    },
+    {
+      "id": 855,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 40"
+    },
+    {
+      "id": 860,
+      "parent": 855,
+      "notused": 62,
+      "detail": "SEARCH s USING INDEX sqlite_autoindex_request_form_submissions_2 (project_id=?)"
+    }
+  ],
+  "optimizedPlan": [
+    {
+      "id": 1,
+      "parent": 0,
+      "notused": 0,
+      "detail": "SCAN CONSTANT ROW"
+    },
+    {
+      "id": 4,
+      "parent": 0,
+      "notused": 0,
+      "detail": "SCALAR SUBQUERY 41"
+    },
+    {
+      "id": 9,
+      "parent": 4,
+      "notused": 62,
+      "detail": "SEARCH p USING INDEX ik_active_target (destination=?)"
+    },
+    {
+      "id": 19,
+      "parent": 4,
+      "notused": 0,
+      "detail": "LIST SUBQUERY 1"
+    },
+    {
+      "id": 23,
+      "parent": 19,
+      "notused": 62,
+      "detail": "SEARCH move_in_batches USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 34,
+      "parent": 19,
+      "notused": 0,
+      "detail": "CREATE BLOOM FILTER"
+    },
+    {
+      "id": 45,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 4"
+    },
+    {
+      "id": 49,
+      "parent": 45,
+      "notused": 53,
+      "detail": "SEARCH c USING COVERING INDEX conversations_contact_history (project_id=? AND contact_id=?)"
+    },
+    {
+      "id": 56,
+      "parent": 45,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 3"
+    },
+    {
+      "id": 61,
+      "parent": 56,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 74,
+      "parent": 56,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 2"
+    },
+    {
+      "id": 78,
+      "parent": 74,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 82,
+      "parent": 74,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 105,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 7"
+    },
+    {
+      "id": 111,
+      "parent": 105,
+      "notused": 55,
+      "detail": "SEARCH participant USING COVERING INDEX move_in_contact_participants (contact_id=?)"
+    },
+    {
+      "id": 115,
+      "parent": 105,
+      "notused": 46,
+      "detail": "SEARCH c USING INDEX sqlite_autoindex_conversations_1 (id=?)"
+    },
+    {
+      "id": 125,
+      "parent": 105,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 6"
+    },
+    {
+      "id": 130,
+      "parent": 125,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 143,
+      "parent": 125,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 5"
+    },
+    {
+      "id": 147,
+      "parent": 143,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 151,
+      "parent": 143,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 174,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 10"
+    },
+    {
+      "id": 180,
+      "parent": 174,
+      "notused": 213,
+      "detail": "SCAN authored USING COVERING INDEX move_in_contact_authors"
+    },
+    {
+      "id": 187,
+      "parent": 174,
+      "notused": 46,
+      "detail": "SEARCH c USING INDEX sqlite_autoindex_conversations_1 (id=?)"
+    },
+    {
+      "id": 197,
+      "parent": 174,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 9"
+    },
+    {
+      "id": 202,
+      "parent": 197,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 215,
+      "parent": 197,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 8"
+    },
+    {
+      "id": 219,
+      "parent": 215,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 223,
+      "parent": 215,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 246,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 11"
+    },
+    {
+      "id": 250,
+      "parent": 246,
+      "notused": 216,
+      "detail": "SCAN session"
+    },
+    {
+      "id": 267,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 14"
+    },
+    {
+      "id": 272,
+      "parent": 267,
+      "notused": 62,
+      "detail": "SEARCH linked USING INDEX contact_companies_company (project_id=? AND company_id=?)"
+    },
+    {
+      "id": 280,
+      "parent": 267,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 13"
+    },
+    {
+      "id": 285,
+      "parent": 280,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 297,
+      "parent": 280,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 12"
+    },
+    {
+      "id": 301,
+      "parent": 297,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 305,
+      "parent": 297,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 330,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 17"
+    },
+    {
+      "id": 335,
+      "parent": 330,
+      "notused": 56,
+      "detail": "SEARCH tagged USING COVERING INDEX conversation_tags_filter (project_id=? AND tag_id=?)"
+    },
+    {
+      "id": 341,
+      "parent": 330,
+      "notused": 44,
+      "detail": "SEARCH c USING COVERING INDEX sqlite_autoindex_conversations_1 (id=?)"
+    },
+    {
+      "id": 346,
+      "parent": 330,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 16"
+    },
+    {
+      "id": 351,
+      "parent": 346,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 364,
+      "parent": 346,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 15"
+    },
+    {
+      "id": 368,
+      "parent": 364,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 372,
+      "parent": 364,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 397,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 18"
+    },
+    {
+      "id": 402,
+      "parent": 397,
+      "notused": 216,
+      "detail": "SCAN b"
+    },
+    {
+      "id": 404,
+      "parent": 397,
+      "notused": 0,
+      "detail": "SCAN s VIRTUAL TABLE INDEX 1:"
+    },
+    {
+      "id": 420,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 19"
+    },
+    {
+      "id": 424,
+      "parent": 420,
+      "notused": 216,
+      "detail": "SCAN knowledge_generation_sources"
+    },
+    {
+      "id": 436,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 20"
+    },
+    {
+      "id": 440,
+      "parent": 436,
+      "notused": 215,
+      "detail": "SCAN ai_generation_sources USING COVERING INDEX sqlite_autoindex_ai_generation_sources_1"
+    },
+    {
+      "id": 452,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 21"
+    },
+    {
+      "id": 456,
+      "parent": 452,
+      "notused": 54,
+      "detail": "SEARCH knowledge_translations USING COVERING INDEX sqlite_autoindex_knowledge_translations_1 (article_id=?)"
+    },
+    {
+      "id": 466,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 22"
+    },
+    {
+      "id": 471,
+      "parent": 466,
+      "notused": 61,
+      "detail": "SEARCH knowledge_article_history USING INDEX knowledge_history_article (project_id=? AND article_id=?)"
+    },
+    {
+      "id": 486,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 23"
+    },
+    {
+      "id": 490,
+      "parent": 486,
+      "notused": 55,
+      "detail": "SEARCH knowledge_feedback USING COVERING INDEX sqlite_autoindex_knowledge_feedback_1 (project_id=? AND article_id=?)"
+    },
+    {
+      "id": 502,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 24"
+    },
+    {
+      "id": 507,
+      "parent": 502,
+      "notused": 62,
+      "detail": "SEARCH knowledge_events USING INDEX knowledge_events_project (project_id=?)"
+    },
+    {
+      "id": 522,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 25"
+    },
+    {
+      "id": 526,
+      "parent": 522,
+      "notused": 216,
+      "detail": "SCAN knowledge_read_receipts"
+    },
+    {
+      "id": 541,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 26"
+    },
+    {
+      "id": 546,
+      "parent": 541,
+      "notused": 62,
+      "detail": "SEARCH knowledge_slug_redirects USING INDEX sqlite_autoindex_knowledge_slug_redirects_1 (project_id=?)"
+    },
+    {
+      "id": 563,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 30"
+    },
+    {
+      "id": 568,
+      "parent": 563,
+      "notused": 62,
+      "detail": "SEARCH a USING INDEX sqlite_autoindex_knowledge_articles_2 (project_id=?)"
+    },
+    {
+      "id": 578,
+      "parent": 563,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 27"
+    },
+    {
+      "id": 582,
+      "parent": 578,
+      "notused": 39,
+      "detail": "SEARCH linked USING COVERING INDEX sqlite_autoindex_knowledge_article_categories_1 (article_id=? AND category_id=?)"
+    },
+    {
+      "id": 593,
+      "parent": 563,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 29"
+    },
+    {
+      "id": 598,
+      "parent": 593,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 611,
+      "parent": 593,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 28"
+    },
+    {
+      "id": 615,
+      "parent": 611,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 619,
+      "parent": 611,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 642,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 33"
+    },
+    {
+      "id": 647,
+      "parent": 642,
+      "notused": 62,
+      "detail": "SEARCH c USING INDEX sqlite_autoindex_knowledge_categories_2 (project_id=?)"
+    },
+    {
+      "id": 657,
+      "parent": 642,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 32"
+    },
+    {
+      "id": 662,
+      "parent": 657,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 675,
+      "parent": 657,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 31"
+    },
+    {
+      "id": 679,
+      "parent": 675,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 683,
+      "parent": 675,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 708,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 36"
+    },
+    {
+      "id": 714,
+      "parent": 708,
+      "notused": 56,
+      "detail": "SEARCH v USING COVERING INDEX sqlite_autoindex_ticket_field_values_1 (project_id=?)"
+    },
+    {
+      "id": 722,
+      "parent": 708,
+      "notused": 46,
+      "detail": "SEARCH c USING INDEX sqlite_autoindex_conversations_1 (id=?)"
+    },
+    {
+      "id": 731,
+      "parent": 708,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 35"
+    },
+    {
+      "id": 736,
+      "parent": 731,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 749,
+      "parent": 731,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 34"
+    },
+    {
+      "id": 753,
+      "parent": 749,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 757,
+      "parent": 749,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 780,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 39"
+    },
+    {
+      "id": 786,
+      "parent": 780,
+      "notused": 62,
+      "detail": "SEARCH f USING INDEX request_forms_public (project_id=?)"
+    },
+    {
+      "id": 793,
+      "parent": 780,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 38"
+    },
+    {
+      "id": 798,
+      "parent": 793,
+      "notused": 46,
+      "detail": "SEARCH owned USING INDEX ik_active_target (destination=? AND target_kind=? AND target_id=?)"
+    },
+    {
+      "id": 810,
+      "parent": 793,
+      "notused": 0,
+      "detail": "CORRELATED LIST SUBQUERY 37"
+    },
+    {
+      "id": 814,
+      "parent": 810,
+      "notused": 55,
+      "detail": "SEARCH original USING COVERING INDEX move_in_batches_job (kit_job_id=?)"
+    },
+    {
+      "id": 818,
+      "parent": 810,
+      "notused": 62,
+      "detail": "SEARCH sibling USING INDEX sqlite_autoindex_move_in_batches_1 (run_id=?)"
+    },
+    {
+      "id": 835,
+      "parent": 780,
+      "notused": 0,
+      "detail": "SCAN ref VIRTUAL TABLE INDEX 3:"
+    },
+    {
+      "id": 854,
+      "parent": 4,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 40"
+    },
+    {
+      "id": 859,
+      "parent": 854,
+      "notused": 62,
+      "detail": "SEARCH s USING INDEX sqlite_autoindex_request_form_submissions_2 (project_id=?)"
+    }
+  ],
+  "optimizedElapsedMs": 204.28247999999996,
+  "result": {
+    "clear": 1
+  }
+}

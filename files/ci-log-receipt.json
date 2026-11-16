@@ -1,0 +1,13 @@
+{
+  "command": "gh run view 43948782221 --repo just-every/run-happytohelp --job 133586387761 --log-failed",
+  "exit": 0,
+  "jobId": 133586387761,
+  "runId": 43948782221,
+  "sha": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "sanitized": true,
+  "stdoutBytes": 0,
+  "stderrBytes": 0,
+  "localArchiveFound": false,
+  "httpStatus": "not reported",
+  "additionalArchiveAttempts": 0
+}

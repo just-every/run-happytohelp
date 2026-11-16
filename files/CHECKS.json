@@ -58,5 +58,23 @@
     "setupExit": 0,
     "privateLogsNotTransferred": true
   },
-  "fullLocalSuite": "not run; scoped checks per brief, full Verify runs on exact pushed SHA"
+  "fullLocalSuite": "not run; scoped checks per brief, full Verify runs on exact pushed SHA",
+  "exactShaVerify": {
+    "runId": 43948782221,
+    "conclusion": "failure",
+    "head_sha": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43948782221",
+    "status": "completed"
+  },
+  "browserProof": {
+    "head": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+    "firstOwnerEntryMs": 15248,
+    "warmup503Responses": 2,
+    "automaticRecovery": true,
+    "viewports": [
+      1440,
+      390
+    ],
+    "visuallyInspected": true
+  }
 }

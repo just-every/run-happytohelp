@@ -1,0 +1,31 @@
+{
+  "runId": 43948782221,
+  "head": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+  "failedJobs": [
+    {
+      "completed_at": "2026-11-16T20:32:29Z",
+      "conclusion": "failure",
+      "head_sha": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+      "id": 133586387761,
+      "name": "Verify / public-and-import-browser",
+      "started_at": "2026-11-16T20:22:18Z",
+      "status": "completed"
+    }
+  ],
+  "runningJobs": [
+    "Verify / identity-and-desk",
+    "Verify / import-and-reports",
+    "Verify / support-and-recovery"
+  ],
+  "completedSuccessfulJobs": [
+    "contract-docs",
+    "plan",
+    "build",
+    "Verify / identity-and-repair-browser",
+    "Verify / connections-and-computers",
+    "Verify / assistant-and-knowledge",
+    "Verify / support-workflow-browser",
+    "size-check"
+  ],
+  "logRead": "pending completed workflow per brief"
+}

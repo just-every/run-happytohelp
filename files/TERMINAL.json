@@ -6,15 +6,32 @@
   "ready": false,
   "ci": {
     "runId": 43948782221,
-    "conclusion": null,
+    "conclusion": "failure",
     "head_sha": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
     "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43948782221",
-    "status": "in_progress"
+    "status": "completed"
   },
   "pr": null,
-  "blockers": [],
-  "pending": [
-    "Exact-SHA Verify still in progress"
+  "blockers": [
+    "Exact-SHA Verify failed; known failed job Verify / public-and-import-browser (133586387761). Its required completed-run log command returned exit 0 with empty stdout/stderr and no cached archive, so the failing assertion could not be identified within the ten-call budget."
   ],
-  "clauseStatusesChanged": false
+  "pending": [
+    "Successful exact-SHA Verify"
+  ],
+  "clauseStatusesChanged": false,
+  "terminal": "BLOCKED",
+  "failedJobId": 133586387761,
+  "failedLog": {
+    "command": "gh run view 43948782221 --repo just-every/run-happytohelp --job 133586387761 --log-failed",
+    "exit": 0,
+    "jobId": 133586387761,
+    "runId": 43948782221,
+    "sha": "5ab76253ed29375ff862a79ed5c2ee7f52a6abc2",
+    "sanitized": true,
+    "stdoutBytes": 0,
+    "stderrBytes": 0,
+    "localArchiveFound": false,
+    "httpStatus": "not reported",
+    "additionalArchiveAttempts": 0
+  }
 }

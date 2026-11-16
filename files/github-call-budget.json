@@ -1,0 +1,57 @@
+{
+  "manualCalls": 10,
+  "limit": 10,
+  "commands": [
+    {
+      "n": 1,
+      "command": "gh api rate_limit",
+      "purpose": "respect fleet core quota"
+    },
+    {
+      "n": 2,
+      "command": "gh api repos/runeditrun/base/git/trees/f2737d02a5f77be042cfdfd237a7dce4689cbe2f?recursive=1",
+      "purpose": "measure built-in Base acquisition size"
+    },
+    {
+      "n": 3,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs?head_sha=5ab76253ed29375ff862a79ed5c2ee7f52a6abc2&per_page=100",
+      "purpose": "exact-head Verify discovery"
+    },
+    {
+      "n": 4,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43948782221",
+      "purpose": "status poll 1"
+    },
+    {
+      "n": 5,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43948782221",
+      "purpose": "status poll 2"
+    },
+    {
+      "n": 6,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43948782221",
+      "purpose": "status poll 3"
+    },
+    {
+      "n": 7,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43948782221/jobs?per_page=100",
+      "purpose": "identify failed shard on exact head"
+    },
+    {
+      "n": 8,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43948782221",
+      "purpose": "status poll 4"
+    },
+    {
+      "n": 9,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43948782221",
+      "purpose": "status poll 5"
+    },
+    {
+      "n": 10,
+      "command": "gh run view 43948782221 --repo just-every/run-happytohelp --job 133586387761 --log-failed",
+      "purpose": "one completed-run failed-job archive read"
+    }
+  ],
+  "note": "The separately requested supported refresh-base --from-api command performs its own immutable Base acquisition. No extra log download, workflow dispatch or rerun was attempted."
+}

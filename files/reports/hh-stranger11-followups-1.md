@@ -93,5 +93,16 @@ CLAIM SOURCE-001 PARTIAL points=none tests=scripts/edition-authoring/cli.mjs#che
 
 Base custody clarification: the refresh changed only the copy-provenance record, not the selected local source bytes. The record covers 990 files and preserves five acknowledged seed-owned adaptations. The offline check proves unadapted byte equality and the adapted files' acknowledged local hashes/modes; it does not describe adaptations as verbatim upstream copies.
 
-## CI status
-Verify run 43948782221, https://github.com/just-every/run-happytohelp/actions/runs/43948782221, is still in progress on exact head 5ab76253ed29375ff862a79ed5c2ee7f52a6abc2 at this interim evidence save. The branch is PUSHED, not READY. Only the final exact-SHA outcome can establish readiness. This report-only publication protects completed local work and is not a product acceptance or landing signal.
+
+## Final CI result and blocker
+Exact-head Verify run **43948782221** completed **failure** on **5ab76253ed29375ff862a79ed5c2ee7f52a6abc2**: https://github.com/just-every/run-happytohelp/actions/runs/43948782221. The intermediate jobs response identified **Verify / public-and-import-browser**, job **133586387761**, as failed. It runs public-browser.mjs, move-in-browser.mjs and erasure-browser.mjs. The full workflow's later individual job results were not re-read; its aggregate failure is recorded directly by REST. The contract-docs job succeeded, so this is not the permitted generated-view-only exception.
+
+After the workflow completed, the one required archive command was run exactly:
+
+    gh run view 43948782221 --repo just-every/run-happytohelp --job 133586387761 --log-failed
+
+Observed result: **exit 0, stdout 0 bytes, stderr 0 bytes**. No HTTP status or error body was supplied, and no downloaded local ZIP/archive was found. This is reported as missing assertion detail, not as a Forbidden response or a passing test. The actual receipt is ci-log-receipt.json; ci-public-and-import-failed.log is the actual empty sanitized output. No second archive download, signed-URL request, workflow dispatch, or rerun was attempted. The known refund/procedures shard had passed and did not trigger its special rerun permission. The ten manual GitHub reads are enumerated in github-call-budget.json.
+
+**BLOCKER:** Successful exact-SHA Verify is still required. Without returned failure text and with the GitHub budget exhausted, the failed assertion cannot be safely attributed or repaired. No speculative product change or CI-weakening change was made. All scoped code, contract/docs custody, local proofs and the product branch are preserved. No contract Status/Gap/Evidence promotion, default-branch push, PR, deployment, submission or landing occurred. The independent gate/fleet can retrieve the full failing assertion and continue from this ordinary pushed candidate.
+
+The product terminal is **BLOCKED**, not READY. The evidence ref is report transport only and never acceptance or landing proof. The complete source diff has only the 16 allowed paths recorded in scope-scan.json. All owned browsers were closed and the recorded dev CLI was stopped; runtime-cleanup.json confirms no recorded live runtime PID remains.

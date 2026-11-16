@@ -1,0 +1,2 @@
+verify	Require the plan and every selected check	2026-11-16T16:35:08.4860965Z [36;1m    test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:success:skipped[0m
+verify	Require the plan and every selected check	2026-11-16T16:35:08.4935566Z ##[error]Process completed with exit code 1.

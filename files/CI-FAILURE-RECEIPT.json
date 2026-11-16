@@ -1,0 +1,32 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16T16:40:44Z",
+  "head": "43bce0be0601d47bda9a37ea5271ea4241686951",
+  "run": 43903926381,
+  "conclusion": "failure",
+  "primaryFailedJob": {
+    "id": 133428487666,
+    "name": "Verify / support-workflow-browser",
+    "step": "Run shard checks",
+    "archiveCommand": "gh run view 43903926381 --repo just-every/run-happytohelp --job 133428487666 --log-failed",
+    "commandExit": 0,
+    "outputBytes": 0,
+    "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "diagnostic": "The successful archive command returned an empty body; no assertion, timeout or HTTP error is established by that output."
+  },
+  "aggregateFailedJob": {
+    "id": 133445754261,
+    "name": "verify",
+    "reason": "Require the plan and every selected check refused CHECKS=failure",
+    "archiveCommand": "gh run view 43903926381 --repo just-every/run-happytohelp --job 133445754261 --log-failed",
+    "commandExit": 0,
+    "originalSanitizedOutputBytes": 4890,
+    "publishedExcerpt": "CI-verify-excerpt.txt"
+  },
+  "githubCalls": 10,
+  "importAndReports": "success",
+  "publicAndImportBrowser": "success",
+  "otherShardResults": "Seven shard jobs succeeded; support-workflow-browser failed. Contract docs and build succeeded.",
+  "ready": false,
+  "reason": "Exact-SHA Verify is red; this is not the generated-contract-view exception. No failing assertion was available from the once-read primary job archive, and the ten-call budget is exhausted."
+}

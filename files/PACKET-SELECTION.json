@@ -18,7 +18,11 @@
     "browser/move-in/undo-complete-1440.png",
     "browser/move-in/undo-complete-390.png",
     "PACKET-SELECTION.json",
-    "TERMINAL-RECEIPT.json"
+    "TERMINAL-RECEIPT.json",
+    "CI-JOBS.json",
+    "CI-FAILURE-RECEIPT.json",
+    "CI-support-workflow-browser.log",
+    "CI-verify-excerpt.txt"
   ],
   "scope": "Only actual non-secret reports, receipts and four changed-screen images. Unrelated browser screenshots are not selected."
 }

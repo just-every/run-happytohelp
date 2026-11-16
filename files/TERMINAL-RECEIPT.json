@@ -18,5 +18,9 @@
   "businessTablesCompared": 474,
   "removed": 2004,
   "restored": 0,
-  "retained": 0
+  "retained": 0,
+  "terminal": "BLOCKED",
+  "ciRun": 43903926381,
+  "ciConclusion": "failure",
+  "blocker": "Exact-SHA Verify is red; this is not the generated-contract-view exception. No failing assertion was available from the once-read primary job archive, and the ten-call budget is exhausted."
 }

@@ -79,5 +79,14 @@
     "checks": 77,
     "pageErrors": 0,
     "durationMs": 243549.964189
+  },
+  "verifyExact": {
+    "head": "43bce0be0601d47bda9a37ea5271ea4241686951",
+    "run": 43903926381,
+    "result": "failure",
+    "failedShard": "Verify / support-workflow-browser",
+    "importAndReports": "success",
+    "publicAndImportBrowser": "success",
+    "diagnostics": "CI-FAILURE-RECEIPT.json"
   }
 }

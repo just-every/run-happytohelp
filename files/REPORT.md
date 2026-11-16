@@ -1,14 +1,14 @@
 # HappyToHelp stranger-11 undo report
 
-Run Edit Run fleet, 2026-11-16T16:18:42Z.
+Run Edit Run fleet, 2026-11-16T16:40:44Z.
 
 Repository: just-every/run-happytohelp
 Branch: cloud/hh-stranger11-undo-1
 Candidate head: 43bce0be0601d47bda9a37ea5271ea4241686951
 Fresh main base: 2044dfa31d6b5e43dea1224bca08e0b509e48396
 PR: none; this repository's branch Verify supplies the candidate entry point. The fleet owns landing.
-Verify run: 43903926381; in_progress/None; https://github.com/just-every/run-happytohelp/actions/runs/43903926381
-GitHub observations used: 3.
+Verify run: 43903926381; completed/failure; https://github.com/just-every/run-happytohelp/actions/runs/43903926381
+GitHub observations used: 10.
 
 ## Plan and implementation
 
@@ -135,6 +135,15 @@ The visual fixture has six tickets/18 native changes. The separate scale receipt
     "checks": 77,
     "pageErrors": 0,
     "durationMs": 243549.964189
+  },
+  "verifyExact": {
+    "head": "43bce0be0601d47bda9a37ea5271ea4241686951",
+    "run": 43903926381,
+    "result": "failure",
+    "failedShard": "Verify / support-workflow-browser",
+    "importAndReports": "success",
+    "publicAndImportBrowser": "success",
+    "diagnostics": "CI-FAILURE-RECEIPT.json"
   }
 }
 
@@ -149,4 +158,12 @@ CLAIM ZENDESK-IMPORT-001 PARTIAL points=none tests=tests/journeys/move-in-large-
 DEFAULT MOVE-IN-001: Retain strict native-edit/reference conflicts; do not introduce a partial destructive undo policy or change its authority.
 GAP ZENDESK-IMPORT-001: The contract's existing broader offline-import qualifications are not promoted by this targeted undo round.
 
-Both brief items are fixed and qualified by the targeted tests. The lander's publication scan and independent required gate remain fleet responsibilities. Product READY/PUSHED custody and the evidence ref are separate signals.
+## Terminal blocker
+
+Exact-SHA Verify 43903926381 completed with failure. Contract docs, build and seven shard jobs succeeded, including import-and-reports (133428487549) and public-and-import-browser (133428487535). The support-workflow-browser shard (133428487666) failed at Run shard checks; final verify (133445754261) refused CHECKS=failure. This is not the contract-generator exception and no READY line is claimed.
+
+The prescribed command `gh run view 43903926381 --repo just-every/run-happytohelp --job 133428487666 --log-failed` was run exactly once. It exited 0 and returned 0 bytes. Thus its archive provides no assertion or transport error, and this report does not invent a timeout diagnosis. The same command for final verify, also run once, yielded its expected check-aggregation failure. CI-JOBS.json, CI-FAILURE-RECEIPT.json, the actual empty primary output and CI-verify-excerpt.txt retain those observations without publishing the log's environment block. All ten GitHub calls were used (seven exact-SHA status observations, one jobs read, two required failed-job reads). No re-run was dispatched and no test or workflow was weakened.
+
+The failed workflows-browser entry point covers ticket workflow, AI triage/procedures/advice, feedback, HubSpot and support-channel journeys. Its source and those helpers were not modified here. Its failure is outside the named undo flows; baseline equivalence/root cause are not established by the available empty archive. Further CI diagnosis needs a usable failure artifact and a fresh call budget. The pushed product candidate and all local equality/browser receipts are preserved for the lane and independent gate.
+
+Both brief items are fixed and qualified by the targeted tests, but the candidate is BLOCKED by the red required Verify. The lander's publication scan and independent required gate remain fleet responsibilities. Product READY/PUSHED custody and the evidence ref are separate signals.

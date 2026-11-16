@@ -16,10 +16,49 @@
       "at": 1794845848.2830322,
       "endpoint": "repos/just-every/run-happytohelp/actions/runs/43903926381",
       "exit": 0
+    },
+    {
+      "at": 1794846149.6821487,
+      "endpoint": "repos/just-every/run-happytohelp/actions/runs/43903926381",
+      "exit": 0
+    },
+    {
+      "at": 1794846450.9923418,
+      "endpoint": "repos/just-every/run-happytohelp/actions/runs/43903926381",
+      "exit": 0
+    },
+    {
+      "at": 1794846752.4337192,
+      "endpoint": "repos/just-every/run-happytohelp/actions/runs/43903926381",
+      "exit": 0
+    },
+    {
+      "at": 1794847053.7865317,
+      "endpoint": "repos/just-every/run-happytohelp/actions/runs/43903926381",
+      "exit": 0
+    },
+    {
+      "at": 1794847076.1165342,
+      "endpoint": "repos/just-every/run-happytohelp/actions/runs/43903926381/jobs?per_page=100",
+      "exit": 0
+    },
+    {
+      "at": 1794847111.7644808,
+      "command": "gh run view 43903926381 --repo just-every/run-happytohelp --job 133428487666 --log-failed",
+      "job": 133428487666,
+      "exit": 0,
+      "log": "/tmp/hh-ci-job-133428487666.log"
+    },
+    {
+      "at": 1794847111.7583683,
+      "command": "gh run view 43903926381 --repo just-every/run-happytohelp --job 133445754261 --log-failed",
+      "job": 133445754261,
+      "exit": 0,
+      "log": "/tmp/hh-ci-job-133445754261.log"
     }
   ],
   "runId": 43903926381,
-  "status": "in_progress",
-  "conclusion": null,
+  "status": "completed",
+  "conclusion": "failure",
   "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43903926381"
 }

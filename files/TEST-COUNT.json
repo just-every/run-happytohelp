@@ -1,1 +1,14 @@
-{"scope":"static top-level tests/journeys registrations; no generated case added","before":110,"after":111,"added":1,"changedExistingBrowserRegistrations":1}
+{
+  "scope": "static top-level tests/journeys registrations; no generated case added",
+  "before": 110,
+  "after": 111,
+  "added": 1,
+  "changedExistingBrowserRegistrations": 1,
+  "allTestDirectoryRegistrationCalls": {
+    "before": 114,
+    "after": 115,
+    "filesBefore": 38,
+    "filesAfter": 39,
+    "scope": "Static test/it/contract registration calls, all tests source files; assertion scripts are not included in this count."
+  }
+}

@@ -404,7 +404,7 @@ allow cohort growth because they aggregate a selected 90-day window. Those are
 budgets, not measured provider limits. Existing flows retain the historical
 working ceilings; added routes have initial engineering budgets. No credentials or real conversations are used. The published 0.2.112 command let
 consumer work enter the meter, and report statements exceeded the 90-item margin.
-With the pinned, qualified rer 0.2.117, all 17 unchanged control flows pass
+With the previously qualified rer 0.2.117, all 17 unchanged control flows pass
 (inbox reads 2,359 to 2,403 rows); the copied-build full-table-query fault is
 refused solely for ceiling and growth. Queues are held. Scheduled knowledge refresh and legacy importer
 fixtures target admission/wakes; consumer completion is not qualified. The two legacy run rows are discovery fixtures without R2

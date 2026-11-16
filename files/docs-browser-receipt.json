@@ -1,0 +1,21 @@
+{
+  "sourceHead": "47218177618172fff37999d7aa2311f200802c10",
+  "builtFromCurrentSavedSource": true,
+  "browser": "/usr/bin/chromium",
+  "widths": [
+    1440,
+    390
+  ],
+  "pages": [
+    {
+      "slug": "install",
+      "status": 200,
+      "visibleText": "In Settings → Widget → Settings, set Widget website origin to the address it printed, such as http://127.0.0.1:52817, and save. Use the actual origin if your server differs: scheme, hostname and optional port, without a path. localhost and 127.0.0.1 are different hosts, and different ports are different origins. Fresh installs ask widget visitors for an email before sending a message. To turn this off, open Settings → Widget → Settings → Required contact details and disable Require email, then save. An explicitly saved choice is retained."
+    },
+    {
+      "slug": "reports",
+      "status": 200,
+      "visibleText": "Incoming tickets were created in the selected range and have a persisted public message. Incoming, workload and backlog exclude internal-note-only tickets and call logs without a public message, even when those tickets are assigned and visible in Inbox. Private notes and call notes do not qualify a ticket; a later public message does. Workload uses their current assignment and status. Resolved means currently Solved or Closed. A ticket with several tags counts under each tag; unassigned and untagged tickets have their own rows. Merged-away source tickets are excluded."
+    }
+  ]
+}

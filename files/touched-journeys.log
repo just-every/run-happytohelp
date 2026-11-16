@@ -1,0 +1,134 @@
+TAP version 13
+# Welcome email not sent 8fbf34d9-30c4-4c8b-bae6-eedbcb955a18 Managed mailbox is not active
+# Subtest: a first owner provisions useful support, observes actual Setup receipts, installs a provider and answers within the daily allowance while local and uncertain mail stay honest
+ok 1 - a first owner provisions useful support, observes actual Setup receipts, installs a provider and answers within the daily allowance while local and uncertain mail stay honest
+  ---
+  duration_ms: 83597.411723
+  type: 'test'
+  ...
+# Subtest: a new owner imports their website as private searchable knowledge once, keeps their own edits and deletes the source without later jobs bringing it back
+ok 2 - a new owner imports their website as private searchable knowledge once, keeps their own edits and deletes the source without later jobs bringing it back
+  ---
+  duration_ms: 3210.068146
+  type: 'test'
+  ...
+# PUBLIC_PROOF PUBLIC-005 docs 200/200/404 with unavailable alias lookup; help control=500
+# Subtest: a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing
+ok 3 - a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing
+  ---
+  duration_ms: 181263.88934
+  type: 'test'
+  ...
+# Subtest: help filled by a Move in import stays noindex on every public page until a member publishes, then is indexable for good
+ok 4 - help filled by a Move in import stays noindex on every public page until a member publishes, then is indexable for good
+  ---
+  duration_ms: 150217.812099
+  type: 'test'
+  ...
+# PUBLIC_PROOF overload positions /help/p-public-busy:16 /help/busy-help/busy-guide:26 /busy-help:17 /help/p-public-busy/requests:7 /portal/p-public-busy:4 https://help.example/:15 https://help.example/busy-guide:25 PUT /api/public-site/projects/p-public-busy/alias:3 html:/help/p-public-busy:16 html:/help/busy-help/busy-guide:26 html:/busy-help:17 html:/help/p-public-busy/requests:7 html:/portal/p-public-busy:4 html:https://help.example/:15 html:https://help.example/busy-guide:25 html:POST /api/knowledge/public/p-public-busy/articles/busy-guide/helpful:10 POST /auth/signout
+# PUBLIC_PROOF read effects once /help/once-help/once-guide:28 https://once.example/once-guide:27 /help/once-help/search?keyword=guide:18 https://once.example/search?keyword=guide:17 /api/knowledge/public/p-read-once/search?q=guide:12 help-verify:6 portal-verify:35
+# Subtest: the public site and a configured help host answer D1's overload as the application does: a read is retried, then 503 with Retry-After, never 500, and a write is never re-run; a read's side effects happen once
+ok 5 - the public site and a configured help host answer D1's overload as the application does: a read is retried, then 503 with Retry-After, never 500, and a write is never re-run; a read's side effects happen once
+  ---
+  duration_ms: 98976.590054
+  type: 'test'
+  ...
+# PROBE ACCESS-001 P1: GET conversations.csv all; narrow to selected between page queries -> {"status":200,"streamRefused":false,"laterRow":false}
+# Uncaught exception: workerd/jsg/_virtual_includes/iterator/workerd/jsg/value.h:1477: failed: remote.jsg.Error: Your report access changed. Start a new report.
+# stack: /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@377a367 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@377a965 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@34237e0 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3418800 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@341949c /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3183d0e /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@318477b /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3185153 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@24274b0 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@588570a /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5884730 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3193130 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3418c70 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3419026 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3183fc1 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@318449e /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3185153 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247eac8 /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589cd6f /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589e17a /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589edaf /home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@585f560
+# PROBE ACCESS-001 P1: public response stream refusal receipt -> {"streamErrors":[{"status":403}],"transportRejected":false}
+# PROBE ACCESS-001 P1: D1 fixture page receipts -> [{"page":1,"rows":500},{"page":2,"rows":0}]
+# PROBE ACCESS-001 P2: erasure -> "none; no erasure/retention code changed; existing support-outcomes erasure assertions run in report journey"
+# PROBE ACCESS-001 P3: money -> "none; no money authority or provider-money code changed"
+# PROBE ACCESS-001 P4: all GET reports -> {"status":200,"volume":5,"firstResponse":{"count":4,"median":4000,"p90":7000},"comments":[{"conversationId":"synthetic-hh-d","value":1,"comment":"synthetic-hh-comment-d","updatedAt":"2026-03-08T12:01:20.000Z"},{"conversationId":"synthetic-hh-c","value":-1,"comment":"synthetic-hh-comment-c","updatedAt":"2026-03-08T12:00:40.000Z"},{"conversationId":"synthetic-hh-b","value":-1,"comment":"synthetic-hh-comment-b","updatedAt":"2026-03-08T12:00:20.000Z"},{"conversationId":"synthetic-hh-a","value":1,"comment":"synthetic-hh-comment-a","updatedAt":"2026-03-08T12:00:10.000Z"}]}
+# PROBE ACCESS-001 P5: all GET conversations.csv / summary.csv -> {"status":200,"rows":5,"hiddenComment":true}
+# PROBE ACCESS-001 P6: all GET transcripts.json -> {"status":200,"ids":["synthetic-hh-a","synthetic-hh-b","synthetic-hh-c","synthetic-hh-d","synthetic-hh-e"],"hiddenNote":true,"hiddenAttachment":true}
+# PROBE ACCESS-001 P7: all GET results / results.csv -> {"status":200,"summary":{"rated":4,"positive":2,"lowScore":2,"rate":0.5,"invited":4,"delivery":{"failed":1,"sent":2,"suppressed":1},"optedOut":1},"ids":["synthetic-hh-d","synthetic-hh-c","synthetic-hh-b","synthetic-hh-a"]}
+# PROBE ACCESS-001 P8: all GET brands/reports -> {"status":200,"aggregate":{"volume":6,"resolved":4,"ai":1,"rated":4,"positive":2,"aiResolutionRate":0.25,"satisfactionRate":0.5}}
+# PROBE ACCESS-001 P4: selected GET reports -> {"status":200,"volume":2,"firstResponse":{"count":2,"median":3000,"p90":5000},"comments":[{"conversationId":"synthetic-hh-c","value":-1,"comment":"synthetic-hh-comment-c","updatedAt":"2026-03-08T12:00:40.000Z"},{"conversationId":"synthetic-hh-a","value":1,"comment":"synthetic-hh-comment-a","updatedAt":"2026-03-08T12:00:10.000Z"}]}
+# PROBE ACCESS-001 P5: selected GET conversations.csv / summary.csv -> {"status":200,"rows":2,"hiddenComment":false}
+# PROBE ACCESS-001 P6: selected GET transcripts.json -> {"status":200,"ids":["synthetic-hh-a","synthetic-hh-c"],"hiddenNote":false,"hiddenAttachment":false}
+# PROBE ACCESS-001 P7: selected GET results / results.csv -> {"status":200,"summary":{"rated":2,"positive":1,"lowScore":1,"rate":0.5,"invited":2,"delivery":{"sent":1,"suppressed":1},"optedOut":0},"ids":["synthetic-hh-c","synthetic-hh-a"]}
+# PROBE ACCESS-001 P8: selected GET brands/reports -> {"status":200,"aggregate":{"volume":3,"resolved":2,"ai":1,"rated":2,"positive":1,"aiResolutionRate":0.5,"satisfactionRate":0.5}}
+# PROBE ACCESS-001 P4: empty GET reports -> {"status":200,"volume":0,"firstResponse":{"count":0,"median":null,"p90":null},"comments":[]}
+# PROBE ACCESS-001 P5: empty GET conversations.csv / summary.csv -> {"status":200,"rows":0,"hiddenComment":false}
+# PROBE ACCESS-001 P6: empty GET transcripts.json -> {"status":200,"ids":[],"hiddenNote":false,"hiddenAttachment":false}
+# PROBE ACCESS-001 P7: empty GET results / results.csv -> {"status":200,"summary":{"rated":0,"positive":0,"lowScore":0,"rate":null,"invited":0,"delivery":{},"optedOut":0},"ids":[]}
+# PROBE ACCESS-001 P8: empty GET brands/reports -> {"status":200,"aggregate":{"volume":1,"resolved":0,"ai":0,"rated":0,"positive":0,"aiResolutionRate":null,"satisfactionRate":null}}
+# PROBE ACCESS-001 P4: foreign GET reports -> {"status":403}
+# PROBE ACCESS-001 P5: foreign GET conversations.csv / summary.csv -> {"status":403,"rows":null,"hiddenComment":false}
+# PROBE ACCESS-001 P6: foreign GET transcripts.json -> {"status":403,"hiddenNote":false,"hiddenAttachment":false}
+# PROBE ACCESS-001 P7: foreign GET results / results.csv -> {"status":403}
+# PROBE ACCESS-001 P8: foreign GET brands/reports -> {"status":403}
+# PROBE ACCESS-001 P4: owner GET reports -> {"status":200,"volume":5,"firstResponse":{"count":4,"median":4000,"p90":7000},"comments":[{"conversationId":"synthetic-hh-d","value":1,"comment":"synthetic-hh-comment-d","updatedAt":"2026-03-08T12:01:20.000Z"},{"conversationId":"synthetic-hh-c","value":-1,"comment":"synthetic-hh-comment-c","updatedAt":"2026-03-08T12:00:40.000Z"},{"conversationId":"synthetic-hh-b","value":-1,"comment":"synthetic-hh-comment-b","updatedAt":"2026-03-08T12:00:20.000Z"},{"conversationId":"synthetic-hh-a","value":1,"comment":"synthetic-hh-comment-a","updatedAt":"2026-03-08T12:00:10.000Z"}]}
+# PROBE ACCESS-001 P5: owner GET conversations.csv / summary.csv -> {"status":200,"rows":5,"hiddenComment":true}
+# PROBE ACCESS-001 P6: owner GET transcripts.json -> {"status":200,"ids":["synthetic-hh-a","synthetic-hh-b","synthetic-hh-c","synthetic-hh-d","synthetic-hh-e"],"hiddenNote":true,"hiddenAttachment":true}
+# PROBE ACCESS-001 P7: owner GET results / results.csv -> {"status":200,"summary":{"rated":4,"positive":2,"lowScore":2,"rate":0.5,"invited":4,"delivery":{"failed":1,"sent":2,"suppressed":1},"optedOut":1},"ids":["synthetic-hh-d","synthetic-hh-c","synthetic-hh-b","synthetic-hh-a"]}
+# PROBE ACCESS-001 P8: owner GET brands/reports -> {"status":200,"aggregate":{"volume":6,"resolved":4,"ai":1,"rated":4,"positive":2,"aiResolutionRate":0.25,"satisfactionRate":0.5}}
+# PROBE ACCESS-001 P4: admin GET reports -> {"status":200,"volume":5,"firstResponse":{"count":4,"median":4000,"p90":7000},"comments":[{"conversationId":"synthetic-hh-d","value":1,"comment":"synthetic-hh-comment-d","updatedAt":"2026-03-08T12:01:20.000Z"},{"conversationId":"synthetic-hh-c","value":-1,"comment":"synthetic-hh-comment-c","updatedAt":"2026-03-08T12:00:40.000Z"},{"conversationId":"synthetic-hh-b","value":-1,"comment":"synthetic-hh-comment-b","updatedAt":"2026-03-08T12:00:20.000Z"},{"conversationId":"synthetic-hh-a","value":1,"comment":"synthetic-hh-comment-a","updatedAt":"2026-03-08T12:00:10.000Z"}]}
+# PROBE ACCESS-001 P5: admin GET conversations.csv / summary.csv -> {"status":200,"rows":5,"hiddenComment":true}
+# PROBE ACCESS-001 P6: admin GET transcripts.json -> {"status":200,"ids":["synthetic-hh-a","synthetic-hh-b","synthetic-hh-c","synthetic-hh-d","synthetic-hh-e"],"hiddenNote":true,"hiddenAttachment":true}
+# PROBE ACCESS-001 P7: admin GET results / results.csv -> {"status":200,"summary":{"rated":4,"positive":2,"lowScore":2,"rate":0.5,"invited":4,"delivery":{"failed":1,"sent":2,"suppressed":1},"optedOut":1},"ids":["synthetic-hh-d","synthetic-hh-c","synthetic-hh-b","synthetic-hh-a"]}
+# PROBE ACCESS-001 P8: admin GET brands/reports -> {"status":200,"aggregate":{"volume":6,"resolved":4,"ai":1,"rated":4,"positive":2,"aiResolutionRate":0.25,"satisfactionRate":0.5}}
+# PROBE ACCESS-001 P4: null GET reports -> {"status":200,"volume":5,"firstResponse":{"count":4,"median":4000,"p90":7000},"comments":[{"conversationId":"synthetic-hh-d","value":1,"comment":"synthetic-hh-comment-d","updatedAt":"2026-03-08T12:01:20.000Z"},{"conversationId":"synthetic-hh-c","value":-1,"comment":"synthetic-hh-comment-c","updatedAt":"2026-03-08T12:00:40.000Z"},{"conversationId":"synthetic-hh-b","value":-1,"comment":"synthetic-hh-comment-b","updatedAt":"2026-03-08T12:00:20.000Z"},{"conversationId":"synthetic-hh-a","value":1,"comment":"synthetic-hh-comment-a","updatedAt":"2026-03-08T12:00:10.000Z"}]}
+# PROBE ACCESS-001 P5: null GET conversations.csv / summary.csv -> {"status":200,"rows":5,"hiddenComment":true}
+# PROBE ACCESS-001 P6: null GET transcripts.json -> {"status":200,"ids":["synthetic-hh-a","synthetic-hh-b","synthetic-hh-c","synthetic-hh-d","synthetic-hh-e"],"hiddenNote":true,"hiddenAttachment":true}
+# PROBE ACCESS-001 P7: null GET results / results.csv -> {"status":200,"summary":{"rated":4,"positive":2,"lowScore":2,"rate":0.5,"invited":4,"delivery":{"failed":1,"sent":2,"suppressed":1},"optedOut":1},"ids":["synthetic-hh-d","synthetic-hh-c","synthetic-hh-b","synthetic-hh-a"]}
+# PROBE ACCESS-001 P8: null GET brands/reports -> {"status":200,"aggregate":{"volume":6,"resolved":4,"ai":1,"rated":4,"positive":2,"aiResolutionRate":0.25,"satisfactionRate":0.5}}
+# PROBE ACCESS-001 P9: all / NULL / owner / admin every ordinary door -> {"identical":true,"digest":"249f20fbbecfd78f96c835a1585bd74a6abf489d410506e41fd3c75389b03c3b"}
+# PROBE ACCESS-001 P10: identical-body receipt -> {"digest":"7aeee672f31efbde124868a339365b70c9b8fcbda40666406191310bc72e4f6e"}
+# PROBE ACCESS-001 P10: empty-scope GET team / hidden-ticket timer / scheduled-dispatch -> {"teamStatus":200,"cohort":5,"timerStatus":200,"timer":{"sessions":[],"running":null,"totalMs":0,"ticketTotalMs":0,"now":1793491200000,"userId":"synthetic-hh-64","canAdjustOthers":true},"scheduledStatus":200,"scheduled":{"schedules":[],"recipients":[{"id":"admin-synthetic-hh-60","name":"admin synthetic-hh-60","email":"admin-synthetic-hh-60@example.test"},{"id":"owner-synthetic-hh-60","name":"owner synthetic-hh-60","email":"owner-synthetic-hh-60@example.test"},{"id":"synthetic-hh-62","name":"synthetic-hh-62","email":"synthetic-hh-62@example.test"},{"id":"synthetic-hh-63","name":"synthetic-hh-63","email":"synthetic-hh-63@example.test"},{"id":"synthetic-hh-64","name":"synthetic-hh-64","email":"synthetic-hh-64@example.test"},{"id":"synthetic-hh-65","name":"synthetic-hh-65","email":"synthetic-hh-65@example.test"}],"timezone":"UTC","permissions":{"manage":true}},"dispatchCohort":5,"providerBoundary":"network-edge fake"}
+# PROBE ACCESS-001 P4: selected ordinary report with workspace campaign aggregate -> {"status":403}
+# Subtest: inspect calendar Reports and formula-safe exports against known durations, rates and exclusions, then revoke private export access
+ok 6 - inspect calendar Reports and formula-safe exports against known durations, rates and exclusions, then revoke private export access
+  ---
+  duration_ms: 17015.126099
+  type: 'test'
+  ...
+# {"proof":"public-door multichannel report cohort","tickets":5,"nativeTickets":4,"importedTickets":1,"nativeChannels":["widget","email"],"firstResponse":{"count":3,"median":125,"p90":197},"firstResolution":{"count":3,"median":191,"p90":256},"reopens":{"resolved":3,"denominator":3,"reopened":1,"events":1,"imported_history_unknown":0,"rate":0.3333333333333333},"providerBoundary":"network-edge fixture; no live delivery"}
+# Error in OpenAI streaming response: InternalServerError3: 503 fixture rejected
+#     at _APIError.generate (file:///home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/script-0.mjs:95035:18)
+#     at OpenAI.makeStatusError (file:///home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/script-0.mjs:106004:26)
+#     at OpenAI.makeRequest (file:///home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/script-0.mjs:106189:28)
+#     at async OpenAIProvider.createResponseStream (file:///home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/script-0.mjs:112953:27)
+#     at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/script-0.mjs:48157:9)
+#     at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/script-0.mjs:48072:5)
+#     at async streamWithAbortAndTimeout (file:///home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/script-0.mjs:65388:35)
+#     at async executeRound (file:///home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/script-0.mjs:69481:20)
+#     at async ensembleRequest (file:///home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/script-0.mjs:69067:21)
+#     at async runStream (file:///home/agent/rer-consolidation/work/hh-stranger3-docs-1/repo/script-0.mjs:190753:22) {
+#   status: 503,
+#   headers: Headers(4) {
+#     'connection' => 'keep-alive',
+#     'content-type' => 'application/json',
+#     'date' => 'Mon, 16 Nov 2026 14:43:22 GMT',
+#     'transfer-encoding' => 'chunked',
+#     [immutable]: true
+#   },
+#   requestID: null,
+#   error: { message: 'fixture rejected', type: 'server_error' },
+#   code: undefined,
+#   param: undefined,
+#   type: 'server_error'
+# }
+# Subtest: resolve and reopen multichannel support with visible answer attribution, visitor feedback and permission-scoped team reports
+ok 7 - resolve and reopen multichannel support with visible answer attribution, visitor feedback and permission-scoped team reports
+  ---
+  duration_ms: 15708.039625
+  type: 'test'
+  ...
+# Subtest: visitor and teammate sockets replay their durable cursor, exchange first reads and private activity only within current authority, and close on revocation
+ok 8 - visitor and teammate sockets replay their durable cursor, exchange first reads and private activity only within current authority, and close on revocation
+  ---
+  duration_ms: 4421.554952
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 555491.111272

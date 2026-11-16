@@ -1,0 +1,35 @@
+{
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "exit": 0
+  },
+  "touchedJourneys": {
+    "command": "node --test --test-concurrency=1 tests/journeys/reports.mjs tests/journeys/widget.mjs tests/journeys/first-run.mjs tests/journeys/public.mjs",
+    "exit": 0
+  },
+  "head": "c06c450d0c3ee42e47bd33b68ea26de80cf317f3",
+  "docs": {
+    "command": "verifyDocs(process.cwd()) from tests/helpers/public-docs-journey.mjs",
+    "pages": 39,
+    "problems": [],
+    "exit": 0
+  },
+  "sourceLock": {
+    "command": "node scripts/edition-authoring/cli.mjs lock",
+    "exit": 0
+  },
+  "sourceCheck": {
+    "command": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "rerCheck": {
+    "command": "pnpm exec rer check --profile first-party",
+    "exit": 0
+  },
+  "journeyTotals": {
+    "tests": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0
+  }
+}

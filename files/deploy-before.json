@@ -1,0 +1,6 @@
+{
+  "command": "git clone --branch v0.4.31 https://github.com/just-every/run-happytohelp",
+  "exit": 128,
+  "diagnostic": "fatal: destination path 'run-happytohelp' already exists and is not an empty directory.\n",
+  "followingCdWouldEnter": "quick-start main checkout"
+}

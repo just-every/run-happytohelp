@@ -1,0 +1,66 @@
+{
+  "head": "47218177618172fff37999d7aa2311f200802c10",
+  "requestedBase": "35e0a4ac735bab3c3ded8dc92c994da6ae2c9bfc",
+  "attempts": [
+    {
+      "number": 1,
+      "exit": 4,
+      "http": 503,
+      "changesWritten": false
+    },
+    {
+      "number": 2,
+      "exit": 4,
+      "http": 503,
+      "changesWritten": false
+    },
+    {
+      "number": 3,
+      "exit": 0,
+      "changesWritten": true
+    }
+  ],
+  "backoffSeconds": [
+    15,
+    45
+  ],
+  "recordsRefreshed": 437,
+  "selectedSourceByteChanges": 0,
+  "editionMigrations": [],
+  "templateAdoptions": [],
+  "withheld": [],
+  "adaptations": [
+    {
+      "path": ".github/workflows/verify.yml",
+      "originPath": "export/verify.yml",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891",
+      "conflict": false
+    },
+    {
+      "path": "scripts/ci/verify-evidence.mjs",
+      "originPath": "export/verify-evidence.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891",
+      "conflict": false
+    },
+    {
+      "path": "scripts/ci/verify-light.mjs",
+      "originPath": "export/verify-light.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891",
+      "conflict": false
+    },
+    {
+      "path": "scripts/ci/verify-plan.mjs",
+      "originPath": "export/verify-plan.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891",
+      "conflict": false
+    },
+    {
+      "path": "scripts/delivery/base/schema/generate-business-role.mjs",
+      "originPath": "schema/generate-business-role.mjs",
+      "revision": "ab97e5e864013ef03fd7f1e1a335101dd9150891",
+      "conflict": false
+    }
+  ],
+  "dependencyAdvisory": "Seed React 19.2.8 retained; Base advertises 19.3.1. No selected source bytes changed, no dependency migration requested; typecheck and all required local checks passed.",
+  "offlineCheck": "recorded local bytes and acknowledged adaptations passed; remote origin was verified during API refresh, not by offline check"
+}

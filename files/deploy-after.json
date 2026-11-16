@@ -1,0 +1,28 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "selectionCommand": "curl --fail --silent --show-error --location --output /dev/null --write-out %{url_effective} https://github.com/just-every/run-happytohelp/releases/latest",
+  "selectedTag": "v0.4.31",
+  "releaseHead": "e5fb53dc305f53a71ff0b6db81d5eec7dfd0104f",
+  "retainedMainHead": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "separateDirectory": "run-happytohelp-release",
+  "dryRun": {
+    "command": "rer deploy --dry-run",
+    "cwd": "run-happytohelp-release",
+    "exit": 0,
+    "noCloudflareRequests": true,
+    "noRemoteChanges": true,
+    "actualLog": "deploy-dry-run.log"
+  },
+  "productionCommands": "NOT RUN: live installations and account/provider mutations are prohibited; inspected cwd stays release folder",
+  "replayedAfterActualPublicQuickStart": {
+    "originalCloneExit": 128,
+    "originalDiagnostic": "fatal: destination path 'run-happytohelp' already exists and is not an empty directory.\n",
+    "latestReleaseAcquisitionExit": 0,
+    "head": "e5fb53dc305f53a71ff0b6db81d5eec7dfd0104f",
+    "separateDirectory": "run-happytohelp-release",
+    "dryRunExit": 0,
+    "actualLog": "deploy-dry-run-after-quickstart.log",
+    "productionCommands": "Not executed: explicitly outside authorized scope"
+  }
+}

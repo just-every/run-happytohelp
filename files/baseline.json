@@ -1,0 +1,13 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "main": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "tag": "hh-stranger3-docs-1",
+  "before": {
+    "README": "Release 0.4.28; v0.4.28 once published",
+    "email": "README, installer guide and widget helper incorrectly say no email by default",
+    "reports": "pending public-door reproduction",
+    "deploy": "duplicate run-happytohelp destination expected exit 128"
+  },
+  "builder": "Run Edit Run fleet",
+  "date": "2026-11-16"
+}

@@ -1,0 +1,30 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "initialAttempt": {
+    "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 3,
+    "reason": "requires contained private answers for WIDGET_ORIGIN and OWNER_PASSWORD"
+  },
+  "quickStart": {
+    "command": "pnpm exec rer dev --foreground",
+    "result": "native local owner entered Setup; synthetic fixture retained"
+  },
+  "existingOwnerRefusal": {
+    "result": "fleet-email setup correctly refuses reassigning already-owned local database; data and private settings retained",
+    "resetPerformed": false
+  },
+  "freshReleaseCheckout": {
+    "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --answers .rer/hh-cloud-answers.json --non-interactive",
+    "exit": 0,
+    "nativeOwnerEmail": "fleet@runeditrun.com",
+    "privateAnswersRemoved": true
+  },
+  "localResume": {
+    "command": "pnpm exec rer setup --owner-email owner@repo.test --non-interactive; pnpm exec rer dev --foreground",
+    "nativeOwnerKept": true,
+    "ready": true,
+    "serverPidStartedAndStopped": 43840,
+    "purpose": "Resume the existing disposable native owner without resetting retained stranger tickets"
+  }
+}

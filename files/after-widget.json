@@ -1,0 +1,11 @@
+{
+  "phase": "after",
+  "sourceHead": "47218177618172fff37999d7aa2311f200802c10",
+  "savedChoiceRetained": true,
+  "requireEmail": true,
+  "helper": [
+    "On insight makes the chat button glow when Help before they ask offers a visitor help. Turn that on in Project settings, Help before they ask.",
+    "Fresh installs ask visitors for an email before they send a message. Turn off Require email here to stop asking. Your saved choice is retained. On a hosted installation with email sending configured, operator replies can reach that address.",
+    "Try the widget here. Preview messages stay in this editor."
+  ]
+}

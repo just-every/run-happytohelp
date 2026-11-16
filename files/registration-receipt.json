@@ -1,0 +1,11 @@
+{
+  "scope": "Literal top-level node:test registrations in tracked tests/journeys/*.mjs and nested kit; count is a source inventory, not an assertion of an adjudicated fleet-wide cap",
+  "literalRegistrations": {
+    "origin/main": 107,
+    "working": 107
+  },
+  "delta": 0,
+  "newRegistrations": 0,
+  "removedOrWeakenedRegistrations": 0,
+  "branchChangesTests": false
+}

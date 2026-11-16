@@ -1,0 +1,18 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "baseline": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "readmeProducer": "handwritten README; no in-repo writer or release template found",
+  "before": {
+    "releaseHeading": "## Release 0.4.28",
+    "acquisition": "git clone --branch v0.4.28 https://github.com/just-every/run-happytohelp",
+    "email": "By default the widget does not ask for an email"
+  },
+  "after": {
+    "releaseHeading": "Releases and upgrades",
+    "deploymentSelection": "GitHub /releases/latest redirect selects published tag; a separate run-happytohelp-release checkout",
+    "email": "Fresh installs ask; disable Settings \u2192 Widget \u2192 Settings \u2192 Required contact details \u2192 Require email; saved choices retained"
+  },
+  "authoritativeBuyerSteps": "RELEASE.json unchanged; README points to release-specific buyer steps",
+  "outsideProducerGap": "None established inside this repository. External release producers were not inspected or changed. The versionless directions avoid dependence on one."
+}

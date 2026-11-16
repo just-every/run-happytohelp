@@ -1,0 +1,7 @@
+CLAIM NATIVE-001 PARTIAL points=none tests=tests/journeys/first-run.mjs#a first owner provisions useful support, observes actual Setup receipts, installs a provider and answers within the daily allowance while local and uncertain mail stay honest
+CLAIM FIRST-RUN-001 PARTIAL points=none tests=tests/journeys/first-run.mjs#a first owner provisions useful support, observes actual Setup receipts, installs a provider and answers within the daily allowance while local and uncertain mail stay honest
+CLAIM WIDGET-001 PARTIAL points=none tests=tests/journeys/first-run.mjs#a first owner provisions useful support, observes actual Setup receipts, installs a provider and answers within the daily allowance while local and uncertain mail stay honest
+CLAIM REPORTS-001 PARTIAL points=none tests=tests/journeys/reports.mjs#inspect calendar Reports and formula-safe exports against known durations, rates and exclusions, then revoke private export access
+CLAIM REPORTS-002 PARTIAL points=1,2 tests=tests/journeys/reports.mjs#resolve and reopen multichannel support with visible answer attribution, visitor feedback and permission-scoped team reports
+CLAIM PUBLIC-005 PARTIAL points=none tests=tests/helpers/public-docs-journey.mjs#verifyDocs
+CLAIM SOURCE-001 PARTIAL points=none tests=scripts/edition-authoring/cli.mjs#check; scripts/edition-authoring/cli.mjs#verify-base --offline

@@ -1,0 +1,11 @@
+{
+  "phase": "before",
+  "sourceHead": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "savedChoiceRetained": false,
+  "requireEmail": true,
+  "helper": [
+    "On insight makes the chat button glow when Help before they ask offers a visitor help. Turn that on in Project settings, Help before they ask.",
+    "The widget does not ask for an email by default. Enable Require email to show an email field before visitors send a message. On a hosted installation with email sending configured, operator replies can reach that address.",
+    "Try the widget here. Preview messages stay in this editor."
+  ]
+}

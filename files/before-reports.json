@@ -1,0 +1,46 @@
+{
+  "phase": "before",
+  "cohort": 1,
+  "backlog": 1,
+  "ownerWorkload": {
+    "id": "655627a7-4936-4cd0-bef4-c195dfa5776b",
+    "label": "Owner",
+    "incoming": 1,
+    "resolved": 0,
+    "backlog": 1,
+    "oldest_age_ms": 70890,
+    "ageBuckets": [
+      {
+        "id": "under_1d",
+        "count": 1
+      },
+      {
+        "id": "days_1_3",
+        "count": 0
+      },
+      {
+        "id": "days_3_7",
+        "count": 0
+      },
+      {
+        "id": "days_7_30",
+        "count": 0
+      },
+      {
+        "id": "days_30_plus",
+        "count": 0
+      }
+    ]
+  },
+  "scope": "2026-10-18 through 2026-11-17 (exclusive) · UTC · Workspace timezone\n1 tickets in the creation cohort · 1 native · 0 imported included · 0 imported excluded.",
+  "firstResponse": {
+    "count": 0,
+    "median": null,
+    "p90": null
+  },
+  "firstResolution": {
+    "count": 0,
+    "median": null,
+    "p90": null
+  }
+}

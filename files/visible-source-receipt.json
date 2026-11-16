@@ -1,0 +1,14 @@
+{
+  "proofSourceHead": "47218177618172fff37999d7aa2311f200802c10",
+  "files": {
+    "README.md": "7c37e64f4195137a76936092aad6eb963213424e6441015d2c1abfc06a863e01",
+    "docs/INSTALLER.md": "f45217d612cca5fe8a3773d81fc5381d7d2e1a4ffbc1a85b66e135173cc40de5",
+    "docs/reports.md": "771c58cbdf9e536f8f0681a2c2a318d13ef6582f9c9fcca6e256f396a945fc61",
+    "src/modules/reports/team-read.ts": "50993301db3187068a5714ef17d00a4805a25689b1ced0af6c12b0ec1bb166b3",
+    "src/ui/dashboard/components/widget-settings/WidgetBehaviorFields.jsx": "916e9a4be6de41fa16d34a74a71b680f045fc34e7edc2cebb5d83af29456539f",
+    "src/ui/native/pages/Reports.jsx": "4dd62ba08c32ad34ce250676299db7cad0f0aad60474f6640b69a4267fac24bd",
+    "src/ui/native/pages/reports/TeamReports.jsx": "592176bd537c6d9d48399b9a83af4eae366144e5e28eaeba2d46ac9c8066bf0a"
+  },
+  "kind": "Native Widget settings and Reports and published install/reports docs were recaptured from the exact final product head.",
+  "preservationProofSourceHead": "c06c450d0c3ee42e47bd33b68ea26de80cf317f3"
+}

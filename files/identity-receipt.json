@@ -1,0 +1,19 @@
+{
+  "candidates": [
+    {
+      "sha": "47218177618172fff37999d7aa2311f200802c10",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": []
+    },
+    {
+      "sha": "c06c450d0c3ee42e47bd33b68ea26de80cf317f3",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": []
+    }
+  ],
+  "allSideParentsIncluded": true,
+  "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+  "passed": true
+}

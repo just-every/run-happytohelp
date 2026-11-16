@@ -1,0 +1,17 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "head": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "trackedAndUntrackedTreeClean": true,
+  "rerInstalledVersion": "0.2.119",
+  "entry": "ordinary rer dev private native-owner entry",
+  "visitorFlow": "installed widget collected email and persisted visitor message",
+  "ticketFlows": [
+    "New ticket \u2192 Internal note \u2014 no email \u2192 existing requester",
+    "New ticket \u2192 Log a call \u2192 new requester"
+  ],
+  "assignedOwnerTickets": 3,
+  "incoming": 1,
+  "backlog": 1,
+  "cohort": 1,
+  "privateDevEntryRotatedAfterDiagnostic": true
+}

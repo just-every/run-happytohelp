@@ -1,0 +1,27 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger3-docs-1",
+  "baseline": "2044dfa31d6b5e43dea1224bca08e0b509e48396",
+  "proofRuntime": "rer dev local native-owner entry; local synthetic data only",
+  "beforeSource": "README/docs/UI restored byte-for-byte from origin/main while collecting before proof; rer package was already updated to 0.2.120",
+  "afterSource": "Exact final pushed head; native and published-doc browser proof recaptured after commit",
+  "desktopWidth": 1440,
+  "mobileWidth": 390,
+  "screenshotsInspected": [
+    "before-widget-settings-390.png",
+    "before-inbox-1440.png",
+    "before-reports-390.png",
+    "after-widget-settings-1440.png",
+    "after-reports-390.png",
+    "before-widget-settings-1440.png",
+    "after-widget-settings-390.png",
+    "before-reports-1440.png",
+    "after-reports-1440.png"
+  ],
+  "serverPidStartedAndStopped": 4196,
+  "noProviderCredentialsUsed": true,
+  "preservationHead": "c06c450d0c3ee42e47bd33b68ea26de80cf317f3",
+  "preservationPushed": true,
+  "finalHead": "47218177618172fff37999d7aa2311f200802c10",
+  "cleanMainProof": "2044dfa31d6b5e43dea1224bca08e0b509e48396 with installed rer 0.2.119 and clean Git tree"
+}

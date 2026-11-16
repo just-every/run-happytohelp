@@ -1,0 +1,42 @@
+{
+  "head": "47218177618172fff37999d7aa2311f200802c10",
+  "typecheck": 0,
+  "docs": {
+    "pages": 39,
+    "problems": [],
+    "exit": 0
+  },
+  "sourceLock": 0,
+  "sourceCheck": 0,
+  "rerFirstPartyCheck": 0,
+  "offlineRecordedBaseBytesCheck": 0,
+  "journeys": {
+    "head": "c06c450d0c3ee42e47bd33b68ea26de80cf317f3",
+    "tests": 8,
+    "passed": 8,
+    "skipped": 0,
+    "functionalSourceUnchangedSinceThatRun": true,
+    "changedPathsSinceRun": [
+      "README.md",
+      "base-copies.json",
+      "docs/reports.md",
+      "sources.lock.json"
+    ]
+  },
+  "fullLocalVerifyRun": false,
+  "fullGate": "exact-SHA GitHub Verify",
+  "finalBuild": 0,
+  "finalBrowserProof": {
+    "head": "47218177618172fff37999d7aa2311f200802c10",
+    "widgetSettings": 0,
+    "reports": 0,
+    "publishedDocs": 0,
+    "widths": [
+      1440,
+      390
+    ],
+    "screensInspected": 8,
+    "savedOffChoiceRetained": true,
+    "nativeDevServerStoppedByPid": 91980
+  }
+}

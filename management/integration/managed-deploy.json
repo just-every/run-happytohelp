@@ -234,6 +234,17 @@
       "binding": "RER_BUSINESS_TRUST",
       "environment": "RER_BUSINESS_TRUST",
       "optional": true
+    },
+    {
+      "binding": "MAIL_PROVIDER",
+      "environment": "MAIL_PROVIDER",
+      "optional": true
     }
+  ],
+  "vars": {
+    "MAIL_PROVIDER": "direct"
+  },
+  "publicSettings": [
+    "MAIL_PROVIDER"
   ]
 }

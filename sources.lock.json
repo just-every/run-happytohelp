@@ -1605,7 +1605,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "dac853ad5a348d60f5a5fd112d3233a0f5d23886dc0a59a164703f04da99fc1e",
+      "sha256": "431b9855ac4f8f3827bea6b1494005686bca419cc4f14dfb6d06c489da9c4533",
       "executable": false
     },
     "CHANGELOG.md": {
@@ -1633,7 +1633,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "ee91d2e267c3b5b94e36a7ef91c7fca22c922524d91cbf04c2de870716b1c407",
+      "sha256": "1b893ba128b6615206f5f75a2ee2711c90bb4fc52689ecc0eb368859e0171d5c",
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
@@ -2073,7 +2073,7 @@
       "executable": false
     },
     "management/integration/managed-deploy.json": {
-      "sha256": "c0616bd04ee330c20b9f5490632b951c7059b6f08ace8451fcb65832823db05f",
+      "sha256": "8084f173ff956da787868f1b026327d3cdfb39a888ae493e9d3ace40af9b8311",
       "executable": false
     },
     "management/integration/native-setup.json": {
@@ -2917,11 +2917,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "db4934fcc5fcae762f3fc9f9eaf5de209f2cfda9579a2fcca788271c5aaaf03d",
+      "sha256": "9f451e8d85129386a05f6b8919824bbf80f8229c7f625ad5664ad55b848ab684",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "89ab65be7d58f54b288660e9e1f2290e589333a566d1602ef1ee83923b2577f6",
+      "sha256": "2dbae155efeaa1aa368d094173a0c956a4e9dec26ec27f8a295b936e1f9d6d84",
       "executable": false
     },
     "public/fonts/fonts.css": {
@@ -5949,7 +5949,7 @@
       "executable": false
     },
     "src/modules/forms/source-eligibility.ts": {
-      "sha256": "77de188089c5a0b0482d84dae03a743a85cc22e20b6a89aa5b84ed31cf6b6897",
+      "sha256": "9c87cdcf2f43ff20d7ccf5d209a0510b4567f54d856b9533bdb7e6e3daf19644",
       "executable": false
     },
     "src/modules/forms/store.ts": {
@@ -10865,7 +10865,7 @@
       "executable": false
     },
     "src/modules/workflows/routes-sla.ts": {
-      "sha256": "72d6c18c793b86a12105dc9ef4885752fb82f9d54212f7a940b85abfbf6f0cbb",
+      "sha256": "fc147fde81eb50351481205c120d11b092c943a37ecd7e52620a340ad51cbb24",
       "executable": false
     },
     "src/modules/workflows/routes.ts": {
@@ -16769,7 +16769,7 @@
       "executable": false
     },
     "tests/helpers/inbox/new-ticket-configuration.mjs": {
-      "sha256": "1da539b431595a8e3242ca808c96580673115ed2bb02eb1ba12a7f1667c53563",
+      "sha256": "9600b0b63fe12771bf139a46dba6ea3f1dea7fe8cdd449394cc4e0c586ffa03b",
       "executable": false
     },
     "tests/helpers/inbox/no-mailbox-ticket.mjs": {
@@ -17384,6 +17384,10 @@
       "sha256": "24562617784cdc407a1ffc800afd889a59bfcc8fa9d9677a5b11b7fb2b2b961c",
       "executable": false
     },
+    "tests/helpers/workflows/sla-field-access.mjs": {
+      "sha256": "499fffe00e055600e55f0da2cd9794a0c5d0842b84029c03fb19e0e7466e1861",
+      "executable": false
+    },
     "tests/helpers/zendesk-diagnostics/authority.mjs": {
       "sha256": "c577bfa7f78c5b8a809dc8bf7d51c45ffd19bbcdf293d0c48addf5684ba5cc4c",
       "executable": false
@@ -17469,7 +17473,7 @@
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {
-      "sha256": "bc41304cf95af1dd03b71afc6b7245214d3309913937e9e51ee5ea28746e82e8",
+      "sha256": "7c8af0cc8fdabbf85e0bc6122685a78b5e7dce1a92f326ab06e5a5d00b73723f",
       "executable": false
     },
     "tests/journeys/inbox.mjs": {

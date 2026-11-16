@@ -167,6 +167,27 @@ export async function newTicketConfigurationBrowser(){
    assert.equal(privateTicket.conversation.channel,'email');assert.equal(privateTicket.conversation.mailbox_id,mailbox.id);assert.equal(privateTicket.conversation.submitter_id,owner.actor.id)
    await page.waitForURL(`**/conversations/${privateId}`);await page.locator('.transcript-note-content').getByText(privateContent,{exact:true}).waitFor()
    await page.reload();await page.locator('.transcript-note-content').getByText(privateContent,{exact:true}).waitFor()
+   // Reconstruct Yours after leaving the ticket, rather than retaining the
+   // optimistic creation result or only reloading its open transcript.
+   assert.equal(privateTicket.conversation.assigned_to,owner.actor.id)
+   await page.goto(`${runtime.origin}/projects/${projectId}/activation`)
+   await page.goto(`${runtime.origin}/projects/${projectId}/conversations?view=mine`)
+   await page.reload()
+   const privateRow=page.locator('.conversation-item').filter({hasText:`Private parcel review ${width}`})
+   await privateRow.waitFor()
+   assert.equal(await privateRow.count(),1,'the assigned internal-only ticket remains discoverable after Inbox reload')
+   const mine=(await call(base+'/conversations/counts',undefined,owner.token)).data.mine
+   for(const list of [base+'/conversations?view=mine','/api/dashboard/conversations?view=mine']){
+    const reloaded=await call(list,undefined,owner.token)
+    assert.equal(reloaded.data.filter(ticket=>ticket.id===privateId).length,1,'workspace and global Yours retain the internal ticket')
+    if(list.startsWith(base)){
+     assert.equal(reloaded.meta.pagination.total,mine,'Yours and its list count the same tickets')
+     assert.equal(reloaded.data.length,mine,'every counted fixture ticket is discoverable on the reloaded first page')
+    }
+   }
+   await capture('private-inbox-after-reload')
+   await privateRow.click();await page.locator('.transcript-note-content').getByText(privateContent,{exact:true}).waitFor()
+   await page.reload();await page.locator('.transcript-note-content').getByText(privateContent,{exact:true}).waitFor()
    const bucket=(await call(`${base}/conversations/${privateId}/buckets/${privateId}`,undefined,owner.token)).data
    assert.equal(bucket.messages.length,0);assert.equal(bucket.events.filter(event=>event.type==='INTERNAL_NOTE'&&event.content===privateContent).length,1)
    assert.equal((await call(`/api/conversations/${privateId}/messages`,undefined,owner.token)).messages.length,0)

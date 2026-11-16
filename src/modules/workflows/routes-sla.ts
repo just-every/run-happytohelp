@@ -11,7 +11,7 @@ import {policyData,policyDefinition} from './sla-policy'
 import {validateFieldValue} from '../tickets/fields'
 import {publicField} from '../forms/definition'
 import {fieldVisibility} from '../forms/source-eligibility'
-import {publicFieldReadSql} from '../forms/field-access'
+import {formFieldGuard} from '../forms/field-guard'
 import {ticketSla,liveSlaTicketSql} from './sla'
 
 export const workflowSlaRoutes=new Hono<AppEnv>()
@@ -43,10 +43,11 @@ for(const kind of ['workflow-calendars','sla-policies'] as const){
    }
    const conditions=JSON.parse(policy.conditions_json),fieldIds=Object.keys(conditions.fields??{})
    if(fieldIds.length){
-    const fields=(await fieldVisibility(c.env,actor.projectId)).filter(field=>fieldIds.includes(field.id))
+    const fields=await fieldVisibility(c.env,actor.projectId,fieldIds)
     if(fields.length!==fieldIds.length||fields.some(f=>!publicField(f)))invalid('SLA conditions require customer-visible workspace fields')
     for(const field of fields){if(validateFieldValue(field,conditions.fields[field.id])===null)invalid('SLA field conditions require a typed value')}
-    extra.push(`NOT EXISTS(SELECT 1 FROM json_each(?) ref WHERE NOT EXISTS(SELECT 1 FROM ticket_fields f WHERE f.project_id=? AND f.id=json_extract(ref.value,'$[0]') AND f.updated_at=json_extract(ref.value,'$[1]') AND ${publicFieldReadSql('f')}))`);args.push(JSON.stringify(fields.map(f=>[f.id,f.updated_at])),actor.projectId)
+    const fieldGuard=formFieldGuard(actor.projectId,fields)
+    extra.push(fieldGuard.sql);args.push(...fieldGuard.args)
    }
    const formIds=conditions.form_ids??[]
    if(formIds.length){

@@ -42,7 +42,8 @@ const scriptJson = (value: unknown) => JSON.stringify(value).replaceAll('<', '\\
  * it shows the busy look, and takes it away if nodes arrive again. A document that stopped before its body is given
  * an empty one to show it in (the browser paints nothing without a body), removed again if the document resumes.
  * After a few seconds with no node and no end marker the document was cut (a dropped connection, a Worker restart):
- * it asks /health until the Worker answers, then reloads once. A document that completes calls the end marker and is
+ * it asks /health until the Worker answers, then reloads once. A 503 still establishes reachability even when the
+ * Worker is degraded; the document completion marker independently cancels recovery. A completed document is
  * never reloaded. The script and the marker remove their own elements, so hydration never sees them.
  */
 export const documentRecoveryScript = `(function(){
@@ -64,7 +65,7 @@ function check(){
  if(quiet<stall||probing||Date.now()<next)return;
  probing=true;next=Date.now()+1000;
  var abort=new AbortController(),limit=setTimeout(function(){abort.abort()},3000);
- fetch('/health',{cache:'no-store',signal:abort.signal}).then(function(r){return r.ok},function(){return false}).then(function(up){
+ fetch('/health',{cache:'no-store',signal:abort.signal}).then(function(r){return r.ok||r.status===503},function(){return false}).then(function(up){
   clearTimeout(limit);probing=false;
   if(!up||done||Date.now()-last<stall)return;
   finish();location.reload();

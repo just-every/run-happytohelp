@@ -9,6 +9,7 @@ import {randomBytes} from 'node:crypto'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
 import {reviewExplanations} from '../move-in/outcomes-policy.mjs'
 import {generate} from '../move-in/generator.mjs'
+import {undoBrowser} from '../move-in/undo-browser.mjs'
 import {launchBrowser,evidence} from './kit/browser.mjs'
 
 // Move in in a real browser against the emitted Worker: one owner workspace, every
@@ -24,7 +25,7 @@ before(async()=>{
  browser=await launchBrowser();context=await browser.newContext({viewport:{width:1440,height:1000},bypassCSP:true});page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',error=>errors.push(error.message));page.on('dialog',async dialog=>{errors.push('Unexpected script dialog');await dialog.dismiss()})
  await page.goto(runtime.origin+'/login?returnTo='+encodeURIComponent(base+'/conversations'));await page.getByLabel('Email',{exact:true}).fill(owner.email);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Login',exact:true}).click();await page.waitForURL('**/conversations')
 })
-after(async()=>{await writeFile(shot('checks.json'),JSON.stringify({checks:results,errors},null,2)).catch(()=>{});await browser?.close();await runtime?.close(success)})
+after(async()=>{await writeFile(shot('checks.json'),JSON.stringify({head:process.env.H2H_CANDIDATE_SHA??null,checks:results,errors},null,2)).catch(()=>{});await browser?.close();await runtime?.close(success)})
 const guarded=body=>async()=>{try{await body();assert.deepEqual(errors,[])}catch(error){success=false;throw error}}
 
 async function vendorJourney(width,vendor){
@@ -44,7 +45,7 @@ async function vendorJourney(width,vendor){
   await page.evaluate(()=>document.querySelectorAll('.conversation-item').forEach(row=>{row.dataset.beforeFilter='1'}));await filter.selectOption({label:'Priority'});
   await page.waitForFunction(()=>document.querySelectorAll('.conversation-item').length===3&&!document.querySelector('.conversation-item[data-before-filter]')&&[...document.querySelectorAll('.conversation-item .conversation-tag')].filter(tag=>tag.textContent.includes('Priority')).length===3);
   assert.equal(await page.locator('.conversation-item').count(),3);assert.equal(await page.locator('.conversation-item .conversation-tag').filter({hasText:'Priority'}).count(),3);await inspect(`${label}-tag-filter`);
-  await page.goto(runtime.origin+base+'/move-in');await page.getByRole('button',{name:`${filename} — Complete`,exact:true}).click();await page.getByRole('button',{name:'Undo whole import',exact:true}).click();await page.getByRole('heading',{name:`Undone: ${filename}`,exact:true}).waitFor({timeout:120000});await inspect(`${label}-undone`);
+  await page.goto(runtime.origin+base+'/move-in');await page.getByRole('button',{name:`${filename} — Complete`,exact:true}).click();await undoBrowser({page,filename,shot});await inspect(`${label}-undone`);
   const listed=await request(`/api/dashboard/projects/${project}/conversations?view=all`,{token});assert.equal(listed.meta.pagination.total,0);
 
 }

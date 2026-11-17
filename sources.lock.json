@@ -1737,11 +1737,11 @@
       "executable": false
     },
     "docs/INDEPENDENT-RELEASE.md": {
-      "sha256": "860ba495b7d37258c87233f1521b2eb897828de425a83e20e98cb5d0cb8cddb6",
+      "sha256": "03a9b3199b99f90faa1ec54f7f14a0346510647bb38978156a182a36fa9966a6",
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "f34c3277b59f0dc8537786cfd01b94b99ddc5709c250b229befcd0bbd8538fa7",
+      "sha256": "7ffcf88c1ee2cf51d56a5a449a5b8b71824591fbccd5e985868faf5db52496fd",
       "executable": false
     },
     "docs/knowledge-upgrade-report.md": {
@@ -1861,7 +1861,7 @@
       "executable": false
     },
     "docs/verify.md": {
-      "sha256": "c7d231e2533e243eda6fb57297416bb5db562bdb533c45d8f3ec9e14aeb178da",
+      "sha256": "47a24118ec61f33a805b502f243294c7021f1982d8fc930f96ef1b0bde8617a8",
       "executable": false
     },
     "docs/voice.md": {
@@ -4073,11 +4073,11 @@
       "executable": false
     },
     "scripts/installer/provider-preflight-summary.mjs": {
-      "sha256": "6a0e3c30638faa27e1a454fa18491de518ddb845644ad56ad9cb528e161bb4b9",
+      "sha256": "566364339828ffb13bfe814b509b1ea40196a06ff26e0d8d7978398ef78fd262",
       "executable": false
     },
     "scripts/installer/provider-preflight.mjs": {
-      "sha256": "0bf090802ffc600732c0ef7104b1d31200e32015c73ef2751e46b9a1c672d852",
+      "sha256": "f988f62d24c88fae753dc2dfc45ed354522e7520f092901cb92d65310783e67b",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -17557,7 +17557,7 @@
       "executable": false
     },
     "tests/journeys/provider-preflight.mjs": {
-      "sha256": "e0143323c9545216a728c7521f213765a69e48415e3888dca7ac1f69da45ffcc",
+      "sha256": "b6384bae229d65a95ce2071b5ca56867270993ce15ee15b377e9ff61ec83580e",
       "executable": false
     },
     "tests/journeys/public-browser.mjs": {

@@ -11,6 +11,8 @@ const execute = promisify(execFile);
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const command = join(root, 'scripts/installer/provider-preflight.mjs');
 const declaration = JSON.parse(await readFile(join(root, 'deploy.json'), 'utf8'));
+const setup = JSON.parse(await readFile(join(root, 'rer-setup.json'), 'utf8'));
+const claimToken = setup.steps.find(step => step.type === 'owner-claim').tokenField;
 // Deliberately synthetic, never a provider credential or account.
 const token = 'synthetic-happytohelp-1', account = '0'.repeat(32), worker = 'synthetic-happytohelp-2';
 const target = ['--account-id', account, '--worker', worker], consent = '--consent-read-only';
@@ -24,6 +26,13 @@ async function run({args = [...target, consent], credential = token, scenario = 
   bindings.push(...[...new Set([...Object.keys(declaration.vars ?? {}), declaration.originVar].filter(Boolean))].map(name => ({name, type: 'plain_text', text: 'synthetic-hidden-setting'})));
   const settings = {compatibility_date: declaration.compatibilityDate, compatibility_flags: declaration.compatibilityFlags, bindings, annotations: {'workers/message': 'synthetic-hidden-annotation'}};
   const secrets = declaration.secrets.filter(row => !row.optional).map(row => ({name: row.binding, type: 'secret_text'}));
+  if (scenario === 'claimed') secrets.splice(secrets.findIndex(row => row.name === claimToken), 1);
+  if (scenario.startsWith('missing-required:')) secrets.splice(secrets.findIndex(row => row.name === scenario.slice('missing-required:'.length)), 1);
+  if (scenario === 'allowed-shapes') {
+   delete settings.bindings;
+   for (const row of secrets) row.type = 'secret_key';
+   secrets.push({name: 'synthetic-key-name', type: 'secret_key', value: 'synthetic-hidden-value'}, {type: 'secret_key'});
+  }
   secrets.push({name: 'synthetic-extra-name', type: 'secret_text', value: 'synthetic-hidden-value'});
   await writeFile(join(directory, 'fixture.json'), JSON.stringify({settings, secrets}));
   // This is the sole replacement: the command, parser, declaration reader and summary run unchanged.
@@ -90,6 +99,22 @@ test('an explicitly consented provider preflight reads exactly three GETs and re
  assert.match(result.stdout, /Secret NAME INTEGRATION_ENCRYPTION_KEY: present/);
  assert.match(result.stdout, /Secret NAME EMAIL_API_KEY: missing \(optional\)/);
  assert.match(result.stdout, /Other secret NAMES: "synthetic-extra-name"/);
+ const claimed = await run({scenario: 'claimed'});
+ assert.equal(claimed.code, 0); assert.equal(claimed.requests.length, 3);
+ assert.ok(claimed.stdout.includes(`Secret NAME ${claimToken}: absent, spent after owner claim (lifecycle-optional)`));
+ assert.match(claimed.stdout, /Read-only preflight complete/);
+ assert.ok(result.stdout.includes(`Secret NAME ${claimToken}: present (lifecycle-optional)`));
+ for (const row of declaration.secrets.filter(row => !row.optional && row.binding !== claimToken)) {
+  const missingRequired = await run({scenario: `missing-required:${row.binding}`});
+  assert.equal(missingRequired.code, 9); assert.equal(missingRequired.requests.length, 3);
+  assert.ok(missingRequired.stdout.includes(`Secret NAME ${row.binding}: missing (required by deploy.json)`));
+  assert.doesNotMatch(missingRequired.stdout, /preflight complete/);
+ }
+ const shapes = await run({scenario: 'allowed-shapes'});
+ assert.equal(shapes.code, 9); assert.equal(shapes.requests.length, 3);
+ assert.match(shapes.stdout, /Binding DB \/ d1: MISSING or mismatched/);
+ assert.match(shapes.stdout, /Other secret NAMES:.*"synthetic-key-name"/);
+ assert.doesNotMatch(shapes.stderr, /Unexpected provider response shape/);
  const gaps = await run({scenario: 'gaps'});
  assert.equal(gaps.code, 9); assert.equal(gaps.requests.length, 3);
  assert.match(gaps.stdout, /Setting compatibility_date: MISSING or mismatched/);
@@ -105,11 +130,24 @@ test('provider preflight refuses absent consent and absent credentials distinctl
  const uncredentialed = await run({credential: ''});
  assert.equal(uncredentialed.code, 4); assert.equal(uncredentialed.requests.length, 0);
  assert.match(uncredentialed.stderr, /Missing scoped token: set CLOUDFLARE_API_TOKEN/);
+ const whitespace = await run({credential: '   '});
+ assert.equal(whitespace.code, 4); assert.equal(whitespace.requests.length, 0);
+ assert.match(whitespace.stderr, /Missing scoped token: set CLOUDFLARE_API_TOKEN/);
+ assert.doesNotMatch(whitespace.stderr + whitespace.stdout, /\[REDACTED\]/);
+ for (const args of [['--account-id', 'malformed', '--worker', worker, consent], ['--account-id', account, '--worker', 'not/a/worker', consent]]) {
+  const malformed = await run({args});
+  assert.equal(malformed.code, 2); assert.equal(malformed.requests.length, 0);
+ }
  const unaddressed = await run({args: [consent]});
  assert.equal(unaddressed.code, 2); assert.equal(unaddressed.requests.length, 0);
  const credentialAsTarget = await run({args: ['--account-id', account, '--worker', token, consent]});
- assert.equal(credentialAsTarget.code, 2); assert.equal(credentialAsTarget.requests.length, 0);
+ assert.equal(credentialAsTarget.code, 10); assert.equal(credentialAsTarget.requests.length, 0);
  assert.match(credentialAsTarget.stderr, /Target identifiers must not contain CLOUDFLARE_API_TOKEN/);
+ for (const args of [['--account-id', account, '--worker', `prefix-${token}`, consent], ['--account-id', `prefix-${token}`, '--worker', worker, consent]]) {
+  const embedded = await run({args});
+  assert.equal(embedded.code, 10); assert.equal(embedded.requests.length, 0);
+  assert.match(embedded.stderr, /Target identifiers must not contain CLOUDFLARE_API_TOKEN/);
+ }
 });
 
 test('provider authorization and missing Worker responses identify the failed read honestly without retry or error-body leakage', async () => {

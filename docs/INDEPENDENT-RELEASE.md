@@ -73,7 +73,8 @@ outbound requests and needs no provider credentials. A separately started
 Cloudflare token, with its own acceptance limited to the account's Workers
 subdomain and the Worker's settings and secret names (three GETs for an existing
 Worker), no mail and no mutations. Neither step is a mock of the other. The
-separate preflight remains unimplemented and unqualified. Remote provisioning
+[read-only preflight command](INSTALLER.md#read-only-provider-preflight) is
+implemented; live qualification remains **UNMET-EXTERNAL**. Remote provisioning
 needs separate qualification. Do not reset or replace `.wrangler/state` during an
 update.
 Run setup with your existing owner and private answers to apply local migrations,
@@ -332,8 +333,10 @@ locally without Cloudflare credentials, mail inputs or a real `OWNER_EMAIL`. Its
 completion report explicitly says no Cloudflare requests were made and nothing
 was changed remotely; inputs still needed for a real deploy are listed separately.
 Remote resources, credential validity and existing secret bindings remain unchecked.
-The separately started, owner-consented read-only preflight using the owner's
-scoped token still needs implementation and live qualification. Its own acceptance
+The separately started, owner-consented
+[read-only preflight command](INSTALLER.md#read-only-provider-preflight) uses the
+owner's scoped token. It is implemented; live qualification remains
+**UNMET-EXTERNAL**. Its own acceptance
 permits only the account's Workers subdomain and the Worker's settings and secret
 names (three GETs for an existing Worker), no mail and no mutations.
 
@@ -430,3 +433,5 @@ The root [`LICENSE`](../LICENSE) (MIT) covers the whole repository, including
 the homepage drawings and setup artwork. Keep `docs/licenses/` and third-party
 package notices with any copy you redistribute; see
 [SOURCE-PROVENANCE.md](SOURCE-PROVENANCE.md).
+
+_Preflight follow-ups: Run Edit Run fleet, 17 November 2026._

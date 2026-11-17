@@ -8,9 +8,9 @@ const rootDestination = createServerFn({ method: 'GET' }).handler(async () => {
 });
 export const Route = createFileRoute('/')({
   headers: () => ({ 'Cache-Control': 'no-store', Vary: 'Cookie, Authorization' }),
-  beforeLoad: async ({ location }) => {
+  beforeLoad: async ({ location }): Promise<void> => {
     const destination = await rootDestination();
-    if (!destination) return {};
+    if (!destination) return;
     const incoming = new URLSearchParams(location.searchStr), query = new URLSearchParams();
     // Each destination receives only the parameters its existing page accepts.
     const accepted = destination === '/login' ? ['returnTo'] : ['locale', 'keyword', 'q', 'access', 'sent'];

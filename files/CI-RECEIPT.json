@@ -1,6 +1,6 @@
 {
-  "calls": 4,
-  "last_call": 1794901664.5659654,
+  "calls": 8,
+  "last_call": 1794902929.1831615,
   "runs": [
     {
       "conclusion": null,
@@ -54,6 +54,38 @@
       "head_sha": "94cc8ccc2d39d369695411554a3ac86113efec28",
       "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44039934744",
       "status": "in_progress"
+    },
+    {
+      "at": 1794901986.8475738,
+      "run_id": 44039934744,
+      "conclusion": null,
+      "head_sha": "94cc8ccc2d39d369695411554a3ac86113efec28",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44039934744",
+      "status": "in_progress"
+    },
+    {
+      "at": 1794902301.2289536,
+      "run_id": 44039934744,
+      "conclusion": null,
+      "head_sha": "94cc8ccc2d39d369695411554a3ac86113efec28",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44039934744",
+      "status": "in_progress"
+    },
+    {
+      "at": 1794902614.9745245,
+      "run_id": 44039934744,
+      "conclusion": null,
+      "head_sha": "94cc8ccc2d39d369695411554a3ac86113efec28",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44039934744",
+      "status": "in_progress"
+    },
+    {
+      "at": 1794902929.1831632,
+      "run_id": 44039934744,
+      "conclusion": "success",
+      "head_sha": "94cc8ccc2d39d369695411554a3ac86113efec28",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44039934744",
+      "status": "completed"
     }
   ],
   "final_runs": [
@@ -67,9 +99,9 @@
     }
   ],
   "final_status": {
-    "conclusion": null,
+    "conclusion": "success",
     "head_sha": "94cc8ccc2d39d369695411554a3ac86113efec28",
     "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44039934744",
-    "status": "in_progress"
+    "status": "completed"
   }
 }

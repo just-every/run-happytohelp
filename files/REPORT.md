@@ -3,7 +3,7 @@
 Author: Run Edit Run fleet. Date: 2026-11-17 UTC.
 Repository: just-every/run-happytohelp. Branch: cloud/hh-stranger13-ui-1.
 
-Final product head: 94cc8ccc2d39d369695411554a3ac86113efec28. Product branch push and remote ref identity are confirmed. Exact-SHA Verify is in progress; this report will record its actual conclusion before publication.
+Final product head: 94cc8ccc2d39d369695411554a3ac86113efec28. Product branch push and remote ref identity are confirmed. Exact-SHA Verify completed successfully: [run 44039934744](https://github.com/just-every/run-happytohelp/actions/runs/44039934744).
 
 ## Scope and plan
 
@@ -55,3 +55,14 @@ CLAIM PROCEDURE-001 PARTIAL points=1 tests=tests/journeys/workflows-browser.mjs#
 CLAIM API-002 PARTIAL points=none tests=tests/journeys/workflows-browser.mjs#an owner chooses named workspace bindings and issues a machine credential with the same scoped IDs
 CLAIM FIRST-RUN-001 PARTIAL points=none tests=tests/journeys/workflows-browser.mjs#a signed-in owner discovers workspace creation in both menus and reaches Setup as its owner
 CLAIM CONVERSATION-002 PARTIAL points=none tests=tests/journeys/inbox-browser.mjs#an operator finds a merge by requester or subject and explicitly chooses the surviving ticket
+
+
+## Final CI and custody
+
+Verify run 44039934744 completed with conclusion success on the final head 94cc8ccc2d39d369695411554a3ac86113efec28. CI-RECEIPT.json contains the actual budgeted REST observations. Eight GitHub calls were used: two discoveries (the earlier candidate and the final head) and six final-head status polls, each at least 300 seconds apart. No workflow rerun or dispatch was used. Earlier run 44039124177 belongs to superseded head 7591f93, was queued when last observed, and was never used for a READY claim.
+
+The named product branch was pushed through the fleet guard, with successful first attempts and all candidate authors/committers checked as Run Edit Run fleet <fleet@runeditrun.com>; no co-author trailers were added. The final remote ref was confirmed. No PR was required by the repository instructions, and none was created. A verified source recovery bundle is retained outside the clone; its SHA-256 and prerequisite main head are in VALIDATION.json. Reports and receipts are transported only on evidence/hh-stranger13-ui-1. The product checkout/head/index are unchanged by that transport.
+
+Blockers in this five-item candidate: none. Real-provider qualification and production rollout are not claimed. The fleet's independent gate, publication scan and landing remain separate. The task clone is removed after the final evidence transfer, retaining the packet and source bundle.
+
+READY branch=cloud/hh-stranger13-ui-1 head=94cc8ccc2d39d369695411554a3ac86113efec28

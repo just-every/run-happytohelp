@@ -4,7 +4,7 @@
   "head": "94cc8ccc2d39d369695411554a3ac86113efec28",
   "base": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
   "author": "Run Edit Run fleet",
-  "updated_at": "2026-11-17T07:36:31.140592+00:00",
+  "updated_at": "2026-11-17T08:09:48.275716+00:00",
   "local_full_suite": false,
   "assertion_width": 1440,
   "proof_widths": [
@@ -119,7 +119,14 @@
     "result": "passed",
     "final_merge_source_unchanged": true
   },
-  "ci": "pending",
+  "ci": {
+    "run_id": 44039934744,
+    "conclusion": "success",
+    "head_sha": "94cc8ccc2d39d369695411554a3ac86113efec28",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44039934744",
+    "status": "completed",
+    "github_calls_used": 8
+  },
   "publication_scan": "Mac fleet at landing; not run in cloud",
   "prior_validated_head": "7591f933f9145553b284b7a9507642c50cf0cf87",
   "final_delta": "Singular completed-article wording only, plus generated sources.lock.json. All other product and journey files are byte-identical to the prior validated head.",
@@ -136,7 +143,7 @@
       "/tmp/h2h-native-runtime-lLKt1Z"
     ],
     "private_setup_answer_files_removed": true,
-    "product_clone": "retained until CI and evidence publication finish"
+    "product_clone": "Required for evidence transport; deletion follows publication and is reported in the terminal message."
   },
   "terminal_source_bundle": {
     "path": "/home/agent/rer-consolidation/work/hh-stranger13-ui-1/final-candidate.bundle",
@@ -144,5 +151,6 @@
     "head": "94cc8ccc2d39d369695411554a3ac86113efec28",
     "prerequisite": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
     "verified": true
-  }
+  },
+  "terminal_custody": "READY"
 }

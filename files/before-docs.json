@@ -1,0 +1,32 @@
+{
+  "head": "965e9deb6092256708e1f75bb8e90c2c9bfa898f",
+  "published_and_docs_files": 63,
+  "signatures": [
+    {
+      "file": "CHANGELOG.md",
+      "line": 25,
+      "text": "_Run Edit Run fleet, 2026-11-15._"
+    },
+    {
+      "file": "CHANGELOG.md",
+      "line": 41,
+      "text": "_Run Edit Run fleet, 2026-11-15._"
+    },
+    {
+      "file": "CHANGELOG.md",
+      "line": 55,
+      "text": "_Run Edit Run fleet, 2026-11-15._"
+    },
+    {
+      "file": "OPERATIONS.md",
+      "line": 362,
+      "text": "_Run Edit Run fleet, 2026-11-15._"
+    },
+    {
+      "file": "OPERATIONS.md",
+      "line": 502,
+      "text": "_Run Edit Run fleet, 2026-11-15._"
+    }
+  ],
+  "count": 5
+}

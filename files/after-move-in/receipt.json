@@ -1,0 +1,24 @@
+{
+  "phase": "after",
+  "status": "Undoing import. 1 of 11 imported changes reversed. 1 record removed, 0 prior records restored; 10 imported changes remaining.",
+  "originalReviewLabelCount": 1,
+  "run": [
+    {
+      "state": "undoing",
+      "error": "NATIVE_EDIT_CONFLICT",
+      "report": {
+        "state": "undoing",
+        "total": 11,
+        "checkpoint": 1,
+        "removed": 1,
+        "restored": 0,
+        "retained": 10,
+        "referencesChecked": true
+      }
+    }
+  ],
+  "screenshots": [
+    "stopped-undo-expanded-1440.png",
+    "stopped-undo-expanded-390.png"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "product_head": "965e9deb6092256708e1f75bb8e90c2c9bfa898f",
+  "product_code": "unchanged main build",
+  "test_change": "existing call-log scenario assigned to owner and extended with leave/reload, workspace/global Yours membership and list/count equality",
+  "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium node --input-type=module -e 'import {newTicketConfigurationBrowser} from \"./tests/helpers/inbox/new-ticket-configuration.mjs\"; await newTicketConfigurationBrowser()'",
+  "result": "pass",
+  "assertion_width": 1440,
+  "capture_widths": [1440, 390],
+  "test_registrations_added": 0,
+  "output": "before-inbox.log"
+}

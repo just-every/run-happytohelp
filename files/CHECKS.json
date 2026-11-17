@@ -1,0 +1,61 @@
+{
+  "head": "20b254ff85a01e9874b61d301ec192eeae0d73b8",
+  "main_base": "965e9deb6092256708e1f75bb8e90c2c9bfa898f",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --answers .rer/hh-setup-answers.json --non-interactive",
+      "exit_code": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit_code": 0
+    },
+    {
+      "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium node ../move-in-proof.mjs after",
+      "exit_code": 0
+    },
+    {
+      "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium node --input-type=module -e <newTicketConfigurationBrowser invocation>",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "tracked_files": [
+    "CHANGELOG.md",
+    "OPERATIONS.md",
+    "sources.lock.json",
+    "src/ui/native/pages/MoveIn.jsx",
+    "src/ui/native/pages/MoveInReview.jsx",
+    "tests/helpers/inbox/new-ticket-configuration.mjs"
+  ],
+  "protected_sources_unchanged": true,
+  "assertion_width": 1440,
+  "capture_widths": [
+    1440,
+    390
+  ],
+  "test_registrations_before": 6,
+  "test_registrations_after": 6,
+  "new_tests": 0,
+  "identity": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "trailers": []
+}

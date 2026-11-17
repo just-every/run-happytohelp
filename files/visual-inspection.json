@@ -1,0 +1,46 @@
+{
+  "before_inspected": [
+    {
+      "path": "before-move-in/stopped-undo-expanded-1440.png",
+      "sha256": "7b2e3eaf00a072288a0d4988d29411a4f878a4c22f6f83f87f7edd410f8f4774"
+    },
+    {
+      "path": "before-move-in/stopped-undo-expanded-390.png",
+      "sha256": "1dcd8bd065b7ab92d81659c62b2fd4c4092db24e34f711d53c41963955ffe101"
+    }
+  ],
+  "observation": "Both widths show one removed native record with plural wording, and duplicate disclosure/heading labels. Historical People count is 11.",
+  "after_inspected": [
+    {
+      "path": "after-move-in/stopped-undo-expanded-1440.png",
+      "sha256": "df10cec989e2961a23b01512275dea432e571e37faf829cea065059e7c13b272"
+    },
+    {
+      "path": "after-move-in/stopped-undo-expanded-390.png",
+      "sha256": "2a7a131dafa8c8969ae84bf080634812b3d620958cf6ea7e8816d11b3a4b2689"
+    }
+  ],
+  "after_observation": "Both widths show 1 record removed and one Original import review disclosure label. People: 11 and original-review explanation remain. Counts exactly match clean main (1 removed, 0 restored, 10 retained).",
+  "completed_undo_inspected": [
+    {
+      "path": "after-move-in/undo-complete-1440.png",
+      "sha256": "dfa1e35a84b8f55c32ffabb88d7aee50fd98b79f4b88a786c375aef8e020ef7d"
+    },
+    {
+      "path": "after-move-in/undo-complete-390.png",
+      "sha256": "f5d944cc3ce6739d828b1e3cce66f6a0f9a84e0e8be8d48ddb28cd7f85ef57dc"
+    }
+  ],
+  "completed_undo_observation": "Undo complete shows plural 6 records removed and 0 prior records restored, 0 retained; the historical review remains available as one collapsed disclosure.",
+  "call_reload_inspected": [
+    {
+      "path": "after-inbox/outbound-tickets/1440-call-inbox-after-reload.png",
+      "sha256": "414f104708c27797690b83539db870729f2fcef2164dd7f9b8cc045598dc6102"
+    },
+    {
+      "path": "after-inbox/outbound-tickets/390-call-inbox-after-reload.png",
+      "sha256": "1182c1ba4401b836c45b354697582b591bf8b91cb1221c50709a9131a6ef2322"
+    }
+  ],
+  "call_reload_observation": "Yours displays Customer called 1440 after leaving and reloading, beside the retained private internal-note ticket; count and list agree in the public-door assertions."
+}

@@ -1,0 +1,19 @@
+Native runtime failure artifacts retained: /tmp/h2h-native-runtime-dRd9jl
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /1 of 2 imported changes reversed/. Input:
+
+'Undoing import. 0 of 2 imported changes reversed. 0 records removed, 0 prior records restored; 2 imported changes remaining.'
+
+    at file:///home/agent/rer-consolidation/work/hh-stranger11-copy-2/move-in-proof.mjs:37:9 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'Undoing import. 0 of 2 imported changes reversed. 0 records removed, 0 prior records restored; 2 imported changes remaining.',
+  expected: /1 of 2 imported changes reversed/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

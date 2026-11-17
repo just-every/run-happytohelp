@@ -1,0 +1,21 @@
+{
+  "phase": "after",
+  "descriptions": [
+    "Signed out",
+    "Customer identity unlinked",
+    "Customer identity linked"
+  ],
+  "publicActions": [
+    "session.signed_out",
+    "customer.identity_linked",
+    "customer.identity_unlinked"
+  ],
+  "outcomes": "succeeded",
+  "currentSessionRevoked": true,
+  "otherSessionRetained": true,
+  "identityLinkGrantsAccess": false,
+  "widths": [
+    1440,
+    390
+  ]
+}

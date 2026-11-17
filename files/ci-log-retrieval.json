@@ -1,0 +1,13 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-happytohelp",
+  "parentHead": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+  "runId": 44094867861,
+  "githubCalls": 3,
+  "commands": [
+    {"command": "gh run view 44094867861 --repo just-every/run-happytohelp --job 134080357871 --log-failed", "stdoutBytes": 0, "stderrBytes": 0, "result": "No log content returned; local reproduction required"},
+    {"command": "gh run view 44094867861 --repo just-every/run-happytohelp --job 134080357924 --log-failed", "stdoutBytes": 0, "stderr": "failed to get run log: zip: not a valid zip file", "httpStatus": "not supplied", "result": "Archive transport failed; not retried"},
+    {"command": "gh run view 44094867861 --repo just-every/run-happytohelp --job 134080358057 --log-failed", "stdoutBytes": 0, "stderrBytes": 0, "result": "No log content returned; local reproduction required"}
+  ]
+}

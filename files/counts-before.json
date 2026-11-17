@@ -1,0 +1,165 @@
+{
+  "head": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+  "journeyFileRegistrationCount": 121,
+  "files": [
+    {
+      "path": "tests/journeys/ai-live.mjs",
+      "registrations": 2
+    },
+    {
+      "path": "tests/journeys/ai.mjs",
+      "registrations": 6
+    },
+    {
+      "path": "tests/journeys/connections.mjs",
+      "registrations": 8
+    },
+    {
+      "path": "tests/journeys/connector.mjs",
+      "registrations": 2
+    },
+    {
+      "path": "tests/journeys/context.mjs",
+      "registrations": 2
+    },
+    {
+      "path": "tests/journeys/customers.mjs",
+      "registrations": 3
+    },
+    {
+      "path": "tests/journeys/delegation-browser.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/delegation-computers.mjs",
+      "registrations": 2
+    },
+    {
+      "path": "tests/journeys/delegation.mjs",
+      "registrations": 5
+    },
+    {
+      "path": "tests/journeys/deploy-nightly.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/email.mjs",
+      "registrations": 2
+    },
+    {
+      "path": "tests/journeys/erasure-browser.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/erasure.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/first-run.mjs",
+      "registrations": 2
+    },
+    {
+      "path": "tests/journeys/identity-browser.mjs",
+      "registrations": 7
+    },
+    {
+      "path": "tests/journeys/identity.mjs",
+      "registrations": 11
+    },
+    {
+      "path": "tests/journeys/inbox-browser.mjs",
+      "registrations": 7
+    },
+    {
+      "path": "tests/journeys/inbox.mjs",
+      "registrations": 4
+    },
+    {
+      "path": "tests/journeys/installer-nightly.mjs",
+      "registrations": 5
+    },
+    {
+      "path": "tests/journeys/knowledge.mjs",
+      "registrations": 6
+    },
+    {
+      "path": "tests/journeys/legacy.mjs",
+      "registrations": 6
+    },
+    {
+      "path": "tests/journeys/move-in-admission.mjs",
+      "registrations": 0
+    },
+    {
+      "path": "tests/journeys/move-in-browser.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/move-in-capacity.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/move-in-custody.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/move-in-erasure.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/move-in-large-undo.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/move-in-zendesk-pull.mjs",
+      "registrations": 5
+    },
+    {
+      "path": "tests/journeys/provider-preflight.mjs",
+      "registrations": 4
+    },
+    {
+      "path": "tests/journeys/public-browser.mjs",
+      "registrations": 2
+    },
+    {
+      "path": "tests/journeys/public.mjs",
+      "registrations": 3
+    },
+    {
+      "path": "tests/journeys/reports.mjs",
+      "registrations": 2
+    },
+    {
+      "path": "tests/journeys/restore.mjs",
+      "registrations": 2
+    },
+    {
+      "path": "tests/journeys/runtime.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/upgrade-nightly.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/upgrade.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/widget.mjs",
+      "registrations": 1
+    },
+    {
+      "path": "tests/journeys/workflows-browser.mjs",
+      "registrations": 10
+    }
+  ],
+  "contractSummary": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "note": "121 top-level test() registrations in 38 tests/journeys/*.mjs files; no loops around registrations in these files. Helper assertions and existing verification scripts are unchanged in number. No tests added, removed, skipped or split by this repair."
+}

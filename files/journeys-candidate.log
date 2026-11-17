@@ -1,0 +1,46 @@
+TAP version 13
+# PROBE ACCESS-001 P10 1440: native owner/admin Roles, empty/default/selection/ungrouped/save/reload/real conflict -> {"paths":{"owner":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/after/ticket-scope/roles-owner-1440.png","admin":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/after/ticket-scope/roles-admin-1440.png","empty":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/after/ticket-scope/roles-empty-1440.png","failed":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/after/ticket-scope/roles-failed-save-1440.png"},"targets":[{"height":44,"width":640},{"height":44,"width":640},{"height":44,"width":620},{"height":44,"width":620},{"height":44,"width":620}],"overflow":[false,false],"persisted":{"groupIds":["e69d6877-a4f3-41b0-bf99-f0b2bf39e06d"],"includeUngrouped":true}}
+# PROBE ACCESS-001 P11 1440: agent ticket/draft open, owner narrows role, stream closes at the next frame, reload reads generic unavailable -> {"path":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/after/ticket-scope/agent-revoked-1440.png","transcriptPresent":0,"draftPresent":0}
+# PROBE ACCESS-001 P12 1440: scoped collaborator read/note/follow, reply/field refusal, hidden ticket; member mobile after warned role save -> {"allowed":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/after/ticket-scope/collaborator-allowed-1440.png","hidden":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/after/ticket-scope/collaborator-hidden-1440.png","reply":403,"fields":403,"mobile":{"status":401,"code":"mobile_session_invalid"},"warning":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/after/ticket-scope/roles-warning-1440.png"}
+# PROBE NOTIFY-001 teams Settings: consent, authenticated personal link, preference persistence, unlink at 1440; captures teams-{unavailable,consent,linked}-{1440,390}.png
+# Subtest: an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session
+ok 1 - an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session
+  ---
+  duration_ms: 491022.434949
+  type: 'test'
+  ...
+# (node:20324) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: an operator replies from the phone inbox, opens a company customer and reviews and reverses a labelled identity link without changing customer authority
+ok 2 - an operator replies from the phone inbox, opens a company customer and reviews and reverses a labelled identity link without changing customer authority
+  ---
+  duration_ms: 325756.058375
+  type: 'test'
+  ...
+# (node:23161) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# AUTOMATION-001 sandbox Route refunds {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+# AUTOMATION-001 sandbox Tag VIP refunds {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+# AUTOMATION-001 sandbox Set refund status {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+# AUTOMATION-001 sandbox Remind refund assignee {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+# Subtest: a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow
+ok 3 - a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow
+  ---
+  duration_ms: 534867.52406
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 4 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 356508.476775
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1718856.896789

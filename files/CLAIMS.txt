@@ -1,0 +1,3 @@
+CLAIM AUDIT-001 PARTIAL points=none tests=tests/journeys/identity-browser.mjs#an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session
+CLAIM CUSTOMER-001 PARTIAL points=none tests=tests/journeys/inbox-browser.mjs#an operator replies from the phone inbox, opens a company customer and reviews and reverses a labelled identity link without changing customer authority
+CLAIM STATUS-001 PARTIAL points=none tests=tests/journeys/workflows-browser.mjs#a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow

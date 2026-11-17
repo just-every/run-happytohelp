@@ -1,0 +1,58 @@
+PROBE ACCESS-001 P10 1440: native owner/admin Roles, empty/default/selection/ungrouped/save/reload/real conflict -> {"paths":{"owner":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/before/ticket-scope/roles-owner-1440.png","admin":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/before/ticket-scope/roles-admin-1440.png","empty":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/before/ticket-scope/roles-empty-1440.png","failed":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/before/ticket-scope/roles-failed-save-1440.png"},"targets":[{"height":44,"width":640},{"height":44,"width":640},{"height":44,"width":620},{"height":44,"width":620},{"height":44,"width":620}],"overflow":[false,false],"persisted":{"groupIds":["0f0772b6-7710-4388-8b88-e30834db3f26"],"includeUngrouped":true}}
+PROBE ACCESS-001 P11 1440: agent ticket/draft open, owner narrows role, stream closes at the next frame, reload reads generic unavailable -> {"path":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/before/ticket-scope/agent-revoked-1440.png","transcriptPresent":0,"draftPresent":0}
+PROBE ACCESS-001 P12 1440: scoped collaborator read/note/follow, reply/field refusal, hidden ticket; member mobile after warned role save -> {"allowed":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/before/ticket-scope/collaborator-allowed-1440.png","hidden":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/before/ticket-scope/collaborator-hidden-1440.png","reply":403,"fields":403,"mobile":{"status":401,"code":"mobile_session_invalid"},"warning":"/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/before/ticket-scope/roles-warning-1440.png"}
+PROBE NOTIFY-001 teams Settings: consent, authenticated personal link, preference persistence, unlink at 1440; captures teams-{unavailable,consent,linked}-{1440,390}.png
+Native runtime failure artifacts retained: /tmp/h2h-native-runtime-n1RuiI
+✖ an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session (346327.72495ms)
+Native runtime failure artifacts retained: /tmp/h2h-native-runtime-vmacZ5
+✖ an operator replies from the phone inbox, opens a company customer and reviews and reverses a labelled identity link without changing customer authority (343962.837388ms)
+Native runtime failure artifacts retained: /tmp/h2h-native-runtime-0d9SH3
+✖ a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow (170447.684719ms)
+✔ a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release (355322.468617ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 1
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1226725.982093
+
+✖ failing tests:
+
+test at tests/journeys/identity-browser.mjs:6:1
+✖ an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session (346327.72495ms)
+  locator.waitFor: Timeout 20000ms exceeded.
+  Call log:
+  [2m  - waiting for getByRole('row').filter({ hasText: /signed out/i }).filter({ hasText: 'succeeded' }).first() to be visible[22m
+  
+      at securityBrowserJourney (/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/repo/tests/helpers/identity/security-browser.mjs:89:102)
+      at async TestContext.<anonymous> (/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/repo/tests/journeys/identity-browser.mjs:8:6) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('row').filter({ hasText: /signed out/i }).filter({ hasText: 'succeeded' }).first() to be visible" ]
+  }
+
+test at tests/journeys/inbox-browser.mjs:11:1
+✖ an operator replies from the phone inbox, opens a company customer and reviews and reverses a labelled identity link without changing customer authority (343962.837388ms)
+  locator.waitFor: Timeout 20000ms exceeded.
+  Call log:
+  [2m  - waiting for getByText('Customer identity linked', { exact: true }) to be visible[22m
+  
+      at customerScreenOutcomes (/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/repo/tests/helpers/customer-outcomes-edges.mjs:171:65)
+      at async TestContext.<anonymous> (/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/repo/tests/journeys/inbox-browser.mjs:11:191) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByText('Customer identity linked', { exact: true }) to be visible" ]
+  }
+
+test at tests/journeys/workflows-browser.mjs:8:1
+✖ a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow (170447.684719ms)
+  locator.waitFor: Timeout 15000ms exceeded.
+  Call log:
+  [2m  - waiting for getByRole('button', { name: 'Solve', exact: true }) to be visible[22m
+  
+      at ticketStatusEdits (/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/repo/tests/helpers/inbox/ticket-status-edits.mjs:29:60)
+      at async ticketsBrowser (/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/repo/tests/helpers/inbox/tickets-browser.mjs:40:3)
+      at async TestContext.<anonymous> (/home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c1/repo/tests/journeys/workflows-browser.mjs:8:165) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('button', { name: 'Solve', exact: true }) to be visible" ]
+  }

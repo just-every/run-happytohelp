@@ -1,0 +1,32 @@
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+PUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/hh-owner-design-inbox-1-c1
+git log origin/main..HEAD --format="%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)"
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+CANDIDATE_IDENTITY_OK commits=5 side_parents=included
+
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+To https://github.com/just-every/run-happytohelp.git
+*	HEAD:refs/heads/cloud/hh-owner-design-inbox-1-c1	[new branch]
+Done
+remote: 
+remote: Create a pull request for 'cloud/hh-owner-design-inbox-1-c1' on GitHub by visiting:        
+remote:      https://github.com/just-every/run-happytohelp/pull/new/cloud/hh-owner-design-inbox-1-c1        
+remote: 
+remote: GitHub found 15 vulnerabilities on just-every/run-happytohelp's default branch (3 high, 10 moderate, 2 low). To find out more, visit:        
+remote:      https://github.com/just-every/run-happytohelp/security/dependabot        
+remote: 
+PUSH_OK branch=cloud/hh-owner-design-inbox-1-c1

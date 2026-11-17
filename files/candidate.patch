@@ -1,0 +1,72 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index 08dbbfb2..7eb6dc4a 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -13873,7 +13873,7 @@
+       "executable": false
+     },
+     "src/ui/native/pages/security/SecurityLog.jsx": {
+-      "sha256": "c105e9f7a48535b9a92f3aa3eaef161d5f7b7afd5f6a53e04e8a0d79aad0b880",
++      "sha256": "8e9791f7227e63aaa47f546a63bb463e3caf875d5cf4e2c2340f00bca73799d0",
+       "executable": false
+     },
+     "src/ui/native/pages/security/SecurityPage.jsx": {
+@@ -16725,7 +16725,7 @@
+       "executable": false
+     },
+     "tests/helpers/identity/security-browser.mjs": {
+-      "sha256": "748dcec25e0c5040a358f7d0dc4354ac5403a7cd2208ac998d1c35e142bdab4a",
++      "sha256": "c6f9bf61114131dbaaaa044c4467489d297ab1815be0d31d979a828ceb7e7357",
+       "executable": false
+     },
+     "tests/helpers/identity/ticket-scope-browser.mjs": {
+@@ -16857,7 +16857,7 @@
+       "executable": false
+     },
+     "tests/helpers/inbox/ticket-status-edits.mjs": {
+-      "sha256": "457447c2a18811e8fae135cefc5993dcb249f779fb8e91513265af297ebd7eb9",
++      "sha256": "77fbd0364287c0a2276fb515eb303a80c400d6e555b760955677b88def7e6545",
+       "executable": false
+     },
+     "tests/helpers/inbox/tickets-browser.mjs": {
+diff --git a/src/ui/native/pages/security/SecurityLog.jsx b/src/ui/native/pages/security/SecurityLog.jsx
+index b4317f37..0248ec2d 100644
+--- a/src/ui/native/pages/security/SecurityLog.jsx
++++ b/src/ui/native/pages/security/SecurityLog.jsx
+@@ -12,6 +12,7 @@ const RETENTION=[['','Keep forever'],['90','90 days'],['180','180 days'],['365',
+ const json=(method,body)=>({method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ const when=value=>new Date(value).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});
+ const LABELS={
++ 'session.signed_out':'Signed out','customer.identity_linked':'Customer identity linked','customer.identity_unlinked':'Customer identity unlinked',
+  'ticket.updated':'Ticket updated','ticket.permission_denied':'Ticket access refused','ticket.bulk.apply':'Tickets updated together','contact.updated':'Customer details updated',
+  'sign_in.succeeded':'Signed in','sign_in.password_accepted':'Password accepted, second step next','sign_in.email_link_accepted':'Email link accepted, second step next','sign_in.refused':'Sign-in refused',
+  'two_factor.verified':'Second step passed','two_factor.refused':'Second step refused','two_factor.enrolled':'Two-factor method added','two_factor.removed':'Two-factor method removed','two_factor.recovery_codes_issued':'New recovery codes','two_factor.reset':'Teammate’s two-factor reset','two_factor.policy_changed':'Two-factor requirement changed',
+diff --git a/tests/helpers/identity/security-browser.mjs b/tests/helpers/identity/security-browser.mjs
+index 74a1ffbc..af7a84a3 100644
+--- a/tests/helpers/identity/security-browser.mjs
++++ b/tests/helpers/identity/security-browser.mjs
+@@ -86,7 +86,7 @@ export async function securityBrowserJourney(browser){
+    assert.equal((await owner.context().request.get(origin+'/api/identity/session')).status(),200)
+   }finally{await second.close()}
+   await owner.goto(origin+P+'/security-log')
+-  await owner.getByRole('row').filter({hasText:/signed out/i}).filter({hasText:'succeeded'}).first().waitFor()
++  await owner.getByRole('row').filter({hasText:/signed out/i}).filter({hasText:'Completed'}).first().waitFor()
+   await auditPage(owner,shot('security-log.png'))
+   assert.deepEqual(errors,[]);passed=true
+  }finally{await runtime.close(passed)}
+diff --git a/tests/helpers/inbox/ticket-status-edits.mjs b/tests/helpers/inbox/ticket-status-edits.mjs
+index 69fa4477..1c9c26c5 100644
+--- a/tests/helpers/inbox/ticket-status-edits.mjs
++++ b/tests/helpers/inbox/ticket-status-edits.mjs
+@@ -24,9 +24,9 @@ export async function ticketStatusEdits({page,fixture,origin}){
+  await header.filter({hasText:/^Solved$/}).waitFor();await page.locator('.conversation-header-reopen').waitFor()
+  await page.reload();await page.getByRole('tab',{name:'Ticket',exact:true}).click()
+  await header.filter({hasText:/^Solved$/}).waitFor();assert.equal(await status.inputValue(),'solved')
+- for(const [value,label] of [['open','Open'],['pending','Pending'],['on_hold','On-hold'],['new','New']]){
++ for(const [value,label] of [['open','Open'],['pending','Pending'],['on_hold','On hold'],['new','New']]){
+   await choose(value);await header.filter({hasText:new RegExp(`^${label}$`)}).waitFor()
+-  await page.getByRole('button',{name:'Solve',exact:true}).waitFor()
++  await page.getByRole('button',{name:'Solve and ask for a rating',exact:true}).waitFor()
+   assert.equal(await page.locator('.conversation-header-reopen').count(),0)
+  }
+  await tag.click();await tag.waitFor({state:'detached'})

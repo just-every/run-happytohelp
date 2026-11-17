@@ -16,7 +16,11 @@ export async function zendeskFidelityJourney(){
  const receipt={head:process.env.H2H_CANDIDATE_SHA??null,source:'synthetic only',queries:[],checks:[]}
  const query=async sql=>{const result=await rows(h,sql);receipt.queries.push({sql,rows:result});return result}
  try{
-  const before=await h.snapshot(),plan=await review(h,'zendesk',fixture.archive,'synthetic-hh-documented.zip')
+  const before=await h.snapshot(),rawPlan=await review(h,'zendesk',fixture.rawArchive,'synthetic-hh-untouched.zip')
+  const rawTickets=rawPlan.plan.decisions.filter(d=>d.kind==='ticket');assert.equal(rawTickets.length,o.ticket.length);assert.ok(rawTickets.every(d=>!d.rejection&&d.targets.length===1),'untouched admin NDJSON/API shapes map without packing annotations')
+  for(const t of o.ticket.filter(t=>t.comments.some(c=>c.attachments.length))){const decision=rawTickets.find(d=>d.sourceId===String(t.id));assert.ok(decision.omissions.some(o=>o.reason.startsWith('attachments_metadata_retained_bytes_not_imported')));assert.equal(decision.targets[0].attachments?.length??0,0,'untouched export never claims attachment bytes')}
+  assertBusinessEquality(before,await h.snapshot())
+  const plan=await review(h,'zendesk',fixture.archive,'synthetic-hh-documented.zip')
   assertBusinessEquality(before,await h.snapshot())
   const tickets=plan.plan.decisions.filter(d=>d.kind==='ticket')
   assert.deepEqual(tickets.map(d=>d.sourceId).sort(),o.ticket.map(t=>String(t.id)).sort())
@@ -44,6 +48,10 @@ export async function zendeskFidelityJourney(){
   const first=native[0];await h.contactSession('visitor','p',first.contact_id)
   const publicView=await h.call(`/api/conversations/${first.id}/messages`,{actor:'visitor'});assert.doesNotMatch(JSON.stringify(publicView),/private investigation/)
   for(const m of media.filter(m=>m.conversation_id===first.id))assert.equal((await h.download(`/api/conversations/${first.id}/media/${m.id}`,'visitor')).status,m.message_id?200:404)
+  // contactSession is authentication fixture setup, not imported business data.
+  // Remove that temporary visitor grant before asking undo to restore the owner
+  // baseline: production undo correctly preserves contacts with native sessions.
+  await h.db.prepare("DELETE FROM sessions WHERE project_id='p' AND actor_id='visitor'").run()
   const detail=(await h.call(`/api/dashboard/projects/p/conversations/${first.id}`)).data;assert.equal(detail.subject,o.ticket[0].subject)
   const history=await h.call(`/api/conversations/${first.id}/imported-history`);assert.equal(history.history.events.length,o.audit[0].events.length)
   const importedRules=(await query('SELECT * FROM workflow_rules')).filter(r=>!before.workflow_rules.some(old=>old.id===r.id));assert.equal(importedRules.length,o.trigger.length+o.automation.length);assert.ok(importedRules.every(r=>r.state==='draft'))
@@ -55,8 +63,10 @@ export async function zendeskFidelityJourney(){
   await undo(h,plan);assertBusinessEquality(before,await h.snapshot());assert.equal(h.outbound,0)
   receipt.checks.push('same export through old NDJSON door adds no business state; whole-import undo restores exact business state; zero outbound requests')
   // A malformed typed value must be refused, never rounded into a new value.
-  console.log('ZENDESK_FIDELITY numeric refusal');const invalid=structuredClone(fixture.records);invalid.find(r=>r.ticket).ticket.custom_fields.find(v=>v.id===702).value='9007199254740993'
+  console.log('ZENDESK_FIDELITY numeric refusal');const invalid=structuredClone(fixture.records.filter(r=>r.user?.id===o.user[0].id||r.ticket_field||r.ticket?.id===o.ticket[0].id));invalid.find(r=>r.ticket).ticket.custom_fields.find(v=>v.id===702).value='9007199254740993'
   const refused=await review(h,'zendesk',invalid.map(JSON.stringify).join('\n'),'synthetic-hh-invalid.ndjson');assert.match(refused.plan.decisions.find(d=>d.kind==='ticket'&&d.sourceId===String(o.ticket[0].id)).rejection,/ticket_numeric_field_not_representable/)
+  const precise=structuredClone(invalid);precise.find(r=>r.ticket).ticket.custom_fields.find(v=>v.id===702).value='42';precise.find(r=>r.ticket).ticket.custom_fields.find(v=>v.id===703).value='0.0000001'
+  const preciseReview=await review(h,'zendesk',precise.map(JSON.stringify).join('\n'),'synthetic-hh-precise.ndjson');assert.equal(preciseReview.plan.decisions.find(d=>d.kind==='ticket').rejection,undefined,'small decimal stays representable despite JavaScript scientific notation')
   // The documented API response itself does not contain comments. It remains
   // refused instead of manufacturing a conversation from description alone.
   const missing={...o.ticket[0]};delete missing.comments
@@ -64,7 +74,7 @@ export async function zendeskFidelityJourney(){
   const signed=await h.raw(`${root}?vendor=zendesk`,{method:'POST',headers:{'X-Import-Filename':'synthetic-hh-sensitive-page.json'},body:JSON.stringify({users:[o.user[0]],next_page:'https://synthetic-hh.example.test/users?token=synthetic-hh-949'})});assert.equal(signed.response.status,422);assert.equal(signed.data.diagnostic.code,'signed_download_link_not_accepted')
   receipt.checks.push('unrepresentable numeric string and API ticket without comments refused explicitly')
   receipt.counts={customers:contacts.length,tickets:native.length,publicComments:messages.length,privateNotes:notes.length,typedValues:fields.length,attachmentFiles:media.length,review:plan.plan.counts,afterUndo:'exact business equality',outbound:h.outbound}
-  if(process.env.H2H_FIDELITY_RECEIPT){const path=process.env.H2H_FIDELITY_RECEIPT;await mkdir(join(path,'..'),{recursive:true});await writeFile(path,JSON.stringify(receipt,null,2)+'\n');await writeFile(join(path,'..','REVIEW.json'),JSON.stringify(plan,null,2)+'\n')}
+  if(process.env.H2H_FIDELITY_RECEIPT){const path=process.env.H2H_FIDELITY_RECEIPT;await mkdir(join(path,'..'),{recursive:true});await writeFile(path,JSON.stringify(receipt,null,2)+'\n');await writeFile(join(path,'..','REVIEW.json'),JSON.stringify(plan,null,2)+'\n');await writeFile(join(path,'..','RAW-REVIEW.json'),JSON.stringify(rawPlan,null,2)+'\n')}
   console.log('ZENDESK_FIDELITY passed',JSON.stringify(receipt.counts));return receipt
  }finally{await h.close()}
 }

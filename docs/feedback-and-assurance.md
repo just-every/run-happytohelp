@@ -63,6 +63,57 @@ The Penny API path and signed release receiver have network-boundary tests. No
 live Penny/Vector or buyer-tracker sandbox receipt is included. Qualify your own
 provider account and release bridge before production use.
 
+### Configure your release sender
+
+Run Edit Run fleet, 17 November 2026.
+
+Use a script or bridge controlled by your release team; an ordinary GitHub,
+Linear or Jira webhook does not have this receiver's payload or signature.
+Generate a secret on your own machine with `openssl rand -hex 32`, save it in
+**Ticket → Product feedback → Release connection**, and store that same value
+in your sender's private secret store as `H2H_RELEASE_SECRET`. Store the displayed
+Release receiver URL as `H2H_RELEASE_RECEIVER`. Keep both out of source control.
+A local receiver is reachable only from the same machine; use your hosted HTTPS
+receiver for a remote release sender.
+
+Save the following as `send-release.mjs` in your own release tooling. It reads a
+JSON payload from standard input and uses the exact bytes for signing and sending.
+Your sender's secret store must supply the two environment variables above.
+It uses Node's official [HMAC API](https://nodejs.org/api/crypto.html#cryptocreatehmacalgorithm-key-options).
+
+```js
+import { createHmac } from 'node:crypto';
+const chunks = [];
+for await (const chunk of process.stdin) chunks.push(chunk);
+const body = Buffer.concat(chunks);
+const secret = process.env.H2H_RELEASE_SECRET;
+const receiver = process.env.H2H_RELEASE_RECEIVER;
+if (!secret || secret.length < 32 || !receiver) throw Error('Configure receiver and signing secret');
+if (body.length > 32768) throw Error('Release body exceeds 32 KiB');
+const signature = createHmac('sha256', secret).update(body).digest('hex');
+const response = await fetch(receiver, {
+  method: 'POST', redirect: 'error',
+  headers: { 'Content-Type': 'application/json', 'X-HappyToHelp-Signature': signature },
+  body,
+});
+console.log('Release receiver HTTP status:', response.status);
+if (!response.ok) process.exitCode = 1;
+```
+
+Create `release.json` using the shape above: replace its event identifier, URLs
+and release time with the real release. `issue_url` must exactly match the
+engineering URL already linked in HappyToHelp. `released_at` is the actual ISO
+release timestamp, not a future schedule. Run `node send-release.mjs < release.json`
+from your sender environment. There is no API bearer token or OAuth callback for
+this receiver. The signature is only the 64-character hexadecimal digest, with
+no `sha256=` prefix; never send the secret itself.
+
+A successful response confirms intake, not a customer send. Inspect the resulting
+draft in Product feedback and approve it separately. For a failed or uncertain
+request, inspect the receiver and retained event before retrying. Reuse the exact
+same event ID and bytes; changing the body with an existing ID returns 409.
+Replacing or revoking the connection secret invalidates the previous sender secret.
+
 ## Erasure and archives
 
 Customer erasure removes selected feedback quotes, requester mappings, pending

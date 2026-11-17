@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {parseArgs} from 'node:util';
 import {preflightSummary} from './provider-preflight-summary.mjs';
 
-const usage = `Usage: pnpm run preflight:provider --account-id ACCOUNT_ID --worker WORKER --consent-read-only
+const usage = `Usage: pnpm -s run preflight:provider --account-id ACCOUNT_ID --worker WORKER --consent-read-only
 Reads only this account's Workers subdomain and this Worker's settings and secret NAMES.
 Requires CLOUDFLARE_API_TOKEN in the process environment (Account / Workers Scripts / Read).
 No token file, deployment, mail, retries or redirects. See docs/INSTALLER.md#read-only-provider-preflight.`;
@@ -45,7 +45,7 @@ async function get(path, label, token) {
 async function main() {
  // The credential is read only from this environment variable. It is never persisted.
  const token = process.env.CLOUDFLARE_API_TOKEN ?? '';
- const print = (stream, message) => stream.write((token ? message.replaceAll(token, '[REDACTED]') : message) + '\n');
+ const print = (stream, message) => stream.write((token.trim() ? message.replaceAll(token, '[REDACTED]') : message) + '\n');
  try {
   let options;
   try {
@@ -56,24 +56,26 @@ async function main() {
   } catch { throw new Refusal(2, usage); }
   if (options.help) { print(process.stdout, usage); return; }
   const account = options['account-id'], worker = options.worker;
+  if (token.trim() && (account?.includes(token) || worker?.includes(token))) throw new Refusal(10,
+   'Target identifiers must not contain CLOUDFLARE_API_TOKEN. Supply the account ID and Worker name, never the credential. No request was made.');
   if (!/^[a-f0-9]{32}$/i.test(account ?? '') || !/^[a-z0-9_][a-z0-9_-]{0,62}$/i.test(worker ?? ''))
    throw new Refusal(2, 'Supply --account-id (32 hexadecimal characters) and --worker (the existing Worker name).\n' + usage);
   if (!options['consent-read-only']) throw new Refusal(3,
    `Consent required: account ${account}, Worker ${worker}. Review these targets, then explicitly add --consent-read-only to authorize only three GETs. No request was made.`);
   if (!token.trim()) throw new Refusal(4,
    'Missing scoped token: set CLOUDFLARE_API_TOKEN in the process environment. No credential file is read and no request was made.');
-  if (account.includes(token) || worker.includes(token)) throw new Refusal(2,
-   'Target identifiers must not contain CLOUDFLARE_API_TOKEN. Supply the account ID and Worker name, never the credential. No request was made.');
-  let declaration;
-  try { declaration = JSON.parse(await readFile(new URL('../../deploy.json', import.meta.url), 'utf8')); }
-  catch { throw new Refusal(2, 'Could not read this edition’s deploy.json; no request was made.'); }
+  let declaration, setup;
+  try {
+   declaration = JSON.parse(await readFile(new URL('../../deploy.json', import.meta.url), 'utf8'));
+   setup = JSON.parse(await readFile(new URL('../../rer-setup.json', import.meta.url), 'utf8'));
+  } catch { throw new Refusal(2, 'Could not read this edition’s deploy.json or rer-setup.json; no request was made.'); }
   print(process.stdout, `Read-only consent: account ${account}, Worker ${worker}. Reading only subdomain, settings and secret names.`);
   const base = `/accounts/${account}/workers`, script = `${base}/scripts/${worker}`;
   const subdomain = await get(`${base}/subdomain`, 'account Workers subdomain', token);
   const settings = await get(`${script}/settings`, 'Worker settings', token);
   const secrets = await get(`${script}/secrets`, 'Worker secret names', token);
   let summary;
-  try { summary = preflightSummary(declaration, subdomain, settings, secrets); }
+  try { summary = preflightSummary(declaration, subdomain, settings, secrets, setup); }
   catch { throw new Refusal(8, 'Unexpected provider response shape; preflight incomplete. No retry was made.'); }
   for (const line of summary.lines) print(process.stdout, line);
   if (summary.missing) throw new Refusal(9, 'Preflight found missing or mismatched declared settings or required secret names. No repairs were attempted.');

@@ -5,6 +5,7 @@ import { json, ticketPath } from '../workflows/workflow-model';
 import TriageAccuracy from './TriageAccuracy';
 import TriageTaxonomy from './TriageTaxonomy';
 import './triage-settings.css';
+import ProviderSetupNotice from '../../activation/ProviderSetupNotice';
 
 export default function TriageSettings({ projectId, changed, clean }) {
     const path = `${ticketPath(projectId)}/triage-settings`, currentPath = useRef(path);
@@ -53,6 +54,7 @@ export default function TriageSettings({ projectId, changed, clean }) {
             {!canEdit && <p className="settings-note">Your role can read triage settings. Settings permission is required to make changes.</p>}
             <fieldset disabled={!canEdit || busy}>
                 <Section card title="Intelligent triage" description="Classify incoming customer messages for intent, sentiment and language using the configured AI service. Each prediction keeps its confidence and quoted evidence.">
+                    {settings.availability?.available === false && <><p role="status">Triage is unavailable. {settings.availability.reason} Saving these preferences does not connect a model.</p><ProviderSetupNotice projectId={projectId} secretName={settings.availability.secretName}/></>}
                     <Field name="triage-enabled" label="Enable triage" type="checkbox" value={draft.enabled} onChange={(_, value) => change('enabled', value)}/>
                     <div className="workflow-grid triage-controls">
                         <Field name="triage-threshold" label="Confidence threshold" hint="A value from 0 to 1. Predictions below this threshold go to the default queue." type="number" min={0} max={1} step="any" required value={draft.threshold} onChange={(_, value) => change('threshold', value)}/>

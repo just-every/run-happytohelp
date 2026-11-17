@@ -16,9 +16,9 @@ function failureMessage(failure){
   default: return 'The response did not meet the declared requirements.';
  }
 }
-export default function ProcedureReceipt({receipt,versionId,projectId}){
+export default function ProcedureReceipt({receipt,version,projectId}){
  return <div aria-label="Simulation receipt" className="procedure-receipt">
-  <p>Version receipt: <code>{versionId}</code></p>
+  <p>Receipt for <strong>{version.procedure_key} · Version {version.version}</strong></p><details><summary>Technical details</summary><p>Version ID: <code>{version.id}</code></p></details>
   {receipt.status==='blocked'&&<><p role="status">Blocked: provider key missing. No cases were executed and no cost was reserved. <Link to={`/projects/${projectId}/activation`}>Set up provider key</Link></p><ProviderSetupNotice projectId={projectId} error={receipt.cases.find(item=>item.error)?.error}/></>}
   {receipt.cases.map(item=>{
    const notRun=['queued','cancelled','blocked'].includes(item.status)&&!activeStatuses.includes(receipt.status);

@@ -1,5 +1,6 @@
 import React from 'react';
 import {GitHubConnectionForm, JiraConnectionForm, LinearConnectionForm, SlackConnectionForm, TeamsConnectionForm} from './ConnectionForms';
+import ConnectionSetup from './ConnectionSetup';
 import {providerNames} from './api';
 
 const forms = {github: GitHubConnectionForm, linear: LinearConnectionForm, jira: JiraConnectionForm, slack: SlackConnectionForm, teams: TeamsConnectionForm};
@@ -14,6 +15,7 @@ export default function Connections({base, connections, onSaved}) {
                 <summary>{providerNames[provider]} <span className="escalation-hint">{connection?.connected ? 'Connected' : 'Not connected'}</span></summary>
                 {connection?.connected && <p className="escalation-hint">Connected to <strong>{connection.target}</strong></p>}
                 {connection?.webhook_url && <div className="escalation-webhook"><span>Webhook endpoint</span><code>{connection.webhook_url}</code></div>}
+                <ConnectionSetup provider={provider} base={base}/>
                 <ProviderForm base={base} onSaved={onSaved}/>
             </details>;
         })}

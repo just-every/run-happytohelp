@@ -256,7 +256,7 @@ It never runs as part of `rer deploy --dry-run` or any setup/build command.
    read -r -s -p 'Scoped Cloudflare read token: ' CLOUDFLARE_API_TOKEN
    printf '\n'
    export CLOUDFLARE_API_TOKEN
-   pnpm run preflight:provider --account-id YOUR_ACCOUNT_ID --worker YOUR_EXISTING_WORKER --consent-read-only
+   pnpm -s run preflight:provider --account-id YOUR_ACCOUNT_ID --worker YOUR_EXISTING_WORKER --consent-read-only
    unset CLOUDFLARE_API_TOKEN
    ```
 
@@ -264,7 +264,10 @@ The command does not open credential files, use `--env-file`, discover accounts,
 request token verification, or contact the Worker itself. It uses the token only
 in the Authorization header. It does not print or save the token, binding values
 or raw provider errors. Keep the environment private and do not enable shell
-tracing around credential entry.
+tracing around credential entry. Use `pnpm -s` to suppress pnpm’s argument echo
+and trailing lifecycle error; plain `pnpm run` can echo a credential mistakenly
+pasted into an argument before the command refuses it. The command itself
+refuses credential-bearing identifiers and redacts its own output at either door.
 
 For an existing readable Worker it makes exactly these three HTTPS GETs, in order,
 on `https://api.cloudflare.com/client/v4`, with no body, retries or redirects:
@@ -277,22 +280,34 @@ on `https://api.cloudflare.com/client/v4`, with no body, retries or redirects:
 
 The summary compares compatibility date/flags, declared resource binding
 names/types, public setting binding presence and required/optional secret NAMES
-with `deploy.json`. Optional absent names are informational. A missing required
-name or setting gives exit 9; the report never reads secret values or proves
-that a value works. A spent `H2H_SETUP_TOKEN` can be absent after owner claim:
-review that lifecycle difference rather than adding it back to satisfy this report.
+with `deploy.json`. Optional absent names are informational. Owner-claim token
+fields are taken from `rer-setup.json` and treated as lifecycle-optional: an
+absent token is reported as "absent, spent after owner claim" without failing
+the preflight. Its absence alone does not prove a claim occurred. Every other
+required secret name remains required. A missing required name or setting gives
+exit 9; the report never reads secret values or proves that a value works.
 Schedules, queue consumer configuration, resource contents, health, sending and
 edit permissions remain unchecked. This is an inspection, not a deployment
 readiness certificate.
 
 Every run ends with `No mail was sent and nothing was changed.` It stops on the
 first failed read, without retrying or following a redirect. Exit codes are:
-2 invalid arguments/declaration, 3 missing consent, 4 missing environment token,
-5 HTTP 401/403 (check token validity, the named account and Workers Scripts: Read),
-6 HTTP 404 (account subdomain or Worker missing), 7 network failure/timeout,
-8 another HTTP/protocol failure, 9 declaration differences, and 0 completed reads
-with no required difference. A 401/403 cannot by itself distinguish an invalid
-token from a missing scope. A missing Worker is never created.
+
+| Exit | Meaning |
+| --- | --- |
+| 0 | Help, or completed reads with no required difference |
+| 2 | Invalid arguments or unreadable edition declaration/setup manifest |
+| 3 | Missing explicit read-only consent |
+| 4 | Missing or whitespace-only environment token |
+| 5 | HTTP 401/403: check token validity, account scope and Workers Scripts: Read |
+| 6 | HTTP 404: account subdomain or Worker missing |
+| 7 | Network failure or timeout |
+| 8 | Other HTTP, protocol, response-shape or unexpected failure |
+| 9 | Missing or mismatched declared settings or required secret names |
+| 10 | A target identifier contains the environment token |
+
+A 401/403 cannot by itself distinguish an invalid token from a missing scope.
+A missing Worker is never created.
 
 **Live qualification: UNMET-EXTERNAL.** The command is covered with a fake at the
 network edge. It has not been qualified against a real Cloudflare account;

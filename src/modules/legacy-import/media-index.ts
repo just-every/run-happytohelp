@@ -1,3 +1,4 @@
+import {mediaAssociations} from './media-links'
 import type {Row,LegacyBundle} from './types'
 import {relationships} from './relationships'
 import {archiveOnly} from './archive-only'
@@ -39,7 +40,7 @@ export function packageMediaIndex(projectId:string,media:Iterable<Row>,carried:S
  for(const row of media){
   const key=legacyKey(row),objectKey=String(row.object_key||row.storage_key||'')
   if(!key||!carried.has(objectKey)||archiveOnly('media',row,context))continue
-  const message=find('messages',row.message_id||mediaMessages.get(String(row.id))?.mediable_id),conversation=row.conversation_id||message?.conversation_id
+  const association=mediaAssociations(row,context),message=association.message,conversation=association.blocked?undefined:row.conversation_id||message?.conversation_id
   const base={mediaId:String(row.id),objectKey,...described(row)}
   if(conversation!=null){files.set(key,{...base,conversationId:String(conversation)});continue}
   const links=[row.id,row.original_media_id].filter(id=>id!=null).flatMap(id=>mediaLinks.get(String(id))??[])

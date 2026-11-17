@@ -212,3 +212,21 @@ Build before cutover: recreating live mail/provider/integration configuration wi
 ## Local integration
 
 `pnpm run test:legacy-export` requires an isolated local/CI MySQL admin supplied by `LEGACY_TEST_MYSQL_HOST`, `LEGACY_TEST_MYSQL_PORT`, `LEGACY_TEST_MYSQL_USER`, `LEGACY_TEST_MYSQL_PASSWORD`, optional `LEGACY_TEST_MYSQL_SOCKET`. It creates and deletes only its randomly named test database/user. It loads the complete migration-derived final schema (53 tables and 580 columns from the live shape, with synthetic rows only) and realistic ChargeDesk/12ui fixtures, grants a SELECT-only reader, runs both exporter commands, invokes the importer's public command twice per project and checks actual local D1/R2 content, privacy, publication, tenant separation and replay. It then changes one project in the legacy database (new and late messages, a new customer with a file, a renamed contact, the project retired) while the seed's team changes a conversation, exports a delta `--since` the recorded watermark, imports and reruns it, and runs `check.mjs delta --persist-to`. `LEGACY_TEST_OUTPUT` keeps synthetic artifacts outside the checkout for local UI inspection. CI runs this single integration test against MySQL 8.4.
+
+## Synthetic schema qualification
+
+`tests/legacy-export.mjs` creates a new synthetic MySQL schema, grants a
+SELECT-only exporter account, runs both public transports, and exercises local
+D1/R2 replay, resume, delta, conflicts and erasure. Generated attachment bytes
+come from a local directory; no original bucket or provider is read.
+`tests/legacy-export/field-matrix.mjs` reconciles every field in the current
+resolved DDL against explicit import dispositions and reports null coverage,
+export omissions, nested redactions and unsupported native fields separately.
+
+The administrative CLI and installed owner-approved historical adoption have
+different access, verification and assignment policies. Read
+[the legacy procedure](moving-in.md#native-legacy-happytohelp-packages) before
+choosing either entry. A missing source website, model choice or mail domain is
+an explicit input decision, never inferred from an email address or slug.
+This fixture does not establish current production schema or real-data
+completeness.

@@ -1713,7 +1713,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "05eb61f425f0a83768cc758b9d477166b1d4b0ef729e931618e5333e8624610b",
+      "sha256": "e66b38294b8f02553ebca47fd74d4cdb27be9833401d8b877d01937bbde9b546",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -1889,7 +1889,7 @@
       "executable": false
     },
     "importers.json": {
-      "sha256": "09f3462074a3e834b5b840421157940c70506e12a65322e61974601e62057fba",
+      "sha256": "3bd965682992f0b82a42b4d3e977103e064acaae8a7b488769dfd8b840b6ed95",
       "executable": false
     },
     "LICENSE": {
@@ -4761,7 +4761,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "eb9b46c6afc370839ca3b5550a972a513cc821e4472d716b0741b5376a641646",
+      "sha256": "ab2be082715803925f2b4708c345ae506c320c043aeaeff951a4263b41803c40",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -7221,7 +7221,7 @@
       "executable": false
     },
     "src/modules/integrations/mailboxes/history-routes.ts": {
-      "sha256": "40e70eb831468c47490a8063e1a5135b0b366465bb4d9cc64834b4ebc0e35866",
+      "sha256": "f78bbb3405f97ea2b663f6aea6e826646dd5e8e1d1efb45ee77790de9a036104",
       "executable": false
     },
     "src/modules/integrations/mailboxes/history-source.ts": {
@@ -13465,7 +13465,7 @@
       "executable": false
     },
     "src/ui/native/pages/email/MailboxHistory.jsx": {
-      "sha256": "87f0dc24458d1f7ab2e92a9b7a7a59a288b5d45130f01217057220ee2c150720",
+      "sha256": "ab2538a8e571875fcf6e93abb5c69a30f93faacc589380b816ef3882f4b219e2",
       "executable": false
     },
     "src/ui/native/pages/email/ManagedEmail.jsx": {
@@ -16469,7 +16469,7 @@
       "executable": false
     },
     "tests/helpers/email/mailbox-history.mjs": {
-      "sha256": "ae377662f0ab588c265d9e9724c13ff013f9138c6476b9291788a415e49a1bfc",
+      "sha256": "7ff5053a210cb6edf680d56bf5c4b5cc84445856fa9cc18682113c4892d48a97",
       "executable": false
     },
     "tests/helpers/email/mailbox-provider.mjs": {

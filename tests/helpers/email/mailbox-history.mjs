@@ -23,8 +23,9 @@ export async function mailboxHistoryJourney({browserProof}={}){
    const fetch=command.match(/^UID FETCH ([12]) \(UID BODY\.PEEK\[\]\)$/);assert.ok(fetch,'only read commands allowed: '+command)
    const raw=raws[Number(fetch[1])-1];return new Response(Buffer.concat([Buffer.from(`* 1 FETCH (BODY[] {${raw.length}}\r\n`),raw,Buffer.from(`)\r\n${tag} OK fetched\r\n`)]))
   }
-  if(url.pathname.endsWith('/token')){assert.equal(request.method,'POST');const grant=new URLSearchParams(await request.text());assert.equal(/send|write|settings\.basic/i.test(grant.get('scope')||''),false);return Response.json({access_token:secret,refresh_token:secret,expires_in:1,...(grant.get('code')==='synthetic-happytohelp-broad'?{scope:'Mail.Send'}:{})})}
+  if(url.pathname.endsWith('/token')){assert.equal(request.method,'POST');const grant=new URLSearchParams(await request.text());assert.equal(/send|write|settings\.basic/i.test(grant.get('scope')||''),false);return Response.json({access_token:secret,refresh_token:secret,expires_in:grant.get('code')==='synthetic-happytohelp-live'?3600:1,...(grant.get('code')==='synthetic-happytohelp-broad'?{scope:url.hostname.includes('google')?'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send':'Mail.Read Mail.Send User.Read'}:{})})}
   assert.equal(request.method,'GET','no provider mailbox write method')
+  if(url.pathname.endsWith('/settings/sendAs'))return Response.json({sendAs:[]})
   if(url.pathname.endsWith('/profile'))return Response.json({emailAddress:'synthetic-happytohelp-gmail@example.test'})
   if(url.pathname==='/v1.0/me')return Response.json({mail:'synthetic-happytohelp-microsoft@example.test'})
   if(url.pathname.endsWith('/labels'))return Response.json({labels:[{id:'Archive',name:'Archive'},{id:'Sent',name:'Sent'}]})
@@ -46,6 +47,8 @@ export async function mailboxHistoryJourney({browserProof}={}){
   const tables=['contacts','context_subjects','conversations','messages','media','workspace_tags','conversation_tags','move_in_conversations','move_in_message_sources','move_in_attachment_bytes','move_in_origins']
   const snapshot=async()=>Object.fromEntries(await Promise.all(tables.map(async table=>[table,(await app.sql(`SELECT * FROM ${table}`)).map(row=>JSON.stringify(row)).sort()])))
   const other=await app.seedWorkspace('synthetic-happytohelp-history-other')
+  const restricted=(await ok(base+'/roles',{name:'History without integration access',base:'admin',permissions:[]})).data
+  await ok(`${base}/agents/${w.users.admin}`,{role:restricted.id},'PUT')
   for(const provider of ['gmail','microsoft','imap']){
    // Scope and PKCE assertions inspect the real authorization redirect.
    let box
@@ -64,6 +67,7 @@ export async function mailboxHistoryJourney({browserProof}={}){
    assert.equal(Object.keys(credentials).some(key=>key.startsWith('smtp')),false,'no send credential in secret custody')
    assert.equal(box.mode,'history');assert.equal(box.addresses.every(value=>!value.can_send),true)
    assert.equal((await app.call(`${boxes}/${box.id}/history/folders`,{token:w.tokens.operator})).status,403)
+   assert.equal((await app.call(`${boxes}/${box.id}/history/folders`,{token:w.tokens.admin})).status,403,'custom admin without integration permission cannot enumerate folders')
    const folders=(await ok(`${boxes}/${box.id}/history/folders`)).data;assert.ok(folders.some(folder=>folder.id==='Archive'))
    const prior=await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',w.projectId)
    const read=await ok(`${boxes}/${box.id}/history`,{folders:['Archive','Sent']});assert.equal(read.messages,provider==='imap'?4:2)
@@ -98,13 +102,16 @@ export async function mailboxHistoryJourney({browserProof}={}){
    const repeat=await ok(`${boxes}/${box.id}/history`,{folders:['Archive','Sent']});await app.drainJobs();assert.equal(repeat.data.id,runId)
    assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',w.projectId)).n,prior.n+1)
    assert.deepEqual(await snapshot(),beforeRepeat,'repeat preserves every imported business row')
-   const beforeCron=requests.length;await app.scheduled();await app.drainJobs();assert.equal(requests.length,beforeCron,'history never polls in cron')
+   const beforeCron=requests.length;await app.scheduled();await app.drainJobs();assert.equal(requests.length,beforeCron,'history never polls in cron');const scheduledReads=requests.length-beforeCron
    if(browserProof&&provider==='imap')await browserProof({app,w,box})
    await ok(runPath+'/undo',{});await app.drainJobs();const undone=(await ok(runPath)).data;assert.equal(undone.state,'undone',JSON.stringify(undone));assert.equal(undone.error,null)
    assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',w.projectId)).n,prior.n)
    assert.equal((await app.first('SELECT count(*) n FROM media WHERE project_id=?',w.projectId)).n,0)
    assert.deepEqual(await snapshot(),initial,'undo restores every imported business table exactly')
-   results.push({provider,sourceMessages:raws.length,importedThreads:1,importedMessages:rows.length,attachments:media.length,repeat:'no-op',undo:'exact',send:'refused',customerRead:'refused',scheduledReads:requests.length-beforeCron})
+   if(provider==='gmail'){
+    const again=await ok(`${boxes}/${box.id}/history`,{folders:['Archive','Sent']});assert.notEqual(again.data.id,runId,'reimport after undo has its own immutable journal');await app.drainJobs();const againPath=`/api/move-in/projects/${w.projectId}/imports/${again.data.id}`,againReview=(await ok(againPath)).data;assert.equal(againReview.state,'ready');await ok(againPath+'/apply',{fingerprint:againReview.plan.fingerprint});await app.drainJobs();assert.equal((await app.first('SELECT count(*) n FROM messages WHERE project_id=?',w.projectId)).n,raws.length);await ok(againPath+'/undo',{});await app.drainJobs();assert.deepEqual(await snapshot(),initial)
+   }
+   results.push({provider,sourceMessages:raws.length,importedThreads:1,importedMessages:rows.length,attachments:media.length,repeat:'no-op',undo:'exact',send:'refused',customerRead:'refused',scheduledReads})
    const publicState=JSON.stringify(await ok(boxes))+JSON.stringify(await app.sql('SELECT * FROM audit_events WHERE project_id=?',w.projectId))
    assert.equal(publicState.includes(secret),false);assert.equal(publicState.includes('must-not-store'),false)
    if(provider!=='imap'){
@@ -114,6 +121,9 @@ export async function mailboxHistoryJourney({browserProof}={}){
     const broad=new URL((await ok(boxes+'/connect',{provider,mode:'history'})).url),beforeBroad=await app.first('SELECT credential_cipher FROM mailbox_connections WHERE id=?',box.id)
     assert.equal((await app.call(`/api/management/mailboxes/oauth/${provider}/callback?state=${broad.searchParams.get('state')}&code=synthetic-happytohelp-broad`,{token})).status,502,'a provider token with send permissions is never stored')
     assert.deepEqual(await app.first('SELECT credential_cipher FROM mailbox_connections WHERE id=?',box.id),beforeBroad)
+    assert.equal((await app.call(`/api/management/mailboxes/oauth/${provider}/callback?state=${live.searchParams.get('state')}&code=synthetic-happytohelp-live`,{token})).status,302)
+    const activated=(await ok(boxes)).data.find(b=>b.id===box.id);assert.equal(activated.mode,'live');assert.equal(activated.cursor,null);assert.ok(activated.addresses.some(a=>a.can_send))
+    await app.ok(`${boxes}/${box.id}`,{token,method:'DELETE'})
    }
   }
   if(process.env.H2H_HISTORY_RECEIPT)await writeFile(process.env.H2H_HISTORY_RECEIPT,JSON.stringify({providers:results,mailboxMethods:[...new Set(requests.filter(r=>!r.path.endsWith('/token')&&r.path!=='/socket').map(r=>r.method))],imapCommands:[...new Set(commands)].filter(c=>c!=='LOGIN')},null,2)+'\n')

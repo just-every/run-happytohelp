@@ -31,6 +31,12 @@
       "sha256": "7afeb67134c1a25c60b37f02686aa71df35e691d04778a9f32e1a4eacc420efb"
     },
     {
+      "blob": "423b57a29239bca96c6640d4127c4bd49c768d7a",
+      "bytes": 20629,
+      "path": "EVIDENCE-CANDIDATE-ROUNDTRIP.json",
+      "sha256": "5d611afd6e7aed847c73ea352a5c7511023ce84176c3a34d04a6d064f9eeae61"
+    },
+    {
       "blob": "66b2c4741b71bd58e656f33711e0d96cba2b3834",
       "bytes": 18537,
       "path": "EVIDENCE-ROUNDTRIP.json",

@@ -83,5 +83,14 @@
   },
   "contract_judgments_changed": false,
   "migrations_added": 0,
-  "publication_scan": "Fleet Mac lander; not available in cloud; no self-gate claimed."
+  "publication_scan": "Fleet Mac lander; not available in cloud; no self-gate claimed.",
+  "ci": {
+    "run_id": 44082414086,
+    "head": "dce3781bcb264311d7d02cb201cafc67decddc62",
+    "status": "completed",
+    "conclusion": "success",
+    "api_calls": 8,
+    "receipt": "ci-receipt.json",
+    "jobs": "ci-jobs.json"
+  }
 }

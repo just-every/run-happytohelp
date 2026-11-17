@@ -1,0 +1,23 @@
+{
+  "phase": "after",
+  "items": {
+    "3": {
+      "status": "solved",
+      "contactHistory": "Solved \u00b7 11/17/2026, 6:58:20 AM"
+    },
+    "4": {
+      "statuses": [
+        200,
+        200
+      ],
+      "status": "pending",
+      "priority": "high",
+      "tags": [
+        "damage-review"
+      ]
+    }
+  },
+  "head": "2724edff5c7de79ae061a3a07592e1f23c3459ff",
+  "node": "v22.20.0",
+  "source": "clean final checkout; emitted build from these product bytes"
+}

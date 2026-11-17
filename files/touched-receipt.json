@@ -1,0 +1,24 @@
+{
+  "results": [
+    {
+      "name": "statusLifecycleJourney",
+      "started": "2026-11-17T06:47:33.259Z",
+      "completed": "2026-11-17T06:47:50.963Z",
+      "result": "passed"
+    },
+    {
+      "name": "ticketsBrowser",
+      "started": "2026-11-17T06:47:50.963Z",
+      "completed": "2026-11-17T06:50:35.828Z",
+      "result": "passed"
+    },
+    {
+      "name": "collaborationBrowser",
+      "started": "2026-11-17T06:50:35.828Z",
+      "completed": "2026-11-17T06:53:18.642Z",
+      "result": "passed"
+    }
+  ],
+  "head": "2724edff5c7de79ae061a3a07592e1f23c3459ff",
+  "sourceProvenance": "All tested product and helper bytes match final head. Final commit was created after these runs; validation-receipt.json records the final file hashes."
+}

@@ -1,0 +1,32 @@
+{
+  "head": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
+  "phase": "before",
+  "items": {
+    "2": {
+      "preview": "Your support request is 465d1dcc-7bb4-44f5-aa4b-820e628c7cdc.",
+      "rawUuid": "465d1dcc-7bb4-44f5-aa4b-820e628c7cdc"
+    },
+    "3": {
+      "ticketStatus": "solved",
+      "contactHistory": "Closed \u00b7 11/17/2026, 6:44:15 AM"
+    },
+    "4": {
+      "priorityHttp": 200,
+      "error": "Ticket changed. Reload before applying changes."
+    },
+    "15": {
+      "statuses": [
+        200,
+        409
+      ],
+      "expectedRevisions": [
+        2,
+        2
+      ],
+      "error": "Not sent: Request failed (409)",
+      "retainedDraft": "Alex replacement draft"
+    }
+  },
+  "checkoutHeadWhenFixtureReady": "69dc2a714a99515527cc30516f75dbffeec00779",
+  "provenance": "Emitted main build completed before product edits. The working branch was committed while fixture migrations ran; checkoutHeadWhenFixtureReady is metadata, not the emitted build identity."
+}

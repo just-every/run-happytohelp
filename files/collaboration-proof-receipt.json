@@ -1,0 +1,9 @@
+{
+  "head": "2724edff5c7de79ae061a3a07592e1f23c3459ff",
+  "started": "2026-11-17T06:59:05.897Z",
+  "completed": "2026-11-17T07:01:45.757Z",
+  "result": "passed",
+  "node": "v22.20.0",
+  "source": "/workspace/run-happytohelp/tests/helpers/inbox/desk-collaboration.mjs",
+  "adjustment": "Same asserted journey; screenshot capture waits for responsive assistant state and its transition after each resize. No product or test source edit."
+}

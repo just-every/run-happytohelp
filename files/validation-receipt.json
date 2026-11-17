@@ -1,0 +1,89 @@
+{
+  "checks": [
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "started": "2026-11-17T06:54:49.798165+00:00",
+      "completed": "2026-11-17T06:55:08.041610+00:00"
+    },
+    {
+      "name": "rer-check",
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "exit": 0,
+      "started": "2026-11-17T06:55:08.042459+00:00",
+      "completed": "2026-11-17T06:55:09.692270+00:00"
+    }
+  ],
+  "node": "v22.20.0",
+  "pnpm": "10.12.4",
+  "head": "2724edff5c7de79ae061a3a07592e1f23c3459ff",
+  "productTree": "7673e0178d95cb290ef5bb1f6cb9d1bbe4c0578d",
+  "workingTreeClean": true,
+  "completedCommands": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --answers .seed/installer/hh-answers.json --non-interactive",
+      "exit": 0,
+      "result": "Setup complete: 200 migrations applied, owner set up; private answers excluded"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "result": "Your application is built; build: complete (exit 0)"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "changedFiles": {
+    "sources.lock.json": "9556835087221f37787d2b7370e36866be8f14b0d4986634447dcc9267f8e4da",
+    "src/modules/management/resource-list.ts": "52924181f0acfc62efd4a8e074c2a445b6b6f00618ad9e83556ef054d3099b40",
+    "src/ui/dashboard/components/Conversation.jsx": "03c4ad4e4c51ba994c84d36131239db474d981fd32fdd366709a404a3d7b437c",
+    "src/ui/dashboard/components/conversation/ConversationTags.jsx": "7474364726efc1a4659167a32a83a8155611a6385ec6bbb88f40f34d64597384",
+    "src/ui/dashboard/components/ticket-panel/TicketSummary.jsx": "0534061c87fecb4659069fcdab9f56b72b36b3d522dc8478225694bdf3d3e29b",
+    "src/ui/dashboard/components/ticket-panel/useTicketRecord.js": "6cd08c3c1ff0e86afd12a3bb8becbe000d5148c1b0c5202eb58c32fe60fb5001",
+    "src/ui/native/pages/ContactDetails.jsx": "95634ff34d5d1ec013b6aac3b31e05d55cf44266a9397f5b10561b56aa3292ba",
+    "src/ui/native/transport.js": "df23c71309f2a29e187435a522c840ea97d0c048703180c2c60c112ab9249347",
+    "tests/helpers/inbox/desk-collaboration.mjs": "0c3b93d35e16d98a77963f4e14866634d856564a744b4422b2cd11b4a04ef265",
+    "tests/helpers/inbox/status-lifecycle.mjs": "b2aae6b88d148925f17d6a72165258342c71c47c688a4f91d09b14e3930bde4f",
+    "tests/helpers/inbox/ticket-status-edits.mjs": "c06ab2d83dae4a79205443354e85c4b854b774ea6526e13d704cf8687cabf07a"
+  },
+  "testExecution": {
+    "node": "v24.19.0",
+    "concurrency": 1,
+    "journeys": [
+      "statusLifecycleJourney",
+      "ticketsBrowser",
+      "collaborationBrowser"
+    ],
+    "source": "same final product/test bytes; final commit adds the last inspected helper/wording edits and refreshed lock"
+  },
+  "proofExecution": {
+    "node": "v22.20.0",
+    "chromium": "/usr/bin/chromium",
+    "args": [
+      "--no-sandbox"
+    ],
+    "sourceHead": "2724edff5c7de79ae061a3a07592e1f23c3459ff"
+  }
+}

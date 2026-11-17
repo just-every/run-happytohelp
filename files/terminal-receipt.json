@@ -1,0 +1,45 @@
+{
+  "tag": "hh-stranger13-behaviour-1",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger13-behaviour-1",
+  "head": "2724edff5c7de79ae061a3a07592e1f23c3459ff",
+  "productPushed": true,
+  "pushAttempts": 1,
+  "commits": [
+    "69dc2a714a99515527cc30516f75dbffeec00779",
+    "2724edff5c7de79ae061a3a07592e1f23c3459ff"
+  ],
+  "identityCheck": "all candidate authors/committers are Run Edit Run fleet <fleet@runeditrun.com>; no trailers",
+  "status": "pending_exact_sha_verify",
+  "blocker": "Item 2: no existing customer-friendly ticket reference identified; clarification pending; UUID expansion unchanged",
+  "clauseStatusChanges": [],
+  "countsBeforeAfter": {
+    "fixedItems": [
+      0,
+      3
+    ],
+    "unresolvedItems": [
+      4,
+      1
+    ],
+    "contractRegistry": {
+      "before": {
+        "done": 4,
+        "partial": 71,
+        "missing": 16
+      },
+      "after": {
+        "done": 4,
+        "partial": 71,
+        "missing": 16
+      }
+    },
+    "affectedRegistrations": [
+      3,
+      3
+    ],
+    "registrationsAdded": 0,
+    "registrationsDeleted": 0
+  },
+  "recordedAt": "2026-11-17T06:57:37.969128+00:00"
+}

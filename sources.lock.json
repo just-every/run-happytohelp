@@ -17633,7 +17633,7 @@
       "executable": false
     },
     "tests/journeys/public.mjs": {
-      "sha256": "72e5ae92c2138eccedde76a69fed368552e92faa9e003e44d43ed8d2b922ed9e",
+      "sha256": "2b9dcff570a5374fe138db89f5d4f2abf90a221913bac3a731393be9963b78bb",
       "executable": false
     },
     "tests/journeys/reports.mjs": {

@@ -4038,7 +4038,7 @@
   "run": {
     "runId": "legacy-package:4d7bc081d679902095fe8c5de0e815d5cda33c8cec19284f16245a4fb4b9ebb7",
     "manifestSha256": "4d7bc081d679902095fe8c5de0e815d5cda33c8cec19284f16245a4fb4b9ebb7",
-    "projectId": "9a59845b-b4da-4a80-b148-9e6ce5dc830e",
+    "projectId": "bc6fa59e-bd96-48c3-adcd-a4c86deca102",
     "sourceProjectId": "10000000-0000-4000-8000-000000000001",
     "contractVersion": 2,
     "mode": "full",
@@ -4052,9 +4052,9 @@
     },
     "nextAt": 0,
     "errorCode": null,
-    "createdAt": 1794923480617,
-    "updatedAt": 1794923501298,
-    "completedAt": 1794923501298,
+    "createdAt": 1794928517120,
+    "updatedAt": 1794928537683,
+    "completedAt": 1794928537683,
     "progress": {
       "rows": 842,
       "bytes": 10728257,
@@ -4062,7 +4062,7 @@
     },
     "canResume": false
   },
-  "verifiedAt": 1794923500802,
+  "verifiedAt": 1794928537175,
   "verification": "verified",
   "tables": {
     "ai_defaults": {
@@ -4543,7 +4543,7 @@
     },
     "baseline": {
       "kind": "before-import",
-      "at": 1794923492922,
+      "at": 1794928529513,
       "counts": {
         "conversation_outbox": 0,
         "email_deliveries": 0,
@@ -4563,7 +4563,7 @@
       },
       "installation": {
         "kind": "installation-setup",
-        "at": 1794923361748,
+        "at": 1794928356813,
         "counts": {
           "conversation_outbox": 0,
           "email_deliveries": 0,
@@ -4640,8 +4640,8 @@
   },
   "sourceCustody": {
     "status": "ready",
-    "expiresAt": 1795009901297,
-    "absoluteExpiresAt": 1795528274928,
+    "expiresAt": 1795014937681,
+    "absoluteExpiresAt": 1795533310964,
     "sourcePurged": false,
     "invalidated": false,
     "cleanupPending": false,

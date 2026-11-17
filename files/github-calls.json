@@ -28,5 +28,25 @@
     "at": 1794923761.9655247,
     "command": "gh api repos/just-every/run-happytohelp/actions/runs/44095599175",
     "exit": 0
+  },
+  {
+    "at": 1794924211.556301,
+    "command": "gh api repos/just-every/run-happytohelp/actions/runs/44095599175",
+    "exit": 0
+  },
+  {
+    "at": 1794924840.7520654,
+    "command": "gh api repos/just-every/run-happytohelp/actions/runs/44095599175",
+    "exit": 0
+  },
+  {
+    "at": 1794925141.637454,
+    "command": "gh api repos/just-every/run-happytohelp/actions/runs/44095599175/jobs?per_page=100",
+    "exit": 0
+  },
+  {
+    "at": 1794925447.416375,
+    "command": "gh run view 44095599175 --repo just-every/run-happytohelp --job 134082930661 --log-failed",
+    "exit": 0
   }
 ]

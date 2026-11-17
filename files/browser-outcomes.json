@@ -1,5 +1,5 @@
 {
-  "candidateHead": "ebeabafef8a47e6a04d89f9816583096e9a4d63f",
+  "candidateHead": "388b0bbc612761895766ffdbb329aace0169522f",
   "runtime": "rer dev / generated SQL package / approved native owner",
   "screens": [
     {
@@ -18,7 +18,7 @@
       "path": "/projects/10000000-0000-4000-8000-000000000001/conversations/40000000-0000-4000-8000-000000000001",
       "status": 200,
       "file": "screens/transcript-private-note-1440.png",
-      "bodyCharacters": 1466,
+      "bodyCharacters": 1465,
       "loadingOnly": false,
       "pageError": false
     },
@@ -128,7 +128,7 @@
       "path": "/projects/10000000-0000-4000-8000-000000000001/conversations/40000000-0000-4000-8000-000000000001",
       "status": 200,
       "file": "screens/transcript-private-note-390.png",
-      "bodyCharacters": 1205,
+      "bodyCharacters": 1204,
       "loadingOnly": false,
       "pageError": false
     },

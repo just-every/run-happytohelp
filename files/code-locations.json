@@ -58,5 +58,9 @@
   {
     "path": "tests/legacy-export/fidelity-inputs.mjs",
     "line": 9
+  },
+  {
+    "path": "importers.json",
+    "line": 10
   }
 ]

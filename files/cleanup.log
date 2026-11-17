@@ -1,6 +1,6 @@
 [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
 
 
-Stopped the dev server at http://127.0.0.1:8787 for /workspace/run-happytohelp (PID 63258) with 4 more processes.
+Stopped the dev server at http://127.0.0.1:8787 for /workspace/run-happytohelp (PID 73281) with 4 more processes.
 
-The test-owned MySQL container and internal network were stopped and removed after the final complete exporter journey. Browsers closed in their driver finally blocks; stalled inspected-helper processes and their verified owned children were separately stopped, with no PASS awarded.
+Final typecheck completed successfully. rer reset --yes disposed of the test-owned installation after the final-head capture. The synthetic MySQL container/network and all owned browser/server/helper processes were stopped; exported comparison states and actual reports remain for recovery/review.

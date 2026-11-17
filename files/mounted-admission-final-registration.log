@@ -1,0 +1,33 @@
+TAP version 13
+# (node:70245) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# IMPORT_ADMISSION_PHASE {"journey":"legacyPackageAdmission","duration_ms":9906}
+# RESERVATION_RECOVERY expired, discarded, failed: fresh approval wins once; stale SHA, actor, scope refusals; users/grants added=0
+# IMPORT_ADMISSION_PHASE {"journey":"mountedAdoptionJourney","duration_ms":58520}
+# Native access refresh notification failed
+# Native access refresh notification failed
+# Native access refresh notification failed
+# Native access refresh notification failed
+# Persisted job handler failed move-in 21de1c1f-c7e0-49dd-91ad-6f299127a725
+# Native access refresh notification failed
+# Native access refresh notification failed
+# Native access refresh notification failed
+# IMPORT_ADMISSION_PHASE {"journey":"outcomesJourney","duration_ms":25724}
+# IMPORT_ADMISSION_PHASE {"journey":"mountedOrderingJourney","duration_ms":20337}
+# RESERVATION_ATTACHMENTS [{"mode":"stop-expiry","order":"before","identical":2,"verified":true,"erased":true},{"mode":"stop-expiry","order":"after","identical":2,"verified":true,"erased":true},{"mode":"orphan","cleaned":2}]
+# IMPORT_ADMISSION_PHASE {"journey":"expiredAndOrphanedAttachmentRecovery","duration_ms":30853}
+# Subtest: adopt mounted history, recover Worker stops and expired or orphaned attachments, and enforce authority and ordering
+ok 1 - adopt mounted history, recover Worker stops and expired or orphaned attachments, and enforce authority and ordering
+  ---
+  duration_ms: 145342.757488
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 145813.28396

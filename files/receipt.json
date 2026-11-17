@@ -1,0 +1,156 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger11-followups-1-c2",
+  "current_main": "65201d9210a6f812ceacf879da96678aab8cafce",
+  "old_baseline": "ece2172a9463acbd6cbf998189ab18a4fa66c693",
+  "old_head": "e16adff519a241389cda942d133eb1da532eedbe",
+  "old_files": [
+    "base-copies.json",
+    "deploy.json",
+    "docs/macros-and-teamwork.md",
+    "docs/request-forms.md",
+    "management/integration/managed-deploy.json",
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json",
+    "src/modules/forms/definition.ts",
+    "src/modules/forms/source-eligibility.ts",
+    "src/modules/workflows/routes-sla.ts",
+    "src/platform/document-recovery-script.ts",
+    "src/ui/native/Dashboard.tsx",
+    "tests/helpers/inbox/new-ticket-configuration.mjs",
+    "tests/helpers/stranger11-browser.mjs",
+    "tests/helpers/workflows/sla-field-access.mjs",
+    "tests/journeys/inbox.mjs"
+  ],
+  "candidate_files": [
+    "base-copies.json",
+    "deploy.json",
+    "docs/macros-and-teamwork.md",
+    "docs/request-forms.md",
+    "management/integration/managed-deploy.json",
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json",
+    "src/modules/forms/definition.ts",
+    "src/modules/forms/source-eligibility.ts",
+    "src/modules/workflows/routes-sla.ts",
+    "src/platform/document-recovery-script.ts",
+    "src/ui/native/Dashboard.tsx",
+    "tests/helpers/inbox/new-ticket-configuration.mjs",
+    "tests/helpers/stranger11-browser.mjs",
+    "tests/helpers/workflows/sla-field-access.mjs",
+    "tests/journeys/inbox.mjs"
+  ],
+  "product_paths": [
+    "docs/macros-and-teamwork.md",
+    "docs/request-forms.md",
+    "src/modules/forms/definition.ts",
+    "src/modules/forms/source-eligibility.ts",
+    "src/modules/workflows/routes-sla.ts",
+    "src/platform/document-recovery-script.ts",
+    "src/ui/native/Dashboard.tsx",
+    "tests/helpers/inbox/new-ticket-configuration.mjs",
+    "tests/helpers/stranger11-browser.mjs",
+    "tests/helpers/workflows/sla-field-access.mjs",
+    "tests/journeys/inbox.mjs"
+  ],
+  "product_patch_equal": true,
+  "product_patch_sha256": "20a5ca054bb1ccced68eda37dc16dceb41d79d640e5591ce370fdf2383386a62",
+  "rer": "0.2.121",
+  "base_ref": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+  "mail_declarations_equal_to_c1": true,
+  "contract_unchanged": true,
+  "before_status_counts": {
+    "partial": 71,
+    "done": 4,
+    "missing": 16
+  },
+  "after_status_counts": {
+    "partial": 71,
+    "done": 4,
+    "missing": 16
+  },
+  "status_changes": [],
+  "local_checks": {
+    "source_lock": 0,
+    "source_check": 0,
+    "rer_check_first_party": 0,
+    "typecheck": 0,
+    "rer_build": 0,
+    "setup": 0,
+    "base_origin_offline": 0,
+    "source_check_final_after_staging": 0,
+    "touched_tests": 0,
+    "touched_tests_pass": 4,
+    "touched_tests_fail": 0
+  },
+  "notes": [
+    "rer verify delegates to verify:app, which runs all route and browser suites. The brief explicitly limits local tests; those suites remain delegated to GitHub exact-SHA Verify."
+  ],
+  "setup_notes": [
+    "Initial noninteractive setup required WIDGET_ORIGIN and OWNER_PASSWORD (exit 3).",
+    "Absolute answers path refused as outside contained checkout (exit 4).",
+    "Rer setup succeeded with ignored private .rer/task-setup-answers.json, removed immediately; no secrets retained in report."
+  ],
+  "lock_notes": [
+    "First lock preceded staging the newly added SLA helper. Its subsequent check detected staleness. Regenerated after staging the helper, and the final source check passed."
+  ],
+  "base_origin_check": {
+    "exit": 1,
+    "drift": [],
+    "unrecordedCopies": [
+      {
+        "path": "migrations/277_agent_door.sql",
+        "originPath": "modules/agent-door/tests/fixtures/schema-0.2.93/agent-door.sql",
+        "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f"
+      },
+      {
+        "path": "migrations/316_agent_door_relay_privacy.sql",
+        "originPath": "default-seed/migrations/core/0043_agent_door_relay_privacy.sql",
+        "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f"
+      }
+    ],
+    "scope": "Additional origin discovery, not the required offline check. No product changes authorized for inherited metadata omissions.",
+    "inherited_migrations_byte_identical_in_main_and_c1": true
+  },
+  "generated_pin_files_identical_to_c1": [
+    "base-copies.json",
+    "package.json",
+    "pnpm-lock.yaml",
+    "deploy.json",
+    "management/integration/managed-deploy.json"
+  ],
+  "product_head": "965e9deb6092256708e1f75bb8e90c2c9bfa898f",
+  "commit_count": 1,
+  "merge_count": 0,
+  "insertions": 566,
+  "deletions": 474,
+  "product_diff_equal": true,
+  "custody": "READY: product pushed once; exact-head Verify completed/success; no rerun, no PR, no landing",
+  "ci_summary": "Verify 43986680768 completed/success, exact head 965e9deb6092256708e1f75bb8e90c2c9bfa898f; attempt 1; API calls 6/10",
+  "ci_run_ids": [
+    43986680768
+  ],
+  "pr_url": null,
+  "local_test_durations_ms": {
+    "SLA field access": 7846.020867,
+    "new ticket configuration": 208115.462221,
+    "macro handoff": 156270.527284,
+    "form field eligibility": 155208.237525
+  },
+  "browser_files": 65,
+  "ci_result": {
+    "conclusion": "success",
+    "head_sha": "965e9deb6092256708e1f75bb8e90c2c9bfa898f",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/43986680768",
+    "status": "completed"
+  },
+  "ci_calls_used": 6,
+  "terminal_remote_refs": {
+    "refs/heads/cloud/hh-stranger11-followups-1-c2": "965e9deb6092256708e1f75bb8e90c2c9bfa898f",
+    "refs/heads/main": "65201d9210a6f812ceacf879da96678aab8cafce"
+  },
+  "blockers": [],
+  "local_full_rer_verify": "Not run because its full-suite target conflicts with the explicit local test limit; exact-head GitHub Verify passed."
+}

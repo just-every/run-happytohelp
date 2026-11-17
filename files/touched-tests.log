@@ -1,0 +1,19 @@
+✔ SLA field access (7846.020867ms)
+BRAND_ORDERING {"ordering":"old-during-switch","status":201,"mailbox":"new","error":null}
+BRAND_ORDERING {"ordering":"old-after-switch","status":201,"mailbox":"new","error":null}
+BRAND_ORDERING {"ordering":"new-before-old","status":201,"mailbox":"new","error":null}
+BRAND_ORDERING {"ordering":"no-switch","status":201,"mailbox":"current","error":null}
+PROBE OUTBOUND-001 no mailbox: UI creates requester, email ticket and team-only note; reload/retry retain them; customer messages, outbound queue, deliveries, send options and provider sends stay empty; public email/notices refused; 1440 assertions with 1440/390 captures
+PROBE OUTBOUND-001-NOTE browser N1/N2/N3: First comment -> internal email note, lost-response replay/reload -> one private note, no mail; explicit Send -> one public mail without note; assertions 1440, dialog/thread captures 1440/390
+PROBE OUTBOUND-001 4: New ticket WhatsApp form at 1440 -> consent refusal retains draft; correction sends approved template; captures at 1440/390, 44px targets, one focused control, no overflow
+✔ inbox new ticket configuration, 1440 assertions and 1440/390 proof (208115.462221ms)
+✔ repaired macro handoff journey, 1440/390 proof (156270.527284ms)
+✔ repaired form field journey, 1440/390 proof (155208.237525ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 531138.257367

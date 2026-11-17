@@ -1,0 +1,244 @@
+diff --git a/docs/macros-and-teamwork.md b/docs/macros-and-teamwork.md
+index 32405a7..fa3ea4a 100644
+--- a/docs/macros-and-teamwork.md
++++ b/docs/macros-and-teamwork.md
+@@ -29,5 +29,3 @@ The surviving operator thread includes the source histories. Customer access sta
+ Open **Merge history → Undo merge** to restore the source to the queue. Undo is refused if either ticket changed or partner activity advanced after the merge. Review the retained history when undo is unsafe.
+ 
+ Use **Forward to partner** to select customer-visible messages and files for an external partner. Preview the recipient and exact content first. Internal notes are never forwarded. The partner receives its own reply address; replies and files return to **Private partner threads** in the ticket. They do not enter customer history or trigger customer acknowledgements. Revoke partner replies when that collaboration ends. A delivery whose outcome is uncertain is shown as uncertain and is never automatically resent.
+-
+-Handoff clarification: Run Edit Run fleet, 16 November 2026.
+diff --git a/docs/request-forms.md b/docs/request-forms.md
+index a40b83a..fbc2836 100644
+--- a/docs/request-forms.md
++++ b/docs/request-forms.md
+@@ -135,5 +135,3 @@ old ticket values from disappearing when a lead changes their forms.
+ Order/account lookup fields and a form version-history management screen are not
+ available. Form fields reuse the current ticket-field permissions and validation; they do not introduce a separate field
+ catalogue or grant access to company requests.
+-
+-Read-permission clarification: Run Edit Run fleet, 16 November 2026.
+diff --git a/src/modules/forms/definition.ts b/src/modules/forms/definition.ts
+index 3e92296..b00ea42 100644
+--- a/src/modules/forms/definition.ts
++++ b/src/modules/forms/definition.ts
+@@ -3,6 +3,8 @@ import {HTTPException} from 'hono/http-exception'
+ import {object} from '../tickets/model'
+ import {validateFieldValue} from '../tickets/fields'
+ import type {FormConfig,FormField,FormTranslation,StoredField} from './types'
++// Stored fields carry fieldVisibility’s current-role and source verdict. Proposed
++// imported form fields have no stored verdict yet and still need the read-role check.
+ export const publicField=(f:StoredField)=>f.form_eligible!==0&&everyRoleReads(JSON.parse(f.read_roles_json))
+ const bad=(message:string):never=>{throw new HTTPException(400,{message})}
+ function text(value:unknown,max:number,empty=false){if(typeof value!=='string'||value.length>max||!empty&&!value.trim())bad(`Enter text ${empty?'up to':'of 1–'} ${max} characters`);return (value as string).trim()}
+diff --git a/src/modules/forms/source-eligibility.ts b/src/modules/forms/source-eligibility.ts
+index b8ba021..2cd221c 100644
+--- a/src/modules/forms/source-eligibility.ts
++++ b/src/modules/forms/source-eligibility.ts
+@@ -14,8 +14,8 @@ export const fieldSourceState=`COALESCE((SELECT json_array(origin.vendor,origin.
+ const states=new WeakMap<StoredField,string>()
+ export const fieldSourceSnapshot=(field:StoredField)=>states.get(field)
+ 
+-export async function fieldVisibility(env:Pick<Env,'DB'>,projectId:string){
+- const [customRoles,loaded]=await Promise.all([env.DB.prepare('SELECT id FROM project_roles WHERE project_id=?').bind(projectId).all<{id:string}>(),env.DB.prepare(`SELECT f.*,${fieldSourceState} AS source_state FROM ticket_fields f WHERE f.project_id=? ORDER BY f.name,f.id`).bind(projectId).all<StoredField&{source_state:string}>()])
++export async function fieldVisibility(env:Pick<Env,'DB'>,projectId:string,fieldIds?:string[]){
++ const [customRoles,loaded]=await Promise.all([env.DB.prepare('SELECT id FROM project_roles WHERE project_id=?').bind(projectId).all<{id:string}>(),env.DB.prepare(`SELECT f.*,${fieldSourceState} AS source_state FROM ticket_fields f WHERE f.project_id=?${fieldIds===undefined?'':' AND f.id IN (SELECT value FROM json_each(?))'} ORDER BY f.name,f.id`).bind(projectId,...(fieldIds===undefined?[]:[JSON.stringify(fieldIds)])).all<StoredField&{source_state:string}>()])
+  const rows=loaded.results
+  const proofs=rows.flatMap(row=>{const origin=JSON.parse(row.source_state);return origin?.[0]==='zendesk'&&origin[3]!=='erased-visibility'?origin[4]:[]})
+  const plans=await loadReferencedPlans(await ownerHeads(env.DB,[...new Set<string>(proofs.map(p=>p.job_id))]),proofs,env.DB)
+diff --git a/src/modules/workflows/routes-sla.ts b/src/modules/workflows/routes-sla.ts
+index 42fbcd4..e89b8a9 100644
+--- a/src/modules/workflows/routes-sla.ts
++++ b/src/modules/workflows/routes-sla.ts
+@@ -10,6 +10,8 @@ import {calendarData,calendarDefinition} from './calendars'
+ import {policyData,policyDefinition} from './sla-policy'
+ import {validateFieldValue} from '../tickets/fields'
+ import {publicField} from '../forms/definition'
++import {fieldVisibility} from '../forms/source-eligibility'
++import {formFieldGuard} from '../forms/field-guard'
+ import {ticketSla,liveSlaTicketSql} from './sla'
+ 
+ export const workflowSlaRoutes=new Hono<AppEnv>()
+@@ -41,10 +43,11 @@ for(const kind of ['workflow-calendars','sla-policies'] as const){
+    }
+    const conditions=JSON.parse(policy.conditions_json),fieldIds=Object.keys(conditions.fields??{})
+    if(fieldIds.length){
+-    const fields=(await c.env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id IN (SELECT value FROM json_each(?))').bind(actor.projectId,JSON.stringify(fieldIds)).all<any>()).results
++    const fields=await fieldVisibility(c.env,actor.projectId,fieldIds)
+     if(fields.length!==fieldIds.length||fields.some(f=>!publicField(f)))invalid('SLA conditions require customer-visible workspace fields')
+     for(const field of fields){if(validateFieldValue(field,conditions.fields[field.id])===null)invalid('SLA field conditions require a typed value')}
+-    extra.push("NOT EXISTS(SELECT 1 FROM json_each(?) ref WHERE NOT EXISTS(SELECT 1 FROM ticket_fields f WHERE f.project_id=? AND f.id=json_extract(ref.value,'$[0]') AND f.updated_at=json_extract(ref.value,'$[1]')))");args.push(JSON.stringify(fields.map(f=>[f.id,f.updated_at])),actor.projectId)
++    const fieldGuard=formFieldGuard(actor.projectId,fields)
++    extra.push(fieldGuard.sql);args.push(...fieldGuard.args)
+    }
+    const formIds=conditions.form_ids??[]
+    if(formIds.length){
+diff --git a/src/platform/document-recovery-script.ts b/src/platform/document-recovery-script.ts
+index c2076ee..2091767 100644
+--- a/src/platform/document-recovery-script.ts
++++ b/src/platform/document-recovery-script.ts
+@@ -32,7 +32,7 @@ const css = `@font-face{font-family:Outfit;font-style:normal;font-weight:100 900
+ @keyframes h2h-recovery-pen{from{stroke-dashoffset:1.02}to{stroke-dashoffset:0}}`;
+ const markup = `<style>${css}</style><header class="h2h-recovery__header"><a class="h2h-recovery__brand" href="/">${markSvg().trim()}${wordSvg()}<span class="h2h-recovery__name">HappyToHelp</span></a></header>`
+     + `<div class="h2h-recovery__body"><svg class="h2h-recovery__pen" viewBox="0 0 240 60" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path pathLength="1" d="${penLoop}"/></svg>`
+-    + `<p class="h2h-recovery__message" role="status">The workspace is busy. Trying again in a few seconds…</p></div>`;
++    + `<p class="h2h-recovery__message" role="status">Opening your workspace… We’ll continue automatically.</p></div>`;
+ 
+ /** Script text is never closed early: every `<` is written as an escape. */
+ const scriptJson = (value: unknown) => JSON.stringify(value).replaceAll('<', '\\u003c');
+@@ -42,7 +42,8 @@ const scriptJson = (value: unknown) => JSON.stringify(value).replaceAll('<', '\\
+  * it shows the busy look, and takes it away if nodes arrive again. A document that stopped before its body is given
+  * an empty one to show it in (the browser paints nothing without a body), removed again if the document resumes.
+  * After a few seconds with no node and no end marker the document was cut (a dropped connection, a Worker restart):
+- * it asks /health until the Worker answers, then reloads once. A document that completes calls the end marker and is
++ * it asks /health until the Worker answers, then reloads once. A 503 still establishes reachability even when the
++ * Worker is degraded; the document completion marker independently cancels recovery. A completed document is
+  * never reloaded. The script and the marker remove their own elements, so hydration never sees them.
+  */
+ export const documentRecoveryScript = `(function(){
+diff --git a/src/ui/native/Dashboard.tsx b/src/ui/native/Dashboard.tsx
+index cc74ce7..444c25a 100644
+--- a/src/ui/native/Dashboard.tsx
++++ b/src/ui/native/Dashboard.tsx
+@@ -21,7 +21,7 @@ export function DashboardPending({ busy: waiting = false }: { busy?: boolean })
+     const busy = useWorkspaceBusy() || waiting;
+     return <main className="h2h-identity dashboard-state" aria-busy="true"><header className="id-header"><BrandLockup home="/" /></header>
+         <div className="dashboard-state__body"><PenLine progress />{busy
+-            ? <p className="dashboard-state__message" role="status">The workspace is busy. Trying again in a few seconds…</p>
++            ? <p className="dashboard-state__message" role="status">Opening your workspace… We’ll continue automatically.</p>
+             : <p className="dashboard-state__message">Loading your workspace…</p>}</div>
+     </main>;
+ }
+@@ -74,7 +74,7 @@ export default function Dashboard() {
+     return <DashboardSettingsContext.Provider value={settings}>
+         <EditorLauncher authorized={!!settings.project && ['owner', 'admin'].includes(settings.project.role)} />
+         <Suspense fallback={<DashboardPending />}><DashboardClient settings={settings} /></Suspense>
+-        {busy && <p className="dashboard-busy" role="status">The workspace is busy. Trying again in a few seconds…</p>}
++        {busy && <p className="dashboard-busy" role="status">Opening your workspace… We’ll continue automatically.</p>}
+         <StepUpHost />
+     </DashboardSettingsContext.Provider>;
+ }
+diff --git a/tests/helpers/inbox/new-ticket-configuration.mjs b/tests/helpers/inbox/new-ticket-configuration.mjs
+index 8c96b27..6410fd0 100644
+--- a/tests/helpers/inbox/new-ticket-configuration.mjs
++++ b/tests/helpers/inbox/new-ticket-configuration.mjs
+@@ -167,6 +167,27 @@ export async function newTicketConfigurationBrowser(){
+    assert.equal(privateTicket.conversation.channel,'email');assert.equal(privateTicket.conversation.mailbox_id,mailbox.id);assert.equal(privateTicket.conversation.submitter_id,owner.actor.id)
+    await page.waitForURL(`**/conversations/${privateId}`);await page.locator('.transcript-note-content').getByText(privateContent,{exact:true}).waitFor()
+    await page.reload();await page.locator('.transcript-note-content').getByText(privateContent,{exact:true}).waitFor()
++   // Reconstruct Yours after leaving the ticket, rather than retaining the
++   // optimistic creation result or only reloading its open transcript.
++   assert.equal(privateTicket.conversation.assigned_to,owner.actor.id)
++   await page.goto(`${runtime.origin}/projects/${projectId}/activation`)
++   await page.goto(`${runtime.origin}/projects/${projectId}/conversations?view=mine`)
++   await page.reload()
++   const privateRow=page.locator('.conversation-item').filter({hasText:`Private parcel review ${width}`})
++   await privateRow.waitFor()
++   assert.equal(await privateRow.count(),1,'the assigned internal-only ticket remains discoverable after Inbox reload')
++   const mine=(await call(base+'/conversations/counts',undefined,owner.token)).data.mine
++   for(const list of [base+'/conversations?view=mine','/api/dashboard/conversations?view=mine']){
++    const reloaded=await call(list,undefined,owner.token)
++    assert.equal(reloaded.data.filter(ticket=>ticket.id===privateId).length,1,'workspace and global Yours retain the internal ticket')
++    if(list.startsWith(base)){
++     assert.equal(reloaded.meta.pagination.total,mine,'Yours and its list count the same tickets')
++     assert.equal(reloaded.data.length,mine,'every counted fixture ticket is discoverable on the reloaded first page')
++    }
++   }
++   await capture('private-inbox-after-reload')
++   await privateRow.click();await page.locator('.transcript-note-content').getByText(privateContent,{exact:true}).waitFor()
++   await page.reload();await page.locator('.transcript-note-content').getByText(privateContent,{exact:true}).waitFor()
+    const bucket=(await call(`${base}/conversations/${privateId}/buckets/${privateId}`,undefined,owner.token)).data
+    assert.equal(bucket.messages.length,0);assert.equal(bucket.events.filter(event=>event.type==='INTERNAL_NOTE'&&event.content===privateContent).length,1)
+    assert.equal((await call(`/api/conversations/${privateId}/messages`,undefined,owner.token)).messages.length,0)
+diff --git a/tests/helpers/stranger11-browser.mjs b/tests/helpers/stranger11-browser.mjs
+index 726eff5..39314b7 100644
+--- a/tests/helpers/stranger11-browser.mjs
++++ b/tests/helpers/stranger11-browser.mjs
+@@ -27,6 +27,13 @@ async function openTicketPanel(page){
+  const show=page.getByRole('button',{name:'Show conversation panel',exact:true});if(await show.isVisible())await show.click()
+  await page.getByRole('tab',{name:'Ticket',exact:true}).click()
+ }
++// A breakpoint change updates the assistant in a matchMedia handler. Wait for
++// React to apply it before choosing Show/Hide, whose accessible name changes too.
++async function ticketViewport(page,viewport){
++ const crossed=(page.viewportSize().width>=1280)!==(viewport.width>=1280)
++ await page.setViewportSize(viewport)
++ if(crossed)await page.waitForFunction(desktop=>document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden')===String(!desktop),viewport.width>=1280)
++}
+ export async function macroHandoffBrowser(){
+  const f=await strangerFixture(),{page,browser,origin,projectId,base,request}=f,shot=await evidence('stranger11-after-macro');let success=false
+  try{
+@@ -60,8 +67,8 @@ export async function macroHandoffBrowser(){
+   const hide=page.getByRole('button',{name:'Hide conversation panel',exact:true});if(await hide.isVisible())await hide.click()
+   await page.getByRole('button',{name:'Actions',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:'Request damage photo',exact:true}).click()
+   const preview=page.getByRole('region',{name:'Macro preview'});await preview.waitFor();assert.match(await preview.innerText(),/Owner → Lena Patel/)
+-  for(const viewport of [viewports.desktop,viewports.mobile]){await page.setViewportSize(viewport);await page.screenshot({path:shot(`${viewport.width}-preview.png`),fullPage:true})}
+-  await page.setViewportSize(viewports.desktop)
++  for(const viewport of [viewports.desktop,viewports.mobile]){await ticketViewport(page,viewport);await page.screenshot({path:shot(`${viewport.width}-preview.png`),fullPage:true})}
++  await ticketViewport(page,viewports.desktop)
+   await page.getByRole('button',{name:'Apply macro',exact:true}).click()
+   const composer=page.getByRole('textbox',{name:'Reply to conversation'});await page.waitForFunction(()=>document.querySelector('[aria-label="Reply to conversation"]')?.value?.startsWith('Please send'))
+   const edited='Please send a damage photo of the outer box too.';await composer.fill(edited)
+@@ -73,10 +80,10 @@ export async function macroHandoffBrowser(){
+   const assignment=page.getByRole('button',{name:/Assign conversation\. Current assignment:/});await assignment.waitFor()
+   const after=(await request(`${base}/conversations/${mia.id}/ticket`)).data
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'the ticket fits the desktop')
+-  for(const viewport of [viewports.desktop,viewports.mobile]){if(viewport.width===390&&await hide.isVisible())await hide.click();await page.setViewportSize(viewport);await page.screenshot({path:shot(`${viewport.width}-sent.png`),fullPage:true})}
++  for(const viewport of [viewports.desktop,viewports.mobile]){if(viewport.width===390&&await hide.isVisible())await hide.click();await ticketViewport(page,viewport);await page.screenshot({path:shot(`${viewport.width}-sent.png`),fullPage:true})}
+   const receipt={assignmentPreserved:after.assigned_to===lenaId,assignee:after.assigned_to===lenaId?'Lena Patel':'Owner',editedReplyPersisted:true}
+   await writeFile(shot('result.json'),JSON.stringify(receipt,null,2))
+-  assert.equal(after.assigned_to,lenaId,'ordinary Send preserves the explicit macro handoff');await page.setViewportSize(viewports.desktop);await openTicketPanel(page);assert.match(await assignment.getAttribute('aria-label'),/Lena Patel/)
++  assert.equal(after.assigned_to,lenaId,'ordinary Send preserves the explicit macro handoff');await ticketViewport(page,viewports.desktop);await openTicketPanel(page);assert.match(await assignment.getAttribute('aria-label'),/Lena Patel/)
+   await assignment.click();await page.getByRole('menuitem',{name:/\bOwner$/}).click();await page.getByRole('button',{name:'Assign conversation. Current assignment: Owner',exact:true}).waitFor()
+   assert.equal((await request(`${base}/conversations/${mia.id}/ticket`)).data.assigned_to,ownerId,'the sender can explicitly take over')
+   success=true;return receipt
+diff --git a/tests/helpers/workflows/sla-field-access.mjs b/tests/helpers/workflows/sla-field-access.mjs
+new file mode 100644
+index 0000000..25ca334
+--- /dev/null
++++ b/tests/helpers/workflows/sla-field-access.mjs
+@@ -0,0 +1,33 @@
++import assert from 'node:assert/strict'
++import {startApp} from '../../journeys/kit/app.mjs'
++
++export async function slaFieldAccessJourney(){
++ const app=await startApp()
++ try{
++  const w=await app.seedWorkspace('synthetic-happytohelp-sla'),p=w.projectId,base=`/api/dashboard/projects/${p}`,management=`/api/management/projects/${p}`,token=w.tokens.owner
++  const door=async(path,body,method)=>(await app.ok(path,{token,...(body===undefined?{}:{body}),...(method?{method}:{})})).data
++  const role=await door(management+'/roles',{name:'Stock reviewers',base:'operator',permissions:['conversations.notes']})
++  const builtins=['owner','admin','operator','collaborator','api']
++  const restricted=await door(base+'/ticket-fields',{name:'Order number',type:'text',read_roles:builtins})
++  const readable=await door(base+'/ticket-fields',{name:'Public reference',type:'text',read_roles:[...builtins,role.id]})
++  const unrestricted=await door(base+'/ticket-fields',{name:'Shared reference',type:'text',read_roles:[]})
++  const calendar=await door(base+'/workflow-calendars',{name:'Stock support',timezone:'America/New_York',weekly:[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})),holidays:'none',closures:[]})
++  const policy={name:'Stock commitment',calendar_id:calendar.id,first_response_minutes:60,resolution_minutes:480}
++  const condition=field=>({fields:{[field.id]:'SN-2'}})
++  const create=conditions=>app.call(base+'/sla-policies',{token,body:{...policy,conditions}})
++  const refused=await create(condition(restricted))
++  assert.equal(refused.status,400,'a custom role without read access keeps the field out of SLA conditions')
++  assert.match(refused.data.error,/customer-visible workspace fields/)
++  assert.deepEqual(await door(base+'/sla-policies'),[],'refused creation leaves no policy')
++  let saved=await door(base+'/sla-policies',{...policy,conditions:condition(readable)})
++  assert.deepEqual(saved.conditions.fields,{[readable.id]:'SN-2'},'explicit access for every current role is accepted')
++  const path=base+'/sla-policies/'+saved.id
++  const denied=await app.call(path,{token,method:'PATCH',body:{conditions:condition(restricted)}})
++  assert.equal(denied.status,400)
++  assert.deepEqual((await door(base+'/sla-policies')).find(row=>row.id===saved.id),saved,'a refused edit preserves the saved policy')
++  saved=await door(path,{conditions:condition(unrestricted)},'PATCH')
++  assert.deepEqual(saved.conditions.fields,{[unrestricted.id]:'SN-2'},'an empty read-role list means everyone can read')
++  await app.configure({})
++  assert.deepEqual((await door(base+'/sla-policies')).find(row=>row.id===saved.id),saved,'accepted eligibility survives a runtime restart')
++ }finally{await app.close()}
++}
+diff --git a/tests/journeys/inbox.mjs b/tests/journeys/inbox.mjs
+index cafe8bd..d7f9cb4 100644
+--- a/tests/journeys/inbox.mjs
++++ b/tests/journeys/inbox.mjs
+@@ -44,3 +44,6 @@ test('two brands share a permitted team while customer identity, knowledge, rout
+ 
+ import {problemJourney} from '../helpers/inbox/problems.mjs'
+ test('a support lead links affected requests to one problem, follows its engineering issue and sends scoped recovery updates once while preferences, provider uncertainty and erasure remain honest',problemJourney)
++
++import {slaFieldAccessJourney} from '../helpers/workflows/sla-field-access.mjs'
++test('SLA field conditions admit only fields readable by every current workspace role',slaFieldAccessJourney)

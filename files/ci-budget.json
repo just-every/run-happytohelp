@@ -1,0 +1,45 @@
+{
+  "calls": 6,
+  "last_call_unix": 1794876636.4368289,
+  "run_ids": [
+    43986680768
+  ],
+  "history": [
+    {
+      "call": 1,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs?head_sha=965e9deb6092256708e1f75bb8e90c2c9bfa898f&per_page=100",
+      "receipt": "ci-discovery.json",
+      "completed_unix": 1794874771.3915994
+    },
+    {
+      "call": 2,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43986680768 --jq {status,conclusion,head_sha,html_url}",
+      "receipt": "ci-poll-2.json",
+      "completed_unix": 1794875084.0377808
+    },
+    {
+      "call": 3,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43986680768 --jq {status,conclusion,head_sha,html_url}",
+      "receipt": "ci-poll-3.json",
+      "completed_unix": 1794875398.91631
+    },
+    {
+      "call": 4,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43986680768 --jq {status,conclusion,head_sha,html_url}",
+      "receipt": "ci-poll-4.json",
+      "completed_unix": 1794875711.5091684
+    },
+    {
+      "call": 5,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43986680768 --jq {status,conclusion,head_sha,html_url}",
+      "receipt": "ci-poll-5.json",
+      "completed_unix": 1794876023.7246084
+    },
+    {
+      "call": 6,
+      "command": "gh api repos/just-every/run-happytohelp/actions/runs/43986680768 --jq {status,conclusion,head_sha,html_url}",
+      "receipt": "ci-poll-6.json",
+      "completed_unix": 1794876636.4368324
+    }
+  ]
+}

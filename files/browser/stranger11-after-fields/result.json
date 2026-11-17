@@ -1,0 +1,12 @@
+{
+  "checks": [
+    {
+      "setting": "default",
+      "eligible": true
+    },
+    {
+      "setting": "empty read list, default edit list",
+      "eligible": true
+    }
+  ]
+}

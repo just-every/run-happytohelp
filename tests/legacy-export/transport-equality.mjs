@@ -13,6 +13,7 @@ const tables={
  conversation_notes:'id,conversation_id,user_id,content,created_at',
  conversation_buckets:'id,conversation_id,metadata_json,created_at',
  conversation_participants:'id,conversation_id,contact_id,created_at',
+ legacy_import_files:'project_id,media_id,object_key,filename,content_type,audience',
  media:'id,project_id,conversation_id,message_id,object_key,filename,content_type,size,created_at',
  knowledge_categories:'id,project_id,parent_id,name,slug,summary,is_published,position',
  knowledge_articles:'id,project_id,title,slug,content,summary,status,updated_at',

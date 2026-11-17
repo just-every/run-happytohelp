@@ -16,7 +16,7 @@ const parents:Record<string,Record<string,string>>={
  macros:{project_id:'projects',created_by_id:'users'},
 }
 export function validateSourceReferences(table:string,row:Row,context:LegacyBundle,complete=false){
- if(context.source.repository!=='happytohelp')return
+ if(context.source.repository!=='happytohelp'||context.source.snapshot!=='REPEATABLE READ; CONSISTENT SNAPSHOT; READ ONLY; UTC')return
  const related=relationships(context)
  for(const [field,parent] of Object.entries(parents[table]??{})){
   if(!complete&&!(Array.isArray(context.source.referenceTables)&&context.source.referenceTables.includes(parent)))continue

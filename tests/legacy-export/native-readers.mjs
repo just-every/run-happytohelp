@@ -41,13 +41,23 @@ export async function nativeReaders({persist,sources,files,output,ownerId}){
    const contact=source.tables.contacts[0],customer=data(await call(`/api/management/projects/${projectId}/contacts/${contact.id}`,{token,status:200}))
    assert.equal(customer.name,contact.provided_name||contact.name||contact.nickname||null)
    assert.equal(customer.email,contact.provided_email||contact.email||null)
+   assert.equal(JSON.parse(customer.metadata_json).timezone_name,contact.timezone,'recorded timezone is visible through the existing customer reader')
    assert.equal(customer.is_verified,1,'administrative CLI verification policy is intentionally separate')
    const settings=data(await call(`/api/management/projects/${projectId}/settings`,{token,status:200}))
    assert.equal(settings.timezone,source.tables.projects[0].timezone)
+   assert.equal(settings.website,source.tables.projects[0].website,'recorded website stays visible and editable')
+   assert.deepEqual(settings.availability_schedule.days,source.tables.projects[0].availability_schedule.days.map(Number),'source string weekdays normalize for native opening hours')
    const categories=(await call(`/api/knowledge/${projectId}/categories`,{token,status:200})).data
    assert.equal(categories.length,source.tables.categories.length)
    const articles=(await call(`/api/knowledge/${projectId}/articles`,{token,status:200})).data
    assert.deepEqual(new Set(articles.map(a=>a.id)),new Set(source.tables.articles.map(a=>a.id)))
+   const supplied=JSON.parse(await readFile(files[i],'utf8'))
+   for(const row of source.tables.media.filter(row=>row.mime_type==='image/png')){
+    const path=`/api/imported-files/${projectId}/${row.id}`,object=supplied.objects.find(o=>o.key===row.object_key),publicResponse=await request(path)
+    assert.equal(publicResponse.status,200,'own public logo/article image is available without a session')
+    assert.equal(publicResponse.headers.get('Content-Type'),'image/png')
+    assert.equal(sha(Buffer.from(await publicResponse.arrayBuffer())),object.sha256,'generated PNG bytes remain exact through the native file door')
+   }
    const known=source.tables.macros.find(m=>m.created_by_id),unknown=source.tables.macros.find(m=>m.created_by_id===null)
    const macro=data(await call(`/api/management/projects/${projectId}/macros/${known.id}`,{token,status:200}))
    assert.equal(macro.title,known.title)

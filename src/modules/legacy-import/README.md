@@ -328,3 +328,11 @@ the schema-shaped qualification in `tests/legacy-export.mjs`, with its SQL
 fixture, field-matrix and native-reader helpers. Synthetic local results do not
 qualify a real export, current production schema, original objects, live
 integrations or cutover.
+
+Source contact timezones also populate the existing reader's `timezone_name`;
+the recorded project website remains editable in native Project settings while
+widget admission uses only its allowed origin. Schedules without a recognized
+days/time representation are explicitly reported as custody without restored
+opening hours. Normal SQL booleans are numeric; manual AI/category flag aliases
+accept only booleans, 0/1, or exact strings `true`, `false`, `0`, `1`.
+Other flag representations are refused before apply.

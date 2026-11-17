@@ -34,12 +34,17 @@ export async function fidelityInputs({admin,run,env,output,projectId,snapshotArg
   ['missing-parent',b=>{b.tables.messages[0].conversation_id='00000000-0000-4000-8000-000000000099'},/Missing legacy source parent/],
   ['category-cycle',b=>{b.tables.categories[0].parent_id=b.tables.categories[1].id;b.tables.categories[1].parent_id=b.tables.categories[0].id},/Category parent cycle/],
   ['foreign-tenant',b=>{b.tables.conversations[0].project_id='00000000-0000-4000-8000-000000000088'},/Missing legacy source parent|Cross-project/],
-  ['damaged-bytes',b=>{b.objects[0].sha256='0'.repeat(64)},/Object digest mismatch/]
+  ['damaged-bytes',b=>{b.objects[0].sha256='0'.repeat(64)},/Object digest mismatch/],
+  ['invalid-manual-flag',b=>{b.tables.ais[0].is_enabled='not-a-boolean'},/Invalid legacy boolean/]
  ]){
   const invalid=structuredClone(raw);mutate(invalid);const path=join(output,name+'.json');await writeFile(path,JSON.stringify(invalid))
   await assert.rejects(run('scripts/import-legacy.mjs',['--file',path,'--apply','--persist-to',refusedState]),error)
   assert.deepEqual(counts(),before,name+' refusal leaves every durable table unchanged')
  }
+ const manual=structuredClone(raw);manual.tables.ais[0].is_enabled='false';manual.tables.ais[0].is_animated='0'
+ const manualPath=join(output,'manual-flags.json');await writeFile(manualPath,JSON.stringify(manual))
+ await run('scripts/import-legacy.mjs',['--file',manualPath,'--apply','--persist-to',refusedState])
+ {const db=new DatabaseSync(database,{readOnly:true});try{const flags=db.prepare('SELECT is_enabled,is_animated FROM ai_profiles WHERE id=?').get(manual.tables.ais[0].id);assert.deepEqual({...flags},{is_enabled:0,is_animated:0},'manual string flags normalize consistently; ordinary SQL export remains numeric')}finally{db.close()}}
  // Source soft-deletion controls are SQL mutations, not invented native flags.
  const contactId=raw.tables.contacts[0].id
  for(const scope of ['contact','project']){

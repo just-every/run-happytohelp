@@ -96,7 +96,8 @@ export async function assertResumedSweep({admin,run,status,env,output,objectDire
  * the mapped target the uninterrupted import journaled), none of her canonical or search rows written, her file removed from
  * R2 with its record; everything else as the uninterrupted import has it. A replay changes nothing. */
 export async function assertFullErasure({output,from,pkg,projectId}){
-  const expectedKeys=JSON.parse(await readFile(join(pkg,'manifest.json'),'utf8')).objects.map(o=>o.key).sort();
+  const manifest=JSON.parse(await readFile(join(pkg,'manifest.json'),'utf8')),expectedKeys=manifest.objects.map(o=>o.key).sort();
+  const erasedIds=new Set([uuid('80',2),uuid('d1',2),uuid('d2',2)]),publicKeys=manifest.objects.filter(o=>!erasedIds.has(String(o.mediaId))).map(o=>o.key).sort();
   const contact=uuid('30',2),conversation=uuid('40',2),media=uuid('80',2),fileKey=`legacy/projects/${projectId}/media/${media}`;
   const now="CAST(unixepoch('subsec')*1000 AS INTEGER)";
   const whole=join(output,'full-whole'),stopped=join(output,'full-stopped');
@@ -128,7 +129,7 @@ export async function assertFullErasure({output,from,pkg,projectId}){
     assert.deepEqual(journal(stoppedDb),atStop,'a full import waiting for an erasure writes nothing');assert.deepEqual(busy(stoppedDb,'SELECT * FROM legacy_delta_leases'),[]);
     write(stoppedDb,`UPDATE contact_erasure_leases SET expires_at=${now}-1`);
     assert.equal(await rerun.exit,0,rerun.stderr);
-    const completed=JSON.parse(rerun.stdout);assert.equal(completed.objectsRemoved,expectedKeys.length);assert.equal(completed.replayed,atStop.length);
+    const completed=JSON.parse(rerun.stdout);assert.equal(completed.objectsRemoved,erasedIds.size);assert.equal(completed.replayed,atStop.length);
     assert.match(rerun.stderr,/"step":"erased","contacts":1,"objects":\d+/);
 
     // Her pending rows: journaled as erasure leaves them, against the targets the uninterrupted import mapped them to.
@@ -157,7 +158,7 @@ export async function assertFullErasure({output,from,pkg,projectId}){
     // Each install mints its own knowledge incarnation; the imported columns agree.
     const articles=database=>{const db=new DatabaseSync(database,{readOnly:true});try{return snapshotTable(db,'knowledge_articles',others.knowledge_articles.columns.filter(column=>column!=='source_incarnation'));}finally{db.close();}};
     assert.deepEqual(articles(stoppedDb),articles(wholeDb),'knowledge_articles');
-    assert.deepEqual(await keys(stopped),[],'her file is removed from R2');assert.deepEqual(read(stoppedDb,'SELECT * FROM legacy_import_objects WHERE object_key=?',fileKey),[],'with its record');
+    assert.deepEqual(await keys(stopped),publicKeys,'her private files are removed while unrelated public article/logo assets stay');assert.deepEqual(read(stoppedDb,'SELECT * FROM legacy_import_objects WHERE object_key=?',fileKey),[],'with its record');
     assert.deepEqual(await keys(whole),expectedKeys);
 
     const settled={business:settledBusiness,objects:await objectsOf(stopped),journal:journal(stoppedDb)};

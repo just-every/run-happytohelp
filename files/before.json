@@ -1,0 +1,43 @@
+{
+  "head": "55e2f106c506e4f671d2e474c737124e760e2233",
+  "results": {
+    "invitation": {
+      "passed": false,
+      "error": "capability never appears in a text node or announcement  true !== false "
+    },
+    "undo": {
+      "passed": false,
+      "error": "locator.waitFor: Timeout 20000ms exceeded. Call log:   - waiting for getByRole('alert').filter({ hasText: 'Synthetic customer with later native work' }) to be visible "
+    }
+  },
+  "imports": [
+    {
+      "id": "a44991c6-45ce-4904-9ba9-c30704a8a80e",
+      "state": "undoing",
+      "error": "NATIVE_EDIT_CONFLICT",
+      "report": {
+        "state": "undoing",
+        "total": 2,
+        "checkpoint": 0,
+        "removed": 0,
+        "restored": 0,
+        "retained": 2,
+        "referencesChecked": false
+      }
+    },
+    {
+      "id": "74cb27f4-3f8e-4708-85d1-6fe70247e656",
+      "state": "undone",
+      "error": null,
+      "report": {
+        "state": "undone",
+        "total": 2,
+        "checkpoint": 2,
+        "removed": 2,
+        "restored": 0,
+        "retained": 0,
+        "referencesChecked": true
+      }
+    }
+  ]
+}

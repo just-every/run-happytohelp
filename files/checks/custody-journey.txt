@@ -1,0 +1,10 @@
+Persisted job handler failed move-in 4e474303-7e76-4eb0-a66c-55f842676018
+✔ an admin reviews conflicts, loses and regains authority, resumes after a Worker stop and keeps later native work when undo refuses (56377.992824ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 56754.562235

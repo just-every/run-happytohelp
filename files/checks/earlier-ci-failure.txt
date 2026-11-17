@@ -1,0 +1,4 @@
+Command: gh run view 44155675717 --repo just-every/run-happytohelp --job 134295808477 --log-failed
+Failure output (environment listing excluded):
+build	Run node scripts/edition-authoring/cli.mjs check	2026-11-17T19:11:09.2912622Z Stale lock or source/tool integrity mismatch; run changes to inspect intentional edits before lock
+build	Run node scripts/edition-authoring/cli.mjs check	2026-11-17T19:11:09.3094352Z ##[error]Process completed with exit code 1.

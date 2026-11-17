@@ -1,0 +1,133 @@
+{
+  "author": "Run Edit Run fleet",
+  "baseline": "55e2f106c506e4f671d2e474c737124e760e2233",
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "log": "/tmp/hh-install.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "log": "/tmp/hh-setup.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "/tmp/hh-typecheck.log"
+    },
+    {
+      "command": "cloud_run node /tmp/hh-invitation-probe.mjs",
+      "exit": 0,
+      "result": "Real Settings \u2192 Agents creation, copy, pending copy and clipboard-denied input; no capability in text/live regions/title/aria labels. Synthetic runtime, Chromium /usr/bin/chromium.",
+      "screenshots": [
+        "screenshots/invitation/invitation-copied-1440.png",
+        "screenshots/invitation/invitation-copied-390.png"
+      ]
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "/tmp/hh-rer-check.log"
+    },
+    {
+      "command": "cloud_run node /tmp/hh-undo-probe.mjs",
+      "exit": 0,
+      "result": "Public Zendesk upload, approval, matching native staff acceptance, undo; separate native contact edit; 21 native edits plus one later native conversation reference.",
+      "receipt": "undo-after.json",
+      "screenshots": [
+        "screenshots/undo/undo-conflicts-1440.png",
+        "screenshots/undo/undo-conflicts-390.png"
+      ]
+    },
+    {
+      "command": "cloud_run node --test --test-concurrency=1 tests/journeys/move-in-custody.mjs",
+      "exit": 0,
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "log": "/tmp/hh-custody.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "/tmp/hh-typecheck-final.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "/tmp/hh-rer-check-final.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "/tmp/hh-lock.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "/tmp/hh-source-check.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "node": "22.20.0",
+      "exit": 0,
+      "log": "/tmp/hh-typecheck-node22.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "node": "22.20.0",
+      "exit": 0,
+      "log": "/tmp/hh-rer-check-node22.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "node": "22.20.0",
+      "exit": 0,
+      "log": "/tmp/hh-lock-node22.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "node": "22.20.0",
+      "exit": 0,
+      "log": "/tmp/hh-source-check-node22.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "node": "22.20.0",
+      "head": "e66af4637ebdcd090328ae9ccd1123f1dad70bc2",
+      "exit": 0,
+      "log": "/tmp/hh-build-node22.log"
+    },
+    {
+      "command": "cloud_run node /tmp/hh-final-proof.mjs",
+      "node": "22.20.0",
+      "head": "e66af4637ebdcd090328ae9ccd1123f1dad70bc2",
+      "exit": 0,
+      "receipt": "candidate-proof.json",
+      "log": "/tmp/hh-final-proof-node22.log"
+    },
+    {
+      "command": "git diff --exit-code && node scripts/edition-authoring/cli.mjs check",
+      "head": "e66af4637ebdcd090328ae9ccd1123f1dad70bc2",
+      "exit": 0,
+      "result": "Clean committed source and complete source inventory after the browser proof."
+    }
+  ],
+  "intermediate_save": "3564affc80c286d14b531d0a61115c016706cc36",
+  "head": "e66af4637ebdcd090328ae9ccd1123f1dad70bc2",
+  "ci": {
+    "calls": 7,
+    "run_id": 44157423018,
+    "status": "in_progress",
+    "head": "e66af4637ebdcd090328ae9ccd1123f1dad70bc2",
+    "earlier_run": {
+      "id": 44155675717,
+      "head": "b5a5ee845c9ab8bb0013ba0bfe696f663dcd5b43",
+      "conclusion": "failure",
+      "cause": "Source lock omitted three newly tracked files; fixed by the final regeneration."
+    },
+    "last_observed_at": "2026-11-17T19:31:44Z"
+  }
+}

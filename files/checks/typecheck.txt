@@ -1,0 +1,4 @@
+
+> happytohelp@0.4.31 typecheck /home/agent/rer-consolidation/work/hh-seed-faults-1/product
+> node scripts/generate-routes.mjs && tsc --noEmit
+

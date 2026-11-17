@@ -1,0 +1,136 @@
+{
+  "staffMatch": "undo completed; native staff retained",
+  "nativeEdit": {
+    "state": "undoing",
+    "total": 2,
+    "checkpoint": 0,
+    "removed": 0,
+    "restored": 0,
+    "retained": 2,
+    "referencesChecked": false,
+    "undoConflicts": {
+      "total": 1,
+      "records": [
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer with later native work",
+          "reason": "changed"
+        }
+      ]
+    }
+  },
+  "reference": {
+    "state": "undoing",
+    "total": 44,
+    "checkpoint": 0,
+    "removed": 0,
+    "restored": 0,
+    "retained": 44,
+    "referencesChecked": false,
+    "undoConflicts": {
+      "total": 22,
+      "records": [
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7311 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7307 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7319 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7313 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7308 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7314 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7317 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7320 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7301 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7300 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7315 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7302 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7316 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7306 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7310 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7321",
+          "reason": "referenced"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7305 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7303 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7309 edited natively",
+          "reason": "changed"
+        },
+        {
+          "kind": "Contact",
+          "name": "Synthetic customer 7312 edited natively",
+          "reason": "changed"
+        }
+      ]
+    }
+  }
+}

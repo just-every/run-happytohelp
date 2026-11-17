@@ -12,7 +12,7 @@ const domainOf = address => String(address || '').split('@')[1] || '';
 
 function Sending({sending, installation, role, projectId}) {
  if (sending?.mode === 'local') return null;
- if (sending?.mode === 'remote') return <><div className="sh-state" data-sending="ready"><span className="h2h-chip"><i className="fe fe-check" aria-hidden="true"/>Working</span><p>Sending is set up: mail goes out through {providers[sending.provider] || sending.provider}{sending.from ? <> from <b>{sending.from}</b></> : null}.</p></div>{role === 'owner' && <OwnerTestMail projectId={projectId}/>}</>;
+ if (sending?.mode === 'remote') return <><div className="sh-state" data-sending="ready"><span className="h2h-chip"><i className="fe fe-check" aria-hidden="true"/>Working</span><p>Sending is set up: mail goes out through {providers[sending.provider] || 'your email service'}{sending.from ? <> from <b>{sending.from}</b></> : null}.</p></div>{role === 'owner' && <OwnerTestMail projectId={projectId}/>}</>;
  return <p data-sending="missing">Sending email is off. Ask your technical person to connect your email service.</p>;
 
 }
@@ -21,9 +21,9 @@ const receivingCopy = (receiving, domain) => ({
  ready: ['Mail server found', <>Mail to <b>{receiving.address}</b> reaches a mail server. Send it a test email: Setup confirms the first one that arrives.</>],
  no_address: ['Not set up', <>Enter the address customers will write to. Changes save automatically.</>],
  local: ['Local trial', null],
- no_token: ['Not available', <>This installation has no receiving credential. Ask the person running it to finish email setup.</>],
- workers_dev: ['Not available', <><b>{receiving.address}</b> can’t receive email: <code>workers.dev</code> addresses have no mail server. Use an address on a domain you own, such as <code>support@in.example.com</code>, then route it as shown below.</>],
- no_mx: ['Not set up', <><b>{receiving.address}</b> can’t receive email yet: <code>{domain}</code> has no mail server (MX record). Route it as shown below.</>],
+ no_token: ['Not available', <>Receiving email needs to be connected. Send the steps above to your technical person.</>],
+ workers_dev: ['Not available', <>This address can’t receive email. Use an address on a domain you own; send the setup steps to your technical person.</>],
+ no_mx: ['Not set up', <><b>{receiving.address}</b> is not connected to a mail service yet. Send the setup steps to your technical person.</>],
  dns_unknown: ['Unknown', <>We couldn’t check the mail records for <code>{domain}</code> just now. Reload the page to try again.</>],
 })[receiving.reason] || ['Waiting', 'The receiving route is being activated.'];
 
@@ -79,7 +79,7 @@ export default function EmailSettings({data, status, field, role, projectId,onRe
    <div className="settings-grid">{field('email_from_address', 'Support Email From Address', 'email')}{field('email_from_name', 'Support Email From Name')}</div>
    <div className="mt-3">{field('is_enabled', 'Email customers and your team about conversations', 'checkbox')}</div>
    <p className="settings-note">On: customers who leave an email get your replies by email, and teammates get alerts. Off also stops receiving.</p>
-   <p className="settings-note">Who gets alerts: the person a conversation is assigned to, when the customer writes and they have not read it. Unassigned conversations alert only people who turned on <b>Notify on unassigned conversation activity</b>, each set under <Link to={`/projects/${projectId}/agents`}>Agents</Link> (open a person, including yourself). It is on for the owner who created the workspace, so a team of one hears about every new conversation; turn it on for whoever else should, or off for anyone who should not.</p>
+   <p className="settings-note">Who gets alerts: the person a conversation is assigned to, when the customer writes and they have not read it. Unassigned conversations alert only people who turned on <b>Notify on unassigned conversation activity</b>, each set under <Link to={`/projects/${projectId}/agents`}>Team</Link> (open a person, including yourself). It is on for the owner who created the workspace, so a team of one hears about every new conversation; turn it on for whoever else should, or off for anyone who should not.</p>
   </Section>
   <Section title="Receive Email">
    {field('inbound_address', 'Receiving address', 'email')}

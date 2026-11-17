@@ -3,6 +3,7 @@ import {nativeRequest} from '../../transport';
 import {packageBase,runnerRequest,rememberPackage,scanPackage,selectPackage,uploadFile} from './client';
 import PackageResult from './Result';
 import DeveloperHandoff from '../../setup-help/DeveloperHandoff';
+const exportSteps='Use this edition’s documented legacy exporter, scripts/export-legacy.mjs, to produce a flat package with manifest.json, row chunks, required context and attachment files. Follow https://github.com/just-every/run-happytohelp/blob/main/docs/LEGACY-EXPORT.md for a consistent read-only snapshot and private attachment packaging. Return the complete import folder securely to the workspace owner; do not send credentials or customer data by email.';
 const size=n=>`${Number(n||0).toLocaleString()} bytes`;
 export default function LegacyPackage({projectId}){
  const [selection,setSelection]=useState(null),[sha,setSha]=useState(()=>new URLSearchParams(window.location.search).get('legacyPackage')||''),[status,setStatus]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[progress,setProgress]=useState(null),[result,setResult]=useState(null),[runner,setRunner]=useState('pending'),[review,setReview]=useState(null),[runs,setRuns]=useState([]),[historyStatus,setHistoryStatus]=useState('loading');
@@ -34,8 +35,8 @@ export default function LegacyPackage({projectId}){
  return <section className="legacy-package" aria-labelledby="legacy-package-title"><h3 id="legacy-package-title">Export from your old HappyToHelp</h3>
  <p>Ask the person who runs your old HappyToHelp installation to prepare your export folder.</p>
  <DeveloperHandoff what="The person running your old installation prepares the export." unlocks="Then you can choose the folder here and review your history." subject="Prepare our original HappyToHelp export"
-  steps="Use this edition’s documented legacy exporter, scripts/export-legacy.mjs, to produce a flat package with manifest.json, row chunks, required context and attachment files. Follow https://github.com/just-every/run-happytohelp/blob/main/docs/LEGACY-EXPORT.md for a consistent read-only snapshot and private attachment packaging. Return the complete import folder securely to the workspace owner; do not send credentials or customer data by email.">
-  <p>Follow the <a href="https://github.com/just-every/run-happytohelp/blob/main/docs/LEGACY-EXPORT.md">Legacy export guide</a> for the export tool and its private inputs. Return the complete import folder securely to the owner.</p>
+  steps={exportSteps}>
+  <pre tabIndex={0}>{exportSteps}</pre><p>Follow the <a href="https://github.com/just-every/run-happytohelp/blob/main/docs/LEGACY-EXPORT.md">Legacy export guide</a> for the export tool and its private inputs. Return the complete import folder securely to the owner.</p>
  </DeveloperHandoff>
  <ol><li>Send the steps to the person running your old installation.</li><li>Ask them for the complete export folder.</li><li>Choose the folder you received below. It contains a file called <code>manifest.json</code>.</li></ol>
  <p>Uploads stay private. Selecting files does not import history.</p>

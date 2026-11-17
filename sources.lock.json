@@ -12937,7 +12937,7 @@
       "executable": false
     },
     "src/ui/native/activation/ProviderSetupNotice.jsx": {
-      "sha256": "51fcdcc228fcbf79569a9355ff20eb6981641942b8e8cf9ee0e82f11e46e2803",
+      "sha256": "597aef19dee0b85316b672ca664b966daf64c4c3a3e6dd15cb091467e6bea664",
       "executable": false
     },
     "src/ui/native/activation/SetRow.jsx": {
@@ -12949,7 +12949,7 @@
       "executable": false
     },
     "src/ui/native/activation/setup-model.js": {
-      "sha256": "ea5309e4000663f6048644136f7756e0030c2473735c0ff52676c32d6170f89f",
+      "sha256": "bf4b2099972ddaca6d2d1d4fa101c02480df39c53740ea0700a5cdca1c5596e9",
       "executable": false
     },
     "src/ui/native/activation/setup-store.js": {
@@ -13221,7 +13221,7 @@
       "executable": false
     },
     "src/ui/native/pages/AssistantsPage.jsx": {
-      "sha256": "581c21991e9db3a48216a8f2047b5aa28cdb07e7bb7c79347346e7345c96276c",
+      "sha256": "9be3d3b9af91536f4d3b8f3af835134dbf937882f09702d18eaa57daab44d503",
       "executable": false
     },
     "src/ui/native/pages/AvailabilitySettings.jsx": {
@@ -13457,7 +13457,7 @@
       "executable": false
     },
     "src/ui/native/pages/EmailSettings.jsx": {
-      "sha256": "111abe41d5aa12e8a01b05fb60166b4e26de82b904a7d1cdd941b41ef6a15735",
+      "sha256": "006f21667c7b12940eebba5f517fd49c96435d2979806396a70005ebb6783aa0",
       "executable": false
     },
     "src/ui/native/pages/forms.jsx": {
@@ -13589,7 +13589,7 @@
       "executable": false
     },
     "src/ui/native/pages/legacy-package/LegacyPackage.jsx": {
-      "sha256": "0e527e53196d541ff84c6f906b4c675e6b9321a38ab3eb98e3c59d8cc676d4bf",
+      "sha256": "54db9d18808436186c68cb067a57bf3f8b6b02f5e88da84608ca1daa6b96b6b9",
       "executable": false
     },
     "src/ui/native/pages/legacy-package/pause-reason.js": {
@@ -14048,8 +14048,32 @@
       "sha256": "a517b2250ed0d43169a450e3c97c3658da55f91f11031568963d452912cfa46c",
       "executable": false
     },
+    "src/ui/native/setup-help/ai-billing.js": {
+      "sha256": "58fc3a86adc850faf5cf3d286f26dfc9613cec0849f3830276e179a9c823f6e5",
+      "executable": false
+    },
+    "src/ui/native/setup-help/AiKeyHandoff.jsx": {
+      "sha256": "0d5b5fa57680ef7dfeb612a421d296f51ad42778dc1952f6f8212a8b2b16835f",
+      "executable": false
+    },
     "src/ui/native/setup-help/CopyCommand.jsx": {
       "sha256": "d3de36863193895722d29fb8b3ed1f1675571c226624faa9e56be8d576349017",
+      "executable": false
+    },
+    "src/ui/native/setup-help/developer-handoff.css": {
+      "sha256": "fb21cd8f129e9a1e7fbd6602189deb412f37e7182a64c6c3d37ba8a76de94da8",
+      "executable": false
+    },
+    "src/ui/native/setup-help/DeveloperHandoff.jsx": {
+      "sha256": "f685c79c2c4650dc84b0dca5b7a97f36c19257a0c82293e17f52b27fee821729",
+      "executable": false
+    },
+    "src/ui/native/setup-help/LocalMailBanner.jsx": {
+      "sha256": "2aeb0b1153f879d761ab3407ae6f4fa9f4b045716b80fb87f35c0b8fd45b9959",
+      "executable": false
+    },
+    "src/ui/native/setup-help/MailProviderHandoff.jsx": {
+      "sha256": "6a31bc69f12fc53f4c5ccc2b5ea1bc673786bae840d961086225b64b6d68e882",
       "executable": false
     },
     "src/ui/native/setup-help/SecretSteps.jsx": {
@@ -16396,6 +16420,10 @@
       "sha256": "5274022e8eb307c53d876796f3778eccde13a6ad69934fd87c83f6a4acfd060c",
       "executable": false
     },
+    "tests/helpers/developer-handoff.mjs": {
+      "sha256": "da5b17ae5b9527d978255a9d656d818bbe4e64103ee994892f3e00d73723c1d3",
+      "executable": false
+    },
     "tests/helpers/email/app.mjs": {
       "sha256": "c75751cce795d0068587bb923ca2c28a047a1cd1271c3952da6a1175c2bd7aea",
       "executable": false
@@ -17277,7 +17305,7 @@
       "executable": false
     },
     "tests/helpers/stranger13-browser.mjs": {
-      "sha256": "4fffe6d694d9a80adbffb3c7db1c5699ff7d2d0d55d7b12e0de0393ee0183c51",
+      "sha256": "23aeb73cbab8d1e131a447e13429c404c9ec4cfe8318fbb2f4b9249caffb2043",
       "executable": false
     },
     "tests/helpers/support-channels/browser-network.mjs": {
@@ -17793,7 +17821,7 @@
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/browser.mjs": {
-      "sha256": "f900081f5d3cf013cde6b34eeeecc73945632732520db144ff9c3682132946c7",
+      "sha256": "b539941f6da8f0054d2e6ef3295e9996c08647ee2ca6dcaae4e311a797176449",
       "executable": false
     },
     "tests/move-in/legacy-adoption-integration/erasure-states.mjs": {
@@ -17841,11 +17869,11 @@
       "executable": false
     },
     "tests/move-in/legacy-package-upload/auth-return.mjs": {
-      "sha256": "d0595c56317dd64078e401d83f382d2345ba3707f6a1b1a3a550609c7da04667",
+      "sha256": "12eeea6c7f861823721cdc524a9b2334583efc23ae24a5289487490a47260c78",
       "executable": false
     },
     "tests/move-in/legacy-package-upload/browser.mjs": {
-      "sha256": "dbf78228d4e16a8a2f8150b5818ec89e2e8492a061d94501eff66736c34d622f",
+      "sha256": "519de43f0fd7c75dabeec48c2c43734146ac0aa917332cbf99a7e744431048a0",
       "executable": false
     },
     "tests/move-in/legacy-package-upload/fixture.mjs": {
@@ -17905,7 +17933,7 @@
       "executable": false
     },
     "tests/move-in/zendesk-offline-browser.mjs": {
-      "sha256": "df4ecb3efdca0bd1e97dde3cf3e9f97ead09491b069c4c44d7363e29e4b62697",
+      "sha256": "7445ce80e7718219bf28d6b454d27185bd3c66ba4dd61f19844dd9223dfe3b32",
       "executable": false
     },
     "tests/move-in/zendesk-offline-fixture.mjs": {

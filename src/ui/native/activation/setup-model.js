@@ -66,6 +66,8 @@ export function modelKeyState(data) {
 /** `waiting|checking|problem|review` plus the words shown beside it, for one needs-you step. */
 export function needStatus(data, item) {
  const {id, state, detail} = item, facts = data.facts || {};
+ if (id === 'model_key' && state === 'failed') return {status: 'problem', text: 'Your provider did not accept the key.'};
+ if (id === 'model_key' && modelKeyState(data) === 'blocked') return {status: 'waiting', text: 'Your provider refused the key check.'};
  if (state === 'failed') return {status: 'problem', text: detail};
  if (state === 'checking') return {status: 'checking', text: 'Checking now'};
  if (id === 'model_key') return modelKeyState(data) === 'blocked' ? {status: 'waiting', text: sentence(detail)} : {status: 'waiting', text: facts.ai?.keyInstalled ? 'Waiting for your provider key to be checked' : 'Waiting for a key'};
@@ -124,14 +126,14 @@ function rowFor(data, id) {
     const names = own?.state === 'unavailable' ? requiredNames(own.detail) : '';
     return {...base, state: 'unavailable', value: `Outbound email is off for this installation, so we can’t email you.${names ? ` Turning it on needs ${names}.` : ''}`};
    }
-   return withObservation('set', facts.mail?.mode === 'local' ? 'Email is suppressed during local development. No email is sent.' : observed ? `${/delivered/i.test(own.receiptRef || '') ? 'Delivered' : 'Received'}. ${own.checkedAt ? `Confirmed ${utc(own.checkedAt)}.` : ''}`.trim() : 'Not confirmed yet. Signing in with an emailed link, or the test on the Email page, confirms it.');
+   return withObservation('set', facts.mail?.mode === 'local' ? 'Email is off on this computer.' : observed ? `${/delivered/i.test(own.receiptRef || '') ? 'Delivered' : 'Received'}. ${own.checkedAt ? `Confirmed ${utc(own.checkedAt)}.` : ''}`.trim() : 'Not confirmed yet. Signing in with an emailed link, or the test on the Email page, confirms it.');
   }
   case 'inbound_address': {
    if(facts.mail?.managed){const m=facts.mail.managed;return {...base,state:m.error?'problem':m.observed?'confirmed':'set',value:`${m.address||'Your managed address'}. ${m.error|| (m.observed?'Email has arrived here.':m.routeActive?'Route active; waiting for the first email.':'Run Edit Run is activating the route. No email setup is needed.')}`};}
    // Replies by email: customers answer an emailed reply by pressing Reply. Each reason says what is true and where to act.
    const mailbox = facts.inboundAddress, lead = mailbox ? `${mailbox}. ` : '', reason = facts.inbound?.receiving;
    if (reason === 'workers_dev' || facts.inbound?.customDomainRequired) return {...base, state: 'unavailable', value: `${lead}This address can’t receive email: workers.dev addresses have no mail server. Customers answer in the chat for now. To let them reply by email, use an address on your own domain; the Email page shows how.`};
-   if (own && own.applicable === false) return {...base, state: 'unavailable', value: `${lead}${local ? 'Email can’t be received on a local trial. It works once you deploy with your own domain.' : 'Replies by email are not available with this mail provider.'}`};
+   if (own && own.applicable === false) return {...base, state: 'unavailable', value: `${lead}${local ? 'Email is off on this computer.' : 'Replies by email are not available with this mail provider.'}`};
    if (facts.inbound && !facts.inbound.gateway) return {...base, state: 'unavailable', value: `${lead}This installation has no inbound token, so it can’t receive email. Run rer setup in your checkout, then deploy again.`};
    if (!mailbox) return {...base, state: 'unavailable', value: 'Customers answer your emails in the chat for now. To let them reply by email, set a receiving address on the Email page.'};
    if (facts.inbound && !facts.inbound.enabled) return {...base, state: 'off', value: `${lead}Conversation email is off. Turn it on in Email settings.`};

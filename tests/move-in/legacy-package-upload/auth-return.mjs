@@ -42,7 +42,7 @@ export async function legacyMoveInAuthReturn(browser,{width=1440,inspect=async()
   const resumed=page=>page.waitForRequest(request=>request.isNavigationRequest()&&new URL(request.url()).pathname==='/app/move-in').then(request=>assertContinuation(request.url()))
   const ready=async(page,name)=>{
    await page.waitForURL(url=>url.pathname+url.search===destination)
-   await page.getByRole('heading',{name:'HappyToHelp export',exact:true}).waitFor()
+   await page.getByRole('heading',{name:'Export from your old HappyToHelp',exact:true}).waitFor()
    await inspect(page,`${name}-${width}`)
   }
   const passwordPage=await fresh();await prepareLogin(passwordPage)

@@ -1,0 +1,105 @@
+2026-11-17T12:35:41.6517967Z TAP version 13
+2026-11-17T12:35:42.1744215Z # (node:2516) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+2026-11-17T12:35:42.1745491Z # (Use `node --trace-warnings ...` to show where the warning was created)
+2026-11-17T12:38:27.4141255Z # AUTOMATION-001 sandbox Route refunds {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+2026-11-17T12:38:28.7493500Z # AUTOMATION-001 sandbox Tag VIP refunds {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+2026-11-17T12:38:29.6582682Z # AUTOMATION-001 sandbox Set refund status {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+2026-11-17T12:38:30.2637814Z # AUTOMATION-001 sandbox Remind refund assignee {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+2026-11-17T12:40:09.4716214Z # Subtest: a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow
+2026-11-17T12:40:09.4722086Z ok 1 - a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow
+2026-11-17T12:40:09.4724422Z   ---
+2026-11-17T12:40:09.4724770Z   duration_ms: 267298.167485
+2026-11-17T12:40:09.4724999Z   type: 'test'
+2026-11-17T12:40:09.4725185Z   ...
+2026-11-17T12:41:17.1124390Z # Subtest: a support lead reviews measured triage accuracy, approves prediction routing and corrects the evidence on a real admitted customer ticket
+2026-11-17T12:41:17.1126478Z ok 2 - a support lead reviews measured triage accuracy, approves prediction routing and corrects the evidence on a real admitted customer ticket
+2026-11-17T12:41:17.1128072Z   ---
+2026-11-17T12:41:17.1128689Z   duration_ms: 67641.132566
+2026-11-17T12:41:17.1129085Z   type: 'test'
+2026-11-17T12:41:17.1129337Z   ...
+2026-11-17T12:43:06.8392432Z # Native runtime failure artifacts retained: /tmp/h2h-native-runtime-37GtcB
+2026-11-17T12:43:06.8397043Z # Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+2026-11-17T12:43:06.8417155Z not ok 3 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+2026-11-17T12:43:06.8446308Z   ---
+2026-11-17T12:43:06.8476115Z   duration_ms: 109722.470744
+2026-11-17T12:43:06.8476452Z   type: 'test'
+2026-11-17T12:43:06.8477096Z   location: '/home/runner/work/run-happytohelp/run-happytohelp/tests/journeys/workflows-browser.mjs:17:1'
+2026-11-17T12:43:06.8477773Z   failureType: 'testCodeFailure'
+2026-11-17T12:43:06.8478120Z   error: |-
+2026-11-17T12:43:06.8478430Z     locator.waitFor: Timeout 30000ms exceeded.
+2026-11-17T12:43:06.8478821Z     Call log:
+2026-11-17T12:43:06.8479675Z       - waiting for getByRole('button', { name: 'refund · Version 1', exact: true }) to be visible
+2026-11-17T12:43:06.8480228Z     
+2026-11-17T12:43:06.8480456Z   code: 'ERR_TEST_FAILURE'
+2026-11-17T12:43:06.8480763Z   name: 'TimeoutError'
+2026-11-17T12:43:06.8481026Z   stack: |-
+2026-11-17T12:43:06.8481796Z     proceduresBrowserJourney (/home/runner/work/run-happytohelp/run-happytohelp/tests/helpers/ai/procedures-browser.mjs:41:105)
+2026-11-17T12:43:06.8483015Z     async TestContext.<anonymous> (/home/runner/work/run-happytohelp/run-happytohelp/tests/journeys/workflows-browser.mjs:20:6)
+2026-11-17T12:43:06.8483700Z   ...
+2026-11-17T12:44:17.5456110Z # Subtest: an operator links a customer quote, hands it to Penny with explicit permission, receives a signed release and approves one service update while recovery stays unconfirmed
+2026-11-17T12:44:17.5458027Z ok 4 - an operator links a customer quote, hands it to Penny with explicit permission, receives a signed release and approves one service update while recovery stays unconfirmed
+2026-11-17T12:44:17.5458950Z   ---
+2026-11-17T12:44:17.5459197Z   duration_ms: 70710.321731
+2026-11-17T12:44:17.5459486Z   type: 'test'
+2026-11-17T12:44:17.5459737Z   ...
+2026-11-17T12:45:39.8383589Z # PROBE CRM-001 3: built connected operator customer without readable ticket -> native CRM 404 retained; no panel or CRM error
+2026-11-17T12:45:40.4384884Z # PROBE CRM-001 4: built customer source summary at 390 -> 229.09375x44, both dimensions >=44px
+2026-11-17T12:45:48.9287342Z # PROBE CRM-001 2: owner/custom inbox role built customer and ticket screens before connect and after disconnect -> no panel at 1440/390; built-in Agent also hidden before connect
+2026-11-17T12:45:50.4924393Z # PROBE CRM-001 5: built operator fresh/stale/unmapped panels -> one localized Last refreshed value, matching owner; existing source disclosure, reply draft and six write refusals retained
+2026-11-17T12:45:57.3570502Z # Subtest: an owner maps and refreshes HubSpot context while unsaved edits and revoked permissions remain safe
+2026-11-17T12:45:57.3571439Z ok 5 - an owner maps and refreshes HubSpot context while unsaved edits and revoked permissions remain safe
+2026-11-17T12:45:57.3571939Z   ---
+2026-11-17T12:45:57.3572291Z   duration_ms: 99811.257851
+2026-11-17T12:45:57.3572859Z   type: 'test'
+2026-11-17T12:45:57.3573125Z   ...
+2026-11-17T12:47:55.1629358Z # Subtest: governed advice retains evaluation state, refuses failed releases, links bounded production traces and stops; human promises remain unsent drafts
+2026-11-17T12:47:55.1631043Z ok 6 - governed advice retains evaluation state, refuses failed releases, links bounded production traces and stops; human promises remain unsent drafts
+2026-11-17T12:47:55.1631899Z   ---
+2026-11-17T12:47:55.1632171Z   duration_ms: 117805.3836
+2026-11-17T12:47:55.1632473Z   type: 'test'
+2026-11-17T12:47:55.1632729Z   ...
+2026-11-17T12:49:08.0947563Z # Subtest: support-channel settings, original-channel replies and shared customer controls stay authorized
+2026-11-17T12:49:08.0997294Z ok 7 - support-channel settings, original-channel replies and shared customer controls stay authorized
+2026-11-17T12:49:08.1026326Z   ---
+2026-11-17T12:49:08.1056307Z   duration_ms: 72929.948716
+2026-11-17T12:49:08.1056960Z   type: 'test'
+2026-11-17T12:49:08.1086543Z   ...
+2026-11-17T12:50:08.2343333Z # Subtest: a lead adds a readable ticket field to a public request form with default permissions and an empty read-role list
+2026-11-17T12:50:08.2344591Z ok 8 - a lead adds a readable ticket field to a public request form with default permissions and an empty read-role list
+2026-11-17T12:50:08.2345044Z   ---
+2026-11-17T12:50:08.2345241Z   duration_ms: 60141.435945
+2026-11-17T12:50:08.2345452Z   type: 'test'
+2026-11-17T12:50:08.2345629Z   ...
+2026-11-17T12:51:10.7971321Z # Subtest: an owner chooses named workspace bindings and issues a machine credential with the same scoped IDs
+2026-11-17T12:51:10.7972761Z ok 9 - an owner chooses named workspace bindings and issues a machine credential with the same scoped IDs
+2026-11-17T12:51:10.7990146Z   ---
+2026-11-17T12:51:10.7990528Z   duration_ms: 62562.611325
+2026-11-17T12:51:10.7990879Z   type: 'test'
+2026-11-17T12:51:10.7991161Z   ...
+2026-11-17T12:52:10.8423556Z # Subtest: a signed-in owner discovers workspace creation in both menus and reaches Setup as its owner
+2026-11-17T12:52:10.8424730Z ok 10 - a signed-in owner discovers workspace creation in both menus and reaches Setup as its owner
+2026-11-17T12:52:10.8425351Z   ---
+2026-11-17T12:52:10.8425633Z   duration_ms: 60044.233561
+2026-11-17T12:52:10.8426071Z   type: 'test'
+2026-11-17T12:52:10.8426333Z   ...
+2026-11-17T12:52:13.7744589Z 1..10
+2026-11-17T12:52:13.7744935Z # tests 10
+2026-11-17T12:52:13.7745170Z # suites 0
+2026-11-17T12:52:13.7746845Z # pass 9
+2026-11-17T12:52:13.7747151Z # fail 1
+2026-11-17T12:52:13.7747410Z # cancelled 0
+2026-11-17T12:52:13.7747710Z # skipped 0
+2026-11-17T12:52:13.7748012Z # todo 0
+2026-11-17T12:52:13.7748286Z # duration_ms 992132.113289
+2026-11-17T12:52:13.7786942Z ##[endgroup]
+2026-11-17T12:52:13.7787267Z {
+2026-11-17T12:52:13.7787476Z   "failures": [
+2026-11-17T12:52:13.7787676Z     {
+2026-11-17T12:52:13.7788234Z       "command": "node --test --test-concurrency=1 tests/journeys/workflows-browser.mjs",
+2026-11-17T12:52:13.7788808Z       "code": 1,
+2026-11-17T12:52:13.7789086Z       "signal": null
+2026-11-17T12:52:13.7789373Z     }
+2026-11-17T12:52:13.7789602Z   ],
+2026-11-17T12:52:13.7789841Z   "interrupted": false
+2026-11-17T12:52:13.7790169Z }
+2026-11-17T12:52:13.7829515Z ##[error]Process completed with exit code 1.

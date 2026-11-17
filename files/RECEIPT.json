@@ -1,0 +1,91 @@
+{
+  "tag": "hh-stranger13-behaviour-1-c2",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger13-behaviour-1-c2",
+  "head": "4054c90ab0f0eda9d81eba6152d5c9ef2d7f920f",
+  "main": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "candidate": "c0b85c26bc44e77e3d943df1a3584aa8e712b799",
+  "comparison_base": "b2b9bc602a73feb542017bca8a46529f68b631c4",
+  "commits": 1,
+  "parents": 1,
+  "merges": 0,
+  "changed_files": 30,
+  "equal_patches": 28,
+  "insertions": 284,
+  "deletions": 65,
+  "contract_counts_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "contract_counts_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "clause_status_changes": [],
+  "checks": {
+    "setup": {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --answers .seed/local-answers.json --non-interactive",
+      "exit": 0
+    },
+    "build": {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    "lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    "lock_check": {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    "rer_check": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "touched_journeys": {
+      "command": "cloud_run node --test --test-concurrency=1 /tmp/hh-touched.mjs",
+      "node": "22.20.0",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "exit": 0
+    },
+    "phone_proof": {
+      "command": "cloud_run node /tmp/hh-phone-proof.mjs",
+      "node": "22.20.0",
+      "exit": 0
+    }
+  },
+  "push": {
+    "attempts": 1,
+    "success": true,
+    "force": false,
+    "product_pushes": 1
+  },
+  "verify": {
+    "id": 44084276591,
+    "head_sha": "4054c90ab0f0eda9d81eba6152d5c9ef2d7f920f",
+    "status": "completed",
+    "conclusion": "success",
+    "initial_conclusion": "failure",
+    "failed_job": 134043306344,
+    "reruns": 1,
+    "github_calls_used": 10,
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44084276591",
+    "run_attempt": 2
+  },
+  "pr": null,
+  "blockers": [],
+  "worktree_clean": true,
+  "terminal": "READY"
+}

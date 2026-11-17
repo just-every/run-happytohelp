@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: ticket reference search
+ok 1 - ticket reference search
+  ---
+  duration_ms: 6459.534558
+  type: 'test'
+  ...
+# Subtest: ticket reference preview and screen proof
+ok 2 - ticket reference preview and screen proof
+  ---
+  duration_ms: 164621.027749
+  type: 'test'
+  ...
+# Subtest: competing replies route
+ok 3 - competing replies route
+  ---
+  duration_ms: 8130.982207
+  type: 'test'
+  ...
+# Subtest: consecutive status priority tag edits and Solved contact history
+ok 4 - consecutive status priority tag edits and Solved contact history
+  ---
+  duration_ms: 160453.189747
+  type: 'test'
+  ...
+# Subtest: competing replies browser and desktop/phone proof
+ok 5 - competing replies browser and desktop/phone proof
+  ---
+  duration_ms: 333144.063259
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 676346.706074

@@ -1,0 +1,11 @@
+diff --git a/tests/journeys/inbox-browser.mjs b/tests/journeys/inbox-browser.mjs
+index e457ae5..0f73149 100644
+--- a/tests/journeys/inbox-browser.mjs
++++ b/tests/journeys/inbox-browser.mjs
+@@ -22,3 +22,6 @@ test('an owner previews a shared macro handoff to a UI-invited agent, edits and
+ 
+ import {mergePickerBrowser} from '../helpers/stranger13-browser.mjs'
+ test('an operator finds a merge by requester or subject and explicitly chooses the surviving ticket',mergePickerBrowser)
++
++import {ticketReferenceBrowser} from '../helpers/inbox/ticket-reference-browser.mjs'
++test('a saved reply previews the short support reference and working link on a widget ticket, matching its operator header and page title',ticketReferenceBrowser)

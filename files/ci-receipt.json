@@ -1,0 +1,263 @@
+{
+  "budget": 10,
+  "calls": [
+    {
+      "call": 1,
+      "at": "2026-11-17T12:33:41Z",
+      "action": "exact-SHA discovery",
+      "result": {
+        "conclusion": null,
+        "head_sha": "4054c90ab0f0eda9d81eba6152d5c9ef2d7f920f",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44084276591",
+        "id": 44084276591,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 2,
+      "at": "2026-11-17T12:39:02Z",
+      "action": "run poll",
+      "result": {
+        "conclusion": null,
+        "head_sha": "4054c90ab0f0eda9d81eba6152d5c9ef2d7f920f",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44084276591",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 3,
+      "at": "2026-11-17T12:44:25Z",
+      "action": "run poll",
+      "result": {
+        "conclusion": null,
+        "head_sha": "4054c90ab0f0eda9d81eba6152d5c9ef2d7f920f",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44084276591",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 4,
+      "at": "2026-11-17T12:49:46Z",
+      "action": "run poll",
+      "result": {
+        "conclusion": null,
+        "head_sha": "4054c90ab0f0eda9d81eba6152d5c9ef2d7f920f",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44084276591",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 5,
+      "at": "2026-11-17T13:00:17Z",
+      "action": "run poll",
+      "result": {
+        "conclusion": null,
+        "head_sha": "4054c90ab0f0eda9d81eba6152d5c9ef2d7f920f",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44084276591",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 6,
+      "at": "2026-11-17T13:11:13Z",
+      "action": "run poll",
+      "result": {
+        "conclusion": "failure",
+        "head_sha": "4054c90ab0f0eda9d81eba6152d5c9ef2d7f920f",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44084276591",
+        "status": "completed"
+      }
+    },
+    {
+      "call": 7,
+      "action": "completed-run jobs",
+      "result": [
+        {
+          "completed_at": "2026-11-17T12:34:12Z",
+          "conclusion": "success",
+          "id": 134042505011,
+          "name": "contract-docs",
+          "started_at": "2026-11-17T12:33:40Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T12:33:55Z",
+          "conclusion": "success",
+          "id": 134042505714,
+          "name": "plan",
+          "started_at": "2026-11-17T12:33:40Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T12:35:05Z",
+          "conclusion": "success",
+          "id": 134042668109,
+          "name": "build",
+          "started_at": "2026-11-17T12:34:00Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T12:33:55Z",
+          "conclusion": "skipped",
+          "id": 134042671663,
+          "name": "slow",
+          "started_at": "2026-11-17T12:33:56Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T12:38:15Z",
+          "conclusion": "success",
+          "id": 134043305885,
+          "name": "size-check",
+          "started_at": "2026-11-17T12:35:07Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T12:52:39Z",
+          "conclusion": "success",
+          "id": 134043306199,
+          "name": "Verify / assistant-and-knowledge",
+          "started_at": "2026-11-17T12:35:08Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T13:03:45Z",
+          "conclusion": "success",
+          "id": 134043306208,
+          "name": "Verify / support-and-recovery",
+          "started_at": "2026-11-17T12:35:07Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T12:47:48Z",
+          "conclusion": "success",
+          "id": 134043306264,
+          "name": "Verify / connections-and-computers",
+          "started_at": "2026-11-17T12:35:07Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T13:01:33Z",
+          "conclusion": "success",
+          "id": 134043306333,
+          "name": "Verify / import-and-reports",
+          "started_at": "2026-11-17T12:35:08Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T12:51:02Z",
+          "conclusion": "success",
+          "id": 134043306342,
+          "name": "Verify / identity-and-desk",
+          "started_at": "2026-11-17T12:35:07Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T12:52:21Z",
+          "conclusion": "failure",
+          "id": 134043306344,
+          "name": "Verify / support-workflow-browser",
+          "started_at": "2026-11-17T12:35:08Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "failure",
+              "name": "Run shard checks"
+            }
+          ]
+        },
+        {
+          "completed_at": "2026-11-17T12:48:43Z",
+          "conclusion": "success",
+          "id": 134043306346,
+          "name": "Verify / identity-and-repair-browser",
+          "started_at": "2026-11-17T12:35:07Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T12:46:28Z",
+          "conclusion": "success",
+          "id": 134043306361,
+          "name": "Verify / public-and-import-browser",
+          "started_at": "2026-11-17T12:35:07Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T12:38:15Z",
+          "conclusion": "skipped",
+          "id": 134045016683,
+          "name": "nightly-proof",
+          "started_at": "2026-11-17T12:38:16Z",
+          "status": "completed",
+          "steps": []
+        },
+        {
+          "completed_at": "2026-11-17T13:03:56Z",
+          "conclusion": "failure",
+          "id": 134058845106,
+          "name": "verify",
+          "started_at": "2026-11-17T13:03:47Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "failure",
+              "name": "Require the plan and every selected check"
+            }
+          ]
+        },
+        {
+          "completed_at": "2026-11-17T13:03:45Z",
+          "conclusion": "skipped",
+          "id": 134058847127,
+          "name": "full-push-proof",
+          "started_at": "2026-11-17T13:03:45Z",
+          "status": "completed",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "call": 8,
+      "action": "failed assertion archive",
+      "command": "gh run view 44084276591 --repo just-every/run-happytohelp --job 134043306344 --log-failed",
+      "exit": 0,
+      "stdout_bytes": 0,
+      "cache": "/tmp/gh-cli-cache/run-log-44084276591-1794918817.zip",
+      "cached_step": "Verify _ support-workflow-browser/12_Run shard checks.txt",
+      "note": "Read the already downloaded CLI archive locally; no extra API call or blob download."
+    },
+    {
+      "call": 9,
+      "at": "2026-11-17T13:12:23Z",
+      "action": "rerun known flaky job once",
+      "command": "gh api --method POST repos/just-every/run-happytohelp/actions/jobs/134043306344/rerun --silent",
+      "exit": 0
+    },
+    {
+      "call": 10,
+      "at": "2026-11-17T13:49:30Z",
+      "action": "final exact-head run poll",
+      "result": {
+        "conclusion": "success",
+        "head_sha": "4054c90ab0f0eda9d81eba6152d5c9ef2d7f920f",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44084276591",
+        "run_attempt": 2,
+        "status": "completed"
+      }
+    }
+  ],
+  "total_calls": 10
+}

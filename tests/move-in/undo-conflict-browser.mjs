@@ -49,7 +49,7 @@ export async function undoConflictBrowser({page,origin,project,shot}){
  const contact=contacts.find(c=>c.email==='synthetic-hh-7200@example.test');assert.ok(contact)
  await page.goto(origin+base+'/contacts/'+contact.id)
  const changedName='Synthetic customer with later native work'
- await page.getByLabel('Name',{exact:true}).fill(changedName)
+ await page.getByLabel('Provided name',{exact:true}).fill(changedName)
  await page.getByRole('button',{name:'Save',exact:true}).click()
  await page.getByRole('status').filter({hasText:'Saved'}).waitFor()
  await page.goto(origin+base+'/move-in')
@@ -61,7 +61,7 @@ export async function undoConflictBrowser({page,origin,project,shot}){
  await page.getByRole('alert').filter({hasText:changedName}).waitFor()
  const editReport=(await call(edited.path)).data.report
  assert.ok(editReport.undoConflicts.records.some(r=>r.name===changedName&&r.reason==='changed'))
- assert.equal((await call(api+'/contacts/'+contact.id)).data.name,changedName)
+ assert.equal(JSON.parse((await call(api+'/contacts/'+contact.id)).data.metadata_json).provided_name,changedName)
  // More than one diagnostic window and more than twenty conflicts: the last
  // contact is used by a new native conversation, the others have native edits.
  const referenced=await upload(7300,22)

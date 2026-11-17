@@ -9092,6 +9092,10 @@
       "sha256": "f351e47324085f53f086363c674bc5c05a07fbb1b9aa435b9de20c17f7d52d27",
       "executable": false
     },
+    "src/modules/move-in/undo-conflicts.ts": {
+      "sha256": "020c33ec865b6c035d0a57ed33ce12909046b45fb6994d3defe0112f63a9259c",
+      "executable": false
+    },
     "src/modules/move-in/undo-progress.ts": {
       "sha256": "b25d31cf93ac4732aba767bb4d88ecd85f559bece0b2aadfdfcb83b483eab22b",
       "executable": false
@@ -13680,6 +13684,10 @@
       "sha256": "8e2416623b0dd9d6b97a92490f140a21079164056cf9406a7654a29b73060184",
       "executable": false
     },
+    "src/ui/native/pages/MoveInUndoConflict.jsx": {
+      "sha256": "1b586433055054f75daf575b536b0d3f1af1f18e8770a5a09d8e8826986a6e62",
+      "executable": false
+    },
     "src/ui/native/pages/MoveInZendesk.jsx": {
       "sha256": "c4badfee6600bc1f1d7f6f02f6d1a2af0924700eb9bb22eabb5280344db22903",
       "executable": false
@@ -17886,6 +17894,10 @@
     },
     "tests/move-in/undo-browser.mjs": {
       "sha256": "eb72f69dd632b5ddd6b69c078c47f5b70d70288a807cd9ec3eb63524faa20179",
+      "executable": false
+    },
+    "tests/move-in/undo-conflict-browser.mjs": {
+      "sha256": "d9561fa1b0907e95c3518e223c3a85e7c1b4b9f7403fedf7c2f4689aaac43f7f",
       "executable": false
     },
     "tests/move-in/vendor-replies.mjs": {

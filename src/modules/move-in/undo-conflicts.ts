@@ -26,7 +26,8 @@ function recordName(p:ProvenanceRow,target:TargetRow|undefined,sourceName:string
  const value=target?.value as unknown as NativeValue|undefined,row=value?.tables[tables[p.targetKind]]?.[0]
  const config=row?.config_json?JSON.parse(row.config_json):null
  const reply=p.targetKind==='reply'?(value?.tables.messages?.[0]?.content||value?.tables.move_in_notes?.[0]?.content):null
- const name=row?.name||row?.title||row?.subject||config?.name||config?.title||reply||sourceName
+ const providedName=p.targetKind==='contact'&&row?.metadata_json?JSON.parse(row.metadata_json).provided_name:null
+ const name=providedName||row?.name||row?.title||row?.subject||config?.name||config?.title||reply||sourceName
  return String(name||`Source ${p.sourceKind} ${p.sourceId}`).slice(0,500)
 }
 export async function advanceUndoConflictReport(env:Env,run:Run):Promise<boolean>{

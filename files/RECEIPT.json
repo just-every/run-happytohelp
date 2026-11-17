@@ -1,0 +1,196 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-design-d20-1-c1",
+  "head": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+  "parents": [
+    "b6f16fc44feaad1164753d895419bb78e61e40e3"
+  ],
+  "upstream_d20_head": "d36288793b599c22034881a6eeda46e71c01dd37",
+  "candidate_commits": 1,
+  "commit_identity": {
+    "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": []
+  },
+  "pull_request": null,
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "browser": "system Chromium 154.0.8037.57, headless, --no-sandbox"
+  },
+  "checks": {
+    "setup": {
+      "exit": 0,
+      "migrations": 200,
+      "environment": "isolated local trial"
+    },
+    "pnpm run typecheck": {
+      "exit": 0
+    },
+    "pnpm exec rer check --profile first-party": {
+      "exit": 0
+    },
+    "node scripts/edition-authoring/cli.mjs lock": {
+      "exit": 0
+    },
+    "node scripts/edition-authoring/cli.mjs check": {
+      "exit": 0
+    },
+    "node src/site/base/contract-docs.mjs check": {
+      "exit": 0
+    },
+    "node scripts/contract-docs.mjs check": {
+      "exit": 0
+    },
+    "node scripts/delivery/secret-declarations.mjs": {
+      "exit": 0
+    },
+    "npx -y @runeditrun/rer build": {
+      "exit": 0
+    },
+    "git diff --check": {
+      "exit": 0
+    },
+    "identity_route_registrations": {
+      "path": "tests/journeys/identity.mjs",
+      "status": "pass",
+      "summary": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skipped": 0
+      },
+      "duration_ms": 50297.426525,
+      "tests": [
+        "the first owner claims once, signs in, invites and recovers a teammate, admits signed visitors and retains account identity after workspace deletion",
+        "an owner enrolls factors, enforces teammate enrollment, steps up to export and recovers lost factors with audited single-use authority"
+      ]
+    },
+    "invitationJoinBrowser in tests/helpers/identity/magic-browser.mjs": {
+      "status": "pass",
+      "assertion_viewport_width": 1440,
+      "proof_widths": [
+        1440,
+        390
+      ]
+    },
+    "macro handoff in tests/journeys/inbox-browser.mjs": {
+      "status": "pass",
+      "summary": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0
+      },
+      "duration_ms": 196780.470912,
+      "tests": [
+        "an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over"
+      ],
+      "assertion_viewport_width": 1440
+    },
+    "identity_browser_registration": {
+      "path": "tests/journeys/identity-browser.mjs",
+      "status": "pass",
+      "summary": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0
+      },
+      "duration_ms": 646845.104989,
+      "tests": [
+        "a new teammate chooses a password and opens the inbox signed in, and an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session"
+      ]
+    }
+  },
+  "counts": {
+    "extra_sign_ins_after_password_choice": {
+      "before": 1,
+      "after": 0
+    },
+    "identity_route_registrations": {
+      "before": 14,
+      "after": 14
+    },
+    "identity_browser_registrations": {
+      "before": 6,
+      "after": 6
+    },
+    "inbox_browser_registrations": {
+      "before": 7,
+      "after": 7
+    },
+    "clauses_before": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    },
+    "clauses_after": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    },
+    "clause_status_changes": []
+  },
+  "push": {
+    "status": "verified on origin",
+    "attempts": 1,
+    "remote_ref": "refs/heads/cloud/hh-owner-design-d20-1-c1",
+    "pushed_at": "2026-11-17T22:49:24Z"
+  },
+  "verify": {
+    "conclusion": null,
+    "head_sha": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44193740986",
+    "status": "in_progress",
+    "id": 44193740986,
+    "discovery": {
+      "conclusion": null,
+      "head_sha": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44193740986",
+      "id": 44193740986,
+      "run_attempt": 1,
+      "status": "in_progress"
+    },
+    "observations": [
+      {
+        "status": "in_progress",
+        "conclusion": null,
+        "head_sha": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44193740986"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44193740986",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44193740986",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44193740986",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44193740986",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44193740986",
+        "status": "in_progress"
+      }
+    ]
+  }
+}

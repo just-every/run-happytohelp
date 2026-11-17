@@ -1,0 +1,76 @@
+{
+  "files": [
+    {
+      "blob": "de1ec68b2e8781847ae78c1704a0aa5576f635bc",
+      "bytes": 5882,
+      "path": "RECEIPT.json",
+      "sha256": "40ecf56dc2886050879729b969f7ff0f33d010700ad8167dffbd0e7270bd333e"
+    },
+    {
+      "blob": "571f8ec06e39263503ac4300f1cfb2f34dc69189",
+      "bytes": 8620,
+      "path": "REPORT.md",
+      "sha256": "82327083524e480b6eb389ce16dd3da5983b782acad2729631c5c397f0970d4a"
+    },
+    {
+      "blob": "202ce4b0ab7d4e5d2bb5d3caa67246a59234e78d",
+      "bytes": 1964,
+      "path": "SCREENSHOTS.json",
+      "sha256": "e81aafc7b9c5f2327f97f73a3cbcf619a495596cb529ec2c63f67ce9f4a62592"
+    },
+    {
+      "blob": "c75b765237522ae396ce7f9975c024b29bc5072a",
+      "bytes": 60041,
+      "path": "screenshots/accept-invitation-1440.png",
+      "sha256": "ac17b844f99336b3622e6fbbe7facefadb4c2501fd58bad727acec6ee289a251"
+    },
+    {
+      "blob": "69d4d451ef00e37115617349a6858506883b7d1f",
+      "bytes": 46074,
+      "path": "screenshots/accept-invitation-390.png",
+      "sha256": "ac65c8ff730963c725fbb5bd2023c2f52a66ea070bc2a22a67493daa108b8222"
+    },
+    {
+      "blob": "ab6284eba0f19d17d253f9353c5bc954d693e039",
+      "bytes": 60186,
+      "path": "screenshots/inbox-after-password-1440.png",
+      "sha256": "55a7ce2b02b067ef1d971448cc69e603ee4b90a84dfc0b019f2e5ce6abf42743"
+    },
+    {
+      "blob": "02def423923a116b44698d3a1aef5d22e822551f",
+      "bytes": 24487,
+      "path": "screenshots/inbox-after-password-390.png",
+      "sha256": "d021614427c54df9ed4c24127289b7c89e5eeab719bbc99f2533f82e2a23c787"
+    },
+    {
+      "blob": "15e51529f5131057b3417ce327e2e3ef05d34280",
+      "bytes": 30892,
+      "path": "screenshots/teammate-email-sign-in-1440.png",
+      "sha256": "0dca4afa3c96a7dfc3754c0eb40ea9f8f1209534bbfc51ce55c8ca35f98f25a6"
+    },
+    {
+      "blob": "5491ea1027dcad9caa84247a0a11940ccd892560",
+      "bytes": 21048,
+      "path": "screenshots/teammate-email-sign-in-390.png",
+      "sha256": "1f7e2eb4b416fc28dc1bcd6227910c8f3cae719e2ddbd54c56a2350c8735092d"
+    },
+    {
+      "blob": "ef684d32ac2a3cd6030478ead1e02b2d34637149",
+      "bytes": 77313,
+      "path": "screenshots/teammate-sign-in-1440.png",
+      "sha256": "e202037cccccbfd3ff7a56df481e228f307f1a5f8e603c0ce8b585d4419d8452"
+    },
+    {
+      "blob": "32393da0d8967335d03890aef8d0ebe6b9229540",
+      "bytes": 51424,
+      "path": "screenshots/teammate-sign-in-390.png",
+      "sha256": "4de046cee6492d1406d6d3ef67d06c7273bd20ee1bbd8673155c00ff2b41fca3"
+    }
+  ],
+  "product_branch": "cloud/hh-owner-design-d20-1-c1",
+  "product_head": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+  "ref": "refs/heads/evidence/hh-owner-design-d20-1-c1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-owner-design-d20-1-c1"
+}

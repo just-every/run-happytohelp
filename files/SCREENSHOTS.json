@@ -1,0 +1,63 @@
+{
+  "candidate": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+  "runner": "emitted Worker with system Chromium",
+  "visual_review": "Eight screenshots inspected. Synthetic identities and masked password only.",
+  "images": [
+    {
+      "file": "screenshots/accept-invitation-1440.png",
+      "width": 1440,
+      "height": 979,
+      "bytes": 60041,
+      "sha256": "ac17b844f99336b3622e6fbbe7facefadb4c2501fd58bad727acec6ee289a251"
+    },
+    {
+      "file": "screenshots/accept-invitation-390.png",
+      "width": 390,
+      "height": 966,
+      "bytes": 46074,
+      "sha256": "ac65c8ff730963c725fbb5bd2023c2f52a66ea070bc2a22a67493daa108b8222"
+    },
+    {
+      "file": "screenshots/inbox-after-password-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 60186,
+      "sha256": "55a7ce2b02b067ef1d971448cc69e603ee4b90a84dfc0b019f2e5ce6abf42743"
+    },
+    {
+      "file": "screenshots/inbox-after-password-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 24487,
+      "sha256": "d021614427c54df9ed4c24127289b7c89e5eeab719bbc99f2533f82e2a23c787"
+    },
+    {
+      "file": "screenshots/teammate-sign-in-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 77313,
+      "sha256": "e202037cccccbfd3ff7a56df481e228f307f1a5f8e603c0ce8b585d4419d8452"
+    },
+    {
+      "file": "screenshots/teammate-sign-in-390.png",
+      "width": 390,
+      "height": 1038,
+      "bytes": 51424,
+      "sha256": "4de046cee6492d1406d6d3ef67d06c7273bd20ee1bbd8673155c00ff2b41fca3"
+    },
+    {
+      "file": "screenshots/teammate-email-sign-in-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 30892,
+      "sha256": "0dca4afa3c96a7dfc3754c0eb40ea9f8f1209534bbfc51ce55c8ca35f98f25a6"
+    },
+    {
+      "file": "screenshots/teammate-email-sign-in-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 21048,
+      "sha256": "1f7e2eb4b416fc28dc1bcd6227910c8f3cae719e2ddbd54c56a2350c8735092d"
+    }
+  ]
+}

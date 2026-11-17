@@ -1,0 +1,139 @@
+{
+  "credentialColumns": {
+    "datasets": [
+      "crawl_webhook_token",
+      "refresh_claim_token",
+      "status_message"
+    ],
+    "dataset_files": [
+      "html"
+    ],
+    "messages": [
+      "content_raw"
+    ],
+    "collectors": [
+      "data"
+    ],
+    "local_agent_devices": [
+      "token_hash"
+    ],
+    "local_agent_grants": [
+      "token_hash"
+    ],
+    "projects": [
+      "verification_secret"
+    ],
+    "users": [
+      "password",
+      "remember_token"
+    ],
+    "project_users": [
+      "invitation_token"
+    ],
+    "contacts": [
+      "key_hashes",
+      "user_agent"
+    ],
+    "connections": [
+      "shared_key",
+      "contact_shared_key",
+      "contact_shared_key_id",
+      "page_content"
+    ],
+    "collector_actions": [
+      "action",
+      "contact_shared_key_id"
+    ],
+    "collector_summaries": [
+      "summary"
+    ],
+    "project_github_connections": [
+      "access_token"
+    ],
+    "message_thinkings": [
+      "signature",
+      "thinking_id"
+    ]
+  },
+  "skippedTables": [
+    "migrations",
+    "password_resets",
+    "personal_access_tokens",
+    "asymmetric_keys",
+    "contact_shared_keys",
+    "failed_jobs",
+    "jobs",
+    "job_batches",
+    "telescope_entries",
+    "telescope_entries_tags",
+    "telescope_monitoring",
+    "waitlist",
+    "elastic_migrations",
+    "ai_logs",
+    "local_agent_device_authorizations",
+    "local_agent_pairings",
+    "prompt_plans"
+  ],
+  "structuredOmissions": {
+    "events": {
+      "payload": [
+        [
+          "contact_message",
+          "contact",
+          "hash"
+        ],
+        [
+          "contact_message",
+          "contact",
+          "metadata",
+          "hash"
+        ],
+        [
+          "contact_message",
+          "contact",
+          "metadata",
+          "admin"
+        ]
+      ]
+    },
+    "messages": {
+      "content": [
+        [
+          "data",
+          "clientConfiguration",
+          "braintreeApi",
+          "accessToken"
+        ],
+        [
+          "data",
+          "tokenizeUsBankAccount",
+          "paymentMethod",
+          "id"
+        ],
+        [
+          "data",
+          "tokenizeUsBankAccount",
+          "paymentMethod",
+          "legacyId"
+        ]
+      ]
+    },
+    "contacts": {
+      "metadata": [
+        [
+          "admin"
+        ]
+      ]
+    },
+    "conversations": {
+      "metadata": [
+        [
+          "customer_reply"
+        ],
+        [
+          "suggestions"
+        ]
+      ]
+    }
+  }
+}

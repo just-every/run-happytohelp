@@ -1,0 +1,123 @@
+{
+  "tag": "ct-import-plan-happytohelp-1",
+  "repository": "just-every/run-happytohelp",
+  "role": "planner",
+  "observedAt": "2026-11-17T11:03:32.722518+00:00",
+  "productBranch": "main",
+  "productHead": "b2b9bc602a73feb542017bca8a46529f68b631c4",
+  "originMain": "b2b9bc602a73feb542017bca8a46529f68b631c4",
+  "productStatusPorcelain": "",
+  "productCommitsCreated": 0,
+  "productPushes": 0,
+  "applicationLaunches": 0,
+  "ciDispatches": 0,
+  "pullRequestsCreated": 0,
+  "ownerContext": {
+    "repository": "just-every/run-runeditrun",
+    "status": "unavailable",
+    "observations": [
+      "clone: Repository not found",
+      "ls-remote main: Repository not found"
+    ],
+    "citedCopyFound": false
+  },
+  "actualChecks": [
+    {
+      "command": "node $HOME/rer-consolidation/work/ct-import-plan-happytohelp-1/probe.mjs",
+      "result": "pass: assertions confirm two source-level packing defects; generation checks only",
+      "runtime": "Node v24.19.0",
+      "scope": "existing pure packer/generator, external deterministic synthetic files"
+    },
+    {
+      "command": "public documentation HTTP GETs",
+      "result": "18 sources retrieved; local HTML parser extracted schema tables",
+      "scope": "public Zendesk documentation only"
+    },
+    {
+      "command": "git status --porcelain; git rev-parse HEAD origin/main",
+      "result": "clean main checkout; HEAD equals origin/main",
+      "scope": "product read-only custody"
+    }
+  ],
+  "notRun": [
+    "pnpm install",
+    "required Node 22.20.0 application execution",
+    "typecheck",
+    "route/browser/capacity/hosted acceptance",
+    "live accounts",
+    "release/deploy"
+  ],
+  "inventories": {
+    "zendeskTopLevelFields": 243,
+    "zendeskNestedBoundaryRows": 23,
+    "legacyTables": 53,
+    "legacyColumns": 580
+  },
+  "evidenceScope": "separate report-only evidence branch; never product readiness, acceptance, landing or release",
+  "sourceFiles": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "7845d5c06f3ab561c4caa9bf6bfcc06859f83fd45368a7b59552b37111783a99"
+    },
+    {
+      "path": "CONTRACT.md",
+      "sha256": "ae8feea8b7998aa729edadf621d7f3809aa83bbe073fd3e053e1c1fb8b9b04ec"
+    },
+    {
+      "path": "ACCEPTANCE.md",
+      "sha256": "e3ba98cf208eacbe47e2afe32950250f7a8e610fd27bccedfe31942093224539"
+    },
+    {
+      "path": "HANDOVER.md",
+      "sha256": "45a2ba8500c48bdeab1349c299a626bf83b1c62f7f0a6ee529eb18c5b26453fc"
+    },
+    {
+      "path": "docs/moving-in.md",
+      "sha256": "44158d01074d608df0245d3239c52e899cee18382d6509973c1915ef90f9b44f"
+    },
+    {
+      "path": "docs/LEGACY-EXPORT.md",
+      "sha256": "3c1ac07fe49d77cf6c30357e4f22bb1c0de03031ecb65d2ed74be84032008e25"
+    },
+    {
+      "path": "importers.json",
+      "sha256": "bd57cdb5fec26f8594676b8d622a1991551b62b94caa10e1b613ac0192767f5b"
+    },
+    {
+      "path": "scripts/pack-zendesk-offline.mjs",
+      "sha256": "1cd401b39f864bad8dcddc01b5c8cdad177b19b6a4497bae96a0d68c8e4a6ef6"
+    }
+  ],
+  "packetFiles": [
+    {
+      "path": "LEGACY-FIELD-MATRIX.csv",
+      "bytes": 135582,
+      "sha256": "3a8ae9aaba13cf31b1bbd58555a4c8e336a094e8d4b3f88f56f8a249a5b4476c"
+    },
+    {
+      "path": "LEGACY-OMISSION-POLICY.json",
+      "bytes": 2473,
+      "sha256": "f0e7e33a541ad499f8c5522f6fc31d659008d3399788d76c9b4f583a27cefbe3"
+    },
+    {
+      "path": "PUBLIC-SOURCES.json",
+      "bytes": 4481,
+      "sha256": "4e71aa0aa9c81025d7f6553387dd3de66e2a3e9136fe77ed716696ce7a1bed2d"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 61542,
+      "sha256": "34ee5258b8a14600b8eeb9ccff20a1ac01b2165cceb59a2fa8cf9855c82093a5"
+    },
+    {
+      "path": "ZENDESK-FIELD-MATRIX.csv",
+      "bytes": 63620,
+      "sha256": "3ab90ff660b1a93dba4b76075d63b12456fe5f3838f6f5b69b13de6fb70c42b5"
+    },
+    {
+      "path": "source-probes.json",
+      "bytes": 1522,
+      "sha256": "7f700a7d04a297a11c60d363e22c05621ae9db4c112e50e5615a5002ad2609d8"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "kind": "read-only planner source probes",
+  "productRevision": "b2b9bc602a73feb542017bca8a46529f68b631c4",
+  "node": "v24.19.0",
+  "fullApplicationTests": "not run",
+  "probes": [
+    {
+      "name": "complete two-page documented comment response",
+      "outcome": "confirmed defect",
+      "pagesSupplied": 2,
+      "commentsPacked": 2,
+      "comments_complete": false,
+      "consequence": "zendeskOffline rejects this fully supplied conversation as zendesk_comments_incomplete",
+      "source": "scripts/pack-zendesk-offline.mjs: pages.every(p=>p.complete) includes next_page==null on every page"
+    },
+    {
+      "name": "incomplete documented users envelope",
+      "outcome": "confirmed loss of completeness metadata",
+      "inputNextPageNonNull": true,
+      "packedUserCount": 1,
+      "continuationRetained": false,
+      "consequence": "packer succeeds after discarding a declared unsupplied user page"
+    },
+    {
+      "name": "existing capacity generator",
+      "outcome": "generated only; not imported",
+      "bytes": 937603,
+      "records": 1104,
+      "tickets": 1000,
+      "statusCounts": {
+        "new": 167,
+        "open": 167,
+        "pending": 167,
+        "hold": 167,
+        "solved": 166,
+        "closed": 166
+      },
+      "underTwoMiB": true,
+      "attachmentBindings": 0
+    },
+    {
+      "name": "existing Business door generator",
+      "outcome": "generated only; not imported",
+      "bytes": 265578,
+      "tickets": 312,
+      "closedOldTicketCount": 52
+    }
+  ]
+}

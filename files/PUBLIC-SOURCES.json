@@ -1,0 +1,128 @@
+[
+  {
+    "key": "export",
+    "url": "https://support.zendesk.com/hc/en-us/articles/4408886165402-Exporting-data-to-a-JSON-CSV-or-XML-file",
+    "status": 200,
+    "bytes": 115797,
+    "sha256": "16bbfdb9b87685468949e94892306387136560b08aedb3e5df39042e23234a42"
+  },
+  {
+    "key": "tickets",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/",
+    "status": 200,
+    "bytes": 6543604,
+    "sha256": "ac8db9e17a98c746d6b35e7806ccc976dd84c73b31d4fe6462506ede3b6f1ebe"
+  },
+  {
+    "key": "comments",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_comments/",
+    "status": 200,
+    "bytes": 1474874,
+    "sha256": "bd30ec594378ae4727a76eac086ec684968e7955217dfd6ea4b5fc555f584234"
+  },
+  {
+    "key": "users",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/users/users/",
+    "status": 200,
+    "bytes": 6646343,
+    "sha256": "2d522640d18825ee5eda4e8b13b6aaa4903a60429e9cd9442a6c00e9973bd505"
+  },
+  {
+    "key": "organizations",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/organizations/organizations/",
+    "status": 200,
+    "bytes": 3351442,
+    "sha256": "82bb89d3e3955515aaebb6207ffee412edacc3256ce1de13858cddfa24552958"
+  },
+  {
+    "key": "groups",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/groups/groups/",
+    "status": 200,
+    "bytes": 1903534,
+    "sha256": "13ae915e7ddb3d821ae2066648b83181edaa6baa64e7d4dce391b523200a3251"
+  },
+  {
+    "key": "memberships",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/",
+    "status": 200,
+    "bytes": 2186902,
+    "sha256": "48bc31f4b879ec4c69095414c39d2305a840da59a58efb108575d3d7670238e0"
+  },
+  {
+    "key": "macros",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/",
+    "status": 200,
+    "bytes": 3623414,
+    "sha256": "037b9783956c514f639f8daac2b8be68b88bb72f007b120ee642ac463a81d658"
+  },
+  {
+    "key": "triggers",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/",
+    "status": 200,
+    "bytes": 3137842,
+    "sha256": "3886883600f2f23b40b48b3d2820cc2d2191e8ea9adda5b160a762c839cc51e4"
+  },
+  {
+    "key": "automations",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/",
+    "status": 200,
+    "bytes": 1968520,
+    "sha256": "78415de0c9aa5cf7b85a0447eec20a26afdf426298ff8ae38f63088942fe0010"
+  },
+  {
+    "key": "views",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/business-rules/views/",
+    "status": 200,
+    "bytes": 3434581,
+    "sha256": "3cf012250bc481105e5ba28607c96e74047609274eab0414ed040d0fc08e3cb8"
+  },
+  {
+    "key": "articles",
+    "url": "https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/",
+    "status": 200,
+    "bytes": 3689090,
+    "sha256": "3c12c31bb8da4fcaf4bcec2043c3b1dea930d129ed47d40b45bb00b6b81339c6"
+  },
+  {
+    "key": "attachments",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/tickets/ticket-attachments/",
+    "status": 200,
+    "bytes": 999472,
+    "sha256": "aa6fde56a5e25879ed646967de5f1f9baaadb2e363119ec9c00b65662cca03a6"
+  },
+  {
+    "key": "article-attachments",
+    "url": "https://developer.zendesk.com/api-reference/help_center/help-center-api/article_attachments/",
+    "status": 200,
+    "bytes": 1656428,
+    "sha256": "f6890e4097a184410ecdad96960e367c94a385ba7dc4869ead3c83fc10d0937b"
+  },
+  {
+    "key": "incremental",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/",
+    "status": 200,
+    "bytes": 1566442,
+    "sha256": "fdd1846cabbaf93973297d26cd9385b708b4b7e7c8f28e8339daef7a997510b8"
+  },
+  {
+    "key": "pagination",
+    "url": "https://developer.zendesk.com/api-reference/introduction/pagination/",
+    "status": 200,
+    "bytes": 140736,
+    "sha256": "d58e3cf24b8bf0ed73893498888f87ee5de76b30d2d7c0146aa4a0d82cbfeca7"
+  },
+  {
+    "key": "audits",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/",
+    "status": 200,
+    "bytes": 1028327,
+    "sha256": "05bca06bf37aa262a634541ea62fd708bfdedeb307d1c2bbb0f46b13be702c4d"
+  },
+  {
+    "key": "metrics",
+    "url": "https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/",
+    "status": 200,
+    "bytes": 475340,
+    "sha256": "3a969ac7ab5d9f6d9aa45d6ff820ecf378a6bae97ba2b19ffb93ec3381ff3707"
+  }
+]

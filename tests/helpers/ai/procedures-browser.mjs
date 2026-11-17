@@ -48,6 +48,12 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   await page.unroute('**'+root,fail)
   await activate(button('Refresh versions'),()=>button('Save immutable version').waitFor());await visibleResult()
 
+  // Keep an initial empty read in flight across a newer refresh and a save.
+  // Its late delivery must not erase the newly saved version from the list.
+  const beforeSave=await holdNativeResponse(page,root);holds.push(beforeSave)
+  await page.reload();await beforeSave.responseReady
+  await activate(button('Refresh versions'),()=>button('Save immutable version').waitFor());await visibleResult()
+
   // A committed save held in flight remains one POST even when Enter is repeated.
   let saves=0;page.on('request',request=>{if(request.method()==='POST'&&request.url().endsWith('/refund/versions'))saves++})
   const pending=await holdNativeResponse(page,root+'/refund/versions','POST');holds.push(pending)
@@ -55,6 +61,9 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   await save.press('Enter');assert.equal(saves,1)
   assert.ok(await save.evaluate(element=>document.activeElement===element))
   pending.release();await pending.deliveryDone;await pending.close();await button('refund · Version 1').waitFor();await settled(save);await visibleResult()
+  await releaseRead(beforeSave)
+  await button('refund · Version 1').waitFor()
+  assert.equal((await (await context.request.get(runtime.origin+root)).json()).versions.length,1,'the retained visible version is the one committed by the single save')
 
   await page.getByLabel('Procedure key',{exact:true}).fill('Invalid key')
   await activate(save,()=>page.getByRole('alert').waitFor());await visibleResult()

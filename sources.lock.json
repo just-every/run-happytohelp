@@ -16141,7 +16141,7 @@
       "executable": false
     },
     "tests/helpers/ai/procedures-browser.mjs": {
-      "sha256": "8198c3387dbe4654b68e8eccf886339a3c3dbf08c546476e982cda86ed57b4c9",
+      "sha256": "f3f1f669509c223a64e07159509138168c46f07ccd04815d5db232cf71207f47",
       "executable": false
     },
     "tests/helpers/ai/procedures.mjs": {

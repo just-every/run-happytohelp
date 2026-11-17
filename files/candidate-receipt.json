@@ -1,0 +1,24 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-design-widget-1-c1",
+  "head": "6ad6464a3bb4c7e4a7858aba35b66274a862f5ce",
+  "parent_task_head": "6b5d230a08c1b8c44d24617379490ec833d91518",
+  "push": "success, cloud-push.py attempt 1",
+  "advertised_ref": "6ad6464a3bb4c7e4a7858aba35b66274a862f5ce\trefs/heads/cloud/hh-owner-design-widget-1-c1",
+  "exact_sha_verify_run_id": 44113676650,
+  "exact_sha_verify_status": "completed",
+  "verify_url": "https://github.com/just-every/run-happytohelp/actions/runs/44113676650",
+  "github_calls_used": 7,
+  "product_diff_from_parent": " sources.lock.json                       |  4 ++--\n src/modules/access/route-permissions.ts |  4 ++--\n tests/helpers/identity/roles-audit.mjs  | 25 +++++++++++++++++++++++++\n 3 files changed, 29 insertions(+), 4 deletions(-)\n",
+  "all_candidate_commits": {
+    "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": []
+  },
+  "pr": "not created; no PR landing requirement in repository AGENTS.md; branch-only candidate for fleet lander",
+  "exact_sha_verify_conclusion": "success",
+  "terminal_product_status": "READY",
+  "verified_at_utc": "2026-11-17T16:00:00Z",
+  "working_tree": "clean",
+  "blockers": []
+}

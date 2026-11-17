@@ -1,0 +1,25 @@
+{
+  "scope": "Direct node:test registrations in tests/journeys/*.mjs; existing assert scripts are additional and unchanged",
+  "before": {
+    "registrations": 121,
+    "loopRegistrations": []
+  },
+  "after": {
+    "registrations": 121,
+    "loopRegistrations": []
+  },
+  "added": 0,
+  "removed": 0,
+  "contractStatusBefore": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "contractStatusAfter": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  }
+}

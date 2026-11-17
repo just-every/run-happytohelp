@@ -1,0 +1,32 @@
+Single exact-SHA watcher: run=44113676650; GitHub calls used=6; scheduled REST read at workflow age 35 minutes; no intervening GitHub polling.
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1621
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1566
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1511
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1456
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1401
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1346
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1291
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1236
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1181
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1126
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1071
+CI_WAIT run=44113676650 scheduled_read_in_seconds=1016
+CI_WAIT run=44113676650 scheduled_read_in_seconds=961
+CI_WAIT run=44113676650 scheduled_read_in_seconds=906
+CI_WAIT run=44113676650 scheduled_read_in_seconds=851
+CI_WAIT run=44113676650 scheduled_read_in_seconds=796
+Resumed the same scheduled wait after environment/session reset. Former watcher process is absent, no REST read occurred; GitHub calls used remain 6.
+CI_WAIT run=44113676650 scheduled_read_in_seconds=676
+CI_WAIT run=44113676650 scheduled_read_in_seconds=621
+CI_WAIT run=44113676650 scheduled_read_in_seconds=566
+CI_WAIT run=44113676650 scheduled_read_in_seconds=511
+CI_WAIT run=44113676650 scheduled_read_in_seconds=456
+CI_WAIT run=44113676650 scheduled_read_in_seconds=401
+CI_WAIT run=44113676650 scheduled_read_in_seconds=346
+CI_WAIT run=44113676650 scheduled_read_in_seconds=291
+CI_WAIT run=44113676650 scheduled_read_in_seconds=236
+CI_WAIT run=44113676650 scheduled_read_in_seconds=181
+CI_WAIT run=44113676650 scheduled_read_in_seconds=126
+CI_WAIT run=44113676650 scheduled_read_in_seconds=71
+CI_WAIT run=44113676650 scheduled_read_in_seconds=16
+CI_READ calls_used=7 {"conclusion": "success", "head_sha": "6ad6464a3bb4c7e4a7858aba35b66274a862f5ce", "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44113676650", "status": "completed"}

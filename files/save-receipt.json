@@ -1,0 +1,10 @@
+{
+  "head": "776217fb92c38cde23ed35c46c510d0d68550660",
+  "branch": "cloud/hh-owner-design-widget-1-c1",
+  "push": "success, fleet cloud-push.py attempt 1",
+  "ref_probe": "776217fb92c38cde23ed35c46c510d0d68550660\trefs/heads/cloud/hh-owner-design-widget-1-c1",
+  "candidate": false,
+  "skip_ci": true,
+  "identity": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "trailers": []
+}

@@ -1,0 +1,37 @@
+{
+  "parent_head": "6b5d230a08c1b8c44d24617379490ec833d91518",
+  "run_id": 44102307499,
+  "status": "completed",
+  "conclusion": "failure",
+  "failed_shards": [
+    {
+      "job": 134106545196,
+      "name": "identity-and-desk",
+      "failed_step": "Run shard checks"
+    },
+    {
+      "job": 134106545257,
+      "name": "connections-and-computers",
+      "failed_step": "Run shard checks"
+    }
+  ],
+  "log_reads": [
+    {
+      "command": "gh run view 44102307499 --repo just-every/run-happytohelp --job 134106545196 --log-failed",
+      "exit": 0,
+      "stdout_bytes": 0,
+      "http_status": "not supplied by gh"
+    },
+    {
+      "command": "gh run view 44102307499 --repo just-every/run-happytohelp --job 134106545257 --log-failed",
+      "exit": 0,
+      "stdout_bytes": 0,
+      "http_status": "not supplied by gh"
+    }
+  ],
+  "github_calls_used": 5,
+  "log_retries": 0,
+  "procedures_parent_shard": "success",
+  "other_shards": "success",
+  "watcher": "single, task-side REST only"
+}

@@ -1,0 +1,101 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive --answers <private contained answers path>",
+    "exit": 0,
+    "migrations_applied": 200,
+    "network_scope": "local synthetic installation; no deployment"
+  },
+  "dependencies": {
+    "command": "cloud_run pnpm install --frozen-lockfile",
+    "exit": 0
+  },
+  "runtime": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "chromium": "/usr/bin/chromium",
+    "browser_args": [
+      "--no-sandbox"
+    ]
+  },
+  "publication_scan": "delegated to fleet Mac by cloud brief; unavailable on this VM",
+  "product_changes": [
+    "src/modules/access/route-permissions.ts",
+    "tests/helpers/identity/roles-audit.mjs",
+    "sources.lock.json"
+  ],
+  "reproductions": {
+    "identity-and-desk": {
+      "head": "6b5d230a08c1b8c44d24617379490ec833d91518",
+      "tests": 19,
+      "passed": 18,
+      "failed": 1,
+      "cause": "three unclassified widget mutation routes"
+    },
+    "connections": {
+      "head": "6b5d230a08c1b8c44d24617379490ec833d91518",
+      "tests": 1,
+      "passed": 0,
+      "failed": 1,
+      "cause": "same three unclassified widget mutation routes"
+    }
+  },
+  "touched_authority": {
+    "head": "776217fb92c38cde23ed35c46c510d0d68550660",
+    "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='^a connected product opens|^custom roles restrict' tests/journeys/connections.mjs tests/journeys/identity.mjs",
+    "exit": 0,
+    "tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "duration_ms": 108637.959476
+  },
+  "typecheck": {
+    "exit": 0
+  },
+  "rer_check": {
+    "profile": "first-party",
+    "exit": 0
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0
+  },
+  "source_lock": {
+    "command": "pnpm run source:lock",
+    "exit": 0
+  },
+  "source_check": {
+    "command": "pnpm run source:check",
+    "exit": 0
+  },
+  "owner_installation": {
+    "head": "6ad6464a3bb4c7e4a7858aba35b66274a862f5ce",
+    "exit": 0,
+    "assertion_width": 1440,
+    "screenshots": 36,
+    "screenshot_widths": [
+      1440,
+      390
+    ]
+  },
+  "procedures": {
+    "head": "6ad6464a3bb4c7e4a7858aba35b66274a862f5ce",
+    "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='^a lead compares saved procedure definitions' tests/journeys/workflows-browser.mjs",
+    "exit": 0,
+    "tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "duration_ms": 362449.74817,
+    "sibling_expected_0_actual_1": "not reproduced; parent shard also passed; no unsupported claim of main failure or proven flakiness"
+  },
+  "exact_sha_verify": {
+    "run_id": 44113676650,
+    "conclusion": "success",
+    "head_sha": "6ad6464a3bb4c7e4a7858aba35b66274a862f5ce",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44113676650",
+    "status": "completed"
+  }
+}

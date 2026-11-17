@@ -1,0 +1,1 @@
+CLAIM ACCESS-001 PARTIAL points=3,4,5 tests=tests/journeys/identity.mjs#custom roles restrict native and delegated knowledge and ticket actions, and security retention and legal holds preserve accountable history

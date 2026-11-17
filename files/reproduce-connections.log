@@ -1,0 +1,46 @@
+TAP version 13
+# (node:8342) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a connected product opens and appends one scoped support request, receives signed events and a safe team notification, then loses access on expiry, erasure and revocation without replaying uncertain delivery
+not ok 1 - a connected product opens and appends one scoped support request, receives signed events and a safe team notification, then loses access on expiry, erasure and revocation without replaying uncertain delivery
+  ---
+  duration_ms: 43317.18837
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/hh-owner-design-widget-1-c1/repo/tests/journeys/connections.mjs:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + [
+    +   'POST /api/management/projects/:projectId/widget-owner-name',
+    +   'POST /api/management/projects/:projectId/widget-addresses',
+    +   'DELETE /api/management/projects/:projectId/widget-addresses'
+    + ]
+    - []
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    0: 'POST /api/management/projects/:projectId/widget-owner-name'
+    1: 'POST /api/management/projects/:projectId/widget-addresses'
+    2: 'DELETE /api/management/projects/:projectId/widget-addresses'
+  operator: 'deepStrictEqual'
+  stack: |-
+    api001Outcomes (file:///home/agent/rer-consolidation/work/hh-owner-design-widget-1-c1/repo/tests/connections/api001-outcomes.mjs:10:71)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async connectionsJourney (file:///home/agent/rer-consolidation/work/hh-owner-design-widget-1-c1/repo/tests/connections/api.mjs:12:2)
+    async TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/hh-owner-design-widget-1-c1/repo/tests/journeys/connections.mjs:7:253)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 43672.614961

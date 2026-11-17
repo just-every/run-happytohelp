@@ -75,3 +75,9 @@ CLAIM MOVE-IN-001 PARTIAL points=none tests=tests/journeys/move-in-browser.mjs#a
 
 DEFAULT AI-001: Use the supported developer hand-off; do not promise browser secret storage.
 DEFAULT MOVE-IN-001: Use the documented operator/exporter hand-off; do not invent an original-service export screen.
+
+## Final result
+
+PUSHED: cloud/hh-owner-design-setup-1 at 4fd4965485351d1a45dd10f8e1b3ba69ea78afc1. Verify 44090438878 remains in_progress on that exact SHA after five scheduled terminal-run observations. Nine of the ten permitted CI observation calls were used across the published candidates. The cloud budget fallback applies; no READY or green CI result is claimed. The product, source lock, local checks and final browser proof are complete and pushed. No PR was created, no landing or deployment was performed, and clause Status/Gap/Evidence and generated counts are unchanged.
+
+The staged evidence packet was independently fetched through Git and all 97 selected file hashes matched. The final evidence publication updates this packet with the latest CI observations and this terminal receipt. Evidence transfer is separate from product readiness.

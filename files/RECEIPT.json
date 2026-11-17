@@ -89,11 +89,20 @@
     "head": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1",
     "status": "in_progress",
     "conclusion": null,
-    "url": "https://github.com/just-every/run-happytohelp/actions/runs/44090438878"
+    "url": "https://github.com/just-every/run-happytohelp/actions/runs/44090438878",
+    "head_sha": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44090438878"
   },
   "publicationScan": "Mac lander; not available/run in cloud",
   "landing": "not performed",
   "pr": null,
-  "ciObservationCalls": 6,
-  "updatedAt": "2026-11-17T13:25:19.507189+00:00"
+  "ciObservationCalls": 9,
+  "updatedAt": "2026-11-17T13:45:18.927747+00:00",
+  "result": "PUSHED",
+  "ready": false,
+  "ciObservationBudget": 10,
+  "outstanding": [
+    "Exact-SHA Verify remains in progress at the last permitted observation used by this task."
+  ],
+  "blockers": []
 }

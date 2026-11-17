@@ -31,16 +31,16 @@
       "sha256": "39196e588f91729be8c2a3ba79562166fb6365c5cd473c16fafbb867b037981e"
     },
     {
-      "blob": "4a2e577200fd3fb18f8f546066ab8013756fb20c",
-      "bytes": 3158,
+      "blob": "38dcc74d1198aa94aa260ce0723f8e387045355c",
+      "bytes": 3515,
       "path": "RECEIPT.json",
-      "sha256": "ac08a48da1739fd0cf68f7949db58844575c26299421f4be6cc0338366d7f3c2"
+      "sha256": "85b2b071a6c4c84398956dce02a8369bd10941d8ce017ceb142b52ab5aea8cf5"
     },
     {
-      "blob": "aca00a2c227e2286ba523d3d28799969e5e3eaeb",
-      "bytes": 13495,
+      "blob": "da3ecf6a910b26e51c3eb0affaf30ff656d3c324",
+      "bytes": 14351,
       "path": "REPORT.md",
-      "sha256": "e00462444340d21ea1f842678d4b1d5a5b2c382a48d121c922a11ddac7bde849"
+      "sha256": "01039f3cd10a4014dad4716b3af3b29243eb47edcca3478a17dfef62b0c4c21c"
     },
     {
       "blob": "33f6461e1b1fbdc38fefcc0a3e3143762e958334",
@@ -135,8 +135,32 @@
     {
       "blob": "935667c5ebe8e8bfd459205281d052fb35319f36",
       "bytes": 181,
+      "path": "checks/ci-terminal-observation-3.json",
+      "sha256": "c888561c12092f766260616fa7f45702a1dac9e59a011e4b82296a015bb58a16"
+    },
+    {
+      "blob": "935667c5ebe8e8bfd459205281d052fb35319f36",
+      "bytes": 181,
+      "path": "checks/ci-terminal-observation-4.json",
+      "sha256": "c888561c12092f766260616fa7f45702a1dac9e59a011e4b82296a015bb58a16"
+    },
+    {
+      "blob": "935667c5ebe8e8bfd459205281d052fb35319f36",
+      "bytes": 181,
+      "path": "checks/ci-terminal-observation-5.json",
+      "sha256": "c888561c12092f766260616fa7f45702a1dac9e59a011e4b82296a015bb58a16"
+    },
+    {
+      "blob": "935667c5ebe8e8bfd459205281d052fb35319f36",
+      "bytes": 181,
       "path": "checks/ci-terminal-status.json",
       "sha256": "c888561c12092f766260616fa7f45702a1dac9e59a011e4b82296a015bb58a16"
+    },
+    {
+      "blob": "480ed99056a1d66493b893b0c9e30a3f556c84fd",
+      "bytes": 413,
+      "path": "checks/evidence-stage-validation.json",
+      "sha256": "99009fc7afb8240033eee46006b59edc085725ada31090d8f24bf396d4742089"
     },
     {
       "blob": "9570b67343f4ce204e40f01b2f7ff08ce60e7369",
@@ -205,10 +229,10 @@
       "sha256": "edfbf255033f8c1915708da9db57cf9ae45d52c798831f36e886ad0221928484"
     },
     {
-      "blob": "aca00a2c227e2286ba523d3d28799969e5e3eaeb",
-      "bytes": 13495,
+      "blob": "da3ecf6a910b26e51c3eb0affaf30ff656d3c324",
+      "bytes": 14351,
       "path": "reports/hh-owner-design-setup-1.md",
-      "sha256": "e00462444340d21ea1f842678d4b1d5a5b2c382a48d121c922a11ddac7bde849"
+      "sha256": "01039f3cd10a4014dad4716b3af3b29243eb47edcca3478a17dfef62b0c4c21c"
     },
     {
       "blob": "9625a1469416ae4a9fda9bdd13ebdc5440333517",

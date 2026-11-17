@@ -90,6 +90,16 @@
   ],
   "packetFiles": [
     {
+      "path": "EVIDENCE-AUDIT.json",
+      "bytes": 286,
+      "sha256": "05c27b51bc88ec65be38554dabd7cd4bbd0e6c17e81421286d5119ac1b767f04"
+    },
+    {
+      "path": "EVIDENCE-VERIFY.json",
+      "bytes": 1782,
+      "sha256": "adf2605608d2699a077bb24b767d1622ef6b611818c1d288cb51ea1320353702"
+    },
+    {
       "path": "LEGACY-FIELD-MATRIX.csv",
       "bytes": 135582,
       "sha256": "3a8ae9aaba13cf31b1bbd58555a4c8e336a094e8d4b3f88f56f8a249a5b4476c"
@@ -106,8 +116,8 @@
     },
     {
       "path": "REPORT.md",
-      "bytes": 61542,
-      "sha256": "34ee5258b8a14600b8eeb9ccff20a1ac01b2165cceb59a2fa8cf9855c82093a5"
+      "bytes": 61888,
+      "sha256": "93badcc033881386a3a3d7550cc443845769884ca3f6144e0e8eb66d2f017e5f"
     },
     {
       "path": "ZENDESK-FIELD-MATRIX.csv",

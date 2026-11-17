@@ -1,0 +1,10 @@
+{
+  "head": "12c2b9ade0ef7dc4e040b4645ede14d41931ef67",
+  "candidateCommits": [
+    "12c2b9ade0ef7dc4e040b4645ede14d41931ef67"
+  ],
+  "allParentsChecked": true,
+  "identity": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "requiredLogRange": "origin/main..HEAD",
+  "status": "passed"
+}

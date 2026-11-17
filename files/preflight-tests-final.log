@@ -1,0 +1,38 @@
+
+> happytohelp@0.4.31 test:provider-preflight /workspace/run-happytohelp
+> node --test tests/journeys/provider-preflight.mjs
+
+TAP version 13
+# Subtest: an explicitly consented provider preflight reads exactly three GETs and reports declared settings and secret names without values or writes
+ok 1 - an explicitly consented provider preflight reads exactly three GETs and reports declared settings and secret names without values or writes
+  ---
+  duration_ms: 136.328862
+  type: 'test'
+  ...
+# Subtest: provider preflight refuses absent consent and absent credentials distinctly before any network request
+ok 2 - provider preflight refuses absent consent and absent credentials distinctly before any network request
+  ---
+  duration_ms: 117.347881
+  type: 'test'
+  ...
+# Subtest: provider authorization and missing Worker responses identify the failed read honestly without retry or error-body leakage
+ok 3 - provider authorization and missing Worker responses identify the failed read honestly without retry or error-body leakage
+  ---
+  duration_ms: 289.885454
+  type: 'test'
+  ...
+# Subtest: provider transport, redirect and unreadable responses fail closed without following, retrying or exposing diagnostics
+ok 4 - provider transport, redirect and unreadable responses fail closed without following, retrying or exposing diagnostics
+  ---
+  duration_ms: 257.137578
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 869.399928

@@ -1,0 +1,31 @@
+{
+  "base": "20b254ff85a01e9874b61d301ec192eeae0d73b8",
+  "contract_byte_identical": true,
+  "dry_run_adapter_byte_identical": true,
+  "rer_version": "0.2.121",
+  "new_preflight_tests": 4,
+  "journey_registration_lines_before": 120,
+  "journey_registration_lines_after": 124,
+  "live_cloudflare_used": false,
+  "live_qualification": "UNMET-EXTERNAL",
+  "status_changes": [],
+  "contract_status_counts_before": {
+    "partial": 71,
+    "done": 4,
+    "missing": 16
+  },
+  "contract_status_counts_after": {
+    "partial": 71,
+    "done": 4,
+    "missing": 16
+  },
+  "unchanged_files_verified": [
+    "CONTRACT.md",
+    "ACCEPTANCE.md",
+    "docs/CLAIMS.md",
+    "scripts/installer/offline-deploy.mjs",
+    "RELEASE.json",
+    "pnpm-lock.yaml"
+  ],
+  "final_head": "94f64dfc35d938bd92b59bac9e938c11be10c27d"
+}

@@ -1,0 +1,116 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "checks": [
+    {
+      "command": "pnpm run test:provider-preflight",
+      "exit": 0,
+      "tests": 4,
+      "passed": 4
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive --answers .rer/preflight-answers.json",
+      "exit": 0,
+      "scope": "disposable local setup only; temporary private answers removed"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "verifyDocs(process.cwd())",
+      "exit": 0,
+      "pages": 39,
+      "sections": 4
+    },
+    {
+      "command": "node --test --test-name-pattern=\"a new owner finds the source and installation guide\" tests/journeys/public-browser.mjs",
+      "exit": 0,
+      "tests": 1,
+      "passed": 1,
+      "duration_ms": 221217
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check (all files tracked)",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party (corrected lock)",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "head": "f2c32a7b475fbfc745b30cbac77ad86ccd5e39d4",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run test:provider-preflight (credential-as-target refusal included)",
+      "exit": 0,
+      "tests": 4,
+      "passed": 4
+    },
+    {
+      "command": "pnpm run typecheck (final preflight sources)",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check (final sources)",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party (final sources)",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "head": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
+      "exit": 0
+    }
+  ],
+  "local_full_suite": "NOT RUN: touched checks only, full Verify is the branch CI gate",
+  "live_cloudflare": "NOT RUN: UNMET-EXTERNAL, no token or account used",
+  "publication_scan": "Fleet Mac landing gate; not claimed by this cloud build",
+  "product_head": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
+  "branch": "cloud/hh-preflight-1",
+  "created_utc": "2026-11-17T04:16:45.548064+00:00",
+  "initial_ci": {
+    "run_id": 44015870666,
+    "conclusion": "failure",
+    "cause": "lock generated before new files were Git-tracked",
+    "fixed": true
+  },
+  "updated_utc": "2026-11-17T04:54:13.787209+00:00",
+  "final_verify": {
+    "run_id": 44019973966,
+    "conclusion": "success",
+    "head_sha": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44019973966",
+    "status": "completed",
+    "observed_utc": "2026-11-17T05:26:24Z",
+    "observation_file": "ci-status-10.json"
+  },
+  "application_and_documentation_unchanged_from": "b35c5fe5899ab1a750b722bb5888307df4cddc4e",
+  "ci_github_calls": 10,
+  "terminal_custody": "READY branch=cloud/hh-preflight-1 head=94f64dfc35d938bd92b59bac9e938c11be10c27d",
+  "signed_post": "POST lanes/hh/INBOX.md: 2026-11-17T05:26:24Z Run Edit Run fleet: hh-preflight-1 implements the separately consented three-GET provider preflight; NATIVE-001 stays PARTIAL, claim point 3; no clause Status/Gap/Evidence changes; preflight tests 0->4 pass; head=94f64dfc35d938bd92b59bac9e938c11be10c27d; Verify 44019973966 completed/success on that SHA; initial 44015870666 lock failure fixed, intermediate 44016693507 superseded; live qualification UNMET-EXTERNAL."
+}

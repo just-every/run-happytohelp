@@ -1,0 +1,7 @@
+build	Run node scripts/edition-authoring/cli.mjs check	﻿2026-11-17T04:15:58.6489103Z ##[group]Run node scripts/edition-authoring/cli.mjs check
+build	Run node scripts/edition-authoring/cli.mjs check	2026-11-17T04:15:58.6489448Z [36;1mnode scripts/edition-authoring/cli.mjs check[0m
+build	Run node scripts/edition-authoring/cli.mjs check	2026-11-17T04:15:58.6506791Z shell: /usr/bin/bash -e {0}
+[Workflow environment context omitted]
+build	Run node scripts/edition-authoring/cli.mjs check	2026-11-17T04:15:58.6508193Z ##[endgroup]
+build	Run node scripts/edition-authoring/cli.mjs check	2026-11-17T04:15:59.1448310Z Stale lock or source/tool integrity mismatch; run changes to inspect intentional edits before lock
+build	Run node scripts/edition-authoring/cli.mjs check	2026-11-17T04:15:59.1652562Z ##[error]Process completed with exit code 1.

@@ -1,0 +1,6 @@
+{
+  "method": "TypeScript AST direct registrations imported from node:test under tests (vendored Base excluded by directory); no registration loops added",
+  "before": 118,
+  "after": 122,
+  "added": 4
+}

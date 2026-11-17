@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {writeFile,mkdir} from 'node:fs/promises'
 import {join} from 'node:path'
+import {createHash} from 'node:crypto'
 import {nativeHarness} from './harness.mjs'
 import {review,apply,undo,rows,root,json} from './journey-kit.mjs'
 import {assertBusinessEquality} from './business-equality.mjs'
@@ -35,7 +36,10 @@ export async function zendeskFidelityJourney(){
   const contacts=await query('SELECT id,name,email,is_verified,metadata_json FROM contacts ORDER BY email')
   assert.equal(contacts.length,o.user.filter(u=>u.role==='end-user').length)
   for(const u of o.user.filter(u=>u.role==='end-user')){const c=contacts.find(c=>c.email===u.email);assert.ok(c);assert.equal(c.name,u.name);assert.equal(c.is_verified,0);assert.equal(JSON.parse(c.metadata_json).phone,u.phone)}
-  assert.equal((await query('SELECT * FROM contact_companies')).length,o.user.filter(u=>u.organization_id).length)
+  for(const t of o.ticket){const requester=o.user.find(u=>u.id===t.requester_id);assert.equal(native.find(c=>c.source_id===String(t.id)).contact_id,contacts.find(c=>c.email===requester.email).id,'source requester resolves to the same native customer')}
+  const companyLinks=await query('SELECT cc.contact_id,c.name FROM contact_companies cc JOIN companies c ON c.id=cc.company_id ORDER BY cc.contact_id')
+  assert.equal(companyLinks.length,o.user.filter(u=>u.organization_id).length)
+  for(const u of o.user.filter(u=>u.organization_id)){const contact=contacts.find(c=>c.email===u.email),organization=o.organization.find(g=>g.id===u.organization_id);assert.equal(companyLinks.find(l=>l.contact_id===contact.id).name,organization.name)}
   const messages=await query('SELECT m.content,m.created_at,s.source_id,s.author_json FROM messages m JOIN move_in_message_sources s ON s.message_id=m.id ORDER BY m.id'),notes=await query('SELECT content,created_at,author_json FROM move_in_notes ORDER BY id')
   assert.equal(messages.length,o.ticket.flatMap(t=>t.comments).filter(c=>c.public).length);assert.equal(notes.length,o.ticket.flatMap(t=>t.comments).filter(c=>!c.public).length)
   for(const t of o.ticket)for(const c of t.comments){const got=c.public?messages.find(m=>m.source_id===String(c.id)):notes.find(n=>n.content===c.plain_body);assert.ok(got);assert.equal(got.content,c.plain_body);assert.equal(got.created_at,Date.parse(c.created_at));const author=JSON.parse(got.author_json);assert.equal(author.id,String(c.author_id));assert.equal(author.role,c.author_id===-1?'system':c.author_id<=200?'contact':'operator')}
@@ -44,14 +48,14 @@ export async function zendeskFidelityJourney(){
   for(const t of o.ticket){const conversation=native.find(c=>c.source_id===String(t.id));for(const value of t.custom_fields.slice(0,supportedTypes.length)){const definition=o.ticket_field.find(f=>f.id===value.id),got=fields.find(f=>f.conversation_id===conversation.id&&f.name===definition.title);assert.ok(got);assert.deepEqual(JSON.parse(got.value_json),['integer','decimal'].includes(definition.type)?Number(value.value):value.value)}}
   const media=await query('SELECT m.id,m.conversation_id,m.message_id,m.filename,a.base64 FROM media m JOIN move_in_attachment_bytes a ON a.media_id=m.id ORDER BY m.id')
   assert.equal(media.length,o.ticket.flatMap(t=>t.comments).flatMap(c=>c.attachments).length)
-  for(const m of media){const response=await h.download(`/api/conversations/${m.conversation_id}/media/${m.id}`);assert.equal(response.status,200);assert.deepEqual(response.bytes,Buffer.from(m.base64,'base64'));assert.equal((await h.download(`/api/conversations/${m.conversation_id}/media/${m.id}`,'foreign')).status,404)}
+  for(const m of media){const response=await h.download(`/api/conversations/${m.conversation_id}/media/${m.id}`);assert.equal(response.status,200);const reviewed=plan.plan.decisions.flatMap(d=>d.targets).flatMap(t=>t.attachments??[]).find(a=>a.id===m.id);assert.ok(reviewed);const expected=o.ticket.flatMap(t=>t.comments).flatMap(c=>c.attachments).map(a=>Buffer.from(`synthetic-hh-${a.id} file\n`)).find(bytes=>createHash('sha256').update(bytes).digest('hex')===reviewed.sha256);assert.ok(expected);assert.deepEqual(response.bytes,expected);assert.deepEqual(response.bytes,Buffer.from(m.base64,'base64'));assert.equal((await h.download(`/api/conversations/${m.conversation_id}/media/${m.id}`,'foreign')).status,404)}
   const first=native[0];await h.contactSession('visitor','p',first.contact_id)
   const publicView=await h.call(`/api/conversations/${first.id}/messages`,{actor:'visitor'});assert.doesNotMatch(JSON.stringify(publicView),/private investigation/)
   for(const m of media.filter(m=>m.conversation_id===first.id))assert.equal((await h.download(`/api/conversations/${first.id}/media/${m.id}`,'visitor')).status,m.message_id?200:404)
   // contactSession is authentication fixture setup, not imported business data.
   // Remove that temporary visitor grant before asking undo to restore the owner
   // baseline: production undo correctly preserves contacts with native sessions.
-  await h.db.prepare("DELETE FROM sessions WHERE project_id='p' AND actor_id='visitor'").run()
+  await h.db.prepare("DELETE FROM sessions WHERE project_id='p' AND contact_id=?").bind(first.contact_id).run()
   const detail=(await h.call(`/api/dashboard/projects/p/conversations/${first.id}`)).data;assert.equal(detail.subject,o.ticket[0].subject)
   const history=await h.call(`/api/conversations/${first.id}/imported-history`);assert.equal(history.history.events.length,o.audit[0].events.length)
   const importedRules=(await query('SELECT * FROM workflow_rules')).filter(r=>!before.workflow_rules.some(old=>old.id===r.id));assert.equal(importedRules.length,o.trigger.length+o.automation.length);assert.ok(importedRules.every(r=>r.state==='draft'))

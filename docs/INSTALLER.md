@@ -210,7 +210,8 @@ separately started **read-only provider preflight** with owner consent and the
 owner's scoped Cloudflare token. The preflight has its own acceptance: only the
 account's Workers subdomain and the Worker's settings and secret names (three
 GETs for an existing Worker), no mail and no mutations. Neither step is a mock of
-the other. The zero-outbound dry-run is implemented in this candidate. The separately started preflight still needs implementation and live qualification.
+the other. Both commands are implemented; live provider qualification remains
+**UNMET-EXTERNAL** and needs the owner’s scoped token and authorization.
 
 From the installed checkout, run the credential-free local check:
 
@@ -224,7 +225,7 @@ verified sender, sending token or real `OWNER_EMAIL` are required. The completio
 report explicitly says no Cloudflare requests were made and nothing was changed
 remotely; missing production inputs are listed as needed for a real deploy.
 Remote resources, credential validity and existing secret bindings remain unchecked
-until a real deployment. `rer deploy --environment
+by the dry run. The separate command below can inspect an existing Worker. `rer deploy --environment
 production` requires owner authorization and the private credentials/declaration
 in Operations. Local development still needs no email account.
 Stop `rer dev` first (`rer dev --stop`): while it runs it owns the checkout's local
@@ -233,6 +234,72 @@ operation owns the state".
 `rer describe` lists the remaining commands and real flags.
 All new verbs accept `--help`, `--cwd PATH`, `--non-interactive` and `--json`;
 release has its own preserved parser. No command implies provider acceptance.
+
+### Read-only provider preflight
+
+From the installed checkout, explicitly start this separate command for an
+**existing** Worker. It does not build, deploy, send mail or repair anything.
+It never runs as part of `rer deploy --dry-run` or any setup/build command.
+
+1. In the Cloudflare account that owns the Worker, create a custom API token with
+   **Account → Workers Scripts → Read**, restricted to **that one account**.
+   This is the minimum permission set for all three reads. Do not add Edit,
+   D1, R2, Queues, zone, user or membership permissions for this command.
+2. Copy that account's ID and the existing Worker's exact name from the dashboard.
+   Replace `YOUR_ACCOUNT_ID` and `YOUR_EXISTING_WORKER` below and review both.
+   The explicit `--consent-read-only` flag authorizes reads of those named targets;
+   omitting it refuses before any request. A token alone is not consent.
+3. Supply the token only in the process environment as `CLOUDFLARE_API_TOKEN`.
+   For example, in Bash, read it without terminal echo or a history entry:
+
+   ```sh
+   read -r -s -p 'Scoped Cloudflare read token: ' CLOUDFLARE_API_TOKEN
+   printf '\n'
+   export CLOUDFLARE_API_TOKEN
+   pnpm run preflight:provider --account-id YOUR_ACCOUNT_ID --worker YOUR_EXISTING_WORKER --consent-read-only
+   unset CLOUDFLARE_API_TOKEN
+   ```
+
+The command does not open credential files, use `--env-file`, discover accounts,
+request token verification, or contact the Worker itself. It uses the token only
+in the Authorization header. It does not print or save the token, binding values
+or raw provider errors. Keep the environment private and do not enable shell
+tracing around credential entry.
+
+For an existing readable Worker it makes exactly these three HTTPS GETs, in order,
+on `https://api.cloudflare.com/client/v4`, with no body, retries or redirects:
+
+| Read | Path | Cloudflare API documentation |
+| --- | --- | --- |
+| Account Workers subdomain | `/accounts/{account_id}/workers/subdomain` | [Get a Workers Subdomain](https://developers.cloudflare.com/api/resources/workers/subresources/subdomains/methods/get/) |
+| Worker settings and binding names/types | `/accounts/{account_id}/workers/scripts/{script_name}/settings` | [Get Worker Script and Version Settings](https://developers.cloudflare.com/api/resources/workers/subresources/scripts/subresources/script_and_version_settings/methods/get/) |
+| Worker secret names | `/accounts/{account_id}/workers/scripts/{script_name}/secrets` | [List secrets bound to a Worker script](https://developers.cloudflare.com/api/resources/workers/subresources/scripts/subresources/secrets/methods/list/) |
+
+The summary compares compatibility date/flags, declared resource binding
+names/types, public setting binding presence and required/optional secret NAMES
+with `deploy.json`. Optional absent names are informational. A missing required
+name or setting gives exit 9; the report never reads secret values or proves
+that a value works. A spent `H2H_SETUP_TOKEN` can be absent after owner claim:
+review that lifecycle difference rather than adding it back to satisfy this report.
+Schedules, queue consumer configuration, resource contents, health, sending and
+edit permissions remain unchecked. This is an inspection, not a deployment
+readiness certificate.
+
+Every run ends with `No mail was sent and nothing was changed.` It stops on the
+first failed read, without retrying or following a redirect. Exit codes are:
+2 invalid arguments/declaration, 3 missing consent, 4 missing environment token,
+5 HTTP 401/403 (check token validity, the named account and Workers Scripts: Read),
+6 HTTP 404 (account subdomain or Worker missing), 7 network failure/timeout,
+8 another HTTP/protocol failure, 9 declaration differences, and 0 completed reads
+with no required difference. A 401/403 cannot by itself distinguish an invalid
+token from a missing scope. A missing Worker is never created.
+
+**Live qualification: UNMET-EXTERNAL.** The command is covered with a fake at the
+network edge. It has not been qualified against a real Cloudflare account;
+that requires the owner's scoped token and explicit consent in a separate run.
+Remote provisioning remains separately unqualified.
+
+_Preflight guidance: Run Edit Run fleet, 17 November 2026._
 
 ### Outbound email off
 

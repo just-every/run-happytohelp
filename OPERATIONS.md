@@ -188,9 +188,41 @@ deploy: local dry run complete; no credentials were needed, no Cloudflare reques
 
 Missing production inputs are listed as **needed for a real deploy**, without
 blocking the dry run. Remote resources, credential validity and existing secret
-bindings remain unchecked. NATIVE-001 separately requires an explicitly started,
-owner-consented read-only provider preflight; that step still needs implementation
-and live qualification. The dry run does not establish remote readiness.
+bindings remain unchecked by the dry run. The independent read-only inspection
+below is implemented. Neither command establishes remote provisioning readiness.
+
+### Read-only provider inspection
+
+For an existing Worker, follow the
+[installer preflight instructions](docs/INSTALLER.md#read-only-provider-preflight).
+Supply `CLOUDFLARE_API_TOKEN` only in the process environment, using a custom token
+with **Account → Workers Scripts → Read** restricted to the named account. This
+one read permission covers all three endpoints; no Edit, D1, R2, Queues, zone,
+user or membership permission is needed. Review the account ID and existing
+Worker name before explicitly authorizing them:
+
+```sh
+pnpm run preflight:provider --account-id YOUR_ACCOUNT_ID --worker YOUR_EXISTING_WORKER --consent-read-only
+```
+
+The command refuses missing consent (exit 3) or a missing token (exit 4), opens no
+credential file and writes no report or state. It makes exactly three HTTPS GETs
+on api.cloudflare.com for an existing readable Worker: the account's Workers
+subdomain, the Worker's settings and its secret NAMES. It does not retry, follow
+redirects, send mail or mutate anything. The installer guide links the documented
+paths and explains every exit code, including 401/403, 404 and network failures.
+Its summary compares only selected settings, bindings and names to `deploy.json`;
+optional missing names are informational, required differences give exit 9.
+A spent setup token can be absent after owner claim; no secret should be restored
+just to turn this inspection green. Names do not prove values, resource contents,
+queue consumers, schedules, health, edit permission or mail delivery. Every run
+ends with `No mail was sent and nothing was changed.`
+
+**Live qualification is UNMET-EXTERNAL:** only network-edge fakes have exercised
+this command. A real Cloudflare-account qualification needs the owner's scoped
+token and explicit consent and has not been done. No live provisioning is claimed.
+
+_Preflight guidance: Run Edit Run fleet, 17 November 2026._
 
 ### What you need first
 
@@ -285,8 +317,10 @@ and secret names, with no mail or mutations. Neither step is a mock of the other
 The candidate implements the zero-outbound dry-run: it validates and builds without
 provider credentials, sends no mail and changes no resources. Its report leaves
 remote resources, credential validity and existing secret bindings unchecked.
-The separately started owner-consented preflight and remote provisioning still
-need implementation or qualification, respectively.
+The separately started owner-consented preflight is available through the
+[installer command](docs/INSTALLER.md#read-only-provider-preflight). Its live
+qualification remains **UNMET-EXTERNAL**, requiring the owner's scoped token and
+consent. Remote provisioning is separately unqualified.
 
 Cloudflare Email Sending additionally needs `EMAIL_ACCOUNT_ID`, the Cloudflare
 account ID the Worker reads as `env.EMAIL_ACCOUNT_ID`. The declaration already binds

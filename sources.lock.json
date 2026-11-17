@@ -1573,7 +1573,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "5d99f329c5aa52ea7faa25f227b3ceda982d1ef98b526b64bd34c2e5b4eba68a",
+      "sha256": "8b8fcce669a1a48231572819aa8ccf21e2d996b35fa72b3ff8c369bfd2a09d70",
       "executable": false
     },
     ".gitignore": {
@@ -1601,7 +1601,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "40710644b2bb1b4fdde10b609c7c5b83f2180fc401018e2de42edfe7fe98693c",
+      "sha256": "7845d5c06f3ab561c4caa9bf6bfcc06859f83fd45368a7b59552b37111783a99",
       "executable": false
     },
     "base-copies.json": {
@@ -1741,7 +1741,7 @@
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "f45217d612cca5fe8a3773d81fc5381d7d2e1a4ffbc1a85b66e135173cc40de5",
+      "sha256": "f34c3277b59f0dc8537786cfd01b94b99ddc5709c250b229befcd0bbd8538fa7",
       "executable": false
     },
     "docs/knowledge-upgrade-report.md": {
@@ -2913,11 +2913,11 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "1a7e0bdb88faa3ced573cf424d1ce72e575fcb416fbbe1c7d970b07c45e57f9a",
+      "sha256": "e440015818b268a09a3a7a3d43ad9196dddaf8739cde549f6ce7f62b708a9cae",
       "executable": false
     },
     "package.json": {
-      "sha256": "9f451e8d85129386a05f6b8919824bbf80f8229c7f625ad5664ad55b848ab684",
+      "sha256": "585bab8ec234815c29a1e9f58db7d4921bf2e384f885484cbad405c11a8f9424",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -2993,7 +2993,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "7c37e64f4195137a76936092aad6eb963213424e6441015d2c1abfc06a863e01",
+      "sha256": "8ff03fbf498363924798bcd43186013809f5d5abe4621bc2a6a688f56d96fbd4",
       "executable": false
     },
     "RELEASE.json": {

@@ -29,7 +29,7 @@ pnpm exec rer describe
 Reset erases the printed local inventory; export your data **before** resetting
 if you need it. Import requires an empty destination and retains native owners.
 Deploy requires explicit owner authorization and private account configuration.
-NATIVE-001 requires a zero-outbound dry-run and a separately started read-only provider preflight with owner consent and a scoped token. The separate preflight still needs implementation and live qualification.
+NATIVE-001 requires a zero-outbound dry-run and a separately started read-only provider preflight with owner consent and a scoped token. Run `pnpm run preflight:provider --account-id ACCOUNT_ID --worker WORKER --consent-read-only` with `CLOUDFLARE_API_TOKEN` in the process environment (Workers Scripts: Read on that account); see the installer guide. Live qualification remains UNMET-EXTERNAL.
 `--dry-run` validates and builds locally without provider requests or credentials.
 It sends no mail and changes no provider resources. Its receipt explicitly leaves
 remote resources, credential validity and existing secret bindings unchecked;

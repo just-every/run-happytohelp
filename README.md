@@ -158,6 +158,25 @@ the application locally. The completion report lists any inputs needed for a
 real deploy; remote resources, credential validity, target secrets and remote
 readiness remain unchecked.
 
+To inspect an **existing** Worker separately, use the
+[read-only provider preflight](docs/INSTALLER.md#read-only-provider-preflight):
+set `CLOUDFLARE_API_TOKEN` privately in the process environment with only
+**Account → Workers Scripts → Read** on the intended account, review the account
+ID and Worker name, then explicitly consent:
+
+```sh
+pnpm run preflight:provider --account-id YOUR_ACCOUNT_ID --worker YOUR_EXISTING_WORKER --consent-read-only
+```
+
+It reads only the account's Workers subdomain, Worker settings and secret NAMES
+(three GETs), sends no mail and changes no resources. It refuses missing consent
+or a missing token. The installer guide explains private token entry, the summary
+and failures. It is independent of the credential-free dry run. **Live qualification
+is UNMET-EXTERNAL:** it needs the owner's scoped token and consent and has not
+been done. This inspection does not prove remote provisioning or readiness.
+
+_Preflight guidance: Run Edit Run fleet, 17 November 2026._
+
 For a real deployment, read
 [deployment prerequisites](OPERATIONS.md#deploy-to-your-cloudflare-account).
 When rer says **See the deploy-kit owner-account instructions**, it means
@@ -168,13 +187,6 @@ and private account credentials, then:
 ```sh
 rer deploy --environment production
 ```
-
-The contract also requires a separately started **read-only provider preflight**
-with explicit owner consent and the owner's scoped Cloudflare token. For an
-existing Worker, that preflight permits only the account's Workers subdomain and
-the Worker's settings and secret names (three GETs), with no mail or mutations.
-That separate preflight is not yet implemented or live-qualified; the local dry
-run does not perform it or prove remote readiness.
 
 For a new installation with outbound email, also supply real `EMAIL_PROVIDER`,
 `EMAIL_FROM`, `EMAIL_API_KEY` and `OWNER_EMAIL` inputs in an owned 0600 `--env-file`;

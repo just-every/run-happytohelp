@@ -177,7 +177,7 @@ jobs:
           - name: connections-and-computers
             browser: false
             commands: |
-              node --test --test-concurrency=1 tests/journeys/connections.mjs tests/journeys/widget.mjs tests/journeys/delegation.mjs tests/journeys/delegation-computers.mjs tests/journeys/connector.mjs tests/journeys/upgrade.mjs tests/journeys/runtime.mjs
+              node --test --test-concurrency=1 tests/journeys/connections.mjs tests/journeys/widget.mjs tests/journeys/delegation.mjs tests/journeys/delegation-computers.mjs tests/journeys/connector.mjs tests/journeys/upgrade.mjs tests/journeys/runtime.mjs tests/journeys/provider-preflight.mjs
           - name: import-and-reports
             browser: false
             commands: |

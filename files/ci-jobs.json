@@ -1,0 +1,124 @@
+[
+  {
+    "conclusion": "success",
+    "id": 134319201516,
+    "name": "plan",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "success",
+    "id": 134319201905,
+    "name": "contract-docs",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "success",
+    "id": 134319389356,
+    "name": "build",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "skipped",
+    "id": 134319391810,
+    "name": "slow",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "success",
+    "id": 134320147572,
+    "name": "Verify / public-and-import-browser",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "success",
+    "id": 134320147598,
+    "name": "Verify / support-workflow-browser",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "success",
+    "id": 134320147616,
+    "name": "Verify / import-and-reports",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "success",
+    "id": 134320147672,
+    "name": "Verify / identity-and-desk",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "success",
+    "id": 134320147690,
+    "name": "Verify / connections-and-computers",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "success",
+    "id": 134320147693,
+    "name": "Verify / assistant-and-knowledge",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "success",
+    "id": 134320147761,
+    "name": "size-check",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "success",
+    "id": 134320147770,
+    "name": "Verify / identity-and-repair-browser",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "failure",
+    "id": 134320147868,
+    "name": "Verify / support-and-recovery",
+    "status": "completed",
+    "steps": [
+      {
+        "conclusion": "failure",
+        "name": "Run shard checks"
+      }
+    ]
+  },
+  {
+    "conclusion": "skipped",
+    "id": 134321951727,
+    "name": "nightly-proof",
+    "status": "completed",
+    "steps": []
+  },
+  {
+    "conclusion": "failure",
+    "id": 134337450191,
+    "name": "verify",
+    "status": "completed",
+    "steps": [
+      {
+        "conclusion": "failure",
+        "name": "Require the plan and every selected check"
+      }
+    ]
+  },
+  {
+    "conclusion": "skipped",
+    "id": 134337452093,
+    "name": "full-push-proof",
+    "status": "completed",
+    "steps": []
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 tests/journeys/inbox-browser.mjs tests/journeys/restore.mjs",
+  "node": "22.20.0",
+  "candidate_head": "621d11ff3581a1e6cfda23957c5d430349539c66",
+  "exit_code": 0,
+  "tests": 9,
+  "passed": 9,
+  "failed": 0,
+  "skipped": 0,
+  "duration_ms": 2678345.34599,
+  "restore_duration_ms": 756086.527664,
+  "restore": {
+    "profile": "first-run",
+    "tables": 541,
+    "migrations": 200,
+    "objects": 6,
+    "result": "PASS"
+  },
+  "log_file": "logs/ci-local-reproduction.tap",
+  "log_sha256": "852fc2e625b911b8905ddebfc4f1193c6949f3170e984b08a4f54fe6c5f0546a",
+  "meaning": "The completed failing CI shard was reproduced locally without failure. This does not replace red exact-SHA CI.",
+  "recorded_at": "2026-11-17T21:06:10.636542+00:00"
+}

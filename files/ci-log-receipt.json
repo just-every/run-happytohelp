@@ -1,0 +1,8 @@
+{
+  "command": "gh run view 44162342688 --repo just-every/run-happytohelp --job 134320147868 --log-failed",
+  "exit_code": 0,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "retry": false,
+  "note": "No failing assertion text was returned. No additional log download attempted."
+}

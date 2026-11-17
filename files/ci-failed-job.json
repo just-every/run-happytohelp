@@ -1,0 +1,149 @@
+{
+  "completed_at": "2026-11-17T20:16:19Z",
+  "conclusion": "failure",
+  "id": 134320147868,
+  "name": "Verify / support-and-recovery",
+  "started_at": "2026-11-17T19:48:53Z",
+  "steps": [
+    {
+      "completed_at": "2026-11-17T19:48:56Z",
+      "conclusion": "success",
+      "name": "Set up job",
+      "started_at": "2026-11-17T19:48:54Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T19:48:56Z",
+      "conclusion": "success",
+      "name": "Configure evidence directory",
+      "started_at": "2026-11-17T19:48:56Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T19:48:59Z",
+      "conclusion": "success",
+      "name": "Run actions/checkout@v4",
+      "started_at": "2026-11-17T19:48:56Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T19:49:01Z",
+      "conclusion": "success",
+      "name": "Run pnpm/action-setup@v4",
+      "started_at": "2026-11-17T19:48:59Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T19:49:06Z",
+      "conclusion": "success",
+      "name": "Run actions/setup-node@v4",
+      "started_at": "2026-11-17T19:49:01Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T19:49:06Z",
+      "conclusion": "success",
+      "name": "Set runner-owned caches",
+      "started_at": "2026-11-17T19:49:06Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T19:49:14Z",
+      "conclusion": "success",
+      "name": "Cache frozen dependencies and Chromium",
+      "started_at": "2026-11-17T19:49:06Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T19:49:22Z",
+      "conclusion": "success",
+      "name": "Run pnpm install --frozen-lockfile",
+      "started_at": "2026-11-17T19:49:14Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T19:49:24Z",
+      "conclusion": "success",
+      "name": "Run actions/download-artifact@v4",
+      "started_at": "2026-11-17T19:49:22Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T19:49:24Z",
+      "conclusion": "success",
+      "name": "Restore the build from this workflow's exact checkout",
+      "started_at": "2026-11-17T19:49:24Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T19:49:26Z",
+      "conclusion": "success",
+      "name": "Install Chromium",
+      "started_at": "2026-11-17T19:49:24Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T20:16:11Z",
+      "conclusion": "failure",
+      "name": "Run shard checks",
+      "started_at": "2026-11-17T19:49:26Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T20:16:11Z",
+      "conclusion": "success",
+      "name": "Confirm checks preserve source",
+      "started_at": "2026-11-17T20:16:11Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T20:16:13Z",
+      "conclusion": "success",
+      "name": "Upload browser evidence",
+      "started_at": "2026-11-17T20:16:11Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T20:16:15Z",
+      "conclusion": "success",
+      "name": "Upload failure diagnostics",
+      "started_at": "2026-11-17T20:16:13Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T20:16:15Z",
+      "conclusion": "skipped",
+      "name": "Post Cache frozen dependencies and Chromium",
+      "started_at": "2026-11-17T20:16:15Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T20:16:15Z",
+      "conclusion": "skipped",
+      "name": "Post Run actions/setup-node@v4",
+      "started_at": "2026-11-17T20:16:15Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T20:16:15Z",
+      "conclusion": "success",
+      "name": "Post Run pnpm/action-setup@v4",
+      "started_at": "2026-11-17T20:16:15Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T20:16:16Z",
+      "conclusion": "success",
+      "name": "Post Run actions/checkout@v4",
+      "started_at": "2026-11-17T20:16:15Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-17T20:16:16Z",
+      "conclusion": "success",
+      "name": "Complete job",
+      "started_at": "2026-11-17T20:16:16Z",
+      "status": "completed"
+    }
+  ]
+}

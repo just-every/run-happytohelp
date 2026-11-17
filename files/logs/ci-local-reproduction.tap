@@ -1,0 +1,88 @@
+TAP version 13
+# (node:16741) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# PROBE AGENT-001 W1: built /widget.js -> visitor message -> queued model-edge fixture -> admitted AI answer; visible author and AI disclosure survive reload
+# PROBE AGENT-001 W2: ordinary operator reply -> human takeover -> widget reload -> distinct AI history author and visible Human responder; human message carries no AI label
+# PROBE AGENT-001 W3: existing brand/widget browser registration -> rendered disclosure and fetched-history assertions; no additional test registration
+# PROBE browser ACCESS-001: owner/admin load and save General, Appearance and Availability; collaborator/operator/custom-admin refused
+# BRAND_ORDERING {"ordering":"old-during-switch","status":201,"mailbox":"new","error":null}
+# BRAND_ORDERING {"ordering":"old-after-switch","status":201,"mailbox":"new","error":null}
+# BRAND_ORDERING {"ordering":"new-before-old","status":201,"mailbox":"new","error":null}
+# BRAND_ORDERING {"ordering":"no-switch","status":201,"mailbox":"current","error":null}
+# PROBE OUTBOUND-001 no mailbox: UI creates requester, email ticket and team-only note; reload/retry retain them; customer messages, outbound queue, deliveries, send options and provider sends stay empty; public email/notices refused; 1440 assertions with 1440/390 captures
+# PROBE OUTBOUND-001-NOTE browser N1/N2/N3: First comment -> internal email note, lost-response replay/reload -> one private note, no mail; explicit Send -> one public mail without note; assertions 1440, dialog/thread captures 1440/390
+# PROBE OUTBOUND-001 4: New ticket WhatsApp form at 1440 -> consent refusal retains draft; correction sends approved template; captures at 1440/390, 44px targets, one focused control, no overflow
+# Subtest: two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening
+ok 1 - two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening
+  ---
+  duration_ms: 732888.169383
+  type: 'test'
+  ...
+# Subtest: an operator replies from the phone inbox, opens a company customer and reviews and reverses a labelled identity link without changing customer authority
+ok 2 - an operator replies from the phone inbox, opens a company customer and reviews and reverses a labelled identity link without changing customer authority
+  ---
+  duration_ms: 316645.6548
+  type: 'test'
+  ...
+# Subtest: two signed-in operators see viewing, typing and unsent draft warnings before replying and after reload
+ok 3 - two signed-in operators see viewing, typing and unsent draft warnings before replying and after reload
+  ---
+  duration_ms: 163344.995398
+  type: 'test'
+  ...
+# Subtest: installed widget availability, provider-edge answers and consent-aware proactive outcomes
+ok 4 - installed widget availability, provider-edge answers and consent-aware proactive outcomes
+  ---
+  duration_ms: 166407.397274
+  type: 'test'
+  ...
+# Subtest: knowledge references remain reviewable in saved replies, ticket insertion, recipient refusals and collection grants at 1440 and 390
+ok 5 - knowledge references remain reviewable in saved replies, ticket insertion, recipient refusals and collection grants at 1440 and 390
+  ---
+  duration_ms: 198417.983056
+  type: 'test'
+  ...
+# Subtest: an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over
+ok 6 - an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over
+  ---
+  duration_ms: 168953.336816
+  type: 'test'
+  ...
+# Subtest: an operator finds a merge by requester or subject and explicitly chooses the surviving ticket
+ok 7 - an operator finds a merge by requester or subject and explicitly chooses the surviving ticket
+  ---
+  duration_ms: 170671.422973
+  type: 'test'
+  ...
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# (node:31919) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Recovery restore: offline snapshot
+# Recovery restore: public export/reset/import
+# Recovery restore: public reset
+# Recovery restore: public import
+# Recovery restore: post-import setup
+# Recovery restore: restored access and fresh recovery
+# Recovery restore: guarded member erase
+# {"profile":"first-run","sourceSha":"621d11ff3581a1e6cfda23957c5d430349539c66","tables":541,"migrations":200,"objects":6,"result":"PASS"}
+# Subtest: a populated packaged install restores from its documented credential-free backup into a fresh destination with every row, object and metadata equal, sessions and password sign-in working, setup closed and delegated credentials gone
+ok 8 - a populated packaged install restores from its documented credential-free backup into a fresh destination with every row, object and metadata equal, sessions and password sign-in working, setup closed and delegated credentials gone
+  ---
+  duration_ms: 756086.527664
+  type: 'test'
+  ...
+# Subtest: every derived table an import rebuilds stays out of the archive, so a restored export equals its source
+ok 9 - every derived table an import rebuilds stays out of the archive, so a restored export equals its source
+  ---
+  duration_ms: 1.09129
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2678345.34599

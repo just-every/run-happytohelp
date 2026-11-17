@@ -223,6 +223,12 @@
       "sha256": "03ef632871e5d2dfa50d3c72685a40ba1c357ff1b4749aea5f16fd69a2cb9e96"
     },
     {
+      "blob": "f51402949b94ee38e1c351c30db40830e0cdb8bd",
+      "bytes": 272,
+      "path": "evidence-verification-final.json",
+      "sha256": "4f0b2f55298ecd0c8b2ff660a2dcd522f42310c7f861fb25256db156d808d983"
+    },
+    {
       "blob": "ef9dcb61bdd60a40d902cf78ac5b8ca4bfd2e513",
       "bytes": 329,
       "path": "evidence-verification-initial.json",

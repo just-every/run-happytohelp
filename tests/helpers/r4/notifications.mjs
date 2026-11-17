@@ -30,7 +30,9 @@ export async function notificationTriggersJourney(m){
   const id=(await m.claim(request.messageId)).conversation_id,first=await m.admitted(request.messageId)
   for(const address of ['requester@example.com','cc@example.com']){
    assert.equal(notices('received',address).length,1)
-   assert.match(notices('received',address)[0].body.text,new RegExp(id))
+   assert.ok(notices('received',address)[0].body.text.includes('#'+id.slice(0,8).toUpperCase()))
+   assert.ok(notices('received',address)[0].body.subject.includes('#'+id.slice(0,8).toUpperCase()))
+   assert.ok(!notices('received',address)[0].body.subject.includes(id))
    assert.match(notices('received',address)[0].body.text,/two business hours/)
    assert.equal(notices('received',address)[0].body.headers['X-Auto-Response-Suppress'],'All')
   }
@@ -40,6 +42,10 @@ export async function notificationTriggersJourney(m){
   assert.equal(notices('received','requester@example.com').length,1)
   await call(ticket(id),{resolved:true});await settle();await call(ticket(id),{resolved:false});await call(ticket(id),{resolved:true});await settle()
   assert.equal(notices('solved','requester@example.com').length,1);assert.equal(notices('solved','cc@example.com').length,1)
+  for(const address of ['requester@example.com','cc@example.com']){
+   const notice=notices('solved',address)[0].body,reference='#'+id.slice(0,8).toUpperCase()
+   assert.ok(notice.subject.includes(reference));assert.ok(notice.text.includes(reference));assert.ok(!notice.subject.includes(id))
+  }
   assert.equal(notices('solved','never-seen1@example.net').length+notices('solved','never-seen2@example.org').length,0)
   const audit=await call(`${base}/audit?limit=200`,undefined,'GET')
   assert.ok(audit.data.some(event=>event.action==='notifications.delivery_outcome'&&event.target_id===id),'notification outcome appears in the workspace audit log')

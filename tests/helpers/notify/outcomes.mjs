@@ -25,7 +25,7 @@ export async function notificationOutcomesJourney(){
    const visitor=await app.ok('/api/identity/widget/session',{headers:{Origin:w.allowedOrigin},body:{widgetKey:w.widgetKey,email:`widget-${label}@example.test`}})
    const widget=await app.ok('/api/conversations',{token:visitor.token,body:{projectId:w.projectId}})
    await app.scheduled()
-   assert.equal(mail.sent.filter(e=>e.body.subject?.includes(widget.id)).length,0,'empty widget admission is not a request')
+   assert.equal(mail.sent.filter(e=>e.body.subject?.includes('#'+widget.id.slice(0,8).toUpperCase())).length,0,'empty widget admission is not a request')
    const command={localId:'notify-widget-'+label,content:'Please help with this widget order.',expectedRevision:0}
    await app.ok(`/api/conversations/${widget.id}/messages`,{token:visitor.token,body:command})
    await app.ok(`/api/conversations/${widget.id}/messages`,{token:visitor.token,body:command})
@@ -84,7 +84,7 @@ export async function notificationOutcomesJourney(){
   await beta.req(`/api/conversations/${beta.emailId}/messages`,{localId:'notify-public-headers',content:'Public reply header proof.',expectedRevision:frontier.revision,expectedLastMessageId:frontier.last_message_id})
   await beta.req(`${beta.desk}/conversations/${beta.emailId}`,{resolved:true},'PUT');await app.scheduled()
   assert.ok(mail.sent.some(e=>e.body.text?.includes('Public reply header proof.')))
-  assert.ok(mail.sent.some(e=>e.body.subject?.includes(beta.emailId)&&e.body.subject.includes('solved')))
+  assert.ok(mail.sent.some(e=>e.body.subject?.includes('#'+beta.emailId.slice(0,8).toUpperCase())&&e.body.subject.includes('solved')))
   for(const {body,headers} of mail.sent){
    assert.equal(body.headers['Auto-Submitted'],'auto-generated')
    assert.equal(body.headers['X-Auto-Response-Suppress'],'All','every captured ticket notice suppresses loops')

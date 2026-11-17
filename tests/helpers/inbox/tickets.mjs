@@ -90,7 +90,7 @@ export async function ticketsJourney(){
   const unnamedApplied=(await ok(`/macros/${macro.id}/apply`,{version:macro.version,command_id:'unnamed-replacement',tickets:[{id:unnamedTicket.id,expected_version:0}]})).results[0]
   assert.equal(unnamedApplied.status,'applied')
   const unnamedDraft=await ok(`/conversations/${unnamedTicket.id}/macro-draft`)
-  assert.equal(unnamedDraft.content,`Hello there, ticket ${unnamedTicket.id}, reference RMA-456. {{ticket.custom.missing}}`)
+  assert.equal(unnamedDraft.content,`Hello there, ticket #${unnamedTicket.id.slice(0,8).toUpperCase()}, reference RMA-456. {{ticket.custom.missing}}`)
   assert.deepEqual(unnamedDraft.unresolved,['ticket.custom.missing'])
   const blocked=await app.call(`/api/conversations/${unnamedTicket.id}/messages`,{token:w.tokens.owner,body:{localId:'unnamed-unresolved',content:unnamedDraft.content,expectedRevision:(await get(unnamedTicket.id)).revision}})
   assert.equal(blocked.status,422);assert.equal(blocked.data.code,'unresolved_placeholders');assert.deepEqual(blocked.data.unresolved,['ticket.custom.missing'])

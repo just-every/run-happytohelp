@@ -7,7 +7,7 @@ export async function ticketReferenceSearch(){
  const app=await startApp(),shot=await evidence('ticket-reference-search')
  try{
   const w=await app.seedWorkspace('synthetic-happytohelp-reference'),other=await app.seedWorkspace('synthetic-happytohelp-reference-other')
-  const group=await app.ok(`/api/dashboard/projects/${w.projectId}/ticket-groups`,{token:w.tokens.owner,body:{name:'Private queue',members:[w.users.owner]}})
+  const group=(await app.ok(`/api/dashboard/projects/${w.projectId}/ticket-groups`,{token:w.tokens.owner,body:{name:'Private queue',members:[w.users.owner]}})).data
   const visible=['ca164bf0-0000-4000-8000-000000000001','ca164bf0-0000-4000-8000-000000000002'],hidden='ca164bf0-0000-4000-8000-000000000003',foreign='ca164bf0-0000-4000-8000-000000000004',decoy='aca164bf-0000-4000-8000-000000000005'
   // Deliberate UUID collision fixtures; creation and message admission otherwise
   // use the same public doors as normal inbox work. No production ID is renamed.

@@ -1,9 +1,10 @@
+import {mailboxHistoryBrowser} from './history-browser.mjs'
 import assert from 'node:assert/strict'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {launchBrowser} from '../../journeys/kit/browser.mjs'
 
 export async function localEmailSetupBrowser(){
- const runtime=await createRuntime({vars:{H2H_LOCAL:'true',APP_ORIGIN:'http://127.0.0.1',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}}),browser=await launchBrowser()
+ const runtime=await createRuntime({queueConsumers:true,outboundFixture:new URL('./history-browser-edge.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:Buffer.alloc(32,7).toString('base64'),H2H_LOCAL:'true',APP_ORIGIN:'http://127.0.0.1',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}}),browser=await launchBrowser()
  let passed=false
  try{
   const context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage()
@@ -23,6 +24,7 @@ export async function localEmailSetupBrowser(){
   await guide.getByRole('link').click()
   assert.equal(new URL(page.url()).pathname.startsWith('/docs/'),true,'the local guide opens on-site hosted setup instructions')
   assert.equal((await context.request.get(page.url())).status(),200,'hosted setup documentation is available')
+  await mailboxHistoryBrowser({runtime,page,owner:{...owner,userId:owner.userId||owner.actor?.id}})
   await context.close();passed=true
  }finally{await browser.close();await runtime.close(passed)}
 }

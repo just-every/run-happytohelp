@@ -1,3 +1,4 @@
+import {customerMailboxHistorySql} from '../move-in/mailbox-privacy'
 import {ticketScopeSql} from '../access/ticket-scope'
 import {createReferenceReadScope} from '../knowledge/reference-read'
 import {referenceIds,renderKnowledgeFields,referenceVisibility} from '../knowledge/reference-store'
@@ -13,7 +14,7 @@ import {recordOnline} from '../collaboration/presence-store'
 
 export class ConversationSocket extends DurableObject<Env>{
  async authorized(a:Attachment):Promise<SocketActor|null>{
-  const scope=a.projectId?'EXISTS(SELECT 1 FROM memberships target WHERE target.user_id=s.actor_id AND target.project_id=?) AND s.role<>\'contact\'':`EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=s.project_id AND (s.role<>'contact' AND ${ticketScopeSql('s.actor_id')} OR s.role='contact' AND s.contact_id=c.contact_id AND EXISTS(SELECT 1 FROM contacts ct WHERE ct.id=c.contact_id AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1)))`
+  const scope=a.projectId?'EXISTS(SELECT 1 FROM memberships target WHERE target.user_id=s.actor_id AND target.project_id=?) AND s.role<>\'contact\'':`EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=s.project_id AND (s.role<>'contact' AND ${ticketScopeSql('s.actor_id')} OR s.role='contact' AND s.contact_id=c.contact_id AND ${customerMailboxHistorySql()} AND EXISTS(SELECT 1 FROM contacts ct WHERE ct.id=c.contact_id AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1)))`
   const row=await this.env.DB.prepare(`SELECT s.actor_id,s.role,u.name,s.project_id,sf.verified_at factorAt,sf.method factorMethod,
    EXISTS(SELECT 1 FROM user_factors f WHERE f.user_id=s.actor_id AND f.confirmed_at IS NOT NULL) hasFactor,
    (SELECT json_extract(ps.settings_json,'$.two_factor_roles') FROM project_settings ps WHERE ps.project_id=s.project_id) twoFactorRoles,

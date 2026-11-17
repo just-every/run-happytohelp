@@ -1,0 +1,16 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-root-signedout-1",
+  "head": "bdef5aff63ee5783883d0d0ebf939182fc27c90f",
+  "tree": "945d9af58a701079515ac02dbc24bc2f270630d5",
+  "clean": true,
+  "base": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "commits": [
+    "bdef5aff63ee5783883d0d0ebf939182fc27c90f Run Edit Run fleet <fleet@runeditrun.com> | Run Edit Run fleet <fleet@runeditrun.com>",
+    "9f876c432df084b6d8f65cee418a1836cc5662a7 Run Edit Run fleet <fleet@runeditrun.com> | Run Edit Run fleet <fleet@runeditrun.com>"
+  ],
+  "remoteHead": "bdef5aff63ee5783883d0d0ebf939182fc27c90f",
+  "verifyRunId": 44124009048,
+  "verifyConclusion": "success",
+  "ready": true
+}

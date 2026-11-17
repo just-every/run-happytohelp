@@ -1,0 +1,15 @@
+{
+  "tag": "hh-root-signedout-1",
+  "stamp": "2026-11-17T16:51:34Z",
+  "branch": "cloud/hh-root-signedout-1",
+  "head": "bdef5aff63ee5783883d0d0ebf939182fc27c90f",
+  "verifyRunId": 44124009048,
+  "verify": "success",
+  "status": "READY",
+  "clauseStatusChanges": [],
+  "registrationCounts": {
+    "before": 118,
+    "after": 119
+  },
+  "claim": "CLAIM PUBLIC-005 PARTIAL points=3 tests=tests/journeys/public.mjs#a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing"
+}

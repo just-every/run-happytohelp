@@ -67,3 +67,18 @@ First save: `9f876c4` (`[skip ci]`), then a real final test/type-inference commi
 - Initial new root browser journey: 1 passed, 0 failed, 156.556 seconds. The final exact-candidate replay and reduced-motion screenshots are recorded in the final receipt below.
 
 The five existing journeys ran while the final commit was created from the unchanged tested tree. The final root replay rebuilds and tests the clean pushed SHA itself. The ordinary docs home link also returns to the right root destination; this is an HTML navigation check, not a claim of a separate SPA-only flow.
+
+
+Final local replay on `bdef5aff63ee5783883d0d0ebf939182fc27c90f`: build passed; the new root journey passed 1/1 with no skips or failures in 157.185 seconds under Node 22.20.0. Inspected the final six 1440/390 screenshots after replay; unconfigured entry artwork is complete under reduced motion, the native sign-in form is legible at both widths, and the Help Center shows only the synthetic workspace and published guide. Native workspace ids are absent from running text. Browser and runtime processes exited; tracked product checkout remains clean.
+
+
+## Exact-head Verify and terminal result
+Verify run `44124009048` completed **success** on the exact pushed head `bdef5aff63ee5783883d0d0ebf939182fc27c90f`: https://github.com/just-every/run-happytohelp/actions/runs/44124009048. Six repository REST calls total: one exact-SHA discovery and five status reads, each at least 300 seconds apart. No workflow re-run, failure-log read or exception to the Verify bar was needed.
+
+Remote product ref was read back through Git and matches this head; the checkout is clean. Six local touched/new journey registrations passed (five existing plus one new), typecheck/build/rer check/source check passed, and all eight requested before/after screenshots were inspected. No open blocker. No PR was created. No clause statuses or generated views changed; PUBLIC-005 remains partial. Push journey entrypoint registrations: 118 → 119.
+
+CLAIM PUBLIC-005 PARTIAL points=3 tests=tests/journeys/public.mjs#a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing
+
+2026-11-17T16:51:34Z Run Edit Run fleet: hh-root-signedout-1 complete; native company root routing corrected, clause statuses unchanged; head bdef5aff63ee5783883d0d0ebf939182fc27c90f; Verify 44124009048 success.
+
+READY branch=cloud/hh-root-signedout-1 head=bdef5aff63ee5783883d0d0ebf939182fc27c90f

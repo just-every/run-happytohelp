@@ -29,3 +29,8 @@ test('a shared account needs every affected workspace owner’s current factor-b
 
 import {auditReplyNamesJourney} from '../helpers/owner-journey-inbox.mjs';
 test('security log reply names retain personal and role access restrictions',auditReplyNamesJourney);
+import {localOwnerReentry,localOwnerPassword,deviceHoursTimezone,externalWidgetConfirmation} from '../helpers/first-hour/owner.mjs'
+test('a locally admitted owner signs out and reopens the workspace without the installer link while foreign and hosted entry stay closed',localOwnerReentry)
+test('a local owner chooses a password using installation custody, revokes old sessions and signs back in with it',localOwnerPassword)
+test('the first business-hours save uses the device timezone and every explicitly saved timezone wins',deviceHoursTimezone)
+test('widget installation confirms only after an authenticated ping from the separate allowed website',externalWidgetConfirmation)

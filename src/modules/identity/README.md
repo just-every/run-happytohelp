@@ -8,6 +8,15 @@ Local development uses a native rer dev v2 wrapper: open the private `RER_OPEN`
 address after `RER_READY` to enter as the real owner through the checkout's key
 gate. It retains native passwords, sessions, roles and prior owner data. The
 wrapper is excluded from production output. Preview uses native password sign-in.
+After sign-out, a browser that still holds this checkout’s local admission cookie
+can use **Sign in as local owner** on the sign-in page. The action reuses the same
+key-gated native entry, accepts only the configured loopback origin, and is absent
+from production. A fresh browser still needs the private entry; no network-only
+owner admission is added. A locally admitted owner can choose a password in
+Profile → Security using the existing installation-custody step-up; all account
+sessions are revoked after the change. Ordinary password and mailbox proof rules
+remain unchanged.
+
 Local visitor and teammate email is validated and suppressed with no message store,
 viewer or external sending; the signed-out UI offers no local email request flow.
 

@@ -45,7 +45,7 @@ export default function AvailabilitySettings({ data, change, field, saved }) {
             {field('is_availability_schedule_enabled', 'Use opening hours', 'checkbox')}
             <label className="form-label">Days</label>
             <div className="project-days">{DAYS.map((day, i) => <label key={day}><input type="checkbox" checked={(schedule.days || []).includes(i + 1)} onChange={e => scheduleChange('days', e.target.checked ? [...(schedule.days || []), i + 1] : (schedule.days || []).filter(v => v !== i + 1))} />{day}</label>)}</div>
-            <label className="form-label" htmlFor="schedule-from">Hours</label>
+            <label className="form-label" htmlFor="schedule-from">Hours ({(data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone).replaceAll('_', ' ')})</label>
             <div className="project-hours"><input id="schedule-from" aria-label="Opening time" className="form-control" type="time" value={schedule.time_from || ''} onChange={e => scheduleChange('time_from', e.target.value)} /><span>to</span><input aria-label="Closing time" className="form-control" type="time" value={schedule.time_to || ''} onChange={e => scheduleChange('time_to', e.target.value)} /></div>
             <Field name="schedule-message" label="Away message outside hours" type="textarea" rows={3} value={schedule.message || ''} onChange={(_, value) => scheduleChange('message', value)} hint="Posted once in a conversation that starts outside your opening hours or during an SLA calendar closure. Leave it empty to say you are away, when you are back, and that you will reply by email." />
         </Section>

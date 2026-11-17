@@ -10,7 +10,7 @@ export function useHydrated() {
     return hydrated;
 }
 
-export interface AuthOptions { setupRequired: boolean; registrationAvailable: boolean; recoveryAvailable: boolean }
+export interface AuthOptions { localOwnerEntry?: boolean; setupRequired: boolean; registrationAvailable: boolean; recoveryAvailable: boolean }
 
 export function useSignInMail() {
     const [options,setOptions]=useState<{mailMode:'local'|'remote'|'unavailable'}|null>(null);

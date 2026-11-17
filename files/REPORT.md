@@ -23,7 +23,7 @@ Clean-main browser proof through public upload, apply, native contact edit and u
 
 Inspected clean-main screenshots at both widths: before-move-in/stopped-undo-expanded-1440.png and before-move-in/stopped-undo-expanded-390.png. The successful structured observation is before-move-in/receipt.json; stdout is before-move-in-final.log.
 
-Local setup completed using generated private local answers (never selected as evidence). Initial setup attempts lacked required local fields or supplied an answers path outside the checkout; a contained private answer file corrected that. No provider/live installation was used. Typecheck and the candidate build passed. The candidate inbox browser helper, declared lock/check commands and rer check subsequently passed; exact-SHA Verify is pending.
+Local setup completed using generated private local answers (never selected as evidence). Initial setup attempts lacked required local fields or supplied an answers path outside the checkout; a contained private answer file corrected that. No provider/live installation was used. Typecheck and the candidate build passed. The candidate inbox browser helper, declared lock/check commands and rer check subsequently passed. Exact-SHA Verify completed successfully.
 
 ## Intended changes and counts
 
@@ -52,7 +52,7 @@ One product commit was created and published: 20b254ff85a01e9874b61d301ec192eeae
 
 The publication scan and landing remain with the fleet's Mac. This report claims no publication scan, self-gate, acceptance promotion or landing.
 
-Exact-SHA Verify: https://github.com/just-every/run-happytohelp/actions/runs/44006445324 (run 44006445324), still in progress at the approximately 10-minute poll; head 20b254ff85a01e9874b61d301ec192eeae0d73b8. API calls so far: 3 (discovery and two polls at least 300 seconds apart); future polls remain at least 300 seconds apart.
+Exact-SHA Verify: https://github.com/just-every/run-happytohelp/actions/runs/44006445324 (run 44006445324), completed/success on 20b254ff85a01e9874b61d301ec192eeae0d73b8. No contract-view exception was needed. The workflow remained in progress through the approximately 20-minute poll and was green at the approximately 30-minute poll. Six API calls were used: one discovery and five status polls, all at least 300 seconds apart. No job-log downloads or reruns were needed.
 
 ## Claims
 
@@ -62,4 +62,22 @@ CLAIM MOVE-IN-001 PARTIAL points=none tests=tests/move-in/undo-browser.mjs#undoB
 CLAIM OUTBOUND-001 PARTIAL points=none tests=tests/helpers/inbox/new-ticket-configuration.mjs#newTicketConfigurationBrowser
 CLAIM PUBLIC-005 PARTIAL points=none tests=scripts/build.mjs#docsSite Markdown validation
 
-No new policy defaults or product gaps were introduced. No product blocker is known; exact-head CI remains pending.
+No new policy defaults or product gaps were introduced. Blockers: none. Exact-head Verify is completed/success. All four scoped follow-ups are complete; clause judgments remain unchanged.
+
+## Evidence preservation
+
+An initial report-only evidence publication preserved the packet while CI was pending. A Git fetch and readback verified all 49 selected file lengths, SHA-256 hashes and Git blob identities against the manifest, including its exact product SHA. Product HEAD and index remained unchanged and clean. See evidence-verification-initial.json. The final evidence publication updates the report and CI receipt without changing the product branch.
+
+Local cloud commands used pnpm 10.12.4 and the prescribed toolchain environment. The cloud shell reported Node 24.19.0; rer selected project Node 22.20.0. Browser proof used system Chromium /usr/bin/chromium with --no-sandbox and the real HOME, isolated synthetic sessions, and no real browser profile. Every browser/runtime closed through its own recorded process handles. The exact-SHA GitHub workflow uses the repository's Node 22.20.0 pin.
+
+## Final handoff
+
+Branch: cloud/hh-stranger11-copy-2
+Head: 20b254ff85a01e9874b61d301ec192eeae0d73b8
+Verify: 44006445324 — completed/success on that exact SHA.
+PR: none required or created.
+Product: one six-file commit (27 insertions, 14 deletions), pushed through the cloud guard and remote-ref verified.
+Evidence: report-only refs/heads/evidence/hh-stranger11-copy-2, including this report, complete plan, actual check/CI/browser receipts and relevant screenshots. Its exact final evidence head is returned separately in the terminal EVIDENCE line.
+Cleanup: private setup answer files were removed after use; the product clone and its local test state are removed only after final evidence publication and readback verification.
+
+READY branch=cloud/hh-stranger11-copy-2 head=20b254ff85a01e9874b61d301ec192eeae0d73b8

@@ -13,10 +13,17 @@ export interface RecordPosition extends JsonPosition {}
 function* items(file:ExportFile,vendor:Vendor,maxRecords:number):Generator<Item> {
  if(/(?:^|\/)attachments\//i.test(file.name))throw new Error('attachment_original_retained_not_imported')
  const raw=new TextDecoder('utf-8',{fatal:true}).decode(file.bytes).replace(/^\uFEFF/,''),extension=file.name.split('.').pop()?.toLowerCase()
+ if(vendor==='zendesk'&&extension==='json'){
+  // Admin exports have a .json suffix but contain NDJSON. First try one
+  // document so pretty-printed API responses and documented arrays retain
+  // their real offsets; multiple roots fall through to the line reader.
+  const positions=jsonPositions(raw,maxRecords,false,undefined,true)
+  if(!positions.some(p=>p.error==='invalid_json')){for(const position of positions)yield {...position,raw:raw.slice(position.start,position.end)};return}
+ }
  if(wrappedVendor(vendor)||extension==='jsonl'){
   if(vendor==='intercom'&&extension!=='jsonl')throw new Error('unsupported_file_extension')
  let row=1,start=0;while(start<raw.length){const newline=raw.indexOf('\n',start),end=newline<0?raw.length:newline,line=raw.slice(start,end);if(line.trim()){
-  try{for(const position of vendor==='helpscout'?helpScoutPositions(line,maxRecords):jsonPositions(line,maxRecords,wrappedVendor(vendor)))yield {...position,raw:line.slice(position.start,position.end),start:start+position.start,end:start+position.end,row}}
+  try{for(const position of vendor==='helpscout'?helpScoutPositions(line,maxRecords):jsonPositions(line,maxRecords,vendor==='zendesk'?false:wrappedVendor(vendor),undefined,vendor==='zendesk'))yield {...position,raw:line.slice(position.start,position.end),start:start+position.start,end:start+position.end,row}}
   catch(error){if(error instanceof IndexLimitError)throw new IndexLimitError(row,error.pointer);throw error}
  };start=end+1;row++}return
  }

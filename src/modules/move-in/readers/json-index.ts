@@ -3,11 +3,11 @@
 import {LIMITS} from '../types'
 import {IndexLimitError} from './admission-error'
 import {auditShape} from './shapes'
-import {collectionNames,intercomDocument,RecordStructureError} from './classification'
+import {collectionNames,intercomDocument,RecordStructureError,zendeskCollections} from './classification'
 export interface JsonPosition {start:number;end:number;row:number;pointer:string;unsupported?:string;error?:string;sourceKind?:string}
 class LocatedError extends Error {offset:number;pointer:string;constructor(offset:number,pointer:string,code='invalid_json'){super(code);this.offset=offset;this.pointer=pointer}}
 const escapePointer=(key:string)=>key.replace(/~/g,'~0').replace(/\//g,'~1')
-export function jsonPositions(raw:string,maxRecords:number=LIMITS.records,recordOnly=false,observe?:(position:JsonPosition)=>void):JsonPosition[] {
+export function jsonPositions(raw:string,maxRecords:number=LIMITS.records,recordOnly=false,observe?:(position:JsonPosition)=>void,zendesk=false):JsonPosition[] {
  let p=0,indexed=0,rootStart=0;const output:JsonPosition[]=[],properties:{key:string;position:JsonPosition;children?:JsonPosition[]}[]=[]
  // Potential collection entries and object fields are structural scan work.
  // A typed record can contain either without consuming extra source positions.
@@ -31,6 +31,12 @@ export function jsonPositions(raw:string,maxRecords:number=LIMITS.records,record
  // Top-level object scanning records each collection's children without keeping
  // their values. Valid earlier records remain diagnosable after a later error.
  const isEnvelope=()=>{
+  if(zendesk){
+   const collections=properties.filter(p=>zendeskCollections.has(p.key))
+   if(!collections.length)return false
+   for(const field of collections)if(!field.children)throw new LocatedError(field.position.start,field.position.pointer,'collection_must_be_array')
+   return true
+  }
   try{return 'envelope' in intercomDocument(properties.map(({key,position,children})=>({key,array:!!children,...(['type','kind'].includes(key)?{value:raw[position.start]==='"'?JSON.parse(raw.slice(position.start,position.end)):null}:{})})))}
   catch(error){if(!(error instanceof RecordStructureError))throw error;const field=properties.find(field=>`/${escapePointer(field.key)}`===error.pointer);throw new LocatedError(field?.position.start??rootStart,error.pointer,error.message)}
  }
@@ -50,9 +56,9 @@ export function jsonPositions(raw:string,maxRecords:number=LIMITS.records,record
  // A syntax error can still expose earlier source positions for the reader's
  // diagnostics. Admission refuses the entire file on that error before custody.
  if(error&&!recordOnly&&properties.length){try{expanded=isEnvelope()}catch{expanded=false}}
- if(expanded){output.length=0;for(const property of properties){const known=collectionNames.has(property.key);if(known&&property.children)output.push(...property.children);else {
-  const metadata=['type','kind','total_count','pages'].includes(property.key),body=raw.slice(property.position.start,property.position.end)
-  if(!error&&metadata&&body.length<=LIMITS.recordBytes&&auditShape('intercom','$envelope',{[property.key]:JSON.parse(body)}).complete)continue
+ if(expanded){output.length=0;for(const property of properties){const known=zendesk?zendeskCollections.has(property.key):collectionNames.has(property.key);if(known&&property.children)output.push(...property.children.map(position=>zendesk?{...position,sourceKind:zendeskCollections.get(property.key)}:position));else {
+  const metadata=(zendesk?['count','next_page','previous_page','meta','links','end_of_stream','after_cursor','after_url','end_time']:['type','kind','total_count','pages']).includes(property.key),body=raw.slice(property.position.start,property.position.end)
+  if(!error&&metadata&&body.length<=LIMITS.recordBytes&&auditShape(zendesk?'zendesk':'intercom','$envelope',{[property.key]:JSON.parse(body)}).complete)continue
   if(property.children?.length)output.push(...property.children.map(position=>({...position,unsupported:property.key})));else output.push({...property.position,unsupported:property.key})
  }}}
  if(error)output.push({start:0,end:0,row:row(error.offset),pointer:error.pointer,error:error.message})

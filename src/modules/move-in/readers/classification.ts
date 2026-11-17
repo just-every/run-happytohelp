@@ -7,6 +7,11 @@ export class RecordStructureError extends Error {
  readonly pointer:string
  constructor(code:string,pointer=''){super(code);this.pointer=pointer}
 }
+// Both Zendesk's documented array around singular wrappers and API list
+// responses are accepted. A collection name supplies the type, never a guess
+// from object contents or a filename. Comment/history pages still need packing
+// with explicit ticket IDs because those endpoints omit the parent ticket ID.
+export const zendeskCollections=new Map(Object.entries({tickets:'ticket',users:'user',organizations:'organization',groups:'group',ticket_fields:'ticket_field',ticket_forms:'ticket_form',macros:'macro',views:'view',triggers:'trigger',automations:'automation',sla_policies:'sla_policy',articles:'article',sections:'section',identities:'identity',organization_memberships:'organization_membership',group_memberships:'group_membership',satisfaction_ratings:'satisfaction_rating',tags:'tag'}))
 export const collectionNames=new Set(['contacts','conversations','data','articles','macros'])
 const identifiedKinds={zendesk:new Set(['user','ticket','macro','article','tag']),freshdesk:new Set(['contact','agent','ticket','canned_response']),intercom:new Set(['contact','user','lead','conversation','macro','article','tag','tag-name'])}
 export function recordSourceId(kind:string,payload:Record<string,any>,vendor:Vendor):string {
@@ -77,6 +82,11 @@ export function classifyRecord(value:unknown,vendor:Vendor):{kind:string;payload
  * wrappers are refused as a whole, rather than inventing a kind for their record.
  * The check also applies to older persisted source offsets on queue resume. */
 export function lowerPosition(value:unknown,vendor:Vendor,unsupported?:string,sourceKind?:string){
+ if(vendor==='zendesk'&&sourceKind){
+  if(!object(value))throw new RecordStructureError('record_must_be_object')
+  const wrapped=Object.keys(value).length===1&&Object.hasOwn(value,sourceKind)
+  return classifyRecord(wrapped?value:{[sourceKind]:value},vendor)
+ }
  if(vendor==='helpscout'){if(!sourceKind||!sourceKind.startsWith('metadata:')&&!object(value))throw new RecordStructureError('helpscout_document_shape_required');return {kind:sourceKind,payload:sourceKind.startsWith('metadata:')?{value}:value as Record<string,any>,prefix:''}}
  if(unsupported!==undefined&&(!object(value)||!Object.hasOwn(value,'type')&&!Object.hasOwn(value,'kind'))){
   let nodes=0

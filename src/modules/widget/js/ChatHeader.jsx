@@ -13,17 +13,19 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
     const context = useContext(AppContext);
     const {
         thinking,
+        messages,
         conversationSettings,
         setConversationSettings,
         sendMessage,
-        getCurrentAgent,
     } = useContext(ConnectContext);
 
     const contentEl = useRef(null);
     const responderToggleRef = useRef(null);
     const [lastHeight, setLastHeight] = useState(0);
 
-    const currentAgent = getCurrentAgent();
+    const lastReply = [...(messages || [])].reverse().find(message => message.agent && message.agent_id && message.actor_role !== 'system' && !message.sending && !message.failed_send);
+    const brandName = conversationSettings?.workspace_brand?.name || context.brand?.name || 'Customer';
+    const currentAgent = lastReply?.agent || {id:null,name:`${brandName} support`,initials:brandName.slice(0,2)};
     // An away team keeps its configured reply estimate when no reopening time is known.
     const availability = conversationSettings?.availability;
     const humanResponse = availability?.available === false ? (availability.opensAt ? context.text.away.header_back.replace('{when}', backAt(availability.opensAt)) : `${context.text.away.header} · ${humanResponseTime(context.text)}`) : humanResponseTime(context.text);
@@ -76,7 +78,7 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
             agents.push(agent);
         });
         if(conversationSettings.is_human_response_enabled) {
-            agents.push(conversationSettings.human);
+            agents.push(lastReply?.agent && !lastReply.agent.is_ai ? lastReply.agent : {id:null,name:`${brandName} support`,initials:brandName.slice(0,2)});
         }
 
         let agentRows = [];
@@ -86,8 +88,8 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
                 <div className="happytohelp-insight-agent">
                     <div>
                         <span className="happytohelp-insight-agent-name">{agent.first_name ?? agent.name}</span>
-                        <span className="happytohelp-insight-agent-seperator">•</span>
-                        <span className="happytohelp-insight-agent-role">{agent.role ?? (agent.is_ai ? context.text.ai.ai : context.text.ai.human)}</span>
+
+                        <span className="happytohelp-insight-agent-role">{agent.is_ai ? "AI assistant" : ""}</span>
                     </div>
                     <div className="happytohelp-insight-agent-info">{agent.is_ai ? context.text.ai.ai_response : humanResponse}</div>
                 </div>
@@ -123,9 +125,9 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
                             <FontAwesomeIcon icon={faAngleDown}/>
                         </span>}
                     </span>
-                    <span className="happytohelp-insight-agent-seperator">•</span>
+
                     <span className="happytohelp-insight-agent-role">
-                        {currentAgent.role ?? (currentAgent.is_ai ? context.text.ai.ai : context.text.ai.human)}
+
                         {canExpand && <span className="happytohelp-chat-header-edit-inline">
                             <FontAwesomeIcon icon={faAngleDown}/>
                         </span>}

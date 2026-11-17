@@ -8685,7 +8685,7 @@
       "executable": false
     },
     "src/modules/management/resource-list.ts": {
-      "sha256": "037ce14a8997aeaa2f5bd84c2a2ccc738987f223b28a9cd71b588990a206018c",
+      "sha256": "52924181f0acfc62efd4a8e074c2a445b6b6f00618ad9e83556ef054d3099b40",
       "executable": false
     },
     "src/modules/management/resources.ts": {
@@ -11533,7 +11533,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/Conversation.jsx": {
-      "sha256": "5254177d5558d6dd5defa3d5306afbf16b589b22f8f6f723386f1ddf2cbe2de9",
+      "sha256": "5402849ada6276ed5e473cf7bf31e6b24eb49e3bfa18bd20fe9331670315adae",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ai-controls.css": {
@@ -11565,7 +11565,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ConversationTags.jsx": {
-      "sha256": "e0975ef01e18efac17305ac3353e147e532d21bb7227bb089a739cd97edca10f",
+      "sha256": "7474364726efc1a4659167a32a83a8155611a6385ec6bbb88f40f34d64597384",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/emailAddress.jsx": {
@@ -11905,11 +11905,11 @@
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/TicketSummary.jsx": {
-      "sha256": "69458e662675fc8f0499505a56d7266e60ab2ce81526a09450288faeea3270ad",
+      "sha256": "0534061c87fecb4659069fcdab9f56b72b36b3d522dc8478225694bdf3d3e29b",
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/useTicketRecord.js": {
-      "sha256": "7c0b673c1f9a9db5b81b8c63b6453d61b54631daca89cde79369f8e18814d6ae",
+      "sha256": "6cd08c3c1ff0e86afd12a3bb8becbe000d5148c1b0c5202eb58c32fe60fb5001",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/handle-timer.css": {
@@ -13349,7 +13349,7 @@
       "executable": false
     },
     "src/ui/native/pages/ContactDetails.jsx": {
-      "sha256": "dc96a7581d8385e44051c4757bb2eea0fc05824224269235b083306a3672a4d3",
+      "sha256": "95634ff34d5d1ec013b6aac3b31e05d55cf44266a9397f5b10561b56aa3292ba",
       "executable": false
     },
     "src/ui/native/pages/ContactErasure.jsx": {
@@ -14089,7 +14089,7 @@
       "executable": false
     },
     "src/ui/native/transport.js": {
-      "sha256": "157fea9bef75eb83f3ed556aee25dc17167bc030c90cbcdfe9e085efbe371319",
+      "sha256": "01c748b55b64301eeb20f512ae8a2959adf87c5df3e2af7efc56089583a00e68",
       "executable": false
     },
     "src/ui/native/workspace-page-code.js": {
@@ -16761,7 +16761,7 @@
       "executable": false
     },
     "tests/helpers/inbox/desk-collaboration.mjs": {
-      "sha256": "ff287efd2caf6fd9bf222b669f711c8f0114e557e1f90d481302bb4ed8f9c3bc",
+      "sha256": "0c3b93d35e16d98a77963f4e14866634d856564a744b4422b2cd11b4a04ef265",
       "executable": false
     },
     "tests/helpers/inbox/desk-proof.mjs": {
@@ -16833,7 +16833,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ticket-status-edits.mjs": {
-      "sha256": "457447c2a18811e8fae135cefc5993dcb249f779fb8e91513265af297ebd7eb9",
+      "sha256": "c7c63f22d4479a9438cbf92c21b8f8efcafe030a16a8473e712b08d2611c7a5c",
       "executable": false
     },
     "tests/helpers/inbox/tickets-browser.mjs": {

@@ -1,0 +1,4 @@
+Command: git log origin/main..HEAD --format="%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)"
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+All candidate commits including side parents inspected; fleet author and committer; no trailers.

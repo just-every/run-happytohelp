@@ -1,0 +1,43 @@
+{
+  "head": "b3660b6ee2772d005185bc0343f14cb9d7fd0d51",
+  "node": "v24.19.0",
+  "pnpm": "10.12.4",
+  "checks": [
+    {
+      "name": "lock-check",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "started_at": "2026-11-17T20:43:22.159822+00:00",
+      "finished_at": "2026-11-17T20:43:23.572873+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "started_at": "2026-11-17T20:43:23.572956+00:00",
+      "finished_at": "2026-11-17T20:43:37.693123+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "rer-check",
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "started_at": "2026-11-17T20:43:37.693176+00:00",
+      "finished_at": "2026-11-17T20:43:39.338950+00:00",
+      "exit_code": 0
+    }
+  ]
+}

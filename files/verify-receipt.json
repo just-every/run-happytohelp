@@ -1,0 +1,14 @@
+{
+  "command": "gh api repos/just-every/run-happytohelp/actions/runs/44156311769 --jq '{id,name,status,conclusion,head_sha,html_url,repository:.repository.full_name,head_branch}'",
+  "api_call_count": 1,
+  "response": {
+    "conclusion": "success",
+    "head_branch": "cloud/hh-stranger13-behaviour-1-c2-rebase-b3660b6ee2772d005185bc0343f14cb9d7fd0d51",
+    "head_sha": "b3660b6ee2772d005185bc0343f14cb9d7fd0d51",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44156311769",
+    "id": 44156311769,
+    "name": "Verify",
+    "repository": "just-every/run-happytohelp",
+    "status": "completed"
+  }
+}

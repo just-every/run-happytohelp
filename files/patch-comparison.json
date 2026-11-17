@@ -1,0 +1,226 @@
+{
+  "base": "55e2f106c506e4f671d2e474c737124e760e2233",
+  "head": "b3660b6ee2772d005185bc0343f14cb9d7fd0d51",
+  "original_base": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "original_head": "4054c90ab0f0eda9d81eba6152d5c9ef2d7f920f",
+  "main_moved": false,
+  "candidate_commit_count": 1,
+  "candidate_parents": [
+    "55e2f106c506e4f671d2e474c737124e760e2233"
+  ],
+  "candidate_tree": "51f446e931940a7ea59bb996be39aed1822b50df",
+  "files": [
+    {
+      "path": "docs/macros-and-teamwork.md",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "00766bec5439a1d65497547fd5b3ae7756bed2d236b942dbb936723c2b6e96bd",
+      "prior_patch_sha256": "00766bec5439a1d65497547fd5b3ae7756bed2d236b942dbb936723c2b6e96bd"
+    },
+    {
+      "path": "sources.lock.json",
+      "byte_exact_patch": false,
+      "patch_id_equal": true,
+      "current_patch_sha256": "9a18552338838a1f19ba257baf8fbabec7ed96be78a607a9a7a441c39a9626a1",
+      "prior_patch_sha256": "bfbcbce7a0e006592259c2a17ba86e96753656c2177d115e9158257c8b77e76c"
+    },
+    {
+      "path": "src/modules/integrations/triggers/templates.ts",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "3b9303908379580536374e7d6d17123659554bf2669bb88d8d74807891f293f4",
+      "prior_patch_sha256": "3b9303908379580536374e7d6d17123659554bf2669bb88d8d74807891f293f4"
+    },
+    {
+      "path": "src/modules/macros/placeholders.ts",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "4dbe29ce2d7ea5e06293b17c9c10a20d6a2213ca4d19b5e3095f7dfb7b5a587d",
+      "prior_patch_sha256": "4dbe29ce2d7ea5e06293b17c9c10a20d6a2213ca4d19b5e3095f7dfb7b5a587d"
+    },
+    {
+      "path": "src/modules/management/inbox-search.ts",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "b27004627054b6ad1b40d7ce1b88b4ed9faa94fddaccc6eae03e63a99da63500",
+      "prior_patch_sha256": "b27004627054b6ad1b40d7ce1b88b4ed9faa94fddaccc6eae03e63a99da63500"
+    },
+    {
+      "path": "src/modules/management/resource-list.ts",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "4bd1a0c284011f43944b60e5f0788e334bb065cb35d46f52dbdec29f6e90790b",
+      "prior_patch_sha256": "4bd1a0c284011f43944b60e5f0788e334bb065cb35d46f52dbdec29f6e90790b"
+    },
+    {
+      "path": "src/modules/tickets/reference.ts",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "9079130945c75724787d3cd39ea17daa91e34568a1c056a8afccb7b4f04a43ff",
+      "prior_patch_sha256": "9079130945c75724787d3cd39ea17daa91e34568a1c056a8afccb7b4f04a43ff"
+    },
+    {
+      "path": "src/modules/workflows/notify.ts",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "2a51c1a31f4affa8fd604262c659b0b81b5682ce76a51a7f800b584dc22e9757",
+      "prior_patch_sha256": "2a51c1a31f4affa8fd604262c659b0b81b5682ce76a51a7f800b584dc22e9757"
+    },
+    {
+      "path": "src/ui/dashboard/components/Conversation.jsx",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "6c44cc6026ec7667384d2967f91d056b12ac8850eb0ee32982b17cefd1e0e43c",
+      "prior_patch_sha256": "6c44cc6026ec7667384d2967f91d056b12ac8850eb0ee32982b17cefd1e0e43c"
+    },
+    {
+      "path": "src/ui/dashboard/components/ConversationHeader.jsx",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "da5cd0b13414618c669076df3b4b4165eb16895d2b70c7a824c44f4c37188377",
+      "prior_patch_sha256": "da5cd0b13414618c669076df3b4b4165eb16895d2b70c7a824c44f4c37188377"
+    },
+    {
+      "path": "src/ui/dashboard/components/conversation/ConversationTags.jsx",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "820fc06c146d34e9a0bb5a43ff68f956932df8ebdf135daaf3c5a0b6c8b66bac",
+      "prior_patch_sha256": "820fc06c146d34e9a0bb5a43ff68f956932df8ebdf135daaf3c5a0b6c8b66bac"
+    },
+    {
+      "path": "src/ui/dashboard/components/ticket-panel/TicketSummary.jsx",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "bc3ee60f6dc69a05b1176873599f45c290f8c17afa7cd80abb590e6616a56436",
+      "prior_patch_sha256": "bc3ee60f6dc69a05b1176873599f45c290f8c17afa7cd80abb590e6616a56436"
+    },
+    {
+      "path": "src/ui/dashboard/components/ticket-panel/useTicketRecord.js",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "a8561bd471a68c6a961ad87f20b6a66d682714c44cf4a03dc516528c29a95dff",
+      "prior_patch_sha256": "a8561bd471a68c6a961ad87f20b6a66d682714c44cf4a03dc516528c29a95dff"
+    },
+    {
+      "path": "src/ui/native/pages/ContactDetails.jsx",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "13ee5f68a32e6951bc091e0a31ce9d07dd7b19a5c3d70521512b07becc397ec4",
+      "prior_patch_sha256": "13ee5f68a32e6951bc091e0a31ce9d07dd7b19a5c3d70521512b07becc397ec4"
+    },
+    {
+      "path": "src/ui/native/pages/macros/MacrosPage.jsx",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "fd6fdd70da197ec30a0173c8fd34620ca28be9111bbc28c187f64542eeb11866",
+      "prior_patch_sha256": "fd6fdd70da197ec30a0173c8fd34620ca28be9111bbc28c187f64542eeb11866"
+    },
+    {
+      "path": "src/ui/native/pages/notifications/NotificationTriggerSettings.jsx",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "ad25fb749db38e5cc4423a7c09b9fc62325e12f4c2d540eabe2206a9e920bd17",
+      "prior_patch_sha256": "ad25fb749db38e5cc4423a7c09b9fc62325e12f4c2d540eabe2206a9e920bd17"
+    },
+    {
+      "path": "src/ui/native/transport.js",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "c8c7f101a77b53ca74388654f3315050e351d0d75643752646bcbc93bb98e368",
+      "prior_patch_sha256": "c8c7f101a77b53ca74388654f3315050e351d0d75643752646bcbc93bb98e368"
+    },
+    {
+      "path": "tests/helpers/inbox/desk-collaboration.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "573ea0685b19a7c275fa435d19428e7696c5412b4074a1a9f941656e6c6f2906",
+      "prior_patch_sha256": "573ea0685b19a7c275fa435d19428e7696c5412b4074a1a9f941656e6c6f2906"
+    },
+    {
+      "path": "tests/helpers/inbox/queue-bulk.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "f4fc61ca97734b2e6bc66e0d3078387a34ef022ea17feafd4f2ed0cd432fd024",
+      "prior_patch_sha256": "f4fc61ca97734b2e6bc66e0d3078387a34ef022ea17feafd4f2ed0cd432fd024"
+    },
+    {
+      "path": "tests/helpers/inbox/queue-work.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "57eb89af5bb836c9b21e0896a44c05eaa563f8da4878587e6606c04daba9071c",
+      "prior_patch_sha256": "57eb89af5bb836c9b21e0896a44c05eaa563f8da4878587e6606c04daba9071c"
+    },
+    {
+      "path": "tests/helpers/inbox/status-lifecycle.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "0811f31d049588a0e79955d090f083e95865cc41312c2600ee2c05d9fafe3b39",
+      "prior_patch_sha256": "0811f31d049588a0e79955d090f083e95865cc41312c2600ee2c05d9fafe3b39"
+    },
+    {
+      "path": "tests/helpers/inbox/ticket-reference-browser.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "469a50c02e40d310dcb23058bb08b7925acf01413c5b9ed9766a7dd348122cdb",
+      "prior_patch_sha256": "469a50c02e40d310dcb23058bb08b7925acf01413c5b9ed9766a7dd348122cdb"
+    },
+    {
+      "path": "tests/helpers/inbox/ticket-reference-search.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "64ed02d15732907b38bf6d712fd31acee87ca2383b600a736eac1b5f2abdeb72",
+      "prior_patch_sha256": "64ed02d15732907b38bf6d712fd31acee87ca2383b600a736eac1b5f2abdeb72"
+    },
+    {
+      "path": "tests/helpers/inbox/ticket-status-edits.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "8ab55f3e174492cfaea83c6f60f1da17ee328fcffdc98ba2f47f902ef863a433",
+      "prior_patch_sha256": "8ab55f3e174492cfaea83c6f60f1da17ee328fcffdc98ba2f47f902ef863a433"
+    },
+    {
+      "path": "tests/helpers/inbox/tickets.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "35ee7fe4d4b518ffb8b7f3f2d9e8efdc766ecafc587ea7126464485253b4e23b",
+      "prior_patch_sha256": "35ee7fe4d4b518ffb8b7f3f2d9e8efdc766ecafc587ea7126464485253b4e23b"
+    },
+    {
+      "path": "tests/helpers/notify/outcomes.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "5d0740e7880a074b65674cfe17b7224d650bae188a4eb608a4241e264a0988a2",
+      "prior_patch_sha256": "5d0740e7880a074b65674cfe17b7224d650bae188a4eb608a4241e264a0988a2"
+    },
+    {
+      "path": "tests/helpers/r4/notifications.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "81d0914645951f71fee9b46b2fcbb4875cf92e7a139f18dafc2d60a5f00cfdd7",
+      "prior_patch_sha256": "81d0914645951f71fee9b46b2fcbb4875cf92e7a139f18dafc2d60a5f00cfdd7"
+    },
+    {
+      "path": "tests/helpers/request-forms-journey.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "c1058213598dc5d7c61f98b7ee2fe88e539a30f43a95fd92267c19552d60ac6a",
+      "prior_patch_sha256": "c1058213598dc5d7c61f98b7ee2fe88e539a30f43a95fd92267c19552d60ac6a"
+    },
+    {
+      "path": "tests/journeys/inbox-browser.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "4bdcb769a54caae1c8161f6fcddfbf6c406abfeddf9ffcb7cb607f6cbb9bf7af",
+      "prior_patch_sha256": "4bdcb769a54caae1c8161f6fcddfbf6c406abfeddf9ffcb7cb607f6cbb9bf7af"
+    },
+    {
+      "path": "tests/journeys/inbox.mjs",
+      "byte_exact_patch": true,
+      "patch_id_equal": true,
+      "current_patch_sha256": "c8e75d12f77352811f4ba3261c2bd3c6b5006aec51719f77f50c315caadfebc2",
+      "prior_patch_sha256": "c8e75d12f77352811f4ba3261c2bd3c6b5006aec51719f77f50c315caadfebc2"
+    }
+  ],
+  "contract_changes": [],
+  "lock_patch_difference": "Only the full-index blob identifiers differ; all patch hunks are byte identical."
+}

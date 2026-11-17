@@ -1,0 +1,88 @@
+{
+  "files": [
+    {
+      "blob": "01b689ca4897a9e081a2d11cf4a0d40f2314d6b1",
+      "bytes": 1612,
+      "path": "PLAN.md",
+      "sha256": "da47b51a70bc6ea547e4888d599e476e09e2bc04ce31573579fa8936244afe19"
+    },
+    {
+      "blob": "f838e9deb38f6d045f332b2ef2ce6e7b688475c2",
+      "bytes": 6798,
+      "path": "REPORT.md",
+      "sha256": "4306b1656474297b12661e8a7922228729f1cc2f8528ac67cd11279d61cfc0e0"
+    },
+    {
+      "blob": "af4b3c5c4384cf069ae2e85be2e3e3e7d21576ba",
+      "bytes": 218,
+      "path": "candidate-log.txt",
+      "sha256": "a6a4235c1eecb9c77bb8b7767614dd0be833a7ce53fd9e740778861f7fadc342"
+    },
+    {
+      "blob": "59e492d500c14df826737188499347846f534a35",
+      "bytes": 960,
+      "path": "checks-receipt.json",
+      "sha256": "dda83ef79089d9c8cc254bfb46afd392d6e74f7d79d213b0001b0ecc8383a4c5"
+    },
+    {
+      "blob": "d44b6ed6e4b39ce4ecd776b573c5b37512715094",
+      "bytes": 1168,
+      "path": "custody-receipt.json",
+      "sha256": "b6778de13314db0cdb44cc3ebecb581406117f0cce6475f2f98ca7103bb3f296"
+    },
+    {
+      "blob": "ec5416814b10c1755c7e639ce0d2ec37a6fac47f",
+      "bytes": 273,
+      "path": "identity-receipt.txt",
+      "sha256": "3b6d2b5d9bebd088afbd7fdc481ae2c05e442e09db8fd71c22b4ad8943440190"
+    },
+    {
+      "blob": "a6b0858fec23aec2d4b4263489e19e87d19a7b10",
+      "bytes": 763422,
+      "path": "lock-check.txt",
+      "sha256": "6591710595c62814404f154c86d373d7f3c754f1486bb606ae3819b5bf3c00c6"
+    },
+    {
+      "blob": "beb37d078ab96149bbd7d7767472e9e89bbf0628",
+      "bytes": 10354,
+      "path": "patch-comparison.json",
+      "sha256": "33101d594acb2a1f77535547233212186a609f6e7a3f13b671b7dbe75de79d68"
+    },
+    {
+      "blob": "6a6dbcb5a9ed7037ec6bba1d25d770628c2e33da",
+      "bytes": 906,
+      "path": "product-push.txt",
+      "sha256": "d8d04d73e80c8aa9aa2e3fb6a3bf1f497f85eb97e7e3e9bfeab783469057cee1"
+    },
+    {
+      "blob": "cad6e5251f6de2b1f49e1fb6d68f0ae70e302b9d",
+      "bytes": 420,
+      "path": "queue-post.txt",
+      "sha256": "89994f61ba48a6b87b01f07533d80389e113af8859a9ae1740bf22de90ad6907"
+    },
+    {
+      "blob": "e0746d82caf17348cdc04c253bcde3312f0717a8",
+      "bytes": 136,
+      "path": "rer-check.txt",
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "blob": "c0073003fce167dd26828fa75cf5a312fe67cf6b",
+      "bytes": 217,
+      "path": "typecheck.txt",
+      "sha256": "235bb077bfce35ad372186f75a231491072ad55e357e5360bd09dd3c7bf1a0f1"
+    },
+    {
+      "blob": "734b60b17b33e2299414b2d8139f7373497f7e33",
+      "bytes": 629,
+      "path": "verify-receipt.json",
+      "sha256": "ba2950836d1562fb9516039cd3b9c480f5237a9ade2f6d8cdec08b83be60eae3"
+    }
+  ],
+  "product_branch": "cloud/hh-stranger13-behaviour-1-c2-c1",
+  "product_head": "b3660b6ee2772d005185bc0343f14cb9d7fd0d51",
+  "ref": "refs/heads/evidence/hh-stranger13-behaviour-1-c2-c1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-stranger13-behaviour-1-c2-c1"
+}

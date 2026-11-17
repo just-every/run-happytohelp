@@ -1,0 +1,38 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger13-behaviour-1-c2-c1",
+  "head": "b3660b6ee2772d005185bc0343f14cb9d7fd0d51",
+  "parent": "55e2f106c506e4f671d2e474c737124e760e2233",
+  "tree": "51f446e931940a7ea59bb996be39aed1822b50df",
+  "candidate_commit_count": 1,
+  "parent_count": 1,
+  "product_push_attempts": 1,
+  "product_push_exit": 0,
+  "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/hh-stranger13-behaviour-1-c2-c1",
+  "remote_ref_observation": [
+    "b3660b6ee2772d005185bc0343f14cb9d7fd0d51\trefs/heads/cloud/hh-stranger13-behaviour-1-c2-c1",
+    "55e2f106c506e4f671d2e474c737124e760e2233\trefs/heads/main"
+  ],
+  "observed_at": "2026-11-17T20:46:37Z",
+  "worktree_clean": true,
+  "verify_run": 44156311769,
+  "verify_status": "completed",
+  "verify_conclusion": "success",
+  "verify_reused_as_explicitly_authorized": true,
+  "pr": null,
+  "clauses_changed": [],
+  "counts_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "counts_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16,
+    "total": 91
+  },
+  "github_api_calls": 1,
+  "blockers": []
+}

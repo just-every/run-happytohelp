@@ -1,0 +1,51 @@
+TAP version 13
+# Native runtime failure artifacts retained: /tmp/h2h-native-runtime-C0FCtV
+# Subtest: a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing
+not ok 1 - a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing
+  ---
+  duration_ms: 177005.376243
+  type: 'test'
+  location: '/workspace/run-happytohelp/tests/journeys/public.mjs:19:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /<form id="customer-request"/. Input:
+    
+    '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Contact support · Retained support</title><link rel="stylesheet" href="/site-assets/help_center/css/app.css"><link rel="stylesheet" href="/site-assets/help_center/experience.css"><link rel="stylesheet" href="/site-assets/help_center/request-forms.css"></head><body data-help-base="/help/38beaeab-7eb6-4918-8b77-0a7e94fd636a" data-help-project="38beaeab-7eb6-4918-8b77-0a7e94fd636a"><nav class="help-center-nav" data-help-center-nav aria-label="Help Center navigation"><div class="help-center-nav-inner"><a class="help-center-brand" href="/help/38beaeab-7eb6-4918-8b77-0a7e94fd636a"><span><strong>Retained support</strong> Help Center</span></a></div></nav><div class="help-center-status" data-help-status role="status" hidden></div><main class="help-center-main"><div class="help-center-content"><nav class="help-center-controls" aria-label="Customer support"><a href="/help/38beaeab-7eb6-4918-8b77-0a7e94fd636a">Help Center</a><a href="/portal/38beaeab-7eb6-4918-8b77-0a7e94fd636a/requests">My requests</a><a href="/portal/38beaeab-7eb6-4918-8b77-0a7e94fd636a/preferences">Notification preferences</a></nav><h1>Contact support</h1><p class="request-unavailable" role="status">Please use the <a href="#launch-chat">chat</a> to reach us.</p></div></main><script src="/site-assets/help_center/navigation.js" defer></script><script data-h2h-request-chat src="/widget.js" data-api-origin="http://127.0.0.1:40433" data-widget-key="b94c061c-9d4c-4ace-abc9-ac04fb5f1bba" data-config="{&quot;requireEmail&quot;:true,&quot;settings&quot;:{&quot;collect&quot;:{&quot;require_email&quot;:true},&quot;collector&quot;:{&quot;enabled&quot;:false}}}" defer></script></body></html>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Contact support · Retained support</title><link rel="stylesheet" href="/site-assets/help_center/css/app.css"><link rel="stylesheet" href="/site-assets/help_center/experience.css"><link rel="stylesheet" href="/site-assets/help_center/request-forms.css"></head><body data-help-base="/help/38beaeab-7eb6-4918-8b77-0a7e94fd636a" data-help-project="38beaeab-7eb6-4918-8b77-0a7e94fd636a"><nav class="help-center-nav" data-help-center-nav aria-label="Help Center navigation"><div class="help-center-nav-inner"><a class="help-center-brand" href="/help/38beaeab-7eb6-4918-8b77-0a7e94fd636a"><span><strong>Retained support</strong> Help Center</span></a></div></nav><div class="help-center-status" data-help-status role="status" hidden></div><main class="help-center-main"><div class="help-center-content"><nav class="help-center-controls" aria-label="Customer support"><a href="/help/38beaeab-7eb6-4918-8b77-0a7e94fd636a">Help Center</a><a href="/portal/38beaeab-7eb6-4918-8b77-0a7e94fd636a/requests">My requests</a><a href="/portal/38beaeab-7eb6-4918-8b77-0a7e94fd636a/preferences">Notification preferences</a></nav><h1>Contact support</h1><p class="request-unavailable" role="status">Please use the <a href="#launch-chat">chat</a> to reach us.</p></div></main><script src="/site-assets/help_center/navigation.js" defer></script><script data-h2h-request-chat src="/widget.js" data-api-origin="http://127.0.0.1:40433" data-widget-key="b94c061c-9d4c-4ace-abc9-ac04fb5f1bba" data-config="{&quot;requireEmail&quot;:true,&quot;settings&quot;:{&quot;collect&quot;:{&quot;require_email&quot;:true},&quot;collector&quot;:{&quot;enabled&quot;:false}}}" defer></script></body></html>'
+  operator: 'match'
+  stack: |-
+    publicContactProof (file:///workspace/run-happytohelp/tests/helpers/public-site/contact.mjs:15:48)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async file:///workspace/run-happytohelp/tests/journeys/public.mjs:26:3
+    async withRuntime (file:///workspace/run-happytohelp/tests/journeys/public.mjs:17:107)
+    async TestContext.<anonymous> (file:///workspace/run-happytohelp/tests/journeys/public.mjs:21:2)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: help filled by a Move in import stays noindex on every public page until a member publishes, then is indexable for good
+ok 2 - help filled by a Move in import stays noindex on every public page until a member publishes, then is indexable for good
+  ---
+  duration_ms: 173102.96037
+  type: 'test'
+  ...
+# PUBLIC_PROOF overload positions /help/p-public-busy:16 /help/busy-help/busy-guide:27 /busy-help:17 /help/p-public-busy/requests:9 /portal/p-public-busy:4 https://help.example/:15 https://help.example/busy-guide:26 PUT /api/public-site/projects/p-public-busy/alias:3 html:/help/p-public-busy:16 html:/help/busy-help/busy-guide:27 html:/busy-help:17 html:/help/p-public-busy/requests:9 html:/portal/p-public-busy:4 html:https://help.example/:15 html:https://help.example/busy-guide:26 html:POST /api/knowledge/public/p-public-busy/articles/busy-guide/helpful:10 POST /auth/signout
+# PUBLIC_PROOF read effects once /help/once-help/once-guide:29 https://once.example/once-guide:28 /help/once-help/search?keyword=guide:18 https://once.example/search?keyword=guide:17 /api/knowledge/public/p-read-once/search?q=guide:12 help-verify:6 portal-verify:35
+# Subtest: the public site and a configured help host answer D1's overload as the application does: a read is retried, then 503 with Retry-After, never 500, and a write is never re-run; a read's side effects happen once
+ok 3 - the public site and a configured help host answer D1's overload as the application does: a read is retried, then 503 with Retry-After, never 500, and a write is never re-run; a read's side effects happen once
+  ---
+  duration_ms: 105515.178411
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 2
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 456288.556847

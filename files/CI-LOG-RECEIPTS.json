@@ -1,0 +1,38 @@
+{
+  "run": 44094432678,
+  "head": "a98138f5f346fb95811d6bd2b8afc368fe70a2bf",
+  "reads": [
+    {
+      "job": "Verify / connections-and-computers",
+      "id": 134078780162,
+      "conclusion": "failure",
+      "command": "gh run view 44094432678 --repo just-every/run-happytohelp --job 134078780162 --log-failed",
+      "exit": 0,
+      "stdoutAndStderrBytes": 0,
+      "httpStatus": "not supplied",
+      "result": "empty log output"
+    },
+    {
+      "job": "Verify / identity-and-desk",
+      "id": 134078780171,
+      "conclusion": "failure",
+      "command": "gh run view 44094432678 --repo just-every/run-happytohelp --job 134078780171 --log-failed",
+      "exit": 0,
+      "stdoutAndStderrBytes": 0,
+      "httpStatus": "not supplied",
+      "result": "empty log output"
+    },
+    {
+      "job": "Verify / import-and-reports",
+      "id": 134078780385,
+      "conclusion": "failure",
+      "command": "gh run view 44094432678 --repo just-every/run-happytohelp --job 134078780385 --log-failed",
+      "exit": 0,
+      "stdoutAndStderrBytes": 0,
+      "httpStatus": "not supplied",
+      "result": "empty log output"
+    }
+  ],
+  "githubCallsUsed": 10,
+  "budget": 10
+}

@@ -1,31 +1,24 @@
 {
   "schema": 1,
   "author": "Run Edit Run fleet",
-  "date": "2026-11-17T13:37:45.730054+00:00",
+  "date": "2026-11-17T14:23:06.761018+00:00",
   "repository": "just-every/run-happytohelp",
   "tag": "hh-owner-design-widget-1",
   "branch": "cloud/hh-owner-design-widget-1",
   "baseline": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
-  "head": "a98138f5f346fb95811d6bd2b8afc368fe70a2bf",
+  "head": "6b5d230a08c1b8c44d24617379490ec833d91518",
   "productPush": {
     "result": "success",
     "attempts": 1,
     "intermediateHead": "5a6507ef0cdbf889ad569917a818b53351f7e695",
     "intermediateSkipCI": true,
-    "finalSkipCI": false
-  },
-  "ci": {
-    "runId": 44094432678,
-    "head_sha": "a98138f5f346fb95811d6bd2b8afc368fe70a2bf",
-    "status": "in_progress",
-    "url": "https://github.com/just-every/run-happytohelp/actions/runs/44094432678",
-    "conclusion": null,
-    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44094432678",
-    "githubCallsUsed": 5
+    "finalSkipCI": false,
+    "finalHead": "6b5d230a08c1b8c44d24617379490ec833d91518",
+    "fixtureCorrectionHead": "6b5d230a08c1b8c44d24617379490ec833d91518"
   },
   "sourceDigest": {
     "method": "sha256 over sorted src/tests/scripts paths and each file sha256, separated by NUL; excludes generated sources.lock.json",
-    "sha256": "e9e2d020133840d1c62e39affce76ea9fafee7027168fd5317c73c806763e04d"
+    "sha256": "b69b1840f50412a955768e8a3fa962d7ebb144f1df2c4e26909d10a3d1f78611"
   },
   "validation": [
     {
@@ -87,6 +80,32 @@
       "passes": 1,
       "head": "a98138f5f346fb95811d6bd2b8afc368fe70a2bf",
       "log": "validation/public-form.log"
+    },
+    {
+      "command": "cloud_run node --test --test-concurrency=1 tests/journeys/public.mjs",
+      "exit": 1,
+      "passes": 2,
+      "failures": 1,
+      "head": "a98138f5f346fb95811d6bd2b8afc368fe70a2bf",
+      "result": "Email-off fixture expected a configured request form; reproduced in publicContactProof. Other two cases passed.",
+      "log": "validation/public-routes-before-fixture-fix.log"
+    },
+    {
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern=\"a published help center:\" tests/journeys/public.mjs",
+      "exit": 0,
+      "passes": 1,
+      "result": "Fixture explicitly configures synthetic email; original form, verification, publication and tenant assertions retained.",
+      "log": "validation/public-routes-fixed.log"
+    },
+    {
+      "command": "cloud_run pnpm run typecheck",
+      "exit": 0,
+      "log": "validation/terminal-typecheck.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check; cloud_run npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "log": "validation/terminal-rer-check.log"
     }
   ],
   "proof": {
@@ -402,11 +421,72 @@
     "newTestRegistrations": 0
   },
   "gaps": [],
-  "blockers": [],
+  "blockers": [
+    "Readiness is not established: the prior exact-head run has three failed jobs and empty archive output; one public-route fixture failure was reproduced and repaired locally. Other prior shard failures remain undiagnosed. Final-head Verify is unobserved because the ten-call budget is exhausted."
+  ],
   "limits": [
     "Synthetic local runtime and network-edge fixtures; no live installation, customer data, DNS or email.",
     "Local commands ran the tested source; CI separately verifies exact committed SHA.",
     "Mac lander publication scan and final acceptance/landing remain independent.",
-    "Compatibility log uses historical phrase visible Human responder; assertion now requires the actual name and absence of the Human badge."
-  ]
+    "Compatibility log uses historical phrase visible Human responder; assertion now requires the actual name and absence of the Human badge.",
+    "The final follow-up changes only the retained public-route fixture and its source lock. Production source is unchanged from a98138f5f346fb95811d6bd2b8afc368fe70a2bf; no repeated build was needed."
+  ],
+  "evidenceRoundTrip": {
+    "head": "c796c99886ef91dab4de9473016150a168707c87",
+    "result": "restored; manifest and all selected file hashes verified",
+    "receipt": "EVIDENCE-ROUNDTRIP.json"
+  },
+  "candidateDisposition": "PUSHED",
+  "priorCI": [
+    {
+      "runId": 44094432678,
+      "head_sha": "a98138f5f346fb95811d6bd2b8afc368fe70a2bf",
+      "status": "in_progress",
+      "url": "https://github.com/just-every/run-happytohelp/actions/runs/44094432678",
+      "conclusion": null,
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44094432678",
+      "githubCallsUsed": 10,
+      "githubCallBudget": 10,
+      "failedJobs": [
+        {
+          "completed_at": "2026-11-17T13:50:31Z",
+          "conclusion": "failure",
+          "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44094432678/job/134078780162",
+          "id": 134078780162,
+          "name": "Verify / connections-and-computers",
+          "started_at": "2026-11-17T13:38:27Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-17T13:54:20Z",
+          "conclusion": "failure",
+          "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44094432678/job/134078780171",
+          "id": 134078780171,
+          "name": "Verify / identity-and-desk",
+          "started_at": "2026-11-17T13:38:27Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-17T14:04:46Z",
+          "conclusion": "failure",
+          "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44094432678/job/134078780385",
+          "id": 134078780385,
+          "name": "Verify / import-and-reports",
+          "started_at": "2026-11-17T13:38:27Z",
+          "status": "completed"
+        }
+      ],
+      "lastJobObservation": "2026-11-17T14:07:01.294566+00:00",
+      "logReads": "three prescribed failed-job archive reads, exit 0, zero bytes each; CI-LOG-RECEIPTS.json records actual commands and results"
+    }
+  ],
+  "ci": {
+    "workflow": "Verify",
+    "head_sha": "6b5d230a08c1b8c44d24617379490ec833d91518",
+    "status": "not_observed",
+    "conclusion": null,
+    "githubCallsUsed": 10,
+    "githubCallBudget": 10,
+    "reason": "The final fixture correction was pushed after the ten-call budget was exhausted. No new run ID or green result is claimed."
+  }
 }

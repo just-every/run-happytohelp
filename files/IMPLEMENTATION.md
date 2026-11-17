@@ -14,3 +14,5 @@ Truthfulness adjustment: “Chat only works on this site” is reduced to “Cha
 No migration, release metadata, pins, Base refresh, CONTRACT.md clause judgments, generated acceptance views or sibling-page design changes are part of this candidate. The new name step wraps Setup without editing its counter or observation/confirmation code.
 
 The Inbox diagnostic lives outside its screen-reader-only title. A measured notice height keeps the inbox panes and mobile conversation below the visible notice. The browser checks that the approval control is the actual hit target, then cancels its Inbox confirmation before testing approval in Setup.
+
+The retained public-route fixture now explicitly configures the existing synthetic mail edge, like the configured-mail browser fixture. Its form/template, email verification and tenant assertions remain intact. Local email-off chat behavior is separately covered by owner-installation and local portal browser proofs. No production behavior is changed by this fixture follow-up.

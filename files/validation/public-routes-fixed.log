@@ -1,0 +1,17 @@
+TAP version 13
+# PUBLIC_PROOF PUBLIC-005 docs 200/200/404 with unavailable alias lookup; help control=500
+# Subtest: a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing
+ok 1 - a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing
+  ---
+  duration_ms: 204510.733223
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 207898.55528

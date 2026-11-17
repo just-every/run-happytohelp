@@ -1,0 +1,52 @@
+[
+  {
+    "at": "2026-11-17T13:36:40.747190+00:00",
+    "command": "gh api repos/just-every/run-happytohelp/actions/runs?head_sha=a98138f5f346fb95811d6bd2b8afc368fe70a2bf&per_page=100 --jq {runs:[.workflow_runs[]|{id,name,status,conclusion,head_sha,html_url}]}",
+    "exit": 0
+  },
+  {
+    "at": "2026-11-17T13:41:52.190588+00:00",
+    "command": "gh api repos/just-every/run-happytohelp/actions/runs/44094432678 --jq {status,conclusion,head_sha,html_url}",
+    "exit": 0
+  },
+  {
+    "at": "2026-11-17T13:46:57.016072+00:00",
+    "command": "gh api repos/just-every/run-happytohelp/actions/runs/44094432678 --jq {status,conclusion,head_sha,html_url}",
+    "exit": 0
+  },
+  {
+    "at": "2026-11-17T13:51:56.400814+00:00",
+    "command": "gh api repos/just-every/run-happytohelp/actions/runs/44094432678 --jq {status,conclusion,head_sha,html_url}",
+    "exit": 0
+  },
+  {
+    "at": "2026-11-17T13:56:57.936311+00:00",
+    "command": "gh api repos/just-every/run-happytohelp/actions/runs/44094432678 --jq {status,conclusion,head_sha,html_url}",
+    "exit": 0
+  },
+  {
+    "at": "2026-11-17T14:01:59.387575+00:00",
+    "command": "gh api repos/just-every/run-happytohelp/actions/runs/44094432678 --jq {status,conclusion,head_sha,html_url}",
+    "exit": 0
+  },
+  {
+    "at": "2026-11-17T14:07:01.294566+00:00",
+    "command": "gh api repos/just-every/run-happytohelp/actions/runs/44094432678/jobs?per_page=100 --jq {total_count,jobs:[.jobs[]|{id,name,status,conclusion,started_at,completed_at,html_url}]}",
+    "exit": 0
+  },
+  {
+    "at": "2026-11-17T14:12:05.720934+00:00",
+    "command": "gh run view 44094432678 --repo just-every/run-happytohelp --job 134078780162 --log-failed",
+    "exit": 0
+  },
+  {
+    "at": "2026-11-17T14:12:06.861260+00:00",
+    "command": "gh run view 44094432678 --repo just-every/run-happytohelp --job 134078780171 --log-failed",
+    "exit": 0
+  },
+  {
+    "at": "2026-11-17T14:12:08.111977+00:00",
+    "command": "gh run view 44094432678 --repo just-every/run-happytohelp --job 134078780385 --log-failed",
+    "exit": 0
+  }
+]

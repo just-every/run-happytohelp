@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import AssistantReadiness from './AssistantReadiness';
 import AiReplyMode from './AiReplyMode';
 import AiSpendCard from '../activation-spend/AiSpendCard';
+import {aiBilling} from '../setup-help/ai-billing';
 import AvatarUpload from './AvatarUpload';
 import { PageHeaderTabs } from '../PageHeader';
 import { nativeRequest } from '../transport';
@@ -68,7 +69,7 @@ export default function AssistantsPage({ projectId, recordId }) {
     const defaultNames = ['default_visitor_ai_id', 'default_verified_user_ai_id'];
     const invalidDefaults = defaultNames.some(name => settings?.[name] && settings[name] !== '-' && !(items || []).some(item => item.id === settings[name] && item.is_enabled));
     const responders = [{ value: '-', label: 'None' }, ...(items || []).filter(item => item.is_enabled).map(item => ({ value: item.id, label: item.name || item.role }))];
-    return <div className="workspace-settings"><PageHeaderTabs><nav aria-label="AI settings"><ul className="nav nav-tabs header-tabs">{[['ais','AI'],['datasets','Knowledge sources'],['training-runs','Evaluation runs']].map(([path,label])=><li className="nav-item" key={path}><Link className={`nav-link ${path==='ais'?'active':''}`} aria-current={path==='ais'?'page':undefined} to={`/projects/${projectId}/${path}`}>{label}</Link></li>)}</ul></nav></PageHeaderTabs><Feedback {...{ error, saved }}/><AssistantReadiness projectId={projectId} status={readiness}/>
+    return <div className="workspace-settings"><PageHeaderTabs><nav aria-label="AI settings"><ul className="nav nav-tabs header-tabs">{[['ais','AI'],['datasets','Knowledge sources'],['training-runs','Evaluation runs']].map(([path,label])=><li className="nav-item" key={path}><Link className={`nav-link ${path==='ais'?'active':''}`} aria-current={path==='ais'?'page':undefined} to={`/projects/${projectId}/${path}`}>{label}</Link></li>)}</ul></nav></PageHeaderTabs><p>{aiBilling}</p><Feedback {...{ error, saved }}/><AssistantReadiness projectId={projectId} status={readiness}/>
         {!items && !error && <p role="status">Loading assistants…</p>}
         {recordId && draft && <form onSubmit={saveAssistant}>
             <Section title="Identity" description="Set the name, role, and avatar shown for this assistant."><div className="settings-grid">{field('name', 'Name', 'text', true)}{field('role', 'Role', 'text', true)}<AvatarUpload projectId={projectId} value={draft.avatar_url} onChange={value => {markDirty();setDraft(current => ({ ...current, avatar_url: value }));}}/></div></Section>

@@ -2,52 +2,26 @@ import React from 'react';
 import {Link} from '@tanstack/react-router';
 import {buildAnonymousEmbedCode} from '../../dashboard/components/widget-settings/code/anonymousEmbedCode';
 import CopyCommand from '../setup-help/CopyCommand';
-import SecretSteps from '../setup-help/SecretSteps';
+import AiKeyHandoff from '../setup-help/AiKeyHandoff';
+import {aiBilling} from '../setup-help/ai-billing';
 import {hostOf, modelKeyState} from './setup-model';
 // Serves a test page on a port nothing else is using, and prints its address.
 const testPageCommand=`PORT=\$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')
 echo "Test page: http://127.0.0.1:\$PORT"
 python3 -m http.server "\$PORT" --bind 127.0.0.1`;
 
-// The words and actions of each thing that needs the owner. Local and hosted copy is chosen here, never hidden by CSS.
-const keyPages = {
- OPENAI_API_KEY: ['OpenAI', 'https://platform.openai.com/api-keys'], ANTHROPIC_API_KEY: ['Anthropic', 'https://console.anthropic.com/settings/keys'],
- GOOGLE_API_KEY: ['Google AI Studio', 'https://aistudio.google.com/app/apikey'], DEEPSEEK_API_KEY: ['DeepSeek', 'https://platform.deepseek.com/api_keys'],
- XAI_API_KEY: ['xAI', 'https://console.x.ai'], OPENROUTER_API_KEY: ['OpenRouter', 'https://openrouter.ai/settings/keys'],
-};
-const keyLink = name => <a href={keyPages[name][1]} target="_blank" rel="noreferrer">{keyPages[name][0]}</a>;
 /** This installation, for steps that say exactly where a value goes. */
 export function installationOf(data) {
  const origin = data.facts?.widget?.apiOrigin || '', host = hostOf(origin);
  return {environment: data.environment === 'local' ? 'local' : 'hosted', origin, worker: host.endsWith('.workers.dev') ? host.split('.')[0] : null};
 }
-const where = (data, name) => <SecretSteps installation={installationOf(data)} values={[{name, example: 'your-api-key'}]}/>;
-
 function aiNeed({data}) {
- const name = data.facts?.ai?.secretName;
- // Workspaces made before the starter assistant existed have none: say only what is true of the assistant they do have.
- const starter = Boolean(data.facts?.starterAssistant), hasDefault = Boolean(data.facts?.ai?.assistantId);
- const whose = starter ? 'your starter assistant' : hasDefault ? 'your default assistant' : 'an assistant';
- // A provider that checks keys refused this one the read it needs (for example HTTP 403): the key is there, so ask
- // for the access, not for a key.
- if (modelKeyState(data) === 'blocked') return {
-  title: 'Let us check your AI key',
-  copy: <><code>{name}</code> is installed, but the provider refused our read-only check, so we can’t confirm {whose} can answer with it.</>,
-  actions: [{kind: 'how'}],
-  how: <><p>In your AI provider’s dashboard, give this key permission to read models. Or make a key that has it and replace <code>{name}</code>. We’ll check again on our own.</p>{where(data, name)}</>,
- };
+ const blocked = modelKeyState(data) === 'blocked';
  return {
-  title: 'Connect an AI service',
-  copy: starter
-   ? <>Your starter assistant will answer visitors from what you publish and from your website, within your daily limits. It needs a key from OpenAI, Anthropic, Google or a similar service.</>
-   : <>Once a key is in, {hasDefault ? 'your default assistant' : 'an assistant'} can answer visitors from what you publish and from your website, within your daily limits. It needs a key from OpenAI, Anthropic, Google or a similar service.</>,
+  title: blocked ? 'Let us check your AI key' : 'Connect an AI service',
+  copy: <>{blocked ? 'Your AI provider refused the key check. Ask your technical person to review its access.' : 'Without a key, every conversation stays with your team.'} {aiBilling}</>,
   actions: [{kind: 'how'}],
-  how: <>
-   <p><b>What it’s for:</b> the AI suggests replies for your team and {starter ? 'lets your starter assistant answer' : 'lets an assistant answer'} visitors when no one is around, using only what you publish and your website. Without a key, every conversation stays with your team.</p>
-   <p><b>1. Get an API key.</b> {name && keyPages[name] ? <>{whose[0].toUpperCase() + whose.slice(1)} uses {/^[AEIOU]/.test(keyPages[name][0]) ? 'an' : 'a'} {keyPages[name][0]} model, so make a key at {keyLink(name)}. Using another service instead? Add its key and choose one of its models on the AI page.</> : <>Make one with any of {Object.keys(keyPages).map((key, index, all) => <React.Fragment key={key}>{index ? index === all.length - 1 ? ' or ' : ', ' : ''}{keyLink(key)}</React.Fragment>)}. Its name is <code>OPENAI_API_KEY</code>, <code>ANTHROPIC_API_KEY</code>, <code>GOOGLE_API_KEY</code>, <code>DEEPSEEK_API_KEY</code>, <code>XAI_API_KEY</code> or <code>OPENROUTER_API_KEY</code>.</>}</p>
-   <p><b>2. Add it to this installation{name ? <> as <code>{name}</code></> : null}.</b> We’ll notice as soon as it’s there.</p>
-   {where(data, name || 'OPENAI_API_KEY')}
-  </>,
+  how: <AiKeyHandoff secretName={data.facts?.ai?.secretName} installation={installationOf(data)}/>,
  };
 }
 

@@ -11057,7 +11057,7 @@
       "executable": false
     },
     "src/platform/dashboard-path.js": {
-      "sha256": "6d417be5ebfcf4712268cc869a835f846e83eee3381d7150a9734955a7f075cf",
+      "sha256": "479475a920a0770ca7dd32e81416165180036bcd5f57b8b8521b81c32d42b745",
       "executable": false
     },
     "src/platform/db.ts": {
@@ -12341,7 +12341,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/foundation/_sidebar.scss": {
-      "sha256": "7c245351f084f2974b011062312dfa52f4fa9985b17bd944be5082a2db04df24",
+      "sha256": "c9c0a6050581bad78227716a48c961f724f9c54813faf50130bc7e49060e4be1",
       "executable": false
     },
     "src/ui/dashboard/styles/foundation/_surfaces.scss": {
@@ -12901,7 +12901,7 @@
       "executable": false
     },
     "src/ui/native/activation-spend/AiSpendCard.jsx": {
-      "sha256": "4df1563e0b194b895d0bfcd1a757f3694c3529eacb24816506e0cc28fd37b99c",
+      "sha256": "5aa8be2615097aea308f8f943a5581dbd481e9c634449e79b7ce6c2502e613da",
       "executable": false
     },
     "src/ui/native/activation-spend/spend-model.js": {
@@ -12921,7 +12921,7 @@
       "executable": false
     },
     "src/ui/native/activation/need-content.jsx": {
-      "sha256": "12dc91bd5d515095bf296bf4e68b99ed02ec295d91f109319988f6880b4b96cd",
+      "sha256": "f98acf1e94b47b3ce4b04b3ab87e571fe94116570fd8d9ca2ca69bdf7773cb26",
       "executable": false
     },
     "src/ui/native/activation/NeedItem.jsx": {
@@ -12937,7 +12937,7 @@
       "executable": false
     },
     "src/ui/native/activation/ProviderSetupNotice.jsx": {
-      "sha256": "0d82161b261bf9e77bd43b7c8c3498c576d15ef577e9b4049994add11ad2a46f",
+      "sha256": "51fcdcc228fcbf79569a9355ff20eb6981641942b8e8cf9ee0e82f11e46e2803",
       "executable": false
     },
     "src/ui/native/activation/SetRow.jsx": {
@@ -12949,7 +12949,7 @@
       "executable": false
     },
     "src/ui/native/activation/setup-model.js": {
-      "sha256": "92016c1035055007425859863d78761bcffdd5aa7315dd900cc81b779db26e38",
+      "sha256": "ea5309e4000663f6048644136f7756e0030c2473735c0ff52676c32d6170f89f",
       "executable": false
     },
     "src/ui/native/activation/setup-store.js": {
@@ -12957,7 +12957,7 @@
       "executable": false
     },
     "src/ui/native/activation/SetupList.jsx": {
-      "sha256": "8e00e199c1dc5f1b8e639dc30222e2c85431ad4cff3bb42268e4ac7b518fdf26",
+      "sha256": "be765e8ecb5b15bd4e42f44ce04d2b677633d4fa0ac1d2eac07bf624ea9b474e",
       "executable": false
     },
     "src/ui/native/activation/SetupTitle.jsx": {
@@ -13217,15 +13217,15 @@
       "executable": false
     },
     "src/ui/native/pages/AssistantReadiness.jsx": {
-      "sha256": "9f878e4e53402ee7b84b19209f156f94000cdacae7066a63357bad4867799fdf",
+      "sha256": "30f6328609408ca7944e7b9454f205566a686dd93709dae29b66fa9e7345c06b",
       "executable": false
     },
     "src/ui/native/pages/AssistantsPage.jsx": {
-      "sha256": "4d35d6b654af94df2dee1911993fb7af91bddf8af5b3684234534e1a9fb78749",
+      "sha256": "581c21991e9db3a48216a8f2047b5aa28cdb07e7bb7c79347346e7345c96276c",
       "executable": false
     },
     "src/ui/native/pages/AvailabilitySettings.jsx": {
-      "sha256": "23b29ca2ed1bb7288d1eb4abf12659f2d94f0e9fc22d1b5ae00d2b27e684fbe2",
+      "sha256": "cde177d999f4f53f109a4b628c753db9a81e554a69699f37acd1151e3ad15aae",
       "executable": false
     },
     "src/ui/native/pages/AvatarUpload.jsx": {
@@ -13433,7 +13433,7 @@
       "executable": false
     },
     "src/ui/native/pages/email/MailboxEditor.jsx": {
-      "sha256": "362f1d12678e1473defcd5e25615d8aab43008aaa1f86e99eef025103a647d0a",
+      "sha256": "5179f063d6ffa7ca83ff3bb56ab7c55f7ba8337bf45d7f84a3dedde0bb307829",
       "executable": false
     },
     "src/ui/native/pages/email/Mailboxes.jsx": {
@@ -13457,7 +13457,7 @@
       "executable": false
     },
     "src/ui/native/pages/EmailSettings.jsx": {
-      "sha256": "3a222fd9232978a2b90d1224db231fabc935e2b626858346446c0f579756a895",
+      "sha256": "111abe41d5aa12e8a01b05fb60166b4e26de82b904a7d1cdd941b41ef6a15735",
       "executable": false
     },
     "src/ui/native/pages/forms.jsx": {
@@ -13589,7 +13589,7 @@
       "executable": false
     },
     "src/ui/native/pages/legacy-package/LegacyPackage.jsx": {
-      "sha256": "e6da0f9bf42784ebf6e80489f74c831a89e3f0cf0167f1dfafdc1138498d78b2",
+      "sha256": "0e527e53196d541ff84c6f906b4c675e6b9321a38ab3eb98e3c59d8cc676d4bf",
       "executable": false
     },
     "src/ui/native/pages/legacy-package/pause-reason.js": {
@@ -13661,11 +13661,11 @@
       "executable": false
     },
     "src/ui/native/pages/MoveIn.jsx": {
-      "sha256": "dd510355b7041a61f815c584c37778f33bf0b3a63c951e5d87b9b6ebfbc7978e",
+      "sha256": "0e5c093bdf64b9c757b0a5dce8722b00e87dfac4f3b2fd2a90ff5482199acdd7",
       "executable": false
     },
     "src/ui/native/pages/MoveInGuide.jsx": {
-      "sha256": "5e36d6324ce90392979b10e6fd95fb6d28e00432d2311dca04059783bd8684da",
+      "sha256": "bae4ac18271d1f9bd1e6ede6a32d342d5b1cbb433613b781e47ed02f50f808b7",
       "executable": false
     },
     "src/ui/native/pages/MoveInOwnership.jsx": {
@@ -13681,7 +13681,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInZendesk.jsx": {
-      "sha256": "c4badfee6600bc1f1d7f6f02f6d1a2af0924700eb9bb22eabb5280344db22903",
+      "sha256": "432bb15f216d488214da3fd856b0a5698fc486ad5e5bc3a324295fdf19dbdcb3",
       "executable": false
     },
     "src/ui/native/pages/MoveInZendeskFiles.jsx": {
@@ -13753,7 +13753,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProjectSettings.jsx": {
-      "sha256": "0bcf222112a05f34b1ef94373e11ff27fb87bffb8f09a7fe490d686a7cab7dd2",
+      "sha256": "f0bbd2dcac62903821c5352157c7a9e5554f4d9c00fe8f81c0f96303331a4316",
       "executable": false
     },
     "src/ui/native/pages/ProjectsPage.d.ts": {
@@ -14041,11 +14041,11 @@
       "executable": false
     },
     "src/ui/native/settings-destinations.js": {
-      "sha256": "1284f407b6f5b343adc9e3b7874d864eb9985c7559dc62f34f3519722adb5067",
+      "sha256": "7c6183b8889257029276a17354258a96bc9fe9443595a704fe3f3022e9f9d399",
       "executable": false
     },
     "src/ui/native/SettingsNavigation.jsx": {
-      "sha256": "425e424d4ec117f6f0e9e45b7661f0db8f478421db927b7bf76ba903bc675f02",
+      "sha256": "a517b2250ed0d43169a450e3c97c3658da55f91f11031568963d452912cfa46c",
       "executable": false
     },
     "src/ui/native/setup-help/CopyCommand.jsx": {
@@ -14105,7 +14105,7 @@
       "executable": false
     },
     "src/ui/native/workspace-page-code.js": {
-      "sha256": "a22e9426dba308f787ae239476b35525a4a2353e259e2f6a39d4fbae81f2cfc9",
+      "sha256": "3d3d0627ee0643b8f63a19771b65b2b1b7f0e2a61dcce92c3d54db36f4ee6c68",
       "executable": false
     },
     "src/ui/native/workspace-scope.ts": {
@@ -14117,7 +14117,7 @@
       "executable": false
     },
     "src/ui/native/WorkspacePages.jsx": {
-      "sha256": "5a54d4ee2ddbaf98c136b0277537676701547666cb7d264afa88626a3e40d193",
+      "sha256": "bec0d744f732bd662ec59c724d4e7042df0d8f411223ebbf796dc12a16ea7fa7",
       "executable": false
     },
     "src/ui/native/WorkspaceSidebarArtwork.jsx": {
@@ -16469,7 +16469,7 @@
       "executable": false
     },
     "tests/helpers/email/setup-browser.mjs": {
-      "sha256": "08b27b0183eccb09f014a0246796277c2c797ac22e08fd427ff7a66351fa5067",
+      "sha256": "59fc5f71551606c773745cc4ad4f1d653dfac92513ef8784fdf69ef13b042268",
       "executable": false
     },
     "tests/helpers/email/transports.mjs": {
@@ -16653,7 +16653,7 @@
       "executable": false
     },
     "tests/helpers/identity/native-settings-browser.mjs": {
-      "sha256": "e2541dff7c8fed79e420bab2f3be32651e1bc37119579775af08e903890fa949",
+      "sha256": "339efa0c9d247436d0589cb43d7eaab2d5003ddca0464c33a7708b7f50b6909e",
       "executable": false
     },
     "tests/helpers/identity/recovery-authority/authenticator.mjs": {
@@ -17897,7 +17897,7 @@
       "executable": false
     },
     "tests/move-in/zendesk-connect-browser.mjs": {
-      "sha256": "3e58c77fd87605fc9f0dd62680136e52fc3e4d9da447c6b6494e4d2495329c8c",
+      "sha256": "7443497d4e7edd9bdfab0367d54993a4ea55a2ed7a763cd2abe76d7af23f1078",
       "executable": false
     },
     "tests/move-in/zendesk-door.mjs": {

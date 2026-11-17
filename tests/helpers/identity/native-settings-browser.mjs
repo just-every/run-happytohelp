@@ -61,7 +61,7 @@ export async function nativeSettingsBrowser({runtime,browser,owner}){
    assert.equal(await page.getByRole('img',{name:'Workspace brand',exact:true}).getAttribute('src'),values.brand_image_url)
    await capture(page,kind+'-appearance')
    await page.getByRole('button',{name:'Update',exact:true}).click();await page.getByRole('status').filter({hasText:'Saved.'}).waitFor()
-   await page.getByRole('button',{name:'Availability',exact:true}).click()
+   await page.getByRole('link',{name:'Business hours',exact:true}).click()
    assert.equal(await page.getByLabel('Use opening hours',{exact:true}).isChecked(),true)
    for(const [index,day] of ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].entries())assert.equal(await page.getByLabel(day,{exact:true}).isChecked(),values.availability_schedule.days.includes(index+1))
    for(const [label,value] of [['Opening time',values.availability_schedule.time_from],['Closing time',values.availability_schedule.time_to],['Away message outside hours',values.availability_schedule.message],['Away message when nobody is online',values.presence_away_message],['Away message while new conversations are off',values.unavailable_message]])assert.equal(await page.getByLabel(label,{exact:true}).inputValue(),value)

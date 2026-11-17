@@ -6,7 +6,7 @@ import { useDashboardLocation } from './dashboard-state';
 import { adminTitles } from './pages/AdminRecords';
 import { workspacePageComponents, workspacePageRoute } from './workspace-page-code';
 import { AdminRequired, PageNotFound, ProjectUnavailable } from './pages/WorkspaceNotices';
-const titles={'support-channels':'Support channels',assurance:'Regulated deployment','hubspot-settings':'HubSpot',procedures:'Procedures',companies:'Companies','workflow-settings':'Workflows','ticket-settings':'Tickets','api-settings':'API tokens','webhook-settings':'Webhooks','slack-settings':'Slack','delivery-log':'Delivery log',reports:'Reports','move-in':'Move in',cutover:'Cutover',edit:'Project',settings:'Project',ais:'AI',datasets:'Knowledge',articles:'Knowledge',categories:'Knowledge',agents:'Agents','local-agent':'Local computers','email-settings':'Email',suspended:'Suspended email','widget-settings':'Widget',macros:'Saved Replies',contacts:'Contacts',plugins:'Plugins',users:'Profile',insights:'Insights','training-runs':'Evaluation runs',security:'Security','security-log':'Security log',roles:'Roles'};
+const titles={'support-channels':'Support channels',assurance:'Regulated deployment','hubspot-settings':'HubSpot',procedures:'Procedures',companies:'Companies','workflow-settings':'Workflows','ticket-settings':'Tickets','api-settings':'API tokens','webhook-settings':'Webhooks','slack-settings':'Slack','delivery-log':'Delivery log',reports:'Reports','move-in':'Move in',cutover:'Cutover',edit:'Workspace',settings:'Workspace','business-hours':'Business hours','help-center-settings':'Help center',ais:'AI',datasets:'Knowledge',articles:'Knowledge',categories:'Knowledge',agents:'Team','local-agent':'Local computers','email-settings':'Email',suspended:'Suspended email','widget-settings':'Chat widget',macros:'Saved replies',contacts:'Contacts',plugins:'Plugins',users:'Profile',insights:'Insights','training-runs':'Evaluation runs',security:'Security','security-log':'Security log',roles:'Roles'};
 export default function WorkspacePages({ settings, pages = {} }) {
     const { ChannelSettings, AssurancePage, Connections, Reports, Companies, MoveIn, Cutover, ActivationPage, SetupTitle, GitHubSettings, ArticleImport,
         ProjectsPage, AdminPage, KnowledgePage, ManagementPage, ProjectSettings, WidgetSettingsPage,
@@ -28,7 +28,7 @@ export default function WorkspacePages({ settings, pages = {} }) {
     else if(section==='articles'&&recordId==='import')page=<ArticleImport {...{projectId}}/>;
     else if(['datasets','articles','categories'].includes(section))page=<KnowledgePage {...{projectId,section,recordId}} project={settings.projects?.[projectId]||settings.project}/>;
     else if(['ais','macros','contacts','plugins','agents'].includes(section))page=<ManagementPage {...{projectId,section,recordId}}/>;
-    else if(['edit','settings','email-settings'].includes(section))page=<ProjectSettings {...{projectId,section}} role={settings.projects?.[projectId]?.role}/>;
+    else if(['edit','settings','business-hours','help-center-settings','email-settings'].includes(section))page=<ProjectSettings {...{projectId,section}} role={settings.projects?.[projectId]?.role}/>;
     else if(['hubspot-settings','api-settings','webhook-settings','slack-settings','delivery-log'].includes(section))page=<Connections {...{projectId,section}} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='support-channels')page=<ChannelSettings key={projectId} {...{projectId}} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='github-settings')page=<GitHubSettings {...{projectId}}/>;
@@ -57,7 +57,7 @@ export default function WorkspacePages({ settings, pages = {} }) {
     if(section==='agents'&&recordId==='create')title='Invite Agent';
     if(section==='activation')title=<SetupTitle projectId={projectId}/>;
     if(section==='delegation')title=recordId==='authorize'?'Connect to Slate':'Connected applications';
-    if(section==='github-settings')title='Project';
+    if(section==='github-settings')title='Workspace';
     if(section==='admin')title=settings.isPlatformAdmin?adminTitles[segments[1]||'projects']||'Admin':'Administration';
     if(settings.projectUnavailable)title='Project not found';
     else if(foreignUser)title='Not found';
@@ -73,6 +73,8 @@ export default function WorkspacePages({ settings, pages = {} }) {
                 {inSettings&&<SettingsMenuButton title={typeof title==='string'?title:'Setup'}/>}
                 {section==='users'&&!foreignUser&&<h6 className="header-pretitle">Overview</h6>}
                 {header}
+                {section==='cutover'&&<p>Switch from your old service</p>}
+                {section==='assurance'&&<p>For HIPAA, SOC 2 and similar rules</p>}
             </div><div className="workspace-page-actions" id="workspace-header-actions"/></div>
             <div id="workspace-header-tabs"/>
         </div></div>

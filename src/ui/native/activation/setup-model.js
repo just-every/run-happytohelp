@@ -15,9 +15,10 @@ export const pages = {
 };
 const rowPage = {visitor_email:'widget',workspace: 'workspace', widget_origin: 'widget', colour: 'widget', widget_seen: 'widget', owner_mail: 'email', inbound_address: 'email', sender_dns: 'email', spend_ceilings: 'ai', starter_assistant: 'ai', model_key: 'ai'};
 const rowOrder = ['workspace', 'widget_origin', 'visitor_email', 'colour', 'widget_seen', 'owner_mail', 'sender_dns', 'inbound_address', 'model_key', 'spend_ceilings', 'starter_assistant'];
+import {aiBilling, dailySafetyLimit} from '../setup-help/ai-billing';
 export const rowLabels = {
  visitor_email:'Visitor email', workspace: 'Workspace', widget_origin: 'Website', colour: 'Colour', widget_seen: 'Widget', owner_mail: 'Email to you', sender_dns: 'Sending address',
- inbound_address: 'Replies by email', model_key: 'AI service', spend_ceilings: 'AI limits', starter_assistant: 'Starter assistant',
+ inbound_address: 'Replies by email', model_key: 'AI service', spend_ceilings: 'Daily safety limit', starter_assistant: 'Starter assistant',
 };
 const stateLabels = {confirmed: 'Confirmed', set: 'Set', waiting: 'Waiting', checking: 'Checking', unknown: 'Unknown', off: 'Off', unchecked: 'Not checked', problem: 'Problem', unavailable: 'Not available'};
 
@@ -67,7 +68,7 @@ export function needStatus(data, item) {
  const {id, state, detail} = item, facts = data.facts || {};
  if (state === 'failed') return {status: 'problem', text: detail};
  if (state === 'checking') return {status: 'checking', text: 'Checking now'};
- if (id === 'model_key') return modelKeyState(data) === 'blocked' ? {status: 'waiting', text: sentence(detail)} : {status: 'waiting', text: facts.ai?.keyInstalled && facts.ai.secretName ? `Waiting for ${facts.ai.secretName}` : 'Waiting for a key'};
+ if (id === 'model_key') return modelKeyState(data) === 'blocked' ? {status: 'waiting', text: sentence(detail)} : {status: 'waiting', text: facts.ai?.keyInstalled ? 'Waiting for your provider key to be checked' : 'Waiting for a key'};
  if (id === 'widget_seen') return {status: 'waiting', text: 'Waiting for the first visit. We’ll spot it.'};
  if (id === 'sender_dns') return state === 'unavailable' ? {status: 'waiting', text: 'Waiting for an email key'} : (facts.senderRecords || []).length ? {status: 'waiting', text: 'Waiting for DNS records'} : {status: 'waiting', text: 'Waiting for the sending domain'};
  return {status: 'waiting', text: 'Waiting'};
@@ -97,7 +98,7 @@ export const localTrial = data => data.environment === 'local' && modelKeyState(
 function ceilingsValue(data) {
  const limits = data.facts?.ceilings;
  if (limits && limits.spendUsdPerProject != null && limits.repliesPerProject != null) {
-  return `Up to $${limits.spendUsdPerProject} and ${limits.repliesPerProject} AI replies a day for this workspace${limits.repliesPerInstallation != null ? `, ${Number(limits.repliesPerInstallation).toLocaleString('en-US')} across the installation` : ''}. Resets at 00:00 UTC.`;
+  return `${aiBilling} ${dailySafetyLimit(limits.repliesPerProject, limits.spendUsdPerProject)}`;
  }
  return null;
 }
@@ -140,7 +141,7 @@ function rowFor(data, id) {
   case 'spend_ceilings': return withObservation('set', ceilingsValue(data) || sentence(own?.detail || ''));
   case 'model_key': {
    const mode = modelKeyState(data);
-   if (mode === 'unchecked') return {...base, state: 'unchecked', value: `${facts.ai.secretName} is installed. It can’t be checked automatically for this provider, so it stays unconfirmed.`};
+   if (mode === 'unchecked') return {...base, state: 'unchecked', value: 'Your provider key is installed. It can’t be checked automatically for this provider, so it stays unconfirmed.'};
    if (mode === 'unassigned') return {...base, state: 'waiting', value: sentence(own?.detail || '')};
    if (mode === 'unknown') return {...base, state: 'unknown', value: `A key is installed, but right now we can’t tell whether the provider accepts it. We’ll try again on our own.${own.detail ? ` ${sentence(own.detail)}` : ''}`};
    if (mode === 'checking') return {...base, state: 'checking', value: 'A key is installed. Checking it with the provider now.'};

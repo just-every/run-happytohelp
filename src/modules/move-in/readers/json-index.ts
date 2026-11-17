@@ -3,7 +3,7 @@
 import {LIMITS} from '../types'
 import {IndexLimitError} from './admission-error'
 import {auditShape} from './shapes'
-import {collectionNames,intercomDocument,RecordStructureError,zendeskCollections} from './classification'
+import {collectionNames,intercomDocument,RecordStructureError,zendeskCollections,signedLink} from './classification'
 export interface JsonPosition {start:number;end:number;row:number;pointer:string;unsupported?:string;error?:string;sourceKind?:string}
 class LocatedError extends Error {offset:number;pointer:string;constructor(offset:number,pointer:string,code='invalid_json'){super(code);this.offset=offset;this.pointer=pointer}}
 const escapePointer=(key:string)=>key.replace(/~/g,'~0').replace(/\//g,'~1')
@@ -58,6 +58,7 @@ export function jsonPositions(raw:string,maxRecords:number=LIMITS.records,record
  if(error&&!recordOnly&&properties.length){try{expanded=isEnvelope()}catch{expanded=false}}
  if(expanded){output.length=0;for(const property of properties){const known=zendesk?zendeskCollections.has(property.key):collectionNames.has(property.key);if(known&&property.children)output.push(...property.children.map(position=>zendesk?{...position,sourceKind:zendeskCollections.get(property.key)}:position));else {
   const metadata=(zendesk?['count','next_page','previous_page','meta','links','end_of_stream','after_cursor','after_url','end_time']:['type','kind','total_count','pages']).includes(property.key),body=raw.slice(property.position.start,property.position.end)
+  if(!error&&zendesk&&body.length<=LIMITS.recordBytes&&signedLink(JSON.parse(body),'',true)!==null){output.push({...property.position,error:'signed_download_link_not_accepted'});continue}
   if(!error&&metadata&&body.length<=LIMITS.recordBytes&&auditShape(zendesk?'zendesk':'intercom','$envelope',{[property.key]:JSON.parse(body)}).complete)continue
   if(property.children?.length)output.push(...property.children.map(position=>({...position,unsupported:property.key})));else output.push({...property.position,unsupported:property.key})
  }}}

@@ -1,0 +1,49 @@
+{
+  "author": "Run Edit Run fleet",
+  "date_utc": "2026-11-17T21:30:38.948363+00:00",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-design-d20-1",
+  "head": "d36288793b599c22034881a6eeda46e71c01dd37",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "checks": [
+    {
+      "check": "typecheck",
+      "command": "pnpm run typecheck",
+      "exit_code": 0,
+      "head": "d36288793b599c22034881a6eeda46e71c01dd37",
+      "log_sha256": "f297c51f8e3681c8a2f9c74ec27244cf50a936d46e1b5903e9ee39ae08376d17",
+      "log_bytes": 111,
+      "log_completed_at": "2026-11-17T21:28:21.922382+00:00"
+    },
+    {
+      "check": "rer-check",
+      "command": "pnpm exec rer check --profile first-party",
+      "exit_code": 0,
+      "head": "d36288793b599c22034881a6eeda46e71c01dd37",
+      "log_sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a",
+      "log_bytes": 136,
+      "log_completed_at": "2026-11-17T21:28:46.357319+00:00"
+    },
+    {
+      "check": "build",
+      "command": "npx -y @runeditrun/rer build",
+      "exit_code": 0,
+      "head": "d36288793b599c22034881a6eeda46e71c01dd37",
+      "log_sha256": "6fde47e23a0bc0cf8043001b012eb208c7dfca8d65fc272c0ff98f16c47827b0",
+      "log_bytes": 91526,
+      "log_completed_at": "2026-11-17T21:29:15.698870+00:00"
+    },
+    {
+      "check": "source-check",
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "head": "d36288793b599c22034881a6eeda46e71c01dd37",
+      "log_sha256": "68cc6bd3c4ffd620373b45fdb0332352946bf3aa567ff2581062af20f9f33303",
+      "log_bytes": 763389,
+      "log_completed_at": "2026-11-17T21:28:21.310409+00:00"
+    }
+  ],
+  "publication_scan": "Fleet/Mac gate; unavailable in this cloud task",
+  "contract_status_changes": []
+}

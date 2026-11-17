@@ -1,0 +1,19 @@
+{
+  "author": "Run Edit Run fleet",
+  "observed_at": "2026-11-17T21:48:06.437929+00:00",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-design-d20-1",
+  "head": "d36288793b599c22034881a6eeda46e71c01dd37",
+  "remote_head": "d36288793b599c22034881a6eeda46e71c01dd37",
+  "tree": "fc6890150adb73f5160e9f3e1ff6c77fc3ab3fa2",
+  "main_base": "b6f16fc44feaad1164753d895419bb78e61e40e3",
+  "product_commits": [
+    "d36288793b599c22034881a6eeda46e71c01dd37 Prove invited sessions obey teammate factor policy",
+    "26eb80e28ebc9aea7737a26315ede5f102ca184e Sign invited teammates in after password choice [skip ci]"
+  ],
+  "worktree": "clean",
+  "identity_check": "Every candidate author/committer is Run Edit Run fleet <fleet@runeditrun.com>; no trailers",
+  "pr": null,
+  "push_log": "logs/product-push.log",
+  "publication_scan": "Required separate fleet gate; unavailable in cloud"
+}

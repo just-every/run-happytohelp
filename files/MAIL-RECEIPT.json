@@ -1,0 +1,14 @@
+{
+  "author": "Run Edit Run fleet",
+  "head": "d36288793b599c22034881a6eeda46e71c01dd37",
+  "command": "node .local-evidence/d20-mail-probe.mjs",
+  "exit_code": 0,
+  "observed_at": "2026-11-17T21:47:00.308716+00:00",
+  "mail_mode": "local",
+  "status": 503,
+  "session_cookie": false,
+  "outbound_requests": 0,
+  "log": "logs/local-mail-refusal.log",
+  "sha256": "b486ed29e4a3a33a151f4de4a29ebd57cbc4692419a441ce74ba072e087f34bf",
+  "runner_note": "An earlier stdin-based standalone invocation was stopped during startup; the saved module invocation completed and all assertions passed."
+}

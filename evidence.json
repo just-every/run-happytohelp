@@ -1,0 +1,172 @@
+{
+  "files": [
+    {
+      "blob": "36ed77f8fb3c32686fb1ff8df8f31cfbfeaacd85",
+      "bytes": 1790,
+      "path": "BUILD-RECEIPT.json",
+      "sha256": "2fcfb790b46bb6471810d48297be62e2d5e44937a26b543bfd07392604987b48"
+    },
+    {
+      "blob": "070325ae3484262191e9920577bb399d1f4bb691",
+      "bytes": 603,
+      "path": "CI-DISCOVERY.json",
+      "sha256": "2912c2587e0f05f42d6c7a5c7e6a50ffe0c17cef89d2559aefc2b50c1d992867"
+    },
+    {
+      "blob": "4a9192ebd5520628697d57cc3726b35eb14de47d",
+      "bytes": 366,
+      "path": "CI-POLL-2.json",
+      "sha256": "7e23d74a859ec816160bbb5f1072fa54a93ec36204130e111386d8c307fa58f6"
+    },
+    {
+      "blob": "bf840676c578902a7b4f645c7b04f4bfc337a8a6",
+      "bytes": 366,
+      "path": "CI-POLL-3.json",
+      "sha256": "bd1087b621be8176a17de6239600f83f2264df9c6bdc006fd37d34ced131a07d"
+    },
+    {
+      "blob": "2c99a80372b896da87dbfe5991fc6b7ae45b13e9",
+      "bytes": 498,
+      "path": "CI-RECEIPT.json",
+      "sha256": "3e311a25181f135904a5986532b7d4820b3a8e052b90df73ec8c70f9e0aa43c1"
+    },
+    {
+      "blob": "ae3a3ebd5e78cf4fdcb70c7ea8aa0ce7fe6f3d69",
+      "bytes": 411,
+      "path": "COUNTS.json",
+      "sha256": "46fbf7e39122837179a0f96be61f3048535fd6617aa005067ad8471cf0058308"
+    },
+    {
+      "blob": "9b22417c18c418e51dc37851de104f142d1b8b4d",
+      "bytes": 590,
+      "path": "MAIL-RECEIPT.json",
+      "sha256": "6fb67767fbe17050f9a7cba52d8bfc0a91d56248689955ff8bd438ad25d20983"
+    },
+    {
+      "blob": "0b900bff88632ea46582e4c5eb5cb1df0788104b",
+      "bytes": 1856,
+      "path": "PLAN.md",
+      "sha256": "b0dff1245f1c792d62f233ab559aec06751c9e954728165d312bbee571410db8"
+    },
+    {
+      "blob": "583e842033815f07fbd27508101889f5a2cbbeb9",
+      "bytes": 905,
+      "path": "PRODUCT-RECEIPT.json",
+      "sha256": "7edfcca85a015ddfdf2887acdf0945ab7ae50e8db8bcfa64b02b02ca195a3fef"
+    },
+    {
+      "blob": "ce8eff6a21149a027617a773f2285bcb74678dec",
+      "bytes": 8389,
+      "path": "REPORT.md",
+      "sha256": "808098dd5f6fefde3ece637776fd5f2d51ade4ea4a3b68d8712db33b7e6f2fa2"
+    },
+    {
+      "blob": "e88b8358c9f619bb1b466ba853f7a5e08844d57f",
+      "bytes": 2139,
+      "path": "SCREENSHOTS.json",
+      "sha256": "18ff1964ed18cefe55afe2aeb54dd8dbdbe28264530177f5e09870c9ac2471ee"
+    },
+    {
+      "blob": "9227a362fc65ea809cfd56ae55ef101f785099f4",
+      "bytes": 1547,
+      "path": "TEST-RECEIPT.json",
+      "sha256": "b109e8c5994c7e2283d59f3ce540a77b7c1f5f03e6ec55dec62eac7950ab3f08"
+    },
+    {
+      "blob": "29ced2d4716698b4c125b90f014a25873bcf02c7",
+      "bytes": 960,
+      "path": "local-mail-probe.mjs",
+      "sha256": "b7f55187faaf7f6388f3e2127d72a2dec793b42dad19bd680012d0105faafdef"
+    },
+    {
+      "blob": "a39f59fc7a7af31cb9b7d2c0c827342e112a1bd0",
+      "bytes": 2621,
+      "path": "logs/identity-browser.log",
+      "sha256": "c121a96a25e54d22b06b1d1d1306423c3fc3f7c23f8de42cc8791f04321d7ed0"
+    },
+    {
+      "blob": "889b4375110eb9fe59f5237d872f7f2e98301ad6",
+      "bytes": 13963,
+      "path": "logs/identity-final.log",
+      "sha256": "8e2756258d31ddc4490f3cbf7c96cfa3f3998fbff5bcbb30d786140a8a2c9c06"
+    },
+    {
+      "blob": "6ea94acca60fc0fb05b33b46cdb2a0a1a140d64c",
+      "bytes": 12173,
+      "path": "logs/identity-initial.log",
+      "sha256": "867b14996115a44131eeefb40a05c9802dafac27d8163a4d3af151da517914df"
+    },
+    {
+      "blob": "2dbb1f09d34e41aba0d4b3140553b3344c8dc14e",
+      "bytes": 202,
+      "path": "logs/local-mail-refusal.log",
+      "sha256": "b486ed29e4a3a33a151f4de4a29ebd57cbc4692419a441ce74ba072e087f34bf"
+    },
+    {
+      "blob": "fa18b5c6022def0e12f57bfe2c29b996b788c783",
+      "bytes": 747,
+      "path": "logs/product-push.log",
+      "sha256": "c6a33901c60345205bedb4fe599ac7eba023b2e2f5aa54343c9b0919e11575ae"
+    },
+    {
+      "blob": "ce8eff6a21149a027617a773f2285bcb74678dec",
+      "bytes": 8389,
+      "path": "reports/hh-owner-design-d20-1.md",
+      "sha256": "808098dd5f6fefde3ece637776fd5f2d51ade4ea4a3b68d8712db33b7e6f2fa2"
+    },
+    {
+      "blob": "c75b765237522ae396ce7f9975c024b29bc5072a",
+      "bytes": 60041,
+      "path": "screenshots/accept-invitation-1440.png",
+      "sha256": "ac17b844f99336b3622e6fbbe7facefadb4c2501fd58bad727acec6ee289a251"
+    },
+    {
+      "blob": "69d4d451ef00e37115617349a6858506883b7d1f",
+      "bytes": 46074,
+      "path": "screenshots/accept-invitation-390.png",
+      "sha256": "ac65c8ff730963c725fbb5bd2023c2f52a66ea070bc2a22a67493daa108b8222"
+    },
+    {
+      "blob": "a82a6a0f16ff0deb4cb4c9ac4542ee09a1aa8031",
+      "bytes": 60229,
+      "path": "screenshots/inbox-after-password-1440.png",
+      "sha256": "0344a84befcabc6628e76499b9e3cc0b54a7de25f9324e3c5746cf76b42bcbc9"
+    },
+    {
+      "blob": "3b0c6ce8f871e6a69a0d301455ab56a610dc0467",
+      "bytes": 24337,
+      "path": "screenshots/inbox-after-password-390.png",
+      "sha256": "c7e0fd8c9c36b8b843d6ff60fa7259159e3ecd2a52c0e96d6fe215045a01ae99"
+    },
+    {
+      "blob": "15e51529f5131057b3417ce327e2e3ef05d34280",
+      "bytes": 30892,
+      "path": "screenshots/teammate-email-sign-in-1440.png",
+      "sha256": "0dca4afa3c96a7dfc3754c0eb40ea9f8f1209534bbfc51ce55c8ca35f98f25a6"
+    },
+    {
+      "blob": "5491ea1027dcad9caa84247a0a11940ccd892560",
+      "bytes": 21048,
+      "path": "screenshots/teammate-email-sign-in-390.png",
+      "sha256": "1f7e2eb4b416fc28dc1bcd6227910c8f3cae719e2ddbd54c56a2350c8735092d"
+    },
+    {
+      "blob": "ef684d32ac2a3cd6030478ead1e02b2d34637149",
+      "bytes": 77313,
+      "path": "screenshots/teammate-sign-in-1440.png",
+      "sha256": "e202037cccccbfd3ff7a56df481e228f307f1a5f8e603c0ce8b585d4419d8452"
+    },
+    {
+      "blob": "32393da0d8967335d03890aef8d0ebe6b9229540",
+      "bytes": 51424,
+      "path": "screenshots/teammate-sign-in-390.png",
+      "sha256": "4de046cee6492d1406d6d3ef67d06c7273bd20ee1bbd8673155c00ff2b41fca3"
+    }
+  ],
+  "product_branch": "cloud/hh-owner-design-d20-1",
+  "product_head": "d36288793b599c22034881a6eeda46e71c01dd37",
+  "ref": "refs/heads/evidence/hh-owner-design-d20-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-owner-design-d20-1"
+}

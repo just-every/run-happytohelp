@@ -1,0 +1,3 @@
+Starting isolated local mail probe
+Isolated application ready
+{"probe":"local teammate email sign-in is unavailable","mailMode":"local","status":503,"newSession":false,"outboundRequests":0,"pass":true}

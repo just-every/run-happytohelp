@@ -1,0 +1,35 @@
+{
+  "author": "Run Edit Run fleet",
+  "observed_at": "2026-11-17T21:43:10.734754+00:00",
+  "checks": [
+    {
+      "command": "node --test --test-concurrency=1 tests/journeys/identity.mjs",
+      "head": "26eb80e28ebc9aea7737a26315ede5f102ca184e",
+      "exit_code": 1,
+      "pass_count": 13,
+      "fail_count": 1,
+      "log": "logs/identity-initial.log",
+      "sha256": "867b14996115a44131eeefb40a05c9802dafac27d8163a4d3af151da517914df"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/journeys/identity.mjs",
+      "head": "d36288793b599c22034881a6eeda46e71c01dd37",
+      "exit_code": 0,
+      "pass_count": 14,
+      "fail_count": 0,
+      "log": "logs/identity-final.log",
+      "sha256": "8e2756258d31ddc4490f3cbf7c96cfa3f3998fbff5bcbb30d786140a8a2c9c06"
+    },
+    {
+      "command": "H2H_CHROMIUM_PATH=/usr/bin/chromium H2H_D20_PROOF=1 node --test --test-concurrency=1 --test-name-pattern='a new teammate chooses a password' tests/journeys/identity-browser.mjs",
+      "head": "d36288793b599c22034881a6eeda46e71c01dd37",
+      "exit_code": 0,
+      "pass_count": 1,
+      "fail_count": 0,
+      "log": "logs/identity-browser.log",
+      "sha256": "c121a96a25e54d22b06b1d1d1306423c3fc3f7c23f8de42cc8791f04321d7ed0"
+    }
+  ],
+  "initial_failure_resolution": "Use the invitation-created session in the existing factor-policy test; preserve the exact one-session revocation assertions.",
+  "browser": "System Chromium /usr/bin/chromium, headless, --no-sandbox; browser and isolated runtimes closed by the journey."
+}

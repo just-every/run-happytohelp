@@ -1,0 +1,17 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-design-d20-1",
+  "head": "d36288793b599c22034881a6eeda46e71c01dd37",
+  "run_id": 44182796330,
+  "status": "in_progress",
+  "conclusion": null,
+  "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44182796330",
+  "observed_at": "2026-11-17T21:54:25.588703+00:00",
+  "ci_api_calls": 3,
+  "ready": false,
+  "observation_files": [
+    "CI-DISCOVERY.json",
+    "CI-POLL-2.json",
+    "CI-POLL-3.json"
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "head": "d36288793b599c22034881a6eeda46e71c01dd37",
+  "assertion_viewport": 1440,
+  "proof_viewports": [
+    1440,
+    390
+  ],
+  "review": "All eight screenshots visually reviewed. Invitation password is masked; no capability URL, session value, installer instruction or local-owner door appears on the teammate screens.",
+  "files": [
+    {
+      "path": "screenshots/accept-invitation-1440.png",
+      "width": 1440,
+      "height": 979,
+      "sha256": "ac17b844f99336b3622e6fbbe7facefadb4c2501fd58bad727acec6ee289a251",
+      "bytes": 60041
+    },
+    {
+      "path": "screenshots/accept-invitation-390.png",
+      "width": 390,
+      "height": 966,
+      "sha256": "ac65c8ff730963c725fbb5bd2023c2f52a66ea070bc2a22a67493daa108b8222",
+      "bytes": 46074
+    },
+    {
+      "path": "screenshots/inbox-after-password-1440.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "0344a84befcabc6628e76499b9e3cc0b54a7de25f9324e3c5746cf76b42bcbc9",
+      "bytes": 60229
+    },
+    {
+      "path": "screenshots/inbox-after-password-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "c7e0fd8c9c36b8b843d6ff60fa7259159e3ecd2a52c0e96d6fe215045a01ae99",
+      "bytes": 24337
+    },
+    {
+      "path": "screenshots/teammate-sign-in-1440.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "e202037cccccbfd3ff7a56df481e228f307f1a5f8e603c0ce8b585d4419d8452",
+      "bytes": 77313
+    },
+    {
+      "path": "screenshots/teammate-sign-in-390.png",
+      "width": 390,
+      "height": 1038,
+      "sha256": "4de046cee6492d1406d6d3ef67d06c7273bd20ee1bbd8673155c00ff2b41fca3",
+      "bytes": 51424
+    },
+    {
+      "path": "screenshots/teammate-email-sign-in-1440.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "0dca4afa3c96a7dfc3754c0eb40ea9f8f1209534bbfc51ce55c8ca35f98f25a6",
+      "bytes": 30892
+    },
+    {
+      "path": "screenshots/teammate-email-sign-in-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "1f7e2eb4b416fc28dc1bcd6227910c8f3cae719e2ddbd54c56a2350c8735092d",
+      "bytes": 21048
+    }
+  ]
+}

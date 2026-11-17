@@ -1,0 +1,9 @@
+# D20 implementation plan
+Run Edit Run fleet, 2026-11-17.
+
+1. Start from newest origin/main; inspect native invitation consumption, password sign-in, second-factor policy and local-owner re-entry. Preserve owner-fix-1, generated acceptance views, clause judgments, migrations and release metadata.
+2. On successful creation of a new invited account only, issue the native password session with the normal cookie, lifetime and factor checks, scoped to the invited tenant and role. Keep failed/reused/revoked/expired capabilities sessionless and password resets unchanged. Route the browser directly to the inbox, or required factor enrollment before inbox access.
+3. Remove installer instructions from ordinary password and email sign-in pages. Retain the existing guarded local-owner door and installer documentation.
+4. Extend existing identity journeys rather than adding registrations. Prove acceptance-to-inbox in the emitted Worker, invalid invitations without sessions, collaborator authority and required factors. Run typecheck, rer check and touched journeys only. Capture the accept page, first screen after password choice and teammate sign-in at 1440 and 390, plus the email sign-in page where the misleading instruction also appeared.
+5. Regenerate sources.lock.json last and check it. Save real commits to cloud/hh-owner-design-d20-1 with fleet identity, no AI trailer. Before the final candidate merge current main, run touched checks and push through the fleet guard.
+6. Observe exact-head Verify using REST, one watcher and at least 300 seconds between calls for the run, within ten GitHub calls. Preserve actual receipts and screenshots outside the product tree. Publish the explicit non-secret packet to evidence/hh-owner-design-d20-1 and return claims and lane POST lines. The fleet performs publication scanning and landing separately.

@@ -1,0 +1,27 @@
+{
+  "registrations": {
+    "identity": {
+      "before": 14,
+      "after": 14
+    },
+    "identity-browser": {
+      "before": 6,
+      "after": 6
+    }
+  },
+  "contract_summary": {
+    "before": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    },
+    "after": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    }
+  },
+  "status_changes": []
+}

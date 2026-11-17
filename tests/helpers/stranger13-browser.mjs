@@ -13,8 +13,9 @@ async function withWorkspace(name,journey){
   try{
    await page.goto(runtime.origin+'/login?returnTo='+encodeURIComponent(`/projects/${fixture.projectId}/conversations`))
    await page.getByLabel('Email',{exact:true}).fill(fixture.owner.email);await page.getByLabel('Password',{exact:true}).fill(fixture.owner.password);await page.getByRole('button',{name:'Login',exact:true}).click();await page.waitForURL('**/conversations')
-   const capture=async label=>{for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:shot(`${name}-${label}-${width}.png`),fullPage:true})}await page.setViewportSize({width:1440,height:1000})}
+   const capture=async label=>{for(const width of [1440,390]){await page.setViewportSize({width,height:1000});if(label==='account'){const accountToggle=page.getByRole('button',{name:'Account menu',exact:true}).filter({visible:true});if(await accountToggle.getAttribute('aria-expanded')!=='true')await accountToggle.click()}await page.screenshot({path:shot(`${name}-${label}-${width}.png`),fullPage:true})}await page.setViewportSize({width:1440,height:1000})}
    await journey({runtime,fixture,context,page,capture});passed=true
+  }catch(error){console.error(error.stack);throw error
   }finally{await context.close()}
  }finally{await browser.close();await runtime.close(passed)}
 }
@@ -28,7 +29,7 @@ export const credentialBindingsBrowser=()=>withWorkspace('bindings',async({runti
  assert.ok(prior.token&&credential)
  await page.goto(runtime.origin+`/projects/${projectId}/api-settings`)
  await page.getByLabel('Token name',{exact:true}).fill('Returns integration');await page.getByLabel('Source product',{exact:true}).fill('synthetic-returns')
- await page.getByText('Credential bindings',{exact:true}).click()
+ await page.locator('form > details > summary').filter({hasText:/^Credential bindings$/}).click()
  const choices={Brands:fixture.owner.name,Mailboxes:'Returns mailbox (synthetic-support@example.test)',Groups:group.name,Forms:'Returns request',Priorities:'High',Tags:tags[0].name,Credentials:'Prior integration'}
  for(const [label,name] of Object.entries(choices))await page.getByLabel(label,{exact:true}).selectOption({label:name})
  await page.getByLabel('conversations:create',{exact:true}).check();await auditPage(page);await capture('selected')
@@ -52,10 +53,11 @@ export const workspaceCreationBrowser=()=>withWorkspace('workspace',async({runti
  await page.goto(runtime.origin+`/projects/${fixture.projectId}/conversations`)
  await page.getByRole('button',{name:'Account menu',exact:true}).filter({visible:true}).click()
  const account=page.locator('.native-account-dropdown').filter({visible:true});await account.getByRole('link',{name:'Create workspace',exact:true}).waitFor();await capture('account')
+ const accountToggle=page.getByRole('button',{name:'Account menu',exact:true}).filter({visible:true});if(await accountToggle.getAttribute('aria-expanded')!=='true')await accountToggle.click()
  await account.getByRole('link',{name:'Create workspace',exact:true}).click()
  await page.getByLabel('Name',{exact:true}).fill('Synthetic second workspace');await page.getByLabel('Website',{exact:true}).fill(runtime.origin);await page.getByLabel('Widget website origin',{exact:true}).fill(runtime.origin)
  await page.getByRole('button',{name:'Create project',exact:true}).click();await page.waitForURL('**/activation')
- await page.getByRole('heading',{name:'Setup',exact:true}).waitFor();const newId=new URL(page.url()).pathname.split('/')[2]
+ await page.locator('[data-need="widget_seen"] [data-field="snippet"]').waitFor();assert.ok((await page.locator('[data-need="widget_seen"] [data-field="snippet"]').innerText()).includes(runtime.origin+'/widget.js'));const newId=new URL(page.url()).pathname.split('/')[2]
  assert.notEqual(newId,fixture.projectId)
  const workspaces=(await fixture.api('/api/management/projects')).data
  assert.equal(workspaces.find(item=>item.id===newId).role,'owner')
@@ -83,8 +85,8 @@ export const mergePickerBrowser=()=>withWorkspace('merge',async({runtime,fixture
  await dialog.getByRole('button',{name:'Preview merge',exact:true}).click();await dialog.getByText('No customer notification is sent.',{exact:false}).waitFor()
  assert.match(await dialog.innerText(),new RegExp('Surviving: '+second.id));assert.match(await dialog.innerText(),new RegExp('Source: '+first.id));await auditPage(page);await capture('preview')
  await dialog.getByRole('button',{name:'Confirm merge',exact:true}).click();await page.waitForURL('**/conversations/'+second.id)
- const state=(await api(`${base}/conversations/${first.id}/ticket`)).data
- assert.equal(state.merged_into,second.id)
+ const merges=(await api(`${base}/conversations/${second.id}/merges`)).data
+ assert.ok(merges.some(item=>item.source_id===first.id&&item.target_id===second.id&&!item.undone_at))
  const history=(await api(`${base}/conversations/${second.id}/merged-history`)).data
  assert.ok(history.some(item=>item.conversation_id===first.id));assert.ok(JSON.stringify(history).includes('Synthetic private source note'))
 })
@@ -109,6 +111,7 @@ export async function missingProviderProcedureBrowser(){
    assert.equal(details.reserved_cost,0);assert.equal(details.spent_cost,0);assert.ok(details.cases.every(item=>!item.attempt_id&&!item.started_at&&!item.provider_rounds.length))
    await auditPage(page)
    for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await receipt.scrollIntoViewIfNeeded();await page.screenshot({path:shot(`simulation-blocked-${width}.png`)})}
+   await receipt.getByRole('link',{name:'Set up provider key',exact:true}).click();await page.waitForURL('**/activation');await page.locator('[data-need="model_key"]').waitFor()
    passed=true
   }finally{await context.close()}
  }finally{await browser.close();await runtime.close(passed)}

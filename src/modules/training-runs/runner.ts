@@ -13,7 +13,7 @@ export async function executeTrainingRun(env:Env,runId:string,execute:TrainingEx
  if(!await isProjectActive(env,run.project_id)){await env.DB.batch([env.DB.prepare("UPDATE training_cases SET status=CASE WHEN status='running' THEN 'uncertain' ELSE 'cancelled' END,error='Project deleted; started attempts require inspection' WHERE run_id=? AND status IN ('queued','running')").bind(runId),env.DB.prepare("UPDATE training_runs SET status=CASE WHEN reserved_cost>0 THEN 'uncertain' ELSE 'cancelled' END,completed_at=? WHERE id=?").bind(Date.now(),runId)]);return;}
  // Missing installation keys are known before any case is attempted or cost reserved.
  // Runs with started cases keep their uncertain outcomes and are never reclassified.
- if(run.status==='queued'&&JSON.parse(run.config).procedureVersionId){
+ if(run.kind==='simulation'&&run.status==='queued'&&JSON.parse(run.config).procedureVersionId){
   try{for(const model of JSON.parse(run.config).models)assertModelConfigured(env,model)}
   catch(error){
    if(error instanceof AiConfigurationError){

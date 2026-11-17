@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from '@tanstack/react-router';
 import ProviderSetupNotice from '../activation/ProviderSetupNotice';
 
 export const caseLabels={allowed:'Allowed read',denied:'Denied read',timeout:'Read timeout',injection:'Prompt injection'};
@@ -18,7 +19,7 @@ function failureMessage(failure){
 export default function ProcedureReceipt({receipt,versionId,projectId}){
  return <div aria-label="Simulation receipt" className="procedure-receipt">
   <p>Version receipt: <code>{versionId}</code></p>
-  {receipt.status==='blocked'&&<><p role="status">Blocked: provider key missing. No cases were executed and no cost was reserved.</p><ProviderSetupNotice projectId={projectId} error={receipt.cases.find(item=>item.error)?.error}/></>}
+  {receipt.status==='blocked'&&<><p role="status">Blocked: provider key missing. No cases were executed and no cost was reserved. <Link to={`/projects/${projectId}/activation`}>Set up provider key</Link></p><ProviderSetupNotice projectId={projectId} error={receipt.cases.find(item=>item.error)?.error}/></>}
   {receipt.cases.map(item=>{
    const notRun=['queued','cancelled','blocked'].includes(item.status)&&!activeStatuses.includes(receipt.status);
    const failures=[...new Set((item.checks?.failures||[]).map(failureMessage))];

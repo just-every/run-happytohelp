@@ -155,6 +155,7 @@ for(const base of [P,D]){
  rules[`PATCH ${base}/conversations/:conversationId/triage`]='conversations.manage'
  rules[`GET ${base}/ticket-settings`]='self'
  rules[`GET ${base}/ticket-problem-search`]='conversations.manage'
+ rules[`GET ${base}/ticket-merge-search`]='conversations.manage'
  rules[`GET ${base}/conversations/:conversationId/ticket`]='self'
  rules[`PATCH ${base}/conversations/:conversationId/ticket`]='conversations.manage'
  for(const method of ['GET','PATCH'])rules[`${method} ${base}/conversations/:conversationId/ticket/problem`]='conversations.manage'

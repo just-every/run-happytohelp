@@ -92,6 +92,7 @@ export async function proceduresJourney(){
   assert.equal(run.cases.length,4)
   assert.ok(run.cases.every(item=>item.status==='blocked'&&!item.attempt_id&&!item.started_at&&!item.artifact_available&&item.error.includes('OPENAI_API_KEY')))
   assert.equal(blocked.providerCalls(),0)
+  await blocked.app.call(`${root}/exchange/versions/${version.id}/release`,{token:blocked.owner,body:{evaluationId:run.id},status:409})
   await blocked.run();assert.equal(blocked.providerCalls(),0,'a blocked run never executes on queue redelivery')
  }finally{await blocked.close()}
 }

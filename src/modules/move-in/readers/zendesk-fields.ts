@@ -6,6 +6,15 @@ import type {NativeValue} from './normalise'
 import {nativeId,sourceId,text,time,object} from './common'
 
 const supported:Record<string,string>={text:'text',textarea:'text',integer:'number',decimal:'decimal',date:'date',checkbox:'checkbox',tagger:'dropdown',multiselect:'multiselect',regexp:'regex'}
+// Compare significant decimal digits and scale, including the scientific
+// notation JavaScript uses when spelling a small representable number.
+function decimalIdentity(value:string){
+ const match=/^(-?)(\d+)(?:\.(\d*))?(?:e([+-]?\d+))?$/i.exec(value)!
+ const digits=(match[2]+(match[3]??'')).replace(/^0+/,'')
+ if(!digits)return '0'
+ const significant=digits.replace(/0+$/,'')
+ return `${match[1]}${significant}e${Number(match[4]??0)-(match[3]?.length??0)+digits.length-significant.length}`
+}
 const system=new Set(['subject','description'])
 export function zendeskField(record:SourceRecord,projectId:string,portal=true):StoredField{
  const p=record.payload as any,type=supported[p.type]
@@ -76,8 +85,7 @@ export function zendeskTicketFields(record:SourceRecord,projectId:string,convers
   if(['integer','decimal'].includes((definition.payload as any).type)&&typeof native==='string'){
    if(!/^-?\d+(?:\.\d+)?$/.test(native))throw Error('ticket_numeric_field_invalid:'+source)
    const number=Number(native)
-   const canonical=(v:string)=>v.replace(/^(-?)0+(?=\d)/,'$1').replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'').replace(/^-0$/,'0')
-   if(!Number.isFinite(number)||Math.abs(number)>Number.MAX_SAFE_INTEGER||field.type==='number'&&!Number.isSafeInteger(number)||canonical(String(number))!==canonical(native))throw Error('ticket_numeric_field_not_representable:'+source)
+   if(!Number.isFinite(number)||Math.abs(number)>Number.MAX_SAFE_INTEGER||field.type==='number'&&!Number.isSafeInteger(number)||decimalIdentity(String(number))!==decimalIdentity(native))throw Error('ticket_numeric_field_not_representable:'+source)
    native=number;omissions.push('ticket_numeric_string_converted:'+source)
   }
   const checked=validateFieldValue(field,native)

@@ -59,6 +59,9 @@ export async function fidelityCorpus(){
   // a tickets array; API pages contain unwrapped objects under plural keys.
   const entries=[{name:'export_2026_11_17_synthetic_hh_1.json',body:JSON.stringify({tickets:records.filter(r=>r.ticket)},null,1)}]
   for(const [kind,rows] of Object.entries(objects).filter(([kind])=>!['ticket','audit'].includes(kind))){const key=kind==='identity'?'identities':kind==='sla_policy'?'sla_policies':kind+'s',data=records.filter(r=>r[kind]).map(r=>r[kind]);entries.push({name:`${kind}.json`,body:JSON.stringify({[key]:data,count:rows.length,next_page:null,previous_page:null},null,1)})}
-  return {objects,records,wrapped,archive:zip(entries),entries}
+  // Untouched Admin Center NDJSON and separate API collection responses: no
+  // HappyToHelp packing annotations or bytes. This is reviewed independently.
+  const rawEntries=Object.entries(objects).filter(([kind])=>kind!=='audit').map(([kind,rows])=>({name:`raw-${kind}.json`,body:['ticket','user','organization'].includes(kind)?rows.map(value=>JSON.stringify({[kind]:value})).join('\n'):JSON.stringify({[kind==='identity'?'identities':kind==='sla_policy'?'sla_policies':kind+'s']:rows,next_page:null})}))
+  return {objects,records,wrapped,archive:zip(entries),rawArchive:zip(rawEntries),entries}
  }finally{await rm(directory,{recursive:true,force:true})}
 }

@@ -5985,7 +5985,7 @@
       "executable": false
     },
     "src/modules/identity/accounts.ts": {
-      "sha256": "23102dd53d5a915550a84863a2d28635e7786e960610345372f2fe3de0d3708a",
+      "sha256": "11a468e6920fe74b9ad8727d721a482fde376e831066b663670b8965bf8dfbbe",
       "executable": false
     },
     "src/modules/identity/availability.ts": {
@@ -6033,7 +6033,7 @@
       "executable": false
     },
     "src/modules/identity/README.md": {
-      "sha256": "16f5fe3d93c94667d9325f07e8f7856adcc1dd5be98560be00313a2375c905fa",
+      "sha256": "8f41a0f33c8ec398ab82bfda3af81e9310fc74716d64082a9be93721e037dd4c",
       "executable": false
     },
     "src/modules/identity/recovery-authority/common.ts": {
@@ -12793,7 +12793,7 @@
       "executable": false
     },
     "src/ui/identity/AcceptInvitation.tsx": {
-      "sha256": "6cb31601f474892f9514fa7be92ae38544c08b0b5ed9761ae08834831e2d7b13",
+      "sha256": "fa0cb5cc541687e80b4b21d8a2716b50b32617a9e7eae6002556c6b245578af8",
       "executable": false
     },
     "src/ui/identity/fields.tsx": {
@@ -12825,11 +12825,11 @@
       "executable": false
     },
     "src/ui/identity/Login.tsx": {
-      "sha256": "ef340ba2d7a2436ab3999c7e4f3f984a56fd3689a891c4bc3121f3bf7b0c50b4",
+      "sha256": "ca69e6fbc87234cbe243e612044d9127150e5f370929b5a8233ff6155b7ae619",
       "executable": false
     },
     "src/ui/identity/MagicLogin.tsx": {
-      "sha256": "a78fb4ccb24254324f4d6e7b3345f2945e9e8db0024d930267ccbec65e2c930a",
+      "sha256": "8580274f0cbb36202711a295cfc10cd53bf29b808fab07d7903207f51f694ad4",
       "executable": false
     },
     "src/ui/identity/OwnerRecovery.tsx": {
@@ -16645,7 +16645,7 @@
       "executable": false
     },
     "tests/helpers/identity/magic-browser.mjs": {
-      "sha256": "cc5e1f7c20dbec3a86bd1f90271e66c3c6273ea53947f3d115a518ce088d45e7",
+      "sha256": "cb19e45c01c90f190768b28cfe955d8e31e6804cdbb03ae3d7f3b53896ea06d7",
       "executable": false
     },
     "tests/helpers/identity/mail-edge.mjs": {
@@ -16657,7 +16657,7 @@
       "executable": false
     },
     "tests/helpers/identity/native-account.mjs": {
-      "sha256": "2131c30d8f83a88cea7faec7b5ba7a9a4ba77ab314984c4be0b3515b7984196e",
+      "sha256": "4740e8bcdb1919ca892d6031a91b2abd41bc2f43c38d1ddb7f64098f7aeecace",
       "executable": false
     },
     "tests/helpers/identity/native-settings-authority.mjs": {
@@ -16745,7 +16745,7 @@
       "executable": false
     },
     "tests/helpers/identity/two-factor.mjs": {
-      "sha256": "9c7d8bfb6c00f88aa4e5eef3e178f2136d1d5fab7b9a6499aa9115f3f5ee81a2",
+      "sha256": "649120e47058db3af2f6597ca9e1882cee1110e17cf5402c84d7c6a9a03c4535",
       "executable": false
     },
     "tests/helpers/identity/upgrade-fence.mjs": {
@@ -17285,7 +17285,7 @@
       "executable": false
     },
     "tests/helpers/stranger11-browser.mjs": {
-      "sha256": "872362b5f3af27fb10e737ed3a9dbf714481e4f72f4a1499eb4248e18c75408d",
+      "sha256": "66fe92243734e4e04d3eec08e1bdb078b013178a2d866253ec4279d8b7097794",
       "executable": false
     },
     "tests/helpers/stranger13-browser.mjs": {
@@ -17505,7 +17505,7 @@
       "executable": false
     },
     "tests/journeys/identity-browser.mjs": {
-      "sha256": "034e30b33ac38b44c0679ec36239190864ff35677faa630bb8743036e2c047b8",
+      "sha256": "400475b35e969703608530930b775d49b960011e0deb858a773897ce8b911968",
       "executable": false
     },
     "tests/journeys/identity.mjs": {

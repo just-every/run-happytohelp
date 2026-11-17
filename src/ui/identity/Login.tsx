@@ -45,7 +45,6 @@ export default function Login() {
         <p className="id-lede">Log in to your HappyToHelp workspace.</p>
         {options?.setupRequired && <p className="id-note" role="status">This installation has not been set up yet. <a href="/setup">Set up your workspace</a> to create the first owner account.</p>}
         {options?.localOwnerEntry && <p className="id-note" role="status">This browser can reopen your local workspace on this computer. <a href="/auth/dev/enter">Sign in as local owner</a></p>}
-        {mail?.mailMode === 'local' && !options?.localOwnerEntry && <p className="id-note" role="status"><code>rer dev</code> signs you in automatically as the local owner. Open the app address it prints. Email is suppressed during local development. No email is sent.</p>}
         {mail?.mailMode === 'unavailable' && <p className="id-note" role="status">Outbound email is off for this installation, so sign-in links and password resets are not sent. Sign in with your password, or ask whoever runs this installation for a one-time sign-in link.</p>}
         <Alert>{error}</Alert>
         <form method="post" onSubmit={submit}>

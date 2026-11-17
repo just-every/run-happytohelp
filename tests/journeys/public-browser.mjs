@@ -45,3 +45,6 @@ test('a lead publishes two approved help hosts, scoped reviewed translations and
   await domainsBrowserJourney({runtime,browser,fixture,viewport:viewports.desktop,shot});await proposalsBrowserJourney({runtime,browser,shot});passed=true
  }finally{await browser.close();await runtime.close(passed)}
 })
+
+import {rootEntryJourney} from '../helpers/root-entry.mjs'
+test('the installation root keeps first-run and signed-in entry, then sends signed-out visitors to published or enabled help and otherwise native sign-in',rootEntryJourney)

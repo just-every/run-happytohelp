@@ -1,0 +1,29 @@
+TAP version 13
+# Native runtime failure artifacts retained: /tmp/h2h-native-runtime-0jgOXM
+# Subtest: a first owner and a signed-in owner reach Setup and install a working widget
+not ok 1 - a first owner and a signed-in owner reach Setup and install a working widget
+  ---
+  duration_ms: 174601.974163
+  type: 'test'
+  location: '/workspace/run-happytohelp/tests/journeys/identity-browser.mjs:19:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.waitFor: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('heading', { name: 'Server secret', exact: true }) to be visible
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    builtOutcomes (/workspace/run-happytohelp/tests/helpers/first-run/outcomes.mjs:96:123)
+    async TestContext.<anonymous> (/workspace/run-happytohelp/tests/journeys/identity-browser.mjs:19:95)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 178271.182026

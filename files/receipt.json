@@ -1,0 +1,157 @@
+{
+  "schema": 1,
+  "tag": "hh-owner-design-setup-1-c1",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-design-setup-1-c1",
+  "head": "64f10a3948135a164d878c7313be6c45aafacf8f",
+  "remote_head": "64f10a3948135a164d878c7313be6c45aafacf8f",
+  "parent": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1",
+  "origin_main": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "new_commits": 1,
+  "candidate_commits_including_parent": 5,
+  "published_history_rewritten": false,
+  "changed_paths": [
+    "sources.lock.json",
+    "tests/helpers/ai/procedures-browser.mjs",
+    "tests/helpers/first-run/outcomes.mjs"
+  ],
+  "application_changes": false,
+  "clause_status_changes": [],
+  "contract_counts_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "contract_counts_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "local_checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive --answers .hh-setup-answers.json",
+      "exit": 0,
+      "scope": "isolated local setup; mail off; AI deferred"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='a first owner and a signed-in owner reach Setup' tests/journeys/identity-browser.mjs",
+      "exit": 0,
+      "tests": 1,
+      "passed": 1,
+      "duration_ms": 311740.315943,
+      "log": "candidate-identity.tap"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='a lead compares saved procedure definitions' tests/journeys/workflows-browser.mjs",
+      "exit": 0,
+      "tests": 1,
+      "passed": 1,
+      "duration_ms": 355233.943033,
+      "log": "candidate-procedures.tap"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "source-lock.log",
+      "tracked_edits_complete": true
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "ok": true,
+      "log": "source-check.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "rer-check.log"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "parent_failures": [
+    {
+      "journey": "first-owner Setup/widget",
+      "class": "a",
+      "exit": 1,
+      "failure": "Server secret heading wait, 20000ms",
+      "log": "parent-identity.tap"
+    },
+    {
+      "journey": "procedure versions and simulations",
+      "class": "a",
+      "exit": 1,
+      "failure": "procedures-browser.mjs:138: expected 0 pre elements, actual 1",
+      "log": "parent-procedures.tap"
+    }
+  ],
+  "failing_selected_journeys_before": 2,
+  "failing_selected_journeys_after": 0,
+  "test_registrations_added": 0,
+  "test_registrations_removed": 0,
+  "test_registrations_skipped": 0,
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "chromium": "/usr/bin/chromium",
+  "identity_audit": {
+    "all_candidate_authors_committers": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": "absent",
+    "side_parents_included": true,
+    "file": "identity-audit.txt"
+  },
+  "product_push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/hh-owner-design-setup-1-c1",
+    "exit": 0,
+    "attempts": 1,
+    "pushed_utc": "2026-11-17T14:50:43Z"
+  },
+  "ci": {
+    "id": 44107579411,
+    "head_sha": "64f10a3948135a164d878c7313be6c45aafacf8f",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/just-every/run-happytohelp/actions/runs/44107579411",
+    "last_read_utc": "2026-11-17T15:27:34Z",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44107579411",
+    "jobs_last_read_utc": "2026-11-17T15:22:16Z",
+    "jobs_complete": true,
+    "job_counts": {
+      "success": 14,
+      "skipped": 2,
+      "failure": 0
+    },
+    "repaired_shards": [
+      {
+        "name": "Verify / support-workflow-browser",
+        "id": 134125102038,
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify / identity-and-repair-browser",
+        "id": 134125102101,
+        "conclusion": "success"
+      }
+    ],
+    "terminal_observed_utc": "2026-11-17T15:27:34Z"
+  },
+  "github_calls_used": 10,
+  "github_call_budget": 10,
+  "publication_scan": "Fleet-owned Mac gate, not run from this cloud builder",
+  "independent_gate": "Not self-gated or submitted",
+  "pr": null,
+  "browser_cleanup": "Browsers and isolated runtime children closed by the existing finally blocks; cloud_run subreaper completed.",
+  "terminal_status": "READY",
+  "blockers": [],
+  "evidence_ref": "refs/heads/evidence/hh-owner-design-setup-1-c1"
+}

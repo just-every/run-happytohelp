@@ -1,0 +1,23 @@
+{
+  "github_calls_used": 10,
+  "run_id": 44090438878,
+  "failed_jobs": [
+    134091828161,
+    134091828525
+  ],
+  "log_attempts": [
+    {
+      "command": "gh run view 44090438878 --repo just-every/run-happytohelp --job 134091828161 --log-failed",
+      "exit": 0,
+      "output_bytes": 0
+    },
+    {
+      "command": "gh run view 44090438878 --repo just-every/run-happytohelp --job 134091828525 --log-failed",
+      "exit": 0,
+      "output_bytes": 0
+    }
+  ],
+  "diagnosis_source": "Local reproduction on the exact parent head; no useful archive output was returned.",
+  "terminal_ci_run_id": 44107579411,
+  "terminal_ci_conclusion": "success"
+}

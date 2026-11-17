@@ -1,0 +1,20 @@
+commit 64f10a3948135a164d878c7313be6c45aafacf8f
+Author:     Run Edit Run fleet <fleet@runeditrun.com>
+AuthorDate: Tue Nov 17 14:50:41 2026 +0000
+Commit:     Run Edit Run fleet <fleet@runeditrun.com>
+CommitDate: Tue Nov 17 14:50:41 2026 +0000
+
+    Keep setup and procedure journeys aligned with owner hand-offs
+    
+    Open the widget's Advanced disclosure after its controls load, rather than
+    the new Settings navigation disclosure. Keep the secret and installation
+    assertions intact.
+    
+    Allow the missing-provider receipt's collapsed developer instructions while
+    still excluding raw evaluator blocks. Exercise its mailto, matching copy and
+    refused-clipboard fallback, and capture the receipt at both proof widths.
+
+ sources.lock.json                       |  4 ++--
+ tests/helpers/ai/procedures-browser.mjs | 10 +++++++++-
+ tests/helpers/first-run/outcomes.mjs    |  3 ++-
+ 3 files changed, 13 insertions(+), 4 deletions(-)

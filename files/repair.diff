@@ -1,0 +1,66 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index a352636..ed8b638 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -16165,7 +16165,7 @@
+       "executable": false
+     },
+     "tests/helpers/ai/procedures-browser.mjs": {
+-      "sha256": "8ed7273462bc5b688af1cb26d798f2165e0c074decfcd3c596ecc3caba913503",
++      "sha256": "93785e479d332f6b3b5a252b0b6d9bf0d71afcdce7c7c010f61999beb09ebd74",
+       "executable": false
+     },
+     "tests/helpers/ai/procedures.mjs": {
+@@ -16597,7 +16597,7 @@
+       "executable": false
+     },
+     "tests/helpers/first-run/outcomes.mjs": {
+-      "sha256": "bf1b4870f433aa32947004ac7f55c80971321d90bfcc5d7d654bd0485de88c2d",
++      "sha256": "5242d61f3bd4b006910312de1f3819672bd3bed574dd985102ac964b7be42cdf",
+       "executable": false
+     },
+     "tests/helpers/first-run/provisioning.mjs": {
+diff --git a/tests/helpers/ai/procedures-browser.mjs b/tests/helpers/ai/procedures-browser.mjs
+index 20f0618..d80c9b1 100644
+--- a/tests/helpers/ai/procedures-browser.mjs
++++ b/tests/helpers/ai/procedures-browser.mjs
+@@ -1,6 +1,7 @@
+ import assert from 'node:assert/strict'
+ import {holdNativeResponse} from '../training-readiness.mjs'
+ import {procedureDefinition} from './procedures.mjs'
++import {developerHandoffFlow} from '../developer-handoff.mjs'
+ 
+ export async function proceduresBrowserJourney({runtime,browser,shot}){
+  const tenant=await runtime.seedTenant({name:'Synthetic procedures',email:'synthetic-hh-procedures@example.test',allowedOrigin:runtime.origin}),{projectId,token,userId}=tenant
+@@ -135,9 +136,16 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
+   const blockedReceipt=page.getByLabel('Simulation receipt')
+   assert.equal(await blockedReceipt.getByText('Not run',{exact:true}).count(),4)
+   assert.equal(await blockedReceipt.getByText('No sandbox read',{exact:true}).count(),4)
+-  assert.equal(await blockedReceipt.locator('pre').count(),0)
++  // Setup instructions belong in the hand-off; evaluator objects still never render as raw code.
++  assert.equal(await blockedReceipt.locator('pre:not(.developer-handoff pre)').count(),0)
+   assert.doesNotMatch(await blockedReceipt.innerText(),/CONFIGURATION_REQUIRED|TRAINING_PRICE_CEILINGS|\bnull\b/)
+   assert.doesNotMatch(await blockedReceipt.innerText(),/Result uncertain|attempt will not be replayed/)
++  for(const width of [1440,390]){
++   await page.setViewportSize({width,height:1000})
++   await blockedReceipt.screenshot({path:shot(`procedures-blocked-${width}.png`)})
++  }
++  await page.setViewportSize({width:1440,height:1000})
++  await developerHandoffFlow(page,blockedReceipt.locator('.developer-handoff'))
+ 
+   for(const [key,instructions] of [['provider','synthetic-hh-provider-error'],['unread','synthetic-hh-no-read']]){
+    const created=await context.request.post(runtime.origin+`${root}/${key}/versions`,{data:{...procedureDefinition(),instructions}})
+diff --git a/tests/helpers/first-run/outcomes.mjs b/tests/helpers/first-run/outcomes.mjs
+index b030263..d660d17 100644
+--- a/tests/helpers/first-run/outcomes.mjs
++++ b/tests/helpers/first-run/outcomes.mjs
+@@ -93,7 +93,8 @@ export async function builtOutcomes(){
+   await page.reload();await page.getByRole('button',{name:'Appearance',exact:true}).click()
+   assert.equal(await page.getByLabel('Workspace color hex',{exact:true}).inputValue(),'#2548aa')
+   await page.goto(`${runtime.origin}/projects/${first.projectId}/widget-settings`)
+-  await page.getByText('Advanced',{exact:true}).click();await page.getByRole('heading',{name:'Server secret',exact:true}).waitFor()
++  // Settings also has an Advanced disclosure; wait for the widget's own controls.
++  await page.locator('.widget-code__advanced > summary').click();await page.getByRole('heading',{name:'Server secret',exact:true}).waitFor()
+   assert.equal(await page.getByRole('button',{name:'Reveal server secret',exact:true}).isEnabled(),true)
+   await page.getByRole('tablist',{name:'Verification example language'}).waitFor()
+   assert.match(await page.locator('#widget-code-verification-example').innerText(),/HMAC|hash_hmac|createHmac/i)

@@ -1,0 +1,36 @@
+TAP version 13
+# (node:4784) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Native runtime failure artifacts retained: /tmp/h2h-native-runtime-Kd08JQ
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+not ok 1 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 185063.524821
+  type: 'test'
+  location: '/workspace/run-happytohelp/tests/journeys/workflows-browser.mjs:17:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    proceduresBrowserJourney (file:///workspace/run-happytohelp/tests/helpers/ai/procedures-browser.mjs:138:10)
+    async TestContext.<anonymous> (file:///workspace/run-happytohelp/tests/journeys/workflows-browser.mjs:20:6)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 188872.441097

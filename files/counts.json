@@ -1,0 +1,42 @@
+{
+  "affected_registrations": [
+    {
+      "ref": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1",
+      "file": "tests/journeys/identity-browser.mjs",
+      "top_level_registrations": 6
+    },
+    {
+      "ref": "HEAD",
+      "file": "tests/journeys/identity-browser.mjs",
+      "top_level_registrations": 6
+    },
+    {
+      "ref": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1",
+      "file": "tests/journeys/workflows-browser.mjs",
+      "top_level_registrations": 10
+    },
+    {
+      "ref": "HEAD",
+      "file": "tests/journeys/workflows-browser.mjs",
+      "top_level_registrations": 10
+    }
+  ],
+  "selected_journeys_before": 2,
+  "selected_journeys_after": 2,
+  "contract_counts_before": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "clause_status_changes": [],
+  "tests_added": 0,
+  "tests_removed": 0,
+  "tests_skipped": 0,
+  "selected_failures_before": 2,
+  "selected_failures_after": 0,
+  "contract_counts_after": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  }
+}

@@ -33,6 +33,13 @@ export async function attachMatchedMessages(env:Env,term:string,rows:{id:string;
  * NUL, which FTS cannot take) keep the per-conversation substring test the index cannot answer.
  */
 export function inboxSearchCondition(term:string){
+ // A pasted native reference is an exact id prefix, never a message substring.
+ // Access stays in the outer conversation query for both inbox doors.
+ const reference=/^#?([a-f0-9]{8})$/i.exec(term)
+ if(reference){
+  const prefix=reference[1].toLowerCase()
+  return {sql:'c.id IN (SELECT id FROM conversations WHERE id>=? AND id<?)',params:[prefix,prefix+'g'],indexed:true}
+ }
  const needle=term.replace(/[A-Z]/g,letter=>letter.toLowerCase())
  const sourceId=term.startsWith('#')?term.slice(1):term
  // Quotes group a phrase; other whitespace-separated terms may occur in any order.

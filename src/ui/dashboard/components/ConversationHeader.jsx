@@ -1,3 +1,4 @@
+import { ticketReference } from '../../../modules/tickets/reference';
 import { isNoRequester } from '../../../modules/customers/no-requester';
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
@@ -63,6 +64,7 @@ export default function ConversationHeader({
 
     return (
         <div className={ `chat-header conversation-header${atTop ? '' : ' is-scrolled'}` }>
+            <title>{ `${ ticketReference(conversation.id) } · ${ conversation.subject || contactName } · HappyToHelp` }</title>
             <div className="conversation-header-panel">
                 <div className="conversation-header-identity">
                     <button type="button" className="conversation-header-back nav-link d-xl-none" { ...tooltip('Show conversations', 'right') } onClick={ () => setIsMainVisible(false) }>

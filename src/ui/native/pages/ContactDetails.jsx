@@ -1,6 +1,7 @@
 import React, {useEffect,useState} from 'react';
 import {Link} from '@tanstack/react-router';
 import {nativeRequest} from '../transport';
+import {label} from '../../dashboard/components/tickets/ticket-model';
 import {PersonAvatar} from './ManagementLists';
 import {Section} from './forms';
 import HubSpotContext from '../crm/HubSpotContext';
@@ -10,7 +11,7 @@ function Facts({values}) {return <dl className="contact-facts">{values.map(([lab
 function ContactConversations({projectId,contactId}) {
  const [page,setPage]=useState(1),[result,setResult]=useState(null),[error,setError]=useState('');
  useEffect(()=>{const controller=new AbortController();setResult(null);setError('');nativeRequest(`/api/management/projects/${projectId}/contacts/${contactId}/conversations?page=${page}`,{signal:controller.signal}).then(data=>{if(!controller.signal.aborted)setResult(data)}).catch(e=>{if(!controller.signal.aborted)setError(e.message)});return()=>controller.abort();},[projectId,contactId,page]);
- return <Section title="Conversations">{error&&<p role="alert">{error}</p>}{!result&&!error&&<p role="status">Loading…</p>}{result&&<>{result.data.length?<ul className="list-unstyled">{result.data.map(conversation=><li key={conversation.id} className="mb-3"><Link to={`/projects/${projectId}/conversations/${conversation.id}`}>{conversation.preview||'Open conversation'}</Link><p className="text-muted">{conversation.resolved_at?'Closed':'Open'} · {date(conversation.updated_at)}</p></li>)}</ul>:<p>No conversations yet.</p>}<nav aria-label="Conversation pages" className="d-flex flex-wrap gap-2 align-items-center"><button type="button" className="btn btn-white" disabled={page<=1} onClick={()=>setPage(page-1)}>Previous</button><span role="status">Page {page}</span><button type="button" className="btn btn-white" disabled={!result.pagination.hasMore} onClick={()=>setPage(page+1)}>Next</button></nav></>}</Section>;
+ return <Section title="Conversations">{error&&<p role="alert">{error}</p>}{!result&&!error&&<p role="status">Loading…</p>}{result&&<>{result.data.length?<ul className="list-unstyled">{result.data.map(conversation=><li key={conversation.id} className="mb-3"><Link to={`/projects/${projectId}/conversations/${conversation.id}`}>{conversation.preview||'Open conversation'}</Link><p className="text-muted">{label(conversation.status_category)} · {date(conversation.updated_at)}</p></li>)}</ul>:<p>No conversations yet.</p>}<nav aria-label="Conversation pages" className="d-flex flex-wrap gap-2 align-items-center"><button type="button" className="btn btn-white" disabled={page<=1} onClick={()=>setPage(page-1)}>Previous</button><span role="status">Page {page}</span><button type="button" className="btn btn-white" disabled={!result.pagination.hasMore} onClick={()=>setPage(page+1)}>Next</button></nav></>}</Section>;
 }
 export default function ContactDetails({contact,projectId}) {
  const name=contact.provided_name||contact.name||'Visitor',email=contact.provided_email||contact.email;

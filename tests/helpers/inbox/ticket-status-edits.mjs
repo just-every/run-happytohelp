@@ -14,14 +14,43 @@ export async function ticketStatusEdits({page,fixture,origin}){
   assert.equal((await get()).status_id,value)
  }
  await priority.selectOption('normal');await page.getByText('Priority saved.',{exact:true}).waitFor({state:'attached'})
- await priority.selectOption('high');await page.getByText('Priority saved.',{exact:true}).waitFor({state:'attached'})
- const beforeTag=await get()
- await page.getByLabel('New tag',{exact:true}).fill('saturday-walk')
- await page.locator('.conversation-tags-form').getByRole('button',{name:'Add',exact:true}).click()
+ const beforeTag=await get(),writes=[]
+ let releaseOwn,ownArrived
+ const heldOwn=new Promise(resolve=>{releaseOwn=resolve}),arrivedOwn=new Promise(resolve=>{ownArrived=resolve})
+ // The first save has committed but its acknowledgement has not reached this tab.
+ // Priority and Tags are still ordinary subsequent user edits, with no teammate.
+ await page.route(origin+path,async route=>{
+  if(route.request().method()!=='PATCH')return route.continue()
+  const response=await route.fetch();ownArrived();await heldOwn;await route.fulfill({response})
+ },{times:1})
+ const observe=response=>{if(response.url().endsWith(path)&&response.request().method()==='PATCH')writes.push(response)}
+ page.on('response',observe)
+ try{
+  await status.selectOption('pending');await arrivedOwn
+  await priority.selectOption('high')
+  await page.getByLabel('New tag',{exact:true}).fill('saturday-walk')
+  await page.locator('.conversation-tags-form').getByRole('button',{name:'Add',exact:true}).click()
+ }finally{releaseOwn()}
+ await page.getByText('Status saved.',{exact:true}).waitFor({state:'attached'})
+ await page.getByText('Priority saved.',{exact:true}).waitFor({state:'attached'})
  const tag=page.getByRole('button',{name:'Remove tag saturday-walk',exact:true});await tag.waitFor()
- assert.equal((await get()).priority,'high');assert.ok((await get()).ticket_version>beforeTag.ticket_version)
+ page.off('response',observe)
+ assert.deepEqual(writes.map(response=>response.status()),[200,200])
+ const consecutive=await get()
+ assert.equal(consecutive.status_id,'pending');assert.equal(consecutive.priority,'high')
+ assert.ok(consecutive.tags.some(item=>item.name==='saturday-walk'))
+ assert.ok(consecutive.ticket_version>beforeTag.ticket_version)
+ assert.equal(await page.locator('.ticket-summary [role="alert"]').count(),0)
  await choose('solved')
  await header.filter({hasText:/^Solved$/}).waitFor();await page.locator('.conversation-header-reopen').waitFor()
+ const solved=await get(),historyPath='/api/management/projects/'+fixture.projectId+'/contacts/'+solved.contact_id+'/conversations'
+ assert.equal((await fixture.api(historyPath)).data.find(ticket=>ticket.id===id).status_category,'solved')
+ await page.locator('.chat-header-title').click()
+ await page.getByRole('heading',{name:'Conversations',exact:true}).waitFor()
+ const history=page.locator('li').filter({has:page.locator('a[href="/projects/'+fixture.projectId+'/conversations/'+id+'"]')})
+ await history.getByText(/^Solved · /).waitFor()
+ assert.equal(await history.getByText(/^Closed · /).count(),0)
+ await page.goto(origin+'/projects/'+fixture.projectId+'/conversations/'+id)
  await page.reload();await page.getByRole('tab',{name:'Ticket',exact:true}).click()
  await header.filter({hasText:/^Solved$/}).waitFor();assert.equal(await status.inputValue(),'solved')
  for(const [value,label] of [['open','Open'],['pending','Pending'],['on_hold','On-hold'],['new','New']]){

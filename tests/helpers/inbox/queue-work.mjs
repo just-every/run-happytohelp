@@ -117,7 +117,7 @@ export async function queueWork(f,{field,pending,tag}){
  const macroInput={version:bulkMacro.version,command_id:'replacement-batch',tickets:macroSelection}
  const macroPreview=await ok(`/macros/${bulkMacro.id}/preview`,macroInput)
  resultsFor(macroPreview,macroSelection,['ready','ready','forbidden'])
- for(const row of macroPreview.results.filter(row=>row.status==='ready')){assert.equal(row.draft.reply_type,'public');assert.equal(row.draft.content,`Reference ${row.id}`);assert.deepEqual(row.draft.unresolved,[])}
+ for(const row of macroPreview.results.filter(row=>row.status==='ready')){assert.equal(row.draft.reply_type,'public');assert.equal(row.draft.content,`Reference #${row.id.slice(0,8).toUpperCase()}`);assert.deepEqual(row.draft.unresolved,[])}
  assert.deepEqual(await Promise.all([id,second].map(get)),macroTickets,'bulk macro preview changes no ticket')
  const macroBatch=await ok(`/macros/${bulkMacro.id}/apply`,macroInput)
  resultsFor(macroBatch,macroSelection,['applied','applied','forbidden'])

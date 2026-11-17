@@ -25,13 +25,13 @@ export async function notificationOutcomesJourney(){
    const visitor=await app.ok('/api/identity/widget/session',{headers:{Origin:w.allowedOrigin},body:{widgetKey:w.widgetKey,email:`widget-${label}@example.test`}})
    const widget=await app.ok('/api/conversations',{token:visitor.token,body:{projectId:w.projectId}})
    await app.scheduled()
-   assert.equal(mail.sent.filter(e=>e.body.subject?.includes(widget.id)).length,0,'empty widget admission is not a request')
+   assert.equal(mail.sent.filter(e=>e.body.subject?.includes('#'+widget.id.slice(0,8).toUpperCase())).length,0,'empty widget admission is not a request')
    const command={localId:'notify-widget-'+label,content:'Please help with this widget order.',expectedRevision:0}
    await app.ok(`/api/conversations/${widget.id}/messages`,{token:visitor.token,body:command})
    await app.ok(`/api/conversations/${widget.id}/messages`,{token:visitor.token,body:command})
    await app.scheduled()
    for(const [channel,id,address] of [['email',emailId,`buyer-${label}@example.test`],['widget',widget.id,`widget-${label}@example.test`]]){
-    const copies=mail.sent.filter(e=>e.body.subject===`${label} ${channel} #${id} received`)
+    const copies=mail.sent.filter(e=>e.body.subject===`${label} ${channel} #${id.slice(0,8).toUpperCase()} received`)
     assert.equal(copies.length,1,`${channel}/${label} receives one acknowledgment after replay`)
     assert.deepEqual(recipients(copies[0].body),[address])
     assert.ok(copies[0].body.text.includes(id));assert.ok(copies[0].body.text.includes(w.name))
@@ -84,7 +84,7 @@ export async function notificationOutcomesJourney(){
   await beta.req(`/api/conversations/${beta.emailId}/messages`,{localId:'notify-public-headers',content:'Public reply header proof.',expectedRevision:frontier.revision,expectedLastMessageId:frontier.last_message_id})
   await beta.req(`${beta.desk}/conversations/${beta.emailId}`,{resolved:true},'PUT');await app.scheduled()
   assert.ok(mail.sent.some(e=>e.body.text?.includes('Public reply header proof.')))
-  assert.ok(mail.sent.some(e=>e.body.subject?.includes(beta.emailId)&&e.body.subject.includes('solved')))
+  assert.ok(mail.sent.some(e=>e.body.subject?.includes('#'+beta.emailId.slice(0,8).toUpperCase())&&e.body.subject.includes('solved')))
   for(const {body,headers} of mail.sent){
    assert.equal(body.headers['Auto-Submitted'],'auto-generated')
    assert.equal(body.headers['X-Auto-Response-Suppress'],'All','every captured ticket notice suppresses loops')
@@ -104,9 +104,9 @@ async function formNotificationTemplate(){
   const trigger=(await app.ok(settings,owner)).data.find(t=>t.event==='request_received')
   await app.ok(settings,{...owner,method:'PUT',body:{triggers:[{...trigger,channel:'form',brand_id:p,expected_reply_time:'within six business hours'}]}})
   const customer=await signin('notify-form@example.test'),submitted=await app.ok(`${api}/${form.id}/submissions`,{...customer,body:valid})
-  const copies=mail.filter(body=>body.subject?.includes(submitted.ticket.id)&&body.subject.includes('received'))
+  const copies=mail.filter(body=>body.subject?.includes('#'+submitted.ticket.id.slice(0,8).toUpperCase())&&body.subject.includes('received'))
   assert.equal(copies.length,1);assert.deepEqual(recipients(copies[0]),['notify-form@example.test'])
-  assert.ok(copies[0].text.includes(submitted.ticket.id));assert.match(copies[0].text,/within six business hours/)
+  assert.ok(copies[0].text.includes('#'+submitted.ticket.id.slice(0,8).toUpperCase()));assert.match(copies[0].text,/within six business hours/)
   assert.ok(copies[0].text.includes(f.workspace.name),'the form acknowledgment carries its current brand')
  }finally{await app.close()}
 }

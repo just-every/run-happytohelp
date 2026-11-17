@@ -6,7 +6,7 @@ Branch: cloud/hh-stranger13-behaviour-1
 Baseline emitted application: 94f64dfc35d938bd92b59bac9e938c11be10c27d
 Initial pushed save: 69dc2a714a99515527cc30516f75dbffeec00779 [skip ci]
 Final head: 2724edff5c7de79ae061a3a07592e1f23c3459ff
-Verify: run 44034769376, exact head above; in progress at the second permitted poll (2026-11-17T07:07Z), three REST calls including discovery
+Verify: completed/success on the exact final head, run 44034769376 (https://github.com/just-every/run-happytohelp/actions/runs/44034769376); seven REST calls including discovery.
 
 ## Result and scope
 
@@ -77,3 +77,7 @@ CLAIM QUEUE-002 PARTIAL points=none tests=tests/helpers/inbox/tickets-browser.mj
 CLAIM QUEUE-003 PARTIAL points=none tests=tests/journeys/inbox-browser.mjs#two signed-in operators see viewing, typing and unsent draft warnings before replying and after reload
 
 The point-none claims name the targeted regression journeys without promoting the whole broader acceptance point. The unresolved reference remains explicitly unproved.
+
+## Final disposition
+
+Exact-SHA Verify is green. Product branch custody is PUSHED at 2724edff5c7de79ae061a3a07592e1f23c3459ff. Overall task disposition is BLOCKED by unresolved item 2: identify the existing customer-friendly support reference required by the brief. The UUID placeholder expansion is unchanged and no four-item completion or product READY claim is made. The three implemented fixes are preserved for the lane and independent gate. No PR was created.

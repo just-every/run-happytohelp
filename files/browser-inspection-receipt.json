@@ -1,0 +1,106 @@
+{
+  "head": "2724edff5c7de79ae061a3a07592e1f23c3459ff",
+  "screenshots": [
+    {
+      "file": "browser/before-macro-1440.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "95975539c3a1ab63ffff97169f35aa7cdfb79519fea8bdf1f54d0318d9930d2a",
+      "inspected": true
+    },
+    {
+      "file": "browser/before-macro-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "7d34d2a8664064623979b06f730a1998e702c466e894d5a152fc47c09e6890e0",
+      "inspected": true
+    },
+    {
+      "file": "browser/before-history-1440.png",
+      "width": 1440,
+      "height": 1921,
+      "sha256": "74e88695c9ab6bf8860b6d24e70f92ed16d0d984720f84c5fac9f8523be1fa4c",
+      "inspected": true
+    },
+    {
+      "file": "browser/before-history-390.png",
+      "width": 390,
+      "height": 2828,
+      "sha256": "f2f7b25294e4bf777982b51d92959a0ca4f9b07d89bf9673780e6a2227539757",
+      "inspected": true
+    },
+    {
+      "file": "browser/before-inline-1440.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "c9be030b313be674e52138b870f9503fcc9d6a77f86052b2d6d109158c57c6be",
+      "inspected": true
+    },
+    {
+      "file": "browser/before-inline-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "56cd266f05750a647c0ce80a0b0985eeeb0980e40c219b239c0c579470620cec",
+      "inspected": true
+    },
+    {
+      "file": "browser/before-conflict-1440.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "4357767c20746b8197d65cb72f9ddc52f4cefb9c9414b11eddb2633758fd5377",
+      "inspected": true
+    },
+    {
+      "file": "browser/before-conflict-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "513a553377d63a330e439917c91ba6766b425b8f59bf16f417342c907bc6e077",
+      "inspected": true
+    },
+    {
+      "file": "browser/after-history-1440.png",
+      "width": 1440,
+      "height": 1921,
+      "sha256": "3acd26c3ae967d6f552e2d6681aec30767afa14b6dfad03b6ef4860cd9e0d722",
+      "inspected": true
+    },
+    {
+      "file": "browser/after-history-390.png",
+      "width": 390,
+      "height": 2828,
+      "sha256": "4b04ae42d8025ad051e5ec19f28806c9fa4becd04a8c205c265c9a93245a0bc0",
+      "inspected": true
+    },
+    {
+      "file": "browser/after-inline-1440.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "0044ab708b3f15542348189ed3880f25319dfb04a9b5e82ff963b0a71613ebde",
+      "inspected": true
+    },
+    {
+      "file": "browser/after-inline-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "fb2998b40c62ef1d030a541a1b52fce17bb7a4e464f89b593c5569a18a21a8a0",
+      "inspected": true
+    },
+    {
+      "file": "browser/collaboration/conflict-1440.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "8a85aeba35448f4aeace630303758cb1511916c9b758c3d27ef7244825661140",
+      "inspected": true
+    },
+    {
+      "file": "browser/collaboration/conflict-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "592f9ccff1c8e87e2a9fa572e88837c2f84a698d42e6f144c6ea23559c8777bd",
+      "inspected": true
+    }
+  ],
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17T07:29:29.174542+00:00",
+  "note": "Before macro/inline phone captures show the pre-existing responsive transition; final after captures wait for the responsive layout. Final conflict screenshot pair came from the repeat documented in collaboration-proof-receipt.json."
+}

@@ -10,7 +10,7 @@
     "2724edff5c7de79ae061a3a07592e1f23c3459ff"
   ],
   "identityCheck": "all candidate authors/committers are Run Edit Run fleet <fleet@runeditrun.com>; no trailers",
-  "status": "pending_exact_sha_verify",
+  "status": "BLOCKED",
   "blocker": "Item 2: no existing customer-friendly ticket reference identified; clarification pending; UUID expansion unchanged",
   "clauseStatusChanges": [],
   "countsBeforeAfter": {
@@ -41,5 +41,15 @@
     "registrationsAdded": 0,
     "registrationsDeleted": 0
   },
-  "recordedAt": "2026-11-17T06:57:37.969128+00:00"
+  "recordedAt": "2026-11-17T07:29:29.158455+00:00",
+  "productCustody": "PUSHED",
+  "verify": {
+    "at": "2026-11-17T07:28:26.232593+00:00",
+    "conclusion": "success",
+    "head_sha": "2724edff5c7de79ae061a3a07592e1f23c3459ff",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44034769376",
+    "status": "completed"
+  },
+  "apiCalls": 7,
+  "progressEvidenceHead": "9607c616f50e71a7ccacc251cf10a686ff4a4679"
 }

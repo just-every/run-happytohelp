@@ -1,0 +1,11 @@
+{
+  "head": "48c4f14b9d36f1013440519e8b9f94a28055f572",
+  "passes": 6,
+  "test_failures": 0,
+  "complete": false,
+  "interruption": "tool environment reconnect; original test PID is a zombie",
+  "process_state": "Z",
+  "exit_code_field": 9,
+  "recorded_at": "2026-11-17T20:34:37.023938+00:00",
+  "consecutive_proof_restarted": true
+}

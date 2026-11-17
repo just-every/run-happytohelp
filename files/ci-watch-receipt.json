@@ -1,0 +1,16 @@
+{
+  "github_calls_total": 5,
+  "discovery_at": "2026-11-17T20:07:24.072862+00:00",
+  "discovery_exit": 0,
+  "head": "c706b09c67d6155151270a178d413b8eec4bf9e0",
+  "runs": [
+    {
+      "conclusion": null,
+      "head_sha": "c706b09c67d6155151270a178d413b8eec4bf9e0",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44165616563",
+      "id": 44165616563,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "exit": 0,
+    "ok": true
+  },
+  {
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "output": "\n> happytohelp@0.4.31 typecheck /workspace/run-happytohelp\n> node scripts/generate-routes.mjs && tsc --noEmit\n\n"
+  },
+  {
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "exit": 0,
+    "output": "\u001b[33m\u25b2 \u001b[43;33m[\u001b[43;30mWARNING\u001b[43;33m]\u001b[0m \u001b[1mProxy environment variables detected. We'll use your proxy for fetch requests.\u001b[0m\n\n\n"
+  }
+]

@@ -1,0 +1,128 @@
+[
+  {
+    "file": "src/modules/access/route-permissions.ts",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "src/modules/api-integrations/binding-options.ts",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "src/modules/api-integrations/settings.ts",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "src/modules/tickets/merge-search.ts",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "src/modules/tickets/routes.ts",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "src/modules/training-runs/runner.ts",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "src/ui/dashboard/components/conversation-actions/MergeConversation.jsx",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "src/ui/native/Navigation.jsx",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "src/ui/native/pages/Connections.jsx",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "src/ui/native/pages/MoveInReview.jsx",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "src/ui/native/pages/ProcedureSettings.jsx",
+    "diff_equal": false,
+    "mergebase_patch_equal": false,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "src/ui/native/pages/connections/Tokens.jsx",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "tests/helpers/ai/procedures-browser.mjs",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "tests/helpers/ai/procedures.mjs",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "tests/helpers/stranger13-browser.mjs",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "tests/journeys/inbox-browser.mjs",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "tests/journeys/move-in-browser.mjs",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  },
+  {
+    "file": "tests/journeys/workflows-browser.mjs",
+    "diff_equal": true,
+    "mergebase_patch_equal": true,
+    "patch_equal_excluding_blob_index": true,
+    "committed_patch_equal_excluding_blob_index": true
+  }
+]

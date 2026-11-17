@@ -1,0 +1,32 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger13-ui-1-c1",
+  "head": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "main": "b2b9bc602a73feb542017bca8a46529f68b631c4",
+  "one_commit": true,
+  "one_parent": [
+    "b2b9bc602a73feb542017bca8a46529f68b631c4"
+  ],
+  "product_push": "success",
+  "product_push_attempts": 1,
+  "changed_files": 20,
+  "insertions": 275,
+  "deletions": 54,
+  "touched_browser_tests": {
+    "tests": 3,
+    "pass": 3,
+    "fail": 0
+  },
+  "blocked_receipt_browser": "pass",
+  "verify_run_id": 44054528057,
+  "verify_status": "completed",
+  "pr": null,
+  "verify_conclusion": "success",
+  "github_calls_used": 8,
+  "verify_jobs": "all completed success or expected skip",
+  "final_verify_job_id": 133956935571,
+  "failed_jobs": [],
+  "reruns": 0,
+  "terminal_product_custody": "READY",
+  "blockers": []
+}

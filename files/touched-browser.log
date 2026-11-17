@@ -1,0 +1,11 @@
+✔ an operator finds a merge by requester or subject and explicitly chooses the surviving ticket (162079.599505ms)
+✔ a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release (370122.404351ms)
+✔ an owner chooses named workspace bindings and issues a machine credential with the same scoped IDs (156301.057835ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 695739.785027

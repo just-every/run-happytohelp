@@ -1,0 +1,31 @@
+{
+  "files": [
+    "sources.lock.json",
+    "src/modules/access/route-permissions.ts",
+    "src/modules/api-integrations/binding-options.ts",
+    "src/modules/api-integrations/settings.ts",
+    "src/modules/tickets/merge-search.ts",
+    "src/modules/tickets/routes.ts",
+    "src/modules/training-runs/runner.ts",
+    "src/ui/dashboard/components/conversation-actions/MergeConversation.jsx",
+    "src/ui/native/Navigation.jsx",
+    "src/ui/native/pages/Connections.jsx",
+    "src/ui/native/pages/MoveInReview.jsx",
+    "src/ui/native/pages/ProcedureReceipt.jsx",
+    "src/ui/native/pages/ProcedureSettings.jsx",
+    "src/ui/native/pages/connections/Tokens.jsx",
+    "tests/helpers/ai/procedures-browser.mjs",
+    "tests/helpers/ai/procedures.mjs",
+    "tests/helpers/stranger13-browser.mjs",
+    "tests/journeys/inbox-browser.mjs",
+    "tests/journeys/move-in-browser.mjs",
+    "tests/journeys/workflows-browser.mjs"
+  ],
+  "expected_files_equal": true,
+  "file_count": 20,
+  "receipt_version_prop_preserved": true,
+  "receipt_header_preserved": true,
+  "technical_details_preserved": true,
+  "three_requested_receipt_changes": true,
+  "contract_and_generated_views_unchanged": true
+}

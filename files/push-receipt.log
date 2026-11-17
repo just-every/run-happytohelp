@@ -1,0 +1,18 @@
+fleet Git: credential-bearing URL rewrites cleared
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+
+PUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/hh-stranger13-ui-1-c1
+fleet Git: credential-bearing URL rewrites cleared
+To https://github.com/just-every/run-happytohelp.git
+*	HEAD:refs/heads/cloud/hh-stranger13-ui-1-c1	[new branch]
+Done
+remote: 
+remote: Create a pull request for 'cloud/hh-stranger13-ui-1-c1' on GitHub by visiting:        
+remote:      https://github.com/just-every/run-happytohelp/pull/new/cloud/hh-stranger13-ui-1-c1        
+remote: 
+remote: GitHub found 15 vulnerabilities on just-every/run-happytohelp's default branch (3 high, 10 moderate, 2 low). To find out more, visit:        
+remote:      https://github.com/just-every/run-happytohelp/security/dependabot        
+remote: 
+PUSH_OK branch=cloud/hh-stranger13-ui-1-c1

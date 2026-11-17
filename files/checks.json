@@ -1,0 +1,31 @@
+{
+  "source lock": {
+    "ok": null,
+    "edition": "just-every/happytohelp"
+  },
+  "source check": {
+    "ok": true,
+    "edition": "just-every/happytohelp"
+  },
+  "typecheck": {
+    "exit": 0,
+    "command": "pnpm run typecheck",
+    "log": "\u2009WARN\u2009 Unsupported engine: wanted: {\"node\":\"22.20.0\"} (current: {\"node\":\"v24.19.0\",\"pnpm\":\"10.12.4\"})\n\n> happytohelp@0.4.31 typecheck /workspace/run-happytohelp\n> node scripts/generate-routes.mjs && tsc --noEmit\n\n"
+  },
+  "rer check": {
+    "exit": 0,
+    "command": "pnpm exec rer check --profile first-party",
+    "log": "\u001b[33m\u25b2 \u001b[43;33m[\u001b[43;30mWARNING\u001b[43;33m]\u001b[0m \u001b[1mProxy environment variables detected. We'll use your proxy for fetch requests.\u001b[0m\n\n\n"
+  },
+  "build": {
+    "exit": 0,
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "last_lines": [
+      "\u2713 built in 5.77s",
+      "[REDACTED]/delivery-artifact/happytohelp-worker-artifact.json",
+      "[REDACTED]/management/integration/deployment-spec.json",
+      "Your application is built",
+      "build: complete (exit 0)"
+    ]
+  }
+}

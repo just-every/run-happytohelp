@@ -11533,7 +11533,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/Conversation.jsx": {
-      "sha256": "5402849ada6276ed5e473cf7bf31e6b24eb49e3bfa18bd20fe9331670315adae",
+      "sha256": "03c4ad4e4c51ba994c84d36131239db474d981fd32fdd366709a404a3d7b437c",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ai-controls.css": {
@@ -14089,7 +14089,7 @@
       "executable": false
     },
     "src/ui/native/transport.js": {
-      "sha256": "01c748b55b64301eeb20f512ae8a2959adf87c5df3e2af7efc56089583a00e68",
+      "sha256": "df23c71309f2a29e187435a522c840ea97d0c048703180c2c60c112ab9249347",
       "executable": false
     },
     "src/ui/native/workspace-page-code.js": {
@@ -16809,7 +16809,7 @@
       "executable": false
     },
     "tests/helpers/inbox/status-lifecycle.mjs": {
-      "sha256": "b6be44677f085949a571cfd9ad03957aab2dcb52d6e66ea1b436de492cd08f11",
+      "sha256": "b2aae6b88d148925f17d6a72165258342c71c47c688a4f91d09b14e3930bde4f",
       "executable": false
     },
     "tests/helpers/inbox/ticket-browser-fixture.mjs": {
@@ -16833,7 +16833,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ticket-status-edits.mjs": {
-      "sha256": "c7c63f22d4479a9438cbf92c21b8f8efcafe030a16a8473e712b08d2611c7a5c",
+      "sha256": "c06ab2d83dae4a79205443354e85c4b854b774ea6526e13d704cf8687cabf07a",
       "executable": false
     },
     "tests/helpers/inbox/tickets-browser.mjs": {

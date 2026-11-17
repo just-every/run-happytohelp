@@ -175,6 +175,12 @@
       "sha256": "08cb49e779ecff3eacd085771456562b1edd6cbc520ea83a35ecb3b0122ae88b"
     },
     {
+      "blob": "65b3728c1716f295e94194f58584788c942438fe",
+      "bytes": 8218,
+      "path": "checks/move-in-browser-checks.json",
+      "sha256": "23abc85836019d341e91242fe1b68c7bd6c14091f9ec3bf8ba76b97079818e68"
+    },
+    {
       "blob": "a1fc04d953e04e9a1760c4da6c665901e3a99f13",
       "bytes": 552,
       "path": "checks/move-in-complete.log",
@@ -197,6 +203,12 @@
       "bytes": 195,
       "path": "checks/native-settings-browser.log",
       "sha256": "bf193da0bc3d6f8a4ec3b23cfe6299986992a992418bc7e01bc7ed8e8dd2aa2f"
+    },
+    {
+      "blob": "eebf4cf8b5f6579ef11bb83aa64c006ea403ba44",
+      "bytes": 920,
+      "path": "checks/native-settings-proof.json",
+      "sha256": "7a12c6d35cc25809b14094c4411882adb1c50a51e22b0291c3d4712f31073bbb"
     },
     {
       "blob": "0d5c88086097d8935bc7dcf12b0f1f7e6ba24d86",

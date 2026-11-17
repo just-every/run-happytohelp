@@ -1,0 +1,56 @@
+[
+  {
+    "name": "owner-general",
+    "width": 1440,
+    "minText": 15,
+    "smallTargets": 2
+  },
+  {
+    "name": "owner-appearance",
+    "width": 1440,
+    "minText": 14,
+    "smallTargets": 0
+  },
+  {
+    "name": "owner-availability",
+    "width": 1440,
+    "minText": 15,
+    "smallTargets": 10
+  },
+  {
+    "name": "admin-general",
+    "width": 1440,
+    "minText": 15,
+    "smallTargets": 2
+  },
+  {
+    "name": "admin-appearance",
+    "width": 1440,
+    "minText": 14,
+    "smallTargets": 0
+  },
+  {
+    "name": "admin-availability",
+    "width": 1440,
+    "minText": 15,
+    "smallTargets": 10
+  },
+  {
+    "name": "collaborator-refused",
+    "width": 1440,
+    "minText": 16,
+    "smallTargets": 0
+  },
+  {
+    "name": "operator-refused",
+    "width": 1440,
+    "minText": 16,
+    "smallTargets": 0
+  },
+  {
+    "name": "custom-admin-refused",
+    "width": 1440,
+    "minText": 16,
+    "smallTargets": 0
+  }
+]

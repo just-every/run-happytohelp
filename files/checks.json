@@ -113,21 +113,72 @@
       "head": "e66af4637ebdcd090328ae9ccd1123f1dad70bc2",
       "exit": 0,
       "result": "Clean committed source and complete source inventory after the browser proof."
+    },
+    {
+      "command": "pnpm run typecheck",
+      "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    {
+      "command": "catalogue integrity assertions from zendeskDoorJourney",
+      "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+      "node": "22.20.0",
+      "exit": 0,
+      "receipt": "checks/catalogue-integrity.json"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run node /tmp/hh-final-proof.mjs",
+      "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+      "node": "22.20.0",
+      "exit": 0,
+      "receipt": "candidate-proof.json"
+    },
+    {
+      "command": "git diff --exit-code; node scripts/edition-authoring/cli.mjs check",
+      "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+      "exit": 0
+    },
+    {
+      "command": "standalone full zendeskDoorJourney retry",
+      "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+      "status": "NOT RUN",
+      "reason": "local D1 harness did not initialize; interrupted retries, no passing claim"
     }
   ],
   "intermediate_save": "3564affc80c286d14b531d0a61115c016706cc36",
-  "head": "e66af4637ebdcd090328ae9ccd1123f1dad70bc2",
+  "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
   "ci": {
-    "calls": 7,
-    "run_id": 44157423018,
-    "status": "in_progress",
-    "head": "e66af4637ebdcd090328ae9ccd1123f1dad70bc2",
-    "earlier_run": {
-      "id": 44155675717,
-      "head": "b5a5ee845c9ab8bb0013ba0bfe696f663dcd5b43",
-      "conclusion": "failure",
-      "cause": "Source lock omitted three newly tracked files; fixed by the final regeneration."
-    },
-    "last_observed_at": "2026-11-17T19:31:44Z"
+    "calls": 10,
+    "budget": 10,
+    "current_head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+    "current_verify": "not observed after final push; GitHub budget exhausted",
+    "earlier_runs": [
+      {
+        "id": 44155675717,
+        "head": "b5a5ee845c9ab8bb0013ba0bfe696f663dcd5b43",
+        "conclusion": "failure",
+        "cause": "Source lock omitted three newly tracked files; corrected in e66af4637ebdcd090328ae9ccd1123f1dad70bc2."
+      },
+      {
+        "id": 44157423018,
+        "head": "e66af4637ebdcd090328ae9ccd1123f1dad70bc2",
+        "conclusion": "failure",
+        "cause": "Importer catalogue guide size/digest stale after docs update; corrected in 8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+        "changed_browser_journeys": "passed; see cached-archive excerpt"
+      }
+    ]
   }
 }

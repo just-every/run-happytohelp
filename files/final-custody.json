@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-17T20:25:52.629702+00:00",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-seed-faults-1",
+  "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+  "remote_head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+  "custody": "PUSHED",
+  "verify": "unobserved on final head; ten-call GitHub budget exhausted",
+  "ready": false,
+  "prior_runs": [
+    44155675717,
+    44157423018
+  ],
+  "pr": null
+}

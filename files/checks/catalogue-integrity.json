@@ -1,0 +1,9 @@
+{
+  "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+  "node": "v22.20.0",
+  "path": "evidence:docs/moving-in.md",
+  "bytes": 135569,
+  "digestMatches": true,
+  "sourceDigestMatches": true,
+  "assertions": "unchanged catalogue integrity assertions from zendeskDoorJourney"
+}

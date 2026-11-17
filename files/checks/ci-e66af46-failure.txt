@@ -1,0 +1,41 @@
+Completed run: 44157423018; head: e66af4637ebdcd090328ae9ccd1123f1dad70bc2
+Command: gh run view 44157423018 --repo just-every/run-happytohelp --log-failed
+The run archive was downloaded once. These selected entries were read from that local archive without another GitHub call. Environment listings are excluded.
+
+Import-and-reports failure:
+2026-11-17T19:33:51.3170834Z not ok 7 - review an export, import its history and private notes, repeat and repackage without effects, then undo exactly
+2026-11-17T19:33:51.3172305Z   ---
+2026-11-17T19:33:51.3172805Z   duration_ms: 117802.824934
+2026-11-17T19:33:51.3173232Z   type: 'test'
+2026-11-17T19:33:51.3173903Z   location: '/home/runner/work/run-happytohelp/run-happytohelp/tests/journeys/move-in-admission.mjs:23:7'
+2026-11-17T19:33:51.3175007Z   failureType: 'testCodeFailure'
+2026-11-17T19:33:51.3176078Z   error: |-
+2026-11-17T19:33:51.3176584Z     Expected values to be strictly equal:
+2026-11-17T19:33:51.3177135Z     
+2026-11-17T19:33:51.3177498Z     135569 !== 135191
+2026-11-17T19:33:51.3177888Z     
+2026-11-17T19:33:51.3178134Z   code: 'ERR_ASSERTION'
+2026-11-17T19:33:51.3178410Z   name: 'AssertionError'
+2026-11-17T19:33:51.3178664Z   expected: 135191
+2026-11-17T19:33:51.3178884Z   actual: 135569
+2026-11-17T19:33:51.3179119Z   operator: 'strictEqual'
+2026-11-17T19:33:51.3179382Z   stack: |-
+2026-11-17T19:33:51.3179971Z     zendeskDoorJourney (file:///home/runner/work/run-happytohelp/run-happytohelp/tests/move-in/zendesk-door.mjs:146:83)
+2026-11-17T19:33:51.3180937Z     async zendeskOfflineJourney (file:///home/runner/work/run-happytohelp/run-happytohelp/tests/move-in/zendesk-offline.mjs:12:2)
+2026-11-17T19:33:51.3181925Z     async reviewImportJourney (file:///home/runner/work/run-happytohelp/run-happytohelp/tests/move-in/review-import.mjs:18:2)
+2026-11-17T19:33:51.3182832Z     async phases (file:///home/runner/work/run-happytohelp/run-happytohelp/tests/journeys/move-in-admission.mjs:19:7)
+2026-11-17T19:33:51.3183809Z     async TestContext.<anonymous> (file:///home/runner/work/run-happytohelp/run-happytohelp/tests/journeys/move-in-admission.mjs:24:2)
+2026-11-17T19:33:51.3184868Z     async Test.run (node:internal/test_runner/test:1054:7)
+2026-11-17T19:33:51.3185409Z     async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+2026-11-17T19:33:51.3186144Z     async file:///home/runner/work/run-happytohelp/run-happytohelp/tests/journeys/move-in-admission.mjs:23:1
+2026-11-17T19:33:51.3186669Z   ...
+
+Changed browser journeys:
+2026-11-17T19:26:44.4139316Z ok 2 - an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import
+2026-11-17T19:32:12.6912020Z # tests 4
+2026-11-17T19:32:12.6912501Z # pass 4
+2026-11-17T19:32:12.6912745Z # fail 0
+2026-11-17T19:28:04.7951160Z ok 2 - an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session
+2026-11-17T19:36:15.5453236Z # tests 7
+2026-11-17T19:36:15.5454110Z # pass 7
+2026-11-17T19:36:15.5454803Z # fail 0

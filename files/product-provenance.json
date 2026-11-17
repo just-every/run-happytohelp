@@ -1,0 +1,59 @@
+{
+  "at": "2026-11-17T20:22:24.168681+00:00",
+  "branch": "cloud/hh-seed-faults-1",
+  "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+  "base": "55e2f106c506e4f671d2e474c737124e760e2233",
+  "clean": true,
+  "commits": [
+    {
+      "head": "3564affc80c286d14b531d0a61115c016706cc36",
+      "author": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "subject": "Keep copied invitation capabilities out of page announcements [skip ci]"
+    },
+    {
+      "head": "b5a5ee845c9ab8bb0013ba0bfe696f663dcd5b43",
+      "author": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "subject": "Name records that block strict whole-import undo"
+    },
+    {
+      "head": "e66af4637ebdcd090328ae9ccd1123f1dad70bc2",
+      "author": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "subject": "Use the visible contact name in undo conflict reports"
+    },
+    {
+      "head": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+      "author": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "subject": "Refresh importer evidence for the undo guide clarification"
+    }
+  ],
+  "changed_files": [
+    "docs/moving-in.md",
+    "importers.json",
+    "sources.lock.json",
+    "src/modules/move-in/batches.ts",
+    "src/modules/move-in/routes.ts",
+    "src/modules/move-in/service.ts",
+    "src/modules/move-in/undo-conflicts.ts",
+    "src/modules/move-in/undo-references.ts",
+    "src/ui/native/pages/InvitationActions.jsx",
+    "src/ui/native/pages/MoveIn.jsx",
+    "src/ui/native/pages/MoveInUndoConflict.jsx",
+    "tests/helpers/identity/invitation-browser.mjs",
+    "tests/helpers/identity/security-browser.mjs",
+    "tests/journeys/move-in-browser.mjs",
+    "tests/move-in/undo-conflict-browser.mjs"
+  ],
+  "stat": "docs/moving-in.md                             |  2 +-\n importers.json                                |  4 +-\n sources.lock.json                             | 36 +++++++---\n src/modules/move-in/batches.ts                |  2 +\n src/modules/move-in/routes.ts                 |  4 +-\n src/modules/move-in/service.ts                |  3 +-\n src/modules/move-in/undo-conflicts.ts         | 57 ++++++++++++++++\n src/modules/move-in/undo-references.ts        |  7 +-\n src/ui/native/pages/InvitationActions.jsx     | 19 ++++--\n src/ui/native/pages/MoveIn.jsx                |  4 +-\n src/ui/native/pages/MoveInUndoConflict.jsx    | 14 ++++\n tests/helpers/identity/invitation-browser.mjs | 53 +++++++++++++++\n tests/helpers/identity/security-browser.mjs   |  2 +\n tests/journeys/move-in-browser.mjs            |  3 +\n tests/move-in/undo-conflict-browser.mjs       | 94 +++++++++++++++++++++++++++\n 15 files changed, 280 insertions(+), 24 deletions(-)"
+}

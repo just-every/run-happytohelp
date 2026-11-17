@@ -12937,7 +12937,7 @@
       "executable": false
     },
     "src/ui/native/activation/ProviderSetupNotice.jsx": {
-      "sha256": "597aef19dee0b85316b672ca664b966daf64c4c3a3e6dd15cb091467e6bea664",
+      "sha256": "274895253bef8ed462775c3a6f29159b1919154390b56fff3314b25054165cd8",
       "executable": false
     },
     "src/ui/native/activation/SetRow.jsx": {
@@ -14061,7 +14061,7 @@
       "executable": false
     },
     "src/ui/native/setup-help/developer-handoff.css": {
-      "sha256": "fb21cd8f129e9a1e7fbd6602189deb412f37e7182a64c6c3d37ba8a76de94da8",
+      "sha256": "84ae7df2e5659eeb0395850e2bbee3777e70f051eec796a0f8ba27ab46ac43d1",
       "executable": false
     },
     "src/ui/native/setup-help/DeveloperHandoff.jsx": {

@@ -8,3 +8,5 @@
 .developer-handoff summary { cursor: pointer; font-size: 15px; }
 .developer-handoff pre { margin: 12px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; color: inherit; font-size: 14px; }
 .local-mail-banner { margin: 0 0 16px; padding: 12px 16px; border: 1px solid var(--rule-strong); border-radius: 12px; font-size: 15px; line-height: 1.5; }
+
+.provider-setup-handoff { width: 100%; min-width: 0; }

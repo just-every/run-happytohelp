@@ -127,11 +127,11 @@ export default function Interact({ setOpen }) {
     }
 
     return (
-        <div className={containerClass.join(" ")} style={headerHeight?{"--happytohelp-header-height":`${headerHeight}px`}:undefined}>
+        <div className={containerClass.join(" ")} style={headerHeight!==null?{"--happytohelp-header-height":`${headerHeight}px`}:undefined}>
             <div className="happytohelp-interact" onClick={() => {
                 headerExpanded && setHeaderExpanded(false)
             }}>
-                <ChatHeader onHeightChange={setHeaderHeight} setOpen={setOpen} headerExpanded={headerExpanded} setHeaderExpanded={setHeaderExpanded}/>
+                <ChatHeader unavailable={unavailable} onHeightChange={setHeaderHeight} setOpen={setOpen} headerExpanded={headerExpanded} setHeaderExpanded={setHeaderExpanded}/>
                 <div className={overlayClass.join(" ")}/>
                 <div
                     className={"happytohelp-content" + (mainView === 'conversation' ? " happytohelp-content-full" : "")}>

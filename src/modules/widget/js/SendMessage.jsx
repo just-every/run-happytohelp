@@ -36,7 +36,7 @@ export default function SendMessage({ mainView, setView, messages, localContact,
     const contactMissing = () => {
         const missing = [];
         if(context.settings.collect.require_name && !contact.name) missing.push(context.text.message.error_name);
-        if(context.settings.collect.require_email && !contact.email) missing.push("Please add an email we can reach you at.");
+        if(context.settings.collect.require_email && !contact.email) missing.push(context.text.message.error_email === "Please enter a valid email address" ? "Please add an email we can reach you at." : context.text.message.error_email);
         return missing;
     };
     const send = (content, attachments) => {

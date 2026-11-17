@@ -8773,7 +8773,7 @@
       "executable": false
     },
     "src/modules/management/widget-settings.ts": {
-      "sha256": "185a144bb21fb5d0b522697a1e5d1a4e5198de319a50e9100dd6110d4ad99d2a",
+      "sha256": "d15f29d87ea745c9dfeab61ac52d64ab6d19815093f2fed853f36c76f9693733",
       "executable": false
     },
     "src/modules/management/workspace-artwork.ts": {
@@ -10609,7 +10609,7 @@
       "executable": false
     },
     "src/modules/widget/js/ChatHeader.jsx": {
-      "sha256": "473665e7042f5543cad5709c4dacfef23febb1aa4db64d0b187e6663dada6455",
+      "sha256": "e4f75f79c4b06c277f2eeece933a4658e11da87dc565746341ea45e4cb9071d8",
       "executable": false
     },
     "src/modules/widget/js/ChatList.jsx": {
@@ -10673,7 +10673,7 @@
       "executable": false
     },
     "src/modules/widget/js/context/defaults.js": {
-      "sha256": "2ed94757c190529c9f681397bd5e5b27a1f3fe315daeec01c1fa7e93b59772ae",
+      "sha256": "a7cd9611cca55be50df373a25a401fad4ce629c815510a1d2f06e99cb9a89232",
       "executable": false
     },
     "src/modules/widget/js/context/replyStream.jsx": {
@@ -10725,7 +10725,7 @@
       "executable": false
     },
     "src/modules/widget/js/Interact.jsx": {
-      "sha256": "a90b652f27b58e92569229b01889587ce4d58d38040564ea10bc3bc1ccfa9824",
+      "sha256": "df0e0ee8f25d37e5ad314769d989691a4f79d8b4767a1b182e5c8324b3f91194",
       "executable": false
     },
     "src/modules/widget/js/Media.jsx": {
@@ -10765,7 +10765,7 @@
       "executable": false
     },
     "src/modules/widget/js/SendMessage.jsx": {
-      "sha256": "5f48b8468645f1779e340b5083f9297e89db24e5ff2e58006b1ab15b7ec0e59d",
+      "sha256": "7a8b7c04aa5a7973232d914f6648a0373c3791f435e1836ebe22865b5f0834e7",
       "executable": false
     },
     "src/modules/widget/js/Style.jsx": {
@@ -13101,7 +13101,7 @@
       "executable": false
     },
     "src/ui/native/first-run.css": {
-      "sha256": "feb75f46b8b1dd6a9b3787082b511e7855a5528746ef030e724633701372a8bf",
+      "sha256": "3826d513895dea74fef0ff67514d36b2ef762de3abe4dc3314e6f809b5d82bcc",
       "executable": false
     },
     "src/ui/native/help-center/HelpCenterLink.jsx": {
@@ -13121,7 +13121,7 @@
       "executable": false
     },
     "src/ui/native/InboxPage.jsx": {
-      "sha256": "b8e15f61d691aef8220e2248e8018cb9e84a0d92898a4110b6450e755c37185d",
+      "sha256": "3c196d32d5b69e35cacfb20a1e5279ec85c5580d1b31a5cd1880e8deb8be1e0b",
       "executable": false
     },
     "src/ui/native/initial-inbox-list.d.ts": {
@@ -14114,6 +14114,10 @@
     },
     "src/ui/native/widget-setup/CustomerNameStep.jsx": {
       "sha256": "15c2136f83572d8ddb2bd87f676e141aaee72e146ddba58bead8e16f9388a985",
+      "executable": false
+    },
+    "src/ui/native/widget-setup/InboxWidgetNotice.jsx": {
+      "sha256": "bd8164580764266a16c7e7c7644b18df8d9b4b23a1281951c21b2f3b64189fde",
       "executable": false
     },
     "src/ui/native/widget-setup/LocalMailBanner.jsx": {
@@ -17409,7 +17413,7 @@
       "executable": false
     },
     "tests/helpers/widget/owner-installation.mjs": {
-      "sha256": "fbd8f98c793b4803814ba924f1509e7c5241f3f7a97df84465aa665cd11f33d9",
+      "sha256": "9abd21ad5067717d74cb6f54b091e90d8a6a3a3bb569b16bb461072b0de0562a",
       "executable": false
     },
     "tests/helpers/widget/socket.mjs": {

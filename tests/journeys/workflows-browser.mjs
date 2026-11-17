@@ -19,6 +19,7 @@ test('a lead compares saved procedure definitions, revises an older version with
  let passed=false
  try{await proceduresBrowserJourney({runtime,browser,shot:await evidence('procedures')});passed=true}
  finally{await browser.close();await runtime.close(passed)}
+ await missingProviderProcedureBrowser()
 })
 
 import {randomBytes} from 'node:crypto'
@@ -66,3 +67,7 @@ test('support-channel settings, original-channel replies and shared customer con
 
 import {formFieldBrowser} from '../helpers/stranger11-browser.mjs'
 test('a lead adds a readable ticket field to a public request form with default permissions and an empty read-role list',formFieldBrowser)
+
+import {credentialBindingsBrowser,workspaceCreationBrowser,missingProviderProcedureBrowser} from '../helpers/stranger13-browser.mjs'
+test('an owner chooses named workspace bindings and issues a machine credential with the same scoped IDs',credentialBindingsBrowser)
+test('a signed-in owner discovers workspace creation in both menus and reaches Setup as its owner',workspaceCreationBrowser)

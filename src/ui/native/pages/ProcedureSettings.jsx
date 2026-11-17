@@ -76,7 +76,7 @@ function Procedures({projectId}){
   {result('receipts')}
   {runs.map(run=><article key={run.id} className="procedure-run">
    <h3>Simulation · <time dateTime={new Date(run.created_at).toISOString()}>{new Date(run.created_at).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'medium'})}</time></h3>
-   <p>{run.passed_count} of {run.case_count} passed · {run.status==='completed'?'Completed':run.status==='uncertain'?'Stopped: result uncertain':run.status==='budget_exhausted'?'Stopped: budget exhausted':run.status==='cancelled'?'Cancelled':run.status==='running'?'Running':'Queued'}</p>
+   <p>{run.passed_count} of {run.case_count} passed · {run.status==='blocked'?'Blocked: provider key missing':run.status==='completed'?'Completed':run.status==='uncertain'?'Stopped: result uncertain':run.status==='budget_exhausted'?'Stopped: budget exhausted':run.status==='cancelled'?'Cancelled':run.status==='running'?'Running':'Queued'}</p>
    <div className="d-flex flex-wrap gap-2">
     <button className="btn btn-white" aria-disabled={busy} onClick={()=>perform(run.id,async()=>{
      const response=await nativeRequest(`/api/training/projects/${projectId}/runs/${run.id}`);

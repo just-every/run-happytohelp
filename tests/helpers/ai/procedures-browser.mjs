@@ -116,7 +116,7 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   await page.getByLabel('Compare with',{exact:true}).selectOption(original.id)
   await page.getByRole('table',{name:'refund: Version 1 compared with selected Version 3',exact:true}).getByRole('rowheader',{name:'Instructions Changed',exact:true}).waitFor()
 
-  // A configuration refusal stops one attempt; untouched cases are not failures.
+  // A missing provider key blocks the run before any case is attempted.
   await page.getByLabel('Procedure key',{exact:true}).fill('configuration')
   await page.getByLabel('Model',{exact:true}).fill('synthetic-hh-unconfigured-model')
   await activate(save,()=>button('configuration · Version 1').waitFor())
@@ -126,18 +126,18 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   let configRun
   for(let index=0;index<60;index++){
    configRun=(await (await context.request.get(runtime.origin+`${root}/configuration/versions/${configVersion.id}/simulations`)).json()).runs[0]
-   if(configRun?.status==='uncertain')break
+   if(configRun?.status==='blocked')break
    await page.waitForTimeout(500)
   }
-  assert.equal(configRun.status,'uncertain')
+  assert.equal(configRun.status,'blocked')
   await activate(button('Refresh receipts'),()=>button('Inspect cases').waitFor())
   await activate(button('Inspect cases'),()=>page.getByLabel('AI provider setup').waitFor())
-  const uncertain=page.getByLabel('Simulation receipt')
-  assert.equal(await uncertain.getByText('Not run',{exact:true}).count(),3)
-  assert.equal(await uncertain.getByText('No sandbox read',{exact:true}).count(),4)
-  assert.equal(await uncertain.locator('pre').count(),0)
-  assert.doesNotMatch(await uncertain.innerText(),/CONFIGURATION_REQUIRED|TRAINING_PRICE_CEILINGS|\bnull\b/)
-  await uncertain.getByText(/This attempt will not be replayed automatically/).waitFor()
+  const blockedReceipt=page.getByLabel('Simulation receipt')
+  assert.equal(await blockedReceipt.getByText('Not run',{exact:true}).count(),4)
+  assert.equal(await blockedReceipt.getByText('No sandbox read',{exact:true}).count(),4)
+  assert.equal(await blockedReceipt.locator('pre').count(),0)
+  assert.doesNotMatch(await blockedReceipt.innerText(),/CONFIGURATION_REQUIRED|TRAINING_PRICE_CEILINGS|\bnull\b/)
+  assert.doesNotMatch(await blockedReceipt.innerText(),/Result uncertain|attempt will not be replayed/)
 
   for(const [key,instructions] of [['provider','synthetic-hh-provider-error'],['unread','synthetic-hh-no-read']]){
    const created=await context.request.post(runtime.origin+`${root}/${key}/versions`,{data:{...procedureDefinition(),instructions}})

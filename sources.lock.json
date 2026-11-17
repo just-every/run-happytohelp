@@ -4072,6 +4072,14 @@
       "sha256": "32e5304dbfa5294daeb51a5536c6eaac2a7e301e9addcc8467ad515fe4a6147e",
       "executable": false
     },
+    "scripts/installer/provider-preflight-summary.mjs": {
+      "sha256": "6a0e3c30638faa27e1a454fa18491de518ddb845644ad56ad9cb528e161bb4b9",
+      "executable": false
+    },
+    "scripts/installer/provider-preflight.mjs": {
+      "sha256": "338e673d25edbc7248109f42393c2c40e801e36571d4a9898e3a5c70647d3e4b",
+      "executable": false
+    },
     "scripts/installer/qualify.mjs": {
       "sha256": "9b86c721f27ca3252b0d0815ffa4fee076c6ec3a83c146e8dd2c603a9746e8f6",
       "executable": false
@@ -17546,6 +17554,10 @@
     },
     "tests/journeys/move-in-zendesk-pull.mjs": {
       "sha256": "95ddeec087d9cc130db1e19ed932c55baaac104704f04f36c5b35e18edcf7b9d",
+      "executable": false
+    },
+    "tests/journeys/provider-preflight.mjs": {
+      "sha256": "218eb0d28c1a94a90b724e9f6fb6c60674a58fd64c074648c90cf4e585e19691",
       "executable": false
     },
     "tests/journeys/public-browser.mjs": {

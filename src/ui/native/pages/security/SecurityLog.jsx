@@ -12,6 +12,7 @@ const RETENTION=[['','Keep forever'],['90','90 days'],['180','180 days'],['365',
 const json=(method,body)=>({method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const when=value=>new Date(value).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});
 const LABELS={
+ 'session.signed_out':'Signed out','customer.identity_linked':'Customer identity linked','customer.identity_unlinked':'Customer identity unlinked',
  'ticket.updated':'Ticket updated','ticket.permission_denied':'Ticket access refused','ticket.bulk.apply':'Tickets updated together','contact.updated':'Customer details updated',
  'sign_in.succeeded':'Signed in','sign_in.password_accepted':'Password accepted, second step next','sign_in.email_link_accepted':'Email link accepted, second step next','sign_in.refused':'Sign-in refused',
  'two_factor.verified':'Second step passed','two_factor.refused':'Second step refused','two_factor.enrolled':'Two-factor method added','two_factor.removed':'Two-factor method removed','two_factor.recovery_codes_issued':'New recovery codes','two_factor.reset':'Teammate’s two-factor reset','two_factor.policy_changed':'Two-factor requirement changed',

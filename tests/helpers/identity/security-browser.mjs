@@ -86,7 +86,7 @@ export async function securityBrowserJourney(browser){
    assert.equal((await owner.context().request.get(origin+'/api/identity/session')).status(),200)
   }finally{await second.close()}
   await owner.goto(origin+P+'/security-log')
-  await owner.getByRole('row').filter({hasText:/signed out/i}).filter({hasText:'succeeded'}).first().waitFor()
+  await owner.getByRole('row').filter({hasText:/signed out/i}).filter({hasText:'Completed'}).first().waitFor()
   await auditPage(owner,shot('security-log.png'))
   assert.deepEqual(errors,[]);passed=true
  }finally{await runtime.close(passed)}

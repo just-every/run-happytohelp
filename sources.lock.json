@@ -13873,7 +13873,7 @@
       "executable": false
     },
     "src/ui/native/pages/security/SecurityLog.jsx": {
-      "sha256": "c105e9f7a48535b9a92f3aa3eaef161d5f7b7afd5f6a53e04e8a0d79aad0b880",
+      "sha256": "8e9791f7227e63aaa47f546a63bb463e3caf875d5cf4e2c2340f00bca73799d0",
       "executable": false
     },
     "src/ui/native/pages/security/SecurityPage.jsx": {
@@ -16725,7 +16725,7 @@
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {
-      "sha256": "748dcec25e0c5040a358f7d0dc4354ac5403a7cd2208ac998d1c35e142bdab4a",
+      "sha256": "c6f9bf61114131dbaaaa044c4467489d297ab1815be0d31d979a828ceb7e7357",
       "executable": false
     },
     "tests/helpers/identity/ticket-scope-browser.mjs": {
@@ -16857,7 +16857,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ticket-status-edits.mjs": {
-      "sha256": "457447c2a18811e8fae135cefc5993dcb249f779fb8e91513265af297ebd7eb9",
+      "sha256": "77fbd0364287c0a2276fb515eb303a80c400d6e555b760955677b88def7e6545",
       "executable": false
     },
     "tests/helpers/inbox/tickets-browser.mjs": {

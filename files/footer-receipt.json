@@ -1,0 +1,11 @@
+{
+  "head": "dce3781bcb264311d7d02cb201cafc67decddc62",
+  "exit": 0,
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "flow": "Account > Sign out > Home > footer Set up > Sign in > Sign in as local owner > native owner session",
+  "result": "passed"
+}

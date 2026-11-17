@@ -1,0 +1,173 @@
+TAP version 13
+# Welcome email not sent 51a03eb1-d5e5-4951-8b0d-67dd38d38aa8 Managed mailbox is not active
+# Subtest: a first owner provisions useful support, observes actual Setup receipts, installs a provider and answers within the daily allowance while local and uncertain mail stay honest
+ok 1 - a first owner provisions useful support, observes actual Setup receipts, installs a provider and answers within the daily allowance while local and uncertain mail stay honest
+  ---
+  duration_ms: 129062.788126
+  type: 'test'
+  ...
+# Subtest: a new owner imports their website as private searchable knowledge once, keeps their own edits and deletes the source without later jobs bringing it back
+ok 2 - a new owner imports their website as private searchable knowledge once, keeps their own edits and deletes the source without later jobs bringing it back
+  ---
+  duration_ms: 4944.699249
+  type: 'test'
+  ...
+# PROBE owner ACCESS-001: GET native Settings -> 200; sentinel-hits=0
+# PROBE owner-after-save ACCESS-001: GET native Settings -> 200; sentinel-hits=0
+# PROBE admin ACCESS-001: GET native Settings -> 200; sentinel-hits=0
+# PROBE admin-after-save ACCESS-001: GET native Settings -> 200; sentinel-hits=0
+# PROBE operator ACCESS-001: GET native Settings -> 403; sentinel-hits=0
+# PROBE collaborator ACCESS-001: GET native Settings -> 403; sentinel-hits=0
+# PROBE custom-admin-no-settings ACCESS-001: GET native Settings -> 403; sentinel-hits=0
+# PROBE custom-admin-restored ACCESS-001: GET native Settings -> 200; sentinel-hits=0
+# PROBE custom-admin-revoked-permission ACCESS-001: GET native Settings -> 403; sentinel-hits=0
+# PROBE invalid-settings-no-fallback ACCESS-001: GET native Settings -> 500; sentinel-hits=0
+# PROBE foreign-workspace ACCESS-001: GET native Settings -> 403; sentinel-hits=0
+# PROBE revoked-membership ACCESS-001: GET native Settings -> 401; sentinel-hits=0
+# PROBE revoked-session ACCESS-001: GET native Settings -> 401; sentinel-hits=0
+# PROBE deleted-project ACCESS-001: GET native Settings -> 401; sentinel-hits=0
+# Subtest: the first owner claims once, signs in, invites and recovers a teammate, admits signed visitors and retains account identity after workspace deletion
+ok 3 - the first owner claims once, signs in, invites and recovers a teammate, admits signed visitors and retains account identity after workspace deletion
+  ---
+  duration_ms: 26014.166868
+  type: 'test'
+  ...
+# Subtest: an owner enrolls factors, enforces teammate enrollment, steps up to export and recovers lost factors with audited single-use authority
+ok 4 - an owner enrolls factors, enforces teammate enrollment, steps up to export and recovers lost factors with audited single-use authority
+  ---
+  duration_ms: 11884.062739
+  type: 'test'
+  ...
+# Subtest: a mailbox-only owner proves the account email, exports through the fresh session and installs a password without empowering a held session
+ok 5 - a mailbox-only owner proves the account email, exports through the fresh session and installs a password without empowering a held session
+  ---
+  duration_ms: 5365.429327
+  type: 'test'
+  ...
+# PROBE ACCESS-001 P1 AFTER: prepared note/participant/tag + role PUT rename; group DELETE / role PUT or POST in both orders -> {"commits":[{"status":409,"roleSave":200,"unchanged":true},{"status":409,"roleSave":200,"unchanged":true},{"status":409,"roleSave":200,"unchanged":true}],"deleteFirst":409,"saveFirst":409,"post":409,"dangling":0}
+# PROBE ACCESS-001 P2 AFTER: none -> "erasure/retention untouched; role audit scope contains only group ids and a boolean"
+# PROBE ACCESS-001 P3 AFTER: none -> "no money path changed or invoked"
+# PROBE ACCESS-001 P4 AFTER: GET roles; invalid/foreign scope, unauthorized/member/foreign, admin-base, built-in and stale-step-up PUT -> {"groups":3,"nullScope":null,"builtInUnscopable":true,"validation":[400,400,400,400,400,400,400,400,403,403],"stepUp":403,"admin":403,"builtIn":404,"dedup":{"groupIds":["synthetic-hh-301-a"],"includeUngrouped":false}}
+# PROBE ACCESS-001 P5 AFTER: omitted PUT selection/empty/null; explicit null; omitted POST; corrupt omission; explicit empty list/count/GET -> {"omissions":[{"status":200,"same":true},{"status":200,"same":true},{"status":200,"same":true}],"explicitNull":200,"post":null,"corrupt":409,"emptyList":0,"counts":{"data":{"mine":0,"open":0,"unassigned":0,"ai":0,"closed":0,"unread":0,"snoozed":0,"suspended":0}},"read":404}
+# PROBE ACCESS-001 P6 AFTER: role.created and role.updated audit detail -> {"created":{"before":null,"after":null},"createdSelected":{"before":null,"after":{"groupIds":["synthetic-hh-301-a"],"includeUngrouped":false}},"transitions":[{"before":{"groupIds":[],"includeUngrouped":false},"after":null},{"before":null,"after":{"groupIds":["synthetic-hh-301-a"],"includeUngrouped":false}},{"before":{"groupIds":["synthetic-hh-301-a"],"includeUngrouped":false},"after":{"groupIds":[],"includeUngrouped":false}}]}
+# Native access refresh notification failed
+# PROBE ACCESS-001 P7 AFTER: open project/ticket streams + role narrowing; assignRole; forced notification failure -> {"save":200,"notified":true,"ticketClose":[1008],"hiddenFrames":0,"nextRequest":404,"replay":404,"assigned":true,"publishFailureWrite":200}
+# PROBE ACCESS-001 P8 AFTER: DELETE selected group, then remove it from role and DELETE; corrupt unrelated row -> {"used":409,"message":{"error":"A role still uses this group; remove it from the selection first."},"removed":200,"unused":200}
+# PROBE ACCESS-001 P9 AFTER: owner moves visible ticket outside role selection; stream frame/replay/ping/GET, then moves back -> {"move":200,"close":[1008],"projectHidden":false,"owner":200,"hidden":404,"restored":200}
+# PROBE 1 selected read: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket -> {"status":200}
+# PROBE 2 hidden read: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket -> {"status":404}
+# PROBE 3 selected patch: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket priority=high -> {"status":200}
+# PROBE 4 hidden patch: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket priority=high -> {"status":404}
+# PROBE 5 destination refused: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket group_id=synthetic-hh-b -> {"status":403}
+# PROBE 6 source refused: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket group_id=synthetic-hh-a -> {"status":404}
+# PROBE 7 bulk selected preview: POST /api/management/projects/p-synthetic-hh-1/tickets/bulk/preview visible priority=urgent -> {"status":200,"results":[{"status":"ready"}]}
+# PROBE 8 bulk hidden apply: POST /api/management/projects/p-synthetic-hh-1/tickets/bulk/apply hidden priority=urgent -> {"status":200,"results":[{"status":"forbidden"}]}
+# PROBE 9 bulk destination refused: POST /api/management/projects/p-synthetic-hh-1/tickets/bulk/apply visible group_id=synthetic-hh-b -> {"status":400}
+# PROBE 10 bulk commit revocation: POST /api/management/projects/p-synthetic-hh-1/tickets/bulk/apply visible priority=urgent; scope narrowed before INSERT ticket_history -> {"status":200,"results":[{"status":"stale"}]}
+# RACE unchanged=true
+# PROBE 11 ungrouped selected: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket -> {"status":200}
+# PROBE 12 ungrouped excludes groups: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket -> {"status":404}
+# PROBE 13 empty excludes ungrouped: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket -> {"status":404}
+# PROBE 14 empty excludes groups: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket -> {"status":404}
+# PROBE 15 owner recovery: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket as native owner -> {"status":200}
+# PROBE 16 destination revoked at commit: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket group_id=synthetic-hh-b; scope narrows before receipt -> {"status":409}
+# PROBE 17 routing assignment follow confer no visibility: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket as routed assignee/follower -> {"status":404}
+# PROBE 18 malformed JSON: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket with test-only stored malformed JSON -> {"status":404}
+# PROBE 19 malformed JSON ungrouped: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket with test-only stored malformed JSON -> {"status":404}
+# PROBE 20 malformed shape: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket with test-only stored malformed shape -> {"status":404}
+# PROBE 21 malformed shape ungrouped: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket with test-only stored malformed shape -> {"status":404}
+# PROBE 22 unknown group: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket with test-only stored unknown group -> {"status":404}
+# PROBE 23 unknown group ungrouped: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket with test-only stored unknown group -> {"status":404}
+# PROBE 24 foreign group: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket with test-only stored foreign group -> {"status":404}
+# PROBE 25 foreign group ungrouped: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-ungrouped/ticket with test-only stored foreign group -> {"status":404}
+# PROBE 26 NULL compatibility hidden read: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket -> {"status":200}
+# PROBE 27 NULL compatibility mutate: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket subject=Synthetic unrestricted -> {"status":200}
+# PROBE 28 collaborator reads permitted: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket -> {"status":200}
+# PROBE 29 collaborator notes permitted: POST /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/notes -> {"status":201}
+# PROBE 30 collaborator follows permitted: POST /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/follow -> {"status":200}
+# PROBE 31 collaborator reply refused: POST /api/conversations/synthetic-hh-visible/messages -> {"status":403,"code":"permission_denied"}
+# PROBE 32 collaborator fields refused: PATCH /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-visible/ticket priority=low -> {"status":403,"code":"permission_denied"}
+# PROBE 33 collaborator hidden refused: GET /api/dashboard/projects/p-synthetic-hh-1/conversations/synthetic-hh-hidden/ticket -> {"status":404}
+# PROBE_TOTAL=33 phase=AFTER
+# COMMIT_PROOF participants=201,404,409 unchanged=true; tags=201,409 unchanged=true
+# Subtest: custom roles restrict native and delegated knowledge and ticket actions, and security retention and legal holds preserve accountable history
+ok 6 - custom roles restrict native and delegated knowledge and ticket actions, and security retention and legal holds preserve accountable history
+  ---
+  duration_ms: 26716.103996
+  type: 'test'
+  ...
+# Subtest: an installation with outbound email off refuses every sign-in mail in words, contacts no provider, and admits an owner through a deploy-credential grant once
+ok 7 - an installation with outbound email off refuses every sign-in mail in words, contacts no provider, and admits an owner through a deploy-credential grant once
+  ---
+  duration_ms: 4207.32772
+  type: 'test'
+  ...
+# Subtest: while a knowledge upgrade is pending, setup, sign-in options and the emailed sign-in link answer normally and knowledge stays closed to anyone without a member session
+ok 8 - while a knowledge upgrade is pending, setup, sign-in options and the emailed sign-in link answer normally and knowledge stays closed to anyone without a member session
+  ---
+  duration_ms: 4736.878751
+  type: 'test'
+  ...
+# Subtest: an owner records regulated qualification, retains ordinary support access and erasure, and cannot activate health-data processing without independent review
+ok 9 - an owner records regulated qualification, retains ordinary support access and erasure, and cannot activate health-data processing without independent review
+  ---
+  duration_ms: 7170.607602
+  type: 'test'
+  ...
+# Subtest: the setup owner recovers through a scoped Managed handoff only after proving a replacement factor, with old authority revoked
+ok 10 - the setup owner recovers through a scoped Managed handoff only after proving a replacement factor, with old authority revoked
+  ---
+  duration_ms: 14072.29425
+  type: 'test'
+  ...
+# Subtest: recovery custody binds and revokes monotonic generations while sentinel and conflicting owner anchors refuse
+ok 11 - recovery custody binds and revokes monotonic generations while sentinel and conflicting owner anchors refuse
+  ---
+  duration_ms: 14740.127895
+  type: 'test'
+  ...
+# Subtest: a shared account needs every affected workspace owner’s current factor-backed consent and keeps its memberships
+ok 12 - a shared account needs every affected workspace owner’s current factor-backed consent and keeps its memberships
+  ---
+  duration_ms: 6346.678458
+  type: 'test'
+  ...
+# Subtest: a locally admitted owner signs out and reopens the workspace without the installer link while foreign and hosted entry stay closed
+ok 13 - a locally admitted owner signs out and reopens the workspace without the installer link while foreign and hosted entry stay closed
+  ---
+  duration_ms: 7887.039641
+  type: 'test'
+  ...
+# Subtest: a local owner chooses a password using installation custody, revokes old sessions and signs back in with it
+ok 14 - a local owner chooses a password using installation custody, revokes old sessions and signs back in with it
+  ---
+  duration_ms: 4595.814348
+  type: 'test'
+  ...
+# Subtest: the first business-hours save uses the device timezone and every explicitly saved timezone wins
+ok 15 - the first business-hours save uses the device timezone and every explicitly saved timezone wins
+  ---
+  duration_ms: 4479.546736
+  type: 'test'
+  ...
+# Subtest: widget installation confirms only after an authenticated ping from the separate allowed website
+ok 16 - widget installation confirms only after an authenticated ping from the separate allowed website
+  ---
+  duration_ms: 4381.360066
+  type: 'test'
+  ...
+# Subtest: visitor and teammate sockets replay their durable cursor, exchange first reads and private activity only within current authority, and close on revocation
+ok 17 - visitor and teammate sockets replay their durable cursor, exchange first reads and private activity only within current authority, and close on revocation
+  ---
+  duration_ms: 6197.186392
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 284124.404635

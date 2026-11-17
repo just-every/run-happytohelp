@@ -1,0 +1,25 @@
+{
+  "phase": "before",
+  "origin": "http://127.0.0.1:8787",
+  "widths": [
+    1440,
+    390
+  ],
+  "findings": [
+    "BUG3: generated credential requires an unknown Current password.",
+    "BUG2: Brisbane browser saved hours in UTC; hours inputs have no zone.",
+    "BUG4: homepage widget activity inspected; see widget receipt.",
+    "BUG1: sign-out leads to password-only form and rer dev instructions."
+  ],
+  "widget": {
+    "id": "widget_seen",
+    "label": "Open the widget on your website",
+    "actionHref": "/projects/e1ee18b0-e9f8-4f7b-a829-afa1aedf9ac3/widget-settings",
+    "state": "done",
+    "checkedAt": "2026-11-17T12:10:23.106Z",
+    "detail": "Authenticated widget ping observed at 2026-11-17T12:10:19.572Z on http://127.0.0.1:8787. This is an installation observation, not a claim a visitor remains online.",
+    "receiptRef": "38041dbd-d995-4754-8054-f2c4324c4405",
+    "placement": "set",
+    "applicable": true
+  }
+}

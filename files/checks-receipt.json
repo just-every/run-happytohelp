@@ -1,0 +1,87 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17T12:22:53.435790+00:00",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-fix-1",
+  "head": "dce3781bcb264311d7d02cb201cafc67decddc62",
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/journeys/identity.mjs tests/journeys/first-run.mjs tests/journeys/widget.mjs",
+      "exit": 0,
+      "tests": 17,
+      "passed": 17,
+      "failed": 0,
+      "log": "touched-journeys.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "note": "Regenerated last after new files were staged."
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "rer-check.log"
+    },
+    {
+      "command": "node /tmp/hh-before.mjs",
+      "exit": 0,
+      "receipt": "before-receipt.json"
+    },
+    {
+      "command": "node /tmp/hh-after.mjs",
+      "exit": 0,
+      "receipt": "after-receipt.json"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit": 0
+    },
+    {
+      "command": "node /tmp/hh-footer.mjs",
+      "exit": 0,
+      "receipt": "footer-receipt.json",
+      "head": "dce3781bcb264311d7d02cb201cafc67decddc62"
+    }
+  ],
+  "counts": {
+    "reported_bugs_before": 4,
+    "reported_bugs_after": 0,
+    "new_real_flow_tests": 4,
+    "literal_journey_test_calls_before": 122,
+    "literal_journey_test_calls_after": 126,
+    "generated_clause_counts_before": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16
+    },
+    "generated_clause_counts_after": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16
+    }
+  },
+  "browser": {
+    "assertion_width": 1440,
+    "screenshots": [
+      1440,
+      390
+    ],
+    "timezone": "Australia/Brisbane",
+    "inspected_before_after": true,
+    "head_source_matches_candidate": true,
+    "inspected_footer_at_both_widths": true
+  },
+  "contract_judgments_changed": false,
+  "migrations_added": 0,
+  "publication_scan": "Fleet Mac lander; not available in cloud; no self-gate claimed."
+}

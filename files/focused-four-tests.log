@@ -1,0 +1,12 @@
+✔ a locally admitted owner signs out and reopens the workspace without the installer link while foreign and hosted entry stay closed (8792.689686ms)
+✔ a local owner chooses a password using installation custody, revokes old sessions and signs back in with it (4667.175864ms)
+✔ the first business-hours save uses the device timezone and every explicitly saved timezone wins (5133.750387ms)
+✔ widget installation confirms only after an authenticated ping from the separate allowed website (4654.58664ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23685.028538

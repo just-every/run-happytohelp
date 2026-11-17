@@ -1,0 +1,86 @@
+# HappyToHelp first-hour owner bug fixes
+
+Run Edit Run fleet, 2026-11-17. Tag: hh-owner-fix-1. Repository: just-every/run-happytohelp.
+
+Candidate branch: `cloud/hh-owner-fix-1`.
+Candidate head: `dce3781bcb264311d7d02cb201cafc67decddc62`.
+Fresh main used: `bb70a0424b6f1efef5b10cb14992f1b579f1fc50` (newer than the brief’s writing-time head).
+Product branch pushed successfully and remote ref verified. No PR created; this repository’s instructions do not require one for the lane candidate. No main push, landing or independent gate was attempted.
+
+## Result and counts
+
+The four reported BUGs are reproduced and fixed locally: 4 before, 0 remaining in the assigned flows. Four real-flow regression registrations were added, with no tests deleted, skipped or weakened. Literal `test(...)` calls in journey entrypoints changed from 122 to 126. The touched run passed all 17 registrations.
+
+Generated acceptance counts remain 4 done, 71 partial, 16 missing. No CONTRACT.md Status, Gap or Evidence changed, no generated views were committed, and no migrations, pins, release metadata, Base refresh or visitor-email policy changed. The browser’s false setup confirmations changed from 3/5 before to 1/5 after: both the app-origin website and its widget ping now remain unconfirmed. These are observations of the synthetic local installation, not a claim about a live customer installation.
+
+## BUG 1: sign back in after sign-out
+
+Before: open the installer’s local entry once, then Account menu → Sign out. The owner reaches Email and Password without knowing the generated password. The local hint tells them about rer dev. Homepage footer → Set up reaches the already-owned setup/sign-in circuit. Screenshots: `screenshots/before-signin-1440.png`, `before-signin-390.png`, `before-setup-loop-1440.png`, `before-setup-loop-390.png`.
+
+Cause: the product already had a key-gated local native-owner entry, but the sign-in UI never offered it to a browser that still held the checkout’s admission cookie.
+
+After: sign-in offers **Sign in as local owner** to that admitted browser. Clicking it restores the native owner session without the installer URL or email. Screenshots: `screenshots/after-signin-1440.png`, `after-signin-390.png`. The before/after browser receipts record the real flow; a separate final-head footer receipt records the footer path.
+
+Decision: reuse the existing entry instead of changing automatic first-run setup to demand a chosen password. This adds the least surface: one capability field on the existing auth-options response in the local-only Worker and one link in the existing sign-in note. The existing checkout key/cookie still gates entry. A fresh browser without admission, foreign origin, cross-site navigation, non-loopback configured origin, managed installation, disabled dev identity and missing dev key are refused. The production Worker imports no local owner wrapper. Clearing/expiring the admission cookie still requires a password the owner has chosen or the private installer entry; no network-only owner entry was added.
+
+Regression: `tests/journeys/identity.mjs#a locally admitted owner signs out and reopens the workspace without the installer link while foreign and hosted entry stay closed`. The test exchanges the real local key through the existing public exchange route, retains its cookie across sign-out, then re-enters. The browser proof uses the actual Account menu.
+
+## BUG 2: device time zone for first business-hours save
+
+Before: with the browser reporting Australia/Brisbane, save Monday–Friday, 09:00–17:00. Availability reports UTC and incorrectly shows Available at night in Brisbane; the hours inputs have no adjacent zone. Screenshots: `screenshots/before-availability-1440.png`, `before-availability-390.png`.
+
+Cause: the first hours save never supplied a device zone, and the availability calculation fell back to UTC.
+
+After: the availability form supplies the signed-in browser’s IANA time zone. The existing transactional settings save uses it only when opening hours are enabled and no zone is stored. An explicitly stored zone, including UTC, always wins. The zone appears beside the hours and is retained on General. The same synthetic local installation now reports Away with the next Brisbane opening. Screenshots: `screenshots/after-availability-1440.png`, `after-availability-390.png`, `after-general-1440.png`, `after-general-390.png`. No migration or reinterpretation of existing saved zones.
+
+Regression: `tests/journeys/identity.mjs#the first business-hours save uses the device timezone and every explicitly saved timezone wins`. It saves hours through the authenticated management route, reads the stored settings and effective availability, explicitly chooses UTC, saves again from Brisbane and proves UTC remains; an invalid device zone is rejected.
+
+## BUG 3: choose a password on a local trial
+
+Before: Profile → Security asks for a Current password generated by the installer, and the alternative asks for email on a local installation that suppresses email. Screenshots: `screenshots/before-password-1440.png`, `before-password-390.png`.
+
+Cause: the password-change route treated every existing credential as requiring the old password or mailbox proof, overlooking the existing installation-custody proof on the admitted native local-owner session.
+
+After: a local owner’s existing installation proof passes the existing requireStepUp guard. Profile → Security presents New password and Confirm password; no new proof mechanism is introduced. The owner chooses a password, all account sessions are revoked, and native password sign-in works. Ordinary sessions still require the prior password/mailbox proof, and factor, step-up, erasure and hosted rules are retained. Screenshots: `screenshots/after-password-1440.png`, `after-password-390.png`.
+
+Regression: `tests/journeys/identity.mjs#a local owner chooses a password using installation custody, revokes old sessions and signs back in with it`. It proves the old generated credential fails, all old sessions fail, the chosen password works, a normal native session cannot silently replace it, and no email/provider request occurs. Existing mailbox-only and second-factor journeys also passed in the touched run.
+
+## BUG 4: widget confirmation requires the owner’s separate website
+
+Before: skip widget installation, visit HappyToHelp’s own homepage, then return to Setup. The app’s widget ping marks the widget Confirmed and removes the skipped row. The actual before receipt records `done`, `set`, on `http://127.0.0.1:8787`. Screenshots: `screenshots/before-widget-1440.png`, `before-widget-390.png`.
+
+Cause: confirmation excluded the owner preview origin but did not exclude APP_ORIGIN. A default that allowed the app’s own homepage therefore passed both origin and ping confirmation.
+
+After: origin/ping confirmation rejects the app’s own origin as well as preview. Receipt fingerprints include those bindings so old confirmation does not survive the rule change. The existing last authenticated ping recording is unchanged. Visiting the homepage leaves the widget installation open, with no Confirmed widget row. The after receipt records `pending`, `needs_you`. Screenshots: `screenshots/after-widget-1440.png`, `after-widget-390.png`.
+
+Regression: `tests/journeys/identity.mjs#widget installation confirms only after an authenticated ping from the separate allowed website`. The app-origin ping remains recorded but never confirms the skipped step; saving a separate allowed website also does not confirm it; only a subsequent authenticated widget ping from that allowed website confirms it. Existing recording continues to retain the last accepted ping.
+
+## Validation and boundaries
+
+- `pnpm run typecheck`: exit 0. Fresh main had a TanStack beforeLoad inference error (`Promise<context>` constrained to `never`). Extracting that unchanged dashboard loader into an explicitly typed function fixes inference without changing redirects, session checks or editor permission behavior.
+- `node --test --test-concurrency=1 tests/journeys/identity.mjs tests/journeys/first-run.mjs tests/journeys/widget.mjs`: exit 0; 17 passed, 0 failed, 0 skipped. Actual log: `touched-journeys.log`.
+- Four initial focused flow tests passed; `focused-four-tests.log` is the preliminary focused result. The authoritative 17-test log includes the final cookie-based re-entry case and independent refusal configurations.
+- `pnpm exec rer check --profile first-party`: exit 0.
+- Source lock regenerated last after staging new source files; source check exit 0. No generated acceptance/claim view edits.
+- Browser assertions ran at 1440; before/after proof screens were captured and inspected at 1440 and 390 using headless `/usr/bin/chromium --no-sandbox`. Browser zone: Australia/Brisbane. Real local trial, native D1 sessions and public UI/routes; no live installation or external company state used.
+- Initial non-interactive setup required the declared private password/website answers; rer dev’s existing automatic native-owner setup completed successfully instead. A dead initial shell left its own zombie setup lock; only that verified dead operation’s lock was removed. Final server and browsers were stopped by their recorded PIDs. No shared process stop commands were used.
+- The fleet publication scan and independent access/identity gate run on the fleet machine; this cloud result is not a self-gate or landing signal.
+
+Exact-SHA Verify run: `44082414086`, https://github.com/just-every/run-happytohelp/actions/runs/44082414086. Its terminal result and API-call receipts are recorded in `ci-receipt.json` and the terminal report update below.
+
+## Clause claims
+
+These narrow bug fixes do not prove every acceptance point of the broad clauses; no full-clause promotion is requested.
+
+CLAIM IDENTITY-002 PARTIAL points=none tests=tests/journeys/identity.mjs#a locally admitted owner signs out and reopens the workspace without the installer link while foreign and hosted entry stay closed; tests/journeys/identity.mjs#a local owner chooses a password using installation custody, revokes old sessions and signs back in with it
+CLAIM WIDGET-001 PARTIAL points=none tests=tests/journeys/identity.mjs#the first business-hours save uses the device timezone and every explicitly saved timezone wins
+CLAIM ACTIVATION-001 PARTIAL points=none tests=tests/journeys/identity.mjs#widget installation confirms only after an authenticated ping from the separate allowed website
+
+DEFAULT IDENTITY-002: reuse existing key/cookie-gated local entry and installation step-up; no fresh-browser or non-loopback bypass.
+DEFAULT WIDGET-001: default only an unchosen workspace zone at the first enabled hours save; explicit zones win; no migration.
+DEFAULT ACTIVATION-001: retain existing raw last-ping recording while requiring a separate allowed website for confirmation.
+GAP IDENTITY-002: broader upgrade/recovery qualification is outside these four BUGs; the independent identity/access gate still follows.
+GAP WIDGET-001: this round proves the timezone default, not the full provider-backed widget availability acceptance point.
+GAP ACTIVATION-001: this round proves widget confirmation, not every provider outcome of the clause.
+
+Evidence preservation snapshot: 2026-11-17T12:44:12.727538+00:00. Exact-SHA Verify remains in progress after five budgeted API calls. This snapshot is not product READY or an independent gate.

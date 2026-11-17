@@ -1,0 +1,180 @@
+[
+  {
+    "phase": "ai-history",
+    "width": 1440,
+    "documentWidth": 1440,
+    "header": {
+      "x": 915,
+      "y": 33,
+      "width": 500,
+      "height": 90
+    },
+    "disclosure": {
+      "x": 1012.1875,
+      "y": 68.25,
+      "width": 348.4375,
+      "height": 19.5
+    },
+    "labels": [
+      {
+        "text": "AI assistant",
+        "bounds": {
+          "x": 1012.1875,
+          "y": 68.25,
+          "width": 70.140625,
+          "height": 18
+        },
+        "clips": []
+      },
+      {
+        "text": "AI",
+        "bounds": {
+          "x": 972.390625,
+          "y": 265.375,
+          "width": 12.71875,
+          "height": 18
+        },
+        "clips": []
+      }
+    ],
+    "headerText": "R\nRobin\nAI assistant\n•Product support",
+    "groups": [
+      {
+        "text": "R\nRobin\nAI\n\nThanks for your message.\n\nReceived today at 1:13 PM",
+        "width": 482,
+        "scrollWidth": 482
+      }
+    ]
+  },
+  {
+    "phase": "ai-history",
+    "width": 390,
+    "documentWidth": 390,
+    "header": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 75
+    },
+    "disclosure": {
+      "x": 89,
+      "y": 15.859375,
+      "width": 99.359375,
+      "height": 19.5
+    },
+    "labels": [
+      {
+        "text": "AI assistant",
+        "bounds": {
+          "x": 89,
+          "y": 15.859375,
+          "width": 70.140625,
+          "height": 18
+        },
+        "clips": []
+      },
+      {
+        "text": "AI",
+        "bounds": {
+          "x": 54.1875,
+          "y": 236.875,
+          "width": 12.71875,
+          "height": 18
+        },
+        "clips": []
+      }
+    ],
+    "headerText": "R\nRobin\nAI assistant\nProduct support",
+    "groups": [
+      {
+        "text": "R\nRobin\nAI\n\nThanks for your message.\n\nReceived today at 1:13 PM",
+        "width": 372,
+        "scrollWidth": 372
+      }
+    ]
+  },
+  {
+    "phase": "human-history",
+    "width": 1440,
+    "documentWidth": 1440,
+    "header": {
+      "x": 915,
+      "y": 33,
+      "width": 500,
+      "height": 90
+    },
+    "disclosure": {
+      "x": 972.390625,
+      "y": 205.875,
+      "width": 432.609375,
+      "height": 19.5
+    },
+    "labels": [
+      {
+        "text": "AI",
+        "bounds": {
+          "x": 972.390625,
+          "y": 205.875,
+          "width": 12.71875,
+          "height": 18
+        },
+        "clips": []
+      }
+    ],
+    "headerText": "C\nCasey•Human\nResponds within 24 hours",
+    "groups": [
+      {
+        "text": "R\nRobin\nAI\n\nThanks for your message.",
+        "width": 482,
+        "scrollWidth": 482
+      },
+      {
+        "text": "C\nCasey\n\nI am Casey, your support teammate. I will help from here.\n\nReceived today at 1:13 PM",
+        "width": 482,
+        "scrollWidth": 482
+      }
+    ]
+  },
+  {
+    "phase": "human-history",
+    "width": 390,
+    "documentWidth": 390,
+    "header": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 75
+    },
+    "disclosure": {
+      "x": 54.1875,
+      "y": 157.875,
+      "width": 325.8125,
+      "height": 19.5
+    },
+    "labels": [
+      {
+        "text": "AI",
+        "bounds": {
+          "x": 54.1875,
+          "y": 157.875,
+          "width": 12.71875,
+          "height": 18
+        },
+        "clips": []
+      }
+    ],
+    "headerText": "C\nCasey\nHuman•Responds within 24 hours",
+    "groups": [
+      {
+        "text": "R\nRobin\nAI\n\nThanks for your message.",
+        "width": 372,
+        "scrollWidth": 372
+      },
+      {
+        "text": "C\nCasey\n\nI am Casey, your support teammate. I will help from here.\n\nReceived today at 1:13 PM",
+        "width": 372,
+        "scrollWidth": 372
+      }
+    ]
+  }
+]

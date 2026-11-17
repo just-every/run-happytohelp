@@ -1,0 +1,44 @@
+TAP version 13
+# Subtest: opening Profile preserves the selected workspace and its contact navigation
+ok 1 - opening Profile preserves the selected workspace and its contact navigation
+  ---
+  duration_ms: 156079.082809
+  type: 'test'
+  ...
+# (node:13472) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Native runtime failure artifacts retained: /tmp/h2h-native-runtime-qBu32h
+# Subtest: knowledge references remain reviewable in saved replies, ticket insertion, recipient refusals and collection grants at 1440 and 390
+not ok 2 - knowledge references remain reviewable in saved replies, ticket insertion, recipient refusals and collection grants at 1440 and 390
+  ---
+  duration_ms: 178635.828001
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/tests/journeys/inbox-browser.mjs:18:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.click: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('button', { name: 'Insert article', exact: true })[22m
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    referenceEditing (/home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/tests/helpers/knowledge/reference-editing-browser.mjs:10:68)
+    async referenceBrowser (/home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/tests/helpers/knowledge/reference-browser.mjs:53:4)
+    async TestContext.<anonymous> (/home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/tests/journeys/inbox-browser.mjs:18:234)
+  ...
+# Subtest: an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over
+ok 3 - an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over
+  ---
+  duration_ms: 164980.411346
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 2
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 507158.864452

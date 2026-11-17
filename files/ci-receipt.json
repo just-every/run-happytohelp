@@ -1,0 +1,81 @@
+{
+  "calls": 7,
+  "discoveredAt": 1794922791.9828813,
+  "lastPollAt": 1794923730.8971016,
+  "head": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+  "supersededCandidate": {
+    "calls": 3,
+    "discoveredAt": 1794922156.7884455,
+    "lastPollAt": 1794922603.7054338,
+    "head": "19f55654cdf787b1f77902de2fad5c0aa6a09892",
+    "runs": [
+      {
+        "id": 44093077823,
+        "name": "Verify",
+        "status": "in_progress",
+        "conclusion": null,
+        "head_sha": "19f55654cdf787b1f77902de2fad5c0aa6a09892",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44093077823",
+        "event": "push",
+        "head_branch": "cloud/hh-owner-design-inbox-1"
+      }
+    ],
+    "supersededCandidate": {
+      "calls": 1,
+      "discoveredAt": 1794921365.6803954,
+      "head": "9b9e84ee7e288cc372779abfb9418e9fd6f2db14",
+      "runs": [
+        {
+          "id": 44090964044,
+          "name": "Verify",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "9b9e84ee7e288cc372779abfb9418e9fd6f2db14",
+          "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44090964044",
+          "event": "push",
+          "head_branch": "cloud/hh-owner-design-inbox-1"
+        }
+      ]
+    },
+    "observations": [
+      {
+        "conclusion": null,
+        "head_sha": "19f55654cdf787b1f77902de2fad5c0aa6a09892",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44093077823",
+        "status": "in_progress"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_branch": "cloud/hh-owner-design-inbox-1",
+      "head_sha": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44094867861",
+      "id": 44094867861,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "observations": [
+    {
+      "conclusion": null,
+      "head_sha": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44094867861",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44094867861",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44094867861",
+      "status": "in_progress"
+    }
+  ]
+}

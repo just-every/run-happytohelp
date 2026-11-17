@@ -1,0 +1,2736 @@
+[
+  {
+    "width": 1440,
+    "name": "upgrade-report-empty",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 390,
+    "name": "upgrade-report-empty",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 1440,
+    "name": "typing-saved-reply-link",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 280,
+          "y": 298.796875,
+          "width": 1112,
+          "height": 44,
+          "right": 1392,
+          "bottom": 342.796875
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 280,
+          "y": 504.578125,
+          "width": 1112,
+          "height": 44,
+          "right": 1392,
+          "bottom": 548.578125
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 280,
+          "y": 298.796875,
+          "width": 1112,
+          "height": 249.78125,
+          "right": 1392,
+          "bottom": 548.578125
+        },
+        "clientHeight": 250,
+        "scrollHeight": 250,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 1268.546875,
+          "y": 366.1875,
+          "width": 110.453125,
+          "height": 44,
+          "right": 1379,
+          "bottom": 410.1875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert article",
+        "box": {
+          "x": 280,
+          "y": 810.828125,
+          "width": 144.875,
+          "height": 44,
+          "right": 424.875,
+          "bottom": 854.828125
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "typing-saved-reply-link",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 16,
+          "y": 382.796875,
+          "width": 358,
+          "height": 44,
+          "right": 374,
+          "bottom": 426.796875
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 16,
+          "y": 633.578125,
+          "width": 358,
+          "height": 44,
+          "right": 374,
+          "bottom": 677.578125
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 16,
+          "y": 382.796875,
+          "width": 358,
+          "height": 294.78125,
+          "right": 374,
+          "bottom": 677.578125
+        },
+        "clientHeight": 295,
+        "scrollHeight": 295,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 250.546875,
+          "y": 450.1875,
+          "width": 110.453125,
+          "height": 44,
+          "right": 361,
+          "bottom": 494.1875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert article",
+        "box": {
+          "x": 16,
+          "y": 939.828125,
+          "width": 144.875,
+          "height": 44,
+          "right": 160.875,
+          "bottom": 983.828125
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "typing-composer-link",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 629,
+          "y": 620.21875,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 664.21875
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 629,
+          "y": 620.21875,
+          "width": 450,
+          "height": 294.78125,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 295,
+        "scrollHeight": 295,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 955.546875,
+          "y": 687.609375,
+          "width": 110.453125,
+          "height": 44,
+          "right": 1066,
+          "bottom": 731.609375
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "typing-composer-link",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 31,
+          "y": 429.21875,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 473.21875
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 31,
+          "y": 733,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 31,
+          "y": 429.21875,
+          "width": 336,
+          "height": 347.78125,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 348,
+        "scrollHeight": 348,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 44,
+          "y": 527.109375,
+          "width": 110.453125,
+          "height": 44,
+          "right": 154.453125,
+          "bottom": 571.109375
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "pasted-copy-punctuation",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 629,
+          "y": 597.71875,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 641.71875
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 629,
+          "y": 597.71875,
+          "width": 450,
+          "height": 317.28125,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 317,
+        "scrollHeight": 317,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 955.546875,
+          "y": 665.109375,
+          "width": 110.453125,
+          "height": 44,
+          "right": 1066,
+          "bottom": 709.109375
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "pasted-copy-punctuation",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 31,
+          "y": 406.71875,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 450.71875
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 31,
+          "y": 733,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 31,
+          "y": 406.71875,
+          "width": 336,
+          "height": 370.28125,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 370,
+        "scrollHeight": 370,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 44,
+          "y": 504.609375,
+          "width": 110.453125,
+          "height": 44,
+          "right": 154.453125,
+          "bottom": 548.609375
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "delivered-copy-punctuation",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "delivered-copy-punctuation",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 31,
+          "y": 785,
+          "width": 156.0625,
+          "height": 44,
+          "right": 187.0625,
+          "bottom": 829
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 31,
+          "y": 785,
+          "width": 156.0625,
+          "height": 44,
+          "right": 187.0625,
+          "bottom": 829
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "upgrade-report",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [
+      {
+        "tag": "A",
+        "label": "Recover a team account",
+        "box": {
+          "x": 337,
+          "y": 382.890625,
+          "width": 179.546875,
+          "height": 44,
+          "right": 516.546875,
+          "bottom": 426.890625
+        }
+      }
+    ],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 390,
+    "name": "upgrade-report",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [
+      {
+        "tag": "A",
+        "label": "Recover a team account",
+        "box": {
+          "x": 73,
+          "y": 718.1875,
+          "width": 179.546875,
+          "height": 44,
+          "right": 252.546875,
+          "bottom": 762.1875
+        }
+      }
+    ],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 1440,
+    "name": "operator-articles",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 390,
+    "name": "operator-articles",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 1440,
+    "name": "help-center-settings",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 390,
+    "name": "help-center-settings",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 1440,
+    "name": "article-analytics",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 390,
+    "name": "article-analytics",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 1440,
+    "name": "collection-grants",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 390,
+    "name": "collection-grants",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 1440,
+    "name": "collection-company-search",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 390,
+    "name": "collection-company-search",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 1440,
+    "name": "saved-reply-insert",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 280,
+          "y": 298.796875,
+          "width": 1112,
+          "height": 164,
+          "right": 1392,
+          "bottom": 462.796875
+        },
+        "clientHeight": 162,
+        "scrollHeight": 162,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 280,
+          "y": 298.796875,
+          "width": 1112,
+          "height": 164,
+          "right": 1392,
+          "bottom": 462.796875
+        },
+        "clientHeight": 164,
+        "scrollHeight": 164,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Insert article",
+        "box": {
+          "x": 280,
+          "y": 725.046875,
+          "width": 144.875,
+          "height": 44,
+          "right": 424.875,
+          "bottom": 769.046875
+        }
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choose a published articleRecover a team account",
+        "box": {
+          "x": 280,
+          "y": 835.796875,
+          "width": 843.5,
+          "height": 44,
+          "right": 1123.5,
+          "bottom": 879.796875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert link",
+        "box": {
+          "x": 1131.5,
+          "y": 835.796875,
+          "width": 125.234375,
+          "height": 44,
+          "right": 1256.734375,
+          "bottom": 879.796875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert text",
+        "box": {
+          "x": 1264.734375,
+          "y": 835.796875,
+          "width": 127.265625,
+          "height": 44,
+          "right": 1392,
+          "bottom": 879.796875
+        }
+      }
+    ],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 390,
+    "name": "saved-reply-insert",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 16,
+          "y": 382.796875,
+          "width": 358,
+          "height": 164,
+          "right": 374,
+          "bottom": 546.796875
+        },
+        "clientHeight": 162,
+        "scrollHeight": 162,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 16,
+          "y": 382.796875,
+          "width": 358,
+          "height": 164,
+          "right": 374,
+          "bottom": 546.796875
+        },
+        "clientHeight": 164,
+        "scrollHeight": 164,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Insert article",
+        "box": {
+          "x": 16,
+          "y": 809.046875,
+          "width": 144.875,
+          "height": 44,
+          "right": 160.875,
+          "bottom": 853.046875
+        }
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choose a published articleRecover a team account",
+        "box": {
+          "x": 16,
+          "y": 964.796875,
+          "width": 358,
+          "height": 44,
+          "right": 374,
+          "bottom": 1008.796875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert link",
+        "box": {
+          "x": 16,
+          "y": 1016.796875,
+          "width": 125.234375,
+          "height": 44,
+          "right": 141.234375,
+          "bottom": 1060.796875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert text",
+        "box": {
+          "x": 149.234375,
+          "y": 1016.796875,
+          "width": 127.265625,
+          "height": 44,
+          "right": 276.5,
+          "bottom": 1060.796875
+        }
+      }
+    ],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 1440,
+    "name": "saved-reply-reference",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 280,
+          "y": 298.796875,
+          "width": 1112,
+          "height": 44,
+          "right": 1392,
+          "bottom": 342.796875
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 280,
+          "y": 527.078125,
+          "width": 1112,
+          "height": 44,
+          "right": 1392,
+          "bottom": 571.078125
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 280,
+          "y": 298.796875,
+          "width": 1112,
+          "height": 272.28125,
+          "right": 1392,
+          "bottom": 571.078125
+        },
+        "clientHeight": 272,
+        "scrollHeight": 272,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 1268.546875,
+          "y": 366.1875,
+          "width": 110.453125,
+          "height": 44,
+          "right": 1379,
+          "bottom": 410.1875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert article",
+        "box": {
+          "x": 280,
+          "y": 833.328125,
+          "width": 144.875,
+          "height": 44,
+          "right": 424.875,
+          "bottom": 877.328125
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "saved-reply-reference",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 16,
+          "y": 382.796875,
+          "width": 358,
+          "height": 68,
+          "right": 374,
+          "bottom": 450.796875
+        },
+        "clientHeight": 66,
+        "scrollHeight": 66,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 16,
+          "y": 702.578125,
+          "width": 358,
+          "height": 44,
+          "right": 374,
+          "bottom": 746.578125
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 16,
+          "y": 382.796875,
+          "width": 358,
+          "height": 363.78125,
+          "right": 374,
+          "bottom": 746.578125
+        },
+        "clientHeight": 364,
+        "scrollHeight": 364,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 250.546875,
+          "y": 474.1875,
+          "width": 110.453125,
+          "height": 44,
+          "right": 361,
+          "bottom": 518.1875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert article",
+        "box": {
+          "x": 16,
+          "y": 1008.828125,
+          "width": 144.875,
+          "height": 44,
+          "right": 160.875,
+          "bottom": 1052.828125
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "saved-reply-history",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 280,
+          "y": 166.796875,
+          "width": 1112,
+          "height": 44,
+          "right": 1392,
+          "bottom": 210.796875
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 280,
+          "y": 395.078125,
+          "width": 1112,
+          "height": 44,
+          "right": 1392,
+          "bottom": 439.078125
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 280,
+          "y": 166.796875,
+          "width": 1112,
+          "height": 272.28125,
+          "right": 1392,
+          "bottom": 439.078125
+        },
+        "clientHeight": 272,
+        "scrollHeight": 272,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 1268.546875,
+          "y": 234.1875,
+          "width": 110.453125,
+          "height": 44,
+          "right": 1379,
+          "bottom": 278.1875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert article",
+        "box": {
+          "x": 280,
+          "y": 701.328125,
+          "width": 144.875,
+          "height": 44,
+          "right": 424.875,
+          "bottom": 745.328125
+        }
+      }
+    ],
+    "definition": [
+      {
+        "x": 550.9375,
+        "y": 818.328125,
+        "width": 840.5625,
+        "height": 300,
+        "right": 1391.5,
+        "bottom": 1118.328125
+      }
+    ],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "saved-reply-history",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 16,
+          "y": 250.796875,
+          "width": 358,
+          "height": 68,
+          "right": 374,
+          "bottom": 318.796875
+        },
+        "clientHeight": 66,
+        "scrollHeight": 66,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 16,
+          "y": 570.578125,
+          "width": 358,
+          "height": 44,
+          "right": 374,
+          "bottom": 614.578125
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 16,
+          "y": 250.796875,
+          "width": 358,
+          "height": 363.78125,
+          "right": 374,
+          "bottom": 614.578125
+        },
+        "clientHeight": 364,
+        "scrollHeight": 364,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 250.546875,
+          "y": 342.1875,
+          "width": 110.453125,
+          "height": 44,
+          "right": 361,
+          "bottom": 386.1875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert article",
+        "box": {
+          "x": 16,
+          "y": 876.828125,
+          "width": 144.875,
+          "height": 44,
+          "right": 160.875,
+          "bottom": 920.828125
+        }
+      }
+    ],
+    "definition": [
+      {
+        "x": 31,
+        "y": 1175.078125,
+        "width": 328,
+        "height": 479.25,
+        "right": 359,
+        "bottom": 1654.328125
+      }
+    ],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "ticket-picker",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "SUMMARY",
+        "label": "Preview article",
+        "box": {
+          "x": 629,
+          "y": 774.484375,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 818.484375
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert link",
+        "box": {
+          "x": 629,
+          "y": 826.484375,
+          "width": 104.53125,
+          "height": 44,
+          "right": 733.53125,
+          "bottom": 870.484375
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert text",
+        "box": {
+          "x": 741.53125,
+          "y": 826.484375,
+          "width": 106.4375,
+          "height": 44,
+          "right": 847.96875,
+          "bottom": 870.484375
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "ticket-picker",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 31,
+          "y": 733,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 31,
+          "y": 733,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "SUMMARY",
+        "label": "Preview article",
+        "box": {
+          "x": 31,
+          "y": 673.390625,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 717.390625
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert link",
+        "box": {
+          "x": 31,
+          "y": 725.390625,
+          "width": 104.53125,
+          "height": 44,
+          "right": 135.53125,
+          "bottom": 769.390625
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert text",
+        "box": {
+          "x": 143.53125,
+          "y": 725.390625,
+          "width": 106.4375,
+          "height": 44,
+          "right": 249.96875,
+          "bottom": 769.390625
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "composer-reference",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 629,
+          "y": 591.71875,
+          "width": 450,
+          "height": 50,
+          "right": 1079,
+          "bottom": 641.71875
+        },
+        "clientHeight": 48,
+        "scrollHeight": 48,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 629,
+          "y": 591.71875,
+          "width": 450,
+          "height": 323.28125,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 323,
+        "scrollHeight": 323,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 955.546875,
+          "y": 665.109375,
+          "width": 110.453125,
+          "height": 44,
+          "right": 1066,
+          "bottom": 709.109375
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "composer-reference",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 31,
+          "y": 400.71875,
+          "width": 336,
+          "height": 50,
+          "right": 367,
+          "bottom": 450.71875
+        },
+        "clientHeight": 48,
+        "scrollHeight": 48,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 31,
+          "y": 733,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 31,
+          "y": 400.71875,
+          "width": 336,
+          "height": 376.28125,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 376,
+        "scrollHeight": 376,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 44,
+          "y": 504.609375,
+          "width": 110.453125,
+          "height": 44,
+          "right": 154.453125,
+          "bottom": 548.609375
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "operator-thread-withheld",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "operator-thread-withheld",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 31,
+          "y": 785,
+          "width": 156.0625,
+          "height": 44,
+          "right": 187.0625,
+          "bottom": 829
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 31,
+          "y": 785,
+          "width": 156.0625,
+          "height": 44,
+          "right": 187.0625,
+          "bottom": 829
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "picker-all-blocked",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 390,
+    "name": "picker-all-blocked",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 31,
+          "y": 733,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 31,
+          "y": 733,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 1440,
+    "name": "picker-blocked-recipient",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "SUMMARY",
+        "label": "Preview article",
+        "box": {
+          "x": 629,
+          "y": 774.484375,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 818.484375
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert link",
+        "box": {
+          "x": 629,
+          "y": 860.25,
+          "width": 104.53125,
+          "height": 44,
+          "right": 733.53125,
+          "bottom": 904.25
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert text",
+        "box": {
+          "x": 741.53125,
+          "y": 860.25,
+          "width": 106.4375,
+          "height": 44,
+          "right": 847.96875,
+          "bottom": 904.25
+        }
+      }
+    ],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 390,
+    "name": "picker-blocked-recipient",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 31,
+          "y": 733,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 31,
+          "y": 733,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "SUMMARY",
+        "label": "Preview article",
+        "box": {
+          "x": 31,
+          "y": 673.390625,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 717.390625
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert link",
+        "box": {
+          "x": 31,
+          "y": 780.15625,
+          "width": 104.53125,
+          "height": 44,
+          "right": 135.53125,
+          "bottom": 824.15625
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Insert text",
+        "box": {
+          "x": 143.53125,
+          "y": 780.15625,
+          "width": 106.4375,
+          "height": 44,
+          "right": 249.96875,
+          "bottom": 824.15625
+        }
+      }
+    ],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 1440,
+    "name": "saved-reply-target-preview",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 629,
+          "y": 1410.28125,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 1454.28125
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 629,
+          "y": 1410.28125,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 1454.28125
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "saved-reply-target-preview",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 31,
+          "y": 1455.890625,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 1499.890625
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 31,
+          "y": 1455.890625,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 1499.890625
+        },
+        "clientHeight": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "bulk-saved-reply-preview",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [
+      {
+        "tag": "SUMMARY",
+        "label": "Details",
+        "box": {
+          "x": 294,
+          "y": -849.125,
+          "width": 227,
+          "height": 44,
+          "right": 521,
+          "bottom": -805.125
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Every change",
+        "box": {
+          "x": 294,
+          "y": -805.125,
+          "width": 227,
+          "height": 44,
+          "right": 521,
+          "bottom": -761.125
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Details",
+        "box": {
+          "x": 294,
+          "y": 317.25,
+          "width": 227,
+          "height": 44,
+          "right": 521,
+          "bottom": 361.25
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Every change",
+        "box": {
+          "x": 294,
+          "y": 361.25,
+          "width": 227,
+          "height": 44,
+          "right": 521,
+          "bottom": 405.25
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "bulk-saved-reply-preview",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [
+      {
+        "tag": "SUMMARY",
+        "label": "Details",
+        "box": {
+          "x": 62,
+          "y": -789.125,
+          "width": 265,
+          "height": 44,
+          "right": 327,
+          "bottom": -745.125
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Every change",
+        "box": {
+          "x": 62,
+          "y": -745.125,
+          "width": 265,
+          "height": 44,
+          "right": 327,
+          "bottom": -701.125
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Details",
+        "box": {
+          "x": 62,
+          "y": 217.3125,
+          "width": 265,
+          "height": 44,
+          "right": 327,
+          "bottom": 261.3125
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Every change",
+        "box": {
+          "x": 62,
+          "y": 261.3125,
+          "width": 265,
+          "height": 44,
+          "right": 327,
+          "bottom": 305.3125
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "bulk-reference-visibility",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [
+      {
+        "tag": "SUMMARY",
+        "label": "Details",
+        "box": {
+          "x": 294,
+          "y": -1685.125,
+          "width": 227,
+          "height": 44,
+          "right": 521,
+          "bottom": -1641.125
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Every change",
+        "box": {
+          "x": 294,
+          "y": -1641.125,
+          "width": 227,
+          "height": 44,
+          "right": 521,
+          "bottom": -1597.125
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Details",
+        "box": {
+          "x": 294,
+          "y": -518.75,
+          "width": 227,
+          "height": 44,
+          "right": 521,
+          "bottom": -474.75
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Every change",
+        "box": {
+          "x": 294,
+          "y": -474.75,
+          "width": 227,
+          "height": 44,
+          "right": 521,
+          "bottom": -430.75
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "bulk-reference-visibility",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [
+      {
+        "tag": "SUMMARY",
+        "label": "Details",
+        "box": {
+          "x": 62,
+          "y": -1604.125,
+          "width": 265,
+          "height": 44,
+          "right": 327,
+          "bottom": -1560.125
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Every change",
+        "box": {
+          "x": 62,
+          "y": -1560.125,
+          "width": 265,
+          "height": 44,
+          "right": 327,
+          "bottom": -1516.125
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Details",
+        "box": {
+          "x": 62,
+          "y": -597.6875,
+          "width": 265,
+          "height": 44,
+          "right": 327,
+          "bottom": -553.6875
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Every change",
+        "box": {
+          "x": 62,
+          "y": -553.6875,
+          "width": 265,
+          "height": 44,
+          "right": 327,
+          "bottom": -509.6875
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      },
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "bulk-saved-reply-draft",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 629,
+          "y": 569.96875,
+          "width": 450,
+          "height": 50,
+          "right": 1079,
+          "bottom": 619.96875
+        },
+        "clientHeight": 48,
+        "scrollHeight": 48,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 629,
+          "y": 871,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 629,
+          "y": 569.96875,
+          "width": 450,
+          "height": 345.03125,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 345,
+        "scrollHeight": 345,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 955.546875,
+          "y": 643.359375,
+          "width": 110.453125,
+          "height": 44,
+          "right": 1066,
+          "bottom": 687.359375
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "bulk-saved-reply-draft",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 31,
+          "y": 378.96875,
+          "width": 336,
+          "height": 50,
+          "right": 367,
+          "bottom": 428.96875
+        },
+        "clientHeight": 48,
+        "scrollHeight": 48,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 31,
+          "y": 733,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 31,
+          "y": 378.96875,
+          "width": 336,
+          "height": 398.03125,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 398,
+        "scrollHeight": 398,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 44,
+          "y": 482.859375,
+          "width": 110.453125,
+          "height": 44,
+          "right": 154.453125,
+          "bottom": 526.859375
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "named-refusal",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 629,
+          "y": 595,
+          "width": 450,
+          "height": 50,
+          "right": 1079,
+          "bottom": 645
+        },
+        "clientHeight": 48,
+        "scrollHeight": 48,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 629,
+          "y": 896.03125,
+          "width": 450,
+          "height": 44,
+          "right": 1079,
+          "bottom": 940.03125
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 629,
+          "y": 595,
+          "width": 450,
+          "height": 320,
+          "right": 1079,
+          "bottom": 915
+        },
+        "clientHeight": 320,
+        "scrollHeight": 345,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 955.546875,
+          "y": 668.390625,
+          "width": 110.453125,
+          "height": 44,
+          "right": 1066,
+          "bottom": 712.390625
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "name": "named-refusal",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [
+      {
+        "box": {
+          "x": 31,
+          "y": 506.921875,
+          "width": 336,
+          "height": 50,
+          "right": 367,
+          "bottom": 556.921875
+        },
+        "clientHeight": 48,
+        "scrollHeight": 48,
+        "scrollTop": 0
+      },
+      {
+        "box": {
+          "x": 31,
+          "y": 860.953125,
+          "width": 336,
+          "height": 44,
+          "right": 367,
+          "bottom": 904.953125
+        },
+        "clientHeight": 42,
+        "scrollHeight": 42,
+        "scrollTop": 0
+      }
+    ],
+    "editors": [
+      {
+        "box": {
+          "x": 31,
+          "y": 506.921875,
+          "width": 336,
+          "height": 270.078125,
+          "right": 367,
+          "bottom": 777
+        },
+        "clientHeight": 270,
+        "scrollHeight": 398,
+        "scrollTop": 0
+      }
+    ],
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Remove Recover a team account",
+        "box": {
+          "x": 44,
+          "y": 610.8125,
+          "width": 110.453125,
+          "height": 44,
+          "right": 154.453125,
+          "bottom": 654.8125
+        }
+      }
+    ],
+    "definition": [],
+    "badges": [
+      {
+        "listStyle": "none",
+        "marginLeft": "0px"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "name": "help-private-miss",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  },
+  {
+    "width": 390,
+    "name": "help-private-miss",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": 0,
+    "textareas": [],
+    "editors": [],
+    "controls": [],
+    "definition": [],
+    "badges": []
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "phase": "before",
+  "screenshots": [
+    "screenshots/before/D4-D13-D14-D16-conversation-1440.png",
+    "screenshots/before/D4-D13-D14-D16-conversation-390.png",
+    "screenshots/before/D15-ticket-status-1440.png",
+    "screenshots/before/D15-ticket-status-390.png",
+    "screenshots/before/D11-save-reply-1440.png",
+    "screenshots/before/D11-save-reply-390.png",
+    "screenshots/before/D18-contacts-1440.png",
+    "screenshots/before/D18-contacts-390.png",
+    "screenshots/before/D21-security-log-1440.png",
+    "screenshots/before/D21-security-log-390.png",
+    "screenshots/before/D22-profile-1440.png",
+    "screenshots/before/D22-profile-390.png",
+    "screenshots/before/D13-widget-rating-1440.png",
+    "screenshots/before/D13-widget-rating-390.png"
+  ],
+  "checks": [
+    "Owner reply appeared in the customer widget"
+  ],
+  "contact": "Dana",
+  "contactRows": 4,
+  "artifactSourceHead": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "artifactSource": "Initial rer build before product source edits; isolated runtime and synthetic records."
+}

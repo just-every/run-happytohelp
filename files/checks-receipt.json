@@ -1,0 +1,84 @@
+{
+  "sourceRoutes": {
+    "command": "node --test --test-concurrency=1 tests/journeys/customers.mjs tests/journeys/inbox.mjs",
+    "passed": 7,
+    "failed": 0
+  },
+  "sourceAudit": {
+    "command": "node --test --test-concurrency=1 --test-name-pattern='custom roles|security log reply names' tests/journeys/identity.mjs",
+    "passed": 2,
+    "failed": 0
+  },
+  "initialBrowsers": {
+    "passed": 2,
+    "failed": 1,
+    "failure": "nested knowledge editing helper had not opened More options"
+  },
+  "referenceRetry": {
+    "passed": 1,
+    "failed": 0
+  },
+  "typecheck": "passed",
+  "build": "passed on final committed head",
+  "nodeForBrowsers": "22.20.0",
+  "sourceRegistrations": {
+    "before": 122,
+    "after": 125
+  },
+  "journeyRegistrations": {
+    "before": 118,
+    "after": 121
+  },
+  "contractSummary": {
+    "before": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    },
+    "after": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    }
+  },
+  "contractEdits": false,
+  "migrations": 0,
+  "paidProviderCalls": 0,
+  "head": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+  "sourceLock": "regenerated last; source:check passed",
+  "rerCheck": "passed",
+  "brandsBrowser": "passed: widget reply, rating persistence, reports, isolation, settings",
+  "profileBrowser": "passed",
+  "savedReplyHandoffBrowser": "passed; inserted name rendered for requester; edited reply persisted without taking over",
+  "referenceBrowser": "passed after disclosure-path correction; existing refusal and delivered-byte assertions retained",
+  "sourceLockSha256": "847f3ede478e8cf326077fb6b1ef4e455ebb8047ff24156c2703e3b5c699c427",
+  "changedFiles": 54,
+  "productBranch": "cloud/hh-owner-design-inbox-1",
+  "pr": null,
+  "badgeClickJourney": "passed: existing saved reply journey clicks the badge and waits for the accessible tooltip",
+  "supersededCandidate": "9b9e84ee7e288cc372779abfb9418e9fd6f2db14",
+  "supersededReason": "Clean-head proof caught combined hover/click hiding the email explanation; fixed in a new commit and existing browser journey.",
+  "lastLabelCorrection": "Conversation list reuses existing statusName; no behavior or test registration change.",
+  "sourceCheck": "passed",
+  "signedBy": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "clauses": "No Status, Gap, Evidence or acceptance text changed; focused UI work leaves complete-clause proof to the lane.",
+  "exactHeadBrowserProof": {
+    "head": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+    "workingTreeClean": true,
+    "screenshots": 20,
+    "widths": [
+      1440,
+      390
+    ],
+    "checks": [
+      "Owner reply appeared in the customer widget",
+      "An email-only contact is included and displayed by its saved email",
+      "Customer rated the conversation without answering another question"
+    ],
+    "onHoldCustomerState": "open",
+    "solvedCustomerState": "solved"
+  }
+}

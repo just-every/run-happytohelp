@@ -1,0 +1,17 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-design-inbox-1",
+  "head": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+  "clean": true,
+  "originMain": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "productRemoteHead": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+  "commits": [
+    "4c86a426ccd1184b2be306de181a27ef85e767d3",
+    "19f55654cdf787b1f77902de2fad5c0aa6a09892",
+    "9b9e84ee7e288cc372779abfb9418e9fd6f2db14",
+    "69ca3a5d5e8b2a2546a0e678ef6c0f32a69b633a"
+  ],
+  "pr": null,
+  "signedBy": "Run Edit Run fleet",
+  "recordedAt": "2026-11-17T13:43:39.285063+00:00"
+}

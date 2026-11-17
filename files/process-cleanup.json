@@ -1,0 +1,25 @@
+{
+  "signedBy": "Run Edit Run fleet",
+  "stoppedRecordedOwnOrphans": [],
+  "browserRuntimeClosedByFixture": true,
+  "recordedExitedZombiePids": [
+    620,
+    5097,
+    6903,
+    7559,
+    7625,
+    7640,
+    16463,
+    21960,
+    26159,
+    28717,
+    28779
+  ],
+  "runningBrowserOrWorker": false,
+  "removedOwnFailedRuntimeDirectories": [
+    "h2h-native-runtime-OJrzvy",
+    "h2h-native-runtime-qBu32h",
+    "h2h-native-runtime-rA3PoX"
+  ],
+  "privateSetupAnswerFileRemoved": true
+}

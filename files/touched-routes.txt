@@ -1,0 +1,583 @@
+PROBE CRM-001 fix1: operator GET customer CRM without readable ticket -> 404; after native ticket creation -> 200, grants_customer_access:false, no provider request or mapping change
+CUSTOMER-001 remaining Gap: disconnected context retains no last-sync time; CRM-001 mapping is deleted
+CONTEXT baseline: native operator GET ticket/customer CRM -> identical fresh owner cache; six mutations 403; provider requests and CRM writes unchanged
+PROBE CRM-001 1: GET native ticket/customer CRM with no inbox permission -> two 403 permission_denied responses, exactly one permission.denied audit event each with native route/actor/role shape
+CONTEXT baseline: native CRM reads after ticket-scope narrowing -> 404; permission removal -> 403; membership revocation -> 401; foreign/customer doors refused
+PROBE CRM-001 2: GET cached CRM before connect/after disconnect -> connected false; connected unmapped -> connected true; reads call no provider
+✔ a support team manages an account and its members, reviews and reverses an identity association without sharing customer authority, and erases its provenance (143680.88326ms)
+✔ an owner previews mapped customer and company CSVs, imports and reverses them without contacting anyone, while later edits and erasure protect retained records (5625.361923ms)
+✔ the owner can hide page visitors without losing writers, email contacts, search matches or correct pagination (4567.245209ms)
+PROBE 1 cohort allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations -> 200/{"ids":["synthetic-hh-visible-31","synthetic-hh-visible-30","synthetic-hh-visible-29","synthetic-hh-visible-28","synthetic-hh-visible-27","synthetic-hh-visible-26","synthetic-hh-visible-25","synthetic-hh-visible-24","synthetic-hh-visible-23","synthetic-hh-visible-22","synthetic-hh-visible-21","synthetic-hh-visible-20","synthetic-hh-visible-19","synthetic-hh-visible-18","synthetic-hh-visible-17","synthetic-hh-visible-16","synthetic-hh-visible-15","synthetic-hh-visible-14","synthetic-hh-visible-13","synthetic-hh-visible-12","synthetic-hh-visible-11","synthetic-hh-visible-10","synthetic-hh-visible-09","synthetic-hh-visible-08","synthetic-hh-visible-07","synthetic-hh-visible-06","synthetic-hh-visible-05","synthetic-hh-visible-04","synthetic-hh-visible-03","synthetic-hh-visible-02"],"pagination":{"total":32,"current_page":1,"total_pages":2}}
+PROBE 2 cohort allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations?search=Synthetic -> 200/{"ids":["synthetic-hh-visible-31","synthetic-hh-visible-30","synthetic-hh-visible-29","synthetic-hh-visible-28","synthetic-hh-visible-27","synthetic-hh-visible-26","synthetic-hh-visible-25","synthetic-hh-visible-24","synthetic-hh-visible-23","synthetic-hh-visible-22","synthetic-hh-visible-21","synthetic-hh-visible-20","synthetic-hh-visible-19","synthetic-hh-visible-18","synthetic-hh-visible-17","synthetic-hh-visible-16","synthetic-hh-visible-15","synthetic-hh-visible-14","synthetic-hh-visible-13","synthetic-hh-visible-12","synthetic-hh-visible-11","synthetic-hh-visible-10","synthetic-hh-visible-09","synthetic-hh-visible-08","synthetic-hh-visible-07","synthetic-hh-visible-06","synthetic-hh-visible-05","synthetic-hh-visible-04","synthetic-hh-visible-03","synthetic-hh-visible-02"],"pagination":{"total":32,"current_page":1,"total_pages":2}}
+PROBE 3 cohort allowed: GET /api/dashboard/conversations -> 200/{"ids":["synthetic-hh-visible-31","synthetic-hh-visible-30","synthetic-hh-visible-29","synthetic-hh-visible-28","synthetic-hh-visible-27","synthetic-hh-visible-26","synthetic-hh-visible-25","synthetic-hh-visible-24","synthetic-hh-visible-23","synthetic-hh-visible-22","synthetic-hh-visible-21","synthetic-hh-visible-20","synthetic-hh-visible-19","synthetic-hh-visible-18","synthetic-hh-visible-17","synthetic-hh-visible-16","synthetic-hh-visible-15","synthetic-hh-visible-14","synthetic-hh-visible-13","synthetic-hh-visible-12","synthetic-hh-visible-11","synthetic-hh-visible-10","synthetic-hh-visible-09","synthetic-hh-visible-08","synthetic-hh-visible-07","synthetic-hh-visible-06","synthetic-hh-visible-05","synthetic-hh-visible-04","synthetic-hh-visible-03","synthetic-hh-visible-02"],"pagination":{"total":32,"current_page":1,"total_pages":2}}
+PROBE 4 cohort allowed: GET /api/dashboard/conversations?search=Synthetic -> 200/{"ids":["synthetic-hh-visible-31","synthetic-hh-visible-30","synthetic-hh-visible-29","synthetic-hh-visible-28","synthetic-hh-visible-27","synthetic-hh-visible-26","synthetic-hh-visible-25","synthetic-hh-visible-24","synthetic-hh-visible-23","synthetic-hh-visible-22","synthetic-hh-visible-21","synthetic-hh-visible-20","synthetic-hh-visible-19","synthetic-hh-visible-18","synthetic-hh-visible-17","synthetic-hh-visible-16","synthetic-hh-visible-15","synthetic-hh-visible-14","synthetic-hh-visible-13","synthetic-hh-visible-12","synthetic-hh-visible-11","synthetic-hh-visible-10","synthetic-hh-visible-09","synthetic-hh-visible-08","synthetic-hh-visible-07","synthetic-hh-visible-06","synthetic-hh-visible-05","synthetic-hh-visible-04","synthetic-hh-visible-03","synthetic-hh-visible-02"],"pagination":{"total":32,"current_page":1,"total_pages":2}}
+PROBE 5 native-list allowed: GET /api/conversations -> 200/{"count":32,"hidden":false}
+PROBE 6 counts allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/counts -> 200/{"data":{"mine":32,"open":32,"unassigned":0,"ai":0,"closed":0,"unread":32,"snoozed":0,"suspended":0}}
+PROBE 7 counts allowed: GET /api/dashboard/conversations/counts -> 200/{"data":{"mine":32,"open":32,"unassigned":0,"ai":0,"closed":0,"unread":32,"snoozed":0}}
+PROBE 8 ticket allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00 -> 200/{"visible":true,"hidden":false}
+PROBE 9 ticket allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/ticket -> 200/{"visible":true,"hidden":false}
+PROBE 10 ticket allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/buckets -> 200/{"visible":true,"hidden":false}
+PROBE 11 ticket allowed: GET /api/conversations/synthetic-hh-visible-00 -> 200/{"visible":true,"hidden":false}
+PROBE 12 ticket allowed: GET /api/conversations/synthetic-hh-visible-00/messages -> 200/{"visible":true,"hidden":false}
+PROBE 13 ticket allowed: GET /api/conversations/synthetic-hh-visible-00/media/synthetic-hh-visible-00-media -> 200/{"visible":true,"hidden":false}
+PROBE 14 ticket allowed: GET /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/routing -> 200/{"visible":true,"hidden":false}
+PROBE 15 ticket allowed: GET /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/email-followups -> 200/{"visible":true,"hidden":false}
+PROBE 16 ticket allowed: GET /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/crm -> 200/{"visible":true,"hidden":false}
+PROBE 17 ticket allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/ticket/problem -> 200/{"visible":true,"hidden":false}
+PROBE 18 related allowed: GET /api/management/projects/p-synthetic-hh-10/companies/9e9faefc-571b-48ed-94af-c5e33fef8a5e -> 200/{"hidden":false,"count":32}
+PROBE 19 related allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/merged-history -> 200/{"hidden":false,"count":1}
+PROBE 20 related allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/merges -> 200/{"hidden":false,"count":0}
+PROBE 21 related allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/partner-forwards -> 200/{"hidden":false}
+PROBE 22 related allowed: GET /api/management/projects/p-synthetic-hh-10/notification-triggers -> 200/{"hidden":false,"count":2}
+PROBE 23 related allowed: GET /api/management/projects/p-synthetic-hh-10/notification-inbox -> 200/{"hidden":false,"count":1}
+PROBE 24 related allowed: GET /api/management/projects/p-synthetic-hh-10/contacts/synthetic-hh-11/conversations -> 200/{"hidden":false,"count":32}
+PROBE 25 related allowed: GET /api/management/projects/p-synthetic-hh-10/routing-operators -> 200/{"hidden":false}
+PROBE 26 related allowed: GET /api/dashboard/projects/p-synthetic-hh-10/ticket-problem-search?q=Synthetic -> 200/{"hidden":false,"count":32}
+PROBE 27 problem-preview allowed: POST /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/ticket/problem/solve/preview -> 200/{"hidden":false,"ids":["synthetic-hh-visible-01"]}
+PROBE 28 crm-refresh allowed: POST /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/crm/refresh -> 200/{"providerCalls":2,"state":"fresh"}
+PROBE 29 cohort denied: GET /api/dashboard/projects/p-synthetic-hh-10/conversations -> 200/{"ids":[],"pagination":{"total":0,"current_page":1,"total_pages":1}}
+PROBE 30 cohort denied: GET /api/dashboard/projects/p-synthetic-hh-10/conversations?search=Synthetic -> 200/{"ids":[],"pagination":{"total":0,"current_page":1,"total_pages":1}}
+PROBE 31 cohort denied: GET /api/dashboard/conversations -> 200/{"ids":[],"pagination":{"total":0,"current_page":1,"total_pages":1}}
+PROBE 32 cohort denied: GET /api/dashboard/conversations?search=Synthetic -> 200/{"ids":[],"pagination":{"total":0,"current_page":1,"total_pages":1}}
+PROBE 33 native-list denied: GET /api/conversations -> 200/{"count":0,"hidden":false}
+PROBE 34 counts denied: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/counts -> 200/{"data":{"mine":0,"open":0,"unassigned":0,"ai":0,"closed":0,"unread":0,"snoozed":0,"suspended":0}}
+PROBE 35 counts denied: GET /api/dashboard/conversations/counts -> 200/{"data":{"mine":0,"open":0,"unassigned":0,"ai":0,"closed":0,"unread":0,"snoozed":0}}
+PROBE 36 ticket denied: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00 -> 404/{"visible":false,"hidden":false}
+PROBE 37 ticket denied: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/ticket -> 404/{"visible":false,"hidden":false}
+PROBE 38 ticket denied: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/buckets -> 404/{"visible":false,"hidden":false}
+PROBE 39 ticket denied: GET /api/conversations/synthetic-hh-visible-00 -> 404/{"visible":false,"hidden":false}
+PROBE 40 ticket denied: GET /api/conversations/synthetic-hh-visible-00/messages -> 404/{"visible":false,"hidden":false}
+PROBE 41 ticket denied: GET /api/conversations/synthetic-hh-visible-00/media/synthetic-hh-visible-00-media -> 404/{"visible":false,"hidden":false}
+PROBE 42 ticket denied: GET /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/routing -> 404/{"visible":false,"hidden":false}
+PROBE 43 ticket denied: GET /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/email-followups -> 404/{"visible":false,"hidden":false}
+PROBE 44 ticket denied: GET /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/crm -> 404/{"visible":false,"hidden":false}
+PROBE 45 ticket denied: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/ticket/problem -> 404/{"visible":false,"hidden":false}
+PROBE 46 related denied: GET /api/management/projects/p-synthetic-hh-10/companies/9e9faefc-571b-48ed-94af-c5e33fef8a5e -> 200/{"hidden":false,"count":0}
+PROBE 47 related denied: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/merged-history -> 404/{"hidden":false}
+PROBE 48 related denied: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/merges -> 404/{"hidden":false}
+PROBE 49 related denied: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/partner-forwards -> 404/{"hidden":false}
+PROBE 50 related denied: GET /api/management/projects/p-synthetic-hh-10/notification-triggers -> 200/{"hidden":false,"count":2}
+PROBE 51 related denied: GET /api/management/projects/p-synthetic-hh-10/notification-inbox -> 200/{"hidden":false,"count":0}
+PROBE 52 related denied: GET /api/management/projects/p-synthetic-hh-10/contacts/synthetic-hh-11/conversations -> 200/{"hidden":false,"count":0}
+PROBE 53 related denied: GET /api/management/projects/p-synthetic-hh-10/routing-operators -> 200/{"hidden":false}
+PROBE 54 related denied: GET /api/dashboard/projects/p-synthetic-hh-10/ticket-problem-search?q=Synthetic -> 200/{"hidden":false,"count":0}
+PROBE 55 problem-preview denied: POST /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/ticket/problem/solve/preview -> 404/{"error":"","hidden":false}
+PROBE 56 crm-refresh denied: POST /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/crm/refresh -> 404/{"providerCalls":0}
+PROBE 57 cohort other-tenant: GET /api/dashboard/projects/p-synthetic-hh-10/conversations -> 403/{"ids":[]}
+PROBE 58 cohort other-tenant: GET /api/dashboard/projects/p-synthetic-hh-10/conversations?search=Synthetic -> 403/{"ids":[]}
+PROBE 59 cohort other-tenant: GET /api/dashboard/conversations -> 200/{"ids":[],"pagination":{"total":0,"current_page":1,"total_pages":1}}
+PROBE 60 cohort other-tenant: GET /api/dashboard/conversations?search=Synthetic -> 200/{"ids":[],"pagination":{"total":0,"current_page":1,"total_pages":1}}
+PROBE 61 native-list other-tenant: GET /api/conversations -> 200/{"count":0,"hidden":false}
+PROBE 62 counts other-tenant: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/counts -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 63 counts other-tenant: GET /api/dashboard/conversations/counts -> 200/{"data":{"mine":0,"open":0,"unassigned":0,"ai":0,"closed":0,"unread":0,"snoozed":0}}
+PROBE 64 ticket other-tenant: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00 -> 404/{"visible":false,"hidden":false}
+PROBE 65 ticket other-tenant: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/ticket -> 404/{"visible":false,"hidden":false}
+PROBE 66 ticket other-tenant: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/buckets -> 404/{"visible":false,"hidden":false}
+PROBE 67 ticket other-tenant: GET /api/conversations/synthetic-hh-visible-00 -> 404/{"visible":false,"hidden":false}
+PROBE 68 ticket other-tenant: GET /api/conversations/synthetic-hh-visible-00/messages -> 404/{"visible":false,"hidden":false}
+PROBE 69 ticket other-tenant: GET /api/conversations/synthetic-hh-visible-00/media/synthetic-hh-visible-00-media -> 404/{"visible":false,"hidden":false}
+PROBE 70 ticket other-tenant: GET /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/routing -> 403/{"visible":false,"hidden":false}
+PROBE 71 ticket other-tenant: GET /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/email-followups -> 403/{"visible":false,"hidden":false}
+PROBE 72 ticket other-tenant: GET /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/crm -> 403/{"visible":false,"hidden":false}
+PROBE 73 ticket other-tenant: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/ticket/problem -> 404/{"visible":false,"hidden":false}
+PROBE 74 related other-tenant: GET /api/management/projects/p-synthetic-hh-10/companies/9e9faefc-571b-48ed-94af-c5e33fef8a5e -> 403/{"hidden":false}
+PROBE 75 related other-tenant: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/merged-history -> 404/{"hidden":false}
+PROBE 76 related other-tenant: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/merges -> 404/{"hidden":false}
+PROBE 77 related other-tenant: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/partner-forwards -> 404/{"hidden":false}
+PROBE 78 related other-tenant: GET /api/management/projects/p-synthetic-hh-10/notification-triggers -> 403/{"hidden":false}
+PROBE 79 related other-tenant: GET /api/management/projects/p-synthetic-hh-10/notification-inbox -> 403/{"hidden":false}
+PROBE 80 related other-tenant: GET /api/management/projects/p-synthetic-hh-10/contacts/synthetic-hh-11/conversations -> 403/{"hidden":false}
+PROBE 81 related other-tenant: GET /api/management/projects/p-synthetic-hh-10/routing-operators -> 403/{"hidden":false}
+PROBE 82 related other-tenant: GET /api/dashboard/projects/p-synthetic-hh-10/ticket-problem-search?q=Synthetic -> 403/{"hidden":false}
+PROBE 83 problem-preview other-tenant: POST /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/ticket/problem/solve/preview -> 404/{"error":"","hidden":false}
+PROBE 84 crm-refresh other-tenant: POST /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/crm/refresh -> 403/{"providerCalls":0}
+PROBE 85 hidden-target denied: GET/POST /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-hidden-01 -> 404/{"error":""}
+PROBE 86 hidden-target denied: GET/POST /api/conversations/synthetic-hh-hidden-01 -> 404/{"error":""}
+PROBE 87 hidden-target denied: GET/POST /api/conversations/synthetic-hh-hidden-01/messages -> 404/{"error":""}
+PROBE 88 hidden-target denied: GET/POST /api/conversations/synthetic-hh-hidden-01/media/synthetic-hh-hidden-01-media -> 404/{"error":""}
+PROBE 89 hidden-target denied: GET/POST /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-hidden-01/email-followups -> 404/{"error":""}
+PROBE 90 hidden-target denied: GET/POST /api/management/projects/p-synthetic-hh-10/conversations/synthetic-hh-hidden-01/crm/refresh -> 404/{"error":""}
+PROBE 91 upload allowed: native synthetic-hh-visible-00 -> 201/{"stored":1}
+PROBE 92 upload denied: native synthetic-hh-visible-00 -> 404/{"stored":0}
+PROBE 93 upload other-tenant: native synthetic-hh-visible-00 -> 404/{"stored":0}
+PROBE 94 upload-hidden denied: native synthetic-hh-hidden-01 -> 404/{"error":""}
+PROBE 95 upload-revocation denied: native scope narrowed after staging -> 409/{"unchanged":true}
+PROBE 96 upload allowed: dashboard synthetic-hh-visible-00 -> 201/{"stored":1}
+PROBE 97 upload denied: dashboard synthetic-hh-visible-00 -> 404/{"stored":0}
+PROBE 98 upload other-tenant: dashboard synthetic-hh-visible-00 -> 403/{"stored":0}
+PROBE 99 upload-hidden denied: dashboard synthetic-hh-hidden-01 -> 404/{"error":""}
+PROBE 100 upload-revocation denied: dashboard scope narrowed after staging -> 409/{"unchanged":true}
+PROBE 101 merge allowed: /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/merge -> 404/{"error":""}
+PROBE 102 merge denied: /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/merge -> 404/{"error":""}
+PROBE 103 merge other-tenant: /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-00/merge -> 404/{"error":""}
+PROBE 104 compatibility NULL: GET /api/dashboard/projects/p-synthetic-hh-10/conversations -> 200/{"total":66}
+PROBE 105 compatibility owner: GET /api/dashboard/projects/p-synthetic-hh-10/conversations -> 200/{"total":66}
+PROBE 106 hidden-survivor allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-31 -> 200/{"hidden":false}
+PROBE 107 hidden-survivor allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-31/merged-history -> 200/{"hidden":false}
+PROBE 108 hidden-survivor allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-31/merges -> 200/{"hidden":false}
+PROBE 109 hidden-survivor allowed: GET /api/dashboard/projects/p-synthetic-hh-10/conversations/synthetic-hh-visible-31/partner-forwards -> 200/{"hidden":false}
+SCOPE_DATA_TOTAL=109
+PROBE ACCESS-001 P1 AFTER: POST /tickets scope narrowed before INSERT; GET /links minted while visible -> {"create":409,"unchanged":true,"link":401}
+PROBE ACCESS-001 P1 AFTER: visible-minted link after ticket leaves current selected cohort -> {"link":404}
+PROBE ACCESS-001 P2 erasure AFTER: none -> "no erasure/retention code changed; context schema and erasure custody retained"
+PROBE ACCESS-001 P3 money AFTER: none -> "no money path changed or invoked"
+PROBE ACCESS-001 P4 AFTER: GET /mobile/tickets selected -> {"status":200,"ids":["synthetic-hh-80-ticket-a","synthetic-hh-80-ticket-b"]}
+PROBE ACCESS-001 P4 AFTER: GET /mobile/tickets empty -> {"status":200,"ids":[]}
+PROBE ACCESS-001 P4 AFTER: GET /mobile/tickets foreign -> {"status":200,"ids":[]}
+PROBE ACCESS-001 P5 AFTER: GET hidden mobile bytes/prepared/link -> {"bytes":404,"body":{"error":""},"payloads":1,"hiddenLinks":0}
+PROBE ACCESS-001 P6 AFTER: channel thread/templates list/send allowed -> {"thread":200,"data":{"data":{"connection_id":"8a938644-5da0-4252-941a-20d86ddf25e3","consent":[],"changes":[],"actions":[],"provider":"whatsapp","channel":"synthetic-hh-80-channel","blocked":"reply_window_expired: choose an approved continuation template with customer consent, or wait for a new customer message","template_consent":true,"sends":[]}},"templates":200,"send":200,"provider":3}
+PROBE ACCESS-001 P6 AFTER: channel thread/templates list/send denied -> {"thread":200,"data":{"data":null},"templates":404,"send":404,"provider":0}
+PROBE ACCESS-001 P6 AFTER: channel thread/templates list/send empty -> {"thread":200,"data":{"data":null},"templates":404,"send":404,"provider":0}
+PROBE ACCESS-001 P6 AFTER: channel thread/templates list/send other-tenant -> {"thread":403,"data":{"error":"Project not found, or you do not have access to it"},"templates":403,"send":403,"provider":0}
+PROBE ACCESS-001 P7 AFTER: suspended hidden candidate list/detail; recover as note -> {"candidate":null,"detail":null,"recover":404,"unchanged":true}
+PROBE ACCESS-001 P7 AFTER: verified suspended release into hidden ticket -> {"status":404,"unchanged":true}
+PROBE ACCESS-001 P7 AFTER: scope lost at recovery note INSERT -> {"status":409,"unchanged":true}
+PROBE ACCESS-001 P7 AFTER: suspended allowed target; ungrouped recovery -> {"allowed":200,"ungrouped":403,"unchanged":true}
+PROBE ACCESS-001 P8 AFTER: GET/reconcile hidden inbound receipt -> {"get":404,"reconcile":404,"unchanged":true}
+PROBE ACCESS-001 P9 AFTER: POST /tickets inside -> {"status":201,"unchanged":false}
+PROBE ACCESS-001 P9 AFTER: replay of a created ticket that moved outside selection -> {"status":404,"hiddenId":false}
+PROBE ACCESS-001 P9 AFTER: POST /tickets outside -> {"status":403,"unchanged":true}
+PROBE ACCESS-001 P9 AFTER: POST /tickets ungrouped -> {"status":403,"unchanged":true}
+PROBE ACCESS-001 P9 AFTER: ungrouped notice preview/send and POST /api/conversations -> {"preview":403,"send":403,"native":403}
+PROBE ACCESS-001 P10 AFTER: context subject synthetic-hh-80-mixed -> [{"door":"packet","status":200,"clean":true},{"door":"/insights","status":200,"clean":true},{"door":"/jobs","status":200,"clean":true},{"door":"generate","status":409}]
+PROBE ACCESS-001 P10 AFTER: context subject synthetic-hh-80-visible -> [{"door":"packet","status":200,"clean":true},{"door":"/insights","status":200,"clean":true},{"door":"/jobs","status":200,"clean":true},{"door":"generate","status":202}]
+PROBE ACCESS-001 P10 AFTER: context subject synthetic-hh-80-none -> [{"door":"packet","status":200,"clean":true},{"door":"/insights","status":200,"clean":true},{"door":"/jobs","status":200,"clean":true},{"door":"generate","status":202}]
+PROBE ACCESS-001 P10 AFTER: context insights inventory -> {"status":200,"subjects":["synthetic-hh-80-visible","synthetic-hh-80-none"],"clean":true}
+PROBE ACCESS-001 P11 AFTER: NULL mobile/bytes/channel/context/receipt/ungrouped native create -> {"mobile":200,"bytes":200,"channel":200,"context":200,"receipt":200,"native":201,"templates":200,"noticePreview":200}
+PROBE ACCESS-001 P11 AFTER: owner mobile/bytes/channel/context/receipt/ungrouped native create -> {"mobile":200,"bytes":200,"channel":200,"context":200,"receipt":200,"native":201,"templates":200,"noticePreview":200}
+PROBE ACCESS-001 P9 AFTER: includeUngrouped native/notices remain served -> {"native":201,"preview":200,"send":200,"accepted":[true,true]}
+PROBE ACCESS-001 P12 AFTER: five retained helper journeys and frozen paths -> "reported separately from this residual-door extension"
+Request failed Error
+PROBE 1 selected schedule create: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules allowed group -> 201/{"id":"687bd32d-376c-4c69-aa02-fac22ce89b78","state":"pending","reason":null}
+PROBE 2 selected snooze create: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules snooze allowed group -> 201/{"id":"7f61ff97-89e2-4472-83d2-395527dc26a4","state":"pending","reason":null}
+PROBE 3 hidden schedule create: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules hidden group -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 4 hidden snooze create: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules snooze hidden group -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 5 hidden schedule edit: PATCH /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules/21786ea2-4620-4831-b169-b1d0fc379dfd body -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 6 hidden snooze cancel: PATCH /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules/630f97f2-da55-4c2d-b87d-18369fe17c2f cancel -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 7 scope listing: GET /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules -> 200/[{"conversation_id":"0795c9c8-43d3-4e8b-9d92-2b6776620faa","dependency_id":null,"state":"pending"},{"conversation_id":"ad71eeb1-1c34-4de9-9c28-51bc2c5ff550","dependency_id":null,"state":"pending"}]
+PROBE 8 hidden ticket work: GET /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/conversations/f5546e5e-90af-4b0f-bbc8-296f07245516/workflows -> 404/{"error":""}
+PROBE 9 hidden dependency create: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules allowed -> hidden dependency -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 10 hidden dependency edit: PATCH /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules/7f61ff97-89e2-4472-83d2-395527dc26a4 hidden dependency -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 11 snooze cancel commit revocation: PATCH /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules/7f61ff97-89e2-4472-83d2-395527dc26a4 cancel; selection removed before UPDATE -> 409/{"error":"Schedule, ticket or authority changed. Reload before continuing."}
+PROBE 12 snooze edit commit revocation: PATCH /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules/7f61ff97-89e2-4472-83d2-395527dc26a4 due_at; selection removed before UPDATE -> 409/{"error":"Schedule, ticket or authority changed. Reload before continuing."}
+PROBE 13 empty schedule create: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules empty selection -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 14 empty schedule edit: PATCH /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules/687bd32d-376c-4c69-aa02-fac22ce89b78 empty selection -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 15 empty listing: GET /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules empty selection -> 200/[]
+PROBE 16 owner recovery: PATCH /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules/21786ea2-4620-4831-b169-b1d0fc379dfd as native owner -> 200/{"id":"21786ea2-4620-4831-b169-b1d0fc379dfd","state":"pending","reason":null}
+PROBE 17 foreign group fail closed: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules stored foreign group -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 18 foreign group list fail closed: GET /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules stored foreign group -> 200/[]
+PROBE 19 foreign schedule create: native schedule door as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 20 foreign snooze create: native schedule door as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 21 foreign schedule edit: native schedule door as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 22 foreign snooze cancel: native schedule door as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 23 foreign list: native schedule door as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 24 foreign ticket work: native schedule door as other workspace -> 404/{"error":""}
+PROBE 25 run read scope: GET /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-runs -> 200/{"runs":[{"id":"synthetic-hh-schedule-run-dashboard-allowed","state":"failed"}]}
+PROBE 26 hidden run query: GET /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-runs?conversation_id=hidden -> 200/{"runs":[]}
+PROBE 27 hidden run reconcile: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-runs/synthetic-hh-schedule-run-dashboard-hidden/reconcile -> 404/{"error":""}
+PROBE 28 foreign run read: GET /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-runs as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 29 foreign run reconcile: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-runs/synthetic-hh-schedule-run-dashboard-allowed/reconcile as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 30 run reconcile commit revocation: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-runs/synthetic-hh-schedule-run-dashboard-allowed/reconcile; selection removed before audit -> 409/{"error":"Workflow configuration or authority changed; reload before applying changes"}
+PROBE 31 selected run reconcile: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-runs/synthetic-hh-schedule-run-dashboard-allowed/reconcile -> 200/{"state":"cancelled"}
+PROBE 32 NULL hidden run read: GET /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-runs NULL scope -> 200/{"runs":[{"id":"synthetic-hh-schedule-run-dashboard-hidden","state":"failed"},{"id":"synthetic-hh-schedule-run-dashboard-allowed","state":"cancelled"}]}
+PROBE 33 NULL hidden schedule create: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules hidden group NULL scope -> 201/{"id":"afdc9cb3-5f2a-4adc-9ecb-1d1c415774d8","state":"pending","reason":null}
+PROBE 34 NULL hidden schedule edit: PATCH /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-schedules/afdc9cb3-5f2a-4adc-9ecb-1d1c415774d8 NULL scope -> 200/{"id":"afdc9cb3-5f2a-4adc-9ecb-1d1c415774d8","state":"pending","reason":null}
+PROBE 35 NULL hidden run reconcile: POST /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/workflow-runs/synthetic-hh-schedule-run-dashboard-hidden/reconcile NULL scope -> 200/{"state":"cancelled"}
+PROBE 36 selected scheduled admission: GET /api/dashboard/projects/p-synthetic-hh-schedule-dashboard-1/conversations/0795c9c8-43d3-4e8b-9d92-2b6776620faa/workflows after due tick -> 200/{"schedules":[{"state":"sent","reason":null}]}
+PROBE 37 scope revoked admission: scheduled tick then owner GET workflows -> 200/{"state":"cancelled","reason":"conversation_access_denied","messages":0}
+PROBE_TOTAL=37 schedule authority area=dashboard
+PROBE 1 selected schedule create: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules allowed group -> 201/{"id":"a3691c2d-6244-463c-b73a-d3c13f5f401e","state":"pending","reason":null}
+PROBE 2 selected snooze create: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules snooze allowed group -> 201/{"id":"096b5d68-fc90-4807-8da8-ef8425acae67","state":"pending","reason":null}
+PROBE 3 hidden schedule create: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules hidden group -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 4 hidden snooze create: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules snooze hidden group -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 5 hidden schedule edit: PATCH /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules/9e6feab2-6e85-4655-b61a-ffa30f8c39a0 body -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 6 hidden snooze cancel: PATCH /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules/dc60746d-e648-4238-b886-31f2430da069 cancel -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 7 scope listing: GET /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules -> 200/[{"conversation_id":"417e53e8-e7e4-457b-9778-314c547f3fa0","dependency_id":null,"state":"pending"},{"conversation_id":"4870a63b-10db-4e28-a4bb-9d9bf37b24ee","dependency_id":null,"state":"pending"}]
+PROBE 8 hidden ticket work: GET /api/management/projects/p-synthetic-hh-schedule-management-1/conversations/4f7e2799-709e-4fb7-a56e-658956922a76/workflows -> 404/{"error":""}
+PROBE 9 hidden dependency create: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules allowed -> hidden dependency -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 10 hidden dependency edit: PATCH /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules/096b5d68-fc90-4807-8da8-ef8425acae67 hidden dependency -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 11 snooze cancel commit revocation: PATCH /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules/096b5d68-fc90-4807-8da8-ef8425acae67 cancel; selection removed before UPDATE -> 409/{"error":"Schedule, ticket or authority changed. Reload before continuing."}
+PROBE 12 snooze edit commit revocation: PATCH /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules/096b5d68-fc90-4807-8da8-ef8425acae67 due_at; selection removed before UPDATE -> 409/{"error":"Schedule, ticket or authority changed. Reload before continuing."}
+PROBE 13 empty schedule create: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules empty selection -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 14 empty schedule edit: PATCH /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules/a3691c2d-6244-463c-b73a-d3c13f5f401e empty selection -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 15 empty listing: GET /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules empty selection -> 200/[]
+PROBE 16 owner recovery: PATCH /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules/9e6feab2-6e85-4655-b61a-ffa30f8c39a0 as native owner -> 200/{"id":"9e6feab2-6e85-4655-b61a-ffa30f8c39a0","state":"pending","reason":null}
+PROBE 17 foreign group fail closed: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules stored foreign group -> 404/{"error":"This ticket is unavailable. Your access or its group may have changed."}
+PROBE 18 foreign group list fail closed: GET /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules stored foreign group -> 200/[]
+PROBE 19 foreign schedule create: native schedule door as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 20 foreign snooze create: native schedule door as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 21 foreign schedule edit: native schedule door as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 22 foreign snooze cancel: native schedule door as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 23 foreign list: native schedule door as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 24 foreign ticket work: native schedule door as other workspace -> 404/{"error":""}
+PROBE 25 run read scope: GET /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-runs -> 200/{"runs":[{"id":"synthetic-hh-schedule-run-management-allowed","state":"failed"}]}
+PROBE 26 hidden run query: GET /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-runs?conversation_id=hidden -> 200/{"runs":[]}
+PROBE 27 hidden run reconcile: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-runs/synthetic-hh-schedule-run-management-hidden/reconcile -> 404/{"error":""}
+PROBE 28 foreign run read: GET /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-runs as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 29 foreign run reconcile: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-runs/synthetic-hh-schedule-run-management-allowed/reconcile as other workspace -> 403/{"error":"Project not found, or you do not have access to it"}
+PROBE 30 run reconcile commit revocation: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-runs/synthetic-hh-schedule-run-management-allowed/reconcile; selection removed before audit -> 409/{"error":"Workflow configuration or authority changed; reload before applying changes"}
+PROBE 31 selected run reconcile: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-runs/synthetic-hh-schedule-run-management-allowed/reconcile -> 200/{"state":"cancelled"}
+PROBE 32 NULL hidden run read: GET /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-runs NULL scope -> 200/{"runs":[{"id":"synthetic-hh-schedule-run-management-hidden","state":"failed"},{"id":"synthetic-hh-schedule-run-management-allowed","state":"cancelled"}]}
+PROBE 33 NULL hidden schedule create: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules hidden group NULL scope -> 201/{"id":"4223b7bf-cbba-46a3-88ca-0b7029166221","state":"pending","reason":null}
+PROBE 34 NULL hidden schedule edit: PATCH /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-schedules/4223b7bf-cbba-46a3-88ca-0b7029166221 NULL scope -> 200/{"id":"4223b7bf-cbba-46a3-88ca-0b7029166221","state":"pending","reason":null}
+PROBE 35 NULL hidden run reconcile: POST /api/management/projects/p-synthetic-hh-schedule-management-1/workflow-runs/synthetic-hh-schedule-run-management-hidden/reconcile NULL scope -> 200/{"state":"cancelled"}
+PROBE 36 selected scheduled admission: GET /api/management/projects/p-synthetic-hh-schedule-management-1/conversations/417e53e8-e7e4-457b-9778-314c547f3fa0/workflows after due tick -> 200/{"schedules":[{"state":"sent","reason":null}]}
+PROBE 37 scope revoked admission: scheduled tick then owner GET workflows -> 200/{"state":"cancelled","reason":"conversation_access_denied","messages":0}
+PROBE_TOTAL=37 schedule authority area=management
+Workflow phase failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+Workflow phase failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+Survey recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Integration recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Voice media recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at Object.batch (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201895:41)
+    at expireVoiceMedia (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:225498:17)
+Outbox recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.all (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201882:14)
+Generation recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Knowledge recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.all (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201882:14)
+Context recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.all (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201882:14)
+Ticket continuation recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.all (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201882:14)
+Training recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at Object.batch (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201895:41)
+    at stopDeletedTraining (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:211045:17)
+Local result recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.all (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201882:14)
+Brand recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Site read recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Lead recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201853:55)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Counter recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+QUEUE-004: timezone/dependency snooze, response wake, edited overdue owner, cancellation/reassignment, once-only send, interrupted claim and provider outcomes survive restart without replay
+Workflow phase failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+Survey recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Integration recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Voice media recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at Object.batch (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201895:41)
+    at expireVoiceMedia (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:225498:17)
+Outbox recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.all (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201882:14)
+Generation recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Knowledge recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.all (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201882:14)
+Context recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.all (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201882:14)
+Ticket continuation recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.all (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201882:14)
+Training recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at Object.batch (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201895:41)
+    at stopDeletedTraining (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:211045:17)
+Local result recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.all (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201882:14)
+Brand recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Site read recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Lead recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201853:55)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+Counter recovery failed Error: Injected invocation termination
+    at alive (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230463:28)
+    at Object.prepare3 [as prepare] (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230512:5)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:230437:46)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at Object.prepare (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:10876:27)
+    at prepare3 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201851:101)
+    at execute2 (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201873:28)
+    at Object.run (file:///home/agent/rer-consolidation/work/hh-owner-design-inbox-1/repo/script-0.mjs:201880:14)
+AUTOMATION-002: 48/96 business hours, four-day close, weekend/DST, interrupted cursor restart, reset, repeat refusal and automation actors passed
+STATUS-001: widget/email reopen and owner wakes; hidden holds in widget/portal/mail; custom Pending SLA/report; configured close; requester/CC/tag/field follow-up; forbidden role passed
+✔ a replacement request moves through scoped fields, a reviewed macro, shared queue work, private collaboration, routing, schedules and durable automations before closure and erasure (233427.830049ms)
+✔ two brands share a permitted team while customer identity, knowledge, routing, sender policy and reports retain their current brand authority (12474.51449ms)
+{"proof":"R10 problem incidents","linked":25,"solved":23,"providerRejected":1,"optOutBlocked":1,"emails":11,"replayEmails":0,"slaChecked":{"solved":23,"open":3},"invitations":3}
+✔ a support lead links affected requests to one problem, follows its engineering issue and sends scoped recovery updates once while preferences, provider uncertainty and erasure remain honest (11435.952167ms)
+✔ SLA field conditions admit only fields readable by every current workspace role (5422.600204ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 417643.360285

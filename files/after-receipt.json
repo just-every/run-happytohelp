@@ -1,0 +1,141 @@
+{
+  "phase": "after",
+  "head": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+  "workingTreeClean": true,
+  "screenshots": [
+    "screenshots/after/D4-D13-D14-D16-conversation-1440.png",
+    "screenshots/after/D4-D13-D14-D16-conversation-390.png",
+    "screenshots/after/D4-email-explanation-1440.png",
+    "screenshots/after/D4-email-explanation-390.png",
+    "screenshots/after/D15-ticket-status-1440.png",
+    "screenshots/after/D15-ticket-status-390.png",
+    "screenshots/after/D11-save-reply-1440.png",
+    "screenshots/after/D11-save-reply-390.png",
+    "screenshots/after/D11-more-options-1440.png",
+    "screenshots/after/D11-more-options-390.png",
+    "screenshots/after/D18-contacts-1440.png",
+    "screenshots/after/D18-contacts-390.png",
+    "screenshots/after/D18-email-fallback-1440.png",
+    "screenshots/after/D18-email-fallback-390.png",
+    "screenshots/after/D21-security-log-1440.png",
+    "screenshots/after/D21-security-log-390.png",
+    "screenshots/after/D22-profile-1440.png",
+    "screenshots/after/D22-profile-390.png",
+    "screenshots/after/D13-widget-rating-1440.png",
+    "screenshots/after/D13-widget-rating-390.png"
+  ],
+  "checks": [
+    "Owner reply appeared in the customer widget",
+    "An email-only contact is included and displayed by its saved email",
+    "Customer rated the conversation without answering another question"
+  ],
+  "viewportMeasurements": [
+    {
+      "name": "D4-D13-D14-D16-conversation",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "name": "D4-D13-D14-D16-conversation",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "name": "D4-email-explanation",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "name": "D4-email-explanation",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "name": "D15-ticket-status",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "name": "D15-ticket-status",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "name": "D11-save-reply",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "name": "D11-save-reply",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "name": "D11-more-options",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "name": "D11-more-options",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "name": "D18-contacts",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "name": "D18-contacts",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "name": "D18-email-fallback",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "name": "D18-email-fallback",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "name": "D21-security-log",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "name": "D21-security-log",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "name": "D22-profile",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "name": "D22-profile",
+      "width": 390,
+      "documentWidth": 390
+    },
+    {
+      "name": "D13-widget-rating",
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    {
+      "name": "D13-widget-rating",
+      "width": 390,
+      "documentWidth": 390
+    }
+  ],
+  "contact": "Dana",
+  "onHoldCustomerState": "open",
+  "savedReplyVisibleFields": 3,
+  "contactRows": 1,
+  "confirmationEmailRefusalStatus": 503,
+  "shownVisitorRows": 4,
+  "solvedCustomerState": "solved"
+}

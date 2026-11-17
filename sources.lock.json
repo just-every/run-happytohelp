@@ -7849,7 +7849,7 @@
       "executable": false
     },
     "src/modules/legacy-import/archive-only.ts": {
-      "sha256": "461d443470fa2ef56310c19d894e2559d5404a7e4e4b88ba1305f27c7000f00f",
+      "sha256": "ff9ec8914afebd42aa6f9e13560733615b92255f4914f45b348b60c80426ce4e",
       "executable": false
     },
     "src/modules/legacy-import/custody/authority.ts": {
@@ -17653,7 +17653,7 @@
       "executable": false
     },
     "tests/legacy-export/fidelity-inputs.mjs": {
-      "sha256": "ecc4529c900470a6f01a47192a9d7438bbbb7aff012ebfed0ab87dcf6180f06b",
+      "sha256": "3a4d713d4effba4a41346f9142e59d3028a800607d49b496e5ae5ac8ceaa506e",
       "executable": false
     },
     "tests/legacy-export/field-matrix.mjs": {

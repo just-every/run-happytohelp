@@ -130,10 +130,12 @@ test('provider preflight refuses absent consent and absent credentials distinctl
  const uncredentialed = await run({credential: ''});
  assert.equal(uncredentialed.code, 4); assert.equal(uncredentialed.requests.length, 0);
  assert.match(uncredentialed.stderr, /Missing scoped token: set CLOUDFLARE_API_TOKEN/);
- const whitespace = await run({credential: '   '});
- assert.equal(whitespace.code, 4); assert.equal(whitespace.requests.length, 0);
- assert.match(whitespace.stderr, /Missing scoped token: set CLOUDFLARE_API_TOKEN/);
- assert.doesNotMatch(whitespace.stderr + whitespace.stdout, /\[REDACTED\]/);
+ for (const credential of [' ', '   ']) {
+  const whitespace = await run({credential});
+  assert.equal(whitespace.code, 4); assert.equal(whitespace.requests.length, 0);
+  assert.match(whitespace.stderr, /Missing scoped token: set CLOUDFLARE_API_TOKEN/);
+  assert.doesNotMatch(whitespace.stderr + whitespace.stdout, /\[REDACTED\]/);
+ }
  for (const args of [['--account-id', 'malformed', '--worker', worker, consent], ['--account-id', account, '--worker', 'not/a/worker', consent]]) {
   const malformed = await run({args});
   assert.equal(malformed.code, 2); assert.equal(malformed.requests.length, 0);

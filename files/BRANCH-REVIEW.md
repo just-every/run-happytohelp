@@ -1,0 +1,9 @@
+Read-only main inspected: b2b9bc602a73feb542017bca8a46529f68b631c4, 2026-11-17.
+
+BRANCH-INVENTORY.json contains all 989 observed origin/cloud/* tips, SHA, date, subject and ancestor-of-main result. 545 tips are not ancestors; a retained remote ref is not evidence that a round is still active.
+
+All sd-prefixed refs were enumerated, including non-ancestor candidates. cloud/sd-e6-happytohelp-queue-003-sol is already in main; its astra variant is not an ancestor but covers the same QUEUE-003 work already DONE. cloud/sd-h2h-d2 has old preflight commits 1990e957/2e9e50d0/9e7356cb; current main b35c5fe5 through 05f18d8c/a64ebd6d supplies and repairs that feature. Do not schedule it. cloud/sd-h2h-d1c is an older large Base/authoring/import-kit adoption candidate; these new entries exclude its shared atomic engine. cloud/sd-happytohelp-refresh-0296 has newer rebased descendants already in main. sd release 0.4.31/0.4.30 and current 0.4.28 baseline work are already reflected in main. Old non-ancestor release 0.4.25-r2 is not new product scope.
+
+Current non-sd stranger13 behavior c0b85c26 and UI bb70a042/ed085018 also remain separate from main: behavior touches ticket references, lifecycle history/conflict recovery, notification reference copy and placeholder rendering; UI touches merge search, connection binding choices, procedure receipt controls, Move in copy and navigation. New entries exclude those UI/behavior hunks. stranger13 copy's connection guide has landed through a1ec372f/b2b9bc60. Main also already includes stranger11 follow-ups/undo and registration/health changes even where sibling remote branch tips are not ancestors.
+
+The planner did not infer CI/queue custody from branch names or launch anything. Immediately before feeding an entry, refresh refs read-only and compare its specific source/test paths to newly landed work. No contract status/evidence edits are part of any entry.

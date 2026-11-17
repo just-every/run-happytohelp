@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "d8858c7c9e198cea4ef9e8beb7117c83e8d58609",
+      "bytes": 286197,
+      "path": "BRANCH-INVENTORY.json",
+      "sha256": "720421f6d2513a928871601971aa34b81fe26839c509ac8c942ea6867fec4391"
+    },
+    {
+      "blob": "b5a55c0f90698ec37d469925585a12c7a4d3454e",
+      "bytes": 1914,
+      "path": "BRANCH-REVIEW.md",
+      "sha256": "81bb4f63cde18bf011b616d6f724551c98f7d9d70706d532dba25edc7755b25a"
+    },
+    {
+      "blob": "28efd18636d0425816a66d2de944dac5155b3ddc",
+      "bytes": 2059,
+      "path": "CHECK-RECEIPT.json",
+      "sha256": "baf8e2131ee362e60e45ba085adf6a84f06b098efe5c385f1086e22187084183"
+    },
+    {
+      "blob": "f02929f3037a04d4592cab804c921255ef4d4ecc",
+      "bytes": 39132,
+      "path": "CLASSIFICATIONS.json",
+      "sha256": "a545bbb3acb77481cc1845bd6c23a2606cee9eee707e518b577b23bbc215cbbb"
+    },
+    {
+      "blob": "a9a0536b4702bca6df5fe149fa979c6a566bc319",
+      "bytes": 348795,
+      "path": "CLAUSE-AUDIT.md",
+      "sha256": "8694cd49381079ff030443fcb16543ad9f339446a9f63c969f9a62d08eb48bf9"
+    },
+    {
+      "blob": "6aefa1a4da0ce0cce8df0daad701c286fd89007b",
+      "bytes": 11330,
+      "path": "QUEUE-ENTRIES.txt",
+      "sha256": "4ce8d40fcae7100bbee51842e6f29a3aede09c08cefa142b3ef54d2d0d0b3a15"
+    },
+    {
+      "blob": "104708486e270788dfb0d03177b3f68fe02d09a2",
+      "bytes": 51432,
+      "path": "REPORT.md",
+      "sha256": "c36a1e724cc339ddc27f3b3a0649207ab10b0feeed7ea714e347fe45d96b8621"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-docs-check.txt",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "8f4e9f32819d2aaa4565cac945cf0ae922750060",
+      "bytes": 675,
+      "path": "provider-preflight.tap",
+      "sha256": "26e0bff1065ba19af35b72e0b7bc43719553c4078e32b2e9409d05119a702262"
+    },
+    {
+      "blob": "0e79ceba33b75cc22e24bbbd15bb900ab4b5af80",
+      "bytes": 762085,
+      "path": "source-check.txt",
+      "sha256": "bffc2205f0c0330e5ef9f7659cddacd9139030f5cc1587083a311e851bb0552e"
+    }
+  ],
+  "product_branch": "main",
+  "product_head": "b2b9bc602a73feb542017bca8a46529f68b631c4",
+  "ref": "refs/heads/evidence/ct-open-points-plan-happytohelp-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "ct-open-points-plan-happytohelp-1"
+}

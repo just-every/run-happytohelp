@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-happytohelp",
+  "main": "b2b9bc602a73feb542017bca8a46529f68b631c4",
+  "observed_at": "2026-11-17T10:51:10.707376+00:00",
+  "checks": [
+    {
+      "command": [
+        "node",
+        "--test",
+        "tests/journeys/provider-preflight.mjs"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 1.772,
+      "output": "provider-preflight.tap"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/contract-docs.mjs",
+        "check"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.129,
+      "output": "contract-docs-check.txt"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.531,
+      "output": "source-check.txt"
+    }
+  ],
+  "paid_api_calls": 0,
+  "live_provider_calls": 0,
+  "product_mutations": false,
+  "product_branch": "main",
+  "product_head": "b2b9bc602a73feb542017bca8a46529f68b631c4",
+  "product_status_porcelain": "",
+  "product_index_sha256": "a8f502048bb3ebefbe0497a9d6e4d962a0ab16a0642ae4b4aab952d3d60b6d4f",
+  "product_candidate_commits": "",
+  "main_advertised_at_final_read": "b2b9bc602a73feb542017bca8a46529f68b631c4\trefs/heads/main",
+  "publication_authority": "Only refs/heads/evidence/ct-open-points-plan-happytohelp-1; isolated report-only tree; product remains untouched",
+  "evidence_publication_prechecks": [
+    {
+      "attempt": 1,
+      "status": "local audit stopped before network push",
+      "reason": "partial-clone product ancestry cannot be fetched into temporary report store without unavailable blobs"
+    },
+    {
+      "attempt": 2,
+      "status": "local audit stopped before network push",
+      "reason": "same partial-clone guard dependency diagnosed; no network push attempted"
+    },
+    {
+      "next_attempt": 3,
+      "guard": "Import actual main commit as exclusion-side shallow boundary only; audit entire unrelated evidence candidate lineage with exact required git log and validate all parents"
+    }
+  ]
+}

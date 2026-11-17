@@ -1,0 +1,81 @@
+```queue-entries
+- role: BUILDER
+  title: Preserve supplied Intercom attachment bytes through Move in
+  ids: [MOVE-IN-002]
+  class: HARD
+  acceptance: "A1 Intercom slice: exact public/private attachment bytes, honest omissions, resume/repeat/undo; A2 revoked reviewer and source erasure cause no sends or resurrection. This does not complete all vendors, final delta or live cutover."
+  files: "src/modules/move-in/readers/normalise.ts; new readers/intercom-attachments.ts; docs/moving-in-shapes.md; existing supplied-attachments.ts only if needed without changing its limits; new tests/move-in/intercom-attachments.mjs; existing move-in admission/custody/erasure registration."
+  proof: "Use documented Intercom records plus an explicitly documented owner-supplied byte/digest sidecar; never claim those extra bytes are an official Intercom export field. No URL retrieval. Test public source/part and private note files, malformed/digest/size/count refusals, tenant/role revocation, repeated import exact state, undo equality and erasure/export bytes. Exercise mounted Move in and actual downloads. Assert and capture review, omission, result and private-attachment refusal at 1440 and 390. Run touched journeys, typecheck and source check."
+  must_not_touch: "CONTRACT.md Status/Gap/Evidence or generated acceptance/claims; Base/import-kit atomic engine or M3/Business grants; Zendesk downloader/redirect policy; Help Scout/Freshdesk fidelity; source-record replacement/delta rules; active stranger13 UI; no import sends or live accounts."
+  Gate: required
+
+- role: BUILDER
+  title: Restore native machine credential lifecycle acceptance
+  ids: [API-002]
+  class: CHEAP
+  acceptance: "A1 create-only/append-only/read-only/full secrets once, hash storage and complete Settings metadata; A2 exact mailbox/brand mismatch refusal; A3 rotation overlap, expiry, revoke, workspace block and whole-or-absent in-flight create."
+  files: "New tests/helpers/machine-api/credential-acceptance.mjs and browser helper; additive existing connections/workflows-browser registration. If a defect is found, limit production repair to src/modules/api-integrations/machine-credentials.ts and credential Settings projection."
+  proof: "Drive actual native issuance/rotation/settings and public API routes; independently inspect stored secret hashes, old/new overlap boundaries, clock expiry and an atomic admission race. Assert denied requests leave all business stores unchanged. At 1440 and 390 assert and capture one credential card, one-time secret, bindings and revocation. Preserve only synthetic credential-free receipts. Run touched tests, typecheck and source check."
+  must_not_touch: "Contract status/evidence/generated claims; native authentication or Base sources; API create/append/attachment/event/erasure implementations; frozen role/ticket-scope semantics; stranger13 binding-options UI; no new credential model, live provider or relaxed binding."
+  Gate: required
+
+- role: BUILDER
+  title: Restore machine request identity and replay acceptance
+  ids: [API-003]
+  class: CHEAP
+  acceptance: "A1 identical/changed/concurrent/missing-key create; A2 existing verified/new asserted email, phone and external ID, conflicting identifiers without disclosure and erased identity refusal; A3 complete operator attribution/source link and spoofed source, duplicate reference, unknown tag, assignment and internal-field refusals."
+  files: "New tests/helpers/machine-api/create-acceptance.mjs and operator readback browser helper; additive existing connections registration. Limit any production defect repair to create-input.ts, requester-admission.ts or api-create.ts within src/modules/api-integrations."
+  proof: "Use independent same/foreign-workspace fixtures and two real concurrent API creates; count one ticket or none after each outcome, preserve exact response replay and requester verification state, inspect all refused mutations for nondisclosure/no effects. At 1440 and 390 assert/capture the actual API-channel ticket, machine actor and functional source back-link. Run touched tests, typecheck and source check."
+  must_not_touch: "Contract metadata/generated claims; credential lifecycle owned by API-002 entry; attachment/append/event/erasure implementations; shared identity matching outside machine admission; frozen role scope or another seed's API; no live customer identities."
+  Gate: required
+
+- role: BUILDER
+  title: Prove atomic machine attachments and append lifecycle
+  ids: [API-004]
+  class: CHEAP
+  acceptance: "A1 bounded upload and digest-matching HTTPS bytes versus digest mismatch, redirect, private-address, oversize/type refusal, always complete ticket+bytes or neither; A2 customer/note append, Solved reopen, Closed follow-up, merged conflict and create-only/other-credential/foreign append denial."
+  files: "New tests/helpers/machine-api/attachment-append-acceptance.mjs; additive connections registration; if necessary only src/modules/api-integrations/create-attachments.ts, upload-lifecycle.ts or api-append.ts."
+  proof: "Only replace the remote HTTP edge, never admission/D1/R2/authority. Compare downloaded hashes and complete D1/R2 state under lost/duplicate responses; prove private notes stay out of customer transcript, no truncation/orphan files and exactly one Closed follow-up. At 1440 and 390 assert/capture operator attachment and linked follow-up readback and customer note exclusion. Run touched tests, typecheck and source check."
+  must_not_touch: "Contract metadata/generated claims; credential issuance/create identity/event/erasure modules; Base network policy, URL allow rules, limits, legacy importer or frozen lifecycle semantics. Report an out-of-scope shared defect rather than modifying another entry's module."
+  Gate: required
+
+- role: BUILDER
+  title: Prove credential-filtered machine events and redacted history
+  ids: [API-006]
+  class: CHEAP
+  acceptance: "A1 signed created/message/status/assigned events, per-credential destination filtering, no text/contact fields, duplicate/out-of-order handling and same-ID rate-limit retry; A2 issue/rotate/binding/first-use/denial/revoke/create/append audit, issuer/requester erasure redaction with retained events."
+  files: "New tests/helpers/machine-api/events-history-acceptance.mjs; additive connections registration; any defect repair restricted to machine event projection/filtering and audit projection under src/modules/api-integrations."
+  proof: "Real native issuance/actions and independent signature receiver with synthetic network edge; hand-derive permitted event IDs and exact retry identity. Compare native ticket history and exported audit before/after issuer/requester erasure; scan all receipt bytes for synthetic secret and personal sentinels. At 1440 and 390 assert/capture history and delivery outcomes. Run touched tests, typecheck and source check."
+  must_not_touch: "Contract metadata/generated claims; credential lifecycle, admission, attachment/append or erasure algorithms; Base retry budgets; frozen audit visibility; no live webhooks, new automatic retries or expanded payloads."
+  Gate: required
+
+- role: BUILDER
+  title: Prove complete machine-request erasure across retained stores
+  ids: [API-007]
+  class: CHEAP
+  acceptance: "A1 populated API-created contact content, replay bodies, pending events and file removal, complete owner counts, stale replay/new-create tombstone fencing. Retain and rerun existing A2 metadata-only revoked/inert restore proof."
+  files: "New tests/helpers/machine-api/erasure-acceptance.mjs; tests/helpers/recovery/journey.mjs supporting assertions only; additive erasure/connections registration. Any repair restricted to machine-store erasure inventory/projection in src/modules/customers; no native erasure policy change."
+  proof: "Populate ticket, customer/note bytes, replay response, pending event and uploaded attachment through public routes; snapshot all native business stores and export, erase through the owner door, compare exact completed/failed/unsupported counts and positive controls. Restore to a disposable clean destination and prove revoked credentials, digest fences and no replay. At 1440 and 390 assert/capture complete owner erasure results without personal payloads. Run touched erasure/restore tests, typecheck and source check."
+  must_not_touch: "Contract metadata/generated claims; API credential/create/append/event algorithms; Base portable encoding, immutable erasure authority or frozen retention/legal-hold/ticket-scope semantics; no claim to recall old offline archives or sent provider bytes."
+  Gate: required
+
+- role: BUILDER
+  title: Execute the published API examples without exposing secrets
+  ids: [API-008]
+  class: CHEAP
+  acceptance: "A1 run the actual docs/api.md fenced shell examples against an emitted rer dev server and confirm business results with no credential in process arguments or logs."
+  files: "docs/api.md only for observed runnable-example corrections; new tests/helpers/api-doc-examples.mjs; additive existing connections/runtime test registration."
+  proof: "Read the committed fenced examples, seed documented IDs/current revision, issue synthetic scoped credentials privately and execute those exact snippets. Confirm each expected status and persisted effect, identical replay where documented, and argv/stdout/stderr secrecy by independent process/log observation. Use loopback-only data, no product egress. Assert/capture the built guide and code layout at 1440 and 390. Run touched tests, docs check, typecheck and source check."
+  must_not_touch: "Contract metadata/generated claims; API semantics, scopes, schema or other entries' acceptance helpers; no shell tracing, real credentials, live providers or copied substitute examples."
+  Gate: required
+
+- role: BUILDER
+  title: Deliver problem-resolution replies to eligible SMS incidents
+  ids: [CONVERSATION-003]
+  class: HARD
+  acceptance: "A1 native SMS slice: one problem with five email/widget/SMS incidents, previewed requester-specific replies, current consent/window blocker and per-ticket outcome, identity separation and independent status/SLA/CSAT; A2 unlink before solve leaves the incident unchanged. Live Twilio receipt remains held."
+  files: "src/modules/tickets/problem-delivery.ts, problem-execute.ts and problem preview/result projection only as required; new tests/helpers/inbox/problem-sms.mjs called from existing problems.mjs; existing support-channels test edge reused."
+  proof: "Use ordinary signed inbound SMS events and existing consent/A2P/window checks. Assert opt-out or revocation after preview prevents dispatch, duplicate/concurrent solve sends once, unknown/lost provider receipt remains uncertain after restart, and no cross-recipient text. Compare status/SLA/CSAT and unlinked positive controls. At 1440 and 390 assert/capture preview, per-incident refusal/uncertainty and final result. Run inbox/channel touched tests, typecheck and source check."
+  must_not_touch: "Contract metadata/generated claims; support-channels consent policy, provider credentials/connection models or Twilio live qualification; frozen notification/SLA/escalation custody; WhatsApp/Meta transport expansion; stranger13 ticket-reference/lifecycle UI; no automatic replay or cross-channel fallback."
+  Gate: required
+```

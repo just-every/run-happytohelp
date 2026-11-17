@@ -69,9 +69,18 @@ export function zendeskTicketFields(record:SourceRecord,projectId:string,convers
   if(!definition){omissions.push('ticket_custom_field_definition_missing:'+source);continue}
   let field:StoredField
   try{field=zendeskField(definition,projectId,false)}catch{omissions.push('ticket_custom_field_unsupported:'+source);continue}
-  // Do not coerce a vendor value: the original numeric/boolean/string type is
-  // part of its meaning and must pass the same native validation as an edit.
-  const checked=validateFieldValue(field,value.value)
+  // Zendesk exports numeric fields as strings. Convert only a documented
+  // numeric definition and decimal syntax; refuse unsafe or lossy values.
+  // Source custody retains the exact original spelling (including zeros).
+  let native=value.value
+  if(['integer','decimal'].includes((definition.payload as any).type)&&typeof native==='string'){
+   if(!/^-?\d+(?:\.\d+)?$/.test(native))throw Error('ticket_numeric_field_invalid:'+source)
+   const number=Number(native)
+   const canonical=(v:string)=>v.replace(/^(-?)0+(?=\d)/,'$1').replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'').replace(/^-0$/,'0')
+   if(!Number.isFinite(number)||Math.abs(number)>Number.MAX_SAFE_INTEGER||field.type==='number'&&!Number.isSafeInteger(number)||canonical(String(number))!==canonical(native))throw Error('ticket_numeric_field_not_representable:'+source)
+   native=number;omissions.push('ticket_numeric_string_converted:'+source)
+  }
+  const checked=validateFieldValue(field,native)
   if(checked!==null)rows.push({project_id:projectId,conversation_id:conversationId,field_id:field.id,value_json:JSON.stringify(checked)})
  }
  return rows

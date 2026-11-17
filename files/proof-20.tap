@@ -31,3 +31,33 @@ ok 5 - a lead compares saved procedure definitions, revises an older version wit
   duration_ms: 136326.390139
   type: 'test'
   ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 6 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 132623.008684
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 7 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 136013.152246
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 8 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 148435.598033
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 9 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 136864.970203
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 10 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 141698.244302
+  type: 'test'
+  ...

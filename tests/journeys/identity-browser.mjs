@@ -4,7 +4,7 @@ import {invitationJoinBrowser} from '../helpers/identity/magic-browser.mjs'
 import {securityBrowserJourney} from '../helpers/identity/security-browser.mjs'
 import {legacyMoveInAuthReturn} from '../move-in/legacy-package-upload/auth-return.mjs'
 
-test('an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session',async()=>{
+test('a new teammate chooses a password and opens the inbox signed in, and an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session',async()=>{
  const browser=await launchBrowser()
  try{await invitationJoinBrowser(browser);await securityBrowserJourney(browser);await legacyMoveInAuthReturn(browser)}finally{await browser.close()}
 })

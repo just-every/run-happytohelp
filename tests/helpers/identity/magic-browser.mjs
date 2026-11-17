@@ -94,14 +94,19 @@ export async function invitationJoinBrowser(browser){
   await page.waitForURL(url=>url.pathname==='/login')
   assert.equal((await context.request.get(origin+'/api/identity/session')).status(),401)
   assert.equal((await context.request.get(origin+'/api/identity/sign-in-options')).status(),200)
+  const auth=await (await context.request.get(origin+'/api/identity/auth-options')).json()
+  assert.notEqual(auth.localOwnerEntry,true,'the teammate has no local-owner custody')
   const mail=await (await context.request.get(origin+'/api/identity/sign-in-options')).json()
   assert.equal(mail.mailMode,'local','the proof reproduces the local trial where the misleading message appeared')
   await page.getByLabel('Email',{exact:true}).fill('synthetic-d20-teammate@example.test')
   await capture('teammate-sign-in')
   // No source-literal assertion: the teammate has no installer/local-owner door or instructions.
   assert.equal(await page.getByRole('link',{name:/local owner/i}).count(),0)
+  const mailOptions=page.waitForResponse(response=>response.url()===origin+'/api/identity/sign-in-options')
   await page.goto(origin+'/login/magic')
+  await mailOptions
   await page.getByRole('heading',{name:'Email sign-in',exact:true}).waitFor()
+  await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))))
   await page.getByRole('link',{name:'Use your password',exact:true}).waitFor()
   await capture('teammate-email-sign-in')
   // Returning to the invitation in a signed-out browser cannot grant a second session.

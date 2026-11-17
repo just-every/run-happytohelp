@@ -16645,7 +16645,7 @@
       "executable": false
     },
     "tests/helpers/identity/magic-browser.mjs": {
-      "sha256": "df812789a49c74334584e1947db13c50e4625b92791e3d1d5f26b17804543d9b",
+      "sha256": "cb19e45c01c90f190768b28cfe955d8e31e6804cdbb03ae3d7f3b53896ea06d7",
       "executable": false
     },
     "tests/helpers/identity/mail-edge.mjs": {
@@ -16745,7 +16745,7 @@
       "executable": false
     },
     "tests/helpers/identity/two-factor.mjs": {
-      "sha256": "9c7d8bfb6c00f88aa4e5eef3e178f2136d1d5fab7b9a6499aa9115f3f5ee81a2",
+      "sha256": "649120e47058db3af2f6597ca9e1882cee1110e17cf5402c84d7c6a9a03c4535",
       "executable": false
     },
     "tests/helpers/identity/upgrade-fence.mjs": {
@@ -17505,7 +17505,7 @@
       "executable": false
     },
     "tests/journeys/identity-browser.mjs": {
-      "sha256": "ccf7191b2998ee44147744167c8436f183b5bb078ba5d008f9868d30c90e2b40",
+      "sha256": "400475b35e969703608530930b775d49b960011e0deb858a773897ce8b911968",
       "executable": false
     },
     "tests/journeys/identity.mjs": {

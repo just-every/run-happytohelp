@@ -1,0 +1,13 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-root-signedout-1",
+  "head": "bdef5aff63ee5783883d0d0ebf939182fc27c90f",
+  "runId": 44124009048,
+  "url": "https://github.com/just-every/run-happytohelp/actions/runs/44124009048",
+  "callsUsed": 2,
+  "budget": 10,
+  "lastObservedAt": "2026-11-17T16:27:31Z",
+  "nextPollNotBefore": "2026-11-17T16:32:31Z",
+  "status": "in_progress",
+  "conclusion": null
+}

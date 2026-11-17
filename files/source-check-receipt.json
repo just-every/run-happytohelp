@@ -1,0 +1,7 @@
+{
+  "command": "node scripts/edition-authoring/cli.mjs check",
+  "exitCode": 0,
+  "ok": true,
+  "head": "bdef5aff63ee5783883d0d0ebf939182fc27c90f",
+  "tree": "945d9af58a701079515ac02dbc24bc2f270630d5"
+}

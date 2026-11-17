@@ -1,0 +1,17 @@
+Welcome email not sent 3e5a7310-f3ae-4abb-b2c3-c1ad5bca5397 Managed mailbox is not active
+✔ a first owner provisions useful support, observes actual Setup receipts, installs a provider and answers within the daily allowance while local and uncertain mail stay honest (120605.805301ms)
+✔ a new owner imports their website as private searchable knowledge once, keeps their own edits and deletes the source without later jobs bringing it back (4420.889252ms)
+PUBLIC_PROOF PUBLIC-005 docs 200/200/404 with unavailable alias lookup; help control=500
+✔ a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing (198781.675825ms)
+✔ help filled by a Move in import stays noindex on every public page until a member publishes, then is indexable for good (163568.276739ms)
+PUBLIC_PROOF overload positions /help/p-public-busy:16 /help/busy-help/busy-guide:27 /busy-help:17 /help/p-public-busy/requests:8 /portal/p-public-busy:4 https://help.example/:15 https://help.example/busy-guide:26 PUT /api/public-site/projects/p-public-busy/alias:3 html:/help/p-public-busy:16 html:/help/busy-help/busy-guide:27 html:/busy-help:17 html:/help/p-public-busy/requests:8 html:/portal/p-public-busy:4 html:https://help.example/:15 html:https://help.example/busy-guide:26 html:POST /api/knowledge/public/p-public-busy/articles/busy-guide/helpful:10 POST /auth/signout
+PUBLIC_PROOF read effects once /help/once-help/once-guide:29 https://once.example/once-guide:28 /help/once-help/search?keyword=guide:18 https://once.example/search?keyword=guide:17 /api/knowledge/public/p-read-once/search?q=guide:12 help-verify:6 portal-verify:35
+✔ the public site and a configured help host answer D1's overload as the application does: a read is retried, then 503 with Retry-After, never 500, and a write is never re-run; a read's side effects happen once (105296.185896ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 593875.389699

@@ -1,0 +1,136 @@
+{
+  "files": [
+    {
+      "blob": "9012e5b4e6afaaa78d2951fffe980b24f3ffd26f",
+      "bytes": 8646,
+      "path": "REPORT.md",
+      "sha256": "7c087a34bd9be47e9e8711dd8c1f578f3e34447fe85487c451ba3c37a7f5565c"
+    },
+    {
+      "blob": "123b9974938ecc859f619f0637e59755d73e7d19",
+      "bytes": 286,
+      "path": "before-receipt.json",
+      "sha256": "afebf628886a63400c196a31a22b295bcd17f59764320555b010cba362be7481"
+    },
+    {
+      "blob": "7804a6477ecfbb90a1936c90c46ab97ecdcbee92",
+      "bytes": 2107,
+      "path": "checks-receipt.json",
+      "sha256": "10598d60ec6fa1da743a8e603b5ce4d2ec1e8f02de2d5fcafd58c0079ddd61b3"
+    },
+    {
+      "blob": "578e8b753ea97a3a5efd0be324bca5b8b84f4bb3",
+      "bytes": 273,
+      "path": "ci-discovery.json",
+      "sha256": "213caf9413a07e12ffda062ad8a9cbc0b3aced8ad599a9571e59194b26b7850e"
+    },
+    {
+      "blob": "095d45cc746384039cf15f52140c277ef3f8683c",
+      "bytes": 425,
+      "path": "ci-receipt.json",
+      "sha256": "e7bcb7786a67abc739fb82e91507d8efa2d9c38700d4e6ccf364c4196648082e"
+    },
+    {
+      "blob": "aaddf823d894f6b9d641d24c67cc5384d997e8d8",
+      "bytes": 181,
+      "path": "ci-result.json",
+      "sha256": "2d211f3747898e5626e31521b48770e7d5220fb4a431fa2c7ad58b8bdd52eccf"
+    },
+    {
+      "blob": "d7925fd9f88c716bb50e4fcce6d3e203574010c5",
+      "bytes": 288,
+      "path": "initial-root-journey.log",
+      "sha256": "a0b9dd1780884a80060ba98fea8d44150975aad118a4043c188a06265d2793ad"
+    },
+    {
+      "blob": "56f0a2c96d661b3034891dd17256505621584320",
+      "bytes": 1067,
+      "path": "local-receipt.json",
+      "sha256": "8cc1298282bc141a563d2af9885d862d5f2148aadba7fbe77622fb3e6044b52d"
+    },
+    {
+      "blob": "9c2093d03057aba86f325757d2a74b865e08a18e",
+      "bytes": 492,
+      "path": "root-journey.log",
+      "sha256": "f7cb289c3dd158f7dfb53649759f4724db122bba3ba4ff3018550c2cc74d7f4f"
+    },
+    {
+      "blob": "51e22ae43257d0a42acbdf5c48dc70d62911e165",
+      "bytes": 870801,
+      "path": "screenshots/before-configured-signedout-1440.png",
+      "sha256": "ddcdbe209090b537d33c2b3f20185da757618f6f1e179026a522d3a2d7836d43"
+    },
+    {
+      "blob": "5705eae71428bc107fd5f0bc0fa061130388dd71",
+      "bytes": 737594,
+      "path": "screenshots/before-configured-signedout-390.png",
+      "sha256": "b3920e7003a8db55e6832da625cef34cf662bc071aec1fc19cc7d1a51770ce37"
+    },
+    {
+      "blob": "aa007f8197e3ed57eb0716aab11d497846fafca4",
+      "bytes": 26591,
+      "path": "screenshots/root-entry/configured-help-1440.png",
+      "sha256": "ca85202bfe86ac39eaf636c5bd4d5f1266e0a42f939a7bc81ff7029ed06abbb9"
+    },
+    {
+      "blob": "a06c1528f766b30c350320ad05cdaf818ce2bced",
+      "bytes": 21891,
+      "path": "screenshots/root-entry/configured-help-390.png",
+      "sha256": "0f5e8269c75bed59e5f99aa3bb45de9224809d026a503f71f40479053d5e8178"
+    },
+    {
+      "blob": "19206a53086e0bfefb15d5c96e08b3ae8ec81810",
+      "bytes": 99911,
+      "path": "screenshots/root-entry/configured-signin-1440.png",
+      "sha256": "78e70c374c160d14370d0e013d15bc288b0e17120f46d6e5286344ee91de2a86"
+    },
+    {
+      "blob": "8d91b3fbd6016d59a4a3c5e16dbbed292086c1f6",
+      "bytes": 67126,
+      "path": "screenshots/root-entry/configured-signin-390.png",
+      "sha256": "af4eec104fbcd8b096fe88b6699f063016fd1bbfd7b581b4ebe8ce54bf00c691"
+    },
+    {
+      "blob": "427859f81dcef14fbe1c2814a3032982bd3047ad",
+      "bytes": 676,
+      "path": "screenshots/root-entry/receipt.json",
+      "sha256": "15734db274fbb865795a13fafd5f78d8e188824e8c156554976c60faf144e796"
+    },
+    {
+      "blob": "531ba87b664739a4482e4413228ad197cf79e4cd",
+      "bytes": 874161,
+      "path": "screenshots/root-entry/unconfigured-1440.png",
+      "sha256": "95b49f84108480a4cc456efc46181caef9098b3120eb53bc16143ad2ca8c5ff9"
+    },
+    {
+      "blob": "9590ca2a062bcce1a982b775ba546027cf2f8d28",
+      "bytes": 736698,
+      "path": "screenshots/root-entry/unconfigured-390.png",
+      "sha256": "1043d568473827f825991f1cb24fb376471aee21582d754c341c9167ec34f623"
+    },
+    {
+      "blob": "4c6c6c028d0f6fdd2788203e23e158091d1ef123",
+      "bytes": 203,
+      "path": "source-check-receipt.json",
+      "sha256": "12b6fcd3dfd1690ed04ffe13623674fa546438d45890fe5579fcd9141ad45670"
+    },
+    {
+      "blob": "f7f8d15399f282893b19f46482eec5072598df48",
+      "bytes": 2104,
+      "path": "touched-journeys.log",
+      "sha256": "da43a73a05ef5746c3dc1136f7741824f02950d695b38a27ecb7ea1285702018"
+    },
+    {
+      "blob": "693c87e6ebbdfc04e684a5a540fe839da13c2b33",
+      "bytes": 144,
+      "path": "typecheck.log",
+      "sha256": "a1cfe6a76b0a3318349018a981e24c5089b026f983b8deb8f11955453cbdfb57"
+    }
+  ],
+  "product_branch": "cloud/hh-root-signedout-1",
+  "product_head": "bdef5aff63ee5783883d0d0ebf939182fc27c90f",
+  "ref": "refs/heads/evidence/hh-root-signedout-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-root-signedout-1"
+}

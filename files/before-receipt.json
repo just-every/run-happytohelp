@@ -1,0 +1,12 @@
+{
+  "origin": "local rer dev trial",
+  "setupAvailable": false,
+  "signedOut": true,
+  "status": 200,
+  "pathname": "/",
+  "productPageVisible": true,
+  "screenshots": [
+    "screenshots/before-configured-signedout-1440.png",
+    "screenshots/before-configured-signedout-390.png"
+  ]
+}

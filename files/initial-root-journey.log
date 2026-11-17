@@ -1,0 +1,9 @@
+✔ the installation root keeps first-run and signed-in entry, then sends signed-out visitors to published or enabled help and otherwise native sign-in (152576.747562ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 156556.035121

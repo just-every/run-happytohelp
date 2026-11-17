@@ -1,0 +1,33 @@
+{
+  "assertionViewport": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "states": [
+    {
+      "state": "unconfigured",
+      "destination": "/",
+      "status": 200
+    },
+    {
+      "state": "configured-without-help",
+      "destination": "/login",
+      "status": 302,
+      "cacheControl": "no-store"
+    },
+    {
+      "state": "configured-published",
+      "destination": "built-in Help Center",
+      "status": 302,
+      "cacheControl": "no-store"
+    },
+    {
+      "state": "configured-enabled-empty",
+      "destination": "built-in Help Center",
+      "status": 302,
+      "clientNavigation": "same destination"
+    }
+  ],
+  "signedInRoot": "unchanged"
+}

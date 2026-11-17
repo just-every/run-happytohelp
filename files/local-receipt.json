@@ -1,0 +1,20 @@
+{
+  "tag": "hh-root-signedout-1",
+  "setup": {
+    "command": "npx -y @runeditrun/rer setup --answers .rer/answers.json --owner-email fleet@runeditrun.com --non-interactive",
+    "outcome": "passed; 200 migrations applied; native owner claimed; no remote services"
+  },
+  "initialSetupAttempts": [
+    "missing required private answers, corrected with generated local-only answer file",
+    "absolute answer path refused; corrected to ignored checkout-contained .rer/answers.json"
+  ],
+  "environmentInterruption": "Environment re-announced starting/ready during the final candidate rebuild; tool session vanished and its build processes were already zombies. Product checkout and all packet files survived. Rebuild and root journey restarted without changing the pushed candidate.",
+  "staleLockRecovery": {
+    "pid": 9572,
+    "observedState": "Z",
+    "file": ".wrangler/local-operation/active.json",
+    "action": "removed exact verified regular inode after matching this interrupted build owner",
+    "nativeData": "retained",
+    "productChanges": false
+  }
+}

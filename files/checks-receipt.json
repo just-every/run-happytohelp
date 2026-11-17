@@ -1,0 +1,75 @@
+{
+  "tag": "hh-root-signedout-1",
+  "base": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "candidateTree": "945d9af58a701079515ac02dbc24bc2f270630d5",
+  "sourceLockCheck": {
+    "command": "node scripts/edition-authoring/cli.mjs check",
+    "exitCode": 0,
+    "ok": true,
+    "exactCandidateCheck": true
+  },
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "exitCode": 0,
+    "note": "explicit Promise<void> avoids sibling route inference cycle"
+  },
+  "rerCheck": {
+    "command": "pnpm exec rer check --profile first-party",
+    "exitCode": 0
+  },
+  "build": {
+    "command": "npx -y @runeditrun/rer build",
+    "exitCode": 0
+  },
+  "registrationCount": {
+    "scope": "top-level tests/journeys/*.mjs registrations",
+    "before": 118,
+    "after": 119
+  },
+  "clauseStatusChanges": [],
+  "migrationsAdded": 0,
+  "productReleaseMetadataChanges": 0,
+  "head": "bdef5aff63ee5783883d0d0ebf939182fc27c90f",
+  "pushedAt": "2026-11-17T16:17:31.455968+00:00",
+  "productBranch": "cloud/hh-root-signedout-1",
+  "push": "passed, guarded ordinary push; no force; no main change",
+  "touchedJourneys": {
+    "command": "node --test --test-concurrency=1 tests/journeys/public.mjs tests/journeys/first-run.mjs",
+    "exitCode": 0,
+    "tests": 5,
+    "passed": 5,
+    "durationMs": 593875.389699
+  },
+  "initialRootJourney": {
+    "exitCode": 0,
+    "tests": 1,
+    "passed": 1,
+    "durationMs": 156556.035121
+  },
+  "finalTypecheck": {
+    "command": "pnpm run typecheck",
+    "node": "22.20.0",
+    "exitCode": 0
+  },
+  "finalRootJourney": {
+    "command": "node --test --test-name-pattern='the installation root' tests/journeys/public-browser.mjs",
+    "head": "bdef5aff63ee5783883d0d0ebf939182fc27c90f",
+    "exitCode": 0,
+    "tests": 1,
+    "passed": 1,
+    "durationMs": 157184.690462,
+    "node": "22.20.0",
+    "browser": "system Chromium, headless, --no-sandbox",
+    "assertionWidth": 1440,
+    "screenshotWidths": [
+      1440,
+      390
+    ],
+    "screenshotsInspected": true
+  },
+  "finalBuild": {
+    "command": "npx -y @runeditrun/rer build",
+    "exitCode": 0,
+    "node": "22.20.0"
+  }
+}

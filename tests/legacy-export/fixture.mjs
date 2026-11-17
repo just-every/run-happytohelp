@@ -1,3 +1,4 @@
+import {seedFidelity,seedExcluded} from './fidelity-fixture.mjs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {seedExtendedLegacy, PLANTED_SECRETS} from './extended-fixture.mjs';
@@ -41,10 +42,10 @@ export async function seedLegacy(connection, { objectDirectory }) {
 
   await insert('password_resets', {email:'export-owner@example.test',token:'fixture-password-reset-token',created_at:timestamp});
 
-  for (const [index, name] of ['ChargeDesk', '12ui'].entries()) {
+  for (const [index, name] of ['Paper Lantern', 'Orbit Repairs'].entries()) {
     const n = index + 1;
     const projectId = projectIds[index];
-    const slug = index ? '12ui' : 'chargedesk';
+    const slug = index ? 'orbit-repairs' : 'paper-lantern';
     const aiId = uuid('22', n);
     const contactId = uuid('30', n);
     const participantId = uuid('31', n);
@@ -150,8 +151,10 @@ export async function seedLegacy(connection, { objectDirectory }) {
     await insert('article_categories', { id: uuid('75', n), article_id: articleId, category_id: draftCategoryId, ...times });
     await insert('article_categories', { id: uuid('76', n), article_id: uuid('73', n), category_id: draftCategoryId, ...times });
     await seedExtendedLegacy(insert,{projectId,n,slug,name,ownerId,aiId,contactId,conversationId,bucketId,messageId:messageIds[2]});
+    await seedFidelity(insert,connection,{projectId,n,ownerId,conversationId,resolvedId,messageIds,objectDirectory,mediaId});
     await insert('macros', { id: uuid('90', n), project_id: projectId, created_by_id: ownerId,
       title: `${name} billing reply`, content: `Thanks for contacting ${name}. Please open your billing page to download invoices.`, ...times });
   }
+  await seedExcluded(insert,connection,counts);
   return { projectIds: [...projectIds], ownerId, counts, secrets:PLANTED_SECRETS };
 }

@@ -1,3 +1,7 @@
+import {transportEquality} from './legacy-export/transport-equality.mjs';
+import {nativeReaders} from './legacy-export/native-readers.mjs';
+import {sourceInventory,writeFieldMatrix} from './legacy-export/field-matrix.mjs';
+import {fidelityInputs} from './legacy-export/fidelity-inputs.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import mysql from 'mysql2/promise';
@@ -13,7 +17,7 @@ import {assertDeltaSweep} from './legacy-export/delta.mjs';
 import {assertFullErasure} from './legacy-export/resume.mjs';
 
 // One public-command integration flow, using real MySQL and local D1/R2.
-test('project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark', {timeout:360000}, async () => {
+test('project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark', {timeout:600000}, async () => {
   const output=process.env.LEGACY_TEST_OUTPUT?resolve(process.env.LEGACY_TEST_OUTPUT):await mkdtemp(join(tmpdir(),'h2h-legacy-export-'));
   await mkdir(output,{recursive:true,mode:0o700});
   const database='h2h_export_'+randomBytes(5).toString('hex'),reader='export_'+randomBytes(5).toString('hex');
@@ -36,6 +40,7 @@ test('project snapshot → attachment bytes → native import → safe replay �
     await admin.query(`CREATE DATABASE \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
     await admin.query(`USE \`${database}\``);
     const fixture=await seedLegacy(admin,{objectDirectory});
+    const inventory=await sourceInventory(admin);
     await admin.query(`CREATE USER '${reader}'@'%' IDENTIFIED BY ?`,[password]);
     await admin.query(`GRANT SELECT ON \`${database}\`.* TO '${reader}'@'%'`);
     const env={LEGACY_MYSQL_HOST:host,LEGACY_MYSQL_PORT:String(port),LEGACY_MYSQL_DATABASE:database,LEGACY_MYSQL_USER:reader,LEGACY_MYSQL_PASSWORD:password};
@@ -43,8 +48,8 @@ test('project snapshot → attachment bytes → native import → safe replay �
     try{await assert.rejects(readonly.execute('DELETE FROM projects'),/denied/i);}finally{await readonly.end();}
     await run('scripts/migrations.mjs');
     await run('node_modules/wrangler/bin/wrangler.js',['d1','migrations','apply','DB','--local','--persist-to',persist]);
-    const empty=join(output,'empty-state');await cp(persist,empty,{recursive:true});
-    const results=[],files=[],sources=[];
+    const empty=join(output,'empty-state'),jsonState=join(output,'json-state');await cp(persist,empty,{recursive:true});await cp(persist,jsonState,{recursive:true});
+    const results=[],files=[],sources=[];let fidelity;
     for(const [index,projectId] of fixture.projectIds.entries()){
       const snapshot=join(output,`project-${index+1}.snapshot.json`),file=join(output,`project-${index+1}.import.json`);
       const snapshotArgs=['snapshot','--project',projectId,'--revision','fixture-legacy-schema','--ai-model','gpt-5.6-luna','--mail-from-domain','example.test'];
@@ -66,10 +71,15 @@ test('project snapshot → attachment bytes → native import → safe replay �
       const chunkSnapshot=join(output,`project-${index+1}.snapshot`),chunkImport=join(output,`project-${index+1}.import`);
       await run('scripts/export-legacy.mjs',[...snapshotArgs,'--chunk-bytes','4096','--output',chunkSnapshot],env);
       await run('scripts/export-legacy.mjs',['attachments','--input',chunkSnapshot,'--objects-dir',objectDirectory,'--output',chunkImport]);
+      if(index===0)fidelity=await fidelityInputs({admin,run,env,output,projectId,snapshotArgs,file,empty});
+      const filePlan=JSON.parse(await run('scripts/import-legacy.mjs',['--file',file])),packagePlan=JSON.parse(await run('scripts/import-legacy.mjs',['--package',chunkImport]));
+      const baselineFields=fields=>fields.filter(f=>!(f.table==='media'&&['object_key','original_filename'].includes(f.field)));
+      assert.deepEqual(baselineFields(packagePlan.fieldDispositions),baselineFields(filePlan.fieldDispositions),'transports disclose the same baseline source fields without counting context twice; JSON additionally carries derived media enrichment');
       const chunked=JSON.parse(await run('scripts/import-legacy.mjs',['--package',chunkImport,'--apply','--persist-to',persist]));
+      await run('scripts/import-legacy.mjs',['--file',file,'--apply','--persist-to',jsonState]);
       const first=JSON.parse(await run('scripts/import-legacy.mjs',['--file',file,'--apply','--persist-to',persist]));
       const replay=JSON.parse(await run('scripts/import-legacy.mjs',['--file',file,'--apply','--persist-to',persist]));
-      assert.equal(chunked.sourceRows,first.sourceRows);assert.equal(chunked.mappedRows,first.mappedRows);assert.equal(chunked.objects,index?1:2,'the first company also carries its guide\'s diagram');
+      assert.equal(chunked.sourceRows,first.sourceRows);assert.equal(chunked.mappedRows,first.mappedRows);assert.equal(chunked.objects,raw.tables.media.length,'the first company also carries its guide\'s diagram');
       // Each reply's storage URL naming the customer's carried attachment becomes its native URL (and the first company's
       // guide's diagram); the URL of a file the export does not carry is left and counted, by either format.
       for(const summary of [chunked,first])assert.deepEqual(summary.mediaUrls,{rewritten:index?1:2,left:1});
@@ -115,12 +125,15 @@ test('project snapshot → attachment bytes → native import → safe replay �
       assert.equal((await proxy.env.DB.prepare("SELECT COUNT(*) n FROM local_events WHERE json_extract(payload,'$.message')='Reading invoice details'").first()).n,2,'delegation progress text is live');
       await assertAllNativeStores(proxy.env,fixture.secrets,persist);
     }finally{await proxy.dispose();}
+    const equivalence=await transportEquality(persist,jsonState);
+    const readers=await nativeReaders({persist,sources,files,output,ownerId:fixture.ownerId});
     // The second company's full package and an erasure of its customer, from the empty state.
     const fullErasure=await assertFullErasure({output,from:empty,pkg:join(output,'project-2.import'),projectId:fixture.projectIds[1]});
     const delta=await assertDeltaSweep({admin,run,status,env,output,persist,objectDirectory,projectId:fixture.projectIds[0],
       snapshotArgs:['snapshot','--project',fixture.projectIds[0],'--revision','fixture-legacy-schema','--ai-model','gpt-5.6-luna','--mail-from-domain','example.test'],
       fullSnapshot:join(output,'project-1.snapshot'),fullImport:join(output,'project-1.import')});
-    await writeFile(join(output,'results.json'),JSON.stringify({fixture:fixture.counts,native,imports:results,files,persist,fullErasure,delta},null,2));
+    const matrix=await writeFieldMatrix(output,inventory,sources,results);
+    await writeFile(join(output,'results.json'),JSON.stringify({fixture:fixture.counts,native,imports:results,files,persist,fullErasure,delta,fidelity,readers,equivalence,fieldMatrix:{tables:matrix.schemaTables,fields:matrix.baselineFields}},null,2));
     console.log(JSON.stringify({output,fixture:fixture.counts,native,replayApplied:results.map(r=>r.replay.applied)}));success=true;
   }finally{
     await admin.query(`DROP DATABASE IF EXISTS \`${database}\``);await admin.query(`DROP USER IF EXISTS '${reader}'@'%'`);await admin.end();

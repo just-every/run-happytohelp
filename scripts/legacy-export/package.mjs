@@ -31,6 +31,8 @@ export async function writePart(root,file,value){const bytes=JSON.stringify(valu
 const contextFields={projects:null,users:['id','type','email','deleted_at'],ais:null,ai_defaults:null,
  contacts:['id','project_id','deleted_at','identifier','external_id','created_at'],conversations:['id','project_id','contact_id','deleted_at'],
  messages:['id','project_id','conversation_id','contact_id','agent_id','ai_id','created_at','deleted_at','local_id'],
+ buckets:['id','project_id','conversation_id'],categories:['id','project_id','parent_id'],articles:['id','project_id'],
+ events:['id','conversation_id','bucket_id','agent_id','type','created_at'],
  mediables:null,datasets:null,dataset_files:['id','dataset_id','deleted_at','updated_at','created_at','markdown','content'],
  support_delegations:['id','project_id','conversation_id','deleted_at'],
  media:null};
@@ -51,7 +53,7 @@ export async function snapshotPackage(connection,options){return publishDirector
   const attachments=enrichMedia(retained); // Adds deterministic keys to media context below.
   // Media rows were persisted before enrichment. Native mapping reconstructs the
   // same keys from the verified attachment manifest, without altering source rows.
-  const manifest={format:PACKAGE_FORMAT,source:{...bundle.source,attachments},chunks,context,objects:[]};
+  const manifest={format:PACKAGE_FORMAT,source:{...bundle.source,attachments,referenceTables:Object.keys(contextFields)},chunks,context,objects:[]};
   await writeFile(path.join(root,'manifest.json'),JSON.stringify(manifest),{mode:0o600,flag:'wx'});return manifest;
 });}
 export async function packageContext(root,manifest){const tables={};for(const part of manifest.context){const rows=await readPart(root,part);(tables[part.table]??=[]).push(...rows);}classifySnapshot({tables});

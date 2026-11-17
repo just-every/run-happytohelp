@@ -11,9 +11,11 @@ export function archiveOnly(table:string,row:Row,bundle:LegacyBundle):boolean {
  if(table==='project_users'&&find('users',row.user_id)?.deleted_at)return true
  if(table==='conversation_participants'&&find('contacts',row.contact_id)?.deleted_at)return true
  if(table==='media'){
-  const join=mediaMessages.get(String(row.id))
-  const message=find('messages',row.message_id||join?.mediable_id)
-  if(message&&(message.deleted_at||archiveOnly('messages',message,bundle)))return true
+  // A deleted pivot must not suppress a different live link just because it
+  // happened to be read last. All-deleted message associations remain private.
+  const ids=[row.message_id,...(relationships(bundle).mediaLinks.get(String(row.id))??[]).filter(link=>String(link.mediable_type).endsWith('Message')).map(link=>link.mediable_id)].filter(id=>id!=null)
+  const messages=ids.map(id=>find('messages',id)).filter((r):r is Row=>!!r)
+  if(messages.length&&messages.every(message=>message.deleted_at||archiveOnly('messages',message,bundle))&&!(relationships(bundle).mediaLinks.get(String(row.id))??[]).some(link=>!String(link.mediable_type).endsWith('Message')))return true
  }
  return false
 }

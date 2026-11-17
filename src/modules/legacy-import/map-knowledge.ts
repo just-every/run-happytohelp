@@ -1,6 +1,7 @@
 import { type Row,type LegacyBundle,type MappedRow,timestamp,text,stable } from './types'
 import {truth,columns,publishedFiles} from './mapping-shared'
 import {relationships} from './relationships'
+import {historical,type MappingProfile} from './adoption/profile'
 
 function crawlLimit(value:unknown,field:string){
  if(value===undefined||value===null||typeof value==='string'&&value.trim()==='')return undefined
@@ -30,7 +31,7 @@ function refreshSettings(r:Row){
  // running claim or scheduling a new paid crawl in the destination.
  return {row:{refresh_mode:supported?mode:'manual',unchanged_count:unchanged,last_refreshed_at:r.last_refreshed_at?timestamp(r.last_refreshed_at):null,next_refresh_at:null,claim_token:null},hold:!supported?'Imported refresh schedule has no native equivalent; refresh manually':r.next_refresh_at||r.refresh_claimed_at||r.refresh_claim_token?'Imported refresh schedule held; refresh explicitly before scheduling again':undefined}
 }
-export function mapKnowledge(table:string,r:Row,b:LegacyBundle):MappedRow[]|undefined {
+export function mapKnowledge(table:string,r:Row,b:LegacyBundle,profile?:MappingProfile):MappedRow[]|undefined {
  const created=timestamp(r.created_at),project=r.project_id&&String(r.project_id),id=r.id&&String(r.id);const one=(table:string,row:Row,key=['id'],hold?:string):MappedRow[]=>[{table,row,key,hold}]
  switch(table){
  case 'ais':case 'ai_profiles':{const defaults=(b.tables.ai_defaults||[]).find(d=>d.type===r.type);return one('ai_profiles',{id,project_id:project,name:text(r.name,'ais.name'),role:r.role||defaults?.role||r.type||'assistant',prompt:r.prompt||r.instructions||defaults?.prompt||'',model:text(r.model||b.source.aiModel,'ais.model or source.aiModel explicit selected model'),is_enabled:r.is_enabled===false||r.is_enabled===0?0:1,is_animated:r.is_animated?1:0,avatar_url:r.avatar_url??null,created_at:created})}
@@ -44,7 +45,11 @@ export function mapKnowledge(table:string,r:Row,b:LegacyBundle):MappedRow[]|unde
  case 'article_categories':case 'knowledge_article_categories':return one('knowledge_article_categories',{article_id:String(r.article_id),category_id:String(r.category_id)},['article_id','category_id'])
  case 'insights':{const closed=r.closed_at??r.dismissed_at;return one('context_insights',{id,project_id:project,subject_id:String(r.contact_id),help_type:r.help_type||'legacy',content:r.content||'',buttons:stable(r.buttons||[]),evidence_ids:stable(r.evidence_ids||[]),created_at:created,dismissed_at:closed===undefined||closed===null||closed===''?null:timestamp(closed)})}
  case 'collector_summaries':if(r.summary===undefined)return [];return one('context_summaries',{id,project_id:project,subject_id:String(r.contact_id),summary:r.summary||'',evidence_ids:stable(r.evidence_ids||[]),created_at:created})
- case 'macros':return one('macros',{id,project_id:project,title:r.title||'',content:r.content||'',created_by:text(r.created_by_id||r.created_by,'macros.created_by_id'),created_at:created,updated_at:timestamp(r.updated_at||r.created_at)})
+ case 'macros':{const author=r.created_by_id??r.created_by
+  // SQL permits a missing author. Only stored historical approval supplies a
+  // legitimate custodian; administrative imports retain this row privately.
+  if(!author&&!historical(profile))return []
+  return one('macros',{id,project_id:project,title:r.title||'',content:r.content||'',created_by:historical(profile)?profile.custodianId:text(author,'macros.created_by_id'),created_at:created,updated_at:timestamp(r.updated_at||r.created_at)})}
  case 'plugins':return one('plugins',{id,project_id:project,name:r.name||'',url:text(r.url,'plugins.url'),sort_order:Number(r.sort_order||r.position||0),is_enabled:r.is_enabled===undefined?1:truth(r.is_enabled)?1:0,created_at:created})
  case 'collectors':return one('context_collectors',{project_id:project,subject_id:String(r.contact_id),actions_count:Number(r.actions_count||0),analysis_actions:0,analysis_count:Number(r.analysis_count||0),analysis_since_insight:0,job_id:null,last_run_at:r.last_run_at?timestamp(r.last_run_at):null},['project_id','subject_id'],r.running_at?'Imported collector was running; no automatic resumption':undefined)
  case 'collector_actions':if(!r.plaintext_action)return [];return one('context_actions',{id,project_id:project,subject_id:String(r.contact_id),local_id:r.local_id||id,action:typeof r.plaintext_action==='string'?r.plaintext_action:stable(r.plaintext_action),occurred_at:created})

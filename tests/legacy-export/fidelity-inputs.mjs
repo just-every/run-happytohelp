@@ -1,0 +1,60 @@
+import {DatabaseSync} from 'node:sqlite'
+import {findDatabase} from '../helpers/upgrade-snapshot.mjs'
+import assert from 'node:assert/strict'
+import {join} from 'node:path'
+import {writeFile,readFile,cp} from 'node:fs/promises'
+
+/** Deliberate source-shape choices and malformed transports; all commands are
+ * the public exporter/importer, and refusal happens before a native apply. */
+export async function fidelityInputs({admin,run,env,output,projectId,snapshotArgs,file,empty}){
+ const [[project]]=await admin.execute('SELECT website FROM projects WHERE id=?',[projectId])
+ await admin.execute('UPDATE projects SET website=NULL WHERE id=?',[projectId])
+ try{
+  const missing=join(output,'missing-origin.json')
+  await run('scripts/export-legacy.mjs',[...snapshotArgs,'--output',missing],env)
+  await assert.rejects(run('scripts/import-legacy.mjs',['--file',missing]),/origin|website|URL/i)
+ }finally{await admin.execute('UPDATE projects SET website=? WHERE id=?',[project.website,projectId])}
+ const withoutModel=snapshotArgs.filter((arg,i)=>arg!=='--ai-model'&&snapshotArgs[i-1]!=='--ai-model')
+ await assert.rejects(run('scripts/export-legacy.mjs',[...withoutModel,'--output',join(output,'missing-model.json')],env),/explicit --ai-model/)
+ const withoutMail=snapshotArgs.filter((arg,i)=>arg!=='--mail-from-domain'&&snapshotArgs[i-1]!=='--mail-from-domain')
+ await assert.rejects(run('scripts/export-legacy.mjs',[...withoutMail,'--output',join(output,'missing-mail.json')],env),/explicit --mail-from-domain/)
+ const raw=JSON.parse(await readFile(file,'utf8')),reversed={...raw,tables:{...raw.tables,mediables:[...raw.tables.mediables].reverse()}}
+ const reverseFile=join(output,'reversed-pivots.json');await writeFile(reverseFile,JSON.stringify(reversed))
+ const original=JSON.parse(await run('scripts/import-legacy.mjs',['--file',file])),reverse=JSON.parse(await run('scripts/import-legacy.mjs',['--file',reverseFile]))
+ assert.deepEqual(reverse.fieldDispositions,original.fieldDispositions,'pivot input order never changes field outcomes')
+ assert.deepEqual(reverse.holds,original.holds,'pivot input order never changes privacy/link holds')
+ assert.ok(original.holds.some(h=>h.includes('macros.created_by_id is unknown')),'CLI holds unknown source author rather than abort or invent account')
+ assert.ok(original.holds.some(h=>h.includes('additional or deleted message association')),'every unrepresented source link is named')
+ assert.ok(original.holds.some(h=>h.includes('private event/delegation association')),'private shared file is held')
+ const refusedState=join(output,'refused-state');await cp(empty,refusedState,{recursive:true})
+ const database=await findDatabase(join(refusedState,'v3/d1')),counts=()=>{
+  const db=new DatabaseSync(database,{readOnly:true});try{return Object.fromEntries(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").all().map(({name})=>[name,db.prepare('SELECT count(*) n FROM "'+name+'"').get().n]))}finally{db.close()}
+ },before=counts()
+ for(const [name,mutate,error] of [
+  ['missing-parent',b=>{b.tables.messages[0].conversation_id='00000000-0000-4000-8000-000000000099'},/Missing legacy source parent/],
+  ['category-cycle',b=>{b.tables.categories[0].parent_id=b.tables.categories[1].id;b.tables.categories[1].parent_id=b.tables.categories[0].id},/Category parent cycle/],
+  ['foreign-tenant',b=>{b.tables.conversations[0].project_id='00000000-0000-4000-8000-000000000088'},/Missing legacy source parent|Cross-project/],
+  ['damaged-bytes',b=>{b.objects[0].sha256='0'.repeat(64)},/Object digest mismatch/]
+ ]){
+  const invalid=structuredClone(raw);mutate(invalid);const path=join(output,name+'.json');await writeFile(path,JSON.stringify(invalid))
+  await assert.rejects(run('scripts/import-legacy.mjs',['--file',path,'--apply','--persist-to',refusedState]),error)
+  assert.deepEqual(counts(),before,name+' refusal leaves every durable table unchanged')
+ }
+ // Source soft-deletion controls are SQL mutations, not invented native flags.
+ const contactId=raw.tables.contacts[0].id
+ for(const scope of ['contact','project']){
+  const table=scope==='contact'?'contacts':'projects',id=scope==='contact'?contactId:projectId
+  await admin.execute(`UPDATE \`${table}\` SET deleted_at=? WHERE id=?`,['2026-11-17 00:00:00',id])
+  try{
+   const snapshot=join(output,'deleted-'+scope+'.json'),artifact=join(output,'deleted-'+scope+'-import.json')
+   await run('scripts/export-legacy.mjs',[...snapshotArgs,'--output',snapshot],env)
+   const source=JSON.parse(await readFile(snapshot,'utf8'))
+   // The same writer enriches and supplies all attachment bytes.
+   await run('scripts/export-legacy.mjs',['attachments','--input',snapshot,'--objects-dir',join(output,'source-objects'),'--output',artifact])
+   const plan=JSON.parse(await run('scripts/import-legacy.mjs',['--file',artifact]))
+   for(const row of source.tables.conversations.filter(c=>scope==='project'||c.contact_id===contactId))assert.ok(plan.archivedOnly.includes('conversations:'+row.id),'deleted parent suppresses native descendants')
+   if(scope==='project')for(const row of source.tables.articles)assert.ok(plan.archivedOnly.includes('articles:'+row.id))
+  }finally{await admin.execute(`UPDATE \`${table}\` SET deleted_at=NULL WHERE id=?`,[id])}
+ }
+ return {nullOrigin:'refused',missingModel:'refused',missingMailChoice:'refused',pivotPermutations:'identical decisions',nullMacro:'explicit CLI hold',sourcePrivacyLinks:'held',invalidApplyEffects:'every durable table unchanged',deletedParents:'SQL contact/project suppress descendants'}
+}

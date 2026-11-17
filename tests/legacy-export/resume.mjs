@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {cp,rm} from 'node:fs/promises';
+import {cp,rm,readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {spawn} from 'node:child_process';
 import {DatabaseSync} from 'node:sqlite';
@@ -96,6 +96,7 @@ export async function assertResumedSweep({admin,run,status,env,output,objectDire
  * the mapped target the uninterrupted import journaled), none of her canonical or search rows written, her file removed from
  * R2 with its record; everything else as the uninterrupted import has it. A replay changes nothing. */
 export async function assertFullErasure({output,from,pkg,projectId}){
+  const expectedKeys=JSON.parse(await readFile(join(pkg,'manifest.json'),'utf8')).objects.map(o=>o.key).sort();
   const contact=uuid('30',2),conversation=uuid('40',2),media=uuid('80',2),fileKey=`legacy/projects/${projectId}/media/${media}`;
   const now="CAST(unixepoch('subsec')*1000 AS INTEGER)";
   const whole=join(output,'full-whole'),stopped=join(output,'full-stopped');
@@ -117,7 +118,7 @@ export async function assertFullErasure({output,from,pkg,projectId}){
     const first=command(stopped);assert.notEqual(await first.exit,0);assert.match(first.stderr,/stopped by the full-package fixture/);
     write(stoppedDb,'DROP TRIGGER full_fixture_stop');
     assert.deepEqual(read(stoppedDb,"SELECT status FROM legacy_import_rows WHERE source_table='contacts' AND source_id=?",contact),[{status:'mapped'}],'her contact was imported before the stop');
-    assert.deepEqual(await keys(stopped),[fileKey],'every file was uploaded before the stop');
+    assert.deepEqual(await keys(stopped),expectedKeys,'every file was uploaded before the stop');
     const atStop=journal(stoppedDb);
 
     write(stoppedDb,`INSERT INTO contact_erasure_leases VALUES('${projectId}','${contact}','erasure-request',${now}+600000)`);
@@ -127,8 +128,8 @@ export async function assertFullErasure({output,from,pkg,projectId}){
     assert.deepEqual(journal(stoppedDb),atStop,'a full import waiting for an erasure writes nothing');assert.deepEqual(busy(stoppedDb,'SELECT * FROM legacy_delta_leases'),[]);
     write(stoppedDb,`UPDATE contact_erasure_leases SET expires_at=${now}-1`);
     assert.equal(await rerun.exit,0,rerun.stderr);
-    const completed=JSON.parse(rerun.stdout);assert.equal(completed.objectsRemoved,1);assert.equal(completed.replayed,atStop.length);
-    assert.match(rerun.stderr,/"step":"erased","contacts":1,"objects":1/);
+    const completed=JSON.parse(rerun.stdout);assert.equal(completed.objectsRemoved,expectedKeys.length);assert.equal(completed.replayed,atStop.length);
+    assert.match(rerun.stderr,/"step":"erased","contacts":1,"objects":\d+/);
 
     // Her pending rows: journaled as erasure leaves them, against the targets the uninterrupted import mapped them to.
     const wholeRows=new Map(journal(wholeDb).map(row=>[`${row.source_table}:${row.source_id}`,row])),rows=journal(stoppedDb),erased=rows.filter(row=>row.status==='erased');
@@ -157,7 +158,7 @@ export async function assertFullErasure({output,from,pkg,projectId}){
     const articles=database=>{const db=new DatabaseSync(database,{readOnly:true});try{return snapshotTable(db,'knowledge_articles',others.knowledge_articles.columns.filter(column=>column!=='source_incarnation'));}finally{db.close();}};
     assert.deepEqual(articles(stoppedDb),articles(wholeDb),'knowledge_articles');
     assert.deepEqual(await keys(stopped),[],'her file is removed from R2');assert.deepEqual(read(stoppedDb,'SELECT * FROM legacy_import_objects WHERE object_key=?',fileKey),[],'with its record');
-    assert.deepEqual(await keys(whole),[fileKey]);
+    assert.deepEqual(await keys(whole),expectedKeys);
 
     const settled={business:settledBusiness,objects:await objectsOf(stopped),journal:journal(stoppedDb)};
     const replay=command(stopped);assert.equal(await replay.exit,0,replay.stderr);

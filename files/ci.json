@@ -1,8 +1,8 @@
 {
   "repository": "just-every/run-happytohelp",
   "head": "c0b85c26bc44e77e3d943df1a3584aa8e712b799",
-  "calls": 9,
-  "lastApiEpoch": 1794907658.415333,
+  "calls": 10,
+  "lastApiEpoch": 1794909759.911897,
   "finalPollNotBeforeEpoch": 1794909759.415333,
   "runs": [
     {
@@ -31,9 +31,33 @@
           "created_at": "2026-11-17T09:27:26Z"
         }
       ]
+    },
+    {
+      "kind": "final-poll",
+      "run_id": 44055737842,
+      "conclusion": "success",
+      "head_sha": "c0b85c26bc44e77e3d943df1a3584aa8e712b799",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44055737842",
+      "status": "completed"
     }
   ],
   "priorAttemptReceipt": "ci-attempt-1.json",
   "priorRunId": 44050158749,
-  "reasonForFollowup": "Update the request-form CC acknowledgment assertion filter to the intentional short reference format."
+  "reasonForFollowup": "Update the request-form CC acknowledgment assertion filter to the intentional short reference format.",
+  "result": {
+    "conclusion": "success",
+    "head_sha": "c0b85c26bc44e77e3d943df1a3584aa8e712b799",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44055737842",
+    "status": "completed"
+  },
+  "terminalRun": {
+    "id": 44055737842,
+    "name": "Verify",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "c0b85c26bc44e77e3d943df1a3584aa8e712b799",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44055737842",
+    "created_at": "2026-11-17T09:27:26Z"
+  }
 }

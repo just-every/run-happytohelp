@@ -1,0 +1,27 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "tag": "hh-stranger13-behaviour-1-c1",
+  "branch": "cloud/hh-stranger13-behaviour-1-c1",
+  "head": "c0b85c26bc44e77e3d943df1a3584aa8e712b799",
+  "verify": {
+    "id": 44055737842,
+    "conclusion": "success",
+    "head_sha": "c0b85c26bc44e77e3d943df1a3584aa8e712b799",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44055737842",
+    "status": "completed"
+  },
+  "githubCalls": 10,
+  "priorVerify": {
+    "id": 44050158749,
+    "conclusion": "failure",
+    "fixed": "request-form CC test filter expected full UUID rather than derived reference"
+  },
+  "ready": true,
+  "clausesChanged": [],
+  "registrationCounts": {
+    "before": 119,
+    "after": 121
+  },
+  "signed": "Run Edit Run fleet",
+  "at": "2026-11-17T10:03:18Z"
+}

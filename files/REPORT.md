@@ -1,6 +1,8 @@
 # HappyToHelp ticket reference candidate
 
-Run Edit Run fleet — 2026-11-17 UTC. Tag: hh-stranger13-behaviour-1-c1.
+Run Edit Run fleet — 2026-11-17T10:03:18Z. Tag: hh-stranger13-behaviour-1-c1.
+
+Result: the short support reference is implemented across customer placeholders, operator headings/titles and scoped inbox search. Exact-head Verify is green; clause status cells are unchanged.
 
 ## Scope and plan
 
@@ -40,27 +42,26 @@ Contract source/status summary stays 4 Done / 71 Partial / 16 Missing, total 91.
 
 ## Validation and custody
 
-Final candidate under validation: `c0b85c26bc44e77e3d943df1a3584aa8e712b799`.
+Final product branch: cloud/hh-stranger13-behaviour-1-c1.
+Final full head: `c0b85c26bc44e77e3d943df1a3584aa8e712b799`. Product push and remote ref were verified through ordinary Git. All candidate commits, including side parents, passed fleet identity/trailer inspection. No PR was created; branch Verify is this repository's pre-main entry point.
 
-Local rer setup and build completed. The final build and browser test both passed on the integrated, pushed head. The final browser receipt records #F4211F53; its UUID stays in the full working link. All four final captures were inspected at 1440 and 390. CI is recorded below.
+**Exact-SHA Verify: completed / success**, run [44055737842](https://github.com/just-every/run-happytohelp/actions/runs/44055737842), head `c0b85c26bc44e77e3d943df1a3584aa8e712b799`. Ten GitHub calls total were used across discovery, bounded status polling and the single failed-job log invocation. `ci.json` and `terminal-receipt.json` retain the actual terminal response.
 
-Initial local checks deliberately retained the old user-flow assertions. They exposed raw-UUID expectations in individual, unnamed-requester and bulk macros, and in default/request-received/solved notices. Those expectations now require the short reference, with existing message, authority, missing-field and no-send checks retained. The default notification journey also asserts that subjects omit the UUID. An earlier Node 24 run failed the local server PID custody check when rer re-executed on Node 22; the pinned Node 22 run passed that stage and proceeded to the notification assertions. No product or test workaround was made for the cleanup check.
+Local results:
+- Native rer setup and build completed with synthetic local data. No remote installation or provider account was used.
+- Replacement/scoped-inbox journey: 1 passed, 0 failed. The other four inbox registrations and legacy SES registration passed in the broader touched run.
+- Registered customer-email journey: 1 passed, 0 failed, on Node 22.20.0. The final follow-up translated request-form journey: 1 passed, 0 failed.
+- Typecheck, first-party rer check and regenerated source-lock check: exit 0, including after the follow-up correction.
+- Final integrated build and widget macro browser test: exit 0, 1 passed, 0 failed. The browser test asserts at 1440; all four captures were inspected at 1440 and 390. The recorded reference is #F4211F53, with the UUID preserved in its link. This local proof ran on 32bb314532f9ab34edcbb67cf6b758833649c544; all product sources are byte-identical on the final head, whose only subsequent change is the request-form test filter and its source lock. Exact-SHA CI reran the browser registration on the final head.
+- No full local suite was run. Exact-SHA GitHub Verify supplied the full check.
 
-Registered email journey: PASS (1 registration), using Node 22.20.0. Replacement/scoped-inbox journey: PASS (1 registration). The other four inbox registrations and legacy SES registration passed in the broader touched run. The two new search/preview registrations also passed. Typecheck: exit 0; first-party rer check: exit 0; source-lock check: exit 0. No full local suite was run.
+The first Verify, 44050158749 at 32bb3145, had one failed shard (assistant-and-knowledge) and one failing registration: its request-form CC acknowledgment filter still searched for the full UUID in the body. The template correctly rendered the new reference. The filter now matches the short reference; the count, replay and CC/privacy assertions remain intact. All other selected shards, build, contract docs and size check passed that first run. `ci-attempt-1.json`, `ci-jobs.json` and `ci-failure.txt` retain its actual result and assertion.
 
-The email run began at 5078741f90e4cb0a1fd0243d1d143b000bf17a01 and completed after the main integration commit; the reference implementation and assertion files did not change in that merge. Typecheck, rer check and source check ran after integration. Final build/browser and the exact-SHA CI run qualify the integrated head separately. The direct helper invocation outside node:test was stopped after it made no progress; the registered journey subsequently passed.
+The required `gh run view 44050158749 --repo just-every/run-happytohelp --job 133926461257 --log-failed` command was invoked once. It exited 0 with empty stdout but fetched the log archive into gh's local cache; the failed step was read from that cache without a second network download. Earlier local checks also exposed raw-UUID expectations in individual, unnamed-requester and bulk macros and default/request-received/solved notices; these now require the intended reference without dropping their protected user-flow assertions. A Node 24 local-server PID custody issue was resolved by running the repository's pinned Node 22.20.0. A direct helper invocation outside node:test was stopped after it made no progress; the registered journey subsequently passed.
 
-Final product push: confirmed at `c0b85c26bc44e77e3d943df1a3584aa8e712b799` through the fleet guard, including all candidate/side-parent identity and trailer checks. PR: none created; the repository's branch Verify is the pre-main entry point. Verify run: [44050158749](https://github.com/just-every/run-happytohelp/actions/runs/44050158749), still in progress after the first five-minute poll (2 GitHub calls used).
+The email run began at 5078741f and completed after current main was integrated; reference implementation and assertion files were unchanged by that merge. Static checks ran after integration. Final exact-SHA CI independently qualifies the complete integrated head.
 
-The first exact-SHA Verify (44050158749, head 32bb314532f9ab34edcbb67cf6b758833649c544) completed with one failed shard, assistant-and-knowledge. Build, contract docs, size check and all seven other shards passed. Its only failing registration was the translated request-form journey: its CC notice filter still looked for the UUID in the body, where the new template correctly renders the short reference. The count and CC/privacy assertions were retained, and the filter was updated. The failing journey then passed locally (1 test, 0 failures), followed by exit 0 from typecheck, first-party rer check and the regenerated lock check.
-
-The required gh log command was invoked once. It exited 0 with empty stdout but fetched the archive into gh's local cache. The failed step was read from that cache without another network download. ci-failure.txt contains the actual assertion and command receipt; ci-attempt-1.json and ci-jobs.json retain the first run's results.
-
-Follow-up candidate: `c0b85c26bc44e77e3d943df1a3584aa8e712b799`. It changes only tests/helpers/request-forms-journey.mjs and sources.lock.json from the prior pushed head. The final local browser proof on 32bb3145 is byte-equivalent for all product sources. The follow-up is pushed, and Verify 44055737842 is in progress. Nine of ten permitted GitHub calls have been used; the last call is reserved until the prior run's longest shard has had time to finish. This packet publication is evidence custody only, not READY or acceptance.
-
-TERMINAL_CI_PENDING
-
-The full-suite wall is exact-SHA GitHub Verify; local execution is limited to the touched journeys, typecheck, first-party rer check and lock check. The cloud cannot perform the Mac publication scan; the fleet retains that pre-landing guard. No independent gate, landing, main push, release or deployment is claimed.
+Blockers: none for this candidate. The required independent gate for items 2, 3, 4 and 15 follows. No independent gate, landing, main push, release or deployment was performed. The cloud cannot perform the Mac publication scan; that fleet pre-landing guard remains required. Evidence publication is report custody, not acceptance or landing.
 
 ## Claims and remaining boundaries
 
@@ -71,4 +72,4 @@ CLAIM STATUS-001 PARTIAL points=1,2,3,4 tests=tests/journeys/inbox.mjs#a replace
 GAP MACRO-001: Existing clause-wide judgment remains Partial; this round closes the named customer-reference defect, subject to the independent gate.
 GAP NOTIFY-001: Provider-edge fixtures establish local behaviour, not real configured provider delivery.
 
-Signed Run Edit Run fleet, 2026-11-17 UTC.
+Signed Run Edit Run fleet, 2026-11-17T10:03:18Z.

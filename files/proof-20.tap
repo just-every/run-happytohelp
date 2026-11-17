@@ -7,3 +7,27 @@ ok 1 - a lead compares saved procedure definitions, revises an older version wit
   duration_ms: 156476.67339
   type: 'test'
   ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 2 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 135363.594417
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 3 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 136005.826875
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 4 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 139758.504319
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 5 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 139839.256609
+  type: 'test'
+  ...

@@ -67,10 +67,10 @@
       "sha256": "944b3aa9c267debbaf70a7a73643020998dcebb7094b6355e15890142088f674"
     },
     {
-      "blob": "8e5c477236d84467ba6f8f9a3a5cdb7345eb016f",
-      "bytes": 595,
+      "blob": "fdddb8a9f1769872bbf0af8240ef0dbce9c5195c",
+      "bytes": 2227,
       "path": "proof-20.tap",
-      "sha256": "3967d4216ebfe39dac024c62eb99e6a526726e92316fba627d7477c97222bb07"
+      "sha256": "a0f57f988645fff81830baea5d69e4c69f00086852f55e4a398972e611942be3"
     },
     {
       "blob": "068039325210c479f0866392d9483c80556d7ba6",
@@ -83,6 +83,12 @@
       "bytes": 3210,
       "path": "proof-preload.mjs",
       "sha256": "71317f618617729d01e43c1a30a2273ef4a57633ffbf59a1b2134e4f1475b836"
+    },
+    {
+      "blob": "b40da295f6c99292baf26a50dffc485e0f175067",
+      "bytes": 124,
+      "path": "proof-progress.json",
+      "sha256": "7a93940c4c233dba495fd31a43728d6e936d989c3295d301301a0440af071aaa"
     },
     {
       "blob": "2f114d8869370c9b310fb925bce8846798fb8896",

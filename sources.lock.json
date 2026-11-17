@@ -12937,7 +12937,7 @@
       "executable": false
     },
     "src/ui/native/activation/ProviderSetupNotice.jsx": {
-      "sha256": "274895253bef8ed462775c3a6f29159b1919154390b56fff3314b25054165cd8",
+      "sha256": "7cac32dc4e8d339d3ad449f7d460c7fbee3d476c6b423e9b33ee326ce1fd601b",
       "executable": false
     },
     "src/ui/native/activation/SetRow.jsx": {

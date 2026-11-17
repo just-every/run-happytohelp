@@ -1793,7 +1793,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "0f3d5f958ad898fbf655771ba6e6d75e6d928759a5a3d4ada561c8afca8116a9",
+      "sha256": "8eb52bb9f7ae3d64eff99a3b8f062d01a776000d2e983a4df828a6aa831fa484",
       "executable": false
     },
     "docs/NAVIGATION.md": {
@@ -1889,7 +1889,7 @@
       "executable": false
     },
     "importers.json": {
-      "sha256": "b81b4454936ac3929f207f86ec5f3f0b412211f817d8e77f23156be655764894",
+      "sha256": "09f3462074a3e834b5b840421157940c70506e12a65322e61974601e62057fba",
       "executable": false
     },
     "LICENSE": {
@@ -17897,7 +17897,7 @@
       "executable": false
     },
     "tests/move-in/zendesk-fidelity.mjs": {
-      "sha256": "5446ae711cf2afca273b887ceacfb233e6555e33c80986e889f66b960ae5ed51",
+      "sha256": "f4d6e123e2647676d74a2b0d7eacb17f2405c1e00da2eff062a09ac0b17413dd",
       "executable": false
     },
     "tests/move-in/zendesk-offline-browser.mjs": {

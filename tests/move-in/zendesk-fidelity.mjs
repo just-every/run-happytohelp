@@ -59,7 +59,8 @@ export async function zendeskFidelityJourney(){
   const detail=(await h.call(`/api/dashboard/projects/p/conversations/${first.id}`)).data;assert.equal(detail.subject,o.ticket[0].subject)
   const history=await h.call(`/api/conversations/${first.id}/imported-history`);assert.equal(history.history.events.length,o.audit[0].events.length)
   const importedRules=(await query('SELECT * FROM workflow_rules')).filter(r=>!before.workflow_rules.some(old=>old.id===r.id));assert.equal(importedRules.length,o.trigger.length+o.automation.length);assert.ok(importedRules.every(r=>r.state==='draft'))
-  for(const table of ['ticket_sla_state','sla_alerts','sla_policies'])assert.equal((await query(`SELECT * FROM ${table}`)).length,0)
+  for(const table of ['ticket_sla_state','sla_alerts','sla_policies','conversation_ratings','conversation_rating_history'])assert.equal((await query(`SELECT * FROM ${table}`)).length,0)
+  const importedForms=(await query('SELECT id,config_json,enabled FROM request_forms')).filter(f=>!before.request_forms.some(old=>old.id===f.id));assert.equal(importedForms.length,o.ticket_form.length);assert.ok(importedForms.every(f=>f.enabled===0))
   receipt.checks.push('review is inert; all tickets, authors, exact instants, typed values and phones reconcile; source-only kinds have no targets; attachment bytes and privacy; draft rules and no SLA activation')
   console.log('ZENDESK_FIDELITY repeat and undo');const applied=await h.snapshot()
   // Repackage the very same objects into the previously supported NDJSON door.

@@ -42,7 +42,7 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
   const role=['contact','user','lead'].includes(kind)?'contact':['admin','teammate','team'].includes(kind)?'operator':['bot','campaign','system'].includes(kind)?'system':null
   if(!role)throw new Error('author_role_unsupported');return {id:sid,name:typeof value.name==='string'?value.name:null,role}}
  for(const record of source.records){const key=recordKey(record),p=record.payload as any,issues=auditShape(vendor,record.kind,p).issues.filter(issue=>issue.reason!=='record_kind_not_understood'),omissions:string[]=issues.map(shapeReason)
-  for(const issue of issues)source.diagnostics.push({severity:'warning',code:issue.code,message:shapeReason(issue),kind:record.kind,sourceId:record.sourceId,location:{...record.location,pointer:`${record.location.pointer??''}${vendor==='zendesk'?`/${record.kind}`:''}${issue.path}`}})
+  for(const issue of issues)source.diagnostics.push({severity:'warning',code:issue.code,message:shapeReason(issue),kind:record.kind,sourceId:record.sourceId,location:{...record.location,pointer:`${record.location.pointer??''}${vendor==='zendesk'?((record as SourceRecord&{payloadPrefix?:string}).payloadPrefix??`/${record.kind}`):''}${issue.path}`}})
   try{if(tags(record).some(name=>name.trim().length>80))throw new Error('tag_name_limit');let kind:string,tables:NativeValue['tables']={},target:string
    const configuration=vendor==='zendesk'?zendeskFields(record,projectId,records,omissions)??zendeskConfiguration(record,projectId,actorId,records,tagIds,omissions):null
    if(configuration){kind=configuration.kind;target=configuration.target;Object.assign(tables,configuration.tables)}

@@ -33,12 +33,12 @@ function* items(file:ExportFile,vendor:Vendor,maxRecords:number):Generator<Item>
  if(!raw.trim())return
  for(const position of (vendor==='helpscout'?helpScoutPositions(raw,maxRecords):jsonPositions(raw,maxRecords)))yield {...position,raw:raw.slice(position.start,position.end)}
 }
-function classify(value:unknown,vendor:Vendor,item:JsonPosition):{kind:string;id:string;payload:any;omittedField?:true} {
+function classify(value:unknown,vendor:Vendor,item:JsonPosition):{kind:string;id:string;payload:any;prefix?:string;omittedField?:true} {
  const lowered=lowerPosition(value,vendor,item.unsupported,item.sourceKind)
  if('field' in lowered)return {kind:`unsupported-field:${lowered.field}`,id:item.pointer,payload:lowered.payload,omittedField:true}
  const {kind,payload}=lowered
  if(kind==='conversation'&&typeof payload.conversation_parts?.total_count==='number'&&!Number.isFinite(payload.conversation_parts.total_count))throw new Error('conversation_parts_count_invalid_or_incomplete')
- return {kind,id:recordSourceId(kind,payload,vendor),payload}
+ return {kind,id:recordSourceId(kind,payload,vendor),payload,prefix:lowered.prefix}
 }
 /** Source offsets are indexed once, then saved with the private file descriptor.
  * Later queue chunks parse only their bounded slice, with original physical lines. */
@@ -57,7 +57,7 @@ export function* parseFile(file:ExportFile,vendor:Vendor,start=0,limit:number=LI
   if(new TextEncoder().encode(body).length>recordBytes){yield {ordinal,diagnostic:issue('record_size_limit',file.name,item.row,item.pointer)};continue}
   try{const value=JSON.parse(body),parsed=classify(value,vendor,item),record=sourceRecord(vendor,parsed.kind,parsed.id,parsed.payload,file.name,hash,item.row,item.pointer)
    const diagnostic=item.unsupported!==undefined&&!parsed.omittedField?{...issue('unsupported_source_field',file.name,item.row,item.pointer),severity:'warning' as const,kind:parsed.kind,sourceId:parsed.id,message:`unsupported_envelope_field:${item.unsupported}`} : undefined
-   yield {ordinal,record:{...record,payload:parsed.payload},serialized:JSON.stringify(parsed.payload),...(diagnostic?{diagnostic}:{})}
+   yield {ordinal,record:{...record,...(vendor==='zendesk'&&item.sourceKind?{payloadPrefix:parsed.prefix}:{}),payload:parsed.payload},serialized:JSON.stringify(parsed.payload),...(diagnostic?{diagnostic}:{})}
   }catch(error){yield {ordinal,diagnostic:issue(error instanceof Error?error.message:'invalid_record',file.name,item.row,item.pointer+(error instanceof RecordStructureError?error.pointer:''))}}
  }
 }

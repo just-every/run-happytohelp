@@ -23,6 +23,8 @@ export async function zendeskFidelityJourney(){
   assertBusinessEquality(before,await h.snapshot())
   const plan=await review(h,'zendesk',fixture.archive,'synthetic-hh-documented.zip')
   assertBusinessEquality(before,await h.snapshot())
+  const located=plan.plan.diagnostics.find(d=>d.kind==='user'&&d.sourceId==='1'&&d.location.pointer?.endsWith('/time_zone'));assert.ok(located)
+  const original=JSON.parse(fixture.entries.find(e=>e.name===located.location.artifact).body),resolved=located.location.pointer.split('/').slice(1).reduce((value,key)=>value?.[key.replaceAll('~1','/').replaceAll('~0','~')],original);assert.equal(resolved,o.user[0].time_zone,'source warning resolves to the actual API JSON field')
   const tickets=plan.plan.decisions.filter(d=>d.kind==='ticket')
   assert.deepEqual(tickets.map(d=>d.sourceId).sort(),o.ticket.map(t=>String(t.id)).sort())
   assert.ok(tickets.every(d=>!d.rejection&&d.targets.length===1),JSON.stringify(tickets.filter(d=>d.rejection).map(d=>[d.sourceId,d.rejection])))
@@ -49,13 +51,7 @@ export async function zendeskFidelityJourney(){
   const media=await query('SELECT m.id,m.conversation_id,m.message_id,m.filename,a.base64 FROM media m JOIN move_in_attachment_bytes a ON a.media_id=m.id ORDER BY m.id')
   assert.equal(media.length,o.ticket.flatMap(t=>t.comments).flatMap(c=>c.attachments).length)
   for(const m of media){const response=await h.download(`/api/conversations/${m.conversation_id}/media/${m.id}`);assert.equal(response.status,200);const reviewed=plan.plan.decisions.flatMap(d=>d.targets).flatMap(t=>t.attachments??[]).find(a=>a.id===m.id);assert.ok(reviewed);const expected=o.ticket.flatMap(t=>t.comments).flatMap(c=>c.attachments).map(a=>Buffer.from(`synthetic-hh-${a.id} file\n`)).find(bytes=>createHash('sha256').update(bytes).digest('hex')===reviewed.sha256);assert.ok(expected);assert.deepEqual(response.bytes,expected);assert.deepEqual(response.bytes,Buffer.from(m.base64,'base64'));assert.equal((await h.download(`/api/conversations/${m.conversation_id}/media/${m.id}`,'foreign')).status,404)}
-  const first=native[0];await h.contactSession('visitor','p',first.contact_id)
-  const publicView=await h.call(`/api/conversations/${first.id}/messages`,{actor:'visitor'});assert.doesNotMatch(JSON.stringify(publicView),/private investigation/)
-  for(const m of media.filter(m=>m.conversation_id===first.id))assert.equal((await h.download(`/api/conversations/${first.id}/media/${m.id}`,'visitor')).status,m.message_id?200:404)
-  // contactSession is authentication fixture setup, not imported business data.
-  // Remove that temporary visitor grant before asking undo to restore the owner
-  // baseline: production undo correctly preserves contacts with native sessions.
-  await h.db.prepare("DELETE FROM sessions WHERE project_id='p' AND contact_id=?").bind(first.contact_id).run()
+  const first=native[0]
   const detail=(await h.call(`/api/dashboard/projects/p/conversations/${first.id}`)).data;assert.equal(detail.subject,o.ticket[0].subject)
   const history=await h.call(`/api/conversations/${first.id}/imported-history`);assert.equal(history.history.events.length,o.audit[0].events.length)
   const importedRules=(await query('SELECT * FROM workflow_rules')).filter(r=>!before.workflow_rules.some(old=>old.id===r.id));assert.equal(importedRules.length,o.trigger.length+o.automation.length);assert.ok(importedRules.every(r=>r.state==='draft'))
@@ -73,7 +69,7 @@ export async function zendeskFidelityJourney(){
   await undo(h,plan);assertBusinessEquality(before,await h.snapshot());assert.equal(h.outbound,0)
   receipt.checks.push('same export through old NDJSON door adds no business state; whole-import undo restores exact business state; zero outbound requests')
   // A malformed typed value must be refused, never rounded into a new value.
-  console.log('ZENDESK_FIDELITY numeric refusal');const invalid=structuredClone(fixture.records.filter(r=>r.user?.id===o.user[0].id||r.ticket_field||r.ticket?.id===o.ticket[0].id));invalid.find(r=>r.ticket).ticket.custom_fields.find(v=>v.id===702).value='9007199254740993'
+  console.log('ZENDESK_FIDELITY numeric refusal');const invalid=structuredClone(fixture.records.filter(r=>r.user&&(r.user.id===o.user[0].id||r.user.role!=='end-user')||r.ticket_field||r.ticket?.id===o.ticket[0].id));invalid.find(r=>r.ticket).ticket.custom_fields.find(v=>v.id===702).value='9007199254740993'
   const refused=await review(h,'zendesk',invalid.map(JSON.stringify).join('\n'),'synthetic-hh-invalid.ndjson');assert.match(refused.plan.decisions.find(d=>d.kind==='ticket'&&d.sourceId===String(o.ticket[0].id)).rejection,/ticket_numeric_field_not_representable/)
   const precise=structuredClone(invalid);precise.find(r=>r.ticket).ticket.custom_fields.find(v=>v.id===702).value='42';precise.find(r=>r.ticket).ticket.custom_fields.find(v=>v.id===703).value='0.0000001'
   const preciseReview=await review(h,'zendesk',precise.map(JSON.stringify).join('\n'),'synthetic-hh-precise.ndjson');assert.equal(preciseReview.plan.decisions.find(d=>d.kind==='ticket').rejection,undefined,'small decimal stays representable despite JavaScript scientific notation')
@@ -82,6 +78,11 @@ export async function zendeskFidelityJourney(){
   const missing={...o.ticket[0]};delete missing.comments
   const incomplete=await review(h,'zendesk',JSON.stringify({tickets:[missing],users:o.user}),'synthetic-hh-api-incomplete.json');assert.equal(incomplete.plan.decisions.find(d=>d.kind==='ticket').rejection,'ticket_comments_required')
   const signed=await h.raw(`${root}?vendor=zendesk`,{method:'POST',headers:{'X-Import-Filename':'synthetic-hh-sensitive-page.json'},body:JSON.stringify({users:[o.user[0]],next_page:'https://synthetic-hh.example.test/users?token=synthetic-hh-949'})});assert.equal(signed.response.status,422);assert.equal(signed.data.diagnostic.code,'signed_download_link_not_accepted')
+  const privacyRecords=fixture.records.filter(r=>r.ticket?.id===o.ticket[0].id||r.ticket_field||r.organization?.id===o.organization[0].id||r.user&&(r.user.id===o.user[0].id||r.user.role!=='end-user'))
+  await apply(h,await review(h,'zendesk',privacyRecords.map(JSON.stringify).join('\n'),'synthetic-hh-privacy.ndjson'))
+  await h.contactSession('visitor','p',first.contact_id)
+  const publicView=await h.call(`/api/conversations/${first.id}/messages`,{actor:'visitor'});assert.doesNotMatch(JSON.stringify(publicView),/private investigation/)
+  for(const m of media.filter(m=>m.conversation_id===first.id))assert.equal((await h.download(`/api/conversations/${first.id}/media/${m.id}`,'visitor')).status,m.message_id?200:404)
   receipt.checks.push('unrepresentable numeric string and API ticket without comments refused explicitly')
   receipt.counts={customers:contacts.length,tickets:native.length,publicComments:messages.length,privateNotes:notes.length,typedValues:fields.length,attachmentFiles:media.length,review:plan.plan.counts,afterUndo:'exact business equality',outbound:h.outbound}
   if(process.env.H2H_FIDELITY_RECEIPT){const path=process.env.H2H_FIDELITY_RECEIPT;await mkdir(join(path,'..'),{recursive:true});await writeFile(path,JSON.stringify(receipt,null,2)+'\n');await writeFile(join(path,'..','REVIEW.json'),JSON.stringify(plan,null,2)+'\n');await writeFile(join(path,'..','RAW-REVIEW.json'),JSON.stringify(rawPlan,null,2)+'\n')}

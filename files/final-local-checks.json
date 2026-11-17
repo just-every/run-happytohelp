@@ -1,0 +1,56 @@
+{
+  "node": "v22.20.0",
+  "commands": [
+    {
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^a full legacy import",
+        "tests/journeys/legacy.mjs"
+      ],
+      "log": "legacy-retry.log",
+      "started": "2026-11-17T16:15:13.272790+00:00",
+      "finished": "2026-11-17T16:18:53.230870+00:00",
+      "exit": 0
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^adopt mounted history",
+        "tests/journeys/move-in-admission.mjs"
+      ],
+      "log": "fidelity-journey.log",
+      "started": "2026-11-17T16:18:53.236468+00:00",
+      "finished": "2026-11-17T16:21:16.086129+00:00",
+      "exit": 0
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "log": "typecheck.log",
+      "started": "2026-11-17T16:21:16.090763+00:00",
+      "finished": "2026-11-17T16:21:34.590034+00:00",
+      "exit": 0
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "log": "rer-check.log",
+      "started": "2026-11-17T16:21:34.596899+00:00",
+      "finished": "2026-11-17T16:21:36.433578+00:00",
+      "exit": 0
+    }
+  ]
+}

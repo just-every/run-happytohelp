@@ -1,0 +1,14 @@
+{
+  "tests/journeys/legacy.mjs": {
+    "before": 6,
+    "after": 6
+  },
+  "tests/journeys/move-in-admission.mjs": {
+    "before": 3,
+    "after": 3
+  },
+  "tests/legacy-export.mjs": {
+    "before": 1,
+    "after": 1
+  }
+}

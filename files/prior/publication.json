@@ -1,0 +1,26 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-import-legacy-fidelity-1",
+  "head": "388b0bbc612761895766ffdbb329aace0169522f",
+  "pushed": true,
+  "pr": null,
+  "firstSave": "a59cc89b3d7e07225b519c884756765e992b04bb",
+  "mergedMain": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "candidateIdentities": "author and committer independently checked as Run Edit Run fleet <fleet@runeditrun.com> for every origin/main..HEAD candidate, including side parents",
+  "trailers": "absent; no OpenAI/Codex co-author trailers",
+  "previousCandidate": "ebeabafef8a47e6a04d89f9816583096e9a4d63f",
+  "priorVerify": {
+    "id": 44095599175,
+    "head": "ebeabafef8a47e6a04d89f9816583096e9a4d63f",
+    "status": "completed",
+    "conclusion": "failure",
+    "failedJobs": [
+      "contract-docs",
+      "Verify / import-and-reports",
+      "verify"
+    ]
+  },
+  "status": "PUSHED",
+  "finalVerifyObserved": false,
+  "finalVerifyReason": "Ten GitHub calls exhausted; final metadata-corrected candidate workflow has not been queried"
+}

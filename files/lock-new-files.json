@@ -1,0 +1,19 @@
+{
+  "command": "node scripts/edition-authoring/cli.mjs lock",
+  "stagedNewFiles": [
+    "src/modules/legacy-import/field-dispositions.ts",
+    "src/modules/legacy-import/field-rules.ts",
+    "src/modules/legacy-import/media-links.ts",
+    "src/modules/legacy-import/source-columns.ts",
+    "src/modules/legacy-import/source-references.ts",
+    "tests/legacy-export/fidelity-fixture.mjs",
+    "tests/legacy-export/fidelity-inputs.mjs",
+    "tests/legacy-export/field-matrix.mjs",
+    "tests/legacy-export/media-fixture.mjs",
+    "tests/legacy-export/native-readers.mjs",
+    "tests/legacy-export/no-outbound.mjs",
+    "tests/legacy-export/transport-equality.mjs"
+  ],
+  "allNewFilesPresent": true,
+  "sha256": "8fccfa48e5b4cf0cd3888459710724a93abba43ddcc5fcd50f39e5947b3afbb9"
+}

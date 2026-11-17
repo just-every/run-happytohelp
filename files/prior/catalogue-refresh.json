@@ -1,0 +1,13 @@
+{
+  "path": "importers.json",
+  "artifact": "docs/moving-in.md",
+  "beforeBytes": 63679,
+  "afterBytes": 66844,
+  "beforeSha256": "44158d01074d608df0245d3239c52e899cee18382d6509973c1915ef90f9b44f",
+  "afterSha256": "9e1b0a3ebfa6c823b90da41ecaaf080d15aaca894255256c9d509d211f1919b5",
+  "adapterSourceProvenance": "unchanged and checked against actual reader source",
+  "status": "documented format (unchanged)",
+  "validation": "synthetic-only (unchanged)",
+  "realExport": "not-supplied (unchanged)",
+  "localReproduction": "tests/move-in/zendesk-door.mjs:146; first admission registration failed on old guide size and passed after recomputation"
+}

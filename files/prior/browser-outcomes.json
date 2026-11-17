@@ -1,0 +1,245 @@
+{
+  "candidateHead": "388b0bbc612761895766ffdbb329aace0169522f",
+  "runtime": "rer dev / generated SQL package / approved native owner",
+  "screens": [
+    {
+      "name": "inbox",
+      "width": 1440,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/conversations",
+      "status": 200,
+      "file": "screens/inbox-1440.png",
+      "bodyCharacters": 319,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "transcript-private-note",
+      "width": 1440,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/conversations/40000000-0000-4000-8000-000000000001",
+      "status": 200,
+      "file": "screens/transcript-private-note-1440.png",
+      "bodyCharacters": 1465,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "contact",
+      "width": 1440,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/contacts/30000000-0000-4000-8000-000000000001",
+      "status": 200,
+      "file": "screens/contact-1440.png",
+      "bodyCharacters": 1124,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "knowledge-categories",
+      "width": 1440,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/articles",
+      "status": 200,
+      "file": "screens/knowledge-categories-1440.png",
+      "bodyCharacters": 586,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "article",
+      "width": 1440,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/articles/70000000-0000-4000-8000-000000000001",
+      "status": 200,
+      "file": "screens/article-1440.png",
+      "bodyCharacters": 544,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "draft",
+      "width": 1440,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/articles/73000000-0000-4000-8000-000000000001",
+      "status": 200,
+      "file": "screens/draft-1440.png",
+      "bodyCharacters": 397,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "saved-replies",
+      "width": 1440,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/macros",
+      "status": 200,
+      "file": "screens/saved-replies-1440.png",
+      "bodyCharacters": 694,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "unknown-author-reply",
+      "width": 1440,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/macros/d0000000-0000-4000-8000-000000000001",
+      "status": 200,
+      "file": "screens/unknown-author-reply-1440.png",
+      "bodyCharacters": 1875,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "settings",
+      "width": 1440,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/settings",
+      "status": 200,
+      "file": "screens/settings-1440.png",
+      "bodyCharacters": 9082,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "availability",
+      "width": 1440,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/settings",
+      "status": 200,
+      "file": "screens/availability-1440.png",
+      "bodyCharacters": 2715,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "widget",
+      "width": 1440,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/widget-settings#settings",
+      "status": 200,
+      "file": "screens/widget-1440.png",
+      "bodyCharacters": 1389,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "inbox",
+      "width": 390,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/conversations",
+      "status": 200,
+      "file": "screens/inbox-390.png",
+      "bodyCharacters": 166,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "transcript-private-note",
+      "width": 390,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/conversations/40000000-0000-4000-8000-000000000001",
+      "status": 200,
+      "file": "screens/transcript-private-note-390.png",
+      "bodyCharacters": 1204,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "contact",
+      "width": 390,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/contacts/30000000-0000-4000-8000-000000000001",
+      "status": 200,
+      "file": "screens/contact-390.png",
+      "bodyCharacters": 1064,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "knowledge-categories",
+      "width": 390,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/articles",
+      "status": 200,
+      "file": "screens/knowledge-categories-390.png",
+      "bodyCharacters": 544,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "article",
+      "width": 390,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/articles/70000000-0000-4000-8000-000000000001",
+      "status": 200,
+      "file": "screens/article-390.png",
+      "bodyCharacters": 467,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "draft",
+      "width": 390,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/articles/73000000-0000-4000-8000-000000000001",
+      "status": 200,
+      "file": "screens/draft-390.png",
+      "bodyCharacters": 330,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "saved-replies",
+      "width": 390,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/macros",
+      "status": 200,
+      "file": "screens/saved-replies-390.png",
+      "bodyCharacters": 340,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "unknown-author-reply",
+      "width": 390,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/macros/d0000000-0000-4000-8000-000000000001",
+      "status": 200,
+      "file": "screens/unknown-author-reply-390.png",
+      "bodyCharacters": 1521,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "settings",
+      "width": 390,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/settings",
+      "status": 200,
+      "file": "screens/settings-390.png",
+      "bodyCharacters": 8729,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "availability",
+      "width": 390,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/settings",
+      "status": 200,
+      "file": "screens/availability-390.png",
+      "bodyCharacters": 2362,
+      "loadingOnly": false,
+      "pageError": false
+    },
+    {
+      "name": "widget",
+      "width": 390,
+      "path": "/projects/10000000-0000-4000-8000-000000000001/widget-settings#settings",
+      "status": 200,
+      "file": "screens/widget-390.png",
+      "bodyCharacters": 1036,
+      "loadingOnly": false,
+      "pageError": false
+    }
+  ],
+  "downloads": [
+    {
+      "sourceMediaId": "d1000000-0000-4000-8000-000000000001",
+      "bytes": 29,
+      "privateNote": true,
+      "sha256": "e3246978aeb003eb30d36ce1e3f8c44dfd8801947bf5496114877706be549f69",
+      "sourceSha256": "e3246978aeb003eb30d36ce1e3f8c44dfd8801947bf5496114877706be549f69"
+    },
+    {
+      "sourceMediaId": "d2000000-0000-4000-8000-000000000001",
+      "bytes": 0,
+      "privateNote": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "blockedBrowserHosts": [
+    "paper-lantern.example.test"
+  ]
+}

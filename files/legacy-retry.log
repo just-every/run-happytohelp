@@ -1,0 +1,18 @@
+TAP version 13
+# (node:13681) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a full legacy import leaves the work counts unchanged and the default rule a draft, authorless texts are system, history opens read; each can be opted back in
+ok 1 - a full legacy import leaves the work counts unchanged and the default rule a draft, authorless texts are system, history opens read; each can be opted back in
+  ---
+  duration_ms: 216808.696993
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 219922.385709

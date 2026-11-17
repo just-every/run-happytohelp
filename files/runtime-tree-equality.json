@@ -1,0 +1,158 @@
+{
+  "prior": "388b0bbc612761895766ffdbb329aace0169522f",
+  "files": [
+    {
+      "file": "docs/LEGACY-EXPORT.md",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "docs/moving-in.md",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "importers.json",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "scripts/legacy-export/package.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "scripts/legacy-import/import-package.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/README.md",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/adoption/historical.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/adoption/note-media.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/archive-only.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/delta.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/field-dispositions.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/field-rules.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/importer.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/map-core.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/map-knowledge.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/map-project.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/mapping-shared.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/mapping.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/media-index.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/media-links.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/source-columns.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/source-references.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/worker/context-read.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/worker/result.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "src/modules/legacy-import/worker/row-step.ts",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/legacy-export.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/legacy-export/extended-fixture.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/legacy-export/fidelity-fixture.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/legacy-export/fidelity-inputs.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/legacy-export/field-matrix.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/legacy-export/fixture.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/legacy-export/media-fixture.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/legacy-export/native-readers.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/legacy-export/no-outbound.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/legacy-export/resume.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/legacy-export/transport-equality.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/move-in/legacy-adoption-integration/fixture.mjs",
+      "priorBytesEqual": true
+    },
+    {
+      "file": "tests/move-in/legacy-adoption-integration/journey.mjs",
+      "priorBytesEqual": true
+    }
+  ],
+  "allEqual": true
+}

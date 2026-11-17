@@ -1,0 +1,202 @@
+{
+  "main": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "prior": "388b0bbc612761895766ffdbb329aace0169522f",
+  "priorMergeBase": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "priorFiles": 40,
+  "comparedFiles": 37,
+  "excluded": [
+    "CONTRACT.md",
+    "sources.lock.json",
+    "importers.json",
+    "ACCEPTANCE.md",
+    "docs/CLAIMS.md"
+  ],
+  "equal": true,
+  "files": [
+    {
+      "file": "docs/LEGACY-EXPORT.md",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "docs/moving-in.md",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "scripts/legacy-export/package.mjs",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "scripts/legacy-import/import-package.mjs",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/README.md",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/adoption/historical.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/adoption/note-media.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/archive-only.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/delta.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/field-dispositions.ts",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "src/modules/legacy-import/field-rules.ts",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "src/modules/legacy-import/importer.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/map-core.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/map-knowledge.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/map-project.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/mapping-shared.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/mapping.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/media-index.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/media-links.ts",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "src/modules/legacy-import/source-columns.ts",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "src/modules/legacy-import/source-references.ts",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "src/modules/legacy-import/worker/context-read.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/worker/result.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "src/modules/legacy-import/worker/row-step.ts",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "tests/legacy-export.mjs",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "tests/legacy-export/extended-fixture.mjs",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "tests/legacy-export/fidelity-fixture.mjs",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "tests/legacy-export/fidelity-inputs.mjs",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "tests/legacy-export/field-matrix.mjs",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "tests/legacy-export/fixture.mjs",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "tests/legacy-export/media-fixture.mjs",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "tests/legacy-export/native-readers.mjs",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "tests/legacy-export/no-outbound.mjs",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "tests/legacy-export/resume.mjs",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "tests/legacy-export/transport-equality.mjs",
+      "equal": true,
+      "method": "git show blob / new file bytes"
+    },
+    {
+      "file": "tests/move-in/legacy-adoption-integration/fixture.mjs",
+      "equal": true,
+      "method": "git diff --binary"
+    },
+    {
+      "file": "tests/move-in/legacy-adoption-integration/journey.mjs",
+      "equal": true,
+      "method": "git diff --binary"
+    }
+  ]
+}

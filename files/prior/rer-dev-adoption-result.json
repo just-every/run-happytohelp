@@ -1,0 +1,4654 @@
+{
+  "exportDispositions": {
+    "omittedColumns": {
+      "projects": [
+        "verification_secret"
+      ],
+      "project_users": [
+        "invitation_token"
+      ],
+      "contacts": [
+        "user_agent",
+        "key_hashes"
+      ],
+      "conversations": [],
+      "messages": [
+        "content_raw"
+      ],
+      "buckets": [],
+      "ais": [],
+      "categories": [],
+      "articles": [],
+      "macros": [],
+      "datasets": [
+        "crawl_webhook_token",
+        "refresh_claim_token",
+        "status_message"
+      ],
+      "plugins": [],
+      "collectors": [
+        "data"
+      ],
+      "collector_actions": [
+        "action",
+        "contact_shared_key_id"
+      ],
+      "collector_summaries": [
+        "summary"
+      ],
+      "insights": [],
+      "ai_usages": [],
+      "project_optimizations": [],
+      "message_thinkings": [
+        "thinking_id",
+        "signature"
+      ],
+      "leads": [],
+      "charges": [],
+      "project_github_connections": [
+        "access_token"
+      ],
+      "connections": [
+        "shared_key",
+        "contact_shared_key",
+        "contact_shared_key_id",
+        "page_content"
+      ],
+      "local_agent_device_project_settings": [],
+      "support_delegations": [],
+      "events": [],
+      "conversation_participants": [],
+      "dataset_files": [
+        "html"
+      ],
+      "support_delegation_events": [],
+      "local_agent_devices": [
+        "token_hash"
+      ],
+      "local_agent_grants": [
+        "token_hash"
+      ],
+      "article_categories": [],
+      "users": [
+        "password",
+        "remember_token"
+      ],
+      "ai_defaults": [],
+      "mediables": [],
+      "media": []
+    },
+    "excludedTables": [
+      "ai_logs",
+      "asymmetric_keys",
+      "contact_shared_keys",
+      "elastic_migrations",
+      "failed_jobs",
+      "job_batches",
+      "jobs",
+      "local_agent_device_authorizations",
+      "local_agent_pairings",
+      "migrations",
+      "password_resets",
+      "personal_access_tokens",
+      "prompt_plans",
+      "telescope_entries",
+      "telescope_entries_tags",
+      "telescope_monitoring",
+      "waitlist"
+    ],
+    "omittedJsonPaths": {
+      "events": {
+        "payload": [
+          [
+            "contact_message",
+            "contact",
+            "hash"
+          ],
+          [
+            "contact_message",
+            "contact",
+            "metadata",
+            "hash"
+          ],
+          [
+            "contact_message",
+            "contact",
+            "metadata",
+            "admin"
+          ]
+        ]
+      },
+      "messages": {
+        "content": [
+          [
+            "data",
+            "clientConfiguration",
+            "braintreeApi",
+            "accessToken"
+          ],
+          [
+            "data",
+            "tokenizeUsBankAccount",
+            "paymentMethod",
+            "id"
+          ],
+          [
+            "data",
+            "tokenizeUsBankAccount",
+            "paymentMethod",
+            "legacyId"
+          ]
+        ]
+      },
+      "contacts": {
+        "metadata": [
+          [
+            "admin"
+          ]
+        ]
+      },
+      "conversations": {
+        "metadata": [
+          [
+            "customer_reply"
+          ],
+          [
+            "suggestions"
+          ]
+        ]
+      }
+    },
+    "omittedJsonValueCounts": {
+      "contacts.metadata": 2,
+      "conversations.metadata": 2,
+      "events.payload": 3
+    },
+    "omittedTextValueCounts": {
+      "contacts.ai_profile": 2,
+      "messages.content": 1
+    },
+    "repeatedCredentialValueCounts": {
+      "messages.content": 1
+    },
+    "reason": "Removed before export; never retained in source journals"
+  },
+  "fieldDispositions": [
+    {
+      "table": "ai_defaults",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ai_defaults",
+      "field": "id",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ai_defaults",
+      "field": "prompt",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ai_defaults",
+      "field": "role",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ai_defaults",
+      "field": "type",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ai_defaults",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ais",
+      "field": "avatar_url",
+      "kind": "native",
+      "target": "ai_profiles",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ais",
+      "field": "created_at",
+      "kind": "native",
+      "target": "ai_profiles",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ais",
+      "field": "id",
+      "kind": "native",
+      "target": "ai_profiles",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ais",
+      "field": "is_animated",
+      "kind": "normalized",
+      "target": "ai_profiles.is_enabled / is_animated",
+      "reason": "Normal export is numeric booleans; historical adoption always disables AI",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ais",
+      "field": "is_enabled",
+      "kind": "normalized",
+      "target": "ai_profiles.is_enabled / is_animated",
+      "reason": "Normal export is numeric booleans; historical adoption always disables AI",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ais",
+      "field": "name",
+      "kind": "native",
+      "target": "ai_profiles",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ais",
+      "field": "project_id",
+      "kind": "native",
+      "target": "ai_profiles",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ais",
+      "field": "prompt",
+      "kind": "normalized",
+      "target": "ai_profiles.role / prompt",
+      "reason": "Empty role/prompt inherit matching default type; no original type column; explicit source.aiModel is required",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ais",
+      "field": "role",
+      "kind": "normalized",
+      "target": "ai_profiles.role / prompt",
+      "reason": "Empty role/prompt inherit matching default type; no original type column; explicit source.aiModel is required",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ais",
+      "field": "type",
+      "kind": "normalized",
+      "target": "ai_profiles.role / prompt",
+      "reason": "Empty role/prompt inherit matching default type; no original type column; explicit source.aiModel is required",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "ais",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "article_categories",
+      "field": "article_id",
+      "kind": "native",
+      "target": "knowledge_article_categories",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "article_categories",
+      "field": "category_id",
+      "kind": "native",
+      "target": "knowledge_article_categories",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "article_categories",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "article_categories",
+      "field": "id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "article_categories",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "articles",
+      "field": "content",
+      "kind": "native",
+      "target": "knowledge_articles",
+      "reason": "Article fields retained and carried storage URLs rewritten; content normalizes through the native knowledge boundary",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "articles",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "articles",
+      "field": "created_by_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "articles",
+      "field": "id",
+      "kind": "native",
+      "target": "knowledge_articles",
+      "reason": "Article fields retained and carried storage URLs rewritten; content normalizes through the native knowledge boundary",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "articles",
+      "field": "modified_by_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 2
+    },
+    {
+      "table": "articles",
+      "field": "project_id",
+      "kind": "native",
+      "target": "knowledge_articles",
+      "reason": "Article fields retained and carried storage URLs rewritten; content normalizes through the native knowledge boundary",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "articles",
+      "field": "published_at",
+      "kind": "normalized",
+      "target": "knowledge_articles.status",
+      "reason": "Null means draft; exact publication instant has no native destination",
+      "rows": 3,
+      "nulls": 1
+    },
+    {
+      "table": "articles",
+      "field": "slug",
+      "kind": "native",
+      "target": "knowledge_articles",
+      "reason": "Article fields retained and carried storage URLs rewritten; content normalizes through the native knowledge boundary",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "articles",
+      "field": "summary",
+      "kind": "native",
+      "target": "knowledge_articles",
+      "reason": "Article fields retained and carried storage URLs rewritten; content normalizes through the native knowledge boundary",
+      "rows": 3,
+      "nulls": 1
+    },
+    {
+      "table": "articles",
+      "field": "title",
+      "kind": "native",
+      "target": "knowledge_articles",
+      "reason": "Article fields retained and carried storage URLs rewritten; content normalizes through the native knowledge boundary",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "articles",
+      "field": "updated_at",
+      "kind": "native",
+      "target": "knowledge_articles",
+      "reason": "Article fields retained and carried storage URLs rewritten; content normalizes through the native knowledge boundary",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "buckets",
+      "field": "conversation_id",
+      "kind": "native",
+      "target": "conversation_buckets",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "buckets",
+      "field": "counts",
+      "kind": "normalized",
+      "target": "conversation_buckets.metadata_json",
+      "reason": "Source bucket metadata custody only; not equivalent native vectorization or count behavior",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "buckets",
+      "field": "created_at",
+      "kind": "native",
+      "target": "conversation_buckets",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "buckets",
+      "field": "first_message_id",
+      "kind": "normalized",
+      "target": "conversation_buckets.metadata_json",
+      "reason": "Source bucket metadata custody only; not equivalent native vectorization or count behavior",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "buckets",
+      "field": "id",
+      "kind": "native",
+      "target": "conversation_buckets",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "buckets",
+      "field": "is_vectorized",
+      "kind": "normalized",
+      "target": "conversation_buckets.metadata_json",
+      "reason": "Source bucket metadata custody only; not equivalent native vectorization or count behavior",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "buckets",
+      "field": "last_message_id",
+      "kind": "normalized",
+      "target": "conversation_buckets.metadata_json",
+      "reason": "Source bucket metadata custody only; not equivalent native vectorization or count behavior",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "buckets",
+      "field": "project_id",
+      "kind": "normalized",
+      "target": "conversation_buckets.metadata_json",
+      "reason": "Source bucket metadata custody only; not equivalent native vectorization or count behavior",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "buckets",
+      "field": "updated_at",
+      "kind": "normalized",
+      "target": "conversation_buckets.metadata_json",
+      "reason": "Source bucket metadata custody only; not equivalent native vectorization or count behavior",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "categories",
+      "field": "_lft",
+      "kind": "normalized",
+      "target": "knowledge_categories.position",
+      "reason": "Nested-set left position orders native categories; right boundary stays private archive",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "categories",
+      "field": "_rgt",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "categories",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "categories",
+      "field": "created_by_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "categories",
+      "field": "id",
+      "kind": "native",
+      "target": "knowledge_categories",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "categories",
+      "field": "modified_by_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 1
+    },
+    {
+      "table": "categories",
+      "field": "parent_id",
+      "kind": "native",
+      "target": "knowledge_categories",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 3,
+      "nulls": 2
+    },
+    {
+      "table": "categories",
+      "field": "project_id",
+      "kind": "native",
+      "target": "knowledge_categories",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "categories",
+      "field": "published_at",
+      "kind": "normalized",
+      "target": "knowledge_categories.is_published",
+      "reason": "Null means draft; exact publication instant has no native destination",
+      "rows": 3,
+      "nulls": 1
+    },
+    {
+      "table": "categories",
+      "field": "slug",
+      "kind": "native",
+      "target": "knowledge_categories",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "categories",
+      "field": "summary",
+      "kind": "native",
+      "target": "knowledge_categories",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 3,
+      "nulls": 1
+    },
+    {
+      "table": "categories",
+      "field": "title",
+      "kind": "native",
+      "target": "knowledge_categories.name",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "categories",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "charges",
+      "field": "amount",
+      "kind": "native",
+      "target": "billing_ledger / billing_operations",
+      "reason": "Historical only; exact amount to minor units; unsettled pending becomes uncertain, failed remains failed; no provider action",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "charges",
+      "field": "created_at",
+      "kind": "native",
+      "target": "billing_ledger / billing_operations",
+      "reason": "Historical only; exact amount to minor units; unsettled pending becomes uncertain, failed remains failed; no provider action",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "charges",
+      "field": "id",
+      "kind": "native",
+      "target": "billing_ledger / billing_operations",
+      "reason": "Historical only; exact amount to minor units; unsettled pending becomes uncertain, failed remains failed; no provider action",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "charges",
+      "field": "invoice_url",
+      "kind": "archive",
+      "reason": "No settled native destination; unsettled response_json retains source row privately",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "charges",
+      "field": "project_id",
+      "kind": "native",
+      "target": "billing_ledger / billing_operations",
+      "reason": "Historical only; exact amount to minor units; unsettled pending becomes uncertain, failed remains failed; no provider action",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "charges",
+      "field": "receipt_url",
+      "kind": "archive",
+      "reason": "No settled native destination; unsettled response_json retains source row privately",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "charges",
+      "field": "status",
+      "kind": "native",
+      "target": "billing_ledger / billing_operations",
+      "reason": "Historical only; exact amount to minor units; unsettled pending becomes uncertain, failed remains failed; no provider action",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "charges",
+      "field": "stripe_id",
+      "kind": "native",
+      "target": "billing_ledger / billing_operations",
+      "reason": "Historical only; exact amount to minor units; unsettled pending becomes uncertain, failed remains failed; no provider action",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "charges",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No settled native destination; unsettled response_json retains source row privately",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_actions",
+      "field": "contact_id",
+      "kind": "archive",
+      "reason": "Encrypted action omitted before export; no plaintext_action enrichment, so no native context event; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_actions",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "Encrypted action omitted before export; no plaintext_action enrichment, so no native context event; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_actions",
+      "field": "id",
+      "kind": "archive",
+      "reason": "Encrypted action omitted before export; no plaintext_action enrichment, so no native context event; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_actions",
+      "field": "project_id",
+      "kind": "archive",
+      "reason": "Encrypted action omitted before export; no plaintext_action enrichment, so no native context event; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_actions",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_summaries",
+      "field": "contact_id",
+      "kind": "archive",
+      "reason": "Summary omitted before export; no native context summary; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_summaries",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "Summary omitted before export; no native context summary; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_summaries",
+      "field": "end_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "collector_summaries",
+      "field": "id",
+      "kind": "archive",
+      "reason": "Summary omitted before export; no native context summary; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_summaries",
+      "field": "metadata",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_summaries",
+      "field": "project_id",
+      "kind": "archive",
+      "reason": "Summary omitted before export; no native context summary; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_summaries",
+      "field": "start_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "collector_summaries",
+      "field": "total_actions",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_summaries",
+      "field": "total_pages",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_summaries",
+      "field": "total_summaries",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collector_summaries",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collectors",
+      "field": "actions_count",
+      "kind": "native",
+      "target": "context_collectors",
+      "reason": "Subject/project mapping retains counts and last run only; encrypted browsing payload is omitted",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collectors",
+      "field": "analysis_actions",
+      "kind": "control",
+      "reason": "Running job held with job_id null; analysis action counters reset to zero",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collectors",
+      "field": "analysis_count",
+      "kind": "native",
+      "target": "context_collectors",
+      "reason": "Subject/project mapping retains counts and last run only; encrypted browsing payload is omitted",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collectors",
+      "field": "analysis_since_insight",
+      "kind": "control",
+      "reason": "Running job held with job_id null; analysis action counters reset to zero",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collectors",
+      "field": "contact_id",
+      "kind": "native",
+      "target": "context_collectors",
+      "reason": "Subject/project mapping retains counts and last run only; encrypted browsing payload is omitted",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collectors",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collectors",
+      "field": "id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collectors",
+      "field": "last_run_at",
+      "kind": "native",
+      "target": "context_collectors",
+      "reason": "Subject/project mapping retains counts and last run only; encrypted browsing payload is omitted",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "collectors",
+      "field": "project_id",
+      "kind": "native",
+      "target": "context_collectors",
+      "reason": "Subject/project mapping retains counts and last run only; encrypted browsing payload is omitted",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collectors",
+      "field": "running_at",
+      "kind": "control",
+      "reason": "Running job held with job_id null; analysis action counters reset to zero",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "collectors",
+      "field": "summary_count",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "collectors",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "connections",
+      "field": "agent_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "connections",
+      "field": "contact_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "connections",
+      "field": "conversation_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "connections",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "connections",
+      "field": "deleted_at",
+      "kind": "archive",
+      "reason": "Row and deleted-parent descendants stay sanitized private archive; never restored natively; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "connections",
+      "field": "id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "connections",
+      "field": "is_internal",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "connections",
+      "field": "is_proxy",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "connections",
+      "field": "project_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "connections",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "ai_profile",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "ai_profile_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "contacts",
+      "field": "ai_profile_count",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "avatar_url",
+      "kind": "native",
+      "target": "contacts.metadata_json",
+      "reason": "Structured metadata retained after export redaction; metadata keys override scalar profile fields; blocked state is explicit",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "contacts",
+      "field": "blocked_at",
+      "kind": "native",
+      "target": "contacts.metadata_json",
+      "reason": "Structured metadata retained after export redaction; metadata keys override scalar profile fields; blocked state is explicit",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "contacts",
+      "field": "country_code",
+      "kind": "native",
+      "target": "contacts.metadata_json",
+      "reason": "Structured metadata retained after export redaction; metadata keys override scalar profile fields; blocked state is explicit",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "created_at",
+      "kind": "native",
+      "target": "contacts",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "deleted_at",
+      "kind": "control",
+      "reason": "Row and deleted-parent descendants stay sanitized private archive; never restored natively",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "contacts",
+      "field": "email",
+      "kind": "normalized",
+      "target": "contacts.email / contacts.metadata_json.provided_email",
+      "reason": "Nonempty provided_email overrides email",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "id",
+      "kind": "native",
+      "target": "contacts",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "identifier",
+      "kind": "normalized",
+      "target": "contacts.external_id",
+      "reason": "Empty becomes null; duplicate keeps earliest source contact by time then ID; others held",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "ip_address",
+      "kind": "native",
+      "target": "contacts.metadata_json",
+      "reason": "Structured metadata retained after export redaction; metadata keys override scalar profile fields; blocked state is explicit",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "contacts",
+      "field": "is_verified",
+      "kind": "normalized",
+      "target": "contacts.is_verified",
+      "reason": "Cleared to zero; old verification fact retained only in private source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "language",
+      "kind": "native",
+      "target": "contacts.metadata_json",
+      "reason": "Structured metadata retained after export redaction; metadata keys override scalar profile fields; blocked state is explicit",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "last_seen_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "contacts",
+      "field": "metadata",
+      "kind": "native",
+      "target": "contacts.metadata_json",
+      "reason": "Structured metadata retained after export redaction; metadata keys override scalar profile fields; blocked state is explicit",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "name",
+      "kind": "normalized",
+      "target": "contacts.name",
+      "reason": "First nonempty provided_name, name, nickname; originals remain private archive",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "nickname",
+      "kind": "normalized",
+      "target": "contacts.name",
+      "reason": "First nonempty provided_name, name, nickname; originals remain private archive",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "project_id",
+      "kind": "native",
+      "target": "contacts",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "provided_email",
+      "kind": "normalized",
+      "target": "contacts.email / contacts.metadata_json.provided_email",
+      "reason": "Nonempty provided_email overrides email",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "contacts",
+      "field": "provided_name",
+      "kind": "normalized",
+      "target": "contacts.name",
+      "reason": "First nonempty provided_name, name, nickname; originals remain private archive",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "contacts",
+      "field": "timezone",
+      "kind": "normalized",
+      "target": "contacts.metadata_json.timezone / timezone_name",
+      "reason": "Recorded timezone retained under existing reader key as well; explicit source metadata takes precedence",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "contacts",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "conversation_participants",
+      "field": "contact_id",
+      "kind": "native",
+      "target": "conversation_participants",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "conversation_participants",
+      "field": "conversation_id",
+      "kind": "native",
+      "target": "conversation_participants",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "conversation_participants",
+      "field": "created_at",
+      "kind": "native",
+      "target": "conversation_participants",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "conversation_participants",
+      "field": "id",
+      "kind": "native",
+      "target": "conversation_participants",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "conversation_participants",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "conversations",
+      "field": "agent_id",
+      "kind": "normalized",
+      "target": "conversations.assigned_to",
+      "reason": "CLI preserves non-AI assignee; adoption requires one exact current-member email match, otherwise held unassigned",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "conversations",
+      "field": "ai_id",
+      "kind": "native",
+      "target": "conversation_ai.ai_id",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "conversations",
+      "field": "ai_thoughts",
+      "kind": "control",
+      "reason": "Historical execution state is never activated; sanitized source remains private archive",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "conversations",
+      "field": "ai_thoughts_at",
+      "kind": "control",
+      "reason": "Historical execution state is never activated; sanitized source remains private archive",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "conversations",
+      "field": "contact_id",
+      "kind": "native",
+      "target": "conversations",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "conversations",
+      "field": "created_at",
+      "kind": "native",
+      "target": "conversations",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "conversations",
+      "field": "deleted_at",
+      "kind": "control",
+      "reason": "Row and deleted-parent descendants stay sanitized private archive; never restored natively",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "conversations",
+      "field": "id",
+      "kind": "native",
+      "target": "conversations",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "conversations",
+      "field": "is_ai_locked",
+      "kind": "control",
+      "reason": "Historical execution state is never activated; sanitized source remains private archive",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "conversations",
+      "field": "is_ai_selected",
+      "kind": "control",
+      "reason": "Historical execution state is never activated; sanitized source remains private archive",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "conversations",
+      "field": "last_message_at",
+      "kind": "control",
+      "reason": "Unread history resets by default; active message order rebuilds frontier/time; original counts/time stay private archive",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "conversations",
+      "field": "last_message_id",
+      "kind": "normalized",
+      "target": "conversations.last_message_id / revision",
+      "reason": "Rebuilt from active transcript time then ID, never copied from the source frontier",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "conversations",
+      "field": "metadata",
+      "kind": "normalized",
+      "target": "conversations.subject",
+      "reason": "Only metadata.subject is operational; other metadata remains private source archive after export redaction",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "conversations",
+      "field": "project_id",
+      "kind": "native",
+      "target": "conversations",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "conversations",
+      "field": "resolved_at",
+      "kind": "native",
+      "target": "conversations",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "conversations",
+      "field": "unread_agent_messages_count",
+      "kind": "control",
+      "reason": "Unread history resets by default; active message order rebuilds frontier/time; original counts/time stay private archive",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "conversations",
+      "field": "unread_contact_messages_count",
+      "kind": "control",
+      "reason": "Unread history resets by default; active message order rebuilds frontier/time; original counts/time stay private archive",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "conversations",
+      "field": "updated_at",
+      "kind": "native",
+      "target": "conversations",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "created_at",
+      "kind": "control",
+      "reason": "Publication eligibility cutoff only; native documents have no equivalent timestamps",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "dataset_id",
+      "kind": "normalized",
+      "target": "knowledge_documents.version_id",
+      "reason": "Derived legacy version links eligible retained documents to dataset",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "file_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "id",
+      "kind": "native",
+      "target": "knowledge_documents",
+      "reason": "Only eligible retained published/last-refresh markdown becomes readable; provider-ID-only files remain private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "markdown",
+      "kind": "native",
+      "target": "knowledge_documents",
+      "reason": "Only eligible retained published/last-refresh markdown becomes readable; provider-ID-only files remain private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "original_url",
+      "kind": "normalized",
+      "target": "knowledge_documents.url",
+      "reason": "Nonempty url, then original_url; absent URL gets explicit legacy source identity",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "project_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "rank",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "title",
+      "kind": "native",
+      "target": "knowledge_documents",
+      "reason": "Only eligible retained published/last-refresh markdown becomes readable; provider-ID-only files remain private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "updated_at",
+      "kind": "control",
+      "reason": "Publication eligibility cutoff only; native documents have no equivalent timestamps",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "url",
+      "kind": "normalized",
+      "target": "knowledge_documents.url",
+      "reason": "Nonempty url, then original_url; absent URL gets explicit legacy source identity",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "dataset_files",
+      "field": "vector_store_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "crawl_run_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "datasets",
+      "field": "created_at",
+      "kind": "native",
+      "target": "knowledge_datasets",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "excluded_urls",
+      "kind": "normalized",
+      "target": "knowledge_datasets / source_input.crawl",
+      "reason": "CRLF/newline exclusions split, integer bounds validated; no crawl starts",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "external_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "id",
+      "kind": "native",
+      "target": "knowledge_datasets",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "last_refresh_attempt_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "datasets",
+      "field": "last_refreshed_at",
+      "kind": "normalized",
+      "target": "knowledge_datasets",
+      "reason": "Supported preferences retained; unsupported schedule held; no automatic refresh",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "datasets",
+      "field": "max_crawl_depth",
+      "kind": "normalized",
+      "target": "knowledge_datasets / source_input.crawl",
+      "reason": "CRLF/newline exclusions split, integer bounds validated; no crawl starts",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "max_crawl_pages",
+      "kind": "normalized",
+      "target": "knowledge_datasets / source_input.crawl",
+      "reason": "CRLF/newline exclusions split, integer bounds validated; no crawl starts",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "metadata",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "next_refresh_at",
+      "kind": "control",
+      "reason": "Native schedule and claim clear; source running/scheduled work stays held",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "datasets",
+      "field": "pages_count",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "project_id",
+      "kind": "native",
+      "target": "knowledge_datasets",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "refresh_claim_reason",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "datasets",
+      "field": "refresh_claimed_at",
+      "kind": "control",
+      "reason": "Native schedule and claim clear; source running/scheduled work stays held",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "datasets",
+      "field": "refresh_interval_days",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "datasets",
+      "field": "refresh_mode",
+      "kind": "normalized",
+      "target": "knowledge_datasets",
+      "reason": "Supported preferences retained; unsupported schedule held; no automatic refresh",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "refresh_unchanged_count",
+      "kind": "normalized",
+      "target": "knowledge_datasets",
+      "reason": "Supported preferences retained; unsupported schedule held; no automatic refresh",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "staged_external_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "datasets",
+      "field": "status",
+      "kind": "normalized",
+      "target": "knowledge_datasets.status / published_version",
+      "reason": "Published only when eligible retained markdown exists; otherwise empty, never claimed provider success",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "datasets",
+      "field": "url",
+      "kind": "native",
+      "target": "knowledge_datasets",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "events",
+      "field": "agent_id",
+      "kind": "native",
+      "target": "conversation_notes / move_in_notes / context_tracked_events",
+      "reason": "INTERNAL_NOTE string stays private; AGENT_ASSIGNED and USED_INSIGHT are inert tracked history; other event types have no native target",
+      "rows": 3,
+      "nulls": 1
+    },
+    {
+      "table": "events",
+      "field": "bucket_id",
+      "kind": "normalized",
+      "target": "move_in_notes.bucket_id / context_tracked_events.payload",
+      "reason": "Historical note grouping retained; CLI conversation_notes has no bucket field",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "events",
+      "field": "contact_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 3
+    },
+    {
+      "table": "events",
+      "field": "conversation_id",
+      "kind": "native",
+      "target": "conversation_notes / move_in_notes / context_tracked_events",
+      "reason": "INTERNAL_NOTE string stays private; AGENT_ASSIGNED and USED_INSIGHT are inert tracked history; other event types have no native target",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "events",
+      "field": "created_at",
+      "kind": "native",
+      "target": "conversation_notes / move_in_notes / context_tracked_events",
+      "reason": "INTERNAL_NOTE string stays private; AGENT_ASSIGNED and USED_INSIGHT are inert tracked history; other event types have no native target",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "events",
+      "field": "id",
+      "kind": "native",
+      "target": "conversation_notes / move_in_notes / context_tracked_events",
+      "reason": "INTERNAL_NOTE string stays private; AGENT_ASSIGNED and USED_INSIGHT are inert tracked history; other event types have no native target",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "events",
+      "field": "local_agent",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 3
+    },
+    {
+      "table": "events",
+      "field": "payload",
+      "kind": "native",
+      "target": "conversation_notes / move_in_notes / context_tracked_events",
+      "reason": "INTERNAL_NOTE string stays private; AGENT_ASSIGNED and USED_INSIGHT are inert tracked history; other event types have no native target",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "events",
+      "field": "type",
+      "kind": "control",
+      "reason": "Selects supported support history; PAGE_VIEW rows are omitted before export and never archived",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "insights",
+      "field": "activated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "insights",
+      "field": "ai_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "insights",
+      "field": "ai_type",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "insights",
+      "field": "analysis",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "insights",
+      "field": "closed_at",
+      "kind": "native",
+      "target": "context_insights",
+      "reason": "Contact becomes subject, closed_at becomes dismissed_at; unsupported analysis stays private archive",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "insights",
+      "field": "contact_id",
+      "kind": "native",
+      "target": "context_insights",
+      "reason": "Contact becomes subject, closed_at becomes dismissed_at; unsupported analysis stays private archive",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "insights",
+      "field": "content",
+      "kind": "native",
+      "target": "context_insights",
+      "reason": "Contact becomes subject, closed_at becomes dismissed_at; unsupported analysis stays private archive",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "insights",
+      "field": "created_at",
+      "kind": "native",
+      "target": "context_insights",
+      "reason": "Contact becomes subject, closed_at becomes dismissed_at; unsupported analysis stays private archive",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "insights",
+      "field": "id",
+      "kind": "native",
+      "target": "context_insights",
+      "reason": "Contact becomes subject, closed_at becomes dismissed_at; unsupported analysis stays private archive",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "insights",
+      "field": "metadata",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "insights",
+      "field": "project_id",
+      "kind": "native",
+      "target": "context_insights",
+      "reason": "Contact becomes subject, closed_at becomes dismissed_at; unsupported analysis stays private archive",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "insights",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "content",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "email",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "error",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "leads",
+      "field": "id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "name",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "project_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "sent_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "leads",
+      "field": "source",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "status",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "subject",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "website",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "leads",
+      "field": "website_html",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_device_project_settings",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_device_project_settings",
+      "field": "id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_device_project_settings",
+      "field": "local_agent_device_id",
+      "kind": "native",
+      "target": "local_device_settings",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_device_project_settings",
+      "field": "project_id",
+      "kind": "native",
+      "target": "local_device_settings",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_device_project_settings",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_device_project_settings",
+      "field": "working_directories",
+      "kind": "native",
+      "target": "local_device_settings",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "capabilities",
+      "kind": "normalized",
+      "target": "local_devices",
+      "reason": "CLI retains declared capabilities/session; adoption empties capabilities and clears session",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "client_session_id",
+      "kind": "normalized",
+      "target": "local_devices",
+      "reason": "CLI retains declared capabilities/session; adoption empties capabilities and clears session",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "created_at",
+      "kind": "control",
+      "reason": "Pairing/readiness cleared and every device revoked; timestamps only determine deterministic revocation",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "id",
+      "kind": "native",
+      "target": "local_devices",
+      "reason": "Legacy names normalize to user_id/grant_id; source principals namespaced in adoption",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "last_seen_at",
+      "kind": "native",
+      "target": "local_devices",
+      "reason": "Legacy names normalize to user_id/grant_id; source principals namespaced in adoption",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "local_agent_grant_id",
+      "kind": "native",
+      "target": "local_devices",
+      "reason": "Legacy names normalize to user_id/grant_id; source principals namespaced in adoption",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "local_agent_pairing_id",
+      "kind": "control",
+      "reason": "Pairing/readiness cleared and every device revoked; timestamps only determine deterministic revocation",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "max_concurrent_tasks",
+      "kind": "native",
+      "target": "local_devices",
+      "reason": "Legacy names normalize to user_id/grant_id; source principals namespaced in adoption",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "name",
+      "kind": "native",
+      "target": "local_devices",
+      "reason": "Legacy names normalize to user_id/grant_id; source principals namespaced in adoption",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "operator_id",
+      "kind": "native",
+      "target": "local_devices",
+      "reason": "Legacy names normalize to user_id/grant_id; source principals namespaced in adoption",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "project_id",
+      "kind": "native",
+      "target": "local_devices",
+      "reason": "Legacy names normalize to user_id/grant_id; source principals namespaced in adoption",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "provider",
+      "kind": "native",
+      "target": "local_devices",
+      "reason": "Legacy names normalize to user_id/grant_id; source principals namespaced in adoption",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "revoked_at",
+      "kind": "control",
+      "reason": "Pairing/readiness cleared and every device revoked; timestamps only determine deterministic revocation",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "updated_at",
+      "kind": "control",
+      "reason": "Pairing/readiness cleared and every device revoked; timestamps only determine deterministic revocation",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "worker_mode",
+      "kind": "control",
+      "reason": "Pairing/readiness cleared and every device revoked; timestamps only determine deterministic revocation",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "local_agent_devices",
+      "field": "worker_ready_at",
+      "kind": "control",
+      "reason": "Pairing/readiness cleared and every device revoked; timestamps only determine deterministic revocation",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "local_agent_grants",
+      "field": "created_at",
+      "kind": "control",
+      "reason": "Deterministic revocation time; token null, re-pair required; original dates stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_grants",
+      "field": "id",
+      "kind": "native",
+      "target": "local_grants",
+      "reason": "Operator maps to user_id; adoption namespaces historical principals, never access",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_grants",
+      "field": "last_used_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "local_agent_grants",
+      "field": "operator_id",
+      "kind": "native",
+      "target": "local_grants",
+      "reason": "Operator maps to user_id; adoption namespaces historical principals, never access",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_grants",
+      "field": "project_id",
+      "kind": "native",
+      "target": "local_grants",
+      "reason": "Operator maps to user_id; adoption namespaces historical principals, never access",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "local_agent_grants",
+      "field": "revoked_at",
+      "kind": "control",
+      "reason": "Deterministic revocation time; token null, re-pair required; original dates stay private archive",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "local_agent_grants",
+      "field": "updated_at",
+      "kind": "control",
+      "reason": "Deterministic revocation time; token null, re-pair required; original dates stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "macros",
+      "field": "content",
+      "kind": "native",
+      "target": "macros",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "macros",
+      "field": "created_at",
+      "kind": "native",
+      "target": "macros",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "macros",
+      "field": "created_by_id",
+      "kind": "normalized",
+      "target": "macros.created_by / legacy_actor_origins",
+      "reason": "Adoption uses the approved custodian and preserves source or unknown author provenance; CLI with no source author holds the whole row privately",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "macros",
+      "field": "id",
+      "kind": "native",
+      "target": "macros",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "macros",
+      "field": "project_id",
+      "kind": "native",
+      "target": "macros",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "macros",
+      "field": "title",
+      "kind": "native",
+      "target": "macros",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "macros",
+      "field": "updated_at",
+      "kind": "native",
+      "target": "macros",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "aggregate_type",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "aggregate_type",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "alt",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 3
+    },
+    {
+      "table": "media",
+      "field": "alt",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 3,
+      "nulls": 3
+    },
+    {
+      "table": "media",
+      "field": "created_at",
+      "kind": "native",
+      "target": "media / legacy_import_files",
+      "reason": "Native media for a safe conversation attachment; otherwise a conditional referenced file door, never count-only support",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "created_at",
+      "kind": "control",
+      "target": "media / legacy_import_files",
+      "reason": "Native media for a safe conversation attachment; otherwise a conditional referenced file door, never count-only support; media source row is journaled as archive-only, while referenced file-door targets are emitted with the project/article that uses the URL; see object/file-door outcomes",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "directory",
+      "kind": "normalized",
+      "target": "media.object_key / rewritten storage URLs",
+      "reason": "Exporter constructs carried object key from project/media IDs; disk/directory and original URL have no native column",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "directory",
+      "kind": "control",
+      "target": "media.object_key / rewritten storage URLs",
+      "reason": "Exporter constructs carried object key from project/media IDs; disk/directory and original URL have no native column; media source row is journaled as archive-only, while referenced file-door targets are emitted with the project/article that uses the URL; see object/file-door outcomes",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "disk",
+      "kind": "normalized",
+      "target": "media.object_key / rewritten storage URLs",
+      "reason": "Exporter constructs carried object key from project/media IDs; disk/directory and original URL have no native column",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "disk",
+      "kind": "control",
+      "target": "media.object_key / rewritten storage URLs",
+      "reason": "Exporter constructs carried object key from project/media IDs; disk/directory and original URL have no native column; media source row is journaled as archive-only, while referenced file-door targets are emitted with the project/article that uses the URL; see object/file-door outcomes",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "extension",
+      "kind": "normalized",
+      "target": "media.filename / legacy_import_files.filename",
+      "reason": "Original filename if present, otherwise stem.extension",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "extension",
+      "kind": "control",
+      "target": "media.filename / legacy_import_files.filename",
+      "reason": "Original filename if present, otherwise stem.extension; media source row is journaled as archive-only, while referenced file-door targets are emitted with the project/article that uses the URL; see object/file-door outcomes",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "filename",
+      "kind": "normalized",
+      "target": "media.filename / legacy_import_files.filename",
+      "reason": "Original filename if present, otherwise stem.extension",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "filename",
+      "kind": "control",
+      "target": "media.filename / legacy_import_files.filename",
+      "reason": "Original filename if present, otherwise stem.extension; media source row is journaled as archive-only, while referenced file-door targets are emitted with the project/article that uses the URL; see object/file-door outcomes",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "filename_original",
+      "kind": "normalized",
+      "target": "media.filename / legacy_import_files.filename",
+      "reason": "Original filename if present, otherwise stem.extension",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "filename_original",
+      "kind": "control",
+      "target": "media.filename / legacy_import_files.filename",
+      "reason": "Original filename if present, otherwise stem.extension; media source row is journaled as archive-only, while referenced file-door targets are emitted with the project/article that uses the URL; see object/file-door outcomes",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "id",
+      "kind": "native",
+      "target": "media / legacy_import_files",
+      "reason": "Native media for a safe conversation attachment; otherwise a conditional referenced file door, never count-only support",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "id",
+      "kind": "control",
+      "target": "media / legacy_import_files",
+      "reason": "Native media for a safe conversation attachment; otherwise a conditional referenced file door, never count-only support; media source row is journaled as archive-only, while referenced file-door targets are emitted with the project/article that uses the URL; see object/file-door outcomes",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "mime_type",
+      "kind": "native",
+      "target": "media / legacy_import_files",
+      "reason": "Native media for a safe conversation attachment; otherwise a conditional referenced file door, never count-only support",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "mime_type",
+      "kind": "control",
+      "target": "media / legacy_import_files",
+      "reason": "Native media for a safe conversation attachment; otherwise a conditional referenced file door, never count-only support; media source row is journaled as archive-only, while referenced file-door targets are emitted with the project/article that uses the URL; see object/file-door outcomes",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "original_media_id",
+      "kind": "control",
+      "reason": "Variant may inherit original file-door audience; no native variant relation",
+      "rows": 3,
+      "nulls": 3
+    },
+    {
+      "table": "media",
+      "field": "original_media_id",
+      "kind": "control",
+      "reason": "Variant may inherit original file-door audience; no native variant relation; media source row is journaled as archive-only, while referenced file-door targets are emitted with the project/article that uses the URL; see object/file-door outcomes",
+      "rows": 3,
+      "nulls": 2
+    },
+    {
+      "table": "media",
+      "field": "size",
+      "kind": "native",
+      "target": "media / legacy_import_files",
+      "reason": "Native media for a safe conversation attachment; otherwise a conditional referenced file door, never count-only support",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "size",
+      "kind": "control",
+      "target": "media / legacy_import_files",
+      "reason": "Native media for a safe conversation attachment; otherwise a conditional referenced file door, never count-only support; media source row is journaled as archive-only, while referenced file-door targets are emitted with the project/article that uses the URL; see object/file-door outcomes",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 2
+    },
+    {
+      "table": "media",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "url",
+      "kind": "normalized",
+      "target": "media.object_key / rewritten storage URLs",
+      "reason": "Exporter constructs carried object key from project/media IDs; disk/directory and original URL have no native column",
+      "rows": 3,
+      "nulls": 2
+    },
+    {
+      "table": "media",
+      "field": "url",
+      "kind": "control",
+      "target": "media.object_key / rewritten storage URLs",
+      "reason": "Exporter constructs carried object key from project/media IDs; disk/directory and original URL have no native column; media source row is journaled as archive-only, while referenced file-door targets are emitted with the project/article that uses the URL; see object/file-door outcomes",
+      "rows": 3,
+      "nulls": 0
+    },
+    {
+      "table": "media",
+      "field": "variant_name",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 3,
+      "nulls": 3
+    },
+    {
+      "table": "media",
+      "field": "variant_name",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 3,
+      "nulls": 2
+    },
+    {
+      "table": "mediables",
+      "field": "media_id",
+      "kind": "archive",
+      "reason": "Stable eligible message link selected; additional and incompatible links explicitly held with source identities; pivot itself remains private archive; this row has no eligible native target",
+      "rows": 9,
+      "nulls": 0
+    },
+    {
+      "table": "mediables",
+      "field": "mediable_id",
+      "kind": "archive",
+      "reason": "Stable eligible message link selected; additional and incompatible links explicitly held with source identities; pivot itself remains private archive; this row has no eligible native target",
+      "rows": 9,
+      "nulls": 0
+    },
+    {
+      "table": "mediables",
+      "field": "mediable_type",
+      "kind": "archive",
+      "reason": "Stable eligible message link selected; additional and incompatible links explicitly held with source identities; pivot itself remains private archive; this row has no eligible native target",
+      "rows": 9,
+      "nulls": 0
+    },
+    {
+      "table": "mediables",
+      "field": "order",
+      "kind": "archive",
+      "reason": "No equivalent native pivot tag/order; used only for deterministic link selection, originals retained privately; this row has no eligible native target",
+      "rows": 9,
+      "nulls": 0
+    },
+    {
+      "table": "mediables",
+      "field": "tag",
+      "kind": "archive",
+      "reason": "No equivalent native pivot tag/order; used only for deterministic link selection, originals retained privately; this row has no eligible native target",
+      "rows": 9,
+      "nulls": 0
+    },
+    {
+      "table": "message_thinkings",
+      "field": "content",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "message_thinkings",
+      "field": "conversation_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "message_thinkings",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "message_thinkings",
+      "field": "id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "message_thinkings",
+      "field": "local_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "message_thinkings",
+      "field": "message_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "message_thinkings",
+      "field": "model",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "message_thinkings",
+      "field": "project_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "message_thinkings",
+      "field": "seq",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "agent_id",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "agent_id",
+      "kind": "normalized",
+      "target": "messages.actor_id / actor_role / message_authorship",
+      "reason": "Source actor determines visitor/human/AI; authorless text is system with unknown authorship, never a guessed user",
+      "rows": 4,
+      "nulls": 2
+    },
+    {
+      "table": "messages",
+      "field": "bucket_id",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "bucket_id",
+      "kind": "native",
+      "target": "messages",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 4,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "contact_id",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "messages",
+      "field": "contact_id",
+      "kind": "normalized",
+      "target": "messages.actor_id / actor_role / message_authorship",
+      "reason": "Source actor determines visitor/human/AI; authorless text is system with unknown authorship, never a guessed user",
+      "rows": 4,
+      "nulls": 3
+    },
+    {
+      "table": "messages",
+      "field": "content",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "content",
+      "kind": "normalized",
+      "target": "messages.content",
+      "reason": "Export redacts known credentials; carried storage URLs rewrite; transcript text remains literal",
+      "rows": 4,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "conversation_id",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "conversation_id",
+      "kind": "native",
+      "target": "messages",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 4,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "created_at",
+      "kind": "native",
+      "target": "messages",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 4,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "deleted_at",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "deleted_at",
+      "kind": "control",
+      "reason": "Row and deleted-parent descendants stay sanitized private archive; never restored natively",
+      "rows": 4,
+      "nulls": 4
+    },
+    {
+      "table": "messages",
+      "field": "id",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "id",
+      "kind": "native",
+      "target": "messages",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 4,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "local_agent",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "messages",
+      "field": "local_agent",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 4,
+      "nulls": 4
+    },
+    {
+      "table": "messages",
+      "field": "local_id",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "local_id",
+      "kind": "normalized",
+      "target": "messages.local_id",
+      "reason": "Earliest delivery ID in transcript order keeps it; repeats/missing IDs become legacy:<source message id>",
+      "rows": 4,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "notified_at",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "messages",
+      "field": "notified_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 4,
+      "nulls": 3
+    },
+    {
+      "table": "messages",
+      "field": "notified_by",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "messages",
+      "field": "notified_by",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 4,
+      "nulls": 3
+    },
+    {
+      "table": "messages",
+      "field": "project_id",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "project_id",
+      "kind": "native",
+      "target": "messages",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 4,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "read_by_agents",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "messages",
+      "field": "read_by_agents",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 4,
+      "nulls": 3
+    },
+    {
+      "table": "messages",
+      "field": "read_by_contacts",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "messages",
+      "field": "read_by_contacts",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 4,
+      "nulls": 3
+    },
+    {
+      "table": "messages",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "Deleted row or deleted parent; private source custody without native restoration",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "messages",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 4,
+      "nulls": 0
+    },
+    {
+      "table": "plugins",
+      "field": "created_at",
+      "kind": "native",
+      "target": "plugins",
+      "reason": "Stored configuration only; no request or compatibility claim",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "plugins",
+      "field": "created_by_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "plugins",
+      "field": "id",
+      "kind": "native",
+      "target": "plugins",
+      "reason": "Stored configuration only; no request or compatibility claim",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "plugins",
+      "field": "modified_by_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "plugins",
+      "field": "name",
+      "kind": "native",
+      "target": "plugins",
+      "reason": "Stored configuration only; no request or compatibility claim",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "plugins",
+      "field": "position",
+      "kind": "native",
+      "target": "plugins.sort_order",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "plugins",
+      "field": "project_id",
+      "kind": "native",
+      "target": "plugins",
+      "reason": "Stored configuration only; no request or compatibility claim",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "plugins",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "plugins",
+      "field": "url",
+      "kind": "native",
+      "target": "plugins",
+      "reason": "Stored configuration only; no request or compatibility claim",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_github_connections",
+      "field": "connected_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_github_connections",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_github_connections",
+      "field": "github_login",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_github_connections",
+      "field": "github_user_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_github_connections",
+      "field": "id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_github_connections",
+      "field": "project_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_github_connections",
+      "field": "scopes",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_github_connections",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_optimizations",
+      "field": "ai_profile",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "project_optimizations",
+      "field": "ai_profile_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "project_optimizations",
+      "field": "ai_profile_count",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_optimizations",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_optimizations",
+      "field": "id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_optimizations",
+      "field": "metadata",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_optimizations",
+      "field": "project_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_optimizations",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal; this row has no eligible native target",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "project_users",
+      "field": "accepted_at",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "project_users",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "project_users",
+      "field": "id",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "project_users",
+      "field": "invitation_email",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "project_users",
+      "field": "invited_by_id",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "project_users",
+      "field": "is_notified_on_unassigned_activity",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "project_users",
+      "field": "is_primary",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "project_users",
+      "field": "project_id",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "project_users",
+      "field": "role",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "project_users",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "project_users",
+      "field": "user_id",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 1
+    },
+    {
+      "table": "projects",
+      "field": "ai_balance",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "ai_balance_top_up_amount",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "ai_balance_top_up_when_below",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "ai_level",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "ai_monthly_budget",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "ai_profile",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "projects",
+      "field": "ai_profile_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "projects",
+      "field": "ai_profile_count",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "availability_schedule",
+      "kind": "normalized",
+      "target": "project_settings.settings_json",
+      "reason": "Only dashboard metadata and supported settings are used; effective widget defaults merge with overrides, schedules use numeric days, domains use HTTPS, carried media URLs are rewritten; other metadata/widget paths stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "avatar_url",
+      "kind": "normalized",
+      "target": "project_settings.settings_json",
+      "reason": "Only dashboard metadata and supported settings are used; effective widget defaults merge with overrides, schedules use numeric days, domains use HTTPS, carried media URLs are rewritten; other metadata/widget paths stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "created_at",
+      "kind": "native",
+      "target": "projects",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "default_verified_user_ai_id",
+      "kind": "normalized",
+      "target": "project_settings.settings_json",
+      "reason": "Only dashboard metadata and supported settings are used; effective widget defaults merge with overrides, schedules use numeric days, domains use HTTPS, carried media URLs are rewritten; other metadata/widget paths stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "default_visitor_ai_id",
+      "kind": "normalized",
+      "target": "project_settings.settings_json",
+      "reason": "Only dashboard metadata and supported settings are used; effective widget defaults merge with overrides, schedules use numeric days, domains use HTTPS, carried media URLs are rewritten; other metadata/widget paths stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "deleted_at",
+      "kind": "control",
+      "reason": "Row and deleted-parent descendants stay sanitized private archive; never restored natively",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "projects",
+      "field": "email_from_address",
+      "kind": "native",
+      "target": "email_settings",
+      "reason": "Historical sender retained; sending stays disabled",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "email_from_name",
+      "kind": "native",
+      "target": "email_settings",
+      "reason": "Historical sender retained; sending stays disabled",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "help_center_domain",
+      "kind": "normalized",
+      "target": "project_settings.settings_json",
+      "reason": "Only dashboard metadata and supported settings are used; effective widget defaults merge with overrides, schedules use numeric days, domains use HTTPS, carried media URLs are rewritten; other metadata/widget paths stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "id",
+      "kind": "native",
+      "target": "projects",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "is_ai_balance_top_up_enabled",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "is_ai_level_dynamic",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "is_availability_schedule_enabled",
+      "kind": "normalized",
+      "target": "project_settings.settings_json",
+      "reason": "Only dashboard metadata and supported settings are used; effective widget defaults merge with overrides, schedules use numeric days, domains use HTTPS, carried media URLs are rewritten; other metadata/widget paths stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "is_collection_created",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "is_contact_tracking_enabled",
+      "kind": "normalized",
+      "target": "project_settings.settings_json",
+      "reason": "Only dashboard metadata and supported settings are used; effective widget defaults merge with overrides, schedules use numeric days, domains use HTTPS, carried media URLs are rewritten; other metadata/widget paths stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "is_human_response_enabled",
+      "kind": "normalized",
+      "target": "project_settings.settings_json",
+      "reason": "Only dashboard metadata and supported settings are used; effective widget defaults merge with overrides, schedules use numeric days, domains use HTTPS, carried media URLs are rewritten; other metadata/widget paths stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "is_proxy_only",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "metadata",
+      "kind": "normalized",
+      "target": "project_settings.settings_json",
+      "reason": "Only dashboard metadata and supported settings are used; effective widget defaults merge with overrides, schedules use numeric days, domains use HTTPS, carried media URLs are rewritten; other metadata/widget paths stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "name",
+      "kind": "native",
+      "target": "projects",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "pm_error",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "projects",
+      "field": "pm_expires_at",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "projects",
+      "field": "pm_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "projects",
+      "field": "pm_last_four",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "projects",
+      "field": "pm_type",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "projects",
+      "field": "proxy_html_requests_count",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "proxy_other_requests_count",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "slug",
+      "kind": "normalized",
+      "target": "public_project_aliases.slug / email_settings.inbound_address",
+      "reason": "Inbound address requires an explicitly selected mail domain; otherwise held and disabled",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "stripe_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "projects",
+      "field": "timezone",
+      "kind": "normalized",
+      "target": "project_settings.settings_json",
+      "reason": "Only dashboard metadata and supported settings are used; effective widget defaults merge with overrides, schedules use numeric days, domains use HTTPS, carried media URLs are rewritten; other metadata/widget paths stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "updated_at",
+      "kind": "native",
+      "target": "project_settings.updated_at / email_settings.updated_at",
+      "reason": "Retained when this row is eligible; timestamps normalize to native milliseconds",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "website",
+      "kind": "normalized",
+      "target": "projects.allowed_origin / project_settings.settings_json.website",
+      "reason": "Requires explicit usable origin; native widget retains its URL origin and project settings retains the recorded website",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "widget_settings",
+      "kind": "normalized",
+      "target": "project_settings.settings_json",
+      "reason": "Only dashboard metadata and supported settings are used; effective widget defaults merge with overrides, schedules use numeric days, domains use HTTPS, carried media URLs are rewritten; other metadata/widget paths stay private archive",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "projects",
+      "field": "widget_settings_hash",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegation_events",
+      "field": "created_at",
+      "kind": "native",
+      "target": "local_events",
+      "reason": "Source ID becomes event_id, delegation becomes job_id, event_type becomes kind; message merges into object payload",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegation_events",
+      "field": "created_by_user_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegation_events",
+      "field": "event_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegation_events",
+      "field": "event_type",
+      "kind": "native",
+      "target": "local_events",
+      "reason": "Source ID becomes event_id, delegation becomes job_id, event_type becomes kind; message merges into object payload",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegation_events",
+      "field": "id",
+      "kind": "native",
+      "target": "local_events",
+      "reason": "Source ID becomes event_id, delegation becomes job_id, event_type becomes kind; message merges into object payload",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegation_events",
+      "field": "message",
+      "kind": "native",
+      "target": "local_events",
+      "reason": "Source ID becomes event_id, delegation becomes job_id, event_type becomes kind; message merges into object payload",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegation_events",
+      "field": "payload",
+      "kind": "native",
+      "target": "local_events",
+      "reason": "Source ID becomes event_id, delegation becomes job_id, event_type becomes kind; message merges into object payload",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegation_events",
+      "field": "support_delegation_id",
+      "kind": "native",
+      "target": "local_events",
+      "reason": "Source ID becomes event_id, delegation becomes job_id, event_type becomes kind; message merges into object payload",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "cancel_requested",
+      "kind": "normalized",
+      "target": "local_jobs",
+      "reason": "resolve_and_reply becomes resolve_reply; running becomes revoked, pending cancelled, active cancel forced; adoption clears session",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "claim_id",
+      "kind": "control",
+      "reason": "Claim cleared; updated_at only fallback completion time for revoked work",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "completed_at",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "context",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "conversation_id",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "created_at",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "created_by_user_id",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "delivery_state",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "expected_last_message_id",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "id",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "instructions",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "local_agent_device_id",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "mode",
+      "kind": "normalized",
+      "target": "local_jobs",
+      "reason": "resolve_and_reply becomes resolve_reply; running becomes revoked, pending cancelled, active cancel forced; adoption clears session",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "parent_support_delegation_id",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "project_id",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "request_id",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "result",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "result_note_event_id",
+      "kind": "archive",
+      "reason": "No equivalent native field; retained only in the private sanitized source journal",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "run_id",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "session_id",
+      "kind": "normalized",
+      "target": "local_jobs",
+      "reason": "resolve_and_reply becomes resolve_reply; running becomes revoked, pending cancelled, active cancel forced; adoption clears session",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "source_proposal_id",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "started_at",
+      "kind": "native",
+      "target": "local_jobs",
+      "reason": "Device/operator/parent names normalized; active delivery held/revoked, unknown local outcome never replayed; adoption namespaces operator",
+      "rows": 1,
+      "nulls": 1
+    },
+    {
+      "table": "support_delegations",
+      "field": "status",
+      "kind": "normalized",
+      "target": "local_jobs",
+      "reason": "resolve_and_reply becomes resolve_reply; running becomes revoked, pending cancelled, active cancel forced; adoption clears session",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "support_delegations",
+      "field": "updated_at",
+      "kind": "control",
+      "reason": "Claim cleared; updated_at only fallback completion time for revoked work",
+      "rows": 1,
+      "nulls": 0
+    },
+    {
+      "table": "users",
+      "field": "ai_profile",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "users",
+      "field": "ai_profile_at",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "users",
+      "field": "ai_profile_count",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "users",
+      "field": "avatar_url",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "users",
+      "field": "created_at",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "users",
+      "field": "deleted_at",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "users",
+      "field": "email",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "users",
+      "field": "email_verified_at",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "users",
+      "field": "global_inbox_appearance",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "users",
+      "field": "id",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "users",
+      "field": "is_notifiable_on_conversation_assignment",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "users",
+      "field": "last_login_at",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 2
+    },
+    {
+      "table": "users",
+      "field": "last_login_country",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "users",
+      "field": "last_login_ip",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "users",
+      "field": "name",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "users",
+      "field": "timezone",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "users",
+      "field": "type",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    },
+    {
+      "table": "users",
+      "field": "updated_at",
+      "kind": "archive",
+      "reason": "Historical policy preserves source attribution without accounts, access, settings or defaults",
+      "rows": 2,
+      "nulls": 0
+    }
+  ],
+  "targetColumnOmissions": [],
+  "run": {
+    "runId": "legacy-package:4d7bc081d679902095fe8c5de0e815d5cda33c8cec19284f16245a4fb4b9ebb7",
+    "manifestSha256": "4d7bc081d679902095fe8c5de0e815d5cda33c8cec19284f16245a4fb4b9ebb7",
+    "projectId": "bc6fa59e-bd96-48c3-adcd-a4c86deca102",
+    "sourceProjectId": "10000000-0000-4000-8000-000000000001",
+    "contractVersion": 2,
+    "mode": "full",
+    "state": "complete",
+    "phase": "done",
+    "attempt": 1,
+    "version": 279,
+    "cursor": {
+      "file": null,
+      "row": 0
+    },
+    "nextAt": 0,
+    "errorCode": null,
+    "createdAt": 1794928517120,
+    "updatedAt": 1794928537683,
+    "completedAt": 1794928537683,
+    "progress": {
+      "rows": 842,
+      "bytes": 10728257,
+      "objects": 6
+    },
+    "canResume": false
+  },
+  "verifiedAt": 1794928537175,
+  "verification": "verified",
+  "tables": {
+    "ai_defaults": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 0,
+      "archivedOnly": 1,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "ai_usages": {
+      "packageRows": 1,
+      "excludedRows": 1,
+      "requiredRows": 0,
+      "journalRows": 0,
+      "mapped": 0,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "ais": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "article_categories": {
+      "packageRows": 3,
+      "excludedRows": 0,
+      "requiredRows": 3,
+      "journalRows": 3,
+      "mapped": 3,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "articles": {
+      "packageRows": 3,
+      "excludedRows": 0,
+      "requiredRows": 3,
+      "journalRows": 3,
+      "mapped": 3,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "buckets": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "categories": {
+      "packageRows": 3,
+      "excludedRows": 0,
+      "requiredRows": 3,
+      "journalRows": 3,
+      "mapped": 3,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "charges": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "collector_actions": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 0,
+      "archivedOnly": 1,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "collector_summaries": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 0,
+      "archivedOnly": 1,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "collectors": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "connections": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 0,
+      "archivedOnly": 1,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "contacts": {
+      "packageRows": 2,
+      "excludedRows": 0,
+      "requiredRows": 2,
+      "journalRows": 2,
+      "mapped": 2,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "conversation_participants": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "conversations": {
+      "packageRows": 2,
+      "excludedRows": 0,
+      "requiredRows": 2,
+      "journalRows": 2,
+      "mapped": 2,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 2
+    },
+    "dataset_files": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "datasets": {
+      "packageRows": 2,
+      "excludedRows": 0,
+      "requiredRows": 2,
+      "journalRows": 2,
+      "mapped": 2,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "events": {
+      "packageRows": 3,
+      "excludedRows": 0,
+      "requiredRows": 3,
+      "journalRows": 3,
+      "mapped": 3,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "insights": {
+      "packageRows": 2,
+      "excludedRows": 0,
+      "requiredRows": 2,
+      "journalRows": 2,
+      "mapped": 2,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "leads": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 0,
+      "archivedOnly": 1,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "local_agent_device_project_settings": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "local_agent_devices": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 1
+    },
+    "local_agent_grants": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 1
+    },
+    "macros": {
+      "packageRows": 2,
+      "excludedRows": 0,
+      "requiredRows": 2,
+      "journalRows": 2,
+      "mapped": 2,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "media": {
+      "packageRows": 6,
+      "excludedRows": 0,
+      "requiredRows": 6,
+      "journalRows": 6,
+      "mapped": 3,
+      "archivedOnly": 3,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 3
+    },
+    "mediables": {
+      "packageRows": 9,
+      "excludedRows": 0,
+      "requiredRows": 9,
+      "journalRows": 9,
+      "mapped": 0,
+      "archivedOnly": 9,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "message_thinkings": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 0,
+      "archivedOnly": 1,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "messages": {
+      "packageRows": 5,
+      "excludedRows": 0,
+      "requiredRows": 5,
+      "journalRows": 5,
+      "mapped": 4,
+      "archivedOnly": 1,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "plugins": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "project_github_connections": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 0,
+      "archivedOnly": 1,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "project_optimizations": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 0,
+      "archivedOnly": 1,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "project_users": {
+      "packageRows": 2,
+      "excludedRows": 0,
+      "requiredRows": 2,
+      "journalRows": 2,
+      "mapped": 0,
+      "archivedOnly": 2,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "projects": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "support_delegation_events": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    },
+    "support_delegations": {
+      "packageRows": 1,
+      "excludedRows": 0,
+      "requiredRows": 1,
+      "journalRows": 1,
+      "mapped": 1,
+      "archivedOnly": 0,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 1
+    },
+    "users": {
+      "packageRows": 2,
+      "excludedRows": 0,
+      "requiredRows": 2,
+      "journalRows": 2,
+      "mapped": 0,
+      "archivedOnly": 2,
+      "erased": 0,
+      "journalEqualsPackage": true,
+      "holds": 0
+    }
+  },
+  "excluded": {
+    "ai_usages": 1
+  },
+  "journalEqualsPackage": true,
+  "attachments": {
+    "package": 6,
+    "required": 6,
+    "journal": 6,
+    "identical": 6,
+    "withheld": 0,
+    "missing": 0,
+    "different": 0,
+    "unverified": 0,
+    "bytes": 10560198,
+    "complete": true,
+    "method": "r2-sha256-vs-manifest"
+  },
+  "lease": {
+    "runHeld": false,
+    "runLeaseUntil": null,
+    "workspaceHeld": false,
+    "workspaceLeaseUntil": null,
+    "waitingFor": "none"
+  },
+  "attempt": {
+    "number": 1,
+    "appliedRows": 67,
+    "replayedRows": 0,
+    "measuredRows": 842,
+    "measuredBytes": 10728257,
+    "maxCpuMs": null,
+    "maxHeapBytes": null
+  },
+  "diagnostics": {
+    "scope": "workspace-and-installation",
+    "conversationCount": 2,
+    "distinctDeltaSourceIds": 0,
+    "incompleteDeltaRuns": 0,
+    "sampleConversationIds": [
+      "40000000-0000-4000-8000-000000000001",
+      "41000000-0000-4000-8000-000000000001"
+    ],
+    "installationWork": {
+      "before": {
+        "conversation_outbox": 0,
+        "email_deliveries": 0,
+        "magic_signins": 0,
+        "operator_notifications": 0,
+        "operator_notification_activity": 0,
+        "native_integration_events": 0,
+        "native_integration_intents": 0,
+        "integration_deliveries": 0,
+        "context_jobs": 0,
+        "lead_jobs": 0,
+        "leads": 0,
+        "brand_generations": 0,
+        "csat_surveys": 0,
+        "workflow_events": 0,
+        "knowledge_datasets": 0
+      },
+      "after": {
+        "conversation_outbox": 0,
+        "email_deliveries": 0,
+        "magic_signins": 0,
+        "operator_notifications": 0,
+        "operator_notification_activity": 0,
+        "native_integration_events": 0,
+        "native_integration_intents": 0,
+        "integration_deliveries": 0,
+        "context_jobs": 0,
+        "lead_jobs": 0,
+        "leads": 0,
+        "brand_generations": 0,
+        "csat_surveys": 0,
+        "workflow_events": 0,
+        "knowledge_datasets": 0
+      },
+      "qualification": "whole-installation; concurrent native work is not attributed to this import"
+    },
+    "baseline": {
+      "kind": "before-import",
+      "at": 1794928529513,
+      "counts": {
+        "conversation_outbox": 0,
+        "email_deliveries": 0,
+        "magic_signins": 0,
+        "operator_notifications": 0,
+        "operator_notification_activity": 0,
+        "native_integration_events": 0,
+        "native_integration_intents": 0,
+        "integration_deliveries": 0,
+        "context_jobs": 0,
+        "lead_jobs": 0,
+        "leads": 0,
+        "brand_generations": 0,
+        "csat_surveys": 0,
+        "workflow_events": 0,
+        "knowledge_datasets": 0
+      },
+      "installation": {
+        "kind": "installation-setup",
+        "at": 1794928356813,
+        "counts": {
+          "conversation_outbox": 0,
+          "email_deliveries": 0,
+          "magic_signins": 0,
+          "operator_notifications": 0,
+          "operator_notification_activity": 0,
+          "native_integration_events": 0,
+          "native_integration_intents": 0,
+          "integration_deliveries": 0,
+          "context_jobs": 0,
+          "lead_jobs": 0,
+          "leads": 0,
+          "brand_generations": 0,
+          "csat_surveys": 0,
+          "workflow_events": 0,
+          "knowledge_datasets": 0
+        }
+      }
+    }
+  },
+  "work": {
+    "before": {
+      "conversation_outbox": 0,
+      "email_deliveries": 0,
+      "magic_signins": 0,
+      "operator_notifications": 0,
+      "operator_notification_activity": 0,
+      "native_integration_events": 0,
+      "native_integration_intents": 0,
+      "integration_deliveries": 0,
+      "context_jobs": 0,
+      "lead_jobs": 0,
+      "leads": 0,
+      "brand_generations": 0,
+      "csat_surveys": 0,
+      "workflow_events": 0,
+      "knowledge_datasets": 0
+    },
+    "after": {
+      "conversation_outbox": 0,
+      "email_deliveries": 0,
+      "magic_signins": 0,
+      "operator_notifications": 0,
+      "operator_notification_activity": 0,
+      "native_integration_events": 0,
+      "native_integration_intents": 0,
+      "integration_deliveries": 0,
+      "context_jobs": 0,
+      "lead_jobs": 0,
+      "leads": 0,
+      "brand_generations": 0,
+      "csat_surveys": 0,
+      "workflow_events": 0,
+      "knowledge_datasets": 0
+    },
+    "delta": {
+      "conversation_outbox": 0,
+      "email_deliveries": 0,
+      "magic_signins": 0,
+      "operator_notifications": 0,
+      "operator_notification_activity": 0,
+      "native_integration_events": 0,
+      "native_integration_intents": 0,
+      "integration_deliveries": 0,
+      "context_jobs": 0,
+      "lead_jobs": 0,
+      "leads": 0,
+      "brand_generations": 0,
+      "csat_surveys": 0,
+      "workflow_events": 0,
+      "knowledge_datasets": 0
+    },
+    "unchanged": true
+  },
+  "sourceCustody": {
+    "status": "ready",
+    "expiresAt": 1795014937681,
+    "absoluteExpiresAt": 1795533310964,
+    "sourcePurged": false,
+    "invalidated": false,
+    "cleanupPending": false,
+    "canResume": false
+  },
+  "adoption": {
+    "destinationProjectId": "10000000-0000-4000-8000-000000000001",
+    "membershipPolicy": "historical memberships; no access created"
+  }
+}

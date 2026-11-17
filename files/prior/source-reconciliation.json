@@ -1,0 +1,437 @@
+{
+  "totals": {
+    "sqlRows": 154,
+    "exportedDistinctRows": 132,
+    "mappedSourceRows": 84,
+    "archiveOnlySourceRows": 48,
+    "omittedBeforeExport": 22
+  },
+  "tables": {
+    "users": {
+      "sqlRows": 3,
+      "exportedDistinctRows": 3,
+      "mappedSourceRows": 1,
+      "archiveOnlySourceRows": 2,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "ai_defaults": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 1,
+      "mappedSourceRows": 1,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "password_resets": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "projects": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "project_users": {
+      "sqlRows": 4,
+      "exportedDistinctRows": 4,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 2,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "ais": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "contacts": {
+      "sqlRows": 4,
+      "exportedDistinctRows": 4,
+      "mappedSourceRows": 4,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "conversations": {
+      "sqlRows": 4,
+      "exportedDistinctRows": 4,
+      "mappedSourceRows": 4,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "conversation_participants": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "buckets": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "messages": {
+      "sqlRows": 10,
+      "exportedDistinctRows": 10,
+      "mappedSourceRows": 8,
+      "archiveOnlySourceRows": 2,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "events": {
+      "sqlRows": 8,
+      "exportedDistinctRows": 6,
+      "mappedSourceRows": 6,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 2,
+      "reason": "PAGE_VIEW tracking is excluded"
+    },
+    "media": {
+      "sqlRows": 11,
+      "exportedDistinctRows": 11,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 9,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "mediables": {
+      "sqlRows": 17,
+      "exportedDistinctRows": 17,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 17,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "categories": {
+      "sqlRows": 6,
+      "exportedDistinctRows": 6,
+      "mappedSourceRows": 6,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "articles": {
+      "sqlRows": 6,
+      "exportedDistinctRows": 6,
+      "mappedSourceRows": 6,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "article_categories": {
+      "sqlRows": 6,
+      "exportedDistinctRows": 6,
+      "mappedSourceRows": 6,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "local_agent_grants": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "local_agent_devices": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "local_agent_device_project_settings": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "support_delegations": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "support_delegation_events": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "asymmetric_keys": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 2,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "contact_shared_keys": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 2,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "connections": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 2,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "collectors": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "collector_actions": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 2,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "collector_summaries": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 2,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "project_github_connections": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 2,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "plugins": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "datasets": {
+      "sqlRows": 4,
+      "exportedDistinctRows": 4,
+      "mappedSourceRows": 4,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "dataset_files": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "insights": {
+      "sqlRows": 4,
+      "exportedDistinctRows": 4,
+      "mappedSourceRows": 4,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "ai_usages": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "ai_logs": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 2,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "project_optimizations": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 2,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "message_thinkings": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 2,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "leads": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 2,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "charges": {
+      "sqlRows": 2,
+      "exportedDistinctRows": 2,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "macros": {
+      "sqlRows": 4,
+      "exportedDistinctRows": 4,
+      "mappedSourceRows": 2,
+      "archiveOnlySourceRows": 2,
+      "omittedBeforeExport": 0,
+      "reason": null
+    },
+    "telescope_entries": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "telescope_entries_tags": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "telescope_monitoring": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "failed_jobs": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "waitlist": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "job_batches": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "jobs": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "migrations": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "elastic_migrations": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "local_agent_device_authorizations": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "local_agent_pairings": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "personal_access_tokens": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    },
+    "prompt_plans": {
+      "sqlRows": 1,
+      "exportedDistinctRows": 0,
+      "mappedSourceRows": 0,
+      "archiveOnlySourceRows": 0,
+      "omittedBeforeExport": 1,
+      "reason": "excluded credential/telemetry/system table; never archived"
+    }
+  },
+  "scopeDuplicates": 2,
+  "contextRows": "mapping input only; not imported or counted twice"
+}

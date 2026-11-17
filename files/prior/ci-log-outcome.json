@@ -1,0 +1,10 @@
+{
+  "command": "gh run view 44095599175 --repo just-every/run-happytohelp --job 134082930661 --log-failed",
+  "exit": 0,
+  "stdoutBytes": 0,
+  "stderrBytes": 0,
+  "httpStatus": "not supplied",
+  "retry": false,
+  "apiCallsUsed": 10,
+  "assertionLogAvailable": false
+}

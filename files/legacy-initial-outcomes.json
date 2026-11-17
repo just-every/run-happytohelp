@@ -1,0 +1,45 @@
+{
+  "command": "node --test --test-concurrency=1 tests/journeys/legacy.mjs",
+  "exit": 1,
+  "registrations": [
+    {
+      "registration": 1,
+      "name": "a legacy package is reviewed, imported and replayed through its command; the native owner reads retained transcripts, files and knowledge while old execution authority stays inert",
+      "outcome": "pass",
+      "duration_ms": 423687.177826
+    },
+    {
+      "registration": 2,
+      "name": "a full legacy import leaves the work counts unchanged and the default rule a draft, authorless texts are system, history opens read; each can be opted back in",
+      "outcome": "fail",
+      "duration_ms": 194078.246098
+    },
+    {
+      "registration": 3,
+      "name": "migration 320 removes the work rows a pre-fidelity full import left and keeps the native activity after it",
+      "outcome": "pass",
+      "duration_ms": 203326.505578
+    },
+    {
+      "registration": 4,
+      "name": "imported storage URLs serve their files to who may read them, the widget keeps its legacy look, team and hours, and the upgrade command brings an earlier import to the same rows",
+      "outcome": "pass",
+      "duration_ms": 215482.256051
+    },
+    {
+      "registration": 5,
+      "name": "the Worker package reader verifies immutable custody and chunk identity, while legacy source journals remain byte-exact under the native knowledge boundary",
+      "outcome": "pass",
+      "duration_ms": 6777.660004
+    },
+    {
+      "registration": 6,
+      "name": "an owner runs a bounded legacy package through HTTP and queue, stops in-flight writes, resumes two real Worker deaths and replays zero rows",
+      "outcome": "pass",
+      "duration_ms": 63278.65432
+    }
+  ],
+  "pass": 5,
+  "fail": 1,
+  "note": "Only registration 2 is repeated separately. No test or assertion changed."
+}

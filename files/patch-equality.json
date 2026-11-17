@@ -1,0 +1,286 @@
+{
+  "prior": "388b0bbc612761895766ffdbb329aace0169522f",
+  "priorMergeBase": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "main": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "head": "c91ad58f146f84520d942986dcf6974ae3f85a16",
+  "commitCount": 1,
+  "parents": [
+    "bb70a0424b6f1efef5b10cb14992f1b579f1fc50"
+  ],
+  "allDiffEqual": true,
+  "diffCommandPrior": "git diff --binary bb70a0424b6f1efef5b10cb14992f1b579f1fc50 388b0bbc612761895766ffdbb329aace0169522f -- . :!CONTRACT.md :!sources.lock.json :!importers.json :!ACCEPTANCE.md :!docs/CLAIMS.md",
+  "diffCommandCandidate": "git diff --binary bb70a0424b6f1efef5b10cb14992f1b579f1fc50 c91ad58f146f84520d942986dcf6974ae3f85a16 -- . :!CONTRACT.md :!sources.lock.json :!importers.json :!ACCEPTANCE.md :!docs/CLAIMS.md",
+  "excluded": [
+    "CONTRACT.md",
+    "sources.lock.json",
+    "importers.json",
+    "ACCEPTANCE.md",
+    "docs/CLAIMS.md"
+  ],
+  "files": [
+    {
+      "file": "docs/LEGACY-EXPORT.md",
+      "equal": true,
+      "priorPatchSha256": "5518e4cb8605ff422660e2a9e5238fc2fc4db1c1d79bc77b64984cba43d0ebcc",
+      "candidatePatchSha256": "5518e4cb8605ff422660e2a9e5238fc2fc4db1c1d79bc77b64984cba43d0ebcc"
+    },
+    {
+      "file": "docs/moving-in.md",
+      "equal": true,
+      "priorPatchSha256": "e6564ebdbca9dcccd138ca90acd3ce3be1c319a9e552877230dbd9b100d9b63c",
+      "candidatePatchSha256": "e6564ebdbca9dcccd138ca90acd3ce3be1c319a9e552877230dbd9b100d9b63c"
+    },
+    {
+      "file": "scripts/legacy-export/package.mjs",
+      "equal": true,
+      "priorPatchSha256": "fcfe99882fd7034a9934dcb890e8349a63631a7141aa6a6b036a091405ecf992",
+      "candidatePatchSha256": "fcfe99882fd7034a9934dcb890e8349a63631a7141aa6a6b036a091405ecf992"
+    },
+    {
+      "file": "scripts/legacy-import/import-package.mjs",
+      "equal": true,
+      "priorPatchSha256": "9a09593ce7d0b4824eb7a5005cdbbe6349e85a2a974c4bdb2a35224560935a43",
+      "candidatePatchSha256": "9a09593ce7d0b4824eb7a5005cdbbe6349e85a2a974c4bdb2a35224560935a43"
+    },
+    {
+      "file": "src/modules/legacy-import/README.md",
+      "equal": true,
+      "priorPatchSha256": "7503eb3907a6ddcc51e77f47b65d0f6dcf651d31a423360b63900b9e46259623",
+      "candidatePatchSha256": "7503eb3907a6ddcc51e77f47b65d0f6dcf651d31a423360b63900b9e46259623"
+    },
+    {
+      "file": "src/modules/legacy-import/adoption/historical.ts",
+      "equal": true,
+      "priorPatchSha256": "a56643b4cd4f68fac15e22e6d80da2f782ecd7a83f0e199de27379f99b1cd81a",
+      "candidatePatchSha256": "a56643b4cd4f68fac15e22e6d80da2f782ecd7a83f0e199de27379f99b1cd81a"
+    },
+    {
+      "file": "src/modules/legacy-import/adoption/note-media.ts",
+      "equal": true,
+      "priorPatchSha256": "17f974322c7e9a540c553fcc341a9465099a2c400db0e4ba7afbc8517fa5f750",
+      "candidatePatchSha256": "17f974322c7e9a540c553fcc341a9465099a2c400db0e4ba7afbc8517fa5f750"
+    },
+    {
+      "file": "src/modules/legacy-import/archive-only.ts",
+      "equal": true,
+      "priorPatchSha256": "5ce0abf5da06f6a1af70af94b971fa411783cf70d30b7c627a6fee5f4cc900bc",
+      "candidatePatchSha256": "5ce0abf5da06f6a1af70af94b971fa411783cf70d30b7c627a6fee5f4cc900bc"
+    },
+    {
+      "file": "src/modules/legacy-import/delta.ts",
+      "equal": true,
+      "priorPatchSha256": "8094851233a979af5be93b1baae14e46aa016a5ebef5c5da9ee387051e18635f",
+      "candidatePatchSha256": "8094851233a979af5be93b1baae14e46aa016a5ebef5c5da9ee387051e18635f"
+    },
+    {
+      "file": "src/modules/legacy-import/field-dispositions.ts",
+      "equal": true,
+      "priorPatchSha256": "9e1115a13500c652f0145d9d8ffa2c0aa4e7003396077fe6bd9a34a4c872cbdf",
+      "candidatePatchSha256": "9e1115a13500c652f0145d9d8ffa2c0aa4e7003396077fe6bd9a34a4c872cbdf"
+    },
+    {
+      "file": "src/modules/legacy-import/field-rules.ts",
+      "equal": true,
+      "priorPatchSha256": "414ecf32dad84718ea2e72bd60493eaaee95bec78c3fc4eee6b8c1560bdf7a76",
+      "candidatePatchSha256": "414ecf32dad84718ea2e72bd60493eaaee95bec78c3fc4eee6b8c1560bdf7a76"
+    },
+    {
+      "file": "src/modules/legacy-import/importer.ts",
+      "equal": true,
+      "priorPatchSha256": "adfeeddb273bdb4a0a2369b3765da214458a0b26cef86f5d4ef373c2b4a8d612",
+      "candidatePatchSha256": "adfeeddb273bdb4a0a2369b3765da214458a0b26cef86f5d4ef373c2b4a8d612"
+    },
+    {
+      "file": "src/modules/legacy-import/map-core.ts",
+      "equal": true,
+      "priorPatchSha256": "a987e0dac5f383cf83939cb0a1ceb8cb588fadc3dd9f0dc21e2dfac782c33652",
+      "candidatePatchSha256": "a987e0dac5f383cf83939cb0a1ceb8cb588fadc3dd9f0dc21e2dfac782c33652"
+    },
+    {
+      "file": "src/modules/legacy-import/map-knowledge.ts",
+      "equal": true,
+      "priorPatchSha256": "1e7fd56cece21a89f7dcdd87d87d30d19128a1930a5be311e931b3eac95d17cd",
+      "candidatePatchSha256": "1e7fd56cece21a89f7dcdd87d87d30d19128a1930a5be311e931b3eac95d17cd"
+    },
+    {
+      "file": "src/modules/legacy-import/map-project.ts",
+      "equal": true,
+      "priorPatchSha256": "ab5484b02cbadc6d479d00b33220a1c465d1b56ed68a238586d1ed4e81f13bdb",
+      "candidatePatchSha256": "ab5484b02cbadc6d479d00b33220a1c465d1b56ed68a238586d1ed4e81f13bdb"
+    },
+    {
+      "file": "src/modules/legacy-import/mapping-shared.ts",
+      "equal": true,
+      "priorPatchSha256": "b9110496bc3302d91deccc7c029f91f8eab79b11cbe502ed522b7c3834e769b0",
+      "candidatePatchSha256": "b9110496bc3302d91deccc7c029f91f8eab79b11cbe502ed522b7c3834e769b0"
+    },
+    {
+      "file": "src/modules/legacy-import/mapping.ts",
+      "equal": true,
+      "priorPatchSha256": "85d706bb8351e791f90ab8de6df1eb151a7ded8e0a53c26f02c5756d60baf79b",
+      "candidatePatchSha256": "85d706bb8351e791f90ab8de6df1eb151a7ded8e0a53c26f02c5756d60baf79b"
+    },
+    {
+      "file": "src/modules/legacy-import/media-index.ts",
+      "equal": true,
+      "priorPatchSha256": "61854eae4448a38de2ac38c074c78f7384b1032f3416d6e0a7e3ec34157016f7",
+      "candidatePatchSha256": "61854eae4448a38de2ac38c074c78f7384b1032f3416d6e0a7e3ec34157016f7"
+    },
+    {
+      "file": "src/modules/legacy-import/media-links.ts",
+      "equal": true,
+      "priorPatchSha256": "6b94186e943cfd51465dce20a7eee5e7d3664b2773321f25fcc231d0d09a46cd",
+      "candidatePatchSha256": "6b94186e943cfd51465dce20a7eee5e7d3664b2773321f25fcc231d0d09a46cd"
+    },
+    {
+      "file": "src/modules/legacy-import/source-columns.ts",
+      "equal": true,
+      "priorPatchSha256": "d196362250bb476c46c616631e11948cf5e36b238cd657dca1e7418792e2ee19",
+      "candidatePatchSha256": "d196362250bb476c46c616631e11948cf5e36b238cd657dca1e7418792e2ee19"
+    },
+    {
+      "file": "src/modules/legacy-import/source-references.ts",
+      "equal": true,
+      "priorPatchSha256": "8f1a2e3b52eabe6ba1d8dbc371e16fe95c7462f0d15050de52100ee5ce0ce07e",
+      "candidatePatchSha256": "8f1a2e3b52eabe6ba1d8dbc371e16fe95c7462f0d15050de52100ee5ce0ce07e"
+    },
+    {
+      "file": "src/modules/legacy-import/worker/context-read.ts",
+      "equal": true,
+      "priorPatchSha256": "5473321ff68d9d97806c5399c0764e40c2703e0cb17a64c5ff3c3dda38fa2039",
+      "candidatePatchSha256": "5473321ff68d9d97806c5399c0764e40c2703e0cb17a64c5ff3c3dda38fa2039"
+    },
+    {
+      "file": "src/modules/legacy-import/worker/result.ts",
+      "equal": true,
+      "priorPatchSha256": "de3ed72ab7344590bbabd783535e9defa80bd97ba249e4aaa568ef59b3f719ec",
+      "candidatePatchSha256": "de3ed72ab7344590bbabd783535e9defa80bd97ba249e4aaa568ef59b3f719ec"
+    },
+    {
+      "file": "src/modules/legacy-import/worker/row-step.ts",
+      "equal": true,
+      "priorPatchSha256": "a2eea96aeba870127f2182c1c0694520f193d848a3584fd0402a82b503c5584b",
+      "candidatePatchSha256": "a2eea96aeba870127f2182c1c0694520f193d848a3584fd0402a82b503c5584b"
+    },
+    {
+      "file": "tests/legacy-export.mjs",
+      "equal": true,
+      "priorPatchSha256": "d3b187ad36d579c39c862d34d3001a36b7f64a1c054f9dd55b082940cfe2f0ef",
+      "candidatePatchSha256": "d3b187ad36d579c39c862d34d3001a36b7f64a1c054f9dd55b082940cfe2f0ef"
+    },
+    {
+      "file": "tests/legacy-export/extended-fixture.mjs",
+      "equal": true,
+      "priorPatchSha256": "692beb24cb2a2e57ab66e6b9e32daa6b02a4e11a4d7d8b914ade9f763b16309d",
+      "candidatePatchSha256": "692beb24cb2a2e57ab66e6b9e32daa6b02a4e11a4d7d8b914ade9f763b16309d"
+    },
+    {
+      "file": "tests/legacy-export/fidelity-fixture.mjs",
+      "equal": true,
+      "priorPatchSha256": "53b0983f95279c57ee51b5f9c28fe7ab2eb10dfe3e63f8062d802c4ea6e810cd",
+      "candidatePatchSha256": "53b0983f95279c57ee51b5f9c28fe7ab2eb10dfe3e63f8062d802c4ea6e810cd"
+    },
+    {
+      "file": "tests/legacy-export/fidelity-inputs.mjs",
+      "equal": true,
+      "priorPatchSha256": "fa37d52292f268c62395b9356e78400e44ab184d8987e9d27b48fb7e3662bd1e",
+      "candidatePatchSha256": "fa37d52292f268c62395b9356e78400e44ab184d8987e9d27b48fb7e3662bd1e"
+    },
+    {
+      "file": "tests/legacy-export/field-matrix.mjs",
+      "equal": true,
+      "priorPatchSha256": "7e41272d454042fffc900822b634fdebfcc322b7301d230f874a3c7b8ac90823",
+      "candidatePatchSha256": "7e41272d454042fffc900822b634fdebfcc322b7301d230f874a3c7b8ac90823"
+    },
+    {
+      "file": "tests/legacy-export/fixture.mjs",
+      "equal": true,
+      "priorPatchSha256": "c37d4d3e6ff59df46e5a9bd0dc83404a26004cef35d4fca11696839dc7aaff75",
+      "candidatePatchSha256": "c37d4d3e6ff59df46e5a9bd0dc83404a26004cef35d4fca11696839dc7aaff75"
+    },
+    {
+      "file": "tests/legacy-export/media-fixture.mjs",
+      "equal": true,
+      "priorPatchSha256": "175ae5877fdecae7d902acf55fb901ed5e30f3efe68c357eadb60f5e160547af",
+      "candidatePatchSha256": "175ae5877fdecae7d902acf55fb901ed5e30f3efe68c357eadb60f5e160547af"
+    },
+    {
+      "file": "tests/legacy-export/native-readers.mjs",
+      "equal": true,
+      "priorPatchSha256": "9e60c03ae34f2ac8deaa24beb5046058739567bc94822e44e468f1945227670e",
+      "candidatePatchSha256": "9e60c03ae34f2ac8deaa24beb5046058739567bc94822e44e468f1945227670e"
+    },
+    {
+      "file": "tests/legacy-export/no-outbound.mjs",
+      "equal": true,
+      "priorPatchSha256": "9e8f3b8bd24ef2fd2f253c54905fc26c41e805ae5349d90ccbc66644f6a89cb8",
+      "candidatePatchSha256": "9e8f3b8bd24ef2fd2f253c54905fc26c41e805ae5349d90ccbc66644f6a89cb8"
+    },
+    {
+      "file": "tests/legacy-export/resume.mjs",
+      "equal": true,
+      "priorPatchSha256": "b84f08b47352d78df0b2df08189b01483aaf50d8ffe3799d1334d64f2e8be442",
+      "candidatePatchSha256": "b84f08b47352d78df0b2df08189b01483aaf50d8ffe3799d1334d64f2e8be442"
+    },
+    {
+      "file": "tests/legacy-export/transport-equality.mjs",
+      "equal": true,
+      "priorPatchSha256": "2ed6598f237ad9dae4e69d41a9ca9c97dc4c9190ed8d4034fab997be76eb15d4",
+      "candidatePatchSha256": "2ed6598f237ad9dae4e69d41a9ca9c97dc4c9190ed8d4034fab997be76eb15d4"
+    },
+    {
+      "file": "tests/move-in/legacy-adoption-integration/fixture.mjs",
+      "equal": true,
+      "priorPatchSha256": "bc2ac8c86d12c71bcea950763d04e1646157311058507fe4e1db222fe276faf6",
+      "candidatePatchSha256": "bc2ac8c86d12c71bcea950763d04e1646157311058507fe4e1db222fe276faf6"
+    },
+    {
+      "file": "tests/move-in/legacy-adoption-integration/journey.mjs",
+      "equal": true,
+      "priorPatchSha256": "9469f16cfcfff50e7d164e24dff355c0d8259b396caae813c613097d998619d1",
+      "candidatePatchSha256": "9469f16cfcfff50e7d164e24dff355c0d8259b396caae813c613097d998619d1"
+    }
+  ],
+  "mainContractAndViewsUnchanged": true,
+  "candidateFiles": [
+    "docs/LEGACY-EXPORT.md",
+    "docs/moving-in.md",
+    "importers.json",
+    "scripts/legacy-export/package.mjs",
+    "scripts/legacy-import/import-package.mjs",
+    "sources.lock.json",
+    "src/modules/legacy-import/README.md",
+    "src/modules/legacy-import/adoption/historical.ts",
+    "src/modules/legacy-import/adoption/note-media.ts",
+    "src/modules/legacy-import/archive-only.ts",
+    "src/modules/legacy-import/delta.ts",
+    "src/modules/legacy-import/field-dispositions.ts",
+    "src/modules/legacy-import/field-rules.ts",
+    "src/modules/legacy-import/importer.ts",
+    "src/modules/legacy-import/map-core.ts",
+    "src/modules/legacy-import/map-knowledge.ts",
+    "src/modules/legacy-import/map-project.ts",
+    "src/modules/legacy-import/mapping-shared.ts",
+    "src/modules/legacy-import/mapping.ts",
+    "src/modules/legacy-import/media-index.ts",
+    "src/modules/legacy-import/media-links.ts",
+    "src/modules/legacy-import/source-columns.ts",
+    "src/modules/legacy-import/source-references.ts",
+    "src/modules/legacy-import/worker/context-read.ts",
+    "src/modules/legacy-import/worker/result.ts",
+    "src/modules/legacy-import/worker/row-step.ts",
+    "tests/legacy-export.mjs",
+    "tests/legacy-export/extended-fixture.mjs",
+    "tests/legacy-export/fidelity-fixture.mjs",
+    "tests/legacy-export/fidelity-inputs.mjs",
+    "tests/legacy-export/field-matrix.mjs",
+    "tests/legacy-export/fixture.mjs",
+    "tests/legacy-export/media-fixture.mjs",
+    "tests/legacy-export/native-readers.mjs",
+    "tests/legacy-export/no-outbound.mjs",
+    "tests/legacy-export/resume.mjs",
+    "tests/legacy-export/transport-equality.mjs",
+    "tests/move-in/legacy-adoption-integration/fixture.mjs",
+    "tests/move-in/legacy-adoption-integration/journey.mjs"
+  ]
+}

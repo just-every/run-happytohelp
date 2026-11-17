@@ -1,0 +1,66 @@
+[
+  {
+    "path": "src/modules/legacy-import/map-knowledge.ts",
+    "line": 48
+  },
+  {
+    "path": "src/modules/legacy-import/adoption/historical.ts",
+    "line": 14
+  },
+  {
+    "path": "src/modules/legacy-import/map-core.ts",
+    "line": 19
+  },
+  {
+    "path": "src/modules/legacy-import/map-project.ts",
+    "line": 21
+  },
+  {
+    "path": "src/modules/legacy-import/media-links.ts",
+    "line": 7
+  },
+  {
+    "path": "src/modules/legacy-import/adoption/note-media.ts",
+    "line": 10
+  },
+  {
+    "path": "src/modules/legacy-import/worker/context-read.ts",
+    "line": 13
+  },
+  {
+    "path": "src/modules/legacy-import/field-dispositions.ts",
+    "line": 12
+  },
+  {
+    "path": "src/modules/legacy-import/source-references.ts",
+    "line": 18
+  },
+  {
+    "path": "tests/legacy-export.mjs",
+    "line": 20
+  },
+  {
+    "path": "tests/legacy-export/field-matrix.mjs",
+    "line": 19
+  },
+  {
+    "path": "tests/legacy-export/native-readers.mjs",
+    "line": 11
+  },
+  {
+    "path": "tests/move-in/legacy-adoption-integration/journey.mjs",
+    "line": 18
+  },
+  {
+    "path": "src/modules/legacy-import/archive-only.ts",
+    "line": 4
+  },
+  {
+    "path": "tests/legacy-export/fidelity-inputs.mjs",
+    "line": 9
+  },
+  {
+    "path": "importers.json",
+    "line": 10
+  }
+]

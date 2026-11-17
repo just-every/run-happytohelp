@@ -1,0 +1,12 @@
+# Linear legacy fidelity carry plan
+
+Run Edit Run fleet, 2026-11-17.
+
+1. Configure fleet Git identity, refresh the launcher, install fleet authentication and commit hooks; clone only just-every/run-happytohelp with blob filtering and depth 100. Read current repository rules and the supplied briefs.
+2. Fetch main and the prior fidelity branch. Record main and prior head. Create cloud/hh-import-legacy-fidelity-1-c1 from main. Apply the prior head's merge-base net patch, excluding CONTRACT.md, sources.lock.json and generated views. Stop on any other conflict.
+3. Recompute importers.json guide size/SHA-256 from the final document bytes using the same read/hash/write operation described by prior commit 388b0bbc. No declared catalogue generator was found in this checkout; keep the reproducible generating script in this evidence packet. Retain every other catalogue field unchanged. Move the excluded contract evidence/gap text into the report, with the complete omitted diff available separately.
+4. Recover explicitly selected prior public evidence, including its completed field matrix and native/MySQL/browser outcomes. Label it historical evidence, not a new execution on the linear head. Keep all reports and receipts outside the product tree.
+5. Run contract-docs, typecheck, first-party rer check, the legacy journey registrations and focused mounted historical-adoption fidelity assertions. Run one heavy command at a time. Leave the MySQL fixture qualification on its existing remote keep path; no Base refresh, pin changes, migrations, production access or new proof directory.
+6. Refresh main before the single unpublished commit. Regenerate the source lock last and check it. Prove full per-file binary diff equality for the carried patch, with only contract/generated views excluded and catalogue/lock separately regenerated. Prove CONTRACT.md and the two generated views are unchanged.
+7. Create exactly one linear commit with one main parent, using fleet identity and active hooks. Inspect every candidate identity and trailer and push only the named cloud branch through the supplied guard. Do not force push, submit, land or change main.
+8. Observe exact-head Verify through budgeted REST calls separated by at least 300 seconds per run. Read failed logs once per failed job if needed; rerun a failing procedures shard once only if applicable. Publish the complete selected report packet on evidence/hh-import-legacy-fidelity-1-c1 and return exact product/evidence provenance, claims and lane POST lines.

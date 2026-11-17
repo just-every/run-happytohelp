@@ -1,0 +1,5 @@
+{
+  "command": "node --test --test-concurrency=1 tests/journeys/legacy.mjs",
+  "node": "22.20.0",
+  "exit": 1
+}

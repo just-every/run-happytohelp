@@ -1,0 +1,11 @@
+{
+  "lock": {
+    "command": "node scripts/edition-authoring/cli.mjs lock",
+    "exit": 0
+  },
+  "check": {
+    "command": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "note": "New files staged before regeneration; lock command selects Git-owned files."
+}

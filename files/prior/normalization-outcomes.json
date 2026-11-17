@@ -1,0 +1,10 @@
+{
+  "scope": "Actual exporter SQL TIMESTAMP(6) row and native timestamp helper; collector action has no native row because encrypted action was deliberately omitted",
+  "exported": "2026-11-16T23:59:59.123456Z",
+  "nativeMilliseconds": 1794873599123,
+  "nativeIso": "2026-11-16T23:59:59.123Z",
+  "subMillisecondMicrosecondsLost": 456,
+  "missingTimestamp": 0,
+  "precision": "Native instants are milliseconds; archive retains exported UTC fractional text",
+  "manualMalformedCases": "String AI/category flags normalized explicitly; invalid non-boolean spellings refused before durable writes in the public CLI journey"
+}

@@ -16,6 +16,9 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))
   await held.close()
  }
+ // A socket can close between read-only polling requests. Retry only the
+ // transport reset once; assertion failures, HTTP errors and writes still fail.
+ const read=path=>context.request.get(runtime.origin+path,{maxRetries:1})
  const button=name=>page.getByRole('button',{name,exact:true})
  const settled=async control=>{
   await page.waitForFunction(element=>element.getAttribute('aria-disabled')!=='true',await control.elementHandle())
@@ -63,7 +66,7 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   pending.release();await pending.deliveryDone;await pending.close();await button('refund · Version 1').waitFor();await settled(save);await visibleResult()
   await releaseRead(beforeSave)
   await button('refund · Version 1').waitFor()
-  assert.equal((await (await context.request.get(runtime.origin+root)).json()).versions.length,1,'the retained visible version is the one committed by the single save')
+  assert.equal((await (await read(root)).json()).versions.length,1,'the retained visible version is the one committed by the single save')
 
   await page.getByLabel('Procedure key',{exact:true}).fill('Invalid key')
   await activate(save,()=>page.getByRole('alert').waitFor());await visibleResult()
@@ -74,7 +77,7 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   await page.getByLabel('Human escalation',{exact:true}).fill('Refund review team')
   await page.getByLabel('Instructions',{exact:true}).fill('synthetic-hh-failing: read policy and escalate to a human; never issue a refund.')
   await activate(save,()=>button('refund · Version 2').waitFor());await visibleResult()
-  const getVersions=await context.request.get(runtime.origin+root),versions=(await getVersions.json()).versions
+  const getVersions=await read(root),versions=(await getVersions.json()).versions
   assert.equal(versions.length,2);assert.notEqual(versions[0].definition.instructions,versions[1].definition.instructions)
   for(const version of [1,2]){
    const versionButton=button(`refund · Version ${version}`)
@@ -83,7 +86,7 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
    await activate(button('Run synthetic simulation'),()=>page.getByText('Simulation queued. Refresh receipts to inspect its outcome.').waitFor())
    let state
    for(let index=0;index<60;index++){
-    const response=await context.request.get(runtime.origin+`${root}/refund/versions/${versions.find(item=>item.version===version).id}/simulations`)
+    const response=await read(`${root}/refund/versions/${versions.find(item=>item.version===version).id}/simulations`)
     state=(await response.json()).runs[0]?.status
     if(state==='completed'||state==='uncertain')break
     await page.waitForTimeout(500)
@@ -129,7 +132,7 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   await page.getByLabel('Instructions',{exact:true}).fill('Revised synthetic policy: read the policy and ask a human to approve.')
   const revisionInstructions=await page.getByLabel('Instructions',{exact:true}).inputValue()
   await activate(save,()=>button('refund · Version 3').waitFor())
-  const savedVersions=(await (await context.request.get(runtime.origin+root)).json()).versions
+  const savedVersions=(await (await read(root)).json()).versions
   const saved=savedVersions.find(item=>item.version===3)
   assert.deepEqual(saved.definition,{...original.definition,basedOnVersionId:original.id,instructions:revisionInstructions},'a revision retains its source cases, tools and budgets through the public save door')
   assert.deepEqual(savedVersions.find(item=>item.id===original.id),original,'the source snapshot remains unchanged')
@@ -147,10 +150,10 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   await activate(save,()=>button('configuration · Version 1').waitFor())
   await activate(button('configuration · Version 1'),()=>button('Run synthetic simulation').waitFor())
   await activate(button('Run synthetic simulation'),()=>page.getByText('Simulation queued. Refresh receipts to inspect its outcome.').waitFor())
-  const configVersions=await (await context.request.get(runtime.origin+root)).json(),configVersion=configVersions.versions.find(item=>item.procedure_key==='configuration')
+  const configVersions=await (await read(root)).json(),configVersion=configVersions.versions.find(item=>item.procedure_key==='configuration')
   let configRun
   for(let index=0;index<60;index++){
-   configRun=(await (await context.request.get(runtime.origin+`${root}/configuration/versions/${configVersion.id}/simulations`)).json()).runs[0]
+   configRun=(await (await read(`${root}/configuration/versions/${configVersion.id}/simulations`)).json()).runs[0]
    if(configRun?.status==='blocked')break
    await page.waitForTimeout(500)
   }
@@ -171,7 +174,7 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
    const queued=await context.request.post(runtime.origin+`${base}/simulations`,{data:{}});assert.equal(queued.status(),201)
    let run
    for(let index=0;index<60;index++){
-    run=(await (await context.request.get(runtime.origin+`${base}/simulations`)).json()).runs[0]
+    run=(await (await read(`${base}/simulations`)).json()).runs[0]
     if(['completed','uncertain'].includes(run?.status))break
     await page.waitForTimeout(500)
    }

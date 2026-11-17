@@ -11629,7 +11629,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationItemMeta.jsx": {
-      "sha256": "3b43d708938b5a07b099cc602d75bd66c915f699bb83c077816edc732eaad93b",
+      "sha256": "01ccf17fd305094734b90777e92407aab607c94af9dd73ded5d58d90db77debd",
       "executable": false
     },
     "src/ui/dashboard/components/conversationListPagination.jsx": {

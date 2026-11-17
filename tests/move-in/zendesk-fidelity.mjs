@@ -60,6 +60,11 @@ export async function zendeskFidelityJourney(){
   const history=await h.call(`/api/conversations/${first.id}/imported-history`);assert.equal(history.history.events.length,o.audit[0].events.length)
   const importedRules=(await query('SELECT * FROM workflow_rules')).filter(r=>!before.workflow_rules.some(old=>old.id===r.id));assert.equal(importedRules.length,o.trigger.length+o.automation.length);assert.ok(importedRules.every(r=>r.state==='draft'))
   for(const table of ['ticket_sla_state','sla_alerts','sla_policies','conversation_ratings','conversation_rating_history'])assert.equal((await query(`SELECT * FROM ${table}`)).length,0)
+  for(const [kind,table,expected] of [['macro','macros',o.macro.length],['view','ticket_views',o.view.length],['group','ticket_groups',o.group.length],['article','knowledge_articles',o.article.filter(a=>a.user_segment_id==null).length],['tag','workspace_tags',new Set(o.ticket.flatMap(t=>t.tags)).size]]){
+   const values=await query(`SELECT t.* FROM ${table} t JOIN move_in_origins origin ON origin.target_id=t.id WHERE origin.project_id='p' AND origin.target_kind='${kind}' ORDER BY t.id`);assert.equal(values.length,expected,`${kind} native targets reconcile with the export`)
+   if(kind==='article')assert.deepEqual(values.map(a=>a.status).sort(),o.article.filter(a=>a.user_segment_id==null).map(a=>a.draft?'draft':'published').sort())
+  }
+  await query('SELECT * FROM macro_versions ORDER BY macro_id,version')
   const importedForms=(await query('SELECT id,config_json,enabled FROM request_forms')).filter(f=>!before.request_forms.some(old=>old.id===f.id));assert.equal(importedForms.length,o.ticket_form.length);assert.ok(importedForms.every(f=>f.enabled===0))
   receipt.checks.push('review is inert; all tickets, authors, exact instants, typed values and phones reconcile; source-only kinds have no targets; attachment bytes and privacy; draft rules and no SLA activation')
   console.log('ZENDESK_FIDELITY repeat and undo');const applied=await h.snapshot()

@@ -1,0 +1,99 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "head": "32bb314532f9ab34edcbb67cf6b758833649c544",
+  "calls": 8,
+  "lastApiEpoch": 1794907312.6714382,
+  "runs": [
+    {
+      "id": 44050158749,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "32bb314532f9ab34edcbb67cf6b758833649c544",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749",
+      "created_at": "2026-11-17T08:50:22Z"
+    }
+  ],
+  "history": [
+    {
+      "kind": "discovery",
+      "runs": [
+        {
+          "id": 44050158749,
+          "name": "Verify",
+          "event": "push",
+          "status": "in_progress",
+          "conclusion": null,
+          "head_sha": "32bb314532f9ab34edcbb67cf6b758833649c544",
+          "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749",
+          "created_at": "2026-11-17T08:50:22Z"
+        }
+      ]
+    },
+    {
+      "kind": "poll",
+      "run_id": 44050158749,
+      "conclusion": null,
+      "head_sha": "32bb314532f9ab34edcbb67cf6b758833649c544",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749",
+      "status": "in_progress"
+    },
+    {
+      "kind": "poll",
+      "run_id": 44050158749,
+      "conclusion": null,
+      "head_sha": "32bb314532f9ab34edcbb67cf6b758833649c544",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749",
+      "status": "in_progress"
+    },
+    {
+      "kind": "poll",
+      "run_id": 44050158749,
+      "conclusion": null,
+      "head_sha": "32bb314532f9ab34edcbb67cf6b758833649c544",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749",
+      "status": "in_progress"
+    },
+    {
+      "kind": "poll",
+      "run_id": 44050158749,
+      "conclusion": null,
+      "head_sha": "32bb314532f9ab34edcbb67cf6b758833649c544",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749",
+      "status": "in_progress"
+    },
+    {
+      "kind": "poll",
+      "run_id": 44050158749,
+      "conclusion": "failure",
+      "head_sha": "32bb314532f9ab34edcbb67cf6b758833649c544",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749",
+      "status": "completed"
+    },
+    {
+      "kind": "jobs",
+      "count": 16
+    },
+    {
+      "kind": "failed-job-log",
+      "job_id": 133926461257,
+      "exit": 0
+    }
+  ],
+  "result": {
+    "conclusion": "failure",
+    "head_sha": "32bb314532f9ab34edcbb67cf6b758833649c544",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749",
+    "status": "completed"
+  },
+  "failureDiagnosis": {
+    "job_id": 133926461257,
+    "test": "tests/journeys/knowledge.mjs#a translated request admits typed conditional values and attributes its prior article view exactly once through replay",
+    "source": "tests/helpers/request-forms-journey.mjs:51",
+    "reason": "Legacy acknowledgment filter required the full UUID in text; formatter correctly returns the short reference. CC, replay and privacy assertions retained.",
+    "archiveCommandExit": 0,
+    "archiveCommandStdoutBytes": 0,
+    "cacheArchiveSha256": "28e3620bbdfa1ba860f20f5f429b38d2bfd7129765e67efda96b365b0d7428c0"
+  }
+}

@@ -1,0 +1,26 @@
+Command: gh run view 44050158749 --repo just-every/run-happytohelp --job 133926461257 --log-failed
+Exit: 0. Standard output was empty; the archive fetched by that invocation was inspected locally at /tmp/gh-cli-cache/run-log-44050158749-1794905422.zip, member Verify _ assistant-and-knowledge/12_Run shard checks.txt. No second provider download was made.
+
+2026-11-17T09:05:40.0869410Z # Subtest: a translated request admits typed conditional values and attributes its prior article view exactly once through replay
+2026-11-17T09:05:40.0871196Z not ok 15 - a translated request admits typed conditional values and attributes its prior article view exactly once through replay
+2026-11-17T09:05:40.0872031Z   ---
+2026-11-17T09:05:40.0872294Z   duration_ms: 4167.482411
+2026-11-17T09:05:40.0872614Z   type: 'test'
+2026-11-17T09:05:40.0873008Z   location: '/home/runner/work/run-happytohelp/run-happytohelp/tests/journeys/knowledge.mjs:16:1'
+2026-11-17T09:05:40.0873437Z   failureType: 'testCodeFailure'
+2026-11-17T09:05:40.0873695Z   error: |-
+2026-11-17T09:05:40.0873995Z     the form acknowledges its independently proven CC once, including replay
+2026-11-17T09:05:40.0874308Z     
+2026-11-17T09:05:40.0874471Z     0 !== 1
+2026-11-17T09:05:40.0874639Z     
+2026-11-17T09:05:40.0874805Z   code: 'ERR_ASSERTION'
+2026-11-17T09:05:40.0875009Z   name: 'AssertionError'
+2026-11-17T09:05:40.0875212Z   expected: 1
+2026-11-17T09:05:40.0875387Z   actual: 0
+2026-11-17T09:05:40.0875562Z   operator: 'strictEqual'
+2026-11-17T09:05:40.0875754Z   stack: |-
+2026-11-17T09:05:40.0876267Z     TestContext.requestFormsJourney (file:///home/runner/work/run-happytohelp/run-happytohelp/tests/helpers/request-forms-journey.mjs:51:10)
+2026-11-17T09:05:40.0877221Z     process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-11-17T09:05:40.0877643Z     async Test.run (node:internal/test_runner/test:1054:7)
+2026-11-17T09:05:40.0878243Z     async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+2026-11-17T09:05:40.0878575Z   ...

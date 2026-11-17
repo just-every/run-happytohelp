@@ -1,0 +1,25 @@
+{
+  "head": "32bb314532f9ab34edcbb67cf6b758833649c544",
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "inspected": [
+    "ticket-reference-before/1440-preview.png",
+    "ticket-reference-before/1440-ticket.png",
+    "ticket-reference-before/390-preview.png",
+    "ticket-reference-before/390-ticket.png",
+    "ticket-reference-after/1440-preview.png",
+    "ticket-reference-after/1440-ticket.png",
+    "ticket-reference-after/390-preview.png",
+    "ticket-reference-after/390-ticket.png"
+  ],
+  "findings": [
+    "Original preview renders a full UUID and original Summary has no reference.",
+    "Final preview renders #F4211F53 and preserves its complete UUID URL.",
+    "The final Ticket heading matches at both widths.",
+    "The final page-title assertion passed."
+  ],
+  "signed": "Run Edit Run fleet, 2026-11-17 UTC"
+}

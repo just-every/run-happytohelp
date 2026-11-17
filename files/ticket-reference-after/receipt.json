@@ -1,0 +1,13 @@
+{
+  "reference": "#F4211F53",
+  "uuid": "f4211f53-9346-4da1-bf68-5e82c64ee962",
+  "preview": true,
+  "fullLink": true,
+  "operatorHeader": true,
+  "pageTitle": true,
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ]
+}

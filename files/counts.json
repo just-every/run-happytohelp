@@ -1,0 +1,18 @@
+{
+  "journeyRegistrations": {
+    "before": 115,
+    "after": 117
+  },
+  "allTestsTopLevelRegistrations": {
+    "before": 119,
+    "after": 121
+  },
+  "newTests": 2,
+  "contractStatusChanges": 0,
+  "sourceStatusCounts": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "note": "Counts of syntactic top-level test registrations; no new generated case loop or assertion script."
+}

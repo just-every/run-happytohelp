@@ -1,0 +1,1979 @@
+{
+  "run_id": 44050158749,
+  "total_count": 16,
+  "jobs": [
+    {
+      "id": 133925660701,
+      "name": "contract-docs",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-17T08:50:25Z",
+      "completed_at": "2026-11-17T08:50:56Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133925660701",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:50:26Z",
+          "completed_at": "2026-11-17T08:50:27Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:50:27Z",
+          "completed_at": "2026-11-17T08:50:35Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T08:50:35Z",
+          "completed_at": "2026-11-17T08:50:36Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:50:36Z",
+          "completed_at": "2026-11-17T08:50:41Z"
+        },
+        {
+          "name": "Set runner-owned dependency cache",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T08:50:41Z",
+          "completed_at": "2026-11-17T08:50:41Z"
+        },
+        {
+          "name": "Run actions/cache@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T08:50:41Z",
+          "completed_at": "2026-11-17T08:50:45Z"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T08:50:45Z",
+          "completed_at": "2026-11-17T08:50:51Z"
+        },
+        {
+          "name": "Run node src/site/base/contract-docs.mjs check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:50:51Z",
+          "completed_at": "2026-11-17T08:50:52Z"
+        },
+        {
+          "name": "Run node scripts/contract-docs.mjs check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:50:52Z",
+          "completed_at": "2026-11-17T08:50:52Z"
+        },
+        {
+          "name": "Post Run actions/cache@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-11-17T08:50:52Z",
+          "completed_at": "2026-11-17T08:50:52Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-11-17T08:50:52Z",
+          "completed_at": "2026-11-17T08:50:52Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-11-17T08:50:52Z",
+          "completed_at": "2026-11-17T08:50:52Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-11-17T08:50:52Z",
+          "completed_at": "2026-11-17T08:50:52Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-11-17T08:50:52Z",
+          "completed_at": "2026-11-17T08:50:52Z"
+        }
+      ]
+    },
+    {
+      "id": 133925661125,
+      "name": "plan",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-17T08:50:25Z",
+      "completed_at": "2026-11-17T08:50:39Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133925661125",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:50:25Z",
+          "completed_at": "2026-11-17T08:50:26Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:50:26Z",
+          "completed_at": "2026-11-17T08:50:36Z"
+        },
+        {
+          "name": "Look up complete nightly marker",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3,
+          "started_at": "2026-11-17T08:50:36Z",
+          "completed_at": "2026-11-17T08:50:36Z"
+        },
+        {
+          "name": "Run node scripts/ci/verify-lifecycle.mjs --plan",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:50:36Z",
+          "completed_at": "2026-11-17T08:50:37Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:50:37Z",
+          "completed_at": "2026-11-17T08:50:37Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:50:37Z",
+          "completed_at": "2026-11-17T08:50:37Z"
+        }
+      ]
+    },
+    {
+      "id": 133925795025,
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-17T08:50:42Z",
+      "completed_at": "2026-11-17T08:52:02Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133925795025",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:50:43Z",
+          "completed_at": "2026-11-17T08:50:46Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:50:46Z",
+          "completed_at": "2026-11-17T08:50:55Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T08:50:55Z",
+          "completed_at": "2026-11-17T08:50:57Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:50:57Z",
+          "completed_at": "2026-11-17T08:51:02Z"
+        },
+        {
+          "name": "Set runner-owned caches",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T08:51:02Z",
+          "completed_at": "2026-11-17T08:51:02Z"
+        },
+        {
+          "name": "Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T08:51:02Z",
+          "completed_at": "2026-11-17T08:51:06Z"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T08:51:06Z",
+          "completed_at": "2026-11-17T08:51:15Z"
+        },
+        {
+          "name": "Run pnpm exec rer describe",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:51:15Z",
+          "completed_at": "2026-11-17T08:51:17Z"
+        },
+        {
+          "name": "Run node scripts/edition-authoring/cli.mjs check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:51:17Z",
+          "completed_at": "2026-11-17T08:51:18Z"
+        },
+        {
+          "name": "Run pnpm run typecheck",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-17T08:51:18Z",
+          "completed_at": "2026-11-17T08:51:32Z"
+        },
+        {
+          "name": "Run pnpm exec rer check --profile first-party",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-17T08:51:32Z",
+          "completed_at": "2026-11-17T08:51:34Z"
+        },
+        {
+          "name": "Run pnpm run build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-17T08:51:34Z",
+          "completed_at": "2026-11-17T08:51:53Z"
+        },
+        {
+          "name": "Run reviewed light readers and build the run site",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-11-17T08:51:53Z",
+          "completed_at": "2026-11-17T08:51:53Z"
+        },
+        {
+          "name": "Package internal build output",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-17T08:51:53Z",
+          "completed_at": "2026-11-17T08:51:55Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-11-17T08:51:55Z",
+          "completed_at": "2026-11-17T08:51:57Z"
+        },
+        {
+          "name": "Confirm build preserves source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-11-17T08:51:57Z",
+          "completed_at": "2026-11-17T08:51:57Z"
+        },
+        {
+          "name": "Upload build failure diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-11-17T08:51:57Z",
+          "completed_at": "2026-11-17T08:51:57Z"
+        },
+        {
+          "name": "Post Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-17T08:51:57Z",
+          "completed_at": "2026-11-17T08:51:58Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 32,
+          "started_at": "2026-11-17T08:51:58Z",
+          "completed_at": "2026-11-17T08:51:58Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 33,
+          "started_at": "2026-11-17T08:51:58Z",
+          "completed_at": "2026-11-17T08:51:58Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 34,
+          "started_at": "2026-11-17T08:51:58Z",
+          "completed_at": "2026-11-17T08:51:58Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 35,
+          "started_at": "2026-11-17T08:51:58Z",
+          "completed_at": "2026-11-17T08:51:58Z"
+        }
+      ]
+    },
+    {
+      "id": 133925796629,
+      "name": "slow",
+      "status": "completed",
+      "conclusion": "skipped",
+      "started_at": "2026-11-17T08:50:40Z",
+      "completed_at": "2026-11-17T08:50:40Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133925796629",
+      "steps": []
+    },
+    {
+      "id": 133926461069,
+      "name": "size-check",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-17T08:52:05Z",
+      "completed_at": "2026-11-17T08:55:14Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133926461069",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:52:06Z",
+          "completed_at": "2026-11-17T08:52:08Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:52:08Z",
+          "completed_at": "2026-11-17T08:52:14Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T08:52:14Z",
+          "completed_at": "2026-11-17T08:52:15Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:52:15Z",
+          "completed_at": "2026-11-17T08:52:20Z"
+        },
+        {
+          "name": "Set runner-owned dependency cache",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T08:52:20Z",
+          "completed_at": "2026-11-17T08:52:20Z"
+        },
+        {
+          "name": "Run actions/cache@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T08:52:20Z",
+          "completed_at": "2026-11-17T08:52:26Z"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T08:52:26Z",
+          "completed_at": "2026-11-17T08:52:34Z"
+        },
+        {
+          "name": "Record the published rer artifact identity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:52:34Z",
+          "completed_at": "2026-11-17T08:52:34Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:52:34Z",
+          "completed_at": "2026-11-17T08:52:37Z"
+        },
+        {
+          "name": "Restore the build from this workflow's exact checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-17T08:52:37Z",
+          "completed_at": "2026-11-17T08:52:37Z"
+        },
+        {
+          "name": "Check migration statements and real small/large flows",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-17T08:52:37Z",
+          "completed_at": "2026-11-17T08:55:07Z"
+        },
+        {
+          "name": "Upload statement handoff and identity, including failed checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-17T08:55:07Z",
+          "completed_at": "2026-11-17T08:55:09Z"
+        },
+        {
+          "name": "Confirm size checks preserve source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-17T08:55:09Z",
+          "completed_at": "2026-11-17T08:55:09Z"
+        },
+        {
+          "name": "Post Run actions/cache@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-11-17T08:55:09Z",
+          "completed_at": "2026-11-17T08:55:09Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-11-17T08:55:09Z",
+          "completed_at": "2026-11-17T08:55:09Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-11-17T08:55:09Z",
+          "completed_at": "2026-11-17T08:55:10Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-11-17T08:55:10Z",
+          "completed_at": "2026-11-17T08:55:10Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-17T08:55:10Z",
+          "completed_at": "2026-11-17T08:55:10Z"
+        }
+      ]
+    },
+    {
+      "id": 133926461183,
+      "name": "Verify / connections-and-computers",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-17T08:52:04Z",
+      "completed_at": "2026-11-17T09:02:07Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133926461183",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:52:05Z",
+          "completed_at": "2026-11-17T08:52:07Z"
+        },
+        {
+          "name": "Configure evidence directory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:52:07Z",
+          "completed_at": "2026-11-17T08:52:07Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T08:52:07Z",
+          "completed_at": "2026-11-17T08:52:11Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:52:11Z",
+          "completed_at": "2026-11-17T08:52:12Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T08:52:12Z",
+          "completed_at": "2026-11-17T08:52:17Z"
+        },
+        {
+          "name": "Set runner-owned caches",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T08:52:17Z",
+          "completed_at": "2026-11-17T08:52:17Z"
+        },
+        {
+          "name": "Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T08:52:17Z",
+          "completed_at": "2026-11-17T08:52:20Z"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:52:20Z",
+          "completed_at": "2026-11-17T08:52:28Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:52:28Z",
+          "completed_at": "2026-11-17T08:52:29Z"
+        },
+        {
+          "name": "Restore the build from this workflow's exact checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-17T08:52:29Z",
+          "completed_at": "2026-11-17T08:52:29Z"
+        },
+        {
+          "name": "Install Chromium",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 11,
+          "started_at": "2026-11-17T08:52:29Z",
+          "completed_at": "2026-11-17T08:52:29Z"
+        },
+        {
+          "name": "Run shard checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-17T08:52:29Z",
+          "completed_at": "2026-11-17T09:02:03Z"
+        },
+        {
+          "name": "Confirm checks preserve source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-17T09:02:03Z",
+          "completed_at": "2026-11-17T09:02:04Z"
+        },
+        {
+          "name": "Upload browser evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-17T09:02:04Z",
+          "completed_at": "2026-11-17T09:02:04Z"
+        },
+        {
+          "name": "Upload failure diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-17T09:02:04Z",
+          "completed_at": "2026-11-17T09:02:04Z"
+        },
+        {
+          "name": "Post Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-17T09:02:04Z",
+          "completed_at": "2026-11-17T09:02:04Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-17T09:02:04Z",
+          "completed_at": "2026-11-17T09:02:04Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-17T09:02:04Z",
+          "completed_at": "2026-11-17T09:02:04Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-11-17T09:02:04Z",
+          "completed_at": "2026-11-17T09:02:04Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-17T09:02:04Z",
+          "completed_at": "2026-11-17T09:02:04Z"
+        }
+      ]
+    },
+    {
+      "id": 133926461245,
+      "name": "Verify / support-and-recovery",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-17T08:52:05Z",
+      "completed_at": "2026-11-17T09:19:50Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133926461245",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:52:06Z",
+          "completed_at": "2026-11-17T08:52:08Z"
+        },
+        {
+          "name": "Configure evidence directory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:52:08Z",
+          "completed_at": "2026-11-17T08:52:08Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T08:52:08Z",
+          "completed_at": "2026-11-17T08:52:12Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:52:12Z",
+          "completed_at": "2026-11-17T08:52:14Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T08:52:14Z",
+          "completed_at": "2026-11-17T08:52:18Z"
+        },
+        {
+          "name": "Set runner-owned caches",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T08:52:18Z",
+          "completed_at": "2026-11-17T08:52:19Z"
+        },
+        {
+          "name": "Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T08:52:19Z",
+          "completed_at": "2026-11-17T08:52:27Z"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:52:27Z",
+          "completed_at": "2026-11-17T08:52:35Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:52:35Z",
+          "completed_at": "2026-11-17T08:52:38Z"
+        },
+        {
+          "name": "Restore the build from this workflow's exact checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-17T08:52:38Z",
+          "completed_at": "2026-11-17T08:52:38Z"
+        },
+        {
+          "name": "Install Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-17T08:52:38Z",
+          "completed_at": "2026-11-17T08:52:40Z"
+        },
+        {
+          "name": "Run shard checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-17T08:52:40Z",
+          "completed_at": "2026-11-17T09:19:44Z"
+        },
+        {
+          "name": "Confirm checks preserve source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-17T09:19:44Z",
+          "completed_at": "2026-11-17T09:19:44Z"
+        },
+        {
+          "name": "Upload browser evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-17T09:19:44Z",
+          "completed_at": "2026-11-17T09:19:47Z"
+        },
+        {
+          "name": "Upload failure diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-17T09:19:47Z",
+          "completed_at": "2026-11-17T09:19:47Z"
+        },
+        {
+          "name": "Post Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-17T09:19:47Z",
+          "completed_at": "2026-11-17T09:19:47Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-17T09:19:47Z",
+          "completed_at": "2026-11-17T09:19:47Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-17T09:19:47Z",
+          "completed_at": "2026-11-17T09:19:47Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-11-17T09:19:47Z",
+          "completed_at": "2026-11-17T09:19:47Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-17T09:19:47Z",
+          "completed_at": "2026-11-17T09:19:47Z"
+        }
+      ]
+    },
+    {
+      "id": 133926461252,
+      "name": "Verify / identity-and-repair-browser",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-17T08:52:05Z",
+      "completed_at": "2026-11-17T09:05:14Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133926461252",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:52:06Z",
+          "completed_at": "2026-11-17T08:52:08Z"
+        },
+        {
+          "name": "Configure evidence directory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:52:08Z",
+          "completed_at": "2026-11-17T08:52:08Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T08:52:08Z",
+          "completed_at": "2026-11-17T08:52:12Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:52:12Z",
+          "completed_at": "2026-11-17T08:52:13Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T08:52:13Z",
+          "completed_at": "2026-11-17T08:52:18Z"
+        },
+        {
+          "name": "Set runner-owned caches",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T08:52:18Z",
+          "completed_at": "2026-11-17T08:52:18Z"
+        },
+        {
+          "name": "Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T08:52:18Z",
+          "completed_at": "2026-11-17T08:52:25Z"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:52:25Z",
+          "completed_at": "2026-11-17T08:52:34Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:52:34Z",
+          "completed_at": "2026-11-17T08:52:36Z"
+        },
+        {
+          "name": "Restore the build from this workflow's exact checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-17T08:52:36Z",
+          "completed_at": "2026-11-17T08:52:37Z"
+        },
+        {
+          "name": "Install Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-17T08:52:37Z",
+          "completed_at": "2026-11-17T08:52:39Z"
+        },
+        {
+          "name": "Run shard checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-17T08:52:39Z",
+          "completed_at": "2026-11-17T09:05:07Z"
+        },
+        {
+          "name": "Confirm checks preserve source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-17T09:05:07Z",
+          "completed_at": "2026-11-17T09:05:08Z"
+        },
+        {
+          "name": "Upload browser evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-17T09:05:08Z",
+          "completed_at": "2026-11-17T09:05:10Z"
+        },
+        {
+          "name": "Upload failure diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-17T09:05:10Z",
+          "completed_at": "2026-11-17T09:05:10Z"
+        },
+        {
+          "name": "Post Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-17T09:05:10Z",
+          "completed_at": "2026-11-17T09:05:10Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-17T09:05:10Z",
+          "completed_at": "2026-11-17T09:05:10Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-17T09:05:10Z",
+          "completed_at": "2026-11-17T09:05:11Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-11-17T09:05:11Z",
+          "completed_at": "2026-11-17T09:05:11Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-17T09:05:11Z",
+          "completed_at": "2026-11-17T09:05:11Z"
+        }
+      ]
+    },
+    {
+      "id": 133926461255,
+      "name": "Verify / public-and-import-browser",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-17T08:52:05Z",
+      "completed_at": "2026-11-17T09:02:02Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133926461255",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:52:05Z",
+          "completed_at": "2026-11-17T08:52:08Z"
+        },
+        {
+          "name": "Configure evidence directory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:52:08Z",
+          "completed_at": "2026-11-17T08:52:08Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T08:52:08Z",
+          "completed_at": "2026-11-17T08:52:12Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:52:12Z",
+          "completed_at": "2026-11-17T08:52:13Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T08:52:13Z",
+          "completed_at": "2026-11-17T08:52:18Z"
+        },
+        {
+          "name": "Set runner-owned caches",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T08:52:18Z",
+          "completed_at": "2026-11-17T08:52:19Z"
+        },
+        {
+          "name": "Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T08:52:19Z",
+          "completed_at": "2026-11-17T08:52:25Z"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:52:25Z",
+          "completed_at": "2026-11-17T08:52:33Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:52:33Z",
+          "completed_at": "2026-11-17T08:52:35Z"
+        },
+        {
+          "name": "Restore the build from this workflow's exact checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-17T08:52:35Z",
+          "completed_at": "2026-11-17T08:52:36Z"
+        },
+        {
+          "name": "Install Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-17T08:52:36Z",
+          "completed_at": "2026-11-17T08:52:38Z"
+        },
+        {
+          "name": "Run shard checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-17T08:52:38Z",
+          "completed_at": "2026-11-17T09:01:54Z"
+        },
+        {
+          "name": "Confirm checks preserve source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-17T09:01:54Z",
+          "completed_at": "2026-11-17T09:01:55Z"
+        },
+        {
+          "name": "Upload browser evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-17T09:01:55Z",
+          "completed_at": "2026-11-17T09:01:57Z"
+        },
+        {
+          "name": "Upload failure diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-17T09:01:57Z",
+          "completed_at": "2026-11-17T09:01:57Z"
+        },
+        {
+          "name": "Post Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-17T09:01:57Z",
+          "completed_at": "2026-11-17T09:01:58Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-17T09:01:58Z",
+          "completed_at": "2026-11-17T09:01:58Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-17T09:01:58Z",
+          "completed_at": "2026-11-17T09:01:58Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-11-17T09:01:58Z",
+          "completed_at": "2026-11-17T09:01:58Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-17T09:01:58Z",
+          "completed_at": "2026-11-17T09:01:58Z"
+        }
+      ]
+    },
+    {
+      "id": 133926461257,
+      "name": "Verify / assistant-and-knowledge",
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2026-11-17T08:52:05Z",
+      "completed_at": "2026-11-17T09:07:40Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133926461257",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:52:06Z",
+          "completed_at": "2026-11-17T08:52:08Z"
+        },
+        {
+          "name": "Configure evidence directory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:52:08Z",
+          "completed_at": "2026-11-17T08:52:08Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T08:52:08Z",
+          "completed_at": "2026-11-17T08:52:13Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:52:13Z",
+          "completed_at": "2026-11-17T08:52:14Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T08:52:14Z",
+          "completed_at": "2026-11-17T08:52:18Z"
+        },
+        {
+          "name": "Set runner-owned caches",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T08:52:18Z",
+          "completed_at": "2026-11-17T08:52:19Z"
+        },
+        {
+          "name": "Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T08:52:19Z",
+          "completed_at": "2026-11-17T08:52:24Z"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:52:24Z",
+          "completed_at": "2026-11-17T08:52:32Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:52:32Z",
+          "completed_at": "2026-11-17T08:52:35Z"
+        },
+        {
+          "name": "Restore the build from this workflow's exact checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-17T08:52:35Z",
+          "completed_at": "2026-11-17T08:52:35Z"
+        },
+        {
+          "name": "Install Chromium",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 11,
+          "started_at": "2026-11-17T08:52:35Z",
+          "completed_at": "2026-11-17T08:52:35Z"
+        },
+        {
+          "name": "Run shard checks",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 12,
+          "started_at": "2026-11-17T08:52:35Z",
+          "completed_at": "2026-11-17T09:07:34Z"
+        },
+        {
+          "name": "Confirm checks preserve source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-17T09:07:34Z",
+          "completed_at": "2026-11-17T09:07:34Z"
+        },
+        {
+          "name": "Upload browser evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-17T09:07:34Z",
+          "completed_at": "2026-11-17T09:07:34Z"
+        },
+        {
+          "name": "Upload failure diagnostics",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-11-17T09:07:34Z",
+          "completed_at": "2026-11-17T09:07:34Z"
+        },
+        {
+          "name": "Post Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 27,
+          "started_at": "2026-11-17T09:07:34Z",
+          "completed_at": "2026-11-17T09:07:34Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 28,
+          "started_at": "2026-11-17T09:07:34Z",
+          "completed_at": "2026-11-17T09:07:34Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-17T09:07:34Z",
+          "completed_at": "2026-11-17T09:07:35Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-11-17T09:07:35Z",
+          "completed_at": "2026-11-17T09:07:35Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-17T09:07:35Z",
+          "completed_at": "2026-11-17T09:07:35Z"
+        }
+      ]
+    },
+    {
+      "id": 133926461261,
+      "name": "Verify / import-and-reports",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-17T08:52:04Z",
+      "completed_at": "2026-11-17T09:18:33Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133926461261",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:52:05Z",
+          "completed_at": "2026-11-17T08:52:06Z"
+        },
+        {
+          "name": "Configure evidence directory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:52:06Z",
+          "completed_at": "2026-11-17T08:52:06Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T08:52:06Z",
+          "completed_at": "2026-11-17T08:52:11Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:52:11Z",
+          "completed_at": "2026-11-17T08:52:12Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T08:52:12Z",
+          "completed_at": "2026-11-17T08:52:16Z"
+        },
+        {
+          "name": "Set runner-owned caches",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T08:52:16Z",
+          "completed_at": "2026-11-17T08:52:17Z"
+        },
+        {
+          "name": "Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T08:52:17Z",
+          "completed_at": "2026-11-17T08:52:21Z"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:52:21Z",
+          "completed_at": "2026-11-17T08:52:29Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:52:29Z",
+          "completed_at": "2026-11-17T08:52:30Z"
+        },
+        {
+          "name": "Restore the build from this workflow's exact checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-17T08:52:30Z",
+          "completed_at": "2026-11-17T08:52:30Z"
+        },
+        {
+          "name": "Install Chromium",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 11,
+          "started_at": "2026-11-17T08:52:30Z",
+          "completed_at": "2026-11-17T08:52:30Z"
+        },
+        {
+          "name": "Run shard checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-17T08:52:30Z",
+          "completed_at": "2026-11-17T09:18:29Z"
+        },
+        {
+          "name": "Confirm checks preserve source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-17T09:18:29Z",
+          "completed_at": "2026-11-17T09:18:29Z"
+        },
+        {
+          "name": "Upload browser evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-17T09:18:29Z",
+          "completed_at": "2026-11-17T09:18:30Z"
+        },
+        {
+          "name": "Upload failure diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-17T09:18:30Z",
+          "completed_at": "2026-11-17T09:18:30Z"
+        },
+        {
+          "name": "Post Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-17T09:18:30Z",
+          "completed_at": "2026-11-17T09:18:30Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-17T09:18:30Z",
+          "completed_at": "2026-11-17T09:18:30Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-17T09:18:30Z",
+          "completed_at": "2026-11-17T09:18:30Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-11-17T09:18:30Z",
+          "completed_at": "2026-11-17T09:18:30Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-17T09:18:30Z",
+          "completed_at": "2026-11-17T09:18:30Z"
+        }
+      ]
+    },
+    {
+      "id": 133926461386,
+      "name": "Verify / identity-and-desk",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-17T08:52:04Z",
+      "completed_at": "2026-11-17T09:08:28Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133926461386",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:52:05Z",
+          "completed_at": "2026-11-17T08:52:07Z"
+        },
+        {
+          "name": "Configure evidence directory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:52:07Z",
+          "completed_at": "2026-11-17T08:52:07Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T08:52:07Z",
+          "completed_at": "2026-11-17T08:52:11Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:52:11Z",
+          "completed_at": "2026-11-17T08:52:12Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T08:52:12Z",
+          "completed_at": "2026-11-17T08:52:16Z"
+        },
+        {
+          "name": "Set runner-owned caches",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T08:52:16Z",
+          "completed_at": "2026-11-17T08:52:17Z"
+        },
+        {
+          "name": "Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T08:52:17Z",
+          "completed_at": "2026-11-17T08:52:20Z"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:52:20Z",
+          "completed_at": "2026-11-17T08:52:26Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:52:26Z",
+          "completed_at": "2026-11-17T08:52:28Z"
+        },
+        {
+          "name": "Restore the build from this workflow's exact checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-17T08:52:28Z",
+          "completed_at": "2026-11-17T08:52:28Z"
+        },
+        {
+          "name": "Install Chromium",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 11,
+          "started_at": "2026-11-17T08:52:28Z",
+          "completed_at": "2026-11-17T08:52:28Z"
+        },
+        {
+          "name": "Run shard checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-17T08:52:28Z",
+          "completed_at": "2026-11-17T09:08:23Z"
+        },
+        {
+          "name": "Confirm checks preserve source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-17T09:08:23Z",
+          "completed_at": "2026-11-17T09:08:23Z"
+        },
+        {
+          "name": "Upload browser evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-17T09:08:23Z",
+          "completed_at": "2026-11-17T09:08:24Z"
+        },
+        {
+          "name": "Upload failure diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-17T09:08:24Z",
+          "completed_at": "2026-11-17T09:08:24Z"
+        },
+        {
+          "name": "Post Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-17T09:08:24Z",
+          "completed_at": "2026-11-17T09:08:24Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-17T09:08:24Z",
+          "completed_at": "2026-11-17T09:08:24Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-17T09:08:24Z",
+          "completed_at": "2026-11-17T09:08:25Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-11-17T09:08:25Z",
+          "completed_at": "2026-11-17T09:08:25Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-17T09:08:25Z",
+          "completed_at": "2026-11-17T09:08:25Z"
+        }
+      ]
+    },
+    {
+      "id": 133926461693,
+      "name": "Verify / support-workflow-browser",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-11-17T08:52:05Z",
+      "completed_at": "2026-11-17T09:07:54Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133926461693",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T08:52:06Z",
+          "completed_at": "2026-11-17T08:52:08Z"
+        },
+        {
+          "name": "Configure evidence directory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T08:52:08Z",
+          "completed_at": "2026-11-17T08:52:08Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T08:52:08Z",
+          "completed_at": "2026-11-17T08:52:12Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T08:52:12Z",
+          "completed_at": "2026-11-17T08:52:14Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T08:52:14Z",
+          "completed_at": "2026-11-17T08:52:18Z"
+        },
+        {
+          "name": "Set runner-owned caches",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T08:52:18Z",
+          "completed_at": "2026-11-17T08:52:19Z"
+        },
+        {
+          "name": "Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T08:52:19Z",
+          "completed_at": "2026-11-17T08:52:25Z"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T08:52:25Z",
+          "completed_at": "2026-11-17T08:52:34Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T08:52:34Z",
+          "completed_at": "2026-11-17T08:52:35Z"
+        },
+        {
+          "name": "Restore the build from this workflow's exact checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-17T08:52:35Z",
+          "completed_at": "2026-11-17T08:52:35Z"
+        },
+        {
+          "name": "Install Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-17T08:52:35Z",
+          "completed_at": "2026-11-17T08:52:39Z"
+        },
+        {
+          "name": "Run shard checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-17T08:52:39Z",
+          "completed_at": "2026-11-17T09:07:48Z"
+        },
+        {
+          "name": "Confirm checks preserve source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-17T09:07:48Z",
+          "completed_at": "2026-11-17T09:07:48Z"
+        },
+        {
+          "name": "Upload browser evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-11-17T09:07:48Z",
+          "completed_at": "2026-11-17T09:07:50Z"
+        },
+        {
+          "name": "Upload failure diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-17T09:07:50Z",
+          "completed_at": "2026-11-17T09:07:50Z"
+        },
+        {
+          "name": "Post Cache frozen dependencies and Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-11-17T09:07:50Z",
+          "completed_at": "2026-11-17T09:07:50Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-11-17T09:07:50Z",
+          "completed_at": "2026-11-17T09:07:51Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-11-17T09:07:51Z",
+          "completed_at": "2026-11-17T09:07:51Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-11-17T09:07:51Z",
+          "completed_at": "2026-11-17T09:07:51Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-11-17T09:07:51Z",
+          "completed_at": "2026-11-17T09:07:51Z"
+        }
+      ]
+    },
+    {
+      "id": 133927981414,
+      "name": "nightly-proof",
+      "status": "completed",
+      "conclusion": "skipped",
+      "started_at": "2026-11-17T08:55:14Z",
+      "completed_at": "2026-11-17T08:55:14Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133927981414",
+      "steps": []
+    },
+    {
+      "id": 133940519778,
+      "name": "verify",
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2026-11-17T09:19:53Z",
+      "completed_at": "2026-11-17T09:20:00Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133940519778",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T09:19:53Z",
+          "completed_at": "2026-11-17T09:19:54Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T09:19:54Z",
+          "completed_at": "2026-11-17T09:19:59Z"
+        },
+        {
+          "name": "Require the plan and every selected check",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 3,
+          "started_at": "2026-11-17T09:19:59Z",
+          "completed_at": "2026-11-17T09:19:59Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T09:19:59Z",
+          "completed_at": "2026-11-17T09:19:59Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T09:19:59Z",
+          "completed_at": "2026-11-17T09:19:59Z"
+        }
+      ]
+    },
+    {
+      "id": 133940522166,
+      "name": "full-push-proof",
+      "status": "completed",
+      "conclusion": "skipped",
+      "started_at": "2026-11-17T09:19:51Z",
+      "completed_at": "2026-11-17T09:19:51Z",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44050158749/job/133940522166",
+      "steps": []
+    }
+  ]
+}

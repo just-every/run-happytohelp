@@ -1,0 +1,9 @@
+{
+  "head": "c0b85c26bc44e77e3d943df1a3584aa8e712b799",
+  "command": "node scripts/edition-authoring/cli.mjs check",
+  "exit": 0,
+  "lockCommand": "node scripts/edition-authoring/cli.mjs lock",
+  "lockSha256": "6713427b8c47a4efb3001de9fbe020ed1e4af48a025622de9a02a853aab476be",
+  "generatedViewsChanged": false,
+  "contractChanged": false
+}

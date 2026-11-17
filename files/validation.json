@@ -1,0 +1,61 @@
+{
+  "head": "c0b85c26bc44e77e3d943df1a3584aa8e712b799",
+  "node": "v22.20.0",
+  "exitCodes": {
+    "registeredEmailJourney": 0,
+    "typecheck": 0,
+    "rerCheckFirstParty": 0,
+    "sourceCheck": 0
+  },
+  "registeredEmailStartedOnHead": "5078741f90e4cb0a1fd0243d1d143b000bf17a01",
+  "note": "Current main was merged during the email run; reference implementation and its assertion files were unchanged by that merge. Typecheck, rer check and source check ran after the merge. Exact-SHA CI is recorded separately.",
+  "additionalLocalResults": {
+    "inboxReplacementJourney": {
+      "head": "5078741f90e4cb0a1fd0243d1d143b000bf17a01",
+      "tests": 1,
+      "pass": 1,
+      "fail": 0
+    },
+    "otherTouchedRunCases": {
+      "pass": 5,
+      "includes": [
+        "legacy SES",
+        "brands",
+        "Problem/Incidents",
+        "SLA field permission",
+        "ticket reference search"
+      ]
+    }
+  },
+  "finalBuild": {
+    "head": "32bb314532f9ab34edcbb67cf6b758833649c544",
+    "exit": 0
+  },
+  "finalBrowser": {
+    "head": "32bb314532f9ab34edcbb67cf6b758833649c544",
+    "node": "v22.20.0",
+    "tests": 1,
+    "pass": 1,
+    "fail": 0,
+    "exit": 0,
+    "assertionWidth": 1440,
+    "screenshotWidths": [
+      1440,
+      390
+    ]
+  },
+  "followupRequestForm": {
+    "head": "c0b85c26bc44e77e3d943df1a3584aa8e712b799",
+    "tests": 1,
+    "pass": 1,
+    "fail": 0,
+    "exit": 0
+  },
+  "followupStaticChecks": {
+    "head": "c0b85c26bc44e77e3d943df1a3584aa8e712b799",
+    "typecheckExit": 0,
+    "rerCheckFirstPartyExit": 0,
+    "sourceCheckExit": 0
+  },
+  "productSourceIdenticalToBrowserProof": true
+}

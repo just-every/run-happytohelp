@@ -1,0 +1,34 @@
+Error in OpenAI streaming response: InternalServerError3: 503 fixture rejected
+    at _APIError.generate (file:///home/agent/rer-consolidation/work/hh-stranger13-ui-1/repo/script-0.mjs:95036:18)
+    at OpenAI.makeStatusError (file:///home/agent/rer-consolidation/work/hh-stranger13-ui-1/repo/script-0.mjs:106005:26)
+    at OpenAI.makeRequest (file:///home/agent/rer-consolidation/work/hh-stranger13-ui-1/repo/script-0.mjs:106190:28)
+    at async OpenAIProvider.createResponseStream (file:///home/agent/rer-consolidation/work/hh-stranger13-ui-1/repo/script-0.mjs:112954:27)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-stranger13-ui-1/repo/script-0.mjs:48158:9)
+    at async wrapper.createResponseStream (file:///home/agent/rer-consolidation/work/hh-stranger13-ui-1/repo/script-0.mjs:48073:5)
+    at async streamWithAbortAndTimeout (file:///home/agent/rer-consolidation/work/hh-stranger13-ui-1/repo/script-0.mjs:65389:85)
+    at async executeRound (file:///home/agent/rer-consolidation/work/hh-stranger13-ui-1/repo/script-0.mjs:69482:20)
+    at async ensembleRequest (file:///home/agent/rer-consolidation/work/hh-stranger13-ui-1/repo/script-0.mjs:69068:21)
+    at async runStream (file:///home/agent/rer-consolidation/work/hh-stranger13-ui-1/repo/script-0.mjs:190789:22) {
+  status: 503,
+  headers: Headers(4) {
+    'connection' => 'keep-alive',
+    'content-type' => 'application/json',
+    'date' => 'Tue, 17 Nov 2026 07:28:29 GMT',
+    'transfer-encoding' => 'chunked',
+    [immutable]: true
+  },
+  requestID: null,
+  error: { message: 'fixture rejected', type: 'server_error' },
+  code: undefined,
+  param: undefined,
+  type: 'server_error'
+}
+✔ a lead versions a synthetic-only procedure, inspects its bounded simulations and refuses a failed or mismatched release (10491.518356ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10825.85525

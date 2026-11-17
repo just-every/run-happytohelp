@@ -1,0 +1,10 @@
+✔ an owner chooses named workspace bindings and issues a machine credential with the same scoped IDs (157226.482975ms)
+✔ a signed-in owner discovers workspace creation in both menus and reaches Setup as its owner (151376.885989ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 312156.749143

@@ -1,0 +1,9 @@
+✔ an operator finds a merge by requester or subject and explicitly chooses the surviving ticket (157951.899935ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 161593.957826

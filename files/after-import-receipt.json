@@ -1,0 +1,15 @@
+{
+  "head": "94cc8ccc2d39d369695411554a3ac86113efec28",
+  "assertionWidth": 1440,
+  "proofWidths": [
+    1440,
+    390
+  ],
+  "tickets": 1000,
+  "planned": 1106,
+  "total": 1107,
+  "plannedText": "Importing: synthetic-zendesk-1000.jsonl\n\nImporting. 0 of 1107 source records processed.\n\nPlanned import summary\nTags: 3\nPeople: 101\nConversations: 1000\nArticles: 2\nSaved replies: 1\n\n1106 of 1107 records will be imported. None need fixing. Articles: 1 will be published, 1 will stay a draft.\n\nCustomers are not contacted. People who were staff in Zendesk stay as the authors of their messages and get no access here. Your original files are kept privately, including any fields that aren’t imported.\n\nTicket contents (1000)\nImported with notes (3)\nResume import",
+  "completedSummary": "Import summary\nTags: 3\nPeople: 101\nConversations: 1000\nArticles: 2\nSaved replies: 1\n\n1106 of 1107 records were imported. None need fixing. Articles: 1 was published, 1 stayed a draft.\n\nCustomers are not contacted. People who were staff in Zendesk stay as the authors of their messages and get no access here. Your original files are kept privately, including any fields that aren’t imported.\n\nTicket contents (1000)\nImported with notes (3)\nUndo whole import\n",
+  "nativeTicketTotal": 1000,
+  "completed": true
+}

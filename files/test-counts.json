@@ -1,0 +1,6 @@
+{
+  "scope": "Direct test() and contract() registrations in tracked tests/journeys/*.mjs; no registrations removed or skipped",
+  "before": 118,
+  "after": 121,
+  "delta": 3
+}

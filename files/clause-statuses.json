@@ -1,0 +1,22 @@
+{
+  "FIRST-RUN-001": {
+    "before": "partial",
+    "after": "partial"
+  },
+  "MOVE-IN-001": {
+    "before": "done",
+    "after": "done"
+  },
+  "CONVERSATION-002": {
+    "before": "partial",
+    "after": "partial"
+  },
+  "API-002": {
+    "before": "missing",
+    "after": "missing"
+  },
+  "PROCEDURE-001": {
+    "before": "partial",
+    "after": "partial"
+  }
+}

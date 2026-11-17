@@ -1,0 +1,10 @@
+Zendesk Connect: both presses POSTed and navigated to their returned authorize URL from the same page load
+✔ an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import (267854.576924ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 271517.830782

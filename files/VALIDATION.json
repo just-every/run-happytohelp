@@ -1,0 +1,148 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger13-ui-1",
+  "head": "94cc8ccc2d39d369695411554a3ac86113efec28",
+  "base": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
+  "author": "Run Edit Run fleet",
+  "updated_at": "2026-11-17T07:36:31.140592+00:00",
+  "local_full_suite": false,
+  "assertion_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "checks": [
+    {
+      "name": "selectors",
+      "head": "7591f933f9145553b284b7a9507642c50cf0cf87",
+      "command": "node --test --test-concurrency=1 --test-name-pattern='chooses named workspace|discovers workspace creation' tests/journeys/workflows-browser.mjs",
+      "exit": 0,
+      "summary": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skipped": 0
+      },
+      "log": "checks/selectors.txt"
+    },
+    {
+      "name": "procedure-browser",
+      "head": "7591f933f9145553b284b7a9507642c50cf0cf87",
+      "command": "node --test --test-concurrency=1 --test-name-pattern='a lead compares saved procedure' tests/journeys/workflows-browser.mjs",
+      "exit": 0,
+      "summary": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0
+      },
+      "log": "checks/procedure-browser.txt"
+    },
+    {
+      "name": "procedure-route",
+      "head": "7591f933f9145553b284b7a9507642c50cf0cf87",
+      "command": "node --test --test-concurrency=1 --test-name-pattern='a lead versions a synthetic-only procedure' tests/journeys/ai.mjs",
+      "exit": 0,
+      "summary": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0
+      },
+      "log": "checks/procedure-route.txt"
+    },
+    {
+      "name": "move-in-browser",
+      "head": "bebd40362f17287c939959b9cb86546e5089e5d0",
+      "command": "node --test --test-concurrency=1 --test-name-pattern='an owner connects Zendesk twice' tests/journeys/move-in-browser.mjs",
+      "exit": 0,
+      "summary": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0
+      },
+      "log": "checks/move-in-browser.txt"
+    },
+    {
+      "name": "merge",
+      "head": "7591f933f9145553b284b7a9507642c50cf0cf87",
+      "command": "node --test --test-concurrency=1 --test-name-pattern='finds a merge by requester' tests/journeys/inbox-browser.mjs",
+      "exit": 0,
+      "summary": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0
+      },
+      "log": "checks/merge.txt"
+    }
+  ],
+  "static_checks": {
+    "typecheck": 0,
+    "rer check --profile first-party": 0,
+    "source lock/check": 0,
+    "rer build": 0,
+    "git diff --check": 0
+  },
+  "move_in_earlier_head_source_equivalence": {
+    "confirmed": true,
+    "files": [
+      "src/ui/native/pages/MoveInReview.jsx",
+      "src/ui/native/pages/MoveIn.jsx",
+      "tests/journeys/move-in-browser.mjs"
+    ],
+    "comparison_head": "7591f933f9145553b284b7a9507642c50cf0cf87"
+  },
+  "scale_import": {
+    "head": "94cc8ccc2d39d369695411554a3ac86113efec28",
+    "assertionWidth": 1440,
+    "proofWidths": [
+      1440,
+      390
+    ],
+    "tickets": 1000,
+    "planned": 1106,
+    "total": 1107,
+    "plannedText": "Importing: synthetic-zendesk-1000.jsonl\n\nImporting. 0 of 1107 source records processed.\n\nPlanned import summary\nTags: 3\nPeople: 101\nConversations: 1000\nArticles: 2\nSaved replies: 1\n\n1106 of 1107 records will be imported. None need fixing. Articles: 1 will be published, 1 will stay a draft.\n\nCustomers are not contacted. People who were staff in Zendesk stay as the authors of their messages and get no access here. Your original files are kept privately, including any fields that aren\u2019t imported.\n\nTicket contents (1000)\nImported with notes (3)\nResume import",
+    "completedSummary": "Import summary\nTags: 3\nPeople: 101\nConversations: 1000\nArticles: 2\nSaved replies: 1\n\n1106 of 1107 records were imported. None need fixing. Articles: 1 was published, 1 stayed a draft.\n\nCustomers are not contacted. People who were staff in Zendesk stay as the authors of their messages and get no access here. Your original files are kept privately, including any fields that aren\u2019t imported.\n\nTicket contents (1000)\nImported with notes (3)\nUndo whole import\n",
+    "nativeTicketTotal": 1000,
+    "completed": true
+  },
+  "product_push": {
+    "confirmed": true,
+    "attempts": 1,
+    "remote_head": "94cc8ccc2d39d369695411554a3ac86113efec28"
+  },
+  "merge_exact_candidate": {
+    "head": "7591f933f9145553b284b7a9507642c50cf0cf87",
+    "result": "passed",
+    "final_merge_source_unchanged": true
+  },
+  "ci": "pending",
+  "publication_scan": "Mac fleet at landing; not run in cloud",
+  "prior_validated_head": "7591f933f9145553b284b7a9507642c50cf0cf87",
+  "final_delta": "Singular completed-article wording only, plus generated sources.lock.json. All other product and journey files are byte-identical to the prior validated head.",
+  "static_checks_head": "94cc8ccc2d39d369695411554a3ac86113efec28",
+  "scratch_cleanup": {
+    "closed_all_started_browsers_and_servers": true,
+    "removed_failed_synthetic_runtime_directories": [
+      "/tmp/h2h-native-runtime-0GO7PK",
+      "/tmp/h2h-native-runtime-MEYIyw",
+      "/tmp/h2h-native-runtime-MlkVAF",
+      "/tmp/h2h-native-runtime-Qjfdr5",
+      "/tmp/h2h-native-runtime-UjA3dT",
+      "/tmp/h2h-native-runtime-eE72xW",
+      "/tmp/h2h-native-runtime-lLKt1Z"
+    ],
+    "private_setup_answer_files_removed": true,
+    "product_clone": "retained until CI and evidence publication finish"
+  },
+  "terminal_source_bundle": {
+    "path": "/home/agent/rer-consolidation/work/hh-stranger13-ui-1/final-candidate.bundle",
+    "sha256": "9bc00afe1f6e0921e3bb33718ae94071976d866f81c63cbbb979ceda5c72fe24",
+    "head": "94cc8ccc2d39d369695411554a3ac86113efec28",
+    "prerequisite": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
+    "verified": true
+  }
+}

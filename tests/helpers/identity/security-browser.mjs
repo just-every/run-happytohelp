@@ -1,3 +1,4 @@
+import {invitationBrowser} from './invitation-browser.mjs'
 import {ticketScopeBrowserJourney} from './ticket-scope-browser.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
@@ -26,6 +27,7 @@ export async function securityBrowserJourney(browser){
   assert.equal(actor.status,200);tenant.userId=(await actor.json()).id
   const owner=await magicSignIn({runtime,browser,origin,tenant,shot}),P=`/projects/${tenant.projectId}`
   owner.on('pageerror',error=>errors.push(error.message))
+  await invitationBrowser({page:owner,origin,project:tenant.projectId,shot})
   // Personal Slack settings (NOTIFY-001) run first: connection and consent changes need no second factor yet.
   await slackSettingsBrowser({page:owner,runtime,origin,tenant,shot})
  await teamsSettingsBrowser({page:owner,runtime,origin,tenant,shot})

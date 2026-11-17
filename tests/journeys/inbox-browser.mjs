@@ -19,3 +19,6 @@ test('knowledge references remain reviewable in saved replies, ticket insertion,
 
 import {macroHandoffBrowser} from '../helpers/stranger11-browser.mjs'
 test('an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over',macroHandoffBrowser)
+
+import {mergePickerBrowser} from '../helpers/stranger13-browser.mjs'
+test('an operator finds a merge by requester or subject and explicitly chooses the surviving ticket',mergePickerBrowser)

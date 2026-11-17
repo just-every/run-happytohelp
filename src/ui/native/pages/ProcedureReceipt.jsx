@@ -18,8 +18,9 @@ function failureMessage(failure){
 export default function ProcedureReceipt({receipt,versionId,projectId}){
  return <div aria-label="Simulation receipt" className="procedure-receipt">
   <p>Version receipt: <code>{versionId}</code></p>
+  {receipt.status==='blocked'&&<><p role="status">Blocked: provider key missing. No cases were executed and no cost was reserved.</p><ProviderSetupNotice projectId={projectId} error={receipt.cases.find(item=>item.error)?.error}/></>}
   {receipt.cases.map(item=>{
-   const notRun=['queued','cancelled'].includes(item.status)&&!activeStatuses.includes(receipt.status);
+   const notRun=['queued','cancelled','blocked'].includes(item.status)&&!activeStatuses.includes(receipt.status);
    const failures=[...new Set((item.checks?.failures||[]).map(failureMessage))];
    const sandbox=item.artifact?.sandbox?.receipts||[];
    const setup=item.error?.startsWith('CONFIGURATION_REQUIRED:');
@@ -27,7 +28,7 @@ export default function ProcedureReceipt({receipt,versionId,projectId}){
     <h3>{caseLabels[item.case_id]||'Synthetic case'}</h3>
     <p>{notRun?'Not run':item.status==='uncertain'?'Result uncertain':item.checks?.passed?'Passed':item.checks?'Not passed':item.status==='running'?'Running':'Queued'}</p>
     {item.checks&&!item.checks.passed&&failures.length>0&&<ul>{failures.map(message=><li key={message}>{message}</li>)}</ul>}
-    {setup?<ProviderSetupNotice projectId={projectId} error={item.error}/>:item.error&&!notRun&&<p>The simulation stopped without a confirmed result. Review the provider connection and simulation budget before starting another run.</p>}
+    {setup&&receipt.status!=='blocked'?<ProviderSetupNotice projectId={projectId} error={item.error}/>:item.error&&!notRun&&<p>The simulation stopped without a confirmed result. Review the provider connection and simulation budget before starting another run.</p>}
     {item.status==='uncertain'&&<p>This attempt will not be replayed automatically. Inspect its error and any retained output before starting another run.</p>}
     {item.artifact?.response&&<p>Reply: {item.artifact.response}</p>}
     {sandbox.length?sandbox.map((read,index)=><p key={index}>{toolLabels[read.tool]||'Sandbox read'}: {read.status==='ok'?'completed':read.status==='timeout'?'timed out':read.status==='denied'?'denied':'unavailable'}</p>):<p>No sandbox read</p>}

@@ -81,4 +81,17 @@ export async function proceduresJourney(){
   assert.equal((await app.first('SELECT count(*) n FROM email_deliveries')).n,0,'sandbox sends no mail')
   assert.ok(ai.calls.every(c=>c.host==='api.openai.com'),'only the configured model network edge is reachable')
  }finally{await a.close()}
+ const blocked=await assistantApp({bindings:{OPENAI_API_KEY:''}})
+ try{
+  const root=`/api/projects/${blocked.p}/procedures`,call=(path,body)=>blocked.app.call(path,{token:blocked.owner,...(body===undefined?{}:{body}),status:body===undefined?200:201})
+  const version=(await call(root+'/exchange/versions',{...procedureDefinition(),maxCost:0.10})).data
+  const queued=(await call(`${root}/exchange/versions/${version.id}/simulations`,{})).data
+  await blocked.run()
+  const run=(await call(`/api/training/projects/${blocked.p}/runs/${queued.id}`)).data.data
+  assert.equal(run.status,'blocked');assert.equal(run.reserved_cost,0);assert.equal(run.spent_cost,0)
+  assert.equal(run.cases.length,4)
+  assert.ok(run.cases.every(item=>item.status==='blocked'&&!item.attempt_id&&!item.started_at&&!item.artifact_available&&item.error.includes('OPENAI_API_KEY')))
+  assert.equal(blocked.providerCalls(),0)
+  await blocked.run();assert.equal(blocked.providerCalls(),0,'a blocked run never executes on queue redelivery')
+ }finally{await blocked.close()}
 }

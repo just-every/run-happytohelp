@@ -141,10 +141,10 @@
     "pushed_at": "2026-11-17T22:49:24Z"
   },
   "verify": {
-    "conclusion": null,
+    "conclusion": "success",
     "head_sha": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
     "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44193740986",
-    "status": "in_progress",
+    "status": "completed",
     "id": 44193740986,
     "discovery": {
       "conclusion": null,
@@ -190,6 +190,12 @@
         "head_sha": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
         "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44193740986",
         "status": "in_progress"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "15edad251ba4f93b2f8af867764a9d3a415ee5c9",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44193740986",
+        "status": "completed"
       }
     ]
   }

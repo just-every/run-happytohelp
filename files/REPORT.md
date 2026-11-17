@@ -54,7 +54,7 @@ The macro registration in the inbox browser journey passed on the final commit
 Broader coverage was left to Verify.
 
 Exact-head [Verify 44193740986](https://github.com/just-every/run-happytohelp/actions/runs/44193740986) was observed
-`in_progress` / `pending`.
+`completed` / `success`.
 The selected composite identity-browser registration also passed (646.8s total).
 
 ## Claims

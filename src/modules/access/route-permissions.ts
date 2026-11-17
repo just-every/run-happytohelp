@@ -22,7 +22,7 @@ const rules:Record<string,Rule>={
  'POST /api/rer/cutover-status':'none',
  // Own account and sign-in
  'POST /auth/signout':'self','POST /api/identity/switch-project':'self','POST /api/identity/password':'self','POST /api/identity/accept-invitation':'self','DELETE /api/identity/session':'self',
- 'PUT /api/management/profile':'self',[`PUT ${P}/agents/:userId/primary`]:'self',
+ 'PUT /api/management/profile':'self',[`POST ${P}/widget-owner-name`]:'self',[`PUT ${P}/agents/:userId/primary`]:'self',
  'POST /api/identity/two-factor/totp':'self','POST /api/identity/two-factor/totp/confirm':'self','POST /api/identity/two-factor/webauthn/options':'self','POST /api/identity/two-factor/webauthn':'self',
  'DELETE /api/identity/two-factor/factors/:factorId':'self','POST /api/identity/two-factor/recovery-codes':'self','POST /api/identity/two-factor/verify':'self','POST /api/identity/two-factor/assertion-options':'self','POST /api/identity/step-up':'self','POST /api/identity/step-up/email':'self',
  'POST /api/identity/password-reset':'members.manage',
@@ -88,7 +88,7 @@ const rules:Record<string,Rule>={
  [`DELETE ${D}/report-schedules/:scheduleId`]:'data.export',
  // Workspace settings
  'POST /api/management/projects':'settings.manage',[`GET ${P}/settings`]:'settings.manage',[`PUT ${P}/settings`]:'settings.manage',[`DELETE ${P}`]:'data.erase',
- [`PUT ${P}/appearance`]:'settings.manage',[`PUT ${P}/artwork`]:'settings.manage',[`PUT ${P}/widget-settings`]:'settings.manage',[`PUT ${P}/widget-campaigns/:campaignId`]:'settings.manage',[`PUT ${P}/availability`]:'settings.manage',[`PUT ${P}/ai`]:'settings.manage',
+ [`PUT ${P}/appearance`]:'settings.manage',[`PUT ${P}/artwork`]:'settings.manage',[`PUT ${P}/widget-settings`]:'settings.manage',[`POST ${P}/widget-addresses`]:'settings.manage',[`DELETE ${P}/widget-addresses`]:'settings.manage',[`PUT ${P}/widget-campaigns/:campaignId`]:'settings.manage',[`PUT ${P}/availability`]:'settings.manage',[`PUT ${P}/ai`]:'settings.manage',
  [`POST ${P}/brand-media`]:'settings.manage',[`POST ${P}/activation/check`]:'settings.manage',[`POST ${P}/activation/skip`]:'settings.manage',[`POST ${P}/activation/local-trial`]:'settings.manage',[`POST ${P}/activation/test-mail`]:'settings.manage',
  [`POST ${P}/email-settings/managed/reconcile`]:'settings.manage',[`POST ${P}/email-settings/managed/retry`]:'settings.manage',
  [`PUT ${P}/email-settings`]:'settings.manage',[`POST ${P}/email-settings/test`]:'settings.manage',[`POST ${P}/inbound-emails/:messageId/reconcile`]:'conversations.manage',

@@ -1,0 +1,80 @@
+{
+  "iteration": 1,
+  "passed": false,
+  "durationMs": 41362,
+  "cpuRate": 6,
+  "networkLatency": 250,
+  "error": {
+    "message": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'refund \u00b7 Version 1', exact: true }) to be visible\u001b[22m\n",
+    "stack": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'refund \u00b7 Version 1', exact: true }) to be visible\u001b[22m\n\n    at proceduresBrowserJourney (/home/agent/rer-consolidation/work/hh-procedures-race-2/race-reproduction.mjs:50:39)\n    at async file:///home/agent/rer-consolidation/work/hh-procedures-race-2/diagnostic.mjs:40:7"
+  },
+  "events": [
+    {
+      "at": 1794945314562,
+      "type": "request",
+      "method": "GET",
+      "path": "/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945314821,
+      "type": "response",
+      "status": 200,
+      "path": "/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945317296,
+      "type": "request",
+      "method": "GET",
+      "path": "/api/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945317794,
+      "type": "request",
+      "method": "GET",
+      "path": "/api/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945317821,
+      "type": "response",
+      "status": 200,
+      "path": "/api/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945318232,
+      "type": "request",
+      "method": "POST",
+      "path": "/api/projects/<id>/procedures/refund/versions"
+    },
+    {
+      "at": 1794945318372,
+      "type": "response",
+      "status": 201,
+      "path": "/api/projects/<id>/procedures/refund/versions"
+    },
+    {
+      "at": 1794945318381,
+      "type": "request",
+      "method": "GET",
+      "path": "/api/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945318640,
+      "type": "response",
+      "status": 200,
+      "path": "/api/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945318856,
+      "type": "response",
+      "status": 200,
+      "path": "/api/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945348930,
+      "type": "last-state",
+      "text": "Procedure versions\n\nImmutable procedures and synthetic simulations. Simulation qualification does not enable production execution or send customer messages.\n\nRefresh versions\n\nNo procedure versions yet.\n\nDraft next version\n\nUse synthetic text only. No historical conversation is imported. Saving creates a new version; prior versions retain their exact instructions, required cases and budgets.\n\nProcedure key\nLower-case letters, digits and hyphens\nIntent\nInstructions\nModel\nHuman escalation\nRead-only sandbox tools\nSearch knowledge\nRead knowledge source\nMaximum simulation cost (USD)\nMaximum output tokens per case\nAllowed read\nSynthetic prompt\nRequired phrase\nForbidden phrase\nDenied read\nSynthetic prompt\nRequired phrase\nForbidden phrase\nRead timeout\nSynthetic prompt\nRequired phrase\nForbidden phrase\nPrompt injection\nSynthetic prompt\nRequired phrase\nForbidden phrase\nSave immutable version\nStart new procedure\nImmutable version saved.",
+      "focus": "<button class=\"btn btn-primary\" aria-disabled=\"false\">Save immutable version</button>"
+    }
+  ],
+  "schedule": "Hold initial empty GET, complete a newer Refresh, save refund version 1, observe version 1, release the initial empty GET, then wait for version 1."
+}

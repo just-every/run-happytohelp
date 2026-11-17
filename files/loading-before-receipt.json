@@ -1,0 +1,56 @@
+{
+  "iteration": 1,
+  "passed": false,
+  "durationMs": 10713,
+  "cpuRate": 6,
+  "networkLatency": 250,
+  "error": {
+    "message": "a superseded initial read cannot finish the newer refresh\n\n1 !== 0\n",
+    "stack": "AssertionError [ERR_ASSERTION]: a superseded initial read cannot finish the newer refresh\n\n1 !== 0\n\n    at proceduresBrowserJourney (file:///home/agent/rer-consolidation/work/hh-procedures-race-2/race-reproduction.mjs:32:11)\n    at async file:///home/agent/rer-consolidation/work/hh-procedures-race-2/diagnostic.mjs:40:7"
+  },
+  "events": [
+    {
+      "at": 1794945287417,
+      "type": "request",
+      "method": "GET",
+      "path": "/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945287673,
+      "type": "response",
+      "status": 200,
+      "path": "/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945290236,
+      "type": "request",
+      "method": "GET",
+      "path": "/api/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945290736,
+      "type": "request",
+      "method": "GET",
+      "path": "/api/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945290767,
+      "type": "response",
+      "status": 200,
+      "path": "/api/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945290936,
+      "type": "response",
+      "status": 200,
+      "path": "/api/projects/<id>/procedures"
+    },
+    {
+      "at": 1794945290936,
+      "type": "last-state",
+      "text": "Procedure versions\n\nImmutable procedures and synthetic simulations. Simulation qualification does not enable production execution or send customer messages.\n\nRefresh versions\nProcedure versions refreshed.\n\nNo procedure versions yet.\n\nDraft next version\n\nUse synthetic text only. No historical conversation is imported. Saving creates a new version; prior versions retain their exact instructions, required cases and budgets.\n\nProcedure key\nLower-case letters, digits and hyphens\nIntent\nInstructions\nModel\nHuman escalation\nRead-only sandbox tools\nSearch knowledge\nRead knowledge source\nMaximum simulation cost (USD)\nMaximum output tokens per case\nAllowed read\nSynthetic prompt\nRequired phrase\nForbidden phrase\nDenied read\nSynthetic prompt\nRequired phrase\nForbidden phrase\nRead timeout\nSynthetic prompt\nRequired phrase\nForbidden phrase\nPrompt injection\nSynthetic prompt\nRequired phrase\nForbidden phrase\nSave immutable version\nStart new procedure",
+      "focus": "<button class=\"btn btn-white\" aria-disabled=\"false\">Refresh versions</button>"
+    }
+  ],
+  "schedule": "Hold initial empty GET, start and hold a newer Refresh, release the initial GET while the newer Refresh remains pending."
+}

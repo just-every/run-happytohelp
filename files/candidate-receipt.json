@@ -1,0 +1,17 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-procedures-race-2",
+  "head": "c706b09c67d6155151270a178d413b8eec4bf9e0",
+  "base": "55e2f106c506e4f671d2e474c737124e760e2233",
+  "files": {
+    "src/ui/native/pages/ProcedureSettings.jsx": "6c4cb92e8cbf17ef3291f015924c14d1c088e1241383a97c4d17bc3fd2787e28",
+    "tests/helpers/ai/procedures-browser.mjs": "f3f1f669509c223a64e07159509138168c46f07ccd04815d5db232cf71207f47",
+    "sources.lock.json": "e20f32eacfc5365f37fb335558fa54edab2dbf9635866b08f482c89a079c310e"
+  },
+  "workflow_registrations_before": 10,
+  "workflow_registrations_after": 10,
+  "target_journey_registrations_before": 1,
+  "target_journey_registrations_after": 1,
+  "contract_changes": [],
+  "proof_command": "cloud_run env H2H_CHROMIUM_PATH=/usr/bin/chromium H2H_EVIDENCE_DIR=../proof-images HH_PROOF_DIRECTORY=../proof-traces node --import ../proof-preload.mjs --test --test-concurrency=1 --test-name-pattern='^a lead compares saved procedure definitions' ../repeat-registered.mjs"
+}

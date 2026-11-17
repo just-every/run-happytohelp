@@ -1,22 +1,40 @@
 {
   "files": [
     {
+      "blob": "08f91596001d18bfb895f9e354b6eed0cdc458d9",
+      "bytes": 2899,
+      "path": "DIAGNOSTICS.md",
+      "sha256": "46bff19a4448ced98cfe61eb60ea549c41a21d5c8cf88dd3a4da86d8e01d329a"
+    },
+    {
+      "blob": "1bf423b2cbf7d01ce4f2285f617b7f933e832fd9",
+      "bytes": 1949,
+      "path": "NEIGHBOR-AUDIT.md",
+      "sha256": "d54b2bd99cc152e57ef196fedb0c9cf77654223acc7b3bb53319abb57d3c16fe"
+    },
+    {
       "blob": "0eb094bb8e31281a040f40b18530ba012bf81618",
       "bytes": 1562,
       "path": "PLAN.md",
       "sha256": "41f779c75079d6a4cd618b0fc3cf8550b9d755b647d3971b50cc72000690fcbe"
     },
     {
-      "blob": "c0fc503bf8abba1d9d5911ec6dc45f33792ec58a",
-      "bytes": 1571,
+      "blob": "a957ef3971bc8bf39cbba181a39bfd2ba1b360a4",
+      "bytes": 9311,
       "path": "REPORT.md",
-      "sha256": "7316e83002fcf84ff04d7ba5362e1ee53435dd7db7aabc15363a7a7b70fee00b"
+      "sha256": "ce4a43f5384260706a2507284150afcf73a4c6c4cffaf332b210c390fe930f2b"
     },
     {
-      "blob": "0aee64441e531f9bbb20ac96a52951ac195505e2",
-      "bytes": 364,
+      "blob": "a56fb5fa7dee967cead1940ea1bcd476d0247618",
+      "bytes": 464,
       "path": "baseline-receipt.json",
-      "sha256": "b2559d675829c711089ca82f9545c87543bf9dbef62f392cbe0ec5de566ee926"
+      "sha256": "6861c7b3d96f9ee6835de87c58837be050dff3957362951278a128786e163514"
+    },
+    {
+      "blob": "fe87624cb673546e60017079fdde3af099706cfb",
+      "bytes": 246,
+      "path": "baseline2.log",
+      "sha256": "86a29d9d1299565518b8016d9d9b68669b2eb890d1a98bba9f32ec3390098c1b"
     },
     {
       "blob": "883d5fc10c789d2eb9cd6c0bfe452bcfae026e40",
@@ -25,20 +43,80 @@
       "sha256": "85355548efc9b9e396aa40cf63c42612cd96a6b460fc32ffb725c2d2651c36fa"
     },
     {
-      "blob": "1b037cd448818c553cea5bd9cf8aa0909f456050",
-      "bytes": 945,
-      "path": "historical-annotations.json",
-      "sha256": "621a35663e8f793f5365dbee178850d5f09aac80db4107c3344183f0859a1f86"
+      "blob": "db5610a2880b8cb7577d65a65c7b0548b59b36a4",
+      "bytes": 1026,
+      "path": "candidate-receipt.json",
+      "sha256": "76fb5880a2441ac721933f6e3c861481bd323a0361b9a113e25c0ef1b54f93a9"
     },
     {
-      "blob": "6695f173bb13086d59468987f611a988331799d6",
-      "bytes": 2737,
-      "path": "historical-jobs.jsonl",
-      "sha256": "b38c4fbb1b8558e826fd4637ae7893c94bcd21ab0b12e4daa007a5edebdff0d6"
+      "blob": "a774477cfc2e5d535ce95585e9b3be326f4eb2f2",
+      "bytes": 3870,
+      "path": "diagnostic.mjs",
+      "sha256": "5c165ffb2a6bc345b922412c045bbbec5cc05d446453894af0ca684c8b640df0"
+    },
+    {
+      "blob": "d5fd273b370c45ecf0c7c41633d0384467a70ed3",
+      "bytes": 2670,
+      "path": "loading-before-receipt.json",
+      "sha256": "944b3aa9c267debbaf70a7a73643020998dcebb7094b6355e15890142088f674"
+    },
+    {
+      "blob": "e70e9e262be2da5cbfa8bc0a694cf02789231ba5",
+      "bytes": 595,
+      "path": "proof-20.tap",
+      "sha256": "24f946d436e0f7d2fa3217cab806fda4fb25d192f71c3bce6e459f78136ea596"
+    },
+    {
+      "blob": "214e44932f85721669f1cf81fe5cda0bffd5d3cc",
+      "bytes": 3139,
+      "path": "proof-preload.mjs",
+      "sha256": "4f37beba70a60819f4312ed8b94ceefec48f8bf06c7301e1548f535e1d852a19"
+    },
+    {
+      "blob": "2f114d8869370c9b310fb925bce8846798fb8896",
+      "bytes": 14873,
+      "path": "race-reproduction.mjs",
+      "sha256": "1379b297b7d6458bea61a6c9751da12a9294a81207d0af52118e76a62f80cbd8"
+    },
+    {
+      "blob": "4830718299f88493298c2524b6fb649505b2fb7b",
+      "bytes": 315,
+      "path": "repeat-registered.mjs",
+      "sha256": "35be581caa7d37e4cd60585959344cff59135d55bc019f0e296767011a82d722"
+    },
+    {
+      "blob": "415414e99edb47e227b635b67347f999f1a50dfd",
+      "bytes": 586,
+      "path": "repro-loading-before.log",
+      "sha256": "8bbbba061baeedf2e4b59bdc14b786fc1988fbf092777e92013c8c6d842def81"
+    },
+    {
+      "blob": "5b27d23ff67ae88e90ef6070865160d25be4bd4e",
+      "bytes": 749,
+      "path": "repro-save-before.log",
+      "sha256": "df0fe971ab215f102abe6fb68c35d7d40a87353ac6df83f5e5607ee5373f8337"
+    },
+    {
+      "blob": "5fd509dca1c462cf452b9ae4a82ddc4bd5c36080",
+      "bytes": 3438,
+      "path": "save-before-receipt.json",
+      "sha256": "aa319472461b0bc24146ce2f49fbcfb44bfb19dbe947e960ce836ac831570339"
+    },
+    {
+      "blob": "9a4a3cb03cbc1ccdc984f9938baf763da2fa9dbe",
+      "bytes": 999,
+      "path": "touched-checks.json",
+      "sha256": "c3b4ab764a82bf96757b35554d6c1941e3f36676b7df148785c0d143cfa1e39a"
+    },
+    {
+      "blob": "b9e3c8335ae335b501fc704cf24b5976a9145089",
+      "bytes": 82,
+      "path": "wip-check.log",
+      "sha256": "fe4d1b588fa9cee2174afd76e4566da1625653e60d12e417df7e088576f05963"
     }
   ],
   "product_branch": "cloud/hh-procedures-race-2",
-  "product_head": "55e2f106c506e4f671d2e474c737124e760e2233",
+  "product_head": "c706b09c67d6155151270a178d413b8eec4bf9e0",
   "ref": "refs/heads/evidence/hh-procedures-race-2",
   "repository": "just-every/run-happytohelp",
   "schema": 1,

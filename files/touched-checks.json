@@ -1,0 +1,57 @@
+[
+  {
+    "name": "typecheck",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-17T20:00:26.835803+00:00"
+  },
+  {
+    "name": "lock",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "lock"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-17T20:00:46.617974+00:00"
+  },
+  {
+    "name": "source-check",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-17T20:00:47.249416+00:00"
+  },
+  {
+    "name": "rer-check",
+    "command": [
+      "python3",
+      "/tmp/rer-reap.py",
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-17T20:00:47.857271+00:00"
+  },
+  {
+    "name": "diff-check",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "started_at": "2026-11-17T20:00:49.839973+00:00"
+  }
+]

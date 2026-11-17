@@ -1,0 +1,3 @@
+{"iteration":1,"passed":true,"durationMs":80633,"cpuRate":6,"networkLatency":250}
+{"iteration":2,"passed":true,"durationMs":83660,"cpuRate":6,"networkLatency":250}
+{"iteration":3,"passed":true,"durationMs":85627,"cpuRate":6,"networkLatency":250}

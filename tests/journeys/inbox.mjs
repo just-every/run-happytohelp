@@ -47,3 +47,6 @@ test('a support lead links affected requests to one problem, follows its enginee
 
 import {slaFieldAccessJourney} from '../helpers/workflows/sla-field-access.mjs'
 test('SLA field conditions admit only fields readable by every current workspace role',slaFieldAccessJourney)
+
+import {ticketReferenceSearch} from '../helpers/inbox/ticket-reference-search.mjs'
+test('inbox finds every readable exact ticket reference prefix without leaking tenant or operator-scoped tickets',ticketReferenceSearch)

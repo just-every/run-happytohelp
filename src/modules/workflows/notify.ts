@@ -38,8 +38,8 @@ export async function notifyWorkflow(env:Env,input:WorkflowNotification):Promise
   // Rule/run identities can exceed R4's event-id limit; hash the complete scoped
   // identity, including a named backup recipient, without truncation collisions.
   const eventId=`workflow:${await hashToken(JSON.stringify([projectId,conversationId,id,kind,recipientId??null]))}`
-  const subject=kind==='request_received'?'Request #{{ticket.id}} received':kind==='solved'?'Request #{{ticket.id}} solved':'Support ticket #{{ticket.id}}'
-  const body=message||(kind==='request_received'?'We received your support request #{{ticket.id}}.':kind==='solved'?'Your support request #{{ticket.id}} has been solved. Reply if you need more help.':customer?'There is an update to your support request #{{ticket.id}}.':'Support ticket #{{ticket.id}} needs your attention.')
+  const subject=kind==='request_received'?'Request {{ticket.id}} received':kind==='solved'?'Request {{ticket.id}} solved':'Support ticket {{ticket.id}}'
+  const body=message||(kind==='request_received'?'We received your support request {{ticket.id}}.':kind==='solved'?'Your support request {{ticket.id}} has been solved. Reply if you need more help.':customer?'There is an update to your support request {{ticket.id}}.':'Support ticket {{ticket.id}} needs your attention.')
   const delivered=await sendTicketNotification(env,{projectId,conversationId,eventId,audience,recipientId,template:{subject,body},source:'native',...(kind==='solved'?{customerEvent:'ticket_solved' as const}:{}),guard:{sql:`EXISTS(${ticket})`,params:ticketArgs}})
   const state=delivered.state
   const locallySuppressed=state==='suppressed'&&('deliveries' in delivered||'outcome' in delivered&&Array.isArray(delivered.outcome?.deliveries))

@@ -1,3 +1,4 @@
+import {ticketReference} from '../tickets/reference'
 import {HTTPException} from 'hono/http-exception'
 export interface PlaceholderResult {text:string;unresolved:string[]}
 const tokenPattern=/{{\s*([^{}]+?)\s*}}/g
@@ -5,10 +6,13 @@ const tokenPattern=/{{\s*([^{}]+?)\s*}}/g
  * visible so editing or accidentally dropping client metadata cannot send them. */
 export function renderPlaceholders(template:string,context:Record<string,unknown>):PlaceholderResult{
  const unresolved=new Set<string>()
- const text=template.replace(tokenPattern,(literal,expression:string)=>{
+ // Older saved templates already put a # before the token. Keep one marker.
+ const normalized=template.replace(/#(?={{\s*ticket\.id\s*(?:[|}]|$))/g,'')
+ const text=normalized.replace(tokenPattern,(literal,expression:string)=>{
   const separator=expression.indexOf('|'),key=(separator<0?expression:expression.slice(0,separator)).trim()
   const fallback=separator<0?undefined:expression.slice(separator+1).trim()
   const value=Object.hasOwn(context,key)?context[key]:key.split('.').reduce<unknown>((v,k)=>v&&typeof v==='object'&&Object.hasOwn(v,k)?(v as any)[k]:undefined,context)
+  if(key==='ticket.id'&&typeof value==='string'&&value)return ticketReference(value)
   if(Array.isArray(value)&&value.length&&value.every(v=>v!==null&&['string','number','boolean'].includes(typeof v)))return value.join(', ')
   if(value!==null&&value!==undefined&&value!==''&&['string','number','boolean'].includes(typeof value))return String(value)
   if(fallback!==undefined&&fallback.length)return fallback

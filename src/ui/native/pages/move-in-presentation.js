@@ -8,6 +8,9 @@ const expected={expected_string:'should be text',expected_integer:'should be a w
 const field=path=>`“${String(path).replace(/^\//,'').replace(/~1/g,'/').replace(/~0/g,'~')||'record'}”`;
 // Codes that carry a field or record name after a colon.
 const patterns=[
+ [/^ticket_numeric_string_converted:(.*)$/,([,id])=>`Field ${id}: Zendesk's numeric text becomes a native number. The original spelling stays in your private export.`],
+ [/^ticket_numeric_field_invalid:(.*)$/,([,id])=>`Field ${id} is not a supported decimal number. The ticket was refused.`],
+ [/^ticket_numeric_field_not_representable:(.*)$/,([,id])=>`Field ${id} cannot be kept as a native number without losing precision. The ticket was refused.`],
  [/^sla_policy_commitment_reviewed:([^:]+):([0-9]+)$/,([,priority,minutes])=>`First response: ${minutes} business minutes for ${priority} priority only. Other priorities receive no commitment from this policy.`],
  [/^sla_policy_calendar_reviewed:([^:]+):(.*)$/,([,id,name])=>`Review the explicit calendar association: ${name} (source schedule ${id}). Both calendar and policy arrive inactive.`],
  [/^zendesk_history_unsupported_metric:(.*)$/,([,metric])=>`The source metric “${metric}” is retained as unsupported history; no SLA result is inferred.`],

@@ -102,6 +102,22 @@ export async function availabilityOutcomes(f){
  await availability({is_available:false})
  assert.equal((await configuration()).availability.available,false)
  await leaveAndAnswer('accept-off')
+ // Local suppression keeps the email collection, but the visitor can rely only on chat.
+ await app.configure({APP_ORIGIN:'http://127.0.0.1:8787',EMAIL_PROVIDER:'development'})
+ const localUi=await open({at:'2026-10-26T22:00:00Z'})
+ try{
+  await localUi.page.getByRole('textbox',{name:'you@example.com',exact:true}).fill('synthetic-local-away@example.test')
+  await localUi.page.locator('textarea[name=content]').fill('Please keep my local request in chat.')
+  await localUi.page.locator('button[name=submit]').click()
+  const localVisitor=await localUi.session()
+  const localTranscript=await app.until(async()=>{const t=await transcript(localVisitor);return t.messages.some(m=>m.actor_role==='system')&&t},{message:'local away acknowledgement'})
+  assert.equal((await configuration()).mailMode,'local')
+  assert.equal(localTranscript.messages.filter(m=>m.actor_role==='contact').length,1)
+  assert.doesNotMatch(localTranscript.messages.find(m=>m.actor_role==='system').content,/by email|email you/,'suppressed local mail is never promised')
+  const before=mail.length;await app.drainJobs();assert.equal(mail.length,before,'local acknowledgement sends no provider mail')
+ }finally{await localUi.close()}
+ await app.configure({APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend'})
+
  // SLA-001 calendars are configured and observed through their public routes;
  // no calendar implementation is changed by this widget qualification.
  await availability({is_available:true,is_presence_away_enabled:false})

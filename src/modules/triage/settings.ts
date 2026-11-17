@@ -3,11 +3,21 @@ import type {Context} from 'hono'
 import type {Actor,AppEnv} from '../../platform/env'
 import {ticketAuthority,ticketReadAccess,invalid,named,object} from '../tickets/model'
 import {settings,accuracy,fieldRows} from './model'
+import {assertModelConfigured} from '../ai-support/configuration'
+import {workspaceReplyMode} from '../ai-support/reply-mode'
 export async function settingsData(c:Context<AppEnv>,actor:Actor){
  const s=await settings(c.env,actor.projectId),access=await ticketReadAccess(c.env,actor)
  const canEdit=['owner','admin'].includes(actor.role)&&access.permissions.has('settings.manage')
  const groups=(await c.env.DB.prepare('SELECT id,name FROM ticket_groups WHERE project_id=? ORDER BY name').bind(actor.projectId).all()).results
- return {...s,accuracy:await accuracy(c.env,actor.projectId,s.taxonomy),groups,permissions:{settings:canEdit,correct:access.permissions.has('conversations.manage')}}
+ const profile=await c.env.DB.prepare(`SELECT a.model FROM project_settings ps JOIN ai_profiles a ON a.project_id=ps.project_id AND a.id=json_extract(ps.settings_json,'$.default_visitor_ai_id') AND a.is_enabled=1 WHERE ps.project_id=?`).bind(actor.projectId).first<{model:string}>()
+ let availability:{available:boolean;reason?:string;secretName?:string}={available:true}
+ if(await workspaceReplyMode(c.env.DB,actor.projectId)==='off')availability={available:false,reason:'AI is off for this workspace. Turn it on in AI settings to use triage.'}
+ else if(!profile)availability={available:false,reason:'Choose an enabled default visitor assistant in AI settings, then add the key for its model.'}
+ else try{assertModelConfigured(c.env,profile.model)}catch(error){
+  const secretName=error instanceof Error?error.message.match(/^CONFIGURATION_REQUIRED: ([A-Z_]+)$/)?.[1]:undefined
+  availability={available:false,reason:secretName?'The configured model’s provider key is missing.':'The configured model’s provider is unavailable. Review its model and installation key.',...(secretName?{secretName}:{})}
+ }
+ return {...s,availability,accuracy:await accuracy(c.env,actor.projectId,s.taxonomy),groups,permissions:{settings:canEdit,correct:access.permissions.has('conversations.manage')}}
 }
 export async function saveSettings(c:Context<AppEnv>,actor:Actor){
  if(!['owner','admin'].includes(actor.role))throw new HTTPException(403)

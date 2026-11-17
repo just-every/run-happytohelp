@@ -22,6 +22,8 @@ export async function withInstallationContact(request:Request,response:Response,
  const contact=await installationContact(env)
  if(!contact)return response
  let html=await response.text()
+ // An unavailable request form already mounts this workspace’s own chat, including secondary workspaces.
+ if(helpDocument&&html.includes('data-h2h-request-chat'))return new Response(html,response)
  if(helpDocument&&!html.includes(`data-help-project="${e(contact.id)}"`))return new Response(html,response)
  const config={requireEmail:true,settings:{collect:{require_email:true},collector:{enabled:false}}}
  const script=`<script src="/widget.js" data-api-origin="${e(new URL(request.url).origin)}" data-widget-key="${e(contact.widget_key)}" data-config="${e(JSON.stringify(config))}" defer></script>`

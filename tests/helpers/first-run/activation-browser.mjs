@@ -34,6 +34,7 @@ export async function activationBrowserJourney(){
   assert.equal(created.welcomeEmail,'uncertain')
   const projectId=created.projectId,path=`/api/management/projects/${projectId}/activation`
   await page.goto(`${runtime.origin}/projects/${projectId}/activation`)
+  await page.getByLabel('Your name',{exact:true}).fill('Activation support');await page.getByRole('button',{name:'Save and continue',exact:true}).click()
   const row=(data,id)=>data.steps.find(step=>step.id===id)
   const setup=async()=> (await api(path)).data
   await page.locator('[data-need="model_key"] [data-status="problem"]').waitFor()

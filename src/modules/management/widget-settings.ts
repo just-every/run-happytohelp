@@ -1,3 +1,5 @@
+import {widgetAddressAllowed,recordRejectedAddress} from '../widget/allowed-addresses'
+import {listForms} from '../forms/store'
 import {campaignRoutes} from '../widget/campaigns/routes'
 import {emailMode} from '../integrations/email-provider'
 import {Hono} from 'hono'
@@ -5,6 +7,7 @@ import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
 import {teamAvailability} from './live-availability'
 import {hashToken} from '../../platform/auth'
+import {requiredString} from '../../platform/db'
 import {scope} from './common'
 import {websiteAddress} from './website-address'
 import {person} from './dashboard-data'
@@ -26,8 +29,51 @@ widgetSettings.put('/projects/:projectId/widget-settings',async c=>{
  const a=await scope(c,true),input=await c.req.json()
  if(!input||Array.isArray(input)||typeof input!=='object'||JSON.stringify(input).length>30000)throw new HTTPException(400)
  const {allowed_origin,...settings}=input
- const origin=allowed_origin===undefined?undefined:websiteAddress(allowed_origin,'Widget website origin',true)
+ const origin=allowed_origin===undefined?undefined:websiteAddress(allowed_origin,'Your website address',true)
  await saveSettings(c.env,a.projectId,{widget_settings:settings},(_old,_value,guard)=>origin?[c.env.DB.prepare(`UPDATE projects SET allowed_origin=? WHERE id=? AND ${guard.sql}`).bind(origin,a.projectId,...guard.params)]:[])
  return c.json({settings,...(origin?{allowedOrigin:origin}:{})})
 })
-publicWidget.get('/settings',async c=>{const project=await c.env.DB.prepare('SELECT id,allowed_origin FROM projects WHERE widget_key=?').bind(c.req.query('widgetKey')||'').first<{id:string;allowed_origin:string}>();if(!project)throw new HTTPException(403);const origin=c.req.header('Origin')||new URL(c.req.url).origin;if(origin!==project.allowed_origin&&origin!==new URL(c.req.url).origin){if(origin!==c.env.PREVIEW_ORIGIN||!await c.env.DB.prepare('SELECT token_hash FROM preview_grants WHERE project_id=? AND token_hash=? AND expires_at>? AND remaining_requests>0').bind(project.id,await hashToken(c.req.query('previewToken')||''),Date.now()).first())throw new HTTPException(403)}return c.json(await settingsFor(c.env,project.id,appOrigin(c)))})
+widgetSettings.get('/projects/:projectId/widget-owner-name',async c=>{
+ const a=await scope(c),user=await c.env.DB.prepare('SELECT name FROM users WHERE id=?').bind(a.id).first<{name:string}>(),row=await c.env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(a.projectId).first<{settings_json:string}>(),settings=JSON.parse(row?.settings_json||'{}')
+ return c.json({name:user?.name||'',confirmed:Array.isArray(settings.widget_named_members)&&settings.widget_named_members.includes(a.id)})
+})
+widgetSettings.post('/projects/:projectId/widget-owner-name',async c=>{
+ const a=await scope(c),body=await c.req.json(),name=requiredString(body.name,'Your name',200).trim()
+ if(!name||name.toLowerCase()==='owner')throw new HTTPException(400,{message:'Add the name customers should use for you.'})
+ await saveSettings(c.env,a.projectId,old=>({widget_named_members:[...new Set([...(Array.isArray(old.widget_named_members)?old.widget_named_members:[]),a.id])]}),(_old,_value,guard)=>[c.env.DB.prepare(`UPDATE users SET name=? WHERE id=? AND ${guard.sql}`).bind(name,a.id,...guard.params)])
+ return c.json({name,confirmed:true})
+})
+widgetSettings.get('/projects/:projectId/widget-addresses',async c=>{
+ const a=await scope(c),row=await c.env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(a.projectId).first<{settings_json:string}>(),settings=JSON.parse(row?.settings_json||'{}')
+ const rejected=settings.widget_rejected_address
+ return c.json({address:typeof rejected==='string'&&!await widgetAddressAllowed(c.env,a.projectId,rejected)?rejected:null,mailMode:emailMode(c.env),allowedAddresses:Array.isArray(settings.widget_allowed_addresses)?settings.widget_allowed_addresses:[],canManage:['owner','admin'].includes(a.role)})
+})
+widgetSettings.post('/projects/:projectId/widget-addresses',async c=>{
+ const a=await scope(c,true),body=await c.req.json(),address=websiteAddress(body.address,'Your website address',true)
+ await saveSettings(c.env,a.projectId,old=>{
+  const addresses=Array.isArray(old.widget_allowed_addresses)?old.widget_allowed_addresses:[]
+  if(addresses.length>=20&&!addresses.includes(address))throw new HTTPException(400,{message:'Your allowed list is full. Ask your developer to review it.'})
+  return {widget_allowed_addresses:[...new Set([...addresses,address])]}
+ })
+ return c.json({address})
+})
+widgetSettings.delete('/projects/:projectId/widget-addresses',async c=>{
+ const a=await scope(c,true),body=await c.req.json(),address=websiteAddress(body.address,'Your website address',true)
+ await saveSettings(c.env,a.projectId,old=>({widget_allowed_addresses:(Array.isArray(old.widget_allowed_addresses)?old.widget_allowed_addresses:[]).filter((value:string)=>value!==address)}))
+ return c.json({removed:true})
+})
+// This response is deliberately public and contains only a configured customer contact link.
+publicWidget.get('/contact-route',async c=>{
+ const project=await c.env.DB.prepare(`SELECT p.id,s.settings_json FROM projects p LEFT JOIN project_settings s ON s.project_id=p.id WHERE p.widget_key=? AND json_extract(COALESCE(s.settings_json,'{}'),'$.deleted_at') IS NULL`).bind(c.req.query('widgetKey')||'').first<{id:string;settings_json:string}>()
+ let contactUrl:string|null=null
+ if(project){
+  const settings=JSON.parse(project.settings_json||'{}')
+  try{const url=new URL(settings.help_center_domain);if(['https:','http:'].includes(url.protocol)&&!url.username&&!url.password)contactUrl=url.href}catch{}
+  const alias=await c.env.DB.prepare('SELECT slug FROM public_project_aliases WHERE project_id=? ORDER BY slug LIMIT 1').bind(project.id).first<{slug:string}>(),key=encodeURIComponent(alias?.slug||project.id)
+  if(!contactUrl&&await c.env.DB.prepare("SELECT 1 FROM knowledge_articles WHERE project_id=? AND status='published' LIMIT 1").bind(project.id).first())contactUrl=appOrigin(c)+'/help/'+key
+  if(!contactUrl&&emailMode(c.env)==='remote'){if((await listForms(c.env,project.id)).length)contactUrl=appOrigin(c)+'/help/'+key+'/requests'}
+ }
+ c.header('Cache-Control','no-store')
+ return c.json({contactUrl})
+})
+publicWidget.get('/settings',async c=>{const project=await c.env.DB.prepare('SELECT id,allowed_origin FROM projects WHERE widget_key=?').bind(c.req.query('widgetKey')||'').first<{id:string;allowed_origin:string}>();if(!project)throw new HTTPException(403);const origin=c.req.header('Origin')||new URL(c.req.url).origin;if(origin!==new URL(c.req.url).origin&&origin!==project.allowed_origin&&!await widgetAddressAllowed(c.env,project.id,origin)){if(origin!==c.env.PREVIEW_ORIGIN||!await c.env.DB.prepare('SELECT token_hash FROM preview_grants WHERE project_id=? AND token_hash=? AND expires_at>? AND remaining_requests>0').bind(project.id,await hashToken(c.req.query('previewToken')||''),Date.now()).first()){await recordRejectedAddress(c.env,c.req.query('widgetKey')||'',origin);throw new HTTPException(403)}}return c.json(await settingsFor(c.env,project.id,appOrigin(c)))})

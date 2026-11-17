@@ -21,7 +21,7 @@ export function DashboardPending({ busy: waiting = false }: { busy?: boolean }) 
     const busy = useWorkspaceBusy() || waiting;
     return <main className="h2h-identity dashboard-state" aria-busy="true"><header className="id-header"><BrandLockup home="/" /></header>
         <div className="dashboard-state__body"><PenLine progress />{busy
-            ? <p className="dashboard-state__message" role="status">The workspace is busy. Trying again in a few seconds…</p>
+            ? <p className="dashboard-state__message" role="status">Opening your workspace… We’ll continue automatically.</p>
             : <p className="dashboard-state__message">Loading your workspace…</p>}</div>
     </main>;
 }
@@ -74,7 +74,7 @@ export default function Dashboard() {
     return <DashboardSettingsContext.Provider value={settings}>
         <EditorLauncher authorized={!!settings.project && ['owner', 'admin'].includes(settings.project.role)} />
         <Suspense fallback={<DashboardPending />}><DashboardClient settings={settings} /></Suspense>
-        {busy && <p className="dashboard-busy" role="status">The workspace is busy. Trying again in a few seconds…</p>}
+        {busy && <p className="dashboard-busy" role="status">Opening your workspace… We’ll continue automatically.</p>}
         <StepUpHost />
     </DashboardSettingsContext.Provider>;
 }

@@ -1605,7 +1605,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "57425aa958c4a88f1d2235c34fca699cffbc44640237e0a6ad4264b4c9718718",
+      "sha256": "431b9855ac4f8f3827bea6b1494005686bca419cc4f14dfb6d06c489da9c4533",
       "executable": false
     },
     "CHANGELOG.md": {
@@ -1633,7 +1633,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "ee91d2e267c3b5b94e36a7ef91c7fca22c922524d91cbf04c2de870716b1c407",
+      "sha256": "1b893ba128b6615206f5f75a2ee2711c90bb4fc52689ecc0eb368859e0171d5c",
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
@@ -1773,7 +1773,7 @@
       "executable": false
     },
     "docs/macros-and-teamwork.md": {
-      "sha256": "3c21394d0399d86d2c9704f095008f467bcc43ca4745a54e372a5bdd4d528584",
+      "sha256": "321837e0c5062428015531b5191f9f2e1bba0453dc04a6b02e91e9d55a8effcd",
       "executable": false
     },
     "docs/managed-conversation-mail.md": {
@@ -1825,7 +1825,7 @@
       "executable": false
     },
     "docs/request-forms.md": {
-      "sha256": "9b6f4748c34ce7a34cd98fd4511d9fa3fe89e7642491f50883cb0408ea7431e7",
+      "sha256": "59bb8caeaf3cc5157d634e60064e3bc7428531cfbbc65a0bcd55b24d7f857380",
       "executable": false
     },
     "docs/SETUP-WORKFLOW.md": {
@@ -2073,7 +2073,7 @@
       "executable": false
     },
     "management/integration/managed-deploy.json": {
-      "sha256": "c0616bd04ee330c20b9f5490632b951c7059b6f08ace8451fcb65832823db05f",
+      "sha256": "8084f173ff956da787868f1b026327d3cdfb39a888ae493e9d3ace40af9b8311",
       "executable": false
     },
     "management/integration/native-setup.json": {
@@ -2917,11 +2917,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "ecd73a2438f418ac8855d030e8f6b68716955569f617477c18146e195c8e3a3b",
+      "sha256": "9f451e8d85129386a05f6b8919824bbf80f8229c7f625ad5664ad55b848ab684",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "f7825f4e3ac1ccc9dca8186b16fe0b11f00a0f5f21c276ea147890a60aa30585",
+      "sha256": "2dbae155efeaa1aa368d094173a0c956a4e9dec26ec27f8a295b936e1f9d6d84",
       "executable": false
     },
     "public/fonts/fonts.css": {
@@ -5921,7 +5921,7 @@
       "executable": false
     },
     "src/modules/forms/definition.ts": {
-      "sha256": "a4c095fc4c70f2d12c10d84b2e9e98074afe0c6483e0bc9c0ae5a7d32476ad85",
+      "sha256": "8b5e63743eba741a600cf617a272276cefafea13652dfc81fc096f432a8e6f79",
       "executable": false
     },
     "src/modules/forms/erasure.ts": {
@@ -5949,7 +5949,7 @@
       "executable": false
     },
     "src/modules/forms/source-eligibility.ts": {
-      "sha256": "77de188089c5a0b0482d84dae03a743a85cc22e20b6a89aa5b84ed31cf6b6897",
+      "sha256": "9c87cdcf2f43ff20d7ccf5d209a0510b4567f54d856b9533bdb7e6e3daf19644",
       "executable": false
     },
     "src/modules/forms/store.ts": {
@@ -10869,7 +10869,7 @@
       "executable": false
     },
     "src/modules/workflows/routes-sla.ts": {
-      "sha256": "22bc6da1a7bf0ab90d07f5580b5878f155c80a21da8da0a1227c851cca7d28ce",
+      "sha256": "fc147fde81eb50351481205c120d11b092c943a37ecd7e52620a340ad51cbb24",
       "executable": false
     },
     "src/modules/workflows/routes.ts": {
@@ -11053,7 +11053,7 @@
       "executable": false
     },
     "src/platform/document-recovery-script.ts": {
-      "sha256": "7dfc0a8ed7b9e54512da2f240272b4d9e836e17debfb745668edf22f58ea72db",
+      "sha256": "feaefefcdeb94045d4988973eeb27ea9443d7e647bbda75917611cd409356428",
       "executable": false
     },
     "src/platform/document-recovery.ts": {
@@ -13009,7 +13009,7 @@
       "executable": false
     },
     "src/ui/native/Dashboard.tsx": {
-      "sha256": "fe41daaa562fb36f998929b6b955463df7c8a86e15b0b63249d7a6b2880181fa",
+      "sha256": "7d1deff70b559e691f9a85298e380b7dfb6fdf0d4f6738bdb506c54fa8aa04fe",
       "executable": false
     },
     "src/ui/native/DashboardClient.d.ts": {
@@ -16773,7 +16773,7 @@
       "executable": false
     },
     "tests/helpers/inbox/new-ticket-configuration.mjs": {
-      "sha256": "1da539b431595a8e3242ca808c96580673115ed2bb02eb1ba12a7f1667c53563",
+      "sha256": "9600b0b63fe12771bf139a46dba6ea3f1dea7fe8cdd449394cc4e0c586ffa03b",
       "executable": false
     },
     "tests/helpers/inbox/no-mailbox-ticket.mjs": {
@@ -17253,7 +17253,7 @@
       "executable": false
     },
     "tests/helpers/stranger11-browser.mjs": {
-      "sha256": "b020eecb7ba40da9d68ba6564a518faf242395a9bae14c8662f71019f785bba4",
+      "sha256": "872362b5f3af27fb10e737ed3a9dbf714481e4f72f4a1499eb4248e18c75408d",
       "executable": false
     },
     "tests/helpers/support-channels/browser-network.mjs": {
@@ -17388,6 +17388,10 @@
       "sha256": "24562617784cdc407a1ffc800afd889a59bfcc8fa9d9677a5b11b7fb2b2b961c",
       "executable": false
     },
+    "tests/helpers/workflows/sla-field-access.mjs": {
+      "sha256": "499fffe00e055600e55f0da2cd9794a0c5d0842b84029c03fb19e0e7466e1861",
+      "executable": false
+    },
     "tests/helpers/zendesk-diagnostics/authority.mjs": {
       "sha256": "c577bfa7f78c5b8a809dc8bf7d51c45ffd19bbcdf293d0c48addf5684ba5cc4c",
       "executable": false
@@ -17477,7 +17481,7 @@
       "executable": false
     },
     "tests/journeys/inbox.mjs": {
-      "sha256": "db35f9e4b32cf6b56ae4cf08d62c1041e712014f0623ff71df74e7090629a604",
+      "sha256": "f5e8fd7b99d5b3e93bb578d98ec1eb6e0be0ac939946a68512998d34128bd858",
       "executable": false
     },
     "tests/journeys/installer-nightly.mjs": {

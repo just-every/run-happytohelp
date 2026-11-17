@@ -135,5 +135,3 @@ old ticket values from disappearing when a lead changes their forms.
 Order/account lookup fields and a form version-history management screen are not
 available. Form fields reuse the current ticket-field permissions and validation; they do not introduce a separate field
 catalogue or grant access to company requests.
-
-Read-permission clarification: Run Edit Run fleet, 16 November 2026.

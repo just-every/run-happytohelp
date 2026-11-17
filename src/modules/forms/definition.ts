@@ -3,6 +3,8 @@ import {HTTPException} from 'hono/http-exception'
 import {object} from '../tickets/model'
 import {validateFieldValue} from '../tickets/fields'
 import type {FormConfig,FormField,FormTranslation,StoredField} from './types'
+// Stored fields carry fieldVisibility’s current-role and source verdict. Proposed
+// imported form fields have no stored verdict yet and still need the read-role check.
 export const publicField=(f:StoredField)=>f.form_eligible!==0&&everyRoleReads(JSON.parse(f.read_roles_json))
 const bad=(message:string):never=>{throw new HTTPException(400,{message})}
 function text(value:unknown,max:number,empty=false){if(typeof value!=='string'||value.length>max||!empty&&!value.trim())bad(`Enter text ${empty?'up to':'of 1–'} ${max} characters`);return (value as string).trim()}

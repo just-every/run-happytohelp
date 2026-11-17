@@ -14,8 +14,8 @@ export const fieldSourceState=`COALESCE((SELECT json_array(origin.vendor,origin.
 const states=new WeakMap<StoredField,string>()
 export const fieldSourceSnapshot=(field:StoredField)=>states.get(field)
 
-export async function fieldVisibility(env:Pick<Env,'DB'>,projectId:string){
- const [customRoles,loaded]=await Promise.all([env.DB.prepare('SELECT id FROM project_roles WHERE project_id=?').bind(projectId).all<{id:string}>(),env.DB.prepare(`SELECT f.*,${fieldSourceState} AS source_state FROM ticket_fields f WHERE f.project_id=? ORDER BY f.name,f.id`).bind(projectId).all<StoredField&{source_state:string}>()])
+export async function fieldVisibility(env:Pick<Env,'DB'>,projectId:string,fieldIds?:string[]){
+ const [customRoles,loaded]=await Promise.all([env.DB.prepare('SELECT id FROM project_roles WHERE project_id=?').bind(projectId).all<{id:string}>(),env.DB.prepare(`SELECT f.*,${fieldSourceState} AS source_state FROM ticket_fields f WHERE f.project_id=?${fieldIds===undefined?'':' AND f.id IN (SELECT value FROM json_each(?))'} ORDER BY f.name,f.id`).bind(projectId,...(fieldIds===undefined?[]:[JSON.stringify(fieldIds)])).all<StoredField&{source_state:string}>()])
  const rows=loaded.results
  const proofs=rows.flatMap(row=>{const origin=JSON.parse(row.source_state);return origin?.[0]==='zendesk'&&origin[3]!=='erased-visibility'?origin[4]:[]})
  const plans=await loadReferencedPlans(await ownerHeads(env.DB,[...new Set<string>(proofs.map(p=>p.job_id))]),proofs,env.DB)

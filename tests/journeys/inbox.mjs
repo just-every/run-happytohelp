@@ -44,3 +44,6 @@ test('two brands share a permitted team while customer identity, knowledge, rout
 
 import {problemJourney} from '../helpers/inbox/problems.mjs'
 test('a support lead links affected requests to one problem, follows its engineering issue and sends scoped recovery updates once while preferences, provider uncertainty and erasure remain honest',problemJourney)
+
+import {slaFieldAccessJourney} from '../helpers/workflows/sla-field-access.mjs'
+test('SLA field conditions admit only fields readable by every current workspace role',slaFieldAccessJourney)

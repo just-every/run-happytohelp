@@ -32,7 +32,7 @@ const css = `@font-face{font-family:Outfit;font-style:normal;font-weight:100 900
 @keyframes h2h-recovery-pen{from{stroke-dashoffset:1.02}to{stroke-dashoffset:0}}`;
 const markup = `<style>${css}</style><header class="h2h-recovery__header"><a class="h2h-recovery__brand" href="/">${markSvg().trim()}${wordSvg()}<span class="h2h-recovery__name">HappyToHelp</span></a></header>`
     + `<div class="h2h-recovery__body"><svg class="h2h-recovery__pen" viewBox="0 0 240 60" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path pathLength="1" d="${penLoop}"/></svg>`
-    + `<p class="h2h-recovery__message" role="status">The workspace is busy. Trying again in a few seconds…</p></div>`;
+    + `<p class="h2h-recovery__message" role="status">Opening your workspace… We’ll continue automatically.</p></div>`;
 
 /** Script text is never closed early: every `<` is written as an escape. */
 const scriptJson = (value: unknown) => JSON.stringify(value).replaceAll('<', '\\u003c');
@@ -42,7 +42,8 @@ const scriptJson = (value: unknown) => JSON.stringify(value).replaceAll('<', '\\
  * it shows the busy look, and takes it away if nodes arrive again. A document that stopped before its body is given
  * an empty one to show it in (the browser paints nothing without a body), removed again if the document resumes.
  * After a few seconds with no node and no end marker the document was cut (a dropped connection, a Worker restart):
- * it asks /health until the Worker answers, then reloads once. A document that completes calls the end marker and is
+ * it asks /health until the Worker answers, then reloads once. A 503 still establishes reachability even when the
+ * Worker is degraded; the document completion marker independently cancels recovery. A completed document is
  * never reloaded. The script and the marker remove their own elements, so hydration never sees them.
  */
 export const documentRecoveryScript = `(function(){

@@ -27,6 +27,13 @@ async function openTicketPanel(page){
  const show=page.getByRole('button',{name:'Show conversation panel',exact:true});if(await show.isVisible())await show.click()
  await page.getByRole('tab',{name:'Ticket',exact:true}).click()
 }
+// A breakpoint change updates the assistant in a matchMedia handler. Wait for
+// React to apply it before choosing Show/Hide, whose accessible name changes too.
+async function ticketViewport(page,viewport){
+ const crossed=(page.viewportSize().width>=1280)!==(viewport.width>=1280)
+ await page.setViewportSize(viewport)
+ if(crossed)await page.waitForFunction(desktop=>document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden')===String(!desktop),viewport.width>=1280)
+}
 export async function macroHandoffBrowser(){
  const f=await strangerFixture(),{page,browser,origin,projectId,base,request}=f,shot=await evidence('stranger11-after-macro');let success=false
  try{
@@ -60,8 +67,8 @@ export async function macroHandoffBrowser(){
   const hide=page.getByRole('button',{name:'Hide conversation panel',exact:true});if(await hide.isVisible())await hide.click()
   await page.getByRole('button',{name:'Actions',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:'Request damage photo',exact:true}).click()
   const preview=page.getByRole('region',{name:'Macro preview'});await preview.waitFor();assert.match(await preview.innerText(),/Owner → Lena Patel/)
-  for(const viewport of [viewports.desktop,viewports.mobile]){await page.setViewportSize(viewport);await page.screenshot({path:shot(`${viewport.width}-preview.png`),fullPage:true})}
-  await page.setViewportSize(viewports.desktop)
+  for(const viewport of [viewports.desktop,viewports.mobile]){await ticketViewport(page,viewport);await page.screenshot({path:shot(`${viewport.width}-preview.png`),fullPage:true})}
+  await ticketViewport(page,viewports.desktop)
   await page.getByRole('button',{name:'Apply macro',exact:true}).click()
   const composer=page.getByRole('textbox',{name:'Reply to conversation'});await page.waitForFunction(()=>document.querySelector('[aria-label="Reply to conversation"]')?.value?.startsWith('Please send'))
   const edited='Please send a damage photo of the outer box too.';await composer.fill(edited)
@@ -73,10 +80,10 @@ export async function macroHandoffBrowser(){
   const assignment=page.getByRole('button',{name:/Assign conversation\. Current assignment:/});await assignment.waitFor()
   const after=(await request(`${base}/conversations/${mia.id}/ticket`)).data
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'the ticket fits the desktop')
-  for(const viewport of [viewports.desktop,viewports.mobile]){if(viewport.width===390&&await hide.isVisible())await hide.click();await page.setViewportSize(viewport);await page.screenshot({path:shot(`${viewport.width}-sent.png`),fullPage:true})}
+  for(const viewport of [viewports.desktop,viewports.mobile]){if(viewport.width===390&&await hide.isVisible())await hide.click();await ticketViewport(page,viewport);await page.screenshot({path:shot(`${viewport.width}-sent.png`),fullPage:true})}
   const receipt={assignmentPreserved:after.assigned_to===lenaId,assignee:after.assigned_to===lenaId?'Lena Patel':'Owner',editedReplyPersisted:true}
   await writeFile(shot('result.json'),JSON.stringify(receipt,null,2))
-  assert.equal(after.assigned_to,lenaId,'ordinary Send preserves the explicit macro handoff');await page.setViewportSize(viewports.desktop);await openTicketPanel(page);assert.match(await assignment.getAttribute('aria-label'),/Lena Patel/)
+  assert.equal(after.assigned_to,lenaId,'ordinary Send preserves the explicit macro handoff');await ticketViewport(page,viewports.desktop);await openTicketPanel(page);assert.match(await assignment.getAttribute('aria-label'),/Lena Patel/)
   await assignment.click();await page.getByRole('menuitem',{name:/\bOwner$/}).click();await page.getByRole('button',{name:'Assign conversation. Current assignment: Owner',exact:true}).waitFor()
   assert.equal((await request(`${base}/conversations/${mia.id}/ticket`)).data.assigned_to,ownerId,'the sender can explicitly take over')
   success=true;return receipt

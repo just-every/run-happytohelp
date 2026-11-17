@@ -11,7 +11,7 @@ import {prepareMapping,withDerivedRecords} from './readers/normalise'
 import {STAFF_REQUESTER} from './readers/staff-requesters'
 import {recordKey,type Run} from './types'
 import type {Vendor} from './types'
-const requesterOf=(vendor:Vendor,p:any)=>String(vendor==='zendesk'||vendor==='freshdesk'?p.requester_id:vendor==='helpscout'?p.primaryCustomer?.id:p.contacts?.contacts?.[0]?.id)
+const requesterOf=(vendor:Vendor,p:any)=>String(vendor==='zendesk'||vendor==='freshdesk'||vendor==='mailbox'?p.requester_id:vendor==='helpscout'?p.primaryCustomer?.id:p.contacts?.contacts?.[0]?.id)
 // A record the kit rejected before this fix kept its ID with no effects. Undoing that import releases it.
 const rejectedClaim=sha256(canonicalJson([]))
 // A Zendesk pull keeps what an earlier import holds: a person, company or ticket that
@@ -55,6 +55,7 @@ export async function prepareBundle(env:Env,run:Run,bundle:SourceBundle,conflict
  for(const record of source.records)if(run.vendor==='zendesk'&&record.kind==='sla_policy'&&prepared.rejections.has('schedule/'+(record.payload as any).move_in_schedule_id))prepared.rejections.set(recordKey(record),'sla_policy_calendar_unavailable')
  for(const record of source.records)if(run.vendor==='zendesk'&&record.kind==='ticket_form'){const ids=(record.payload as any).ticket_field_ids;if(Array.isArray(ids)&&ids.some((id:any)=>prepared.rejections.has('ticket_field/'+id)))prepared.rejections.set(recordKey(record),'form_field_unavailable')}
  for(const record of source.records)if(run.vendor==='zendesk'&&record.kind==='ticket'){const values=(prepared.effects.get(recordKey(record))?.[0]?.value as any)?.tables?.ticket_field_values??[];if(values.some((value:any)=>source.records.some(field=>field.kind==='ticket_field'&&(prepared.effects.get(recordKey(field))?.[0]?.targetId===value.field_id)&&prepared.rejections.has(recordKey(field)))))prepared.rejections.set(recordKey(record),'ticket_custom_field_definition_conflict')}
+ for(const record of source.records)if(run.vendor==='mailbox'&&record.kind==='conversation'&&((record.payload as any).messages||[]).some((m:any)=>prepared.rejections.has(`contact/${m.sender_id}`)))prepared.rejections.set(recordKey(record),'comment_author_conflict')
  const usableAncestry=retainNativeConflicts(run,source.records,prepared,sourceClaims,nativeById)
  if(run.vendor==='helpscout'){for(const record of source.records){const p=record.payload as any,dependencies=record.kind==='category'?[`collection/${p.collectionId}`]:record.kind==='article'?[`collection/${p.collectionId}`,...(Array.isArray(p.categories)?p.categories.map((id:any)=>`category/${id}`):[])]:[];if(dependencies.some(key=>prepared.rejections.has(key)&&!usableAncestry.has(key)))prepared.rejections.set(recordKey(record),'article_ancestry_incomplete_or_conflicting')}}
  retainNativeConflicts(run,source.records,prepared,sourceClaims,nativeById)

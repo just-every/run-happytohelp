@@ -1,3 +1,4 @@
+import {mailboxHistoryJourney} from '../helpers/email/mailbox-history.mjs'
 import test from 'node:test'
 import {completeMailOutcomes} from '../helpers/email/complete-mail-outcomes.mjs'
 import {localMailJourney} from '../helpers/email/local-mail.mjs'
@@ -17,3 +18,5 @@ test('a customer email is admitted once, receives safe scoped replies and notifi
 test('mail that Amazon SES stores in S3 is read from its two prefixes and admitted by SES\'s own record of the recipient and sender, replayed mail is never authenticated, and nothing is read, written or sent without the reader\'s inputs',async()=>{
  await legacyMailS3Journey()
 })
+
+test('read-only mailbox history uses reviewed inert imports, deduplicates selected folders, refuses sending and undoes unchanged records for Gmail, Microsoft and IMAP',async()=>{await mailboxHistoryJourney()})

@@ -229,9 +229,10 @@ for(const base of [P,D]){
 }
 for(const action of ['connect','imap'])rules[`POST ${P}/mailboxes/${action}`]='integrations.install'
 rules[`POST ${P}/mailboxes`]='integrations.install'
+rules[`GET ${P}/mailboxes/:mailboxId/history/folders`]='integrations.install'
 rules[`PATCH ${P}/mailboxes/:mailboxId`]='settings.manage'
 rules[`DELETE ${P}/mailboxes/:mailboxId`]='integrations.install'
-for(const action of ['reconnect','aliases','poll','backfill'])rules[`POST ${P}/mailboxes/:mailboxId/${action}`]='integrations.install'
+for(const action of ['reconnect','aliases','poll','backfill','live','history'])rules[`POST ${P}/mailboxes/:mailboxId/${action}`]='integrations.install'
 rules[`DELETE ${P}/mailboxes/:mailboxId/aliases/:alias`]='integrations.install'
 rules[`PUT ${P}/mailboxes/:mailboxId/signatures/:agentId`]='settings.manage'
 rules[`POST ${P}/suspended/:id/recover`]='conversations.manage'

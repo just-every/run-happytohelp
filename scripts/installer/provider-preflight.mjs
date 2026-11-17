@@ -62,6 +62,8 @@ async function main() {
    `Consent required: account ${account}, Worker ${worker}. Review these targets, then explicitly add --consent-read-only to authorize only three GETs. No request was made.`);
   if (!token.trim()) throw new Refusal(4,
    'Missing scoped token: set CLOUDFLARE_API_TOKEN in the process environment. No credential file is read and no request was made.');
+  if (account.includes(token) || worker.includes(token)) throw new Refusal(2,
+   'Target identifiers must not contain CLOUDFLARE_API_TOKEN. Supply the account ID and Worker name, never the credential. No request was made.');
   let declaration;
   try { declaration = JSON.parse(await readFile(new URL('../../deploy.json', import.meta.url), 'utf8')); }
   catch { throw new Refusal(2, 'Could not read this edition’s deploy.json; no request was made.'); }

@@ -107,6 +107,9 @@ test('provider preflight refuses absent consent and absent credentials distinctl
  assert.match(uncredentialed.stderr, /Missing scoped token: set CLOUDFLARE_API_TOKEN/);
  const unaddressed = await run({args: [consent]});
  assert.equal(unaddressed.code, 2); assert.equal(unaddressed.requests.length, 0);
+ const credentialAsTarget = await run({args: ['--account-id', account, '--worker', token, consent]});
+ assert.equal(credentialAsTarget.code, 2); assert.equal(credentialAsTarget.requests.length, 0);
+ assert.match(credentialAsTarget.stderr, /Target identifiers must not contain CLOUDFLARE_API_TOKEN/);
 });
 
 test('provider authorization and missing Worker responses identify the failed read honestly without retry or error-body leakage', async () => {

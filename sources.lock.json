@@ -4077,7 +4077,7 @@
       "executable": false
     },
     "scripts/installer/provider-preflight.mjs": {
-      "sha256": "338e673d25edbc7248109f42393c2c40e801e36571d4a9898e3a5c70647d3e4b",
+      "sha256": "0bf090802ffc600732c0ef7104b1d31200e32015c73ef2751e46b9a1c672d852",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -17557,7 +17557,7 @@
       "executable": false
     },
     "tests/journeys/provider-preflight.mjs": {
-      "sha256": "218eb0d28c1a94a90b724e9f6fb6c60674a58fd64c074648c90cf4e585e19691",
+      "sha256": "e0143323c9545216a728c7521f213765a69e48415e3888dca7ac1f69da45ffcc",
       "executable": false
     },
     "tests/journeys/public-browser.mjs": {

@@ -1,0 +1,12 @@
+{
+  "author": "Run Edit Run fleet",
+  "observed_at": "2026-11-17T22:06:33.956221+00:00",
+  "repository": "just-every/run-happytohelp",
+  "ref": "refs/heads/evidence/hh-owner-design-d20-1",
+  "validated_head": "284bab4ff71cdbed3aaa680fe30009678171f189",
+  "files": 27,
+  "all_manifest_bytes_and_hashes_match": true,
+  "product_head_unchanged": true,
+  "worktree": "clean",
+  "note": "Transport validation of the preliminary pending-CI packet; independent acceptance and final evidence revision remain separate."
+}

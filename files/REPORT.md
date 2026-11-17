@@ -4,7 +4,7 @@ Run Edit Run fleet, 2026-11-17. Repository: just-every/run-happytohelp. Branch: 
 
 ## Result and provenance
 
-Started from fresh origin/main b6f16fc44feaad1164753d895419bb78e61e40e3, the newest main at the initial clone and the subsequent merge check. Preserved owner-fix-1. Product save: 26eb80e28ebc9aea7737a26315ede5f102ca184e (`[skip ci]`). Final candidate: d36288793b599c22034881a6eeda46e71c01dd37. No PR was created; the fleet owns landing. CI observation is recorded separately in CI-RECEIPT.json when complete.
+Started from fresh origin/main b6f16fc44feaad1164753d895419bb78e61e40e3, the newest main at the initial clone and the subsequent merge check. Preserved owner-fix-1. Product save: 26eb80e28ebc9aea7737a26315ede5f102ca184e (`[skip ci]`). Final candidate: d36288793b599c22034881a6eeda46e71c01dd37. No PR was created; the fleet owns landing. Exact-head Verify run 44182796330 completed with failure. CI-RECEIPT.json records the actual result. The product branch is pushed, but the candidate is BLOCKED on that failed check.
 
 ## Before and after
 
@@ -42,7 +42,19 @@ The complete plan is PLAN.md. Work followed its six steps: inspect current main;
 
 All eight candidate proof images were visually reviewed and copied to `screenshots/`. Files selected from `teammate-invitation/` only: `accept-invitation-1440.png`, `accept-invitation-390.png`, `inbox-after-password-1440.png`, `inbox-after-password-390.png`, `teammate-sign-in-1440.png`, `teammate-sign-in-390.png`, `teammate-email-sign-in-1440.png`, `teammate-email-sign-in-390.png`. The first three screen pairs meet the brief; the fourth records the other sign-in surface where installer wording was removed. No browser state or capability URLs are published.
 
-BUILD-RECEIPT.json, TEST-RECEIPT.json, MAIL-RECEIPT.json, SCREENSHOTS.json, CI-RECEIPT.json, COUNTS.json and the selected actual logs record command results and provenance. Evidence publication is separate from product readiness and acceptance.
+BUILD-RECEIPT.json, TEST-RECEIPT.json, PRODUCT-RECEIPT.json, MAIL-RECEIPT.json, SCREENSHOTS.json, CI-RECEIPT.json, CI-JOBS.json, CI-LOG-RECEIPT.json, EVIDENCE-VALIDATION.json and COUNTS.json and the selected actual logs record command results and provenance. Evidence publication is separate from product readiness and acceptance.
+
+## Exact-head CI blocker
+
+Verify run [44182796330](https://github.com/just-every/run-happytohelp/actions/runs/44182796330), head `d36288793b599c22034881a6eeda46e71c01dd37`, was observed completed/failure at 2026-11-17T22:19:32Z. Plan, contract docs, build and seven of the eight substantive check shards passed, including identity-and-desk and identity-and-repair-browser. The unselected slow/nightly/size jobs were skipped as planned. The failing substantive job is `Verify / support-and-recovery`, job `134392363009`, step `Run shard checks`; aggregate `verify` job `134409866679` then failed, and full-push-proof was skipped.
+
+The exact required archive command was run once:
+
+`gh run view 44182796330 --repo just-every/run-happytohelp --job 134392363009 --log-failed`
+
+It returned exit 0, zero stdout/stderr bytes, and no failed assertion or transport error body. The zero-byte actual log and command receipt are included. This is not an observed HTTP 403, and no signed URL or authorization header was used. The failure cannot be identified as either known flake from the available evidence. All ten permitted CI API calls were consumed (eight spaced discovery/status observations, one jobs request and one archive invocation). No conditional flake rerun was attempted without an identified assertion or remaining API budget. No unrelated test or product behavior was changed to hide this failure.
+
+The product and all local checks are complete and pushed. The standing exact-SHA red Verify bar prevents READY. The lane needs the failed support-and-recovery assertion/log and, if it is one of the brief's named flakes, the authorized one-job rerun. This is a CI blocker, not a push rejection: both product pushes succeeded on their first attempt and there is no unpushed product work. No push rescue bundle was required.
 
 ## Claims
 

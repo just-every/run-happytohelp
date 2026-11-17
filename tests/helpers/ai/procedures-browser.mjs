@@ -8,6 +8,14 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
  await context.addCookies([{name:'h2h_session',value:token,url:runtime.origin}])
  const page=await context.newPage(),root=`/api/projects/${projectId}/procedures`,url=`${runtime.origin}/projects/${projectId}/procedures`,errors=[],holds=[]
  page.on('pageerror',error=>errors.push(error.message))
+ // Negative assertions follow the native response's completion and its render,
+ // rather than sampling the DOM while the browser is still consuming the body.
+ const releaseRead=async held=>{
+  const finished=page.waitForEvent('requestfinished',{predicate:request=>request.method()==='GET'&&new URL(request.url()).pathname===root})
+  held.release();await held.deliveryDone;await finished
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))
+  await held.close()
+ }
  const button=name=>page.getByRole('button',{name,exact:true})
  const settled=async control=>{
   await page.waitForFunction(element=>element.getAttribute('aria-disabled')!=='true',await control.elementHandle())
@@ -24,7 +32,15 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   await page.goto(url);await initial.responseReady
   await page.getByRole('status').filter({hasText:'Loading procedure versions'}).waitFor()
   assert.equal(await page.locator('.procedure-settings form').count(),0,'loading never exposes an unavailable draft')
-  initial.release();await initial.deliveryDone;await initial.close();await button('Save immutable version').waitFor()
+  // A lead can refresh before the initial read finishes. Its older empty
+  // response must not expose a draft while the newer refresh is still pending.
+  const refresh=await holdNativeResponse(page,root);holds.push(refresh)
+  await button('Refresh versions').focus();await button('Refresh versions').press('Enter');await refresh.responseReady
+  await releaseRead(initial)
+  await page.getByRole('status').filter({hasText:'Loading procedure versions'}).waitFor()
+  assert.equal(await page.locator('.procedure-settings form').count(),0,'an older read cannot finish a newer refresh')
+  refresh.release();await refresh.deliveryDone;await refresh.close();await button('Save immutable version').waitFor()
+  await settled(button('Refresh versions'));await visibleResult()
   const fail=route=>route.abort('failed')
   await page.route('**'+root,fail);await page.reload();await page.getByRole('alert').waitFor()
   assert.equal(await page.locator('.procedure-settings form').count(),0,'a failed read never exposes a draft')

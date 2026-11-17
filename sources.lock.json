@@ -13741,7 +13741,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProcedureSettings.jsx": {
-      "sha256": "6f311ace877b7a1496b775ee79e4fd16e88266295eb3a5475d947388a2eaaeb9",
+      "sha256": "6c4cb92e8cbf17ef3291f015924c14d1c088e1241383a97c4d17bc3fd2787e28",
       "executable": false
     },
     "src/ui/native/pages/project-parity.css": {
@@ -16141,7 +16141,7 @@
       "executable": false
     },
     "tests/helpers/ai/procedures-browser.mjs": {
-      "sha256": "8ed7273462bc5b688af1cb26d798f2165e0c074decfcd3c596ecc3caba913503",
+      "sha256": "8198c3387dbe4654b68e8eccf886339a3c3dbf08c546476e982cda86ed57b4c9",
       "executable": false
     },
     "tests/helpers/ai/procedures.mjs": {

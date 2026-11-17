@@ -17897,7 +17897,7 @@
       "executable": false
     },
     "tests/move-in/zendesk-fidelity.mjs": {
-      "sha256": "298600a5d99ee622a353d11650be1fa14e1c051706bfb6e19b4d4dbe4b1f4b1b",
+      "sha256": "5446ae711cf2afca273b887ceacfb233e6555e33c80986e889f66b960ae5ed51",
       "executable": false
     },
     "tests/move-in/zendesk-offline-browser.mjs": {

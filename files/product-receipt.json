@@ -1,0 +1,23 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-mailbox-import-1",
+  "head": "621d11ff3581a1e6cfda23957c5d430349539c66",
+  "tree": "7392ebb76ba4682f5a7c9194981688b8b302e86b",
+  "remote_ref": "621d11ff3581a1e6cfda23957c5d430349539c66\trefs/heads/cloud/hh-mailbox-import-1",
+  "push_guard": "exit 0; attempt 1/5",
+  "candidate_commits": [
+    {
+      "head": "621d11ff3581a1e6cfda23957c5d430349539c66",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>"
+    },
+    {
+      "head": "db859c88d01f56f94040e289626e9d85aef4a0b0",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>"
+    }
+  ],
+  "trailers": "none",
+  "pr": null,
+  "observed_at": 1794944902.3849287
+}

@@ -1,0 +1,142 @@
+{
+  "files": [
+    {
+      "blob": "6c8a4cad9a566f8d51f9b710ca656003ccf822cf",
+      "bytes": 14743,
+      "path": "REPORT.md",
+      "sha256": "52fcd84b22db6356a7b75abcfaec04b1d35b6fe83828c69a5d08e428ede1760f"
+    },
+    {
+      "blob": "8ba51dbc9f61be481f92605b070df1128d7e50ae",
+      "bytes": 2785,
+      "path": "browser-receipt.json",
+      "sha256": "40be0d9cfd1d2fafed243b1dbd4d4a5b041d9c59513b656a2ba837cfe256728e"
+    },
+    {
+      "blob": "769470306fc1703b56e254d35db19a31fab844df",
+      "bytes": 349,
+      "path": "ci-discovery.json",
+      "sha256": "0cd581b619d1fab32a439dfc2d11c29f3e4490229b393dca0cdd33eef5529ddb"
+    },
+    {
+      "blob": "6b2d437979dfdd145109230f32cd77e27145d85a",
+      "bytes": 284,
+      "path": "ci-receipt.json",
+      "sha256": "3dbb69070e34e8e8f325c27d43c320e89c381507478d712f0bdeed2a513b36a3"
+    },
+    {
+      "blob": "5da493f2b1b5629027b8be7c0ffb2563cff4f42f",
+      "bytes": 30,
+      "path": "logs/browser.log",
+      "sha256": "7076e423e161b16c8b48db19d4f7966d36c26cac47671103e9df262db3b64633"
+    },
+    {
+      "blob": "3726e7f8794209bf09bc0f96665696f53edecd07",
+      "bytes": 7093,
+      "path": "logs/email.tap",
+      "sha256": "730c4a40ec5e0bf48f5e7d250c525e1635ce10a15fd4044e8a9e80e016d4a146"
+    },
+    {
+      "blob": "827ff9e73abc7e6b40887e012ec87819311b8750",
+      "bytes": 516,
+      "path": "logs/history.tap",
+      "sha256": "cbb127824cf297e3240ef6cbd76090d57e8d773f218aea01fc94e2542e9f19d8"
+    },
+    {
+      "blob": "6d55eefe9902446beb862912f6c2086619834c52",
+      "bytes": 2312,
+      "path": "logs/move-in.tap",
+      "sha256": "766ea11d6936608c607f3869016644b0fdc74a8abf3612c5a1377f43e8cc9a7e"
+    },
+    {
+      "blob": "ffd8d6badd9281105b2c23008ebe8e91a15544d2",
+      "bytes": 827,
+      "path": "product-receipt.json",
+      "sha256": "2132bec47e0fae97ffb96d623b33c85db5a26b0d7d96580ee2709fa2130bfe46"
+    },
+    {
+      "blob": "e3a8a58415f73d270109a03bc6e5845349d4e709",
+      "bytes": 1123,
+      "path": "provider-receipt.json",
+      "sha256": "637c764d9608f4c68642f74a15036771d8ad026421465183b98334f0ae91aba8"
+    },
+    {
+      "blob": "6c8a4cad9a566f8d51f9b710ca656003ccf822cf",
+      "bytes": 14743,
+      "path": "reports/hh-mailbox-import-1.md",
+      "sha256": "52fcd84b22db6356a7b75abcfaec04b1d35b6fe83828c69a5d08e428ede1760f"
+    },
+    {
+      "blob": "598dbe6fb18c1c1e3235a632d18910df37cf9959",
+      "bytes": 226559,
+      "path": "screenshots/mailbox-history/editor-1440.png",
+      "sha256": "66eae4d3da33d5c285a6c0fe4e063f9d69a1f432eeea6d7486de31f4d5ac0a11"
+    },
+    {
+      "blob": "cf121ae12d3fada587e12bc3df9a20f8aac8a2bb",
+      "bytes": 181702,
+      "path": "screenshots/mailbox-history/editor-390.png",
+      "sha256": "a13c336fa884c974a73c54f899f1c482fb8386ce14d3e709fa7daf5b7d836f96"
+    },
+    {
+      "blob": "e8b63fe332df64645174f862a63995fefff86447",
+      "bytes": 226112,
+      "path": "screenshots/mailbox-history/folders-1440.png",
+      "sha256": "792f491b5d67363bde158707206b3a1cc97bdbc9c07038dc94876917772708ba"
+    },
+    {
+      "blob": "e901c21755bf908ebac8283d0b2ea2cad3bb62e1",
+      "bytes": 179708,
+      "path": "screenshots/mailbox-history/folders-390.png",
+      "sha256": "7ad570c799a5b4c0ac1c9cb31e0cf3392ab699f6774d135637ec5459077ff69f"
+    },
+    {
+      "blob": "a054ad2dfdb6a15ed81ac0c5587f3846b1957fad",
+      "bytes": 255691,
+      "path": "screenshots/mailbox-history/history-1440.png",
+      "sha256": "b302a41548e01ae697c90321eb375e8b25019b1c389ee17fc4f01e9c93fa36e8"
+    },
+    {
+      "blob": "a4f3acab67e996fcb6de0c64464dbd319a06ae8f",
+      "bytes": 204889,
+      "path": "screenshots/mailbox-history/history-390.png",
+      "sha256": "0c1ca37ff9e5f1e1a852bfea7187f3f382d0c11b5d897453b9225ad3e90a877d"
+    },
+    {
+      "blob": "77574687f6410307cbc2b3860878823a815eee05",
+      "bytes": 262716,
+      "path": "screenshots/mailbox-history/live-step-1440.png",
+      "sha256": "07e5b7a6eae123179f81937be768f43ef81582b56575e28581333f21a58c5619"
+    },
+    {
+      "blob": "03ffe4368e7d2ba48480fcd2355274ce29639f19",
+      "bytes": 210237,
+      "path": "screenshots/mailbox-history/live-step-390.png",
+      "sha256": "f0dce6ac2f4e6222e0167aab74bc57961fba94ad0fec3aa58bc7efc907096ba7"
+    },
+    {
+      "blob": "3ab89f0b479750f471b3b7c3d6b38a154d2416e3",
+      "bytes": 127457,
+      "path": "screenshots/mailbox-history/review-1440.png",
+      "sha256": "e699ab0eb415923725385fb0699de8ab3e561c3f90581bbb364f260bbd315ab2"
+    },
+    {
+      "blob": "3ed54bc1e60adc68d9e7d7fdbd8dc177db66748e",
+      "bytes": 87195,
+      "path": "screenshots/mailbox-history/review-390.png",
+      "sha256": "ad62e44294014f415123d41a8571e36f3e20c8e81e07befd050a66d5a3117635"
+    },
+    {
+      "blob": "6b6d3f30e645e3fcbe03372e69e9c4492335516f",
+      "bytes": 1771,
+      "path": "validation-receipt.json",
+      "sha256": "8d363964d139abd8e36a72913579fe5d16e3c63df2aaa5f8fde4278b01a0f06d"
+    }
+  ],
+  "product_branch": "cloud/hh-mailbox-import-1",
+  "product_head": "621d11ff3581a1e6cfda23957c5d430349539c66",
+  "ref": "refs/heads/evidence/hh-mailbox-import-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-mailbox-import-1"
+}

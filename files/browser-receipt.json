@@ -1,0 +1,91 @@
+{
+  "head": "621d11ff3581a1e6cfda23957c5d430349539c66",
+  "source_tree": "7392ebb76ba4682f5a7c9194981688b8b302e86b",
+  "result": "passed",
+  "assertion_width": 1440,
+  "capture_widths": [
+    1440,
+    390
+  ],
+  "inspected": true,
+  "states": [
+    "editor",
+    "folders",
+    "review",
+    "history",
+    "live-step"
+  ],
+  "files": [
+    {
+      "path": "screenshots/mailbox-history/editor-1440.png",
+      "width": 1440,
+      "height": 2060,
+      "bytes": 226559,
+      "sha256": "66eae4d3da33d5c285a6c0fe4e063f9d69a1f432eeea6d7486de31f4d5ac0a11"
+    },
+    {
+      "path": "screenshots/mailbox-history/editor-390.png",
+      "width": 390,
+      "height": 3139,
+      "bytes": 181702,
+      "sha256": "a13c336fa884c974a73c54f899f1c482fb8386ce14d3e709fa7daf5b7d836f96"
+    },
+    {
+      "path": "screenshots/mailbox-history/folders-1440.png",
+      "width": 1440,
+      "height": 1802,
+      "bytes": 226112,
+      "sha256": "792f491b5d67363bde158707206b3a1cc97bdbc9c07038dc94876917772708ba"
+    },
+    {
+      "path": "screenshots/mailbox-history/folders-390.png",
+      "width": 390,
+      "height": 2814,
+      "bytes": 179708,
+      "sha256": "7ad570c799a5b4c0ac1c9cb31e0cf3392ab699f6774d135637ec5459077ff69f"
+    },
+    {
+      "path": "screenshots/mailbox-history/history-1440.png",
+      "width": 1440,
+      "height": 1794,
+      "bytes": 255691,
+      "sha256": "b302a41548e01ae697c90321eb375e8b25019b1c389ee17fc4f01e9c93fa36e8"
+    },
+    {
+      "path": "screenshots/mailbox-history/history-390.png",
+      "width": 390,
+      "height": 2974,
+      "bytes": 204889,
+      "sha256": "0c1ca37ff9e5f1e1a852bfea7187f3f382d0c11b5d897453b9225ad3e90a877d"
+    },
+    {
+      "path": "screenshots/mailbox-history/live-step-1440.png",
+      "width": 1440,
+      "height": 1794,
+      "bytes": 262716,
+      "sha256": "07e5b7a6eae123179f81937be768f43ef81582b56575e28581333f21a58c5619"
+    },
+    {
+      "path": "screenshots/mailbox-history/live-step-390.png",
+      "width": 390,
+      "height": 2974,
+      "bytes": 210237,
+      "sha256": "f0dce6ac2f4e6222e0167aab74bc57961fba94ad0fec3aa58bc7efc907096ba7"
+    },
+    {
+      "path": "screenshots/mailbox-history/review-1440.png",
+      "width": 1440,
+      "height": 1064,
+      "bytes": 127457,
+      "sha256": "e699ab0eb415923725385fb0699de8ab3e561c3f90581bbb364f260bbd315ab2"
+    },
+    {
+      "path": "screenshots/mailbox-history/review-390.png",
+      "width": 390,
+      "height": 1409,
+      "bytes": 87195,
+      "sha256": "ad62e44294014f415123d41a8571e36f3e20c8e81e07befd050a66d5a3117635"
+    }
+  ],
+  "note": "Built from the final source tree before the commit; no tracked source change between build, capture and commit. Chromium /usr/bin/chromium, --no-sandbox; only synthetic data and a fake provider edge."
+}

@@ -1,0 +1,45 @@
+{
+  "checks": [
+    {
+      "check": "email",
+      "command": "node --test --test-reporter=tap --test-concurrency=1 tests/journeys/email.mjs",
+      "node": "22.20.0",
+      "passed": 3,
+      "failed": 0,
+      "log_sha256": "730c4a40ec5e0bf48f5e7d250c525e1635ce10a15fd4044e8a9e80e016d4a146",
+      "duration_ms": 610963.667215
+    },
+    {
+      "check": "history",
+      "command": "node --test --test-reporter=tap --test-name-pattern='read-only mailbox history' tests/journeys/email.mjs",
+      "node": "22.20.0",
+      "passed": 1,
+      "failed": 0,
+      "log_sha256": "cbb127824cf297e3240ef6cbd76090d57e8d773f218aea01fc94e2542e9f19d8",
+      "duration_ms": 11113.586276
+    },
+    {
+      "check": "move-in",
+      "command": "node --test --test-reporter=tap --test-name-pattern='^review an export' tests/journeys/move-in-admission.mjs",
+      "node": "22.20.0",
+      "passed": 1,
+      "failed": 0,
+      "log_sha256": "766ea11d6936608c607f3869016644b0fdc74a8abf3612c5a1377f43e8cc9a7e",
+      "duration_ms": 217699.429472
+    }
+  ],
+  "other_checks": {
+    "typecheck": "exit 0",
+    "rer_check_first_party": "exit 0",
+    "source_check": "exit 0",
+    "build": "exit 0"
+  },
+  "staged_tree": "f5e676dc9edb9ea4e8926574e2c5074ba3872c3d",
+  "note": "Full email baseline passed; final history and Move in checks cover the hardening. The post-test tree delta is the final attachment-refusal sentence and its source-lock hash; final build/browser cover that exact candidate tree. Exact-SHA CI receipt is recorded separately.",
+  "candidate_head": "621d11ff3581a1e6cfda23957c5d430349539c66",
+  "candidate_tree": "7392ebb76ba4682f5a7c9194981688b8b302e86b",
+  "post_test_tree_delta": [
+    "sources.lock.json",
+    "src/ui/native/pages/email/MailboxHistory.jsx"
+  ]
+}

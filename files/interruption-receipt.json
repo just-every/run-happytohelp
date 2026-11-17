@@ -1,0 +1,46 @@
+{
+  "observed_at": "2026-11-17T22:39:28.993345+00:00",
+  "event": "Managed environment restarted/reconnected; running proof tool was aborted",
+  "completed_passes": 6,
+  "assertion_failures": 0,
+  "proof_exit_receipt_present": false,
+  "processes": [
+    {
+      "pid": 1824,
+      "process_status": "",
+      "ps_exit": 1
+    },
+    {
+      "pid": 1884,
+      "process_status": "1884       1 Z       1071 python3",
+      "ps_exit": 0
+    },
+    {
+      "pid": 1885,
+      "process_status": "1885       1 Z       1071 node",
+      "ps_exit": 0
+    },
+    {
+      "pid": 1891,
+      "process_status": "1891       1 Z       1071 node",
+      "ps_exit": 0
+    },
+    {
+      "pid": 7596,
+      "process_status": "7596       1 Z        123 node",
+      "ps_exit": 0
+    },
+    {
+      "pid": 7607,
+      "process_status": "7607       1 Z        118 workerd",
+      "ps_exit": 0
+    },
+    {
+      "pid": 7612,
+      "process_status": "7612       1 Zs       117 chromium",
+      "ps_exit": 0
+    }
+  ],
+  "action": "No restart, no additional product commit or product push; brief explicitly requires BLOCKED after environment loss",
+  "product_head": "42e70dfea02469c967a4eb456fb51d40c288b8b5"
+}

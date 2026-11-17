@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-11-17T22:21:52.557067+00:00",
+  "github_call": 1,
+  "runs": [
+    {
+      "id": 44189251083,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "42e70dfea02469c967a4eb456fb51d40c288b8b5",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44189251083",
+      "event": "push",
+      "created_at": "2026-11-17T22:21:30Z"
+    }
+  ]
+}

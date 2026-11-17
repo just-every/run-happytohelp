@@ -1,0 +1,39 @@
+TAP version 13
+# (node:1891) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 1 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 290333.014286
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 2 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 128062.64635
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 3 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 126830.927772
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 4 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 133181.429944
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 5 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 131710.91313
+  type: 'test'
+  ...
+# Subtest: a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+ok 6 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release
+  ---
+  duration_ms: 130016.813406
+  type: 'test'
+  ...

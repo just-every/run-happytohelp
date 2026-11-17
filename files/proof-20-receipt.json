@@ -1,0 +1,52 @@
+{
+  "head": "42e70dfea02469c967a4eb456fb51d40c288b8b5",
+  "results": [
+    {
+      "run": 1,
+      "result": "pass",
+      "tap": "ok 1 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release"
+    },
+    {
+      "run": 2,
+      "result": "pass",
+      "tap": "ok 2 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release"
+    },
+    {
+      "run": 3,
+      "result": "pass",
+      "tap": "ok 3 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release"
+    },
+    {
+      "run": 4,
+      "result": "pass",
+      "tap": "ok 4 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release"
+    },
+    {
+      "run": 5,
+      "result": "pass",
+      "tap": "ok 5 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release"
+    },
+    {
+      "run": 6,
+      "result": "pass",
+      "tap": "ok 6 - a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release"
+    }
+  ],
+  "passed": 6,
+  "failed": 0,
+  "completed": false,
+  "exit": null,
+  "cpu_rate": 6,
+  "network_latency_ms": 250,
+  "download_bytes_per_second": 750000,
+  "upload_bytes_per_second": 250000,
+  "node": "22.20.0",
+  "chromium": "/usr/bin/chromium",
+  "clean_at_start": true,
+  "harness": "actual unchanged workflows-browser.mjs registration, test 3, repeated twenty times; includes missingProviderProcedureBrowser",
+  "twenty_consecutive_passes": false,
+  "head_unchanged": true,
+  "observed_at": "2026-11-17T22:39:15.938263+00:00",
+  "interrupted": true,
+  "interruption_reason": "Environment reconnect terminated proof processes after six complete passes; seventh pass incomplete; no proof exit receipt"
+}

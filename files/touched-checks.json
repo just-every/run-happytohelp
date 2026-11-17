@@ -1,0 +1,50 @@
+[
+  {
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "lock"
+    ],
+    "started": "2026-11-17T22:20:45.626588+00:00",
+    "exit": 0
+  },
+  {
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "started": "2026-11-17T22:20:46.413808+00:00",
+    "exit": 0
+  },
+  {
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "started": "2026-11-17T22:20:47.031434+00:00",
+    "exit": 0
+  },
+  {
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "started": "2026-11-17T22:21:04.841049+00:00",
+    "exit": 0
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "started": "2026-11-17T22:21:06.745224+00:00",
+    "exit": 0
+  }
+]

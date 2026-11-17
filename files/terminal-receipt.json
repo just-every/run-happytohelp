@@ -1,0 +1,17 @@
+{
+  "recorded_at": "2026-11-17T22:51:06.416532+00:00",
+  "status": "BLOCKED",
+  "branch": "cloud/hh-procedures-race-2-c1",
+  "head": "42e70dfea02469c967a4eb456fb51d40c288b8b5",
+  "reason": "Managed environment reconnect terminated proof processes after six consecutive completed passes; brief requires BLOCKED after environment loss",
+  "product_pushed": true,
+  "product_pushes": 1,
+  "completed_passes": 6,
+  "reported_assertion_failures": 0,
+  "twenty_run_proof_complete": false,
+  "verify_run_id": 44189251083,
+  "verify_status": "in_progress",
+  "verify_conclusion": null,
+  "github_calls_used": 6,
+  "pr": null
+}

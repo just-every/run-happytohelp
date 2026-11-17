@@ -1,0 +1,12 @@
+{
+  "before": {
+    "registrations": 10,
+    "target_registration": 1
+  },
+  "after": {
+    "registrations": 10,
+    "target_registration": 1
+  },
+  "contract_status": "PROCEDURE-001 partial -> partial; no changes",
+  "progress": "Core 4 done / 71 partial / 11 missing / 86 total; Agent surface 0 done / 0 partial / 5 missing / 5 total; Full target 4 done / 71 partial / 16 missing / 91 total; unchanged"
+}

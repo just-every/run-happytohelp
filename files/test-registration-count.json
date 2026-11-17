@@ -1,0 +1,6 @@
+{
+  "method": "Static inventory of literal top-level test(...) calls in tracked test JavaScript. This is not a claimed full weighted cap count; existing generated cases and assert scripts were not recounted. No registration or registration loop was added or removed.",
+  "before": 122,
+  "after": 122,
+  "newRegistrations": 0
+}

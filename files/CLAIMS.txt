@@ -1,0 +1,5 @@
+CLAIM UI-001 PARTIAL points=none tests=tests/journeys/inbox-browser.mjs#installed widget availability, provider-edge answers and consent-aware proactive outcomes
+CLAIM FIRST-RUN-001 PARTIAL points=1 tests=tests/journeys/identity-browser.mjs#a first owner and a signed-in owner reach Setup and install a working widget
+CLAIM IDENTITY-001 PARTIAL points=none tests=tests/journeys/widget.mjs#visitor and teammate sockets replay their durable cursor, exchange first reads and private activity only within current authority, and close on revocation
+CLAIM KNOWLEDGE-001 PARTIAL points=none tests=tests/journeys/inbox-browser.mjs#installed widget availability, provider-edge answers and consent-aware proactive outcomes
+CLAIM FORMS-001 PARTIAL points=none tests=tests/journeys/public-browser.mjs#a lead publishes two approved help hosts, scoped reviewed translations and a cited editorial proposal, with an attributed request template

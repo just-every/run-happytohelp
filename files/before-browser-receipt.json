@@ -1,0 +1,25 @@
+{
+  "phase": "before",
+  "viewports": [
+    1440,
+    390
+  ],
+  "screens": [
+    "article-editor",
+    "inbox-address",
+    "knowledge",
+    "request-form",
+    "request-form-settings",
+    "setup",
+    "setup-address",
+    "widget-code",
+    "widget-first-open",
+    "widget-launcher",
+    "widget-settings",
+    "widget-texts",
+    "widget-unavailable"
+  ],
+  "result": "captured",
+  "sourceCommit": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "method": "Original committed source exported with git archive, built through rer, and served by the repository emitted-Worker harness with real native bootstrap and local mail suppression."
+}

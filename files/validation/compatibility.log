@@ -1,0 +1,5 @@
+PASS local request chat route
+PROBE AGENT-001 W1: built /widget.js -> visitor message -> queued model-edge fixture -> admitted AI answer; visible author and AI disclosure survive reload
+PROBE AGENT-001 W2: ordinary operator reply -> human takeover -> widget reload -> distinct AI history author and visible Human responder; human message carries no AI label
+PROBE AGENT-001 W3: existing brand/widget browser registration -> rendered disclosure and fetched-history assertions; no additional test registration
+PASS AI and human reply identity

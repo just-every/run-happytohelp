@@ -1,0 +1,27 @@
+{
+  "result": "passed",
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "decisions": [
+    "D1",
+    "D2",
+    "D3",
+    "D17",
+    "D19",
+    "D23",
+    "D24"
+  ],
+  "flows": [
+    "saved address gates snippet and developer handoff",
+    "name persists before install",
+    "public slug resolves",
+    "local request uses chat",
+    "required email gates real message",
+    "header names actual reply",
+    "denied address stays denied on cancel",
+    "confirmed address admits session and socket while keeping prior address"
+  ]
+}

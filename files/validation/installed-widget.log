@@ -1,0 +1,18 @@
+TAP version 13
+# (node:24276) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: installed widget availability, provider-edge answers and consent-aware proactive outcomes
+ok 1 - installed widget availability, provider-edge answers and consent-aware proactive outcomes
+  ---
+  duration_ms: 344066.696362
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 347671.948085

@@ -19,3 +19,6 @@ test('knowledge references remain reviewable in saved replies, ticket insertion,
 
 import {macroHandoffBrowser} from '../helpers/stranger11-browser.mjs'
 test('an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over',macroHandoffBrowser)
+
+import {ticketReferenceBrowser} from '../helpers/inbox/ticket-reference-browser.mjs'
+test('a saved reply previews the short support reference and working link on a widget ticket, matching its operator header and page title',ticketReferenceBrowser)

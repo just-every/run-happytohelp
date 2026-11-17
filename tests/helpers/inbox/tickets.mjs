@@ -47,7 +47,7 @@ export async function ticketsJourney(){
   const macroCall=(action,extra={})=>ok(`/macros/${macro.id}/${action}`,{version:macro.version,tickets:selection,...extra})
   const before=await get(id),preview=(await macroCall('preview')).results[0]
   assert.equal(before.group_id,null);assert.ok(!before.tags.some(value=>value.id===tag.id),'the macro must add a new ticket tag')
-  const rendered=`Hello Dana, ticket ${id}, reference RMA-456. {{ticket.custom.missing}}`
+  const rendered=`Hello Dana, ticket #${id.slice(0,8).toUpperCase()}, reference RMA-456. {{ticket.custom.missing}}`
   assert.deepEqual(Object.fromEntries(preview.changes.map(change=>[change.field,change.to])),{
    status_id:pending.id,priority:'high',group_id:group.id,agent_id:w.users.operator,
    ['custom.'+field.id]:'RMA-456',followers:[w.users.owner,w.users.operator],tags_add:[tag.id],
@@ -70,7 +70,7 @@ export async function ticketsJourney(){
   const edited=saved.content.replace('{{ticket.custom.missing}}','Your return label is attached.')
   await app.ok(`/api/conversations/${id}/messages`,{token:w.tokens.owner,body:{localId:'reviewed-replacement',content:edited,mediaIds:saved.media_ids,expectedRevision:(await get(id)).revision}})
   const visible=await app.ok(`/api/conversations/${id}/messages`,{token:visitor.token});assert.equal(visible.messages.at(-1).content,edited);assert.equal(visible.messages.at(-1).media.length,1)
-  assert.equal(visible.messages.at(-1).content,`Hello Dana, ticket ${id}, reference RMA-456. Your return label is attached.`)
+  assert.equal(visible.messages.at(-1).content,`Hello Dana, ticket #${id.slice(0,8).toUpperCase()}, reference RMA-456. Your return label is attached.`)
   assert.doesNotMatch(visible.messages.at(-1).content,/{{|}}/)
   const reloaded=await get(id)
   assert.equal(reloaded.group_id,group.id);assert.ok(reloaded.tags.some(value=>value.id===tag.id))

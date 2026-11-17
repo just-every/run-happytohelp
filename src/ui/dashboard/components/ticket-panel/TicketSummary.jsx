@@ -1,3 +1,4 @@
+import { ticketReference } from '../../../../modules/tickets/reference';
 import ImportedHistory from './ImportedHistory';
 import React, { useContext, useId, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -65,7 +66,7 @@ export default function TicketSummary({ conversation, record, workflows, escalat
     const statuses = (settings?.statuses || []).filter(status => status.active || status.id === ticket?.status_id)
         .map(status => ({ value: status.id, label: status.name === label(status.category) ? status.name : `${ status.name } (${ label(status.category) })` }));
     return <section className="ticket-summary" aria-labelledby="ticket-summary-title">
-        <h3 id="ticket-summary-title" className="ticket-summary__title">Summary</h3>
+        <h3 id="ticket-summary-title" className="ticket-summary__title">Ticket { ticketReference(conversation.id) }</h3>
         { record?.error && <p role="alert" className="ticket-summary__error">{ record.error }</p> }
         <dl className="ticket-summary__rows">
             <Row label="Assignee" className="ticket-summary__row--assignee">

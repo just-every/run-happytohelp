@@ -78,6 +78,8 @@ export async function zendeskFidelityJourney(){
   const missing={...o.ticket[0]};delete missing.comments
   const incomplete=await review(h,'zendesk',JSON.stringify({tickets:[missing],users:o.user}),'synthetic-hh-api-incomplete.json');assert.equal(incomplete.plan.decisions.find(d=>d.kind==='ticket').rejection,'ticket_comments_required')
   const signed=await h.raw(`${root}?vendor=zendesk`,{method:'POST',headers:{'X-Import-Filename':'synthetic-hh-sensitive-page.json'},body:JSON.stringify({users:[o.user[0]],next_page:'https://synthetic-hh.example.test/users?token=synthetic-hh-949'})});assert.equal(signed.response.status,422);assert.equal(signed.data.diagnostic.code,'signed_download_link_not_accepted')
+  const signedTicket=structuredClone(o.ticket[0]);signedTicket.comments[0].attachments[0].content_url+='?token=synthetic-hh-949'
+  const signedRecord=await h.raw(`${root}?vendor=zendesk`,{method:'POST',headers:{'X-Import-Filename':'synthetic-hh-sensitive-ticket.json'},body:JSON.stringify({tickets:[signedTicket],users:o.user})});assert.equal(signedRecord.response.status,422);assert.equal(signedRecord.data.diagnostic.location.pointer,'/tickets/0/comments/0/attachments/0/content_url','refusal points to the real API field without an invented wrapper')
   const privacyRecords=fixture.records.filter(r=>r.ticket?.id===o.ticket[0].id||r.ticket_field||r.organization?.id===o.organization[0].id||r.user&&(r.user.id===o.user[0].id||r.user.role!=='end-user'))
   await apply(h,await review(h,'zendesk',privacyRecords.map(JSON.stringify).join('\n'),'synthetic-hh-privacy.ndjson'))
   await h.contactSession('visitor','p',first.contact_id)

@@ -359,7 +359,6 @@ with exit 4 and directs this edition to `/login` without issuing a grant. Native
 account dispatch through that rer command remains a runtime-owned gap; the
 script above is the supported native door and needs no sending provider.
 
-_Run Edit Run fleet, 2026-11-15._
 
 ### Mailgun domain sending
 
@@ -499,7 +498,6 @@ sign-in confirmation; it works once. Do not save its stdout in logs or receipts.
 The rer 0.2.117 native-account limitation and the `--open` option are explained
 in [Sign in without mail](#sign-in-without-mail).
 
-_Run Edit Run fleet, 2026-11-15._
 
 If you intend to send sign-in mail and it fails after the owner was claimed,
 repair the sender using the

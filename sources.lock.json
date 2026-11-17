@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "4eb290f56fb8213548d60c625519447b2815e7262dca019557ad8843072bfb11",
+      "sha256": "d92183ed85614a5c907b3f9ee1624d3c7361a61377eb5d919dacff103c546a28",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2913,7 +2913,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "985fd2daf47d67e769ff6497e0a12679806dca9a39e62868228f876156d17cad",
+      "sha256": "1a7e0bdb88faa3ced573cf424d1ce72e575fcb416fbbe1c7d970b07c45e57f9a",
       "executable": false
     },
     "package.json": {
@@ -13641,7 +13641,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveIn.jsx": {
-      "sha256": "417c9bcfd0089674fb81044470e21778fdff07173bd6eb4451e57a5722cc2216",
+      "sha256": "dd510355b7041a61f815c584c37778f33bf0b3a63c951e5d87b9b6ebfbc7978e",
       "executable": false
     },
     "src/ui/native/pages/MoveInGuide.jsx": {
@@ -13657,7 +13657,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInReview.jsx": {
-      "sha256": "b5c55e494ab5b8b85e9cf9bf0dabeffb4e2d917a66098de0e095b15618035ca6",
+      "sha256": "07b933e22d025f38ff81326c07df516fec69ed6be7772d5bb6c276131b95f197",
       "executable": false
     },
     "src/ui/native/pages/MoveInZendesk.jsx": {
@@ -16773,7 +16773,7 @@
       "executable": false
     },
     "tests/helpers/inbox/new-ticket-configuration.mjs": {
-      "sha256": "9600b0b63fe12771bf139a46dba6ea3f1dea7fe8cdd449394cc4e0c586ffa03b",
+      "sha256": "2647829b40209865313905881255dfc318e29d25d47d2bb72b96b9850955d713",
       "executable": false
     },
     "tests/helpers/inbox/no-mailbox-ticket.mjs": {

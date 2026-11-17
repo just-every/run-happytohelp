@@ -207,7 +207,7 @@ export async function newTicketConfigurationBrowser(){
    await dialog.getByLabel('Request form',{exact:true}).selectOption(form.id)
    await dialog.getByLabel('Delivery reason *',{exact:true}).selectOption('question')
    await dialog.getByLabel('Parcel count',{exact:true}).fill('1')
-   await dialog.getByLabel('Assignee',{exact:true}).selectOption('')
+   await dialog.getByLabel('Assignee',{exact:true}).selectOption(owner.actor.id)
    assert.equal(await dialog.getByLabel('CC',{exact:true}).count(),0)
    await capture('new-call')
    let lostCall
@@ -217,8 +217,26 @@ export async function newTicketConfigurationBrowser(){
    await capture('configured-call-lost-response')
    const callResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
    await dialog.getByRole('button',{name:'Check same request',exact:true}).click();const logged=await callResponse;assert.equal(logged.status(),200)
-   const callTicket=await logged.json();assert.equal(callTicket.conversation.id,lostCall.conversation.id);assert.equal(callTicket.duplicate,true);assert.equal(callTicket.conversation.channel,'phone');assert.notEqual(callTicket.conversation.contact_id,created.conversation.contact_id);assert.equal(callTicket.conversation.assigned_to,null);assert.equal(callTicket.note.content,`Confirmed collection time (${width}).`)
+   const callTicket=await logged.json();assert.equal(callTicket.conversation.id,lostCall.conversation.id);assert.equal(callTicket.duplicate,true);assert.equal(callTicket.conversation.channel,'phone');assert.notEqual(callTicket.conversation.contact_id,created.conversation.contact_id);assert.equal(callTicket.conversation.assigned_to,owner.actor.id);assert.equal(callTicket.note.content,`Confirmed collection time (${width}).`)
    assert.equal(callTicket.message,undefined)
+   await page.waitForURL(`**/conversations/${callTicket.conversation.id}`)
+   await page.locator('.transcript-note-content').getByText(callTicket.note.content,{exact:true}).waitFor()
+   await page.goto(`${runtime.origin}/projects/${projectId}/activation`)
+   await page.goto(`${runtime.origin}/projects/${projectId}/conversations?view=mine`)
+   await page.reload()
+   const callRow=page.locator('.conversation-item').filter({hasText:`Customer called ${width}`})
+   await callRow.waitFor()
+   assert.equal(await callRow.count(),1,'the assigned call-log ticket remains discoverable after Inbox reload')
+   const callMine=(await call(base+'/conversations/counts',undefined,owner.token)).data.mine
+   for(const list of [base+'/conversations?view=mine','/api/dashboard/conversations?view=mine']){
+    const reloaded=await call(list,undefined,owner.token)
+    assert.equal(reloaded.data.filter(ticket=>ticket.id===callTicket.conversation.id).length,1,'workspace and global Yours retain the call-log ticket')
+    if(list.startsWith(base)){
+     assert.equal(reloaded.meta.pagination.total,callMine,'Yours and its list count the same tickets after logging a call')
+     assert.equal(reloaded.data.length,callMine,'every counted fixture ticket is discoverable after the call-log reload')
+    }
+   }
+   await capture('call-inbox-after-reload')
    const apiCall={kind:'call',localId:`synthetic-happytohelp-api-call-${width}`,requesterId:created.conversation.contact_id,subject:`Call follow-up ${width}`,content:'Synthetic private collection instructions.'}
    const loggedApi=await request(apiCall);assert.equal(loggedApi.status,201);assert.equal(loggedApi.body.conversation.channel,'phone');assert.equal(loggedApi.body.note.content,apiCall.content)
    assert.equal((await request(apiCall)).body.note.id,loggedApi.body.note.id)

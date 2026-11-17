@@ -1,0 +1,8 @@
+file:///workspace/run-happytohelp/.local-fidelity/browser.mjs:27
+  if(result.run.state==='paused')throw Error('Mounted source package paused: '+result.run.errorCode+' phase='+result.run.phase)
+                                       ^
+
+Error: Mounted source package paused: invalid_scope phase=preflight
+    at file:///workspace/run-happytohelp/.local-fidelity/browser.mjs:27:40
+
+Node.js v22.20.0

@@ -1,0 +1,290 @@
+{
+  "objects": [
+    {
+      "projectId": "10000000-0000-4000-8000-000000000001",
+      "mediaId": "80000000-0000-4000-8000-000000000001",
+      "size": 10560000,
+      "sha256": "2b031151627e83d9ab49d33473767b3fb805dbdab5e04f8e9380c7284f82fa35",
+      "sourcePivots": [
+        {
+          "type": "App\\Models\\Message",
+          "parentId": "60000000-0000-4000-8000-000000000010",
+          "tag": "attachment",
+          "order": 0
+        },
+        {
+          "type": "App\\Models\\Message",
+          "parentId": "60000000-0000-4000-8000-000000000011",
+          "tag": "attachment",
+          "order": 2
+        },
+        {
+          "type": "App\\Models\\Message",
+          "parentId": "60000000-0000-4000-8000-000000000012",
+          "tag": "inline",
+          "order": 1
+        }
+      ],
+      "nativeMessage": {
+        "id": "80000000-0000-4000-8000-000000000001",
+        "message_id": "60000000-0000-4000-8000-000000000010",
+        "conversation_id": "40000000-0000-4000-8000-000000000001"
+      },
+      "fileDoor": null,
+      "holds": [
+        "media 80000000-0000-4000-8000-000000000001 link App\\Models\\Message:60000000-0000-4000-8000-000000000012 tag=inline order=1: additional or deleted message association has no native pivot destination; media 80000000-0000-4000-8000-000000000001 link App\\Models\\Message:60000000-0000-4000-8000-000000000011 tag=attachment order=2: additional or deleted message association has no native pivot destination"
+      ],
+      "bytes": "all supplied bytes SHA-256 checked against actual R2 in the exporter journey",
+      "cliNoteLinks": "unsupported; private archive and explicit hold",
+      "historicalNoteLinks": "see mounted and rer-dev adoption outcomes"
+    },
+    {
+      "projectId": "10000000-0000-4000-8000-000000000001",
+      "mediaId": "c4000000-0000-4000-8000-000000000001",
+      "size": 29,
+      "sha256": "e477b021e1f2b854c78caddc4608f362daa98190de81b4e46f7e486b7544b3db",
+      "sourcePivots": [
+        {
+          "type": "App\\Models\\Article",
+          "parentId": "70000000-0000-4000-8000-000000000001",
+          "tag": "media",
+          "order": 0
+        }
+      ],
+      "nativeMessage": null,
+      "fileDoor": {
+        "audience": "article"
+      },
+      "holds": [],
+      "bytes": "all supplied bytes SHA-256 checked against actual R2 in the exporter journey",
+      "cliNoteLinks": "unsupported; private archive and explicit hold",
+      "historicalNoteLinks": "see mounted and rer-dev adoption outcomes"
+    },
+    {
+      "projectId": "10000000-0000-4000-8000-000000000001",
+      "mediaId": "d1000000-0000-4000-8000-000000000001",
+      "size": 29,
+      "sha256": "e3246978aeb003eb30d36ce1e3f8c44dfd8801947bf5496114877706be549f69",
+      "sourcePivots": [
+        {
+          "type": "App\\Models\\Event",
+          "parentId": "51000000-0000-4000-8000-000000000001",
+          "tag": "attachment",
+          "order": 0
+        },
+        {
+          "type": "App\\Models\\Message",
+          "parentId": "60000000-0000-4000-8000-000000000011",
+          "tag": "attachment",
+          "order": 0
+        }
+      ],
+      "nativeMessage": null,
+      "fileDoor": null,
+      "holds": [
+        "media d1000000-0000-4000-8000-000000000001 link App\\Models\\Event:51000000-0000-4000-8000-000000000001 tag=attachment order=0: private event/delegation association; never exposed as a public message file; media d1000000-0000-4000-8000-000000000001 link App\\Models\\Message:60000000-0000-4000-8000-000000000011 tag=attachment order=0: private event/delegation association; never exposed as a public message file"
+      ],
+      "bytes": "all supplied bytes SHA-256 checked against actual R2 in the exporter journey",
+      "cliNoteLinks": "unsupported; private archive and explicit hold",
+      "historicalNoteLinks": "see mounted and rer-dev adoption outcomes"
+    },
+    {
+      "projectId": "10000000-0000-4000-8000-000000000001",
+      "mediaId": "d2000000-0000-4000-8000-000000000001",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourcePivots": [
+        {
+          "type": "App\\Models\\Event",
+          "parentId": "51000000-0000-4000-8000-000000000001",
+          "tag": "attachment",
+          "order": 0
+        }
+      ],
+      "nativeMessage": null,
+      "fileDoor": null,
+      "holds": [
+        "media d2000000-0000-4000-8000-000000000001 link App\\Models\\Event:51000000-0000-4000-8000-000000000001 tag=attachment order=0: private event/delegation association; never exposed as a public message file"
+      ],
+      "bytes": "all supplied bytes SHA-256 checked against actual R2 in the exporter journey",
+      "cliNoteLinks": "unsupported; private archive and explicit hold",
+      "historicalNoteLinks": "see mounted and rer-dev adoption outcomes"
+    },
+    {
+      "projectId": "10000000-0000-4000-8000-000000000001",
+      "mediaId": "d3000000-0000-4000-8000-000000000001",
+      "size": 70,
+      "sha256": "50c553a639f7600d6fd6c416a296f7b2cdd182a64e74472bc842fef94936d84c",
+      "sourcePivots": [
+        {
+          "type": "App\\Models\\Project",
+          "parentId": "10000000-0000-4000-8000-000000000001",
+          "tag": "image",
+          "order": 0
+        }
+      ],
+      "nativeMessage": null,
+      "fileDoor": {
+        "audience": "public"
+      },
+      "holds": [],
+      "bytes": "all supplied bytes SHA-256 checked against actual R2 in the exporter journey",
+      "cliNoteLinks": "unsupported; private archive and explicit hold",
+      "historicalNoteLinks": "see mounted and rer-dev adoption outcomes"
+    },
+    {
+      "projectId": "10000000-0000-4000-8000-000000000001",
+      "mediaId": "d4000000-0000-4000-8000-000000000001",
+      "size": 70,
+      "sha256": "50c553a639f7600d6fd6c416a296f7b2cdd182a64e74472bc842fef94936d84c",
+      "sourcePivots": [
+        {
+          "type": "App\\Models\\Article",
+          "parentId": "d5000000-0000-4000-8000-000000000001",
+          "tag": "image",
+          "order": 0
+        }
+      ],
+      "nativeMessage": null,
+      "fileDoor": {
+        "audience": "article"
+      },
+      "holds": [],
+      "bytes": "all supplied bytes SHA-256 checked against actual R2 in the exporter journey",
+      "cliNoteLinks": "unsupported; private archive and explicit hold",
+      "historicalNoteLinks": "see mounted and rer-dev adoption outcomes"
+    },
+    {
+      "projectId": "10000000-0000-4000-8000-000000000002",
+      "mediaId": "80000000-0000-4000-8000-000000000002",
+      "size": 48,
+      "sha256": "169f44d6fa6b2df7dccd1082530b9d8d0fb48ea3eb5e5a99c3aea85832d1a7c1",
+      "sourcePivots": [
+        {
+          "type": "App\\Models\\Message",
+          "parentId": "60000000-0000-4000-8000-000000000020",
+          "tag": "attachment",
+          "order": 0
+        },
+        {
+          "type": "App\\Models\\Message",
+          "parentId": "60000000-0000-4000-8000-000000000021",
+          "tag": "attachment",
+          "order": 2
+        },
+        {
+          "type": "App\\Models\\Message",
+          "parentId": "60000000-0000-4000-8000-000000000022",
+          "tag": "inline",
+          "order": 1
+        }
+      ],
+      "nativeMessage": {
+        "id": "80000000-0000-4000-8000-000000000002",
+        "message_id": "60000000-0000-4000-8000-000000000020",
+        "conversation_id": "40000000-0000-4000-8000-000000000002"
+      },
+      "fileDoor": null,
+      "holds": [
+        "media 80000000-0000-4000-8000-000000000002 link App\\Models\\Message:60000000-0000-4000-8000-000000000022 tag=inline order=1: additional or deleted message association has no native pivot destination; media 80000000-0000-4000-8000-000000000002 link App\\Models\\Message:60000000-0000-4000-8000-000000000021 tag=attachment order=2: additional or deleted message association has no native pivot destination"
+      ],
+      "bytes": "all supplied bytes SHA-256 checked against actual R2 in the exporter journey",
+      "cliNoteLinks": "unsupported; private archive and explicit hold",
+      "historicalNoteLinks": "see mounted and rer-dev adoption outcomes"
+    },
+    {
+      "projectId": "10000000-0000-4000-8000-000000000002",
+      "mediaId": "d1000000-0000-4000-8000-000000000002",
+      "size": 29,
+      "sha256": "e3246978aeb003eb30d36ce1e3f8c44dfd8801947bf5496114877706be549f69",
+      "sourcePivots": [
+        {
+          "type": "App\\Models\\Event",
+          "parentId": "51000000-0000-4000-8000-000000000002",
+          "tag": "attachment",
+          "order": 0
+        },
+        {
+          "type": "App\\Models\\Message",
+          "parentId": "60000000-0000-4000-8000-000000000021",
+          "tag": "attachment",
+          "order": 0
+        }
+      ],
+      "nativeMessage": null,
+      "fileDoor": null,
+      "holds": [
+        "media d1000000-0000-4000-8000-000000000002 link App\\Models\\Event:51000000-0000-4000-8000-000000000002 tag=attachment order=0: private event/delegation association; never exposed as a public message file; media d1000000-0000-4000-8000-000000000002 link App\\Models\\Message:60000000-0000-4000-8000-000000000021 tag=attachment order=0: private event/delegation association; never exposed as a public message file"
+      ],
+      "bytes": "all supplied bytes SHA-256 checked against actual R2 in the exporter journey",
+      "cliNoteLinks": "unsupported; private archive and explicit hold",
+      "historicalNoteLinks": "see mounted and rer-dev adoption outcomes"
+    },
+    {
+      "projectId": "10000000-0000-4000-8000-000000000002",
+      "mediaId": "d2000000-0000-4000-8000-000000000002",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourcePivots": [
+        {
+          "type": "App\\Models\\Event",
+          "parentId": "51000000-0000-4000-8000-000000000002",
+          "tag": "attachment",
+          "order": 0
+        }
+      ],
+      "nativeMessage": null,
+      "fileDoor": null,
+      "holds": [
+        "media d2000000-0000-4000-8000-000000000002 link App\\Models\\Event:51000000-0000-4000-8000-000000000002 tag=attachment order=0: private event/delegation association; never exposed as a public message file"
+      ],
+      "bytes": "all supplied bytes SHA-256 checked against actual R2 in the exporter journey",
+      "cliNoteLinks": "unsupported; private archive and explicit hold",
+      "historicalNoteLinks": "see mounted and rer-dev adoption outcomes"
+    },
+    {
+      "projectId": "10000000-0000-4000-8000-000000000002",
+      "mediaId": "d3000000-0000-4000-8000-000000000002",
+      "size": 70,
+      "sha256": "50c553a639f7600d6fd6c416a296f7b2cdd182a64e74472bc842fef94936d84c",
+      "sourcePivots": [
+        {
+          "type": "App\\Models\\Project",
+          "parentId": "10000000-0000-4000-8000-000000000002",
+          "tag": "image",
+          "order": 0
+        }
+      ],
+      "nativeMessage": null,
+      "fileDoor": {
+        "audience": "public"
+      },
+      "holds": [],
+      "bytes": "all supplied bytes SHA-256 checked against actual R2 in the exporter journey",
+      "cliNoteLinks": "unsupported; private archive and explicit hold",
+      "historicalNoteLinks": "see mounted and rer-dev adoption outcomes"
+    },
+    {
+      "projectId": "10000000-0000-4000-8000-000000000002",
+      "mediaId": "d4000000-0000-4000-8000-000000000002",
+      "size": 70,
+      "sha256": "50c553a639f7600d6fd6c416a296f7b2cdd182a64e74472bc842fef94936d84c",
+      "sourcePivots": [
+        {
+          "type": "App\\Models\\Article",
+          "parentId": "d5000000-0000-4000-8000-000000000002",
+          "tag": "image",
+          "order": 0
+        }
+      ],
+      "nativeMessage": null,
+      "fileDoor": {
+        "audience": "article"
+      },
+      "holds": [],
+      "bytes": "all supplied bytes SHA-256 checked against actual R2 in the exporter journey",
+      "cliNoteLinks": "unsupported; private archive and explicit hold",
+      "historicalNoteLinks": "see mounted and rer-dev adoption outcomes"
+    }
+  ]
+}

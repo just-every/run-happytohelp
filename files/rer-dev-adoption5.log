@@ -1,0 +1,9 @@
+file:///workspace/run-happytohelp/.local-fidelity/browser.mjs:19
+ const ensure=async(response,label,allowed=[200,201,202])=>{if(!allowed.includes(response.status())){let body=await response.json().catch(()=>({}));throw Error(label+' '+response.status()+' '+String(body.code??body.error??''))}return response.json()}
+                                                                                                                                                          ^
+
+Error: approval 403 step_up_required
+    at ensure (file:///workspace/run-happytohelp/.local-fidelity/browser.mjs:19:155)
+    at async file:///workspace/run-happytohelp/.local-fidelity/browser.mjs:23:2
+
+Node.js v22.20.0

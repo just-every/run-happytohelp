@@ -1,0 +1,8 @@
+file:///workspace/run-happytohelp/.local-fidelity/browser.mjs:29
+  if(result.run.state==='paused')throw Error('Mounted source package paused: '+result.run.errorCode+' phase='+result.run.phase)
+                                       ^
+
+Error: Mounted source package paused: database_unavailable phase=rows
+    at file:///workspace/run-happytohelp/.local-fidelity/browser.mjs:29:40
+
+Node.js v22.20.0

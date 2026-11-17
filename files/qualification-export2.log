@@ -1,0 +1,63 @@
+TAP version 13
+# (node:10985) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Using secrets defined in .dev.vars
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m\\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:[0m
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api\#supported-bindings[0m
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# Subtest: project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark
+not ok 1 - project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark
+  ---
+  duration_ms: 213990.700312
+  type: 'test'
+  location: '/workspace/run-happytohelp/tests/legacy-export.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    scripts/import-legacy.mjs exited 1: 
+    (node:14513) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+    (Use `node --trace-warnings ...` to show where the warning was created)
+    A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+    {"at":"2026-11-17T11:57:36.290Z","step":"target","target":"local /home/agent/rer-consolidation/work/hh-import-legacy-fidelity-1/qualification2/native-state"}
+    {"at":"2026-11-17T11:57:36.295Z","step":"verify","manifestSha256":"43e3aa7286cb1f76d0ff1e3565bfabc54834fc91abf3679bca1b77f78b9676d5","chunks":36,"objects":3}
+    {"at":"2026-11-17T11:57:36.350Z","step":"context","seconds":0.1}
+    {"at":"2026-11-17T11:57:36.421Z","step":"lease","seconds":0.1}
+    file:///workspace/run-happytohelp/src/modules/legacy-import/source-references.ts:23
+      if(value!=null&&value!==''&&!related.find(parent,value))throw new Error(`Missing legacy source parent: ${table}.${field}`)
+                                                                    ^
+    
+    Error: Missing legacy source parent: messages.bucket_id
+        at validateSourceReferences (file:///workspace/run-happytohelp/src/modules/legacy-import/source-references.ts:23:65)
+        at planImport (file:///workspace/run-happytohelp/src/modules/legacy-import/importer.ts:47:172)
+        at async importLegacy (file:///workspace/run-happytohelp/src/modules/legacy-import/importer.ts:66:13)
+        at async importPackage (file:///workspace/run-happytohelp/scripts/legacy-import/import-package.mjs:65:9)
+        at async file:///workspace/run-happytohelp/scripts/import-legacy.mjs:59:17
+    
+    Node.js v22.20.0
+    
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateSourceReferences (file:///workspace/run-happytohelp/src/modules/legacy-import/source-references.ts:23:65)
+    planImport (file:///workspace/run-happytohelp/src/modules/legacy-import/importer.ts:47:172)
+    async importLegacy (file:///workspace/run-happytohelp/src/modules/legacy-import/importer.ts:66:13)
+    async importPackage (file:///workspace/run-happytohelp/scripts/legacy-import/import-package.mjs:65:9)
+    async file:///workspace/run-happytohelp/scripts/import-legacy.mjs:59:17
+    ChildProcess.<anonymous> (file:///workspace/run-happytohelp/tests/legacy-export.mjs:31:91)
+    Object.onceWrapper (node:events:634:26)
+    ChildProcess.emit (node:events:519:28)
+    ChildProcess.emit (node:domain:489:12)
+    ChildProcess._handle.onexit (node:internal/child_process:293:12)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 214443.47161

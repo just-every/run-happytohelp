@@ -1,0 +1,19 @@
+(node:53584) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+node:internal/fs/promises:1030
+  const result = await PromisePrototypeThen(
+                 ^
+
+Error: ENOENT: no such file or directory, lstat '/home/agent/rer-consolidation/work/hh-import-legacy-fidelity-1/completed-qualification/empty-state'
+    at async lstat (node:internal/fs/promises:1030:18)
+    at async Promise.all (index 0)
+    at async checkPaths (node:internal/fs/cp/cp:76:39)
+    at async cpFn (node:internal/fs/cp/cp:65:17)
+    at async file:///workspace/run-happytohelp/.local-fidelity/effects.mjs:11:31 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'lstat',
+  path: '/home/agent/rer-consolidation/work/hh-import-legacy-fidelity-1/completed-qualification/empty-state'
+}
+
+Node.js v22.20.0

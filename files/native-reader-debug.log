@@ -1,0 +1,20 @@
+(node:15081) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"projects":{"rows":2,"sha256":"a2f8d8849d5a8b3e291267097c41e3addd4dc8f1b4a90b54fca9fe34092b9fc7"},"users":{"rows":1,"sha256":"d83b57407260c38a51b399a36d6e39d952aaff43b8a6a2b5b97e6fe237227c83"},"memberships":{"rows":2,"sha256":"29085daedf2b1da64997691493a5d98c7337fa360bfc486fd126407c6cc365e0"},"contacts":{"rows":4,"sha256":"c803d6d2f84d7a86a326ece5ba326059c1f90a7599070902114d9955b40811cb"},"conversations":{"rows":4,"sha256":"16f654e91ceedf71c950f09d4632cf5d29e3f796200b97ce3940c1a6f7341439"},"messages":{"rows":8,"sha256":"81859c59223d6db4e72a3494643d70500fe18f240337b1804ca3232dc35b0010"},"message_authorship":{"rows":8,"sha256":"7ccd70660f9c5dfe474c97104e4a36bfcc4e341f97ebe1dc78cbfad43c128237"},"conversation_notes":{"rows":2,"sha256":"e0a6dfc2df3c9cd0a7ad06d8d1e3a549977918d124f82b2911cb1fad58943287"},"conversation_buckets":{"rows":2,"sha256":"442de80cb30012d02f0c5bd34d4f3f2e83ed386bd57f292131cc23ca4d0827b5"},"conversation_participants":{"rows":2,"sha256":"87b6e0cbb205ae1e94d89a8d7e6c4a5bd600aca665f5b68a1eac19be920738fe"},"media":{"rows":2,"sha256":"0fedb2b53f9e5a62ff69b8f9a7eac9a2e6fe8308aaed86dbca269576131e0413"},"knowledge_categories":{"rows":6,"sha256":"74c0681d005485499c24f42010147b83685a340438378ce143502d218af0dcb2"},"knowledge_articles":{"rows":4,"sha256":"96e9a35fd7763a5bf5485b0b1f9ca66ff726378044d875a0a13eea626081a795"},"knowledge_article_categories":{"rows":6,"sha256":"fb11c101cc691779052ed5a23ff318c90e31fd0db1f78434ff78e629b9eea0bb"},"knowledge_datasets":{"rows":4,"sha256":"6ba74f53411d3d57f6abbd5cd21c1c8e7daf1d42662ad62b2350a86cb1a31e3f"},"knowledge_documents":{"rows":2,"sha256":"9c220535e57d6c3c68cf6e706db99cfd9c3ed85de8843474a922f0ace4bad592"},"macros":{"rows":2,"sha256":"0e18b6773e766fab26c3e2b6ba9a736d63d04463861d6a0cee2efa50338e339a"},"project_settings":{"rows":2,"sha256":"d3d45ee505a088cb109f046fba12274af5741e83e72429b1c555c4be7c3db381"},"email_settings":{"rows":2,"sha256":"2d2884099596fe97324b84d50a65ab06575da3b1fefb7ebdf00906667cb81021"},"local_jobs":{"rows":2,"sha256":"a58f4d359a79bd24e9e1a64f3f7e9abe2cbca1460cae4a597abfe5661703ea96"},"local_events":{"rows":2,"sha256":"656a268c46c7c36bc0de23b8f46ec6ea95a95b294c0f5f5c9ce44720a0d0a433"},"billing_ledger":{"rows":2,"sha256":"29d9d054156673cb31a1cb5a9fbac5b6b161f76f5abbcfe91e75b7fb596b96f7"},"billing_usage_history":{"rows":2,"sha256":"aac4cae0c15f59ddbf07bec212264da417e60bcd6d9c789a8d496bc131b81658"}}
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: private note JSON string is rendered once, without double encoding
+    at nativeReaders (file:///workspace/run-happytohelp/tests/legacy-export/native-readers.mjs:57:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///workspace/run-happytohelp/[eval1]:10:28 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v22.20.0

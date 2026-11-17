@@ -1,0 +1,53 @@
+TAP version 13
+# (node:39824) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Using secrets defined in .dev.vars
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m\\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:[0m
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api\#supported-bindings[0m
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# Using secrets defined in .dev.vars
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m\\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:[0m
+#   \\t\\t\\t\\t- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api\#supported-bindings[0m
+# A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# Subtest: project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark
+not ok 1 - project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark
+  ---
+  duration_ms: 321930.289563
+  type: 'test'
+  location: '/workspace/run-happytohelp/tests/legacy-export.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    3 !== 5
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 5
+  actual: 3
+  operator: 'strictEqual'
+  stack: |-
+    assertFullErasure (file:///workspace/run-happytohelp/tests/legacy-export/resume.mjs:131:53)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///workspace/run-happytohelp/tests/legacy-export.mjs:131:23)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 322604.230535

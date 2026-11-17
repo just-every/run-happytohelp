@@ -1,0 +1,35 @@
+(node:55129) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m				You have defined bindings to the following internal Durable Objects:[0m
+
+  				- {"name":"CONVERSATIONS","class_name":"ConversationSocket"}
+  				These will not work in local development, but they should work in production.
+  
+  				If you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+  				For detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api#supported-bindings[0m
+
+
+A DurableObjectNamespace in the config referenced the class "ConversationSocket", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+{"at":"2026-11-17T13:16:45.455Z","step":"target","target":"local /home/agent/rer-consolidation/work/hh-import-legacy-fidelity-1/additional-effects/run-54908/deleted-contact"}
+node:internal/process/task_queues:105
+    runMicrotasks();
+    ^
+
+Error: D1_ERROR: FOREIGN KEY constraint failed: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_FOREIGNKEY)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async importLegacy (file:///workspace/run-happytohelp/src/modules/legacy-import/importer.ts:169:16)
+    at async run (file:///workspace/run-happytohelp/scripts/import-legacy.mjs:51:10)
+    at async file:///workspace/run-happytohelp/scripts/import-legacy.mjs:59:17 {
+  [cause]: Error: FOREIGN KEY constraint failed: SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_FOREIGNKEY)
+      at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:189:24)
+      at async cloudflare-internal:d1-api:137:19
+      at async #fetch (file:///workspace/run-happytohelp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/workers/core/entry.worker.js:4911:18)
+      at async ProxyServer.fetch (file:///workspace/run-happytohelp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@26.5.1/node_modules/miniflare/dist/src/workers/core/entry.worker.js:4811:14) {
+    [cause]: undefined
+  }
+}
+
+Node.js v22.20.0

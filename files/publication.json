@@ -1,0 +1,17 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-import-legacy-fidelity-1",
+  "head": "ebeabafef8a47e6a04d89f9816583096e9a4d63f",
+  "pushed": true,
+  "pr": null,
+  "firstSave": "a59cc89b3d7e07225b519c884756765e992b04bb",
+  "mergedMain": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "candidateIdentities": "author and committer independently checked as Run Edit Run fleet <fleet@runeditrun.com> for every origin/main..HEAD candidate, including side parents",
+  "trailers": "absent; no OpenAI/Codex co-author trailers",
+  "previousCandidate": "030694068d933c7050775a2c4b7c747e1042b4ed",
+  "priorVerify": {
+    "id": 44088461561,
+    "head": "030694068d933c7050775a2c4b7c747e1042b4ed",
+    "lastObserved": "in_progress; no green claim; superseded by final candidate"
+  }
+}

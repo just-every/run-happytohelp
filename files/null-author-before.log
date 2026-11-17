@@ -1,0 +1,15 @@
+(node:5681) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+file:///workspace/run-happytohelp/src/modules/legacy-import/types.ts:7
+export function text(value        ,field       ){if(value===undefined||value===null||String(value)==='')throw new Error(`Required legacy field missing: ${field}`);return String(value)}
+                                                                                                              ^
+
+Error: Required legacy field missing: macros.created_by_id
+    at text (file:///workspace/run-happytohelp/src/modules/legacy-import/types.ts:7:111)
+    at mapKnowledge (file:///workspace/run-happytohelp/src/modules/legacy-import/map-knowledge.ts:47:110)
+    at mapLegacy (file:///workspace/run-happytohelp/src/modules/legacy-import/mapping.ts:11:160)
+    at planImport (file:///workspace/run-happytohelp/src/modules/legacy-import/importer.ts:45:434)
+    at async run (file:///workspace/run-happytohelp/scripts/import-legacy.mjs:44:25)
+    at async file:///workspace/run-happytohelp/scripts/import-legacy.mjs:54:38
+
+Node.js v22.20.0

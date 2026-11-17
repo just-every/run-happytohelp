@@ -40,7 +40,7 @@ export const recordShapes:Record<string,Shape>={
  'zendesk/view':record({...common('iso'),title:string,active:boolean,restriction:nullable(opaque),conditions:configurationConditions,execution:record({sort_by:string,sort_order:string,columns:opaque,group_by:nullable(opaque),group_order:nullable(opaque)})},['id','title','conditions']),
  'zendesk/trigger':record({...common('iso'),title:string,active:boolean,position:integer,conditions:configurationConditions,actions:array({type:'action'})},['id','title','conditions','actions']),
  'zendesk/automation':record({...common('iso'),title:string,active:boolean,position:integer,conditions:configurationConditions,actions:array({type:'action'})},['id','title','conditions','actions']),
- 'zendesk/user':{...record({...common('iso'),...contactFields,role:oneOf('end-user','agent','admin'),organization_id:nullable(id),tags:nullable(array(string))},['id']),person:true},
+ 'zendesk/user':{...record({...common('iso'),...contactFields,phone:nullable(string),role:oneOf('end-user','agent','admin'),organization_id:nullable(id),tags:nullable(array(string))},['id']),person:true},
  'zendesk/ticket':record({...common('iso'),subject:nullable(string),requester_id:nullable(reference),priority:nullable(string),status:oneOf('new','open','pending','hold','solved','closed'),tags:nullable(array(string)),comments:array(comment),attachments:nullable(opaque),assignee_id:nullable(reference),group_id:nullable(id),custom_fields:array(record({id,value:nullable(opaque)},['id','value'])),via},['comments']),
  // A reply that arrived on a ticket an earlier import holds, keyed by its own
  // comment ID and attached to that ticket's conversation through ticket_id.

@@ -46,7 +46,7 @@ export async function dashboardBootstrap(input: DashboardBootstrapInput): Promis
     const initialManagement = input.managementKind && input.projectId ? (() => {
         const kind = input.managementKind;
         const query = kind === 'agents' ? '' : '?' + new URLSearchParams({search:'',page:'1',
-            sort:kind === 'contacts' ? 'last_seen_at' : 'title',direction:kind === 'contacts' ? 'desc' : 'asc',...(kind === 'contacts'?{visitors:'hide'}:{})});
+            sort:kind === 'contacts' ? 'last_seen_at' : 'title',direction:kind === 'contacts' ? 'desc' : 'asc',...(kind === 'contacts'?{visitors:'hide',total:'none'}:{})});
         return {path:`/api/management/projects/${input.projectId}/${kind}${query}`,
             outcome:read(`/api/management/projects/${encodeURIComponent(input.projectId!)}/${kind}${query}`)};
     })() : undefined;

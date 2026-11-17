@@ -42,3 +42,19 @@ export async function profileWorkspaceJourney(){
   success=true;
  }finally{await f.close(success);}
 }
+
+export async function auditReplyNamesJourney(){
+ const app=await startApp(),w=await app.seedWorkspace('audit-reply-names'),base=`/api/management/projects/${w.projectId}`;
+ try{
+  const save=async(token,title,scope)=>(await app.ok(base+'/macros',{token,body:{title,content:'Synthetic saved answer',actions:{},scope:{roles:[],groups:[],brands:[],...scope}}})).data;
+  const shared=await save(w.tokens.owner,'Synthetic shared answer',{visibility:'shared'});
+  const personal=await save(w.tokens.operator,'Synthetic private answer',{visibility:'personal'});
+  const restricted=await save(w.tokens.owner,'Synthetic agent answer',{visibility:'shared',roles:['operator']});
+  const log=(await app.ok(base+'/audit',{token:w.tokens.owner})).data;
+  assert.equal(log.find(row=>row.target_id===shared.id).target.name,shared.title,'the log names replies the reader may open');
+  assert.equal(log.find(row=>row.target_id===personal.id).target,null,'a private reply title stays private from another teammate');
+  assert.equal(log.find(row=>row.target_id===restricted.id).target,null,'role restrictions apply to title lookup too');
+  assert.ok(!JSON.stringify(log).includes(personal.title));
+  assert.equal((await app.call(base+'/audit',{token:w.tokens.operator})).status,403);
+ }finally{await app.close();}
+}

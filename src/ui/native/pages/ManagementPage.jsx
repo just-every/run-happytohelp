@@ -28,7 +28,7 @@ function ResourcePage({projectId,section,recordId}) {
  // Custom roles a member can be given; only owners and admins can read them.
  const [customRoles,setCustomRoles]=useState([]);
  useEffect(()=>{if(section==='agents'&&recordId&&recordId!=='create')nativeRequest(`/api/management/projects/${projectId}/roles`).then(r=>setCustomRoles(r.data.custom)).catch(()=>setCustomRoles([]));},[section,recordId,projectId]);
- const [listQuery,setListQuery]=useState({search:'',page:1,sort:section==='contacts'?'last_seen_at':'title',direction:section==='contacts'?'desc':'asc',...(section==='contacts'?{visitors:'hide'}:{})}),[pagination,setPagination]=useState(null);
+ const [listQuery,setListQuery]=useState({search:'',page:1,sort:section==='contacts'?'last_seen_at':'title',direction:section==='contacts'?'desc':'asc',...(section==='contacts'?{visitors:'hide',total:'none'}:{})}),[pagination,setPagination]=useState(null);
  const requestId=useRef(0),savedContact=useRef(null);
  const listPath=path+(paged?'?'+new URLSearchParams(listQuery):'');
  const load=useCallback(async()=>{const id=++requestId.current;const response=await nativeRequest(listPath);if(id!==requestId.current)return;setItems(response.data||response);setPagination(response.pagination||null);if(section==='agents')setEmailConfigured(response.emailConfigured);},[listPath,section]);

@@ -26,3 +26,6 @@ import {sharedRecoveryJourney} from '../helpers/identity/recovery-authority/shar
 test('the setup owner recovers through a scoped Managed handoff only after proving a replacement factor, with old authority revoked',managedRecoveryJourney)
 test('recovery custody binds and revokes monotonic generations while sentinel and conflicting owner anchors refuse',async()=>{await custodyRecoveryJourney();await recoveryRaceAndLimits()})
 test('a shared account needs every affected workspace owner’s current factor-backed consent and keeps its memberships',sharedRecoveryJourney)
+
+import {auditReplyNamesJourney} from '../helpers/owner-journey-inbox.mjs';
+test('security log reply names retain personal and role access restrictions',auditReplyNamesJourney);

@@ -97,7 +97,7 @@ export async function macroHandoffBrowser(){
 export async function formFieldBrowser(){
  const f=await strangerFixture(),{page,origin,projectId,base,request}=f,shot=await evidence('stranger11-after-fields');let success=false
  try{
-  await page.goto(`${origin}/projects/${projectId}/ticket-settings`);await page.getByRole('button',{name:'Fields',exact:true}).click();await page.getByRole('button',{name:'New field',exact:true}).click();await page.getByLabel('Name',{exact:true}).fill('Order number');await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByText('Saved.',{exact:true}).waitFor()
+  await page.goto(`${origin}/projects/${projectId}/ticket-settings`);await page.getByRole('button',{name:'Fields',exact:true}).click();await page.getByRole('button',{name:'New field',exact:true}).click();await page.getByLabel('Name',{exact:true}).fill('Order number');await page.getByRole('button',{name:'Create',exact:true}).click();await page.getByText('Saved.',{exact:true}).waitFor()
   const field=(await request(base+'/ticket-fields')).data.find(field=>field.name==='Order number'),checks=[]
   const openForm=async()=>{await page.goto(`${origin}/projects/${projectId}/edit?tab=forms`);await page.getByRole('button',{name:'New request form',exact:true}).click();await page.getByLabel('Add ticket field',{exact:true}).waitFor()}
   await openForm()

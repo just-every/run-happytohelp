@@ -16,7 +16,7 @@ import '../management-parity.css';
 const empty=()=>({title:'',content:'',actions:{},scope:{visibility:'shared',roles:[],groups:[],brands:[]}});
 export default function MacrosPage({projectId,recordId}){
  const path=`/api/management/projects/${projectId}/macros`,base=`/projects/${projectId}/macros`,navigate=useNavigate(),{markDirty,markSaved}=useUnsavedChanges(),{ask,dialog}=useConfirmation();
- const routeLocation=useDashboardLocation(),textareaRef=useRef(null);
+ const routeLocation=useDashboardLocation(),textareaRef=useRef(null),optionsRef=useRef(null);
  const [items,setItems]=useState(null),[draft,setDraft]=useState(null),[settings,setSettings]=useState(null),[members,setMembers]=useState([]),[tags,setTags]=useState([]),[attachments,setAttachments]=useState([]),[query,setQuery]=useState({search:'',page:1,sort:'title',direction:'asc'}),[pagination,setPagination]=useState(null),[error,setError]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false);
  useEffect(()=>{let active=true;setError('');setDraft(null);setSaved(Boolean(recordId)&&routeLocation.state?.savedReplyCreated===recordId);Promise.all([nativeRequest(`/api/management/projects/${projectId}/ticket-settings`),nativeRequest(`/api/management/projects/${projectId}/agents`),nativeRequest(`/api/dashboard/projects/${projectId}/tags`),nativeRequest(`${path}/attachment-options`)]).then(([s,m,t,a])=>{if(active){setSettings(s.data);setMembers(m.data);setTags(t.data);setAttachments(a.data);if(recordId==='create')setDraft({...empty(),scope:{...empty().scope,visibility:s.data.permissions.settings?'shared':'personal'}})}}).catch(e=>{if(active)setError(e.message)});if(recordId&&recordId!=='create')nativeRequest(`${path}/${recordId}`).then(r=>{if(active)setDraft(r.data)}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[projectId,recordId]);
  useEffect(()=>{if(recordId)return;const abort=new AbortController();setError('');nativeRequest(`${path}?${new URLSearchParams(query)}`,{signal:abort.signal}).then(r=>{setItems(r.data);setPagination(r.pagination)}).catch(e=>{if(!abort.signal.aborted)setError(e.message)});return()=>abort.abort()},[path,query,recordId]);
@@ -29,16 +29,22 @@ export default function MacrosPage({projectId,recordId}){
   const references=mergeReferences(current.draft.references||[],result.references);
   change('content',separateReferences(`${current.draft.content||''}${result.token}`,references));change('references',references);
  };
+ const insertName=()=>{
+  const input=textareaRef.current,token='{{requester.first_name | there}}';
+  const offset=Number(input?.dataset.contentOffset||0),start=input?.selectionStart??draft.content.length,end=input?.selectionEnd??start;
+  change('content',draft.content.slice(0,offset+start)+token+draft.content.slice(offset+end));
+  requestAnimationFrame(()=>{input?.focus();input?.setSelectionRange(start+token.length,start+token.length);});
+ };
  const save=async e=>{e.preventDefault();setBusy(true);setError('');try{const {references,...definition}=draft;const result=await nativeRequest(draft.id?`${path}/${draft.id}`:path,{method:draft.id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...definition,content:separateReferences(definition.content,references),expected_version:draft.version})});markSaved();setDraft(result.data);setSaved(true);if(!draft.id)await navigate({to:`${base}/${result.data.id}`,state:{savedReplyCreated:result.data.id}})}catch(e){setError(e.message)}finally{setBusy(false)}};
  const remove=()=>ask({title:`Delete ${draft.title}?`,body:<p>It will no longer be available in the picker. Version history and past usage remain.</p>,run:async()=>{await nativeRequest(`${path}/${draft.id}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({expected_version:draft.version})});markSaved();await navigate({to:base})}});
  return <><Feedback error={error} saved={saved}/>{!recordId?<ManagementLists section="macros" {...{items,base,projectId,pagination,query}} onQuery={setQuery}/>:!draft||!settings?<p role="status">Loading…</p>:<div className="workspace-settings"><form onSubmit={save}>
  <Section title="Reply" description="Write an answer you can reuse in conversations.">
   <Field name="title" label="Title" required value={draft.title} onChange={change}/>
   <div className="form-group"><label className="form-label" htmlFor="saved-reply-content">Reply text</label><ReferenceEditor id="saved-reply-content" className="form-control" minRows={6} content={draft.content} references={draft.references || []} onChange={value=>change('content',value)} textareaRef={textareaRef}/></div>
-  <button type="button" className="btn btn-white mb-2" onClick={()=>{const input=textareaRef.current,from=input?.selectionStart??draft.content.length,to=input?.selectionEnd??from,token='{{requester.first_name | there}}';change('content',draft.content.slice(0,from)+token+draft.content.slice(to));requestAnimationFrame(()=>{input?.focus();input?.setSelectionRange(from+token.length,from+token.length);});}}>Insert a name</button><span className="ms-2">Customer's first name</span>
-  <Field name="macro-visibility" label="Who can use it" value={draft.scope.visibility} onChange={(_,v)=>change('scope',{...draft.scope,visibility:v})} options={[{value:'personal',label:'Just me'},{value:'group',label:'My team'},{value:'shared',label:'Everyone'}]}/>
+  <button type="button" className="btn btn-white mb-2" onClick={insertName}>Insert a name</button><span className="ms-2">Customer's first name</span>
+  <Field name="macro-visibility" label="Who can use it" value={draft.scope.visibility} onChange={(_,v)=>{change('scope',{...draft.scope,visibility:v});if(v==='group'&&optionsRef.current)optionsRef.current.open=true;}} hint={draft.scope.visibility==='group'?(settings.groups.length?'Choose your team’s group in More options below.':<>Add a group in <a href={`/projects/${projectId}/ticket-settings`}>Ticket settings</a> before choosing My team.</>):undefined} options={[{value:'personal',label:'Just me'},{value:'group',label:'My team'},{value:'shared',label:'Everyone'}]}/>
  </Section>
- <details className="mb-3"><summary>More options</summary>
+ <details ref={optionsRef} className="mb-3"><summary>More options</summary>
   <Section title="Reply options"><InsertArticle projectId={projectId} disabled={busy} onInserted={insertArticle}/><Field name="reply_type" label="Reply type" options={[{value:'public',label:'Public reply'},{value:'note',label:'Internal note'}]} value={draft.actions.reply_type??'public'} onChange={(_,v)=>change('actions',{...draft.actions,reply_type:v})}/></Section>
   <MacroActionsEditor value={draft.actions} onChange={v=>change('actions',v)} {...{settings,members,tags,attachments}}/>
   <MacroScopeEditor value={draft.scope} onChange={v=>change('scope',v)} settings={settings}/>

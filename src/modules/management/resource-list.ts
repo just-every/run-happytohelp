@@ -18,7 +18,7 @@ export async function contactConversations(c:Context<AppEnv>,projectId:string){
  const where=`c.id IN (SELECT own.id FROM conversations own WHERE own.project_id=? AND own.contact_id=? UNION SELECT p.conversation_id FROM conversation_participants p WHERE p.contact_id=?) AND ${ticketScopeSql('?')} AND +c.project_id=?`,params=[projectId,contactId,contactId,actor.id,projectId]
  const [count,result]=await Promise.all([
   c.env.DB.prepare(`SELECT count(*) total FROM conversations c WHERE ${where}`).bind(...params).first<{total:number}>(),
-  c.env.DB.prepare(`SELECT c.id,c.updated_at,c.created_at,c.resolved_at,(SELECT substr(m.content,1,240) FROM messages m WHERE m.project_id=c.project_id AND m.conversation_id=c.id ORDER BY m.revision DESC LIMIT 1) preview FROM conversations c WHERE ${where} ORDER BY c.updated_at DESC,c.id ASC LIMIT ? OFFSET ?`).bind(...params,limit,(page-1)*limit).all(),
+  c.env.DB.prepare(`SELECT c.id,c.updated_at,c.created_at,c.resolved_at,c.status_id,c.status_category,(SELECT substr(m.content,1,240) FROM messages m WHERE m.project_id=c.project_id AND m.conversation_id=c.id ORDER BY m.revision DESC LIMIT 1) preview FROM conversations c WHERE ${where} ORDER BY c.updated_at DESC,c.id ASC LIMIT ? OFFSET ?`).bind(...params,limit,(page-1)*limit).all(),
  ])
  const total=count?.total||0
  return {data:result.results,pagination:{page,limit,total,hasMore:page*limit<total}}

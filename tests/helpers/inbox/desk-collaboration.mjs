@@ -171,6 +171,43 @@ export async function collaborationBrowser({width=1440,proofOnly=false}={}){
    assert.deepEqual(response.messages.map(message=>message.content),['Please review my replacement.'])
    await operatorPage.reload();await operatorPage.getByPlaceholder('Type your reply…').waitFor()
    await line(operatorPage).filter({hasText:'has an unsent draft'}).waitFor()
+   const drafts=['Owner replacement update','Operator replacement draft'],path=origin+'/api/conversations/'+ticket.id+'/messages'
+   let release
+   const held=new Promise(resolve=>{release=resolve}),commands=[]
+   for(const page of pages){
+    await page.getByRole('textbox',{name:'Reply to conversation'}).fill(drafts[pages.indexOf(page)])
+    await page.route(path,async route=>{
+     if(route.request().method()==='POST'){
+      commands.push(route.request().postDataJSON())
+      if(commands.length===2)release()
+      await held
+     }
+     await route.continue()
+    })
+   }
+   const responses=pages.map(page=>page.waitForResponse(response=>response.url()===path&&response.request().method()==='POST'))
+   try{await Promise.all(pages.map(page=>page.getByRole('button',{name:'Send',exact:true}).click()))}catch(error){release();throw error}
+   const actual=await Promise.all(responses)
+   assert.deepEqual(actual.map(response=>response.status()).sort(),[200,409])
+   assert.equal(commands[0].expectedRevision,commands[1].expectedRevision)
+   const loser=actual.findIndex(response=>response.status()===409),winner=1-loser,losingPage=pages[loser]
+   const error=losingPage.getByRole('alert').filter({hasText:/Not sent:.*conversation changed/})
+   await error.waitFor()
+   assert.match(await error.innerText(),/Review the latest reply, then send again/)
+   assert.equal(await losingPage.getByRole('textbox',{name:'Reply to conversation'}).inputValue(),drafts[loser])
+   // The conflict refresh reads the new reply without losing the operator's draft.
+   await losingPage.locator('.transcript-message-content').getByText(drafts[winner],{exact:true}).waitFor()
+   assert.equal((await request('/api/conversations/'+ticket.id+'/messages',undefined,visitor.token)).messages.length,response.messages.length+1)
+   for(const proofWidth of [1440,390]){
+    await losingPage.setViewportSize({width:proofWidth,height:proofWidth===390?844:900})
+    await losingPage.screenshot({path:shot('conflict-'+proofWidth+'.png'),fullPage:true})
+   }
+   await losingPage.setViewportSize({width:1440,height:900})
+   const recovered=losingPage.waitForResponse(response=>response.url()===path&&response.request().method()==='POST')
+   await losingPage.getByRole('button',{name:'Send',exact:true}).click()
+   assert.equal((await recovered).status(),200,'the operator explicitly sends after reviewing the latest reply')
+   assert.equal((await request('/api/conversations/'+ticket.id+'/messages',undefined,visitor.token)).messages.length,response.messages.length+2)
+   assert.equal(await losingPage.getByRole('textbox',{name:'Reply to conversation'}).inputValue(),'')
    assert.deepEqual(errors,[])
   }
   for(const context of contexts)await context.close()

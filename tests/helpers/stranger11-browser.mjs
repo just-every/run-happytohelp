@@ -67,6 +67,8 @@ export async function macroHandoffBrowser(){
   await page.getByLabel('Assignee',{exact:true}).selectOption({label:'Lena Patel'})
   await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByText('Saved.',{exact:true}).waitFor()
   await page.goto(`${origin}/projects/${projectId}/conversations/${mia.id}`)
+  await page.getByRole('button',{name:'Email not confirmed',exact:true}).click()
+  await page.getByRole('tooltip').waitFor()
   await page.getByRole('button',{name:'Actions',exact:true}).waitFor()
   const hide=page.getByRole('button',{name:'Hide conversation panel',exact:true});if(await hide.isVisible())await hide.click()
   await page.getByRole('button',{name:'Actions',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:'Request damage photo',exact:true}).click()

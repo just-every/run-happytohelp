@@ -11621,7 +11621,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationHeader.jsx": {
-      "sha256": "fe2365bac14c2421b7a49d44c7d3c35b837398086b505c8be61f0193575f039e",
+      "sha256": "5939b6afcd14eee6dd5f36a58237bf647c179274167c0b6fcbc70c76f6af955d",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationItem.jsx": {
@@ -17289,7 +17289,7 @@
       "executable": false
     },
     "tests/helpers/stranger11-browser.mjs": {
-      "sha256": "f1f632b5966dcf066a44b2fe0efa8e51b532201d9f7e67237955756d90a05eb0",
+      "sha256": "04e6452a83ca070bd3d769c064e5e9c0452390c0e74a5474bc9e3d342019a312",
       "executable": false
     },
     "tests/helpers/stranger13-browser.mjs": {

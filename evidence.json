@@ -1,10 +1,10 @@
 {
   "files": [
     {
-      "blob": "67f9d44d978523e74726014050ddbaa6662f1a27",
-      "bytes": 16562,
+      "blob": "9c30a8d2f15e7f6fe75817f55771d49e5f14ea06",
+      "bytes": 18335,
       "path": "REPORT.md",
-      "sha256": "49c578980b65696ef6469f423b1b0893fc1b03bdaec1c5d835933f554ff02452"
+      "sha256": "1ac836bc6bee63bd6b614d7c3cff91ea2c398332870cdf757bd9d4eb714cd3cb"
     },
     {
       "blob": "113292d08c8f7a11db9dc54f8316bc01e80f25e6",
@@ -43,16 +43,16 @@
       "sha256": "3d5c871b04cf55700e3566bc37538eb5a821ec06197ba060fe085db42856d7a7"
     },
     {
-      "blob": "1c499dbe27d5fde2708f23b3b12ff1b25808c1f7",
-      "bytes": 2930,
+      "blob": "322086fc0006ecab4b8a866ff9be8f540d7fce42",
+      "bytes": 3647,
       "path": "checks-receipt.json",
-      "sha256": "e9f832520570a199784a4ad329b43ec8b3c266b9804156dd7629c10e969224df"
+      "sha256": "5b6dba10543ba4c27b222af5384e8e022f9184988fba81bbeb30a09ba750a5f1"
     },
     {
-      "blob": "4de03533d24e9435849ff861e2e2599cccd0332c",
-      "bytes": 2597,
+      "blob": "f9dcc672f35a1ac13ddc072424529a715f1eccd2",
+      "bytes": 3273,
       "path": "ci-receipt.json",
-      "sha256": "061c287f5ba842210ba94afa3798adaf556d27f2849f5256593bcc2dd1467413"
+      "sha256": "11e2abd2bd5b2b73f523fa84116c071dc548236fbc6059f38ab2a37aa8c558aa"
     },
     {
       "blob": "8739562d69072fd3305be07fd1d21bfa1cce09d2",
@@ -65,6 +65,18 @@
       "bytes": 745,
       "path": "commit-identities.txt",
       "sha256": "7a0aa6d108c3bcecef0340402d819db88f3f8ac0eedf85fc8cb5a76b8b92a51a"
+    },
+    {
+      "blob": "99c2d4d38cdb61544aa478624c598ecf5dad75bd",
+      "bytes": 14107,
+      "path": "evidence-publication-initial.txt",
+      "sha256": "4cab14586872e9f96e604678d56e3dbecb01d996380c02107f0014260831d12b"
+    },
+    {
+      "blob": "cbc375b1afe790f39ad932e191926a0b9128396b",
+      "bytes": 14271,
+      "path": "evidence-validation-initial.json",
+      "sha256": "e71eced7f06ac7b65b72f2aa9731fb3e294ec2c3c3ec35e70c56e369c08d833c"
     },
     {
       "blob": "3a62b383fc4cbb0d1a9893a515936d4c592fbc33",
@@ -115,10 +127,10 @@
       "sha256": "07bea8192ef6cacc4b7c346a7c3c7cce068001cb93d19b8257eaf83aa6d58775"
     },
     {
-      "blob": "f5959df8c197d87a3247a4a564b6cbca458d8627",
-      "bytes": 605,
+      "blob": "6432713617a562050e22adfecb4e568a1f8b0d93",
+      "bytes": 1202,
       "path": "product-terminal.json",
-      "sha256": "1c3459f14a5b7eff05e2a1d3bf1df82b19bff2f99eea746952a81f1ef1dec963"
+      "sha256": "c661833418a97f73831753e01f1b672a236be949446a264eb6ebcb792b436680"
     },
     {
       "blob": "e3ef2375f04d5381d34a583cdbb747f6ac3f4cd4",
@@ -133,10 +145,10 @@
       "sha256": "ca849171e65bbe6b3e7b35eac309ec84dba3a608346e7253462e551341f869fe"
     },
     {
-      "blob": "67f9d44d978523e74726014050ddbaa6662f1a27",
-      "bytes": 16562,
+      "blob": "9c30a8d2f15e7f6fe75817f55771d49e5f14ea06",
+      "bytes": 18335,
       "path": "reports/hh-owner-design-inbox-1.md",
-      "sha256": "49c578980b65696ef6469f423b1b0893fc1b03bdaec1c5d835933f554ff02452"
+      "sha256": "1ac836bc6bee63bd6b614d7c3cff91ea2c398332870cdf757bd9d4eb714cd3cb"
     },
     {
       "blob": "e0746d82caf17348cdc04c253bcde3312f0717a8",

@@ -80,5 +80,20 @@
     ],
     "onHoldCustomerState": "open",
     "solvedCustomerState": "solved"
-  }
+  },
+  "ci": {
+    "runId": 44094867861,
+    "conclusion": "failure",
+    "event": "push",
+    "head_branch": "cloud/hh-owner-design-inbox-1",
+    "head_sha": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44094867861",
+    "id": 44094867861,
+    "name": "Verify",
+    "status": "completed",
+    "githubCallsUsed": 10,
+    "diagnostics": "not retrieved: ten-call budget exhausted"
+  },
+  "terminalStatus": "BLOCKED",
+  "blocker": "Exact-head Verify 44094867861 completed/failure; ten-call GitHub budget exhausted before failed-job discovery/log retrieval. Failure cause remains undiagnosed; no green claim or generator-only exception is asserted."
 }

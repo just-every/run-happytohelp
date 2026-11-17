@@ -13,5 +13,17 @@
   ],
   "pr": null,
   "signedBy": "Run Edit Run fleet",
-  "recordedAt": "2026-11-17T13:43:39.285063+00:00"
+  "recordedAt": "2026-11-17T14:12:22.625938+00:00",
+  "status": "BLOCKED",
+  "blocker": "Exact-head Verify 44094867861 completed/failure; ten-call GitHub budget exhausted before failed-job discovery/log retrieval. Failure cause remains undiagnosed; no green claim or generator-only exception is asserted.",
+  "verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_branch": "cloud/hh-owner-design-inbox-1",
+    "head_sha": "4c86a426ccd1184b2be306de181a27ef85e767d3",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44094867861",
+    "id": 44094867861,
+    "name": "Verify",
+    "status": "completed"
+  }
 }

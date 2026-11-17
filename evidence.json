@@ -271,6 +271,12 @@
       "sha256": "0377061c5e7e5abf171c83d037ceaa0838b6bd34a8e8d6d5b2b8654f56406ef0"
     },
     {
+      "blob": "4683567e5d13a8879866a3c943258a59bfa9eb90",
+      "bytes": 132,
+      "path": "evidence-transfer.txt",
+      "sha256": "9b3e15ad893d2bb1ff7500590bf26adcbab9038119cb83fa00052c2513966948"
+    },
+    {
       "blob": "d3485c2dfef3071a2f61fa45cd043d6fde7737ee",
       "bytes": 691,
       "path": "provenance.json",

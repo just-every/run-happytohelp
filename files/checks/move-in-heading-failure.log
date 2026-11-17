@@ -1,0 +1,31 @@
+TAP version 13
+# Zendesk Connect: both presses POSTed and navigated to their returned authorize URL from the same page load
+# Subtest: an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import
+not ok 1 - an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import
+  ---
+  duration_ms: 268031.125807
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/hh-owner-design-setup-1/repo/tests/journeys/move-in-browser.mjs:53:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.waitFor: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('heading', { name: 'HappyToHelp export', exact: true }) to be visible[22m
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    legacyPackageBrowserFlow (/home/agent/rer-consolidation/work/hh-owner-design-setup-1/repo/tests/move-in/legacy-adoption-integration/browser.mjs:14:74)
+    async file:///home/agent/rer-consolidation/work/hh-owner-design-setup-1/repo/tests/journeys/move-in-browser.mjs:64:2
+    async TestContext.<anonymous> (/home/agent/rer-consolidation/work/hh-owner-design-setup-1/repo/tests/journeys/move-in-browser.mjs:29:35)
+  ...
+# Native runtime failure artifacts retained: /tmp/h2h-native-runtime-ieCVSp
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 271617.494181

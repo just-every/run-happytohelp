@@ -1,0 +1,440 @@
+{
+  "afterHead": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1",
+  "beforeHead": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "files": [
+    {
+      "file": "screenshots/before-ai-1440.png",
+      "bytes": 137895,
+      "sha256": "412427471f66fa1ba3e40adbcfc50a6c5ad64d557740d38f644f23678cc84076",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-assurance-1440.png",
+      "bytes": 281929,
+      "sha256": "dec4fcabbee0ac7e7b5a1f54830a2d056523b72139e6eeb342bd673b1f686b27",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-business-hours-1440.png",
+      "bytes": 233088,
+      "sha256": "ee7ce367d89e19553176585003250e9e130420646b968caa603afa2d117e647d",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-chat-widget-1440.png",
+      "bytes": 99631,
+      "sha256": "5421e2c78c4875c26c250d712cad89689e79abdb508516ca486f9be313737ac7",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-conversation-generate-1440.png",
+      "bytes": 150801,
+      "sha256": "ae8c170094a7150a0385876a57d2f9ee4d08fd19392879cf51e31846c59ead80",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-cutover-1440.png",
+      "bytes": 79945,
+      "sha256": "49bcec2598da30312383dadcee1b6dd16564a97a6b52c5052d9a9b746cc1c799",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-email-1440.png",
+      "bytes": 164266,
+      "sha256": "8f2da41caa477be05f91c781fceff55d207fcbd29ef041a4dc1b19ea227a49ab",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-gmail-1440.png",
+      "bytes": 194067,
+      "sha256": "53862820ad17357a2cef3502bcc02a9c74e9c8188bc60d5b2c9ebc99ccffd0f4",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-original-export-1440.png",
+      "bytes": 93051,
+      "sha256": "b7de23c8da54485e5914ab0b03d79e9e2aa68e7788396e73efe7253c70028f5e",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-saved-replies-1440.png",
+      "bytes": 76746,
+      "sha256": "7713dcf6554131a866f1592bedb4553337fa14c841c8b4fc041a35f04de92738",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-setup-ai-1440.png",
+      "bytes": 322111,
+      "sha256": "e0b1b7e9b41e18f2377fa9b42f9aea9120faa219d491ccec6df43c2e97c01a8c",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-team-1440.png",
+      "bytes": 99444,
+      "sha256": "8dc03c446f8602d8b64663a0796a55192e1cfdbfea97b509937fb930424bded0",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-workspace-1440.png",
+      "bytes": 220448,
+      "sha256": "2f7adb21737248ff62ae9832a5f52eb1fbe0ee5397b588a4157c2a0605d25855",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-zendesk-1440.png",
+      "bytes": 163644,
+      "sha256": "2cc7394d08959114511595d55e3c6a4be640d18d7e2e1769d5a33820132ded89",
+      "width": 1440,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-ai-390.png",
+      "bytes": 106253,
+      "sha256": "cdf1752c4af5ced6d43b36c6525461199b2a6530a3fb9a96919cf666e06e5451",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-assurance-390.png",
+      "bytes": 233436,
+      "sha256": "044a68a02e3c8242e9409ac8a7dc79cf63a202acd12c69473e613d390a2dd082",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-business-hours-390.png",
+      "bytes": 184734,
+      "sha256": "7f47e0046ddda44e8f789f3392e965a31d268014c9b5aff0a72ae7bc2484a657",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-chat-widget-390.png",
+      "bytes": 53908,
+      "sha256": "f7a36ab852bc45a6146bf085ee94e7e1ad12119632b0ae56012fc92456816a20",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-conversation-generate-390.png",
+      "bytes": 45457,
+      "sha256": "9179c3d9b7f34a8a151f276fa9e4978de78ab17ee74b433703f54fb0fed030fc",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-cutover-390.png",
+      "bytes": 45352,
+      "sha256": "d95b833621fb01ca4732fb5893df150ff06ce9d0f879cc50d0665b3d79d7bbd9",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-email-390.png",
+      "bytes": 130750,
+      "sha256": "79a2e5deb5efdc7daa6204bbc7dcdce6791fb6553511a478840dbd56e0f3f196",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-gmail-390.png",
+      "bytes": 149214,
+      "sha256": "c4efc3bea380704e7538cb971ae96ac0c1059c336e15257bea391b2610ecf3a2",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-original-export-390.png",
+      "bytes": 57181,
+      "sha256": "5bbf8d42069072ac16bf331bde71113fbc922554052e11d5f0f426b77137204f",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-saved-replies-390.png",
+      "bytes": 38739,
+      "sha256": "4dc77264c29e095ca0fe1e789d092c57d2a0b45a673f5ce86d865e7c8a1eea54",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-settings-menu-390.png",
+      "bytes": 31471,
+      "sha256": "1c0d950d9fc6e3b8eec36af4b98fd181584530f262fa1aba41bb5691f848e16e",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-setup-ai-390.png",
+      "bytes": 268486,
+      "sha256": "3a37ac9ad2e0b878e719fe7d5975d06cd15c167ffa47109f9fdbc1dbca438b6f",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-team-390.png",
+      "bytes": 88324,
+      "sha256": "4f80fbfd879735932a0a79bdadcd08fdd840937c2b1dde10dd806ae2e5bec48a",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-workspace-390.png",
+      "bytes": 170643,
+      "sha256": "284ea4ae35930ef2b9613c3c100afef4d5e6f4dc5f54c760bbe08045bedd8318",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/before-zendesk-390.png",
+      "bytes": 118234,
+      "sha256": "46217a314e8076652c246b0395adcdf36037267a7104e93b2beb334063113aa2",
+      "width": 390,
+      "phase": "before"
+    },
+    {
+      "file": "screenshots/after-ai-1440.png",
+      "bytes": 157054,
+      "sha256": "1ed7cf6d57a09ead16795dba0cd3c5f83f1bde684450e51379a0d3f4e4651d22",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-ai-details-1440.png",
+      "bytes": 190002,
+      "sha256": "273cffebce697558cefe0970c161e070c1020da877d1258caa70cf69fc48c998",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-assurance-1440.png",
+      "bytes": 291815,
+      "sha256": "73fb0d34f0f76e752923e7fd10008d211c3ea363e6eb53ed709362b36116ac46",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-business-hours-1440.png",
+      "bytes": 230055,
+      "sha256": "ffdf63eb1ed6bc095b89334c20cdd3cad9fd9179701ab6123617d01e82794fc6",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-chat-widget-1440.png",
+      "bytes": 93025,
+      "sha256": "1e2ce70aa8df540d1bdc87b12a11aadd197441b35a6053062b0cae255a888454",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-conversation-generate-1440.png",
+      "bytes": 154751,
+      "sha256": "22aeb27c47f2a62dbb596a0ec1a5ff0a42089e5a5b54949875a4ce735d6c0220",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-cutover-1440.png",
+      "bytes": 89022,
+      "sha256": "e61d16b40299f4497f4f6f049a8e4cb795e98f6b567f5a383ecd3415e538e055",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-email-1440.png",
+      "bytes": 153266,
+      "sha256": "4f3764edcf8298affdd92f1738a49609cbdbb8e358e9b7a1fba4807a61196a67",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-gmail-1440.png",
+      "bytes": 188482,
+      "sha256": "f83ad4bcfcecf189bc5feadee943ed1e22b3fdd950848e081f07a5fc6cd55e6c",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-help-center-1440.png",
+      "bytes": 70260,
+      "sha256": "0adc2d90f60e19b8f4ad5c42eaa71c4e29b157f121e1aa827fac25e0189b9c64",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-original-export-1440.png",
+      "bytes": 124385,
+      "sha256": "c79d3a9a79f0aa8b601382ce7c966b99813e15f4b13d1177aa290bc7dbdac1c0",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-saved-replies-1440.png",
+      "bytes": 67689,
+      "sha256": "438c69804ac6a9f0f545046e268037a2aa8e535f97e2569446bcd1da8c767fc3",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-setup-ai-1440.png",
+      "bytes": 268611,
+      "sha256": "714b90470bcd7fd4c0c8e15c4a47ebeb087173f5f97073bb153d1b3ceb318f55",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-team-1440.png",
+      "bytes": 90579,
+      "sha256": "88ea0487c10f40adfbd398e7749cf5f2f5ddb58633e3a975bcae88d71ef33502",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-workspace-1440.png",
+      "bytes": 221318,
+      "sha256": "3270538a5ff054ec4a17db9e96f86bf7b6771349cd5cf44b4eece8a2cd7239bc",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-zendesk-1440.png",
+      "bytes": 147515,
+      "sha256": "238e27ce3340f74cf31921cdeae11d937a1346f40f9481821a102866cfd5c46e",
+      "width": 1440,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-ai-390.png",
+      "bytes": 126658,
+      "sha256": "9a4b447958ed627d81d11aeb8af1339e05f1988a2d006150c965c217854ee14d",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-ai-details-390.png",
+      "bytes": 158616,
+      "sha256": "ab15e4fa7e73f2446c82c4324aa170b38fc81c0870499876269096dcd9df8846",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-assurance-390.png",
+      "bytes": 237940,
+      "sha256": "90eb3c8b87b6f2b2b8316a0f96ae1af30281469e0d96d12987da8bca96f974ca",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-business-hours-390.png",
+      "bytes": 189255,
+      "sha256": "1e70e355159170444a9bca566009b6849eb7103cca6abcd6e06266dec3e0ec4c",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-chat-widget-390.png",
+      "bytes": 54802,
+      "sha256": "fd2a2138efbfd4bb472e6d79fe8855541262e125d4f20458ca5b1c86df86a324",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-conversation-generate-390.png",
+      "bytes": 42461,
+      "sha256": "5d4d866e4eb6ac40cb3941c52ade2e89f6840d48b8aab4375ca72842a8fd4002",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-cutover-390.png",
+      "bytes": 49145,
+      "sha256": "12046febd51de58646fc800561626362c4262c5c19df8137952bef47361a23d9",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-email-390.png",
+      "bytes": 129128,
+      "sha256": "5c024fa8510b5fb42ca0d1bef40e24d53bd00dad11badd3613fd1f67ecf1c118",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-gmail-390.png",
+      "bytes": 160330,
+      "sha256": "1ea6d6a85d5c80af149cf161d33abdc83971338be75e0bd3fbb31d3b1f78a467",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-help-center-390.png",
+      "bytes": 41779,
+      "sha256": "7da7d2e63d1e5867d9c733107deef480f41f493b4813388f5a30034a37d1ef95",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-original-export-390.png",
+      "bytes": 91932,
+      "sha256": "dd88d13e5d08710b448e64b74ac7b7461afb33a44947f07d040f7848787b5a55",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-saved-replies-390.png",
+      "bytes": 38318,
+      "sha256": "157e9c1f22a0640eb44944124c6f7bb7d76effac74d3dcb9c7348c6bd4dc3468",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-settings-menu-390.png",
+      "bytes": 24919,
+      "sha256": "84c08fdb931637efda62c320af5200a1c726c9928d5ea0b58a201d9cb2768dd4",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-setup-ai-390.png",
+      "bytes": 224049,
+      "sha256": "a00d180af17f7c2f07cfaa1583fb971a832725425bba6c7fa5a0f932b74a8619",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-team-390.png",
+      "bytes": 87401,
+      "sha256": "01664445bbcc4e652017f01a642b4f45588cbf4e9d068116814bf81e7d8cf639",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-workspace-390.png",
+      "bytes": 177182,
+      "sha256": "31a57ffe8432c612de77f2348ab28e6059632f5800b38646cb9e85692a9d51ec",
+      "width": 390,
+      "phase": "after"
+    },
+    {
+      "file": "screenshots/after-zendesk-390.png",
+      "bytes": 113981,
+      "sha256": "960a4b1fc0f8a7b082fb4a6ea7bd4721bcded13f3f14860776fd42836d058dfa",
+      "width": 390,
+      "phase": "after"
+    }
+  ]
+}

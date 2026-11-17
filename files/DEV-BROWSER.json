@@ -1,0 +1,125 @@
+{
+  "source": "local rer dev",
+  "metrics": [
+    {
+      "name": "setup-ai",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "setup-ai",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "ai",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "ai",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "ai-details",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "ai-details",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "email",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "email",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "gmail",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "gmail",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "zendesk",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "zendesk",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "original-export",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "original-export",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "cutover",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "cutover",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "assurance",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "assurance",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "workspace",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "workspace",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "business-hours",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "business-hours",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "help-center",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "help-center",
+      "width": 390,
+      "overflow": false
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "tag": "hh-owner-design-setup-1",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-design-setup-1",
+  "head": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1",
+  "mainAtStart": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "pushed": true,
+  "createdAt": "2026-11-17T13:13:41.082056+00:00",
+  "checks": [
+    {
+      "command": "rer build",
+      "result": "passed",
+      "head": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "result": "passed",
+      "head": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "result": "passed",
+      "head": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1"
+    },
+    {
+      "command": "rer check --profile first-party",
+      "result": "passed",
+      "head": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/journeys/first-run.mjs",
+      "result": "passed",
+      "tests": 2,
+      "note": "Before final UI refinements; routes unchanged."
+    },
+    {
+      "command": "localEmailSetupBrowser()",
+      "result": "passed",
+      "note": "Existing owner-setup helper; copy/email equality, manual fallback, hidden unconfigured authorization, top-level hours saving and Advanced navigation."
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/journeys/move-in-browser.mjs",
+      "result": "passed",
+      "tests": 1,
+      "head": "9b3eeab00892f72e7e88bad18fb7f771fc697879",
+      "note": "Follow-ups change only shared notice container/landmark."
+    },
+    {
+      "command": "nativeSettingsBrowser()",
+      "result": "passed",
+      "head": "9b3eeab00892f72e7e88bad18fb7f771fc697879"
+    },
+    {
+      "command": "missingProviderProcedureBrowser()",
+      "result": "passed",
+      "head": "e562c1f83bdefce180ec22568ef946c32bf367a3"
+    },
+    {
+      "command": "terminal browser proof",
+      "result": "passed",
+      "head": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1",
+      "stateCaptures": 32,
+      "phoneSettingsMenuExtra": 1,
+      "pageErrors": 0,
+      "horizontalOverflow": 0,
+      "widths": [
+        1440,
+        390
+      ]
+    }
+  ],
+  "contractStatusChanges": [],
+  "migrationsOrVersionOrPinChanges": [],
+  "counts": {
+    "settingsDestinationsBefore": 26,
+    "settingsDestinationsAfter": 28,
+    "visibleEverydayLinksAfter": 9,
+    "advancedLinksAfter": 19,
+    "testDeclarationsBefore": 122,
+    "testDeclarationsAfter": 122,
+    "addedRegistrations": 0
+  },
+  "defaults": {
+    "D6": "developer hand-off; no unsupported browser secret-store field",
+    "D10": "documented operator/exporter hand-off; no invented old-service screen steps"
+  },
+  "ci": {
+    "id": 44090438878,
+    "head": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1",
+    "status": "in_progress",
+    "conclusion": null,
+    "url": "https://github.com/just-every/run-happytohelp/actions/runs/44090438878"
+  },
+  "publicationScan": "Mac lander; not available/run in cloud",
+  "landing": "not performed",
+  "pr": null,
+  "ciObservationCalls": 6,
+  "updatedAt": "2026-11-17T13:25:19.507189+00:00"
+}

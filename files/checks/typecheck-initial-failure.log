@@ -1,0 +1,8 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> happytohelp@0.4.31 typecheck /home/agent/rer-consolidation/work/hh-owner-design-setup-1/repo
+> node scripts/generate-routes.mjs && tsc --noEmit
+
+src/routes/_dashboard.tsx(18,5): error TS2322: Type '({ location }: BeforeLoadContextOptions<Register, RootRoute<Register, undefined, {}, AnyContext, AnyContext, {}, undefined, unknown, unknown, unknown, unknown, undefined>, ... 6 more ..., undefined>) => Promise<...>' is not assignable to type '(ctx: BeforeLoadContextOptions<Register, RootRoute<Register, undefined, {}, AnyContext, AnyContext, {}, undefined, unknown, unknown, unknown, unknown, undefined>, ... 6 more ..., undefined>) => never'.
+  Type 'Promise<{ editorPreload: boolean; }>' is not assignable to type 'never'.
+ ELIFECYCLE  Command failed with exit code 2.

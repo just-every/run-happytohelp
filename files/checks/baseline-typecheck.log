@@ -1,0 +1,4 @@
+
+> happytohelp@0.4.31 typecheck /tmp/hh-baseline
+> node scripts/generate-routes.mjs && tsc --noEmit
+

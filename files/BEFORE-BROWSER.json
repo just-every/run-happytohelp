@@ -1,0 +1,47 @@
+{
+  "head": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "source": "rer-built emitted Worker, real routes and local storage; no external providers",
+  "metrics": [
+    {
+      "name": "team",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "team",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "chat-widget",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "chat-widget",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "saved-replies",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "saved-replies",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "conversation-generate",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "conversation-generate",
+      "width": 390,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

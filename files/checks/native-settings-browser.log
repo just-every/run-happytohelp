@@ -1,0 +1,2 @@
+PROBE browser ACCESS-001: owner/admin load and save General, Appearance and Availability; collaborator/operator/custom-admin refused
+after browser proof passed: 32 screenshots, no browser errors

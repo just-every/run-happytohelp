@@ -1,0 +1,17 @@
+TAP version 13
+# Zendesk Connect: both presses POSTed and navigated to their returned authorize URL from the same page load
+# Subtest: an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import
+ok 1 - an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import
+  ---
+  duration_ms: 273989.495292
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 277683.26689

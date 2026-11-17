@@ -1,0 +1,23 @@
+TAP version 13
+# Welcome email not sent 93c1bf19-740c-4c77-b20b-46d434fa5f5f Managed mailbox is not active
+# Subtest: a first owner provisions useful support, observes actual Setup receipts, installs a provider and answers within the daily allowance while local and uncertain mail stay honest
+ok 1 - a first owner provisions useful support, observes actual Setup receipts, installs a provider and answers within the daily allowance while local and uncertain mail stay honest
+  ---
+  duration_ms: 123588.399762
+  type: 'test'
+  ...
+# Subtest: a new owner imports their website as private searchable knowledge once, keeps their own edits and deletes the source without later jobs bringing it back
+ok 2 - a new owner imports their website as private searchable knowledge once, keeps their own edits and deletes the source without later jobs bringing it back
+  ---
+  duration_ms: 4717.010151
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 128874.548609

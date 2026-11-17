@@ -1,0 +1,8 @@
+{
+  "head": "4fd4965485351d1a45dd10f8e1b3ba69ea78afc1",
+  "typecheck": "passed",
+  "rer_check_first_party": "passed",
+  "source_check": "passed",
+  "build": "passed",
+  "publication_scan": "Mac lander; not run in cloud"
+}

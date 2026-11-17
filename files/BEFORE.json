@@ -1,0 +1,25 @@
+{
+  "head": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "screens": [
+    "before-ai-1440.png",
+    "before-ai-390.png",
+    "before-assurance-1440.png",
+    "before-assurance-390.png",
+    "before-business-hours-1440.png",
+    "before-business-hours-390.png",
+    "before-cutover-1440.png",
+    "before-cutover-390.png",
+    "before-email-1440.png",
+    "before-email-390.png",
+    "before-gmail-1440.png",
+    "before-gmail-390.png",
+    "before-original-export-1440.png",
+    "before-original-export-390.png",
+    "before-setup-ai-1440.png",
+    "before-setup-ai-390.png",
+    "before-workspace-1440.png",
+    "before-workspace-390.png",
+    "before-zendesk-1440.png",
+    "before-zendesk-390.png"
+  ]
+}

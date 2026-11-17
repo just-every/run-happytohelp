@@ -1,5 +1,7 @@
 import { isNoRequester } from '../../../modules/customers/no-requester';
 import React, { useContext } from 'react';
+import {useDashboardSettings} from '../../native/dashboard-state';
+import LocalMailNotice from '../../native/components/LocalMailNotice';
 import PropTypes from 'prop-types';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -32,13 +34,16 @@ export default function ConversationHeader({
     panelToggleRef,
 }) {
     const { getProject, isGlobalInbox, resolveConversation, setIsMainVisible } = useContext(ChatContext);
+    const {mailMode} = useDashboardSettings();
+    const survey = conversation.surveySettings;
+    const asksForRating = conversation.channel === 'widget' ? survey?.widgetEnabled && !conversation.contact.csat_widget_optout : survey?.enabled;
     const projectName = isGlobalInbox ? getProject(conversation.project_id).name : null;
     const isAiAssigned = Boolean(conversation.ai_id);
     // A Closed ticket is final: nothing reopens it, and customer replies open a new ticket.
     const isFinal = conversation.status_category === 'closed';
     const statusCategory = conversation.status_category || (conversation.resolved_at ? 'solved' : 'open');
     const isSolved = statusCategory === 'solved';
-    const statusLabel = { new: 'New', open: 'Open', pending: 'Pending', on_hold: 'On-hold', solved: 'Solved', closed: 'Closed · final' }[statusCategory];
+    const statusLabel = { new: 'New', open: 'Open', pending: 'Pending', on_hold: 'On hold', solved: 'Solved', closed: 'Closed · final' }[statusCategory];
     const canManage = useCan(conversation.project_id, 'conversations.manage');
     const contactEmail = conversation.contact.email && conversation.contact.email !== conversation.contact.display_name
         ? conversation.contact.email
@@ -62,7 +67,7 @@ export default function ConversationHeader({
     const showAlert = Boolean(hasPanelAlert) && !isPanelVisible;
 
     return (
-        <div className={ `chat-header conversation-header${atTop ? '' : ' is-scrolled'}` }>
+        <><LocalMailNotice mode={mailMode}/><div className={ `chat-header conversation-header${asksForRating && !isSolved && !isFinal ? ' has-rating-action' : ''}${atTop ? '' : ' is-scrolled'}` }>
             <div className="conversation-header-panel">
                 <div className="conversation-header-identity">
                     <button type="button" className="conversation-header-back nav-link d-xl-none" { ...tooltip('Show conversations', 'right') } onClick={ () => setIsMainVisible(false) }>
@@ -84,7 +89,7 @@ export default function ConversationHeader({
                 <div className="conversation-header-chips">
                     { !noRequester && (conversation.contact.unverified_sender
                         ? <span className="badge text-bg-danger-subtle" title="This email's From address was not authenticated, so it is kept apart from the customer who uses that address. Replies go only to that address.">Unverified sender</span>
-                        : conversation.contact.is_verified ? <span className="badge text-bg-primary">Verified</span> : <span className="badge text-bg-secondary-subtle">Unverified</span>) }
+                        : !conversation.contact.is_verified && conversation.channel === 'widget' && Boolean(conversation.contact.email || conversation.contact.provided_email) && <OverlayTrigger trigger={['hover', 'focus', 'click']} placement="bottom" overlay={<Tooltip id={`${conversation.id}-email-confirmation`}>{`${conversation.contact.provided_name || contactName} typed this email in the chat; we haven't checked it.`}</Tooltip>}><button type="button" className="badge border-0 text-bg-secondary-subtle">Email not confirmed</button></OverlayTrigger>) }
                     { conversation.resolved_at
                         ? <OverlayTrigger placement="bottom" overlay={ <Tooltip id={ `${conversation.id}-resolved-at` }><TimeAgo date={ conversation.resolved_at } /></Tooltip> }><span className={ `conversation-header-status is-closed${ isFinal ? ' is-final' : '' }` } title={ isFinal ? 'Closed tickets are final. A customer reply opens a new ticket.' : undefined }>{ statusLabel }</span></OverlayTrigger>
                         : <span className="conversation-header-status is-open">{ statusLabel }</span> }
@@ -93,7 +98,7 @@ export default function ConversationHeader({
                 <div className="conversation-header-actions">
                     { canManage && !isFinal && (isSolved
                         ? <button type="button" className="btn btn-white conversation-header-reopen" title="Reopen conversation" onClick={ () => resolveConversation(conversation, false).catch(() => {}) }><i className="fe fe-rotate-ccw me-2" aria-hidden="true"></i>Reopen</button>
-                        : <button type="button" className="btn btn-white conversation-header-close" title="Solve conversation" onClick={ () => resolveConversation(conversation).catch(() => {}) }><i className="fe fe-check-circle me-2" aria-hidden="true"></i>Solve</button>) }
+                        : <button type="button" className="btn btn-white conversation-header-close" title={asksForRating ? (survey?.scale === 'five' ? `${contactName} will be asked to rate this answer from 1 to 5.` : `${contactName} will be asked one question: did this answer your question?`) : 'Solve conversation'} onClick={ () => resolveConversation(conversation).catch(() => {}) }><i className="fe fe-check-circle me-2" aria-hidden="true"></i>{asksForRating ? 'Solve and ask for a rating' : 'Solve'}</button>) }
                     <button
                         type="button"
                         className={ `btn btn-white conversation-assistant-toggle${ showAlert ? ' has-alert' : '' }` }
@@ -108,6 +113,6 @@ export default function ConversationHeader({
                     </button>
                 </div>
             </div>
-        </div>
+        </div></>
     );
 }

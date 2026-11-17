@@ -44,7 +44,7 @@ function MessageItem({ message, conversation, showActor = true, grouped = false,
             </details> }
             <KnowledgeReferences references={message.knowledgeReferences || []} showPreview={false}/>
             <MessageCitations message={message} />
-            <MessageMailStatus status={message.email_status} />
+            {!isCustomer && <MessageMailStatus status={message.email_status} chatCustomer={conversation?.channel === 'widget' && !message.erased_at ? conversation.contact?.display_name : null} />}
             <MessageChannelStatus status={message.channel_status} />
             { message.media && message.media.map(media => (
                 <Media key={ media.id } media={ media }/>

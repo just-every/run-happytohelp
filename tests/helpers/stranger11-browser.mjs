@@ -3,8 +3,8 @@ import {writeFile} from 'node:fs/promises'
 import {createRuntime} from './emitted-runtime.mjs'
 import {launchBrowser,viewports,evidence} from '../journeys/kit/browser.mjs'
 
-export async function strangerFixture(){
- const runtime=await createRuntime({vars:{H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}}),origin=runtime.origin,browser=await launchBrowser()
+export async function strangerFixture({vars={}}={}){
+ const runtime=await createRuntime({vars:{H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test',...vars}}),origin=runtime.origin,browser=await launchBrowser()
  const owner={email:'synthetic-hh-owner@example.test',password:'synthetic-hh-owner-password',name:'Damage support',ownerName:'Owner'}
  const api=async(path,body,token,method=body===undefined?'GET':'POST',headers={})=>{
   const response=await fetch(origin+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{ }),...headers},body:body===undefined?undefined:JSON.stringify(body)})
@@ -58,19 +58,24 @@ export async function macroHandoffBrowser(){
   const lenaId=(await request(`/api/management/projects/${projectId}/agents`)).data.find(member=>member.name==='Lena Patel').id
   await page.goto(`${origin}/projects/${projectId}/macros/create`)
   await page.getByLabel('Title',{exact:true}).fill('Request damage photo')
-  await page.getByLabel('Content',{exact:true}).fill('Please send a damage photo, {{requester.first_name | there}}. Ticket {{ticket.id}}.')
+  await page.getByLabel('Reply text',{exact:true}).fill('Please send a damage photo, ')
+  await page.getByRole('button',{name:'Insert a name',exact:true}).click()
+  await page.getByLabel('Reply text',{exact:true}).press('End')
+  await page.getByLabel('Reply text',{exact:true}).pressSequentially('. Ticket {{ticket.id}}.')
+  await page.getByText('More options',{exact:true}).click()
   await page.getByLabel('Status',{exact:true}).selectOption({label:'Pending'})
   await page.getByLabel('Assignee',{exact:true}).selectOption({label:'Lena Patel'})
-  await page.getByRole('button',{name:'Create',exact:true}).click();await page.getByText('Saved.',{exact:true}).waitFor()
+  await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByText('Saved.',{exact:true}).waitFor()
   await page.goto(`${origin}/projects/${projectId}/conversations/${mia.id}`)
   await page.getByRole('button',{name:'Actions',exact:true}).waitFor()
   const hide=page.getByRole('button',{name:'Hide conversation panel',exact:true});if(await hide.isVisible())await hide.click()
   await page.getByRole('button',{name:'Actions',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:'Request damage photo',exact:true}).click()
-  const preview=page.getByRole('region',{name:'Macro preview'});await preview.waitFor();assert.match(await preview.innerText(),/Owner → Lena Patel/)
+  const preview=page.getByRole('region',{name:'Saved reply preview'});await preview.waitFor();assert.match(await preview.innerText(),/Owner → Lena Patel/)
   for(const viewport of [viewports.desktop,viewports.mobile]){await ticketViewport(page,viewport);await page.screenshot({path:shot(`${viewport.width}-preview.png`),fullPage:true})}
   await ticketViewport(page,viewports.desktop)
-  await page.getByRole('button',{name:'Apply macro',exact:true}).click()
+  await page.getByRole('button',{name:'Use saved reply',exact:true}).click()
   const composer=page.getByRole('textbox',{name:'Reply to conversation'});await page.waitForFunction(()=>document.querySelector('[aria-label="Reply to conversation"]')?.value?.startsWith('Please send'))
+  assert.match(await composer.inputValue(),/Please send a damage photo, Mia/,'the inserted name renders for the actual requester')
   const edited='Please send a damage photo of the outer box too.';await composer.fill(edited)
   const sent=page.waitForResponse(r=>r.url().endsWith(`/api/conversations/${mia.id}/messages`)&&r.request().method()==='POST')
   await page.getByRole('button',{name:'Send',exact:true}).click();assert.equal((await sent).status(),200)
@@ -92,7 +97,7 @@ export async function macroHandoffBrowser(){
 export async function formFieldBrowser(){
  const f=await strangerFixture(),{page,origin,projectId,base,request}=f,shot=await evidence('stranger11-after-fields');let success=false
  try{
-  await page.goto(`${origin}/projects/${projectId}/ticket-settings`);await page.getByRole('button',{name:'Fields',exact:true}).click();await page.getByRole('button',{name:'New field',exact:true}).click();await page.getByLabel('Name',{exact:true}).fill('Order number');await page.getByRole('button',{name:'Create',exact:true}).click();await page.getByText('Saved.',{exact:true}).waitFor()
+  await page.goto(`${origin}/projects/${projectId}/ticket-settings`);await page.getByRole('button',{name:'Fields',exact:true}).click();await page.getByRole('button',{name:'New field',exact:true}).click();await page.getByLabel('Name',{exact:true}).fill('Order number');await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByText('Saved.',{exact:true}).waitFor()
   const field=(await request(base+'/ticket-fields')).data.find(field=>field.name==='Order number'),checks=[]
   const openForm=async()=>{await page.goto(`${origin}/projects/${projectId}/edit?tab=forms`);await page.getByRole('button',{name:'New request form',exact:true}).click();await page.getByLabel('Add ticket field',{exact:true}).waitFor()}
   await openForm()

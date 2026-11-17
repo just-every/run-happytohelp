@@ -1,4 +1,4 @@
-import {contactLive,contactSearchable,contactSorts,type ContactQuery} from './contact-order'
+import {contactAudience,contactLive,contactSearchable,contactSorts,type ContactQuery} from './contact-order'
 import {keyOrder,orderable,type Keyed} from './contact-key-order'
 import {keyedMatches,matchQuery} from './contact-matches'
 
@@ -26,7 +26,7 @@ const bound=(sql:string,params:unknown[])=>params.slice(0,Math.max(0,...Array.fr
  * sparse in it, split into the finer bands of the next level the same way. `budget` bounds the rows read. */
 export async function seekMatches(q:ContactQuery,from:Keyed|null,forward:boolean,need:number,budget=Infinity):Promise<Seek>{
  const sort=contactSorts[q.sort],{key,integer,bands}=sort,index=sort.searchable[q.direction],order=keyOrder(integer,q.direction)
- const where=`project_id=?1 AND ${contactLive.sql} AND ${contactSearchable.sql}`,value=(n:number)=>integer?`CAST(?${n} AS INTEGER)`:`?${n}`
+ const where=`project_id=?1 AND ${contactLive.sql} AND ${contactAudience(q)} AND ${contactSearchable.sql}`,value=(n:number)=>integer?`CAST(?${n} AS INTEGER)`:`?${n}`
  const up=(q.direction==='asc')===forward,byKey=`${key} ${up?'ASC':'DESC'},id ${forward?'ASC':'DESC'}`
  const past=(mark:Keyed)=>(row:Keyed)=>(forward?1:-1)*order.compare(row,mark)>0
  const ordered=(rows:Keyed[])=>{const listed=order.sort(rows);return forward?listed:listed.reverse()}

@@ -128,3 +128,18 @@ body.conversation-workspace #chat .chat > .chat-body > .chat-header {
 @media (prefers-reduced-motion: reduce) {
     body.conversation-workspace #chat .chat > .chat-body > .chat-header::after { transition: none; }
 }
+
+// The rating action tells the owner what Solve does; give its full label a row.
+body.conversation-workspace #chat .chat > .chat-body > .chat-header.has-rating-action {
+    height: auto;
+    min-height: var(--conversation-top-height);
+    .conversation-header-panel {
+        grid-template-areas: "back avatar name name" "back avatar meta meta" "back avatar chips chips" "actions actions actions actions";
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+    @media (max-width: 767.98px) {
+        .conversation-header-panel { grid-template-areas: "back avatar name name" "back avatar meta meta" "chips chips chips chips" "actions actions actions actions"; }
+    }
+}
+body.conversation-workspace #chat .conversation-header .badge { font-size: 14.5px; font-weight: 500; line-height: 1.3; }

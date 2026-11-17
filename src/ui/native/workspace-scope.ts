@@ -18,7 +18,7 @@ export function projectIdFromPath(pathname: string): string | undefined {
 
 /** True for pages that act on the session's active project although the URL does not name it. */
 export function actsOnSessionProject(pathname: string): boolean {
-    return sessionProjectPaths.has(pathname.replace(/\/+$/, ''));
+    return pathname.startsWith('/users/') || sessionProjectPaths.has(pathname.replace(/\/+$/, ''));
 }
 
 /** The inbox renders for `/`, `/conversations...` and `/projects/<id>/conversations...`, except when the project is unavailable. */

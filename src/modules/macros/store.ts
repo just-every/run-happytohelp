@@ -14,8 +14,8 @@ const selection=`SELECT v.*,m.created_by owner_id,m.created_at created_at,
 export function scopeGuard(actor:Actor,row:any,roleKey:string,brandId:string){
  const scope:MacroScope=JSON.parse(row.scope_json),conditions=['m.project_id=?','m.id=?','h.version=?','h.archived_at IS NULL'],params:any[]=[actor.projectId,row.macro_id,row.version]
  if(scope.visibility==='personal'){conditions.push('m.created_by=?');params.push(actor.id)}
- if(scope.roles.length&&!scope.roles.includes(roleKey))throw new HTTPException(403,{message:'Your role cannot use this macro'})
- if(scope.brands.length&&!scope.brands.includes(brandId))throw new HTTPException(403,{message:'This macro is unavailable for this brand'})
+ if(scope.roles.length&&!scope.roles.includes(roleKey))throw new HTTPException(403,{message:'Your role cannot use this saved reply'})
+ if(scope.brands.length&&!scope.brands.includes(brandId))throw new HTTPException(403,{message:'This saved reply is unavailable for this brand'})
  if(scope.groups.length){conditions.push('EXISTS(SELECT 1 FROM ticket_group_members gm WHERE gm.project_id=m.project_id AND gm.user_id=? AND gm.group_id IN (SELECT value FROM json_each(?)))');params.push(actor.id,JSON.stringify(scope.groups))}
  return {sql:`SELECT 1 FROM macros m JOIN macro_heads h ON h.macro_id=m.id WHERE ${conditions.join(' AND ')}`,params}
 }
@@ -54,21 +54,21 @@ async function validReferences(env:Env,actor:Actor,data:MacroDefinition){
  if(data.scope.brands.some(id=>id!==actor.projectId))invalid('Choose a workspace brand')
  for(const role of data.scope.roles)if(!['owner','admin','operator','collaborator'].includes(role)&&!await env.DB.prepare('SELECT 1 FROM project_roles WHERE project_id=? AND id=?').bind(actor.projectId,role).first())invalid('Choose a workspace role')
  const access=await ticketReadAccess(env,actor)
- for(const [id,value] of Object.entries(data.actions.fields??{})){const field=await env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id=?').bind(actor.projectId,id).first<any>();if(!field)invalid('Choose a workspace field');if(!fieldAllowed(field,access)||!fieldAllowed(field,access,true))throw new HTTPException(403,{message:'This macro field is not writable by your role'});validateFieldValue(field,value);if(field.type==='account'&&value!==null&&value!==undefined&&!await env.DB.prepare('SELECT 1 FROM companies WHERE project_id=? AND id=? AND merged_into IS NULL').bind(actor.projectId,value).first())invalid(`${field.name}: Choose an available account`)}
+ for(const [id,value] of Object.entries(data.actions.fields??{})){const field=await env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id=?').bind(actor.projectId,id).first<any>();if(!field)invalid('Choose a workspace field');if(!fieldAllowed(field,access)||!fieldAllowed(field,access,true))throw new HTTPException(403,{message:'This saved reply field is not writable by your role'});validateFieldValue(field,value);if(field.type==='account'&&value!==null&&value!==undefined&&!await env.DB.prepare('SELECT 1 FROM companies WHERE project_id=? AND id=? AND merged_into IS NULL').bind(actor.projectId,value).first())invalid(`${field.name}: Choose an available account`)}
  await validateAttachments(env,actor,data.actions.attachments??[],true)
 }
 export async function saveMacro(env:Env,actor:Actor,input:unknown,authority:TicketAuthority,id?:string){
  const b=object(input),existing=id?await env.DB.prepare('SELECT m.*,h.version FROM macros m JOIN macro_heads h ON h.macro_id=m.id WHERE m.id=? AND m.project_id=? AND h.archived_at IS NULL').bind(id,actor.projectId).first<any>():null
  if(id&&!existing)throw new HTTPException(404)
  if(existing&&b.expected_version!==undefined&&!Number.isSafeInteger(b.expected_version))invalid('expected_version is invalid')
- if(existing&&b.expected_version!==undefined&&existing.version!==b.expected_version)throw new HTTPException(409,{message:'Macro changed. Reload before saving.'})
+ if(existing&&b.expected_version!==undefined&&existing.version!==b.expected_version)throw new HTTPException(409,{message:'Saved reply changed. Reload before saving.'})
  const previous=existing?await env.DB.prepare('SELECT * FROM macro_versions WHERE macro_id=? AND version=?').bind(id,existing.version).first<any>():null
  const data=definition(previous?{...macroData(previous),...b}:input)
  if(existing&&(JSON.parse(previous.scope_json).visibility==='personal'||data.scope.visibility==='personal')&&existing.created_by!==actor.id)throw new HTTPException(403)
  const personal=data.scope.visibility==='personal'&&(!previous||JSON.parse(previous.scope_json).visibility==='personal')
  if(personal&&existing&&existing.created_by!==actor.id)throw new HTTPException(403)
  const guard=await ticketAuthority(env,actor,authority,personal?'conversations.reply':'settings.manage')
- if(!personal&&!['owner','admin'].includes(actor.role))throw new HTTPException(403,{message:'Only a workspace owner or admin may manage shared macros'})
+ if(!personal&&!['owner','admin'].includes(actor.role))throw new HTTPException(403,{message:'Only a workspace owner or admin may manage shared saved replies'})
  await validReferences(env,actor,data)
  const macroId=id??crypto.randomUUID(),version=(existing?.version??0)+1,now=Date.now()
  // The new immutable version is inserted only from the guarded current head. The

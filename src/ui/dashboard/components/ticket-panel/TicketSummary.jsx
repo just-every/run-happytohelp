@@ -1,3 +1,4 @@
+import {statusName,statusMeanings} from '../tickets/status-copy';
 import ImportedHistory from './ImportedHistory';
 import React, { useContext, useId, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -36,6 +37,7 @@ function TicketChoice({ id, name, value, options, disabled, onSave }) {
                 </select>
                 { !disabled && <ReplyIcon name="chevron-right" className="ticket-summary__chevron" /> }
             </span>
+            {options.find(option=>option.value===(pending??value))?.description && <p className="mb-0 mt-1">{options.find(option=>option.value===(pending??value)).description}</p>}
             { error && <p role="alert" className="ticket-summary__error">{ error }</p> }
             <p role="status" className="visually-hidden">{ saved }</p>
         </dd>
@@ -63,7 +65,7 @@ export default function TicketSummary({ conversation, record, workflows, escalat
     const emailFollowups = useEmailFollowups(conversation.project_id, conversation.id);
     const workflowFollowups = Boolean(workflows && (workflows.schedules.data?.data.followup_of || workflows.schedules.data?.data.followups?.length > 0));
     const statuses = (settings?.statuses || []).filter(status => status.active || status.id === ticket?.status_id)
-        .map(status => ({ value: status.id, label: status.name === label(status.category) ? status.name : `${ status.name } (${ label(status.category) })` }));
+        .map(status => ({ value: status.id, label: `${statusName(status)} — ${statusMeanings[status.category] || 'Workspace status.'}`, description:statusMeanings[status.category] }));
     return <section className="ticket-summary" aria-labelledby="ticket-summary-title">
         <h3 id="ticket-summary-title" className="ticket-summary__title">Summary</h3>
         { record?.error && <p role="alert" className="ticket-summary__error">{ record.error }</p> }

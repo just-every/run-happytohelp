@@ -29,7 +29,7 @@ const columns={
  ],
  contacts:[
   {actions:'Photo',cell:({item,href})=><Link {...tooltip('View contact',{describedBy:`contact-${item.id}-name`})} to={href}><PersonAvatar person={item}/></Link>},
-  {label:'Name',cell:({item,href,metadata})=><Link id={`contact-${item.id}-name`} to={href}>{metadata.provided_name||item.name||item.nickname||'Visitor'}</Link>},
+  {label:'Name',cell:({item,href,metadata})=><Link id={`contact-${item.id}-name`} to={href}>{item.name||metadata.provided_name||item.email||metadata.provided_email||'Visitor'}</Link>},
   {label:'Email',cell:({item,metadata})=>metadata.provided_email||item.email},
   {label:'Country',cell:({item,metadata})=>metadata.country_name||metadata.country_code||item.country_code},
   {label:'Last Seen',cell:({item,metadata})=>metadata.is_online?'Online':date(item.last_seen_at||metadata.last_seen_at)},
@@ -52,6 +52,7 @@ export default function ManagementLists({section,items,base,onMove,projectId,ema
  const turn=(page,boundary)=>{const {after,before,...rest}=query;onQuery({...rest,page,...(rows.length?boundary:{})});};
  return <><PageHeaderActions><div className="management-toolbar">{section!=='plugins'&&<div className="input-group"><input aria-label="Search" placeholder="Search" className="form-control" value={query?query.search:search} onChange={e=>query?restart({search:e.target.value}):setSearch(e.target.value)}/><span className="input-group-text"><i className="fe fe-search"/></span></div>}{section==='contacts'&&canManageContacts&&<Link className="btn btn-white" to={`/projects/${projectId}/companies`}>Companies</Link>}{labels[section]&&<Link className="btn btn-primary" to={`${base}/create`}>{labels[section]}</Link>}</div></PageHeaderActions>
  {query&&<div className="d-flex flex-wrap gap-2 align-items-center mb-3"><label htmlFor="management-sort">Sort by</label><select id="management-sort" className="form-select w-auto" value={query.sort} onChange={e=>restart({sort:e.target.value})}>{sorts.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select><label className="visually-hidden" htmlFor="management-direction">Sort direction</label><select id="management-direction" className="form-select w-auto" value={query.direction} onChange={e=>restart({direction:e.target.value})}><option value="asc">Ascending</option><option value="desc">Descending</option></select></div>}
+ {section==='contacts'&&query&&<div className="form-check mb-3"><input id="contacts-show-visitors" type="checkbox" className="form-check-input" checked={query.visitors!=='hide'} onChange={event=>restart({visitors:event.target.checked?'show':'hide'})}/><label className="form-check-label" htmlFor="contacts-show-visitors">Show visitors who haven't written</label></div>}
  {section==='plugins'&&<PluginHelp/>}
  {!items&&!busy&&<p role="status">Loading…</p>}
  {busy&&<p className="management-busy" role="status">{query?.search?'Search is busy.':'The workspace is busy.'} Trying again in a few seconds…</p>}

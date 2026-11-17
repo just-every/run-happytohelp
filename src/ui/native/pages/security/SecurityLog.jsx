@@ -1,3 +1,5 @@
+import LocalMailNotice from '../../components/LocalMailNotice';
+import {useDashboardSettings} from '../../dashboard-state';
 import React,{useCallback,useEffect,useState} from 'react';
 import {nativeRequest,downloadFile} from '../../transport';
 import {Feedback,Section} from '../forms';
@@ -29,13 +31,19 @@ const TARGETS={native_integration_events:'Integration event',native_integration_
 const human=value=>String(value||'').replace(/[._-]/g,' ').replace(/\b(post|patch|put|delete)\b/gi,word=>({post:'created',patch:'updated',put:'saved',delete:'removed'}[word.toLowerCase()])).replace(/^./,letter=>letter.toUpperCase());
 const describe=row=>{
  if(LABELS[row.action]||ACTIONS[row.action])return LABELS[row.action]||ACTIONS[row.action];
+ if(row.action==='macro.version_saved')return row.target?.name?`Saved reply '${row.target.name}' saved`:'Saved reply saved';
+ if(row.action==='macro.archived')return row.target?.name?`Saved reply '${row.target.name}' removed`:'Saved reply removed';
+ if(row.action==='step_up.email_link_refused')return row.detail?.reason==='email_unavailable'?'Confirmation email not sent: email is off':'Confirmation email not sent';
+ if(row.action==='step_up.email_link_requested')return 'Confirmation email requested';
  const [resource,method]=row.action.split('.');
- return RESOURCES[resource]?`${RESOURCES[resource]} ${{post:'created',patch:'updated',put:'saved',delete:'removed'}[method]||human(method)}`:human(row.action);
+ return RESOURCES[resource]?`${RESOURCES[resource]} ${{post:'created',patch:'updated',put:'saved',delete:'removed'}[method]||human(method)}`:'Workspace activity recorded';
 };
-const explain=row=>{const detail=row.detail||{};return [detail.reason&&(REASONS[detail.reason]||detail.reason),detail.permission&&`needs ${detail.permission}`,detail.from&&detail.to&&`${detail.fromName||detail.from} → ${detail.toName||detail.to}`,detail.method&&`with ${detail.method}`,detail.removed!==undefined&&`${detail.removed} removed, ${detail.keptUnderHold} kept under hold`].filter(Boolean).join(' · ')};
+const explain=row=>{const detail=row.detail||{};return [REASONS[detail.reason],typeof detail.removed==='number'&&`${detail.removed} removed, ${detail.keptUnderHold??0} kept under hold`].filter(Boolean).join(' · ')};
+
 
 /** Settings → Security log: the workspace's append-only record, its export, retention and legal holds. */
 export default function SecurityLog({projectId,role}){
+ const {mailMode}=useDashboardSettings();
  const {ask,dialog}=useConfirmation(),base=`/api/management/projects/${projectId}/audit`,owner=role==='owner';
  const [filter,setFilter]=useState({category:'',since:'',until:''}),[rows,setRows]=useState(null),[next,setNext]=useState(null),[holds,setHolds]=useState([]),[retention,setRetention]=useState('');
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[hold,setHold]=useState({name:'',reason:'',starts_at:'',ends_at:''});
@@ -50,7 +58,7 @@ export default function SecurityLog({projectId,role}){
  const release=item=>ask({title:`Release the hold “${item.name}”?`,confirmLabel:'Release',busyLabel:'Releasing…',body:<p>Events it protected follow the normal retention again. The release is recorded in this log.</p>,run:()=>run(()=>nativeRequest(`${base}/holds/${item.id}/release`,{method:'POST'}),'Hold released.')});
  const active=holds.filter(item=>!item.released_at);
  return <div className="workspace-settings security-log" aria-busy={busy}>
-  <Feedback error={error}/>{notice&&<div role="status" className="alert alert-success">{notice}</div>}
+  <LocalMailNotice mode={mailMode}/><Feedback error={error}/>{notice&&<div role="status" className="alert alert-success">{notice}</div>}
   <Section title="Activity" description="Every sign-in, two-factor change, role change, import, export, erasure, assignment and approval in this workspace. Entries cannot be edited. Names are shown as they are now; a removed teammate shows as a former teammate.">
    <form className="security-filters" onSubmit={event=>{event.preventDefault();load();}}>
     <div className="form-group"><label className="form-label" htmlFor="log-category">Show</label><select id="log-category" className="form-select" value={filter.category} onChange={event=>setFilter({...filter,category:event.target.value})}>{CATEGORIES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></div>
@@ -60,9 +68,9 @@ export default function SecurityLog({projectId,role}){
    </form>
    {rows===null?<p>Loading…</p>:rows.length===0?<p className="settings-note">Nothing recorded for this filter yet.</p>:<div className="table-responsive"><table className="table stack-table security-events"><thead><tr><th>When</th><th>What</th><th>Who</th><th>Result</th></tr></thead><tbody>
     {rows.map(row=><tr key={row.id}><td data-label="When"><time dateTime={new Date(row.at).toISOString()}>{when(row.at)}</time></td>
-     <td data-label="What"><span><strong>{describe(row)}</strong>{explain(row)&&<><br/><small>{explain(row)}</small></>}{row.target_type&&<><br/>{row.target?.href?<a href={row.target.href}>{row.target.name}</a>:<span>{row.target?.name||TARGETS[row.target_type]||human(row.target_type)}</span>}<details><summary>Technical details</summary><small>{row.action}<br/>{row.target_type} {row.target_id}</small></details></>}{row.purpose&&<><br/><small className="text-muted">{row.purpose}</small></>}</span></td>
+     <td data-label="What"><span><strong>{describe(row)}</strong>{explain(row)&&<><br/><small>{explain(row)}</small></>}{row.target_type&&<><br/>{row.target?.href?<a href={row.target.href}>{row.target.name}</a>:<span>{row.target?.name||TARGETS[row.target_type]||'Workspace record'}</span>}</>}<details><summary>Details</summary><code>{row.action}</code><br/><code>{row.target_type} {row.target_id}</code><pre className="text-wrap">{JSON.stringify({...row.detail,...(row.purpose?{purpose:row.purpose}:{})},null,2)}</pre></details></span></td>
      <td data-label="Who"><span>{row.actor}<br/><small className="text-muted">{human(row.source)}</small></span></td>
-     <td data-label="Result"><span className={`security-badge security-badge--${row.outcome}`}>{row.outcome}</span>{row.held&&<span className="security-badge security-badge--held" title="Protected by a legal hold">held</span>}</td></tr>)}
+     <td data-label="Result"><span className={`security-badge security-badge--${row.outcome}`}>{({succeeded:'Completed',refused:'Refused',failed:'Failed',uncertain:'Outcome unknown',pending:'Waiting'})[row.outcome] || 'Recorded'}</span>{row.held&&<span className="security-badge security-badge--held" title="Protected by a legal hold">held</span>}</td></tr>)}
    </tbody></table></div>}
    {next&&<button type="button" className="btn btn-white" disabled={busy} onClick={()=>load(next)}>Show older entries</button>}
   </Section>

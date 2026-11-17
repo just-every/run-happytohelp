@@ -7,6 +7,7 @@ import type {Env} from '../../platform/env'
 export async function auditTargets(env:Env,projectId:string,rows:{target_type:string|null;target_id:string|null}[],actorId:string){
  const targets=new Map<string,{name:string;href?:string}>(),base=`/projects/${encodeURIComponent(projectId)}`
  const sources:[string[],string,string,string][]=[
+  [['macro'],'macros','title',`${base}/macros`],
   [['workflow_calendars'],'workflow_calendars','name',`${base}/workflow-settings?tab=calendars`],
   [['sla_policies'],'sla_policies','name',`${base}/workflow-settings?tab=sla`],
   [['workflow'],'workflow_rules','name',`${base}/workflow-settings?tab=rules`],

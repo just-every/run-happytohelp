@@ -79,5 +79,42 @@ accounts.post('/password-reset',async c=>{
  ])
  return c.json({token,expiresIn:3600},201)
 })
-accounts.post('/accept-token',async c=>{const b=await c.req.json(),tokenHash=await hashToken(requiredString(b.token,'token')),now=Date.now(),token=await c.env.DB.prepare('SELECT * FROM identity_tokens WHERE token_hash=? AND consumed_at IS NULL AND expires_at>?').bind(tokenHash,now).first<any>();if(!token)throw new HTTPException(400,{message:'Token invalid or expired'});if(token.kind==='reset'&&token.project_id&&!await soleWorkspace(c.env.DB,token.user_id,token.project_id))throw new HTTPException(409,{message:'This reset link no longer applies: the account now belongs to another workspace. Sign in with your own password.'});const existing=await c.env.DB.prepare('SELECT id FROM users WHERE lower(email)=?').bind(token.email).first<{id:string}>();if(token.kind==='invite'&&existing)throw new HTTPException(409,{message:'Existing users must accept invitations while signed in'});const userId=token.user_id||id(),hash=await passwordHash(b.password);const guard=usableIdentityToken;const statements=[];if(token.kind==='invite'){statements.push(c.env.DB.prepare(`INSERT INTO users SELECT ?,?,?,? WHERE ${guard}`).bind(userId,token.email,requiredString(b.name,'name',200),now,tokenHash,now),c.env.DB.prepare(`INSERT INTO memberships SELECT ?,?,? WHERE ${guard}`).bind(token.project_id,userId,token.role==='collaborator'?'operator':token.role,tokenHash,now),c.env.DB.prepare(`INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) SELECT ?,?,'collaborator',? WHERE ? AND ${guard}`).bind(token.project_id,userId,now,token.role==='collaborator'?1:0,tokenHash,now),retireSiblings(c.env.DB,token.project_id,token.email,tokenHash,now,guard))}statements.push(c.env.DB.prepare(`INSERT INTO credentials SELECT ?,?,? WHERE ${guard} ON CONFLICT(user_id) DO UPDATE SET password_hash=excluded.password_hash,updated_at=excluded.updated_at`).bind(userId,hash,now,tokenHash,now),c.env.DB.prepare(`UPDATE sessions SET revoked_at=? WHERE actor_id=? AND ${guard}`).bind(now,userId,tokenHash,now),c.env.DB.prepare(`UPDATE identity_tokens SET consumed_at=? WHERE token_hash=? AND ${guard}`).bind(now,tokenHash,tokenHash,now));const result=await c.env.DB.batch(statements);if(!result[result.length-1].meta.changes)throw new HTTPException(409,{message:'Token already used'});await runAll(c.env.DB,await accountAudit(c.env.DB,userId,{category:token.kind==='invite'?'access':'auth',action:token.kind==='invite'?'member.joined':'password.reset',actor:{type:'user',id:userId},source:'dashboard'}));return c.json({accepted:true,loginRequired:true})})
+accounts.post('/accept-token',async c=>{
+ const b=await c.req.json(),tokenHash=await hashToken(requiredString(b.token,'token')),now=Date.now()
+ const token=await c.env.DB.prepare('SELECT * FROM identity_tokens WHERE token_hash=? AND consumed_at IS NULL AND expires_at>?').bind(tokenHash,now).first<any>()
+ if(!token)throw new HTTPException(400,{message:'Token invalid or expired'})
+ if(token.kind==='reset'&&token.project_id&&!await soleWorkspace(c.env.DB,token.user_id,token.project_id))throw new HTTPException(409,{message:'This reset link no longer applies: the account now belongs to another workspace. Sign in with your own password.'})
+ const existing=await c.env.DB.prepare('SELECT id FROM users WHERE lower(email)=?').bind(token.email).first<{id:string}>()
+ if(token.kind==='invite'&&existing)throw new HTTPException(409,{message:'Existing users must accept invitations while signed in'})
+ const userId=token.user_id||id(),hash=await passwordHash(b.password),guard=usableIdentityToken,statements=[]
+ const role=token.role==='collaborator'?'operator':token.role
+ if(token.kind==='invite'){
+  statements.push(
+   c.env.DB.prepare(`INSERT INTO users SELECT ?,?,?,? WHERE ${guard}`).bind(userId,token.email,requiredString(b.name,'name',200),now,tokenHash,now),
+   c.env.DB.prepare(`INSERT INTO memberships SELECT ?,?,? WHERE ${guard}`).bind(token.project_id,userId,role,tokenHash,now),
+   c.env.DB.prepare(`INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) SELECT ?,?,'collaborator',? WHERE ? AND ${guard}`).bind(token.project_id,userId,now,token.role==='collaborator'?1:0,tokenHash,now),
+   retireSiblings(c.env.DB,token.project_id,token.email,tokenHash,now,guard),
+  )
+ }
+ statements.push(
+  c.env.DB.prepare(`INSERT INTO credentials SELECT ?,?,? WHERE ${guard} ON CONFLICT(user_id) DO UPDATE SET password_hash=excluded.password_hash,updated_at=excluded.updated_at`).bind(userId,hash,now,tokenHash,now),
+  c.env.DB.prepare(`UPDATE sessions SET revoked_at=? WHERE actor_id=? AND ${guard}`).bind(now,userId,tokenHash,now),
+  c.env.DB.prepare(`UPDATE identity_tokens SET consumed_at=? WHERE token_hash=? AND ${guard}`).bind(now,tokenHash,tokenHash,now),
+ )
+ const result=await c.env.DB.batch(statements)
+ if(!result[result.length-1].meta.changes)throw new HTTPException(409,{message:'Token already used'})
+ await runAll(c.env.DB,await accountAudit(c.env.DB,userId,{category:token.kind==='invite'?'access':'auth',action:token.kind==='invite'?'member.joined':'password.reset',actor:{type:'user',id:userId},source:'dashboard'}))
+ // Only the successful invitation consumer signs in. Password resets keep their existing sign-in boundary.
+ if(token.kind!=='invite')return c.json({accepted:true,loginRequired:true})
+ const session=id()+id(),sessionHash=await hashToken(session),twoFactor=await signInFactor(c.env.DB,userId,token.project_id,role)
+ // Choosing this new account's password is its primary proof, with the same lifetime, cookie and
+ // factor policy as /login. Required enrollment still prevents workspace access until it is complete.
+ await c.env.DB.batch([
+  c.env.DB.prepare('INSERT INTO sessions VALUES(?,?,?,?,NULL,?,NULL)').bind(sessionHash,userId,token.project_id,role,now+86400000),
+  ...(twoFactor==='verify'?[]:[sessionFactorStatement(c.env.DB,sessionHash,userId,'password',now)]),
+  ...await accountAudit(c.env.DB,userId,{category:'auth',action:twoFactor?'sign_in.password_accepted':'sign_in.succeeded',actor:{type:'user',id:userId},source:'dashboard',detail:{method:'password',...(twoFactor?{twoFactor}:{})}}),
+ ])
+ c.header('Set-Cookie',sessionCookie(session,c.req.url))
+ return c.json({accepted:true,token:session,actor:{id:userId,projectId:token.project_id,role},destination:`/projects/${encodeURIComponent(token.project_id)}/conversations`,...(twoFactor?{twoFactor}:{})})
+})
 accounts.post('/accept-invitation',async c=>{const actor=await requireActor(c);if(actor.role==='contact')throw new HTTPException(403);const b=await c.req.json(),tokenHash=await hashToken(requiredString(b.token,'token'));return c.json(await acceptExistingInvitation(c.env,actor.id,c.get('sessionHash'),tokenHash))})

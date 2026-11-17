@@ -39,6 +39,9 @@ never repeated. The response says what happened to it (`welcomeEmail`: `suppress
 `failed` or `uncertain`). Local development returns `suppressed` without storing the email or sending externally.
 Tests: `tests/journeys/identity.mjs` and `tests/journeys/first-run-browser.mjs`.
 
+A new teammate who accepts an invitation and chooses a password receives the native password session and opens
+the invited workspace inbox. Required second-factor enrollment still gates workspace access. Password resets
+continue to require sign-in. Failed, expired, revoked and reused invitations issue no session.
 Accepting one invitation link retires the other links issued for the same email in that workspace. Pending
 invitation management (copy link, resend, revoke) lives in the management module.
 Tests: `tests/journeys/identity.mjs`.

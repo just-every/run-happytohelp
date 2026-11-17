@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "9aec1838094e3358e5374530efb0753c9652f70b",
+      "bytes": 2125,
+      "path": "BROWSER-RECEIPT.txt",
+      "sha256": "aea71096b7c5ae4cf4ae146478b8c2fb5e6a80e53b976d614dd589dc76f48321"
+    },
+    {
+      "blob": "28d2d77ce20674e659af39e241c231b74c394f49",
+      "bytes": 4208,
+      "path": "CI-RECEIPT.txt",
+      "sha256": "163710c3a73a018c513c965d5e51e8c122167f7cf13c71f1def9540a74b084c4"
+    },
+    {
+      "blob": "083d21df4a08b1df864acde81129c008688a5cb5",
+      "bytes": 1005,
+      "path": "RECEIPT.txt",
+      "sha256": "c0d6656949d752b59271f0650f6048ca28ae2a807fc75befa80ab5fd213965df"
+    },
+    {
+      "blob": "d5b2f40507297031150442e717cc866e92137769",
+      "bytes": 4548,
+      "path": "REPORT.md",
+      "sha256": "571fd5bc598fcbb9886918d5d4724dc60435e8e2f25c5af92437a487718f3b2c"
+    },
+    {
+      "blob": "3470b98971b0ff0cd80a324e50acda54fae2579e",
+      "bytes": 126425,
+      "path": "screens/procedures-1440.png",
+      "sha256": "7d661395b9da382ed489ff6a0d342e4a4e24099e5827cd1406c3b017ca71c8de"
+    },
+    {
+      "blob": "5c0b87f1a1cbb8c3e71c88bb0e51908adbde44bc",
+      "bytes": 61623,
+      "path": "screens/procedures-390.png",
+      "sha256": "b93b6c6f0b5cf8d81a0fe44175924c7bc80727959f89139dfab260435ab7d26b"
+    }
+  ],
+  "product_branch": "cloud/hh-procedures-race-2-c2",
+  "product_head": "ace78cf3bacfd3dc277782a3529c2bc819a2f7e5",
+  "ref": "refs/heads/evidence/hh-procedures-race-2-c2",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-procedures-race-2-c2"
+}

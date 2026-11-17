@@ -1,0 +1,18 @@
+2026-11-17T23:13:27Z
+ace78cf3bacfd3dc277782a3529c2bc819a2f7e5 fd0b8640d863bdbb61bb006c43cf3bd77da92973 Keep procedure versions current across late list reads
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+sources.lock.json
+src/ui/native/pages/ProcedureSettings.jsx
+tests/helpers/ai/procedures-browser.mjs
+Non-lock patch equality against c1: exact byte-for-byte match.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Source lock check, typecheck and first-party rer check: PASS.
+Product push succeeded on attempt 1.
+Non-lock diff SHA-256 (c1): b7cd79fe6ea8ea64514391ad05ddc2c9b1c3a8d8baab3c0a1394149dae55fd1b
+Non-lock diff SHA-256 (c2): b7cd79fe6ea8ea64514391ad05ddc2c9b1c3a8d8baab3c0a1394149dae55fd1b
+Ref after push: ace78cf3bacfd3dc277782a3529c2bc819a2f7e5	refs/heads/cloud/hh-procedures-race-2-c2
+Main after push: fd0b8640d863bdbb61bb006c43cf3bd77da92973	refs/heads/main
+Rer build: PASS. Rer setup with documented private local answers: PASS.

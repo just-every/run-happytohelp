@@ -18,7 +18,7 @@ async function withRuntime(options,body){const runtime=await createRuntime(optio
 
 test('a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing',async()=>{
  const slug='retained-help-slug'
- await withRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:slug,'127.0.0.1':slug})}},async(runtime,{request})=>{
+ await withRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-public-form-mail',EMAIL_FROM:'support@public-forms.example.test',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:slug,'127.0.0.1':slug})},outboundFixture:new URL('../helpers/public-site/form-mail-edge.mjs',import.meta.url).href},async(runtime,{request})=>{
   const helpOrigin=new URL(runtime.origin);helpOrigin.hostname='localhost'
   const host=path=>fetch(new URL(path,helpOrigin))
   assert.equal((await host('/')).status,404,'a configured host with an unknown project exposes no center')

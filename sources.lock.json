@@ -11241,7 +11241,7 @@
       "executable": false
     },
     "src/routes/index.tsx": {
-      "sha256": "858714be9597dff6e4a87c614e381874ce57d7793d1165388a6de45c18636fb6",
+      "sha256": "2e27372d9582c56546bff12ba24cc3400b3291a004372dec897b3574f8b9ff4c",
       "executable": false
     },
     "src/routes/login_.magic.tsx": {
@@ -17577,7 +17577,7 @@
       "executable": false
     },
     "tests/journeys/public-browser.mjs": {
-      "sha256": "8db959d8fb59314c2d8bb254fc454422c7a4566cbfe66a57b4d9166cb152826c",
+      "sha256": "96a7df29fac65621e4dfbce4b7979c1969366f71022e7352527ab461ca494203",
       "executable": false
     },
     "tests/journeys/public.mjs": {

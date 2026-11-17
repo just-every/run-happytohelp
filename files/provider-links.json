@@ -1,0 +1,98 @@
+[
+  {
+    "name": "github-token",
+    "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens",
+    "status": 200,
+    "resolved": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"
+  },
+  {
+    "name": "github-hook",
+    "url": "https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks",
+    "status": 200,
+    "resolved": "https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks"
+  },
+  {
+    "name": "github-signature",
+    "url": "https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries",
+    "status": 200,
+    "resolved": "https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries"
+  },
+  {
+    "name": "linear",
+    "url": "https://linear.app/developers/graphql",
+    "status": 200,
+    "resolved": "https://linear.app/developers/graphql"
+  },
+  {
+    "name": "linear-hooks",
+    "url": "https://linear.app/developers/webhooks",
+    "status": 200,
+    "resolved": "https://linear.app/developers/webhooks"
+  },
+  {
+    "name": "jira-token",
+    "url": "https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/",
+    "status": 200,
+    "resolved": "https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/"
+  },
+  {
+    "name": "jira-hooks",
+    "url": "https://developer.atlassian.com/cloud/jira/platform/webhooks/",
+    "status": 200,
+    "resolved": "https://developer.atlassian.com/cloud/jira/platform/webhooks/"
+  },
+  {
+    "name": "slack",
+    "url": "https://docs.slack.dev/quickstart/",
+    "status": 200,
+    "resolved": "https://docs.slack.dev/quickstart/"
+  },
+  {
+    "name": "slack-scope",
+    "url": "https://docs.slack.dev/reference/scopes/chat.write/",
+    "status": 200,
+    "resolved": "https://docs.slack.dev/reference/scopes/chat.write/"
+  },
+  {
+    "name": "slack-permalink",
+    "url": "https://docs.slack.dev/reference/methods/chat.getPermalink/",
+    "status": 200,
+    "resolved": "https://docs.slack.dev/reference/methods/chat.getPermalink/"
+  },
+  {
+    "name": "teams",
+    "url": "https://learn.microsoft.com/en-us/graph/auth-v2-user",
+    "status": 200,
+    "resolved": "https://learn.microsoft.com/en-us/graph/auth-v2-user"
+  },
+  {
+    "name": "teams-channel",
+    "url": "https://learn.microsoft.com/en-us/graph/api/channel-post-messages?view=graph-rest-1.0",
+    "status": 200,
+    "resolved": "https://learn.microsoft.com/en-us/graph/api/channel-post-messages?view=graph-rest-1.0"
+  },
+  {
+    "name": "teams-id",
+    "url": "https://learn.microsoft.com/en-us/graph/api/channel-list?view=graph-rest-1.0",
+    "status": 200,
+    "resolved": "https://learn.microsoft.com/en-us/graph/api/channel-list?view=graph-rest-1.0"
+  },
+  {
+    "name": "node-hmac",
+    "url": "https://nodejs.org/api/crypto.html#cryptocreatehmacalgorithm-key-options",
+    "status": 200,
+    "resolved": "https://nodejs.org/api/crypto.html#cryptocreatehmacalgorithm-key-options"
+  },
+  {
+    "name": "penny-install",
+    "url": "https://github.com/just-every/run-penny#run-it-on-your-computer",
+    "status": 200,
+    "resolved": "https://github.com/just-every/run-penny#run-it-on-your-computer"
+  },
+  {
+    "name": "penny-api",
+    "url": "https://github.com/just-every/run-penny/blob/main/docs/API.md",
+    "status": 200,
+    "resolved": "https://github.com/just-every/run-penny/blob/main/docs/API.md"
+  }
+]

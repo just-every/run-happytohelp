@@ -1,0 +1,20 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger13-copy-1",
+  "head": "2343b5c3f7853ff06919e26ea121b78882e0342c",
+  "base": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
+  "commits": [
+    "9bc6117942a7b6e73efac26852f8d0752a305ddf",
+    "2343b5c3f7853ff06919e26ea121b78882e0342c"
+  ],
+  "productCheckoutClean": true,
+  "reportTree": "refs/heads/evidence/hh-stranger13-copy-1",
+  "publicationScan": "Mac fleet only; cloud does not run it",
+  "PR": null,
+  "clauseStatusChanges": 0,
+  "createdAt": "2026-11-17T07:23:17.089959+00:00",
+  "terminalCustody": "PUSHED",
+  "finalVerifyRun": 44036500245,
+  "finalVerifyLastStatus": "in_progress",
+  "noReadyClaim": true
+}

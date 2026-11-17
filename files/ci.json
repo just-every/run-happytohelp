@@ -1,0 +1,40 @@
+{
+  "head": "2343b5c3f7853ff06919e26ea121b78882e0342c",
+  "runs": [
+    {
+      "id": 44036500245,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "2343b5c3f7853ff06919e26ea121b78882e0342c",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44036500245",
+      "event": "push",
+      "created_at": "2026-11-17T07:09:17Z"
+    }
+  ],
+  "checked_at_epoch": 1794900374.9960835,
+  "github_calls": 10,
+  "observations": [
+    {
+      "conclusion": null,
+      "head_sha": "2343b5c3f7853ff06919e26ea121b78882e0342c",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44036500245",
+      "status": "in_progress",
+      "observed_at_epoch": 1794899734.1884825
+    },
+    {
+      "conclusion": null,
+      "head_sha": "2343b5c3f7853ff06919e26ea121b78882e0342c",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44036500245",
+      "status": "in_progress",
+      "observed_at_epoch": 1794900059.3529086
+    },
+    {
+      "conclusion": null,
+      "head_sha": "2343b5c3f7853ff06919e26ea121b78882e0342c",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44036500245",
+      "status": "in_progress",
+      "observed_at_epoch": 1794900374.9960802
+    }
+  ]
+}

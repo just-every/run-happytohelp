@@ -1,0 +1,25 @@
+ docs/feedback-and-assurance.md                     | 51 ++++++++++++++++++++++
+ public/site-assets/help_center/request-forms.js    |  7 +--
+ sources.lock.json                                  | 48 ++++++++++----------
+ src/modules/feedback/ui/FeedbackPanel.jsx          |  2 +-
+ src/modules/feedback/ui/PennyConnection.jsx        |  2 +-
+ src/modules/management/away-reply.ts               |  2 +-
+ src/modules/public-site/request-pages.ts           | 14 +++---
+ src/modules/triage/settings.ts                     | 12 ++++-
+ src/modules/widget/js/AwayNotice.jsx               |  3 +-
+ .../components/escalations/ConnectionSetup.jsx     | 48 ++++++++++++++++++++
+ .../components/escalations/Connections.jsx         |  2 +
+ .../components/tickets/ProblemBulkLink.jsx         |  2 +-
+ .../dashboard/components/tickets/ProblemPanel.jsx  |  8 ++--
+ .../components/tickets/TicketBulkActions.jsx       |  2 +-
+ src/ui/native/pages/ProcedureReceipt.jsx           |  4 +-
+ src/ui/native/pages/ProcedureSettings.jsx          |  4 +-
+ src/ui/native/pages/companies/CustomerImport.jsx   |  2 +-
+ src/ui/native/pages/connections/Connectors.jsx     | 20 ++++++++-
+ src/ui/native/pages/tickets/TicketSettings.jsx     |  3 +-
+ src/ui/native/pages/triage/TriageSettings.jsx      |  2 +
+ tests/helpers/ai/triage.mjs                        |  4 +-
+ tests/helpers/api001-outcomes-browser.mjs          | 11 ++++-
+ tests/helpers/portal-local-browser.mjs             |  9 ++++
+ tests/helpers/widget/outcomes.mjs                  | 16 +++++++
+ 24 files changed, 225 insertions(+), 53 deletions(-)

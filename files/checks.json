@@ -1,0 +1,87 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-stranger13-copy-1",
+  "head": "2343b5c3f7853ff06919e26ea121b78882e0342c",
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "result": "passed",
+      "node": "22.20.0"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "result": "passed",
+      "node": "22.20.0"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "result": "passed",
+      "node": "22.20.0"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "result": "passed",
+      "manifest": "b45403346c7c7b41b2d2a7835f61d079b0160e6c1b5e31bd84f4f34d1f7a8e91"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='reviewed intent labels|installed widget availability|a support lead configures|a lead compares|an operator links' tests/journeys/ai.mjs tests/journeys/inbox-browser.mjs tests/journeys/workflows-browser.mjs",
+      "result": "triage journey passed; initial browser attempt omitted required system Chromium path and was stopped; browser cases subsequently passed in the explicit Chromium run",
+      "tests": 1,
+      "passedJourney": {
+        "name": "reviewed intent labels enable routing while unavailable triage preserves the operator queue and ordinary admission rules",
+        "duration_ms": 13351.466532
+      },
+      "overallInitialCommand": "stopped after the browser launch failure; not claimed as an overall pass"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern=installed widget availability|a support lead configures|a lead compares|an operator links tests/journeys/inbox-browser.mjs tests/journeys/workflows-browser.mjs",
+      "result": "passed",
+      "tests": 4,
+      "failures": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "registeredJourneys": [
+        {
+          "name": "installed widget availability, provider-edge answers and consent-aware proactive outcomes",
+          "duration_ms": 163718.92641
+        },
+        {
+          "name": "a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow",
+          "duration_ms": 499562.713918
+        },
+        {
+          "name": "a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release",
+          "duration_ms": 187944.307562
+        },
+        {
+          "name": "an operator links a customer quote, hands it to Penny with explicit permission, receives a signed release and approves one service update while recovery stays unconfirmed",
+          "duration_ms": 157323.562816
+        }
+      ]
+    }
+  ],
+  "testRegistrationDelta": 0,
+  "candidatePublished": true,
+  "publicationScan": "fleet lander only; not run in this cloud",
+  "liveProviders": "not used or qualified",
+  "browserProof": "passed; 34 inspected captures at 1440 and 390; durable local chat admission and owner inbox verified",
+  "sourceLockCorrection": "Initial CI found that the newly tracked ConnectionSetup.jsx was missing from the first lock. Regenerated after it was tracked, checked the committed tree, and published a new ordinary commit; no history was rewritten.",
+  "terminalCustody": "PUSHED",
+  "Verify": {
+    "run": 44036500245,
+    "head": "2343b5c3f7853ff06919e26ea121b78882e0342c",
+    "lastStatus": "in_progress",
+    "lastConclusion": null,
+    "githubCalls": 10
+  }
+}

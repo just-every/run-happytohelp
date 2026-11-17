@@ -1,0 +1,26 @@
+{
+  "head": "9bc6117942a7b6e73efac26852f8d0752a305ddf",
+  "runs": [
+    {
+      "id": 44035512678,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "9bc6117942a7b6e73efac26852f8d0752a305ddf",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44035512678",
+      "event": "push",
+      "created_at": "2026-11-17T07:01:27Z"
+    }
+  ],
+  "checked_at_epoch": 1794899228.8129578,
+  "github_calls": 6,
+  "observations": [
+    {
+      "conclusion": "failure",
+      "head_sha": "9bc6117942a7b6e73efac26852f8d0752a305ddf",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44035512678",
+      "status": "completed",
+      "observed_at_epoch": 1794899228.8129363
+    }
+  ]
+}

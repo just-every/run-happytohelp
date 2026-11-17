@@ -1,0 +1,235 @@
+{
+  "passed": true,
+  "stage": "local-public",
+  "records": [
+    {
+      "name": "triage-no-key",
+      "filename": "triage-no-key-1440.png",
+      "width": 1440,
+      "sha256": "b702cf96a2469dab93bb64ee3e586c12c0cd3e4a891770ab715d7f0f2a230f2c"
+    },
+    {
+      "name": "triage-no-key",
+      "filename": "triage-no-key-390.png",
+      "width": 390,
+      "sha256": "66ceaa613003c81ff2ec659d70e6f4a3119f4f66aa1050d8636614a212da6ff2"
+    },
+    {
+      "name": "ticket-field-roles",
+      "filename": "ticket-field-roles-1440.png",
+      "width": 1440,
+      "sha256": "c3f4248f816c0e07ae94c0444034744c517e26a3d0be39db1cfe3f78bc7b6730"
+    },
+    {
+      "name": "ticket-field-roles",
+      "filename": "ticket-field-roles-390.png",
+      "width": 390,
+      "sha256": "221881d0e4ca31a3c9834f6ab8413a696d83f2b7ff9d2d2ebc05d5ebb68507d9"
+    },
+    {
+      "name": "connection-health-api-settings",
+      "filename": "connection-health-api-settings-1440.png",
+      "width": 1440,
+      "sha256": "78045392021464d9d4deef7ec1c549a1cca429b7ca69c1b3c6c4da545a6f16df"
+    },
+    {
+      "name": "connection-health-api-settings",
+      "filename": "connection-health-api-settings-390.png",
+      "width": 390,
+      "sha256": "85c43f4b8fc55cf8b246834a9b89de97ae433a0b5f8c41b242a9ddc0c2bb16e1"
+    },
+    {
+      "name": "connection-health-delivery-log",
+      "filename": "connection-health-delivery-log-1440.png",
+      "width": 1440,
+      "sha256": "fdcaf57d6b524da3046062a1e8957096c0d3f6a9eef7e9732b70d84c69b12b58"
+    },
+    {
+      "name": "connection-health-delivery-log",
+      "filename": "connection-health-delivery-log-390.png",
+      "width": 390,
+      "sha256": "100fa811a25819a19c97ef867ca48073040b33bcf852b6118e653b3d893150f3"
+    },
+    {
+      "name": "procedure-version",
+      "filename": "procedure-version-1440.png",
+      "width": 1440,
+      "sha256": "32955d9c7ebd2940952b3242d14dbf512fffe276212c867eea4d3daba0dd1f9b"
+    },
+    {
+      "name": "procedure-version",
+      "filename": "procedure-version-390.png",
+      "width": 390,
+      "sha256": "449accfe6620ff0e75cba080c57acf302d60d81c103cf46b7d55dcf1bf790e52"
+    },
+    {
+      "name": "company-import",
+      "filename": "company-import-1440.png",
+      "width": 1440,
+      "sha256": "759c62093fa1dc8c854d594c69fb45b056d34660e38d8471e28c130a027266bd"
+    },
+    {
+      "name": "company-import",
+      "filename": "company-import-390.png",
+      "width": 390,
+      "sha256": "b21fbe00ce12143dbca00eea6253851703de748d9b4b9cded8b9aacf93cbd3ae"
+    },
+    {
+      "name": "incident-ready",
+      "filename": "incident-ready-1440.png",
+      "width": 1440,
+      "sha256": "8a6324ddaac56d0759a77bae6431324454bb119cb4df48726b5a710ab85dc9d9"
+    },
+    {
+      "name": "incident-ready",
+      "filename": "incident-ready-390.png",
+      "width": 390,
+      "sha256": "cb5e6f9ac68751a2fbb37f47269e6e9d433c2316861e12b570d6da8f867615f3"
+    },
+    {
+      "name": "incident-applied",
+      "filename": "incident-applied-1440.png",
+      "width": 1440,
+      "sha256": "4f4661c9eaddae769b7462ab8313f398c31e2ee21d4515da8e9605454931d551"
+    },
+    {
+      "name": "incident-applied",
+      "filename": "incident-applied-390.png",
+      "width": 390,
+      "sha256": "9809dcc995e06a60ce4c79c70d880271290704c95c9219413f92cb5e7c34007b"
+    },
+    {
+      "name": "penny-guide",
+      "filename": "penny-guide-1440.png",
+      "width": 1440,
+      "sha256": "8ab4d7b788a98ff9f245a39759479a88a25cd69b0897f5f39565bb857c900fca"
+    },
+    {
+      "name": "penny-guide",
+      "filename": "penny-guide-390.png",
+      "width": 390,
+      "sha256": "d79d1aa25144d53ce36a5f02b40b5e18cae598f593f95b45af3cd6ee7cd3cd49"
+    },
+    {
+      "name": "release-guide",
+      "filename": "release-guide-1440.png",
+      "width": 1440,
+      "sha256": "fc07014da8c38e033dbe469075eff180083de2f9653a90caa81480c17c32d786"
+    },
+    {
+      "name": "release-guide",
+      "filename": "release-guide-390.png",
+      "width": 390,
+      "sha256": "01e78fffe2dc8211fb807b4bcff411ec1501adb38ba97d6c00fb50bea6117f4e"
+    },
+    {
+      "name": "engineering-github",
+      "filename": "engineering-github-1440.png",
+      "width": 1440,
+      "sha256": "c343e193200d73663c79cddeb050e08a69df2f5e6f6ab7f37718207d608a9f5d"
+    },
+    {
+      "name": "engineering-github",
+      "filename": "engineering-github-390.png",
+      "width": 390,
+      "sha256": "21db33f3626e2367ce30c9a968f17dd312cbb46dcd0b0f497b04933d0547703c"
+    },
+    {
+      "name": "engineering-linear",
+      "filename": "engineering-linear-1440.png",
+      "width": 1440,
+      "sha256": "467cb7d93972f277c5260e8df806f24c49c116c322f138b3c8176a16f7e1e5f6"
+    },
+    {
+      "name": "engineering-linear",
+      "filename": "engineering-linear-390.png",
+      "width": 390,
+      "sha256": "6f88f3c4d3dd349a9c2962f246fca2a0093824d898c7ab3b380cd43c83067531"
+    },
+    {
+      "name": "engineering-jira",
+      "filename": "engineering-jira-1440.png",
+      "width": 1440,
+      "sha256": "a606e65d2a178afbc096ae5f53ec3c6d37519f6065048e0c1f91d636d612acf5"
+    },
+    {
+      "name": "engineering-jira",
+      "filename": "engineering-jira-390.png",
+      "width": 390,
+      "sha256": "ef3efc0c4cab76524164d3c4d03cd6d25267c444eddbeb48b0cfd06ef25ff7f2"
+    },
+    {
+      "name": "engineering-slack",
+      "filename": "engineering-slack-1440.png",
+      "width": 1440,
+      "sha256": "9e4a67397ec5a0ea9423b259329a753c1c771ba0dc49c1eedce2b09dd20d388d"
+    },
+    {
+      "name": "engineering-slack",
+      "filename": "engineering-slack-390.png",
+      "width": 390,
+      "sha256": "c2cb2e1c94837bee6472ccfdd98cf224b26ae04be207831ebb6ec6a5643a4a36"
+    },
+    {
+      "name": "engineering-teams",
+      "filename": "engineering-teams-1440.png",
+      "width": 1440,
+      "sha256": "9fcd6918e53a8b2b5ef29de7aeda7ecb92ac35801b0e3a7bc7a2d7521a33e6c0"
+    },
+    {
+      "name": "engineering-teams",
+      "filename": "engineering-teams-390.png",
+      "width": 390,
+      "sha256": "d3839c959b18135dccd1309ea696614a6aaa0a73dd6a834459343949fb03f516"
+    },
+    {
+      "name": "local-request",
+      "filename": "local-request-1440.png",
+      "width": 1440,
+      "sha256": "16fab98f03770ebddc4c1eccfb13a2824bf9ae5b36e5b26bf38cb19332fb2bda"
+    },
+    {
+      "name": "local-request",
+      "filename": "local-request-390.png",
+      "width": 390,
+      "sha256": "0f220fe756d0cae3051671a70b07f54d6f8a37acebcaef11819a54539995c2e9"
+    },
+    {
+      "name": "local-away",
+      "filename": "local-away-1440.png",
+      "width": 1440,
+      "sha256": "006b4137996292cccd6ed052cdb1e6483a99c964ed7862f2447371b8b26f4cb6"
+    },
+    {
+      "name": "local-away",
+      "filename": "local-away-390.png",
+      "width": 390,
+      "sha256": "748f042654665dec4f465272fd3914f4e8190395339d0e996b3b6a26d92946b2"
+    }
+  ],
+  "checks": [
+    "saved triage preferences expose missing key and usable AI setup link",
+    "scoped token read succeeds and denied contact read has usable repair link",
+    "raw identities hidden in default receipts",
+    "Penny, release and engineering official setup guides visible",
+    "local request preview disabled and chat writes to native inbox"
+  ],
+  "pageErrors": [],
+  "head": "2343b5c3f7853ff06919e26ea121b78882e0342c",
+  "inspected": true,
+  "inspection": "All 34 captures inspected: original screenshots plus five desktop-sidebar/phone comparison sheets and four native-page comparison sheets.",
+  "fixtureCorrections": [
+    "Use supported ticket PATCH fields, not a ticket read object",
+    "Reopen the Ticket tab after responsive sidebar mode changes",
+    "Configure genuinely closed business hours rather than an unrelated availability switch",
+    "Verify the native conversation ID and persisted message rather than equating the inbox preview to the visitor text; an away reply can be the latest preview"
+  ],
+  "localChat": {
+    "httpAdmission": 200,
+    "nativeTicketInOwnerInbox": true,
+    "contactMessageDurablyReadable": true,
+    "availability": "closed configured hours",
+    "mailMode": "local",
+    "awayReplyPromises": "chat only"
+  }
+}

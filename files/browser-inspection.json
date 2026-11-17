@@ -1,0 +1,11 @@
+{
+  "head": "2343b5c3f7853ff06919e26ea121b78882e0342c",
+  "passed": true,
+  "count": 34,
+  "widths": [
+    1440,
+    390
+  ],
+  "noHorizontalOverflow": true,
+  "inspection": "All 34 captures inspected: original screenshots plus five desktop-sidebar/phone comparison sheets and four native-page comparison sheets."
+}

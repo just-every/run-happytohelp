@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "0eb094bb8e31281a040f40b18530ba012bf81618",
+      "bytes": 1562,
+      "path": "PLAN.md",
+      "sha256": "41f779c75079d6a4cd618b0fc3cf8550b9d755b647d3971b50cc72000690fcbe"
+    },
+    {
+      "blob": "c0fc503bf8abba1d9d5911ec6dc45f33792ec58a",
+      "bytes": 1571,
+      "path": "REPORT.md",
+      "sha256": "7316e83002fcf84ff04d7ba5362e1ee53435dd7db7aabc15363a7a7b70fee00b"
+    },
+    {
+      "blob": "0aee64441e531f9bbb20ac96a52951ac195505e2",
+      "bytes": 364,
+      "path": "baseline-receipt.json",
+      "sha256": "b2559d675829c711089ca82f9545c87543bf9dbef62f392cbe0ec5de566ee926"
+    },
+    {
+      "blob": "883d5fc10c789d2eb9cd6c0bfe452bcfae026e40",
+      "bytes": 1039,
+      "path": "before-throttle.log",
+      "sha256": "85355548efc9b9e396aa40cf63c42612cd96a6b460fc32ffb725c2d2651c36fa"
+    },
+    {
+      "blob": "1b037cd448818c553cea5bd9cf8aa0909f456050",
+      "bytes": 945,
+      "path": "historical-annotations.json",
+      "sha256": "621a35663e8f793f5365dbee178850d5f09aac80db4107c3344183f0859a1f86"
+    },
+    {
+      "blob": "6695f173bb13086d59468987f611a988331799d6",
+      "bytes": 2737,
+      "path": "historical-jobs.jsonl",
+      "sha256": "b38c4fbb1b8558e826fd4637ae7893c94bcd21ab0b12e4daa007a5edebdff0d6"
+    }
+  ],
+  "product_branch": "cloud/hh-procedures-race-2",
+  "product_head": "55e2f106c506e4f671d2e474c737124e760e2233",
+  "ref": "refs/heads/evidence/hh-procedures-race-2",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-procedures-race-2"
+}

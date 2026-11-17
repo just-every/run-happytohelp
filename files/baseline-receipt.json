@@ -1,0 +1,13 @@
+{
+  "baseline_head": "55e2f106c506e4f671d2e474c737124e760e2233",
+  "complete_journey_passes": 1,
+  "complete_journey_failures": 0,
+  "fixture_exclusions": 2,
+  "cpu_rate": 6,
+  "network_latency_ms": 100,
+  "historical_run": 44094867861,
+  "historical_failed_job": 134080357924,
+  "historical_log_exit": 0,
+  "historical_log_stdout_bytes": 0,
+  "github_calls": 4
+}

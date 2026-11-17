@@ -1,6 +1,7 @@
 (() => {
  const form=document.querySelector('#customer-request'),definition=document.querySelector('#request-definition');if(!form||!definition)return;
  const model=JSON.parse(definition.textContent),result=document.querySelector('#request-result'),key=`h2h-request:${model.projectId}:${model.id}`;
+ const localTrial=form.dataset.localTrial==='1';
  let command=crypto.randomUUID(),refusedField;
  const control=f=>form.elements.namedItem(['subject','message'].includes(f.id)?f.id:`field:${f.id}`);
  const value=f=>{const el=control(f);if(f.type==='checkbox')return el.checked;if(f.type==='multiselect')return [...el.selectedOptions].map(o=>o.value);if(['number','decimal'].includes(f.type))return el.value===''?null:Number(el.value);return el.value;};
@@ -8,12 +9,12 @@
  const values=()=>{const out={};for(const f of model.fields){if(condition(f,out))out[f.id]=value(f);}return out;};
  function focusRefusal(){const el=refusedField&&control(refusedField);(el&&!el.disabled&&!el.closest('[hidden]')?el:result).focus();}
  function update(){const focused=document.activeElement,accepted={};for(const f of model.fields){const row=form.querySelector(`[data-field="${CSS.escape(f.id)}"]`),active=condition(f,accepted),el=control(f);row.hidden=!active;el.disabled=!active||(f.type==='account'&&!f.options.length&&el.getAttribute('aria-invalid')!=='true');el.required=active&&f.required&&f.type!=='checkbox'&&(f.type!=='account'||f.options.length>0);if(active)accepted[f.id]=value(f);}
- const blocked=model.fields.some(f=>f.type==='account'&&f.required&&!f.options.length&&!form.querySelector(`[data-field="${CSS.escape(f.id)}"]`).hidden);form.querySelector('button[type=submit]').disabled=blocked;if(refusedField&&(focused===control(refusedField)||focused===result))focusRefusal();}
+ const blocked=model.fields.some(f=>f.type==='account'&&f.required&&!f.options.length&&!form.querySelector(`[data-field="${CSS.escape(f.id)}"]`).hidden);form.querySelector('button[type=submit]').disabled=blocked||localTrial;if(refusedField&&(focused===control(refusedField)||focused===result))focusRefusal();}
  try {const saved=JSON.parse(sessionStorage.getItem(key));if(saved&&Date.now()-saved.at<900000){command=saved.command;for(const f of model.fields){const el=control(f),v=saved.values[f.id];if(v===undefined)continue;if(f.type==='checkbox')el.checked=v;else if(f.type==='multiselect')for(const o of el.options)o.selected=v.includes(o.value);else el.value=v??'';}}}catch{}
  form.addEventListener('input',()=>{update();try{sessionStorage.setItem(key,JSON.stringify({at:Date.now(),command,values:values()}));}catch{}});update();
  let refreshing,refreshAgain=false;
  async function refreshAccounts(){
-  if(form.hidden)return;
+  if(form.hidden||localTrial)return;
   if(refreshing){refreshAgain=true;return refreshing;}
   refreshing=(async()=>{
    try{
@@ -50,7 +51,7 @@
   refreshAccounts();
  }
  form.addEventListener('submit',async event=>{
-  event.preventDefault();let refused=false;refusedField=undefined;result.replaceChildren();for(const f of model.fields){control(f).removeAttribute('aria-invalid');form.querySelector(`#${CSS.escape(`request-${f.id}-error`)}`).hidden=true;}
+  event.preventDefault();if(localTrial)return;let refused=false;refusedField=undefined;result.replaceChildren();for(const f of model.fields){control(f).removeAttribute('aria-invalid');form.querySelector(`#${CSS.escape(`request-${f.id}-error`)}`).hidden=true;}
   const v=values(),fields=Object.fromEntries(Object.entries(v).filter(([id])=>!['subject','message'].includes(id))),button=form.querySelector('button[type=submit]');button.disabled=true;button.textContent='Sending…';
   try{
    const response=await fetch(form.action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:v.subject,message:v.message,fields,localId:command,turnstileToken:form.elements.namedItem('cf-turnstile-response')?.value,locale:model.locale,knowledgeRead:form.elements.namedItem('knowledgeRead')?.value,afterReading:form.dataset.afterReading||undefined})});

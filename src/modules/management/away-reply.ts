@@ -28,7 +28,7 @@ export async function postAwayReply(env:Env,message:Record<string,unknown>,actor
  if(!row||row.assistant||row.last_message_id!==message.id)return null
  const settings=JSON.parse(row.settings_json||'{}'),sentAt=Number(message.created_at),state=await teamAvailability(env,actor.projectId,settings,sentAt)
  if(state.available)return null
- const configured=String(state.message||'').trim(),mail=emailMode(env)!=='unavailable',known=Boolean(row.email||row.provided_email)
+ const configured=String(state.message||'').trim(),mail=emailMode(env)==='remote',known=Boolean(row.email||row.provided_email)
  const back=state.opensAt?backAt(state.opensAt,{timeZone:state.timezone,now:sentAt,withZone:true}):''
  const reply=configured||`Thanks for your message. ${publicAppearance(settings,row.name).name} is away right now${back?` and back ${back}`:''}. We'll reply here${mail?known?' and by email':', and by email if you leave your address':''}.`
  const content=back?reply:`${reply} ${humanResponseTime(settings.widget_settings?.text)}`

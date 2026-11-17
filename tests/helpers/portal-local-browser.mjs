@@ -16,6 +16,15 @@ export async function localPortalBrowser({browser,shot}){
    await page.waitForURL(url=>url.pathname.startsWith('/help/'))
    assert.ok(new URL(page.url()).pathname.startsWith('/help/'),'local customer can continue to public help')
   }
+
+  // A local request preview never offers an impossible customer verification submission.
+  const response=await fetch(runtime.origin+`/api/forms/projects/${tenant.projectId}/forms`,{method:'POST',headers:{Authorization:'Bearer '+tenant.token,'Content-Type':'application/json'},body:JSON.stringify({title:'Local help request',enabled:true,fields:[]})})
+  assert.equal(response.status,201);const {data:form}=await response.json()
+  await page.goto(`${runtime.origin}/help/${tenant.projectId}/requests/${form.id}`)
+  assert.equal(await page.locator('#customer-request button[type=submit]').isDisabled(),true)
+  assert.equal(await page.locator('.request-identity a').count(),0,'local preview has no impossible email verification action')
+  assert.equal(await page.locator('.cf-turnstile').count(),0,'local preview cannot challenge for an unavailable submission')
+  const chat=page.locator('.request-unavailable a[href="#launch-chat"]');assert.equal(await chat.count(),1)
   passed=true
  }finally{await context.close();await runtime.close(passed)}
 }

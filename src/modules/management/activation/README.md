@@ -30,7 +30,10 @@ assistant also answers from the owner's own site). Sender DNS is `needs_you` on 
 row that is not counted on a hosted installation whose provider has no status API,
 and `hidden` locally. Receiving replies is not counted locally. Everything else is a
 `set` row, and any step observed `done` counts. A preset, default or saved
-configuration never makes a step `done`.
+configuration never makes a step `done`. A widget ping confirms installation only
+when its configured website origin differs from both the installation’s own
+`APP_ORIGIN` and the preview origin. The existing last-ping record is retained;
+changing these origin bindings invalidates previous confirmation receipts.
 
 ## Skipping
 

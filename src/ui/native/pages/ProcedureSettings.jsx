@@ -68,7 +68,7 @@ function Procedures({projectId}){
  </Section>
  {selected&&readState==='ready'&&<ProcedureDefinition version={selected} versions={versions} comparisonId={comparisonId} onCompare={setComparisonId} onRevise={revise} busy={busy}/>}
  {selected&&readState==='ready'&&<Section title={`Version ${selected.version} receipts`} description={selected.definition.instructions}>
-  <p>Exact version: <code>{selected.id}</code></p>
+  <p>Selected procedure: <strong>{selected.procedure_key} · Version {selected.version}</strong></p><details><summary>Technical details</summary><p>Exact version ID: <code>{selected.id}</code></p></details>
   <div className="d-flex flex-wrap gap-2">
    <button className="btn btn-primary" aria-disabled={busy} onClick={()=>perform('receipts',async()=>{await post(`${base}/simulations`);await inspect(selected);return 'Simulation queued. Refresh receipts to inspect its outcome.'})}>Run synthetic simulation</button>
    <button className="btn btn-white" aria-disabled={busy} onClick={()=>perform('receipts',async()=>{await inspect(selected);return 'Simulation receipts refreshed.'})}>Refresh receipts</button>
@@ -88,7 +88,7 @@ function Procedures({projectId}){
    </div>
    {result(run.id)}
   </article>)}
-  {receipt&&<ProcedureReceipt receipt={receipt} versionId={selected.id} projectId={projectId}/>}
+  {receipt&&<ProcedureReceipt receipt={receipt} version={selected} projectId={projectId}/>}
  </Section>}
  {readState==='ready'&&<Section title="Draft next version" description="Use synthetic text only. No historical conversation is imported. Saving creates a new version; prior versions retain their exact instructions, required cases and budgets.">
   {draftSource&&<p role="status">Draft based on {draftSource.procedure_key} · Version {draftSource.version}. Saving creates a new version with its own required evaluation.</p>}

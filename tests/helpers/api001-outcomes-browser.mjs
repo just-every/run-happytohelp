@@ -17,6 +17,10 @@ export async function api001Browser(){
  try{
   const owner=await runtime.seedTenant({name:'Connector operations',email:'api001-browser@example.test'}),root=`/api/management/projects/${owner.projectId}/connections`
   const api=async(path,method='GET',data)=>{const response=await fetch(runtime.origin+path,{method,headers:{Authorization:'Bearer '+owner.token,'Content-Type':'application/json'},...(data===undefined?{}:{body:JSON.stringify(data)})});assert.ok(response.ok,path+': '+response.status+' '+await response.clone().text());return response.json()}
+  const credential=await api(root+'/tokens','POST',{name:'Conversation reader',scopes:['conversations:read']})
+  for(const [path,status] of [['/api/v1/conversations',200],['/api/v1/contacts',403]]){
+   const response=await fetch(runtime.origin+path,{headers:{Authorization:'Bearer '+credential.token}});assert.equal(response.status,status,path)
+  }
   const destination=await api(root+'/webhooks','POST',{name:'Browser receiver',url:'https://receiver.example.com/browser',events:['conversation.created']})
   await api(root+'/webhooks/'+destination.id+'/test','POST',{});await api(root+'/webhooks/'+destination.id+'/test','POST',{})
   await api(root+'/helpscout','PUT',{app_id:'browser-app',app_secret:'synthetic-browser-app',webhook_secret:'synthetic-browser-hook',mailbox_id:'1'})
@@ -25,6 +29,11 @@ export async function api001Browser(){
    await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}]);const page=await context.newPage();page.setDefaultTimeout(20000)
    await page.goto(runtime.origin+`/projects/${owner.projectId}/delivery-log`)
    const section=page.getByRole('region',{name:'Connection health'});await section.getByRole('heading',{name:'Help Scout',exact:true}).waitFor()
+   const tokens=section.locator('li').filter({has:page.getByRole('heading',{name:'API tokens',exact:true})})
+   assert.doesNotMatch(await tokens.innerText(),/bearer\.request|authority_or_quota_refused/,'machine diagnostics stay outside the default view')
+   const repair=tokens.getByRole('link',{name:'API token settings'});await repair.waitFor();await repair.click()
+   await page.waitForURL(url=>url.pathname===`/projects/${owner.projectId}/api-settings`)
+   await page.goto(runtime.origin+`/projects/${owner.projectId}/delivery-log`);await section.getByRole('heading',{name:'Help Scout',exact:true}).waitFor()
    for(const name of ['API tokens','Webhooks','Slack','Zapier hooks','MCP','Help Scout'])assert.equal(await section.getByRole('heading',{name,exact:true}).count(),1)
    const webhooks=section.locator('li').filter({has:page.getByRole('heading',{name:'Webhooks',exact:true})})
    assert.match(await webhooks.innerText(),/failing/);assert.match(await webhooks.innerText(),/HTTP 400/);assert.match(await webhooks.innerText(),/Uncertain: 1/)
@@ -36,7 +45,7 @@ export async function api001Browser(){
    await section.getByText('Resend queued. Check delivery attempts for its result.',{exact:true}).waitFor()
    const pull=page.waitForResponse(r=>r.url().endsWith('/helpscout/pull'));await section.getByRole('button',{name:'Pull Help Scout now'}).click();assert.equal((await pull).status(),502)
    await section.getByRole('alert').waitFor();await section.getByRole('button',{name:'Refresh connection health'}).click()
-   const scout=section.locator('li').filter({has:page.getByRole('heading',{name:'Help Scout',exact:true})});await scout.getByText(/rate_limited/).waitFor()
+   const scout=section.locator('li').filter({has:page.getByRole('heading',{name:'Help Scout',exact:true})});await scout.locator('details').first().getByText('Technical details',{exact:true}).click();await scout.getByText(/rate_limited/).waitFor()
    assert.match(await scout.innerText(),/failing/)
    assert.ok(!/synthetic-browser|Browser receiver/.test(await section.innerText()))
   }finally{await context.close()}

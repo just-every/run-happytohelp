@@ -15,9 +15,9 @@ function failureMessage(failure){
   default: return 'The response did not meet the declared requirements.';
  }
 }
-export default function ProcedureReceipt({receipt,versionId,projectId}){
+export default function ProcedureReceipt({receipt,version,projectId}){
  return <div aria-label="Simulation receipt" className="procedure-receipt">
-  <p>Version receipt: <code>{versionId}</code></p>
+  <p>Receipt for <strong>{version.procedure_key} · Version {version.version}</strong></p><details><summary>Technical details</summary><p>Version ID: <code>{version.id}</code></p></details>
   {receipt.cases.map(item=>{
    const notRun=['queued','cancelled'].includes(item.status)&&!activeStatuses.includes(receipt.status);
    const failures=[...new Set((item.checks?.failures||[]).map(failureMessage))];

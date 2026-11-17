@@ -11,10 +11,11 @@ export default function AwayNotice() {
     const availability = conversationSettings.availability;
     if (availability?.available !== false) return null;
     const text = context.text.away, back = backAt(availability.opensAt);
-    const mail = Boolean(conversationSettings.mailMode) && conversationSettings.mailMode !== 'unavailable';
+    const mail = conversationSettings.mailMode === 'remote';
     return <div className="happytohelp-away-notice" role="status">
         <strong>{text.title}</strong>
         <span>{back ? text.back.replace('{when}', back) : humanResponseTime(context.text)}</span>
+        {conversationSettings.mailMode === 'local' && <span>Local email is suppressed. Return to this chat for the team’s reply.</span>}
         {mail && <span>{contact.email ? text.email_known.replace('{email}', contact.email) : text.email_ask}</span>}
     </div>;
 }

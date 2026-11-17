@@ -29,14 +29,14 @@ export default function ProblemPanel({ projectId, conversationId, ticket, onChan
         setBusy(true); setError(''); setLinkPreview(null); setLinkResult(null);
         try {
             const selected = (await nativeRequest(`${ticketPath(projectId)}/conversations/${encodeURIComponent(incident.id)}/ticket/problem`)).data.ticket;
-            const response = await nativeRequest(`${path}/incidents/preview`, json('POST', { action, tickets: [selected] })); setLinkPreview({ action, ...response.data });
+            const response = await nativeRequest(`${path}/incidents/preview`, json('POST', { action, tickets: [selected] })); setLinkPreview({ action, subjects: { [incident.id]: incident.subject || 'Selected incident' }, ...response.data });
         } catch (failure) { setError(failure.message); } finally { setBusy(false); }
     };
     const applyLink = async () => {
         setBusy(true); setError('');
         try {
             const response = await nativeRequest(`${path}/incidents/apply`, json('POST', { action: linkPreview.action, tickets: linkPreview.results.filter(row => row.status === 'ready').map(({ id, expected_version, expected_revision, expected_last_message_id }) => ({ id, expected_version, expected_revision, expected_last_message_id })) }));
-            setLinkResult(response.data); setLinkPreview(null); await reload();
+            setLinkResult({ ...response.data, subjects: linkPreview.subjects }); setLinkPreview(null); await reload();
         } catch (failure) { setError(failure.message); } finally { setBusy(false); }
     };
     const open = id => setActiveConversationId(id);
@@ -54,8 +54,8 @@ export default function ProblemPanel({ projectId, conversationId, ticket, onChan
                 <ul className="problem-ticket-list">{data.incidents.map(incident => <li key={incident.id}><button type="button" className="btn btn-sm btn-link" onClick={() => open(incident.id)}>{incident.subject || incident.id}</button><div>{incident.requester_name || incident.requester_email || 'Requester'} · {incident.channel} · {incident.status_category}</div><button className="btn btn-sm btn-white" type="button" disabled={disabled} onClick={() => prepareLink(incident, 'unlink')}>Preview unlink</button></li>)}</ul>
                 {(incidentOffset > 0 || data.has_more) && <div className="problem-actions"><button className="btn btn-sm btn-white" type="button" disabled={busy || incidentOffset === 0} onClick={() => setIncidentOffset(Math.max(0, incidentOffset - 100))}>Previous incidents</button><button className="btn btn-sm btn-white" type="button" disabled={busy || !data.has_more} onClick={() => setIncidentOffset(incidentOffset + 100)}>Next incidents</button></div>}
                 <ProblemTicketSearch projectId={projectId} label="Find an incident to link" disabled={disabled} excludeIds={[conversationId, ...data.incidents.map(item => item.id)]} onSelect={prepareLink} />
-                {linkPreview && <div><ul className="problem-ticket-list">{linkPreview.results.map(result => <li key={result.id}>{result.id}: {result.status}{result.reason ? ` — ${result.reason}` : ''}</li>)}</ul><button type="button" className="btn btn-sm btn-primary" disabled={disabled || !linkPreview.results.some(result => result.status === 'ready')} onClick={applyLink}>Confirm {linkPreview.action}</button></div>}
-                {linkResult && <ul className="problem-ticket-list" role="status">{linkResult.results.map(result => <li key={result.id}>{result.id}: {result.status}{result.reason ? ` — ${result.reason}` : ''}</li>)}</ul>}
+                {linkPreview && <div><ul className="problem-ticket-list">{linkPreview.results.map(result => <li key={result.id}><strong>{linkPreview.subjects[result.id] || 'Selected incident'}</strong>: {result.status}{result.reason ? ` — ${result.reason}` : ''}<details><summary>Technical details</summary>Incident ID: <code>{result.id}</code></details></li>)}</ul><button type="button" className="btn btn-sm btn-primary" disabled={disabled || !linkPreview.results.some(result => result.status === 'ready')} onClick={applyLink}>Confirm {linkPreview.action}</button></div>}
+                {linkResult && <ul className="problem-ticket-list" role="status">{linkResult.results.map(result => <li key={result.id}><strong>{linkResult.subjects[result.id] || 'Selected incident'}</strong>: {result.status}{result.reason ? ` — ${result.reason}` : ''}<details><summary>Technical details</summary>Incident ID: <code>{result.id}</code></details></li>)}</ul>}
                 {!!data.incidents.length && <ProblemSolve key={`${path}:${data.problem_version}:${data.incident_offset}`} path={path} recentPreviewId={data.recent_preview_id} incidents={data.incidents} disabled={disabled} onChanged={reload} />}
             </>}
         </>}

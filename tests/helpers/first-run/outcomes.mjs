@@ -93,7 +93,8 @@ export async function builtOutcomes(){
   await page.reload();await page.getByRole('button',{name:'Appearance',exact:true}).click()
   assert.equal(await page.getByLabel('Workspace color hex',{exact:true}).inputValue(),'#2548aa')
   await page.goto(`${runtime.origin}/projects/${first.projectId}/widget-settings`)
-  await page.getByText('Advanced',{exact:true}).click();await page.getByRole('heading',{name:'Server secret',exact:true}).waitFor()
+  // Settings also has an Advanced disclosure; wait for the widget's own controls.
+  await page.locator('.widget-code__advanced > summary').click();await page.getByRole('heading',{name:'Server secret',exact:true}).waitFor()
   assert.equal(await page.getByRole('button',{name:'Reveal server secret',exact:true}).isEnabled(),true)
   await page.getByRole('tablist',{name:'Verification example language'}).waitFor()
   assert.match(await page.locator('#widget-code-verification-example').innerText(),/HMAC|hash_hmac|createHmac/i)

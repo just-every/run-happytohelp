@@ -16165,7 +16165,7 @@
       "executable": false
     },
     "tests/helpers/ai/procedures-browser.mjs": {
-      "sha256": "8ed7273462bc5b688af1cb26d798f2165e0c074decfcd3c596ecc3caba913503",
+      "sha256": "93785e479d332f6b3b5a252b0b6d9bf0d71afcdce7c7c010f61999beb09ebd74",
       "executable": false
     },
     "tests/helpers/ai/procedures.mjs": {
@@ -16597,7 +16597,7 @@
       "executable": false
     },
     "tests/helpers/first-run/outcomes.mjs": {
-      "sha256": "bf1b4870f433aa32947004ac7f55c80971321d90bfcc5d7d654bd0485de88c2d",
+      "sha256": "5242d61f3bd4b006910312de1f3819672bd3bed574dd985102ac964b7be42cdf",
       "executable": false
     },
     "tests/helpers/first-run/provisioning.mjs": {

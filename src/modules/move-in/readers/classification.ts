@@ -85,8 +85,14 @@ export function lowerPosition(value:unknown,vendor:Vendor,unsupported?:string,so
  if(vendor==='zendesk'&&sourceKind){
   if(!object(value))throw new RecordStructureError('record_must_be_object')
   const wrapped=Object.keys(value).length===1&&Object.hasOwn(value,sourceKind)
-  const classified=classifyRecord(wrapped?value:{[sourceKind]:value},vendor)
-  return {...classified,prefix:wrapped?classified.prefix:''}
+  try{
+   const classified=classifyRecord(wrapped?value:{[sourceKind]:value},vendor)
+   return {...classified,prefix:wrapped?classified.prefix:''}
+  }catch(error){
+   const prefix='/'+escape(sourceKind)
+   if(!wrapped&&error instanceof RecordStructureError&&error.pointer.startsWith(prefix+'/'))throw new RecordStructureError(error.message,error.pointer.slice(prefix.length))
+   throw error
+  }
  }
  if(vendor==='helpscout'){if(!sourceKind||!sourceKind.startsWith('metadata:')&&!object(value))throw new RecordStructureError('helpscout_document_shape_required');return {kind:sourceKind,payload:sourceKind.startsWith('metadata:')?{value}:value as Record<string,any>,prefix:''}}
  if(unsupported!==undefined&&(!object(value)||!Object.hasOwn(value,'type')&&!Object.hasOwn(value,'kind'))){

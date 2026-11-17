@@ -4761,7 +4761,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "7ea95e386d8ed392dc6ef2b657204f91d11aec42714e956648c38ff0c1d5495d",
+      "sha256": "01f5ec9f0005e9951d96b0bfdac7192b2c4b1ea33c4c4dc813c7b4931d6ddddb",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -16729,7 +16729,7 @@
       "executable": false
     },
     "tests/helpers/identity/roles-audit.mjs": {
-      "sha256": "c26a8e24dccf30970e9583b3f780752632bacff910ad3fdac539ba0127d26fd8",
+      "sha256": "c4723dedddf5c704b3f9e8ee57eb625747a9d902a35c5be9cf05ce2d80121178",
       "executable": false
     },
     "tests/helpers/identity/scoped-authority.mjs": {

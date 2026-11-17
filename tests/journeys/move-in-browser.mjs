@@ -1,3 +1,4 @@
+import {undoConflictBrowser} from '../move-in/undo-conflict-browser.mjs'
 import {legacyPackageBrowserFlow} from '../move-in/legacy-adoption-integration/browser.mjs'
 import {zendeskResumeBrowserFlow} from '../move-in/zendesk-resume-browser.mjs'
 import {zendeskConnectBrowserFlow} from '../move-in/zendesk-connect-browser.mjs'
@@ -62,6 +63,8 @@ test('an owner connects Zendesk twice, reviews an export, imports and filters it
  await configurationBrowser(1440)
  await configurationBrowser(390)
  await legacyPackageBrowserFlow({page,runtime,project,inspect})
+ const conflicts=await undoConflictBrowser({page,origin:runtime.origin,project,shot})
+ await writeFile(shot('undo-conflicts.json'),JSON.stringify(conflicts,null,2))
 }))
 
 

@@ -1,3 +1,4 @@
+import {startUndoConflictReport} from './undo-conflicts'
 import type { Env } from '../../platform/env'
 import {requireAuditedCustody} from './legacy-identities'
 import {putPrivate} from './private-custody'
@@ -45,6 +46,6 @@ const LOST_RACE=['source_custody_race','source_custody_erased'],RACE_RETRY_SECON
  * so the run advances once and is never stopped by the loser. */
 async function advance(env:Env,read:Run){await assertAuthority(env,read);if(read.error||!WORKING.includes(read.state))return
  let run=read
- try{await requireAuditedCustody(env,read);const touched=await touchRun(env,read);if(!touched)return;run=touched;if(run.state==='uploaded')await unpack(env,run);else if(run.state==='parsing')await parseChunk(env,run);else if(run.state==='planning')await preparePlan(env,run);else await advanceBatch(env,run)}catch(error){const code=error instanceof Error?error.message:'import_failed';if(LOST_RACE.includes(code)){const current=await getWorkRun(env,run.id);if(current&&!current.error&&current.state===run.state&&current.cursor===run.cursor&&current.updated_at===run.updated_at)await enqueue(env,current,RACE_RETRY_SECONDS);return}await assertAuthority(env,run);if(await failRun(env,run,code.startsWith('D1_')?'Import database operation failed':code.slice(0,200)))await notifyPull(env,run);return}
+ try{await requireAuditedCustody(env,read);const touched=await touchRun(env,read);if(!touched)return;run=touched;if(run.state==='uploaded')await unpack(env,run);else if(run.state==='parsing')await parseChunk(env,run);else if(run.state==='planning')await preparePlan(env,run);else await advanceBatch(env,run)}catch(error){const code=error instanceof Error?error.message:'import_failed';if(LOST_RACE.includes(code)){const current=await getWorkRun(env,run.id);if(current&&!current.error&&current.state===run.state&&current.cursor===run.cursor&&current.updated_at===run.updated_at)await enqueue(env,current,RACE_RETRY_SECONDS);return}await assertAuthority(env,run);if(run.state==='undoing'&&code==='NATIVE_EDIT_CONFLICT'){await startUndoConflictReport(env,run);await enqueue(env,run);return}if(await failRun(env,run,code.startsWith('D1_')?'Import database operation failed':code.slice(0,200)))await notifyPull(env,run);return}
  const current=await getWorkRun(env,run.id);if(current&&!current.error&&WORKING.includes(current.state))await enqueue(env,current);else await notifyPull(env,current??run)
 }

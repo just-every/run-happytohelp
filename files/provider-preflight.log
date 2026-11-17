@@ -1,0 +1,12 @@
+✔ an explicitly consented provider preflight reads exactly three GETs and reports declared settings and secret names without values or writes (642.345464ms)
+✔ provider preflight refuses absent consent and absent credentials distinctly before any network request (386.733447ms)
+✔ provider authorization and missing Worker responses identify the failed read honestly without retry or error-body leakage (351.394376ms)
+✔ provider transport, redirect and unreadable responses fail closed without following, retrying or exposing diagnostics (323.147311ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1787.780827

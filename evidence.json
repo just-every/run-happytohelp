@@ -1,0 +1,154 @@
+{
+  "files": [
+    {
+      "blob": "762cdf8f2b4ce2a5ce627ac5b2bbab0f67f35552",
+      "bytes": 1652,
+      "path": "PLAN.md",
+      "sha256": "4519ed5a40409bb5546982d6a5c6f8d6230af026daeda2e8691ff52be153a9ba"
+    },
+    {
+      "blob": "07ff3aef83649f06ca311e876cc26088d221c165",
+      "bytes": 1956,
+      "path": "RECEIPT.json",
+      "sha256": "4262aa976270e742c06d11e7e1b0c036852316be79eb8061afaaaf0516fb9495"
+    },
+    {
+      "blob": "9d2cd14c378d621cc6006c60c66c7daa9086f69b",
+      "bytes": 8915,
+      "path": "REPORT.md",
+      "sha256": "f1bf8c7acb155f76d1ff684402f7e43aa085ebf5b35871f67f4fcec377cdb1da"
+    },
+    {
+      "blob": "4623d59c81c8fa8f97d15bd679bde1db9d36cb33",
+      "bytes": 366046,
+      "path": "browser/approved-docs-390.png",
+      "sha256": "ddc65fbba3e2fbdb067310700a2f91c238e717b237e91656622c78ffeaa56ca2"
+    },
+    {
+      "blob": "0d56d78608b0b7332e48f10cfa57f5cc89109503",
+      "bytes": 442179,
+      "path": "browser/installation.png",
+      "sha256": "9f5d7aecf107e9c33917859f8cefc13eb2b0c75500e682a9ead353ce403e34d6"
+    },
+    {
+      "blob": "42cce697896eabc18ca7db3cad1ad697a874af57",
+      "bytes": 430,
+      "path": "ci-discovery.json",
+      "sha256": "5177febf242f77a4fe70b50ab2f04c036ae525431a1fc12010f629b4288ea2df"
+    },
+    {
+      "blob": "744d2a1b50421489b5c77022b785234b77ae2147",
+      "bytes": 1810,
+      "path": "ci-receipt.json",
+      "sha256": "601d409c73fdbf8f233209deb2957e78cd018959164d25b3c17fdab1c292f67b"
+    },
+    {
+      "blob": "7d8958c238e87f4a3d578dd80a8f19aaa994b2e0",
+      "bytes": 140,
+      "path": "counts.json",
+      "sha256": "1d18dbf6152e236eac15e3acf341b9bb828b868c16d68917e87615046b3c8254"
+    },
+    {
+      "blob": "7d47e19cabc5f9645b3eca08a8264bfe0e380a07",
+      "bytes": 900,
+      "path": "final-product-push.log",
+      "sha256": "0ec7a39a5bdd0c5b7f049df9b10b98d32d44ec58ca92d61ef6939a8c366e512e"
+    },
+    {
+      "blob": "2af3798a672f27a8c6b60fe295169cb91b7b8e3e",
+      "bytes": 3504,
+      "path": "installer-docs.log",
+      "sha256": "dda00472e41190beaab16291c13a95fb5dac9145c80f4ea2289161e31f7d2b96"
+    },
+    {
+      "blob": "4f694bf936eb8d4ae93a0c811b33be5704163097",
+      "bytes": 245,
+      "path": "plain-pnpm-receipt.json",
+      "sha256": "292365a615a1ece0ffbecd98c231b4626d5a0591abedb802404800f7a7812b45"
+    },
+    {
+      "blob": "7aac77d8ac8676abfb2c7e92b725074e3103344e",
+      "bytes": 399,
+      "path": "prior-ci-discovery.json",
+      "sha256": "786363eaa55c2803a68e228cedc171f1297b682c2d73f27b381f95e89b213e4d"
+    },
+    {
+      "blob": "bffa01557b73ea7abf660f8ab9b3e7a2e8ab5f47",
+      "bytes": 338,
+      "path": "prior-ci-receipt.json",
+      "sha256": "85644b139c0f2e44b5b0b59472e563ce1d5971f7cb6e28220aa79ced2b3c1b16"
+    },
+    {
+      "blob": "9da3e43443c2ce6da06ce08f0c51c86a71ef3b53",
+      "bytes": 1002,
+      "path": "product-push.log",
+      "sha256": "697ef4e27c5db9b8e7fe1a692f63f30c7e7b5ad600b090d78fdbf32d1ff1748c"
+    },
+    {
+      "blob": "1249e8f3f0eeb9a69c63407c59c8109b1c766789",
+      "bytes": 675,
+      "path": "provider-preflight.log",
+      "sha256": "49913b88f2f48e8605077371b6c5d3388402e69cb5b6b5bb5be62afd5517ca8e"
+    },
+    {
+      "blob": "9d2cd14c378d621cc6006c60c66c7daa9086f69b",
+      "bytes": 8915,
+      "path": "reports/hh-preflight-2.md",
+      "sha256": "f1bf8c7acb155f76d1ff684402f7e43aa085ebf5b35871f67f4fcec377cdb1da"
+    },
+    {
+      "blob": "dd4fc7ceda99f1bc3b6f2c43e17ef4918c41036a",
+      "bytes": 73,
+      "path": "rer-check-receipt.json",
+      "sha256": "2cd6a22617bdd3dc3c3a0065302445122d0f3090935dbe4d95fb197abb78801a"
+    },
+    {
+      "blob": "e0746d82caf17348cdc04c253bcde3312f0717a8",
+      "bytes": 136,
+      "path": "rer-check.log",
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "blob": "1daee165cf3dca5bd7444f8ae7f2c2bfe8abe1cb",
+      "bytes": 761899,
+      "path": "source-check.log",
+      "sha256": "3f2dc2ed5acc144a3471592024e2b3914d7c5eb83ebf8fd8a74793c8b3833e41"
+    },
+    {
+      "blob": "5baca7c26f4974a644d80e5994737ee2636fa222",
+      "bytes": 761885,
+      "path": "source-lock.log",
+      "sha256": "870fc28dbe9ba97a847bc9ed4a2102effc0cc05e052aaf35da0895b9bffb0d02"
+    },
+    {
+      "blob": "2149ff9e48c5a324014ff5b993e1b17a9a004981",
+      "bytes": 151,
+      "path": "stale-docs-search.json",
+      "sha256": "522de4842c114e65b3246be56e2f608d46da35d15ea07f8f02d52365c5726f86"
+    },
+    {
+      "blob": "d224e6e23b97a8131923003548b17ec15198bb86",
+      "bytes": 50,
+      "path": "typecheck-receipt.json",
+      "sha256": "c8c9887a5c7eedcb1820c390c3b2b9a5af29daaf436e6ea259f23f2cdfaba917"
+    },
+    {
+      "blob": "a63b5a3cee82bb24abc7f413435954dda8b2ccd5",
+      "bytes": 245,
+      "path": "typecheck.log",
+      "sha256": "2be4253ca8ce2d978bb0113743a3a274d6a494bcce004fbbd0649811f2ca857c"
+    },
+    {
+      "blob": "e842d8c84a945561e2ec25c97a242e73ac0c2898",
+      "bytes": 283,
+      "path": "whitespace-regression-receipt.json",
+      "sha256": "bbe2868bf9e8a0cc53ff0b225289b592e5eac1a8856dd2d31d3eb4458fdbe7cb"
+    }
+  ],
+  "product_branch": "cloud/hh-preflight-2",
+  "product_head": "a64ebd6dc51bcc8c349a6a0ebcc71f26985501a2",
+  "ref": "refs/heads/evidence/hh-preflight-2",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-preflight-2"
+}

@@ -1,0 +1,9 @@
+{
+  "fixture": "single whitespace character only",
+  "before_base": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
+  "before_exit": 4,
+  "before_refusal_readable": false,
+  "after_exit": 4,
+  "after_refusal_readable": true,
+  "no_provider_reads": "refused before declaration/network"
+}

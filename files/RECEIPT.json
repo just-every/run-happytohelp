@@ -1,0 +1,57 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-preflight-2",
+  "product_head": "a64ebd6dc51bcc8c349a6a0ebcc71f26985501a2",
+  "base": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
+  "product_push": "both heads succeeded, fleet guard attempt 1 each",
+  "identity_and_trailer_inspection": "passed across both commits including side parents",
+  "changed_files": [
+    "docs/INDEPENDENT-RELEASE.md",
+    "docs/INSTALLER.md",
+    "docs/verify.md",
+    "scripts/installer/provider-preflight-summary.mjs",
+    "scripts/installer/provider-preflight.mjs",
+    "sources.lock.json",
+    "tests/journeys/provider-preflight.mjs"
+  ],
+  "worktree_clean": true,
+  "local_checks": {
+    "typecheck": 0,
+    "rer_check_first_party": 0,
+    "preflight_tests": {
+      "exit_code": 0,
+      "passed": 4,
+      "failed": 0,
+      "tested_tree": "final candidate"
+    },
+    "installer_docs_journey": {
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0
+    },
+    "source_lock": 0,
+    "source_check": 0,
+    "build": 0,
+    "setup_final": 0,
+    "diff_check": 0,
+    "runtime_and_docs_inputs": "identical in both published product commits"
+  },
+  "live_provider_qualification": "UNMET-EXTERNAL",
+  "publication_scan": "not run in cloud; existing Mac gate required",
+  "contract_status_changes": [],
+  "ci_run_id": 44035553847,
+  "ci_result": "completed/success",
+  "prior_head": "05f18d8cacbf01b5a8995b70fc8fd7c9eaa2d3b6",
+  "prior_ci_run_id": 44034575681,
+  "prior_ci_result": "superseded after a test-only improvement, not used for final qualification",
+  "commits": [
+    "a64ebd6dc51bcc8c349a6a0ebcc71f26985501a2",
+    "05f18d8cacbf01b5a8995b70fc8fd7c9eaa2d3b6"
+  ],
+  "github_api_calls_used": 9,
+  "remote_product_head": "a64ebd6dc51bcc8c349a6a0ebcc71f26985501a2",
+  "remote_main_at_finish": "94f64dfc35d938bd92b59bac9e938c11be10c27d",
+  "main_moved_after_push": false,
+  "finished_at": "2026-11-17T07:33:23.046033+00:00",
+  "blockers": []
+}

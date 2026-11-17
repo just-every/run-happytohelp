@@ -1,0 +1,9 @@
+{
+  "door": "plain pnpm run preflight:provider",
+  "fixture": "synthetic only",
+  "exit_code": 10,
+  "command_refusal_present": true,
+  "command_stderr_has_no_token": true,
+  "pnpm_argument_echo_observed": true,
+  "raw_output_retained": false
+}

@@ -1,0 +1,36 @@
+PUBLIC_PROOF PUBLIC-003 desktop invitation right=604.2 drawing left=690.6
+PUBLIC_PROOF PUBLIC-003 phone invitation bottom=5629.8 drawing top=5661.8
+PUBLIC_FINDING PUBLIC-004: h2h-sweep animates backgroundSize beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_FINDING PUBLIC-004: h2h-sweep animates backgroundSize beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_FINDING PUBLIC-004: h2h-tick animates backgroundColor beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_FINDING PUBLIC-004: h2h-tick animates backgroundColor beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_FINDING PUBLIC-004: h2h-tick animates backgroundColor beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_FINDING PUBLIC-004: h2h-tick animates backgroundColor beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_FINDING PUBLIC-004: h2h-tick animates backgroundColor beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_FINDING PUBLIC-004: h2h-tick animates backgroundColor beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_FINDING PUBLIC-004: h2h-tick animates backgroundColor beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_FINDING PUBLIC-004: h2h-tick animates backgroundColor beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_FINDING PUBLIC-004: h2h-tick animates backgroundColor beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_FINDING PUBLIC-004: h2h-tick animates backgroundColor beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open
+PUBLIC_PROOF font swap layout-shift=0.000018460581168552813
+PUBLIC_PROOF font swap changed element boxes=[]
+PUBLIC_FINDING PUBLIC-004: fallback-to-Outfit text or element boxes shift; metric-matched fallback layout remains unmet; no approved CSS changed; Gap remains open
+6:48:56 AM [vite] (client) Re-optimizing dependencies because vite config has changed
+PUBLIC_PROOF operations raw HTML bytes=232745
+PUBLIC_FINDING PUBLIC-005: operations raw HTML exceeds the retained 160 KB budget; no page changed; Gap remains open
+PUBLIC_PROOF PUBLIC-005 code cards, one-line lockups and exclusive aqua accents asserted at 1440
+PUBLIC_PROOF PUBLIC-005 delivered responsive boundaries 640/860/861/1199/1200 and desktop visibility asserted
+PUBLIC_PROOF operations prose measure=54.87815930908414ch
+PUBLIC_FINDING PUBLIC-005: operations prose measure falls outside retained 55–80 characters; no page changed; Gap remains open
+PUBLIC_PROOF PUBLIC-005 visible keyboard focus ring asserted
+PUBLIC_PROOF PUBLIC-005 phone menu and contents controls have visible keyboard focus rings
+PUBLIC_PROOF docs pages=39 sections=4; all current built bodies, headings, links, navigation and source destinations checked
+✔ a new owner finds the source and installation guide from the public product page, and recovers from a missing documentation page (221904.616103ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 225827.747817

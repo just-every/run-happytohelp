@@ -48,7 +48,10 @@ accounts.post('/password',async c=>{
  const b=await c.req.json(),credential=await c.env.DB.prepare('SELECT password_hash FROM credentials WHERE user_id=?').bind(actor.id).first<{password_hash:string}>()
  // A first password is a credential install: teammates moved in without one sign in by email link, which
  // proves them for 15 minutes. Otherwise a held session could set a permanent password and pass every step-up with it.
- if(credential&&!recentMailboxProof(actor.security!)){
+ // The local entry already proves installation custody; never request its generated password or email.
+ if(actor.role==='owner'&&actor.security?.installation){
+  await requireStepUp(c,actor,'account.password')
+ }else if(credential&&!recentMailboxProof(actor.security!)){
   if(b.mailboxReset===true&&!actor.security?.hasFactor)await requireStepUp(c,actor,'account.password',{mailbox:true})
   else await provePassword(c,actor.id,b.currentPassword,credential.password_hash,{refusedAction:'password.change_refused',message:'Current password incorrect'})
  }else await requireStepUp(c,actor,'account.password')

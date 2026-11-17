@@ -1,3 +1,4 @@
+import {validTimezone} from '../reports/calendar'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -16,13 +17,14 @@ const presenceSummary=(settings:any)=>{const presence=presenceSettings(settings)
 projectPolicy.put('/projects/:projectId/availability',async c=>{
  const a=await scope(c,true),b=await c.req.json(),schedule=b.availability_schedule||{}
  if(b.is_availability_schedule_enabled&&(!Array.isArray(schedule.days)||!schedule.days.length||schedule.days.some((v:unknown)=>!Number.isInteger(v)||Number(v)<1||Number(v)>7)||!/^\d{2}:\d{2}$/.test(schedule.time_from)||!/^\d{2}:\d{2}$/.test(schedule.time_to)||schedule.time_to<=schedule.time_from))throw new HTTPException(400,{message:'Availability requires weekdays and an increasing HH:MM interval'})
+ if('device_timezone' in b&&!validTimezone(b.device_timezone))throw new HTTPException(400,{message:'Choose a valid IANA timezone'})
  const patch:Record<string,unknown>={is_availability_schedule_enabled:Boolean(b.is_availability_schedule_enabled),availability_schedule:{days:schedule.days||[],time_from:schedule.time_from||null,time_to:schedule.time_to||null,message:schedule.message?text(schedule.message,2000):''}}
  // Presence-based away: during open hours, away while no teammate who may reply is online.
  if('is_presence_away_enabled' in b)patch.is_presence_away_enabled=Boolean(b.is_presence_away_enabled)
  if('presence_idle_minutes' in b){const minutes=Number(b.presence_idle_minutes);if(!PRESENCE_IDLE_MINUTES.includes(minutes))throw new HTTPException(400,{message:`Choose an idle time of ${PRESENCE_IDLE_MINUTES.join(', ')} minutes`});patch.presence_idle_minutes=minutes}
  if('presence_away_message' in b)patch.presence_away_message=b.presence_away_message?text(b.presence_away_message,2000):''
  // Turning presence-based away on or off, or changing when a teammate counts as idle, is recorded in the security log.
- return c.json({data:await save(c.env,a.projectId,patch,(old,value,guard)=>presenceSummary(old)===presenceSummary(value)?[]:[auditStatement(c.env.DB,{projectId:a.projectId,category:'data',action:'availability.presence_changed',actor:{type:'user',id:a.id},source:requestSource(c),target:{type:'project',id:a.projectId},detail:{from:presenceSummary(old),to:presenceSummary(value)}},Date.now(),guard)])})
+ return c.json({data:await save(c.env,a.projectId,old=>({...patch,...(!old.timezone&&b.is_availability_schedule_enabled&&b.device_timezone?{timezone:b.device_timezone}:{})}),(old,value,guard)=>presenceSummary(old)===presenceSummary(value)?[]:[auditStatement(c.env.DB,{projectId:a.projectId,category:'data',action:'availability.presence_changed',actor:{type:'user',id:a.id},source:requestSource(c),target:{type:'project',id:a.projectId},detail:{from:presenceSummary(old),to:presenceSummary(value)}},Date.now(),guard)])})
 })
 // Whether the default visitor assistant can answer: its provider and the installation secret it needs, never key material.
 projectPolicy.get('/projects/:projectId/ai',async c=>{

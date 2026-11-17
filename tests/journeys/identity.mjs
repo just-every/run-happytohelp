@@ -26,3 +26,9 @@ import {sharedRecoveryJourney} from '../helpers/identity/recovery-authority/shar
 test('the setup owner recovers through a scoped Managed handoff only after proving a replacement factor, with old authority revoked',managedRecoveryJourney)
 test('recovery custody binds and revokes monotonic generations while sentinel and conflicting owner anchors refuse',async()=>{await custodyRecoveryJourney();await recoveryRaceAndLimits()})
 test('a shared account needs every affected workspace owner’s current factor-backed consent and keeps its memberships',sharedRecoveryJourney)
+
+import {localOwnerReentry,localOwnerPassword,deviceHoursTimezone,externalWidgetConfirmation} from '../helpers/first-hour/owner.mjs'
+test('a locally admitted owner signs out and reopens the workspace without the installer link while foreign and hosted entry stay closed',localOwnerReentry)
+test('a local owner chooses a password using installation custody, revokes old sessions and signs back in with it',localOwnerPassword)
+test('the first business-hours save uses the device timezone and every explicitly saved timezone wins',deviceHoursTimezone)
+test('widget installation confirms only after an authenticated ping from the separate allowed website',externalWidgetConfirmation)

@@ -1,57 +1,42 @@
 [
   {
     "name": "typecheck",
-    "command": [
-      "pnpm",
-      "run",
-      "typecheck"
-    ],
+    "command": "pnpm run typecheck",
     "exit": 0,
-    "started_at": "2026-11-17T20:00:26.835803+00:00"
+    "head": "48c4f14b9d36f1013440519e8b9f94a28055f572",
+    "log": "typecheck-final.log",
+    "log_sha256": "1b4cbebdff3af01f38bd5e087c531d3acb325bfb822ca5765329f596b639bf99",
+    "completed_at": "2026-11-17T20:14:47.501087+00:00",
+    "execution": "set -e command chain reached successful commit only after each check returned zero"
   },
   {
     "name": "lock",
-    "command": [
-      "node",
-      "scripts/edition-authoring/cli.mjs",
-      "lock"
-    ],
+    "command": "node scripts/edition-authoring/cli.mjs lock",
     "exit": 0,
-    "started_at": "2026-11-17T20:00:46.617974+00:00"
+    "head": "48c4f14b9d36f1013440519e8b9f94a28055f572",
+    "log": "lock-final.log",
+    "log_sha256": "0c33a649ae8fa74bc9ef18b8109926d1bd72fef74a9d9b8966b0e73e8f6a4052",
+    "completed_at": "2026-11-17T20:15:07.448249+00:00",
+    "execution": "set -e command chain reached successful commit only after each check returned zero"
   },
   {
     "name": "source-check",
-    "command": [
-      "node",
-      "scripts/edition-authoring/cli.mjs",
-      "check"
-    ],
+    "command": "node scripts/edition-authoring/cli.mjs check",
     "exit": 0,
-    "started_at": "2026-11-17T20:00:47.249416+00:00"
+    "head": "48c4f14b9d36f1013440519e8b9f94a28055f572",
+    "log": "source-check-final.log",
+    "log_sha256": "64b87dcd044fe377ef8d0e24d5958b124cf1085c95f00a26473167c1a05dfee8",
+    "completed_at": "2026-11-17T20:15:08.044225+00:00",
+    "execution": "set -e command chain reached successful commit only after each check returned zero"
   },
   {
     "name": "rer-check",
-    "command": [
-      "python3",
-      "/tmp/rer-reap.py",
-      "pnpm",
-      "exec",
-      "rer",
-      "check",
-      "--profile",
-      "first-party"
-    ],
+    "command": "cloud_run pnpm exec rer check --profile first-party",
     "exit": 0,
-    "started_at": "2026-11-17T20:00:47.857271+00:00"
-  },
-  {
-    "name": "diff-check",
-    "command": [
-      "git",
-      "diff",
-      "--check"
-    ],
-    "exit": 0,
-    "started_at": "2026-11-17T20:00:49.839973+00:00"
+    "head": "48c4f14b9d36f1013440519e8b9f94a28055f572",
+    "log": "rer-check-final.log",
+    "log_sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a",
+    "completed_at": "2026-11-17T20:15:09.480166+00:00",
+    "execution": "set -e command chain reached successful commit only after each check returned zero"
   }
 ]

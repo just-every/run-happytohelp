@@ -1,0 +1,9 @@
+{
+  "head": "c706b09c67d6155151270a178d413b8eec4bf9e0",
+  "passes_before_failure": 3,
+  "failed_run": 4,
+  "error": "apiRequestContext.get: read ECONNRESET",
+  "assertion_site": "tests/helpers/ai/procedures-browser.mjs provider-error simulation polling",
+  "valid_twenty_run_proof": false,
+  "action": "Stopped own recorded runner and descendants; read-only ECONNRESET retry added; proof restarted from zero."
+}

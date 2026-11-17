@@ -2,6 +2,7 @@ import {registerHooks} from 'node:module';
 import {readFileSync} from 'node:fs';
 const runtimeURL=new URL('./repo/tests/helpers/emitted-runtime.mjs',import.meta.url).href;
 const browserURL=new URL('./repo/tests/journeys/kit/browser.mjs',import.meta.url).href;
+globalThis.__hhMigratedState=process.env.HH_MIGRATED_STATE||undefined;
 registerHooks({load(url,context,nextLoad){
  const result=nextLoad(url,context);
  if(url!==runtimeURL&&url!==browserURL)return result;

@@ -4,11 +4,11 @@
 
 Repository: just-every/run-happytohelp
 Branch: cloud/hh-procedures-race-2
-Candidate: c706b09c67d6155151270a178d413b8eec4bf9e0
+Candidate: 48c4f14b9d36f1013440519e8b9f94a28055f572
 Starting main: 55e2f106c506e4f671d2e474c737124e760e2233
 WIP save: a9e2bd4bdb9fb9fc6ff9cac90266a0cdedf51580 (pushed with [skip ci]).
-Final candidate is pushed; Verify exact-SHA lookup is pending.
-Proof: first registered pass succeeded; remaining passes running. No READY claim yet.
+Revised candidate is pushed; its exact-SHA Verify lookup is pending. Previous candidate c706b09c67d6155151270a178d413b8eec4bf9e0 was pushed; its observed Verify run was 44165616563 (in progress at discovery; superseded by the read-transport fix).
+Proof restarted from zero after a demonstrated read-transport failure in the first attempt. Revised candidate has its first complete pass; remaining passes are running. No READY claim yet.
 
 ## Plan and execution
 
@@ -47,11 +47,11 @@ tests/helpers/ai/procedures-browser.mjs extends the existing registered journey:
 - Retain the original one-POST repeated-Enter assertion and add a native list count of exactly one after that save.
 - Preserve all original save validation, comparison values, dirty-draft dismissal/confirmation, source definition/cases/tools/budgets, source snapshot/receipt retention, revision fresh-evaluation, configuration/provider failure, release refusal, role denial, focus, focus-ring and visible-feedback assertions.
 
-Negative assertions follow requestfinished and browser rendering turns. No timeout was increased and no fixed-duration sleep was added. Existing simulation polling is unchanged.
+Negative assertions follow requestfinished and browser rendering turns. No timeout was increased and no fixed-duration test sleep was added. Existing simulation polling conditions and intervals are unchanged. A demonstrated TCP reset during the first repeat attempt required one bounded Playwright read-only transport retry, described below.
 
 ## Proof and touched checks
 
-The candidate's typecheck, source lock/check, rer check --profile first-party and git diff --check all returned exit 0. touched-checks.json records actual commands, start timestamps and exits. The emitted native build containing the guard completed successfully; the final commit changes only the second regression and its source lock.
+The candidate's typecheck, source lock/check, rer check --profile first-party and git diff --check all returned exit 0. touched-checks.json records actual commands, start timestamps and exits. The emitted native build containing the guard completed successfully; subsequent commits change only the second regression, the read-only polling helper and their source lock.
 
 The 20-run harness imports the actual workflows-browser.mjs registration 20 times and selects its exact existing test name. It also runs the registration's missingProviderProcedureBrowser path on every pass. Node 22.20.0 and system Chromium are used, with CDP CPU rate 6, 250 ms latency and bounded throughput. Native runtime creation copies a migrated empty state before any fixture seeding, giving every runtime its own state. Runtime queue/provider options and all test assertions are unchanged. Browser contexts and Workers close normally. Raw traces remain outside this public packet because they contain transient synthetic session headers.
 
@@ -73,7 +73,9 @@ DEFAULT PROCEDURE-001: Preserve the approved synthetic-only initial mode and exi
 
 ## Custody and API use
 
-The WIP save and final candidate are pushed. Product custody and report-only evidence publication remain separate. No PR or landing action is required by this checkout's AGENTS.md, and none was performed. No main/default-branch push, force push or published-history rewrite.
+The WIP save, first candidate and revised candidate are pushed. A fresh main fetch after the revised push still matched the starting main. Product custody and report-only evidence publication remain separate. No PR or landing action is required by this checkout's AGENTS.md, and none was performed. No main/default-branch push, force push or published-history rewrite.
+
+Five GitHub calls used: four historical reads below and one exact-SHA discovery of the first candidate (run 44165616563).
 
 Four historical GitHub calls:
 1. Jobs for run 44094867861; support-workflow-browser job 134080357924 failed.
@@ -81,4 +83,13 @@ Four historical GitHub calls:
 3. Check-run annotations contained only a generic process exit (plus an actions runtime warning).
 4. Historical helper contents at 4c86a426ccd1184b2be306de181a27ef85e767d3, byte-identical to baseline helper.
 
-No blocked archive/download retries. Six calls remain for exact-SHA CI and any necessary failed-job diagnosis/recovery. The cloud cannot run the fleet's final publication scan; it makes no publication or landing claim.
+No blocked archive/download retries. Five calls remain for the revised exact-SHA CI and any necessary failed-job diagnosis/recovery. The cloud cannot run the fleet's final publication scan; it makes no publication or landing claim.
+
+
+## First proof attempt and read-transport repair
+
+The first registered repeat attempt on c706b09c67d6155151270a178d413b8eec4bf9e0 passed three times and then failed on pass 4 with apiRequestContext.get: read ECONNRESET while polling the provider-error simulation receipt. Its UI ordering checks had passed. The actual sanitized failed-attempt log is proof-first-attempt.tap. That attempt does not satisfy the proof; it was stopped and the consecutive count reset to zero.
+
+The procedures helper now centralizes its read-only API calls with Playwright maxRetries: 1. The installed implementation and API documentation restrict this option to ECONNRESET; it does not retry HTTP failures, other transport errors, assertion failures or any POST. This follows the real receipt state after a pooled connection closes and keeps every business assertion intact. It has a bounded framework transport backoff, rather than a test sleep or a timeout increase.
+
+The revised proof uses the same CPU/network settings and a separate copy of the empty, migrated snapshot prepared before fixture seeding in the first attempt. Every runtime remains isolated. Raw runner logs are now kept outside the packet and copied into sanitized public receipts so Playwright error diagnostics cannot publish synthetic session headers.

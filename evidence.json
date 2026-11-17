@@ -19,10 +19,10 @@
       "sha256": "41f779c75079d6a4cd618b0fc3cf8550b9d755b647d3971b50cc72000690fcbe"
     },
     {
-      "blob": "a957ef3971bc8bf39cbba181a39bfd2ba1b360a4",
-      "bytes": 9311,
+      "blob": "2679304795668494babde895a2be57c90d9a7036",
+      "bytes": 11331,
       "path": "REPORT.md",
-      "sha256": "ce4a43f5384260706a2507284150afcf73a4c6c4cffaf332b210c390fe930f2b"
+      "sha256": "8d1fcf27b6047f40681ae8ccb1e5388089bf47f4d46c758cb221328d20c60452"
     },
     {
       "blob": "a56fb5fa7dee967cead1940ea1bcd476d0247618",
@@ -43,10 +43,10 @@
       "sha256": "85355548efc9b9e396aa40cf63c42612cd96a6b460fc32ffb725c2d2651c36fa"
     },
     {
-      "blob": "db5610a2880b8cb7577d65a65c7b0548b59b36a4",
-      "bytes": 1026,
+      "blob": "8d199a08118bc3a5078cd8bce212e9e1dee4aed0",
+      "bytes": 1246,
       "path": "candidate-receipt.json",
-      "sha256": "76fb5880a2441ac721933f6e3c861481bd323a0361b9a113e25c0ef1b54f93a9"
+      "sha256": "af24c754e56870c84e07bd279e2e1a966ba929a952cb47f810f88bb3f6a68411"
     },
     {
       "blob": "a774477cfc2e5d535ce95585e9b3be326f4eb2f2",
@@ -55,22 +55,34 @@
       "sha256": "5c165ffb2a6bc345b922412c045bbbec5cc05d446453894af0ca684c8b640df0"
     },
     {
+      "blob": "197597d334dc7f665f08ddeb99787bd5218d7147",
+      "bytes": 412,
+      "path": "first-proof-receipt.json",
+      "sha256": "41c1042d34a0167f39caa327a6ce43c22277eb099e5113e82dd98db4a130eb70"
+    },
+    {
       "blob": "d5fd273b370c45ecf0c7c41633d0384467a70ed3",
       "bytes": 2670,
       "path": "loading-before-receipt.json",
       "sha256": "944b3aa9c267debbaf70a7a73643020998dcebb7094b6355e15890142088f674"
     },
     {
-      "blob": "e70e9e262be2da5cbfa8bc0a694cf02789231ba5",
+      "blob": "8e5c477236d84467ba6f8f9a3a5cdb7345eb016f",
       "bytes": 595,
       "path": "proof-20.tap",
-      "sha256": "24f946d436e0f7d2fa3217cab806fda4fb25d192f71c3bce6e459f78136ea596"
+      "sha256": "3967d4216ebfe39dac024c62eb99e6a526726e92316fba627d7477c97222bb07"
     },
     {
-      "blob": "214e44932f85721669f1cf81fe5cda0bffd5d3cc",
-      "bytes": 3139,
+      "blob": "068039325210c479f0866392d9483c80556d7ba6",
+      "bytes": 2995,
+      "path": "proof-first-attempt.tap",
+      "sha256": "0590b10ea3ca4e68ec7bbe225f9f52efe33866bf60e7e2b3fe21524cf32facbe"
+    },
+    {
+      "blob": "4375b04c8195c6a7fc8c0da6b3e6bf50c4141884",
+      "bytes": 3210,
       "path": "proof-preload.mjs",
-      "sha256": "4f37beba70a60819f4312ed8b94ceefec48f8bf06c7301e1548f535e1d852a19"
+      "sha256": "71317f618617729d01e43c1a30a2273ef4a57633ffbf59a1b2134e4f1475b836"
     },
     {
       "blob": "2f114d8869370c9b310fb925bce8846798fb8896",
@@ -103,10 +115,10 @@
       "sha256": "aa319472461b0bc24146ce2f49fbcfb44bfb19dbe947e960ce836ac831570339"
     },
     {
-      "blob": "9a4a3cb03cbc1ccdc984f9938baf763da2fa9dbe",
-      "bytes": 999,
+      "blob": "4e4501babc810a8b61172c6f653e0104e10c1e2c",
+      "bytes": 1763,
       "path": "touched-checks.json",
-      "sha256": "c3b4ab764a82bf96757b35554d6c1941e3f36676b7df148785c0d143cfa1e39a"
+      "sha256": "7a166958a0eb3fda62cac7e982758bce45f5e610645722a4f021127af243079a"
     },
     {
       "blob": "b9e3c8335ae335b501fc704cf24b5976a9145089",
@@ -116,7 +128,7 @@
     }
   ],
   "product_branch": "cloud/hh-procedures-race-2",
-  "product_head": "c706b09c67d6155151270a178d413b8eec4bf9e0",
+  "product_head": "48c4f14b9d36f1013440519e8b9f94a28055f572",
   "ref": "refs/heads/evidence/hh-procedures-race-2",
   "repository": "just-every/run-happytohelp",
   "schema": 1,

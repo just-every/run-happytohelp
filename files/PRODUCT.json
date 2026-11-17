@@ -1,0 +1,27 @@
+{
+  "recordedAt": "2026-11-17T12:09:56.325854+00:00",
+  "author": "Run Edit Run fleet",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-import-zendesk-fidelity-1",
+  "head": "9edcf89eac6057d105c6a3948e599ad652d7ad20",
+  "remoteHead": "9edcf89eac6057d105c6a3948e599ad652d7ad20",
+  "base": "b2b9bc602a73feb542017bca8a46529f68b631c4",
+  "productWorktreeClean": true,
+  "publication": "named cloud branch pushed with cloud-push.py; main untouched; no force push",
+  "candidateCommitIdentitiesAndTrailers": "9edcf89eac6057d105c6a3948e599ad652d7ad20\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\nb4907aaf9dc4a6746d7d4b6c0baa9e1b4b014ffc\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\na5eb43ab82f345ebd92f9fe11624ec219b9ca426\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n1ba5265e3ff0563abe57f7f85c01330a6352f74e\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n26f296f231a4390dbd17c1f39fbac93d6c8ad278\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n7fb2dd8682ef192bca3926f00bd22f9ec3196c02\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n299554219676db12f31fb64e4fd11c3cfc391558\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n22c807d79ac1899d5bee04a1904787ce99528450\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n0d167658e6141a74ff80280a8b097fd65cd687d0\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n26c8edd71cce51d7f5d0282177d1c3383885d85d\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\ne36721d3c534ea88f9124241b479ae3419080817\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>",
+  "pr": null,
+  "contractStatusGapEvidenceChanges": 0,
+  "claim": "Builder partial claims only; independent gates and fleet landing remain required.",
+  "verify": {
+    "recordedAt": "2026-11-17T12:24:00Z",
+    "author": "Run Edit Run fleet",
+    "workflow": "Verify",
+    "runId": 44078333364,
+    "githubCalls": 6,
+    "conclusion": "success",
+    "head_sha": "9edcf89eac6057d105c6a3948e599ad652d7ad20",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44078333364",
+    "status": "completed"
+  },
+  "blockers": []
+}

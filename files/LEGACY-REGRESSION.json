@@ -1,0 +1,5 @@
+{
+  "head": "9edcf89eac6057d105c6a3948e599ad652d7ad20",
+  "command": "node --test --test-concurrency=1 --test-name-pattern='^review an export' tests/journeys/move-in-admission.mjs",
+  "exitCode": 0
+}

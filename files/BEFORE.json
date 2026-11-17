@@ -1,0 +1,60 @@
+{
+  "sourceHead": "b2b9bc602a73feb542017bca8a46529f68b631c4",
+  "bytes": 1306481,
+  "counts": {
+    "input": 1246,
+    "unique": 1246,
+    "duplicates": 0,
+    "mapped": 236,
+    "unmapped": 1241,
+    "rejected": 304,
+    "effects": 236,
+    "byKind": {
+      "ticket_field": 12,
+      "ticket": 300,
+      "sla_policy": 1,
+      "article": 3,
+      "organization": 10,
+      "tag-name": 4,
+      "user": 202,
+      "group": 3,
+      "identity": 400,
+      "organization_membership": 201,
+      "group_membership": 1,
+      "automation": 1,
+      "macro": 2,
+      "ticket_form": 1,
+      "trigger": 1,
+      "view": 3,
+      "satisfaction_rating": 100,
+      "section": 1
+    }
+  },
+  "tickets": {
+    "accepted": 0,
+    "rejections": [
+      "synthetic-hh-702 integer: Enter a whole number"
+    ]
+  },
+  "contacts": [
+    {
+      "n": 200,
+      "phones": 0
+    }
+  ],
+  "array": {
+    "status": 422,
+    "data": {
+      "error": "Upload refused: export_2026_11_17_synthetic_hh_1.json, line 3017, path /: export_record_limit. No source files or import were saved.",
+      "diagnostic": {
+        "code": "export_record_limit",
+        "location": {
+          "artifact": "export_2026_11_17_synthetic_hh_1.json",
+          "row": 3017,
+          "pointer": ""
+        }
+      }
+    }
+  },
+  "outbound": 0
+}

@@ -1,0 +1,32 @@
+{
+  "head": "9edcf89eac6057d105c6a3948e599ad652d7ad20",
+  "flow": "actual emitted Worker, native owner, synthetic Zendesk ZIP, review before approval",
+  "checks": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "screenshot": "review-1440.png",
+      "lossReviewVisible": true,
+      "approvalEnabled": true,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 390,
+      "height": 1000,
+      "screenshot": "review-390.png",
+      "lossReviewVisible": true,
+      "approvalEnabled": true,
+      "horizontalOverflow": false
+    }
+  ],
+  "errors": [],
+  "visualInspection": {
+    "inspectedAt": "2026-11-17T12:09:05.929903+00:00",
+    "author": "Run Edit Run fleet",
+    "screenshots": [
+      "review-1440.png",
+      "review-390.png"
+    ],
+    "findings": "Read both full-page captures. Loss categories, ledger link, four explicit refusal reasons and approval control are legible. Disclosure precedes approval at both widths; no clipping or horizontal overflow."
+  }
+}

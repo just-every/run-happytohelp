@@ -1,0 +1,8 @@
+{
+  "head": "26f296f231a4390dbd17c1f39fbac93d6c8ad278",
+  "command": "node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs tests/journeys/move-in-custody.mjs tests/journeys/move-in-erasure.mjs tests/journeys/move-in-zendesk-pull.mjs",
+  "exitCode": 1,
+  "log": "/tmp/hh-move-in-final.log",
+  "sourceHeadAtLaunch": "299554219676db12f31fb64e4fd11c3cfc391558",
+  "note": "Initial broad run: nine registrations passed; documentation binding and new authentication-fixture cleanup failures were corrected and rerun separately. No product undo behavior changed. The head field records checkout at receipt time, not a claim that all later edits were executed."
+}

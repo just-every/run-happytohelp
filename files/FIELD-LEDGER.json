@@ -1,0 +1,1628 @@
+[
+  {
+    "object": "user",
+    "field": "active",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "created_at",
+    "status": "Kept",
+    "destination": "contacts.name / email / created_at; query: AFTER.json contacts"
+  },
+  {
+    "object": "user",
+    "field": "details",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "email",
+    "status": "Kept",
+    "destination": "contacts.name / email / created_at; query: AFTER.json contacts"
+  },
+  {
+    "object": "user",
+    "field": "external_id",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "iana_time_zone",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Stable source identity in move_in_origins and contacts.external_id (import:zendesk:ID)"
+  },
+  {
+    "object": "user",
+    "field": "locale",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "locale_id",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "name",
+    "status": "Kept",
+    "destination": "contacts.name / email / created_at; query: AFTER.json contacts"
+  },
+  {
+    "object": "user",
+    "field": "notes",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "organization_id",
+    "status": "Changed",
+    "destination": "contact_companies: default organization only, no portal entitlement"
+  },
+  {
+    "object": "user",
+    "field": "phone",
+    "status": "Kept",
+    "destination": "contacts.metadata_json.phone, the existing contact phone field; AFTER.json contacts"
+  },
+  {
+    "object": "user",
+    "field": "role",
+    "status": "Changed",
+    "destination": "End users become contacts; agents/admins remain historical authors without logins"
+  },
+  {
+    "object": "user",
+    "field": "shared_phone_number",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "suspended",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "tags[]",
+    "status": "Kept",
+    "destination": "contacts.metadata_json.imported_tags"
+  },
+  {
+    "object": "user",
+    "field": "time_zone",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "updated_at",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "url",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "user_fields.eligible",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "user_fields.plan",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "user_fields.renewal_date",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "user_fields.seats",
+    "status": "Dropped",
+    "destination": "Source custody only; no native profile field or permission is set"
+  },
+  {
+    "object": "user",
+    "field": "verified",
+    "status": "Changed",
+    "destination": "Always unverified here; source verification never grants a session"
+  },
+  {
+    "object": "ticket",
+    "field": "assignee_id",
+    "status": "Changed",
+    "destination": "Source ownership kept for review. Assignee binds only on a unique current-member email match; groups need explicit ownership approval. No source membership/access is created"
+  },
+  {
+    "object": "ticket",
+    "field": "brand_id",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "collaborator_ids[]",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].attachments[]",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].attachments[].content_type",
+    "status": "Changed",
+    "destination": "media and move_in_attachment_bytes when local bytes are supplied and verified; missing bytes are named in review"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].attachments[].content_url",
+    "status": "Dropped",
+    "destination": "Never fetched by file import; packer removes download links before custody. Supply local bytes, or use connected Fetch files"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].attachments[].deleted",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].attachments[].file_name",
+    "status": "Changed",
+    "destination": "media and move_in_attachment_bytes when local bytes are supplied and verified; missing bytes are named in review"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].attachments[].id",
+    "status": "Changed",
+    "destination": "media and move_in_attachment_bytes when local bytes are supplied and verified; missing bytes are named in review"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].attachments[].inline",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].attachments[].size",
+    "status": "Changed",
+    "destination": "media and move_in_attachment_bytes when local bytes are supplied and verified; missing bytes are named in review"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].attachments[].thumbnails[]",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].author_id",
+    "status": "Changed",
+    "destination": "move_in_message_sources.author_json / move_in_notes.author_json; system -1 retained; no staff login"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].body",
+    "status": "Changed",
+    "destination": "plain_body takes precedence; body is the fallback"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].created_at",
+    "status": "Changed",
+    "destination": "messages / move_in_notes.created_at in milliseconds, source spelling retained"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].html_body",
+    "status": "Changed",
+    "destination": "HTML presentation stays source-only when plain_body/body is present"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].id",
+    "status": "Changed",
+    "destination": "Stable message/note ID and move_in_message_sources.source_id"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].metadata.custom",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].metadata.system.ip_address",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].plain_body",
+    "status": "Changed",
+    "destination": "messages.content / move_in_notes.content, Unicode and line breaks retained"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].public",
+    "status": "Changed",
+    "destination": "Public comments become messages; false becomes move_in_notes"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].type",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "comments[].via.channel",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "created_at",
+    "status": "Kept",
+    "destination": "conversations: same instants and priority; AFTER.json native tickets"
+  },
+  {
+    "object": "ticket",
+    "field": "custom_fields[].id",
+    "status": "Changed",
+    "destination": "ticket_field_values by definition: nine supported types. Numeric strings become native numbers; exact spelling stays in original. partialcreditcard/lookup/multi_lookup values stay source-only"
+  },
+  {
+    "object": "ticket",
+    "field": "custom_fields[].value",
+    "status": "Changed",
+    "destination": "ticket_field_values by definition: nine supported types. Numeric strings become native numbers; exact spelling stays in original. partialcreditcard/lookup/multi_lookup values stay source-only"
+  },
+  {
+    "object": "ticket",
+    "field": "custom_fields[].value[]",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "custom_status_id",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "description",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "email_cc_ids[]",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "external_id",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "follower_ids[]",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "followup_ids[]",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "group_id",
+    "status": "Changed",
+    "destination": "Source ownership kept for review. Assignee binds only on a unique current-member email match; groups need explicit ownership approval. No source membership/access is created"
+  },
+  {
+    "object": "ticket",
+    "field": "id",
+    "status": "Changed",
+    "destination": "move_in_conversations.source_id; stable native conversation ID"
+  },
+  {
+    "object": "ticket",
+    "field": "organization_id",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "priority",
+    "status": "Kept",
+    "destination": "conversations: same instants and priority; AFTER.json native tickets"
+  },
+  {
+    "object": "ticket",
+    "field": "problem_id",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "recipient",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "requester_id",
+    "status": "Changed",
+    "destination": "conversations.contact_id through the source user; AFTER.json native tickets"
+  },
+  {
+    "object": "ticket",
+    "field": "satisfaction_rating.comment",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "satisfaction_rating.id",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "satisfaction_rating.score",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "status",
+    "status": "Changed",
+    "destination": "Native status category; hold is named on_hold; six source categories remain distinct"
+  },
+  {
+    "object": "ticket",
+    "field": "subject",
+    "status": "Kept",
+    "destination": "conversations.subject and move_in_conversations.subject; AFTER.json native tickets"
+  },
+  {
+    "object": "ticket",
+    "field": "submitter_id",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "tags[]",
+    "status": "Changed",
+    "destination": "workspace_tags and conversation_tags; normalized tag names"
+  },
+  {
+    "object": "ticket",
+    "field": "ticket_form_id",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "type",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "updated_at",
+    "status": "Kept",
+    "destination": "conversations: same instants and priority; AFTER.json native tickets"
+  },
+  {
+    "object": "ticket",
+    "field": "via.channel",
+    "status": "Changed",
+    "destination": "move_in_conversations.source_channel"
+  },
+  {
+    "object": "ticket",
+    "field": "via.source.from.address",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "via.source.rel",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "ticket",
+    "field": "via.source.to.address",
+    "status": "Dropped",
+    "destination": "Source custody only; not used for native ticket behavior"
+  },
+  {
+    "object": "organization",
+    "field": "created_at",
+    "status": "Kept",
+    "destination": "companies; AFTER.json company/membership queries"
+  },
+  {
+    "object": "organization",
+    "field": "details",
+    "status": "Dropped",
+    "destination": "Source custody only; not a native company property"
+  },
+  {
+    "object": "organization",
+    "field": "domain_names[]",
+    "status": "Kept",
+    "destination": "company_domains, for review only; never verifies customers"
+  },
+  {
+    "object": "organization",
+    "field": "external_id",
+    "status": "Dropped",
+    "destination": "Source custody only; not a native company property"
+  },
+  {
+    "object": "organization",
+    "field": "group_id",
+    "status": "Dropped",
+    "destination": "Source custody only; not a native company property"
+  },
+  {
+    "object": "organization",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Stable company ID and move_in_origins source link"
+  },
+  {
+    "object": "organization",
+    "field": "name",
+    "status": "Kept",
+    "destination": "companies; AFTER.json company/membership queries"
+  },
+  {
+    "object": "organization",
+    "field": "notes",
+    "status": "Dropped",
+    "destination": "Source custody only; not a native company property"
+  },
+  {
+    "object": "organization",
+    "field": "organization_fields.renewal",
+    "status": "Dropped",
+    "destination": "Source custody only; not a native company property"
+  },
+  {
+    "object": "organization",
+    "field": "organization_fields.service_plan",
+    "status": "Dropped",
+    "destination": "Source custody only; not a native company property"
+  },
+  {
+    "object": "organization",
+    "field": "shared_comments",
+    "status": "Changed",
+    "destination": "Company portal sharing remains off; source access rights are not imported"
+  },
+  {
+    "object": "organization",
+    "field": "shared_tickets",
+    "status": "Changed",
+    "destination": "Company portal sharing remains off; source access rights are not imported"
+  },
+  {
+    "object": "organization",
+    "field": "tags[]",
+    "status": "Dropped",
+    "destination": "Source custody only; not a native company property"
+  },
+  {
+    "object": "organization",
+    "field": "ticket_restriction",
+    "status": "Changed",
+    "destination": "Company portal sharing remains off; source access rights are not imported"
+  },
+  {
+    "object": "organization",
+    "field": "updated_at",
+    "status": "Kept",
+    "destination": "companies; AFTER.json company/membership queries"
+  },
+  {
+    "object": "organization",
+    "field": "url",
+    "status": "Dropped",
+    "destination": "Source custody only; not a native company property"
+  },
+  {
+    "object": "identity",
+    "field": "created_at",
+    "status": "Dropped",
+    "destination": "Whole alternate identity stays in private original; never adds an email alias or verification"
+  },
+  {
+    "object": "identity",
+    "field": "deliverable_state",
+    "status": "Dropped",
+    "destination": "Whole alternate identity stays in private original; never adds an email alias or verification"
+  },
+  {
+    "object": "identity",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "identity",
+    "field": "primary",
+    "status": "Dropped",
+    "destination": "Whole alternate identity stays in private original; never adds an email alias or verification"
+  },
+  {
+    "object": "identity",
+    "field": "type",
+    "status": "Dropped",
+    "destination": "Whole alternate identity stays in private original; never adds an email alias or verification"
+  },
+  {
+    "object": "identity",
+    "field": "updated_at",
+    "status": "Dropped",
+    "destination": "Whole alternate identity stays in private original; never adds an email alias or verification"
+  },
+  {
+    "object": "identity",
+    "field": "user_id",
+    "status": "Dropped",
+    "destination": "Whole alternate identity stays in private original; never adds an email alias or verification"
+  },
+  {
+    "object": "identity",
+    "field": "value",
+    "status": "Dropped",
+    "destination": "Whole alternate identity stays in private original; never adds an email alias or verification"
+  },
+  {
+    "object": "identity",
+    "field": "verification_method",
+    "status": "Dropped",
+    "destination": "Whole alternate identity stays in private original; never adds an email alias or verification"
+  },
+  {
+    "object": "identity",
+    "field": "verified",
+    "status": "Dropped",
+    "destination": "Whole alternate identity stays in private original; never adds an email alias or verification"
+  },
+  {
+    "object": "organization_membership",
+    "field": "created_at",
+    "status": "Dropped",
+    "destination": "Whole membership object stays in private original; only user.organization_id supplies one default company link"
+  },
+  {
+    "object": "organization_membership",
+    "field": "default",
+    "status": "Dropped",
+    "destination": "Whole membership object stays in private original; only user.organization_id supplies one default company link"
+  },
+  {
+    "object": "organization_membership",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "organization_membership",
+    "field": "organization_id",
+    "status": "Dropped",
+    "destination": "Whole membership object stays in private original; only user.organization_id supplies one default company link"
+  },
+  {
+    "object": "organization_membership",
+    "field": "organization_name",
+    "status": "Dropped",
+    "destination": "Whole membership object stays in private original; only user.organization_id supplies one default company link"
+  },
+  {
+    "object": "organization_membership",
+    "field": "updated_at",
+    "status": "Dropped",
+    "destination": "Whole membership object stays in private original; only user.organization_id supplies one default company link"
+  },
+  {
+    "object": "organization_membership",
+    "field": "user_id",
+    "status": "Dropped",
+    "destination": "Whole membership object stays in private original; only user.organization_id supplies one default company link"
+  },
+  {
+    "object": "organization_membership",
+    "field": "view_tickets",
+    "status": "Dropped",
+    "destination": "Whole membership object stays in private original; only user.organization_id supplies one default company link"
+  },
+  {
+    "object": "group",
+    "field": "created_at",
+    "status": "Dropped",
+    "destination": "Source custody only; no membership/default/access behavior"
+  },
+  {
+    "object": "group",
+    "field": "default",
+    "status": "Dropped",
+    "destination": "Source custody only; no membership/default/access behavior"
+  },
+  {
+    "object": "group",
+    "field": "deleted",
+    "status": "Changed",
+    "destination": "Deleted groups are refused"
+  },
+  {
+    "object": "group",
+    "field": "description",
+    "status": "Dropped",
+    "destination": "Source custody only; no membership/default/access behavior"
+  },
+  {
+    "object": "group",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "group",
+    "field": "is_public",
+    "status": "Dropped",
+    "destination": "Source custody only; no membership/default/access behavior"
+  },
+  {
+    "object": "group",
+    "field": "name",
+    "status": "Kept",
+    "destination": "ticket_groups; no memberships, default routing or access created"
+  },
+  {
+    "object": "group",
+    "field": "updated_at",
+    "status": "Kept",
+    "destination": "ticket_groups; no memberships, default routing or access created"
+  },
+  {
+    "object": "group_membership",
+    "field": "created_at",
+    "status": "Dropped",
+    "destination": "Whole staff membership stays in private original; never grants staff access"
+  },
+  {
+    "object": "group_membership",
+    "field": "default",
+    "status": "Dropped",
+    "destination": "Whole staff membership stays in private original; never grants staff access"
+  },
+  {
+    "object": "group_membership",
+    "field": "group_id",
+    "status": "Dropped",
+    "destination": "Whole staff membership stays in private original; never grants staff access"
+  },
+  {
+    "object": "group_membership",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "group_membership",
+    "field": "updated_at",
+    "status": "Dropped",
+    "destination": "Whole staff membership stays in private original; never grants staff access"
+  },
+  {
+    "object": "group_membership",
+    "field": "user_id",
+    "status": "Dropped",
+    "destination": "Whole staff membership stays in private original; never grants staff access"
+  },
+  {
+    "object": "ticket_field",
+    "field": "active",
+    "status": "Changed",
+    "destination": "Inactive or noneditable definitions are refused"
+  },
+  {
+    "object": "ticket_field",
+    "field": "agent_can_edit",
+    "status": "Changed",
+    "destination": "Inactive or noneditable definitions are refused"
+  },
+  {
+    "object": "ticket_field",
+    "field": "created_at",
+    "status": "Dropped",
+    "destination": "Source custody only; native field presentation, defaults and tag side effects require review"
+  },
+  {
+    "object": "ticket_field",
+    "field": "custom_field_options[].default",
+    "status": "Dropped",
+    "destination": "Source custody only; native field presentation, defaults and tag side effects require review"
+  },
+  {
+    "object": "ticket_field",
+    "field": "custom_field_options[].id",
+    "status": "Dropped",
+    "destination": "Source custody only; native field presentation, defaults and tag side effects require review"
+  },
+  {
+    "object": "ticket_field",
+    "field": "custom_field_options[].name",
+    "status": "Changed",
+    "destination": "request_forms.config_json: translated choice labels keyed by the source option value, when used in a supported form"
+  },
+  {
+    "object": "ticket_field",
+    "field": "custom_field_options[].raw_name",
+    "status": "Dropped",
+    "destination": "Source custody only; native field presentation, defaults and tag side effects require review"
+  },
+  {
+    "object": "ticket_field",
+    "field": "custom_field_options[].value",
+    "status": "Changed",
+    "destination": "Native options use source machine values"
+  },
+  {
+    "object": "ticket_field",
+    "field": "default_value",
+    "status": "Dropped",
+    "destination": "Source custody only; native field presentation, defaults and tag side effects require review"
+  },
+  {
+    "object": "ticket_field",
+    "field": "description",
+    "status": "Changed",
+    "destination": "request_forms.config_json: translated field description when this supported field is included in a form"
+  },
+  {
+    "object": "ticket_field",
+    "field": "editable_in_portal",
+    "status": "Changed",
+    "destination": "Checked before adding this field to a form; source portal rights are never activated automatically"
+  },
+  {
+    "object": "ticket_field",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "ticket_field",
+    "field": "position",
+    "status": "Dropped",
+    "destination": "Source custody only; native field presentation, defaults and tag side effects require review"
+  },
+  {
+    "object": "ticket_field",
+    "field": "regexp_for_validation",
+    "status": "Changed",
+    "destination": "Native validation pattern if it fits the native safe subset; otherwise refused"
+  },
+  {
+    "object": "ticket_field",
+    "field": "relationship_target_type",
+    "status": "Dropped",
+    "destination": "Source custody only; native field presentation, defaults and tag side effects require review"
+  },
+  {
+    "object": "ticket_field",
+    "field": "required",
+    "status": "Changed",
+    "destination": "Native solve requirement left off, explicit review required"
+  },
+  {
+    "object": "ticket_field",
+    "field": "required_in_portal",
+    "status": "Changed",
+    "destination": "request_forms.config_json.fields: required flag for this field on an imported form; native solve requirement is separate"
+  },
+  {
+    "object": "ticket_field",
+    "field": "title",
+    "status": "Kept",
+    "destination": "ticket_fields.name / updated_at for supported definitions"
+  },
+  {
+    "object": "ticket_field",
+    "field": "title_in_portal",
+    "status": "Changed",
+    "destination": "request_forms.config_json: translated field label when this supported field is included in a form; form stays disabled"
+  },
+  {
+    "object": "ticket_field",
+    "field": "type",
+    "status": "Changed",
+    "destination": "text/textarea \u2192 text; integer \u2192 number; decimal/date/checkbox \u2192 same; tagger \u2192 dropdown; multiselect \u2192 multiselect; regexp \u2192 regex. partialcreditcard/lookup/multi_lookup are refused"
+  },
+  {
+    "object": "ticket_field",
+    "field": "updated_at",
+    "status": "Kept",
+    "destination": "ticket_fields.name / updated_at for supported definitions"
+  },
+  {
+    "object": "ticket_field",
+    "field": "visible_in_portal",
+    "status": "Changed",
+    "destination": "Checked before adding this field to a form; an incompatible field refuses the form, and the imported form stays disabled"
+  },
+  {
+    "object": "ticket_form",
+    "field": "active",
+    "status": "Changed",
+    "destination": "Only unrestricted, unconditional forms map; disabled and not made default. Review portal use before enabling"
+  },
+  {
+    "object": "ticket_form",
+    "field": "agent_conditions[]",
+    "status": "Changed",
+    "destination": "Only unrestricted, unconditional forms map; disabled and not made default. Review portal use before enabling"
+  },
+  {
+    "object": "ticket_form",
+    "field": "created_at",
+    "status": "Dropped",
+    "destination": "Source custody only; form presentation and rules require review"
+  },
+  {
+    "object": "ticket_form",
+    "field": "default",
+    "status": "Changed",
+    "destination": "Only unrestricted, unconditional forms map; disabled and not made default. Review portal use before enabling"
+  },
+  {
+    "object": "ticket_form",
+    "field": "display_name",
+    "status": "Changed",
+    "destination": "request_forms.config_json title and supported field references; disabled on arrival"
+  },
+  {
+    "object": "ticket_form",
+    "field": "end_user_conditions[]",
+    "status": "Changed",
+    "destination": "Only unrestricted, unconditional forms map; disabled and not made default. Review portal use before enabling"
+  },
+  {
+    "object": "ticket_form",
+    "field": "end_user_visible",
+    "status": "Changed",
+    "destination": "Only unrestricted, unconditional forms map; disabled and not made default. Review portal use before enabling"
+  },
+  {
+    "object": "ticket_form",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "ticket_form",
+    "field": "in_all_brands",
+    "status": "Changed",
+    "destination": "Only unrestricted, unconditional forms map; disabled and not made default. Review portal use before enabling"
+  },
+  {
+    "object": "ticket_form",
+    "field": "name",
+    "status": "Changed",
+    "destination": "request_forms.config_json title and supported field references; disabled on arrival"
+  },
+  {
+    "object": "ticket_form",
+    "field": "restricted_brand_ids[]",
+    "status": "Changed",
+    "destination": "Only unrestricted, unconditional forms map; disabled and not made default. Review portal use before enabling"
+  },
+  {
+    "object": "ticket_form",
+    "field": "ticket_field_ids[]",
+    "status": "Changed",
+    "destination": "request_forms.config_json title and supported field references; disabled on arrival"
+  },
+  {
+    "object": "ticket_form",
+    "field": "updated_at",
+    "status": "Changed",
+    "destination": "request_forms.config_json title and supported field references; disabled on arrival"
+  },
+  {
+    "object": "macro",
+    "field": "actions[].field",
+    "status": "Changed",
+    "destination": "One reply/note and supported native macro actions; unsupported actions refuse. Public/private mode retained; placeholders only within supported subset"
+  },
+  {
+    "object": "macro",
+    "field": "actions[].value",
+    "status": "Changed",
+    "destination": "One reply/note and supported native macro actions; unsupported actions refuse. Public/private mode retained; placeholders only within supported subset"
+  },
+  {
+    "object": "macro",
+    "field": "active",
+    "status": "Dropped",
+    "destination": "Source custody only; not a native macro attribute"
+  },
+  {
+    "object": "macro",
+    "field": "created_at",
+    "status": "Changed",
+    "destination": "macros and version 1; native creator is the reviewing owner"
+  },
+  {
+    "object": "macro",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "macro",
+    "field": "restriction",
+    "status": "Changed",
+    "destination": "Restricted macros are refused"
+  },
+  {
+    "object": "macro",
+    "field": "title",
+    "status": "Changed",
+    "destination": "macros and version 1; native creator is the reviewing owner"
+  },
+  {
+    "object": "macro",
+    "field": "updated_at",
+    "status": "Changed",
+    "destination": "macros and version 1; native creator is the reviewing owner"
+  },
+  {
+    "object": "view",
+    "field": "active",
+    "status": "Dropped",
+    "destination": "Source custody only; native view columns/grouping and activation differ"
+  },
+  {
+    "object": "view",
+    "field": "conditions.all[].field",
+    "status": "Changed",
+    "destination": "ticket_views: supported filters/sort, owned by reviewer, personal until reviewed"
+  },
+  {
+    "object": "view",
+    "field": "conditions.all[].operator",
+    "status": "Changed",
+    "destination": "ticket_views: supported filters/sort, owned by reviewer, personal until reviewed"
+  },
+  {
+    "object": "view",
+    "field": "conditions.all[].value",
+    "status": "Changed",
+    "destination": "ticket_views: supported filters/sort, owned by reviewer, personal until reviewed"
+  },
+  {
+    "object": "view",
+    "field": "conditions.any[]",
+    "status": "Changed",
+    "destination": "ticket_views: supported filters/sort, owned by reviewer, personal until reviewed"
+  },
+  {
+    "object": "view",
+    "field": "created_at",
+    "status": "Changed",
+    "destination": "ticket_views: supported filters/sort, owned by reviewer, personal until reviewed"
+  },
+  {
+    "object": "view",
+    "field": "execution.columns[].id",
+    "status": "Dropped",
+    "destination": "Source custody only; native view columns/grouping and activation differ"
+  },
+  {
+    "object": "view",
+    "field": "execution.columns[].title",
+    "status": "Dropped",
+    "destination": "Source custody only; native view columns/grouping and activation differ"
+  },
+  {
+    "object": "view",
+    "field": "execution.group_by",
+    "status": "Dropped",
+    "destination": "Source custody only; native view columns/grouping and activation differ"
+  },
+  {
+    "object": "view",
+    "field": "execution.group_order",
+    "status": "Dropped",
+    "destination": "Source custody only; native view columns/grouping and activation differ"
+  },
+  {
+    "object": "view",
+    "field": "execution.sort_by",
+    "status": "Changed",
+    "destination": "ticket_views: supported filters/sort, owned by reviewer, personal until reviewed"
+  },
+  {
+    "object": "view",
+    "field": "execution.sort_order",
+    "status": "Changed",
+    "destination": "ticket_views: supported filters/sort, owned by reviewer, personal until reviewed"
+  },
+  {
+    "object": "view",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "view",
+    "field": "restriction",
+    "status": "Changed",
+    "destination": "Restricted views refuse; no source access list is transferred"
+  },
+  {
+    "object": "view",
+    "field": "title",
+    "status": "Changed",
+    "destination": "ticket_views: supported filters/sort, owned by reviewer, personal until reviewed"
+  },
+  {
+    "object": "view",
+    "field": "updated_at",
+    "status": "Changed",
+    "destination": "ticket_views: supported filters/sort, owned by reviewer, personal until reviewed"
+  },
+  {
+    "object": "trigger",
+    "field": "actions[].field",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "trigger",
+    "field": "actions[].value",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "trigger",
+    "field": "active",
+    "status": "Changed",
+    "destination": "Always draft; native preview/publication required"
+  },
+  {
+    "object": "trigger",
+    "field": "conditions.all[].field",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "trigger",
+    "field": "conditions.all[].operator",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "trigger",
+    "field": "conditions.all[].value",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "trigger",
+    "field": "conditions.any[]",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "trigger",
+    "field": "created_at",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "trigger",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "trigger",
+    "field": "position",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "trigger",
+    "field": "title",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "trigger",
+    "field": "updated_at",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "automation",
+    "field": "actions[].field",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "automation",
+    "field": "actions[].value",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "automation",
+    "field": "active",
+    "status": "Changed",
+    "destination": "Always draft; native preview/publication required"
+  },
+  {
+    "object": "automation",
+    "field": "conditions.all[].field",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "automation",
+    "field": "conditions.all[].operator",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "automation",
+    "field": "conditions.all[].value",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "automation",
+    "field": "conditions.any[]",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "automation",
+    "field": "created_at",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "automation",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "automation",
+    "field": "position",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "automation",
+    "field": "title",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "automation",
+    "field": "updated_at",
+    "status": "Changed",
+    "destination": "workflow_rules draft_json and rule metadata, supported condition/action subset only; unsupported meaning refuses the rule"
+  },
+  {
+    "object": "sla_policy",
+    "field": "created_at",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "description",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "filter.all[].field",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "filter.all[].operator",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "filter.all[].value",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "filter.any[]",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "sla_policy",
+    "field": "policy_metrics[].business_hours",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "policy_metrics[].metric",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "policy_metrics[].priority",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "policy_metrics[].target",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "position",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "title",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "sla_policy",
+    "field": "updated_at",
+    "status": "Not imported",
+    "destination": "This fixture policy refuses: no explicit reviewed calendar association. No SLA policy, clock or compliance result is created"
+  },
+  {
+    "object": "article",
+    "field": "author_id",
+    "status": "Dropped",
+    "destination": "Source custody only; section placement, author, locale, labels and presentation are not transferred"
+  },
+  {
+    "object": "article",
+    "field": "body",
+    "status": "Changed",
+    "destination": "knowledge_articles title / Markdown content / status / updated_at. Public published stays published; draft stays draft; restricted audience is held back whole"
+  },
+  {
+    "object": "article",
+    "field": "comments_disabled",
+    "status": "Dropped",
+    "destination": "Source custody only; section placement, author, locale, labels and presentation are not transferred"
+  },
+  {
+    "object": "article",
+    "field": "created_at",
+    "status": "Dropped",
+    "destination": "Source custody only; section placement, author, locale, labels and presentation are not transferred"
+  },
+  {
+    "object": "article",
+    "field": "draft",
+    "status": "Changed",
+    "destination": "knowledge_articles title / Markdown content / status / updated_at. Public published stays published; draft stays draft; restricted audience is held back whole"
+  },
+  {
+    "object": "article",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "article",
+    "field": "label_names[]",
+    "status": "Dropped",
+    "destination": "Source custody only; section placement, author, locale, labels and presentation are not transferred"
+  },
+  {
+    "object": "article",
+    "field": "locale",
+    "status": "Dropped",
+    "destination": "Source custody only; section placement, author, locale, labels and presentation are not transferred"
+  },
+  {
+    "object": "article",
+    "field": "position",
+    "status": "Dropped",
+    "destination": "Source custody only; section placement, author, locale, labels and presentation are not transferred"
+  },
+  {
+    "object": "article",
+    "field": "promoted",
+    "status": "Dropped",
+    "destination": "Source custody only; section placement, author, locale, labels and presentation are not transferred"
+  },
+  {
+    "object": "article",
+    "field": "section_id",
+    "status": "Dropped",
+    "destination": "Source custody only; section placement, author, locale, labels and presentation are not transferred"
+  },
+  {
+    "object": "article",
+    "field": "source_locale",
+    "status": "Dropped",
+    "destination": "Source custody only; section placement, author, locale, labels and presentation are not transferred"
+  },
+  {
+    "object": "article",
+    "field": "title",
+    "status": "Changed",
+    "destination": "knowledge_articles title / Markdown content / status / updated_at. Public published stays published; draft stays draft; restricted audience is held back whole"
+  },
+  {
+    "object": "article",
+    "field": "updated_at",
+    "status": "Changed",
+    "destination": "knowledge_articles title / Markdown content / status / updated_at. Public published stays published; draft stays draft; restricted audience is held back whole"
+  },
+  {
+    "object": "article",
+    "field": "user_segment_id",
+    "status": "Changed",
+    "destination": "knowledge_articles title / Markdown content / status / updated_at. Public published stays published; draft stays draft; restricted audience is held back whole"
+  },
+  {
+    "object": "article",
+    "field": "user_segment_ids[]",
+    "status": "Changed",
+    "destination": "knowledge_articles title / Markdown content / status / updated_at. Public published stays published; draft stays draft; restricted audience is held back whole"
+  },
+  {
+    "object": "section",
+    "field": "category_id",
+    "status": "Dropped",
+    "destination": "Whole section stays in private original; no section/category hierarchy is created"
+  },
+  {
+    "object": "section",
+    "field": "created_at",
+    "status": "Dropped",
+    "destination": "Whole section stays in private original; no section/category hierarchy is created"
+  },
+  {
+    "object": "section",
+    "field": "description",
+    "status": "Dropped",
+    "destination": "Whole section stays in private original; no section/category hierarchy is created"
+  },
+  {
+    "object": "section",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "section",
+    "field": "locale",
+    "status": "Dropped",
+    "destination": "Whole section stays in private original; no section/category hierarchy is created"
+  },
+  {
+    "object": "section",
+    "field": "name",
+    "status": "Dropped",
+    "destination": "Whole section stays in private original; no section/category hierarchy is created"
+  },
+  {
+    "object": "section",
+    "field": "parent_section_id",
+    "status": "Dropped",
+    "destination": "Whole section stays in private original; no section/category hierarchy is created"
+  },
+  {
+    "object": "section",
+    "field": "position",
+    "status": "Dropped",
+    "destination": "Whole section stays in private original; no section/category hierarchy is created"
+  },
+  {
+    "object": "section",
+    "field": "source_locale",
+    "status": "Dropped",
+    "destination": "Whole section stays in private original; no section/category hierarchy is created"
+  },
+  {
+    "object": "section",
+    "field": "updated_at",
+    "status": "Dropped",
+    "destination": "Whole section stays in private original; no section/category hierarchy is created"
+  },
+  {
+    "object": "satisfaction_rating",
+    "field": "assignee_id",
+    "status": "Dropped",
+    "destination": "Whole rating stays in private original; no native rating, survey or Reports result"
+  },
+  {
+    "object": "satisfaction_rating",
+    "field": "comment",
+    "status": "Dropped",
+    "destination": "Whole rating stays in private original; no native rating, survey or Reports result"
+  },
+  {
+    "object": "satisfaction_rating",
+    "field": "created_at",
+    "status": "Dropped",
+    "destination": "Whole rating stays in private original; no native rating, survey or Reports result"
+  },
+  {
+    "object": "satisfaction_rating",
+    "field": "group_id",
+    "status": "Dropped",
+    "destination": "Whole rating stays in private original; no native rating, survey or Reports result"
+  },
+  {
+    "object": "satisfaction_rating",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "satisfaction_rating",
+    "field": "requester_id",
+    "status": "Dropped",
+    "destination": "Whole rating stays in private original; no native rating, survey or Reports result"
+  },
+  {
+    "object": "satisfaction_rating",
+    "field": "score",
+    "status": "Dropped",
+    "destination": "Whole rating stays in private original; no native rating, survey or Reports result"
+  },
+  {
+    "object": "satisfaction_rating",
+    "field": "ticket_id",
+    "status": "Dropped",
+    "destination": "Whole rating stays in private original; no native rating, survey or Reports result"
+  },
+  {
+    "object": "satisfaction_rating",
+    "field": "updated_at",
+    "status": "Dropped",
+    "destination": "Whole rating stays in private original; no native rating, survey or Reports result"
+  },
+  {
+    "object": "audit",
+    "field": "author_id",
+    "status": "Changed",
+    "destination": "Inert imported history, linked to source ticket/audit; timestamps and author IDs retained"
+  },
+  {
+    "object": "audit",
+    "field": "created_at",
+    "status": "Changed",
+    "destination": "Inert imported history, linked to source ticket/audit; timestamps and author IDs retained"
+  },
+  {
+    "object": "audit",
+    "field": "events[].field_name",
+    "status": "Changed",
+    "destination": "move_in_origins.source_json.history.events, inspectable imported history; supported status change, no native replay"
+  },
+  {
+    "object": "audit",
+    "field": "events[].id",
+    "status": "Changed",
+    "destination": "move_in_origins.source_json.history.events, inspectable imported history; supported status change, no native replay"
+  },
+  {
+    "object": "audit",
+    "field": "events[].previous_value",
+    "status": "Changed",
+    "destination": "move_in_origins.source_json.history.events, inspectable imported history; supported status change, no native replay"
+  },
+  {
+    "object": "audit",
+    "field": "events[].type",
+    "status": "Changed",
+    "destination": "move_in_origins.source_json.history.events, inspectable imported history; supported status change, no native replay"
+  },
+  {
+    "object": "audit",
+    "field": "events[].value",
+    "status": "Changed",
+    "destination": "move_in_origins.source_json.history.events, inspectable imported history; supported status change, no native replay"
+  },
+  {
+    "object": "audit",
+    "field": "id",
+    "status": "Changed",
+    "destination": "Source identity and private original; native target exists only if the whole record maps"
+  },
+  {
+    "object": "audit",
+    "field": "metadata.custom",
+    "status": "Dropped",
+    "destination": "Source custody only; audit metadata/via are not imported as native history"
+  },
+  {
+    "object": "audit",
+    "field": "metadata.system.ip_address",
+    "status": "Dropped",
+    "destination": "Source custody only; audit metadata/via are not imported as native history"
+  },
+  {
+    "object": "audit",
+    "field": "ticket_id",
+    "status": "Changed",
+    "destination": "Inert imported history, linked to source ticket/audit; timestamps and author IDs retained"
+  },
+  {
+    "object": "audit",
+    "field": "via.channel",
+    "status": "Dropped",
+    "destination": "Source custody only; audit metadata/via are not imported as native history"
+  }
+]

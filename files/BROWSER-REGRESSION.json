@@ -1,0 +1,6 @@
+{
+  "head": "9edcf89eac6057d105c6a3948e599ad652d7ad20",
+  "command": "node --test --test-concurrency=1 --test-name-pattern='^an owner connects Zendesk twice' tests/journeys/move-in-browser.mjs",
+  "exitCode": 0,
+  "chromium": "/usr/bin/chromium --no-sandbox"
+}

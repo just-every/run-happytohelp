@@ -47,7 +47,7 @@ export async function requestFormsJourney(){
   const acknowledgments=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&[].concat(mail.to).includes('rosa@example.com'))
   assert.equal(acknowledgments().length,1,'a verified request-form submission acknowledges the requester once, including on exact-command replay')
   assert.equal(acknowledgments()[0].headers['X-Auto-Response-Suppress'],'All')
-  const ccNotices=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&mail.text?.includes(id)&&[].concat(mail.to).includes(cc))
+  const ccNotices=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&mail.text?.includes('#'+id.slice(0,8).toUpperCase())&&[].concat(mail.to).includes(cc))
   assert.equal(ccNotices().length,1,'the form acknowledges its independently proven CC once, including replay')
   assert.equal(ccNotices()[0].headers['X-Auto-Response-Suppress'],'All')
   for(const copy of [...ccNotices(),...acknowledgments()]){assert.equal([].concat(copy.to).length,1);assert.ok(!copy.cc?.length&&!copy.bcc?.length)}

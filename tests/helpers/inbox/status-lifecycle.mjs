@@ -183,10 +183,13 @@ export async function statusLifecycleJourney() {
   await door('/workflow-rules/' + rule.id + '/publish', {})
   await patch(id, {status_id: 'solved'})
   const solved = await get(id), closeAt = solved.resolved_at + 12 * hour
+  const contactHistory = async () => (await app.ok(management + '/contacts/' + solved.contact_id + '/conversations', owner)).data.find(ticket => ticket.id === id)
+  assert.equal((await contactHistory()).status_category, 'solved', 'contact history keeps the actual solved lifecycle state')
   await clock(closeAt - hour) // the existing automation scans once per hour
   assert.equal((await get(id)).status_category, 'solved', 'no early close')
   await clock(closeAt)
   assert.equal((await get(id)).status_category, 'closed')
+  assert.equal((await contactHistory()).status_category, 'closed', 'contact history becomes closed only after the automation')
   await app.configure({})
   await app.scheduled()
   const closed = await get(id)

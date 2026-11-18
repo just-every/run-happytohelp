@@ -30,7 +30,7 @@ function EventItem({ conversation, item, showActor = false, actorName = null, in
     switch (eventType) {
         case 'AGENT_ASSIGNED':
             classes.push('small text-gray-600');
-            content = eventPayload.type === 'unassigned' ? <span>Returned to the unassigned inbox</span> : <span>Switched to {eventPayload.is_ai ? "AI" : "human"}{eventPayload.type && eventPayload.type !== 'assigned' ? ' '+eventPayload.type : ''} agent{eventPayload.name ? ' ('+eventPayload.name+')' : ''}{eventPayload.role ? ' with the role "'+eventPayload.role+'"' : ''}{ item.count > 1 && ` (${item.count} times)` }</span>;
+            content = eventPayload.type === 'unassigned' ? <span>Returned to the unassigned inbox</span> : <span>{eventPayload.type === 'ai_handoff' ? `AI handed over to ${eventPayload.name || 'a teammate'}` : eventPayload.type === 'replied' ? `${item.agent?.name || actorName || eventPayload.name || 'A teammate'} replied` : `Assigned to ${eventPayload.name || (eventPayload.is_ai ? 'AI' : 'a teammate')}${item.agent?.name || actorName ? ` by ${item.agent?.name || actorName}` : ''}`}{item.count > 1 && ` (${item.count} times)`}</span>;
             break;
         case 'USED_INSIGHT':
             classes.push('small text-gray-600');

@@ -39,6 +39,11 @@ export function contactTerm(search:string):(Clause&{needle?:string})|undefined{
  * columns. Both are quoted, so neither can become FTS syntax. */
 export const contactMatch=(projectId:string,needle:string)=>{const phrase=(text:string)=>'"'+text.replace(/"/g,'""')+'"';return `{scope} : ${phrase('\u0001'+projectId+'\u0001')} AND {name email provided_name provided_email} : ${phrase(needle)}`}
 /** One contacts list request: a page by number, or the page after or before a boundary contact (its id). */
-export type ContactQuery={db:D1Database;projectId:string;page:number;limit:number;counted:boolean;after:string;before:string;sort:string;direction:string;term:ReturnType<typeof contactTerm>}
+export type ContactQuery={db:D1Database;projectId:string;page:number;limit:number;counted:boolean;hideVisitors?:boolean;after:string;before:string;sort:string;direction:string;term:ReturnType<typeof contactTerm>}
 /** A page's rows and the page number it shows; `more` when it is known without a total, `total` when counted. */
 export type ContactPage={page:number;rows:Record<string,unknown>[];more?:boolean;total?:number}
+
+/** The owner's list hides page opens until an email or conversation exists. */
+export function contactAudience(q:Pick<ContactQuery,'hideVisitors'>, alias='contacts') {
+ return q.hideVisitors ? `(coalesce(nullif(trim(${alias}.email),''),nullif(trim(json_extract(${alias}.metadata_json,'$.provided_email')),'')) IS NOT NULL OR EXISTS(SELECT 1 FROM conversations written WHERE written.project_id=${alias}.project_id AND written.contact_id=${alias}.id))` : '1';
+}

@@ -57,7 +57,7 @@ export default function TicketBulkActions({ projectId, loaded, selected, onSelec
         {tickets.length > 0 && <>
             <BulkChanges projectId={projectId} selected={tickets} onClear={() => onSelect({})} onApplied={onApplied}/>
             <ProblemBulkLink projectId={projectId} selectedIds={tickets} onApplied={onApplied}/>
-            <BulkMacros projectId={projectId} selectedTickets={tickets.map(ticket => ({ id: ticket.id, expected_version: ticket.ticket_version }))} onApplied={onApplied}/>
+            <BulkMacros projectId={projectId} ticketNames={Object.fromEntries(tickets.map(ticket=>[ticket.id,ticket.subject || ticket.contact?.display_name || 'Selected ticket']))} selectedTickets={tickets.map(ticket => ({ id: ticket.id, expected_version: ticket.ticket_version }))} onApplied={onApplied}/>
         </>}
     </div>;
 }

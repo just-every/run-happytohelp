@@ -1,3 +1,4 @@
+import {readSurveySettings} from '../outcomes/survey-store'
 import {operatorMergeTarget} from '../conversation-actions/merge-read'
 import {ticketScopeSql} from '../access/ticket-scope'
 import {Hono} from 'hono'
@@ -63,7 +64,7 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  return c.json({data,meta:{pagination:{total:count,current_page:page,total_pages:Math.max(1,Math.ceil(count/30))}}})
  })
  dashboard.get(`${prefix}/counts`,async c=>{const a=await requireActor(c);if(a.role==='contact')throw new HTTPException(403);const project=c.req.param('projectId');if(project)await scope(c);const counts=await inboxCounts(c.env,a.id,project);return c.json({data:counts})})
- dashboard.get(`${prefix}/:conversationId`,async c=>{const {actor,conversation}=await dashboardAccess(c);const data=await conversationData(c.env,conversation,actor.id,true);if(data.merged_into)data.merged_into=await operatorMergeTarget(c.env,actor.projectId,conversation.id,actor.id);return c.json({data})})
+ dashboard.get(`${prefix}/:conversationId`,async c=>{const {actor,conversation}=await dashboardAccess(c);const data=await conversationData(c.env,conversation,actor.id,true);data.surveySettings=await readSurveySettings(c.env,conversation.project_id);if(data.merged_into)data.merged_into=await operatorMergeTarget(c.env,actor.projectId,conversation.id,actor.id);return c.json({data})})
  dashboard.get(`${prefix}/:conversationId/buckets`,async c=>{
  const {conversation}=await dashboardAccess(c),page=Math.max(1,parseInt(c.req.query('page')||'1')||1)
  const createdBefore=c.req.query('created_before'),stamp=createdBefore?Date.parse(createdBefore):null

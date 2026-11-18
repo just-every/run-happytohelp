@@ -11,3 +11,8 @@
 #happytohelp-root .happytohelp-resolution-rating textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 65px; font: inherit; color: #202936; background: #fff; border: 1px solid #65748b; border-radius: 6px; padding: 8px; }
 #happytohelp-root .happytohelp-rating-count { display: block; text-align: right; margin: 3px 0 8px; }
 #happytohelp-root .happytohelp-resolution-rating [role=status], #happytohelp-root .happytohelp-resolution-rating [role=alert] { margin: 10px 0 0; overflow-wrap: anywhere; }
+
+#happytohelp-root .happytohelp-resolution-rating details { margin: 10px 0; }
+#happytohelp-root .happytohelp-resolution-rating summary { cursor: pointer; }
+#happytohelp-root .happytohelp-resolution-rating footer { margin-top: 10px; }
+#happytohelp-root .happytohelp-resolution-rating .happytohelp-rating-optout { border: 0; min-height: 32px; padding: 4px 0; text-decoration: underline; font-size: 13px; }

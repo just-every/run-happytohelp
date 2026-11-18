@@ -1,0 +1,36 @@
+AUTOMATION-001 sandbox Route refunds {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+AUTOMATION-001 sandbox Tag VIP refunds {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+AUTOMATION-001 sandbox Set refund status {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+AUTOMATION-001 sandbox Remind refund assignee {"before":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"after":{"conversations":1,"messages":2,"ticket_history":4,"conversation_tags":1,"ticket_field_values":0,"routing_decisions":0,"workflow_runs":0,"workflow_notifications":0,"notification_trigger_claims":4,"notification_inbox":0,"email_deliveries":1,"native_integration_events":5,"native_integration_intents":0},"external_requests_before":1,"external_requests_after":1}
+✖ a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow (694013.315667ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 695776.766726
+
+✖ failing tests:
+
+test at tests/journeys/workflows-browser.mjs:8:1
+✖ a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow (694013.315667ms)
+  AssertionError [ERR_ASSERTION]: manual reconciliation and restart never send or resume remaining actions
+  
+  24 !== 21
+  
+      at workflowNotices (file:///home/agent/rer-consolidation/work/hh-stranger13-behaviour-1-c4/run-happytohelp/tests/helpers/email/workflow-notices.mjs:45:57)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async durableAutomationOutcomes (file:///home/agent/rer-consolidation/work/hh-stranger13-behaviour-1-c4/run-happytohelp/tests/helpers/workflows/outcomes-runtime.mjs:12:40)
+      at async automationOutcomes (file:///home/agent/rer-consolidation/work/hh-stranger13-behaviour-1-c4/run-happytohelp/tests/helpers/workflows/outcomes.mjs:131:2)
+      at async TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/hh-stranger13-behaviour-1-c4/run-happytohelp/tests/journeys/workflows-browser.mjs:8:188)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 24,
+    expected: 21,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

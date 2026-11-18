@@ -1,0 +1,30 @@
+✔ trigger notices render the short ticket reference in subject and body (44215.820496ms)
+✔ workflow notices preserve provider outcomes and scoped audiences (53489.809362ms)
+PROBE ACCESS-001 P1: assign visible ticket; narrow before assignment dispatch -> {"status":200,"email":0,"inbox":0,"state":"complete"}
+PROBE ACCESS-001 P6: assign scoped-out operator -> {"status":200,"assigned":"operator-synthetic-hh-200","notices":0,"inbox":0,"email":0}
+PROBE ACCESS-001 P7: hidden assigned activity -> {"newNotices":0,"email":0}
+PROBE ACCESS-001 P7: hidden unassigned activity, opted-in operator -> {"newNotices":0,"email":0}
+PROBE ACCESS-001 P7: narrow scope during unread rendering -> {"email":0,"pending":0}
+PROBE ACCESS-001 P9: notification compatibility -> {"null":"assignment email retained","otherTenant":"foreign recipients are refused by existing teammate journey","ownerRecovery":"shared S1 term defaults true"}
+PROBE NOTIFY-001 slack P1 audiences: {"assignment":1,"customer_updated":1,"mention":1,"follower":1,"group":1}
+PROBE NOTIFY-001 slack P1 outcomes: ["accepted","accepted","accepted","accepted","accepted","accepted","accepted","accepted"]
+PROBE NOTIFY-001 slack P2b relation: {"unfollowed":0,"reassigned":0}
+PROBE NOTIFY-001 slack P2 sources: {"blocked":4}
+PROBE NOTIFY-001 slack P3 scope: {"noticeRowsMadeByFrozenLeg":2,"slack":0}
+PROBE NOTIFY-001 slack P4 outcomes: {"retry":"rate-limit only, 5 max","lost":"uncertain, not replayed after restart"}
+PROBE NOTIFY-001 slack P5 authority: {"consent":"revoked","installer":"removed","destination":"disabled"}
+PROBE NOTIFY-001 slack P6 erasure: {"deliveriesBeforeContactErasure":22,"afterContactErasure":0,"memberRowsAfter":0}
+PROBE NOTIFY-001 teams link: {"authenticated":true,"hashed":true,"singleUse":true,"expires":true,"sessionBound":true,"noIntake":true}
+PROBE NOTIFY-001 teams audiences: {"assignment":1,"customer_updated":1,"mention":1,"follower":1,"group":1}
+PROBE NOTIFY-001 teams guards: {"preference":true,"relation":true,"source":true,"scope":true,"revokedMember":true,"foreignWorkspace":true}
+PROBE NOTIFY-001 teams outcomes: {"rateAttempts":5,"retryAfter":true,"unknown":"terminal across restart","beforeSendFailure":"failed","preSendRecheck":true}
+PROBE NOTIFY-001 teams authority-erasure: {"consentRevoked":true,"missingInstallerUnavailable":true,"installerRevoked":true,"connectionRevoked":true,"memberRows":0}
+✔ manual and automated notifications record rider outcomes (192159.776787ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 291938.140811

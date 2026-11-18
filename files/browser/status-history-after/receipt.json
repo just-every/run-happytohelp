@@ -1,0 +1,10 @@
+{
+  "consecutiveWrites": true,
+  "staleRefusal": true,
+  "solvedHistory": true,
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ]
+}

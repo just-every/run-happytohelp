@@ -1,0 +1,228 @@
+{
+  "branch": "cloud/hh-stranger13-behaviour-1-c4",
+  "repository": "just-every/run-happytohelp",
+  "head": "68d354d3af7b8de3ff846a07bc004983633d762d",
+  "parent": "bec54d7793e87fb337c2fae45b68a07ae751f8fd",
+  "tree": "f758880ed51a96f0fabbd1aecbecaeeddac1a5ee",
+  "commitsAboveFetchedMain": 1,
+  "parents": 1,
+  "worktreeClean": true,
+  "exactLocalChecksAt": "2026-11-18T10:46:58Z",
+  "exploratoryChecks": {
+    "node": "24.19.0",
+    "routeAggregate": {
+      "tests": 13,
+      "passed": 12,
+      "failed": 1,
+      "error": "Journey server PID has no owned control socket"
+    },
+    "workflowAggregate": {
+      "failed": 1,
+      "error": "Notice reconciliation observed 24 delivery attempts, expected 21"
+    }
+  },
+  "productPush": {
+    "started": "2026-11-18T10:26:29Z",
+    "completed": "2026-11-18T10:26:39Z",
+    "attempts": 1,
+    "remoteHead": "68d354d3af7b8de3ff846a07bc004983633d762d",
+    "remoteMainAtPublication": "bec54d7793e87fb337c2fae45b68a07ae751f8fd",
+    "identityAudit": "Fleet author and committer, complete product message inspected, zero trailers"
+  },
+  "checks": [
+    {
+      "command": "node src/site/base/contract-docs.mjs write",
+      "exitCode": 0,
+      "output": "contract-write.txt"
+    },
+    {
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exitCode": 0,
+      "output": "contract-check.txt"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check",
+      "exitCode": 0,
+      "output": "contract-wrapper-check.txt"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exitCode": 0,
+      "output": "source-lock.txt"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "node": "22.20.0",
+      "exitCode": 0,
+      "output": "lock-check.txt"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "node": "22.20.0",
+      "exitCode": 0,
+      "output": "typecheck.txt"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "node": "22.20.0",
+      "exitCode": 0,
+      "output": "rer-check.txt"
+    },
+    {
+      "command": "cloud_run pnpm exec rer build",
+      "node": "24.19.0",
+      "exitCode": 0,
+      "output": "build.txt"
+    }
+  ],
+  "exactJourneys": [
+    {
+      "name": "collaborationBrowser: competing replies and retained draft",
+      "outcome": "pass",
+      "durationMs": 341124.203512
+    },
+    {
+      "name": "macroHandoffBrowser: saved reply, send and explicit take-over",
+      "outcome": "pass",
+      "durationMs": 335898.606052
+    },
+    {
+      "name": "statusLifecycleJourney: Solved history through configured close",
+      "outcome": "pass",
+      "durationMs": 56111.413744
+    },
+    {
+      "name": "ticket reference search",
+      "outcome": "pass",
+      "durationMs": 17563.669378
+    },
+    {
+      "name": "competing replies route",
+      "outcome": "pass",
+      "durationMs": 24726.198613
+    },
+    {
+      "name": "consecutive status priority tag edits and Solved contact history",
+      "outcome": "pass",
+      "durationMs": 334063.223093
+    },
+    {
+      "name": "ticket reference preview and screen proof",
+      "outcome": "pass",
+      "durationMs": 356310.95873
+    },
+    {
+      "name": "ticketsBrowser: ticket fields, inline edit concurrency and workflow",
+      "outcome": "pass",
+      "durationMs": 393011.057232
+    }
+  ],
+  "exactNotices": [
+    {
+      "name": "trigger notices render the short ticket reference in subject and body",
+      "outcome": "pass",
+      "durationMs": 44215.820496
+    },
+    {
+      "name": "workflow notices preserve provider outcomes and scoped audiences",
+      "outcome": "pass",
+      "durationMs": 53489.809362
+    },
+    {
+      "name": "manual and automated notifications record rider outcomes",
+      "outcome": "pass",
+      "durationMs": 192159.776787
+    }
+  ],
+  "screenshotRecapture": [
+    {
+      "name": "consecutive status priority tag edits and Solved contact history",
+      "outcome": "pass",
+      "durationMs": 363209.577273
+    }
+  ],
+  "browser": {
+    "assertionWidth": 1440,
+    "screenshotWidths": [
+      1440,
+      390
+    ],
+    "executable": "/usr/bin/chromium",
+    "noSandbox": true
+  },
+  "verify": {
+    "id": 44285462387,
+    "initialAttempt": 1,
+    "discovery": {
+      "at": "2026-11-18T10:27:31Z",
+      "result": {
+        "conclusion": null,
+        "event": "push",
+        "head_branch": "cloud/hh-stranger13-behaviour-1-c4",
+        "head_sha": "68d354d3af7b8de3ff846a07bc004983633d762d",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44285462387",
+        "id": 44285462387,
+        "name": "Verify",
+        "run_attempt": 1,
+        "status": "in_progress"
+      }
+    },
+    "polls": [
+      {
+        "at": "2026-11-18T10:34:25Z",
+        "method": "GET",
+        "endpoint": "repos/just-every/run-happytohelp/actions/runs/44285462387",
+        "result": {
+          "conclusion": null,
+          "head_sha": "68d354d3af7b8de3ff846a07bc004983633d762d",
+          "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44285462387",
+          "status": "in_progress"
+        }
+      },
+      {
+        "at": "2026-11-18T10:39:42Z",
+        "method": "GET",
+        "endpoint": "repos/just-every/run-happytohelp/actions/runs/44285462387",
+        "result": {
+          "conclusion": null,
+          "head_sha": "68d354d3af7b8de3ff846a07bc004983633d762d",
+          "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44285462387",
+          "status": "in_progress"
+        }
+      },
+      {
+        "at": "2026-11-18T10:44:59Z",
+        "method": "GET",
+        "endpoint": "repos/just-every/run-happytohelp/actions/runs/44285462387",
+        "result": {
+          "conclusion": null,
+          "head_sha": "68d354d3af7b8de3ff846a07bc004983633d762d",
+          "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44285462387",
+          "status": "in_progress"
+        }
+      },
+      {
+        "at": "2026-11-18T10:49:59Z",
+        "method": "GET",
+        "endpoint": "repos/just-every/run-happytohelp/actions/runs/44285462387",
+        "result": {
+          "conclusion": null,
+          "head_sha": "68d354d3af7b8de3ff846a07bc004983633d762d",
+          "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44285462387",
+          "status": "in_progress"
+        }
+      },
+      {
+        "at": "2026-11-18T10:54:59Z",
+        "method": "GET",
+        "endpoint": "repos/just-every/run-happytohelp/actions/runs/44285462387",
+        "result": {
+          "conclusion": "success",
+          "head_sha": "68d354d3af7b8de3ff846a07bc004983633d762d",
+          "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44285462387",
+          "status": "completed"
+        }
+      }
+    ]
+  }
+}

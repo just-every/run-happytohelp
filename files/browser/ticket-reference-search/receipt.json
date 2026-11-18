@@ -1,0 +1,84 @@
+{
+  "results": [
+    {
+      "door": "/api/dashboard/conversations",
+      "reference": "#CA164BF0",
+      "ids": [
+        "ca164bf0-0000-4000-8000-000000000002",
+        "ca164bf0-0000-4000-8000-000000000001"
+      ],
+      "total": 2
+    },
+    {
+      "door": "/api/dashboard/conversations",
+      "reference": "ca164bf0",
+      "ids": [
+        "ca164bf0-0000-4000-8000-000000000002",
+        "ca164bf0-0000-4000-8000-000000000001"
+      ],
+      "total": 2
+    },
+    {
+      "door": "/api/dashboard/conversations",
+      "reference": "#cA164bF0",
+      "ids": [
+        "ca164bf0-0000-4000-8000-000000000002",
+        "ca164bf0-0000-4000-8000-000000000001"
+      ],
+      "total": 2
+    },
+    {
+      "door": "/api/dashboard/conversations",
+      "reference": "CA164BF0",
+      "ids": [
+        "ca164bf0-0000-4000-8000-000000000002",
+        "ca164bf0-0000-4000-8000-000000000001"
+      ],
+      "total": 2
+    },
+    {
+      "door": "/api/dashboard/projects/p-synthetic-happytohelp-reference/conversations",
+      "reference": "#CA164BF0",
+      "ids": [
+        "ca164bf0-0000-4000-8000-000000000002",
+        "ca164bf0-0000-4000-8000-000000000001"
+      ],
+      "total": 2
+    },
+    {
+      "door": "/api/dashboard/projects/p-synthetic-happytohelp-reference/conversations",
+      "reference": "ca164bf0",
+      "ids": [
+        "ca164bf0-0000-4000-8000-000000000002",
+        "ca164bf0-0000-4000-8000-000000000001"
+      ],
+      "total": 2
+    },
+    {
+      "door": "/api/dashboard/projects/p-synthetic-happytohelp-reference/conversations",
+      "reference": "#cA164bF0",
+      "ids": [
+        "ca164bf0-0000-4000-8000-000000000002",
+        "ca164bf0-0000-4000-8000-000000000001"
+      ],
+      "total": 2
+    },
+    {
+      "door": "/api/dashboard/projects/p-synthetic-happytohelp-reference/conversations",
+      "reference": "CA164BF0",
+      "ids": [
+        "ca164bf0-0000-4000-8000-000000000002",
+        "ca164bf0-0000-4000-8000-000000000001"
+      ],
+      "total": 2
+    }
+  ],
+  "ownerMatches": [
+    "ca164bf0-0000-4000-8000-000000000003",
+    "ca164bf0-0000-4000-8000-000000000002",
+    "ca164bf0-0000-4000-8000-000000000001"
+  ],
+  "tenantDenied": true,
+  "groupDenied": true,
+  "substringExcluded": true
+}

@@ -1,0 +1,17 @@
+✔ collaborationBrowser: competing replies and retained draft (341124.203512ms)
+✔ macroHandoffBrowser: saved reply, send and explicit take-over (335898.606052ms)
+STATUS-001: widget/email reopen and owner wakes; hidden holds in widget/portal/mail; custom Pending SLA/report; configured close; requester/CC/tag/field follow-up; forbidden role passed
+✔ statusLifecycleJourney: Solved history through configured close (56111.413744ms)
+✔ ticket reference search (17563.669378ms)
+✔ competing replies route (24726.198613ms)
+✔ consecutive status priority tag edits and Solved contact history (334063.223093ms)
+✔ ticket reference preview and screen proof (356310.95873ms)
+✔ ticketsBrowser: ticket fields, inline edit concurrency and workflow (393011.057232ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 751837.380127

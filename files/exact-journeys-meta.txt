@@ -1,0 +1,8 @@
+Product head 68d354d3af7b8de3ff846a07bc004983633d762d
+Tree f758880ed51a96f0fabbd1aecbecaeeddac1a5ee
+Started 2026-11-18T10:27:06Z
+Node v22.20.0, pnpm 10.12.4
+Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)
+Command: cloud_run node --test --test-reporter=spec --test-concurrency=3 <six existing-journey wrappers>
+Completed 2026-11-18T10:39:38Z
+Exit 0

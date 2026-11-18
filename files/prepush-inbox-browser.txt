@@ -1,0 +1,11 @@
+✔ two signed-in operators see viewing, typing and unsent draft warnings before replying and after reload (263249.176482ms)
+✔ an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over (339450.693946ms)
+✔ a saved reply previews the short support reference and working link on a widget ticket, matching its operator header and page title (286806.592345ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 894170.990981

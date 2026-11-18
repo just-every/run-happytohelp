@@ -1,0 +1,3 @@
+node scripts/edition-authoring/cli.mjs lock: exit 0
+node scripts/edition-authoring/cli.mjs check: exit 0 (ok=true)
+Both commands returned the manifest in sources.lock.json. SHA-256: f141dde847969e234417177c7c7ec44fca4757dfc5c1c585d7ba95acbfd25dba

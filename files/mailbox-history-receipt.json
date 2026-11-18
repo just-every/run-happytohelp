@@ -1,0 +1,52 @@
+{
+  "providers": [
+    {
+      "provider": "gmail",
+      "sourceMessages": 2,
+      "importedThreads": 1,
+      "importedMessages": 2,
+      "attachments": 2,
+      "repeat": "no-op",
+      "undo": "exact",
+      "send": "refused",
+      "customerRead": "refused",
+      "scheduledReads": 0
+    },
+    {
+      "provider": "microsoft",
+      "sourceMessages": 2,
+      "importedThreads": 1,
+      "importedMessages": 2,
+      "attachments": 2,
+      "repeat": "no-op",
+      "undo": "exact",
+      "send": "refused",
+      "customerRead": "refused",
+      "scheduledReads": 0
+    },
+    {
+      "provider": "imap",
+      "sourceMessages": 2,
+      "importedThreads": 1,
+      "importedMessages": 2,
+      "attachments": 2,
+      "repeat": "no-op",
+      "undo": "exact",
+      "send": "refused",
+      "customerRead": "refused",
+      "scheduledReads": 0
+    }
+  ],
+  "mailboxMethods": [
+    "GET"
+  ],
+  "imapCommands": [
+    "EXAMINE INBOX",
+    "LIST \"\" \"*\"",
+    "EXAMINE \"Archive\"",
+    "UID SEARCH UID 1:2",
+    "UID FETCH 1 (UID BODY.PEEK[])",
+    "UID FETCH 2 (UID BODY.PEEK[])",
+    "EXAMINE \"Sent\""
+  ]
+}

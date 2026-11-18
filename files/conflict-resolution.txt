@@ -1,0 +1,3 @@
+The upstream widget address import and socket route match main exactly.
+The mailbox privacy import, access filter and conversation list match the gated candidate exactly.
+importers.json parses and matches the gated candidate's complete catalog.

@@ -1,0 +1,4 @@
+
+> happytohelp@0.4.31 typecheck /home/agent/rer-consolidation/work/hh-mailbox-import-1-c2/run-happytohelp
+> node scripts/generate-routes.mjs && tsc --noEmit
+

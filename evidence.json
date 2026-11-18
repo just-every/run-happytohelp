@@ -1,0 +1,154 @@
+{
+  "files": [
+    {
+      "blob": "737246823dca01d32971e48a93f099237f7ee579",
+      "bytes": 6992,
+      "path": "REPORT.md",
+      "sha256": "c1f08acdad52d82be0b3ab2fe9fa287db024149e760a49307cb2cc736da51207"
+    },
+    {
+      "blob": "aac40d330038771b2acd037e5be8e6518ee053cf",
+      "bytes": 1763,
+      "path": "browser-captures.json",
+      "sha256": "aafbf142b94468d11419247cece459f252b49b11ea3df93577499cacdae54f87"
+    },
+    {
+      "blob": "bcc22b50fe2ab9362bd4b44c81fb553790880e66",
+      "bytes": 350,
+      "path": "browser-journey.tap",
+      "sha256": "5a81575c77ff7b0ed02ca1b53d5004b5a09839e455639e4d1e90f57f7b73ea01"
+    },
+    {
+      "blob": "33f920dad8dce8fa02781c268fb42d455f552b00",
+      "bytes": 99,
+      "path": "build.txt",
+      "sha256": "4bb2f260220112534176332c1d5162ebb9f26326b613f837b78af3a996edcd15"
+    },
+    {
+      "blob": "6f586b0b0b5b8b55351208addb6566339177ff30",
+      "bytes": 8386,
+      "path": "claim-journeys.tap",
+      "sha256": "42d5509d7bcda78135c25040cfd0681089362b0f4ca7e50a523b8bfc95cc24dc"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "commit-identity.txt",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "14a2a69285b5cdf353588fcd227624b70c0f32e2",
+      "bytes": 245,
+      "path": "conflict-resolution.txt",
+      "sha256": "6629605c966b3e0b9a35ba7a95094b6d62f2baf0e47910c2850dc7b9d3280ada"
+    },
+    {
+      "blob": "3c86266104500be8fe132938ed7c2e589cfed5de",
+      "bytes": 98,
+      "path": "contract-check.txt",
+      "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    },
+    {
+      "blob": "e3a8a58415f73d270109a03bc6e5845349d4e709",
+      "bytes": 1123,
+      "path": "mailbox-history-receipt.json",
+      "sha256": "637c764d9608f4c68642f74a15036771d8ad026421465183b98334f0ae91aba8"
+    },
+    {
+      "blob": "598dbe6fb18c1c1e3235a632d18910df37cf9959",
+      "bytes": 226559,
+      "path": "mailbox-history/editor-1440.png",
+      "sha256": "66eae4d3da33d5c285a6c0fe4e063f9d69a1f432eeea6d7486de31f4d5ac0a11"
+    },
+    {
+      "blob": "cf121ae12d3fada587e12bc3df9a20f8aac8a2bb",
+      "bytes": 181702,
+      "path": "mailbox-history/editor-390.png",
+      "sha256": "a13c336fa884c974a73c54f899f1c482fb8386ce14d3e709fa7daf5b7d836f96"
+    },
+    {
+      "blob": "e8b63fe332df64645174f862a63995fefff86447",
+      "bytes": 226112,
+      "path": "mailbox-history/folders-1440.png",
+      "sha256": "792f491b5d67363bde158707206b3a1cc97bdbc9c07038dc94876917772708ba"
+    },
+    {
+      "blob": "e901c21755bf908ebac8283d0b2ea2cad3bb62e1",
+      "bytes": 179708,
+      "path": "mailbox-history/folders-390.png",
+      "sha256": "7ad570c799a5b4c0ac1c9cb31e0cf3392ab699f6774d135637ec5459077ff69f"
+    },
+    {
+      "blob": "a054ad2dfdb6a15ed81ac0c5587f3846b1957fad",
+      "bytes": 255691,
+      "path": "mailbox-history/history-1440.png",
+      "sha256": "b302a41548e01ae697c90321eb375e8b25019b1c389ee17fc4f01e9c93fa36e8"
+    },
+    {
+      "blob": "a4f3acab67e996fcb6de0c64464dbd319a06ae8f",
+      "bytes": 204889,
+      "path": "mailbox-history/history-390.png",
+      "sha256": "0c1ca37ff9e5f1e1a852bfea7187f3f382d0c11b5d897453b9225ad3e90a877d"
+    },
+    {
+      "blob": "77574687f6410307cbc2b3860878823a815eee05",
+      "bytes": 262716,
+      "path": "mailbox-history/live-step-1440.png",
+      "sha256": "07e5b7a6eae123179f81937be768f43ef81582b56575e28581333f21a58c5619"
+    },
+    {
+      "blob": "03ffe4368e7d2ba48480fcd2355274ce29639f19",
+      "bytes": 210237,
+      "path": "mailbox-history/live-step-390.png",
+      "sha256": "f0dce6ac2f4e6222e0167aab74bc57961fba94ad0fec3aa58bc7efc907096ba7"
+    },
+    {
+      "blob": "3ab89f0b479750f471b3b7c3d6b38a154d2416e3",
+      "bytes": 127457,
+      "path": "mailbox-history/review-1440.png",
+      "sha256": "e699ab0eb415923725385fb0699de8ab3e561c3f90581bbb364f260bbd315ab2"
+    },
+    {
+      "blob": "3ed54bc1e60adc68d9e7d7fdbd8dc177db66748e",
+      "bytes": 87195,
+      "path": "mailbox-history/review-390.png",
+      "sha256": "ad62e44294014f415123d41a8571e36f3e20c8e81e07befd050a66d5a3117635"
+    },
+    {
+      "blob": "ceabe7c264fada549629e67f84aaf46b95ab1ce0",
+      "bytes": 2593,
+      "path": "patch-identity.json",
+      "sha256": "b1070233772155595eb0eac641fefcf817c62760739339f1899c484851a8be19"
+    },
+    {
+      "blob": "e0746d82caf17348cdc04c253bcde3312f0717a8",
+      "bytes": 136,
+      "path": "rer-check.txt",
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "blob": "a3149783c27f7e4d0c1dec98847dc1cef4f2a893",
+      "bytes": 247,
+      "path": "source-check.txt",
+      "sha256": "301a09b5d9564188934aa45dbcc8e459b5d7d92152859b33dffdc16f984caaf6"
+    },
+    {
+      "blob": "d723c20fb885088b108969eead5df1c568fe8f08",
+      "bytes": 158,
+      "path": "typecheck.txt",
+      "sha256": "2be9fd6cdc4dd343e64e9a1aadcf81867ecc4aa0e4217b509bf752343733075f"
+    },
+    {
+      "blob": "36955d25b0c75247685202a705fefbd97bbb98bf",
+      "bytes": 1524,
+      "path": "verify-receipt.jsonl",
+      "sha256": "a78e3cb1a8c73a85fd2bf5d0abb44bbcbb762d8b07396436c119e5da77c0b917"
+    }
+  ],
+  "product_branch": "cloud/hh-mailbox-import-1-c2",
+  "product_head": "041209e8a422dccbc9116a7fc08aa5aee7e35dbc",
+  "ref": "refs/heads/evidence/hh-mailbox-import-1-c2",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-mailbox-import-1-c2"
+}

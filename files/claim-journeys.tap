@@ -1,0 +1,102 @@
+TAP version 13
+# Request failed Error
+# Request failed Error
+# PROBE OUTBOUND-001-NOTE N1/N2/N3/N4: private email + restart/replay -> 1 note, 0 public messages/outbox/email before human Send; 1 public reply + 1 threaded customer reply; public default/call/configuration retained; no migrations
+# PROBE Mailgun: native workspace and forwarding mailbox ready
+# PROBE POINT2: missing/unknown key names, unavailable key, domain and region errors refused before sending
+# PROBE POINT1: owner inbox reply reaches Mailgun EU multipart HTTP edge with named key, support From, recipients, thread headers and attachment
+# PROBE POINT3: reviewed Zendesk history imported through the native door with no sends or notices
+# PROBE POINT2: rejected, rate-limited, server-error, lost-response, missing-receipt and redirect outcomes visible; retries never replay
+# PROBE POINT3: anonymous and foreign-tenant sends refused; native reply threading and duplicate protection retained
+# Held managed mail remains pending
+# Inbound email already received Inbound email identity conflict
+# Inbound email already received Inbound email identity conflict
+# MAIL_HOLD_BUDGET {"pass":1,"statements":160,"calls":145,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":2,"statements":137,"calls":112,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":3,"statements":427,"calls":372,"refused":0}
+# Held managed mail remains pending
+# Held managed mail remains pending
+# Held managed mail remains pending
+# MAIL_HOLD_BUDGET {"pass":4,"statements":303,"calls":261,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":5,"statements":210,"calls":183,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":6,"statements":87,"calls":82,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":7,"statements":129,"calls":115,"refused":0}
+# Held managed mail remains pending
+# Held managed mail remains pending
+# Held managed mail remains pending
+# MAIL_HOLD_BUDGET {"pass":8,"statements":283,"calls":242,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":9,"statements":281,"calls":243,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":10,"statements":294,"calls":259,"refused":0}
+# Held managed mail remains pending
+# Held managed mail remains pending
+# Held managed mail remains pending
+# MAIL_HOLD_BUDGET {"pass":11,"statements":391,"calls":310,"refused":0}
+# Persisted job handler failed outbox.recover 61e7c5b2-294b-4fed-b58b-7d011d7afb23
+# Held managed mail remains pending
+# Persisted job handler failed outbox.recover cb5c6672-7c3d-44d4-92c0-73a7c21b2e7d
+# Held managed mail remains pending
+# Persisted job handler failed outbox.recover d6e0ad33-c032-441b-91b0-cd6a062b02f6
+# MAIL_HOLD_BUDGET {"pass":12,"statements":90,"calls":85,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":13,"statements":90,"calls":85,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":14,"statements":90,"calls":85,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":15,"statements":180,"calls":157,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":16,"statements":227,"calls":199,"refused":0}
+# MAIL_HOLD_BUDGET {"pass":17,"statements":90,"calls":85,"refused":0}
+# Request failed Error
+# Request failed Error
+# PROBE ACCESS-001 P1: assign visible ticket; narrow before assignment dispatch -> {"status":200,"email":0,"inbox":0,"state":"complete"}
+# PROBE ACCESS-001 P6: assign scoped-out operator -> {"status":200,"assigned":"operator-synthetic-hh-200","notices":0,"inbox":0,"email":0}
+# PROBE ACCESS-001 P7: hidden assigned activity -> {"newNotices":0,"email":0}
+# PROBE ACCESS-001 P7: hidden unassigned activity, opted-in operator -> {"newNotices":0,"email":0}
+# PROBE ACCESS-001 P7: narrow scope during unread rendering -> {"email":0,"pending":0}
+# PROBE ACCESS-001 P9: notification compatibility -> {"null":"assignment email retained","otherTenant":"foreign recipients are refused by existing teammate journey","ownerRecovery":"shared S1 term defaults true"}
+# PROBE NOTIFY-001 slack P1 audiences: {"assignment":1,"customer_updated":1,"mention":1,"follower":1,"group":1}
+# PROBE NOTIFY-001 slack P1 outcomes: ["accepted","accepted","accepted","accepted","accepted","accepted","accepted","accepted"]
+# PROBE NOTIFY-001 slack P2b relation: {"unfollowed":0,"reassigned":0}
+# PROBE NOTIFY-001 slack P2 sources: {"blocked":4}
+# PROBE NOTIFY-001 slack P3 scope: {"noticeRowsMadeByFrozenLeg":2,"slack":0}
+# PROBE NOTIFY-001 slack P4 outcomes: {"retry":"rate-limit only, 5 max","lost":"uncertain, not replayed after restart"}
+# PROBE NOTIFY-001 slack P5 authority: {"consent":"revoked","installer":"removed","destination":"disabled"}
+# PROBE NOTIFY-001 slack P6 erasure: {"deliveriesBeforeContactErasure":22,"afterContactErasure":0,"memberRowsAfter":0}
+# PROBE NOTIFY-001 teams link: {"authenticated":true,"hashed":true,"singleUse":true,"expires":true,"sessionBound":true,"noIntake":true}
+# PROBE NOTIFY-001 teams audiences: {"assignment":1,"customer_updated":1,"mention":1,"follower":1,"group":1}
+# PROBE NOTIFY-001 teams guards: {"preference":true,"relation":true,"source":true,"scope":true,"revokedMember":true,"foreignWorkspace":true}
+# PROBE NOTIFY-001 teams outcomes: {"rateAttempts":5,"retryAfter":true,"unknown":"terminal across restart","beforeSendFailure":"failed","preSendRecheck":true}
+# PROBE NOTIFY-001 teams authority-erasure: {"consentRevoked":true,"missingInstallerUnavailable":true,"installerRevoked":true,"connectionRevoked":true,"memberRows":0}
+# Subtest: a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome
+ok 1 - a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome
+  ---
+  duration_ms: 608152.12331
+  type: 'test'
+  ...
+# Subtest: read-only mailbox history uses reviewed inert imports, deduplicates selected folders, refuses sending and undoes unchanged records for Gmail, Microsoft and IMAP
+ok 2 - read-only mailbox history uses reviewed inert imports, deduplicates selected folders, refuses sending and undoes unchanged records for Gmail, Microsoft and IMAP
+  ---
+  duration_ms: 8489.781667
+  type: 'test'
+  ...
+# (node:11963) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# DOOR_COUNTS {"sourceRecords":335,"plan":{"input":335,"unique":335,"duplicates":0,"mapped":332,"unmapped":331,"rejected":0,"effects":332,"byKind":{"article":4,"organization":3,"tag-name":1,"ticket":312,"ticket_field":2,"user":13}},"reconciled":{"sourceRecords":335,"present":4,"explained":331,"nativeTargets":332,"byKind":{"tag-name":1,"organization":3,"user":13,"ticket_field":2,"ticket":312,"article":4},"nativeByKind":{"tag":1,"company":3,"contact":12,"field":2,"conversation":312,"article":2}},"native":{"tickets":312,"contacts":12,"companies":3,"articles":2}}
+# PROBE Zendesk grant door: first claim, privacy, 312 tickets, counts/search, grant fences, erasure and owner close asserted
+# IMPORT_ADMISSION_PHASE {"journey":"reviewImportJourney","duration_ms":180144}
+# MOVE-IN-003 zendesk: headers, encoded, number; lifecycle, custody, refusal, undo/reimport and quiet effects asserted
+# MOVE-IN-003 helpscout: headers, number, address; lifecycle, custody, refusal, undo/reimport and quiet effects asserted
+# IMPORT_ADMISSION_PHASE {"journey":"zendeskAndHelpScoutReplies","duration_ms":31572}
+# LEGACY_ADOPTION_RESULT {"status":"pass","sourceProjectId":"synthetic-adopted-workspace","setupUnchanged":true,"businessLinkUnchanged":true,"historicalStaffRows":4,"historicalMembershipRows":4,"nativeMembershipsAdded":1,"nativeUsersAdded":0,"firstSliceRows":1,"noteMediaBytes":36,"originalRows":24,"appliedRows":23,"replayedRows":24,"replayApplied":0,"workUnchanged":true,"preflightAuthorityRefusals":true,"transactionAuthorityRefusals":true,"mountedProductAcceptance":"pending C","registration":"pending C/lane after index-drain terminal"}
+# IMPORT_ADMISSION_PHASE {"journey":"legacyAdoptionJourney","duration_ms":9250}
+# Subtest: review an export, import its history and private notes, repeat and repackage without effects, then undo exactly
+ok 3 - review an export, import its history and private notes, repeat and repackage without effects, then undo exactly
+  ---
+  duration_ms: 220966.441198
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 838415.515721

@@ -27,10 +27,12 @@ export default function SettingsNavigation({ base, projectId, here, countSetup }
             : <Link to={ `${ base }/${ destination.path }` } { ...props }>{ label }</Link> }</li>;
     };
     return <li className="nav-item"><nav className="nav-settings-group" data-testid="settings-menu" aria-label="Settings">
-        { settingsGroups.map((group, index) => <React.Fragment key={ group.label ?? index }>
-            { group.label && <p className="nav-settings-caption" id={ `settings-group-${ index }` }>{ group.label }</p> }
-            <ul aria-labelledby={ group.label ? `settings-group-${ index }` : undefined }>{ group.destinations.map(entry) }</ul>
-        </React.Fragment>) }
+        {settingsGroups.map((group, index) => group.collapsed
+            ? <details className="nav-settings-advanced" key={group.label} open={group.destinations.some(destination => destinationActive(here, base, destination)) || undefined}>
+                <summary className="nav-settings-caption">{group.label}</summary>
+                <ul aria-label={group.label}>{group.destinations.map(entry)}</ul>
+              </details>
+            : <ul key={index}>{group.destinations.map(entry)}</ul>)}
     </nav></li>;
 }
 

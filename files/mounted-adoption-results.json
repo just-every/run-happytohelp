@@ -1,0 +1,38 @@
+{
+  "states": [
+    "queued:verify_package",
+    "queued:context",
+    "queued:preflight",
+    "queued:objects",
+    "running:objects",
+    "queued:objects",
+    "queued:rows",
+    "running:rows",
+    "queued:rows",
+    "queued:knowledge",
+    "queued:verify_result",
+    "queued:cleanup",
+    "complete:done"
+  ],
+  "uploads": 25,
+  "maxStatements": 161,
+  "kills": 2,
+  "indexDrainSteps": 5,
+  "stopFenced": true,
+  "erased": true,
+  "shape": {
+    "packageRows": 147,
+    "largestPartBytes": 33627,
+    "largestObjectBytes": 480000,
+    "descriptors": 26
+  },
+  "counts": {
+    "nativeUsersBefore": 4,
+    "nativeUsersAfter": 4,
+    "sourceRows": 146,
+    "membershipsAdded": 1
+  },
+  "journalEqualsPackage": true,
+  "attachmentsComplete": true,
+  "workUnchanged": true
+}

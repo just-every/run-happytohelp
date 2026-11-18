@@ -1,0 +1,11 @@
+{
+  "workflow": "Verify",
+  "run_id": 44235519783,
+  "event": "push",
+  "run_attempt": 1,
+  "observed_at": "2026-11-18T04:38:50Z",
+  "head_sha": "71a3f8c7f08c744ab06dd724d5b6c75a75717da9",
+  "status": "completed",
+  "conclusion": "success",
+  "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44235519783"
+}

@@ -1,0 +1,42 @@
+Candidate commit and sole parent: 71a3f8c7f08c744ab06dd724d5b6c75a75717da9 4fb1862757d389782b28cc66688302726eab37f6
+Paths: 39 gated, 39 replayed
+Identical patch hunks: 37 (full raw diff identical on 36)
+identical: docs/LEGACY-EXPORT.md
+identical: scripts/legacy-export/package.mjs
+identical: scripts/legacy-import/import-package.mjs
+identical: src/modules/legacy-import/README.md
+identical: src/modules/legacy-import/adoption/historical.ts
+identical: src/modules/legacy-import/adoption/note-media.ts
+identical: src/modules/legacy-import/archive-only.ts
+identical: src/modules/legacy-import/delta.ts
+identical: src/modules/legacy-import/field-dispositions.ts
+identical: src/modules/legacy-import/field-rules.ts
+identical: src/modules/legacy-import/importer.ts
+identical: src/modules/legacy-import/map-core.ts
+identical: src/modules/legacy-import/map-knowledge.ts
+identical: src/modules/legacy-import/map-project.ts
+identical: src/modules/legacy-import/mapping-shared.ts
+identical: src/modules/legacy-import/mapping.ts
+identical: src/modules/legacy-import/media-index.ts
+identical: src/modules/legacy-import/media-links.ts
+identical: src/modules/legacy-import/source-columns.ts
+identical: src/modules/legacy-import/source-references.ts
+identical: src/modules/legacy-import/worker/context-read.ts
+identical: src/modules/legacy-import/worker/result.ts
+identical: src/modules/legacy-import/worker/row-step.ts
+identical: tests/legacy-export.mjs
+identical: tests/legacy-export/extended-fixture.mjs
+identical: tests/legacy-export/fidelity-fixture.mjs
+identical: tests/legacy-export/fidelity-inputs.mjs
+identical: tests/legacy-export/field-matrix.mjs
+identical: tests/legacy-export/fixture.mjs
+identical: tests/legacy-export/media-fixture.mjs
+identical: tests/legacy-export/native-readers.mjs
+identical: tests/legacy-export/no-outbound.mjs
+identical: tests/legacy-export/resume.mjs
+identical: tests/legacy-export/transport-equality.mjs
+identical: tests/move-in/legacy-adoption-integration/fixture.mjs
+identical: tests/move-in/legacy-adoption-integration/journey.mjs
+identical hunks, different full-file blob IDs due to main edits elsewhere: docs/moving-in.md
+resolved conflict: importers.json
+resolved conflict: sources.lock.json

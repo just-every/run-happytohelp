@@ -1,0 +1,7 @@
+{
+  "head": "71a3f8c7f08c744ab06dd724d5b6c75a75717da9",
+  "journey": "tests/move-in/legacy-adoption-integration/journey.mjs#mountedAdoptionJourney",
+  "start": "2026-11-18T04:11:48Z",
+  "end": "2026-11-18T04:34:38Z",
+  "exit": 247
+}

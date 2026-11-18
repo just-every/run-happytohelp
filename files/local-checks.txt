@@ -1,0 +1,12 @@
+node=v22.20.0
+pnpm=10.12.4
+head=71a3f8c7f08c744ab06dd724d5b6c75a75717da9
+{"ok":true,"schemaVersion":1,"manifest":"b45403346c7c7b41b2d2a7835f61d079b0160e6c1b5e31bd84f4f34d1f7a8e91","edition":"just-every/happytohelp"}
+node scripts/edition-authoring/cli.mjs check: exit 0
+pnpm run typecheck: exit 0 on the same staged tree before commit
+pnpm exec rer check --profile first-party: exit 0
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Contract, views, release and migrations match origin/main.

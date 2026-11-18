@@ -1,0 +1,10 @@
+head=71a3f8c7f08c744ab06dd724d5b6c75a75717da9
+parent=4fb1862757d389782b28cc66688302726eab37f6
+subject=Carry legacy import fidelity as one linear change
+rev-list origin/main..HEAD count=1
+gated candidate:  39 files changed, 951 insertions(+), 86 deletions(-)
+published replay:  39 files changed, 951 insertions(+), 86 deletions(-)
+highest migration on origin/main and HEAD: 336
+336
+local emitted build: build: complete (exit 0)
+Importer entries preserved: 2; merged moving-in evidence digest and byte length verified.

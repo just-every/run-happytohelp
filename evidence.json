@@ -1,0 +1,76 @@
+{
+  "files": [
+    {
+      "blob": "cc90a67d8dab5a1c80fe84882a077131dea860d9",
+      "bytes": 4782,
+      "path": "REPORT.md",
+      "sha256": "ae820222cd5a2748a1f15c2838e944db55d728e4c115f75485c83dbc3c041b25"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "identity-receipt.txt",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "2c7b392c736eef7cd8e0e6bcc82692814fac0353",
+      "bytes": 208,
+      "path": "legacy-custody-receipt.json",
+      "sha256": "08121fba6843cb31ba3de5fcb67cbdd77eb4e87585bef513ada8b6a24ecb1771"
+    },
+    {
+      "blob": "a82769c1692f27999dc4548e687b197ad101bfbc",
+      "bytes": 583,
+      "path": "local-checks.txt",
+      "sha256": "85834b4623f97d19fc88a2d84379b6871a40c79e72cb2ddb17a7ec5e6b0d104f"
+    },
+    {
+      "blob": "dfba9bbf8bf9d0d42735b78b9c06f8ca4920bf93",
+      "bytes": 231,
+      "path": "mounted-adoption-receipt.json",
+      "sha256": "8b29c416486cf8080eb2ecc89d3c984617bfcc3f292b375ed53c187238bf8970"
+    },
+    {
+      "blob": "42c0808c87b2c5755f8f6ee32e897083bc689441",
+      "bytes": 775,
+      "path": "mounted-adoption-results.json",
+      "sha256": "824ba13f48c7593c8b8862a0cded25726c669e781b23a2c82cd6228aa4de91c4"
+    },
+    {
+      "blob": "2703480950c71acb3ac2a0338adb735d775abda8",
+      "bytes": 233,
+      "path": "mounted-startup-receipt.json",
+      "sha256": "4e820ab7310e653b94f77874d363d1f1b9104ea3428368705cd27dc45f4c3738"
+    },
+    {
+      "blob": "9bd1acb57267adb0fd3df3b46ee7308caae7496b",
+      "bytes": 2221,
+      "path": "patch-receipt.txt",
+      "sha256": "512bffd386458fb305950b1465583641b47998e2dce2b7e5f98e0bfed26b9844"
+    },
+    {
+      "blob": "2ade53f8c918ed78c5cddaf6e567a5e2dece30a1",
+      "bytes": 517,
+      "path": "product-receipt.txt",
+      "sha256": "94df20ddf401c6ae651b059545e87a8ab76f7445979a6c105ee9b9f4bb7d3651"
+    },
+    {
+      "blob": "44ae0801937c68b695ab4235268c171ab3981892",
+      "bytes": 89,
+      "path": "pushed-ref.txt",
+      "sha256": "ff1c67901b21a066e896ea2eeeb5d3dffb687158f4dd49a935e37a8c13d65853"
+    },
+    {
+      "blob": "c68567ecaf9385faf687a1e5eac04ebf50583d20",
+      "bytes": 330,
+      "path": "verify-receipt.json",
+      "sha256": "ba6a0498b2c8e28f512044eea2dc12d301557eacd6d4f2f5eb2de252f1211ad9"
+    }
+  ],
+  "product_branch": "cloud/hh-import-legacy-fidelity-1-c2",
+  "product_head": "71a3f8c7f08c744ab06dd724d5b6c75a75717da9",
+  "ref": "refs/heads/evidence/hh-import-legacy-fidelity-1-c2",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-import-legacy-fidelity-1-c2"
+}

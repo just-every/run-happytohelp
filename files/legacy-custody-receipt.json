@@ -1,0 +1,7 @@
+{
+  "head": "71a3f8c7f08c744ab06dd724d5b6c75a75717da9",
+  "journey": "tests/helpers/legacy/custody.mjs#legacyCustodyJourney",
+  "start": "2026-11-18T04:12:06Z",
+  "end": "2026-11-18T04:15:58Z",
+  "exit": 0
+}

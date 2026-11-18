@@ -20,6 +20,7 @@ import {unmarkRetired} from './retire-marker.mjs';
 // Tables other rows are mapped through can never be left out.
 const contextTables=new Set(['projects','users','ais','ai_defaults','contacts','conversations','messages','mediables','media','datasets','dataset_files']);
 export async function importPackage(root,target,modules,{expectManifestSha256,excludeTables=[],concurrency=1,progress=()=>{},retireMarker,history={}}={}){
+  const {mergeFieldDispositions,exportDispositions,mergeTargetColumnOmissions}=await import('../../src/modules/legacy-import/field-dispositions.ts');
   const {planImport,importLegacy,importDelta,planDelta,takeDeltaLease,readErased,erasedMediaOf,heldByNativeMedia,tableOrder,relationships,types}=modules;
   const started=Date.now(),{manifest,digest}=await readManifest(root,expectManifestSha256),delta=isDelta(manifest);
   if(delta&&!manifest.source.projectId)throw Error('A delta package names its legacy project (source.projectId)');
@@ -36,7 +37,7 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
     // The package's own files by legacy storage key (media-index.ts), resolved once before mapping.
     const media=await import('../../src/modules/legacy-import/media-index.ts');
     const packageMedia=media.packageMediaIndex(String(manifest.source.projectId??''),await contextMedia(root,manifest),index.objectKeys,index.context);options.media=packageMedia;
-    const urls={rewritten:0,left:0},widgetNotReproduced={};
+    const urls={rewritten:0,left:0},widgetNotReproduced={};let fields=[],targetOmissions=[];
     let objects={uploaded:0,present:0,removed:0},lease,erased,erasedMedia;const env=()=>target?.env,workspaces=new Set(delta?[String(manifest.source.projectId)]:[]);
     const order=table=>{const i=tableOrder.indexOf(table);return i<0?1000:i};
     // A chunk is identified by its file and digest, never by its place in the order.
@@ -83,6 +84,7 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
         if(retireMarker!==undefined)total.ignoredRetireMarker+=ignored;
         const bundle=bundleOf(part,rows);
         const result=target?await apply(bundle):{...(await planImport(bundle,options)).summary,applied:0,replayed:0};
+        fields=mergeFieldDispositions(fields,result.fieldDispositions??[]);targetOmissions=mergeTargetColumnOmissions([...targetOmissions,...(result.targetColumnOmissions??[])]);
         urls.rewritten+=result.mediaUrls?.rewritten??0;urls.left+=result.mediaUrls?.left??0;for(const [key,count] of Object.entries(result.widgetNotReproduced??{}))widgetNotReproduced[key]=(widgetNotReproduced[key]??0)+count;
         total.mappedRows+=result.mappedRows;total.holds+=result.holds.length;total.applied+=result.applied;
         if(delta&&target){addDeltaTotals(total,result);total.archivedOnly=total.archived_only;conflicts.push(...result.conflicts);}
@@ -95,7 +97,7 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
     if(target)await env().DB.prepare(`UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=?${delta?" AND state<>'complete'":''}`).bind(Date.now(),runId).run();
     }finally{await lease?.release();}
     const sum=key=>Object.values(tables).reduce((n,t)=>n+t[key],0);
-    return {id:runId,manifestSha256:digest,projectId:manifest.source.projectId,workspaces:[...workspaces],sourceRows:sum('sourceRows'),packageRows:Object.values(sourceCounts).reduce((n,c)=>n+c,0),excluded,mappedRows:sum('mappedRows'),archivedOnly:sum('archivedOnly'),holds:sum('holds'),applied:sum('applied'),replayed:sum('replayed'),...(retireMarker!==undefined?{ignoredRetireMarker:Object.values(tables).reduce((n,t)=>n+(t.ignoredRetireMarker||0),0)}:{}),objects:manifest.objects.length,objectsUploaded:objects.uploaded,objectsPresent:objects.present,objectsRemoved:objects.removed,...(delta?{}:{erased:sum('erased')}),mediaUrls:urls,...(delta?{}:{widgetNotReproduced}),mediaBytes:manifest.mediaBytes,sessions:target?.sessions,seconds:seconds(started),tables,
+    return {id:runId,manifestSha256:digest,projectId:manifest.source.projectId,workspaces:[...workspaces],sourceRows:sum('sourceRows'),packageRows:Object.values(sourceCounts).reduce((n,c)=>n+c,0),excluded,mappedRows:sum('mappedRows'),archivedOnly:sum('archivedOnly'),holds:sum('holds'),applied:sum('applied'),replayed:sum('replayed'),...(retireMarker!==undefined?{ignoredRetireMarker:Object.values(tables).reduce((n,t)=>n+(t.ignoredRetireMarker||0),0)}:{}),objects:manifest.objects.length,objectsUploaded:objects.uploaded,objectsPresent:objects.present,objectsRemoved:objects.removed,...(delta?{}:{erased:sum('erased')}),fieldDispositions:fields,exportDispositions:exportDispositions(manifest.source),targetColumnOmissions:mergeTargetColumnOmissions(targetOmissions),mediaUrls:urls,...(delta?{}:{widgetNotReproduced}),mediaBytes:manifest.mediaBytes,sessions:target?.sessions,seconds:seconds(started),tables,
       ...(delta&&target?deltaSummary(manifest,tables,conflicts,options.plan.withheldMedia.size):{})};
   }finally{await index.close();}
 }

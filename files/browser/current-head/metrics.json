@@ -1,0 +1,331 @@
+{
+  "head": "dd123992c1bc1f308fa8eb3b3b8380df8926c936",
+  "source": "Emitted Worker with synthetic owner and customer, no provider keys",
+  "captures": [
+    {
+      "name": "setup-ai",
+      "width": 1440,
+      "file": "setup-ai-1440.png",
+      "overflow": false,
+      "bytes": 260248,
+      "imageHeight": 2290,
+      "sha256": "36e130dab72849eb1a483ebbd8065f6dcb28d462272ae4688cba5905c9c7137d"
+    },
+    {
+      "name": "setup-ai",
+      "width": 390,
+      "file": "setup-ai-390.png",
+      "overflow": false,
+      "bytes": 221528,
+      "imageHeight": 3615,
+      "sha256": "9b5335d123aebca6af6479838087a527496129a7b2f58f256ab8d6d0c809c908"
+    },
+    {
+      "name": "ai",
+      "width": 1440,
+      "file": "ai-1440.png",
+      "overflow": false,
+      "bytes": 154242,
+      "imageHeight": 1398,
+      "sha256": "6c2a6112a9c83148d4722de8bac33e841a9c9a72041cfe66c9b5d0d3df2597f2"
+    },
+    {
+      "name": "ai",
+      "width": 390,
+      "file": "ai-390.png",
+      "overflow": false,
+      "bytes": 125171,
+      "imageHeight": 1996,
+      "sha256": "dbebce3621fe161da28853498b2c8d3f3cc87a3d05766d076d043d1b6e7a7645"
+    },
+    {
+      "name": "ai-details",
+      "width": 1440,
+      "file": "ai-details-1440.png",
+      "overflow": false,
+      "bytes": 188034,
+      "imageHeight": 1727,
+      "sha256": "133bd8c2eba3af837fc214764b58853aee3c57a9559c7db58ff4a56fd5ca88ef"
+    },
+    {
+      "name": "ai-details",
+      "width": 390,
+      "file": "ai-details-390.png",
+      "overflow": false,
+      "bytes": 157163,
+      "imageHeight": 2593,
+      "sha256": "4003c799194567315dafc3b3f964961855c0c1df92edea1eba282e391accf2dc"
+    },
+    {
+      "name": "email",
+      "width": 1440,
+      "file": "email-1440.png",
+      "overflow": false,
+      "bytes": 152088,
+      "imageHeight": 1347,
+      "sha256": "b711fb8785fa7982dbeb8fbd20777ea170c588a22161aacfab51854fdb615110"
+    },
+    {
+      "name": "email",
+      "width": 390,
+      "file": "email-390.png",
+      "overflow": false,
+      "bytes": 127712,
+      "imageHeight": 2011,
+      "sha256": "c9e8cdb85a10864ad35c6ecf64d9733393a4de368c3e3e1300838c2e0e5fba39"
+    },
+    {
+      "name": "gmail",
+      "width": 1440,
+      "file": "gmail-1440.png",
+      "overflow": false,
+      "bytes": 187312,
+      "imageHeight": 1930,
+      "sha256": "598f6c1b76bbc39d9b298d47bee65c679bbdb5b71bd361abb63184892871d684"
+    },
+    {
+      "name": "gmail",
+      "width": 390,
+      "file": "gmail-390.png",
+      "overflow": false,
+      "bytes": 158879,
+      "imageHeight": 2687,
+      "sha256": "b4c8c2aae320350314385c4378f5761b8da1a05939844c050f401bd0a47ac111"
+    },
+    {
+      "name": "microsoft",
+      "width": 1440,
+      "file": "microsoft-1440.png",
+      "overflow": false,
+      "bytes": 188274,
+      "imageHeight": 1930,
+      "sha256": "f132ba2b68b5f9db0ee30e3843a2830b0b9ff7b525a1f730838894bebfbbe675"
+    },
+    {
+      "name": "microsoft",
+      "width": 390,
+      "file": "microsoft-390.png",
+      "overflow": false,
+      "bytes": 159588,
+      "imageHeight": 2687,
+      "sha256": "efb24c6dc85a954d4e21cdd277b46c7106d21808df6e20d6a545b66f4a586dff"
+    },
+    {
+      "name": "zendesk",
+      "width": 1440,
+      "file": "zendesk-1440.png",
+      "overflow": false,
+      "bytes": 158024,
+      "imageHeight": 1487,
+      "sha256": "2d411acb4dd330144376a2d35f8966cb6e402d570910efd677dd2a4fc47d6065"
+    },
+    {
+      "name": "zendesk",
+      "width": 390,
+      "file": "zendesk-390.png",
+      "overflow": false,
+      "bytes": 123407,
+      "imageHeight": 1925,
+      "sha256": "672bc5c487b53a2e7f30adbef4da5799849fc38c4fb455924977501f1a3fa70e"
+    },
+    {
+      "name": "zendesk-file-details",
+      "width": 1440,
+      "file": "zendesk-file-details-1440.png",
+      "overflow": false,
+      "bytes": 171807,
+      "imageHeight": 1570,
+      "sha256": "f01f0cd539537817513055c305193010dd5d465205e0c6fa423949322b97c8dd"
+    },
+    {
+      "name": "zendesk-file-details",
+      "width": 390,
+      "file": "zendesk-file-details-390.png",
+      "overflow": false,
+      "bytes": 135220,
+      "imageHeight": 2054,
+      "sha256": "25b90a04400bba7772403c370b406692a50b33f7a7c1be7855d9b643d3360787"
+    },
+    {
+      "name": "original-export",
+      "width": 1440,
+      "file": "original-export-1440.png",
+      "overflow": false,
+      "bytes": 122330,
+      "imageHeight": 1191,
+      "sha256": "37389fe72dfea96c93241e69a895b9576484a4fe3ae3d07d7791584acc391882"
+    },
+    {
+      "name": "original-export",
+      "width": 390,
+      "file": "original-export-390.png",
+      "overflow": false,
+      "bytes": 90463,
+      "imageHeight": 1535,
+      "sha256": "c681fbd3cc74acecfde3c9a0ae48c6d984baad1e735b4d7d81294e5520f0886e"
+    },
+    {
+      "name": "workspace",
+      "width": 1440,
+      "file": "workspace-1440.png",
+      "overflow": false,
+      "bytes": 214049,
+      "imageHeight": 1567,
+      "sha256": "763d43d96abc18090aebadb3eed3466efe78a4258327db7a6cf63c4f7a638e2f"
+    },
+    {
+      "name": "workspace",
+      "width": 390,
+      "file": "workspace-390.png",
+      "overflow": false,
+      "bytes": 171027,
+      "imageHeight": 2364,
+      "sha256": "6947961c011505b8c0a44f94808b18921a321bab2a3c42d7754f683711d75b7c"
+    },
+    {
+      "name": "business-hours",
+      "width": 1440,
+      "file": "business-hours-1440.png",
+      "overflow": false,
+      "bytes": 216634,
+      "imageHeight": 2006,
+      "sha256": "c42627f7ffe72f2681adb28423db60a910dafeb4f4f61f768cfaa14d46c32d6b"
+    },
+    {
+      "name": "business-hours",
+      "width": 390,
+      "file": "business-hours-390.png",
+      "overflow": false,
+      "bytes": 175650,
+      "imageHeight": 2577,
+      "sha256": "d5110b4d5512a0e9a17366ca999e06bb72bed345f1bb70c54f816a5522e3caac"
+    },
+    {
+      "name": "help-center",
+      "width": 1440,
+      "file": "help-center-1440.png",
+      "overflow": false,
+      "bytes": 65292,
+      "imageHeight": 900,
+      "sha256": "f0f514835b21a4bf694b0f88899c5e271d8e167bc5924873d9a583524db013f4"
+    },
+    {
+      "name": "help-center",
+      "width": 390,
+      "file": "help-center-390.png",
+      "overflow": false,
+      "bytes": 38184,
+      "imageHeight": 900,
+      "sha256": "d74b632c0c79b57ed8cb35ea51976ceb654cae47224a4425ea0cf2b35f21d7a4"
+    },
+    {
+      "name": "cutover",
+      "width": 1440,
+      "file": "cutover-1440.png",
+      "overflow": false,
+      "bytes": 87712,
+      "imageHeight": 900,
+      "sha256": "2ee55e438973aaad84dea8ce53dd28c2756fec3c02bfe2e4cc5c076afa3ae03e"
+    },
+    {
+      "name": "cutover",
+      "width": 390,
+      "file": "cutover-390.png",
+      "overflow": false,
+      "bytes": 48071,
+      "imageHeight": 941,
+      "sha256": "1c73882f45e86a30f7859f8e6b49e89c39ac1ba6c9a8a3de72d5cc06131205ef"
+    },
+    {
+      "name": "assurance",
+      "width": 1440,
+      "file": "assurance-1440.png",
+      "overflow": false,
+      "bytes": 250771,
+      "imageHeight": 1853,
+      "sha256": "830ce3cdbeccb949f060c3ba41405786476be7d28737e36645ba5e06bc5c3a62"
+    },
+    {
+      "name": "assurance",
+      "width": 390,
+      "file": "assurance-390.png",
+      "overflow": false,
+      "bytes": 236548,
+      "imageHeight": 3287,
+      "sha256": "b417cb3dc64e7f79995d0c0e1911cfd9f630107f9a4fae1786090c09a403dec6"
+    },
+    {
+      "name": "team",
+      "width": 1440,
+      "file": "team-1440.png",
+      "overflow": false,
+      "bytes": 47003,
+      "imageHeight": 900,
+      "sha256": "2aad70e2a8b976d0d844b8ca78930212a1086e0df95c55db2c6c40737639167f"
+    },
+    {
+      "name": "team",
+      "width": 390,
+      "file": "team-390.png",
+      "overflow": false,
+      "bytes": 24132,
+      "imageHeight": 900,
+      "sha256": "a9ea24a249fd40c6aa86b629395baa690eea350fe5502edeee4e6dcdaa9e9b07"
+    },
+    {
+      "name": "chat-widget",
+      "width": 1440,
+      "file": "chat-widget-1440.png",
+      "overflow": false,
+      "bytes": 112682,
+      "imageHeight": 1369,
+      "sha256": "c50d4da8e34de207c4c4de5bca2502cdbb86eb92a907e1d0b038816848548783"
+    },
+    {
+      "name": "chat-widget",
+      "width": 390,
+      "file": "chat-widget-390.png",
+      "overflow": false,
+      "bytes": 80208,
+      "imageHeight": 1511,
+      "sha256": "d0fe5baa581dc7f8de86974fba07bb7916044ca9d6ab1f6de7af554d350b88ee"
+    },
+    {
+      "name": "saved-replies",
+      "width": 1440,
+      "file": "saved-replies-1440.png",
+      "overflow": false,
+      "bytes": 62881,
+      "imageHeight": 900,
+      "sha256": "2da67c6bf491e5b27a60bea2f766eaa78011552392b90adba9322a0c0747fe4b"
+    },
+    {
+      "name": "saved-replies",
+      "width": 390,
+      "file": "saved-replies-390.png",
+      "overflow": false,
+      "bytes": 34166,
+      "imageHeight": 900,
+      "sha256": "5ab82195ed346a542cfe7bd415adae7b6d179c38259a00fc10f1de92d5a8c961"
+    },
+    {
+      "name": "conversation-generate",
+      "width": 1440,
+      "file": "conversation-generate-1440.png",
+      "overflow": false,
+      "bytes": 118728,
+      "imageHeight": 900,
+      "sha256": "2c30af027884990b1004282ef9daa4bdaf2f2655ecf6173b149de4a8d5dbd58e"
+    },
+    {
+      "name": "conversation-generate",
+      "width": 390,
+      "file": "conversation-generate-390.png",
+      "overflow": false,
+      "bytes": 6922,
+      "imageHeight": 900,
+      "sha256": "8536d2b9c5a50f993b4f0903b606b1523c92288c0ab8b0692258cd66161fb7b4"
+    }
+  ],
+  "pageErrors": []
+}

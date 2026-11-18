@@ -1,0 +1,110 @@
+[
+  {
+    "name": "owner-general",
+    "width": 1440,
+    "minText": 15,
+    "smallTargets": 2
+  },
+  {
+    "name": "owner-general",
+    "width": 390,
+    "minText": 15,
+    "smallTargets": 10
+  },
+  {
+    "name": "owner-appearance",
+    "width": 1440,
+    "minText": 14,
+    "smallTargets": 0
+  },
+  {
+    "name": "owner-appearance",
+    "width": 390,
+    "minText": 14,
+    "smallTargets": 8
+  },
+  {
+    "name": "owner-availability",
+    "width": 1440,
+    "minText": 15,
+    "smallTargets": 10
+  },
+  {
+    "name": "owner-availability",
+    "width": 390,
+    "minText": 15,
+    "smallTargets": 11
+  },
+  {
+    "name": "admin-general",
+    "width": 1440,
+    "minText": 15,
+    "smallTargets": 2
+  },
+  {
+    "name": "admin-general",
+    "width": 390,
+    "minText": 15,
+    "smallTargets": 10
+  },
+  {
+    "name": "admin-appearance",
+    "width": 1440,
+    "minText": 14,
+    "smallTargets": 0
+  },
+  {
+    "name": "admin-appearance",
+    "width": 390,
+    "minText": 14,
+    "smallTargets": 8
+  },
+  {
+    "name": "admin-availability",
+    "width": 1440,
+    "minText": 15,
+    "smallTargets": 10
+  },
+  {
+    "name": "admin-availability",
+    "width": 390,
+    "minText": 15,
+    "smallTargets": 11
+  },
+  {
+    "name": "collaborator-refused",
+    "width": 1440,
+    "minText": 16,
+    "smallTargets": 0
+  },
+  {
+    "name": "collaborator-refused",
+    "width": 390,
+    "minText": 15,
+    "smallTargets": 1
+  },
+  {
+    "name": "operator-refused",
+    "width": 1440,
+    "minText": 16,
+    "smallTargets": 0
+  },
+  {
+    "name": "operator-refused",
+    "width": 390,
+    "minText": 15,
+    "smallTargets": 1
+  },
+  {
+    "name": "custom-admin-refused",
+    "width": 1440,
+    "minText": 16,
+    "smallTargets": 0
+  },
+  {
+    "name": "custom-admin-refused",
+    "width": 390,
+    "minText": 15,
+    "smallTargets": 1
+  }
+]

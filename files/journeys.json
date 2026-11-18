@@ -1,0 +1,118 @@
+{
+  "head": "dd123992c1bc1f308fa8eb3b3b8380df8926c936",
+  "runtime": "Locally rer-built emitted Worker, Node 22.20.0, /usr/bin/chromium --no-sandbox",
+  "registeredTestReceipts": [
+    {
+      "key": "first-run",
+      "file": "tests/journeys/first-run.mjs",
+      "selector": "^a first owner provisions useful support",
+      "title": "a first owner provisions useful support, observes actual Setup receipts, installs a provider and answers within the daily allowance while local and uncertain mail stay honest",
+      "head": "dd123992c1bc1f308fa8eb3b3b8380df8926c936",
+      "counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "durationMs": 190796.51447
+    },
+    {
+      "key": "identity-setup",
+      "file": "tests/journeys/identity-browser.mjs",
+      "selector": "^a first owner and a signed-in owner reach Setup",
+      "title": "a first owner and a signed-in owner reach Setup and install a working widget",
+      "head": "dd123992c1bc1f308fa8eb3b3b8380df8926c936",
+      "counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "durationMs": 424672.052322
+    },
+    {
+      "key": "move-in",
+      "file": "tests/journeys/move-in-browser.mjs",
+      "selector": "^an owner connects Zendesk twice",
+      "title": "an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import",
+      "head": "dd123992c1bc1f308fa8eb3b3b8380df8926c936",
+      "counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "durationMs": 362868.354255
+    },
+    {
+      "key": "procedures",
+      "file": "tests/journeys/workflows-browser.mjs",
+      "selector": "^a lead compares saved procedure definitions",
+      "title": "a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release",
+      "head": "dd123992c1bc1f308fa8eb3b3b8380df8926c936",
+      "counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "durationMs": 466719.713183
+    },
+    {
+      "key": "native-settings",
+      "file": "tests/helpers/identity/native-settings-browser.mjs",
+      "selector": "nativeSettingsBrowser, bootstrapped local tenant",
+      "title": "native Settings owner, admin and denied roles",
+      "head": "dd123992c1bc1f308fa8eb3b3b8380df8926c936",
+      "counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "durationMs": 195043.182122
+    }
+  ],
+  "verifiedJourneys": [
+    {
+      "name": "First-run provisioning, Setup receipts, provider fixture, daily allowance and mail outcomes",
+      "receipt": "first-run"
+    },
+    {
+      "name": "First and signed-in owner Setup and widget install, with local email hand-off and native Settings navigation",
+      "receipt": "identity-setup"
+    },
+    {
+      "name": "Zendesk connection, reviews, imports, repeat and undo, with original-service export",
+      "receipt": "move-in"
+    },
+    {
+      "name": "Saved procedure definitions, revision and reevaluation before release",
+      "receipt": "procedures"
+    },
+    {
+      "name": "Missing-provider procedure simulation, no reservation or execution, and developer hand-off",
+      "receipt": "procedures",
+      "helper": "missingProviderProcedureBrowser"
+    },
+    {
+      "name": "Native Settings owner and admin saves and restricted-role denials",
+      "receipt": "native-settings"
+    }
+  ],
+  "harnessCorrections": [
+    "The first standalone Settings invocation used an incomplete synthetic tenant without an allowed origin. The UI correctly refused its write with HTTP 400. The retry bootstrapped the workspace through the public identity route and left tracked code untouched.",
+    "Three shell wrappers lost their exit receipt when the shared temporary script was edited for the separate native Settings fixture retry. Their complete TAP streams recorded one passing test each. The receipt uses those streams.",
+    "The standalone screenshot harness used incorrect case for the Help center section heading on its first pass. The heading selector was corrected outside the checkout before proof was finished."
+  ]
+}

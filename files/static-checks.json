@@ -1,0 +1,99 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-design-setup-1-c2",
+  "head": "dd123992c1bc1f308fa8eb3b3b8380df8926c936",
+  "parent": "154b8d638f3332ac29da9398a162fe48345b6aae",
+  "candidate": "64f10a3948135a164d878c7313be6c45aafacf8f",
+  "candidateBase": "bb70a0424b6f1efef5b10cb14992f1b579f1fc50",
+  "mainCheckedBeforePush": "154b8d638f3332ac29da9398a162fe48345b6aae",
+  "candidateCommitsBefore": 5,
+  "candidateCommitsAfter": 1,
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "node src/site/base/contract-docs.mjs write",
+      "exit": 0,
+      "documentsChanged": 0
+    },
+    {
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exit": 0,
+      "proseErrors": 0,
+      "proseWarnings": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "ok": true
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive --answers .seed/local-answers.json",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "head": "dd123992c1bc1f308fa8eb3b3b8380df8926c936"
+    }
+  ],
+  "counts": {
+    "contract": {
+      "before": {
+        "done": 4,
+        "partial": 71,
+        "missing": 16,
+        "total": 91
+      },
+      "after": {
+        "done": 4,
+        "partial": 71,
+        "missing": 16,
+        "total": 91
+      }
+    },
+    "settingsDestinations": {
+      "before": 26,
+      "after": 28
+    },
+    "everydaySettingsLinks": {
+      "before": 26,
+      "after": 9
+    },
+    "advancedSettingsLinks": {
+      "before": 0,
+      "after": 19
+    },
+    "journeyRegistrationsMatchingStartOfLineTestCall": {
+      "before": 123,
+      "after": 123
+    },
+    "migrationCeiling": {
+      "before": 336,
+      "after": 336
+    }
+  },
+  "changedContractJudgments": [],
+  "changedContractPaths": [],
+  "pr": null
+}

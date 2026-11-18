@@ -1,0 +1,126 @@
+{
+  "tag": "hh-owner-design-setup-1-c2",
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-design-setup-1-c2",
+  "productHead": "dd123992c1bc1f308fa8eb3b3b8380df8926c936",
+  "productParent": "154b8d638f3332ac29da9398a162fe48345b6aae",
+  "pushed": true,
+  "ready": true,
+  "status": "READY",
+  "updatedAt": "2026-11-18T01:06:01Z",
+  "pr": null,
+  "productPushAttempts": 1,
+  "contractStatusChanges": [],
+  "counts": {
+    "contract": {
+      "before": {
+        "done": 4,
+        "partial": 71,
+        "missing": 16,
+        "total": 91
+      },
+      "after": {
+        "done": 4,
+        "partial": 71,
+        "missing": 16,
+        "total": 91
+      }
+    },
+    "settingsDestinations": {
+      "before": 26,
+      "after": 28
+    },
+    "everydaySettingsLinks": {
+      "before": 26,
+      "after": 9
+    },
+    "advancedSettingsLinks": {
+      "before": 0,
+      "after": 19
+    },
+    "journeyRegistrationsMatchingStartOfLineTestCall": {
+      "before": 123,
+      "after": 123
+    },
+    "migrationCeiling": {
+      "before": 336,
+      "after": 336
+    }
+  },
+  "patchComparison": {
+    "total": 39,
+    "equal_count": 36,
+    "equal": [
+      "src/platform/dashboard-path.js",
+      "src/ui/dashboard/styles/foundation/_sidebar.scss",
+      "src/ui/native/SettingsNavigation.jsx",
+      "src/ui/native/WorkspacePages.jsx",
+      "src/ui/native/activation-spend/AiSpendCard.jsx",
+      "src/ui/native/activation/ProviderSetupNotice.jsx",
+      "src/ui/native/activation/SetupList.jsx",
+      "src/ui/native/activation/need-content.jsx",
+      "src/ui/native/activation/setup-model.js",
+      "src/ui/native/pages/AssistantReadiness.jsx",
+      "src/ui/native/pages/AssistantsPage.jsx",
+      "src/ui/native/pages/AvailabilitySettings.jsx",
+      "src/ui/native/pages/EmailSettings.jsx",
+      "src/ui/native/pages/MoveIn.jsx",
+      "src/ui/native/pages/MoveInZendesk.jsx",
+      "src/ui/native/pages/ProjectSettings.jsx",
+      "src/ui/native/pages/email/MailboxEditor.jsx",
+      "src/ui/native/pages/legacy-package/LegacyPackage.jsx",
+      "src/ui/native/settings-destinations.js",
+      "src/ui/native/setup-help/AiKeyHandoff.jsx",
+      "src/ui/native/setup-help/DeveloperHandoff.jsx",
+      "src/ui/native/setup-help/LocalMailBanner.jsx",
+      "src/ui/native/setup-help/MailProviderHandoff.jsx",
+      "src/ui/native/setup-help/ai-billing.js",
+      "src/ui/native/setup-help/developer-handoff.css",
+      "src/ui/native/workspace-page-code.js",
+      "tests/helpers/ai/procedures-browser.mjs",
+      "tests/helpers/developer-handoff.mjs",
+      "tests/helpers/email/setup-browser.mjs",
+      "tests/helpers/identity/native-settings-browser.mjs",
+      "tests/helpers/stranger13-browser.mjs",
+      "tests/move-in/legacy-adoption-integration/browser.mjs",
+      "tests/move-in/legacy-package-upload/auth-return.mjs",
+      "tests/move-in/legacy-package-upload/browser.mjs",
+      "tests/move-in/zendesk-connect-browser.mjs",
+      "tests/move-in/zendesk-offline-browser.mjs"
+    ],
+    "different": {
+      "sources.lock.json": "Regenerated from the final combined sources with the documented lock command.",
+      "src/ui/native/pages/MoveInGuide.jsx": "Merged the plain introduction and developer Details with main\u2019s supported-formats text and Check what stays behind link.",
+      "tests/helpers/first-run/outcomes.mjs": "Combined the candidate\u2019s widget-local selector with main\u2019s updated disclosure label, preserving the server-secret and verification assertions."
+    },
+    "comparison": "Per-file zero-context diff hunks, ignoring headers and line offsets, without whitespace normalization."
+  },
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "dd123992c1bc1f308fa8eb3b3b8380df8926c936",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44209178990",
+    "status": "completed",
+    "id": 44209178990
+  },
+  "ciCalls": 5,
+  "ciCallBudget": 10,
+  "ciObservations": [
+    "ci-poll-1.json",
+    "ci-poll-2.json",
+    "ci-poll-3.json",
+    "ci-poll-4.json"
+  ],
+  "journeyCount": 6,
+  "successfulTapReceipts": 5,
+  "browserProof": {
+    "pairs": 18,
+    "screenshots": 36,
+    "widths": [
+      1440,
+      390
+    ],
+    "pageErrors": 0,
+    "horizontalOverflows": 0
+  },
+  "blocker": null
+}

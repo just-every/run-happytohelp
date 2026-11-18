@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {developerHandoffFlow} from '../developer-handoff.mjs'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {launchBrowser} from '../../journeys/kit/browser.mjs'
 
@@ -23,6 +24,30 @@ export async function localEmailSetupBrowser(){
   await guide.getByRole('link').click()
   assert.equal(new URL(page.url()).pathname.startsWith('/docs/'),true,'the local guide opens on-site hosted setup instructions')
   assert.equal((await context.request.get(page.url())).status(),200,'hosted setup documentation is available')
+  await page.goto(`${runtime.origin}/projects/${owner.projectId}/email-settings`)
+  await page.getByRole('button',{name:'Add mailbox',exact:true}).click()
+  await page.getByLabel('Connection',{exact:true}).selectOption('gmail')
+  const editor=page.locator('.email-editor')
+  await editor.locator('.developer-handoff').waitFor()
+  assert.equal(await editor.getByRole('button',{name:'Authorize mailbox',exact:true}).count(),0,'no authorization door until provider configuration is ready')
+  await developerHandoffFlow(page,editor.locator('.developer-handoff'))
+  await page.getByRole('button',{name:'Cancel',exact:true}).click()
+  await page.getByRole('link',{name:'Business hours',exact:true}).click()
+  await page.getByLabel('Opening time',{exact:true}).fill('08:15')
+  await page.getByLabel('Closing time',{exact:true}).fill('17:30')
+  await page.getByRole('button',{name:'Update',exact:true}).click()
+  await page.getByRole('status').filter({hasText:'Saved.'}).waitFor()
+  await page.reload()
+  assert.equal(await page.getByLabel('Opening time',{exact:true}).inputValue(),'08:15','top-level hours retain the native save behavior')
+  assert.equal(await page.getByLabel('Closing time',{exact:true}).inputValue(),'17:30')
+  const advanced=page.locator('.nav-settings-advanced')
+  assert.equal(await advanced.getAttribute('open'),null,'advanced navigation starts collapsed on everyday pages')
+  await advanced.locator('summary').click()
+  await advanced.getByRole('link',{name:'Cutover',exact:true}).click()
+  await page.getByRole('heading',{name:'Cutover',exact:true}).waitFor()
+  await page.getByRole('link',{name:'AI',exact:true}).click()
+  const ai=page.locator('[data-testid="ai-key-status"] .developer-handoff')
+  await ai.waitFor();await developerHandoffFlow(page,ai)
   await context.close();passed=true
  }finally{await browser.close();await runtime.close(passed)}
 }

@@ -109,6 +109,14 @@ export async function mountedAdoptionJourney({representative=true}={}){
   const adopted=(await app.call('/api/identity/switch-project',{token,body:{projectId:source},status:200})).data
   const transcript=(await app.call('/api/dashboard/conversations/synthetic-conversation/buckets/synthetic-conversation',{token:adopted.token,status:200})).data.data
   assert.equal(transcript.messages.find(m=>m.id==='synthetic-message').agent.name,'Historical owner')
+  const noteFile=transcript.events.find(e=>e.id==='synthetic-wire-note').media.find(m=>m.id==='synthetic-wire-note-media')
+  assert.ok(noteFile,'source-shaped note file without project_id has its validated conversation project')
+  const privateBytes=await app.request(noteFile.url,{token:adopted.token});assert.equal(privateBytes.status,200);assert.equal(await privateBytes.text(),'Synthetic private note file; never a public message attachment')
+  assert.equal(transcript.messages.find(m=>m.id==='synthetic-message').media.some(m=>m.id===noteFile.id),false,'shared private note pivot never leaks into a public message')
+  assert.equal((await app.request(noteFile.url)).status,401)
+  assert.equal((await app.request(noteFile.url,{token:foreign.tokens.owner})).status,404)
+  assert.equal((await app.request(`/api/imported-files/${source}/synthetic-wire-note-media`)).status,404)
+
   assert.deepEqual(transcript.events.map(n=>n.id),['synthetic-wire-note'],'root read does not pull non-root historical notes into the root')
   const detail=(await app.call('/api/dashboard/conversations/synthetic-conversation',{token:adopted.token,status:200})).data.data
   assert.equal(detail.assigned_to,owner.userId,'the recorded staff email matches the current native custodian');assert.equal(detail.agent.id,owner.userId);assert.equal(detail.historical_assignment.display_name,'Historical owner')
@@ -119,6 +127,14 @@ export async function mountedAdoptionJourney({representative=true}={}){
   }
   const historicalMacro=(await app.call(`/api/management/projects/${source}/macros/synthetic-wire-macro`,{token:adopted.token,status:200})).data.data
   assert.equal(historicalMacro.created_by_name,'Historical owner');assert.equal(historicalMacro.created_by_historical,1)
+  const unknownMacro=(await app.call(`/api/management/projects/${source}/macros/synthetic-wire-unknown-macro`,{token:adopted.token,status:200})).data.data
+  assert.equal(unknownMacro.created_by_name,'Unknown source author');assert.equal(unknownMacro.created_by_historical,1)
+  assert.equal((await app.first("SELECT created_by FROM macros WHERE id='synthetic-wire-unknown-macro'")).created_by,owner.userId)
+  const historicalContact=(await app.call(`/api/management/projects/${source}/contacts/synthetic-contact`,{token:adopted.token,status:200})).data
+  assert.equal((historicalContact.data??historicalContact).is_verified,0)
+  const archivedContact=await app.first("SELECT source_json FROM legacy_import_rows WHERE source_table='contacts' AND source_id='synthetic-contact'")
+  assert.equal(JSON.parse(archivedContact.source_json).is_verified,1,'source verification fact remains private without native trust')
+  assert.ok(facts.result.fieldDispositions.some(f=>f.table==='contacts'&&f.field==='is_verified'&&f.kind==='normalized'))
   const members=(await app.call(`/api/management/projects/${source}/agents`,{token:adopted.token,status:200})).data.data
   assert.equal(members.some(m=>m.name==='Historical owner'||m.name==='Historical foreign admin'),false,'historical people are never selectable native members')
   facts.history={notes:3,nonRootBuckets:2,assignment:detail.historical_assignment.display_name,macroAuthor:historicalMacro.created_by_name,historicalMembersSelectable:false}

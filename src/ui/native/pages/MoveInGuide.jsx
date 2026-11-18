@@ -8,7 +8,9 @@ const link = (href, text) => <a href={href} target="_blank" rel="noreferrer">{te
 /** How to produce the file Move in accepts, step by step, from each vendor's own export or API. */
 export const vendorGuides = {
  zendesk: {label: 'Zendesk', accept: '.json,.jsonl,.ndjson,.zip', guide: <>
-  <p>Upload Zendesk’s JSON/NDJSON account export, its documented tickets array, or API JSON collections. CSV and XML are not supported. <a href="/docs/moving-in#what-comes-across-from-zendesk-and-what-does-not">Check what stays behind</a> before moving. Already have offline exports? <a href="/docs/moving-in#offline-zendesk-account-files">Pack local ticket, user, organization, comment and history files with supplied attachments</a>, then upload them here. Saved replies (macros) and configuration can be uploaded too, each a line like <code>{'{"macro":{...}}'}</code>; the <a href="/docs/moving-in#zendesk">Zendesk section of the Move in guide</a> shows a complete example of each.</p>
+  <p>An export file contains the support history or saved replies you downloaded from Zendesk.</p>
+  <p>Upload Zendesk’s JSON/NDJSON account export, its documented tickets array, or API JSON collections. CSV and XML are not supported. <a href="/docs/moving-in#what-comes-across-from-zendesk-and-what-does-not">Check what stays behind</a> before moving.</p>
+  <details className="move-in-details"><summary>Details for your developer</summary><p><a href="/docs/moving-in#offline-zendesk-account-files">Pack local ticket, user, organization, comment and history files with supplied attachments</a>. Saved replies and configuration can be uploaded too, each a line like <code>{'{"macro":{...}}'}</code>; the <a href="/docs/moving-in#zendesk">Zendesk guide</a> shows each format.</p></details>
  </>},
  intercom: {label: 'Intercom', accept: '.json,.jsonl,.zip', guide: <>
   <p>Intercom’s own API gives everything Move in needs. You need an Intercom admin account; nothing else to set up.</p>

@@ -156,7 +156,7 @@ body.workspace-themed {
     margin: 2px 0 6px;
 
     &[hidden] { display: none; }
-    > ul { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+    > ul, .nav-settings-advanced > ul { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
     > ul + ul { margin-top: 6px; }
     .nav-link {
       display: flex;
@@ -195,6 +195,8 @@ body.workspace-themed {
     text-transform: uppercase;
   }
   .nav-settings-caption { margin-top: 14px; padding-left: 12px; }
+  .nav-settings-advanced > summary { cursor: pointer; min-height: 40px; padding-top: 10px; font-size: 14px; }
+  .nav-settings-advanced > ul { list-style: none; margin: 0; padding: 0; }
   .nav-inbox-note { margin: 4px 0; padding: 0 12px 0 44px; color: var(--ink-soft); font-size: 14px; }
 
   // Items change state at once (current page, hover): no fade through in-between colours.

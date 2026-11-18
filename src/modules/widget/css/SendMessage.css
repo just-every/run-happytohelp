@@ -271,3 +271,5 @@
 }
 
 /*# sourceMappingURL=SendMessage.css.map */
+
+#happytohelp-root .happytohelp-send-message .happytohelp-send-message-row button.happytohelp-btn[type=submit] { width: auto; min-width: 72px; padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }

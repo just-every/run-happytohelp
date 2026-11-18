@@ -5,9 +5,9 @@ export default function MacroActionsEditor({value,onChange,settings,members,tags
  const set=(key,next)=>{const copy={...value};if(next==='__unchanged__')delete copy[key];else copy[key]=next==='__none__'?null:next;onChange(copy)};
  const select=(key,label,items,clear=false)=><Field name={`macro-${key}`} label={label} value={value[key]===null?'__none__':value[key]??'__unchanged__'} onChange={(_,v)=>set(key,v)} options={[unchanged,...(clear?[{value:'__none__',label:'Unassigned'}]:[]),...items]}/>;
  const multi=(key,label,items)=><div className="form-group"><label className="form-label" htmlFor={`macro-${key}`}>{label}</label><select id={`macro-${key}`} multiple className="form-select" value={value[key]??[]} onChange={e=>set(key,[...e.target.selectedOptions].map(o=>o.value))}>{items.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></div>;
- return <Section title="Actions" description="Every change is previewed before the macro is applied. Reply text is put in the composer for editing."><div className="settings-grid">
+ return <Section title="Actions" description="You can review every change before using the saved reply. Reply text is put in the composer for editing."><div className="settings-grid">
   {select('status_id','Status',settings.statuses.filter(s=>s.active).map(s=>({value:s.id,label:s.name})))}
-  {select('priority','Priority',['low','normal','high','urgent'].map(value=>({value,label:value})))}
+  {select('priority','Priority',['low','normal','high','urgent'].map(value=>({value,label:value[0].toUpperCase()+value.slice(1)})))}
   {select('group_id','Group',settings.groups.map(g=>({value:g.id,label:g.name})),true)}
   {select('agent_id','Assignee',members.filter(m=>!m.pending).map(m=>({value:m.id,label:m.name})),true)}
   {multi('tags_add','Add tags',tags)}{multi('tags_remove','Remove tags',tags)}

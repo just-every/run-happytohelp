@@ -88,7 +88,7 @@ export async function widgetIdentityBrowser({browser,shot}){
    await humanGroup.getByText(content,{exact:true}).waitFor()
    await disclosure.waitFor({state:'hidden'})
    assert.ok((await header.innerText()).includes('Casey'),'the current human responder is visibly named')
-   assert.match(await header.innerText(),/\bhuman\b/i,'the responder is visibly identified as human')
+   assert.doesNotMatch(await header.innerText(),/\bhuman\b/i,'a named teammate needs no human badge')
    assert.equal(await humanGroup.locator('.happytohelp-ai-disclosure').count(),0)
    assert.doesNotMatch(await humanGroup.innerText(),/\bAI\b/i,'the human response is not presented as AI')
    await assertAiHistory()

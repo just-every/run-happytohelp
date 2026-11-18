@@ -58,14 +58,43 @@ export async function nativeAccountJourney(){
   const resent=await manage(invitations+'/resend',session.token,{},'POST');assert.equal(resent.status,201)
   assert.equal(mail.length,mailBefore+1)
   const inviteToken=new URL(copied.data.data.invitationUrl).searchParams.get('token')
-  assert.equal((await identity('/accept-token',{token:inviteToken,name:'Teammate',password:'synthetic-teammate-password'})).status,200)
-  assert.equal((await identity('/accept-token',{token:inviteToken,name:'Teammate',password:'synthetic-teammate-password'})).status,400)
+  const joined=await identity('/accept-token',{token:inviteToken,name:'Teammate',password:'synthetic-teammate-password'})
+  assert.equal(joined.status,200)
+  assert.match(joined.headers.get('set-cookie'),/HttpOnly; Secure; SameSite=Lax; Max-Age=86400/)
+  const joinedCookie=joined.headers.get('set-cookie').split(';')[0]
+  const teammate=(await app.call('/api/identity/session',{headers:{Cookie:joinedCookie},status:200})).data
+  assert.deepEqual([teammate.id,teammate.projectId,teammate.role],[joined.data.actor.id,project,'operator'])
+  assert.equal((await app.call('/api/conversations',{headers:{Cookie:joinedCookie}})).status,200,'the invitation session opens the inbox without a second sign-in')
+  const refuse=async token=>{
+   const sessionsBefore=await app.sql('SELECT token_hash FROM sessions ORDER BY token_hash')
+   const result=await identity('/accept-token',{token,name:'Refused teammate',password:'synthetic-teammate-password'})
+   assert.equal(result.status,400);assert.equal(result.headers.get('set-cookie'),null)
+   assert.equal(result.data.token,undefined)
+   assert.deepEqual(await app.sql('SELECT token_hash FROM sessions ORDER BY token_hash'),sessionsBefore)
+   assert.equal((await identity('/session')).status,401)
+  }
+  await refuse(inviteToken)
   assert.equal((await identity('/link-status',{kind:'invitation',token:new URL(invite.data.data.invitationUrl).searchParams.get('token')})).data.state,'used')
   const invited=(await identity('/login',{email:'new@example.test',password:'synthetic-teammate-password'})).data
   assert.equal(invited.actor.projectId,project)
   const revoke=await manage(path,session.token,{email:'withdrawn@example.test'})
   assert.equal((await manage(`/projects/${project}/invitations/withdrawn%40example.test`,session.token,undefined,'DELETE')).status,200)
-  assert.equal((await identity('/accept-token',{token:new URL(revoke.data.data.invitationUrl).searchParams.get('token'),password:'synthetic-withdrawn-password'})).status,400)
+  await refuse(new URL(revoke.data.data.invitationUrl).searchParams.get('token'))
+  const expired=await manage(path,session.token,{email:'expired@example.test'})
+  const expiredToken=new URL(expired.data.data.invitationUrl).searchParams.get('token')
+  await app.db.prepare("UPDATE identity_tokens SET expires_at=? WHERE email='expired@example.test'").bind(Date.now()-1).run()
+  await refuse(expiredToken)
+  assert.equal(await app.first("SELECT id FROM users WHERE email IN ('withdrawn@example.test','expired@example.test')"),null)
+  // A required factor is enforced on this sign-in too, including a collaborator's narrowed role.
+  await app.db.prepare("UPDATE project_settings SET settings_json=json_set(settings_json,'$.two_factor_roles',json('[\"collaborator\"]')) WHERE project_id=?").bind(project).run()
+  const protectedInvite=await manage(path,session.token,{email:'protected@example.test',role:'collaborator'})
+  assert.equal(protectedInvite.status,201)
+  const protectedJoin=await identity('/accept-token',{token:new URL(protectedInvite.data.data.invitationUrl).searchParams.get('token'),name:'Protected teammate',password:'synthetic-protected-password'})
+  assert.equal(protectedJoin.status,200);assert.equal(protectedJoin.data.twoFactor,'enrol')
+  assert.equal((await app.call('/api/conversations',{token:protectedJoin.data.token})).status,401)
+  assert.equal((await identity('/session',undefined,protectedJoin.data.token)).data.twoFactor,'enrol')
+  assert.equal((await app.first('SELECT role_key FROM member_roles WHERE user_id=?',protectedJoin.data.actor.id)).role_key,'collaborator')
+  await app.db.prepare("UPDATE project_settings SET settings_json=json_remove(settings_json,'$.two_factor_roles') WHERE project_id=?").bind(project).run()
   const factor=(await identity('/two-factor/totp',{},session.token)).data
   assert.equal((await identity('/two-factor/totp/confirm',{factorId:factor.factorId,code:totp(factor.secret)},session.token)).status,201)
   const reset=(await identity('/password-reset',{userId:invited.actor.id},session.token)).data

@@ -1,3 +1,4 @@
+import {targetColumnOmissions} from './field-dispositions'
 import {legacyNeedsRequester} from './no-requester'
 import {noRequesterStatements} from '../customers/no-requester'
 import type { Env } from '../../platform/env'
@@ -122,7 +123,7 @@ export async function importDelta(env:Pick<Env,'DB'|'FILES'>,bundle:LegacyBundle
  conflicts.push(...decisions.flatMap(d=>[...d.conflicts,...d.listed]))
  const counts={sourceRows:plan.rows.length,replayed,mapped:0,updated:0,unchanged:0,conflict:0,kept:0,erased:0,skipped:0,archived_only:0}
  for(const d of decisions)counts[d.status]++
- const summary={id:plan.id,...counts,mappedRows:plan.summary.mappedRows,mediaUrls:plan.summary.mediaUrls,holds:decisions.flatMap(d=>d.status==='mapped'||d.status==='updated'?d.mapped.filter(m=>m.hold).map(m=>`${d.source.table}:${d.source.sourceId}: ${m.hold}`):[]),conflicts}
+ const summary={id:plan.id,fieldDispositions:plan.summary.fieldDispositions,exportDispositions:plan.summary.exportDispositions,targetColumnOmissions:targetColumnOmissions(plan.rows,schemas),...counts,mappedRows:plan.summary.mappedRows,mediaUrls:plan.summary.mediaUrls,holds:decisions.flatMap(d=>d.status==='mapped'||d.status==='updated'?d.mapped.filter(m=>m.hold).map(m=>`${d.source.table}:${d.source.sourceId}: ${m.hold}`):[]),conflicts}
  if(options.checkOnly)return {...summary,applied:0,d1Ms:0}
  if(options.prepared){
   // Only references actually used by canonical appends/updates can be committed.

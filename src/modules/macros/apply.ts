@@ -18,7 +18,7 @@ export async function applyMacro(env:Env,actor:Actor,macroId:string,version:numb
  const ids=batchTicketIds(env)
  const prior=await batchRead(env,`uses:${actor.projectId}:${actor.id}:${commandId}`,async()=>(await env.DB.prepare('SELECT * FROM macro_usage WHERE project_id=? AND actor_id=? AND command_id=? AND conversation_id IN (SELECT value FROM json_each(?))').bind(actor.projectId,actor.id,commandId,JSON.stringify(ids.length?ids:[selected.id])).all<any>()).results)
  const duplicate=prior.find(row=>row.conversation_id===selected.id)
- if(duplicate){if(duplicate.macro_id!==macroId||duplicate.version!==version)throw new HTTPException(409,{message:'This command was already used for a different macro'});return {id:selected.id,status:'duplicate',usage_id:duplicate.id,committed:true,draft:null}}
+ if(duplicate){if(duplicate.macro_id!==macroId||duplicate.version!==version)throw new HTTPException(409,{message:'This command was already used for a different saved reply'});return {id:selected.id,status:'duplicate',usage_id:duplicate.id,committed:true,draft:null}}
  const plan=await prepareMacro(env,actor,macroId,version,selected,authority,false),{prepared,macroGuard,replyGuard,followerPlan}=plan,{current,guard,predicates,params}=prepared
  admitTicketWork(env,40+Object.keys(prepared.fields).length+(prepared.change.tags_add?.length??0)+(prepared.change.tags_remove?.length??0)+plan.media.length*2)
  const {copies,cleanup}=await copyAttachments(env,actor,selected.id,plan.media),usage=crypto.randomUUID(),now=Math.max(Date.now(),current.updated_at+1),accepted='EXISTS(SELECT 1 FROM macro_usage WHERE id=?)'
@@ -31,11 +31,11 @@ export async function applyMacro(env:Env,actor:Actor,macroId:string,version:numb
  ...(followerPlan?.statements('SELECT 1 FROM macro_usage WHERE id=?',[usage])??[])]
  admitTicketWork(env,statements.length+24)
  let committed=false
- try{const result=await env.DB.batch(statements);committed=Boolean(result[0].meta.changes);if(!committed)throw new HTTPException(409,{message:'Ticket, macro, fields or permissions changed. Review a new preview.'})}
+ try{const result=await env.DB.batch(statements);committed=Boolean(result[0].meta.changes);if(!committed)throw new HTTPException(409,{message:'The ticket, saved reply or permissions changed. Review a new preview.'})}
  catch(error){
   // A lost batch response can follow a committed transaction. Read the durable
   // receipt before deleting copied objects; never delete admitted attachments.
-  try{committed=Boolean(await env.DB.prepare('SELECT 1 FROM macro_usage WHERE id=?').bind(usage).first())}catch{throw new HTTPException(503,{message:'Macro outcome could not be confirmed. Reload before trying again.'})}
+  try{committed=Boolean(await env.DB.prepare('SELECT 1 FROM macro_usage WHERE id=?').bind(usage).first())}catch{throw new HTTPException(503,{message:'The saved reply could not be confirmed. Reload before trying again.'})}
   if(!committed){await cleanup();throw error}
  }
  // Stored drafts are never sent, including in bulk. Failure after commit is explicit
@@ -47,7 +47,7 @@ export async function applyMacro(env:Env,actor:Actor,macroId:string,version:numb
 }
 /** Only the named use's draft goes: a newer macro applied meanwhile stays. */
 export async function discardDraft(env:Env,actor:Actor,conversationId:string,usageId:unknown){
- if(typeof usageId!=='string'||!usageId||usageId.length>200)throw new HTTPException(400,{message:'Name the macro draft to discard'})
+ if(typeof usageId!=='string'||!usageId||usageId.length>200)throw new HTTPException(400,{message:'Choose the saved reply draft to discard'})
  const result=await env.DB.prepare('DELETE FROM macro_drafts WHERE project_id=? AND conversation_id=? AND actor_id=? AND coalesce(draft_id,usage_id)=?').bind(actor.projectId,conversationId,actor.id,usageId).run()
  return result.meta.changes>0
 }

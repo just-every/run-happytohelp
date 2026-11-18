@@ -36,7 +36,7 @@ export default function SendMessage({ mainView, setView, messages, localContact,
     const contactMissing = () => {
         const missing = [];
         if(context.settings.collect.require_name && !contact.name) missing.push(context.text.message.error_name);
-        if(context.settings.collect.require_email && !contact.email) missing.push(context.text.message.error_email);
+        if(context.settings.collect.require_email && !contact.email) missing.push(context.text.message.error_email === "Please enter a valid email address" ? "Please add an email we can reach you at." : context.text.message.error_email);
         return missing;
     };
     const send = (content, attachments) => {
@@ -206,7 +206,7 @@ export default function SendMessage({ mainView, setView, messages, localContact,
                     <button type="submit" name="submit" className="happytohelp-btn"
                             onClick={handleSend}
                             { ...tooltip(context.text.message.tooltip_send) } style={ context.theme.input.send }>
-                        <FontAwesomeIcon icon={fasArrowAltRight}/></button>
+                        <span>Send</span><FontAwesomeIcon icon={fasArrowAltRight} aria-hidden="true"/></button>
                 </div>
             </FileHandler>
         );

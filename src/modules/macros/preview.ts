@@ -11,10 +11,10 @@ import {validateAttachments} from './attachments'
 import {labelMacroChanges} from './change-labels'
 export interface MacroSelection {id:string;expected_version:number}
 export async function prepareMacro(env:Env,actor:Actor,macroId:string,version:number,selected:MacroSelection,authority:TicketAuthority,preview=true){
- if(!Number.isSafeInteger(version)||version<1||!Number.isSafeInteger(selected.expected_version)||selected.expected_version<0)throw new HTTPException(400,{message:'Macro and ticket versions are required'})
+ if(!Number.isSafeInteger(version)||version<1||!Number.isSafeInteger(selected.expected_version)||selected.expected_version<0)throw new HTTPException(400,{message:'Reload the saved reply and ticket before trying again.'})
  const replyGuard=await ticketAuthority(env,actor,authority,'conversations.reply')
  const loaded=await loadMacroContext(env,actor,selected.id),{row,guard:macroGuard}=await readMacro(env,actor,macroId,loaded.ticket.brand_id??actor.projectId)
- if(row.version!==version)throw new HTTPException(409,{message:'Macro changed. Review the latest version before applying.'})
+ if(row.version!==version)throw new HTTPException(409,{message:'Saved reply changed. Review the latest version before applying.'})
  const macro=macroData(row),{reply_type,followers,attachments,...change}=macro.actions
  const prepared=await prepareTicketChange(env,actor,selected.id,{...change,expected_ticket_version:selected.expected_version},authority)
  const followerPlan=followers===undefined?null:await prepareFollowerChange(env,actor,selected.id,followers,authority)

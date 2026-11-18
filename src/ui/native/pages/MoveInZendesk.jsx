@@ -1,11 +1,11 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {nativeRequest} from '../transport';
 import {Feedback,Field} from './forms';
-import CopyCommand from '../setup-help/CopyCommand';
+import DeveloperHandoff from '../setup-help/DeveloperHandoff';
 import {reasonLabel} from './move-in-presentation';
 import MoveInZendeskFiles from './MoveInZendeskFiles';
 
-const returned={connected:'Zendesk is connected.',denied:'Zendesk sign-in was cancelled. Choose Connect to try again.',expired:'The Zendesk sign-in took too long. Choose Connect again.',failed:'Zendesk did not accept the sign-in. Check the client Identifier and its redirect URL, then connect again.',conflict:'This workspace already holds history from another Zendesk account.'};
+const returned={connected:'Zendesk is connected.',denied:'Zendesk sign-in was cancelled. Choose Connect to try again.',expired:'The Zendesk sign-in took too long. Choose Connect again.',failed:'Zendesk did not accept the sign-in. Ask your account manager to check the connection details, then connect again.',conflict:'This workspace already holds history from another Zendesk account.'};
 const working=['pulling','reviewing','applying'];
 const phases={fields:'Reading ticket fields',articles:'Reading Help Center articles',organizations:'Reading organizations',users:'Reading people',tickets:'Reading tickets',comments:'Reading every comment',people:'Reading people the tickets mention',packing:'Preparing batches for review',review:'Preparing the review',apply:'Importing approved batches',done:'Done'};
 const count=(n,one,many=`${one}s`)=>`${n} ${n===1?one:many}`;
@@ -29,15 +29,14 @@ export default function MoveInZendesk({projectId,onOpenRun}){
  const redirect=`${window.location.origin}/api/move-in/zendesk/callback`;
  return <div className="sh-steps mt-3" data-zendesk-connection={connection.state}><Feedback error={error}/>{notice&&<p role="status">{notice}</p>}
   {!connection.connected?<>
-   <p><b>Connect Zendesk</b> to bring in every ticket, archived ones included, with all comments, people, organizations and Help Center articles. Only reading is allowed, and the sign-in stays in this workspace.</p>
+   <p>Bring your Zendesk conversations over. Whoever manages your Zendesk account does one step; send it to them.</p>
    {connection.state==='reconnect'&&<p role="alert">Reconnect Zendesk: its sign-in expired or was refused.</p>}
-   <ol>
-    <li>In Zendesk Admin Center, open <b>Apps and integrations</b>, <b>APIs</b>, <b>OAuth clients</b>, and add a client. Choose Client kind <b>Public</b>, allowed scopes <b>read</b> and <b>hc:read</b>, and this redirect URL:<CopyCommand text={redirect}/></li>
-    <li>Save, then enter its <b>Identifier</b> here.</li>
-   </ol>
+   <DeveloperHandoff what="Your Zendesk account manager creates a connection for this move." unlocks="Then you can connect the account and review your history." subject="Prepare our Zendesk move to HappyToHelp"
+    steps={`1. In Zendesk Admin Center, open Apps and integrations → APIs → OAuth clients and add a client.\n2. Choose Client kind: Public. Allowed scopes: read and hc:read.\n3. Set redirect URL: ${redirect}\n4. Save and return the client Identifier and the Zendesk account name to the workspace owner. No client secret is needed.`}/>
+   <h3>Waiting for your Zendesk details</h3>
    <form onSubmit={connect}>
-    <Field name="subdomain" label="Zendesk subdomain" hint="acme for acme.zendesk.com" value={form.subdomain} onChange={(_,value)=>setForm(old=>({...old,subdomain:value}))} required/>
-    <Field name="clientId" label="OAuth client Identifier" value={form.clientId} onChange={(_,value)=>setForm(old=>({...old,clientId:value}))} required/>
+    <Field name="subdomain" label="Your Zendesk account" hint="The name before .zendesk.com in your Zendesk address." value={form.subdomain} onChange={(_,value)=>setForm(old=>({...old,subdomain:value}))} required/>
+    <Field name="clientId" label="Connection identifier from your account manager" value={form.clientId} onChange={(_,value)=>setForm(old=>({...old,clientId:value}))} required/>
     <button type="submit" className="btn btn-primary" disabled={busy||!form.subdomain||!form.clientId}>Connect</button>
    </form>
   </>:<>

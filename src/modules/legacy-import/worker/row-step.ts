@@ -1,3 +1,4 @@
+import {mergeFieldDispositions,mergeTargetColumnOmissions,exportDispositions} from '../field-dispositions'
 import {releaseCanonical,type CanonicalTarget} from './canonical-custody'
 import type {Env} from '../../../platform/env'
 import type {LegacyPackageManifest} from '../worker-contract'
@@ -42,7 +43,11 @@ export async function rowStep(env:Env,run:Run,manifest:LegacyPackageManifest,lea
   if(done)statements.push(env.DB.prepare("UPDATE legacy_import_runs SET state='complete',completed_at=? WHERE id=?").bind(Date.now(),descriptor.journal_run_id))
  }
  statements.push(lease.cleared(env.DB))
- await checkpoint(env,run,{cursor_json:JSON.stringify({stage:checkOnly?'rows':undefined,ordinal:done?ordinal+1:ordinal,file:done?null:part.file,row:done?0:next})},statements)
+ const metrics=json<any>(run.metrics_json,{})
+ // Preflight's original-part cursor and disclosure commit together, so a
+ // stopped/retried slice cannot double-count fields. GET never scans sources.
+ if(checkOnly){metrics.fieldDispositions=mergeFieldDispositions(metrics.fieldDispositions??[],applied.fieldDispositions??[]);metrics.targetColumnOmissions=mergeTargetColumnOmissions([...(metrics.targetColumnOmissions??[]),...(applied.targetColumnOmissions??[])])}
+ await checkpoint(env,run,{...(checkOnly?{metrics_json:JSON.stringify(metrics)}:{}),cursor_json:JSON.stringify({stage:checkOnly?'rows':undefined,ordinal:done?ordinal+1:ordinal,file:done?null:part.file,row:done?0:next})},statements)
  return {rows:selected.rows.length,bytes:selected.bytes,applied:applied.applied,replayed:applied.replayed}
 }
 export async function preflightObjects(env:Env,run:Run,manifest:LegacyPackageManifest,lease:DeltaLease){
@@ -51,7 +56,7 @@ export async function preflightObjects(env:Env,run:Run,manifest:LegacyPackageMan
  const before=await countWork(env)
  // Snapshot each original journal's existing row identities for this attempt,
  // without copying source JSON. A resumed tick can distinguish replay/applied.
- await checkpoint(env,run,{phase:'objects',cursor_json:'{}',work_before_json:JSON.stringify(before),metrics_json:JSON.stringify({...json<any>(run.metrics_json,{}),beforeAt:Date.now()})},[
+ await checkpoint(env,run,{phase:'objects',cursor_json:'{}',work_before_json:JSON.stringify(before),metrics_json:JSON.stringify({...json<any>(run.metrics_json,{}),beforeAt:Date.now(),exportDispositions:exportDispositions(manifest.source)})},[
   lease.assertion(env.DB),env.DB.prepare("INSERT OR IGNORE INTO legacy_import_runs(id,source_json,bundle_digest,state,created_at,completed_at) VALUES(?,?,?,'running',?,NULL)").bind(run.id,JSON.stringify(run.contract_version===2?{projectId:run.source_project_id,package:run.manifest_sha256,contractVersion:2,...(run.mode==='delta'?{delta:true}:{})}:manifest.source),run.manifest_sha256,Date.now()),lease.cleared(env.DB),
  ])
  return {rows:0,bytes:0}

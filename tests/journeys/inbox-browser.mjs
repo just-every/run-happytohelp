@@ -12,9 +12,10 @@ test('an operator replies from the phone inbox, opens a company customer and rev
 
 test('two signed-in operators see viewing, typing and unsent draft warnings before replying and after reload',collaborationBrowser)
 
+import {ownerInstallationBrowser} from '../helpers/widget/owner-installation.mjs'
 import {outcomesJourney} from '../helpers/widget/outcomes.mjs'
 
-test('installed widget availability, provider-edge answers and consent-aware proactive outcomes',outcomesJourney)
+test('installed widget availability, provider-edge answers and consent-aware proactive outcomes',async()=>{await outcomesJourney();await ownerInstallationBrowser()})
 test('knowledge references remain reviewable in saved replies, ticket insertion, recipient refusals and collection grants at 1440 and 390',async()=>{const {referenceBrowser}=await import('../helpers/knowledge/reference-browser.mjs');await referenceBrowser()})
 
 import {macroHandoffBrowser} from '../helpers/stranger11-browser.mjs'

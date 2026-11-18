@@ -345,3 +345,9 @@ necessary: management is an integrated capability, not a replacement database.
 secret projection, original inbox filters/bucket history, notes/participants,
 contact collection, missing provider configuration and email ingress identity.
 Browser behavior is verified by the dashboard/widget integration lane separately.
+
+Business hours first-save time zone: the signed-in browser supplies `device_timezone`
+to the availability save. Only an enabled hours save with no stored time zone uses
+that valid IANA zone; every stored zone, including UTC, wins. The settings compare
+and write guard applies this choice atomically. Hours display their effective zone
+beside the inputs. Existing workspaces are not migrated.

@@ -42,7 +42,7 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
   const role=['contact','user','lead'].includes(kind)?'contact':['admin','teammate','team'].includes(kind)?'operator':['bot','campaign','system'].includes(kind)?'system':null
   if(!role)throw new Error('author_role_unsupported');return {id:sid,name:typeof value.name==='string'?value.name:null,role}}
  for(const record of source.records){const key=recordKey(record),p=record.payload as any,issues=auditShape(vendor,record.kind,p).issues.filter(issue=>issue.reason!=='record_kind_not_understood'),omissions:string[]=issues.map(shapeReason)
-  for(const issue of issues)source.diagnostics.push({severity:'warning',code:issue.code,message:shapeReason(issue),kind:record.kind,sourceId:record.sourceId,location:{...record.location,pointer:`${record.location.pointer??''}${vendor==='zendesk'?`/${record.kind}`:''}${issue.path}`}})
+  for(const issue of issues)source.diagnostics.push({severity:'warning',code:issue.code,message:shapeReason(issue),kind:record.kind,sourceId:record.sourceId,location:{...record.location,pointer:`${record.location.pointer??''}${vendor==='zendesk'?((record as SourceRecord&{payloadPrefix?:string}).payloadPrefix??`/${record.kind}`):''}${issue.path}`}})
   try{if(tags(record).some(name=>name.trim().length>80))throw new Error('tag_name_limit');let kind:string,tables:NativeValue['tables']={},target:string
    const configuration=vendor==='zendesk'?zendeskFields(record,projectId,records,omissions)??zendeskConfiguration(record,projectId,actorId,records,tagIds,omissions):null
    if(configuration){kind=configuration.kind;target=configuration.target;Object.assign(tables,configuration.tables)}
@@ -55,7 +55,7 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
     // email, matched by external id; it can never be mailed. The source value stays in custody.
     const address=email(p.email);if(!address&&vendor!=='zendesk')throw new Error('contact_email_missing_or_invalid')
     if(!address)omissions.push(typeof p.email==='string'&&p.email.trim()?'contact_email_invalid_imported_without_email':'contact_imported_without_email')
-    kind='contact';target=id(kind,record.sourceId);tables.contacts=[{id:target,project_id:projectId,name:vendor==='zendesk'?text(p.name,'contact_name_required',500):typeof p.name==='string'?p.name:address,email:address,external_id:`import:${vendor}:${record.sourceId}`,created_at:time(p.created_at,vendor==='zendesk'?'iso':'unix'),is_verified:0,metadata_json:JSON.stringify({imported_tags:[...new Set(tags(record))]})}]
+    kind='contact';target=id(kind,record.sourceId);tables.contacts=[{id:target,project_id:projectId,name:vendor==='zendesk'?text(p.name,'contact_name_required',500):typeof p.name==='string'?p.name:address,email:address,external_id:`import:${vendor}:${record.sourceId}`,created_at:time(p.created_at,vendor==='zendesk'?'iso':'unix'),is_verified:0,metadata_json:JSON.stringify({imported_tags:[...new Set(tags(record))],...(vendor==='zendesk'&&typeof p.phone==='string'&&p.phone.trim()&&p.phone.length<=320?{phone:p.phone}:{})})}]
     tables.context_subjects=[{project_id:projectId,subject_id:target,consent:0,revision:0,help_types:'[]',bot_enabled:0}]
     if(p.custom_attributes||p.user_fields)omissions.push('custom_fields_retained_in_original_only')
     if(p.external_id!=null)omissions.push('external_identity_retained_in_original_only')

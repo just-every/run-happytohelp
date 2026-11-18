@@ -17,6 +17,7 @@ export default function CollectCustomer({ needsNotifyEmail, away = false, setSho
     const context = useContext(AppContext);
     const { getCurrentAgent } = useContext(ConnectContext);
     const currentAgent = getCurrentAgent();
+    const emailRequired = (context.settings.collect.require_email || needsNotifyEmail) && !contact.email;
 
     const [name, setName] = useState(contact.name || localContact.provided_name);
     const [email, setEmail] = useState(contact.email || localContact.provided_email);
@@ -80,7 +81,7 @@ export default function CollectCustomer({ needsNotifyEmail, away = false, setSho
             <div key="collect-email"
                  className={"happytohelp-send-message-row" + (emailIcon ? " happytohelp-has-icon" : "") + (errorEmail && contact.email ? " happytohelp-send-message-row-error" + (shake ? " happytohelp-shake" : "") : "")}>
                 {emailIcon}
-                <input type="email" name="email" aria-label={context.text.collect.placeholder_email} defaultValue={contact.email || localContact.provided_email}
+                <input type="email" name="email" aria-label={emailRequired ? "Your email, so we can reply" : context.text.collect.placeholder_email} defaultValue={contact.email || localContact.provided_email}
                        autoComplete="email" onChange={e => setEmail(e.target.value)} onFocus={handleFocus}
                        onBlur={handleSubmit} placeholder={context.text.collect.placeholder_email}/>
             </div>
@@ -88,7 +89,7 @@ export default function CollectCustomer({ needsNotifyEmail, away = false, setSho
         if(needsNotifyEmail) {
             content.push(
                 <div key="collect-notify-email" className="happytohelp-send-message-row happytohelp-collect-notify-email">
-                    { away ? context.text.away.email_prompt : context.text.prompt.email_prompt.replace("{agent_name}", (currentAgent?.first_name ?? currentAgent?.name) || "someone") }
+                    { emailRequired ? "Your email, so we can reply" : away ? context.text.away.email_prompt : context.text.prompt.email_prompt.replace("{agent_name}", (currentAgent?.first_name ?? currentAgent?.name) || "someone") }
                 </div>
             );
         }
@@ -97,9 +98,9 @@ export default function CollectCustomer({ needsNotifyEmail, away = false, setSho
     return (
         <form className="happytohelp-collect-customer" onSubmit={handleSubmit}>
             {!needsNotifyEmail && <div className="happytohelp-collect-customer-prompt">
-                { context.text.prompt.edit_contact }
+                { emailRequired ? "Your email, so we can reply" : context.text.prompt.edit_contact }
             </div> }
-            { !needsNotifyEmail && <button type="button" className="happytohelp-collect-customer-close" { ...tooltip('Close contact details') } onClick={() => setShowCollector(false)}><FontAwesomeIcon icon={falTimes} aria-hidden="true" /></button> }
+            { !needsNotifyEmail && !emailRequired && <button type="button" className="happytohelp-collect-customer-close" { ...tooltip('Close contact details') } onClick={() => setShowCollector(false)}><FontAwesomeIcon icon={falTimes} aria-hidden="true" /></button> }
             {content}
         </form>
     );

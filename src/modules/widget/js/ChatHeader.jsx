@@ -9,21 +9,23 @@ import AppContext from "./context/AppContext";
 import {faTimes as falTimes} from "@fortawesome/free-solid-svg-icons";
 import {backAt, humanResponseTime} from "../availability-text.js";
 import { tooltip } from '../../tooltip/tooltip';
-export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded, onHeightChange}) {
+export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded, onHeightChange, unavailable = false}) {
     const context = useContext(AppContext);
     const {
         thinking,
+        messages,
         conversationSettings,
         setConversationSettings,
         sendMessage,
-        getCurrentAgent,
     } = useContext(ConnectContext);
 
     const contentEl = useRef(null);
     const responderToggleRef = useRef(null);
     const [lastHeight, setLastHeight] = useState(0);
 
-    const currentAgent = getCurrentAgent();
+    const lastReply = [...(messages || [])].reverse().find(message => message.agent && message.agent_id && message.actor_role !== 'system' && !message.sending && !message.failed_send);
+    const brandName = conversationSettings?.workspace_brand?.name || context.brand?.name || 'Customer';
+    const currentAgent = lastReply?.agent || {id:null,name:`${brandName} support`,initials:brandName.slice(0,2)};
     // An away team keeps its configured reply estimate when no reopening time is known.
     const availability = conversationSettings?.availability;
     const humanResponse = availability?.available === false ? (availability.opensAt ? context.text.away.header_back.replace('{when}', backAt(availability.opensAt)) : `${context.text.away.header} · ${humanResponseTime(context.text)}`) : humanResponseTime(context.text);
@@ -60,14 +62,14 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
         if (!element) return;
         // Layout height excludes the entrance animation scale. Header and body
         // must reserve the same space throughout that animation.
-        const measure = () => {const height = element.offsetHeight;setLastHeight(height);onHeightChange?.(height);};
+        const measure = () => {const height = unavailable ? 75 : element.offsetHeight;setLastHeight(height);onHeightChange?.(height);};
         measure();const observer = new ResizeObserver(measure);observer.observe(element);
         return () => observer.disconnect();
-    }, [headerExpanded, onHeightChange, context.brand?.logo_url, context.brand?.name, !!currentAgent]);
+    }, [headerExpanded, onHeightChange, context.brand?.logo_url, context.brand?.name, !!currentAgent, unavailable]);
 
 
     let content;
-    if(headerExpanded) {
+    if(!unavailable && headerExpanded) {
         let agents = [];
         conversationSettings.ais.forEach((aiAgent) => {
             let agent = structuredClone(aiAgent);
@@ -76,18 +78,19 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
             agents.push(agent);
         });
         if(conversationSettings.is_human_response_enabled) {
-            agents.push(conversationSettings.human);
+            agents.push(lastReply?.agent && !lastReply.agent.is_ai ? lastReply.agent : {id:null,name:`${brandName} support`,initials:brandName.slice(0,2)});
         }
 
         let agentRows = [];
         agents.forEach((agent, index) => {
-            agentRows.push(<div key={index} className={"happytohelp-chat-header-agent"+(currentAgent.id === agent.id ? " happytohelp-chat-header-agent-active" : "")} role="button" tabIndex={0} aria-pressed={currentAgent.id === agent.id} onClick={(event) => handleAgentChange(event, agent)} onKeyDown={event => activateWithKeyboard(event, action => handleAgentChange(action, agent))}>
+            const selected=agent.is_ai ? conversationSettings.ai_id===agent.id : !conversationSettings.ai_id;
+            agentRows.push(<div key={index} className={"happytohelp-chat-header-agent"+(selected ? " happytohelp-chat-header-agent-active" : "")} role="button" tabIndex={0} aria-pressed={selected} onClick={(event) => handleAgentChange(event, agent)} onKeyDown={event => activateWithKeyboard(event, action => handleAgentChange(action, agent))}>
                 <AgentAvatar agent={ agent } />
                 <div className="happytohelp-insight-agent">
                     <div>
                         <span className="happytohelp-insight-agent-name">{agent.first_name ?? agent.name}</span>
-                        <span className="happytohelp-insight-agent-seperator">•</span>
-                        <span className="happytohelp-insight-agent-role">{agent.role ?? (agent.is_ai ? context.text.ai.ai : context.text.ai.human)}</span>
+
+                        <span className="happytohelp-insight-agent-role">{agent.is_ai ? "AI assistant" : ""}</span>
                     </div>
                     <div className="happytohelp-insight-agent-info">{agent.is_ai ? context.text.ai.ai_response : humanResponse}</div>
                 </div>
@@ -111,7 +114,7 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
             </div>
         );
     }
-    else if(currentAgent) {
+    else if(!unavailable && currentAgent) {
         content = (
             <div className={"happytohelp-chat-header"+(canExpand ? "" : " happytohelp-chat-no-action")} role={canExpand ? 'button' : undefined} tabIndex={canExpand ? 0 : undefined} aria-expanded={canExpand ? headerExpanded : undefined} aria-label={canExpand ? `${currentAgent.first_name ?? currentAgent.name}, ${context.text.ai.selection}` : undefined} onClick={() => canExpand && setHeaderExpanded(true)} onKeyDown={canExpand ? event => activateWithKeyboard(event, () => setHeaderExpanded(true)) : undefined} ref={responderToggleRef} style={ context.theme.window }>
                 <AgentAvatar agent={currentAgent} canAnimate={thinking}/>
@@ -123,9 +126,9 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
                             <FontAwesomeIcon icon={faAngleDown}/>
                         </span>}
                     </span>
-                    <span className="happytohelp-insight-agent-seperator">•</span>
+
                     <span className="happytohelp-insight-agent-role">
-                        {currentAgent.role ?? (currentAgent.is_ai ? context.text.ai.ai : context.text.ai.human)}
+
                         {canExpand && <span className="happytohelp-chat-header-edit-inline">
                             <FontAwesomeIcon icon={faAngleDown}/>
                         </span>}
@@ -150,7 +153,7 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
             <FontAwesomeIcon icon={falTimes} aria-hidden="true"/>
         </button>
         <div ref={contentEl}>
-            {context.brand?.logo_url && <div className="happytohelp-brand-heading"><img src={context.brand.logo_url} alt="" /><span>{context.brand.name}</span></div>}
+            {!unavailable && context.brand?.logo_url && <div className="happytohelp-brand-heading"><img src={context.brand.logo_url} alt="" /><span>{context.brand.name}</span></div>}
             {content}
         </div>
     </div>;

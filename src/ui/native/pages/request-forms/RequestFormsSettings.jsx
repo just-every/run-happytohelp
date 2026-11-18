@@ -1,3 +1,4 @@
+import LocalMailBanner from '../../widget-setup/LocalMailBanner';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { nativeRequest } from '../../transport';
 import { useNavigationGuard, useUnsavedChanges } from '../../NavigationGuard';
@@ -41,7 +42,7 @@ export default function RequestFormsSettings({ projectId, role, onDirtyChange })
     };
     const remove = form => ask({ title: `Delete ${form.title}?`, body: <p>Customers will no longer be able to open this form. Requests already submitted remain in your inbox.</p>, confirmLabel: 'Delete form', run: async () => { await nativeRequest(`${path}/${encodeURIComponent(form.id)}`, { method: 'DELETE' }); setData(current => ({ ...current, data: current.data.filter(item => item.id !== form.id) })); setSaved(false); } });
     return <div className="request-forms-settings" aria-busy={busy}>
-        <Feedback error={error} saved={saved}/>
+        <LocalMailBanner projectId={projectId}/><Feedback error={error} saved={saved}/>
         {!data ? !error && <p role="status">Loading request forms…</p> : draft ? <><h2 ref={editorHeading} tabIndex={-1} className="request-forms-editor-heading">{draft.id ? draft.title : 'Create a request form'}</h2><RequestFormEditor draft={draft} definitions={data.fields} busy={busy} onChange={change} onSubmit={save} onCancel={cancel}/></> : <Section card title="Request forms" description="Give customers a focused way to ask for help, with the ticket fields and language each request needs.">
             {canManage && <button type="button" className="btn btn-primary" onClick={() => edit(null)}>New request form</button>}
             <div className="request-forms-list">{data.data.map(form => <article className="request-forms-list__item" key={form.id}><div><h3>{form.title}</h3><p className="settings-note">{form.enabled ? 'Published' : 'Draft'} · {form.fields.length} custom {form.fields.length === 1 ? 'field' : 'fields'} · {form.locale}</p>{form.description && <p>{form.description}</p>}</div>{canManage && <div className="request-forms-list__actions"><button type="button" className="btn btn-outline-secondary" onClick={() => edit(form)} aria-label={`Edit ${form.title}`}>Edit</button><button type="button" className="btn btn-link" onClick={() => remove(form)} aria-label={`Delete ${form.title}`}>Delete</button></div>}</article>)}</div>

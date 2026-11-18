@@ -18,7 +18,7 @@ export default function AccountPage({projectId}) {
     const [data,setData]=useState(null),[tab,setTab]=useState('general'),[error,setError]=useState(''),[saved,setSaved]=useState(false);
     useEffect(()=>{nativeRequest(path).then(r=>setData(r.data||r)).catch(e=>setError(e.message));},[path]);
     const change=(key,value)=>{markDirty();setSaved(false);setData(d=>({...d,[key]:value}));};
-    const settingPassword=!data?.has_password||data?.mailbox_confirmed;
+    const settingPassword=!data?.has_password||data?.mailbox_confirmed||data?.password_installation_confirmed;
     const field=(name,label,type)=><Field key={name} {...{name,label,type}} value={data[name]} onChange={change}/>;
     const submit=async e=>{e.preventDefault();setError('');try{
         if(tab==='security'&&data.password!==data.password_confirmation)throw new Error('Passwords do not match.');

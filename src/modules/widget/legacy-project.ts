@@ -1,3 +1,4 @@
+import {widgetAddressAllowed} from './allowed-addresses'
 import {Hono} from 'hono'
 import type {AppEnv} from '../../platform/env'
 
@@ -12,6 +13,6 @@ legacyWidget.get('/legacy-project', async c => {
  WHERE (p.id=? OR a.slug=?) AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL) LIMIT 1`)
  .bind(key,key).first<{id:string;widget_key:string;allowed_origin:string}>()
  const origin=c.req.header('Origin') || new URL(c.req.url).origin
- if(!project || origin!==project.allowed_origin && origin!==new URL(c.req.url).origin)return c.json({error:'Widget project is unavailable on this origin'},403)
+ if(!project || origin!==new URL(c.req.url).origin && origin!==project.allowed_origin && !await widgetAddressAllowed(c.env,project.id,origin))return c.json({error:'Widget project is unavailable on this origin'},403)
  return c.json({widgetKey:project.widget_key})
 })

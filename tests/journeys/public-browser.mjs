@@ -20,7 +20,7 @@ import {domainsBrowserJourney} from '../helpers/knowledge/domains-browser.mjs'
 import {proposalsBrowserJourney} from '../helpers/knowledge/proposals-browser.mjs'
 test('a lead publishes two approved help hosts, scoped reviewed translations and a cited editorial proposal, with an attributed request template',async()=>{
  const retainedSlug='retained-browser-help'
- const runtime=await createRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:retainedSlug,'second.localhost':'second-browser-help'})}}),browser=await launchBrowser()
+ const runtime=await createRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-public-form-mail',EMAIL_FROM:'support@public-forms.example.test',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:retainedSlug,'second.localhost':'second-browser-help'})},outboundFixture:new URL('../helpers/public-site/form-mail-edge.mjs',import.meta.url).href}),browser=await launchBrowser()
  let passed=false
  try{
   const fixture=await runtime.seedTenant({name:'Help Center Fixture',email:'help-center-fixture@example.test',allowedOrigin:runtime.origin})
@@ -45,3 +45,6 @@ test('a lead publishes two approved help hosts, scoped reviewed translations and
   await domainsBrowserJourney({runtime,browser,fixture,viewport:viewports.desktop,shot});await proposalsBrowserJourney({runtime,browser,shot});passed=true
  }finally{await browser.close();await runtime.close(passed)}
 })
+
+import {rootEntryJourney} from '../helpers/root-entry.mjs'
+test('the installation root keeps first-run and signed-in entry, then sends signed-out visitors to published or enabled help and otherwise native sign-in',rootEntryJourney)

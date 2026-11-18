@@ -6,6 +6,7 @@ import ChatList from './ChatList';
 import SendMessage from './SendMessage';
 import ConversationWelcome from './ConversationWelcome';
 import ConnectionNotice from './ConnectionNotice';
+import ChatUnavailable from './ChatUnavailable';
 import AwayNotice from './AwayNotice';
 import ResolutionRating from './ResolutionRating';
 import MonitoringConsent from './MonitoringConsent';
@@ -44,9 +45,11 @@ export default function Interact({ setOpen }) {
         contact,
         setContact,
         connectErrors,
+        connectionState,
         uploadMedia
     } = useContext(ConnectContext);
     const [ errors, setErrors ] = useState([]);
+    const unavailable = !isPreview && !messages.some(message=>message.contact_id) && ['interrupted','offline'].includes(connectionState);
     const nodeRefChatList = useRef(null);
     const [ headerExpanded, setHeaderExpanded ] = useState(false);
     const [ headerExpandedAnimate, setHeaderExpandedAnimate ] = useState(false);
@@ -124,24 +127,24 @@ export default function Interact({ setOpen }) {
     }
 
     return (
-        <div className={containerClass.join(" ")} style={headerHeight?{"--happytohelp-header-height":`${headerHeight}px`}:undefined}>
+        <div className={containerClass.join(" ")} style={headerHeight!==null?{"--happytohelp-header-height":`${headerHeight}px`}:undefined}>
             <div className="happytohelp-interact" onClick={() => {
                 headerExpanded && setHeaderExpanded(false)
             }}>
-                <ChatHeader onHeightChange={setHeaderHeight} setOpen={setOpen} headerExpanded={headerExpanded} setHeaderExpanded={setHeaderExpanded}/>
+                <ChatHeader unavailable={unavailable} onHeightChange={setHeaderHeight} setOpen={setOpen} headerExpanded={headerExpanded} setHeaderExpanded={setHeaderExpanded}/>
                 <div className={overlayClass.join(" ")}/>
                 <div
                     className={"happytohelp-content" + (mainView === 'conversation' ? " happytohelp-content-full" : "")}>
                     <ConnectionNotice />
-                    <RequestFormLink/><AwayNotice />
-                    {!isPreview && <MonitoringConsent />}
+                    {unavailable ? <ChatUnavailable/> : <><RequestFormLink/><AwayNotice /></>}
+                    {!isPreview && !unavailable && <MonitoringConsent />}
                     <div className="happytohelp-chatlist-container" ref={nodeRefChatList} role="region" aria-label="Conversation transcript" tabIndex={0}>
-                        <ConversationWelcome empty={!messages.length} />
+                        {!unavailable && <ConversationWelcome empty={!messages.length} />}
                         <ChatList messages={messages} contact={contact} sendContact={sendContact}
                                   scrollRef={nodeRefChatList} agentTyping={agentTyping}/>
                         <ResolutionRating/>
                     </div>
-                    {errors.map((error, index) =>
+                    {!unavailable && errors.map((error, index) =>
                         <div key={"error-" + index} className="happytohelp-error" role="alert">
                             <span>{error}</span>
                             <button type="button" className="happytohelp-error-close" { ...tooltip('Dismiss message') } onClick={() => {
@@ -151,10 +154,10 @@ export default function Interact({ setOpen }) {
                             </button>
                         </div>
                     )}
-                    <SendMessage mainView={mainView} setView={() => {
+                    {!unavailable && <SendMessage mainView={mainView} setView={() => {
                         setMainView('conversation')
                     }} messages={messages} localContact={localContact} contact={contact} sendContact={sendContact}
-                                 onSend={onSend} displayError={displayError}/>
+                                 onSend={onSend} displayError={displayError}/>}
                 </div>
             </div>
         </div>

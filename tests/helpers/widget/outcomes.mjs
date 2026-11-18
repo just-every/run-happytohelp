@@ -66,7 +66,7 @@ export async function availabilityOutcomes(f){
    if(back){assert.match(await notice.textContent(),/tomorrow at 3:00 AM/);assert.match(await ui.page.locator('.happytohelp-chat-header').textContent(),/tomorrow at 3:00 AM/)}
    else {assert.match(await notice.textContent(),/Usually within two business hours/);assert.match(await ui.page.locator('.happytohelp-chat-header').textContent(),/Usually within two business hours/)}
    const email=`${label}@visitor.example.test`
-   await ui.page.getByRole('textbox',{name:'you@example.com',exact:true}).fill(email)
+   await ui.page.getByRole('textbox',{name:'Your email, so we can reply',exact:true}).fill(email)
    await ui.page.locator('textarea[name=content]').fill('Please help me finish checkout.')
    await ui.page.locator('button[name=submit]').click()
    const v=await ui.session()
@@ -106,7 +106,7 @@ export async function availabilityOutcomes(f){
  await app.configure({APP_ORIGIN:'http://127.0.0.1:8787',EMAIL_PROVIDER:'development'})
  const localUi=await open({at:'2026-10-26T22:00:00Z'})
  try{
-  await localUi.page.getByRole('textbox',{name:'you@example.com',exact:true}).fill('synthetic-local-away@example.test')
+  await localUi.page.getByRole('textbox',{name:'Your email, so we can reply',exact:true}).fill('synthetic-local-away@example.test')
   await localUi.page.locator('textarea[name=content]').fill('Please keep my local request in chat.')
   await localUi.page.locator('button[name=submit]').click()
   const localVisitor=await localUi.session()
@@ -143,7 +143,8 @@ export async function availabilityOutcomes(f){
  assert.equal((await configuration()).availability.available,true,'permitted provider-ready AI makes the team available')
  const ui=await open({at:'2026-10-27T16:00:00Z'})
  try{
-  await ui.page.locator('.happytohelp-ai-disclosure').getByText('AI assistant',{exact:true}).waitFor()
+  await ui.page.locator('.happytohelp-chat-header').waitFor()
+  assert.equal(await ui.page.locator('.happytohelp-ai-disclosure').count(),0,'AI authorship is shown with the actual reply')
   assert.equal(await ui.page.locator('.happytohelp-away-notice').count(),0)
   await ui.page.locator('textarea[name=content]').fill('Can you help with checkout?');await ui.page.locator('button[name=submit]').click()
   const v=await ui.session();const jobs=await app.until(async()=>{const pending=await app.takeJobs();return pending.length?pending:null},{message:'AI queue admission'});await app.runJobs(jobs)
@@ -151,6 +152,7 @@ export async function availabilityOutcomes(f){
   // any delivery admitted between the browser click and the queue read.
   await app.scheduled();await app.drainJobs()
   await ui.page.getByText('Your checkout is saved. A teammate can help you finish.',{exact:true}).waitFor()
+  await ui.page.locator('.happytohelp-chat-header .happytohelp-ai-disclosure').getByText('AI assistant',{exact:true}).waitFor()
   assert.equal((await transcript(v)).messages.filter(m=>m.actor_role==='ai').length,1)
   assert.equal((await transcript(v)).messages.filter(m=>m.actor_id==='away').length,0)
   await ok(manage+'/widget-settings',{text:{ai:{human_response:'A teammate will reply soon'}}})

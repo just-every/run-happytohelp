@@ -1,3 +1,4 @@
+import {zendeskFidelityJourney} from '../move-in/zendesk-fidelity.mjs'
 import {mountedErasureStates} from '../move-in/legacy-adoption-integration/erasure-states.mjs'
 import {mountedOrderingJourney} from '../move-in/legacy-adoption-integration/ordering.mjs'
 import {legacyAdoptionJourney} from '../helpers/legacy-adoption/journey.mjs'
@@ -30,3 +31,5 @@ await test('adopt mounted history, recover Worker stops and expired or orphaned 
 await test('erase mounted import states, preserve Freshdesk and Intercom replies and recover signed-out attachment custody',{timeout:480_000},async()=>{
  await phases([mountedErasureStates,async function freshdeskAndIntercomReplies(){await vendorRepliesJourney(vendors.slice(2))},async function signedOutAttachmentRecovery(){await reservationAttachments(['signout'])}])
 })
+
+await test('import a documented synthetic Zendesk workspace with a field ledger, repeat it through NDJSON and undo exactly',{timeout:480_000},zendeskFidelityJourney)

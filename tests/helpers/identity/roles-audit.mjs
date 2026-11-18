@@ -35,6 +35,31 @@ export async function rolesAuditJourney(){
   assert.equal(bootstrap.projects[w.projectId].access.name,'Collaborator');assert.deepEqual(bootstrap.projects[w.projectId].access.permissions,['conversations.notes','conversations.follow'])
   assert.equal((await call(`${P}/agents`,undefined,w.tokens.owner)).data.data.find(row=>row.email==='collab@example.com').access_name,'Collaborator')
 
+  // Widget onboarding changes only the member's own display name. Website approvals
+  // remain settings changes, including for an admin whose custom role was narrowed.
+  const ownerName=(await call(`${P}/widget-owner-name`,undefined,w.tokens.owner)).data.name
+  assert.equal((await call(`${P}/widget-owner-name`,{name:bootstrap.currentAgent.name},collaborator.token)).status,200)
+  const ownName=(await call(`${P}/widget-owner-name`,undefined,collaborator.token)).data
+  assert.equal(ownName.name,bootstrap.currentAgent.name);assert.equal(ownName.confirmed,true)
+  assert.equal((await call(`${P}/widget-owner-name`,undefined,w.tokens.owner)).data.name,ownerName,'confirming a member name does not rename the owner')
+  const address={address:'https://synthetic-widget-authority.example.test'}
+  for(const method of ['POST','DELETE']){
+   const refused=await call(`${P}/widget-addresses`,address,collaborator.token,method)
+   assert.equal(refused.status,403);assert.equal(refused.data.permission,'settings.manage')
+  }
+  assert.equal((await call(`${P}/widget-addresses`,address,w.tokens.owner)).status,200)
+  const restrictedAdmin=await call(`${P}/roles`,{name:'Synthetic widget read only',base:'admin',permissions:[]},w.tokens.owner)
+  assert.equal(restrictedAdmin.status,201)
+  assert.equal((await call(`${P}/agents/${w.users.admin}`,{role:restrictedAdmin.data.data.id},w.tokens.owner,'PUT')).status,200)
+  for(const method of ['POST','DELETE']){
+   const refused=await call(`${P}/widget-addresses`,address,w.tokens.admin,method)
+   assert.equal(refused.status,403);assert.equal(refused.data.permission,'settings.manage')
+  }
+  assert.deepEqual((await call(`${P}/widget-addresses`,undefined,w.tokens.owner)).data.allowedAddresses,[address.address],'refused address changes leave the saved allowance intact')
+  assert.equal((await call(`${P}/agents/${w.users.admin}`,{role:'admin'},w.tokens.owner,'PUT')).status,200)
+  assert.equal((await call(`${P}/widget-addresses`,address,w.tokens.admin,'DELETE')).status,200)
+  assert.deepEqual((await call(`${P}/widget-addresses`,undefined,w.tokens.owner)).data.allowedAddresses,[])
+
   // A collaborator views the ticket, adds a note, follows and reads; everything else is refused and audited.
   assert.equal((await call(C,undefined,collaborator.token)).status,200)
   assert.equal((await call(`${C}/notes`,{content:'Customer is on the beta plan'},collaborator.token)).status,201)

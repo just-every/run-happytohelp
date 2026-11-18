@@ -48,7 +48,7 @@ export async function builtOutcomes(){
  page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))
  let passed=false
  const api=async(path,body,method=body===undefined?'GET':'POST')=>{const response=await context.request.fetch(runtime.origin+path,{method,...(body===undefined?{}:{data:body})});assert.ok(response.ok(),`${method} ${path}: ${response.status()}`);return response.json()}
- const setup=async id=>{await page.waitForURL(url=>url.pathname===`/projects/${id}/activation`);await page.locator('[data-need="widget_seen"] [data-field="snippet"]').waitFor();assert.equal(await page.locator('.sl-needs > li').first().getAttribute('data-need'),'widget_seen','Setup leads with installation');await page.getByRole('heading',{name:'What we’ve set',exact:true}).waitFor()}
+ const setup=async id=>{await page.waitForURL(url=>url.pathname===`/projects/${id}/activation`);const name=page.getByLabel('Your name',{exact:true});await name.or(page.locator('[data-need="widget_seen"] [data-field="snippet"]')).first().waitFor();if(await name.isVisible()){await name.fill('Casey');await page.getByRole('button',{name:'Save and continue',exact:true}).click();}await page.locator('[data-need="widget_seen"] [data-field="snippet"]').waitFor();assert.equal(await page.locator('.sl-needs > li').first().getAttribute('data-need'),'widget_seen','Setup leads with installation');await page.getByRole('heading',{name:'What we’ve set',exact:true}).waitFor()}
  // Assertions use desktop unless the outcome specifically requires a phone.
  // Proof captures each changed screen once at both widths without a test matrix.
  const proof=async name=>{await page.screenshot({path:shot(name+'-1440.png'),fullPage:true});await page.setViewportSize(viewports.mobile);await page.screenshot({path:shot(name+'-390.png'),fullPage:true});await page.setViewportSize(viewports.desktop)}
@@ -93,7 +93,7 @@ export async function builtOutcomes(){
   await page.reload();await page.getByRole('button',{name:'Appearance',exact:true}).click()
   assert.equal(await page.getByLabel('Workspace color hex',{exact:true}).inputValue(),'#2548aa')
   await page.goto(`${runtime.origin}/projects/${first.projectId}/widget-settings`)
-  await page.getByText('Advanced',{exact:true}).click();await page.getByRole('heading',{name:'Server secret',exact:true}).waitFor()
+  await page.getByText('Details for your developer',{exact:true}).last().click();await page.getByRole('heading',{name:'Server secret',exact:true}).waitFor()
   assert.equal(await page.getByRole('button',{name:'Reveal server secret',exact:true}).isEnabled(),true)
   await page.getByRole('tablist',{name:'Verification example language'}).waitFor()
   assert.match(await page.locator('#widget-code-verification-example').innerText(),/HMAC|hash_hmac|createHmac/i)

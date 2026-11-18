@@ -1,0 +1,37 @@
+Before: 32 route and browser journey files, each scheduled exactly once.
+After:  32 route and browser journey files, each scheduled exactly once.
+Identical file set:
+tests/journeys/ai.mjs
+tests/journeys/connections.mjs
+tests/journeys/connector.mjs
+tests/journeys/context.mjs
+tests/journeys/customers.mjs
+tests/journeys/delegation-browser.mjs
+tests/journeys/delegation-computers.mjs
+tests/journeys/delegation.mjs
+tests/journeys/email.mjs
+tests/journeys/erasure-browser.mjs
+tests/journeys/erasure.mjs
+tests/journeys/first-run.mjs
+tests/journeys/identity-browser.mjs
+tests/journeys/identity.mjs
+tests/journeys/inbox-browser.mjs
+tests/journeys/inbox.mjs
+tests/journeys/knowledge.mjs
+tests/journeys/legacy.mjs
+tests/journeys/move-in-admission.mjs
+tests/journeys/move-in-browser.mjs
+tests/journeys/move-in-custody.mjs
+tests/journeys/move-in-erasure.mjs
+tests/journeys/move-in-zendesk-pull.mjs
+tests/journeys/provider-preflight.mjs
+tests/journeys/public-browser.mjs
+tests/journeys/public.mjs
+tests/journeys/reports.mjs
+tests/journeys/restore.mjs
+tests/journeys/runtime.mjs
+tests/journeys/upgrade.mjs
+tests/journeys/widget.mjs
+tests/journeys/workflows-browser.mjs
+All workflow settings outside the shard commands are identical, including names, dependencies, browser flags and 30-minute timeouts.
+Negative checks rejected duplicate and missing assignments and a browser journey without Chromium.

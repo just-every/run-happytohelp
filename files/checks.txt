@@ -1,0 +1,13 @@
+Coverage check: 32/32 journey files exactly once before and after. Same file set and same workflow shape outside shard commands.
+Coverage failure cases: duplicate, omission and browser assignment without Chromium rejected.
+Source lock regenerated last: node scripts/edition-authoring/cli.mjs lock — exit 0.
+Node 22.20.0 / pnpm 10.12.4:
+  node scripts/edition-authoring/cli.mjs check — exit 0.
+  pnpm run typecheck — exit 0.
+  pnpm exec rer check --profile first-party — exit 0.
+  node src/site/base/contract-docs.mjs check — exit 0.
+  node scripts/contract-docs.mjs check — exit 0.
+  node scripts/ci/verify-lifecycle.mjs --plan — exit 0, full coverage selected.
+  git diff --check origin/main..HEAD — exit 0.
+Cloud frozen dependency install, rer setup with a private checkout-local answers file, and rer build — exit 0.
+The branch advertises the commit recorded in ci-receipt.json.

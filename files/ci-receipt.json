@@ -1,0 +1,205 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "product_branch": "cloud/hh-ci-shard-balance-1",
+  "product_head": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+  "main_parent": "154b8d638f3332ac29da9398a162fe48345b6aae",
+  "baseline_verify_heads": {
+    "44209178990": "dd123992c1bc1f308fa8eb3b3b8380df8926c936",
+    "44212333009": "728a8baa23888290495ba6f30ef686c455bac824"
+  },
+  "verify_run_id": 44229637158,
+  "discovery": {
+    "conclusion": null,
+    "created_at": "2026-11-18T03:19:45Z",
+    "event": "push",
+    "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44229637158",
+    "id": 44229637158,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "latest_status": {
+    "conclusion": "success",
+    "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44229637158",
+    "status": "completed"
+  },
+  "jobs": [
+    {
+      "completed_at": "2026-11-18T03:20:19Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551225289,
+      "name": "contract-docs",
+      "started_at": "2026-11-18T03:19:48Z",
+      "status": "completed",
+      "wall_seconds": 31.0
+    },
+    {
+      "completed_at": "2026-11-18T03:20:05Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551225616,
+      "name": "plan",
+      "started_at": "2026-11-18T03:19:48Z",
+      "status": "completed",
+      "wall_seconds": 17.0
+    },
+    {
+      "completed_at": "2026-11-18T03:21:14Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551354010,
+      "name": "build",
+      "started_at": "2026-11-18T03:20:08Z",
+      "status": "completed",
+      "wall_seconds": 66.0
+    },
+    {
+      "completed_at": "2026-11-18T03:20:06Z",
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551356143,
+      "name": "slow",
+      "started_at": "2026-11-18T03:20:06Z",
+      "status": "completed",
+      "wall_seconds": null
+    },
+    {
+      "completed_at": "2026-11-18T03:24:02Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551807209,
+      "name": "size-check",
+      "started_at": "2026-11-18T03:21:16Z",
+      "status": "completed",
+      "wall_seconds": 166.0
+    },
+    {
+      "completed_at": "2026-11-18T03:35:06Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551807389,
+      "name": "Verify / support-and-recovery",
+      "started_at": "2026-11-18T03:21:16Z",
+      "status": "completed",
+      "wall_seconds": 830.0
+    },
+    {
+      "completed_at": "2026-11-18T03:44:34Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551807403,
+      "name": "Verify / public-and-import-browser",
+      "started_at": "2026-11-18T03:21:16Z",
+      "status": "completed",
+      "wall_seconds": 1398.0
+    },
+    {
+      "completed_at": "2026-11-18T03:36:58Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551807404,
+      "name": "Verify / import-and-reports",
+      "started_at": "2026-11-18T03:21:16Z",
+      "status": "completed",
+      "wall_seconds": 942.0
+    },
+    {
+      "completed_at": "2026-11-18T03:39:22Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551807417,
+      "name": "Verify / assistant-and-knowledge",
+      "started_at": "2026-11-18T03:21:16Z",
+      "status": "completed",
+      "wall_seconds": 1086.0
+    },
+    {
+      "completed_at": "2026-11-18T03:44:39Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551807496,
+      "name": "Verify / connections-and-computers",
+      "started_at": "2026-11-18T03:21:16Z",
+      "status": "completed",
+      "wall_seconds": 1403.0
+    },
+    {
+      "completed_at": "2026-11-18T03:40:46Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551807515,
+      "name": "Verify / identity-and-desk",
+      "started_at": "2026-11-18T03:21:16Z",
+      "status": "completed",
+      "wall_seconds": 1170.0
+    },
+    {
+      "completed_at": "2026-11-18T03:34:23Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551807598,
+      "name": "Verify / support-workflow-browser",
+      "started_at": "2026-11-18T03:21:16Z",
+      "status": "completed",
+      "wall_seconds": 787.0
+    },
+    {
+      "completed_at": "2026-11-18T03:36:29Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134551807606,
+      "name": "Verify / identity-and-repair-browser",
+      "started_at": "2026-11-18T03:21:16Z",
+      "status": "completed",
+      "wall_seconds": 913.0
+    },
+    {
+      "completed_at": "2026-11-18T03:24:02Z",
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134552892615,
+      "name": "nightly-proof",
+      "started_at": "2026-11-18T03:24:02Z",
+      "status": "completed",
+      "wall_seconds": null
+    },
+    {
+      "completed_at": "2026-11-18T03:44:43Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134560794554,
+      "name": "full-push-proof",
+      "started_at": "2026-11-18T03:44:41Z",
+      "status": "completed",
+      "wall_seconds": 2.0
+    },
+    {
+      "completed_at": "2026-11-18T03:44:55Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "729c3989345ff2e156945f0c4996c12e3d9b343e",
+      "id": 134560823314,
+      "name": "verify",
+      "started_at": "2026-11-18T03:44:45Z",
+      "status": "completed",
+      "wall_seconds": 10.0
+    }
+  ]
+}

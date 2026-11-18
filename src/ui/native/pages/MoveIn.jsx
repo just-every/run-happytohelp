@@ -22,7 +22,7 @@ function MoveInWorkspace({projectId}){
  const showRun=run=>{selectedId.current=run.id;setSelected(run);setRuns(old=>old.map(item=>item.id===run.id?run:item))};
  // The list carries review summaries; one run's decisions and diagnostics load with it, and its format's guide shows.
  const open=run=>{showRun(run);setRepeated(false);setError('');if(run.vendor!==vendor){setVendor(run.vendor);setFile(null)}nativeRequest(`${base}/${run.id}`).then(r=>{if(selectedId.current===run.id)showRun(r.data)}).catch(e=>{if(selectedId.current===run.id)setError(e.message)})};
- useEffect(()=>{reload()},[base]);
+ useEffect(()=>{reload();const id=new URLSearchParams(window.location.search).get('import');if(id)nativeRequest(`${base}/${encodeURIComponent(id)}`).then(r=>{setVendor(r.data.vendor);showRun(r.data)}).catch(e=>setError(e.message))},[base]);
  // A pulled batch opens in the same review as an uploaded file.
  const openRun=id=>{const run=runs.find(item=>item.id===id);if(run)open(run);else nativeRequest(`${base}/${id}`).then(r=>{showRun(r.data);reload()}).catch(e=>setError(e.message))};
  // A list refresh can bring a finished review's summary first; load its decisions so the plan shows before Approve.

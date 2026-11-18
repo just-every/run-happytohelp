@@ -1,3 +1,4 @@
+import {requireLiveMailbox} from './mode'
 import {cronRoom,CronDeferred} from '../../../platform/cron-budget'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../../platform/env'
@@ -14,6 +15,7 @@ const permanentMessageError=(error:unknown):error is HTTPException=>error instan
  * then a durable Suspended hold. Provider-page and connection failures retry. */
 export async function syncMailbox(env:Env,projectId:string,mailboxId:string,receive:MailboxReceiver,options:MailboxSyncOptions={}){
  const row=await getMailbox(env,projectId,mailboxId)
+ requireLiveMailbox(row)
  if(row.provider==='forwarding')throw new HTTPException(409,{message:'Forwarding mailbox receives through the email gateway'})
  if(row.status!=='connected'&&!(options.backfill&&row.status==='needs_backfill'))throw new HTTPException(409,{message:'Mailbox must be reconnected before syncing'})
  const lease=crypto.randomUUID(),now=Date.now()
@@ -97,7 +99,7 @@ export async function syncMailbox(env:Env,projectId:string,mailboxId:string,rece
 }
 export async function syncConnectedMailboxes(env:Env,receive:MailboxReceiver,options:{limit?:number}={}){
  const limit=Math.max(1,Math.min(20,Math.floor(options.limit||4)))
- const eligible=`FROM mailbox_connections m WHERE m.status='connected' AND m.provider<>'forwarding' AND (m.sync_lock_until IS NULL OR m.sync_lock_until<?)
+ const eligible=`FROM mailbox_connections m WHERE m.status='connected' AND m.provider<>'forwarding' AND coalesce(json_extract(m.cursor_json,'$.mode'),'live')<>'history' AND (m.sync_lock_until IS NULL OR m.sync_lock_until<?)
  AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
  const now=Date.now(),[healthy,retries]=await env.DB.batch<{project_id:string;id:string}>([
   env.DB.prepare(`SELECT m.project_id,m.id ${eligible} AND m.error_code IS NULL ORDER BY coalesce(m.last_sync_at,0),m.id LIMIT ?`).bind(now,limit),

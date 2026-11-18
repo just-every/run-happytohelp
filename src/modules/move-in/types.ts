@@ -1,6 +1,6 @@
 import type {PublicationCategory} from './category-publication'
 import type { SourceBundle, SourceRecord, TargetEffect } from '../import-kit/src/types'
-export type Vendor = 'zendesk' | 'intercom' | 'helpscout' | 'freshdesk'
+export type Vendor = 'zendesk' | 'intercom' | 'helpscout' | 'freshdesk' | 'mailbox'
 export const MAPPING_VERSION = 'happytohelp-move-in-1'
 /** The mapping's revision within MAPPING_VERSION. A revision only maps records an earlier
  * one refused (2: staff requesters as inert contacts, customers with no usable email,

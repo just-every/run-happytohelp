@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {startApp} from '../../journeys/kit/app.mjs'
 
-function fakeTlsConnect(address,options){
+export function fakeTlsConnect(address,options){
  const id=crypto.randomUUID(),encoder=new TextEncoder()
  let controller,resolveClosed,ended=false
  const closed=new Promise(resolve=>{resolveClosed=resolve})

@@ -1,3 +1,4 @@
+import {statusName,statusMeanings} from '../tickets/status-copy';
 import ImportedHistory from './ImportedHistory';
 import React, { useContext, useId, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -22,6 +23,7 @@ function Row({ label: name, children, className = '' }) {
 /** Status or Priority: saved the moment it changes, against the version the agent saw. */
 function TicketChoice({ id, name, value, options, disabled, onSave }) {
     const [ pending, setPending ] = useState(null), [ error, setError ] = useState(''), [ saved, setSaved ] = useState('');
+    const selected=options.find(option=>option.value===(pending??value));
     const change = async event => {
         const next = event.target.value;
         setPending(next); setError(''); setSaved('');
@@ -31,11 +33,13 @@ function TicketChoice({ id, name, value, options, disabled, onSave }) {
         <dt><label htmlFor={ id }>{ name }</label></dt>
         <dd>
             <span className="ticket-summary__choice">
-                <select id={ id } className="ticket-summary__select" value={ pending ?? value ?? '' } disabled={ disabled || pending !== null } onChange={ change }>
+                <select id={ id } className={`ticket-summary__select${selected?.shortLabel ? ' has-option-copy' : ''}`} value={ pending ?? value ?? '' } disabled={ disabled || pending !== null } onChange={ change }>
                     { options.map(option => <option key={ option.value } value={ option.value }>{ option.label }</option>) }
                 </select>
+                {selected?.shortLabel && <span className="ticket-summary__selected" aria-hidden="true">{selected.shortLabel}</span>}
                 { !disabled && <ReplyIcon name="chevron-right" className="ticket-summary__chevron" /> }
             </span>
+            {selected?.description && <p className="mb-0 mt-1">{selected.description}</p>}
             { error && <p role="alert" className="ticket-summary__error">{ error }</p> }
             <p role="status" className="visually-hidden">{ saved }</p>
         </dd>
@@ -63,7 +67,7 @@ export default function TicketSummary({ conversation, record, workflows, escalat
     const emailFollowups = useEmailFollowups(conversation.project_id, conversation.id);
     const workflowFollowups = Boolean(workflows && (workflows.schedules.data?.data.followup_of || workflows.schedules.data?.data.followups?.length > 0));
     const statuses = (settings?.statuses || []).filter(status => status.active || status.id === ticket?.status_id)
-        .map(status => ({ value: status.id, label: status.name === label(status.category) ? status.name : `${ status.name } (${ label(status.category) })` }));
+        .map(status => ({ value: status.id, shortLabel:statusName(status), label: `${statusName(status)} — ${statusMeanings[status.category] || 'Workspace status.'}`, description:statusMeanings[status.category] }));
     return <section className="ticket-summary" aria-labelledby="ticket-summary-title">
         <h3 id="ticket-summary-title" className="ticket-summary__title">Summary</h3>
         { record?.error && <p role="alert" className="ticket-summary__error">{ record.error }</p> }

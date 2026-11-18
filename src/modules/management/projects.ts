@@ -1,3 +1,4 @@
+import {emailMode} from '../integrations/email-provider'
 import {scopeFenceStatements,scheduleScopeCleanup} from '../legacy-import/custody'
 import {withdrawDoorCustody} from '../move-in/door/erasure'
 import {erasureEnvironment} from './contact-erasure/authority'
@@ -63,7 +64,7 @@ projects.get('/bootstrap',async c=>{
  for(const plugin of data[3].results)map[String(plugin.project_id)].plugins.push(plugin)
  const inbox=c.req.query('inbox')
  const inboxViewCounts=inbox==='global'||inbox==='project'?await inboxCounts(c.env,actor.id,inbox==='global'?undefined:projectId):undefined
- return c.json({inboxViewCounts,currentAgent:person(data[4].results[0]),projects:map,project,sessionProjectId:actor.projectId,isPlatformAdmin:platformAdmin,agents:project.agents.map(person),ais:project.ais,plugins:project.plugins})
+ return c.json({mailMode:emailMode(c.env),inboxViewCounts,currentAgent:person(data[4].results[0]),projects:map,project,sessionProjectId:actor.projectId,isPlatformAdmin:platformAdmin,agents:project.agents.map(person),ais:project.ais,plugins:project.plugins})
 })
 projects.get('/projects',async c=>{const a=await scope(c);return c.json({data:(await c.env.DB.prepare('SELECT p.id,p.name,p.widget_key,p.allowed_origin,p.created_at,m.role,coalesce(pref.is_primary,0) is_primary FROM projects p JOIN memberships m ON m.project_id=p.id LEFT JOIN user_project_preferences pref ON pref.project_id=p.id AND pref.user_id=m.user_id WHERE m.user_id=?').bind(a.id).all()).results})})
 projects.post('/projects',async c=>{

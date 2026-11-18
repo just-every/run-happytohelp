@@ -31,3 +31,6 @@ test('lost-factor recovery collects every workspace consent, proves a replacemen
  const browser=await launchBrowser();try{await recoveryBrowserJourney(browser)}finally{await browser.close()}
 })
 import {localEmailSetupBrowser} from '../helpers/email/setup-browser.mjs'
+
+import {profileWorkspaceJourney} from '../helpers/owner-journey-inbox.mjs';
+test('opening Profile preserves the selected workspace and its contact navigation',profileWorkspaceJourney);

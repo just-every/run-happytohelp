@@ -12,7 +12,7 @@ export default function InvitationActions({projectId,invitation,emailConfigured,
   const {data}=await nativeRequest(`${path}/link`,{method:'POST'});
   let copied=false;
   try{await navigator.clipboard.writeText(data.invitationUrl);copied=true}catch{copied=false}
-  onNotice({kind:'link',email:invitation.email,url:data.invitationUrl,copied});
+  onNotice({kind:'link',email:invitation.email,url:copied?null:data.invitationUrl,copied});
  });
  const resend=run('resend',async()=>{const {data}=await nativeRequest(`${path}/resend`,{method:'POST'});onNotice({kind:'resent',email:invitation.email,delivery:data.delivery})});
  const revoke=run('revoke',async()=>{await nativeRequest(path,{method:'DELETE'});onNotice({kind:'revoked',email:invitation.email})});
@@ -27,19 +27,28 @@ export default function InvitationActions({projectId,invitation,emailConfigured,
 /** The result of the last invitation action, shown above the list. */
 export function InvitationNotice({notice}) {
  if(!notice)return null;
- if(notice.kind==='link')return <div className="alert alert-info management-invite-notice" role="status">Invitation link for {notice.email}, valid for 24 hours{notice.copied?' and copied to your clipboard':''}: <a href={notice.url}>{notice.url}</a></div>;
+ if(notice.kind==='link')return <div className="management-invite-notice">
+  <div className="alert alert-info" role="status">{notice.copied?'Invitation link copied. Share it with the person you invited. It works for 24 hours.':'The clipboard is unavailable. Show the invitation link, then select and copy it to share.'}</div>
+  {!notice.copied&&<ManualInvitationLink key={notice.url} url={notice.url}/>}
+ </div>;
  if(notice.kind==='resent')return <div className="alert alert-success" role="status">{notice.delivery==='suppressed'?<>Fresh invitation link created for {notice.email}. Email is suppressed during local development. No email was sent. Copy the link and share it.</>:<>Invitation sent to {notice.email} again with a fresh link.</>}</div>;
  return <div className="alert alert-success" role="status">Invitation for {notice.email} revoked. Its links no longer work.</div>;
+}
+
+/** The capability is a field value only, outside every announcement region. */
+function ManualInvitationLink({url}) {
+ const [shown,setShown]=useState(false);
+ return <div className="mt-2" aria-live="off">{shown?<label className="d-block">Invitation link to share<input className="form-control" readOnly value={url} onFocus={event=>event.target.select()}/></label>:<button type="button" className="btn btn-outline-secondary" onClick={()=>setShown(true)}>Show invitation link</button>}</div>;
 }
 
 /** Sharing a capability is an explicit action, never part of the creation confirmation. */
 export function InvitationCreated({invitation}) {
  const [copied,setCopied]=useState(false),[manual,setManual]=useState(false);
- const copy=async()=>{try{await navigator.clipboard.writeText(invitation.invitationUrl);setCopied(true);setManual(false)}catch{setManual(true)}};
+ const copy=async()=>{try{await navigator.clipboard.writeText(invitation.invitationUrl);setCopied(true);setManual(false)}catch{setCopied(false);setManual(true)}};
  return <div className="mb-3">
   <div className="alert alert-info" role="status">Invitation created. {invitation.delivery==='suppressed'?'Email is suppressed during local development. No email was sent. Copy the invitation link and share it.':invitation.delivery==='sent'?'Email sent.':'Email delivery is not configured. Copy the invitation link and share it.'}</div>
   <button type="button" className="btn btn-outline-secondary" onClick={copy}>Copy invitation link</button>
-  {copied&&<p role="status">Invitation link copied. It works for 24 hours.</p>}
-  {manual&&<label className="d-block mt-2">Invitation link to share<input className="form-control" readOnly value={invitation.invitationUrl} onFocus={event=>event.target.select()}/></label>}
+  {copied&&<p role="status">Invitation link copied. Share it with the person you invited. It works for 24 hours.</p>}
+  {manual&&<><p role="status">The clipboard is unavailable. Show the invitation link, then select and copy it to share.</p><ManualInvitationLink url={invitation.invitationUrl}/></>}
  </div>;
 }

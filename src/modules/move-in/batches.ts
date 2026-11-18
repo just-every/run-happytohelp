@@ -1,3 +1,4 @@
+import {advanceUndoConflictReport} from './undo-conflicts'
 import {retainedSourcePredicates} from './retained-sources'
 import {categoryPublicationPredicates} from './category-publication'
 import type {Env} from '../../platform/env'
@@ -27,6 +28,7 @@ async function publishCheckpoint(env:Env,run:Run,batch:Batch,job:ImportJob){
  await updateRun(env,run,{state,cursor:progress.checkpoint,kit_job_id:job.id,report_json:JSON.stringify({state,...progress,...undo?{referencesChecked:true}:{counts:JSON.parse(other.counts)}}),error:job.error??null},[env.DB.prepare('UPDATE move_in_batches SET kit_job_id=?,state=?,checkpoint=? WHERE run_id=? AND ordinal=?').bind(job.id,nextState,job.checkpoint,run.id,batch.ordinal)])
 }
 export async function advanceBatch(env:Env,run:Run){
+ if(run.state==='undoing'&&await advanceUndoConflictReport(env,run))return
  if(run.state!=='undoing'&&!await reconcileContactKeys(env,run))return
  const review=await readReview(env,run,run.review_fingerprint!);await verifyApprovedCustody(env,run,review)
  const undo=run.state==='undoing';if(undo&&JSON.parse(run.report_json||'{}').referencesChecked!==true)await assertUndoReferences(env,run)

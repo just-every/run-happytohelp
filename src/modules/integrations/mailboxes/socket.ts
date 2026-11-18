@@ -54,7 +54,7 @@ export class MailSocket {
  }
  async close(){clearTimeout(this.timer);this.signal?.removeEventListener('abort',this.abort);await this.socket.close().catch(()=>{})}
 }
-const quote=(value:string)=>{if(/[\r\n\0]/.test(value)||value.length>2048)throw new HTTPException(400,{message:'Invalid mailbox credential'});return '"'+value.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"'}
+export const quote=(value:string)=>{if(/[\r\n\0]/.test(value)||value.length>2048)throw new HTTPException(400,{message:'Invalid mailbox credential'});return '"'+value.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"'}
 export class ImapSession {
  private counter=0
  wire:MailSocket
@@ -71,12 +71,12 @@ export class ImapSession {
   throw new Error('IMAP response exceeds line limit')
  }
 }
-export async function openImap(env:Env,credential:ImapCredential){
+export async function openImap(env:Env,credential:ImapCredential,folder?:string){
  const wire=await MailSocket.open(validateSocketHost(env,credential.imapHost),validateSocketPort(env,credential.imapPort,993)),session=new ImapSession(wire)
  try{
   const greeting=await wire.line();if(!greeting.startsWith('* OK'))throw new Error('IMAP greeting rejected')
   await session.command(`LOGIN ${quote(credential.username)} ${quote(credential.password)}`)
-  const selected=await session.command('EXAMINE INBOX'),combined=selected.lines.join('\n'),validity=combined.match(/\[UIDVALIDITY (\d+)\]/i),next=combined.match(/\[UIDNEXT (\d+)\]/i)
+  const selected=await session.command(folder===undefined?'EXAMINE INBOX':`EXAMINE ${quote(folder)}`),combined=selected.lines.join('\n'),validity=combined.match(/\[UIDVALIDITY (\d+)\]/i),next=combined.match(/\[UIDNEXT (\d+)\]/i)
   if(!validity||!next)throw new Error('IMAP mailbox omitted UID state')
   return {session,uidValidity:validity[1],uidNext:Number(next[1])}
  }catch(error){await wire.close();throw error}

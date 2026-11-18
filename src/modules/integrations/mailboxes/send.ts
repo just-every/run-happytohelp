@@ -1,3 +1,4 @@
+import {requireLiveMailbox} from './mode'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../../platform/env'
 import {hashToken} from '../../../platform/auth'
@@ -14,6 +15,7 @@ import {auditStatement} from '../../audit/record'
 export async function mailboxSender(env:Env,input:MailboxSendInput){
  const row=await mailboxForDelivery(env,input.projectId,input.mailboxId)
  if(!row)throw new HTTPException(409,{message:'Selected mailbox is unavailable'})
+ requireLiveMailbox(row)
  const from=address(input.fromAddress||row.sender_address||row.address)
  const alias=await env.DB.prepare('SELECT can_send FROM mailbox_addresses WHERE mailbox_id=? AND project_id=? AND address=?').bind(row.id,row.project_id,from).first<{can_send:number}>()
  if(!alias||(row.provider!=='forwarding'&&!alias.can_send))throw new HTTPException(403,{message:'Mailbox is not authorized to send from this address'})

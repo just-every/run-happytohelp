@@ -16741,7 +16741,7 @@
       "executable": false
     },
     "tests/helpers/identity/invitation-browser.mjs": {
-      "sha256": "44082948582c680c82e18f07cf2cbd7885e93e4102d8001a62d9e86e1524e593",
+      "sha256": "57452a329ee9b91af07faef33a8b2b1d20fc8a74af03eb699391043b2b6bdb94",
       "executable": false
     },
     "tests/helpers/identity/magic-browser.mjs": {

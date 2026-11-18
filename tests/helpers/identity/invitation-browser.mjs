@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 export async function invitationBrowser({page,origin,project,shot}){
  const base=`/projects/${project}/agents`
  await page.goto(origin+`/projects/${project}/settings`)
- await page.getByRole('link',{name:'Agents',exact:true}).click()
+ await page.getByRole('link',{name:'Team',exact:true}).click()
  await page.getByRole('link',{name:'Invite Agent',exact:true}).click()
  await page.getByLabel('Email',{exact:true}).fill('synthetic-hh-invite@example.test')
  const issued=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith(`/projects/${project}/agents`))

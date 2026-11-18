@@ -829,3 +829,13 @@ corrected source identities. Workspace deletion also withdraws opaque door
 custody. These are documented-format, synthetic-only behaviors; real exports,
 Business stage rehearsal, signed receipts, catch-ups and live cutover remain
 unqualified dependencies. `importers.json` therefore remains `importer_unverified`.
+
+## Import a mailbox's history before switching live mail on
+
+Run Edit Run fleet, 2026-11-17.
+
+**Settings → Email → Add mailbox → Import history only** supports Gmail, Microsoft and IMAP without requesting send access or SMTP configuration. Select folders there and read them into an ordinary Move in review. Approve and undo here using the same current-owner authority, immutable custody and protection for later edits as other imports. Each sender is an unverified contact; messages retain their source dates, grouped threads and supported attachment bytes. Mailbox history is tagged by provider, privately attributed to its mailbox, hidden from customers and excluded from Reports. Importing and undoing do not send notifications, run AI, create tasks, trigger workflows or start SLA clocks. Provider mail is only read, and the reader never schedules live inbound or later polls.
+
+Overlapping folders and repeating the same selection add no duplicate messages. A changed copy of an already-held thread is preserved as imported and shown as a source conflict; this reader does not merge later replies into an imported thread. The current bounded reader can refuse large selections before custody, and Move in can refuse unsupported threads or attachments in the review. [Email setup](email.md#import-history-only) lists the actual bounds and permissions. This is synthetic fake-provider qualification, not a live account migration receipt.
+
+When you are ready to receive and answer mail, **Turn on live mail** in the mailbox settings is a separate permission/configuration step. It does not change historical records into live conversations. Existing Inbox mail may then arrive as live tickets and start enabled rules, so inspect the Inbox before cutover. A technical person may need to update the OAuth app or SMTP installation settings; [the live-mail hand-off](email.md#turn-on-live-mail-later) explains what is needed.

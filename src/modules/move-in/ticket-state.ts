@@ -10,6 +10,7 @@ export function completeImportedTicket(value:NativeValue){
   if(value.source.ticket_fields===1){row.priority??='normal';row.submitter_id??=row.contact_id;row.submitter_type??='contact'}
   if(!source)throw Error('imported_ticket_source_required')
   const states:Record<string,Record<string,string>>={
+   mailbox:{closed:'closed'},
    zendesk:{new:'new',open:'open',pending:'pending',hold:'on_hold',solved:'solved',closed:'closed'},
    freshdesk:{open:'open',pending:'pending',resolved:'solved',closed:'closed',spam:'solved'},
    helpscout:{active:'open',pending:'pending',closed:'solved',spam:'solved'},

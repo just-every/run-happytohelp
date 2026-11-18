@@ -5,8 +5,9 @@ import MailProviderHandoff from '../../setup-help/MailProviderHandoff';
 
 /** Independent controls inside ProjectSettings' form; never submits the parent. */
 export default function MailboxEditor({act,oauth,socketHosts,socketPorts,busy,onDone,reconnect}) {
- const [draft,setDraft] = useState({provider:reconnect?.provider || 'forwarding',address:reconnect?.address || '',displayName:reconnect?.display_name || '',imapHost:'',smtpHost:'',imapPort:'',smtpPort:'',username:'',password:'',smtpUsername:'',smtpPassword:''});
+ const [draft,setDraft] = useState({mode:reconnect?.turnOnLive?'live':reconnect?.mode||'live',provider:reconnect?.provider || 'forwarding',address:reconnect?.address || '',displayName:reconnect?.display_name || '',imapHost:'',smtpHost:'',imapPort:'',smtpPort:'',username:'',password:'',smtpUsername:'',smtpPassword:''});
  const [error,setError] = useState('');const id = useId();
+ const history=draft.mode==='history'&&draft.provider!=='forwarding';
  const oauthProvider = ['gmail','microsoft'].includes(draft.provider);
  const unavailable = oauthProvider ? oauth?.[draft.provider]?.ready !== true : draft.provider === 'imap' && socketHosts?.length === 0;
  const change = (key,value) => setDraft(current=>({...current,[key]:value}));
@@ -15,10 +16,10 @@ export default function MailboxEditor({act,oauth,socketHosts,socketPorts,busy,on
   setError('');
   if(unavailable)return;
   if(!oauthProvider && (!draft.address || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.address))){setError('Enter a valid mailbox email address.');return;}
-  if(draft.provider==='imap' && ['imapHost','smtpHost','username','password'].some(key=>!draft[key].trim())){setError('Enter both mail hosts, username and password.');return;}
-  const {imapPort,smtpPort,...connection}=draft;
-  const body = oauthProvider ? {provider:draft.provider,displayName:draft.displayName} : draft.provider==='forwarding' ? {provider:'forwarding',address:draft.address,displayName:draft.displayName} : {...connection,...(imapPort!==''?{imapPort:Number(imapPort)}:{}),...(smtpPort!==''?{smtpPort:Number(smtpPort)}:{})};
-  const suffix = reconnect ? `/${encodeURIComponent(reconnect.id)}/reconnect` : oauthProvider ? '/connect' : draft.provider==='imap' ? '/imap' : '';
+  if(draft.provider==='imap' && (history?['imapHost','username','password']:['imapHost','smtpHost','username','password']).some(key=>!draft[key].trim())){setError(history?'Enter the IMAP host, username and password.':'Enter both mail hosts, username and password.');return;}
+  const {imapPort,smtpPort,smtpHost,smtpUsername,smtpPassword,...receiving}=draft,connection=history?receiving:{...receiving,smtpHost,smtpUsername,smtpPassword};
+  const body = oauthProvider ? {provider:draft.provider,displayName:draft.displayName,mode:draft.mode} : draft.provider==='forwarding' ? {provider:'forwarding',address:draft.address,displayName:draft.displayName} : {...connection,...(imapPort!==''?{imapPort:Number(imapPort)}:{}),...(!history&&smtpPort!==''?{smtpPort:Number(smtpPort)}:{})};
+  const suffix = reconnect ? `/${encodeURIComponent(reconnect.id)}/${reconnect.turnOnLive?'live':'reconnect'}` : oauthProvider ? '/connect' : draft.provider==='imap' ? '/imap' : '';
   const result = await act(suffix,jsonBody('POST',body),oauthProvider?'Opening provider authorization…':'Mailbox saved.');
   if(!result)return;
   setDraft(current=>({...current,password:'',smtpPassword:''}));
@@ -29,11 +30,12 @@ export default function MailboxEditor({act,oauth,socketHosts,socketPorts,busy,on
   <legend>{reconnect?'Reconnect IMAP mailbox':'Connect a mailbox'}</legend>
   {error && <p className="alert alert-danger" role="alert">{error}</p>}
   {!reconnect && <Field name={`${id}-provider`} label="Connection" value={draft.provider} onChange={(_,value)=>change('provider',value)} options={[{value:'forwarding',label:'Email forwarding'},{value:'gmail',label:'Google Gmail'},{value:'microsoft',label:'Microsoft 365 / Graph'},{value:'imap',label:'IMAP and SMTP'}]}/>}
-  {field('displayName','Sender / brand name')}
+  {draft.provider!=='forwarding'&&<>{reconnect?<p>Mode: {history?'Import history only':'Live mail: send and receive'}</p>:<Field name={`${id}-mode`} label="Mode" value={draft.mode} onChange={(_,value)=>{if(!reconnect)change('mode',value)}} options={[{value:'live',label:'Live mail: send and receive'},{value:'history',label:'Import history only'}]}/>}<p>{history?'Read selected folders once and review the history in Move in. No sending permission, live receiving or automatic replies.':'Connect sending and live Inbox receiving. Enabled replies and workflows apply to incoming mail.'}</p></>}
+  {field('displayName',history?'Mailbox name':'Sender / brand name')}
   {oauthProvider ? unavailable ? <MailProviderHandoff provider={draft.provider}/> : <p>Choose Authorize mailbox to sign in to your email account and approve access.</p> : field('address','Mailbox address','email')}
   {draft.provider==='forwarding' && <p className="settings-note">Use an address on your domain, then route it using the receiving instructions above. Replies use the installation’s verified sender.</p>}
-  {draft.provider==='imap' && <><p className="settings-note">The installation owner must first allow both mail server hosts and TLS ports. <a href="/docs/email#connect-imap-and-smtp">IMAP and SMTP setup</a>.</p><div className="settings-grid">{field('imapHost','IMAP host')}{field('smtpHost','SMTP host')}{['imapPort','smtpPort'].map(key=><Field key={key} name={`${id}-${key}`} label={key==='imapPort'?'IMAP TLS port':'SMTP TLS port'} value={draft[key]} onChange={(_,value)=>change(key,value)} options={[{value:'',label:key==='imapPort'?'Default (993)':'Default (465)'},...(socketPorts||[]).map(port=>({value:String(port),label:String(port)}))]}/>)}{field('username','IMAP username')}{field('password','IMAP password','password')}{field('smtpUsername','SMTP username (if different)')}{field('smtpPassword','SMTP password (if different)','password')}</div><p className="settings-note">Use an app password where your provider requires one. Passwords are encrypted and are never shown again.{socketHosts?.length>0 && <> Allowed socket hosts: {socketHosts.join(', ')}.</>}</p></>}
-  {draft.provider==='imap' && unavailable && <p className="settings-note" role="status">IMAP and SMTP connections are unavailable until the installation owner allows the mail server hosts.</p>}
+  {draft.provider==='imap' && <><p className="settings-note">The installation owner must allow the mail server hosts and TLS ports. <a href="/docs/email#connect-imap-and-smtp">IMAP and SMTP setup</a>.</p><div className="settings-grid">{field('imapHost','IMAP host')}{!history&&field('smtpHost','SMTP host')}{(history?['imapPort']:['imapPort','smtpPort']).map(key=><Field key={key} name={`${id}-${key}`} label={key==='imapPort'?'IMAP TLS port':'SMTP TLS port'} value={draft[key]} onChange={(_,value)=>change(key,value)} options={[{value:'',label:key==='imapPort'?'Default (993)':'Default (465)'},...(socketPorts||[]).map(port=>({value:String(port),label:String(port)}))]}/>)}{field('username','IMAP username')}{field('password','IMAP password','password')}{!history&&<>{field('smtpUsername','SMTP username (if different)')}{field('smtpPassword','SMTP password (if different)','password')}</>}</div><p className="settings-note">Use an app password where your provider requires one. Passwords are encrypted and are never shown again.{socketHosts?.length>0 && <> Allowed socket hosts: {socketHosts.join(', ')}.</>}</p></>}
+  {draft.provider==='imap' && unavailable && <p className="settings-note" role="status">{history?'History import is unavailable until the installation owner allows the IMAP host.':'IMAP and SMTP connections are unavailable until the installation owner allows the mail server hosts.'}</p>}
   <div className="email-actions">{!(oauthProvider && unavailable) && <button className="btn btn-primary" type="button" onClick={save} disabled={unavailable}>{busy?'Connecting…':['gmail','microsoft'].includes(draft.provider)?'Authorize mailbox':'Save mailbox'}</button>}<button className="btn btn-white" type="button" onClick={onDone}>Cancel</button></div>
  </fieldset>;
 }

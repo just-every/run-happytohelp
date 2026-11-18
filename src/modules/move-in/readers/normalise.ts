@@ -1,3 +1,4 @@
+import {prepareMailbox} from './mailbox-mapping'
 import {noRequesterId} from '../../customers/no-requester'
 import {importedPriority,importedAssignee} from '../ticket-import'
 import {zendeskOffline} from './zendesk-offline'
@@ -21,7 +22,7 @@ import { nativeId, object, sourceId, sourceRecord, tagKey, text, time } from './
 export interface NativeValue { tables:Record<string,Record<string,any>[]>; source:Record<string,any> }
 const email=(value:unknown)=>typeof value==='string'&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)?value:null
 const array=(value:unknown):any[]=>Array.isArray(value)?value:[]
-const tags=(record:SourceRecord):string[]=>record.namespace==='helpscout'?helpScoutTags(record):record.namespace==='freshdesk'?freshdeskTags(record):record.namespace==='zendesk'?array((record.payload as any)?.tags).filter(v=>typeof v==='string'&&v.trim()):array((record.payload as any)?.tags?.tags ?? (record.payload as any)?.tags?.data).filter(v=>object(v)&&typeof v.name==='string'&&v.name.trim()).map(v=>v.name)
+const tags=(record:SourceRecord):string[]=>record.namespace==='helpscout'?helpScoutTags(record):record.namespace==='freshdesk'||record.namespace==='mailbox'?freshdeskTags(record):record.namespace==='zendesk'?array((record.payload as any)?.tags).filter(v=>typeof v==='string'&&v.trim()):array((record.payload as any)?.tags?.tags ?? (record.payload as any)?.tags?.data).filter(v=>object(v)&&typeof v.name==='string'&&v.name.trim()).map(v=>v.name)
 /** Records the mapping derives from the export: tag names, and for Zendesk each staff requester's inert contact. */
 export function withDerivedRecords(source:SourceBundle,vendor:Vendor):SourceBundle {
  const seen=new Set<string>(),added:SourceRecord[]=[]
@@ -31,7 +32,7 @@ export function withDerivedRecords(source:SourceBundle,vendor:Vendor):SourceBund
 }
 const rank=(kind:string)=>kind==='tag-name'?0:['company','organization'].includes(kind)?0.5:['group','schedule','ticket_field'].includes(kind)?1:kind==='user'||kind==='contact'||kind==='agent'||kind===STAFF_REQUESTER?1:kind==='collection'?2:kind==='category'?3:4
 export async function prepareMapping(input:MappingInput):Promise<PreparedMapping> {
- const result=await (input.vendor==='helpscout'?prepareHelpScout(input):input.vendor==='freshdesk'?prepareFreshdesk(input):prepareStandard(input))
+ const result=await (input.vendor==='mailbox'?prepareMailbox(input):input.vendor==='helpscout'?prepareHelpScout(input):input.vendor==='freshdesk'?prepareFreshdesk(input):prepareStandard(input))
  mapCompanies(input,result);return result
 }
 async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {

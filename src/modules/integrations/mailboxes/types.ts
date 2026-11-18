@@ -4,9 +4,9 @@ export interface MailboxRow {
  id:string;project_id:string;provider:MailboxProvider;address:string;display_name:string;sender_address:string|null
  status:'connected'|'disconnected'|'reconnect_required'|'needs_backfill'
  credential_cipher:string|null;credential_version:number;cursor_json:string|null
- last_sync_at:number|null;error_code:string|null;connected_by:string
+ sync_lock_until?:number|null;last_sync_at:number|null;error_code:string|null;connected_by:string
 }
-export interface OAuthCredential {accessToken:string;refreshToken:string;expiresAt:number}
+export interface OAuthCredential {mode?:'history';accessToken:string;refreshToken:string;expiresAt:number}
 export interface ImapCredential {
  imapHost:string;smtpHost:string;imapPort?:number;smtpPort?:number;username:string;password:string;smtpUsername?:string;smtpPassword?:string
 }

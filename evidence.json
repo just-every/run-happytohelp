@@ -1,0 +1,94 @@
+{
+  "files": [
+    {
+      "blob": "1ed2cce0ed23f560c6ab8df1053bde272562dcae",
+      "bytes": 3584,
+      "path": "BROWSER-RECEIPT.json",
+      "sha256": "eaf0386762a86d6922fe889864da793790290fbbbfa56f3754299ca460ecbf2a"
+    },
+    {
+      "blob": "82dbbf81a220bb131fa54aa038e418791139a49d",
+      "bytes": 3037,
+      "path": "CHECKS-RECEIPT.json",
+      "sha256": "b2770b28e4b324a66a81a4084843ffa1897b1f347c1551af2fe93b4a2044df25"
+    },
+    {
+      "blob": "a94b2f81742ae34ddfd842880a94ffa97894fc78",
+      "bytes": 5153,
+      "path": "REPORT.md",
+      "sha256": "ae1adc7b3465f71e0fe63eb1e436952bf894ec74ed672af3f707a8dda6fc7ec1"
+    },
+    {
+      "blob": "d196331e8bb749efa4eb0e6b5cd289fcd2a8848e",
+      "bytes": 337,
+      "path": "VERIFY-RECEIPT.json",
+      "sha256": "cf3037bdfa1754323b82e0101fc9f6cda76dd876eb2438b880a050d921464ca7"
+    },
+    {
+      "blob": "2826bc04b7b7239994ccb6efc1ed97ce9c62bd45",
+      "bytes": 222245,
+      "path": "browser/editor-1440.png",
+      "sha256": "f6fb44ec9dedfe9ebe2454c4dc7cbd90c845ade2b89acc9310bbadb454c6311f"
+    },
+    {
+      "blob": "570eb38b8cbe031f14ab3f965e96ad5dc47769f3",
+      "bytes": 193959,
+      "path": "browser/editor-390.png",
+      "sha256": "847ba64a9f4cba491338f75a243ce357fa33ad244995c83a78aa14c310447c3a"
+    },
+    {
+      "blob": "a63308775532118863ca880a4dc2e17773b11007",
+      "bytes": 219829,
+      "path": "browser/folders-1440.png",
+      "sha256": "87c37add82cf3449d4bd29e54012ac51e46bf75c90f2622e9636789542258c80"
+    },
+    {
+      "blob": "52ec30fc494010376c038348653383852f3ee5ef",
+      "bytes": 191898,
+      "path": "browser/folders-390.png",
+      "sha256": "8359317f6076d7b6b9b177016753601ec2e6cf987a04f68480e155137b152b65"
+    },
+    {
+      "blob": "ca549332b73b9dbf51e621d3c2d8c15a982991b6",
+      "bytes": 253348,
+      "path": "browser/history-1440.png",
+      "sha256": "a058d29badea927a9ad4cd93c0852cb5b1512ab52bed297b26f729eba38b7aea"
+    },
+    {
+      "blob": "7d0d886d2a5d39029acc1f27f77c8c9f5fc84876",
+      "bytes": 225026,
+      "path": "browser/history-390.png",
+      "sha256": "15aec433ca3a801e27d795db6fbf25cbc347f3ff00fa7ccd1077c7c62b4de04e"
+    },
+    {
+      "blob": "ca432d6e6fd8b1c64ae5af630354129f3dfc040f",
+      "bytes": 260993,
+      "path": "browser/live-step-1440.png",
+      "sha256": "cf5bb56ab5817bed4254107b00af80d5481bf517769f243fd3b306b615b04980"
+    },
+    {
+      "blob": "b3e2c207ccad6a8027169a05913bae4e02d3be92",
+      "bytes": 230061,
+      "path": "browser/live-step-390.png",
+      "sha256": "da659b9d05107ae7dc0891dcff323d2dd1518d130583515ea9c55d095548dc70"
+    },
+    {
+      "blob": "8347b2e94b4ee2540f1df18a8af2348537b608db",
+      "bytes": 128184,
+      "path": "browser/review-1440.png",
+      "sha256": "c1089341410fde6b0de85d972b07fb6ecb55bd8468ceef4d3136f241661c2cab"
+    },
+    {
+      "blob": "543ed89c9fe78a2db3df22b312900b3227a5dfea",
+      "bytes": 98823,
+      "path": "browser/review-390.png",
+      "sha256": "70610fb18752e2ac75f788a058cf74910421d6c59ca26ced198c288ca67f5c5e"
+    }
+  ],
+  "product_branch": "cloud/hh-mailbox-import-1-c5",
+  "product_head": "6113a584bab1ceb31808de200d69444625214dfd",
+  "ref": "refs/heads/evidence/hh-mailbox-import-1-c5",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-mailbox-import-1-c5"
+}

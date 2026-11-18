@@ -1,0 +1,100 @@
+{
+  "product_head": "6113a584bab1ceb31808de200d69444625214dfd",
+  "journey": "tests/journeys/identity-browser.mjs",
+  "test": "a first owner and a signed-in owner reach Setup and install a working widget",
+  "result": "passed",
+  "duration_ms": 363535,
+  "browser": "System Chromium, headless",
+  "assertion_viewport_width": 1440,
+  "inspection_viewport_width": 390,
+  "observed": [
+    "History-only Gmail, Microsoft and IMAP mode offers no SMTP configuration.",
+    "The history mailbox lacks live sync and sender identity controls.",
+    "Folder selection opens the reviewed import directly in Move in.",
+    "The separate live mail confirmation is visible.",
+    "Desktop captures passed the journey accessibility and horizontal-overflow assertions."
+  ],
+  "screenshots": [
+    {
+      "file": "browser/editor-1440.png",
+      "surface": "History-only mailbox editor",
+      "viewport_width": 1440,
+      "image_height": 2216,
+      "address_masks": 3,
+      "sha256": "f6fb44ec9dedfe9ebe2454c4dc7cbd90c845ade2b89acc9310bbadb454c6311f"
+    },
+    {
+      "file": "browser/editor-390.png",
+      "surface": "History-only mailbox editor",
+      "viewport_width": 390,
+      "image_height": 3202,
+      "address_masks": 4,
+      "sha256": "847ba64a9f4cba491338f75a243ce357fa33ad244995c83a78aa14c310447c3a"
+    },
+    {
+      "file": "browser/folders-1440.png",
+      "surface": "Folder selection",
+      "viewport_width": 1440,
+      "image_height": 1957,
+      "address_masks": 4,
+      "sha256": "87c37add82cf3449d4bd29e54012ac51e46bf75c90f2622e9636789542258c80"
+    },
+    {
+      "file": "browser/folders-390.png",
+      "surface": "Folder selection",
+      "viewport_width": 390,
+      "image_height": 2878,
+      "address_masks": 4,
+      "sha256": "8359317f6076d7b6b9b177016753601ec2e6cf987a04f68480e155137b152b65"
+    },
+    {
+      "file": "browser/history-1440.png",
+      "surface": "Connected history mailbox and live mail guidance",
+      "viewport_width": 1440,
+      "image_height": 1949,
+      "address_masks": 4,
+      "sha256": "a058d29badea927a9ad4cd93c0852cb5b1512ab52bed297b26f729eba38b7aea"
+    },
+    {
+      "file": "browser/history-390.png",
+      "surface": "Connected history mailbox and live mail guidance",
+      "viewport_width": 390,
+      "image_height": 3038,
+      "address_masks": 4,
+      "sha256": "15aec433ca3a801e27d795db6fbf25cbc347f3ff00fa7ccd1077c7c62b4de04e"
+    },
+    {
+      "file": "browser/live-step-1440.png",
+      "surface": "Live mail confirmation dialog",
+      "viewport_width": 1440,
+      "image_height": 1949,
+      "address_masks": 4,
+      "sha256": "cf5bb56ab5817bed4254107b00af80d5481bf517769f243fd3b306b615b04980"
+    },
+    {
+      "file": "browser/live-step-390.png",
+      "surface": "Live mail confirmation dialog",
+      "viewport_width": 390,
+      "image_height": 3038,
+      "address_masks": 3,
+      "sha256": "da659b9d05107ae7dc0891dcff323d2dd1518d130583515ea9c55d095548dc70"
+    },
+    {
+      "file": "browser/review-1440.png",
+      "surface": "Move in history review",
+      "viewport_width": 1440,
+      "image_height": 1064,
+      "address_masks": 0,
+      "sha256": "c1089341410fde6b0de85d972b07fb6ecb55bd8468ceef4d3136f241661c2cab"
+    },
+    {
+      "file": "browser/review-390.png",
+      "surface": "Move in history review",
+      "viewport_width": 390,
+      "image_height": 1409,
+      "address_masks": 1,
+      "sha256": "70610fb18752e2ac75f788a058cf74910421d6c59ca26ced198c288ca67f5c5e"
+    }
+  ],
+  "screenshot_redactions": "Opaque masks cover synthetic address text detected during review."
+}

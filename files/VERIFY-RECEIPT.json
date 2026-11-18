@@ -1,0 +1,11 @@
+{
+  "conclusion": "success",
+  "head_sha": "6113a584bab1ceb31808de200d69444625214dfd",
+  "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44396187234",
+  "status": "completed",
+  "workflow": "Verify",
+  "run_id": 44396187234,
+  "run_attempt": 1,
+  "observed_at": "2026-11-18T21:21:50Z",
+  "github_rest_calls": 6
+}

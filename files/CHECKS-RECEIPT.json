@@ -1,0 +1,83 @@
+{
+  "product_head": "6113a584bab1ceb31808de200d69444625214dfd",
+  "product_parent": "a61a0cd8499323d2fa242e44b09d2fcca2a1278d",
+  "carried_source": "9ad3a3f49d4535d144c221b628e576e24ad03dfc",
+  "candidate_commits": 1,
+  "patches": {
+    "equal": 42,
+    "total": 44,
+    "different": [
+      "importers.json",
+      "sources.lock.json"
+    ]
+  },
+  "environment": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4"
+  },
+  "checks": {
+    "git diff --check origin/main HEAD": "passed",
+    "node src/site/base/contract-docs.mjs write": "passed, zero documents changed",
+    "node src/site/base/contract-docs.mjs check": "passed, zero prose errors or warnings",
+    "node scripts/edition-authoring/cli.mjs lock": "passed",
+    "node scripts/edition-authoring/cli.mjs check": "passed",
+    "pnpm run typecheck": "passed",
+    "pnpm exec rer check --profile first-party": "passed",
+    "npx -y @runeditrun/rer build": "passed",
+    "node scripts/delivery/secret-declarations.mjs": "passed",
+    "node scripts/edition-authoring/cli.mjs verify-base --offline": "one inherited adaptation digest mismatch for .github/workflows/verify.yml",
+    "npx -y @runeditrun/rer setup --non-interactive": "passed with required private local answers",
+    "optional offline Base-origin drift comparison": {
+      "file": ".github/workflows/verify.yml",
+      "main_and_candidate_sha256": "55228cc8da224ea8fb08871d76e3366dc147d0653801a3862c5fec0103c4063b",
+      "recorded_adaptation_sha256": "5d99f329c5aa52ea7faa25f227b3ceda982d1ef98b526b64bd34c2e5b4eba68a",
+      "push_workflow_contains_check": false
+    }
+  },
+  "zendesk_evidence": {
+    "path": "docs/moving-in.md",
+    "bytes": 140665,
+    "sha256": "4d75d0221379e1b3b767e1df1a678f19e0f0a5658b4fb8b14523c96464ad1912"
+  },
+  "passed": 3,
+  "failed": 0,
+  "journey_tests": [
+    {
+      "file": "tests/journeys/email.mjs",
+      "test": "a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome",
+      "status": "passed",
+      "duration_ms": 620756
+    },
+    {
+      "file": "tests/journeys/email.mjs",
+      "test": "read-only mailbox history uses reviewed inert imports, deduplicates selected folders, refuses sending and undoes unchanged records for Gmail, Microsoft and IMAP",
+      "status": "passed",
+      "duration_ms": 7685
+    },
+    {
+      "file": "tests/journeys/move-in-admission.mjs",
+      "test": "review an export, import its history and private notes, repeat and repackage without effects, then undo exactly",
+      "status": "passed",
+      "duration_ms": 220923
+    }
+  ],
+  "move_in_phases": [
+    {
+      "journey": "reviewImportJourney",
+      "duration_ms": 170558
+    },
+    {
+      "journey": "zendeskAndHelpScoutReplies",
+      "duration_ms": 42043
+    },
+    {
+      "journey": "legacyAdoptionJourney",
+      "duration_ms": 8320
+    }
+  ],
+  "product_push": {
+    "branch": "cloud/hh-mailbox-import-1-c5",
+    "attempts": 1,
+    "status": "advertised"
+  }
+}

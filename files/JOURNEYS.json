@@ -1,0 +1,432 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-owner-design-inbox-1-c2",
+  "head": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+  "checked_at": "2026-11-18T01:29:27+00:00",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "chromium": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+  "journey_exit": 1,
+  "recovered_interrupted_workflow_file": true,
+  "journeys": {
+    "tests/journeys/customers.mjs": {
+      "expected": 3,
+      "cases": [
+        {
+          "number": 1,
+          "title": "a support team manages an account and its members, reviews and reverses an identity association without sharing customer authority, and erases its provenance",
+          "result": "pass"
+        },
+        {
+          "number": 2,
+          "title": "an owner previews mapped customer and company CSVs, imports and reverses them without contacting anyone, while later edits and erasure protect retained records",
+          "result": "pass"
+        },
+        {
+          "number": 3,
+          "title": "the owner can hide page visitors without losing writers, email contacts, search matches or correct pagination",
+          "result": "pass"
+        }
+      ]
+    },
+    "tests/journeys/identity-browser.mjs": {
+      "expected": 7,
+      "cases": [
+        {
+          "number": 4,
+          "title": "an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session",
+          "result": "pass"
+        },
+        {
+          "number": 5,
+          "title": "an owner records a deployment profile and executed evidence, sees activation held for independent review, revokes an agreement and exports the qualification record at 1440",
+          "result": "pass"
+        },
+        {
+          "number": 6,
+          "title": "a first owner and a signed-in owner reach Setup and install a working widget",
+          "result": "pass"
+        },
+        {
+          "number": 7,
+          "title": "Setup observes receipts, protects keys and preserves uncertain mail across restarts",
+          "result": "pass"
+        },
+        {
+          "number": 8,
+          "title": "in one browser the widget keeps every visitor to its own conversation across sign-in, sign-out, account switches and shutdown",
+          "result": "pass"
+        },
+        {
+          "number": 9,
+          "title": "lost-factor recovery collects every workspace consent, proves a replacement, preserves access and exposes no session before completion",
+          "result": "pass"
+        },
+        {
+          "number": 10,
+          "title": "opening Profile preserves the selected workspace and its contact navigation",
+          "result": "pass"
+        }
+      ]
+    },
+    "tests/journeys/identity.mjs": {
+      "expected": 15,
+      "cases": [
+        {
+          "number": 11,
+          "title": "the first owner claims once, signs in, invites and recovers a teammate, admits signed visitors and retains account identity after workspace deletion",
+          "result": "pass"
+        },
+        {
+          "number": 12,
+          "title": "an owner enrolls factors, enforces teammate enrollment, steps up to export and recovers lost factors with audited single-use authority",
+          "result": "pass"
+        },
+        {
+          "number": 13,
+          "title": "a mailbox-only owner proves the account email, exports through the fresh session and installs a password without empowering a held session",
+          "result": "pass"
+        },
+        {
+          "number": 14,
+          "title": "custom roles restrict native and delegated knowledge and ticket actions, and security retention and legal holds preserve accountable history",
+          "result": "pass"
+        },
+        {
+          "number": 15,
+          "title": "an installation with outbound email off refuses every sign-in mail in words, contacts no provider, and admits an owner through a deploy-credential grant once",
+          "result": "pass"
+        },
+        {
+          "number": 16,
+          "title": "while a knowledge upgrade is pending, setup, sign-in options and the emailed sign-in link answer normally and knowledge stays closed to anyone without a member session",
+          "result": "pass"
+        },
+        {
+          "number": 17,
+          "title": "an owner records regulated qualification, retains ordinary support access and erasure, and cannot activate health-data processing without independent review",
+          "result": "pass"
+        },
+        {
+          "number": 18,
+          "title": "the setup owner recovers through a scoped Managed handoff only after proving a replacement factor, with old authority revoked",
+          "result": "pass"
+        },
+        {
+          "number": 19,
+          "title": "recovery custody binds and revokes monotonic generations while sentinel and conflicting owner anchors refuse",
+          "result": "pass"
+        },
+        {
+          "number": 20,
+          "title": "a shared account needs every affected workspace owner\u2019s current factor-backed consent and keeps its memberships",
+          "result": "pass"
+        },
+        {
+          "number": 21,
+          "title": "a locally admitted owner signs out and reopens the workspace without the installer link while foreign and hosted entry stay closed",
+          "result": "pass"
+        },
+        {
+          "number": 22,
+          "title": "a local owner chooses a password using installation custody, revokes old sessions and signs back in with it",
+          "result": "pass"
+        },
+        {
+          "number": 23,
+          "title": "the first business-hours save uses the device timezone and every explicitly saved timezone wins",
+          "result": "pass"
+        },
+        {
+          "number": 24,
+          "title": "widget installation confirms only after an authenticated ping from the separate allowed website",
+          "result": "pass"
+        },
+        {
+          "number": 25,
+          "title": "security log reply names retain personal and role access restrictions",
+          "result": "pass"
+        }
+      ]
+    },
+    "tests/journeys/inbox-browser.mjs": {
+      "expected": 7,
+      "cases": [
+        {
+          "number": 26,
+          "title": "two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening",
+          "result": "pass"
+        },
+        {
+          "number": 27,
+          "title": "an operator replies from the phone inbox, opens a company customer and reviews and reverses a labelled identity link without changing customer authority",
+          "result": "pass"
+        },
+        {
+          "number": 28,
+          "title": "two signed-in operators see viewing, typing and unsent draft warnings before replying and after reload",
+          "result": "pass"
+        },
+        {
+          "number": 29,
+          "title": "installed widget availability, provider-edge answers and consent-aware proactive outcomes",
+          "result": "pass"
+        },
+        {
+          "number": 30,
+          "title": "knowledge references remain reviewable in saved replies, ticket insertion, recipient refusals and collection grants at 1440 and 390",
+          "result": "pass"
+        },
+        {
+          "number": 31,
+          "title": "an owner previews a shared macro handoff to a UI-invited agent, edits and sends without taking over, then explicitly takes over",
+          "result": "pass"
+        },
+        {
+          "number": 32,
+          "title": "an operator finds a merge by requester or subject and explicitly chooses the surviving ticket",
+          "result": "pass"
+        }
+      ]
+    },
+    "tests/journeys/workflows-browser.mjs": {
+      "expected": 10,
+      "cases": [
+        {
+          "number": 33,
+          "title": "a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow",
+          "result": "fail",
+          "error": "TypeError: fetch failed during the synthetic webhook test POST in tests/helpers/api001-outcomes-browser.mjs:25"
+        },
+        {
+          "number": 34,
+          "title": "a support lead reviews measured triage accuracy, approves prediction routing and corrects the evidence on a real admitted customer ticket",
+          "result": "pass"
+        },
+        {
+          "number": 35,
+          "title": "a lead compares saved procedure definitions, revises an older version without losing unsaved work or source receipts, and requires fresh evaluation before any release",
+          "result": "pass"
+        },
+        {
+          "number": 36,
+          "title": "an operator links a customer quote, hands it to Penny with explicit permission, receives a signed release and approves one service update while recovery stays unconfirmed",
+          "result": "pass"
+        },
+        {
+          "number": 37,
+          "title": "an owner maps and refreshes HubSpot context while unsaved edits and revoked permissions remain safe",
+          "result": "pass"
+        },
+        {
+          "number": 38,
+          "title": "governed advice retains evaluation state, refuses failed releases, links bounded production traces and stops; human promises remain unsent drafts",
+          "result": "pass"
+        },
+        {
+          "number": 39,
+          "title": "support-channel settings, original-channel replies and shared customer controls stay authorized",
+          "result": "pass"
+        },
+        {
+          "number": 40,
+          "title": "a lead adds a readable ticket field to a public request form with default permissions and an empty read-role list",
+          "result": "pass"
+        },
+        {
+          "number": 41,
+          "title": "an owner chooses named workspace bindings and issues a machine credential with the same scoped IDs",
+          "result": "pass"
+        },
+        {
+          "number": 42,
+          "title": "a signed-in owner discovers workspace creation in both menus and reaches Setup as its owner",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "browser_screens": [
+    {
+      "path": "browser/replay-screens/1440-security-log.png",
+      "width": 1440,
+      "height": 1547,
+      "sha256": "37186fe5a02392e62ca0e24d60bf4b13899e2098984be2075d5d051efeaf6bd8"
+    },
+    {
+      "path": "browser/replay-screens/390-security-log.png",
+      "width": 390,
+      "height": 3145,
+      "sha256": "ce27ffec569212f1c5e7d3d36b24177250d590505111b0fd270f8b54ff658c9c"
+    },
+    {
+      "path": "browser/replay-screens/1440-contacts.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "1f6509e19bdd135781e72ff3ac130a1e6ece09c3b2df6c2711dcd8131c4ffaad"
+    },
+    {
+      "path": "browser/replay-screens/390-contacts.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "f959b6ceeebdb7cbdaa4dba8787fcef63eb5dcfc6ba42003be25cb486b0f0db4"
+    },
+    {
+      "path": "browser/replay-screens/1440-saved-reply-editor.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "b9d16fc7c32f7adeaa1636e735f56a3b94b3bd27266c5370444b50fe1b00999b"
+    },
+    {
+      "path": "browser/replay-screens/390-saved-reply-editor.png",
+      "width": 390,
+      "height": 894,
+      "sha256": "e3b5fac5abb261aea0ef695e1eea8ade582efc6a4d47030de615f7caa9fc3fb5"
+    },
+    {
+      "path": "browser/replay-screens/1440-saved-reply-more-options.png",
+      "width": 1440,
+      "height": 2610,
+      "sha256": "89b0e5685b7a4fc6eaa019aae9c411e3cfa80334fd981eb27cff227baa035dc9"
+    },
+    {
+      "path": "browser/replay-screens/390-saved-reply-more-options.png",
+      "width": 390,
+      "height": 3441,
+      "sha256": "6db8fb98c9b90049e6b73e7620b8a2ae392d46e72032adc39ccb1a50ec8929ac"
+    },
+    {
+      "path": "browser/replay-screens/1440-inbox-email-explanation.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "af01e805ffb14f6b0a04ee24defbd2fd3c0beeb95e429f2c4c5f95312f02a35d"
+    },
+    {
+      "path": "browser/replay-screens/390-inbox-email-explanation.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "09a1653a5c583b0e01a13183cd165b586845e59c66927be31b4fedc086c74b77"
+    },
+    {
+      "path": "browser/replay-screens/1440-widget-rating.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "e35b742d8e89947eb8d06498afe03b79a8c3cfff69d26a6eb1d294c0eb98292a"
+    },
+    {
+      "path": "browser/replay-screens/390-widget-rating.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "734c578dab149ac220c711ed207b0cbb1f8d38b400d55d636773afc1cf1d14fb"
+    },
+    {
+      "path": "browser/replay-screens/1440-widget-more-feedback.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "51ed6d3908f2a2047a00ad21830993e9382611708763333f805217cf1b56dcfb"
+    },
+    {
+      "path": "browser/replay-screens/390-widget-more-feedback.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "6ff0a4e358e8bcb49e6e0a39e8b7b6a99617a7bf55db11445bd47a34f2b72ca9"
+    },
+    {
+      "path": "browser/replay-screens/1440-ticket-summary.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "59295d400cc1a682e7b7acfc0fa5cc622c82b1f4c47387380f27c54a2c0f74fd"
+    },
+    {
+      "path": "browser/replay-screens/390-ticket-summary.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "64f998dd5736c89aa5ad6a31eec31bf515776f8ac9487a3b083e06a09474532d"
+    },
+    {
+      "path": "browser/replay-screens/1440-bulk-ticket-changes.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "ec1dceda408a9888b166aaabd62e9de68bb6c7b468a055b7e81e844366c30e39"
+    },
+    {
+      "path": "browser/replay-screens/390-bulk-ticket-changes.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "81c4896660dc88d93cbc35a7740e7f7af655676c61018eb9d4d1d2253eb5f4d7"
+    },
+    {
+      "path": "browser/stranger11-after-macro/1440-preview.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "804c61897e1291461a2123fc3c3a66a139bb920861a2a6e9c9160ac9113a7738"
+    },
+    {
+      "path": "browser/stranger11-after-macro/390-preview.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "8b78be6b7eb812b5f116fc9c39d59903ef4980475aae220c0b15c2676bf893a3"
+    },
+    {
+      "path": "browser/stranger11-after-macro/1440-sent.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "575d0c6fa13c34f8a7cdf3039b8b78ba568324343704cf359e084f23c7caedc5"
+    },
+    {
+      "path": "browser/stranger11-after-macro/390-sent.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "3b2a0ac7d4fd24fb5cb08dc95f72f4f81d19f9a63cc15d17a8259a5604723fba"
+    },
+    {
+      "path": "browser/knowledge-references/1440-bulk-saved-reply-draft.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "6594dda250312b4313ca37863d49d541c8f54b199cf0ac95e0da8d5bef1e52d0"
+    },
+    {
+      "path": "browser/knowledge-references/390-bulk-saved-reply-draft.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "e1a363f977369608d62a6a88e28c48041996ab68fb9564bdc6480f1011517adf"
+    },
+    {
+      "path": "browser/knowledge-references/1440-named-refusal.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "281a1dd63e63bcaa0d8138bd99f65cd130514fd26c0eda83f09f0dfa2df87370"
+    },
+    {
+      "path": "browser/knowledge-references/390-named-refusal.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "9d51a9d793e66c2b81125d12ec6946e15ded62bb45430ad10cf67306966d750c"
+    },
+    {
+      "path": "browser/customer-outcomes/customer-linked-1440.png",
+      "width": 1440,
+      "height": 2345,
+      "sha256": "c65d1cdcf29bda9fbf0e9e5ec0e4ee8804fdf55a8e29b7063dc882546a87d333"
+    },
+    {
+      "path": "browser/customer-outcomes/customer-linked-390.png",
+      "width": 390,
+      "height": 3468,
+      "sha256": "abf742ec369ecd2059b647b6160dd05a9352d2066e4030e5f67289d391ff6765"
+    },
+    {
+      "path": "browser/customer-outcomes/company-1440.png",
+      "width": 1440,
+      "height": 1022,
+      "sha256": "b3e64f823b24863be856ee3f3d2ce45661db009c13f53bd0f68b847d3c438932"
+    },
+    {
+      "path": "browser/customer-outcomes/company-390.png",
+      "width": 390,
+      "height": 1639,
+      "sha256": "5d0771e56ee20b24f609591dbbe2bd75bb7b2c272d9b284c970df7c29f1e75d5"
+    }
+  ],
+  "missing_planned_browser_screens": []
+}

@@ -1,0 +1,188 @@
+{
+  "id": 44207467165,
+  "workflow": "Verify",
+  "observed_utc": "2026-11-18T01:02:15Z",
+  "receipt_written_utc": "2026-11-18T01:29:27+00:00",
+  "conclusion": "failure",
+  "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+  "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44207467165",
+  "status": "completed",
+  "jobs": [
+    {
+      "completed_at": "2026-11-18T00:24:05Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477001553,
+      "name": "plan",
+      "started_at": "2026-11-18T00:23:50Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:24:31Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477001932,
+      "name": "contract-docs",
+      "started_at": "2026-11-18T00:23:51Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:25:35Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477129974,
+      "name": "build",
+      "started_at": "2026-11-18T00:24:08Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:24:05Z",
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477132389,
+      "name": "slow",
+      "started_at": "2026-11-18T00:24:06Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:27:53Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477822171,
+      "name": "size-check",
+      "started_at": "2026-11-18T00:25:38Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:49:41Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477822272,
+      "name": "Verify / support-and-recovery",
+      "started_at": "2026-11-18T00:25:38Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:55:56Z",
+      "conclusion": "cancelled",
+      "failed_steps": [
+        {
+          "conclusion": "cancelled",
+          "name": "Run shard checks"
+        }
+      ],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477822277,
+      "name": "Verify / import-and-reports",
+      "started_at": "2026-11-18T00:25:38Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:38:00Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477822290,
+      "name": "Verify / public-and-import-browser",
+      "started_at": "2026-11-18T00:25:38Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:43:28Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477822299,
+      "name": "Verify / assistant-and-knowledge",
+      "started_at": "2026-11-18T00:25:37Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:43:06Z",
+      "conclusion": "failure",
+      "failed_steps": [
+        {
+          "conclusion": "failure",
+          "name": "Run shard checks"
+        }
+      ],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477822300,
+      "name": "Verify / support-workflow-browser",
+      "started_at": "2026-11-18T00:25:38Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:48:50Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477822374,
+      "name": "Verify / identity-and-desk",
+      "started_at": "2026-11-18T00:25:37Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:38:01Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477822391,
+      "name": "Verify / identity-and-repair-browser",
+      "started_at": "2026-11-18T00:25:37Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:38:28Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134477822419,
+      "name": "Verify / connections-and-computers",
+      "started_at": "2026-11-18T00:25:38Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:27:53Z",
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134478886442,
+      "name": "nightly-proof",
+      "started_at": "2026-11-18T00:27:53Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:56:08Z",
+      "conclusion": "failure",
+      "failed_steps": [
+        {
+          "conclusion": "failure",
+          "name": "Require the plan and every selected check"
+        }
+      ],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134491845810,
+      "name": "verify",
+      "started_at": "2026-11-18T00:55:59Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-18T00:55:57Z",
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+      "id": 134491847469,
+      "name": "full-push-proof",
+      "started_at": "2026-11-18T00:55:57Z",
+      "status": "completed"
+    }
+  ],
+  "diagnosis": "- `Verify / support-workflow-browser` job 134477822300 failed at `Run shard checks`. The single archive command `gh run view 44207467165 --repo just-every/run-happytohelp --job 134477822300 --log-failed` exited 0 with zero output bytes. It returned no assertion or HTTP error.\n- `Verify / import-and-reports` job 134477822277 was cancelled during `Run shard checks` after 30 minutes 18 seconds, consistent with the configured 30-minute job timeout.\n- The aggregate `verify` job 134491845810 failed at `Require the plan and every selected check`. The contract docs, build and size check jobs succeeded. The two jobs associated with the brief's known flaky cases, `support-and-recovery` and `identity-and-repair-browser`, both succeeded.\n- The failed browser job's check-run annotations contained the generic failure \u201cProcess completed with exit code 1\u201d and a Node action-runtime deprecation warning. Neither response identified the CI assertion."
+}

@@ -1,0 +1,214 @@
+{
+  "files": [
+    {
+      "blob": "b660df27d5d6333edb21ba5812498385593b18b0",
+      "bytes": 6685,
+      "path": "CI.json",
+      "sha256": "eee548e49145c6e98acdf1df545088f051031f3c40fa45d4d1f828f0ed51a476"
+    },
+    {
+      "blob": "fbdda3beefe94b52dafaaa1509684d81814ccf15",
+      "bytes": 1243,
+      "path": "GIT.txt",
+      "sha256": "41a13f167b87548b58c27e5cb553cbe0df009897fe84211cd7ff08a1c52ad9a1"
+    },
+    {
+      "blob": "f31a46f86e533382204a4e98a2fa448df64897f6",
+      "bytes": 16431,
+      "path": "JOURNEYS.json",
+      "sha256": "1e278b1366c14bc4c01cf913e1f611934b95aae9d41376e9a37cff7ac06baa4a"
+    },
+    {
+      "blob": "a89a21e2168f76b3dd70aaba39ed050392fdac5f",
+      "bytes": 7063,
+      "path": "REPORT.md",
+      "sha256": "7bd09267305f5876dcdf2e483e4c52560f9d0eb12b92051f196c783347887f1f"
+    },
+    {
+      "blob": "d953f5ceb2dff84e83014c108334cd31c1b35dc1",
+      "bytes": 108434,
+      "path": "browser/customer-outcomes/company-1440.png",
+      "sha256": "b3e64f823b24863be856ee3f3d2ce45661db009c13f53bd0f68b847d3c438932"
+    },
+    {
+      "blob": "f5516ac20ba5ef55dd114191a38a2dbeeaa3f426",
+      "bytes": 81513,
+      "path": "browser/customer-outcomes/company-390.png",
+      "sha256": "5d0771e56ee20b24f609591dbbe2bd75bb7b2c272d9b284c970df7c29f1e75d5"
+    },
+    {
+      "blob": "c80c1d2d2ef7224046ace017ac8ab084558f5c36",
+      "bytes": 204962,
+      "path": "browser/customer-outcomes/customer-linked-1440.png",
+      "sha256": "c65d1cdcf29bda9fbf0e9e5ec0e4ee8804fdf55a8e29b7063dc882546a87d333"
+    },
+    {
+      "blob": "535410c5ddbc0ce245e156f121400f1af95fea3f",
+      "bytes": 171459,
+      "path": "browser/customer-outcomes/customer-linked-390.png",
+      "sha256": "abf742ec369ecd2059b647b6160dd05a9352d2066e4030e5f67289d391ff6765"
+    },
+    {
+      "blob": "625c7f9b0fdb3ed4f6ebc3a25832d7ce5430cbed",
+      "bytes": 149518,
+      "path": "browser/knowledge-references/1440-bulk-saved-reply-draft.png",
+      "sha256": "6594dda250312b4313ca37863d49d541c8f54b199cf0ac95e0da8d5bef1e52d0"
+    },
+    {
+      "blob": "92eb3477832cf43020149b349f6f3ab032705089",
+      "bytes": 159704,
+      "path": "browser/knowledge-references/1440-named-refusal.png",
+      "sha256": "281a1dd63e63bcaa0d8138bd99f65cd130514fd26c0eda83f09f0dfa2df87370"
+    },
+    {
+      "blob": "a03b1c9948ab04741f3dd1b2f5494d2b91cc7f75",
+      "bytes": 57662,
+      "path": "browser/knowledge-references/390-bulk-saved-reply-draft.png",
+      "sha256": "e1a363f977369608d62a6a88e28c48041996ab68fb9564bdc6480f1011517adf"
+    },
+    {
+      "blob": "461171235a71a57b6a1174304648aa52995c1d7a",
+      "bytes": 61089,
+      "path": "browser/knowledge-references/390-named-refusal.png",
+      "sha256": "9d51a9d793e66c2b81125d12ec6946e15ded62bb45430ad10cf67306966d750c"
+    },
+    {
+      "blob": "9d531b515c07e23c62c4fb8c8c4cfd5ff3283956",
+      "bytes": 88281,
+      "path": "browser/replay-screens/1440-bulk-ticket-changes.png",
+      "sha256": "ec1dceda408a9888b166aaabd62e9de68bb6c7b468a055b7e81e844366c30e39"
+    },
+    {
+      "blob": "b0cf5933b5376325aadd7837e201ded5d930aaa5",
+      "bytes": 52567,
+      "path": "browser/replay-screens/1440-contacts.png",
+      "sha256": "1f6509e19bdd135781e72ff3ac130a1e6ece09c3b2df6c2711dcd8131c4ffaad"
+    },
+    {
+      "blob": "b192471a8119d7020452ab4a05037935e25d171d",
+      "bytes": 120475,
+      "path": "browser/replay-screens/1440-inbox-email-explanation.png",
+      "sha256": "af01e805ffb14f6b0a04ee24defbd2fd3c0beeb95e429f2c4c5f95312f02a35d"
+    },
+    {
+      "blob": "eb172868688fb02dd7d2e062f0923f1e4a2ee183",
+      "bytes": 70693,
+      "path": "browser/replay-screens/1440-saved-reply-editor.png",
+      "sha256": "b9d16fc7c32f7adeaa1636e735f56a3b94b3bd27266c5370444b50fe1b00999b"
+    },
+    {
+      "blob": "44c4e5107776f50dd06512f9c25c54a9c8b4c97e",
+      "bytes": 176859,
+      "path": "browser/replay-screens/1440-saved-reply-more-options.png",
+      "sha256": "89b0e5685b7a4fc6eaa019aae9c411e3cfa80334fd981eb27cff227baa035dc9"
+    },
+    {
+      "blob": "1e6901b12341d882f45c13c60523365cd23830c4",
+      "bytes": 171541,
+      "path": "browser/replay-screens/1440-security-log.png",
+      "sha256": "37186fe5a02392e62ca0e24d60bf4b13899e2098984be2075d5d051efeaf6bd8"
+    },
+    {
+      "blob": "660c71c6ccb0a82ce1296374878da2decb416f64",
+      "bytes": 126616,
+      "path": "browser/replay-screens/1440-ticket-summary.png",
+      "sha256": "59295d400cc1a682e7b7acfc0fa5cc622c82b1f4c47387380f27c54a2c0f74fd"
+    },
+    {
+      "blob": "83fc13d5ff955075af7c0724fae8d158314a27cd",
+      "bytes": 83896,
+      "path": "browser/replay-screens/1440-widget-more-feedback.png",
+      "sha256": "51ed6d3908f2a2047a00ad21830993e9382611708763333f805217cf1b56dcfb"
+    },
+    {
+      "blob": "f2bf128593b189e6fc807bffe0b538690b597ca9",
+      "bytes": 77994,
+      "path": "browser/replay-screens/1440-widget-rating.png",
+      "sha256": "e35b742d8e89947eb8d06498afe03b79a8c3cfff69d26a6eb1d294c0eb98292a"
+    },
+    {
+      "blob": "6c1c369960fda99103cbfd50e46c003a915e455a",
+      "bytes": 38126,
+      "path": "browser/replay-screens/390-bulk-ticket-changes.png",
+      "sha256": "81c4896660dc88d93cbc35a7740e7f7af655676c61018eb9d4d1d2253eb5f4d7"
+    },
+    {
+      "blob": "e0df9993155a70464ee526caa23104261f6d6aec",
+      "bytes": 32833,
+      "path": "browser/replay-screens/390-contacts.png",
+      "sha256": "f959b6ceeebdb7cbdaa4dba8787fcef63eb5dcfc6ba42003be25cb486b0f0db4"
+    },
+    {
+      "blob": "9e43d88dddd30551ebd75426f83c64e9f3110a56",
+      "bytes": 48891,
+      "path": "browser/replay-screens/390-inbox-email-explanation.png",
+      "sha256": "09a1653a5c583b0e01a13183cd165b586845e59c66927be31b4fedc086c74b77"
+    },
+    {
+      "blob": "9afa92ee9ffb79b9cccd3656035c8c3345fbd236",
+      "bytes": 36376,
+      "path": "browser/replay-screens/390-saved-reply-editor.png",
+      "sha256": "e3b5fac5abb261aea0ef695e1eea8ade582efc6a4d47030de615f7caa9fc3fb5"
+    },
+    {
+      "blob": "ebddcc34eaf9b3684cb3e6853c8466ab70b4bbf4",
+      "bytes": 140718,
+      "path": "browser/replay-screens/390-saved-reply-more-options.png",
+      "sha256": "6db8fb98c9b90049e6b73e7620b8a2ae392d46e72032adc39ccb1a50ec8929ac"
+    },
+    {
+      "blob": "d7de64b00820cf60188b6d1ca16f355cc359cb60",
+      "bytes": 153988,
+      "path": "browser/replay-screens/390-security-log.png",
+      "sha256": "ce27ffec569212f1c5e7d3d36b24177250d590505111b0fd270f8b54ff658c9c"
+    },
+    {
+      "blob": "63f6fcddd33150adbea801eb95c5d92ca929220c",
+      "bytes": 35925,
+      "path": "browser/replay-screens/390-ticket-summary.png",
+      "sha256": "64f998dd5736c89aa5ad6a31eec31bf515776f8ac9487a3b083e06a09474532d"
+    },
+    {
+      "blob": "5b81d5207b556ea035e9dc138577e06622f14dd5",
+      "bytes": 46220,
+      "path": "browser/replay-screens/390-widget-more-feedback.png",
+      "sha256": "6ff0a4e358e8bcb49e6e0a39e8b7b6a99617a7bf55db11445bd47a34f2b72ca9"
+    },
+    {
+      "blob": "57a0058ffb0314ad97f78be73eefc59cabccff3f",
+      "bytes": 38364,
+      "path": "browser/replay-screens/390-widget-rating.png",
+      "sha256": "734c578dab149ac220c711ed207b0cbb1f8d38b400d55d636773afc1cf1d14fb"
+    },
+    {
+      "blob": "656f95c015cebb16eafffef47e789e47f3dab9a8",
+      "bytes": 112118,
+      "path": "browser/stranger11-after-macro/1440-preview.png",
+      "sha256": "804c61897e1291461a2123fc3c3a66a139bb920861a2a6e9c9160ac9113a7738"
+    },
+    {
+      "blob": "fc5b283d8052af56d3cc2a5c9f64508dc39f02d0",
+      "bytes": 135551,
+      "path": "browser/stranger11-after-macro/1440-sent.png",
+      "sha256": "575d0c6fa13c34f8a7cdf3039b8b78ba568324343704cf359e084f23c7caedc5"
+    },
+    {
+      "blob": "f55957de1cdeb6ac6bed85470ec17f328bec89e1",
+      "bytes": 57044,
+      "path": "browser/stranger11-after-macro/390-preview.png",
+      "sha256": "8b78be6b7eb812b5f116fc9c39d59903ef4980475aae220c0b15c2676bf893a3"
+    },
+    {
+      "blob": "60a83b5413b720366a79d2701d5905efe7fdbd06",
+      "bytes": 52985,
+      "path": "browser/stranger11-after-macro/390-sent.png",
+      "sha256": "3b2a0ac7d4fd24fb5cb08dc95f72f4f81d19f9a63cc15d17a8259a5604723fba"
+    }
+  ],
+  "product_branch": "cloud/hh-owner-design-inbox-1-c2",
+  "product_head": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+  "ref": "refs/heads/evidence/hh-owner-design-inbox-1-c2",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-owner-design-inbox-1-c2"
+}

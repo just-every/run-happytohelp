@@ -1,0 +1,25 @@
+git log origin/main..HEAD --format=%H %P %s
+08ab40cf54560e2bbc43a7e38ee4419f93503b8f 154b8d638f3332ac29da9398a162fe48345b6aae Carry the owner inbox design round onto main
+
+git log origin/main..HEAD --format="%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)"
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+
+Per-file patch comparison, ignoring blob IDs and hunk offsets
+Candidate files: 56; replay files: 56; equal patches: 54
+Different: sources.lock.json
+Different: tests/journeys/identity.mjs
+
+Original candidate and replay diff statistics
+ 56 files changed, 354 insertions(+), 141 deletions(-)
+ 56 files changed, 354 insertions(+), 141 deletions(-)
+
+Advertised product ref
+08ab40cf54560e2bbc43a7e38ee4419f93503b8f	refs/heads/cloud/hh-owner-design-inbox-1-c2
+
+Main and head SHA-256 for the inherited Base adaptation audit
+origin/main .github/workflows/verify.yml 8b8fcce669a1a48231572819aa8ccf21e2d996b35fa72b3ff8c369bfd2a09d70
+HEAD .github/workflows/verify.yml 8b8fcce669a1a48231572819aa8ccf21e2d996b35fa72b3ff8c369bfd2a09d70
+origin/main base-copies.json 431b9855ac4f8f3827bea6b1494005686bca419cc4f14dfb6d06c489da9c4533
+HEAD base-copies.json 431b9855ac4f8f3827bea6b1494005686bca419cc4f14dfb6d06c489da9c4533

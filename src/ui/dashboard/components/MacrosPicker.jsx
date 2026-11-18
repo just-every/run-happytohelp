@@ -21,13 +21,13 @@ export default function MacrosPicker({onPicked,projectId}){
  useEffect(()=>{setPage(1);setSearch('');setPreview(null);setSelected(null)},[macrosProjectId,activeConversationId]);
  const result=async(macro,action,body)=>{
   const response=await nativeRequest(`${path}/${macro.id}/${action}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,version:macro.version})}),item=response.data.results[0];
-  if(!['ready','applied','duplicate'].includes(item.status))throw new Error(item.reason||'The macro could not be applied');return item;
+  if(!['ready','applied','duplicate'].includes(item.status))throw new Error(item.reason||'The saved reply could not be used');return item;
  };
  const apply=async(macro=selected,review=preview)=>{
   setBusy(true);setError('');try{
    const item=await result(macro,'apply',{tickets:[{id:review.id,expected_version:review.expected_version}],command_id:crypto.randomUUID()});
    if(item.draft)onPicked?.(item.draft.content,{...item.draft,references:item.references || item.draft.references || [],usage_id:item.usage_id});
-   if(item.refresh_error)setError('Macro applied. Reload this ticket to refresh its details.');
+   if(item.refresh_error)setError('Saved reply used. Reload this ticket to refresh its details.');
    setPreview(null);setSelected(null);
   }catch(e){setError(e.message)}finally{setBusy(false)}
  };

@@ -41,7 +41,7 @@ export default function ConversationContactDetails({ conversation, onEdit, onEma
             <a href={ contactPath(conversation, contact) }>{ name }</a>
             { hasDifferentProvidedName && <a href={ contactPath(conversation, contact) } className="conversation-detail-field__secondary-value">{ contact.provided_name }</a> }
         </ConversationDetailField> }
-        { !name && contact.display_name !== contact.id && <ConversationDetailField className="conversation-detail-field--primary" icon="user" label="Generated name">
+        { !name && contact.display_name !== contact.id && <ConversationDetailField className="conversation-detail-field--primary" icon="user" label="Contact">
             <a href={ contactPath(conversation, contact) }>{ contact.display_name }</a>
         </ConversationDetailField> }
         { email && <ConversationDetailField className="conversation-detail-field--primary" icon="mail" label="Email">

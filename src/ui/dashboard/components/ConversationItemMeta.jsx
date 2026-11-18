@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import WorkflowDue from './workflows/WorkflowDue';
 import useQuietLine from '../hooks/useQuietLine';
 import { label } from './tickets/ticket-model';
+import { statusName } from './tickets/status-copy';
 import { DEFAULT_WORKSPACE_COLOUR } from '../../../modules/management/workspace-colour';
 
 // The everyday statuses a row leaves unsaid: New and Open while it is worked, Solved once the row's closed mark shows it.
@@ -11,7 +12,7 @@ const QUIET_STATUSES = [ 'new', 'open', 'solved' ];
 /** The ticket states a row names: a status other than New, Open or Solved, and a priority other than Normal. */
 export function ticketStates(conversation) {
     const states = [];
-    if (!QUIET_STATUSES.includes(conversation.status?.id ?? conversation.status_category)) states.push(conversation.status?.name || label(conversation.status_category));
+    if (!QUIET_STATUSES.includes(conversation.status?.id ?? conversation.status_category)) states.push(conversation.status ? statusName(conversation.status) : label(conversation.status_category));
     if (conversation.priority && conversation.priority !== 'normal') states.push(conversation.priority === 'urgent' ? 'Urgent' : `${ label(conversation.priority) } priority`);
     return states;
 }

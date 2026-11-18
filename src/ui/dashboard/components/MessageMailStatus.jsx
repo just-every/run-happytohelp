@@ -1,7 +1,7 @@
 import React from 'react';
 const labels = {
  sent: 'Email sent to provider · delivery not confirmed',
- suppressed: 'Email not sent · suppressed during local development',
+ suppressed: 'Email not sent: email is off on this computer',
  sending: 'Email send in progress',
  rate_limited: 'Email not sent · outbound notice rate limit reached; no automatic retry',
  consent_refused: 'Email not sent · requester unavailable or email notices disabled; no automatic retry',
@@ -13,7 +13,7 @@ const labels = {
  sender_address: 'Email not sent · the visitor’s address matches the reply sender’s',
  not_recorded: 'Email not sent · no attempt recorded',
 };
-export default function MessageMailStatus({status}) {
- if (!status) return null;
- return <small className="d-block text-muted mt-1" role="status">{status.state==='uncertain'&&status.reason?`Email outcome unknown · ${status.reason}`:labels[status.state] || 'Email status unknown'}</small>;
+export default function MessageMailStatus({status,chatCustomer}) {
+ if (!status && !chatCustomer) return null;
+ return <small className="d-block text-muted mt-1" role="status">{chatCustomer && <>Shown in {chatCustomer}'s chat{status && <br/>}</>}{status && (status.state==='uncertain'&&status.reason?`Email outcome unknown · ${status.reason}`:labels[status.state] || 'Email status unknown')}</small>;
 }

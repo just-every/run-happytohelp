@@ -1,3 +1,5 @@
+import {seedPublicMedia} from './media-fixture.mjs';
+import {seedFidelity,seedExcluded} from './fidelity-fixture.mjs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {seedExtendedLegacy, PLANTED_SECRETS} from './extended-fixture.mjs';
@@ -41,10 +43,10 @@ export async function seedLegacy(connection, { objectDirectory }) {
 
   await insert('password_resets', {email:'export-owner@example.test',token:'fixture-password-reset-token',created_at:timestamp});
 
-  for (const [index, name] of ['ChargeDesk', '12ui'].entries()) {
+  for (const [index, name] of ['Paper Lantern', 'Orbit Repairs'].entries()) {
     const n = index + 1;
     const projectId = projectIds[index];
-    const slug = index ? '12ui' : 'chargedesk';
+    const slug = index ? 'orbit-repairs' : 'paper-lantern';
     const aiId = uuid('22', n);
     const contactId = uuid('30', n);
     const participantId = uuid('31', n);
@@ -66,7 +68,7 @@ export async function seedLegacy(connection, { objectDirectory }) {
       is_proxy_only: 0, is_contact_tracking_enabled: 1, is_ai_balance_top_up_enabled: 0,
       proxy_html_requests_count: 3, proxy_other_requests_count: 8, ai_balance: '12.500000', ai_monthly_budget: '100.00',
       ai_balance_top_up_when_below: '5.00', ai_balance_top_up_amount: '20.00',
-      availability_schedule: json({ monday: [{ start: '09:00', end: '17:00' }] }),
+      availability_schedule: json({ days: ['1','2','3','4','5'], time_from: '09:00', time_to: '17:00', message: 'Synthetic team opening hours' }),
       widget_settings: json({ theme: { chat: { user: { background: index ? '#5046e5' : '#168c76' } } },
         settings: { collect: { require_email: true } }, text: { message: { placeholder_message: `Ask ${name}` } } }),
       widget_settings_hash: `fixture-${slug}`, metadata: json({ source: 'legacy-export-fixture', brand: name }), ...times,
@@ -150,8 +152,11 @@ export async function seedLegacy(connection, { objectDirectory }) {
     await insert('article_categories', { id: uuid('75', n), article_id: articleId, category_id: draftCategoryId, ...times });
     await insert('article_categories', { id: uuid('76', n), article_id: uuid('73', n), category_id: draftCategoryId, ...times });
     await seedExtendedLegacy(insert,{projectId,n,slug,name,ownerId,aiId,contactId,conversationId,bucketId,messageId:messageIds[2]});
+    await seedPublicMedia(insert,connection,{projectId,n,ownerId,objectDirectory});
+    await seedFidelity(insert,connection,{projectId,n,ownerId,conversationId,resolvedId,messageIds,objectDirectory,mediaId});
     await insert('macros', { id: uuid('90', n), project_id: projectId, created_by_id: ownerId,
       title: `${name} billing reply`, content: `Thanks for contacting ${name}. Please open your billing page to download invoices.`, ...times });
   }
+  await seedExcluded(insert,connection,counts);
   return { projectIds: [...projectIds], ownerId, counts, secrets:PLANTED_SECRETS };
 }

@@ -17,7 +17,7 @@ export async function hydrate(env:Env,run:Run,manifest:LegacyPackageManifest,tab
  const inspect=(table:string,row:Row)=>{
   for(const [field,tables] of Object.entries(refs))for(const related of tables)want(related,row[field])
   if(row.parent_id)want(table,row.parent_id)
-  if(table==='mediables'){const model=String(row.mediable_type),parent=model.endsWith('Message')?'messages':model.endsWith('Event')?'events':model.endsWith('SupportDelegation')?'support_delegations':undefined;if(parent)want(parent,row.mediable_id)}
+  if(table==='mediables'){const model=String(row.mediable_type).split('\\').at(-1),parents:Record<string,string>={Message:'messages',Event:'events',SupportDelegation:'support_delegations',Article:'articles',Project:'projects',User:'users',AI:'ais'},parent=model?parents[model]:undefined;if(parent)want(parent,row.mediable_id)}
  }
  for(const row of sourceRows){add(table,row);inspect(table,row);if(table==='media')want('media',row.id)}
  want('projects',run.source_project_id)

@@ -1,0 +1,14 @@
+Browser proof ran the existing mailbox setup and history journey under Chromium.
+Assertions and accessibility audit ran at 1440. The 390 captures show the same controls.
+Synthetic address text was redacted from the published copies.
+
+99f22444d16190f17a7b4b50d3ef11a567cc93790f3ddef80a55822dac9bb813  browser/editor-1440.png  (1440x2216, 2 redactions)
+4a282b499a40b148af952d7c282e74b922fb5c615e908ef106c0a4aa6d3c2aa3  browser/editor-390.png  (390x3202, 2 redactions)
+5337d92810e1be609079f0ec96e6ddd5afad4d4dcea31eea8fa32289a4e3db2e  browser/folders-1440.png  (1440x1957, 3 redactions)
+d6266d354df98bc6c84be38998f842bab4027f0d1fb5e01524cde52c3f9273c0  browser/folders-390.png  (390x2878, 4 redactions)
+45e7ae6b55dfa263f2ca872e1ab6dfedd034910174dd35297007f8f1d65536dc  browser/history-1440.png  (1440x1949, 3 redactions)
+cd473dd58bf969e8192f09176f025fe7b48a6ec972030eff71031156101589a2  browser/history-390.png  (390x3038, 4 redactions)
+ad56cdceebcc34ab42dbbddbc1bd3a61261da2c28f98fc0b137e616a4620dea5  browser/live-step-1440.png  (1440x1949, 3 redactions)
+d3d0e05cee94330e5b7f0a35430c3aa68ff0e7fbbfe8d887daff4da90d1c07b8  browser/live-step-390.png  (390x3038, 3 redactions)
+61e540b5aa0f5a9b6883c935f7cfabd3da068416cc30870df3f718be64fdf11f  browser/review-1440.png  (1440x1064, 0 redactions)
+d9f6e9bd49de439f4833a5e0d04d94b9c1976f9b041ea98f8f953aab9a68c78a  browser/review-390.png  (390x1409, 0 redactions)

@@ -1,0 +1,80 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-mailbox-import-1-c4",
+  "product_head": "9ad3a3f49d4535d144c221b628e576e24ad03dfc",
+  "only_parent": "8e28f7e55376dbaba509dbe29627d16aeeb36db8",
+  "candidate_commits": 1,
+  "identity_check": "Fleet author and committer verified. The commit message has zero trailers.",
+  "contract_status": {
+    "MAIL-001": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "MOVE-IN-002": {
+      "before": "partial",
+      "after": "partial"
+    }
+  },
+  "contract_counts": {
+    "before": {
+      "Published": {
+        "done": 2,
+        "partial": 24,
+        "missing": 0,
+        "total": 26
+      },
+      "Target and push further": {
+        "done": 2,
+        "partial": 47,
+        "missing": 16,
+        "total": 65
+      },
+      "All": {
+        "done": 4,
+        "partial": 71,
+        "missing": 16,
+        "total": 91
+      }
+    },
+    "after": {
+      "Published": {
+        "done": 2,
+        "partial": 24,
+        "missing": 0,
+        "total": 26
+      },
+      "Target and push further": {
+        "done": 2,
+        "partial": 47,
+        "missing": 16,
+        "total": 65
+      },
+      "All": {
+        "done": 4,
+        "partial": 71,
+        "missing": 16,
+        "total": 91
+      }
+    }
+  },
+  "checks": {
+    "documented_contract_write_and_check": "passed. No generated documents changed",
+    "seed_contract_check": "passed",
+    "documented_source_lock_and_check": "passed",
+    "typecheck": "passed on repository Node pin",
+    "rer_check_first_party": "passed on repository Node pin",
+    "rer_build": "passed on repository Node pin",
+    "diff_check": "passed",
+    "browser_mailbox_setup_and_history": "passed at 1440 with 390 evidence captures",
+    "github_verify": {
+      "conclusion": "success",
+      "head_sha": "9ad3a3f49d4535d144c221b628e576e24ad03dfc",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44279318820",
+      "status": "completed",
+      "run_id": 44279318820,
+      "confirmed_at": "2026-11-18T10:14:49Z"
+    }
+  },
+  "node": "v22.20.0",
+  "pnpm": "10.12.4"
+}

@@ -1,0 +1,23 @@
+{
+  "product_head": "9ad3a3f49d4535d144c221b628e576e24ad03dfc",
+  "journeys": [
+    {
+      "file": "tests/journeys/email.mjs",
+      "title": "a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome",
+      "status": "passed",
+      "duration_ms": 563855.179847
+    },
+    {
+      "file": "tests/journeys/email.mjs",
+      "title": "read-only mailbox history uses reviewed inert imports, deduplicates selected folders, refuses sending and undoes unchanged records for Gmail, Microsoft and IMAP",
+      "status": "passed",
+      "duration_ms": 6556.020471
+    },
+    {
+      "file": "tests/journeys/move-in-admission.mjs",
+      "title": "review an export, import its history and private notes, repeat and repackage without effects, then undo exactly",
+      "status": "passed",
+      "duration_ms": 238847.754468
+    }
+  ]
+}

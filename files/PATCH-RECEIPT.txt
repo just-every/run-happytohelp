@@ -1,0 +1,48 @@
+Product SHA 9ad3a3f49d4535d144c221b628e576e24ad03dfc
+Only parent 8e28f7e55376dbaba509dbe29627d16aeeb36db8
+Prior candidate 8113ba7fad3b7d59eed18a21116ad4cfe2651688
+43 byte-identical per-path Git patches; 1 regenerated patch.
+EQUAL docs/email.md
+EQUAL docs/moving-in.md
+EQUAL importers.json
+EQUAL src/modules/access/route-permissions.ts
+EQUAL src/modules/conversations/admission.ts
+EQUAL src/modules/conversations/routes.ts
+EQUAL src/modules/conversations/socket.ts
+EQUAL src/modules/integrations/email-command-options.ts
+EQUAL src/modules/integrations/mailboxes/history-provider.ts
+EQUAL src/modules/integrations/mailboxes/history-routes.ts
+EQUAL src/modules/integrations/mailboxes/history-source.ts
+EQUAL src/modules/integrations/mailboxes/mode.ts
+EQUAL src/modules/integrations/mailboxes/oauth-provider.ts
+EQUAL src/modules/integrations/mailboxes/oauth-routes.ts
+EQUAL src/modules/integrations/mailboxes/routes.ts
+EQUAL src/modules/integrations/mailboxes/send.ts
+EQUAL src/modules/integrations/mailboxes/socket.ts
+EQUAL src/modules/integrations/mailboxes/store.ts
+EQUAL src/modules/integrations/mailboxes/sync.ts
+EQUAL src/modules/integrations/mailboxes/types.ts
+EQUAL src/modules/management/outbound-ticket-store.ts
+EQUAL src/modules/move-in/mailbox-privacy.ts
+EQUAL src/modules/move-in/preparation.ts
+EQUAL src/modules/move-in/readers/common.ts
+EQUAL src/modules/move-in/readers/mailbox-mapping.ts
+EQUAL src/modules/move-in/readers/normalise.ts
+EQUAL src/modules/move-in/readers/shapes.ts
+EQUAL src/modules/move-in/ticket-state.ts
+EQUAL src/modules/move-in/types.ts
+EQUAL src/modules/portal/company-visibility.ts
+EQUAL src/ui/native/pages/MoveIn.jsx
+EQUAL src/ui/native/pages/MoveInGuide.jsx
+EQUAL src/ui/native/pages/email/MailboxEditor.jsx
+EQUAL src/ui/native/pages/email/MailboxHistory.jsx
+EQUAL src/ui/native/pages/email/Mailboxes.jsx
+EQUAL src/ui/native/pages/email/email.css
+EQUAL src/ui/native/pages/move-in-presentation.js
+EQUAL tests/helpers/email/history-browser-edge.mjs
+EQUAL tests/helpers/email/history-browser.mjs
+EQUAL tests/helpers/email/imap-smtp.mjs
+EQUAL tests/helpers/email/mailbox-history.mjs
+EQUAL tests/helpers/email/setup-browser.mjs
+EQUAL tests/journeys/email.mjs
+DIFFERS sources.lock.json — regenerated against current main after all tracked edits.

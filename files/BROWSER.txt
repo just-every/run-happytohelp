@@ -1,0 +1,25 @@
+Product: 8113ba7fad3b7d59eed18a21116ad4cfe2651688
+Runner: Node 22.20.0; /usr/bin/chromium headless with --no-sandbox.
+Command: node --test --test-concurrency=1 --test-name-pattern="^a first owner and a signed-in owner reach Setup and install a working widget$" tests/journeys/identity-browser.mjs
+
+ok 1 - a first owner and a signed-in owner reach Setup and install a working widget
+  duration_ms: 358180.981677
+# tests 1
+# pass 1
+# fail 0
+# duration_ms 362257.380951
+
+At 1440 the journey retains the setup, OAuth developer handoff, hours and navigation assertions and adds the history flow. The phone captures use the same flow at 390.
+The browser proof covers the history-only editor, Archive folder review, Move in review, history details and the explicit live-mail dialog.
+Complete original captures are retained in the task workspace. The selected public visual files omit screenshots containing fixture addresses; this receipt preserves the full original inventory.
+
+editor-1440.png 1440x2216 213960 bytes sha256=fd605c9f78a495aca370d20074c13b489dba606c84676323cca5040ea60df470
+editor-390.png 390x3202 182826 bytes sha256=3733835d5cfa3d16d93de2096aa169ef5495e83987f0e3849b035b0ee97a9eb1
+folders-1440.png 1440x1957 214154 bytes sha256=add9e15799f5fa7bf0678925a78a9fe4d5ac0586ffd63f4562d415594381cfa8
+folders-390.png 390x2878 179970 bytes sha256=bf8cf8b94481e5cc038736b5ffe28c20a243c7bd33a29aca6ea39e15ed58d6f9
+review-1440.png 1440x1064 118630 bytes sha256=f6833be9d9417ae09a2bd9efe734e98c34f44d53fbac88403d96340b20daed7d
+review-390.png 390x1409 87195 bytes sha256=ad62e44294014f415123d41a8571e36f3e20c8e81e07befd050a66d5a3117635
+history-1440.png 1440x1949 241681 bytes sha256=8b6d6d1590273ad743489b86f05177811a238a3107a091a6d8e4460eb1f4adfe
+history-390.png 390x3038 206709 bytes sha256=468f9e5ce0715b0052fee920403f258a350a9f145a526a74a5ab5ba0a0ba84dc
+live-step-1440.png 1440x1949 248942 bytes sha256=4f86c58e1fde6ad344b5639667f39be80478a3eeab4d5cd3bab754a97a4e34ef
+live-step-390.png 390x3038 206189 bytes sha256=67957144b35c645052ed493c3c835773970be8d9e08868f80d803ff7856a2f3b

@@ -1,0 +1,62 @@
+Gated patch: c81b5b436ffdd14abb88c82da67b91ad89d64970..041209e8a422dccbc9116a7fc08aa5aee7e35dbc
+Pushed patch: 50a96bfebd9b0fd9e11d50bc07251db848e2a330..8113ba7fad3b7d59eed18a21116ad4cfe2651688
+git log origin/main..HEAD --format="%H %P": 8113ba7fad3b7d59eed18a21116ad4cfe2651688 50a96bfebd9b0fd9e11d50bc07251db848e2a330
+One commit; one parent; parent is origin/main.
+0 context line comparison: 43/44 equal after excluding blob IDs and hunk headers.
+  sources.lock.json
+3 context line comparison: 40/44 equal after excluding blob IDs and hunk headers.
+  sources.lock.json
+  src/ui/native/pages/MoveInGuide.jsx
+  src/ui/native/pages/email/MailboxEditor.jsx
+  tests/helpers/email/setup-browser.mjs
+Non-conflicting files: 41/41 equal additions and deletions.
+MoveInGuide.jsx differs with context enabled because main revised the adjacent Zendesk copy. The carried mailbox-export line is identical.
+MailboxEditor.jsx retains the exact main OAuth handoff, readiness guard and authorization-button condition. The gated mode control and IMAP history input changes apply alongside them.
+setup-browser.mjs retains all of main’s existing steps in order, followed by the history browser call. The gated network fixture, consumer setting and synthetic encryption fixture are preserved.
+sources.lock.json was regenerated after tracked edits using node scripts/edition-authoring/cli.mjs lock.
+Mechanically equal non-conflicting files:
+  docs/email.md
+  docs/moving-in.md
+  importers.json
+  src/modules/access/route-permissions.ts
+  src/modules/conversations/admission.ts
+  src/modules/conversations/routes.ts
+  src/modules/conversations/socket.ts
+  src/modules/integrations/email-command-options.ts
+  src/modules/integrations/mailboxes/history-provider.ts
+  src/modules/integrations/mailboxes/history-routes.ts
+  src/modules/integrations/mailboxes/history-source.ts
+  src/modules/integrations/mailboxes/mode.ts
+  src/modules/integrations/mailboxes/oauth-provider.ts
+  src/modules/integrations/mailboxes/oauth-routes.ts
+  src/modules/integrations/mailboxes/routes.ts
+  src/modules/integrations/mailboxes/send.ts
+  src/modules/integrations/mailboxes/socket.ts
+  src/modules/integrations/mailboxes/store.ts
+  src/modules/integrations/mailboxes/sync.ts
+  src/modules/integrations/mailboxes/types.ts
+  src/modules/management/outbound-ticket-store.ts
+  src/modules/move-in/mailbox-privacy.ts
+  src/modules/move-in/preparation.ts
+  src/modules/move-in/readers/common.ts
+  src/modules/move-in/readers/mailbox-mapping.ts
+  src/modules/move-in/readers/normalise.ts
+  src/modules/move-in/readers/shapes.ts
+  src/modules/move-in/ticket-state.ts
+  src/modules/move-in/types.ts
+  src/modules/portal/company-visibility.ts
+  src/ui/native/pages/MoveIn.jsx
+  src/ui/native/pages/MoveInGuide.jsx
+  src/ui/native/pages/email/MailboxHistory.jsx
+  src/ui/native/pages/email/Mailboxes.jsx
+  src/ui/native/pages/email/email.css
+  src/ui/native/pages/move-in-presentation.js
+  tests/helpers/email/history-browser-edge.mjs
+  tests/helpers/email/history-browser.mjs
+  tests/helpers/email/imap-smtp.mjs
+  tests/helpers/email/mailbox-history.mjs
+  tests/journeys/email.mjs
+Conflict custody:
+  sources.lock.json
+  src/ui/native/pages/email/MailboxEditor.jsx
+  tests/helpers/email/setup-browser.mjs

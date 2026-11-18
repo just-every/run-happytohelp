@@ -1,0 +1,16 @@
+Product: 8113ba7fad3b7d59eed18a21116ad4cfe2651688
+Runtime: Node 22.20.0; pnpm 10.12.4
+PASS    git diff --check origin/main HEAD
+PASS    Contract source and generated views match current main
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+PASS    Both contract generators check
+PASS    node scripts/edition-authoring/cli.mjs check
+PASS    pnpm run typecheck (candidate tree, before commit)
+PASS    pnpm exec rer check --profile first-party (candidate tree, before commit)
+PASS    cloud_run npx -y @runeditrun/rer build (exact pushed checkout)
+PASS    Guarded product push, one attempt
+PASS    Clean product checkout
+PASS    Non-interactive rer setup completed with private answers and 200 local migrations

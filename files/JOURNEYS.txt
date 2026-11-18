@@ -1,0 +1,14 @@
+Product: 8113ba7fad3b7d59eed18a21116ad4cfe2651688
+Runner: Node 22.20.0, isolated local runtimes; synthetic fixtures.
+Command: node --test --test-concurrency=1 --test-name-pattern='^(a customer email is admitted once|read-only mailbox history uses reviewed inert imports|review an export, import its history and private notes)' tests/journeys/email.mjs tests/journeys/move-in-admission.mjs
+
+ok 1 - a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome
+  duration_ms: 808103.20182
+ok 2 - read-only mailbox history uses reviewed inert imports, deduplicates selected folders, refuses sending and undoes unchanged records for Gmail, Microsoft and IMAP
+  duration_ms: 8478.946854
+ok 3 - review an export, import its history and private notes, repeat and repackage without effects, then undo exactly
+  duration_ms: 234041.639394
+# tests 3
+# pass 3
+# fail 0
+# duration_ms 1051459.383782

@@ -1,0 +1,10 @@
+{
+  "checked_at_utc": "2026-11-18T09:34:50Z",
+  "conclusion": "success",
+  "head_sha": "8113ba7fad3b7d59eed18a21116ad4cfe2651688",
+  "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44271744006",
+  "run_attempt": 1,
+  "run_id": 44271744006,
+  "status": "completed",
+  "workflow": "Verify"
+}

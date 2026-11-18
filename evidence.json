@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "7c1b30bf8587617fe0884f291b8ebe20abca3521",
+      "bytes": 2081,
+      "path": "BROWSER.txt",
+      "sha256": "473622032e3149335c93421ae8ba328e4f3f9f5d89e1310af42120e27ddaa547"
+    },
+    {
+      "blob": "42d9ca1f18d2edd0103ff3034d2e1fca73c834ec",
+      "bytes": 798,
+      "path": "CHECKS.txt",
+      "sha256": "2b40523ce821e04f8a3881de2402d7ad69ab228bab27c80d2383830bb90464a3"
+    },
+    {
+      "blob": "80b3b1bbd65f86997db8bc100cb8b4f47048ab8a",
+      "bytes": 314,
+      "path": "CI.json",
+      "sha256": "40a9dba3363521ee8edc9dd6b0e0c2e2c395945b96cb87512f3c65b43f635c35"
+    },
+    {
+      "blob": "d08a9f751673896f3604c5e9eb395b9e1affc7a3",
+      "bytes": 998,
+      "path": "JOURNEYS.txt",
+      "sha256": "d34fa8ee9d267fe5300431ee51bacf48b1984a26ea1559ccee9787ae5bcc1b6a"
+    },
+    {
+      "blob": "afc42348671268b8bc9fe62706503bc525caf608",
+      "bytes": 3255,
+      "path": "PATCH.txt",
+      "sha256": "4f79e4a33dbe5d655dd62695fc7a1080a7502a5399cfd01d32ea9a36cbee9b85"
+    },
+    {
+      "blob": "0e978e03287628c694476566784698ae5041d504",
+      "bytes": 4915,
+      "path": "REPORT.md",
+      "sha256": "d277672efe6acd8d08a59e4e6240a8116cc4667e3b76d3f497b87abd25c83a52"
+    },
+    {
+      "blob": "387e2adf418a92747c5f613272ca2bc22b93d0d7",
+      "bytes": 118630,
+      "path": "browser/review-1440.png",
+      "sha256": "f6833be9d9417ae09a2bd9efe734e98c34f44d53fbac88403d96340b20daed7d"
+    },
+    {
+      "blob": "3ed54bc1e60adc68d9e7d7fdbd8dc177db66748e",
+      "bytes": 87195,
+      "path": "browser/review-390.png",
+      "sha256": "ad62e44294014f415123d41a8571e36f3e20c8e81e07befd050a66d5a3117635"
+    }
+  ],
+  "product_branch": "cloud/hh-mailbox-import-1-c3",
+  "product_head": "8113ba7fad3b7d59eed18a21116ad4cfe2651688",
+  "ref": "refs/heads/evidence/hh-mailbox-import-1-c3",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-mailbox-import-1-c3"
+}

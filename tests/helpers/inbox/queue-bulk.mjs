@@ -78,7 +78,7 @@ export async function queueBulkJourney(){
   for(const ticket of [id,staleId]){
    const saved=await get(ticket),draft=await ok(`/conversations/${ticket}/macro-draft`)
    assert.equal(saved.fields[field.id],'QUEUE-42');assert.equal(saved.priority,'high')
-   assert.equal(draft.content,`Request ${ticket} is being reviewed.`);assert.deepEqual(draft.unresolved,[])
+   assert.equal(draft.content,`Request #${ticket.slice(0,8).toUpperCase()} is being reviewed.`);assert.deepEqual(draft.unresolved,[])
    assert.deepEqual(await transcript(ticket,visitor.token),messages.get(ticket),'bulk edits and macros publish no reply')
   }
   assert.deepEqual(await foreignTicket(),foreignBefore)

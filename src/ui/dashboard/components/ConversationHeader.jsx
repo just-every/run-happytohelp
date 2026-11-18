@@ -1,3 +1,4 @@
+import { ticketReference } from '../../../modules/tickets/reference';
 import { isNoRequester } from '../../../modules/customers/no-requester';
 import React, { useContext } from 'react';
 import {useDashboardSettings} from '../../native/dashboard-state';
@@ -68,6 +69,7 @@ export default function ConversationHeader({
 
     return (
         <><LocalMailNotice mode={mailMode}/><div className={ `chat-header conversation-header${asksForRating && !isSolved && !isFinal ? ' has-rating-action' : ''}${atTop ? '' : ' is-scrolled'}` }>
+            <title>{ `${ ticketReference(conversation.id) } · ${ conversation.subject || contactName } · HappyToHelp` }</title>
             <div className="conversation-header-panel">
                 <div className="conversation-header-identity">
                     <button type="button" className="conversation-header-back nav-link d-xl-none" { ...tooltip('Show conversations', 'right') } onClick={ () => setIsMainVisible(false) }>

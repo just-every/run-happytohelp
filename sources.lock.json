@@ -16937,7 +16937,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ticket-reference-browser.mjs": {
-      "sha256": "2c461f114c468b03f6b387155e6f532ff03f92057d89c9c30adc91dcbdfe1a65",
+      "sha256": "ba140d52a962e53f7d6a5770bdea55e2fcc9d56041b03595abfd125681e2b5a3",
       "executable": false
     },
     "tests/helpers/inbox/ticket-reference-search.mjs": {

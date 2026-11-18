@@ -1573,7 +1573,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "8b8fcce669a1a48231572819aa8ccf21e2d996b35fa72b3ff8c369bfd2a09d70",
+      "sha256": "55228cc8da224ea8fb08871d76e3366dc147d0653801a3862c5fec0103c4063b",
       "executable": false
     },
     ".gitignore": {
@@ -3053,11 +3053,11 @@
       "executable": false
     },
     "scripts/ci/verify-inventory.mjs": {
-      "sha256": "30c7e0d58f0b2cafb0aa1c74c6450b1f175a2e7052c65f6ba812df50554e9d47",
+      "sha256": "5961f54bb17be4aa4af9c9c794ac91459c0e3f984ff040d637f0fc519357e1ef",
       "executable": false
     },
     "scripts/ci/verify-lifecycle.mjs": {
-      "sha256": "c205e937112020fb0e57d636866665b8d387497d0af13df4660a4f0744a343a5",
+      "sha256": "800fe928bccc5c1c09078feaecab5659d1593355d2e44614aa0739c0a0c988cf",
       "executable": false
     },
     "scripts/ci/verify-light.mjs": {

@@ -169,7 +169,7 @@ jobs:
           - name: identity-and-desk
             browser: false
             commands: |
-              node --test --test-concurrency=1 tests/journeys/identity.mjs tests/journeys/erasure.mjs tests/journeys/inbox.mjs tests/journeys/first-run.mjs tests/journeys/customers.mjs
+              node --test --test-concurrency=1 tests/journeys/identity.mjs tests/journeys/erasure.mjs tests/journeys/inbox.mjs tests/journeys/customers.mjs
           - name: assistant-and-knowledge
             browser: false
             commands: |
@@ -177,11 +177,11 @@ jobs:
           - name: connections-and-computers
             browser: false
             commands: |
-              node --test --test-concurrency=1 tests/journeys/connections.mjs tests/journeys/widget.mjs tests/journeys/delegation.mjs tests/journeys/delegation-computers.mjs tests/journeys/connector.mjs tests/journeys/upgrade.mjs tests/journeys/runtime.mjs tests/journeys/provider-preflight.mjs
+              node --test --test-concurrency=1 tests/journeys/connections.mjs tests/journeys/widget.mjs tests/journeys/delegation.mjs tests/journeys/delegation-computers.mjs tests/journeys/connector.mjs tests/journeys/upgrade.mjs tests/journeys/runtime.mjs tests/journeys/provider-preflight.mjs tests/journeys/move-in-admission.mjs
           - name: import-and-reports
             browser: false
             commands: |
-              node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs tests/journeys/move-in-custody.mjs tests/journeys/move-in-erasure.mjs tests/journeys/move-in-zendesk-pull.mjs tests/journeys/reports.mjs tests/journeys/legacy.mjs tests/journeys/public.mjs
+              node --test --test-concurrency=1 tests/journeys/move-in-custody.mjs tests/journeys/move-in-erasure.mjs tests/journeys/move-in-zendesk-pull.mjs tests/journeys/reports.mjs tests/journeys/legacy.mjs tests/journeys/public.mjs
           - name: support-workflow-browser
             browser: true
             commands: |
@@ -189,15 +189,15 @@ jobs:
           - name: support-and-recovery
             browser: true
             commands: |
-              node --test --test-concurrency=1 tests/journeys/inbox-browser.mjs tests/journeys/restore.mjs
+              node --test --test-concurrency=1 tests/journeys/inbox-browser.mjs
           - name: identity-and-repair-browser
             browser: true
             commands: |
-              node --test --test-concurrency=1 tests/journeys/identity-browser.mjs tests/journeys/delegation-browser.mjs
+              node --test --test-concurrency=1 tests/journeys/identity-browser.mjs tests/journeys/delegation-browser.mjs tests/journeys/first-run.mjs
           - name: public-and-import-browser
             browser: true
             commands: |
-              node --test --test-concurrency=1 tests/journeys/public-browser.mjs tests/journeys/move-in-browser.mjs tests/journeys/erasure-browser.mjs
+              node --test --test-concurrency=1 tests/journeys/public-browser.mjs tests/journeys/move-in-browser.mjs tests/journeys/erasure-browser.mjs tests/journeys/restore.mjs
     steps:
       - name: Configure evidence directory
         run: echo "H2H_EVIDENCE_DIR=$RUNNER_TEMP/happytohelp-evidence" >> "$GITHUB_ENV"

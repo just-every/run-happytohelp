@@ -2,7 +2,7 @@ import {appendFile, readFile} from 'node:fs/promises';
 import {execFileSync, spawnSync} from 'node:child_process';
 import {planVerification} from './verify-plan.mjs';
 import {githubEvidence} from './verify-evidence.mjs';
-import {pushProof, verificationPlan} from './verify-inventory.mjs';
+import {checkPushInventory, pushProof, verificationPlan} from './verify-inventory.mjs';
 
 const shaShape = value => /^[a-f0-9]{40}$/.test(value ?? '') && !/^0+$/.test(value);
 // Queries live throughout the server and module code, including selected Base
@@ -63,6 +63,9 @@ async function sizeAwarePlan() {
 
 const mode = process.argv[2];
 if (mode === '--plan') {
+ const journeys = checkPushInventory(await readFile('.github/workflows/verify.yml', 'utf8'),
+  JSON.parse(await readFile('package.json', 'utf8')).scripts);
+ console.log(`Verify inventory covers ${journeys.length} journey files exactly once`);
  const decision = await sizeAwarePlan();
  const output = Object.entries({...decision, matrix: JSON.stringify(decision.matrix), readers: JSON.stringify(decision.readers)})
   .map(([key, value]) => `${key}=${value}\n`).join('');

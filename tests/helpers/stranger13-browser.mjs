@@ -1,3 +1,4 @@
+import {developerHandoffFlow} from './developer-handoff.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
 import {createRuntime} from './emitted-runtime.mjs'
@@ -106,7 +107,7 @@ export async function missingProviderProcedureBrowser(){
    await page.getByRole('button',{name:'Refresh receipts',exact:true}).click();await page.getByRole('button',{name:'Inspect cases',exact:true}).click()
    const receipt=page.getByLabel('Simulation receipt');await receipt.getByText('Not run',{exact:true}).first().waitFor()
    assert.equal(await receipt.getByText('Not run',{exact:true}).count(),4);assert.doesNotMatch(await receipt.innerText(),/uncertain|replayed automatically/)
-   await receipt.getByText('Add OPENAI_API_KEY',{exact:true}).waitFor();await receipt.getByRole('link',{name:'AI settings',exact:true}).waitFor()
+   await developerHandoffFlow(page,receipt.locator('.developer-handoff'));await receipt.getByRole('link',{name:'AI settings',exact:true}).waitFor()
    const details=(await (await context.request.get(runtime.origin+`/api/training/projects/${owner.projectId}/runs/${run.id}`)).json()).data
    assert.equal(details.reserved_cost,0);assert.equal(details.spent_cost,0);assert.ok(details.cases.every(item=>!item.attempt_id&&!item.started_at&&!item.provider_rounds.length))
    await auditPage(page)

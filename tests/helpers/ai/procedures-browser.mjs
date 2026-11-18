@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {holdNativeResponse} from '../training-readiness.mjs'
 import {procedureDefinition} from './procedures.mjs'
+import {developerHandoffFlow} from '../developer-handoff.mjs'
 
 export async function proceduresBrowserJourney({runtime,browser,shot}){
  const tenant=await runtime.seedTenant({name:'Synthetic procedures',email:'synthetic-hh-procedures@example.test',allowedOrigin:runtime.origin}),{projectId,token,userId}=tenant
@@ -163,9 +164,16 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   const blockedReceipt=page.getByLabel('Simulation receipt')
   assert.equal(await blockedReceipt.getByText('Not run',{exact:true}).count(),4)
   assert.equal(await blockedReceipt.getByText('No sandbox read',{exact:true}).count(),4)
-  assert.equal(await blockedReceipt.locator('pre').count(),0)
+  // Setup instructions belong in the hand-off; evaluator objects still never render as raw code.
+  assert.equal(await blockedReceipt.locator('pre:not(.developer-handoff pre)').count(),0)
   assert.doesNotMatch(await blockedReceipt.innerText(),/CONFIGURATION_REQUIRED|TRAINING_PRICE_CEILINGS|\bnull\b/)
   assert.doesNotMatch(await blockedReceipt.innerText(),/Result uncertain|attempt will not be replayed/)
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000})
+   await blockedReceipt.screenshot({path:shot(`procedures-blocked-${width}.png`)})
+  }
+  await page.setViewportSize({width:1440,height:1000})
+  await developerHandoffFlow(page,blockedReceipt.locator('.developer-handoff'))
 
   for(const [key,instructions] of [['provider','synthetic-hh-provider-error'],['unread','synthetic-hh-no-read']]){
    const created=await context.request.post(runtime.origin+`${root}/${key}/versions`,{data:{...procedureDefinition(),instructions}})

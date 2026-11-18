@@ -1,0 +1,55 @@
+{
+  "main": "bec54d7793e87fb337c2fae45b68a07ae751f8fd",
+  "previous": "8e1369c07ff53f3be328f9cdb7f2c766075055e3",
+  "previous_merge_base": "55e2f106c506e4f671d2e474c737124e760e2233",
+  "prior_files": 15,
+  "replay_files": 15,
+  "conflicts": [
+    "importers.json",
+    "sources.lock.json",
+    "src/ui/native/pages/MoveIn.jsx"
+  ],
+  "exact_byte_patches": [
+    "src/modules/move-in/batches.ts",
+    "src/modules/move-in/routes.ts",
+    "src/modules/move-in/service.ts",
+    "src/modules/move-in/undo-conflicts.ts",
+    "src/modules/move-in/undo-references.ts",
+    "src/ui/native/pages/InvitationActions.jsx",
+    "src/ui/native/pages/MoveInUndoConflict.jsx",
+    "tests/helpers/identity/invitation-browser.mjs",
+    "tests/journeys/move-in-browser.mjs",
+    "tests/move-in/undo-conflict-browser.mjs"
+  ],
+  "same_hunks_with_shifted_locations_or_blob_ids": [
+    "docs/moving-in.md",
+    "tests/helpers/identity/security-browser.mjs"
+  ],
+  "same_edits_with_changed_context": [
+    "src/ui/native/pages/MoveIn.jsx"
+  ],
+  "changed_edits": [
+    "importers.json",
+    "sources.lock.json"
+  ],
+  "clause_counts": {
+    "before": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "unmet-external": 0,
+      "total": 91
+    },
+    "after": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "unmet-external": 0,
+      "total": 91
+    }
+  },
+  "head": "0383239aebd8319a79f841a5f2d133d4db1ed387",
+  "parent": "bec54d7793e87fb337c2fae45b68a07ae751f8fd",
+  "candidate_commits": 1,
+  "clean_worktree": true
+}

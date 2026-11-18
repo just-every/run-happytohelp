@@ -1,0 +1,19 @@
+{
+  "head": "0383239aebd8319a79f841a5f2d133d4db1ed387",
+  "outcome": "passed",
+  "scope": "isolated invitation browser regression",
+  "correction": "Use the current Team link in the proof driver",
+  "assertedWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "checks": [
+    "issue from an actual Worker",
+    "clipboard writes issued link",
+    "capability stays out of page text and announcements",
+    "clipboard denial allows explicit reveal",
+    "pending invitation can copy or explicitly reveal a reissued link"
+  ],
+  "browserErrors": 0
+}

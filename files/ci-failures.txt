@@ -1,0 +1,9 @@
+gh run view 44283277242 --repo just-every/run-happytohelp --job 134730711093 --log-failed
+exit=0
+The command exited successfully with zero stdout bytes and emitted no failed assertion.
+
+gh run view 44283277242 --repo just-every/run-happytohelp --job 134743947091 --log-failed
+exit=0
+verify	Require the plan and every selected check	2026-11-18T10:40:04.7329613Z case "$PUSH_PROOF:$NIGHTLY_PROOF" in *failure*|*cancelled*) exit 1 ;; esac
+verify	Require the plan and every selected check	2026-11-18T10:40:04.7468974Z ##[error]Process completed with exit code 1.
+

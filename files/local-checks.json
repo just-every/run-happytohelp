@@ -1,0 +1,60 @@
+{
+  "head": "0383239aebd8319a79f841a5f2d133d4db1ed387",
+  "tools": {
+    "node": "v22.20.0",
+    "pnpm": "10.12.4"
+  },
+  "required_local_checks": {
+    "contract_regenerate_and_check": {
+      "exit": 0,
+      "result": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "Contract documents are current."
+      ]
+    },
+    "edition_authoring_lock": {
+      "exit": 0,
+      "tracked_files": 4170
+    },
+    "edition_authoring_check": {
+      "exit_before_build": 0,
+      "exit_after_build": 0
+    },
+    "typecheck": {
+      "exit": 0
+    },
+    "rer_check_first_party": {
+      "exit": 0
+    },
+    "rer_build": {
+      "exit": 0
+    },
+    "guide_catalogue": {
+      "exit": 0,
+      "size": 138734,
+      "sha256": "9ff9cc17af910358e94630572f4a7d0bb3d18da7b63241b3334d0343255546f9",
+      "reader_sha256": "1b48c4e2d665a8ad84bb34bf6dea04dd5fa89fcbad8b8f9facce2d7721c90773"
+    }
+  },
+  "additional_verify_build": {
+    "exit": 1,
+    "failed_subcommand": "node scripts/edition-authoring/cli.mjs verify-base --offline",
+    "drift": [
+      {
+        "kind": "adaptation-modified",
+        "path": ".github/workflows/verify.yml",
+        "copy": ".github/workflows/verify.yml",
+        "acknowledge": "node scripts/edition-authoring/cli.mjs adapt-base .github/workflows/verify.yml",
+        "expected": "5d99f329c5aa52ea7faa25f227b3ceda982d1ef98b526b64bd34c2e5b4eba68a",
+        "actual": "55228cc8da224ea8fb08871d76e3366dc147d0653801a3862c5fec0103c4063b"
+      }
+    ],
+    "drift_paths_and_record_match_main": true
+  },
+  "push": {
+    "result": "PUSH_OK",
+    "attempts": 1,
+    "checked_candidate_identity_count": 1,
+    "coauthor_trailers": 0
+  }
+}

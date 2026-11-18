@@ -1,0 +1,73 @@
+{
+  "candidate_head": "0383239aebd8319a79f841a5f2d133d4db1ed387",
+  "browser": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+  "test_environment": "isolated emitted Worker",
+  "cases": {
+    "identity": {
+      "file": "tests/journeys/identity-browser.mjs",
+      "test_name_pattern": "an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session",
+      "exit": 1,
+      "tap_subtests": [
+        "not ok 1 - a new teammate chooses a password and opens the inbox signed in, and an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session"
+      ],
+      "tap_summary": [
+        "# tests 1",
+        "# suites 0",
+        "# pass 0",
+        "# fail 1",
+        "# cancelled 0",
+        "# skipped 0",
+        "# todo 0",
+        "# duration_ms 540020.155036"
+      ],
+      "diagnostics": [
+        "failureType: 'testCodeFailure'",
+        "code: 'ERR_TEST_FAILURE'",
+        "name: 'TimeoutError'",
+        "locator.click: Timeout 20000ms exceeded.",
+        "- waiting for getByRole('link', { name: 'Agents', exact: true })"
+      ]
+    },
+    "move-in": {
+      "file": "tests/journeys/move-in-browser.mjs",
+      "test_name_pattern": "an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import",
+      "exit": 0,
+      "tap_subtests": [
+        "ok 1 - an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import"
+      ],
+      "tap_summary": [
+        "# tests 1",
+        "# suites 0",
+        "# pass 1",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# todo 0",
+        "# duration_ms 349842.222522"
+      ]
+    }
+  },
+  "strict_undo_results": {
+    "nativeEdit": {
+      "total": 2,
+      "checkpoint": 0,
+      "retained": 2,
+      "removed": 0,
+      "restored": 0,
+      "conflicts": 1,
+      "names_displayed": 1
+    },
+    "reference": {
+      "total": 44,
+      "checkpoint": 0,
+      "retained": 44,
+      "removed": 0,
+      "restored": 0,
+      "conflicts": 22,
+      "names_displayed": 20
+    },
+    "staffMatch": "undo completed; native staff retained"
+  },
+  "move_in_accessibility_checks": 77,
+  "move_in_browser_error_count": 0
+}

@@ -6,7 +6,7 @@ export const object = (value:unknown):value is Record<string,any> => value !== n
 export const wrappedVendor=(vendor:Vendor)=>vendor==='zendesk'||vendor==='freshdesk'
 export function sourceId(value:unknown,vendor:Vendor):string {
  if(wrappedVendor(vendor) && (typeof value==='number'&&Number.isSafeInteger(value)&&value>0 || typeof value==='string'&&/^[1-9][0-9]*$/.test(value)))return String(value)
- if((vendor==='intercom'||vendor==='helpscout') && (typeof value==='string'&&!!value.trim()&&value.length<=512 || typeof value==='number'&&Number.isSafeInteger(value)&&value>=0))return String(value)
+ if((vendor==='intercom'||vendor==='helpscout'||vendor==='mailbox') && (typeof value==='string'&&!!value.trim()&&value.length<=512 || typeof value==='number'&&Number.isSafeInteger(value)&&value>=0))return String(value)
  throw new Error('invalid_source_id')
 }
 export function time(value:unknown,format:'iso'|'unix'):number {

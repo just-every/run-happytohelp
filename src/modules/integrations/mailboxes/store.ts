@@ -1,3 +1,4 @@
+import {mailboxMode} from './mode'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../../platform/env'
 import {encryptToken,decryptToken} from '../secrets'
@@ -22,6 +23,7 @@ export async function lookupReceivingMailbox(env:Env,value:string){
  let normalized:string;try{normalized=address(value)}catch{return null}
  const row=await env.DB.prepare(`SELECT a.project_id,a.mailbox_id,a.address FROM mailbox_addresses a JOIN mailbox_connections m ON m.id=a.mailbox_id AND m.project_id=a.project_id
  WHERE a.address=? AND m.status IN ('connected','needs_backfill')
+ AND coalesce(json_extract(m.cursor_json,'$.mode'),'live')<>'history'
  AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=a.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`)
  .bind(normalized).first<{project_id:string;mailbox_id:string;address:string}>()
  return row?{projectId:row.project_id,mailboxId:row.mailbox_id,address:row.address}:null
@@ -38,20 +40,20 @@ export async function assertAddressAvailable(env:Env,projectId:string,value:stri
  AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=e.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`).bind(value,projectId).first()
  if(other||legacy)throw new HTTPException(409,{message:'Address already belongs to an active mailbox'})
 }
-export async function saveConnection(env:Env,input:{id:string;projectId:string;provider:MailboxProvider;address:string;displayName:string;actorId:string;credential?:unknown;addresses:MailboxAddress[];expectedVersion?:number;authorityRevision?:number}){
+export async function saveConnection(env:Env,input:{id:string;projectId:string;provider:MailboxProvider;address:string;displayName:string;actorId:string;credential?:unknown;addresses:MailboxAddress[];expectedVersion?:number;authorityRevision?:number;mode?:'live'|'history'}){
  const primary=address(input.address),addresses=[...new Map(input.addresses.map(a=>[address(a.address),a])).values()]
  if(!addresses.some(a=>address(a.address)===primary))throw new HTTPException(400)
  if(addresses.length>100)throw new HTTPException(400,{message:'Too many mailbox aliases'})
  for(const a of addresses)await assertAddressAvailable(env,input.projectId,address(a.address),input.id)
  const cipher=input.credential===undefined?null:await sealCredential(env,{id:input.id,project_id:input.projectId},input.credential),now=Date.now(),mutation=crypto.randomUUID()
  try{const results=await env.DB.batch([
-  env.DB.prepare(`INSERT INTO mailbox_connections(id,project_id,provider,address,display_name,status,credential_cipher,connected_by,created_at,updated_at,mutation_token)
-   SELECT ?,?,?,?,?,'connected',?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM project_settings WHERE project_id=? AND json_extract(settings_json,'$.deleted_at') IS NOT NULL)
+  env.DB.prepare(`INSERT INTO mailbox_connections(id,project_id,provider,address,display_name,status,credential_cipher,connected_by,created_at,updated_at,mutation_token,cursor_json)
+   SELECT ?,?,?,?,?,'connected',?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM project_settings WHERE project_id=? AND json_extract(settings_json,'$.deleted_at') IS NOT NULL)
    AND EXISTS(SELECT 1 FROM memberships WHERE project_id=? AND user_id=? AND role IN ('owner','admin'))
    AND (? IS NULL OR ?=(SELECT revision FROM integration_authority_epoch WHERE id=1))
-   ON CONFLICT(id) DO UPDATE SET credential_cipher=excluded.credential_cipher,credential_version=mailbox_connections.credential_version+1,status='connected',error_code=NULL,updated_at=excluded.updated_at,mutation_token=excluded.mutation_token,connected_by=excluded.connected_by
+   ON CONFLICT(id) DO UPDATE SET credential_cipher=excluded.credential_cipher,credential_version=mailbox_connections.credential_version+1,status='connected',cursor_json=CASE WHEN ? IS NULL OR coalesce(json_extract(mailbox_connections.cursor_json,'$.mode'),'live')=? THEN mailbox_connections.cursor_json ELSE excluded.cursor_json END,error_code=NULL,updated_at=excluded.updated_at,mutation_token=excluded.mutation_token,connected_by=excluded.connected_by
    WHERE mailbox_connections.project_id=excluded.project_id AND mailbox_connections.provider=excluded.provider AND mailbox_connections.address=excluded.address AND (? IS NULL OR mailbox_connections.credential_version=?)`)
-   .bind(input.id,input.projectId,input.provider,primary,input.displayName,cipher,input.actorId,now,now,mutation,input.projectId,input.projectId,input.actorId,input.authorityRevision??null,input.authorityRevision??null,input.expectedVersion??null,input.expectedVersion??null),
+   .bind(input.id,input.projectId,input.provider,primary,input.displayName,cipher,input.actorId,now,now,mutation,input.mode==='history'?JSON.stringify({mode:'history'}):null,input.projectId,input.projectId,input.actorId,input.authorityRevision??null,input.authorityRevision??null,input.mode??null,input.mode??null,input.expectedVersion??null,input.expectedVersion??null),
   env.DB.prepare('DELETE FROM mailbox_addresses WHERE mailbox_id=? AND project_id=? AND EXISTS(SELECT 1 FROM mailbox_connections WHERE id=? AND mutation_token=?)').bind(input.id,input.projectId,input.id,mutation),
   ...addresses.map(a=>env.DB.prepare(`INSERT INTO mailbox_addresses(address,mailbox_id,project_id,can_send,is_primary)
    SELECT ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM mailbox_connections WHERE id=? AND project_id=? AND status='connected' AND mutation_token=?)`)
@@ -74,5 +76,5 @@ export async function publicMailbox(env:Env,row:MailboxRow){
    ORDER BY m.created_at DESC,CASE d.state WHEN 'uncertain' THEN 0 WHEN 'failed' THEN 1 ELSE 2 END,d.updated_at DESC LIMIT 1`)
    .bind(row.project_id,row.id).first<{state:string}>(),
  ])
- return {id:row.id,provider:row.provider,address:row.address,display_name:row.display_name,sender_address:row.sender_address||row.address,status:row.status,last_sync_at:row.last_sync_at,error_code:row.error_code||(delivery?.state==='failed'?'Mailbox provider rejected delivery':delivery?.state==='uncertain'?'Mailbox delivery outcome unknown; reconcile before retrying':null),cursor:row.cursor_json?JSON.parse(row.cursor_json):null,addresses:aliases.results.map((a:any)=>({...a,can_send:Boolean(a.can_send),is_primary:Boolean(a.is_primary)})),signatures:signatures.results}
+ return {mode:mailboxMode(row),id:row.id,provider:row.provider,address:row.address,display_name:row.display_name,sender_address:row.sender_address||row.address,status:row.status,last_sync_at:row.last_sync_at,error_code:row.error_code||(delivery?.state==='failed'?'Mailbox provider rejected delivery':delivery?.state==='uncertain'?'Mailbox delivery outcome unknown; reconcile before retrying':null),cursor:row.cursor_json?JSON.parse(row.cursor_json):null,addresses:aliases.results.map((a:any)=>({...a,can_send:Boolean(a.can_send),is_primary:Boolean(a.is_primary)})),signatures:signatures.results}
 }

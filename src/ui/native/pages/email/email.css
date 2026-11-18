@@ -23,3 +23,7 @@
 .email-suspended-detail { min-width:0; }
 .email-suspended-detail h2 { font-size:20px; margin:0 0 16px; }
 @media(max-width:767px) { .email-suspended-layout { grid-template-columns:minmax(0,1fr); } }
+
+.email-history-folders { display: grid; gap: 10px; max-height: 260px; overflow-y: auto; margin-bottom: 16px; }
+.email-history-folders label { display: flex; align-items: center; gap: 10px; margin: 0; overflow-wrap: anywhere; }
+.email-mailbox-detail > p { max-width: 72ch; }

@@ -3,6 +3,7 @@ import {Link} from '@tanstack/react-router';
 import {Section} from '../forms';
 import {useConfirmation} from '../ConfirmDialog';
 import MailboxEditor from './MailboxEditor';
+import MailboxHistory from './MailboxHistory';
 import MailboxDetails from './MailboxDetails';
 import {jsonBody,mailboxPath,readMail} from './mail-api';
 import './email.css';
@@ -22,6 +23,7 @@ export default function Mailboxes({projectId,role}) {
   const response=await act(`/${encodeURIComponent(mailbox.id)}/reconnect`,jsonBody('POST',{}),mailbox.provider==='forwarding'?'Mailbox reconnected.':'Opening provider authorization…');
   if(response?.url){const target=new URL(response.url,location.origin);if(target.protocol==='https:')location.assign(target.href);else setError('Authorization returned an invalid URL.');}
  };
+ const turnOnLive=mailbox=>ask({title:'Turn on live mail?',body:<p>This adds sending and live Inbox receiving. Enabled replies, AI and workflows can act on incoming mail. Your imported history stays private. A technical person may need to configure sending first.</p>,confirmLabel:'Continue to authorization',run:async()=>{if(mailbox.provider==='imap'){setEditor({...mailbox,turnOnLive:true});return;}const result=await readMail(`${path}/${encodeURIComponent(mailbox.id)}/live`,jsonBody('POST',{}));const target=new URL(result.url);if(target.protocol!=='https:')throw new Error('Invalid authorization URL');location.assign(target.href);}});
  const disconnect=mailbox=>ask({title:`Disconnect ${mailbox.address}?`,body:<p>Mail sync stops. Existing conversations and email history remain. Reconnect this mailbox to resume receiving.</p>,confirmLabel:'Disconnect',busyLabel:'Disconnecting…',run:async()=>{await readMail(`${path}/${encodeURIComponent(mailbox.id)}`,{method:'DELETE'});setNotice('Mailbox disconnected.');await load();}});
  if(!allowed)return null;
  return <Section title="Mailboxes" description="Connect shared support addresses, choose sender names and signatures, and manage receiving history.">
@@ -31,8 +33,9 @@ export default function Mailboxes({projectId,role}) {
    {!result&&!error&&<p role="status">Loading mailboxes…</p>}
    {result?.data.length===0&&<div className="settings-empty"><p>No connected mailboxes yet.</p>Forward an address on your domain or connect Google, Microsoft or IMAP.</div>}
    {result?.data.map(mailbox=><div className="email-mailbox" key={mailbox.id}>
-    <div className="email-mailbox-heading"><button type="button" className="btn btn-link email-mailbox-title" aria-expanded={selected===mailbox.id} onClick={()=>{setSelected(selected===mailbox.id?null:mailbox.id);setEditor(null);}}><strong>{mailbox.display_name||mailbox.address}</strong><span>{mailbox.address}</span></button><span className="h2h-chip h2h-chip--muted">{mailbox.provider==='microsoft'?'Microsoft Graph':mailbox.provider} · {mailbox.status?.replaceAll('_',' ')}</span></div>
-    {selected===mailbox.id&&<MailboxDetails key={mailbox.id} mailbox={mailbox} agents={agents} act={act} busy={busy} onReconnect={reconnect} onDisconnect={disconnect}/>}
+    <div className="email-mailbox-heading"><button type="button" className="btn btn-link email-mailbox-title" aria-expanded={selected===mailbox.id} onClick={()=>{setSelected(selected===mailbox.id?null:mailbox.id);setEditor(null);}}><strong>{mailbox.display_name||mailbox.address}</strong><span>{mailbox.address}</span></button><span className="h2h-chip h2h-chip--muted">{mailbox.provider==='microsoft'?'Microsoft Graph':mailbox.provider} · {mailbox.mode==='history'?'Import history only':mailbox.status?.replaceAll('_',' ')}</span></div>
+    {selected===mailbox.id&&mailbox.mode==='history'&&<MailboxHistory mailbox={mailbox} projectId={projectId} act={act} busy={busy} onReconnect={reconnect} onDisconnect={disconnect} onLive={turnOnLive}/>}
+    {selected===mailbox.id&&mailbox.mode!=='history'&&<MailboxDetails key={mailbox.id} mailbox={mailbox} agents={agents} act={act} busy={busy} onReconnect={reconnect} onDisconnect={disconnect}/>}
    </div>)}
    {editor&&<MailboxEditor key={editor.id||'create'} act={act} oauth={result?.oauth} socketHosts={result?.socketHosts} socketPorts={result?.socketPorts} busy={busy} reconnect={editor==='create'?null:editor} onDone={()=>setEditor(null)}/>}
    {dialog}

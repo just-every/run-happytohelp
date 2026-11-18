@@ -1,3 +1,6 @@
+import {mailboxHistoryRoutes} from './history-routes'
+import {mailboxMode,requestedMode} from './mode'
+import {openImap} from './socket'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Env} from '../../../platform/env'
@@ -15,6 +18,7 @@ import type {MailboxIncoming,MailboxRow,ImapCredential} from './types'
 export function createMailboxRoutes(receive?:(env:Env,message:MailboxIncoming)=>Promise<void>){
  const app=new Hono<AppEnv>()
  app.route('/',mailboxOAuthRoutes)
+ app.route('/',mailboxHistoryRoutes)
  app.get('/projects/:projectId/mailboxes',async c=>{
   const actor=await scope(c),rows=await c.env.DB.prepare('SELECT * FROM mailbox_connections WHERE project_id=? ORDER BY created_at,id').bind(actor.projectId).all<MailboxRow>()
   const oauth=Object.fromEntries((['gmail','microsoft'] as const).map(provider=>{const config=oauthConfig(c.env,provider);return [provider,{ready:Boolean(config.clientId&&config.clientSecret&&c.env.INTEGRATION_ENCRYPTION_KEY),callbackUrl:callbackUrl(c,provider)}]}))
@@ -31,12 +35,12 @@ export function createMailboxRoutes(receive?:(env:Env,message:MailboxIncoming)=>
  })
  app.post('/projects/:projectId/mailboxes/imap',async c=>{
   const actor=await scope(c,true);await requireStepUp(c,actor,'integration.install')
-  const body=await c.req.json(),credential=imapInput(c.env,body),primary=address(body.address),id=crypto.randomUUID()
+  const body=await c.req.json(),mode=requestedMode(body.mode),credential=imapInput(c.env,body,mode),primary=address(body.address),id=crypto.randomUUID()
   await assertAddressAvailable(c.env,actor.projectId,primary,id)
-  try{await verifyImap(c.env,credential)}catch{throw new HTTPException(502,{message:'IMAP or SMTP connection failed; verify TLS hosts and credentials'})}
+  try{await verifyMailbox(c.env,credential,mode)}catch{throw new HTTPException(502,{message:'IMAP or SMTP connection failed; verify TLS hosts and credentials'})}
   // Re-read membership after the external credential check.
   await scope(c,true)
-  await saveConnection(c.env,{id,projectId:actor.projectId,provider:'imap',address:primary,displayName:text(body.displayName||'',200),actorId:actor.id,credential,addresses:[{address:primary,canSend:true}]})
+  await saveConnection(c.env,{id,projectId:actor.projectId,provider:'imap',address:primary,displayName:text(body.displayName||'',200),actorId:actor.id,credential,mode,addresses:[{address:primary,canSend:mode==='live'}]})
   return c.json({data:await publicMailbox(c.env,await getMailbox(c.env,actor.projectId,id))},201)
  })
  app.post('/projects/:projectId/mailboxes/:mailboxId/reconnect',async c=>{
@@ -45,13 +49,26 @@ export function createMailboxRoutes(receive?:(env:Env,message:MailboxIncoming)=>
   if(row.provider==='gmail'||row.provider==='microsoft')return beginOAuth(c,row.provider,row.id)
   const body=await c.req.json().catch(()=>({}))
   if(body.address&&address(body.address)!==row.address)throw new HTTPException(409,{message:'Reconnect the original mailbox address'})
-  const credential=row.provider==='imap'?imapInput(c.env,body):undefined
-  if(credential)try{await verifyImap(c.env,credential)}catch{throw new HTTPException(502,{message:'IMAP or SMTP reconnect failed'})}
+  const mode=mailboxMode(row),credential=row.provider==='imap'?imapInput(c.env,body,mode):undefined
+  if(credential)try{await verifyMailbox(c.env,credential,mode)}catch{throw new HTTPException(502,{message:'IMAP or SMTP reconnect failed'})}
   await scope(c,true)
   // Reconnection changes credentials, never the configured receiving aliases.
   const retained=(await c.env.DB.prepare('SELECT address FROM mailbox_addresses WHERE mailbox_id=? AND project_id=? ORDER BY address LIMIT 100').bind(row.id,actor.projectId).all<{address:string}>()).results
-  const addresses=[...new Set([row.address,...retained.map(alias=>alias.address)])].map(address=>({address,canSend:row.provider==='imap'}))
-  await saveConnection(c.env,{id:row.id,projectId:actor.projectId,provider:row.provider,address:row.address,displayName:row.display_name,actorId:actor.id,credential,addresses,expectedVersion:row.credential_version})
+  const addresses=[...new Set([row.address,...retained.map(alias=>alias.address)])].map(address=>({address,canSend:row.provider==='imap'&&mode==='live'}))
+  await saveConnection(c.env,{id:row.id,projectId:actor.projectId,provider:row.provider,address:row.address,displayName:row.display_name,actorId:actor.id,credential,mode,addresses,expectedVersion:row.credential_version})
+  return c.json({data:await publicMailbox(c.env,await getMailbox(c.env,actor.projectId,row.id))})
+ })
+ app.post('/projects/:projectId/mailboxes/:mailboxId/live',async c=>{
+  const actor=await scope(c,true);await requireStepUp(c,actor,'integration.install')
+  const row=await getMailbox(c.env,actor.projectId,c.req.param('mailboxId'))
+  if(mailboxMode(row)!=='history')throw new HTTPException(409,{message:'This mailbox already uses live mail'})
+  if(row.sync_lock_until&&row.sync_lock_until>Date.now())throw new HTTPException(409,{message:'Wait for the history read to finish before turning on live mail'})
+  if(row.provider==='gmail'||row.provider==='microsoft')return beginOAuth(c,row.provider,row.id,true)
+  if(row.provider!=='imap')throw new HTTPException(409)
+  const credential=imapInput(c.env,await c.req.json(),'live')
+  try{await verifyImap(c.env,credential)}catch{throw new HTTPException(502,{message:'IMAP or SMTP connection failed; verify TLS hosts and credentials'})}
+  await scope(c,true)
+  await saveConnection(c.env,{id:row.id,projectId:actor.projectId,provider:'imap',address:row.address,displayName:row.display_name,actorId:actor.id,credential,mode:'live',addresses:[{address:row.address,canSend:true}],expectedVersion:row.credential_version})
   return c.json({data:await publicMailbox(c.env,await getMailbox(c.env,actor.projectId,row.id))})
  })
  app.delete('/projects/:projectId/mailboxes/:mailboxId',async c=>{
@@ -106,8 +123,10 @@ export function createMailboxRoutes(receive?:(env:Env,message:MailboxIncoming)=>
  })
  return app
 }
-function imapInput(env:AppEnv['Bindings'],body:any):ImapCredential{
+async function verifyMailbox(env:Env,credential:ImapCredential,mode:'live'|'history'){if(mode==='live')return verifyImap(env,credential);const {session}=await openImap(env,credential);await session.wire.close()}
+function imapInput(env:AppEnv['Bindings'],body:any,mode:'live'|'history'='live'):ImapCredential{
  const secret=(value:unknown)=>{if(typeof value!=='string'||!value||value.length>2048||/[\r\n\0]/.test(value))throw new HTTPException(400,{message:'Invalid mailbox credential'});return value}
+ if(mode==='history')return {imapHost:validateSocketHost(env,body.imapHost),imapPort:validateSocketPort(env,body.imapPort,993),username:secret(body.username),password:secret(body.password)} as ImapCredential
  return {imapHost:validateSocketHost(env,body.imapHost),smtpHost:validateSocketHost(env,body.smtpHost),imapPort:validateSocketPort(env,body.imapPort,993),smtpPort:validateSocketPort(env,body.smtpPort,465),username:secret(body.username),password:secret(body.password),...(body.smtpUsername?{smtpUsername:secret(body.smtpUsername)}:{}),...(body.smtpPassword?{smtpPassword:secret(body.smtpPassword)}:{})}
 }
 export const mailboxRoutes=createMailboxRoutes()

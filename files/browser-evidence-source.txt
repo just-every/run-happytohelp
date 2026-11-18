@@ -1,0 +1,15 @@
+Exact candidate SHA 08ab40cf54560e2bbc43a7e38ee4419f93503b8f
+Run https://github.com/just-every/run-happytohelp/actions/runs/44207467165
+Job Verify / support-and-recovery ID 134510535080 completed/success
+Started 2026-11-18T00:25:38Z and finished 2026-11-18T00:49:41Z
+Job https://github.com/just-every/run-happytohelp/actions/runs/44207467165/job/134510535080
+Workflow artifact name for this job from attempt 1
+browser-evidence-support-and-recovery-44207467165-1
+
+The knowledge-reference journey writes 1440- and 390-pixel PNGs for the synthetic
+saved-reply and inbox paths to the workflow browser evidence directory.
+The job receipt above is from GitHub, and the artifact name is derived from
+.github/workflows/verify.yml.
+
+gh run download 44207467165 --repo just-every/run-happytohelp --name browser-evidence-support-and-recovery-44207467165-1 --dir ../download-browser-evidence-support-and-recovery-44207467165-1
+The GitHub artifact download reached its storage redirect and returned Forbidden (exit 1). The source run and job links above retain browser evidence provenance. Image files were unavailable for the packet.

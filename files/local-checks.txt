@@ -1,0 +1,37 @@
+Exact head 08ab40cf54560e2bbc43a7e38ee4419f93503b8f
+Toolchain v22.20.0 pnpm 10.12.4
+
+$ node scripts/edition-authoring/cli.mjs check
+{
+  "ok": true,
+  "schemaVersion": 1,
+  "manifest": "b45403346c7c7b41b2d2a7835f61d079b0160e6c1b5e31bd84f4f34d1f7a8e91",
+  "edition": "just-every/happytohelp",
+  "files": 4147
+}
+PASS
+
+$ node src/site/base/contract-docs.mjs check
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+PASS
+
+$ node scripts/contract-docs.mjs check
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+PASS
+
+$ cloud_run pnpm run typecheck
+
+> happytohelp@0.4.31 typecheck /home/agent/rer-consolidation/work/hh-owner-design-inbox-1-c3/run-happytohelp
+> node scripts/generate-routes.mjs && tsc --noEmit
+
+PASS
+
+$ cloud_run pnpm exec rer check --profile first-party
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PASS
+
+Clean product working tree.

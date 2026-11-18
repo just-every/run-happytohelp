@@ -1,0 +1,76 @@
+{
+  "files": [
+    {
+      "blob": "d107f8745a4f98ef4f5cfa28ee8f2a1000eebf18",
+      "bytes": 5054,
+      "path": "REPORT.md",
+      "sha256": "ede46e87ba455c2627b4a0a3492629d95d565fc33c6457a2161d130a3b6d81b9"
+    },
+    {
+      "blob": "1118571823aeb39eb641ab0c4d410ee58fedbf6d",
+      "bytes": 1122,
+      "path": "browser-evidence-source.txt",
+      "sha256": "2b35a67165867efc4ed5344d774b7225692208fc216c2eaa7c28d4d2c7310867"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "commit-identity.txt",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "e895ce8a14aa64fab2e940ed3358a25a1b1c68b9",
+      "bytes": 687,
+      "path": "exact-head-runs.json",
+      "sha256": "8fa2417248f9a0082377bda19a11f2b4a79975a6dd33bb162510756f238254e4"
+    },
+    {
+      "blob": "ce85f22d846353c354811f2bc79506fafa71b14a",
+      "bytes": 974,
+      "path": "local-checks.txt",
+      "sha256": "85ebc92a202af101cc38850c5c56a4012fe6765b1a8da6f7198db433a58df8ab"
+    },
+    {
+      "blob": "4a3e15a79668e3076c35931852082ccc5c7454cd",
+      "bytes": 4193,
+      "path": "patch-parity.txt",
+      "sha256": "938f09b542dcd62cbf8361c93c6180e1ee80183de05c47784cabf930ec89d143"
+    },
+    {
+      "blob": "0133c09247cba2c96c027bb146b90bee320fc89a",
+      "bytes": 24765,
+      "path": "prior-verify.json",
+      "sha256": "f6323d2e1752e16c387ef02eb81de01faa5d2e47d6f637816227ae42b0ff159f"
+    },
+    {
+      "blob": "1dca48a5ecd17ed61ec938a79c1b75ff516be41b",
+      "bytes": 85,
+      "path": "product-ref.txt",
+      "sha256": "3982cb4f8310c858cc0a5ee2e7c952d9aeb9d9376ebf3af87adc0414d8ed080d"
+    },
+    {
+      "blob": "e3ffabd2b63f7c376fd3c31a08e1a7eec0847aac",
+      "bytes": 163,
+      "path": "remote-custody.txt",
+      "sha256": "964029afc9f6f1b63738468148d45c2aceea9398c075a2c404ae95d6db88b6a4"
+    },
+    {
+      "blob": "82b658023cf43cd39240ffe4bcb408ff44ec7813",
+      "bytes": 184,
+      "path": "verify-44207467165.json",
+      "sha256": "c7cbb6dc45ff58b5caacc7971bda26936410485609a3bb3a1dd42a78bc824fe5"
+    },
+    {
+      "blob": "ce1562d7804bcda99f4d7f6248dd78ea0ae28935",
+      "bytes": 181,
+      "path": "verify-44218250184.json",
+      "sha256": "bb141325f6e58b0d220d099fee94bd5354469a75aaba02bc9c82bebe79b1c374"
+    }
+  ],
+  "product_branch": "cloud/hh-owner-design-inbox-1-c3",
+  "product_head": "08ab40cf54560e2bbc43a7e38ee4419f93503b8f",
+  "ref": "refs/heads/evidence/hh-owner-design-inbox-1-c3",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-owner-design-inbox-1-c3"
+}

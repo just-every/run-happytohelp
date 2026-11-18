@@ -14,8 +14,12 @@ export async function publicContactProof(runtime,request,tenant,other){
   assert.equal(published.status,200)
   const formHtml=await published.text();assert.match(formHtml,/<form id="customer-request"/)
   const settings=await (await request(`/api/management/projects/${tenant.projectId}/widget-settings`,{token:tenant.token})).json()
+  const signedOutRoot=await request('/')
+  assert.equal(signedOutRoot.status,302,'an empty configured install sends visitors to native sign-in')
+  assert.equal(signedOutRoot.headers.get('location'),'/login')
+  assert.match(signedOutRoot.headers.get('cache-control')||'',/no-store/)
   for(const path of ['/', '/docs', '/run', '/contract', `/help/${tenant.projectId}`, `/help/${tenant.projectId}/requests`]){
-   const response=await request(path);assert.equal(response.status,200,path)
+   const response=await request(path,{token:path==='/'?tenant.token:undefined});assert.equal(response.status,200,path)
    const html=await response.text();assert.ok(html.includes(`data-widget-key="${settings.widgetKey}"`),path+' publishes its own widget')
    assert.match(html,/data-config="[^\"]*requireEmail/)
    for(const href of [...html.matchAll(/href="(\/run|\/contract|\/docs(?:\/getting-started)?)"/g)].map(match=>match[1]))assert.equal((await request(href)).status,200,'native public navigation '+href)

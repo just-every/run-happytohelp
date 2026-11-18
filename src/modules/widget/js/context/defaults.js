@@ -101,7 +101,7 @@ export const defaultText = {
         tooltip_send: "Send message",
         button_send: "Send",
         error_name: "Please enter your name",
-        error_email: "Please enter a valid email address",
+        error_email: "Please add an email we can reach you at.",
         error_message: "Please enter a message to send",
     },
     collect: {

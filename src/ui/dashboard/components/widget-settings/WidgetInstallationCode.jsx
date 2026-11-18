@@ -19,7 +19,7 @@ const HIGHLIGHT_LANGUAGES = {
     csharp: 'csharp',
 };
 
-export default function WidgetInstallationCode() {
+export default function WidgetInstallationCode({website}) {
     const { installation } = useContext(WidgetSettingsContext);
     const [language, setLanguage] = useState(VERIFICATION_LANGUAGES[0].id);
     const languageButtons = useRef({});
@@ -68,10 +68,12 @@ export default function WidgetInstallationCode() {
         <div className="widget-code">
             <section className="widget-code__section" aria-labelledby="widget-code-install-heading">
                 <div className="widget-code__section-heading">
-                    <h2 id="widget-code-install-heading"><span aria-hidden="true">1.</span> Install the widget</h2>
+                    <h2 id="widget-code-install-heading"><span aria-hidden="true">2.</span> Add this code to every page</h2>
                     <p>Add this script to every page where you want the widget to appear.</p>
                 </div>
                 <CodeSnippet
+                    disabled={!website}
+                    unavailable="Enter your website address first, so the chat works on your site"
                     code={anonymousCode}
                     language="html"
                     copyLabel="Copy"
@@ -79,10 +81,12 @@ export default function WidgetInstallationCode() {
                     aiCode={aiIntegrationBrief}
                     aiCopyAriaLabel="Copy redacted AI setup guide from the anonymous installation snippet"
                 />
+                {website && <a className="btn btn-white mt-3" href={`mailto:?subject=${encodeURIComponent("Install our support chat")}&body=${encodeURIComponent(`Our website address: ${website}\n\nAdd this code to every page on that website:\n\n${anonymousCode}`)}`}>Send to my developer</a>}
             </section>
 
             <details className="widget-code__advanced">
-                <summary>Advanced</summary>
+                <summary>Details for your developer</summary>
+            <p>The saved website address uses the scheme, hostname and optional port, without a path, query or fragment.</p>
             <section className="widget-code__section widget-code__section--secret" aria-labelledby="widget-code-secret-heading">
                 <div className="widget-code__section-heading">
                     <h2 id="widget-code-secret-heading">Server secret</h2>
@@ -122,6 +126,8 @@ export default function WidgetInstallationCode() {
                     aria-labelledby={`widget-code-language-${language}`}
                 >
                     <CodeSnippet
+                        disabled={!website}
+                        unavailable="Enter your website address first, so the chat works on your site"
                         code={verificationCode}
                         language={HIGHLIGHT_LANGUAGES[language]}
                         copyLabel="Copy"
@@ -138,6 +144,8 @@ export default function WidgetInstallationCode() {
                     <p>You can include additional user or account metadata in the payload. Optional metadata includes its own verification hash.</p>
                     <p>Append the {selectedLanguage.label} metadata code after the identity example to create its verification hash.</p>
                     <CodeSnippet
+                        disabled={!website}
+                        unavailable="Enter your website address first, so the chat works on your site"
                         code={metadataCode}
                         language={HIGHLIGHT_LANGUAGES[language]}
                         copyLabel="Copy metadata addition"

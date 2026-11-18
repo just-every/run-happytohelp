@@ -14,7 +14,7 @@ node scripts/import-legacy.mjs --package /absolute/company/import --apply --pers
 
 ## Importing a package into a deployed installation
 
-A deployed installation is imported with its deploy credentials. The command binds only that installation's D1 database and R2 bucket, through Wrangler remote bindings and the operator's Cloudflare API token. It has no route in the application, so no workspace session or public request can reach it. It creates no queue, mail, AI or payment binding and never invokes the installation's Worker, so the import itself sends no email, dispatches no job, calls no AI provider and charges nothing.
+A deployed installation is imported with its deploy credentials. The command binds only that installation's D1 database and R2 bucket, through Wrangler remote bindings and the operator's Cloudflare API token. This administrative CLI is separate from the installed Worker runner and its owner-approved historical policy described below. It creates no queue, mail, AI or payment binding and never invokes the installation's Worker, so the import itself sends no email, dispatches no job, calls no AI provider and charges nothing.
 
 ```sh
 CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... \
@@ -126,7 +126,7 @@ Required deliberate export enrichment:
   checkout or Stripe operations. Original unsupported operation rows remain
   visible as archive-only.
 
-Mapped families include project/membership/contact identity, transcript/revision/frontier and original bucket IDs, notes/participants/media, AI profiles, published knowledge/articles/categories, customer profiles/evidence/insights/summaries, generation attempts/round usage, revoked device/grant custody, delegation/events, training runs/cases and historical financial rows. Every input row is also retained verbatim in `legacy_import_rows`, including deleted, unsupported, financial and unrecognized columns. The plan explicitly lists archive-only rows; preserving them does not claim their application behavior has been normalized. Password hashes and old access tokens are retained only in the source archive; native password recovery and device pairing establish new credentials.
+Mapped families include project/membership/contact identity, transcript/revision/frontier and original bucket IDs, notes/participants/media, AI profiles, published knowledge/articles/categories, customer profiles/evidence/insights/summaries, generation attempts/round usage, revoked device/grant custody, delegation/events, training runs/cases and historical financial rows. Every input row is also retained verbatim in `legacy_import_rows`, including deleted, unsupported, financial and unrecognized columns. The plan explicitly lists archive-only rows; preserving them does not claim their application behavior has been normalized. The exporter omits password hashes, old access tokens, authentication keys and telemetry; those omissions are never archived. Native password recovery and device pairing establish new credentials.
 
 The bundle SHA-256 identifies a run. Each committed row and its canonical writes share one D1 transaction. Resuming the exact artifact skips recorded rows; new artifacts must match existing canonical bytes or fail without overwriting them. Imports are incrementally resumable, not whole-database atomic. Conflict after earlier rows leaves an inspectable partial run. R2 uploads verify their digest, refuse conflicting existing bytes and use conditional creation. The importer does not delete anything and never dispatches jobs.
 
@@ -283,4 +283,56 @@ first owner in the setup workspace; workspace-admin takeover grants no global
 read. An installation created before this hook has no original baseline and
 continues to report `installation: null`; an upgrade never invents one.
 Historical note buckets, assignment attribution and macro creator snapshots are
-read as history. Historical people never enter native assignment/member lists.
+read as history. Historical people never enter native member lists. A source assignee may match one current native workspace member by exact recorded email; unmatched assignments remain held, with original attribution retained.
+
+### Field fidelity and policy limits
+
+The administrative CLI preserves source verification, memberships and non-AI
+assignments. Installed v2 historical adoption creates only the approved owner's
+membership, clears historical contact verification, grants no automation consent
+and disables AI. It uses that approved owner as saved-reply custodian before
+mapping, including nullable legacy `macros.created_by_id`; source author
+provenance remains separate, with **Unknown source author** for null. In CLI,
+that row is archive-only with an explicit hold, without aborting other history
+or selecting a guessed user. CLI null-author usability needs an explicit future
+custodian-selection decision.
+
+`fieldDispositions` names each carried field, row/null counts, native
+destination or archive/control reason. `exportDispositions` names omitted
+columns, nested paths and excluded tables; omitted means no source custody.
+`targetColumnOmissions` identifies mapped properties the installed D1 schema
+cannot store. Worker result GET reads field disclosures recorded during bounded
+preflight; it does not rescan sources. Unknown manual/enriched fields remain
+unclassified until reviewed, rather than count as supported.
+
+Conversation metadata's recorded subject maps to `conversations.subject`.
+Other metadata, original unread counts, AI execution state, exact publication
+instants, profile/refresh/provider lifecycle fields and pivot tag/order have the
+explicit dispositions in `field-rules.ts`; archives do not imply native parity.
+UTC source instants normalize to milliseconds (submillisecond precision is lost);
+missing timestamps normalize to epoch. No model, mail domain or website origin
+is guessed.
+
+Media mapping evaluates all original pivots in stable order. One native
+`media.message_id` can retain one eligible message association; extra
+associations are named holds with source identities. Conflicting conversation
+audiences are held. Event/delegation associations suppress visitor message/file
+doors. Historical private-note attachments use the existing note attachment
+reader and never become visitor attachments, even if another source pivot names
+a message. CLI has no equivalent private-note file destination and holds it.
+Deleted rows and deleted-parent descendants retain private custody without
+native restoration.
+
+See [Move in](../../../docs/moving-in.md#native-legacy-happytohelp-packages) and
+the schema-shaped qualification in `tests/legacy-export.mjs`, with its SQL
+fixture, field-matrix and native-reader helpers. Synthetic local results do not
+qualify a real export, current production schema, original objects, live
+integrations or cutover.
+
+Source contact timezones also populate the existing reader's `timezone_name`;
+the recorded project website remains editable in native Project settings while
+widget admission uses only its allowed origin. Schedules without a recognized
+days/time representation are explicitly reported as custody without restored
+opening hours. Normal SQL booleans are numeric; manual AI/category flag aliases
+accept only booleans, 0/1, or exact strings `true`, `false`, `0`, `1`.
+Other flag representations are refused before apply.

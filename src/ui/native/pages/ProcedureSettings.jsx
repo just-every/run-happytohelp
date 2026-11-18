@@ -17,15 +17,18 @@ export default function ProcedureSettings({projectId,role}){
  return <Procedures key={projectId} projectId={projectId}/>;
 }
 function Procedures({projectId}){
- const root=`/api/projects/${projectId}/procedures`,alive=useRef(true),busyRef=useRef(false),selection=useRef(0),resultRef=useRef(null);
+ const root=`/api/projects/${projectId}/procedures`,alive=useRef(true),busyRef=useRef(false),listRead=useRef(0),selection=useRef(0),resultRef=useRef(null);
  const [draft,setDraft]=useState(initial),[versions,setVersions]=useState([]),[selected,setSelected]=useState(null),[runs,setRuns]=useState([]),[receipt,setReceipt]=useState(null),[readState,setReadState]=useState('loading'),[feedback,setFeedback]=useState(null),[busy,setBusy]=useState(false),[denied,setDenied]=useState(false),[comparisonId,setComparisonId]=useState(''),[draftSnapshot,setDraftSnapshot]=useState(JSON.stringify(initial));
  const update=(key,value)=>setDraft(d=>({...d,[key]:value}));
+ // An initial read can still be in flight when a lead refreshes. Only the
+ // newest list read may expose a draft or replace the visible saved versions.
  const load=async()=>{
+  const serial=++listRead.current;
   setReadState('loading');
-  try{const data=await nativeRequest(root);if(alive.current){setVersions(data.versions);setReadState('ready')}}
-  catch(error){if(alive.current){if(error.status===403)setDenied(true);setReadState('failed')}throw error}
+  try{const data=await nativeRequest(root);if(alive.current&&serial===listRead.current){setVersions(data.versions);setReadState('ready')}}
+  catch(error){if(alive.current&&serial===listRead.current){if(error.status===403)setDenied(true);setReadState('failed')}throw error}
  };
- useEffect(()=>{alive.current=true;load().catch(()=>{});return()=>{alive.current=false;selection.current++}},[root]);
+ useEffect(()=>{alive.current=true;load().catch(()=>{});return()=>{alive.current=false;listRead.current++;selection.current++}},[root]);
  useEffect(()=>{
   if(!feedback||!resultRef.current)return;
   const box=resultRef.current.getBoundingClientRect();
@@ -95,7 +98,7 @@ function Procedures({projectId}){
   <form onSubmit={event=>{event.preventDefault();perform('save',async()=>{
    if(!/^[a-z0-9-]{1,80}$/.test(draft.key))throw Object.assign(new Error('Use lower-case letters, digits and hyphens for the procedure key (up to 80 characters).'),{status:400});
    const {key,...definition}=draft;await post(`${root}/${encodeURIComponent(key)}/versions`,definition);
-   const data=await nativeRequest(root);if(alive.current){setVersions(data.versions);setDraftSnapshot(JSON.stringify(draft));}
+   const serial=++listRead.current,data=await nativeRequest(root);if(alive.current&&serial===listRead.current){setVersions(data.versions);setDraftSnapshot(JSON.stringify(draft));}
    return 'Immutable version saved.';
   })}}>
    <Field name="procedure-key" label="Procedure key" hint={draftSource?'Keep this key for the revision, or choose Start new procedure.':'Lower-case letters, digits and hyphens'} value={draft.key} onChange={(_,value)=>update('key',value)} required/>

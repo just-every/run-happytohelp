@@ -6,6 +6,7 @@ import SkippedRow from './SkippedRow';
 import SetRow from './SetRow';
 import {lastLooked,localTrial,needs as needsOf,optional as optionalOf,setRows,skipped as skippedOf,utc} from './setup-model';
 import './setup-list.css';
+import LocalMailBanner from '../setup-help/LocalMailBanner';
 
 const numberWords=['No','One','Two','Three','Four','Five','Six','Seven','Eight'];
 const lede=(count,left)=>count===0?left?'We’ve set up what we can. What you skipped waits below until you want it, and everything we’ve set is listed too, so you can change any of it.':'We’ve set up what we can. Everything is listed below, and you can change any of it.'
@@ -21,6 +22,7 @@ export default function SetupList({projectId,role}) {
  const confirmed=data.done,applicable=data.applicableTotal;
  const cards=items=><ol className="sl-needs">{items.map(item=><NeedItem key={item.id} {...{data,item,projectId}} onSkip={skip} skipBusy={skipBusy}/>)}</ol>;
  return <section className="setup-list" data-testid="setup-list" data-confirmed={confirmed} data-applicable={applicable} data-environment={data.environment}>
+  {data.environment === 'local' && <LocalMailBanner/>}
   <header className="sl-head">
    <p className="sl-lede">{lede(needs.length,left.length>0)}</p>
    <p className="sl-quiet" role="status"><span className="sl-dots" aria-hidden="true">{Array.from({length:applicable},(_,index)=><i key={index} className={index<confirmed?'on':undefined}/>)}</span><span>{confirmed} of {applicable} confirmed. We check on our own, so there’s nothing to press.{looked&&<> Last looked at <time dateTime={looked}>{utc(looked)}</time>.</>}</span></p>

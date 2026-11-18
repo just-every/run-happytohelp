@@ -28,9 +28,9 @@ export default function AssistantReadiness({projectId, status}) {
     if (!status) return null;
     const {assistant, ready, secretName, providerLabel} = status;
     if (!assistant) return <ProviderSetupNotice projectId={projectId}/>;
-    if (ready) return <p className="settings-note" role="status" data-testid="ai-key-status" data-state="present"><i className="fe fe-check" aria-hidden="true"/> {secretName ? <code>{secretName}</code> : `The ${providerLabel} key`} is installed, so {assistant.name} {modeEffect[status.ai_reply_mode] ?? modeEffect.auto}{checkable === true && ' The Setup page checks it with the provider and shows the result.'}{checkable === false && ` ${providerLabel} offers no automatic key check, so the Setup page lists it as installed but not confirmed.`}</p>;
+    if (ready) return <p className="settings-note" role="status" data-testid="ai-key-status" data-state="present"><i className="fe fe-check" aria-hidden="true"/> {`The ${providerLabel} key`} is installed, so {assistant.name} {modeEffect[status.ai_reply_mode] ?? modeEffect.auto}{checkable === true && ' The Setup page checks it with the provider and shows the result.'}{checkable === false && ` ${providerLabel} offers no automatic key check, so the Setup page lists it as installed but not confirmed.`}</p>;
     return <div data-testid="ai-key-status" data-state="missing">
-        <p role="status"><strong>{secretName ? <><code>{secretName}</code> isn’t installed.</> : `The ${providerLabel} key isn’t installed.`}</strong> {facts?.starterId && facts.starterId === assistant.id ? 'Your starter assistant' : 'Your default assistant'}, {assistant.name}, can’t answer visitors until it is. Add it as an installation secret. Until then, new conversations stay with your team.</p>
+        <p role="status"><strong>{`Your ${providerLabel} key isn’t connected.`}</strong> {facts?.starterId && facts.starterId === assistant.id ? 'Your starter assistant' : 'Your default assistant'}, {assistant.name}, can’t answer visitors until it is. Ask your technical person to connect it. Until then, new conversations stay with your team.</p>
         <ProviderSetupNotice projectId={projectId} secretName={secretName}/>
     </div>;
 }

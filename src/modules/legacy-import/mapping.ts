@@ -8,7 +8,7 @@ import {historicalTargets} from './adoption/historical'
 import {historicalNoteMedia} from './adoption/note-media'
 export function mapLegacy(table:string,row:Row,bundle:LegacyBundle,profile?:MappingProfile,assignees?:Map<string,string>):MappedRow[]{
  if(historical(profile)&&['users','user_settings','project_users','memberships','ai_defaults'].includes(table))return []
- const mapped=archiveOnly(table,row,bundle)?[]:historical(profile)&&table==='media'?historicalNoteMedia(row,bundle,profile):mapCore(table,row,bundle,profile)??mapKnowledge(table,row,bundle)??mapOperations(table,row,bundle)??[]
+ const mapped=archiveOnly(table,row,bundle)?[]:historical(profile)&&table==='media'?historicalNoteMedia(row,bundle,profile):mapCore(table,row,bundle,profile)??mapKnowledge(table,row,bundle,profile)??mapOperations(table,row,bundle)??[]
  return historical(profile)?historicalTargets(table,row,bundle,mapped,profile,assignees):mapped
 }
 // Knowledge comes before contacts: publishing a document raises the context

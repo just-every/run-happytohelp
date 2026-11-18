@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {developerHandoffFlow} from '../helpers/developer-handoff.mjs'
 
 // Only the Zendesk HTTP boundary is faked. The first authorization returns 204
 // to keep Move in loaded for a second press; the second reaches the provider page.
@@ -19,7 +20,8 @@ export async function zendeskConnectBrowserFlow({page,origin,base,project,shot})
  await page.route(origin+endpoint,capture)
  await page.route(`${provider}/oauth/authorizations/new?*`,authorize)
  try{
-  const subdomain=page.getByRole('textbox',{name:'Zendesk subdomain',exact:true}),identifier=page.getByRole('textbox',{name:'OAuth client Identifier',exact:true}),connect=page.getByRole('button',{name:'Connect',exact:true})
+  const subdomain=page.getByRole('textbox',{name:'Your Zendesk account',exact:true}),identifier=page.getByRole('textbox',{name:'Connection identifier from your account manager',exact:true}),connect=page.getByRole('button',{name:'Connect',exact:true})
+  await developerHandoffFlow(page,page.locator('[data-zendesk-connection] .developer-handoff'));
   await subdomain.fill('synthetic-hh-support');await identifier.fill(clientId)
   const loadedAt=await page.evaluate(()=>performance.timeOrigin)
   for(const width of [1440,390]){

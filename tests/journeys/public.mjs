@@ -18,7 +18,7 @@ async function withRuntime(options,body){const runtime=await createRuntime(optio
 
 test('a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing',async()=>{
  const slug='retained-help-slug'
- await withRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:slug,'127.0.0.1':slug})}},async(runtime,{request})=>{
+ await withRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-public-form-mail',EMAIL_FROM:'support@public-forms.example.test',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:slug,'127.0.0.1':slug})},outboundFixture:new URL('../helpers/public-site/form-mail-edge.mjs',import.meta.url).href},async(runtime,{request})=>{
   const helpOrigin=new URL(runtime.origin);helpOrigin.hostname='localhost'
   const host=path=>fetch(new URL(path,helpOrigin))
   assert.equal((await host('/')).status,404,'a configured host with an unknown project exposes no center')
@@ -73,7 +73,7 @@ test('a published help center: Markdown rendered safely, complete summary search
   for(const path of ['/','/search?keyword=retained','/retained-guide']){const html=await (await host(path)).text();assert.ok(html.includes('action="/search"'),'host search stays at its root');assert.ok(html.includes('class="help-center-brand" href="/"'),'host brand returns to its root');if(path!=='/retained-guide')assert.ok(html.includes('href="/retained-guide"'))}
   assert.equal((await fetch(new URL('/retained-guide',helpOrigin),{method:'HEAD'})).status,200)
   for(const path of ['/private-guide','/foreign-guide','/missing-guide'])assert.equal((await host(path)).status,404,path)
-  for(const path of ['/','/run']){const response=await request(path,{headers:{Forwarded:'host=localhost','X-Forwarded-Host':'localhost','X-Original-Host':'localhost'}});if(path==='/')assert.equal(response.status,200);assert.ok(response.status<500);assert.doesNotMatch(await response.text(),/data-help-center-nav/,'forwarded headers cannot replace the application origin')}
+  for(const path of ['/','/run']){const response=await request(path,{headers:{Forwarded:'host=localhost','X-Forwarded-Host':'localhost','X-Original-Host':'localhost'}});if(path==='/'){assert.equal(response.status,302);assert.equal(response.headers.get('location'),'/login','forwarded headers cannot select the configured help host instead of native sign-in')}assert.ok(response.status<500);assert.doesNotMatch(await response.text(),/data-help-center-nav/,'forwarded headers cannot replace the application origin')}
   const privateApi=await host('/api/management/projects');assert.equal(privateApi.status,401,'a help host does not turn a private API into public knowledge')
   // The same public doors apply audiences, reviewed locales, templates and old slugs.
   const members=await edit('categories',{title:'Customer articles',audience:'signed-in'})

@@ -5,6 +5,19 @@ import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
 import { dashboardPath } from '../ui/native/dashboard-path';
 import {projectIdFromPath} from '../ui/native/workspace-scope';
 
+// Keep the loader context explicit so route head inference does not collapse beforeLoad to never.
+async function beforeDashboardLoad({location}:{location:{pathname:string;href:string}}):Promise<{editorPreload:boolean}> {
+    if (!dashboardPath.test(location.pathname)) throw notFound();
+    const session = import.meta.env.SSR ? await checkNativeSession() : undefined;
+    if (import.meta.env.SSR && !session) throw redirect({ to: '/login', search: { returnTo: location.href }, replace: true, headers: { 'Cache-Control': 'no-store' } });
+    // A busy database leaves the workspace's own reads to sign in, retry or send the visitor to sign-in.
+    if (session && 'busy' in session) return {editorPreload: false};
+    // A session whose second factor is unproven, or required but missing, finishes signing in first.
+    if (session && session.twoFactor) throw redirect({ href: `/two-factor?returnTo=${encodeURIComponent(location.href)}`, replace: true, headers: { 'Cache-Control': 'no-store' } });
+    const projectId = projectIdFromPath(location.pathname);
+    return {editorPreload: Boolean(session && session.editorAuthorized && (!projectId || projectId === session.projectId))};
+}
+
 // Validate document paths on the server before entering the client-only workspace.
 export const Route = createFileRoute('/_dashboard')({
     codeSplitGroupings: [],
@@ -15,15 +28,5 @@ export const Route = createFileRoute('/_dashboard')({
     ] satisfies LinkHTMLAttributes<HTMLLinkElement>[] }),
     headers: () => ({ 'Cache-Control': 'no-store' }),
     errorComponent: DashboardError,
-    beforeLoad: async ({ location }) => {
-        if (!dashboardPath.test(location.pathname)) throw notFound();
-        const session = import.meta.env.SSR ? await checkNativeSession() : undefined;
-        if (import.meta.env.SSR && !session) throw redirect({ to: '/login', search: { returnTo: location.href }, replace: true, headers: { 'Cache-Control': 'no-store' } });
-        // A busy database leaves the workspace's own reads to sign in, retry or send the visitor to sign-in.
-        if (session && 'busy' in session) return {editorPreload: false};
-        // A session whose second factor is unproven, or required but missing, finishes signing in first.
-        if (session && session.twoFactor) throw redirect({ href: `/two-factor?returnTo=${encodeURIComponent(location.href)}`, replace: true, headers: { 'Cache-Control': 'no-store' } });
-        const projectId = projectIdFromPath(location.pathname);
-        return {editorPreload: Boolean(session && session.editorAuthorized && (!projectId || projectId === session.projectId))};
-    },
+    beforeLoad: beforeDashboardLoad,
 });

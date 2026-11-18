@@ -11,7 +11,7 @@ export async function legacyPackageBrowserFlow({page,runtime,project,inspect,wid
  try{
   await page.setViewportSize({width,height:1000})
   await page.goto(runtime.origin+'/app/move-in');await page.waitForURL(`**/projects/${project}/move-in?legacy=1`)
-  await page.getByRole('heading',{name:'HappyToHelp export',exact:true}).waitFor()
+  await page.getByRole('heading',{name:'Export from your old HappyToHelp',exact:true}).waitFor()
   const good=await packageFixture(join(directory,'good'),'synthetic-browser-'+project,{large:true,staff:[{id:'synthetic-browser-staff',name:'Retired billing manager',email:'synthetic-browser-staff@example.test',created_at:1},{id:'synthetic-browser-admin',name:'Historical support lead',email:'synthetic-browser-admin@example.test',created_at:1}]})
   // Actual directory selection, then a changed local part is refused before acceptance.
   const first=good.manifest.chunks[0],original=await readFile(join(good.root,first.file));await writeFile(join(good.root,first.file),Buffer.alloc(original.length,32))

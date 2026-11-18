@@ -11,7 +11,7 @@ export default function AcceptInvitation() {
     const ready = useHydrated();
     const [revision, setRevision] = useState(0);
     const { token, info, failure } = useLinkStatus('invitation', revision);
-    const [error, setError] = useState(''), [busy, setBusy] = useState(false), [joined, setJoined] = useState<'account' | 'member' | null>(null);
+    const [error, setError] = useState(''), [busy, setBusy] = useState(false), [joined, setJoined] = useState<'member' | null>(null);
     const signIn = `/login?returnTo=${encodeURIComponent('/accept-invitation?token=' + (token ?? ''))}`;
 
     // A new person chooses a name and password. Someone who registered in the meantime is sent to sign in instead.
@@ -19,7 +19,10 @@ export default function AcceptInvitation() {
         event.preventDefault();
         setBusy(true); setError('');
         const form = new FormData(event.currentTarget);
-        try { await postJson('/api/identity/accept-token', { token, name: form.get('name'), password: form.get('password') }); setJoined('account'); }
+        try {
+            const result = await postJson('/api/identity/accept-token', { token, name: form.get('name'), password: form.get('password') });
+            location.assign(result.twoFactor ? '/two-factor?returnTo=' + encodeURIComponent(result.destination) : result.destination);
+        }
         catch (problem: any) { if (problem.status === 409) setRevision(value => value + 1); else setError(problem.message); }
         finally { setBusy(false); }
     };
@@ -33,11 +36,6 @@ export default function AcceptInvitation() {
         try { await postJson('/api/identity/switch-project', { projectId: info?.projectId }); location.assign(`/projects/${encodeURIComponent(info?.projectId ?? '')}/conversations`); } catch (problem: any) { setError(problem.message); setBusy(false); }
     };
 
-    if (joined === 'account') return <IdentityFrame>
-        <h1>Welcome to {info?.workspace}</h1>
-        <p className="id-lede">Your account for <strong>{info?.email}</strong> is ready and you have joined the workspace. Sign in once with the password you just chose to open it.</p>
-        <div className="id-actions"><a className="pill pill--ink" href={`/login?login_hint=${encodeURIComponent(info?.email ?? '')}&returnTo=${encodeURIComponent(`/projects/${info?.projectId ?? ''}/conversations`)}`}>Sign in</a></div>
-    </IdentityFrame>;
     if (joined === 'member') return <IdentityFrame>
         <h1>You have joined {info?.workspace}</h1>
         <p className="id-lede">The invitation is accepted and you are now part of the workspace.</p>

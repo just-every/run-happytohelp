@@ -53,9 +53,9 @@ export async function ticketStatusEdits({page,fixture,origin}){
  await page.goto(origin+'/projects/'+fixture.projectId+'/conversations/'+id)
  await page.reload();await page.getByRole('tab',{name:'Ticket',exact:true}).click()
  await header.filter({hasText:/^Solved$/}).waitFor();assert.equal(await status.inputValue(),'solved')
- for(const [value,label] of [['open','Open'],['pending','Pending'],['on_hold','On-hold'],['new','New']]){
+ for(const [value,label] of [['open','Open'],['pending','Pending'],['on_hold','On hold'],['new','New']]){
   await choose(value);await header.filter({hasText:new RegExp(`^${label}$`)}).waitFor()
-  await page.getByRole('button',{name:'Solve',exact:true}).waitFor()
+  await page.getByRole('button',{name:'Solve and ask for a rating',exact:true}).waitFor()
   assert.equal(await page.locator('.conversation-header-reopen').count(),0)
  }
  await tag.click();await tag.waitFor({state:'detached'})

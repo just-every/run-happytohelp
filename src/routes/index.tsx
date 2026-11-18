@@ -1,7 +1,26 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createServerFn } from '@tanstack/react-start';
 import { withVisualEdits } from '../editor/VisualEditBoundary';
 import Homepage from '../ui/homepage/Homepage';
+const rootDestination = createServerFn({ method: 'GET' }).handler(async () => {
+  const { installationRootDestination } = await import('../platform/root-entry.server');
+  return installationRootDestination();
+});
 export const Route = createFileRoute('/')({
+  headers: () => ({ 'Cache-Control': 'no-store', Vary: 'Cookie, Authorization' }),
+  beforeLoad: async ({ location }): Promise<void> => {
+    const destination = await rootDestination();
+    if (!destination) return;
+    const incoming = new URLSearchParams(location.searchStr), query = new URLSearchParams();
+    // Each destination receives only the parameters its existing page accepts.
+    const accepted = destination === '/login' ? ['returnTo'] : ['locale', 'keyword', 'q', 'access', 'sent'];
+    for (const key of accepted) {
+      const value = incoming.get(key);
+      if (value !== null) query.set(key, value);
+    }
+    throw redirect({ href: destination + (query.size ? `?${query}` : ''), statusCode: 302,
+      headers: { 'Cache-Control': 'no-store', Vary: 'Cookie, Authorization' } });
+  },
   head: () => ({
     meta: [
       { title: 'HappyToHelp — Customer Support, Solved.' },

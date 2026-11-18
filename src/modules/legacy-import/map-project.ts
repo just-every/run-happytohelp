@@ -18,6 +18,7 @@ export function projectSettings(r:Row):MappedRow{
   ...((metadata.dashboard||{}) as Row),
   ...Object.fromEntries(Object.entries(columns(r,['default_visitor_ai_id','default_verified_user_ai_id','is_availability_schedule_enabled','is_contact_tracking_enabled','is_human_response_enabled','timezone','help_center_domain','deleted_at'])).map(([key,value])=>[key,key.startsWith('is_')?truth(value):value])),
   ...legacyWidgetProjectSettings(r),
+  ...(typeof r.website==='string'&&r.website?{website:r.website}:{}),
   ...(r.avatar_url?{logo_url:r.avatar_url}:{})
  }
  if('help_center_domain' in settings)settings.help_center_domain=helpCenterAddress(settings.help_center_domain)

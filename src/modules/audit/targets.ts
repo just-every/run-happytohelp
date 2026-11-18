@@ -1,6 +1,8 @@
 import {ticketScopeSql} from '../access/ticket-scope'
 import {availableTicketSql} from '../tickets/model'
-import type {Env} from '../../platform/env'
+import {HTTPException} from 'hono/http-exception'
+import {readMacro} from '../macros/store'
+import type {Actor,Env} from '../../platform/env'
 
 /** Resolve current names only within this workspace. Missing/erased targets keep a
  * human fallback; audit identifiers remain in the export and technical details. */
@@ -29,6 +31,16 @@ export async function auditTargets(env:Env,projectId:string,rows:{target_type:st
  if(tickets.length){
   const found=(await env.DB.prepare(`SELECT c.id,c.subject FROM conversations c WHERE c.project_id=? AND c.id IN (SELECT value FROM json_each(?)) AND ${availableTicketSql()} AND ${ticketScopeSql('?')} AND NOT EXISTS(SELECT 1 FROM contact_erasures e WHERE e.project_id=c.project_id AND e.contact_id=c.contact_id)`).bind(projectId,JSON.stringify(tickets),actorId).all<{id:string;subject:string}>()).results
   for(const row of found)for(const type of ['conversation','ticket'])targets.set(`${type}:${row.id}`,{name:row.subject||'Support request',href:`${base}/conversations/${encodeURIComponent(row.id)}`})
+ }
+ const replies=[...new Set(rows.filter(row=>row.target_type==='macro'&&row.target_id).map(row=>row.target_id!))]
+ if(replies.length){
+  const member=await env.DB.prepare('SELECT role FROM memberships WHERE project_id=? AND user_id=?').bind(projectId,actorId).first<{role:Actor['role']}>()
+  if(member)for(const id of replies){
+   try{
+    const {row}=await readMacro(env,{id:actorId,projectId,role:member.role},id)
+    targets.set(`macro:${id}`,{name:row.title,href:`${base}/macros/${encodeURIComponent(id)}`})
+   }catch(error){if(!(error instanceof HTTPException)||![403,404].includes(error.status))throw error}
+  }
  }
  return targets
 }

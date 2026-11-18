@@ -293,7 +293,7 @@ export default function KnowledgePage({ projectId, section, recordId, project })
                     onDelete={articleReady && draft.id ? () => remove(draft) : undefined}
                 />}
                 {section === 'datasets' && <WebsiteReader reader={reader}/>}
-                {isArticle && articleReady && draft.is_published && draft.slug && <p className="settings-note knowledge-public-address">Published on your Help Center: <a href={`/help/${projectId}/${draft.slug}`} target="_blank" rel="noreferrer">{`${window.location.origin}/help/${projectId}/${draft.slug}`}</a></p>}
+                {isArticle && articleReady && draft.is_published && draft.slug && <p className="settings-note knowledge-public-address">Published on your Help Center: <a href={`/help/${projectId}/${draft.slug}`} target="_blank" rel="noreferrer">Open published article</a></p>}
                 {draft && (!isArticle || articleReady) && <KnowledgeFields {...{ projectId, section, draft, change, categories, fieldErrors }}/>}
                 {!isArticle && <div className="knowledge-form-actions">
                     <button className="btn btn-primary" disabled={busy}>

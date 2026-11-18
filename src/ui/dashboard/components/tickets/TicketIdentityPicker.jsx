@@ -6,7 +6,7 @@ const contactData = contact => contact.metadata_json ? { ...contact, ...JSON.par
 const contactLabel = contact => {
     const name = contact.provided_name || contact.name || contact.display_name;
     const email = contact.provided_email || contact.email;
-    return name && email && name !== email ? `${name} (${email})` : name || email || contact.external_id || 'Unnamed contact';
+    return name && email && name !== email ? `${name} (${email})` : name || email || 'Visitor';
 };
 const available = contact => !isNoRequester(contact) && !['is_deleted', 'is_erased', 'is_erasing', 'is_blocked'].some(key => Boolean(contact[key]));
 

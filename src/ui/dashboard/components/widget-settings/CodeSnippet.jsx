@@ -10,6 +10,8 @@ export default function CodeSnippet({
     copyAriaLabel = copyLabel,
     aiCode,
     aiCopyAriaLabel,
+    disabled = false,
+    unavailable,
 }) {
     const codeElement = useRef(null);
     const { copy, feedback } = useCopyFeedback();
@@ -20,22 +22,22 @@ export default function CodeSnippet({
 
         delete element.dataset.highlighted;
         hljs.highlightElement(element);
-    }, [code, language]);
+    }, [code, language, disabled]);
 
     return (
         <div className="widget-code__snippet">
             <div className="widget-code__snippet-actions">
                 <div className="widget-code__snippet-buttons">
-                    <button type="button" className="widget-code__copy" aria-label={copyAriaLabel} onClick={() => copy(code)}>
+                    <button type="button" className="widget-code__copy" aria-label={copyAriaLabel} disabled={disabled} onClick={() => copy(code)}>
                         <i className="fe fe-copy" aria-hidden="true" /> {copyLabel}
                     </button>
-                    <button type="button" className="widget-code__copy widget-code__copy--ai" aria-label={aiCopyAriaLabel} onClick={() => copy(aiCode)}>
+                    <button type="button" className="widget-code__copy widget-code__copy--ai" aria-label={aiCopyAriaLabel} disabled={disabled} onClick={() => copy(aiCode)}>
                         <i className="fe fe-zap" aria-hidden="true" /> Copy for AI
                     </button>
                 </div>
                 <span className="widget-code__copy-feedback" role="status" aria-live="polite">{feedback}</span>
             </div>
-            <pre tabIndex={0} aria-label={`${language} code`}><code ref={codeElement} className={`language-${language}`}>{code}</code></pre>
+            {disabled ? <p className="widget-code__unavailable" role="status">{unavailable}</p> : <pre tabIndex={0} aria-label={`${language} code`}><code ref={codeElement} className={`language-${language}`}>{code}</code></pre>}
         </div>
     );
 }

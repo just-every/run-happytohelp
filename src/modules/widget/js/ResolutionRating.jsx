@@ -48,13 +48,15 @@ export default function ResolutionRating() {
         <div className="happytohelp-rating-options">
             {(scale === 'five' ? [1, 2, 3, 4, 5] : [1, -1]).map(score => <button key={score} type="button" aria-label={scale === 'five' ? `${score} / 5` : undefined} aria-pressed={value === score} disabled={saving} onClick={() => setValue(score)}>{scale === 'five' ? `${score} / 5` : score === 1 ? copy.yes : copy.no}</button>)}
         </div>
+        <details><summary>More feedback</summary>
         <label htmlFor="happytohelp-recovery">{recoveryText.question}</label>
         <select id="happytohelp-recovery" value={recovery} disabled={saving} onChange={event => setRecovery(event.target.value)}>{['unknown','recovered','not_recovered'].map(answer => <option key={answer} value={answer}>{recoveryText[answer]}</option>)}</select>
         <label htmlFor="happytohelp-rating-comment">{copy.comment}</label>
         <textarea id="happytohelp-rating-comment" name="rating_comment" maxLength={1000} rows={2} value={comment} onChange={event => setComment(event.target.value)} disabled={saving} aria-describedby="happytohelp-rating-count"/>
         <span id="happytohelp-rating-count" className="happytohelp-rating-count">{comment.length}/1,000</span>
+        </details>
         <button type="submit" disabled={saving || value === null || unchanged}>{saving ? copy.saving : resolution.rating ? copy.update : copy.send}</button>
-        <button type="button" disabled={saving} onClick={stop}>{copy.stop}</button>
+        <footer><button type="button" className="happytohelp-rating-optout" disabled={saving} onClick={stop}>{copy.stop}</button></footer>
         {resolution.rating && <p role="status">{copy.thanks}</p>}
         {error && <p role="alert">{error}</p>}
     </form>;

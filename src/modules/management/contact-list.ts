@@ -2,7 +2,7 @@ import type {Context} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
 import {resourcePage} from './resource-list'
-import {contactLive,contactSorts,contactTerm,type ContactPage,type ContactQuery} from './contact-order'
+import {contactLive,contactSorts,contactTerm,contactAudience,type ContactPage,type ContactQuery} from './contact-order'
 import {contactsById,keyedMatches,matchedPage} from './contact-matches'
 import {seekMatches} from './contact-seek'
 import {walkedPage} from './contact-walk'
@@ -20,7 +20,7 @@ const SEEK_BUDGET=2000,PAGE_TARGET=4900
 async function soughtPage(q:ContactQuery,budget?:number):Promise<ContactPage|{over:number}|undefined>{
  const {db,projectId,page,limit,after,before,term}=q,{key}=contactSorts[q.sort],id=after||before
  if(page>1&&!id)return undefined
- const mark=id&&page>1?await db.prepare(`SELECT id,typeof(k) type,CAST(k AS TEXT) key,listed FROM (SELECT id,${key} k,(${contactLive.sql} AND ${term!.sql}) listed FROM contacts WHERE id=? AND project_id=?)`).bind(...term!.params,id,projectId).first<Keyed&{listed:number}>():null
+ const mark=id&&page>1?await db.prepare(`SELECT id,typeof(k) type,CAST(k AS TEXT) key,listed FROM (SELECT id,${key} k,(${contactLive.sql} AND ${contactAudience(q)} AND ${term!.sql}) listed FROM contacts WHERE id=? AND project_id=?)`).bind(...term!.params,id,projectId).first<Keyed&{listed:number}>():null
  let spent=0
  const shown=async(from:Keyed|null,forward:boolean,need:number):Promise<Keyed[]|{over:number}|undefined>=>{
   const sought=await seekMatches(q,from,forward,need,budget===undefined?undefined:budget-spent)
@@ -64,7 +64,7 @@ export async function listContacts(c:Context<AppEnv>,projectId:string){
  if(!Object.hasOwn(contactSorts,sort)||!['asc','desc'].includes(direction))throw new HTTPException(400,{message:'Invalid sort order'})
  const after=c.req.query('after')||'',before=c.req.query('before')||''
  if(after&&before)throw new HTTPException(400,{message:'Invalid page boundary'})
- const q:ContactQuery={db:c.env.DB,projectId,page,limit,counted:c.req.query('total')!=='none',after,before,sort,direction,term:contactTerm(search)}
+ const q:ContactQuery={db:c.env.DB,projectId,page,limit,counted:c.req.query('total')!=='none',hideVisitors:c.req.query('visitors')==='hide',after,before,sort,direction,term:contactTerm(search)}
  const answer=await contactPage(q)
  if(!q.counted)return {data:answer.rows.slice(0,limit),pagination:{page:answer.page,limit,hasMore:answer.more??answer.rows.length>limit},sort,direction}
  const total=answer.total??0

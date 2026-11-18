@@ -28,9 +28,10 @@ export async function twoFactorJourney(){
   const project=owner.projectId,events=async action=>(await app.sql('SELECT outcome,actor_id,detail_json FROM audit_events WHERE project_id=? AND action=? ORDER BY at',project,action))
   // A teammate joins with a password of their own.
   const invite={token:new URL((await call(`/api/management/projects/${project}/agents`,{email:'agent@example.com'},owner.token)).data.data.invitationUrl).searchParams.get('token')}
-  assert.equal((await call('/api/identity/accept-token',{token:invite.token,name:'Agent',password:'agent-correct-horse-battery'})).status,200)
+  const accepted=await call('/api/identity/accept-token',{token:invite.token,name:'Agent',password:'agent-correct-horse-battery'})
+  assert.equal(accepted.status,200)
   const signIn=async(email,password)=>{const response=await call('/api/identity/login',{email,password});assert.equal(response.status,200);return response.data}
-  let agent=await signIn('agent@example.com','agent-correct-horse-battery')
+  let agent=accepted.data
   assert.equal(agent.twoFactor,undefined,'no factor and no policy: one step')
   const ownerReset=await call('/api/identity/password-reset',{userId:agent.actor.id},owner.token)
   assert.equal(ownerReset.status,403);assert.equal(ownerReset.data.code,'two_factor_setup_required','issuing a teammate a password needs the owner\'s own second factor')
@@ -65,7 +66,7 @@ export async function twoFactorJourney(){
   // Requiring two-factor for agents ends the agent's session that has no factor.
   const policy=await call(`/api/management/projects/${project}/security`,{two_factor_roles:['owner','operator']},owner.token,'PUT')
   assert.equal(policy.status,200);assert.equal(policy.data.data.sessionsEnded,1)
-  assert.equal((await call('/api/identity/session',undefined,agent.token)).status,401,'the agent session without a factor ended')
+  assert.equal((await call('/api/identity/session',undefined,agent.token)).status,401,'the invitation session without a factor ended')
   assert.equal((await events('two_factor.policy_changed')).length,1)
 
   // At the next sign-in the agent must enrol before reaching any data.

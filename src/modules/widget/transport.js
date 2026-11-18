@@ -74,7 +74,7 @@ export class WidgetTransport {
       configuration = await this.request(this.settingsPath);
     } catch (error) {
       if (error.status === 403 || error instanceof TypeError) {
-        throw new Error(`Support could not connect on ${location.origin}. Site owner: open HappyToHelp > Settings > Widget and allow this exact Website origin. Also check that the HappyToHelp address is reachable.`);
+        throw new Error("Chat is unavailable right now.");
       }
       throw error;
     }

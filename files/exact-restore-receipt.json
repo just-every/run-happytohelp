@@ -1,0 +1,31 @@
+{
+  "profile": "first-run",
+  "sourceSha": "31df4bbad43ffb30932b75cbe33032d367239545",
+  "artifactSha256": "63f5c0c74b4c6ddc157c65efcfd4a1b1e45da98db01c377c0d59ca4890108dca",
+  "startedAt": "2026-11-18T02:53:42.958Z",
+  "finishedAt": "2026-11-18T02:57:03.707Z",
+  "node": "v22.20.0",
+  "tables": 541,
+  "migrations": 200,
+  "checks": [
+    "actual native D1 export and fresh D1 import",
+    "every schema definition and row compared",
+    "applied migration identities match artifact",
+    "empty fresh R2 target",
+    "all R2 bytes and HTTP/custom metadata compared",
+    "byte-identical native SQL re-export before login",
+    "retained session authenticated media and transcript",
+    "fresh password login authenticated media and transcript",
+    "unauthenticated media refused",
+    "restored setup stays closed"
+  ],
+  "boundaries": [
+    "local emitted Worker, D1 and R2 only",
+    "no provider credentials supplied or live-provider qualification",
+    "Durable Object storage not exported",
+    "not complete RER export or production recovery qualification",
+    "the actual complete migrated schema and every row are compared without a fixed inventory"
+  ],
+  "objects": 6,
+  "test_exit": 0
+}

@@ -1,0 +1,4 @@
+
+> happytohelp@0.4.31 typecheck /home/agent/rer-consolidation/work/hh-stranger13-behaviour-1-c3/run-happytohelp
+> node scripts/generate-routes.mjs && tsc --noEmit
+

@@ -1,0 +1,993 @@
+[before-shard] start 2026-11-18T02:23:15Z, exit 247
+::group::node --test --test-concurrency=1 tests/journeys/inbox-browser.mjs tests/journeys/restore.mjs
+PROBE AGENT-001 W1: built /widget.js -> visitor message -> queued model-edge fixture -> admitted AI answer; visible author and AI disclosure survive reload
+PROBE AGENT-001 W2: ordinary operator reply -> human takeover -> widget reload -> distinct AI history author and visible Human responder; human message carries no AI label
+PROBE AGENT-001 W3: existing brand/widget browser registration -> rendered disclosure and fetched-history assertions; no additional test registration
+PROBE browser ACCESS-001: owner/admin load and save General, Appearance and Availability; collaborator/operator/custom-admin refused
+
+[before-restore] start 2026-11-18T02:25:46Z, exit 247
+TAP version 13
+# 2026-11-18T02:28:47.839Z 1 POST /api/identity/login begin
+# 2026-11-18T02:28:48.311Z 1 200 headers
+# 2026-11-18T02:28:48.315Z 2 POST /api/identity/owner-recovery begin
+# 2026-11-18T02:28:48.507Z 2 201 headers
+# 2026-11-18T02:28:48.509Z 3 POST /api/identity/owner-recovery/enrol/totp begin
+# 2026-11-18T02:28:48.614Z 3 201 headers
+# 2026-11-18T02:28:48.753Z 4 POST /api/identity/owner-recovery/complete begin
+# 2026-11-18T02:28:48.877Z 4 200 headers
+# 2026-11-18T02:28:48.880Z 5 POST /api/management/projects/[id]/agents begin
+# 2026-11-18T02:28:48.948Z 5 201 headers
+# 2026-11-18T02:28:48.950Z 6 POST /api/identity/accept-token begin
+# 2026-11-18T02:28:49.047Z 6 200 headers
+# 2026-11-18T02:28:49.049Z 7 POST /api/identity/login begin
+# 2026-11-18T02:28:49.112Z 7 200 headers
+# 2026-11-18T02:28:49.113Z 8 POST /api/identity/owner-recovery/account/request begin
+# 2026-11-18T02:28:49.217Z 8 201 headers
+# 2026-11-18T02:28:49.299Z 9 POST /api/identity/owner-recovery/account/approve begin
+# 2026-11-18T02:28:49.466Z 9 200 headers
+# 2026-11-18T02:28:49.467Z 10 POST /api/identity/owner-recovery/enrol/totp begin
+# 2026-11-18T02:28:49.504Z 10 201 headers
+# Recovery restore: offline snapshot
+# Recovery restore: public export/reset/import
+# Recovery restore: public reset
+# Recovery restore: public import
+
+[before-packaged] start 2026-11-18T02:31:43Z, exit 0
+2026-11-18T02:32:57.968Z 1 GET /health begin
+2026-11-18T02:32:57.978Z 1 TypeError error
+2026-11-18T02:32:58.229Z 2 GET /health begin
+2026-11-18T02:32:58.232Z 2 TypeError error
+2026-11-18T02:32:58.482Z 3 GET /health begin
+2026-11-18T02:32:58.486Z 3 TypeError error
+2026-11-18T02:32:58.737Z 4 GET /health begin
+2026-11-18T02:32:58.739Z 4 TypeError error
+2026-11-18T02:32:58.990Z 5 GET /health begin
+2026-11-18T02:32:58.992Z 5 TypeError error
+2026-11-18T02:32:59.242Z 6 GET /health begin
+2026-11-18T02:33:01.910Z 6 200 headers
+2026-11-18T02:33:01.913Z 7 POST /api/identity/bootstrap begin
+2026-11-18T02:33:02.036Z 7 201 headers
+2026-11-18T02:33:02.037Z 8 GET /api/identity/projects/[id] begin
+2026-11-18T02:33:07.135Z 8 200 headers
+2026-11-18T02:33:07.143Z 9 POST /api/identity/widget/session begin
+2026-11-18T02:33:07.168Z 9 201 headers
+2026-11-18T02:33:07.170Z 10 POST /api/conversations begin
+2026-11-18T02:33:07.212Z 10 201 headers
+2026-11-18T02:33:07.216Z 11 POST /api/conversations/[id]/messages begin
+2026-11-18T02:33:07.350Z 11 200 headers
+2026-11-18T02:33:07.352Z 12 POST /api/knowledge/[id]/articles begin
+2026-11-18T02:33:07.375Z 12 201 headers
+2026-11-18T02:33:07.376Z 13 POST /api/conversations/[id]/media begin
+2026-11-18T02:33:07.393Z 13 201 headers
+2026-11-18T02:33:07.395Z 14 GET /api/management/bootstrap begin
+2026-11-18T02:33:07.409Z 14 200 headers
+2026-11-18T02:33:07.410Z 15 POST /api/dashboard/projects/[id]/ticket-groups begin
+2026-11-18T02:33:07.433Z 15 201 headers
+2026-11-18T02:33:07.435Z 16 POST /api/dashboard/projects/[id]/ticket-fields begin
+2026-11-18T02:33:07.452Z 16 201 headers
+2026-11-18T02:33:07.454Z 17 POST /api/dashboard/projects/[id]/ticket-statuses begin
+2026-11-18T02:33:07.469Z 17 201 headers
+2026-11-18T02:33:07.472Z 18 PATCH /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:33:07.597Z 18 200 headers
+2026-11-18T02:33:07.598Z 19 POST /api/dashboard/projects/[id]/ticket-views begin
+2026-11-18T02:33:07.613Z 19 201 headers
+2026-11-18T02:33:07.614Z 20 POST /api/dashboard/projects/[id]/workflow-calendars begin
+2026-11-18T02:33:07.628Z 20 201 headers
+2026-11-18T02:33:07.629Z 21 POST /api/dashboard/projects/[id]/sla-policies begin
+2026-11-18T02:33:07.646Z 21 201 headers
+2026-11-18T02:33:07.647Z 22 PUT /api/dashboard/projects/[id]/routing-operators begin
+2026-11-18T02:33:07.665Z 22 200 headers
+2026-11-18T02:33:07.666Z 23 POST /api/dashboard/projects/[id]/workflow-rules begin
+2026-11-18T02:33:07.694Z 23 201 headers
+2026-11-18T02:33:07.694Z 24 POST /api/dashboard/projects/[id]/workflow-rules/[id]/preview begin
+2026-11-18T02:33:07.724Z 24 200 headers
+2026-11-18T02:33:07.726Z 25 POST /api/dashboard/projects/[id]/workflow-rules/[id]/publish begin
+2026-11-18T02:33:07.754Z 25 200 headers
+2026-11-18T02:33:07.757Z 26 POST /api/dashboard/projects/[id]/workflow-rules/[id]/pause begin
+2026-11-18T02:33:07.779Z 26 200 headers
+2026-11-18T02:33:07.780Z 27 POST /api/dashboard/projects/[id]/workflow-schedules begin
+2026-11-18T02:33:07.800Z 27 201 headers
+2026-11-18T02:33:07.802Z 28 PATCH /api/dashboard/projects/[id]/workflow-schedules/[id] begin
+2026-11-18T02:33:07.819Z 28 200 headers
+2026-11-18T02:33:07.819Z 29 POST /api/dashboard/projects/[id]/workflow-schedules begin
+2026-11-18T02:33:07.845Z 29 201 headers
+2026-11-18T02:33:07.846Z 30 PATCH /api/dashboard/projects/[id]/workflow-schedules/[id] begin
+2026-11-18T02:33:07.892Z 30 200 headers
+2026-11-18T02:33:07.893Z 31 GET /api/dashboard/projects/[id]/workflow-calendars begin
+2026-11-18T02:33:07.894Z 32 GET /api/dashboard/projects/[id]/sla-policies begin
+2026-11-18T02:33:07.894Z 33 GET /api/dashboard/projects/[id]/workflow-rules begin
+2026-11-18T02:33:07.894Z 34 GET /api/dashboard/projects/[id]/routing-operators begin
+2026-11-18T02:33:07.895Z 35 GET /api/dashboard/projects/[id]/conversations/[id]/workflows begin
+2026-11-18T02:33:07.906Z 31 200 headers
+2026-11-18T02:33:07.941Z 33 200 headers
+2026-11-18T02:33:07.945Z 32 200 headers
+2026-11-18T02:33:07.946Z 34 200 headers
+2026-11-18T02:33:07.947Z 35 200 headers
+2026-11-18T02:33:07.951Z 36 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:33:07.969Z 36 200 headers
+2026-11-18T02:33:07.970Z 37 GET /api/management/bootstrap begin
+2026-11-18T02:33:07.980Z 37 200 headers
+2026-11-18T02:33:07.981Z 38 PUT /api/dashboard/projects/[id]/notification-triggers begin
+2026-11-18T02:33:07.995Z 38 200 headers
+2026-11-18T02:33:07.998Z 39 PUT /api/dashboard/projects/[id]/notification-preferences begin
+2026-11-18T02:33:08.008Z 39 200 headers
+2026-11-18T02:33:08.909Z 40 GET /health begin
+2026-11-18T02:33:08.912Z 40 TypeError error
+2026-11-18T02:33:09.162Z 41 GET /health begin
+2026-11-18T02:33:09.163Z 41 TypeError error
+2026-11-18T02:33:09.413Z 42 GET /health begin
+2026-11-18T02:33:09.414Z 42 TypeError error
+2026-11-18T02:33:09.665Z 43 GET /health begin
+2026-11-18T02:33:09.666Z 43 TypeError error
+2026-11-18T02:33:09.915Z 44 GET /health begin
+2026-11-18T02:33:09.916Z 44 TypeError error
+2026-11-18T02:33:10.169Z 45 GET /health begin
+2026-11-18T02:33:12.203Z 45 200 headers
+2026-11-18T02:33:12.205Z 46 PUT /api/dashboard/projects/[id]/conversations/[id]/followers begin
+2026-11-18T02:33:12.252Z 46 200 headers
+2026-11-18T02:33:12.253Z 47 POST /api/dashboard/projects/[id]/macros begin
+2026-11-18T02:33:12.271Z 47 201 headers
+2026-11-18T02:33:12.272Z 48 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:33:12.291Z 48 200 headers
+2026-11-18T02:33:12.291Z 49 POST /api/dashboard/projects/[id]/macros/[id]/apply begin
+2026-11-18T02:33:12.353Z 49 200 headers
+2026-11-18T02:33:12.354Z 50 POST /api/dashboard/projects/[id]/conversations/[id]/notes begin
+2026-11-18T02:33:12.393Z 50 201 headers
+2026-11-18T02:33:12.394Z 51 PUT /api/dashboard/projects/[id]/macros/[id] begin
+2026-11-18T02:33:12.418Z 51 200 headers
+2026-11-18T02:33:12.419Z 52 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:33:12.432Z 52 200 headers
+2026-11-18T02:33:12.433Z 53 POST /api/dashboard/projects/[id]/macros/[id]/apply begin
+2026-11-18T02:33:12.492Z 53 200 headers
+2026-11-18T02:33:12.493Z 54 POST /api/conversations begin
+2026-11-18T02:33:12.512Z 54 201 headers
+2026-11-18T02:33:12.513Z 55 POST /api/conversations/[id]/messages begin
+2026-11-18T02:33:12.615Z 55 200 headers
+2026-11-18T02:33:12.616Z 56 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:33:12.628Z 56 200 headers
+2026-11-18T02:33:12.629Z 57 POST /api/conversations begin
+2026-11-18T02:33:12.642Z 57 201 headers
+2026-11-18T02:33:12.642Z 58 POST /api/conversations/[id]/messages begin
+2026-11-18T02:33:12.702Z 58 200 headers
+2026-11-18T02:33:12.703Z 59 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:33:12.715Z 59 200 headers
+2026-11-18T02:33:12.716Z 60 POST /api/dashboard/projects/[id]/conversations/[id]/merge begin
+2026-11-18T02:33:12.744Z 60 201 headers
+2026-11-18T02:33:12.745Z 61 GET /api/dashboard/projects/[id]/notification-inbox begin
+2026-11-18T02:33:12.754Z 61 200 headers
+2026-11-18T02:33:12.755Z 62 PUT /api/dashboard/projects/[id]/notification-inbox/team-notice:[id]:mention:[id]:recovery-r4-teammate/read begin
+2026-11-18T02:33:12.765Z 62 200 headers
+2026-11-18T02:33:12.766Z 63 GET /api/dashboard/projects/[id]/contacts/[id]/identity-links begin
+2026-11-18T02:33:12.779Z 63 200 headers
+2026-11-18T02:33:12.780Z 64 GET /api/dashboard/projects/[id]/macros/[id]/versions begin
+2026-11-18T02:33:12.797Z 64 200 headers
+2026-11-18T02:33:12.801Z 65 GET /api/dashboard/projects/[id]/macros/[id]/usage begin
+2026-11-18T02:33:12.817Z 65 200 headers
+2026-11-18T02:33:12.818Z 66 GET /api/dashboard/projects/[id]/conversations/[id]/macro-draft begin
+2026-11-18T02:33:12.840Z 66 200 headers
+2026-11-18T02:33:12.841Z 67 GET /api/dashboard/projects/[id]/conversations/[id]/collaboration begin
+2026-11-18T02:33:12.852Z 67 200 headers
+2026-11-18T02:33:12.852Z 68 GET /api/dashboard/projects/[id]/conversations/[id]/buckets begin
+2026-11-18T02:33:12.873Z 68 200 headers
+2026-11-18T02:33:12.874Z 69 GET /api/dashboard/projects/[id]/notification-inbox begin
+2026-11-18T02:33:12.882Z 69 200 headers
+2026-11-18T02:33:12.884Z 70 GET /api/dashboard/projects/[id]/conversations/[id]/merges begin
+2026-11-18T02:33:12.892Z 70 200 headers
+2026-11-18T02:33:12.893Z 71 GET /api/dashboard/projects/[id]/conversations/[id]/partner-forwards begin
+2026-11-18T02:33:12.904Z 71 200 headers
+2026-11-18T02:33:12.908Z 72 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+2026-11-18T02:33:12.919Z 72 200 headers
+2026-11-18T02:33:12.920Z 73 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+2026-11-18T02:33:12.926Z 73 401 headers
+2026-11-18T02:33:12.926Z 74 POST /api/management/projects/[id]/connections/tokens begin
+2026-11-18T02:33:12.939Z 74 201 headers
+2026-11-18T02:33:12.940Z 75 POST /api/v1/conversations begin
+2026-11-18T02:33:13.046Z 75 201 headers
+2026-11-18T02:33:13.047Z 76 POST /api/v1/conversations begin
+2026-11-18T02:33:13.101Z 76 201 headers
+2026-11-18T02:33:13.102Z 77 GET /api/management/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:33:13.113Z 77 200 headers
+2026-11-18T02:33:13.114Z 78 POST /api/management/projects/[id]/contacts/[id]/erase begin
+2026-11-18T02:33:13.374Z 78 200 headers
+2026-11-18T02:33:13.381Z 79 GET /api/conversations/[id]/media/[id] begin
+2026-11-18T02:33:13.395Z 79 200 headers
+2026-11-18T02:33:13.395Z 80 GET /api/conversations/[id]/media/[id] begin
+2026-11-18T02:33:13.401Z 80 401 headers
+2026-11-18T02:33:13.401Z 81 GET /api/conversations/[id]/messages begin
+2026-11-18T02:33:13.412Z 81 200 headers
+2026-11-18T02:33:13.413Z 82 GET /api/identity/session begin
+2026-11-18T02:33:13.429Z 82 200 headers
+2026-11-18T02:33:13.430Z 83 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:33:13.442Z 83 200 headers
+2026-11-18T02:33:13.444Z 84 GET /api/dashboard/projects/[id]/workflow-calendars begin
+2026-11-18T02:33:13.444Z 85 GET /api/dashboard/projects/[id]/sla-policies begin
+2026-11-18T02:33:13.444Z 86 GET /api/dashboard/projects/[id]/workflow-rules begin
+2026-11-18T02:33:13.444Z 87 GET /api/dashboard/projects/[id]/routing-operators begin
+2026-11-18T02:33:13.444Z 88 GET /api/dashboard/projects/[id]/conversations/[id]/workflows begin
+2026-11-18T02:33:13.453Z 84 200 headers
+2026-11-18T02:33:13.478Z 86 200 headers
+2026-11-18T02:33:13.479Z 85 200 headers
+2026-11-18T02:33:13.481Z 87 200 headers
+2026-11-18T02:33:13.485Z 88 200 headers
+2026-11-18T02:33:13.486Z 89 GET /api/dashboard/projects/[id]/contacts/[id]/identity-links begin
+2026-11-18T02:33:13.499Z 89 200 headers
+2026-11-18T02:33:13.500Z 90 GET /api/dashboard/projects/[id]/macros/[id]/versions begin
+2026-11-18T02:33:13.517Z 90 200 headers
+2026-11-18T02:33:13.521Z 91 GET /api/dashboard/projects/[id]/macros/[id]/usage begin
+2026-11-18T02:33:13.538Z 91 200 headers
+2026-11-18T02:33:13.538Z 92 GET /api/dashboard/projects/[id]/conversations/[id]/macro-draft begin
+2026-11-18T02:33:13.560Z 92 200 headers
+2026-11-18T02:33:13.562Z 93 GET /api/dashboard/projects/[id]/conversations/[id]/collaboration begin
+2026-11-18T02:33:13.574Z 93 200 headers
+2026-11-18T02:33:13.575Z 94 GET /api/dashboard/projects/[id]/conversations/[id]/buckets begin
+2026-11-18T02:33:13.596Z 94 200 headers
+2026-11-18T02:33:13.597Z 95 GET /api/dashboard/projects/[id]/notification-inbox begin
+2026-11-18T02:33:13.610Z 95 200 headers
+2026-11-18T02:33:13.611Z 96 GET /api/dashboard/projects/[id]/conversations/[id]/merges begin
+2026-11-18T02:33:13.619Z 96 200 headers
+2026-11-18T02:33:13.619Z 97 GET /api/dashboard/projects/[id]/conversations/[id]/partner-forwards begin
+2026-11-18T02:33:13.633Z 97 200 headers
+2026-11-18T02:33:13.634Z 98 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+2026-11-18T02:33:13.646Z 98 200 headers
+2026-11-18T02:33:13.646Z 99 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+2026-11-18T02:33:13.651Z 99 401 headers
+2026-11-18T02:33:13.652Z 100 GET /api/move-in/projects/[id]/business-imports begin
+2026-11-18T02:33:13.663Z 100 200 headers
+2026-11-18T02:33:13.666Z 101 POST /api/rer/import/status begin
+2026-11-18T02:33:13.682Z 101 404 headers
+2026-11-18T02:33:13.684Z 102 POST /api/mobile/v1/devices begin
+2026-11-18T02:33:13.704Z 102 201 headers
+2026-11-18T02:33:13.705Z 103 GET /api/mobile/v1/tickets/[id] begin
+2026-11-18T02:33:13.730Z 103 200 headers
+2026-11-18T02:33:15.300Z 104 GET /health begin
+2026-11-18T02:33:15.301Z 104 TypeError error
+2026-11-18T02:33:15.552Z 105 GET /health begin
+2026-11-18T02:33:15.553Z 105 TypeError error
+2026-11-18T02:33:15.804Z 106 GET /health begin
+2026-11-18T02:33:15.805Z 106 TypeError error
+2026-11-18T02:33:16.055Z 107 GET /health begin
+2026-11-18T02:33:16.056Z 107 TypeError error
+2026-11-18T02:33:16.306Z 108 GET /health begin
+2026-11-18T02:33:16.308Z 108 TypeError error
+2026-11-18T02:33:16.558Z 109 GET /health begin
+2026-11-18T02:33:18.265Z 109 200 headers
+2026-11-18T02:33:18.266Z 110 POST /api/mobile/v1/devices begin
+2026-11-18T02:33:18.293Z 110 201 headers
+2026-11-18T02:33:18.295Z 111 POST /api/management/projects/[id]/connections/tokens begin
+2026-11-18T02:33:18.314Z 111 201 headers
+2026-11-18T02:33:18.314Z 112 POST /api/v1/conversations begin
+2026-11-18T02:33:18.375Z 112 201 headers
+2026-11-18T02:33:18.377Z 113 POST /api/v1/conversations/[id]/append begin
+2026-11-18T02:33:18.429Z 113 200 headers
+2026-11-18T02:33:18.430Z 114 POST /api/dashboard/projects/[id]/agents/synthetic-hh-recovery-issuer/erase begin
+2026-11-18T02:33:19.614Z 114 200 headers
+2026-11-18T02:33:19.616Z 115 GET /api/management/projects/[id]/audit/export begin
+2026-11-18T02:33:19.638Z 115 200 headers
+2026-11-18T02:33:19.640Z 116 GET /api/mobile/v1/session begin
+2026-11-18T02:33:19.648Z 116 401 headers
+2026-11-18T02:34:56.015Z 117 GET /health begin
+2026-11-18T02:34:56.017Z 117 TypeError error
+2026-11-18T02:34:56.267Z 118 GET /health begin
+2026-11-18T02:34:56.267Z 118 TypeError error
+2026-11-18T02:34:56.517Z 119 GET /health begin
+2026-11-18T02:34:56.518Z 119 TypeError error
+2026-11-18T02:34:56.769Z 120 GET /health begin
+2026-11-18T02:34:56.770Z 120 TypeError error
+2026-11-18T02:34:57.020Z 121 GET /health begin
+2026-11-18T02:34:57.021Z 121 TypeError error
+2026-11-18T02:34:57.271Z 122 GET /health begin
+2026-11-18T02:34:59.668Z 122 200 headers
+2026-11-18T02:34:59.670Z 123 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:34:59.686Z 123 503 headers
+2026-11-18T02:34:59.787Z 124 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:34:59.819Z 124 503 headers
+2026-11-18T02:34:59.920Z 125 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:34:59.930Z 125 503 headers
+2026-11-18T02:35:00.031Z 126 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:00.076Z 126 503 headers
+2026-11-18T02:35:00.178Z 127 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:00.192Z 127 503 headers
+2026-11-18T02:35:00.293Z 128 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:00.355Z 128 503 headers
+2026-11-18T02:35:00.457Z 129 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:00.576Z 129 503 headers
+2026-11-18T02:35:00.677Z 130 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:00.714Z 130 503 headers
+2026-11-18T02:35:00.816Z 131 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:00.931Z 131 503 headers
+2026-11-18T02:35:01.032Z 132 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:01.200Z 132 503 headers
+2026-11-18T02:35:01.300Z 133 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:01.388Z 133 503 headers
+2026-11-18T02:35:01.488Z 134 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:01.616Z 134 503 headers
+2026-11-18T02:35:01.718Z 135 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:01.729Z 135 503 headers
+2026-11-18T02:35:01.830Z 136 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:01.948Z 136 503 headers
+2026-11-18T02:35:02.049Z 137 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:02.101Z 137 503 headers
+2026-11-18T02:35:02.202Z 138 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:02.230Z 138 503 headers
+2026-11-18T02:35:02.338Z 139 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+2026-11-18T02:35:02.354Z 139 200 headers
+2026-11-18T02:35:02.355Z 140 GET /api/mobile/v1/session begin
+2026-11-18T02:35:02.362Z 140 401 headers
+2026-11-18T02:35:02.362Z 141 GET /api/conversations/[id]/media/[id] begin
+2026-11-18T02:35:02.378Z 141 200 headers
+2026-11-18T02:35:02.378Z 142 GET /api/conversations/[id]/media/[id] begin
+2026-11-18T02:35:02.387Z 142 401 headers
+2026-11-18T02:35:02.387Z 143 GET /api/conversations/[id]/messages begin
+2026-11-18T02:35:02.400Z 143 200 headers
+2026-11-18T02:35:02.402Z 144 GET /api/identity/session begin
+2026-11-18T02:35:02.419Z 144 200 headers
+2026-11-18T02:35:02.419Z 145 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:35:02.438Z 145 200 headers
+2026-11-18T02:35:02.438Z 146 GET /api/dashboard/projects/[id]/workflow-calendars begin
+2026-11-18T02:35:02.439Z 147 GET /api/dashboard/projects/[id]/sla-policies begin
+2026-11-18T02:35:02.439Z 148 GET /api/dashboard/projects/[id]/workflow-rules begin
+2026-11-18T02:35:02.439Z 149 GET /api/dashboard/projects/[id]/routing-operators begin
+2026-11-18T02:35:02.439Z 150 GET /api/dashboard/projects/[id]/conversations/[id]/workflows begin
+2026-11-18T02:35:02.450Z 146 200 headers
+2026-11-18T02:35:02.490Z 148 200 headers
+2026-11-18T02:35:02.491Z 147 200 headers
+2026-11-18T02:35:02.492Z 149 200 headers
+2026-11-18T02:35:02.493Z 150 200 headers
+2026-11-18T02:35:02.494Z 151 GET /api/dashboard/projects/[id]/contacts/[id]/identity-links begin
+2026-11-18T02:35:02.509Z 151 200 headers
+2026-11-18T02:35:02.510Z 152 GET /api/dashboard/projects/[id]/macros/[id]/versions begin
+2026-11-18T02:35:02.531Z 152 200 headers
+2026-11-18T02:35:02.532Z 153 GET /api/dashboard/projects/[id]/macros/[id]/usage begin
+2026-11-18T02:35:02.547Z 153 200 headers
+2026-11-18T02:35:02.548Z 154 GET /api/dashboard/projects/[id]/conversations/[id]/macro-draft begin
+2026-11-18T02:35:02.573Z 154 200 headers
+2026-11-18T02:35:02.575Z 155 GET /api/dashboard/projects/[id]/conversations/[id]/collaboration begin
+2026-11-18T02:35:02.585Z 155 200 headers
+2026-11-18T02:35:02.586Z 156 GET /api/dashboard/projects/[id]/conversations/[id]/buckets begin
+2026-11-18T02:35:02.608Z 156 200 headers
+2026-11-18T02:35:02.609Z 157 GET /api/dashboard/projects/[id]/notification-inbox begin
+2026-11-18T02:35:02.620Z 157 200 headers
+2026-11-18T02:35:02.621Z 158 GET /api/dashboard/projects/[id]/conversations/[id]/merges begin
+2026-11-18T02:35:02.630Z 158 200 headers
+2026-11-18T02:35:02.631Z 159 GET /api/dashboard/projects/[id]/conversations/[id]/partner-forwards begin
+2026-11-18T02:35:02.644Z 159 200 headers
+2026-11-18T02:35:02.645Z 160 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+2026-11-18T02:35:02.656Z 160 200 headers
+2026-11-18T02:35:02.656Z 161 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+2026-11-18T02:35:02.661Z 161 401 headers
+2026-11-18T02:35:02.662Z 162 POST /api/identity/bootstrap begin
+2026-11-18T02:35:02.726Z 162 409 headers
+2026-11-18T02:35:02.726Z 163 POST /api/identity/login begin
+2026-11-18T02:35:02.761Z 163 200 headers
+2026-11-18T02:35:02.762Z 164 GET /api/conversations/[id]/media/[id] begin
+2026-11-18T02:35:02.774Z 164 200 headers
+2026-11-18T02:35:02.774Z 165 GET /api/conversations/[id]/media/[id] begin
+2026-11-18T02:35:02.781Z 165 401 headers
+2026-11-18T02:35:02.781Z 166 GET /api/conversations/[id]/messages begin
+2026-11-18T02:35:02.792Z 166 200 headers
+2026-11-18T02:35:02.793Z 167 GET /api/identity/session begin
+2026-11-18T02:35:02.805Z 167 200 headers
+2026-11-18T02:35:02.806Z 168 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:35:02.821Z 168 200 headers
+2026-11-18T02:35:02.822Z 169 GET /api/dashboard/projects/[id]/workflow-calendars begin
+2026-11-18T02:35:02.823Z 170 GET /api/dashboard/projects/[id]/sla-policies begin
+2026-11-18T02:35:02.823Z 171 GET /api/dashboard/projects/[id]/workflow-rules begin
+2026-11-18T02:35:02.823Z 172 GET /api/dashboard/projects/[id]/routing-operators begin
+2026-11-18T02:35:02.823Z 173 GET /api/dashboard/projects/[id]/conversations/[id]/workflows begin
+2026-11-18T02:35:02.831Z 169 200 headers
+2026-11-18T02:35:02.860Z 170 200 headers
+2026-11-18T02:35:02.861Z 171 200 headers
+2026-11-18T02:35:02.862Z 172 200 headers
+2026-11-18T02:35:02.863Z 173 200 headers
+2026-11-18T02:35:02.864Z 174 GET /api/dashboard/projects/[id]/contacts/[id]/identity-links begin
+2026-11-18T02:35:02.875Z 174 200 headers
+2026-11-18T02:35:02.876Z 175 GET /api/dashboard/projects/[id]/macros/[id]/versions begin
+2026-11-18T02:35:02.895Z 175 200 headers
+2026-11-18T02:35:02.896Z 176 GET /api/dashboard/projects/[id]/macros/[id]/usage begin
+2026-11-18T02:35:02.913Z 176 200 headers
+2026-11-18T02:35:02.914Z 177 GET /api/dashboard/projects/[id]/conversations/[id]/macro-draft begin
+2026-11-18T02:35:02.940Z 177 200 headers
+2026-11-18T02:35:02.940Z 178 GET /api/dashboard/projects/[id]/conversations/[id]/collaboration begin
+2026-11-18T02:35:02.950Z 178 200 headers
+2026-11-18T02:35:02.950Z 179 GET /api/dashboard/projects/[id]/conversations/[id]/buckets begin
+2026-11-18T02:35:02.967Z 179 200 headers
+2026-11-18T02:35:02.968Z 180 GET /api/dashboard/projects/[id]/notification-inbox begin
+2026-11-18T02:35:02.978Z 180 200 headers
+2026-11-18T02:35:02.979Z 181 GET /api/dashboard/projects/[id]/conversations/[id]/merges begin
+2026-11-18T02:35:02.988Z 181 200 headers
+2026-11-18T02:35:02.990Z 182 GET /api/dashboard/projects/[id]/conversations/[id]/partner-forwards begin
+2026-11-18T02:35:03.003Z 182 200 headers
+2026-11-18T02:35:03.003Z 183 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+2026-11-18T02:35:03.013Z 183 200 headers
+2026-11-18T02:35:03.013Z 184 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+2026-11-18T02:35:03.020Z 184 401 headers
+2026-11-18T02:35:03.020Z 185 GET /api/move-in/projects/[id]/business-imports begin
+2026-11-18T02:35:03.032Z 185 200 headers
+2026-11-18T02:35:03.032Z 186 POST /api/rer/import/uploads begin
+2026-11-18T02:35:03.044Z 186 404 headers
+2026-11-18T02:35:03.044Z 187 POST /api/rer/import/plan begin
+2026-11-18T02:35:03.052Z 187 404 headers
+2026-11-18T02:35:03.053Z 188 POST /api/rer/import/apply begin
+2026-11-18T02:35:03.062Z 188 404 headers
+2026-11-18T02:35:03.062Z 189 POST /api/rer/import/status begin
+2026-11-18T02:35:03.070Z 189 404 headers
+2026-11-18T02:35:03.071Z 190 POST /api/rer/import/reconcile begin
+2026-11-18T02:35:03.080Z 190 404 headers
+2026-11-18T02:35:03.081Z 191 POST /api/rer/import/undo begin
+2026-11-18T02:35:03.089Z 191 404 headers
+2026-11-18T02:35:03.090Z 192 POST /api/rer/import/cancel begin
+2026-11-18T02:35:03.099Z 192 404 headers
+2026-11-18T02:35:03.101Z 193 POST /api/rer/import/archive begin
+2026-11-18T02:35:03.109Z 193 404 headers
+2026-11-18T02:35:03.110Z 194 POST /api/rer/import/restore-check begin
+2026-11-18T02:35:03.119Z 194 404 headers
+2026-11-18T02:35:03.120Z 195 GET /api/management/projects/[id]/connections/tokens begin
+2026-11-18T02:35:03.137Z 195 200 headers
+2026-11-18T02:35:03.138Z 196 POST /api/v1/conversations begin
+2026-11-18T02:35:03.146Z 196 401 headers
+2026-11-18T02:35:03.147Z 197 GET /api/management/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:35:03.166Z 197 200 headers
+2026-11-18T02:35:03.171Z 198 POST /api/v1/conversations begin
+2026-11-18T02:35:03.186Z 198 401 headers
+2026-11-18T02:35:03.186Z 199 GET /api/management/projects/[id]/audit/export begin
+2026-11-18T02:35:03.213Z 199 200 headers
+2026-11-18T02:35:03.214Z 200 GET /api/management/projects/[id]/conversations/[id]/ticket begin
+2026-11-18T02:35:03.237Z 200 200 headers
+2026-11-18T02:35:03.238Z 201 POST /api/management/projects/[id]/connections/tokens begin
+2026-11-18T02:35:03.253Z 201 201 headers
+2026-11-18T02:35:03.254Z 202 POST /api/v1/conversations begin
+2026-11-18T02:35:03.270Z 202 409 headers
+2026-11-18T02:35:03.271Z 203 POST /api/v1/conversations begin
+2026-11-18T02:35:03.290Z 203 409 headers
+{"profile":"first-run","sourceSha":"31df4bbad43ffb30932b75cbe33032d367239545","tables":541,"migrations":200,"objects":6,"result":"PASS"}
+
+[before-erase-corrected] start 2026-11-18T02:39:00Z, exit 0
+Checkpoint: post-import setup complete
+2026-11-18T02:40:32.240Z 1 GET /api/knowledge/public begin
+2026-11-18T02:40:32.308Z 1 401 headers
+2026-11-18T02:40:32.309Z 2 POST /api/identity/owner-recovery begin
+2026-11-18T02:40:32.387Z 2 201 headers
+2026-11-18T02:40:32.388Z 3 POST /api/identity/owner-recovery/enrol/totp begin
+2026-11-18T02:40:32.431Z 3 201 headers
+2026-11-18T02:40:32.432Z 4 POST /api/identity/owner-recovery/complete begin
+2026-11-18T02:40:32.486Z 4 200 headers
+2026-11-18T02:40:32.487Z 5 GET /api/identity/session begin
+2026-11-18T02:40:32.509Z 5 200 headers
+2026-11-18T02:40:32.509Z 6 POST /api/identity/login begin
+2026-11-18T02:40:32.556Z 6 200 headers
+2026-11-18T02:40:32.556Z 7 POST /api/identity/owner-recovery/account/request begin
+2026-11-18T02:40:32.604Z 7 201 headers
+2026-11-18T02:40:32.604Z 8 POST /api/identity/owner-recovery/account/approve begin
+2026-11-18T02:40:32.640Z 8 200 headers
+2026-11-18T02:40:32.641Z 9 POST /api/identity/owner-recovery/enrol/totp begin
+2026-11-18T02:40:32.671Z 9 201 headers
+2026-11-18T02:40:32.672Z 10 POST /api/identity/owner-recovery/complete begin
+2026-11-18T02:40:32.710Z 10 200 headers
+Recovery restore: guarded member erase
+2026-11-18T02:40:32.710Z 11 POST /api/identity/owner-recovery/account/request begin
+2026-11-18T02:40:32.754Z 11 201 headers
+2026-11-18T02:40:32.754Z 12 POST /api/identity/owner-recovery/account/approve begin
+2026-11-18T02:40:32.778Z 12 200 headers
+2026-11-18T02:40:32.778Z 13 POST /api/identity/owner-recovery/enrol/totp begin
+2026-11-18T02:40:32.808Z 13 201 headers
+2026-11-18T02:40:32.808Z 14 POST /api/management/projects/[id]/agents/[id]/erase begin
+2026-11-18T02:40:34.285Z 14 200 headers
+2026-11-18T02:40:34.285Z 15 GET /api/identity/owner-recovery/status begin
+2026-11-18T02:40:34.313Z 15 401 headers
+2026-11-18T02:40:34.313Z 16 GET /api/identity/session begin
+2026-11-18T02:40:34.332Z 16 200 headers
+Checkpoint: erase, capability refusal and surviving session complete
+Checkpoint: owned stop acknowledged
+Checkpoint: owned process exited
+Checkpoint: offline post-erase storage assertions passed
+
+[before-exact] start 2026-11-18T02:41:27Z, exit 0
+TAP version 13
+# 2026-11-18T02:45:21.637Z 1 POST /api/identity/login begin
+# 2026-11-18T02:45:21.740Z 1 200 headers
+# 2026-11-18T02:45:21.742Z 2 POST /api/identity/owner-recovery begin
+# 2026-11-18T02:45:21.835Z 2 201 headers
+# 2026-11-18T02:45:21.836Z 3 POST /api/identity/owner-recovery/enrol/totp begin
+# 2026-11-18T02:45:21.878Z 3 201 headers
+# 2026-11-18T02:45:21.879Z 4 POST /api/identity/owner-recovery/complete begin
+# 2026-11-18T02:45:21.925Z 4 200 headers
+# 2026-11-18T02:45:21.926Z 5 POST /api/management/projects/[id]/agents begin
+# 2026-11-18T02:45:21.972Z 5 201 headers
+# 2026-11-18T02:45:21.973Z 6 POST /api/identity/accept-token begin
+# 2026-11-18T02:45:22.030Z 6 200 headers
+# 2026-11-18T02:45:22.030Z 7 POST /api/identity/login begin
+# 2026-11-18T02:45:22.083Z 7 200 headers
+# 2026-11-18T02:45:22.084Z 8 POST /api/identity/owner-recovery/account/request begin
+# 2026-11-18T02:45:22.144Z 8 201 headers
+# 2026-11-18T02:45:22.145Z 9 POST /api/identity/owner-recovery/account/approve begin
+# 2026-11-18T02:45:22.176Z 9 200 headers
+# 2026-11-18T02:45:22.176Z 10 POST /api/identity/owner-recovery/enrol/totp begin
+# 2026-11-18T02:45:22.214Z 10 201 headers
+# Recovery restore: offline snapshot
+# Recovery restore: public export/reset/import
+# Recovery restore: public reset
+# Recovery restore: public import
+# Recovery restore: post-import setup
+# Recovery restore: restored access and fresh recovery
+# 2026-11-18T02:53:35.792Z 11 GET /api/knowledge/public begin
+# 2026-11-18T02:53:35.917Z 11 503 headers
+# 2026-11-18T02:53:36.018Z 12 GET /api/knowledge/public begin
+# 2026-11-18T02:53:36.137Z 12 503 headers
+# 2026-11-18T02:53:36.241Z 13 GET /api/knowledge/public begin
+# 2026-11-18T02:53:36.364Z 13 503 headers
+# 2026-11-18T02:53:36.464Z 14 GET /api/knowledge/public begin
+# 2026-11-18T02:53:36.622Z 14 503 headers
+# 2026-11-18T02:53:36.723Z 15 GET /api/knowledge/public begin
+# 2026-11-18T02:53:37.120Z 15 503 headers
+# 2026-11-18T02:53:37.221Z 16 GET /api/knowledge/public begin
+# 2026-11-18T02:53:37.634Z 16 503 headers
+# 2026-11-18T02:53:37.735Z 17 GET /api/knowledge/public begin
+# 2026-11-18T02:53:38.150Z 17 401 headers
+# 2026-11-18T02:53:38.151Z 18 GET /api/identity/owner-recovery/status begin
+# 2026-11-18T02:53:38.181Z 18 401 headers
+# 2026-11-18T02:53:38.181Z 19 POST /api/identity/owner-recovery/complete begin
+# 2026-11-18T02:53:38.207Z 19 401 headers
+# 2026-11-18T02:53:38.207Z 20 POST /api/identity/login begin
+# 2026-11-18T02:53:38.269Z 20 200 headers
+# 2026-11-18T02:53:38.270Z 21 POST /api/identity/two-factor/verify begin
+# 2026-11-18T02:53:38.299Z 21 200 headers
+# 2026-11-18T02:53:38.299Z 22 POST /api/identity/owner-recovery/account/request begin
+# 2026-11-18T02:53:38.353Z 22 201 headers
+# 2026-11-18T02:53:38.354Z 23 POST /api/identity/owner-recovery/account/approve begin
+# 2026-11-18T02:53:38.385Z 23 200 headers
+# 2026-11-18T02:53:38.385Z 24 POST /api/identity/owner-recovery/enrol/totp begin
+# 2026-11-18T02:53:38.413Z 24 201 headers
+# 2026-11-18T02:53:38.414Z 25 POST /api/identity/owner-recovery/complete begin
+# 2026-11-18T02:53:38.448Z 25 200 headers
+# 2026-11-18T02:53:38.448Z 26 POST /api/identity/login begin
+# 2026-11-18T02:53:38.492Z 26 200 headers
+# 2026-11-18T02:53:38.492Z 27 POST /api/identity/owner-recovery/account/request begin
+# Recovery restore: guarded member erase
+# 2026-11-18T02:53:38.573Z 27 201 headers
+# 2026-11-18T02:53:38.573Z 28 POST /api/identity/owner-recovery/account/approve begin
+# 2026-11-18T02:53:38.599Z 28 200 headers
+# 2026-11-18T02:53:38.599Z 29 POST /api/identity/owner-recovery/enrol/totp begin
+# 2026-11-18T02:53:38.630Z 29 201 headers
+# 2026-11-18T02:53:38.630Z 30 POST /api/management/projects/[id]/agents/[id]/erase begin
+# 2026-11-18T02:53:40.168Z 30 200 headers
+# 2026-11-18T02:53:40.169Z 31 GET /api/identity/owner-recovery/status begin
+# 2026-11-18T02:53:40.189Z 31 401 headers
+# 2026-11-18T02:53:40.190Z 32 GET /api/identity/session begin
+# 2026-11-18T02:53:40.212Z 32 200 headers
+# 2026-11-18T02:54:52.639Z 33 GET /health begin
+# 2026-11-18T02:54:52.642Z 33 TypeError error
+# 2026-11-18T02:54:52.892Z 34 GET /health begin
+# 2026-11-18T02:54:52.894Z 34 TypeError error
+# 2026-11-18T02:54:53.145Z 35 GET /health begin
+# 2026-11-18T02:54:53.147Z 35 TypeError error
+# 2026-11-18T02:54:53.398Z 36 GET /health begin
+# 2026-11-18T02:54:53.400Z 36 TypeError error
+# 2026-11-18T02:54:53.651Z 37 GET /health begin
+# 2026-11-18T02:54:53.657Z 37 TypeError error
+# 2026-11-18T02:54:53.907Z 38 GET /health begin
+# 2026-11-18T02:54:53.909Z 38 TypeError error
+# 2026-11-18T02:54:54.159Z 39 GET /health begin
+# 2026-11-18T02:54:56.480Z 39 200 headers
+# 2026-11-18T02:54:56.483Z 40 POST /api/identity/bootstrap begin
+# 2026-11-18T02:54:56.578Z 40 201 headers
+# 2026-11-18T02:54:56.580Z 41 GET /api/identity/projects/[id] begin
+# 2026-11-18T02:55:01.820Z 41 200 headers
+# 2026-11-18T02:55:01.826Z 42 POST /api/identity/widget/session begin
+# 2026-11-18T02:55:01.864Z 42 201 headers
+# 2026-11-18T02:55:01.865Z 43 POST /api/conversations begin
+# 2026-11-18T02:55:01.911Z 43 201 headers
+# 2026-11-18T02:55:01.913Z 44 POST /api/conversations/[id]/messages begin
+# 2026-11-18T02:55:02.114Z 44 200 headers
+# 2026-11-18T02:55:02.116Z 45 POST /api/knowledge/[id]/articles begin
+# 2026-11-18T02:55:02.149Z 45 201 headers
+# 2026-11-18T02:55:02.151Z 46 POST /api/conversations/[id]/media begin
+# 2026-11-18T02:55:02.173Z 46 201 headers
+# 2026-11-18T02:55:02.174Z 47 GET /api/management/bootstrap begin
+# 2026-11-18T02:55:02.190Z 47 200 headers
+# 2026-11-18T02:55:02.191Z 48 POST /api/dashboard/projects/[id]/ticket-groups begin
+# 2026-11-18T02:55:02.221Z 48 201 headers
+# 2026-11-18T02:55:02.223Z 49 POST /api/dashboard/projects/[id]/ticket-fields begin
+# 2026-11-18T02:55:02.246Z 49 201 headers
+# 2026-11-18T02:55:02.247Z 50 POST /api/dashboard/projects/[id]/ticket-statuses begin
+# 2026-11-18T02:55:02.267Z 50 201 headers
+# 2026-11-18T02:55:02.268Z 51 PATCH /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:55:02.419Z 51 200 headers
+# 2026-11-18T02:55:02.420Z 52 POST /api/dashboard/projects/[id]/ticket-views begin
+# 2026-11-18T02:55:02.440Z 52 201 headers
+# 2026-11-18T02:55:02.443Z 53 POST /api/dashboard/projects/[id]/workflow-calendars begin
+# 2026-11-18T02:55:02.462Z 53 201 headers
+# 2026-11-18T02:55:02.462Z 54 POST /api/dashboard/projects/[id]/sla-policies begin
+# 2026-11-18T02:55:02.483Z 54 201 headers
+# 2026-11-18T02:55:02.484Z 55 PUT /api/dashboard/projects/[id]/routing-operators begin
+# 2026-11-18T02:55:02.506Z 55 200 headers
+# 2026-11-18T02:55:02.506Z 56 POST /api/dashboard/projects/[id]/workflow-rules begin
+# 2026-11-18T02:55:02.532Z 56 201 headers
+# 2026-11-18T02:55:02.535Z 57 POST /api/dashboard/projects/[id]/workflow-rules/[id]/preview begin
+# 2026-11-18T02:55:02.566Z 57 200 headers
+# 2026-11-18T02:55:02.568Z 58 POST /api/dashboard/projects/[id]/workflow-rules/[id]/publish begin
+# 2026-11-18T02:55:02.608Z 58 200 headers
+# 2026-11-18T02:55:02.609Z 59 POST /api/dashboard/projects/[id]/workflow-rules/[id]/pause begin
+# 2026-11-18T02:55:02.640Z 59 200 headers
+# 2026-11-18T02:55:02.641Z 60 POST /api/dashboard/projects/[id]/workflow-schedules begin
+# 2026-11-18T02:55:02.668Z 60 201 headers
+# 2026-11-18T02:55:02.670Z 61 PATCH /api/dashboard/projects/[id]/workflow-schedules/[id] begin
+# 2026-11-18T02:55:02.693Z 61 200 headers
+# 2026-11-18T02:55:02.694Z 62 POST /api/dashboard/projects/[id]/workflow-schedules begin
+# 2026-11-18T02:55:02.726Z 62 201 headers
+# 2026-11-18T02:55:02.727Z 63 PATCH /api/dashboard/projects/[id]/workflow-schedules/[id] begin
+# 2026-11-18T02:55:02.755Z 63 200 headers
+# 2026-11-18T02:55:02.756Z 64 GET /api/dashboard/projects/[id]/workflow-calendars begin
+# 2026-11-18T02:55:02.757Z 65 GET /api/dashboard/projects/[id]/sla-policies begin
+# 2026-11-18T02:55:02.757Z 66 GET /api/dashboard/projects/[id]/workflow-rules begin
+# 2026-11-18T02:55:02.757Z 67 GET /api/dashboard/projects/[id]/routing-operators begin
+# 2026-11-18T02:55:02.758Z 68 GET /api/dashboard/projects/[id]/conversations/[id]/workflows begin
+# 2026-11-18T02:55:02.772Z 64 200 headers
+# 2026-11-18T02:55:02.818Z 66 200 headers
+# 2026-11-18T02:55:02.818Z 65 200 headers
+# 2026-11-18T02:55:02.818Z 67 200 headers
+# 2026-11-18T02:55:02.823Z 68 200 headers
+# 2026-11-18T02:55:02.824Z 69 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:55:02.843Z 69 200 headers
+# 2026-11-18T02:55:02.848Z 70 GET /api/management/bootstrap begin
+# 2026-11-18T02:55:02.861Z 70 200 headers
+# 2026-11-18T02:55:02.863Z 71 PUT /api/dashboard/projects/[id]/notification-triggers begin
+# 2026-11-18T02:55:02.882Z 71 200 headers
+# 2026-11-18T02:55:02.883Z 72 PUT /api/dashboard/projects/[id]/notification-preferences begin
+# 2026-11-18T02:55:02.901Z 72 200 headers
+# 2026-11-18T02:55:03.759Z 73 GET /health begin
+# 2026-11-18T02:55:03.761Z 73 TypeError error
+# 2026-11-18T02:55:04.011Z 74 GET /health begin
+# 2026-11-18T02:55:04.012Z 74 TypeError error
+# 2026-11-18T02:55:04.264Z 75 GET /health begin
+# 2026-11-18T02:55:04.272Z 75 TypeError error
+# 2026-11-18T02:55:04.523Z 76 GET /health begin
+# 2026-11-18T02:55:04.524Z 76 TypeError error
+# 2026-11-18T02:55:04.775Z 77 GET /health begin
+# 2026-11-18T02:55:04.777Z 77 TypeError error
+# 2026-11-18T02:55:05.027Z 78 GET /health begin
+# 2026-11-18T02:55:05.029Z 78 TypeError error
+# 2026-11-18T02:55:05.279Z 79 GET /health begin
+# 2026-11-18T02:55:07.476Z 79 200 headers
+# 2026-11-18T02:55:07.481Z 80 PUT /api/dashboard/projects/[id]/conversations/[id]/followers begin
+# 2026-11-18T02:55:07.562Z 80 200 headers
+# 2026-11-18T02:55:07.567Z 81 POST /api/dashboard/projects/[id]/macros begin
+# 2026-11-18T02:55:07.603Z 81 201 headers
+# 2026-11-18T02:55:07.604Z 82 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:55:07.636Z 82 200 headers
+# 2026-11-18T02:55:07.638Z 83 POST /api/dashboard/projects/[id]/macros/[id]/apply begin
+# 2026-11-18T02:55:07.733Z 83 200 headers
+# 2026-11-18T02:55:07.734Z 84 POST /api/dashboard/projects/[id]/conversations/[id]/notes begin
+# 2026-11-18T02:55:07.794Z 84 201 headers
+# 2026-11-18T02:55:07.795Z 85 PUT /api/dashboard/projects/[id]/macros/[id] begin
+# 2026-11-18T02:55:07.831Z 85 200 headers
+# 2026-11-18T02:55:07.834Z 86 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:55:07.855Z 86 200 headers
+# 2026-11-18T02:55:07.856Z 87 POST /api/dashboard/projects/[id]/macros/[id]/apply begin
+# 2026-11-18T02:55:07.967Z 87 200 headers
+# 2026-11-18T02:55:07.968Z 88 POST /api/conversations begin
+# 2026-11-18T02:55:07.997Z 88 201 headers
+# 2026-11-18T02:55:07.998Z 89 POST /api/conversations/[id]/messages begin
+# 2026-11-18T02:55:08.178Z 89 200 headers
+# 2026-11-18T02:55:08.179Z 90 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:55:08.201Z 90 200 headers
+# 2026-11-18T02:55:08.202Z 91 POST /api/conversations begin
+# 2026-11-18T02:55:08.220Z 91 201 headers
+# 2026-11-18T02:55:08.224Z 92 POST /api/conversations/[id]/messages begin
+# 2026-11-18T02:55:08.334Z 92 200 headers
+# 2026-11-18T02:55:08.336Z 93 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:55:08.356Z 93 200 headers
+# 2026-11-18T02:55:08.357Z 94 POST /api/dashboard/projects/[id]/conversations/[id]/merge begin
+# 2026-11-18T02:55:08.413Z 94 201 headers
+# 2026-11-18T02:55:08.414Z 95 GET /api/dashboard/projects/[id]/notification-inbox begin
+# 2026-11-18T02:55:08.479Z 95 200 headers
+# 2026-11-18T02:55:08.481Z 96 PUT /api/dashboard/projects/[id]/notification-inbox/team-notice:[id]:mention:[id]:recovery-r4-teammate/read begin
+# 2026-11-18T02:55:08.497Z 96 200 headers
+# 2026-11-18T02:55:08.498Z 97 GET /api/dashboard/projects/[id]/contacts/[id]/identity-links begin
+# 2026-11-18T02:55:08.518Z 97 200 headers
+# 2026-11-18T02:55:08.521Z 98 GET /api/dashboard/projects/[id]/macros/[id]/versions begin
+# 2026-11-18T02:55:08.553Z 98 200 headers
+# 2026-11-18T02:55:08.558Z 99 GET /api/dashboard/projects/[id]/macros/[id]/usage begin
+# 2026-11-18T02:55:08.584Z 99 200 headers
+# 2026-11-18T02:55:08.590Z 100 GET /api/dashboard/projects/[id]/conversations/[id]/macro-draft begin
+# 2026-11-18T02:55:08.628Z 100 200 headers
+# 2026-11-18T02:55:08.629Z 101 GET /api/dashboard/projects/[id]/conversations/[id]/collaboration begin
+# 2026-11-18T02:55:08.643Z 101 200 headers
+# 2026-11-18T02:55:08.644Z 102 GET /api/dashboard/projects/[id]/conversations/[id]/buckets begin
+# 2026-11-18T02:55:08.671Z 102 200 headers
+# 2026-11-18T02:55:08.673Z 103 GET /api/dashboard/projects/[id]/notification-inbox begin
+# 2026-11-18T02:55:08.684Z 103 200 headers
+# 2026-11-18T02:55:08.685Z 104 GET /api/dashboard/projects/[id]/conversations/[id]/merges begin
+# 2026-11-18T02:55:08.697Z 104 200 headers
+# 2026-11-18T02:55:08.698Z 105 GET /api/dashboard/projects/[id]/conversations/[id]/partner-forwards begin
+# 2026-11-18T02:55:08.713Z 105 200 headers
+# 2026-11-18T02:55:08.714Z 106 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+# 2026-11-18T02:55:08.725Z 106 200 headers
+# 2026-11-18T02:55:08.726Z 107 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+# 2026-11-18T02:55:08.732Z 107 401 headers
+# 2026-11-18T02:55:08.733Z 108 POST /api/management/projects/[id]/connections/tokens begin
+# 2026-11-18T02:55:08.750Z 108 201 headers
+# 2026-11-18T02:55:08.751Z 109 POST /api/v1/conversations begin
+# 2026-11-18T02:55:08.819Z 109 201 headers
+# 2026-11-18T02:55:08.819Z 110 POST /api/v1/conversations begin
+# 2026-11-18T02:55:08.870Z 110 201 headers
+# 2026-11-18T02:55:08.871Z 111 GET /api/management/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:55:08.888Z 111 200 headers
+# 2026-11-18T02:55:08.890Z 112 POST /api/management/projects/[id]/contacts/[id]/erase begin
+# 2026-11-18T02:55:09.247Z 112 200 headers
+# 2026-11-18T02:55:09.248Z 113 GET /api/conversations/[id]/media/[id] begin
+# 2026-11-18T02:55:09.264Z 113 200 headers
+# 2026-11-18T02:55:09.264Z 114 GET /api/conversations/[id]/media/[id] begin
+# 2026-11-18T02:55:09.270Z 114 401 headers
+# 2026-11-18T02:55:09.271Z 115 GET /api/conversations/[id]/messages begin
+# 2026-11-18T02:55:09.286Z 115 200 headers
+# 2026-11-18T02:55:09.287Z 116 GET /api/identity/session begin
+# 2026-11-18T02:55:09.307Z 116 200 headers
+# 2026-11-18T02:55:09.308Z 117 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:55:09.334Z 117 200 headers
+# 2026-11-18T02:55:09.335Z 118 GET /api/dashboard/projects/[id]/workflow-calendars begin
+# 2026-11-18T02:55:09.336Z 119 GET /api/dashboard/projects/[id]/sla-policies begin
+# 2026-11-18T02:55:09.336Z 120 GET /api/dashboard/projects/[id]/workflow-rules begin
+# 2026-11-18T02:55:09.336Z 121 GET /api/dashboard/projects/[id]/routing-operators begin
+# 2026-11-18T02:55:09.337Z 122 GET /api/dashboard/projects/[id]/conversations/[id]/workflows begin
+# 2026-11-18T02:55:09.350Z 118 200 headers
+# 2026-11-18T02:55:09.397Z 120 200 headers
+# 2026-11-18T02:55:09.399Z 119 200 headers
+# 2026-11-18T02:55:09.399Z 121 200 headers
+# 2026-11-18T02:55:09.404Z 122 200 headers
+# 2026-11-18T02:55:09.405Z 123 GET /api/dashboard/projects/[id]/contacts/[id]/identity-links begin
+# 2026-11-18T02:55:09.424Z 123 200 headers
+# 2026-11-18T02:55:09.425Z 124 GET /api/dashboard/projects/[id]/macros/[id]/versions begin
+# 2026-11-18T02:55:09.457Z 124 200 headers
+# 2026-11-18T02:55:09.457Z 125 GET /api/dashboard/projects/[id]/macros/[id]/usage begin
+# 2026-11-18T02:55:09.480Z 125 200 headers
+# 2026-11-18T02:55:09.481Z 126 GET /api/dashboard/projects/[id]/conversations/[id]/macro-draft begin
+# 2026-11-18T02:55:09.517Z 126 200 headers
+# 2026-11-18T02:55:09.518Z 127 GET /api/dashboard/projects/[id]/conversations/[id]/collaboration begin
+# 2026-11-18T02:55:09.531Z 127 200 headers
+# 2026-11-18T02:55:09.532Z 128 GET /api/dashboard/projects/[id]/conversations/[id]/buckets begin
+# 2026-11-18T02:55:09.558Z 128 200 headers
+# 2026-11-18T02:55:09.558Z 129 GET /api/dashboard/projects/[id]/notification-inbox begin
+# 2026-11-18T02:55:09.574Z 129 200 headers
+# 2026-11-18T02:55:09.576Z 130 GET /api/dashboard/projects/[id]/conversations/[id]/merges begin
+# 2026-11-18T02:55:09.597Z 130 200 headers
+# 2026-11-18T02:55:09.600Z 131 GET /api/dashboard/projects/[id]/conversations/[id]/partner-forwards begin
+# 2026-11-18T02:55:09.619Z 131 200 headers
+# 2026-11-18T02:55:09.622Z 132 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+# 2026-11-18T02:55:09.640Z 132 200 headers
+# 2026-11-18T02:55:09.640Z 133 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+# 2026-11-18T02:55:09.648Z 133 401 headers
+# 2026-11-18T02:55:09.648Z 134 GET /api/move-in/projects/[id]/business-imports begin
+# 2026-11-18T02:55:09.664Z 134 200 headers
+# 2026-11-18T02:55:09.666Z 135 POST /api/rer/import/status begin
+# 2026-11-18T02:55:09.687Z 135 404 headers
+# 2026-11-18T02:55:09.687Z 136 POST /api/mobile/v1/devices begin
+# 2026-11-18T02:55:09.709Z 136 201 headers
+# 2026-11-18T02:55:09.710Z 137 GET /api/mobile/v1/tickets/[id] begin
+# 2026-11-18T02:55:09.745Z 137 200 headers
+# 2026-11-18T02:55:10.180Z 138 GET /health begin
+# 2026-11-18T02:55:10.181Z 138 TypeError error
+# 2026-11-18T02:55:10.432Z 139 GET /health begin
+# 2026-11-18T02:55:10.433Z 139 TypeError error
+# 2026-11-18T02:55:10.686Z 140 GET /health begin
+# 2026-11-18T02:55:10.699Z 140 TypeError error
+# 2026-11-18T02:55:10.950Z 141 GET /health begin
+# 2026-11-18T02:55:10.952Z 141 TypeError error
+# 2026-11-18T02:55:11.203Z 142 GET /health begin
+# 2026-11-18T02:55:11.204Z 142 TypeError error
+# 2026-11-18T02:55:11.455Z 143 GET /health begin
+# 2026-11-18T02:55:11.456Z 143 TypeError error
+# 2026-11-18T02:55:11.707Z 144 GET /health begin
+# 2026-11-18T02:55:13.437Z 144 200 headers
+# 2026-11-18T02:55:13.438Z 145 POST /api/mobile/v1/devices begin
+# 2026-11-18T02:55:13.472Z 145 201 headers
+# 2026-11-18T02:55:13.473Z 146 POST /api/management/projects/[id]/connections/tokens begin
+# 2026-11-18T02:55:13.492Z 146 201 headers
+# 2026-11-18T02:55:13.493Z 147 POST /api/v1/conversations begin
+# 2026-11-18T02:55:13.567Z 147 201 headers
+# 2026-11-18T02:55:13.568Z 148 POST /api/v1/conversations/[id]/append begin
+# 2026-11-18T02:55:13.632Z 148 200 headers
+# 2026-11-18T02:55:13.633Z 149 POST /api/dashboard/projects/[id]/agents/synthetic-hh-recovery-issuer/erase begin
+# 2026-11-18T02:55:15.615Z 149 200 headers
+# 2026-11-18T02:55:15.617Z 150 GET /api/management/projects/[id]/audit/export begin
+# 2026-11-18T02:55:15.647Z 150 200 headers
+# 2026-11-18T02:55:15.648Z 151 GET /api/mobile/v1/session begin
+# 2026-11-18T02:55:15.657Z 151 401 headers
+# 2026-11-18T02:56:54.769Z 152 GET /health begin
+# 2026-11-18T02:56:54.771Z 152 TypeError error
+# 2026-11-18T02:56:55.022Z 153 GET /health begin
+# 2026-11-18T02:56:55.023Z 153 TypeError error
+# 2026-11-18T02:56:55.272Z 154 GET /health begin
+# 2026-11-18T02:56:55.274Z 154 TypeError error
+# 2026-11-18T02:56:55.525Z 155 GET /health begin
+# 2026-11-18T02:56:55.526Z 155 TypeError error
+# 2026-11-18T02:56:55.777Z 156 GET /health begin
+# 2026-11-18T02:56:55.778Z 156 TypeError error
+# 2026-11-18T02:56:56.028Z 157 GET /health begin
+# 2026-11-18T02:56:58.522Z 157 200 headers
+# 2026-11-18T02:56:58.523Z 158 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:56:58.545Z 158 503 headers
+# 2026-11-18T02:56:58.647Z 159 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:56:58.660Z 159 503 headers
+# 2026-11-18T02:56:58.761Z 160 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:56:58.775Z 160 503 headers
+# 2026-11-18T02:56:58.876Z 161 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:56:58.891Z 161 503 headers
+# 2026-11-18T02:56:58.994Z 162 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:56:59.017Z 162 503 headers
+# 2026-11-18T02:56:59.118Z 163 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:56:59.149Z 163 503 headers
+# 2026-11-18T02:56:59.250Z 164 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:56:59.413Z 164 503 headers
+# 2026-11-18T02:56:59.514Z 165 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:56:59.574Z 165 503 headers
+# 2026-11-18T02:56:59.674Z 166 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:56:59.766Z 166 503 headers
+# 2026-11-18T02:56:59.868Z 167 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:56:59.943Z 167 503 headers
+# 2026-11-18T02:57:00.045Z 168 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:00.069Z 168 503 headers
+# 2026-11-18T02:57:00.170Z 169 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:00.282Z 169 503 headers
+# 2026-11-18T02:57:00.383Z 170 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:00.448Z 170 503 headers
+# 2026-11-18T02:57:00.550Z 171 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:00.708Z 171 503 headers
+# 2026-11-18T02:57:00.809Z 172 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:00.855Z 172 503 headers
+# 2026-11-18T02:57:00.956Z 173 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:00.986Z 173 503 headers
+# 2026-11-18T02:57:01.087Z 174 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:01.114Z 174 503 headers
+# 2026-11-18T02:57:01.215Z 175 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:01.318Z 175 503 headers
+# 2026-11-18T02:57:01.420Z 176 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:01.501Z 176 503 headers
+# 2026-11-18T02:57:01.605Z 177 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:01.717Z 177 503 headers
+# 2026-11-18T02:57:01.821Z 178 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:01.956Z 178 503 headers
+# 2026-11-18T02:57:02.060Z 179 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:02.161Z 179 503 headers
+# 2026-11-18T02:57:02.263Z 180 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:02.322Z 180 503 headers
+# 2026-11-18T02:57:02.423Z 181 GET /api/knowledge/public/[id]/articles/recovery-fixture begin
+# 2026-11-18T02:57:02.469Z 181 200 headers
+# 2026-11-18T02:57:02.471Z 182 GET /api/mobile/v1/session begin
+# 2026-11-18T02:57:02.479Z 182 401 headers
+# 2026-11-18T02:57:02.479Z 183 GET /api/conversations/[id]/media/[id] begin
+# 2026-11-18T02:57:02.498Z 183 200 headers
+# 2026-11-18T02:57:02.498Z 184 GET /api/conversations/[id]/media/[id] begin
+# 2026-11-18T02:57:02.513Z 184 401 headers
+# 2026-11-18T02:57:02.513Z 185 GET /api/conversations/[id]/messages begin
+# 2026-11-18T02:57:02.534Z 185 200 headers
+# 2026-11-18T02:57:02.535Z 186 GET /api/identity/session begin
+# 2026-11-18T02:57:02.559Z 186 200 headers
+# 2026-11-18T02:57:02.560Z 187 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:57:02.583Z 187 200 headers
+# 2026-11-18T02:57:02.584Z 188 GET /api/dashboard/projects/[id]/workflow-calendars begin
+# 2026-11-18T02:57:02.584Z 189 GET /api/dashboard/projects/[id]/sla-policies begin
+# 2026-11-18T02:57:02.584Z 190 GET /api/dashboard/projects/[id]/workflow-rules begin
+# 2026-11-18T02:57:02.585Z 191 GET /api/dashboard/projects/[id]/routing-operators begin
+# 2026-11-18T02:57:02.585Z 192 GET /api/dashboard/projects/[id]/conversations/[id]/workflows begin
+# 2026-11-18T02:57:02.597Z 188 200 headers
+# 2026-11-18T02:57:02.643Z 190 200 headers
+# 2026-11-18T02:57:02.644Z 189 200 headers
+# 2026-11-18T02:57:02.645Z 191 200 headers
+# 2026-11-18T02:57:02.649Z 192 200 headers
+# 2026-11-18T02:57:02.650Z 193 GET /api/dashboard/projects/[id]/contacts/[id]/identity-links begin
+# 2026-11-18T02:57:02.669Z 193 200 headers
+# 2026-11-18T02:57:02.669Z 194 GET /api/dashboard/projects/[id]/macros/[id]/versions begin
+# 2026-11-18T02:57:02.696Z 194 200 headers
+# 2026-11-18T02:57:02.697Z 195 GET /api/dashboard/projects/[id]/macros/[id]/usage begin
+# 2026-11-18T02:57:02.718Z 195 200 headers
+# 2026-11-18T02:57:02.719Z 196 GET /api/dashboard/projects/[id]/conversations/[id]/macro-draft begin
+# 2026-11-18T02:57:02.754Z 196 200 headers
+# 2026-11-18T02:57:02.755Z 197 GET /api/dashboard/projects/[id]/conversations/[id]/collaboration begin
+# 2026-11-18T02:57:02.767Z 197 200 headers
+# 2026-11-18T02:57:02.768Z 198 GET /api/dashboard/projects/[id]/conversations/[id]/buckets begin
+# 2026-11-18T02:57:02.792Z 198 200 headers
+# 2026-11-18T02:57:02.793Z 199 GET /api/dashboard/projects/[id]/notification-inbox begin
+# 2026-11-18T02:57:02.802Z 199 200 headers
+# 2026-11-18T02:57:02.803Z 200 GET /api/dashboard/projects/[id]/conversations/[id]/merges begin
+# 2026-11-18T02:57:02.817Z 200 200 headers
+# 2026-11-18T02:57:02.818Z 201 GET /api/dashboard/projects/[id]/conversations/[id]/partner-forwards begin
+# 2026-11-18T02:57:02.833Z 201 200 headers
+# 2026-11-18T02:57:02.835Z 202 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+# 2026-11-18T02:57:02.847Z 202 200 headers
+# 2026-11-18T02:57:02.847Z 203 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+# 2026-11-18T02:57:02.854Z 203 401 headers
+# 2026-11-18T02:57:02.854Z 204 POST /api/identity/bootstrap begin
+# 2026-11-18T02:57:02.910Z 204 409 headers
+# 2026-11-18T02:57:02.910Z 205 POST /api/identity/login begin
+# 2026-11-18T02:57:02.956Z 205 200 headers
+# 2026-11-18T02:57:02.957Z 206 GET /api/conversations/[id]/media/[id] begin
+# 2026-11-18T02:57:02.970Z 206 200 headers
+# 2026-11-18T02:57:02.970Z 207 GET /api/conversations/[id]/media/[id] begin
+# 2026-11-18T02:57:02.975Z 207 401 headers
+# 2026-11-18T02:57:02.975Z 208 GET /api/conversations/[id]/messages begin
+# 2026-11-18T02:57:02.987Z 208 200 headers
+# 2026-11-18T02:57:02.988Z 209 GET /api/identity/session begin
+# 2026-11-18T02:57:03.001Z 209 200 headers
+# 2026-11-18T02:57:03.006Z 210 GET /api/dashboard/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:57:03.022Z 210 200 headers
+# 2026-11-18T02:57:03.023Z 211 GET /api/dashboard/projects/[id]/workflow-calendars begin
+# 2026-11-18T02:57:03.023Z 212 GET /api/dashboard/projects/[id]/sla-policies begin
+# 2026-11-18T02:57:03.023Z 213 GET /api/dashboard/projects/[id]/workflow-rules begin
+# 2026-11-18T02:57:03.023Z 214 GET /api/dashboard/projects/[id]/routing-operators begin
+# 2026-11-18T02:57:03.023Z 215 GET /api/dashboard/projects/[id]/conversations/[id]/workflows begin
+# 2026-11-18T02:57:03.037Z 211 200 headers
+# 2026-11-18T02:57:03.086Z 212 200 headers
+# 2026-11-18T02:57:03.086Z 213 200 headers
+# 2026-11-18T02:57:03.087Z 214 200 headers
+# 2026-11-18T02:57:03.093Z 215 200 headers
+# 2026-11-18T02:57:03.094Z 216 GET /api/dashboard/projects/[id]/contacts/[id]/identity-links begin
+# 2026-11-18T02:57:03.114Z 216 200 headers
+# 2026-11-18T02:57:03.114Z 217 GET /api/dashboard/projects/[id]/macros/[id]/versions begin
+# 2026-11-18T02:57:03.144Z 217 200 headers
+# 2026-11-18T02:57:03.145Z 218 GET /api/dashboard/projects/[id]/macros/[id]/usage begin
+# 2026-11-18T02:57:03.166Z 218 200 headers
+# 2026-11-18T02:57:03.173Z 219 GET /api/dashboard/projects/[id]/conversations/[id]/macro-draft begin
+# 2026-11-18T02:57:03.210Z 219 200 headers
+# 2026-11-18T02:57:03.212Z 220 GET /api/dashboard/projects/[id]/conversations/[id]/collaboration begin
+# 2026-11-18T02:57:03.225Z 220 200 headers
+# 2026-11-18T02:57:03.225Z 221 GET /api/dashboard/projects/[id]/conversations/[id]/buckets begin
+# 2026-11-18T02:57:03.251Z 221 200 headers
+# 2026-11-18T02:57:03.252Z 222 GET /api/dashboard/projects/[id]/notification-inbox begin
+# 2026-11-18T02:57:03.264Z 222 200 headers
+# 2026-11-18T02:57:03.265Z 223 GET /api/dashboard/projects/[id]/conversations/[id]/merges begin
+# 2026-11-18T02:57:03.277Z 223 200 headers
+# 2026-11-18T02:57:03.278Z 224 GET /api/dashboard/projects/[id]/conversations/[id]/partner-forwards begin
+# 2026-11-18T02:57:03.294Z 224 200 headers
+# 2026-11-18T02:57:03.295Z 225 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+# 2026-11-18T02:57:03.307Z 225 200 headers
+# 2026-11-18T02:57:03.308Z 226 GET /api/dashboard/projects/[id]/conversations/[id]/partner-files/recovery-r4-file begin
+# 2026-11-18T02:57:03.315Z 226 401 headers
+# 2026-11-18T02:57:03.315Z 227 GET /api/move-in/projects/[id]/business-imports begin
+# 2026-11-18T02:57:03.331Z 227 200 headers
+# 2026-11-18T02:57:03.332Z 228 POST /api/rer/import/uploads begin
+# 2026-11-18T02:57:03.345Z 228 404 headers
+# 2026-11-18T02:57:03.345Z 229 POST /api/rer/import/plan begin
+# 2026-11-18T02:57:03.358Z 229 404 headers
+# 2026-11-18T02:57:03.359Z 230 POST /api/rer/import/apply begin
+# 2026-11-18T02:57:03.370Z 230 404 headers
+# 2026-11-18T02:57:03.371Z 231 POST /api/rer/import/status begin
+# 2026-11-18T02:57:03.385Z 231 404 headers
+# 2026-11-18T02:57:03.385Z 232 POST /api/rer/import/reconcile begin
+# 2026-11-18T02:57:03.399Z 232 404 headers
+# 2026-11-18T02:57:03.399Z 233 POST /api/rer/import/undo begin
+# 2026-11-18T02:57:03.411Z 233 404 headers
+# 2026-11-18T02:57:03.411Z 234 POST /api/rer/import/cancel begin
+# 2026-11-18T02:57:03.423Z 234 404 headers
+# 2026-11-18T02:57:03.423Z 235 POST /api/rer/import/archive begin
+# 2026-11-18T02:57:03.434Z 235 404 headers
+# 2026-11-18T02:57:03.435Z 236 POST /api/rer/import/restore-check begin
+# 2026-11-18T02:57:03.448Z 236 404 headers
+# 2026-11-18T02:57:03.449Z 237 GET /api/management/projects/[id]/connections/tokens begin
+# 2026-11-18T02:57:03.475Z 237 200 headers
+# 2026-11-18T02:57:03.476Z 238 POST /api/v1/conversations begin
+# 2026-11-18T02:57:03.487Z 238 401 headers
+# 2026-11-18T02:57:03.487Z 239 GET /api/management/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:57:03.511Z 239 200 headers
+# 2026-11-18T02:57:03.512Z 240 POST /api/v1/conversations begin
+# 2026-11-18T02:57:03.524Z 240 401 headers
+# 2026-11-18T02:57:03.524Z 241 GET /api/management/projects/[id]/audit/export begin
+# 2026-11-18T02:57:03.553Z 241 200 headers
+# 2026-11-18T02:57:03.555Z 242 GET /api/management/projects/[id]/conversations/[id]/ticket begin
+# 2026-11-18T02:57:03.587Z 242 200 headers
+# 2026-11-18T02:57:03.590Z 243 POST /api/management/projects/[id]/connections/tokens begin
+# 2026-11-18T02:57:03.610Z 243 201 headers
+# 2026-11-18T02:57:03.610Z 244 POST /api/v1/conversations begin
+# 2026-11-18T02:57:03.630Z 244 409 headers
+# 2026-11-18T02:57:03.631Z 245 POST /api/v1/conversations begin
+# 2026-11-18T02:57:03.654Z 245 409 headers
+# Subtest: a populated packaged install restores from its documented credential-free backup into a fresh destination with every row, object and metadata equal, sessions and password sign-in working, setup closed and delegated credentials gone
+ok 1 - a populated packaged install restores from its documented credential-free backup into a fresh destination with every row, object and metadata equal, sessions and password sign-in working, setup closed and delegated credentials gone
+# Subtest: every derived table an import rebuilds stays out of the archive, so a restored export equals its source
+ok 2 - every derived table an import rebuilds stays out of the archive, so a restored export equals its source
+# tests 2
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# duration_ms 936384.543173
+

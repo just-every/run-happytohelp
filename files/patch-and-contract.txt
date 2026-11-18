@@ -1,0 +1,36 @@
+Patch comparison and linear history
+Branch cloud/hh-seed-faults-3
+Product head a61a0cd8499323d2fa242e44b09d2fcca2a1278d
+Parent and origin/main bec54d7793e87fb337c2fae45b68a07ae751f8fd
+Source 0383239aebd8319a79f841a5f2d133d4db1ed387
+Source parent bec54d7793e87fb337c2fae45b68a07ae751f8fd
+git rev-list --parents origin/main..HEAD returned exactly one row with one parent.
+13/15 file patches are byte-for-byte equal, including MoveIn.jsx.
+Conflict count 0. No additional changed files.
+
+Equal files and SHA-256 of the full diff (including diff metadata):
+00762e11b51ee807d2f14189e961cb989a16d4b001a9815278d358d1912cf609  docs/moving-in.md
+b700815ddc5815bb4e89bdc94a4c6bfaa4dcfc0eab045aea99b6b442a124789d  importers.json
+2366417932569653a5406219812d50fdca60ff42f670ca4a4a2461c08a7483f0  src/modules/move-in/batches.ts
+3080106eb31ca0f7c56c846fc6258487bb29b83f178c2719a20f181b1b9d09d7  src/modules/move-in/routes.ts
+b9c466a464de8ef31e71f7455a3efc9a95a573b1cff233c9fdea2275f4e6a1fb  src/modules/move-in/service.ts
+d0b96bb56198e270fe92ac52aadb2ad07c24b37f2b83b62cb12f1871b1f38f9f  src/modules/move-in/undo-conflicts.ts
+c7d9d03d0a296bf5a3223882fdb59bec5c3438bfdcab23220c8513cf5ac0d78e  src/modules/move-in/undo-references.ts
+3ce76c3b63f3bd08ea6a8f0e901a3f5e4519d83c1ac6ddf5a41f9ba1f6181c5c  src/ui/native/pages/InvitationActions.jsx
+fd6f11d2f9d78c6f1b0b71fce0a0f4c9a638169f1c2ac83ba8c8c7d96163e49a  src/ui/native/pages/MoveIn.jsx
+37e3ab0787b81db477a32963af182fff6f047396de66b4944fad6c688cdb7527  src/ui/native/pages/MoveInUndoConflict.jsx
+c8b5e6fd021ebd06f41d1cee2d2ccd9d9e60ae0bf7e8d22a061a9bf1192da974  tests/helpers/identity/security-browser.mjs
+ac1f89aac2dfe1da71ad48454c5a898764f0beacb4711eb1e67b4287353cbfa8  tests/journeys/move-in-browser.mjs
+c8cccb3f8b9a2afe5b4c358c1283d2fa1768a75149314985d5e2bb803dcd1e99  tests/move-in/undo-conflict-browser.mjs
+
+Intentional patch differences (source and result SHA-256):
+sources.lock.json ca59dcc9344621f819721f08d602a7234bcb8396984e402bfe40dc1ba3a43b60 3a46874eea8bc70d8d08af56028baca454a390ce5f8afebb3f197fb4aa01350e
+  Regenerated last. The refreshed lock differs from the source only in the digest of the corrected invitation browser helper.
+tests/helpers/identity/invitation-browser.mjs 5881335b90887b1b2d97c452eea329f224dbe799831ec62e70c107db7e9b98ab c709c97a47c9e361a2a2e7818c146af1fb78ec74bbcd89d2803957e10caee9fb
+  Required navigation locator correction at line 8. Exact link name 'Agents' became 'Team'.
+
+Contract counts before and after (done, partial, missing, total):
+Published: 2, 24, 0, 26
+Target and push-further: 2, 47, 16, 65
+All: 4, 71, 16, 91
+IDENTITY-001 partial; MOVE-IN-001 done. No contract changes.

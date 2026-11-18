@@ -1,0 +1,6 @@
+Browser screen captures from the exact pushed candidate, a61a0cd8499323d2fa242e44b09d2fcca2a1278d.
+These are the named journeys’ screenshots. Redactions cover fixture email text only.
+invitation-copied-1440.png: 1440 viewport, 1440 x 900 pixels, 2 masked spans, SHA-256 c0ed62ffbbc512a1f9db4cd69c1fb4ac7f10d4318a4e1783db26255311f6f2df
+invitation-copied-390.png: 390 viewport, 390 x 1012 pixels, 2 masked spans, SHA-256 0dbb959e9ba4a4ae35cfb213ad71d771e5fef8f5398958b3e34e95bc4f8cdf36
+undo-conflicts-1440.png: 1440 viewport, 1440 x 2767 pixels, 4 masked spans, SHA-256 a5f54baad419e22e341b2de3566f2cee3c2431b048b51871edce20534a810c5a
+undo-conflicts-390.png: 390 viewport, 390 x 4344 pixels, 4 masked spans, SHA-256 5f7d293590dbd70d7021bc270bbd53f8f15b46aa01187b5f9f760255380d6064

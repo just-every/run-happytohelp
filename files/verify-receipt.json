@@ -1,0 +1,61 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-seed-faults-3",
+  "head_sha": "a61a0cd8499323d2fa242e44b09d2fcca2a1278d",
+  "run_id": 44294938530,
+  "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44294938530",
+  "status": "completed",
+  "conclusion": "success",
+  "observations": [
+    {
+      "query": "exact-SHA discovery",
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "a61a0cd8499323d2fa242e44b09d2fcca2a1278d",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44294938530",
+      "id": 44294938530,
+      "name": "Verify",
+      "status": "in_progress"
+    },
+    {
+      "query": "run status",
+      "timeUtc": "113330",
+      "conclusion": null,
+      "head_sha": "a61a0cd8499323d2fa242e44b09d2fcca2a1278d",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44294938530",
+      "status": "in_progress"
+    },
+    {
+      "query": "run status",
+      "timeUtc": "113858",
+      "conclusion": null,
+      "head_sha": "a61a0cd8499323d2fa242e44b09d2fcca2a1278d",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44294938530",
+      "status": "in_progress"
+    },
+    {
+      "query": "run status",
+      "timeUtc": "114358",
+      "conclusion": null,
+      "head_sha": "a61a0cd8499323d2fa242e44b09d2fcca2a1278d",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44294938530",
+      "status": "in_progress"
+    },
+    {
+      "query": "run status",
+      "timeUtc": "114858",
+      "conclusion": null,
+      "head_sha": "a61a0cd8499323d2fa242e44b09d2fcca2a1278d",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44294938530",
+      "status": "in_progress"
+    },
+    {
+      "query": "run status",
+      "timeUtc": "115358",
+      "conclusion": "success",
+      "head_sha": "a61a0cd8499323d2fa242e44b09d2fcca2a1278d",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44294938530",
+      "status": "completed"
+    }
+  ]
+}

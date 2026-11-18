@@ -1,0 +1,17 @@
+Local checks, product a61a0cd8499323d2fa242e44b09d2fcca2a1278d
+Frozen pnpm install: exit 0, pnpm 10.12.4.
+Non-interactive rer setup: exit 0 using an ignored private answers file containing an ephemeral local owner configuration.
+node src/site/base/contract-docs.mjs write: exit 0; Wrote 0 contract documents.
+node src/site/base/contract-docs.mjs check: exit 0; 0 prose errors, 0 warnings; contract documents current.
+Restored ACCEPTANCE.md and docs/CLAIMS.md from origin/main.
+node scripts/edition-authoring/cli.mjs lock: exit 0; ran after tracked edits.
+node scripts/edition-authoring/cli.mjs check: exit 0; repeated immediately before commit with Node 22.20.0.
+pnpm run typecheck: exit 0 with Node 22.20.0.
+pnpm exec rer check --profile first-party: exit 0 with Node 22.20.0.
+node --check: exit 0 for the invitation, identity and Move in browser files.
+node scripts/delivery/secret-declarations.mjs: exit 0.
+git diff --cached --check: exit 0.
+git log origin/main..HEAD identity and trailer scan: one fleet-authored and fleet-committed entry, no trailers.
+Fleet product push guard: exit 0, attempt 1.
+Exact advertised head check before build: pass.
+npx -y @runeditrun/rer build through cloud_run: exit 0 with Node 22.20.0.

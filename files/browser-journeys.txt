@@ -1,0 +1,25 @@
+Exact pushed browser candidate a61a0cd8499323d2fa242e44b09d2fcca2a1278d
+Node 22.20.0, system Chromium headless (--no-sandbox), Node test runner, each named case invoked once.
+
+tests/journeys/identity-browser.mjs
+Test filter: an owner explicitly redeems a scanner-safe sign-in link
+Exit 0
+ok 1 - a new teammate chooses a password and opens the inbox signed in, and an owner explicitly redeems a scanner-safe sign-in link, enrolls factors, signs in with a passkey, steps up for an audit export and signs out only the current session
+# tests 1
+# pass 1
+# fail 0
+# cancelled 0
+# duration_ms 940203.337251
+
+tests/journeys/move-in-browser.mjs
+Test filter: an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import
+Exit 0
+ok 1 - an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import
+# tests 1
+# pass 1
+# fail 0
+# cancelled 0
+# duration_ms 428021.46934
+
+Move in design checks logged 77 of 77 screens with zero serious or critical accessibility findings and no overflow.
+Uncaught Move in page errors recorded: 0.

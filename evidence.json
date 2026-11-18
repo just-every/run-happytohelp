@@ -1,0 +1,82 @@
+{
+  "files": [
+    {
+      "blob": "8ecfdb9b2e41be129c8f02e543c45369b8574cbd",
+      "bytes": 4745,
+      "path": "REPORT.md",
+      "sha256": "a52620f5deaf914a17abb71c9db8e7e630d11116ba7afe6a5d2b942f4a538a08"
+    },
+    {
+      "blob": "fc9caac9e56942ab0d7a30a2563a1e76f5b7dae8",
+      "bytes": 1140,
+      "path": "browser-journeys.txt",
+      "sha256": "33d42b3978856dd7b7aaff26ddb071734bd5caad85e4500a5038a7f144647fff"
+    },
+    {
+      "blob": "de92ddd67a2f444d900cd6de6efd7e1062a0d1f7",
+      "bytes": 781,
+      "path": "browser-screens.txt",
+      "sha256": "15caff553b9e08cffed56bc3904c0090ac2915598efe4dfeb1ef22a65fb7680b"
+    },
+    {
+      "blob": "367e54a2e7cff20362f76f2b7a623ea2a96595c9",
+      "bytes": 70458,
+      "path": "browser/invitation-copied-1440.png",
+      "sha256": "c0ed62ffbbc512a1f9db4cd69c1fb4ac7f10d4318a4e1783db26255311f6f2df"
+    },
+    {
+      "blob": "b75bf5843209059428ee02f0e021fbebd0ea41db",
+      "bytes": 47131,
+      "path": "browser/invitation-copied-390.png",
+      "sha256": "0dbb959e9ba4a4ae35cfb213ad71d771e5fef8f5398958b3e34e95bc4f8cdf36"
+    },
+    {
+      "blob": "12200c5c3153b30dcad2205f04f3003f8ce1e664",
+      "bytes": 452621,
+      "path": "browser/undo-conflicts-1440.png",
+      "sha256": "a5f54baad419e22e341b2de3566f2cee3c2431b048b51871edce20534a810c5a"
+    },
+    {
+      "blob": "f3c56d11378344a804d62b6c801533256d12c7fb",
+      "bytes": 463298,
+      "path": "browser/undo-conflicts-390.png",
+      "sha256": "5f7d293590dbd70d7021bc270bbd53f8f15b46aa01187b5f9f760255380d6064"
+    },
+    {
+      "blob": "42decf1e2049034d9ff5fca7a9f338c1ef4c94ab",
+      "bytes": 1224,
+      "path": "local-checks.txt",
+      "sha256": "66d92816d0c4bd2818cae21ff8c90030136b5f34cadff40a3ec00a26e2314f2f"
+    },
+    {
+      "blob": "e46531138358a76be938a3730216a2bc949ec285",
+      "bytes": 8255,
+      "path": "move-in-checks.json",
+      "sha256": "45e7ebc75c83a50e5a98e5daa49a57833ceb89aa0f9398e803c1dd8a1afbb612"
+    },
+    {
+      "blob": "7cdd883221902296a6977031cf0a7b95f10ae7c3",
+      "bytes": 2659,
+      "path": "patch-and-contract.txt",
+      "sha256": "1646bf040c49810ff123e72d4a774322d1255cce07c65ada89f4a7a9b8d9b483"
+    },
+    {
+      "blob": "0efa250398ddb257c00aecb8bc3418d266d1bbb2",
+      "bytes": 307,
+      "path": "undo-browser-receipt.json",
+      "sha256": "152e6b46eca2ad00e9661fe4100d4cb0243dc582c6f06bd20cf0b420accc042c"
+    },
+    {
+      "blob": "492ec28f5aae6357c3806c045a6964fb34db0d7f",
+      "bytes": 2065,
+      "path": "verify-receipt.json",
+      "sha256": "d73dcaf40e93dae9a4afb7f21a2e91cc906b6c149516214ff811b05594574071"
+    }
+  ],
+  "product_branch": "cloud/hh-seed-faults-3",
+  "product_head": "a61a0cd8499323d2fa242e44b09d2fcca2a1278d",
+  "ref": "refs/heads/evidence/hh-seed-faults-3",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-seed-faults-3"
+}

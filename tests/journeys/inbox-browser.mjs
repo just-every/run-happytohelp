@@ -23,3 +23,6 @@ test('an owner previews a shared macro handoff to a UI-invited agent, edits and 
 
 import {mergePickerBrowser} from '../helpers/stranger13-browser.mjs'
 test('an operator finds a merge by requester or subject and explicitly chooses the surviving ticket',mergePickerBrowser)
+
+import {ticketReferenceBrowser} from '../helpers/inbox/ticket-reference-browser.mjs'
+test('a saved reply previews the short support reference and working link on a widget ticket, matching its operator header and page title',ticketReferenceBrowser)

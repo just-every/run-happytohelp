@@ -1,4 +1,5 @@
 import {statusName,statusMeanings} from '../tickets/status-copy';
+import { ticketReference } from '../../../../modules/tickets/reference';
 import ImportedHistory from './ImportedHistory';
 import React, { useContext, useId, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -69,7 +70,7 @@ export default function TicketSummary({ conversation, record, workflows, escalat
     const statuses = (settings?.statuses || []).filter(status => status.active || status.id === ticket?.status_id)
         .map(status => ({ value: status.id, shortLabel:statusName(status), label: `${statusName(status)} — ${statusMeanings[status.category] || 'Workspace status.'}`, description:statusMeanings[status.category] }));
     return <section className="ticket-summary" aria-labelledby="ticket-summary-title">
-        <h3 id="ticket-summary-title" className="ticket-summary__title">Summary</h3>
+        <h3 id="ticket-summary-title" className="ticket-summary__title">Ticket { ticketReference(conversation.id) }</h3>
         { record?.error && <p role="alert" className="ticket-summary__error">{ record.error }</p> }
         <dl className="ticket-summary__rows">
             <Row label="Assignee" className="ticket-summary__row--assignee">
@@ -84,7 +85,7 @@ export default function TicketSummary({ conversation, record, workflows, escalat
                 <TicketChoice id="ticket-summary-priority" name="Priority" value={ ticket.priority } options={ priorities.map(value => ({ value, label: label(value) })) } disabled={ !record.manage || closed } onSave={ priority => record.save({ priority }) } />
             </> }
             { record && !ticket && !record.error && <Row label="Status"><span role="status">Loading ticket…</span></Row> }
-            <Row label="Tags"><ConversationTags conversation={ conversation } onChanged={ record?.apply } /></Row>
+            <Row label="Tags"><ConversationTags conversation={ conversation } onChanged={ record?.apply } mutate={ record?.mutate } /></Row>
             <Row label="Recipients"><ConversationParticipantsControl conversation={ conversation } /></Row>
             { (due || openAlerts.length > 0) && <Row label="SLA" className={ due?.breached || openAlerts.length ? 'is-alert' : '' }>
                 { due && <span className={ due.breached ? 'text-danger' : undefined }>{ due.text }</span> }

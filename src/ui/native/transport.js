@@ -49,7 +49,7 @@ export async function nativeRequest(path, init = {}) {
     // A sensitive action asks for a recent step-up; once confirmed, the same request runs once more.
     if (response.status === 403 && body.code === 'step_up_required' && !init.stepUpRetried && await confirmStepUp(body)) return nativeRequest(path, { ...init, stepUpRetried: true });
     notifyExpiredSession(path, response.status, body);
-    if (!response.ok) throw Object.assign(new Error(knowledgeRefusalMessage(body) || body.error?.message || body.error || `Request failed (${response.status})`), { status: response.status, data: body });
+    if (!response.ok) throw Object.assign(new Error((body.reason === 'conversation_changed_or_admission_denied' ? 'The conversation changed. Your draft is still here. Review the latest reply, then send again.' : knowledgeRefusalMessage(body)) || body.error?.message || body.error || `Request failed (${response.status})`), { status: response.status, data: body });
     return body;
 }
 /** Downloads a file the server may guard with a step-up (exports), asking for it the same way. */

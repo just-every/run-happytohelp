@@ -14,6 +14,7 @@ export default function useTicketRecord(conversation, reads) {
     const [ ticket, setTicket ] = useState(null), [ settings, setSettings ] = useState(null), [ error, setError ] = useState('');
     const [ staleReads, setStaleReads ] = useState(0);
     const current = useRef(path), loadedVersion = useRef(null);
+    const writes = useRef({ path, tail: Promise.resolve(), pending: 0, version: null });
     current.current = path;
     useEffect(() => { setTicket(null); setSettings(null); setError(''); loadedVersion.current = null; }, [ path ]);
     useEffect(() => {
@@ -35,16 +36,34 @@ export default function useTicketRecord(conversation, reads) {
         setTicket(record);
         updateConversation(conversation.id, record);
     }, [ conversation.id, path, updateConversation ]);
-    // Saves changed fields against the version the agent saw; a refused write leaves the record as the server has it.
-    const save = useCallback(async changes => {
-        const result = await nativeRequest(path, json('PATCH', { ...changes, expected_version: ticket.ticket_version }));
-        apply(result.data);
+    // Consecutive edits in this panel wait for their own preceding acknowledgement.
+    // Only that acknowledgement advances the queued version: another writer still gets a stale refusal.
+    // A failed/unknown write also refuses the edits behind it, without replaying any command.
+    const mutate = useCallback(operation => {
+        if (writes.current.path !== path) writes.current = { path, tail: Promise.resolve(), pending: 0, version: null };
+        const queue = writes.current;
+        if (!queue.pending) queue.version = loadedVersion.current;
+        queue.pending++;
+        const result = queue.tail.then(async () => {
+            if (current.current !== path) throw new Error('Open the ticket again before applying changes.');
+            const record = await operation(queue.version);
+            queue.version = record.ticket_version;
+            apply(record);
+            return record;
+        });
+        queue.tail = result;
+        const settled = () => { if (!--queue.pending) queue.tail = Promise.resolve(); };
+        result.then(settled, settled);
+        return result;
+    }, [ apply, path ]);
+    const save = useCallback(changes => mutate(async version => {
+        const result = await nativeRequest(path, json('PATCH', { ...changes, expected_version: version }));
         return result.data;
-    }, [ apply, path, ticket?.ticket_version ]);
+    }), [ mutate, path ]);
     const reload = useCallback(async () => {
         const result = await nativeRequest(path);
         apply(result.data);
         return result.data;
     }, [ apply, path ]);
-    return { ticket, settings, error, save, reload, apply, manage: Boolean(settings?.permissions?.manage) };
+    return { ticket, settings, error, save, reload, apply, mutate, manage: Boolean(settings?.permissions?.manage) };
 }

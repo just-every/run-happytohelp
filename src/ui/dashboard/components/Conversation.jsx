@@ -203,7 +203,13 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 setEscalationDraftId(null);
                 setFiles([]);
             }
-        } catch (error) { setDraftError(error.message); throw error; } finally {
+        } catch (error) {
+            if (error.data?.reason === 'conversation_changed_or_admission_denied') {
+                setDraftError('');
+                refreshConversation();
+            } else setDraftError(error.message);
+            throw error;
+        } finally {
             setIsSending(false);
         }
         if (sendAndClose) {

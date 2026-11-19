@@ -1,19 +1,45 @@
-import {mkdir,open,rm,unlink,writeFile} from 'node:fs/promises';
+import {link,mkdir,open,readFile,rm,unlink,writeFile} from 'node:fs/promises';
+import {randomUUID} from 'node:crypto';
+import {DatabaseSync} from 'node:sqlite';
 import path from 'node:path';
-import {privateDirectory} from './scratch.mjs';
+import {privateDirectory,running} from './scratch.mjs';
+
+/** A PID marker preserves compatibility with older importers. SQLite's
+ * process-owned lock serializes stale-marker recovery between current importers. */
+async function localLock(directory){
+  const marker=path.join(directory,'.legacy-import.lock'),mutex=path.join(directory,'.legacy-import-mutex.sqlite');
+  const busy=()=>Error('Another legacy import holds the local persistence lock; finish it before applying again');
+  await (await open(mutex,'a',0o600)).close();
+  const gate=new DatabaseSync(mutex,{timeout:0});
+  try{
+    try{gate.exec('BEGIN IMMEDIATE');}catch(error){if(error.errcode===5)throw busy();throw error;}
+    const prior=await readFile(marker,'utf8').catch(error=>{if(error.code==='ENOENT')return null;throw error;});
+    if(prior!==null){
+      const recordedPid=prior.trim(),pid=Number(recordedPid);
+      if(!/^[1-9]\d*$/.test(recordedPid)||!Number.isSafeInteger(pid)||pid>0x7fffffff||running(pid))throw busy();
+      await unlink(marker);
+    }
+    const pending=marker+'.'+randomUUID();
+    await writeFile(pending,String(process.pid),{mode:0o600,flag:'wx'});
+    try{await link(pending,marker);}catch(error){if(error.code==='EEXIST')throw busy();throw error;}
+    finally{await unlink(pending);}
+  }catch(error){gate.close();throw error;}
+  return async()=>{try{await unlink(marker);}finally{gate.close();}};
+}
 
 /** A local Wrangler/rer persistence directory. Parallel applies to the same
  * directory are refused before any write. */
 export async function localTarget(directory){
   await mkdir(directory,{recursive:true});
-  const lockFile=path.join(path.resolve(directory),'.legacy-import.lock');let lock;
-  try{lock=await open(lockFile,'wx',0o600);}catch(e){if(e.code==='EEXIST')throw Error('Another legacy import holds the local persistence lock; finish it before applying again');throw e;}
-  await lock.writeFile(String(process.pid));
-  const {getPlatformProxy}=await import('wrangler');
+  const unlock=await localLock(path.resolve(directory));
   try{
+    // Local D1/R2 do not need request geography. Use Miniflare's built-in data
+    // even on a fresh machine without a Cloudflare metadata cache.
+    process.env.CLOUDFLARE_CF_FETCH_ENABLED='false';
+    const {getPlatformProxy}=await import('wrangler');
     const proxy=await getPlatformProxy({remoteBindings:false,persist:{path:path.join(directory,'v3')}});
-    return {env:proxy.env,label:`local ${directory}`,async close(){await proxy.dispose();await lock.close();await unlink(lockFile);}};
-  }catch(error){await lock.close();await unlink(lockFile);throw error;}
+    return {env:proxy.env,label:'local '+directory,async close(){try{await proxy.dispose();}finally{await unlock();}}};
+  }catch(error){await unlock();throw error;}
 }
 
 // Wrangler's remote bindings (4.129) open local connections for every binding call

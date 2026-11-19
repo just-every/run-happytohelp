@@ -17,7 +17,7 @@ import {assertDeltaSweep} from './legacy-export/delta.mjs';
 import {assertFullErasure} from './legacy-export/resume.mjs';
 
 // One public-command integration flow, using real MySQL and local D1/R2.
-test('project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark', {timeout:600000}, async () => {
+test('project snapshot → attachment bytes → native import → safe replay → delta sweep since the watermark', async () => {
   const output=process.env.LEGACY_TEST_OUTPUT?resolve(process.env.LEGACY_TEST_OUTPUT):await mkdtemp(join(tmpdir(),'h2h-legacy-export-'));
   await mkdir(output,{recursive:true,mode:0o700});
   const database='h2h_export_'+randomBytes(5).toString('hex'),reader='export_'+randomBytes(5).toString('hex');
@@ -62,6 +62,7 @@ test('project snapshot → attachment bytes → native import → safe replay �
       assert.equal(raw.tables.projects.length,1);assert.equal(raw.tables.projects[0].id,projectId);
       for(const rows of Object.values(raw.tables))for(const row of rows)if(row.project_id)assert.equal(row.project_id,projectId);
       assert.equal(raw.tables.users.length,2,'owner and this project’s AI only');
+      assert.equal(raw.tables.users.find(user=>user.id===fixture.ownerId).timezone,null);
       assert.equal(raw.tables.users[0].password,undefined);assert.equal(raw.tables.projects[0].verification_secret,undefined);
       assert.equal(raw.tables.projects[0].ai_balance,'12.500000','decimal remains exact text');
       await run('scripts/export-legacy.mjs',['attachments','--input',snapshot,'--objects-dir',objectDirectory,'--output',file]);
@@ -106,6 +107,7 @@ test('project snapshot → attachment bytes → native import → safe replay �
     const {getPlatformProxy}=await import('wrangler');const proxy=await getPlatformProxy({remoteBindings:false,persist:{path:join(persist,'v3')}});
     const native={};
     try{
+      assert.equal((await proxy.env.DB.prepare('SELECT timezone FROM user_settings WHERE user_id=?').bind(fixture.ownerId).first()).timezone,'UTC');
       const expected={projects:2,users:1,memberships:2,contacts:4,conversations:4,messages:8,conversation_notes:2,media:2,legacy_import_files:5,knowledge_categories:6,knowledge_articles:6,knowledge_article_categories:6,macros:2,project_settings:2,knowledge_datasets:4,knowledge_documents:2,context_insights:4,context_tracked_events:4,local_devices:2,local_grants:2,local_device_settings:2,local_jobs:2,local_events:2,email_settings:2,public_project_aliases:2};
       for(const [table,count] of Object.entries(expected)){const row=await proxy.env.DB.prepare(`SELECT COUNT(*) n FROM ${table}`).first();native[table]=row.n;assert.equal(row.n,count,table);}
       assert.equal((await proxy.env.DB.prepare('SELECT COUNT(*) n FROM knowledge_categories WHERE is_published=0').first()).n,2);

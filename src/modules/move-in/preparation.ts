@@ -22,7 +22,7 @@ const requesterKeys=(vendor:Vendor,id:string)=>vendor==='zendesk'?[`user/${id}`,
 // A usable address only: a person with none, or a malformed one, shares nobody's address.
 const address=(value:unknown)=>typeof value==='string'&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)?value:null
 export async function prepareBundle(env:Env,run:Run,bundle:SourceBundle,conflicts=new Set<string>()){
- if(run.vendor==='zendesk'&&bundle.records.some(r=>r.kind==='ticket'&&(r.payload as any)?.requester_id==null))await guarded(env,run,noRequesterStatements(env,run.project_id))
+ if(bundle.records.some(r=>((run.vendor==='zendesk'&&r.kind==='ticket')||(run.vendor==='mailbox'&&r.kind==='conversation'))&&(r.payload as any)?.requester_id==null))await guarded(env,run,noRequesterStatements(env,run.project_id))
  const source:SourceBundle=withDerivedRecords(bundle,run.vendor),existing=await relevantTags(env,run.project_id,source.records),prepared=await prepareMapping({projectId:run.project_id,actorId:run.actor_id,vendor:run.vendor,source,tagIds:new Map(existing.map(t=>[t.normalized_name,t.id])),agentIds:run.vendor==='zendesk'?await matchedAgents(env,run.project_id,source.records):undefined})
  for(const key of conflicts)prepared.rejections.set(key,'conflicting_duplicate_id')
  if(run.vendor==='zendesk'){

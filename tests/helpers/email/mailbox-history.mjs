@@ -6,9 +6,9 @@ import {fakeTlsConnect} from './imap-smtp.mjs'
 export async function mailboxHistoryJourney({browserProof}={}){
  const results=[]
  const secret='synthetic-happytohelp-history-secret',requests=[],commands=[],sessions=new Map()
- const mime=(index)=>Buffer.from(`From: ${index?'Support':'Customer'} <synthetic-happytohelp-${index+1}@example.test>\r\nTo: synthetic-happytohelp-3@example.test\r\nDate: Tue, 10 Nov 2026 12:0${index}:00 +0000\r\nMessage-ID: <synthetic-happytohelp-${index+1}@example.test>\r\n${index?'References: <synthetic-happytohelp-1@example.test>\r\nIn-Reply-To: <synthetic-happytohelp-1@example.test>\r\n':''}Subject: Replacement parcel\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="synthetic-happytohelp"\r\n\r\n--synthetic-happytohelp\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n${index?'Your replacement ships today.':'Please replace the café parcel.'}\r\n--synthetic-happytohelp\r\nContent-Type: text/plain; name="receipt.txt"\r\nContent-Disposition: attachment; filename="receipt.txt"\r\nContent-Transfer-Encoding: base64\r\n\r\n${Buffer.from('synthetic-happytohelp receipt '+index).toString('base64')}\r\n--synthetic-happytohelp--\r\n`)
+ const mime=(index)=>Buffer.from(`From: ${index?'Support':'Customer'} <synthetic-happytohelp-${index?'imap':'1'}@example.test>\r\nTo: synthetic-happytohelp-3@example.test\r\nDate: Tue, 10 Nov 2026 12:0${index}:00 +0000\r\nMessage-ID: <synthetic-happytohelp-${index+1}@example.test>\r\n${index?'References: <synthetic-happytohelp-1@example.test>\r\nIn-Reply-To: <synthetic-happytohelp-1@example.test>\r\n':''}Subject: Replacement parcel\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="synthetic-happytohelp"\r\n\r\n--synthetic-happytohelp\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n${index?'Your replacement ships today.':'Please replace the café parcel.'}\r\n--synthetic-happytohelp\r\nContent-Type: text/plain; name="receipt.txt"\r\nContent-Disposition: attachment; filename="receipt.txt"\r\nContent-Transfer-Encoding: base64\r\n\r\n${Buffer.from('synthetic-happytohelp receipt '+index).toString('base64')}\r\n--synthetic-happytohelp--\r\n`)
  const raws=[mime(0),mime(1)]
- const app=await startApp({listen:Boolean(browserProof),captureQueue:true,socketModule:`export const connect=${fakeTlsConnect.toString()}`,bindings:{APP_ORIGIN:'https://app.example',INTEGRATION_ENCRYPTION_KEY:Buffer.alloc(32,7).toString('base64'),GOOGLE_MAIL_CLIENT_ID:'synthetic-happytohelp-google',GOOGLE_MAIL_CLIENT_SECRET:secret,MICROSOFT_MAIL_CLIENT_ID:'synthetic-happytohelp-ms',MICROSOFT_MAIL_CLIENT_SECRET:secret,MAILBOX_SOCKET_HOSTS:'imap.synthetic.example,smtp.synthetic.example'},outbound:async request=>{
+ const app=await startApp({listen:Boolean(browserProof),captureQueue:true,socketModule:`export const connect=${fakeTlsConnect.toString()}`,bindings:{INBOUND_EMAIL_TOKEN:secret,APP_ORIGIN:'https://app.example',INTEGRATION_ENCRYPTION_KEY:Buffer.alloc(32,7).toString('base64'),GOOGLE_MAIL_CLIENT_ID:'synthetic-happytohelp-google',GOOGLE_MAIL_CLIENT_SECRET:secret,MICROSOFT_MAIL_CLIENT_ID:'synthetic-happytohelp-ms',MICROSOFT_MAIL_CLIENT_SECRET:secret,MAILBOX_SOCKET_HOSTS:'imap.synthetic.example,smtp.synthetic.example'},outbound:async request=>{
   const url=new URL(request.url);requests.push({method:request.method,path:url.pathname})
   if(url.hostname==='synthetic-mail-edge.example'){
    const body=await request.json();assert.equal(body.address.hostname,'imap.synthetic.example','history never opens SMTP');assert.equal(body.address.port,993)
@@ -17,11 +17,11 @@ export async function mailboxHistoryJourney({browserProof}={}){
    // Credentials stay in the fake's private command handling, never in reports.
    if(command.startsWith('LOGIN ')){assert.ok(command.includes(secret));commands.push('LOGIN');return new Response(`${tag} OK login\r\n`)}
    commands.push(command)
-   if(command.startsWith('EXAMINE '))return new Response(`* OK [UIDVALIDITY 73] stable\r\n* OK [UIDNEXT 3] next\r\n${tag} OK examined\r\n`)
+   if(command.startsWith('EXAMINE '))return new Response(`* OK [UIDVALIDITY 73] stable\r\n* OK [UIDNEXT 900001] next\r\n${tag} OK examined\r\n`)
    if(command==='LIST "" "*"')return new Response(`* LIST () "/" "Archive"\r\n* LIST () "/" "Sent"\r\n${tag} OK list\r\n`)
-   if(command==='UID SEARCH UID 1:2')return new Response(`* SEARCH 1 2\r\n${tag} OK searched\r\n`)
-   const fetch=command.match(/^UID FETCH ([12]) \(UID BODY\.PEEK\[\]\)$/);assert.ok(fetch,'only read commands allowed: '+command)
-   const raw=raws[Number(fetch[1])-1];return new Response(Buffer.concat([Buffer.from(`* 1 FETCH (BODY[] {${raw.length}}\r\n`),raw,Buffer.from(`)\r\n${tag} OK fetched\r\n`)]))
+   if(command==='UID SEARCH ALL')return new Response(`* SEARCH 1 900000\r\n${tag} OK searched\r\n`)
+   const fetch=command.match(/^UID FETCH (1|900000) \(UID BODY\.PEEK\[\]\)$/);assert.ok(fetch,'only read commands allowed: '+command)
+   const raw=raws[fetch[1]==='1'?0:1];return new Response(Buffer.concat([Buffer.from(`* 1 FETCH (BODY[] {${raw.length}}\r\n`),raw,Buffer.from(`)\r\n${tag} OK fetched\r\n`)]))
   }
   if(url.pathname.endsWith('/token')){assert.equal(request.method,'POST');const grant=new URLSearchParams(await request.text());assert.equal(/send|write|settings\.basic/i.test(grant.get('scope')||''),false);return Response.json({access_token:secret,refresh_token:secret,expires_in:grant.get('code')==='synthetic-happytohelp-live'?3600:1,...(grant.get('code')==='synthetic-happytohelp-broad'?{scope:url.hostname.includes('google')?'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send':'Mail.Read Mail.Send User.Read'}:{})})}
   assert.equal(request.method,'GET','no provider mailbox write method')
@@ -61,6 +61,15 @@ export async function mailboxHistoryJourney({browserProof}={}){
     assert.equal((await app.call(callback,{token})).status,302)
     box=(await ok(boxes)).data.find(value=>value.provider===provider)
    }
+   if(provider==='imap'){
+    const tables=['conversations','conversation_outbox','workflow_events']
+    const counts=()=>Promise.all(tables.map(table=>app.first('SELECT count(*) n FROM '+table+' WHERE project_id=?',w.projectId)))
+    const before=await counts()
+    const live=await app.call('/api/integrations/email/inbound',{headers:{Authorization:'Bearer '+secret},body:{messageId:'synthetic-happytohelp-live-to-history',to:box.address,from:'synthetic-happytohelp-live-sender@example.test',subject:'Live delivery to a history-only mailbox',text:'This delivery must be refused.'}})
+    assert.equal(live.status,404)
+    await app.drainJobs()
+    assert.deepEqual(await counts(),before,'live inbound creates no ticket, outbox row or workflow event')
+   }
    const initial=await snapshot()
    const cipher=(await app.first('SELECT credential_cipher FROM mailbox_connections WHERE id=?',box.id)).credential_cipher,[iv,data]=cipher.split('.')
    const key=await crypto.subtle.importKey('raw',Buffer.alloc(32,7),'AES-GCM',false,['decrypt']),credentials=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:Buffer.from(iv,'base64'),additionalData:Buffer.from(`${w.projectId}:mailbox:${box.id}`)},key,Buffer.from(data,'base64'))))
@@ -80,7 +89,12 @@ export async function mailboxHistoryJourney({browserProof}={}){
    const conversations=await app.sql("SELECT c.* FROM conversations c JOIN move_in_conversations i ON i.conversation_id=c.id WHERE c.project_id=? AND i.vendor='mailbox'",w.projectId)
    assert.equal(conversations.length,prior.n+1)
    const latest=conversations.at(-1),rows=await app.sql('SELECT * FROM messages WHERE conversation_id=? ORDER BY revision',latest.id)
-   assert.equal(rows.length,2);assert.match(rows[0].content,/café/);assert.ok(rows.every(m=>m.actor_role==='contact'))
+   assert.equal(rows.length,2);assert.match(rows[0].content,/café/);assert.deepEqual(rows.map(m=>m.actor_role),provider==='imap'?['contact','operator']:['contact','contact'])
+   if(provider==='imap'){
+    const sourceAuthor=await app.first('SELECT author_json FROM move_in_message_sources WHERE message_id=?',rows[1].id)
+    assert.equal(JSON.parse(sourceAuthor.author_json).name,'Unknown source author')
+    assert.equal(await app.first('SELECT id FROM contacts WHERE project_id=? AND email=?',w.projectId,box.address),null)
+   }
    const media=await app.sql('SELECT * FROM media WHERE conversation_id=?',latest.id);assert.equal(media.length,2)
    const download=await app.request(`/api/conversations/${latest.id}/media/${media[0].id}`,{token});assert.equal(download.status,200);assert.match(await download.text(),/synthetic-happytohelp receipt/)
    const contact=await app.first('SELECT * FROM contacts WHERE id=?',latest.contact_id),visitor='synthetic-happytohelp-visitor-'+provider
@@ -111,7 +125,7 @@ export async function mailboxHistoryJourney({browserProof}={}){
    if(provider==='gmail'){
     const again=await ok(`${boxes}/${box.id}/history`,{folders:['Archive','Sent']});assert.notEqual(again.data.id,runId,'reimport after undo has its own immutable journal');await app.drainJobs();const againPath=`/api/move-in/projects/${w.projectId}/imports/${again.data.id}`,againReview=(await ok(againPath)).data;assert.equal(againReview.state,'ready');await ok(againPath+'/apply',{fingerprint:againReview.plan.fingerprint});await app.drainJobs();assert.equal((await app.first('SELECT count(*) n FROM messages WHERE project_id=?',w.projectId)).n,raws.length);await ok(againPath+'/undo',{});await app.drainJobs();assert.deepEqual(await snapshot(),initial)
    }
-   results.push({provider,sourceMessages:raws.length,importedThreads:1,importedMessages:rows.length,attachments:media.length,repeat:'no-op',undo:'exact',send:'refused',customerRead:'refused',scheduledReads})
+   results.push({provider,sourceMessages:raws.length,importedThreads:1,importedMessages:rows.length,attachments:media.length,repeat:'no-op',undo:'exact',send:'refused',customerRead:'refused',scheduledReads,...(provider==='imap'?{liveInbound:'404; no ticket, outbox row or workflow event',teamReply:'Unknown source author',sparseUids:[1,900000]}:{})})
    const publicState=JSON.stringify(await ok(boxes))+JSON.stringify(await app.sql('SELECT * FROM audit_events WHERE project_id=?',w.projectId))
    assert.equal(publicState.includes(secret),false);assert.equal(publicState.includes('must-not-store'),false)
    if(provider!=='imap'){

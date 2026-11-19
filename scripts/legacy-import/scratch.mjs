@@ -21,4 +21,4 @@ export async function removeStaleDirectories(){
   }
   return removed;
 }
-function running(pid){try{process.kill(pid,0);return true;}catch(error){return error.code!=='ESRCH';}}
+export function running(pid){try{process.kill(pid,0);return true;}catch(error){return error.code!=='ESRCH';}}

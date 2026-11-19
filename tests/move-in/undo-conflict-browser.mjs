@@ -1,5 +1,69 @@
 import assert from 'node:assert/strict'
 
+export async function undoInspectedRepeat({page,origin,project,shot}){
+ const base=`/projects/${project}/move-in`,filename='synthetic-hh-inspected.jsonl'
+ const dates={created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z'}
+ const customer={id:940001,role:'end-user',name:'Synthetic customer',email:'synthetic-hh-940001@example.test',...dates}
+ const teammate={id:940002,role:'agent',name:'Synthetic teammate',email:'synthetic-hh-940002@example.test',...dates}
+ const article={id:940003,title:'Synthetic delivery guide',body:'The synthetic delivery guide body.',draft:false,user_segment_id:null,...dates}
+ const comments=[['Original public question',customer,true],['Private delivery note',teammate,false],['Historical public reply',teammate,true]].map(([body,author,isPublic],index)=>({id:940010+index,author_id:author.id,public:isPublic,body,created_at:dates.created_at}))
+ const records=[{user:customer},{user:teammate},{ticket:{id:940004,requester_id:customer.id,subject:'Synthetic delivery question',status:'open',via:{channel:'email'},tags:['Delivery','Priority'],comments,...dates}},{macro:{id:940005,title:'Synthetic delivery greeting',restriction:null,actions:[{field:'comment_value',value:'How can we help with your delivery?'}],...dates}},{article}]
+ const buffer=Buffer.from(records.map(JSON.stringify).join('\n')+'\n')
+ const button=name=>page.getByRole('button',{name,exact:true})
+ const heading=name=>page.getByRole('heading',{name:`${name}: ${filename}`,exact:true})
+ const upload=async()=>{
+  await page.getByLabel('Export format',{exact:true}).selectOption('zendesk')
+  await page.getByLabel('Export file',{exact:true}).setInputFiles({name:filename,mimeType:'application/octet-stream',buffer})
+  const response=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().includes('/imports?'))
+  await button('Upload and review').click()
+  return (await (await response).json()).data
+ }
+ await page.goto(origin+base)
+ const run=await upload()
+ await heading('Ready for review').waitFor({timeout:120000})
+ await button('Approve and import').click()
+ await heading('Complete').waitFor({timeout:120000})
+ await page.getByRole('link',{name:/^Open conversation /}).click()
+ await page.getByText(comments[2].body,{exact:true}).waitFor()
+ const proofWidths=[]
+ if(shot){
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:900})
+   await page.screenshot({path:shot(`inspected-history-${width}.png`),fullPage:true})
+   proofWidths.push(width)
+  }
+  await page.setViewportSize({width:1440,height:1000})
+ }
+ await page.goto(origin+base)
+ await button(`${filename} — Complete`).click()
+ await page.getByRole('link',{name:/^Open article /}).click()
+ const title=page.getByRole('textbox',{name:'Title',exact:true})
+ await title.waitFor()
+ assert.equal(await title.inputValue(),article.title)
+ await page.goto(origin+base)
+ const repeat=await upload()
+ assert.equal(repeat.id,run.id,'exact repeat refers to the original import')
+ await page.getByText('This export was already processed.',{exact:false}).waitFor()
+ await button('Undo whole import').click()
+ const resume=button('Resume undo'),undone=heading('Undone')
+ await resume.or(undone).first().waitFor({timeout:120000})
+ let resumeStatus=null
+ if(await resume.isVisible()){
+  const response=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/'+run.id+'/resume'))
+  await resume.click()
+  resumeStatus=(await response).status()
+ }
+ const path=`/api/move-in/projects/${project}/imports/${run.id}`
+ const state=await page.waitForFunction(async path=>{
+  const {data}=await (await fetch(path)).json()
+  return data.state==='undone'||data.error?{state:data.state,error:data.error,report:data.report}:false
+ },path,{timeout:120000})
+ const result=await state.jsonValue()
+ assert.equal(result.state,'undone',JSON.stringify(result))
+ await undone.waitFor({timeout:120000})
+ return {repeat:'original import',undo:result.state,removed:result.report.removed,resumeStatus,proofWidths}
+}
+
 /** Real Settings uploads, native membership/edit/reference doors, and the owner’s
  * Undo button. Desktop assertions run once; phone images show the same result. */
 export async function undoConflictBrowser({page,origin,project,shot}){
@@ -35,6 +99,7 @@ export async function undoConflictBrowser({page,origin,project,shot}){
  }
  // Creating a native account for a historical author alone never edits the
  // imported history. A staff match must not become a blanket undo refusal.
+ const inspected=await undoInspectedRepeat({page,origin,project,shot})
  const staffRun=await upload(7100,1)
  const invitation=(await call(api+'/agents',{email:staff.email,role:'operator'})).data
  const accepted=await fetch(origin+'/api/identity/accept-token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:new URL(invitation.invitationUrl).searchParams.get('token'),name:staff.name,password:'synthetic-hh-staff-password'})})
@@ -90,5 +155,5 @@ export async function undoConflictBrowser({page,origin,project,shot}){
   await page.screenshot({path:shot(`undo-conflicts-${width}.png`),fullPage:true})
  }
  await page.setViewportSize({width:1440,height:1000})
- return {staffMatch:'undo completed; native staff retained',nativeEdit:editReport,reference:report}
+ return {inspected,staffMatch:'undo completed; native staff retained',nativeEdit:editReport,reference:report}
 }

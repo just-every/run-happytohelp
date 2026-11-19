@@ -32,12 +32,12 @@ export async function seedLegacy(connection, { objectDirectory }) {
     );
     counts[table] = (counts[table] ?? 0) + 1;
   };
-  const user = (id, name, email, type = 'regular') => insert('users', {
+  const user = (id, name, email, type = 'regular', timezone = 'Australia/Brisbane') => insert('users', {
     id, name, email, type, password: 'fixture-password-hash', remember_token: 'fixture-remember-token',
-    timezone: 'Australia/Brisbane', last_login_ip: '192.0.2.10', last_login_country: 'AU', ...times,
+    timezone, last_login_ip: '192.0.2.10', last_login_country: 'AU', ...times,
   });
   const { projectIds, ownerId } = LEGACY_IDS;
-  await user(ownerId, 'Export Owner', 'export-owner@example.test');
+  await user(ownerId, 'Export Owner', 'export-owner@example.test', 'regular', null);
   await insert('ai_defaults', { id: uuid('21', 1), type: 'support', role: 'Customer support',
     prompt: 'Answer using the project knowledge base.', ...times });
 

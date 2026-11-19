@@ -6,54 +6,28 @@ Choose the format, follow the steps the page shows for it, upload the file, and 
 
 An import is inert: it does not send mail or widget messages, run AI, assign staff, activate staff access, or send notifications. Imported contacts are unverified and have no automation consent. Historical staff are retained as source authors only. Conversations solved or closed in the source land **closed**; their closing time is the source's own when the export records one, otherwise the source's last update, and the review says which. Assignment is not activated. Imported messages are history, so they never count as unread. Imported history is excluded from Reports.
 
-## Native legacy HappyToHelp packages
+## Move from an older HappyToHelp workspace
 
-Legacy HappyToHelp packages use a separate importer from the vendor upload
-formats below. Prepare a project-scoped snapshot with the read-only exporter,
-then supply attachment bytes from an authorized local directory; see
-[Legacy export](LEGACY-EXPORT.md) and the [importer guide](../src/modules/legacy-import/README.md).
-A nullable legacy website still needs a deliberately chosen native allowed
-origin. Legacy AI tables contain no model choice: supply one explicitly. Mail
-stays disabled; choose a verified domain later or explicitly defer that choice.
+The owner of this installation can choose **Legacy HappyToHelp** in **Move in**.
+Upload the export folder, check that the review names the workspace you meant to
+bring over, then approve the import. You may be asked to sign in again. The
+history opens in a separate workspace.
 
-For the installed **Legacy HappyToHelp** package flow in Move in, the original
-installation owner uploads the manifest and its listed files, reviews the source
-workspace and fingerprint, approves that exact package with a recent native
-sign-in, and starts the bounded runner. Source history becomes a separate
-workspace. Current session, ownership and approval are checked while it runs.
-Source staff gain no accounts or memberships. Saved replies use the approved
-owner as their custodian, with the source author recorded separately; a missing
-author is shown as **Unknown source author**. Historical contact verification
-is cleared because old authentication keys were omitted. Automation consent
-is not granted, AI is disabled, and scheduled/execution work stays held.
-An assignee can match one current native member by exact recorded email; the
-original staff attribution remains visible. This is an exception to the vendor
-import assignment rule above.
+Conversations, customer details, supported attachments, help articles and saved
+replies can come across. Old staff names stay with their replies. If no author
+was recorded, the reply says **Unknown source author**. An old assignee can be
+matched to a current teammate with the same email address. Check that the match
+is right, and invite any other people who need access.
 
-The administrative command `node scripts/import-legacy.mjs --file …` or
-`--package …` has a different migration policy. After a read-only plan, explicit
-`--apply --persist-to <isolated-state>` can retain source users, memberships,
-verification and non-AI assignments. It creates no native passwords from old
-credentials. A saved reply with no source author has no approved CLI custodian:
-the row is held in private source custody with a field reason while unrelated
-support history imports. Do not infer the installed historical policy from CLI
-success, or run the CLI as a substitute for owner approval.
+Old passwords, account access and customer verification stay behind. Email and
+AI start off, and old automatic work stays paused. Choose a website address
+if the old workspace did not have one. Set up sending and choose an AI model
+when you are ready to use those features.
 
-Both transports report field names, row/null counts, destinations, normalization,
-unsupported native fields and reasons. Export omissions are listed separately
-and are never called archived. A private source archive does not make an
-unsupported field usable. Conversation subjects use native ticket subjects;
-other metadata without a destination remains private. A file shared with a
-private note/delegation is never exposed as a visitor message attachment.
-Additional message associations, pivot tags and order without native
-destinations are explicitly reported and held; check these before adoption.
-
-The [synthetic SQL journey](../tests/legacy-export.mjs) and
-[source field inventory](../src/modules/legacy-import/source-columns.ts)
-cover the resolved 53-table, 580-column schema. This is a possible historical
-shape, not current production inventory. Real export completeness, original
-attachment coverage, mailbox/model/domain choices and cutover remain separate
-owner-supplied qualifications.
+Check the import report for anything left behind. Open a few conversations,
+attachments and articles and compare them with the originals. In particular,
+make sure you can open the files you expected, and that files from private
+notes are still private. Keep your original export until you finish checking.
 
 ## Files and limits
 
@@ -834,7 +808,7 @@ unqualified dependencies. `importers.json` therefore remains `importer_unverifie
 
 Run Edit Run fleet, 2026-11-17.
 
-**Settings → Email → Add mailbox → Import history only** supports Gmail, Microsoft and IMAP without requesting send access or SMTP configuration. Select folders there and read them into an ordinary Move in review. Approve and undo here using the same current-owner authority, immutable custody and protection for later edits as other imports. Each sender is an unverified contact; messages retain their source dates, grouped threads and supported attachment bytes. Mailbox history is tagged by provider, privately attributed to its mailbox, hidden from customers and excluded from Reports. Importing and undoing do not send notifications, run AI, create tasks, trigger workflows or start SLA clocks. Provider mail is only read, and the reader never schedules live inbound or later polls.
+**Settings → Email → Add mailbox → Import history only** supports Gmail, Microsoft and IMAP without requesting send access or SMTP configuration. Select folders there and read them into an ordinary Move in review. Approve and undo here using the same current-owner authority, immutable custody and protection for later edits as other imports. Customers are unverified contacts, and replies from the mailbox’s own address appear as team replies from **Unknown source author**. Messages retain their source dates, grouped threads and supported attachment bytes. Mailbox history is tagged by provider, privately attributed to its mailbox, hidden from customers and excluded from Reports. Importing and undoing do not send notifications, run AI, create tasks, trigger workflows or start SLA clocks. Provider mail is only read, and the reader never schedules live inbound or later polls.
 
 Overlapping folders and repeating the same selection add no duplicate messages. A changed copy of an already-held thread is preserved as imported and shown as a source conflict; this reader does not merge later replies into an imported thread. The current bounded reader can refuse large selections before custody, and Move in can refuse unsupported threads or attachments in the review. [Email setup](email.md#import-history-only) lists the actual bounds and permissions. This is synthetic fake-provider qualification, not a live account migration receipt.
 

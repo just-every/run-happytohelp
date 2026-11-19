@@ -19,15 +19,6 @@ export async function getMailbox(env:Env,projectId:string,id:string){
  if(!row)throw new HTTPException(404,{message:'Mailbox not found'})
  return row
 }
-export async function lookupReceivingMailbox(env:Env,value:string){
- let normalized:string;try{normalized=address(value)}catch{return null}
- const row=await env.DB.prepare(`SELECT a.project_id,a.mailbox_id,a.address FROM mailbox_addresses a JOIN mailbox_connections m ON m.id=a.mailbox_id AND m.project_id=a.project_id
- WHERE a.address=? AND m.status IN ('connected','needs_backfill')
- AND coalesce(json_extract(m.cursor_json,'$.mode'),'live')<>'history'
- AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=a.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`)
- .bind(normalized).first<{project_id:string;mailbox_id:string;address:string}>()
- return row?{projectId:row.project_id,mailboxId:row.mailbox_id,address:row.address}:null
-}
 export const credentialScope=(row:Pick<MailboxRow,'project_id'|'id'>)=>`${row.project_id}:mailbox:${row.id}`
 export async function readCredential<T>(env:Env,row:MailboxRow):Promise<T>{
  if(!row.credential_cipher)throw new HTTPException(409,{message:'Mailbox needs reconnecting'})

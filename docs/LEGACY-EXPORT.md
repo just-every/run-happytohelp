@@ -19,6 +19,57 @@ The snapshot retains UUIDs, all selected noncredential columns, SQL decimals/BIG
 
 Passwords, remember/invitation/contact-key tokens, verification/shared keys, their crypto-only references and GitHub access tokens are omitted. `collector_actions.action` is dropped: it is encrypted visitor telemetry whose key is deliberately omitted, and retaining it has no support-history use. Nothing decrypts or archives that payload. Raw crawler HTML, crawler exception text, encrypted actions, captured page HTML, collected browsing payloads/summaries and raw MIME transport are omitted: these duplicate rendered content/verified attachments or repeat visitor URL credentials. Their non-payload metadata remains archived. The known `contacts.metadata.admin` capability URL and `conversations.metadata.customer_reply` and `.suggestions` runtime trigger/composer caches are removed explicitly and counted in the manifest; unknown nested secret fields still stop export. Browser user-agent headers are omitted as visitor telemetry. Reviewed credential assignments, authentication signatures, HTTP cookies, hidden authentication form values, HAR headers and URL capability values in rendered support text are replaced by `<redacted>` and counted. These include prefix-typed `sk_`/`rk_` keys (also with Markdown's escaped underscore), `curl -u user:secret` and `-u key:` Basic credentials, URL userinfo with or without a user (`redis://:password@host`), unquoted credential values up to the next space, 2FA setup keys written in 4-character groups and `pwd` meeting links. Provider tokens and webhook links are recognized by their own prefix or host (Slack, Shopify, GitLab, HubSpot, Google, npm, Atlassian, Square, Braintree, Mailgun, Mailchimp, Telegram and Discord forms), with no label needed. Cookies in HAR fragments that are not complete JSON and in `curl -b` are removed. A `curl -u` value is kept only when it is an explicit documentation placeholder (`<TOKEN>`, `$VAR`, `YOUR_…`, `XXXX`, or an environment variable name such as `STRIPE_SECRET_KEY`), never because it is written in capitals. Passwords in prose ("my password is …"), under short or translated names (`pass:`, `pw:`, `Passwort:`, `contraseña:`), application passwords in 4-character groups and 2FA keys after "key" are removed. Sign-in, reset, verification and invitation links lose their capability segment, and a private key cut off before its END line goes whole. When a removed value ends at a line break, the line that continues it is removed too; after a marker already in the text, only key-shaped continuation lines are. A value removed in one place is removed wherever the project's text repeats it, and so is every 16+ character token inside it. Opaque runs of 32 or more characters are judged against the entropy a random string of that length would show, which removes about 99% of random mixed-case secrets while word, number and date slugs stay readable. Unverified opaque URLs are omitted as potential access capabilities; documented public avatar, video, document and integration-invitation identifiers remain references. Unclassified opaque diagnostic values are omitted as potential credentials too; their omission counts are explicit. Unknown assignments, JSON fields and encrypted envelopes still fail closed. Braintree authentication/payment nonce fields are omitted; its [public client configuration IDs](https://developer.paypal.com/braintree/graphql/reference/) remain identifiers. [Gravatar hashes](https://docs.gravatar.com/rest/hash/) are public avatar identifiers; [Google Drive resource keys](https://developers.google.com/workspace/drive/api/guides/resource-keys) remain omitted access capabilities. Code variable references and explicit documentation placeholders remain readable. Reviewed public asset identifiers, Gravatar email digests, AI evidence checksums and numeric cache token counters have narrow noncredential classifications. Opaque provider continuation IDs/signatures in `message_thinkings.thinking_id` and `message_thinkings.signature` are also omitted; they are unnecessary to read the retained conversation. Asymmetric/contact shared-key tables, auth resets, queues, Telescope and the unrelated waitlist are excluded. The snapshot records names of excluded tables and omitted columns. Other original business fields remain in the importer's archive, including unsupported fields and soft-deleted records.
 
+## Import policies for native legacy HappyToHelp packages
+
+Legacy HappyToHelp packages use a separate importer from vendor uploads. Prepare a project-scoped snapshot with the read-only exporter,
+then supply attachment bytes from an authorized local directory; see
+the [importer guide](../src/modules/legacy-import/README.md).
+A nullable legacy website still needs a deliberately chosen native allowed
+origin. Legacy AI tables contain no model choice: supply one explicitly. Mail
+stays disabled; choose a verified domain later or explicitly defer that choice.
+
+For the installed **Legacy HappyToHelp** package flow in Move in, the original
+installation owner uploads the manifest and its listed files, reviews the source
+workspace and fingerprint, approves that exact package with a recent native
+sign-in, and starts the bounded runner. Source history becomes a separate
+workspace. Current session, ownership and approval are checked while it runs.
+Source staff gain no accounts or memberships. Saved replies use the approved
+owner as their custodian, with the source author recorded separately; a missing
+author is shown as **Unknown source author**. Historical contact verification
+is cleared because old authentication keys were omitted. Automation consent
+is not granted, AI is disabled, and scheduled/execution work stays held.
+An assignee can match one current native member by exact recorded email; the
+original staff attribution remains visible. This is an exception to the vendor
+import assignment rule for ordinary vendor imports.
+
+The administrative command `node scripts/import-legacy.mjs --file …` or
+`--package …` has a different migration policy. After a read-only plan, explicit
+`--apply --persist-to <isolated-state>` can retain source users, memberships,
+verification and non-AI assignments. It creates no native passwords from old
+credentials. A saved reply with no source author has no approved CLI custodian:
+the row is held in private source custody with a field reason while unrelated
+support history imports. Do not infer the installed historical policy from CLI
+success, or run the CLI as a substitute for owner approval. Local applies use
+built-in Cloudflare request metadata and need no external connection. The
+explicit remote mode still needs access to the named Cloudflare resources.
+
+Both transports report field names, row/null counts, destinations, normalization,
+unsupported native fields and reasons. Export omissions are listed separately
+and are never called archived. A private source archive does not make an
+unsupported field usable. Conversation subjects use native ticket subjects;
+other metadata without a destination remains private. A file shared with a
+private note/delegation is never exposed as a visitor message attachment.
+Additional message associations, pivot tags and order without native
+destinations are explicitly reported and held; check these before adoption.
+
+The [synthetic SQL journey](../tests/legacy-export.mjs) and
+[source field inventory](../src/modules/legacy-import/source-columns.ts)
+cover the resolved 53-table, 580-column schema. This is a possible historical
+shape, not current production inventory. Real export completeness, original
+attachment coverage, mailbox/model/domain choices and cutover remain separate
+owner-supplied qualifications.
+
+
 ## Attachments
 
 ```sh
@@ -211,7 +262,7 @@ Build before cutover: recreating live mail/provider/integration configuration wi
 
 ## Local integration
 
-`pnpm run test:legacy-export` requires an isolated local/CI MySQL admin supplied by `LEGACY_TEST_MYSQL_HOST`, `LEGACY_TEST_MYSQL_PORT`, `LEGACY_TEST_MYSQL_USER`, `LEGACY_TEST_MYSQL_PASSWORD`, optional `LEGACY_TEST_MYSQL_SOCKET`. It creates and deletes only its randomly named test database/user. It loads the complete migration-derived final schema (53 tables and 580 columns from the live shape, with synthetic rows only) and realistic ChargeDesk/12ui fixtures, grants a SELECT-only reader, runs both exporter commands, invokes the importer's public command twice per project and checks actual local D1/R2 content, privacy, publication, tenant separation and replay. It then changes one project in the legacy database (new and late messages, a new customer with a file, a renamed contact, the project retired) while the seed's team changes a conversation, exports a delta `--since` the recorded watermark, imports and reruns it, and runs `check.mjs delta --persist-to`. `LEGACY_TEST_OUTPUT` keeps synthetic artifacts outside the checkout for local UI inspection. CI runs this single integration test against MySQL 8.4.
+`pnpm run test:legacy-export` requires an isolated local/CI MySQL admin supplied by `LEGACY_TEST_MYSQL_HOST`, `LEGACY_TEST_MYSQL_PORT`, `LEGACY_TEST_MYSQL_USER`, `LEGACY_TEST_MYSQL_PASSWORD`, optional `LEGACY_TEST_MYSQL_SOCKET`. It creates and deletes only its randomly named test database/user. It loads the complete migration-derived final schema (53 tables and 580 columns from the live shape, with synthetic rows only) and synthetic Paper Lantern and Orbit Repairs fixtures, grants a SELECT-only reader, runs both exporter commands, invokes the importer's public command twice per project and checks actual local D1/R2 content, privacy, publication, tenant separation and replay. It then changes one project in the legacy database (new and late messages, a new customer with a file, a renamed contact, the project retired) while the seed's team changes a conversation, exports a delta `--since` the recorded watermark, imports and reruns it, and runs `check.mjs delta --persist-to`. `LEGACY_TEST_OUTPUT` keeps synthetic artifacts outside the checkout for local UI inspection. CI runs this single integration test against MySQL 8.4.
 
 ## Synthetic schema qualification
 
@@ -225,7 +276,7 @@ export omissions, nested redactions and unsupported native fields separately.
 
 The administrative CLI and installed owner-approved historical adoption have
 different access, verification and assignment policies. Read
-[the legacy procedure](moving-in.md#native-legacy-happytohelp-packages) before
+[the legacy procedure](moving-in.md#move-from-an-older-happytohelp-workspace) before
 choosing either entry. A missing source website, model choice or mail domain is
 an explicit input decision, never inferred from an email address or slug.
 This fixture does not establish current production schema or real-data

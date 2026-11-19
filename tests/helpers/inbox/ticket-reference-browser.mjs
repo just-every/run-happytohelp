@@ -13,7 +13,7 @@ export async function ticketReferenceBrowser(){
  try{
   const ticket=await f.ticket('Maya'),reference='#'+ticket.id.slice(0,8).toUpperCase()
   await request(`${base}/macros`,{title:'Reference reply',content:'Your support request {{ticket.id}}: {{ticket.link}}',actions:{priority:'high'},scope:{visibility:'shared',roles:[],groups:[],brands:[]}})
-  const path=`/projects/${projectId}/conversations/${ticket.id}`
+  const path=`/projects/${projectId}/conversations/${ticket.id}`,customerPath=`/portal/${projectId}/requests/${ticket.id}`
   await page.goto(origin+path)
   const hide=page.getByRole('button',{name:'Hide conversation panel',exact:true});if(await hide.isVisible())await hide.click()
   await page.getByRole('button',{name:'Actions',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:'Reference reply',exact:true}).click()
@@ -21,7 +21,7 @@ export async function ticketReferenceBrowser(){
   const bounds=await preview.evaluate(node=>({maxHeight:parseFloat(getComputedStyle(node).maxHeight),viewport:innerHeight}))
   assert.ok(Number.isFinite(bounds.maxHeight)&&bounds.maxHeight<=bounds.viewport,'the preview itself is bounded by the viewport')
   const reply=await preview.innerText()
-  assert.ok(reply.includes('Your support request '+reference+': '+origin+path),'preview renders the short reference and the working full UUID link')
+  assert.ok(reply.includes('Your support request '+reference+': '+origin+customerPath),'preview renders the short reference and the customer request link')
   assert.ok(!reply.includes('Your support request '+ticket.id),'the reference itself is not a UUID')
   await page.screenshot({path:shot('1440-preview.png'),fullPage:true})
   await viewport(page,viewports.mobile);await page.screenshot({path:shot('390-preview.png'),fullPage:true})

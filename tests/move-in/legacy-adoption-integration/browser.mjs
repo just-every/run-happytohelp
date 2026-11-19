@@ -15,7 +15,7 @@ export async function legacyPackageBrowserFlow({page,runtime,project,inspect,wid
   const good=await packageFixture(join(directory,'good'),'synthetic-browser-'+project,{large:true,staff:[{id:'synthetic-browser-staff',name:'Retired billing manager',email:'synthetic-browser-staff@example.test',created_at:1},{id:'synthetic-browser-admin',name:'Historical support lead',email:'synthetic-browser-admin@example.test',created_at:1}]})
   // Actual directory selection, then a changed local part is refused before acceptance.
   const first=good.manifest.chunks[0],original=await readFile(join(good.root,first.file));await writeFile(join(good.root,first.file),Buffer.alloc(original.length,32))
-  await page.getByLabel('Export folder',{exact:true}).setInputFiles(good.root);await page.getByText('AI usage history omitted: 1 rows.',{exact:false}).waitFor();await page.getByText(`Review file inventory (${good.manifest.chunks.length+good.manifest.context.length+good.manifest.objects.length} files)`,{exact:false}).click();await shot('review')
+  await page.getByLabel('Export folder',{exact:true}).setInputFiles(good.root);await page.getByText(/AI usage history omitted:\s*1\b/).waitFor();await page.getByText(`Review file inventory (${good.manifest.chunks.length+good.manifest.context.length+good.manifest.objects.length} files)`,{exact:false}).click();await shot('review')
   await page.getByRole('button',{name:'Upload package',exact:true}).click();await page.getByRole('alert').filter({hasText:'File fingerprint differs'}).waitFor();await shot('tampered')
   await writeFile(join(good.root,first.file),original)
   await page.getByLabel('Export folder',{exact:true}).setInputFiles(good.root)

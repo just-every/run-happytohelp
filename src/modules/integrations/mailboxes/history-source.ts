@@ -17,8 +17,8 @@ export async function historySource(row:MailboxRow,input:HistoryMessage[]):Promi
   const mail=await PostalMime.parse(entry.raw),sender=address(mail.from?.address),messageId=mail.messageId||`${row.provider}:${entry.id}`
   if(seen.has(messageId))continue;seen.add(messageId)
   const when=Date.parse(mail.date||'');if(!Number.isSafeInteger(when)||when<0)throw new HTTPException(422,{message:'History message has no valid original date; nothing was imported.'})
-  const senderId=sha256(canonicalJson(['mailbox-sender',sender]))
-  if(!people.has(senderId))people.set(senderId,{type:'contact',id:senderId,name:mail.from?.name||sender,email:sender,created_at:'1970-01-01T00:00:00.000Z'})
+  const senderId=sender===row.address.toLowerCase()?null:sha256(canonicalJson(['mailbox-sender',sender]))
+  if(senderId!==null&&!people.has(senderId))people.set(senderId,{type:'contact',id:senderId,name:mail.from?.name||sender,email:sender,created_at:'1970-01-01T00:00:00.000Z'})
   const references=(mail.headers.find(h=>h.key==='references')?.value||mail.inReplyTo||'').match(/<[^<>\s]+>/g)||[]
   if(!entry.thread&&references.length)parents.set(messageId,references[0]!)
   const content=mail.text?.trim()|| (mail.html?await htmlToMarkdown(mail.html):'')||'(Message contains attachments only)'
@@ -28,7 +28,7 @@ export async function historySource(row:MailboxRow,input:HistoryMessage[]):Promi
  const threads=new Map<string,any[]>()
  for(const m of messages){const id=key(m.thread||root(m.wireId));threads.set(id,[...(threads.get(id)||[]),m])}
  const records:any[]=[...people.values()].sort((a,b)=>a.id.localeCompare(b.id))
- for(const [id,parts] of [...threads].sort(([a],[b])=>a.localeCompare(b))){parts.sort((a,b)=>a.created_at.localeCompare(b.created_at)||a.id.localeCompare(b.id));records.push({type:'conversation',id,requester_id:parts[0].sender_id,subject:parts[0].subject,provider:row.provider,mailbox:row.address,tags:[`Mailbox history: ${row.provider}`],messages:parts.map(({id,sender_id,content,created_at,attachments})=>({id,sender_id,content,created_at,attachments}))})}
+ for(const [id,parts] of [...threads].sort(([a],[b])=>a.localeCompare(b))){parts.sort((a,b)=>a.created_at.localeCompare(b.created_at)||a.id.localeCompare(b.id));records.push({type:'conversation',id,requester_id:parts.find(part=>part.sender_id!==null)?.sender_id??null,subject:parts[0].subject,provider:row.provider,mailbox:row.address,tags:[`Mailbox history: ${row.provider}`],messages:parts.map(({id,sender_id,content,created_at,attachments})=>({id,sender_id,content,created_at,attachments}))})}
  const bytes=new TextEncoder().encode(records.map(record=>JSON.stringify(record)).join('\n'))
  if(bytes.length>2*1024*1024)throw new HTTPException(413,{message:'Selected history exceeds the Move in limit; nothing was imported.'})
  return bytes

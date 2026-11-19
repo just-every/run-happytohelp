@@ -32,7 +32,7 @@ export async function customerTicketNotification(env:Env,event:TicketNotificatio
  .bind(ticket.id,event.projectId).all<NotificationContact>()
  const {recipients}=notificationRecipients(contacts.results,undefined,undefined,contact=>customerNoticeAddress(contact,ticket.channel==='widget'?ticket.contact_id:undefined))
  if(!recipients.length)return {state:'no_recipient'}
- const context=await notificationTemplateContext(env,ticket,{expectedReplyTime:event.expectedReplyTime??trigger.expected_reply_time,actorId:event.actorId})
+ const context=await notificationTemplateContext(env,ticket,{expectedReplyTime:event.expectedReplyTime??trigger.expected_reply_time,actorId:event.actorId,customer:true})
  let inputs:EmailInput[]
  try{
   const subject=renderNotificationTemplate(trigger.subject,context),text=renderNotificationTemplate(trigger.body,context)

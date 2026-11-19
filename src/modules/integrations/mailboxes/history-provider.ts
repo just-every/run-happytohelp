@@ -45,12 +45,15 @@ export async function readHistory(env:Env,row:MailboxRow,folders:string[]):Promi
  const budget=()=>{if(++calls>150)throw new HTTPException(413,{message:'Selected history needs too many provider reads. Select smaller folders; nothing was imported.'})}
  if(row.provider==='imap'){
   const credential=await readCredential<ImapCredential>(env,row)
-  for(const folder of folders){budget();const {session,uidValidity,uidNext}=await openImap(env,credential,folder)
-   try{for(let start=1;start<uidNext;start+=1000){budget();const end=Math.min(uidNext-1,start+999),search=await session.command(`UID SEARCH UID ${start}:${end}`)
-    const uids=search.lines.filter(l=>l.startsWith('* SEARCH')).flatMap(l=>l.slice(8).trim().split(/\s+/).filter(Boolean).map(Number))
-    if(uids.some(uid=>!Number.isSafeInteger(uid)||uid<start||uid>end)||uids.length>1000)throw invalid()
+  for(const folder of folders){budget();const {session,uidValidity}=await openImap(env,credential,folder)
+   try{
+    budget()
+    const search=await session.command('UID SEARCH ALL')
+    const uids=search.lines.filter(l=>/^\* SEARCH(?:\s|$)/i.test(l)).flatMap(l=>l.slice(8).trim().split(/\s+/).filter(Boolean).map(Number))
+    if(uids.some(uid=>!Number.isSafeInteger(uid)||uid<1||uid>0xffffffff)||new Set(uids).size!==uids.length)throw invalid()
+    if(uids.length>1000-messages.length)throw new HTTPException(413,{message:'Selected history exceeds the current Move in limit. Select smaller folders; nothing was imported.'})
     for(const uid of uids){budget();const result=await session.command(`UID FETCH ${uid} (UID BODY.PEEK[])`);if(result.literals.length!==1)throw invalid();admit(`${folder}:${uidValidity}:${uid}`,undefined,result.literals[0])}
-   }}finally{await session.wire.close()}
+   }finally{await session.wire.close()}
   }
  }else{
   const headers={...bearer(await accessToken(env,row)),...(row.provider==='microsoft'?{Prefer:'IdType="ImmutableId"'}:{})}

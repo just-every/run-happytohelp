@@ -1,12 +1,16 @@
-import {mkdtemp,writeFile,rm,mkdir} from 'node:fs/promises'
+import assert from 'node:assert/strict'
+import {mkdtemp,writeFile,rm,mkdir,symlink} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 import {createHash} from 'node:crypto'
 import {packZendesk} from '../../scripts/pack-zendesk-offline.mjs'
 export const publicBytes=Buffer.from('synthetic-hh-1 receipt\n'),privateBytes=Buffer.from('synthetic-hh-2 internal triage\n')
 export async function zendeskCorpus(){
- const dir=await mkdtemp(join(tmpdir(),'synthetic-hh-'))
+ const scratch=await mkdtemp(join(tmpdir(),'synthetic-hh-')),dir=join(scratch,'real')
  try{
+  await mkdir(dir)
+  const alias=join(scratch,'alias')
+  await symlink(dir,alias,'dir')
   const at='2024-01-01T00:00:00Z',updated='2024-01-02T00:00:00Z'
   const users=[{id:1,role:'end-user',name:'synthetic-hh-1',email:'synthetic-hh-1@example.test',organization_id:7,created_at:at},{id:2,role:'agent',name:'synthetic-hh-2',email:'synthetic-hh-2@example.test',created_at:at}]
   const attachment=(id,bytes)=>({id,file_name:'receipt.txt',content_type:'text/plain',size:bytes.length,content_url:`https://files.example.test/attachments/token/synthetic-hh-${id}/?name=receipt.txt`})
@@ -30,10 +34,16 @@ export async function zendeskCorpus(){
   const bindings=[[501,101,'bytes/public.txt',publicBytes],[502,102,'bytes/private.txt',privateBytes]].map(([attachment_id,comment_id,path,bytes])=>({ticket_id:1001,attachment_id,comment_id,path,size:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')}))
   const manifest={format:'happytohelp-zendesk-offline-v1',files:[{kind:'ticket',path:'tickets.json'},{kind:'metrics',path:'metrics.json'},{kind:'audits',path:'audits.json'},{kind:'comments',path:'comments.json',ticket_id:1001,complete:true},{kind:'comments',path:'missing-page.json',ticket_id:2002,complete:false,page:1,pages:2},{kind:'user',path:'users.json'},{kind:'organization',path:'organizations.json'}],attachments:bindings}
   await writeFile(join(dir,'manifest.json'),JSON.stringify(manifest))
-  const body=await packZendesk(join(dir,'manifest.json'))
+  const body=await packZendesk(join(alias,'manifest.json'))
+  await symlink(join(dir,'tickets.json'),join(dir,'shortcut.json'))
+  const invalid=join(dir,'invalid.json')
+  await writeFile(invalid,JSON.stringify({...manifest,files:[{kind:'ticket',path:'shortcut.json'}]}))
+  await assert.rejects(packZendesk(invalid),/local file outside root/)
+  await writeFile(invalid,JSON.stringify({...manifest,files:[{kind:'ticket',path:'../real/tickets.json'}]}))
+  await assert.rejects(packZendesk(invalid),/local relative file path required/)
   const records=body.trim().split('\n').map(JSON.parse)
   records.push({ticket_field:{id:70,type:'checkbox',title:'synthetic-hh-70 approved',active:true,required:false,visible_in_portal:true,editable_in_portal:true,required_in_portal:false,agent_can_edit:true,created_at:at,updated_at:updated}})
   records.find(r=>r.ticket?.id===1001).ticket.synthetic_hh_unknown='synthetic-hh-998'
   return records
- }finally{await rm(dir,{recursive:true,force:true})}
+ }finally{await rm(scratch,{recursive:true,force:true})}
 }

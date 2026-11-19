@@ -323,7 +323,7 @@ a message. CLI has no equivalent private-note file destination and holds it.
 Deleted rows and deleted-parent descendants retain private custody without
 native restoration.
 
-See [Move in](../../../docs/moving-in.md#native-legacy-happytohelp-packages) and
+See [Move in](../../../docs/moving-in.md#move-from-an-older-happytohelp-workspace) and
 the schema-shaped qualification in `tests/legacy-export.mjs`, with its SQL
 fixture, field-matrix and native-reader helpers. Synthetic local results do not
 qualify a real export, current production schema, original objects, live

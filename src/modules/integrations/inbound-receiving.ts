@@ -2,7 +2,7 @@ import type {Env} from '../../platform/env'
 import {emailAddress,inboundTarget} from './inbound-routing'
 
 const enabledMailboxes=`SELECT e.project_id,lower(e.inbound_address) inbound_address,lower(e.from_address) from_address,NULL mailbox_id FROM email_settings e WHERE lower(e.inbound_address) IN (SELECT value FROM json_each(?1)) AND e.is_enabled=1 AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=e.project_id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)
- UNION ALL SELECT a.project_id,lower(a.address),lower(m.sender_address),m.id FROM mailbox_addresses a JOIN mailbox_connections m ON m.id=a.mailbox_id AND m.project_id=a.project_id WHERE lower(a.address) IN (SELECT value FROM json_each(?1)) AND m.status='connected' AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=a.project_id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)`
+ UNION ALL SELECT a.project_id,lower(a.address),lower(m.sender_address),m.id FROM mailbox_addresses a JOIN mailbox_connections m ON m.id=a.mailbox_id AND m.project_id=a.project_id WHERE lower(a.address) IN (SELECT value FROM json_each(?1)) AND m.status='connected' AND coalesce(json_extract(m.cursor_json,'$.mode'),'live')<>'history' AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=a.project_id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)`
 /** The first candidate, in order, that names an enabled mailbox. One lookup: D1
  * binds at most 100 parameters and the candidates are bounded below that. */
 export async function receivingMailbox(env:Env,candidates:string[]){

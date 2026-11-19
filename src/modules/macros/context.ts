@@ -1,6 +1,7 @@
 import {batchRead,batchTicket,batchContact} from '../tickets/request-batch'
 import type {Actor,Env} from '../../platform/env'
 import {getTicket,ticketReadAccess,fieldAllowed} from '../tickets/model'
+import {portalRequestPath} from '../portal/security'
 /** Context contains only fields this actor may currently read. Unknown personal
  * metadata never becomes an implicit placeholder namespace. */
 export async function loadMacroContext(env:Env,actor:Actor,conversationId:string){
@@ -16,7 +17,7 @@ export async function loadMacroContext(env:Env,actor:Actor,conversationId:string
  const context:Record<string,unknown>={
   'requester.name':name,'requester.first_name':name.split(/\s+/)[0]||'','requester.email':email,
   'contact.name':name||'there','contact.email':email,'agent.name':agent?.name,'agent.email':agent?.email,
-  'ticket.id':ticket.id,'ticket.subject':ticket.subject,'ticket.link':typeof env.APP_ORIGIN==='string'?new URL(`/projects/${encodeURIComponent(actor.projectId)}/conversations/${encodeURIComponent(ticket.id)}`,env.APP_ORIGIN).href:undefined,
+  'ticket.id':ticket.id,'ticket.subject':ticket.subject,'ticket.link':typeof env.APP_ORIGIN==='string'?new URL(portalRequestPath(actor.projectId,ticket.id),env.APP_ORIGIN).href:undefined,
   'assignee.name':assignee?.name,'assignee.email':assignee?.email,'brand.id':brand?.id,'brand.name':brand?.name,
   'organisation.name':metadata.organisation?.name??metadata.organization?.name??metadata.organisation_name??metadata.organization_name,
   'organisation.id':metadata.organisation?.id??metadata.organization?.id,

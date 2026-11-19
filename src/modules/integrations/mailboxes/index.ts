@@ -1,5 +1,5 @@
 export {mailboxRoutes,createMailboxRoutes} from './routes'
-export {lookupReceivingMailbox,mailboxForDelivery} from './store'
+export {mailboxForDelivery} from './store'
 export {mailboxSender,sendViaMailbox} from './send'
 export {syncMailbox,syncConnectedMailboxes} from './sync'
 export {mailboxAuthentication} from './authentication'

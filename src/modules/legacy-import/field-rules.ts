@@ -16,7 +16,8 @@ for(const [table,fields] of Object.entries({
 }))omitted(table,fields)
 
 native('users','id name email created_at','users')
-native('users','timezone avatar_url is_notifiable_on_conversation_assignment','user_settings')
+native('users','avatar_url is_notifiable_on_conversation_assignment','user_settings')
+normalized('users','timezone','user_settings.timezone','Missing user timezone defaults to UTC when settings are imported')
 control('users','type','AI source identities become AI profiles, never login users')
 native('projects','id name created_at','projects')
 normalized('projects','website','projects.allowed_origin / project_settings.settings_json.website','Requires explicit usable origin; native widget retains its URL origin and project settings retains the recorded website')

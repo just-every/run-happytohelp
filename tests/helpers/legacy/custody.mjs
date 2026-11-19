@@ -38,13 +38,20 @@ export async function legacyCustodyJourney(){
   const command=async(persist,{fail,inline=false,pkg=root}={})=>{
    try{
     const {stdout}=await exec(process.execPath,['--import',resolve('tests/helpers/legacy/network-edge.mjs'),'scripts/import-legacy.mjs',...(inline?['--file',file]:['--package',pkg]),'--apply','--persist-to',persist],{
-     env:{...process.env,H2H_LEGACY_NETWORK_LOG:networkLog,WRANGLER_SEND_METRICS:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false',CLOUDFLARE_CF_FETCH_ENABLED:'false'},timeout:180000,maxBuffer:4*1024*1024})
+     env:{...process.env,H2H_LEGACY_NETWORK_LOG:networkLog,CLOUDFLARE_CF_FETCH_PATH:join(scratch,'empty-cf-cache.json'),WRANGLER_SEND_METRICS:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false'},timeout:180000,maxBuffer:4*1024*1024})
     assert.equal(fail,undefined,'the guarded command must refuse this input');return JSON.parse(stdout)
    }catch(error){if(!fail)throw error;assert.match(error.stderr||'',fail);return error}
    finally{assert.equal(await readFile(networkLog,'utf8'),'','no external network attempt, even if caught by the importer')}
   }
   const state=join(scratch,'resumed'),clean=join(scratch,'clean'),conflict=join(scratch,'conflict')
   for(const persist of [state,clean,conflict])await cp(base,persist,{recursive:true})
+  const lock=join(state,'.legacy-import.lock')
+  await writeFile(lock,String(process.pid))
+  await command(state,{fail:/Another legacy import holds the local persistence lock/})
+  const exited=exec(process.execPath,['--version'])
+  const stalePid=exited.child.pid
+  await exited
+  await writeFile(lock,String(stalePid))
   const database=async persist=>findDatabase(join(persist,'v3/d1'))
   const sql=async(persist,query,write=false)=>{
    const db=new DatabaseSync(await database(persist),{readOnly:!write})

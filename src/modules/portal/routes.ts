@@ -9,7 +9,7 @@ import {submitRequest} from '../forms/index'
 import {publishResolution} from '../outcomes/state'
 import {portalAccess} from './access'
 import {resolvePortalActor} from './identity'
-import {portalBody,portalSameOrigin,isPortalForm} from './security'
+import {portalBody,portalSameOrigin,isPortalForm,portalRequestPath} from './security'
 import {listPortalRequests,portalRequestDetail,replyPortalRequest,reopenPortalRequest} from './requests'
 import {attachPortalFile,readPortalFile} from './attachments'
 import {readPortalPreferences,savePortalPreferences} from './preferences'
@@ -27,12 +27,11 @@ portalApi.use('*',async(c,next)=>{
 })
 portalApi.route('/',portalAccess)
 async function access(c:any){const identity=await resolvePortalActor(c.env,c.req.param('projectId'),c.req.raw);if(!identity)throw new HTTPException(401,{message:'Sign in to your support requests'});return identity}
-const detailPath=(projectId:string,id:string)=>`/portal/${encodeURIComponent(projectId)}/requests/${encodeURIComponent(id)}`
 portalApi.get('/:projectId/tickets',async c=>c.json({tickets:await listPortalRequests(c.env,await access(c),Number(c.req.query('before')))}))
 portalApi.post('/:projectId/tickets',async c=>{
  const identity=await access(c),body=await portalBody(c)
  const result=await submitRequest(c.env,{projectId:identity.actor.projectId,formId:body.formId,body,request:c.req.raw,identity,channel:'portal',defer:delivery=>c.executionCtx.waitUntil(delivery)})
- return isPortalForm(c)?c.redirect(detailPath(identity.actor.projectId,result.ticket.id),303):c.json(result,result.duplicate?200:201)
+ return isPortalForm(c)?c.redirect(portalRequestPath(identity.actor.projectId,result.ticket.id),303):c.json(result,result.duplicate?200:201)
 })
 portalApi.get('/:projectId/tickets/:ticketId',async c=>c.json(await portalRequestDetail(c.env,await access(c),c.req.param('ticketId'))))
 portalApi.post('/:projectId/tickets/:ticketId/reply',async c=>{
@@ -40,11 +39,11 @@ portalApi.post('/:projectId/tickets/:ticketId/reply',async c=>{
  if(isForm){body.expectedRevision=Number(body.expectedRevision);const files=body.attachment;if(files instanceof File&&files.size){const uploaded=await attachPortalFile(c.env,identity,ticketId,{data:await files.arrayBuffer(),filename:files.name,contentType:files.type||'application/octet-stream'});body.mediaIds=[uploaded.id]}}
  const result=await replyPortalRequest(c.env,identity,ticketId,body,delivery=>c.executionCtx.waitUntil(delivery))
  c.executionCtx.waitUntil(publishResolution(c.env,identity.actor.projectId,ticketId))
- return isForm?c.redirect(detailPath(identity.actor.projectId,ticketId),303):c.json(result)
+ return isForm?c.redirect(portalRequestPath(identity.actor.projectId,ticketId),303):c.json(result)
 })
 portalApi.post('/:projectId/tickets/:ticketId/reopen',async c=>{
  const identity=await access(c),body=await portalBody(c),result=await reopenPortalRequest(c.env,identity,c.req.param('ticketId'),isPortalForm(c)?Number(body.expectedRevision):body.expectedRevision)
- return isPortalForm(c)?c.redirect(detailPath(identity.actor.projectId,c.req.param('ticketId')),303):c.json(result)
+ return isPortalForm(c)?c.redirect(portalRequestPath(identity.actor.projectId,c.req.param('ticketId')),303):c.json(result)
 })
 portalApi.post('/:projectId/tickets/:ticketId/attachments',async c=>{
  const identity=await access(c),declared=Number(c.req.header('Content-Length'))

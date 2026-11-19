@@ -6,6 +6,8 @@ export function portalSameOrigin(request:Request){
  if(!origin&&referer){try{if(new URL(referer).origin===expected)return}catch{}}
  throw new HTTPException(403,{message:'Same-origin request required'})
 }
+export const portalRequestPath=(projectId:string,id:string)=>`/portal/${encodeURIComponent(projectId)}/requests/${encodeURIComponent(id)}`
+
 export function portalReturnPath(value:unknown,projectId:string,aliases:string[]=[]){
  const fallback=`/portal/${encodeURIComponent(projectId)}/requests`
  if(typeof value!=='string'||value.length>1000||!value.startsWith('/')||value.startsWith('//')||/[\\\u0000-\u0020#]/.test(value))return fallback

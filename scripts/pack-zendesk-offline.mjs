@@ -24,7 +24,7 @@ function parseJson(raw){
 }
 export async function packZendesk(manifestPath){
  const info=await lstat(manifestPath);if(!info.isFile()||info.isSymbolicLink()||info.size>LIMIT)throw Error('local manifest exceeds input bound or is not a regular file')
- const root=dirname(resolve(manifestPath)),manifest=parseJson(await readFile(manifestPath,'utf8'))
+ const root=await realpath(dirname(resolve(manifestPath))),manifest=parseJson(await readFile(manifestPath,'utf8'))
  if(manifest.format!==FORMAT||!Array.isArray(manifest.files)||manifest.files.length>64)throw Error('offline manifest format or file count invalid')
  let readBytes=0,redacted=0
  const local=async path=>{

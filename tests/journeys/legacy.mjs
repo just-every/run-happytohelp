@@ -26,6 +26,7 @@ test('a legacy package is reviewed, imported and replayed through its command; t
  try{
   runtime=await createRuntime(options);await runtime.close(true);runtime=undefined
   const {bundle,media}=await legacyBundle(),root=join(scratch,'package'),file=join(scratch,'export.json')
+  bundle.tables.users.find(user=>user.id==='u').timezone=null
   await writeFile(file,JSON.stringify(bundle))
   await writeLegacyPackage(root,bundle,{rowsPerChunk:3})
   const command=async(args,ok=true)=>{
@@ -50,6 +51,11 @@ test('a legacy package is reviewed, imported and replayed through its command; t
   await runtime.execute(`INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES('${hash}','u','p','owner',${Date.now()+3600000});`)
   const transcript=(await call('/api/conversations/conv/messages',{token,status:200})).data
   assert.deepEqual(transcript.messages.map(m=>[m.id,m.content]),[['m1','Prior message'],['m2','Prior answer']])
+  const buckets=(await call('/api/dashboard/projects/p/conversations/conv/buckets',{token,status:200})).data.data
+  const historicalReply=buckets.flatMap(bucket=>bucket.messages).find(message=>message.id==='m2')
+  assert.ok(historicalReply)
+  assert.equal(historicalReply.email_status,null,'imported reply has no sending status')
+  assert.match(await runtime.execute("SELECT timezone FROM user_settings WHERE user_id='u'"),/UTC/)
   const attachment=transcript.messages[0].media[0],download=await request(`/api/conversations/conv/media/${attachment.id}`,{token})
   assert.equal(download.status,200);assert.equal(await download.text(),media.toString())
   const inbox=(await call('/api/dashboard/projects/p/conversations?view=all',{token,status:200})).data.data

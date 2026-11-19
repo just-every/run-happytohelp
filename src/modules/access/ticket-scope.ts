@@ -32,6 +32,10 @@ export function ticketScopeSql(user:string,ticket='c',group=`${ticket}.group_id`
 export async function requireTicketScope(env:Env,userId:string,projectId:string,conversationId:string,source:AuditSource='dashboard',ownerRecovery=true){
  const row=await env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.project_id=? AND c.id=? AND ${ticketScopeSql('?','c','c.group_id',ownerRecovery)}`).bind(projectId,conversationId,userId).first()
  if(row)return
+ return denyTicketScope(env,userId,projectId,conversationId,source)
+}
+
+export async function denyTicketScope(env:Env,userId:string,projectId:string,conversationId:string,source:AuditSource,message='This ticket is unavailable. Your access or its group may have changed.'):Promise<never>{
  await auditStatement(env.DB,{projectId,category:'access',action:'ticket.scope_denied',outcome:'refused',actor:{type:'user',id:userId},source,target:{type:'conversation',id:conversationId}}).run()
- throw new HTTPException(404,{message:'This ticket is unavailable. Your access or its group may have changed.'})
+ throw new HTTPException(404,{message})
 }

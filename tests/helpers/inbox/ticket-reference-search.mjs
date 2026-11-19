@@ -34,6 +34,26 @@ export async function ticketReferenceSearch(){
   const owner=await app.ok('/api/dashboard/conversations?search=%23ca164bf0',{token:w.tokens.owner})
   assert.deepEqual(owner.data.map(row=>row.id).sort(),[...visible,hidden],'the owner can read the otherwise hidden match')
   assert.equal((await app.call(`/api/dashboard/projects/${w.projectId}/conversations/${hidden}`,{token:w.tokens.operator})).status,404)
+  const dashboard=`/api/dashboard/projects/${w.projectId}`
+  const snooze=(dependency_id,method='POST',path='')=>app.call(dashboard+'/workflow-schedules'+path,{
+   token:w.tokens.operator,method,body:{conversation_id:decoy,kind:'snooze',owner_id:w.users.operator,timezone:'UTC',dependency_id}
+  })
+  const ambiguous=await snooze('#CA164BF0')
+  assert.equal(ambiguous.status,400)
+  assert.match(ambiguous.data.error,/more than one/i)
+  const missing=await snooze('#00000000')
+  assert.equal(missing.status,404)
+  for(const unavailable of [hidden,foreign]){
+   const denied=await snooze(unavailable)
+   assert.equal(denied.status,missing.status);assert.deepEqual(denied.data,missing.data)
+  }
+  await app.ok(dashboard+`/conversations/${visible[1]}/ticket`,{token:w.tokens.owner,method:'PATCH',body:{group_id:group.id}})
+  const accepted=await snooze(' #cA164bF0 ')
+  assert.equal(accepted.status,201)
+  assert.equal(accepted.data.data.dependency_id,visible[0],'only the readable match counts')
+  const updated=await snooze(visible[0],'PATCH','/'+accepted.data.data.id)
+  assert.equal(updated.status,200)
+  assert.equal(updated.data.data.dependency_id,visible[0],'existing full IDs remain valid when editing')
   await writeFile(shot('receipt.json'),JSON.stringify({results,ownerMatches:owner.data.map(row=>row.id),tenantDenied:true,groupDenied:true,explicitReferenceExcludesText:true,bareReferenceIncludesText:true},null,2))
  }finally{await app.close()}
 }

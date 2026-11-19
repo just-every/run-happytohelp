@@ -13,9 +13,10 @@ To start it again later, run `cd run-happytohelp && rer dev`.
 
 Normal setup and launch install the app's dependencies and build its local assets;
 they do not download Chromium. Dev uses its local
-address for the chat widget and generates a private owner password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
-real local owner and reach **Setup**. No private answers, email service or AI
-account are needed. Use `rer dev --stop` from the checkout to stop the managed app.
+address for the chat widget and generates a private owner password. Continue in
+the app, or open the private `RER_OPEN` link to reach **Setup** as the owner.
+No private answers, email service or AI account are needed. Use `rer dev --stop`
+from the checkout to stop the managed app.
 
 ## Expert / contributor alternatives
 
@@ -38,12 +39,11 @@ pnpm exec rer check --profile first-party
 ```
 
 This installs frozen dependencies without creating an owner or starting the app.
-The following private-answer path is also available for scripted setup or to
-choose your own website and password.
 
 ## Private setup answers
 
-Create `.seed` with mode 0700 and `.seed/local-answers.json` with mode 0600 using
+For scripted setup of a fresh checkout, create `.seed` with mode 0700 and
+`.seed/local-answers.json` with mode 0600 using
 your editor. Keep the file inside the checkout. Use your own values. Explicit
 `rer setup` requires the website, owner email and owner password:
 
@@ -112,7 +112,7 @@ hostname does not become your workspace name: a `workers.dev` website defaults
 to **My workspace** regardless of owner email. An explicitly chosen native workspace
 name takes precedence; you can change it in Project settings.
 
-## Run it locally
+## Run a scripted setup
 
 ```sh
 rer setup --owner-email you@example.com --answers .seed/local-answers.json

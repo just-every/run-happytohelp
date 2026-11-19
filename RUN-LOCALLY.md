@@ -76,30 +76,28 @@ answers use the declared `rer-setup.json` field names.
 rer deploy --dry-run
 ```
 
-NATIVE-001 requires a **zero-outbound dry-run** that explicitly reports no
-outbound requests and needs no provider credentials, and a separately
-started **read-only provider preflight** with owner consent and the owner's
-scoped Cloudflare token. The preflight's own acceptance permits only the
-account's Workers subdomain and the Worker's settings and secret names (three
-GETs for an existing Worker), no mail and no mutations. Neither step is a mock
-of the other. The separate preflight remains unimplemented and unqualified.
+The current release validates the deployment configuration and builds locally.
+The dry run needs no provider credentials, sends no mail and makes no remote
+requests. Its report lists any inputs needed for a real deploy and leaves remote
+resources, credential validity and existing secrets unchecked.
 
-The command above validates and builds locally with zero provider requests,
-with or without Cloudflare credentials. It explicitly reports no provider
-requests, mail or deployment and returns `providerChecked: false`. Remote
-resources, credential validity and existing secret bindings remain unchecked;
-the dry-run does not establish target readiness or qualify real provisioning.
+To inspect an existing Worker, run the separate
+[read-only provider preflight](docs/INSTALLER.md#read-only-provider-preflight)
+with explicit consent and the owner's scoped Cloudflare read token. It reads
+the account's Workers subdomain and the Worker's settings and secret names in
+three requests. It sends no mail and changes no resources. Live qualification
+remains **UNMET-EXTERNAL** and remote provisioning is separately unqualified.
 
-Real deployment needs private `EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`
-inputs. For a new installation, also supply a real `OWNER_EMAIL` that can receive
-sign-in mail in an owned 0600 `--env-file`; existing installations retain held
-secrets. See [Operations](OPERATIONS.md#deploy-to-your-cloudflare-account).
-Real `rer deploy` requires the documented owner-account credentials, committed
-source and real mail configuration in `deploy.json`; it provisions, migrates and
-checks health through Base deploy-kit. The default environment is production;
-choose one with `--environment NAME`. Local fixture tests do not establish
-provider acceptance. Live preflight and remote provisioning need separate
-qualification.
+A real `rer deploy` requires the owner-account credentials and committed source
+described in [Operations](OPERATIONS.md#deploy-to-your-cloudflare-account). A new
+hosted installation needs a real `OWNER_EMAIL` that can receive sign-in mail.
+Supply private email settings such as `EMAIL_PROVIDER`, `EMAIL_FROM` and
+`EMAIL_API_KEY` when the hosted installation uses its own outbound email
+provider. For an installation that does not send email, see
+[Deploy with outbound email off](OPERATIONS.md#deploy-with-outbound-email-off).
+Existing installations retain their saved secrets unless explicitly changed.
+Deploy provisions resources, applies migrations and checks app health. The
+default environment is production. Choose another with `--environment NAME`.
 Release uses the unchanged Base producer and its existing required `--repo` and
 `--output` arguments, plus explicit `--project`/`--repository` where applicable. It never pushes or deploys.
 

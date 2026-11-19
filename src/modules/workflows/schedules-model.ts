@@ -1,7 +1,9 @@
-import {ticketScopeSql,requireTicketScope} from '../access/ticket-scope'
+import {ticketScopeSql,denyTicketScope} from '../access/ticket-scope'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {object,invalid} from '../tickets/model'
+import {ticketReferenceRange} from '../tickets/reference'
+import {hasMessages} from '../management/inbox-visible'
 export function scheduleDefinition(input:unknown,now:number,existing?:any){
  const b={...existing,...object(input)},kind=b.kind
  if(!['snooze','reply'].includes(kind))invalid('Choose snooze or reply')
@@ -11,7 +13,7 @@ export function scheduleDefinition(input:unknown,now:number,existing?:any){
  if(due!==null&&(!Number.isSafeInteger(due)||due<=now))invalid('Choose a future date and time, including its timezone offset')
  // A local datetime without an offset is ambiguous at DST fall-back; require an instant.
  if(typeof b.due_at==='string'&&b.due_at&&!/(?:Z|[+-]\d\d:\d\d)$/.test(b.due_at))invalid('Date and time must include a timezone offset')
- const dependency=b.dependency_id||null
+ const dependency=(typeof b.dependency_id==='string'?b.dependency_id.trim():b.dependency_id)||null
  if(dependency!==null&&typeof dependency!=='string')invalid('Choose a dependency ticket')
  if(kind==='reply'&&dependency)invalid('Scheduled replies need an exact due time')
  if(due===null&&!(kind==='snooze'&&dependency))invalid('Choose a due time or a dependency')
@@ -22,8 +24,15 @@ export function scheduleDefinition(input:unknown,now:number,existing?:any){
 }
 export async function scheduleReferences(env:Env,projectId:string,ticketId:string,value:ReturnType<typeof scheduleDefinition>,userId:string){
  if(!await env.DB.prepare('SELECT 1 FROM memberships WHERE project_id=? AND user_id=?').bind(projectId,value.owner_id).first())invalid('The responsible teammate must belong to this workspace')
- if(value.dependency_id)await requireTicketScope(env,userId,projectId,value.dependency_id)
- if(value.dependency_id&&(value.dependency_id===ticketId||!await env.DB.prepare('SELECT 1 FROM conversations WHERE project_id=? AND id=?').bind(projectId,value.dependency_id).first()))invalid('Choose another ticket in this workspace as the dependency')
+ const reference=value.dependency_id
+ if(!reference)return null
+ const range=ticketReferenceRange(reference)
+ const match=range?`c.id>=? AND c.id<? AND ${hasMessages}`:'c.id=?'
+ const {results}=await env.DB.prepare(`SELECT c.id FROM conversations c WHERE c.project_id=? AND ${match} AND ${ticketScopeSql('?')} LIMIT 2`).bind(projectId,...(range??[reference]),userId).all<{id:string}>()
+ if(!results.length)return denyTicketScope(env,userId,projectId,reference,'dashboard','That ticket is unavailable. Check its number and workspace.')
+ if(results.length>1)invalid('More than one ticket has that number. Use the full ticket ID from the ticket’s address.')
+ if(results[0].id===ticketId)invalid('Choose another ticket in this workspace as the dependency')
+ return results[0].id
 }
 export async function scheduleRows(env:Env,projectId:string,userId:string,id?:string){
  const rows=await env.DB.prepare(`SELECT s.*,CASE WHEN s.dependency_id IS NULL OR EXISTS(SELECT 1 FROM conversations d WHERE d.id=s.dependency_id AND d.project_id=s.project_id AND ${ticketScopeSql('?','d')}) THEN s.dependency_id ELSE NULL END visible_dependency_id FROM workflow_schedules s JOIN conversations c ON c.project_id=s.project_id AND c.id=s.conversation_id WHERE s.project_id=? AND ${ticketScopeSql('?')} ${id?'AND s.conversation_id=?':''} ORDER BY s.created_at DESC LIMIT 200`).bind(userId,projectId,userId,...(id?[id]:[])).all<any>()

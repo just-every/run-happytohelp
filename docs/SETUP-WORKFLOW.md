@@ -1,41 +1,38 @@
 # First-run setup
 
-Prepare the first owner through [Install](INSTALLER.md), using
-`rer setup --owner-email you@example.com --answers .seed/local-answers.json`.
-Setup creates the native owner and first workspace before it exits. Start with
-`rer dev` and wait for `RER_READY`. Open `RER_OPEN` to enter as the
-real local owner and reach **Setup**.
-The owner decision retains native passwords, prior account/workspace data and
-HappyToHelp's own tenant/permission checks.
+The [one-command installer](INSTALLER.md) creates your local owner account and
+first workspace. Continue in the app it opens, or open the private `RER_OPEN`
+link it prints to go straight to **Setup**. To start again later, run
+`cd run-happytohelp && rer dev`. You can finish setup in the app.
 
 ## Do you need this page?
 
-Use this guide for the one-screen first run, the in-app **Setup** page and the native first-owner
-boundary. A rer local installation already has an owner. An existing installation
-never creates another owner through setup. A remotely deployed installation is claimed by `rer deploy`
-for the owner named by `OWNER_EMAIL`, who then signs in by email (`rer signin` does not
-yet work with this seed's native sign-in). Its private first-owner setup capability and native `/setup` page over
-the configured HTTPS origin are recovery only. Keep the capability private and enter it
-only in the owner form. It is not a sign-in shortcut and is closed permanently after claim.
+If you installed locally, you already have an owner account. Go to
+[After setup](#after-setup) to see what you can do in the app.
 
-## Create your owner account and workspace
+## Hosted or scripted setup
 
-First-run setup is one screen: your email, a password, your website and, on a
-hosted installation, the private setup token. Local setup takes the same
-answers from the private file; only the website and the owner password are
-required, and the owner email comes from the command. Anything you do not give is
-derived: the workspace name from your website (or your company email domain), your
-name from your email and a default colour. When the website is a `workers.dev`
-deployment address, the default workspace name is **My workspace** regardless of
-the owner email; an explicitly chosen native workspace name takes precedence.
-Each can be changed afterwards. Native bootstrap checks origin, validates inputs and claims the first owner atomically.
-Failed claims do not leave partial credentials or memberships. Concurrent claims
-cannot create two owners. Imported identity state also closes first-owner setup.
+For a scripted setup of a fresh checkout, create a
+[private answers file](INSTALLER.md#private-setup-answers) with your website and
+owner password. From the checkout, run:
 
-On a hosted installation `rer deploy` has already claimed the owner; sign in by
-email. Only to recover an unclaimed empty installation, enter the private setup token in
-the native form. Keep tokens and passwords out of shell arguments, URLs, recordings and
-logs. After a recovery claim sign in with the native password.
+```sh
+rer setup --owner-email you@example.com --answers .seed/local-answers.json
+rer dev
+```
+
+Setup uses your website or email domain for the workspace name, your email for
+your name, and a default colour. For a `workers.dev` address the default name
+is **My workspace**. You can choose these values in the answers file or change
+them later. Running setup again preserves the existing owner.
+
+For a [hosted installation](../OPERATIONS.md#deploy-to-your-cloudflare-account),
+`rer deploy` creates the owner named by `OWNER_EMAIL`. Sign in by email. To recover
+an empty installation that still needs an owner, open `/setup` on your hosted
+HappyToHelp address over HTTPS. Enter your email, password, website and private
+setup token. After creating the owner, sign in with that password. Keep tokens and
+passwords out of shell arguments, URLs, recordings and logs.
+Once the owner is created or restored from a backup, the recovery form closes.
 
 Pressing **Create workspace** is your explicit action, and it may send you one
 welcome email at the address you gave. It goes through the same durable send path

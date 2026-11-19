@@ -95,9 +95,10 @@ To set it up without starting it, use
 
 Normal setup and launch install the app's dependencies and build its local assets;
 they do not download Chromium. Dev uses its local
-address for the chat widget and generates a private owner password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
-real local owner and reach **Setup**. No private answers, email service or AI
-account are needed. Use `rer dev --stop` from the checkout to stop the managed app.
+address for the chat widget and generates a private owner password. Continue in
+the app, or open the private `RER_OPEN` link to reach **Setup** as the owner.
+No private answers, email service or AI account are needed. Use `rer dev --stop`
+from the checkout to stop the managed app.
 
 **Browser verification:** `rer verify` downloads the Chromium and headless shell
 pinned by the checkout's Playwright into your user cache when first needed.
@@ -106,7 +107,7 @@ for running browser checks directly.
 
 Already running 0.3? Keep your checkout and data, and follow
 [Upgrading from 0.3.x](OPERATIONS.md#upgrading-from-03x) instead.
-See [Install](docs/INSTALLER.md) for private setup answers and
+See [Install](docs/INSTALLER.md#private-setup-answers) for scripted setup and
 [Local command reference](RUN-LOCALLY.md) for ports, preview and idle shutdown.
 
 To try the customer flow, [install the widget on a local page](docs/INSTALLER.md#try-the-customer-widget-locally),

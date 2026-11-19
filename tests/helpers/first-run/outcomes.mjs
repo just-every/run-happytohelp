@@ -118,11 +118,12 @@ export async function builtOutcomes(){
   await page.getByTestId('ai-key-status').waitFor();assert.equal(await page.getByTestId('ai-key-status').getAttribute('data-state'),'missing')
   assert.match(await page.getByTestId('ai-key-status').innerText(),/new conversations stay with your team/)
   await page.goto(runtime.origin+'/projects/create')
-  await page.getByLabel('Name',{exact:true}).fill('Wholesale support');await page.getByLabel('Website',{exact:true}).fill('https://wholesale.example.test');await page.getByLabel('Widget website origin',{exact:true}).fill('https://wholesale.example.test')
+  await page.getByLabel('Name',{exact:true}).fill('Wholesale support');await page.getByLabel('Website',{exact:true}).fill('https://wholesale.example.test');await page.getByLabel('Widget website origin',{exact:true}).fill('https://chat.wholesale.example.test:8443')
   await page.getByRole('button',{name:'Create workspace',exact:true}).click()
   await page.waitForURL(url=>/^\/projects\/[^/]+\/activation$/.test(url.pathname))
   const second={id:new URL(page.url()).pathname.split('/')[2]};await setup(second.id);await proof('signed-in-setup')
   const secondSettings=(await api(`/api/management/projects/${second.id}/settings`)).data
+  assert.equal((await api(`/api/identity/projects/${second.id}`)).allowed_origin,'https://chat.wholesale.example.test:8443')
   assert.ok(secondSettings.default_visitor_ai_id);assert.notEqual(secondSettings.default_visitor_ai_id,ais[0].id)
   assert.ok((await api(`/api/management/projects/${second.id}/email-settings`)).data.inbound_address)
   await page.setViewportSize(viewports.mobile)

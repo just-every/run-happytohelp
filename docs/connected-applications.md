@@ -13,10 +13,11 @@ You do not need this to use HappyToHelp. Set it up only if you run Slate.
 
 ## Connect Slate
 
-1. In HappyToHelp, open **Settings → Connected applications** for the
+1. In HappyToHelp, open **Settings → Advanced → Connected applications** for the
    workspace. Owners and admins can register applications.
-2. In Slate's settings, set three values. The page shows them ready to copy
-   with your address and workspace filled in:
+2. Check the workspace name in the Slate instructions, then open
+   **Developer values** and select **Copy**. Paste the three values into Slate's
+   settings:
 
    ```sh
    HAPPYTOHELP_DELEGATION_ORIGIN=https://support.example.com
@@ -25,8 +26,8 @@ You do not need this to use HappyToHelp. Set it up only if you run Slate.
    ```
 
    `HAPPYTOHELP_DELEGATION_ORIGIN` is your HappyToHelp address and
-   `HAPPYTOHELP_DELEGATION_ACCOUNT_ID` is the workspace's id. On your own
-   computer these go in Slate's `.dev.vars` with a `SLATE_` prefix
+   `HAPPYTOHELP_DELEGATION_ACCOUNT_ID` is the exact workspace ID from
+   **Developer values**. On your own computer these go in Slate's `.dev.vars` with a `SLATE_` prefix
    (`SLATE_HAPPYTOHELP_DELEGATION_ORIGIN=…`).
 3. Register Slate under **Registered applications** with the fields below and
    choose **Register client**.

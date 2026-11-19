@@ -119,7 +119,7 @@ async function scheduleFlow(f,id){
  // once, and return to the active queue without a customer reply.
  await clock(initial+120000)
  const dependency=await create('Replacement label awaiting warehouse confirmation')
- const waiting=await schedule(id,{kind:'snooze',due_at:null,dependency_id:dependency})
+ const waiting=await schedule(id,{kind:'snooze',due_at:null,dependency_id:dependency.slice(0,8).toUpperCase()})
  await app.configure({});await app.scheduled()
  assert.equal((await read(waiting)).state,'pending');assert.equal((await read(waiting)).dependency_id,dependency)
  assert.equal(await hasActive(id),false)

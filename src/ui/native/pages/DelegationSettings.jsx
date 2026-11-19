@@ -24,13 +24,19 @@ function Grants({ grants, onRevoke, busy }) {
 }
 
 /** What a connected application is, why you would add one, and the values the application needs from this workspace. */
-function About({ projectId }) {
+function About({ projectId, workspaceName }) {
     return <div className="sh-steps mb-4 delegation-about">
         <p><b>What a connected application is</b></p>
         <p>Another app you run that may read some of this workspace, but only after a person here approves it. Today that app is <b>Slate</b>, the open-source team wiki made alongside HappyToHelp (<a href="https://github.com/just-every/run-slate" target="_blank" rel="noreferrer">github.com/just-every/run-slate</a>). Connected, a specialist can start an investigation from a conversation (“Investigate with Slate” in its side panel), Slate reads that conversation and your help articles, and it can correct an outdated article. Customer replies stay in HappyToHelp; Slate never answers a customer.</p>
         <p>You do not need this to use HappyToHelp. Add one only if you run Slate.</p>
         <ol>
-            <li>In Slate’s settings, set these three values (on your own computer they go in Slate’s <code>.dev.vars</code> with a <code>SLATE_</code> prefix):<CopyCommand text={`HAPPYTOHELP_DELEGATION_ORIGIN=${typeof window === 'undefined' ? '' : window.location.origin}\nHAPPYTOHELP_DELEGATION_ACCOUNT_ID=${projectId}\nHAPPYTOHELP_DELEGATION_CLIENT_ID=slate`}/></li>
+            <li>Open <b>Developer values</b> to copy the Slate settings for <b>{workspaceName}</b>.
+                <details>
+                    <summary>Developer values</summary>
+                    <p>Paste these into Slate’s settings. When running Slate on your computer, add <code>SLATE_</code> to the start of each name in Slate’s <code>.dev.vars</code> file.</p>
+                    <CopyCommand tooltipLabel="Copy Slate settings" text={`HAPPYTOHELP_DELEGATION_ORIGIN=${typeof window === 'undefined' ? '' : window.location.origin}\nHAPPYTOHELP_DELEGATION_ACCOUNT_ID=${projectId}\nHAPPYTOHELP_DELEGATION_CLIENT_ID=slate`}/>
+                </details>
+            </li>
             <li>Register Slate below with the same Client identifier (<code>slate</code>), its address and its callback URL.</li>
             <li>In Slate, start the connection. HappyToHelp shows what Slate asks to read or change; choose <b>Allow selected access</b>. Access lasts 30 days and is listed under “Access you have granted”, where you can revoke it.</li>
         </ol>
@@ -97,7 +103,7 @@ export default function DelegationSettings({ projectId, projects }) {
         {error && <><div role="alert" className="alert alert-danger">{error}</div><DelegationExits projectId={projectId} settings={false}/></>}
         {loading && <p role="status" aria-busy="true">Loading connected applications…</p>}
         {data && <>
-            <About projectId={projectId}/>
+            <About key={projectId} projectId={projectId} workspaceName={projects?.[projectId]?.name || 'this workspace'}/>
             <Section title="Access you have granted" description="Applications you have approved to work with this workspace. Revoking stops the application immediately.">
                 <Grants grants={data.grants} onRevoke={revoke} busy={busy}/>
             </Section>

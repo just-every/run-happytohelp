@@ -11,6 +11,19 @@ async function heroAtWidth({runtime,browser,shot,viewport}){
  const context=await browser.newContext({viewport}),page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message))
  try{
   await context.addCookies([{name:'h2h_session',value:tenant.token,url:runtime.origin}])
+  await context.grantPermissions(['clipboard-read','clipboard-write'],{origin:runtime.origin})
+  await page.goto(runtime.origin+`/delegation/settings?account_id=${tenant.projectId}`)
+  const instructions=page.locator('.delegation-about')
+  await instructions.getByText('Hero '+viewport.width,{exact:true}).waitFor()
+  const developerValues=instructions.locator('details')
+  const values=developerValues.locator('pre')
+  assert.equal(await values.isVisible(),false)
+  assert.ok(!(await instructions.innerText()).includes(tenant.projectId))
+  await developerValues.locator('summary').click()
+  await developerValues.getByRole('button',{name:'Copy Slate settings'}).click()
+  await developerValues.getByText('Copied',{exact:true}).waitFor()
+  const copied=await page.evaluate(()=>navigator.clipboard.readText())
+  assert.ok(copied.split('\n').includes('HAPPYTOHELP_DELEGATION_ACCOUNT_ID='+tenant.projectId))
   const widgetKey=(await (await context.request.get(runtime.origin+`/api/identity/projects/${tenant.projectId}`)).json()).widget_key
   const article={slug:'contact-your-support-team',title:'Contact your support team',content:'Open the website chat widget, type your question, and press Send. The support team can reply in the same conversation.',summary:'Contact the support team.',status:'draft'}
   const created=await context.request.post(runtime.origin+`/api/knowledge/${tenant.projectId}/articles`,{data:article});assert.equal(created.status(),201);article.id=(await created.json()).id

@@ -1,5 +1,6 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
+import {ticketReferenceRange} from '../tickets/reference'
 export const INBOX_SEARCH_MAX_LENGTH=200
 export const INBOX_SEARCH_TOO_LONG=`That search is too long. Search for a message phrase, customer name or email using at most ${INBOX_SEARCH_MAX_LENGTH} characters.`
 /** Bound input before it reaches either the identity or full-text search. */
@@ -35,10 +36,9 @@ export async function attachMatchedMessages(env:Env,term:string,rows:{id:string;
 export function inboxSearchCondition(term:string){
  // A leading # selects ticket references. Bare hex also goes through ordinary search.
  // Access stays in the outer conversation query for both inbox doors.
- const prefix=/^#?([a-f0-9]{8})$/i.exec(term)?.[1].toLowerCase()
+ const nativeParams=ticketReferenceRange(term)
  const native='SELECT id FROM conversations WHERE id>=? AND id<?'
- const nativeParams=prefix?[prefix,prefix+'g']:[]
- if(prefix&&term.startsWith('#'))return {sql:`c.id IN (${native})`,params:nativeParams,indexed:true}
+ if(nativeParams&&term.startsWith('#'))return {sql:`c.id IN (${native})`,params:nativeParams,indexed:true}
  const needle=term.replace(/[A-Z]/g,letter=>letter.toLowerCase())
  const sourceId=term.startsWith('#')?term.slice(1):term
  // Quotes group a phrase; other whitespace-separated terms may occur in any order.
@@ -47,8 +47,8 @@ export function inboxSearchCondition(term:string){
  if(Array.from(needle).length>=3&&!needle.includes('\0')){
   const identity=`SELECT conversation.id FROM contacts t JOIN conversations conversation ON conversation.project_id=t.project_id AND conversation.contact_id=t.id WHERE t.rowid IN (SELECT rowid FROM inbox_contact_search WHERE inbox_contact_search MATCH ?)`
   const source=`SELECT imported.conversation_id FROM move_in_conversations imported JOIN conversations conversation ON conversation.id=imported.conversation_id AND conversation.project_id=imported.project_id WHERE imported.source_id=? AND imported.source_id<>''`
-  const candidates=[...(prefix?[native]:[]),identity,source,...(words?['SELECT conversation_id FROM inbox_message_search WHERE inbox_message_search MATCH ?']:[])]
-  return {sql:`c.id IN (${candidates.join(' UNION ALL ')})`,params:[...nativeParams,'"'+needle.replace(/"/g,'""')+'"',sourceId,...(words?[words]:[])],indexed:true}
+  const candidates=[...(nativeParams?[native]:[]),identity,source,...(words?['SELECT conversation_id FROM inbox_message_search WHERE inbox_message_search MATCH ?']:[])]
+  return {sql:`c.id IN (${candidates.join(' UNION ALL ')})`,params:[...(nativeParams??[]),'"'+needle.replace(/"/g,'""')+'"',sourceId,...(words?[words]:[])],indexed:true}
  }
  const fields=["t.name","t.email","json_extract(t.metadata_json,'$.provided_name')","json_extract(t.metadata_json,'$.provided_email')"]
  const source=`EXISTS(SELECT 1 FROM move_in_conversations imported WHERE imported.project_id=c.project_id AND imported.conversation_id=c.id AND imported.source_id=? AND imported.source_id<>'')`

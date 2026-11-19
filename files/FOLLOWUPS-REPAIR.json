@@ -1,0 +1,29 @@
+{
+  "patch_base": "6a5968bee3d33e880cce2e39940e16589f5db967",
+  "published": false,
+  "applies_cleanly": true,
+  "combined_patch_sha256": "a763444e3b6bca56ae44a6a56e2ef36ed8b49b3577ad6b4b21ba7880838944cd",
+  "checks": {
+    "lock": {
+      "exit": 0
+    },
+    "typecheck": {
+      "exit": 0
+    },
+    "problem": {
+      "exit": 0
+    },
+    "journeys": {
+      "exit": 0
+    }
+  },
+  "scope": [
+    "Return the configured AI reply limit without exposing installation-wide reply volume.",
+    "Diagnose message refusal only on the failure path so admitted messages retain their statement budget."
+  ],
+  "problem_recovery": {
+    "published_candidate_solved": 22,
+    "expected_solved": 23,
+    "repair_test_passed": true
+  }
+}

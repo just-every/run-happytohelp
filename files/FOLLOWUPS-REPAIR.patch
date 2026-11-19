@@ -1,0 +1,90 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index e789796..05adbc6 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -4953,7 +4953,7 @@
+       "executable": false
+     },
+     "src/modules/ai-support/reply-ceiling.ts": {
+-      "sha256": "2cdf6b02257280b199813e9a94eac4fcf2d690293838fd35ca44c2ada8158f03",
++      "sha256": "ea356eea97672d34eae3ccc696f06b084cec2c99e64d2161f2f6e1a979754c35",
+       "executable": false
+     },
+     "src/modules/ai-support/reply-mode.ts": {
+@@ -5521,7 +5521,7 @@
+       "executable": false
+     },
+     "src/modules/conversations/admission.ts": {
+-      "sha256": "f4649f8d8cf83a5029e51b4f7a162cbefc84946b8dde0176e69ce0567ec40b89",
++      "sha256": "991eb8f6d8fed357522ca64573889122b0d14aaaf80122e8e1e54f639c77492f",
+       "executable": false
+     },
+     "src/modules/conversations/citations.js": {
+@@ -16725,7 +16725,7 @@
+       "executable": false
+     },
+     "tests/helpers/first-run/provisioning.mjs": {
+-      "sha256": "851d5c68f1cbb39dec967409f002aae4c265eb6758956e99f596536c86af2a32",
++      "sha256": "30acc89f80fa5bec303b065b3d391a5428dd409866618e1726d01f4399d6b592",
+       "executable": false
+     },
+     "tests/helpers/first-run/site-read.mjs": {
+diff --git a/src/modules/ai-support/reply-ceiling.ts b/src/modules/ai-support/reply-ceiling.ts
+index 6349a5f..c7d7bca 100644
+--- a/src/modules/ai-support/reply-ceiling.ts
++++ b/src/modules/ai-support/reply-ceiling.ts
+@@ -80,7 +80,7 @@ export async function automaticAiUsage(env: Env, projectId: string) {
+   resetsAt: new Date(replies.expiresAt).toISOString(),
+   replies: { used: replies.used, limit: limits.repliesPerProject },
+   spendUsd: { used: spend.used / 1e6, limit: limits.spendUsdPerProject },
+-  installationReplies: { used: installation.used, limit: limits.repliesPerInstallation },
++  installationReplies: { limit: limits.repliesPerInstallation },
+   installationCeilingReached: installation.used >= limits.repliesPerInstallation,
+   skippedReplies: skipped.used,
+   replyCeilingReached,
+diff --git a/src/modules/conversations/admission.ts b/src/modules/conversations/admission.ts
+index 6f77896..7615e4f 100644
+--- a/src/modules/conversations/admission.ts
++++ b/src/modules/conversations/admission.ts
+@@ -186,11 +186,20 @@ export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput
+  const committedIndex=statements.length
+  statements.push(
+   env.DB.prepare(`SELECT * FROM messages WHERE id=? ${replayPredicate}`).bind(messageId,...replayArgs),
+-  env.DB.prepare(`SELECT * FROM messages WHERE conversation_id=? AND project_id=? AND local_id=? ${replayPredicate}`).bind(conversationId,projectId,localId,...replayArgs),
+-  // Diagnose a stale frontier only when the write still passes the admission guards.
+-  env.DB.prepare(`${knowledge.prefix}SELECT 1 FROM conversations c WHERE NOT EXISTS(SELECT 1 FROM messages WHERE id=?) AND ${predicates.join(' AND ')} AND NOT (${frontier.join(' AND ')})`).bind(...knowledge.params,messageId,...args,...frontierArgs)
++  env.DB.prepare(`SELECT * FROM messages WHERE conversation_id=? AND project_id=? AND local_id=? ${replayPredicate}`).bind(conversationId,projectId,localId,...replayArgs)
+  )
+  const committed=await env.DB.batch<any>(statements),message=committed[committedIndex].results[0]
+- if(!message){const duplicate=committed[committedIndex+1].results[0];if(duplicate&&duplicate.actor_id===writerId&&duplicate.intent_hash===intentHash)return replayAdmitted(duplicate);const visible=await env.DB.prepare(`${knowledge.prefix}SELECT 1 WHERE ${knowledge.sql}`).bind(...knowledge.params).first();if(!visible){const references=await referenceVisibility(env,projectId,content,actor.id,currentTicketReaders(projectId,conversationId,{contacts:email?.cc,localId}));return {accepted:false,reason:'knowledge_access_denied',content,blockedReferences:references.filter(ref=>ref.recipients.some(recipient=>!recipient.visible))}}return {accepted:false,reason:committed[committedIndex+2].results.length?'conversation_changed':'admission_denied'}}
++ if(!message){
++  const duplicate=committed[committedIndex+1].results[0]
++  if(duplicate&&duplicate.actor_id===writerId&&duplicate.intent_hash===intentHash)return replayAdmitted(duplicate)
++  const visible=await env.DB.prepare(`${knowledge.prefix}SELECT 1 WHERE ${knowledge.sql}`).bind(...knowledge.params).first()
++  if(!visible){
++   const references=await referenceVisibility(env,projectId,content,actor.id,currentTicketReaders(projectId,conversationId,{contacts:email?.cc,localId}))
++   return {accepted:false,reason:'knowledge_access_denied',content,blockedReferences:references.filter(ref=>ref.recipients.some(recipient=>!recipient.visible))}
++  }
++  // Only diagnose a refusal. Successful writes stay inside the statement budget for bulk replies.
++  const stale=await env.DB.prepare(`${knowledge.prefix}SELECT 1 FROM conversations c WHERE NOT EXISTS(SELECT 1 FROM messages WHERE id=?) AND ${predicates.join(' AND ')} AND NOT (${frontier.join(' AND ')})`).bind(...knowledge.params,messageId,...args,...frontierArgs).first()
++  return {accepted:false,reason:stale?'conversation_changed':'admission_denied'}
++ }
+  return {accepted:true,duplicate:false,message,...(followup?{followupConversationId:targetId}:{})}
+ }
+diff --git a/tests/helpers/first-run/provisioning.mjs b/tests/helpers/first-run/provisioning.mjs
+index 8064023..04395e8 100644
+--- a/tests/helpers/first-run/provisioning.mjs
++++ b/tests/helpers/first-run/provisioning.mjs
+@@ -104,6 +104,12 @@ export async function provisioningJourney(){
+   assert.match((await app.first("SELECT error FROM ai_generations WHERE conversation_id=? AND state='failed'",chat.id)).error,/AI_REPLY_CEILING/)
+   const spend=(await app.call(`/api/dashboard/projects/${p}/ai-spend`,{token,status:200})).data.data
+   assert.equal(spend.automatic.replyCeilingReached,true);assert.equal(spend.spend.knownUsd,null,'unpriced provider usage is unknown')
++  const limit=(await setup()).facts.ceilings.repliesPerInstallation
++  const usage=(await app.call(`/api/dashboard/projects/${p}/ai-usage`,{token,status:200})).data.data
++  for(const row of [spend.automatic,usage]){
++   assert.equal(row.replies.used,1,'workspace usage remains visible')
++   assert.deepEqual(row.installationReplies,{limit},'the shared limit is visible without exposing usage outside this workspace')
++  }
+   assert.equal((await app.call(`/api/dashboard/projects/${p}/ai-spend`,{token:next.token})).status,403)
+ 
+   state.uncertain=true;await app.configure({EMAIL_API_KEY:'synthetic-happytohelp-7'})

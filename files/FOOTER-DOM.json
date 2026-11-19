@@ -1,0 +1,26 @@
+[
+  {
+    "width": 1440,
+    "destinations": [
+      "#top",
+      "/docs",
+      "https://github.com/just-every/run-happytohelp",
+      "/projects",
+      "/setup",
+      "/login",
+      "https://github.com/just-every/run-happytohelp/blob/main/LICENSE"
+    ]
+  },
+  {
+    "width": 390,
+    "destinations": [
+      "#top",
+      "/docs",
+      "https://github.com/just-every/run-happytohelp",
+      "/projects",
+      "/setup",
+      "/login",
+      "https://github.com/just-every/run-happytohelp/blob/main/LICENSE"
+    ]
+  }
+]

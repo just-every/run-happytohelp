@@ -1,0 +1,1319 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-followups-1",
+  "product_head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+  "parent": "e943b764e6f51ef33c218361f063250aaf16d223",
+  "published": true,
+  "commits_ahead_of_main": 1,
+  "contract": {
+    "before": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    },
+    "after": {
+      "done": 4,
+      "partial": 71,
+      "missing": 16,
+      "total": 91
+    },
+    "wording_change": "PUBLIC-002",
+    "new_test_registrations": 0,
+    "generated_view_change": "one ACCEPTANCE heading verified by regeneration"
+  },
+  "checks_on_product_head": {
+    "types": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    "sources": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "node scripts/edition-authoring/cli.mjs check && pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "search": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='inbox finds every readable' tests/journeys/inbox.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "widget": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run node --input-type=module -e 'import {ownerInstallationBrowser} from \"./tests/helpers/widget/owner-installation.mjs\"; await ownerInstallationBrowser()'",
+      "exit": 0
+    },
+    "setup": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run node --input-type=module -e 'import {builtOutcomes} from \"./tests/helpers/first-run/outcomes.mjs\"; await builtOutcomes()'",
+      "exit": 0
+    },
+    "invite": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run node --input-type=module -e 'import {launchBrowser} from \"./tests/journeys/kit/browser.mjs\"; import {invitationJoinBrowser} from \"./tests/helpers/identity/magic-browser.mjs\"; const browser=await launchBrowser(); try {await invitationJoinBrowser(browser)} finally {await browser.close()}'",
+      "exit": 0
+    },
+    "public": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='new owner finds the source' tests/journeys/public-browser.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "site": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run npx -y @runeditrun/rer build --site",
+      "exit": 0
+    },
+    "build": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "api": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run node --test --test-concurrency=2 --test-name-pattern='replacement request|inbox finds every readable|first owner claims|widget installation confirms|first business-hours|first owner provisions' tests/journeys/inbox.mjs tests/journeys/identity.mjs tests/journeys/first-run.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 6,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "email": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='customer email is admitted once' tests/journeys/email.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "contract": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "node src/site/base/contract-docs.mjs write && node src/site/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    "preview": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='a saved reply previews' tests/journeys/inbox-browser.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "contacts": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run node --input-type=module -e 'import {customerScreenOutcomes} from \"./tests/helpers/customer-outcomes-edges.mjs\"; await customerScreenOutcomes()'",
+      "exit": 0
+    },
+    "hubspot": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='owner maps and refreshes HubSpot' tests/journeys/workflows-browser.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "desk-shard": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run node --test --test-concurrency=1 tests/journeys/identity.mjs tests/journeys/erasure.mjs tests/journeys/inbox.mjs tests/journeys/customers.mjs",
+      "exit": null
+    },
+    "desk-retry": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run timeout 12m node --test --test-concurrency=2 tests/journeys/identity.mjs tests/journeys/inbox.mjs",
+      "exit": 1,
+      "test_counts": {
+        "tests": 20,
+        "pass": 19,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "erasure": {
+      "head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "command": "cloud_run timeout 12m node --test tests/journeys/erasure.mjs",
+      "exit": 124
+    }
+  },
+  "checks_on_equivalent_product_sources": {
+    "build": {
+      "head": "80ca5b8b14abe0d39decdeb7af033abd16bcfc60",
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "contract": {
+      "head": "80ca5b8b14abe0d39decdeb7af033abd16bcfc60",
+      "command": "node src/site/base/contract-docs.mjs write && node src/site/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    "docs-site": {
+      "head": "80ca5b8b14abe0d39decdeb7af033abd16bcfc60",
+      "command": "npx -y @runeditrun/rer build --site",
+      "exit": 0
+    },
+    "preview": {
+      "head": "80ca5b8b14abe0d39decdeb7af033abd16bcfc60",
+      "command": "node --test --test-concurrency=1 --test-name-pattern='a saved reply previews' tests/journeys/inbox-browser.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "identity-api": {
+      "head": "80ca5b8b14abe0d39decdeb7af033abd16bcfc60",
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='first owner claims|widget installation confirms|first business-hours' tests/journeys/identity.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "first-run-api": {
+      "head": "80ca5b8b14abe0d39decdeb7af033abd16bcfc60",
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='first owner provisions' tests/journeys/first-run.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "inbox-api": {
+      "head": "80ca5b8b14abe0d39decdeb7af033abd16bcfc60",
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='replacement request|inbox finds every readable' tests/journeys/inbox.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "hubspot": {
+      "head": "80ca5b8b14abe0d39decdeb7af033abd16bcfc60",
+      "command": "node --test --test-concurrency=1 --test-name-pattern='owner maps and refreshes HubSpot' tests/journeys/workflows-browser.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "linked": {
+      "head": "80ca5b8b14abe0d39decdeb7af033abd16bcfc60",
+      "command": "node --test --test-concurrency=1 --test-name-pattern='a labelled identity link' tests/journeys/inbox-browser.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    "email": {
+      "head": "e8e35191a0f4b924c420a24386777c48bfb577d2",
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='customer email is admitted once' tests/journeys/email.mjs",
+      "exit": 0,
+      "test_counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "equivalence": "Compared with the penultimate commit, only the owner widget browser fixture and its source lock changed. Earlier email proof covers the same integration, admission and email-test sources.",
+  "site_output": {
+    "pages": 44,
+    "manifest_docs_routes": 39
+  },
+  "browser_environment": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "browser": "headless Chromium",
+    "viewport_widths": [
+      1440,
+      390
+    ]
+  },
+  "verify": {
+    "run": {
+      "conclusion": "failure",
+      "head_sha": "6a5968bee3d33e880cce2e39940e16589f5db967",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44470806075",
+      "status": "completed",
+      "id": 44470806075
+    },
+    "jobs": [
+      {
+        "conclusion": "failure",
+        "id": 135379510750,
+        "name": "contract-docs",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set runner-owned dependency cache"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/cache@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm install --frozen-lockfile"
+          },
+          {
+            "conclusion": "failure",
+            "name": "Run node src/site/base/contract-docs.mjs check"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Run node scripts/contract-docs.mjs check"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Post Run actions/cache@v4"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Post Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "id": 135379510877,
+        "name": "plan",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Look up complete nightly marker"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run node scripts/ci/verify-lifecycle.mjs --plan"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "id": 135379658243,
+        "name": "build",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set runner-owned caches"
+          },
+          {
+            "conclusion": "success",
+            "name": "Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm install --frozen-lockfile"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm exec rer describe"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run node scripts/edition-authoring/cli.mjs check"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm run typecheck"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm exec rer check --profile first-party"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm run build"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Run reviewed light readers and build the run site"
+          },
+          {
+            "conclusion": "success",
+            "name": "Package internal build output"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Confirm build preserves source"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Upload build failure diagnostics"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "id": 135379660954,
+        "name": "slow",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "failure",
+        "id": 135380205711,
+        "name": "Verify / identity-and-desk",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Configure evidence directory"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set runner-owned caches"
+          },
+          {
+            "conclusion": "success",
+            "name": "Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm install --frozen-lockfile"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/download-artifact@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Restore the build from this workflow's exact checkout"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Install Chromium"
+          },
+          {
+            "conclusion": "failure",
+            "name": "Run shard checks"
+          },
+          {
+            "conclusion": "success",
+            "name": "Confirm checks preserve source"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload browser evidence"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload failure diagnostics"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Post Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Post Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "id": 135380205728,
+        "name": "Verify / connections-and-computers",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Configure evidence directory"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set runner-owned caches"
+          },
+          {
+            "conclusion": "success",
+            "name": "Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm install --frozen-lockfile"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/download-artifact@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Restore the build from this workflow's exact checkout"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Install Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run shard checks"
+          },
+          {
+            "conclusion": "success",
+            "name": "Confirm checks preserve source"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload browser evidence"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Upload failure diagnostics"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "id": 135380205738,
+        "name": "Verify / support-workflow-browser",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Configure evidence directory"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set runner-owned caches"
+          },
+          {
+            "conclusion": "success",
+            "name": "Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm install --frozen-lockfile"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/download-artifact@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Restore the build from this workflow's exact checkout"
+          },
+          {
+            "conclusion": "success",
+            "name": "Install Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run shard checks"
+          },
+          {
+            "conclusion": "success",
+            "name": "Confirm checks preserve source"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload browser evidence"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Upload failure diagnostics"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "id": 135380205808,
+        "name": "Verify / identity-and-repair-browser",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Configure evidence directory"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set runner-owned caches"
+          },
+          {
+            "conclusion": "success",
+            "name": "Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm install --frozen-lockfile"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/download-artifact@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Restore the build from this workflow's exact checkout"
+          },
+          {
+            "conclusion": "success",
+            "name": "Install Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run shard checks"
+          },
+          {
+            "conclusion": "success",
+            "name": "Confirm checks preserve source"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload browser evidence"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Upload failure diagnostics"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "id": 135380205813,
+        "name": "Verify / import-and-reports",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Configure evidence directory"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set runner-owned caches"
+          },
+          {
+            "conclusion": "success",
+            "name": "Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm install --frozen-lockfile"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/download-artifact@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Restore the build from this workflow's exact checkout"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Install Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run shard checks"
+          },
+          {
+            "conclusion": "success",
+            "name": "Confirm checks preserve source"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload browser evidence"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Upload failure diagnostics"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "id": 135380205817,
+        "name": "Verify / support-and-recovery",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Configure evidence directory"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set runner-owned caches"
+          },
+          {
+            "conclusion": "success",
+            "name": "Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm install --frozen-lockfile"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/download-artifact@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Restore the build from this workflow's exact checkout"
+          },
+          {
+            "conclusion": "success",
+            "name": "Install Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run shard checks"
+          },
+          {
+            "conclusion": "success",
+            "name": "Confirm checks preserve source"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload browser evidence"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Upload failure diagnostics"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "id": 135380205819,
+        "name": "Verify / public-and-import-browser",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Configure evidence directory"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set runner-owned caches"
+          },
+          {
+            "conclusion": "success",
+            "name": "Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm install --frozen-lockfile"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/download-artifact@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Restore the build from this workflow's exact checkout"
+          },
+          {
+            "conclusion": "success",
+            "name": "Install Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run shard checks"
+          },
+          {
+            "conclusion": "success",
+            "name": "Confirm checks preserve source"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload browser evidence"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Upload failure diagnostics"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "id": 135380205860,
+        "name": "Verify / assistant-and-knowledge",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Configure evidence directory"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set runner-owned caches"
+          },
+          {
+            "conclusion": "success",
+            "name": "Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm install --frozen-lockfile"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/download-artifact@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Restore the build from this workflow's exact checkout"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Install Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run shard checks"
+          },
+          {
+            "conclusion": "success",
+            "name": "Confirm checks preserve source"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload browser evidence"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Upload failure diagnostics"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Cache frozen dependencies and Chromium"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "id": 135380205914,
+        "name": "size-check",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set runner-owned dependency cache"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/cache@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run pnpm install --frozen-lockfile"
+          },
+          {
+            "conclusion": "success",
+            "name": "Record the published rer artifact identity"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/download-artifact@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Restore the build from this workflow's exact checkout"
+          },
+          {
+            "conclusion": "success",
+            "name": "Check migration statements and real small/large flows"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload statement handoff and identity, including failed checks"
+          },
+          {
+            "conclusion": "success",
+            "name": "Confirm size checks preserve source"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/cache@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/setup-node@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run pnpm/action-setup@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "id": 135381340221,
+        "name": "nightly-proof",
+        "status": "completed",
+        "steps": []
+      },
+      {
+        "conclusion": "failure",
+        "id": 135389574249,
+        "name": "verify",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "failure",
+            "name": "Require the plan and every selected check"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "id": 135389576602,
+        "name": "full-push-proof",
+        "status": "completed",
+        "steps": []
+      }
+    ],
+    "disposition": "blocked",
+    "failed_step_summary": "Verify run 44470806075 completed with failure on the published product SHA. The identity-and-desk shard failed its Run shard checks step (job 135380205711). The exact failed-job archive command returned exit 0 and zero bytes, so the API did not supply a failing assertion. The separate contract-docs generator check failed (job 135379510750), and the aggregate verify job failed (135389574249)."
+  }
+}

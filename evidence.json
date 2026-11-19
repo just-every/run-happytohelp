@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "af255e35a7f891ad669ab0079fe27ca75a45fd69",
+      "bytes": 729,
+      "path": "FOLLOWUPS-REPAIR.json",
+      "sha256": "ad289c43b46695216332a9c7bd57a6f73174e8fd04bddf55623a0c180184395b"
+    },
+    {
+      "blob": "1e80d803b10bd228746182b37d06ea73515cd2dc",
+      "bytes": 6532,
+      "path": "FOLLOWUPS-REPAIR.patch",
+      "sha256": "a763444e3b6bca56ae44a6a56e2ef36ed8b49b3577ad6b4b21ba7880838944cd"
+    },
+    {
+      "blob": "ca18b396e1cdf8507e8cec67de6a51901c70567d",
+      "bytes": 528,
+      "path": "FOOTER-DOM.json",
+      "sha256": "ecd367d321273525e793a4cae601a8adf61a245ef3798af64f89d25dce414b1b"
+    },
+    {
+      "blob": "c72f33b44bbbcc5fec0a12a868972d3a6c26d4df",
+      "bytes": 212,
+      "path": "HOSTED-EMAIL-DOM.json",
+      "sha256": "7940af75ada7bea9c2e5669a8bd6c3730be45f28c2ea30cd34229a8ae20110bc"
+    },
+    {
+      "blob": "7b7948212084f98b046a195cdbcd8be817202eab",
+      "bytes": 38561,
+      "path": "RECEIPT.json",
+      "sha256": "802719108d495859f102c7878878d520a6522584f34396fa7930b8cefe619779"
+    },
+    {
+      "blob": "16537fa0228600f42cab2463da1e3948b7971023",
+      "bytes": 10417,
+      "path": "REPORT.md",
+      "sha256": "b807379b55aedded881e35e8ddc092cd2bc3e9642ad4486982155e045f8f90b5"
+    },
+    {
+      "blob": "026556db02d59d76f18bf80ab4a74683c9d9d193",
+      "bytes": 239,
+      "path": "SAVED-REPLY-PREVIEW.json",
+      "sha256": "dfbf854ac24ed0fcc3039cb36ea0ffd143a01c5bbde118df00ee84be70e03951"
+    },
+    {
+      "blob": "709ad957294dd66fda2a03c4276e06f24fafb896",
+      "bytes": 2478,
+      "path": "TICKET-SEARCH.json",
+      "sha256": "922df64850e3355011c7453cbe40c137cd4855e700f53bcd1fe3cd20ea57e618"
+    },
+    {
+      "blob": "b5e9d2f306fb9b8e01f2e7aec245e29d65b4eb90",
+      "bytes": 560,
+      "path": "WIDGET-JOURNEY.json",
+      "sha256": "a709817ae1f4e765ce3527e95e33afc48e230b543d2df378471ce5e04a324c8c"
+    },
+    {
+      "blob": "2e989b5fc79e517aa3260070fdae1a7b10fee6dc",
+      "bytes": 448,
+      "path": "WIDGET-TRIAL-DOM.json",
+      "sha256": "dc611821781b6508643efb174017a5f879d8f243d63d84e141f4059546b356ef"
+    }
+  ],
+  "product_branch": "cloud/hh-followups-1",
+  "product_head": "6a5968bee3d33e880cce2e39940e16589f5db967",
+  "ref": "refs/heads/evidence/hh-followups-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-followups-1"
+}

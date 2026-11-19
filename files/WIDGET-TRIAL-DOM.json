@@ -1,0 +1,20 @@
+{
+  "observations": [
+    {
+      "width": 1440,
+      "trialLinkVisible": true,
+      "liveComposerVisible": true,
+      "supportAvatar": "C",
+      "responseLine": "Responds within 24 hours"
+    },
+    {
+      "width": 390,
+      "trialLinkVisible": true,
+      "liveComposerVisible": true,
+      "supportAvatar": "C",
+      "responseLine": "Responds within 24 hours"
+    }
+  ],
+  "testMessageAdmitted": true,
+  "workspaceInboxConfirmed": true
+}

@@ -1,0 +1,331 @@
+{
+  "base": {
+    "revision": "965e8d4e105f6f4d281dacb3c099f6a958a886e7",
+    "tag_object": "ed28be13eb6fc1155d2b889410d044271966c2fa"
+  },
+  "branch": "cloud/hh-rer-repin-1",
+  "checks": [
+    {
+      "command": "pnpm exec rer --version",
+      "exit": 0,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exit": 0,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check",
+      "exit": 0,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 1,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs verify-base --offline",
+      "exit": 0,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "pnpm exec rer verify",
+      "exit": 1,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "tree": "unpublished repair"
+    },
+    {
+      "command": "pnpm exec rer build",
+      "exit": 0,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "node /tmp/hh-worker-door.mjs",
+      "exit": 0,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "node scripts/delivery/secret-declarations.mjs",
+      "exit": 0,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    },
+    {
+      "command": "pnpm run test:restore",
+      "exit": 1,
+      "tree": "a5f0b8e3d2d540fa9565848a53397aef203a470a"
+    }
+  ],
+  "ci": {
+    "conclusion": "failure",
+    "failed_job_log_file": "CI-LOGS.md",
+    "head_sha": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44633893244",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "head_sha": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44633893244/job/135947357920",
+        "id": 135947357920,
+        "name": "contract-docs",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44633893244/job/135947359019",
+        "id": 135947359019,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "head_sha": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44633893244/job/135947556667",
+        "id": 135947556667,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44633893244/job/135947559166",
+        "id": 135947559166,
+        "name": "slow",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "head_sha": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44633893244/job/135947853822",
+        "id": 135947853822,
+        "name": "verify",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44633893244/job/135947854277",
+        "id": 135947854277,
+        "name": "Verify / ${{ matrix.name }}",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44633893244/job/135947854986",
+        "id": 135947854986,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44633893244/job/135947855197",
+        "id": 135947855197,
+        "name": "size-check",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+        "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44633893244/job/135947855405",
+        "id": 135947855405,
+        "name": "nightly-proof",
+        "status": "completed"
+      }
+    ],
+    "log_commands": [
+      {
+        "exit": 0,
+        "job_id": 135947556667
+      },
+      {
+        "exit": 0,
+        "job_id": 135947853822
+      }
+    ],
+    "run_id": 44633893244,
+    "status": "completed",
+    "workflow": "Verify"
+  },
+  "exact_head_restore_tap": [
+    "not ok 1 - a populated packaged install restores from its documented credential-free backup into a fresh destination with every row, object and metadata equal, sessions and password sign-in working, setup closed and delegated credentials gone",
+    "ok 2 - every derived table an import rebuilds stays out of the archive, so a restored export equals its source",
+    "# tests 2",
+    "# pass 1",
+    "# fail 1",
+    "# cancelled 0"
+  ],
+  "head": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+  "local_owner_archive": {
+    "archive_format": "runeditrun-portability",
+    "archive_version": 2,
+    "export_exit": 0,
+    "history_entries": 200,
+    "import_results": [
+      {
+        "archive": "owner",
+        "errors": [
+          {
+            "code": "safety_refusal",
+            "message": "Import refused before restore: invalid archive structure."
+          }
+        ],
+        "exit": 4,
+        "rows": 0,
+        "version": "0.2.121"
+      },
+      {
+        "archive": "changed",
+        "errors": [
+          {
+            "code": "safety_refusal",
+            "message": "Import refused before restore: invalid archive structure."
+          }
+        ],
+        "exit": 4,
+        "rows": 0,
+        "version": "0.2.121"
+      },
+      {
+        "archive": "changed",
+        "errors": [
+          {
+            "code": "command_failed",
+            "message": "Collecting local migrations failed (Error, code ERR_SQLITE_ERROR).\nFull output: .seed/installer/install.log"
+          }
+        ],
+        "exit": 1,
+        "rows": 0,
+        "version": "0.2.125"
+      },
+      {
+        "archive": "owner",
+        "errors": [
+          {
+            "code": "command_failed",
+            "message": "Collecting local migrations failed (Error, code ERR_SQLITE_ERROR).\nFull output: .seed/installer/install.log"
+          }
+        ],
+        "exit": 1,
+        "rows": 0,
+        "version": "0.2.125"
+      }
+    ],
+    "migration_sequence": [
+      "312_agent_door_retired_refs.sql",
+      "owner-313_inbox_entries.sql",
+      "314_inbox_visitor_waiting.sql"
+    ],
+    "target_restore_jobs": 0,
+    "target_workspace_rows": 0
+  },
+  "parent": "d845c2095b61a69df817205a43b612b0c8ec01f3",
+  "platform_to_native_repro": [
+    {
+      "command": "export",
+      "errors": [],
+      "exit": 0,
+      "fixture": "platform-source"
+    },
+    {
+      "command": "import",
+      "errors": [
+        {
+          "code": "restore_refused",
+          "message": "The portability module refused or failed the archive operation (schema_mismatch).\nFull output: .seed/installer/install.log"
+        }
+      ],
+      "exit": 4,
+      "fixture": "native-0.2.125"
+    },
+    {
+      "command": "import",
+      "errors": [],
+      "exit": 0,
+      "fixture": "native-0.2.121"
+    }
+  ],
+  "product_push": {
+    "advertised": true,
+    "attempts": 1,
+    "candidate_commits": 1,
+    "trailers": 0
+  },
+  "reduced_owner_entry_comparison": [
+    {
+      "command": "rer dev --foreground --non-interactive --json",
+      "errors": [],
+      "exit": 0,
+      "ready": true,
+      "version": "0.2.121"
+    },
+    {
+      "command": "rer dev --foreground --non-interactive --json",
+      "errors": [],
+      "exit": 0,
+      "ready": true,
+      "version": "0.2.125"
+    }
+  ],
+  "refresh_exit": 0,
+  "repository": "just-every/run-happytohelp",
+  "rer": "0.2.125",
+  "source_lock": {
+    "correction_sha256": "67307aee8605daf81fa500b2f323cc1d63d55cb9cd6a1a9703ecbc38bee81af1",
+    "missing_file_count": 10,
+    "published_error": "Stale lock or source/tool integrity mismatch; run changes to inspect intentional edits before lock"
+  },
+  "worker_restore": {
+    "candidate_artifact_sha256": "4ebc7b6453abcd21c09f77d9a3ced9852694e21bf16fa307a08c4a30e9feb1ea",
+    "candidate_http": [
+      {
+        "command": "built HappyToHelp Worker POST /api/portability/imports",
+        "response": "404 Not Found",
+        "status": 404
+      }
+    ],
+    "rer_0.2.121_package_fixture": {
+      "error": "ERR_SQLITE_ERROR: no such column: note",
+      "exit": 1
+    },
+    "rer_0.2.125_package_fixture": [
+      {
+        "case": "matching",
+        "rows": 1,
+        "status": 200
+      },
+      {
+        "body": {
+          "error": "schema_mismatch"
+        },
+        "case": "owner entry omitted",
+        "rows": [],
+        "status": 409
+      }
+    ],
+    "rer_0.2.125_package_fixture_exit": 1
+  },
+  "working_tree_clean": true
+}

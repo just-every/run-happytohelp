@@ -1,0 +1,107 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index ac97ad5..365812a 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -3232,6 +3232,10 @@
+       "sha256": "d511e72b087667dd990e636f4068194ca4772ce537e1cb40306d16537ff6e9e8",
+       "executable": false
+     },
++    "scripts/edition-authoring/api-source.mjs": {
++      "sha256": "de82fffcdff05e4e0ade8174930eb66dcdedaa733b6d9b4fd056d31b018797ff",
++      "executable": false
++    },
+     "scripts/edition-authoring/archive-source.mjs": {
+       "sha256": "a00a67f81f3f0544c6fadd3d37de11d4f1e62be6b42728178f5026f5adb79491",
+       "executable": false
+@@ -3304,6 +3308,10 @@
+       "sha256": "fba6c894e2fe5a48c2f8706ab74b09d1935bd7fa38049a264d3d91ff6d336003",
+       "executable": false
+     },
++    "scripts/edition-authoring/project-hashes.mjs": {
++      "sha256": "43d0a7d7d576f76a0c3e8c525225a29fb202fc2e4ed1f29c964c500a23fb1c35",
++      "executable": false
++    },
+     "scripts/edition-authoring/projection-lock.mjs": {
+       "sha256": "bbb939b4e5bc6b5db8bf51156ec770fa30fc5df7a8fbb21a751c8ede69b1444b",
+       "executable": false
+@@ -9404,6 +9412,10 @@
+       "sha256": "f150b6ba28bdd7fc6fa233b9807577fead5850fd40ea103554079ec93c4d2399",
+       "executable": false
+     },
++    "src/modules/operator-auth/dev-gate-script.mjs": {
++      "sha256": "939d1911b862638a7e358ca6f41a78af213f66aa319799a77c82b909a6fb16f6",
++      "executable": false
++    },
+     "src/modules/operator-auth/dev-gate.mjs": {
+       "sha256": "60a049f19dd3febb7130faf674b85757663b2bbeec9d72fadf74463fa942110d",
+       "executable": false
+@@ -9596,6 +9608,10 @@
+       "sha256": "afb305c3055eb395e0d575f72c8c332dc56b2247848ba9940886dc1615eead40",
+       "executable": false
+     },
++    "src/modules/operator-auth/terminal-guidance.mjs": {
++      "sha256": "43f302632eb951fe6dad47d32e5f35b5ba159067f0b1b3445a28960a1fb29487",
++      "executable": false
++    },
+     "src/modules/outcomes/assignment-history.ts": {
+       "sha256": "a4280da06e03665fb6f5c24d9b48d28fa0c345f4c96a8529db592c8a2414b321",
+       "executable": false
+@@ -15132,6 +15148,10 @@
+       "sha256": "f150b6ba28bdd7fc6fa233b9807577fead5850fd40ea103554079ec93c4d2399",
+       "executable": false
+     },
++    "src/vendor/agent-base/modules/operator-auth/dev-gate-script.mjs": {
++      "sha256": "939d1911b862638a7e358ca6f41a78af213f66aa319799a77c82b909a6fb16f6",
++      "executable": false
++    },
+     "src/vendor/agent-base/modules/operator-auth/dev-gate.mjs": {
+       "sha256": "60a049f19dd3febb7130faf674b85757663b2bbeec9d72fadf74463fa942110d",
+       "executable": false
+@@ -15152,6 +15172,14 @@
+       "sha256": "54f5f042c592924937eb1e47ca6d751b6ddb59b76dc0b1e74962dfb2c2727d42",
+       "executable": false
+     },
++    "src/vendor/agent-base/modules/operator-auth/dev/persona-entry.mjs": {
++      "sha256": "af6a25a73e3447dc5efe5f892171f7f1c630780a553d494420434312f2f617e6",
++      "executable": false
++    },
++    "src/vendor/agent-base/modules/operator-auth/dev/persona-grant.mjs": {
++      "sha256": "a53d87bf414dd56dbe574b6f5b84223561d73f635020ff1a3f0a5fc4c32f1266",
++      "executable": false
++    },
+     "src/vendor/agent-base/modules/operator-auth/dev/personas.mjs": {
+       "sha256": "888afa951b9520376cd1b0cdbe13e75b002213c368be26652e514eca0ca2e485",
+       "executable": false
+@@ -15396,6 +15424,10 @@
+       "sha256": "afb305c3055eb395e0d575f72c8c332dc56b2247848ba9940886dc1615eead40",
+       "executable": false
+     },
++    "src/vendor/agent-base/modules/operator-auth/terminal-guidance.mjs": {
++      "sha256": "43f302632eb951fe6dad47d32e5f35b5ba159067f0b1b3445a28960a1fb29487",
++      "executable": false
++    },
+     "src/vendor/agent-base/modules/owner-claim/idp.mjs": {
+       "sha256": "edb09dfeb0b66849cd84b651099d46c6420d1dc3f270446ae96595d91754d3e6",
+       "executable": false
+@@ -15844,6 +15876,10 @@
+       "sha256": "f150b6ba28bdd7fc6fa233b9807577fead5850fd40ea103554079ec93c4d2399",
+       "executable": false
+     },
++    "src/vendor/base/modules/operator-auth/dev-gate-script.mjs": {
++      "sha256": "939d1911b862638a7e358ca6f41a78af213f66aa319799a77c82b909a6fb16f6",
++      "executable": false
++    },
+     "src/vendor/base/modules/operator-auth/dev-gate.mjs": {
+       "sha256": "60a049f19dd3febb7130faf674b85757663b2bbeec9d72fadf74463fa942110d",
+       "executable": false
+@@ -16036,6 +16072,10 @@
+       "sha256": "afb305c3055eb395e0d575f72c8c332dc56b2247848ba9940886dc1615eead40",
+       "executable": false
+     },
++    "src/vendor/base/modules/operator-auth/terminal-guidance.mjs": {
++      "sha256": "43f302632eb951fe6dad47d32e5f35b5ba159067f0b1b3445a28960a1fb29487",
++      "executable": false
++    },
+     "src/vendor/base/modules/owner-claim/idp.mjs": {
+       "sha256": "edb09dfeb0b66849cd84b651099d46c6420d1dc3f270446ae96595d91754d3e6",
+       "executable": false

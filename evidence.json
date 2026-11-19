@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "0f5ea14daa80d5fc68203f63a327a4282bf9246f",
+      "bytes": 767,
+      "path": "CI-LOGS.md",
+      "sha256": "5237cc56a31cfb89769ece226acb2ddbfe08389074b75893ba1533fcedb88908"
+    },
+    {
+      "blob": "d89a82c29a3fad7467ac0d501f54bb01cdb01e27",
+      "bytes": 11400,
+      "path": "REPORT.md",
+      "sha256": "c798acf063374b0662b9f29f03b2b28a0d586c0cdb68b25efe6f7ea3373ab537"
+    },
+    {
+      "blob": "6eb4f5a0299446d2b05e722862b3f9b62ee050d0",
+      "bytes": 9977,
+      "path": "checks-receipt.json",
+      "sha256": "654f5b6d0543223c76be0414197f3c32ebb268c1c0a716d3f988ccaa7cec6253"
+    },
+    {
+      "blob": "31fd9e27ff1bb9d1e96cf34a0c0cf4561ca457d4",
+      "bytes": 3916,
+      "path": "platform-native-repro.mjs",
+      "sha256": "d36dc5843660046413bd4db955f63dc2c84f4d8903be874036cc0b571eca3dc0"
+    },
+    {
+      "blob": "fbd01e3330a6c065a96d3e166cc058c51e3e0e13",
+      "bytes": 4820,
+      "path": "source-lock-correction.patch",
+      "sha256": "67307aee8605daf81fa500b2f323cc1d63d55cb9cd6a1a9703ecbc38bee81af1"
+    },
+    {
+      "blob": "d74304522f676a803c4b3f7923ecd20161f5cd9c",
+      "bytes": 5220,
+      "path": "worker-history-repro.mjs",
+      "sha256": "844e6c76f3ea68da8d2c91679f8611c9068449a791c88a8f1817df145ae5311b"
+    }
+  ],
+  "product_branch": "cloud/hh-rer-repin-1",
+  "product_head": "a5f0b8e3d2d540fa9565848a53397aef203a470a",
+  "ref": "refs/heads/evidence/hh-rer-repin-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-rer-repin-1"
+}

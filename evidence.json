@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "068131ad1ad06efe2d0f6802a7fc02092e7d4252",
+      "bytes": 13229,
+      "path": "CHECKS.json",
+      "sha256": "33cdc4eb105fa444a28f146f88557154a2ba18267f1122352e1cc4e40dc0a5b0"
+    },
+    {
+      "blob": "e241af4b8aeee5b96c0cc4730d4bcf70e09fcea6",
+      "bytes": 9599,
+      "path": "REPORT.md",
+      "sha256": "42461da4b279d3f85772c0d6ea7c562da28e7f2499789758fac5f0c8857cda74"
+    },
+    {
+      "blob": "632961001a6ac9c8be20cef0b6d4380a92e68301",
+      "bytes": 575,
+      "path": "browser-proof.json",
+      "sha256": "a3b321642e65666409c5a20fe214bb2bdac030240aa236e1b8afa6169ad41c07"
+    },
+    {
+      "blob": "98cf01c8c023eaa19e3038d25ee692e9292611a8",
+      "bytes": 4411,
+      "path": "docs-routes.json",
+      "sha256": "e3af1a359a1059a4544a2a24ace585eebf9b9a33788a99fde683bf4c7cac6d00"
+    },
+    {
+      "blob": "1dbc55eb5ee8cf497c86905efe438d283d222d4c",
+      "bytes": 1294,
+      "path": "mailbox-history.json",
+      "sha256": "5eebd36aacdd8e703a25131c79681063616edf621c78d8c10a8314eb7e422627"
+    },
+    {
+      "blob": "4edc5780d145cfcae3cc70c1eaa04121a32390b0",
+      "bytes": 1896,
+      "path": "mysql-field-receipt.json",
+      "sha256": "54532aa91d3862ebd720399fc9b6d08149844a69e9a2f5fd37f1e82e39699fe9"
+    },
+    {
+      "blob": "835631b88c48ce60b88e8ea659aa4190fc18b7fa",
+      "bytes": 294,
+      "path": "ticket-reference.json",
+      "sha256": "b2708c1a42f126ec5dcb1ba44e1b1bd0c4e84bbec078eb8918f36632eaab64e9"
+    },
+    {
+      "blob": "4480ff63f88d7d53842daee0555083be4cada899",
+      "bytes": 500,
+      "path": "undo-baseline.json",
+      "sha256": "81ce397e70e95b43ba2fd57f156b6740ebcf32f291042f0a41234278b61a0a4e"
+    }
+  ],
+  "product_branch": "cloud/hh-followups-2",
+  "product_head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+  "ref": "refs/heads/evidence/hh-followups-2",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-followups-2"
+}

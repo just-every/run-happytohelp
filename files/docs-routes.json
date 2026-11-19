@@ -1,0 +1,202 @@
+{
+  "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+  "routeCount": 39,
+  "routes": [
+    {
+      "path": "/docs",
+      "source": "README.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/getting-started",
+      "source": "docs/getting-started.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/install",
+      "source": "docs/INSTALLER.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/setup",
+      "source": "docs/SETUP-WORKFLOW.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/local-agent",
+      "source": "local-agent/README.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/agent-fix",
+      "source": "docs/AGENT-FIX.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/agent-door",
+      "source": "docs/AGENT-DOOR.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/run-locally",
+      "source": "RUN-LOCALLY.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/operations",
+      "source": "OPERATIONS.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/managed-conversation-mail",
+      "source": "docs/managed-conversation-mail.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/integrations",
+      "source": "src/modules/integrations/README.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/moving-in",
+      "source": "docs/moving-in.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/limits",
+      "source": "docs/PUBLIC-LIMITS.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/privacy",
+      "source": "docs/PRIVACY.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/updates-and-recovery",
+      "source": "docs/INDEPENDENT-RELEASE.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/inbound-email-recovery",
+      "source": "docs/INBOUND-EMAIL-RECOVERY.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/legacy-entry-points",
+      "source": "docs/legacy-entry-points.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/companies-and-csv",
+      "source": "docs/companies-and-csv.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/website-knowledge",
+      "source": "docs/website-knowledge.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/help-center",
+      "source": "docs/help-center.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/request-forms",
+      "source": "docs/request-forms.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/customer-portal",
+      "source": "docs/customer-portal.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/customer-satisfaction",
+      "source": "docs/customer-satisfaction.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/away",
+      "source": "docs/away.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/tickets",
+      "source": "docs/tickets.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/reports",
+      "source": "docs/reports.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/email",
+      "source": "docs/email.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/workflows",
+      "source": "docs/workflows.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/help-before-they-ask",
+      "source": "docs/help-before-they-ask.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/plugins",
+      "source": "docs/plugins.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/connected-applications",
+      "source": "docs/connected-applications.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/account-security",
+      "source": "docs/account-security.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/macros-and-teamwork",
+      "source": "docs/macros-and-teamwork.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/notifications",
+      "source": "docs/notifications.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/triage",
+      "source": "docs/triage.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/feedback-and-assurance",
+      "source": "docs/feedback-and-assurance.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/support-channels",
+      "source": "docs/support-channels.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/security",
+      "source": "SECURITY.md",
+      "status": 200
+    },
+    {
+      "path": "/docs/changelog",
+      "source": "CHANGELOG.md",
+      "status": 200
+    }
+  ],
+  "unknownStatus": 404
+}

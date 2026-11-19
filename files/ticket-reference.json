@@ -1,0 +1,14 @@
+{
+  "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+  "reference": "#AA829084",
+  "uuid": "aa829084-0aff-45fb-b097-4166f258a26f",
+  "preview": true,
+  "fullLink": true,
+  "operatorHeader": true,
+  "pageTitle": true,
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ]
+}

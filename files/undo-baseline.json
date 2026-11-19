@@ -1,0 +1,25 @@
+{
+  "product_head": "e943b764e6f51ef33c218361f063250aaf16d223",
+  "fixture": {
+    "tickets": 1,
+    "people": 2,
+    "publicMessages": 2,
+    "privateNotes": 1,
+    "tags": 2,
+    "savedReplies": 1,
+    "publicArticles": 1
+  },
+  "sequence": [
+    "import",
+    "open conversation",
+    "open article",
+    "repeat identical export",
+    "undo",
+    "resume"
+  ],
+  "undoRequestStatus": 202,
+  "resumeRequestStatus": 409,
+  "terminalState": "undone",
+  "removed": 6,
+  "nativeEditConflict": false
+}

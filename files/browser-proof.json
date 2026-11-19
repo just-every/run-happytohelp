@@ -1,0 +1,26 @@
+{
+  "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+  "assertionWidth": 1440,
+  "undo": {
+    "repeat": "original import",
+    "undo": "undone",
+    "removed": 6,
+    "resumeStatus": 409,
+    "proofWidths": [
+      1440,
+      390
+    ]
+  },
+  "packageReview": [
+    {
+      "viewport": 1440,
+      "usageCount": "AI usage history omitted: 1 row. Required context is always included.",
+      "visible": true
+    },
+    {
+      "viewport": 390,
+      "usageCount": "AI usage history omitted: 1 row. Required context is always included.",
+      "visible": true
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+  "exit": 0,
+  "mysqlVersion": "8.4.13",
+  "durationMilliseconds": 990860.578185,
+  "schemaTables": 53,
+  "baselineFields": 580,
+  "usersTimezone": {
+    "table": "users",
+    "field": "timezone",
+    "evidence": "tests/legacy-export/schema.sql:16",
+    "fixtureRows": 3,
+    "fixtureNulls": 1,
+    "fixtureCase": "generated SQL / field counts (including nulls)",
+    "exporter": "carried sanitized source",
+    "exportedRows": 4,
+    "native": "user_settings.timezone",
+    "policy": "normalized",
+    "reason": "Missing user timezone defaults to UTC when settings are imported",
+    "outcomes": [
+      {
+        "table": "users",
+        "field": "timezone",
+        "kind": "normalized",
+        "target": "user_settings.timezone",
+        "reason": "Missing user timezone defaults to UTC when settings are imported",
+        "rows": 1,
+        "nulls": 1
+      },
+      {
+        "table": "users",
+        "field": "timezone",
+        "kind": "archive",
+        "reason": "Missing user timezone defaults to UTC when settings are imported; this row has no eligible native target",
+        "rows": 1,
+        "nulls": 0
+      },
+      {
+        "table": "users",
+        "field": "timezone",
+        "kind": "normalized",
+        "target": "user_settings.timezone",
+        "reason": "Missing user timezone defaults to UTC when settings are imported",
+        "rows": 1,
+        "nulls": 1
+      },
+      {
+        "table": "users",
+        "field": "timezone",
+        "kind": "archive",
+        "reason": "Missing user timezone defaults to UTC when settings are imported; this row has no eligible native target",
+        "rows": 1,
+        "nulls": 0
+      }
+    ],
+    "reader": "native flow oracle / authorized reader journey; see native-readers.json",
+    "command": "node --test --test-concurrency=1 tests/legacy-export.mjs"
+  }
+}

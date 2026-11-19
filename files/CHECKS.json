@@ -1,0 +1,400 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-followups-2",
+  "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+  "parent": "c798ff4f9d60bd4ba7a453349f1b626bd6171139",
+  "state": "READY",
+  "registrations": {
+    "before": 133,
+    "after": 133
+  },
+  "contract": {
+    "done": 4,
+    "partial": 71,
+    "missing": 16
+  },
+  "checks": [
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "pack",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "mailbox",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "typecheck",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "source-check",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "rer-check",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "base-check",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "contract-check",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "contract-alias",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "build",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "docs-routes",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "ticket-browser",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "pack-final",
+      "exit": 0,
+      "command": "tests/move-in/zendesk-offline-fixture.mjs zendeskCorpus"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "mailbox-final",
+      "exit": 0,
+      "command": "node --test --test-name-pattern='read-only mailbox history' tests/journeys/email.mjs"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "typecheck-final",
+      "exit": 0,
+      "command": "pnpm run typecheck"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "source-check-final",
+      "exit": 0,
+      "command": "node scripts/edition-authoring/cli.mjs check"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "rer-check-final",
+      "exit": 0,
+      "command": "pnpm exec rer check --profile first-party"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "base-check-final",
+      "exit": 0,
+      "command": "node scripts/edition-authoring/cli.mjs verify-base --offline"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "contract-check-final",
+      "exit": 0,
+      "command": "node src/site/base/contract-docs.mjs check"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "contract-alias-final",
+      "exit": 0,
+      "command": "node scripts/contract-docs.mjs check"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "docs-build-final",
+      "exit": 0,
+      "command": "tests/helpers/public-docs-journey.mjs verifyDocs"
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "move-in-browser",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "build-final",
+      "exit": 0,
+      "command": "cloud_run npx -y @runeditrun/rer build"
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "legacy",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "feb0e13da0fb2c221cfaf0587ac2604abf4d67f7",
+      "check": "mysql",
+      "exit": 0,
+      "command": null
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "browser-proof-final",
+      "exit": 0,
+      "command": "emitted Worker through headless Chromium, all docs routes, Zendesk undo and legacy package review"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "ticket-browser-final",
+      "exit": 0,
+      "command": "node --test --test-name-pattern='a saved reply previews the short support reference' tests/journeys/inbox-browser.mjs"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "mysql-final",
+      "exit": 0,
+      "command": "node --test tests/legacy-export.mjs"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "customer-link-final",
+      "exit": 247,
+      "command": "customer acknowledgement through the authenticated inbound gateway"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "legacy-final",
+      "exit": 0,
+      "command": "node --test --test-name-pattern='a legacy package is reviewed, imported and replayed' tests/journeys/legacy.mjs"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "move-in-browser-final",
+      "exit": 0,
+      "command": "node --test tests/journeys/move-in-browser.mjs"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "notifications-registered-final",
+      "exit": 0,
+      "command": "node --test running the existing notificationOutcomesJourney helper"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "importers-digest-final",
+      "exit": 0,
+      "command": "SHA-256 and byte-length check against the importers.json record"
+    },
+    {
+      "head": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "check": "email-final",
+      "exit": 0,
+      "command": "node --test tests/journeys/email.mjs"
+    }
+  ],
+  "movingInGuide": {
+    "bytes": 138876,
+    "sha256": "37aad17a7c253b856065c4c0c289ff193186128abfb6565cbfcc05e9d1f19492"
+  },
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973",
+    "status": "completed"
+  },
+  "discovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_branch": "cloud/hh-followups-2",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973",
+      "id": 44501900973,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "jobs": [
+    {
+      "completed_at": "2026-11-19T10:03:06Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135483541415",
+      "id": 135483541415,
+      "name": "contract-docs",
+      "started_at": "2026-11-19T10:02:28Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:02:51Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135483541770",
+      "id": 135483541770,
+      "name": "plan",
+      "started_at": "2026-11-19T10:02:28Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:04:16Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135483763424",
+      "id": 135483763424,
+      "name": "build",
+      "started_at": "2026-11-19T10:02:53Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:02:51Z",
+      "conclusion": "skipped",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135483765783",
+      "id": 135483765783,
+      "name": "slow",
+      "started_at": "2026-11-19T10:02:51Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:07:22Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135484536910",
+      "id": 135484536910,
+      "name": "size-check",
+      "started_at": "2026-11-19T10:04:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:21:56Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135484537068",
+      "id": 135484537068,
+      "name": "Verify / import-and-reports",
+      "started_at": "2026-11-19T10:04:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:23:18Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135484537123",
+      "id": 135484537123,
+      "name": "Verify / support-workflow-browser",
+      "started_at": "2026-11-19T10:04:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:28:27Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135484537128",
+      "id": 135484537128,
+      "name": "Verify / public-and-import-browser",
+      "started_at": "2026-11-19T10:04:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:18:29Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135484537135",
+      "id": 135484537135,
+      "name": "Verify / identity-and-desk",
+      "started_at": "2026-11-19T10:04:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:24:10Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135484537158",
+      "id": 135484537158,
+      "name": "Verify / support-and-recovery",
+      "started_at": "2026-11-19T10:04:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:17:38Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135484537185",
+      "id": 135484537185,
+      "name": "Verify / assistant-and-knowledge",
+      "started_at": "2026-11-19T10:04:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:28:33Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135484537213",
+      "id": 135484537213,
+      "name": "Verify / connections-and-computers",
+      "started_at": "2026-11-19T10:04:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:21:42Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135484537266",
+      "id": 135484537266,
+      "name": "Verify / identity-and-repair-browser",
+      "started_at": "2026-11-19T10:04:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:07:22Z",
+      "conclusion": "skipped",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135486205860",
+      "id": 135486205860,
+      "name": "nightly-proof",
+      "started_at": "2026-11-19T10:07:22Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:28:38Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135497660097",
+      "id": 135497660097,
+      "name": "full-push-proof",
+      "started_at": "2026-11-19T10:28:35Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-19T10:28:48Z",
+      "conclusion": "success",
+      "head_sha": "d0000ff73b7dd4cd5d33161eee0ef042965804bb",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44501900973/job/135497702653",
+      "id": 135497702653,
+      "name": "verify",
+      "started_at": "2026-11-19T10:28:40Z",
+      "status": "completed"
+    }
+  ]
+}

@@ -241,14 +241,15 @@ template bytes can be recorded; unmatched workflow bytes remain seed-owned.
 Plain directory archives cannot prove migration ancestry or older source reads;
 those requests still refuse before writing. For an online GitHub source, use
 `rer refresh-base --ref FULL_40_HEX_COMMIT --from-api` instead. This shares
-`record-base --from-api`'s authenticated `gh api` reader: commit/tree/blob reads
-use immutable IDs, incomplete recursive trees are completed by child tree ID,
-and blobs are checked against their Git object IDs. GitHub compare
-`INTRODUCED...REVISION` proves ancestry only with `ahead` or `identical`;
-`behind` and `diverged` do not prove it. Provider errors, unknown comparisons
-and invalid objects refuse before writes. There are no retries or offline API
-mode; choose one of `--from-api`, `--base` or `--base-archive`. API workflow
-matching remains snapshot-only. Named edition-migration consent is still required
+`record-base --from-api`'s immutable reader, now backed by Git packs over HTTPS:
+at most **0 GitHub REST calls**, measured at the process edge, independent of tree
+size. Git verifies acquisition and the reader checks blob object IDs locally.
+Full ancestry establishes migration applicability; missing commits and provider
+errors refuse before writes and identify the exact failed fetch without echoing
+transport diagnostics. Existing Git authentication configuration is used without
+reading a token. `--base <blobless clone>` also spends no REST allowance. There
+are no automatic retries or offline API mode; choose one of `--from-api`, `--base`
+or `--base-archive`. Workflow matching remains snapshot-only. Named edition-migration consent is still required
 for each owed edit; refresh leaves that edition edit owed. Use
 `verify-base --offline` to check local recorded bytes after an archive refresh,
 or `verify-base --base <checkout>` to also check Git provenance.

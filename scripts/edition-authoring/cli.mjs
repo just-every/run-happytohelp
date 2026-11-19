@@ -10,10 +10,13 @@ import {json, tracked, writeTree, fresh} from './files.mjs';
 
 import {resolveSources} from './lock.mjs';
 import {adoptEdition} from './adopt.mjs';
+import {checkoutProjectHashProblems} from './project-hashes.mjs';
 
 const root = process.cwd();
 const resolve = (retain = false, diagnostics = false) => resolveSources(root, retain, diagnostics);
 function check() {
+  const hashProblems = checkoutProjectHashProblems(root);
+  if (hashProblems.length) throw Error(hashProblems.join('\n'));
   const expected = JSON.parse(fs.readFileSync(path.join(root, 'sources.lock.json'), 'utf8'));
   const actual = resolve();
   if (json(expected) !== json(actual)) throw Error('Stale lock or source/tool integrity mismatch; run changes to inspect intentional edits before lock');

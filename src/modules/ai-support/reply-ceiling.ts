@@ -80,7 +80,7 @@ export async function automaticAiUsage(env: Env, projectId: string) {
   resetsAt: new Date(replies.expiresAt).toISOString(),
   replies: { used: replies.used, limit: limits.repliesPerProject },
   spendUsd: { used: spend.used / 1e6, limit: limits.spendUsdPerProject },
-  installationReplies: { used: installation.used, limit: limits.repliesPerInstallation },
+  installationReplies: { limit: limits.repliesPerInstallation },
   installationCeilingReached: installation.used >= limits.repliesPerInstallation,
   skippedReplies: skipped.used,
   replyCeilingReached,

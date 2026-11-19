@@ -186,11 +186,20 @@ export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput
  const committedIndex=statements.length
  statements.push(
   env.DB.prepare(`SELECT * FROM messages WHERE id=? ${replayPredicate}`).bind(messageId,...replayArgs),
-  env.DB.prepare(`SELECT * FROM messages WHERE conversation_id=? AND project_id=? AND local_id=? ${replayPredicate}`).bind(conversationId,projectId,localId,...replayArgs),
-  // Diagnose a stale frontier only when the write still passes the admission guards.
-  env.DB.prepare(`${knowledge.prefix}SELECT 1 FROM conversations c WHERE NOT EXISTS(SELECT 1 FROM messages WHERE id=?) AND ${predicates.join(' AND ')} AND NOT (${frontier.join(' AND ')})`).bind(...knowledge.params,messageId,...args,...frontierArgs)
+  env.DB.prepare(`SELECT * FROM messages WHERE conversation_id=? AND project_id=? AND local_id=? ${replayPredicate}`).bind(conversationId,projectId,localId,...replayArgs)
  )
  const committed=await env.DB.batch<any>(statements),message=committed[committedIndex].results[0]
- if(!message){const duplicate=committed[committedIndex+1].results[0];if(duplicate&&duplicate.actor_id===writerId&&duplicate.intent_hash===intentHash)return replayAdmitted(duplicate);const visible=await env.DB.prepare(`${knowledge.prefix}SELECT 1 WHERE ${knowledge.sql}`).bind(...knowledge.params).first();if(!visible){const references=await referenceVisibility(env,projectId,content,actor.id,currentTicketReaders(projectId,conversationId,{contacts:email?.cc,localId}));return {accepted:false,reason:'knowledge_access_denied',content,blockedReferences:references.filter(ref=>ref.recipients.some(recipient=>!recipient.visible))}}return {accepted:false,reason:committed[committedIndex+2].results.length?'conversation_changed':'admission_denied'}}
+ if(!message){
+  const duplicate=committed[committedIndex+1].results[0]
+  if(duplicate&&duplicate.actor_id===writerId&&duplicate.intent_hash===intentHash)return replayAdmitted(duplicate)
+  const visible=await env.DB.prepare(`${knowledge.prefix}SELECT 1 WHERE ${knowledge.sql}`).bind(...knowledge.params).first()
+  if(!visible){
+   const references=await referenceVisibility(env,projectId,content,actor.id,currentTicketReaders(projectId,conversationId,{contacts:email?.cc,localId}))
+   return {accepted:false,reason:'knowledge_access_denied',content,blockedReferences:references.filter(ref=>ref.recipients.some(recipient=>!recipient.visible))}
+  }
+  // Only diagnose a refusal. Successful writes stay inside the statement budget for bulk replies.
+  const stale=await env.DB.prepare(`${knowledge.prefix}SELECT 1 FROM conversations c WHERE NOT EXISTS(SELECT 1 FROM messages WHERE id=?) AND ${predicates.join(' AND ')} AND NOT (${frontier.join(' AND ')})`).bind(...knowledge.params,messageId,...args,...frontierArgs).first()
+  return {accepted:false,reason:stale?'conversation_changed':'admission_denied'}
+ }
  return {accepted:true,duplicate:false,message,...(followup?{followupConversationId:targetId}:{})}
 }

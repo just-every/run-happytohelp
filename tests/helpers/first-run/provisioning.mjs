@@ -104,6 +104,12 @@ export async function provisioningJourney(){
   assert.match((await app.first("SELECT error FROM ai_generations WHERE conversation_id=? AND state='failed'",chat.id)).error,/AI_REPLY_CEILING/)
   const spend=(await app.call(`/api/dashboard/projects/${p}/ai-spend`,{token,status:200})).data.data
   assert.equal(spend.automatic.replyCeilingReached,true);assert.equal(spend.spend.knownUsd,null,'unpriced provider usage is unknown')
+  const limit=(await setup()).facts.ceilings.repliesPerInstallation
+  const usage=(await app.call(`/api/dashboard/projects/${p}/ai-usage`,{token,status:200})).data.data
+  for(const row of [spend.automatic,usage]){
+   assert.equal(row.replies.used,1,'workspace usage remains visible')
+   assert.deepEqual(row.installationReplies,{limit},'the shared limit is visible without exposing usage outside this workspace')
+  }
   assert.equal((await app.call(`/api/dashboard/projects/${p}/ai-spend`,{token:next.token})).status,403)
 
   state.uncertain=true;await app.configure({EMAIL_API_KEY:'synthetic-happytohelp-7'})

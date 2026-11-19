@@ -193,6 +193,7 @@ For a new installation with outbound email, also supply real `EMAIL_PROVIDER`,
 the owner email must receive sign-in mail. Existing installations retain held
 secrets. The seven optional mailbox settings can stay unset. Remote provisioning
 remains separately unqualified.
+In rer’s deploy summary, `MAIL_PROVIDER` and `MAIL_FROM` correspond to HappyToHelp’s `EMAIL_PROVIDER` and `EMAIL_FROM` ([deployment configuration](OPERATIONS.md)).
 
 ```sh
 rer deploy --environment production --env-file ~/happytohelp-production.env

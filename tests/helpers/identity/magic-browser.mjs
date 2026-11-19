@@ -113,6 +113,32 @@ export async function invitationJoinBrowser(browser){
   const reused=await context.request.post(origin+'/api/identity/accept-token',{data:{token:new URL(link).searchParams.get('token'),name:'Your teammate',password:'synthetic-d20-teammate-password'}})
   assert.equal(reused.status(),400);assert.equal(reused.headers()['set-cookie'],undefined)
   assert.equal((await context.request.get(origin+'/api/identity/session')).status(),401)
+  const fallbackEmail='synthetic-d20-fallback@example.test',fallbackPassword='synthetic-d20-fallback-password'
+  const fallbackInvite=await fetch(origin+`/api/management/projects/${owner.projectId}/agents`,{method:'POST',headers:{Authorization:'Bearer '+owner.token,'Content-Type':'application/json'},body:JSON.stringify({email:fallbackEmail,role:'operator'})})
+  assert.equal(fallbackInvite.status,201)
+  const fallbackLink=(await fallbackInvite.json()).data.invitationUrl
+  await runtime.execute("CREATE TRIGGER test_invite_session_refusal BEFORE INSERT ON sessions WHEN (SELECT name FROM users WHERE id=NEW.actor_id)='Fallback teammate' BEGIN SELECT RAISE(ABORT,'synthetic session write refusal'); END")
+  await page.goto(fallbackLink)
+  await page.getByLabel('Your name',{exact:true}).fill('Fallback teammate')
+  await page.getByLabel('Password',{exact:true}).fill(fallbackPassword)
+  const fallbackResponse=page.waitForResponse(response=>response.url()===origin+'/api/identity/accept-token'&&response.request().method()==='POST')
+  await page.getByRole('button',{name:'Create account and join',exact:true}).click()
+  const accepted=await fallbackResponse
+  assert.equal(accepted.status(),200)
+  assert.equal(accepted.headers()['set-cookie'],undefined)
+  const result=await accepted.json()
+  assert.equal(result.accepted,true)
+  assert.equal(result.loginRequired,true)
+  assert.equal((await context.request.get(origin+'/api/identity/session')).status(),401)
+  await runtime.execute('DROP TRIGGER test_invite_session_refusal')
+  await page.getByRole('link',{name:'Sign in',exact:true}).click()
+  await page.waitForURL(url=>url.pathname==='/login')
+  assert.equal(await page.getByLabel('Email',{exact:true}).inputValue(),fallbackEmail)
+  assert.equal(new URL(page.url()).searchParams.get('returnTo'),`/projects/${owner.projectId}/conversations`)
+  await page.getByLabel('Password',{exact:true}).fill(fallbackPassword)
+  await page.getByRole('button',{name:'Login',exact:true}).click()
+  await page.waitForURL(url=>url.pathname===`/projects/${owner.projectId}/conversations`)
+  assert.equal((await context.request.get(origin+'/api/conversations')).status(),200)
   assert.deepEqual(errors,[]);passed=true
  }finally{await context.close();await runtime.close(passed)}
 }

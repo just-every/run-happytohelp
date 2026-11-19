@@ -1,3 +1,4 @@
+import {ticketReference} from '../tickets/reference'
 import type {Env} from '../../platform/env'
 import {cronRoom} from '../../platform/cron-budget'
 import {notificationTicket,notificationTicketSql} from './triggers/eligibility'
@@ -30,7 +31,7 @@ export async function deliverTeammateNotice(env:Env,row:Notice){
  try{
   const url=typeof env.APP_ORIGIN==='string'?new URL(`/projects/${encodeURIComponent(row.project_id)}/conversations/${encodeURIComponent(row.conversation_id)}`,env.APP_ORIGIN).href:''
   const replyTo=user.inbound_address?await recipientReplyAddress(env,user.inbound_address,row.project_id,row.conversation_id,row.email_address):undefined
-  const outcome=await deliverNotification(env,{projectId:row.project_id,to:row.email_address,subject:`Support ticket #${row.conversation_id}`,text:`${notificationLabels[row.kind]}${url?'\n\nOpen ticket: '+url:''}`,replyTo,headers:loopSuppressionHeaders({}),idempotencyKey:row.id})
+  const outcome=await deliverNotification(env,{projectId:row.project_id,to:row.email_address,subject:`Support ticket ${ticketReference(row.conversation_id)}`,text:`${notificationLabels[row.kind]}${url?'\n\nOpen ticket: '+url:''}`,replyTo,headers:loopSuppressionHeaders({}),idempotencyKey:row.id})
   state=outcome.state==='sending'?'uncertain':outcome.state
  }catch{}
  await env.DB.prepare('UPDATE notification_inbox SET state=? WHERE id=?').bind(state,row.id).run()

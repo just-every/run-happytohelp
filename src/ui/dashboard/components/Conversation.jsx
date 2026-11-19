@@ -204,7 +204,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 setFiles([]);
             }
         } catch (error) {
-            if (error.data?.reason === 'conversation_changed_or_admission_denied') {
+            if (error.data?.reason === 'conversation_changed') {
                 setDraftError('');
                 refreshConversation();
             } else setDraftError(error.message);

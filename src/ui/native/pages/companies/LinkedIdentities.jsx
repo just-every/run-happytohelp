@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
+import { label } from '../../../dashboard/components/tickets/ticket-model';
 import { dateTime } from './company-api';
 import { identityName, proofLabel, recentConversations } from './identity-link-api';
 
@@ -9,7 +10,7 @@ function LinkedHistory({ projectId, contactId }) {
     useEffect(() => { let active = true; recentConversations(projectId, contactId).then(result => { if (active) setRows(result); }).catch(failure => { if (active) setError(failure.message); }); return () => { active = false; }; }, [projectId, contactId]);
     if (error) return <p className="settings-note" role="alert">{error}</p>;
     if (!rows) return <p className="settings-note" role="status">Loading conversations…</p>;
-    return rows.length ? <ul className="identity-links__history">{rows.map(row => <li key={row.id}><Link to={`/projects/${projectId}/conversations/${row.id}`}>{row.preview || 'Open conversation'}</Link><span className="settings-note">{row.resolved_at ? 'Closed' : 'Open'} · {dateTime(row.updated_at)}</span></li>)}</ul> : <p className="settings-note">No conversations yet.</p>;
+    return rows.length ? <ul className="identity-links__history">{rows.map(row => <li key={row.id}><Link to={`/projects/${projectId}/conversations/${row.id}`}>{row.preview || 'Open conversation'}</Link><span className="settings-note">{label(row.status_category)} · {dateTime(row.updated_at)}</span></li>)}</ul> : <p className="settings-note">No conversations yet.</p>;
 }
 
 export default function LinkedIdentities({ projectId, links, onUnlink }) {

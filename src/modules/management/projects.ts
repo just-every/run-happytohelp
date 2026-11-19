@@ -21,6 +21,7 @@ import {appearanceSettings} from './appearance-settings'
 import {workspaceDefaults} from './provisioning/index'
 import {notificationPreference} from './member-updates'
 import {websiteAddress} from './website-address'
+import {primaryWidgetAddressChange} from './widget-address-changes'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement,requestSource} from '../audit/record'
 import {accountAudit} from '../identity/two-factor/factors'
@@ -98,7 +99,7 @@ projects.put('/projects/:projectId/settings',async c=>{
  const name=b.name?requiredString(b.name,'name',200):undefined,origin=b.allowed_origin?websiteAddress(b.allowed_origin,'Widget website origin',true):undefined
  const value=await saveSettings(c.env,a.projectId,settings,(_old,_value,guard)=>[
   ...(name?[c.env.DB.prepare(`UPDATE projects SET name=? WHERE id=? AND ${guard.sql}`).bind(name,a.projectId,...guard.params)]:[]),
-  ...(origin?[c.env.DB.prepare(`UPDATE projects SET allowed_origin=? WHERE id=? AND ${guard.sql}`).bind(origin,a.projectId,...guard.params)]:[]),
+  ...(origin?primaryWidgetAddressChange(c,a,origin,guard):[]),
  ])
  return c.json({data:value})
 })

@@ -13,6 +13,7 @@ import {websiteAddress} from './website-address'
 import {person} from './dashboard-data'
 import {publicAppearance} from '../widget/appearance.js'
 import {saveSettings} from './settings-save'
+import {primaryWidgetAddressChange,widgetAddressAudit} from './widget-address-changes'
 import {proactiveHelpOn} from '../customer-context/widget-policy'
 export const widgetSettings=new Hono<AppEnv>()
 widgetSettings.route('/',campaignRoutes)
@@ -30,7 +31,7 @@ widgetSettings.put('/projects/:projectId/widget-settings',async c=>{
  if(!input||Array.isArray(input)||typeof input!=='object'||JSON.stringify(input).length>30000)throw new HTTPException(400)
  const {allowed_origin,...settings}=input
  const origin=allowed_origin===undefined?undefined:websiteAddress(allowed_origin,'Your website address',true)
- await saveSettings(c.env,a.projectId,{widget_settings:settings},(_old,_value,guard)=>origin?[c.env.DB.prepare(`UPDATE projects SET allowed_origin=? WHERE id=? AND ${guard.sql}`).bind(origin,a.projectId,...guard.params)]:[])
+ await saveSettings(c.env,a.projectId,{widget_settings:settings},(_old,_value,guard)=>origin?primaryWidgetAddressChange(c,a,origin,guard):[])
  return c.json({settings,...(origin?{allowedOrigin:origin}:{})})
 })
 widgetSettings.get('/projects/:projectId/widget-owner-name',async c=>{
@@ -54,12 +55,14 @@ widgetSettings.post('/projects/:projectId/widget-addresses',async c=>{
   const addresses=Array.isArray(old.widget_allowed_addresses)?old.widget_allowed_addresses:[]
   if(addresses.length>=20&&!addresses.includes(address))throw new HTTPException(400,{message:'Your allowed list is full. Ask your developer to review it.'})
   return {widget_allowed_addresses:[...new Set([...addresses,address])]}
- })
+ },(old,_value,guard)=>Array.isArray(old.widget_allowed_addresses)&&old.widget_allowed_addresses.includes(address)?[]:[widgetAddressAudit(c,a,'widget.address_allowed',address,guard)])
  return c.json({address})
 })
 widgetSettings.delete('/projects/:projectId/widget-addresses',async c=>{
- const a=await scope(c,true),body=await c.req.json(),address=websiteAddress(body.address,'Your website address',true)
- await saveSettings(c.env,a.projectId,old=>({widget_allowed_addresses:(Array.isArray(old.widget_allowed_addresses)?old.widget_allowed_addresses:[]).filter((value:string)=>value!==address)}))
+ // An old inert wildcard entry can still be removed.
+ const a=await scope(c,true),body=await c.req.json(),address=websiteAddress(body.address,'Your website address',true,{allowStoredWildcard:true})
+ await saveSettings(c.env,a.projectId,old=>({widget_allowed_addresses:(Array.isArray(old.widget_allowed_addresses)?old.widget_allowed_addresses:[]).filter((value:string)=>value!==address)}),
+  (old,_value,guard)=>Array.isArray(old.widget_allowed_addresses)&&old.widget_allowed_addresses.includes(address)?[widgetAddressAudit(c,a,'widget.address_removed',address,guard)]:[])
  return c.json({removed:true})
 })
 // This response is deliberately public and contains only a configured customer contact link.

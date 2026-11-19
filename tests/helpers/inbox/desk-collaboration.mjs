@@ -61,8 +61,11 @@ export async function deskCollaboration(f){
   const competing=await Promise.all(commands.map(command=>app.call(`/api/conversations/${id}/messages`,command)))
   assert.equal(competing.filter(result=>result.data.accepted).length,1)
   const refused=competing.find(result=>!result.data.accepted)
-  assert.ok(refused);assert.equal(refused.data.reason,'conversation_changed_or_admission_denied')
+  assert.ok(refused);assert.equal(refused.data.reason,'conversation_changed')
   assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',id)).n,beforeMessages+1)
+  const refusedAttachment=await app.call(`/api/conversations/${id}/messages`,{token:w.tokens.owner,body:{localId:'missing-attachment',content:'This attachment cannot be sent',mediaIds:[crypto.randomUUID()],expectedRevision:frontier.revision}})
+  assert.equal(refusedAttachment.status,409)
+  assert.equal(refusedAttachment.data.reason,'admission_denied','failed admission remains a refusal even with a stale frontier')
   const transcript=await publicMessages(),winner=competing.find(result=>result.data.accepted).data.message
   assert.equal(transcript.messages.length,beforeMessages+1)
   assert.equal(transcript.messages.filter(message=>message.local_id?.startsWith('collision-')).length,1)

@@ -1,5 +1,6 @@
 import {createServer} from 'node:net'
 import assert from 'node:assert/strict'
+import {writeFile} from 'node:fs/promises'
 import {createSites} from '../site-read-sites.mjs'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {createRuntime} from '../emitted-runtime.mjs'
@@ -11,6 +12,7 @@ const sites=createSites()
 export default async function networkEdge(request){
  const url=new URL(request.url)
  if(url.hostname==='api.resend.com')return Response.json(request.method==='POST'?{id:crypto.randomUUID()}:{data:[],has_more:false})
+ if(url.hostname==='cloudflare-dns.com'&&url.searchParams.get('type')==='MX'&&url.searchParams.get('name')?.endsWith('.acme.example.com'))return Response.json({Status:0,Answer:[{type:15,data:'10 mx.acme.example.com.'}]})
  if(['cloudflare-dns.com','acme.example.com'].includes(url.hostname))return sites.handler(request)
  throw Error('Unexpected first-run network edge: '+url.hostname)
 }
@@ -79,6 +81,19 @@ export async function builtOutcomes(){
   const snippet=await page.locator('[data-need="widget_seen"] [data-field="snippet"]').innerText()
   assert.ok(snippet.includes(runtime.origin+'/widget.js'),'the supplied snippet points at this installation');assert.match(snippet,/<script src=/);assert.doesNotMatch(snippet,/verificationSecret|serverSecret/)
   await proof('first-owner-setup')
+  await api(P+'/email-settings',{from_name:'Acme Care',from_address:'support@installation.test',inbound_address:'support@in.acme.example.com',is_enabled:true},'PUT')
+  await page.goto(`${runtime.origin}/projects/${first.projectId}/email-settings`)
+  await page.locator('[data-sending="ready"]').waitFor()
+  await page.locator('[data-receiving="ready"]').waitFor()
+  assert.equal(await page.locator('.developer-handoff').count(),0,'an installation with working sending and a receiving route needs no hand-off')
+  const mailProof=[]
+  for(const viewport of Object.values(viewports)){
+   await page.setViewportSize(viewport)
+   mailProof.push(await page.evaluate(()=>({width:innerWidth,sending:document.querySelector('[data-sending]')?.dataset.sending,receiving:document.querySelector('[data-receiving]')?.dataset.receiving,technicalHandoffs:document.querySelectorAll('.developer-handoff').length})))
+  }
+  await page.setViewportSize(viewports.desktop)
+  await writeFile(shot('followup-email-dom.json'),JSON.stringify(mailProof,null,2)+'\n')
+  await page.goto(`${runtime.origin}/projects/${first.projectId}/activation`)
   await page.locator('[data-need="widget_seen"] [data-skip]').click()
   await page.locator('[data-skipped="widget_seen"] [data-undo]').waitFor()
   await page.goto(`${runtime.origin}/projects/${first.projectId}/edit`)
@@ -104,7 +119,7 @@ export async function builtOutcomes(){
   assert.match(await page.getByTestId('ai-key-status').innerText(),/new conversations stay with your team/)
   await page.goto(runtime.origin+'/projects/create')
   await page.getByLabel('Name',{exact:true}).fill('Wholesale support');await page.getByLabel('Website',{exact:true}).fill('https://wholesale.example.test');await page.getByLabel('Widget website origin',{exact:true}).fill('https://wholesale.example.test')
-  await page.getByRole('button',{name:'Create project',exact:true}).click()
+  await page.getByRole('button',{name:'Create workspace',exact:true}).click()
   await page.waitForURL(url=>/^\/projects\/[^/]+\/activation$/.test(url.pathname))
   const second={id:new URL(page.url()).pathname.split('/')[2]};await setup(second.id);await proof('signed-in-setup')
   const secondSettings=(await api(`/api/management/projects/${second.id}/settings`)).data

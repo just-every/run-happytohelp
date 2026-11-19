@@ -1,4 +1,11 @@
 // Adapted from the selected 12UI Code-tab layout to the existing workspace shell.
+body.workspace-page h2.widget-code__step-heading {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
 body.workspace-page .widget-code {
     display: grid;
     gap: 24px;
@@ -49,7 +56,8 @@ body.workspace-page .widget-code {
     &__snippet-buttons { display: flex; align-items: center; gap: 6px; }
     &__snippet .widget-code__copy,
     &__secret-frame .widget-code__secret-action { min-height: 36px; padding: 0 14px; border: 1px solid #f6f2ea; border-radius: 999px; background: transparent; color: #f6f2ea; }
-    &__snippet .widget-code__copy:hover,
+    &__snippet .widget-code__copy:disabled { border-color: #8f8b83; color: #beb8ac; opacity: 1; }
+    &__snippet .widget-code__copy:enabled:hover,
     &__secret-frame .widget-code__secret-action:hover { background: #f6f2ea; color: #141414; }
     &__snippet .widget-code__copy:focus-visible,
     &__secret-frame .widget-code__secret-action:focus-visible { outline-color: #5ad8ec; }

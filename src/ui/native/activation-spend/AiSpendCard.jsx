@@ -28,7 +28,7 @@ export default function AiSpendCard({ projectId }) {
    <button type="button" className="btn btn-sm btn-white" disabled={!projectId || (!data && !failure)} onClick={() => setRevision(value => value + 1)}>Refresh spend</button>
   </div>
   {!projectId ? <p>Select a workspace to view AI spend.</p> : failure ? <p role="alert">Could not load AI spend: {failure}</p> : !data ? <p role="status">Loading AI spend…</p> : <>
-   <h3>Daily safety limit</h3><p>{dailySafetyLimit(data.automatic.replies.limit, data.automatic.spendUsd.limit)}</p>
+   <h3>Daily safety limit</h3><p>{dailySafetyLimit(data.automatic.replies.limit, data.automatic.spendUsd.limit, data.automatic.installationReplies.limit, data.resetsAt.slice(11, 16))}</p>
    {data.automatic.replyCeilingReached && <p role="status">Automatic replies are paused: a daily ceiling has been reached.</p>}
    {data.automatic.installationCeilingReached && <p>The installation reply ceiling has been reached across workspaces.</p>}
    {data.contextRuns.ceilingReached && <p>Visitor context runs are paused at their daily ceiling.</p>}

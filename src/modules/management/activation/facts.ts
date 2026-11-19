@@ -46,6 +46,6 @@ export async function activationFacts(env:Env,config:Configuration,receipts:Rece
   inbound:{enabled:Boolean(config.email?.is_enabled),gateway:typeof env.INBOUND_EMAIL_TOKEN==='string'&&Boolean(env.INBOUND_EMAIL_TOKEN),customDomainRequired:inboundNeedsCustomDomain(config.email?.inbound_address),receiving:(await receivingState(env,config.email?.inbound_address)).reason},
   ceilings:ceilings(env),
   senderRecords:senderRecords(config,receipts),
-  widget:{requireEmail:config.settings.widget_settings?.settings?.collect?.require_email===true,key:String(config.project?.widget_key||''),scriptUrl:new URL('/widget.js',origin).href,apiOrigin:origin},
+  widget:{hasAdditionalAddresses:Array.isArray(settings.widget_allowed_addresses)&&settings.widget_allowed_addresses.some((address:unknown)=>typeof address==='string'&&!address.includes('*')&&address!==config.project?.allowed_origin),requireEmail:config.settings.widget_settings?.settings?.collect?.require_email===true,key:String(config.project?.widget_key||''),scriptUrl:new URL('/widget.js',origin).href,apiOrigin:origin},
  }
 }

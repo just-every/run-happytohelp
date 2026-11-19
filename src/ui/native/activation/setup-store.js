@@ -78,6 +78,16 @@ function createStore(projectId) {
   path,
   // The footer's explicit "Check again": a check that is not marked automatic, so the server runs it now.
   checkAgain: async () => { await inflight; await observe(false); polls = 0; schedule(); },
+  async refreshWebsiteAddresses() {
+   await inflight;
+   if (stopped) return;
+   try {
+    const {data} = await nativeRequest(path, {cache: 'no-store'});
+    if (!stopped && state.data) set({data: {...state.data, facts: {...state.data.facts, widget: {...state.data.facts.widget, hasAdditionalAddresses: data.facts.widget.hasAdditionalAddresses}}}});
+   } catch {
+    // The next setup observation will read the addresses again.
+   }
+  },
   skip: (step, skipped) => write('skip', {step, skipped}),
   // Try locally without a website or AI key: both local-trial steps left for now in one request.
   tryLocally: () => write('local-trial', {}),

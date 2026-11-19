@@ -38,7 +38,7 @@ defects; each is fixed and covered by `tests/journeys/inbox-browser.mjs`.
 | Surface | Behaviour now |
 | --- | --- |
 | Opening a project (deep link, Projects list, switcher) | The URL's project becomes the session's active project before its pages load, so Help Center, Categories, AI Training, Training runs, Insights and conversation attachments no longer show "Project access denied" or broken images under a switcher that names that project. |
-| Unknown or non-member project URL | An in-shell "Project not found" state with a link to Projects. It never offers "Sign in" to a signed-in user; the route error boundary offers "Sign in" only for an expired session. |
+| Unknown or non-member project URL | An in-shell "Workspace not found" state with a link to workspaces. It never offers "Sign in" to a signed-in user; the route error boundary offers "Sign in" only for an expired session. |
 | Global Inbox Settings | Lists "Settings for <project>" for each of the account's projects instead of unlabelled links that acted on the session's project. |
 | `/local-agent/authorize` | Scoped to the session's active project: the project's Settings menu with Local computers current, and the form names the project it acts on. |
 | Admin | The account menu offers Admin only to platform administrators; `/admin` pages show an access-limited state with no tables, forms or admin API calls for everyone else. |

@@ -24,8 +24,15 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
     const [lastHeight, setLastHeight] = useState(0);
 
     const lastReply = [...(messages || [])].reverse().find(message => message.agent && message.agent_id && message.actor_role !== 'system' && !message.sending && !message.failed_send);
-    const brandName = conversationSettings?.workspace_brand?.name || context.brand?.name || 'Customer';
-    const currentAgent = lastReply?.agent || {id:null,name:`${brandName} support`,initials:brandName.slice(0,2)};
+    const brand = conversationSettings?.workspace_brand || context.brand;
+    const brandName = brand?.name?.trim() || 'Customer';
+    const supportAgent = {
+        id: null,
+        name: `${brandName} support`,
+        initials: brandName.split(/\s+/).slice(0, 2).map(word => Array.from(word)[0]).join('').toUpperCase(),
+        avatar_url: brand?.avatar_url || brand?.logo_url,
+    };
+    const currentAgent = lastReply?.agent || supportAgent;
     // An away team keeps its configured reply estimate when no reopening time is known.
     const availability = conversationSettings?.availability;
     const humanResponse = availability?.available === false ? (availability.opensAt ? context.text.away.header_back.replace('{when}', backAt(availability.opensAt)) : `${context.text.away.header} · ${humanResponseTime(context.text)}`) : humanResponseTime(context.text);
@@ -78,7 +85,7 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
             agents.push(agent);
         });
         if(conversationSettings.is_human_response_enabled) {
-            agents.push(lastReply?.agent && !lastReply.agent.is_ai ? lastReply.agent : {id:null,name:`${brandName} support`,initials:brandName.slice(0,2)});
+            agents.push(lastReply?.agent && !lastReply.agent.is_ai ? lastReply.agent : supportAgent);
         }
 
         let agentRows = [];
@@ -132,7 +139,7 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
                         {canExpand && <span className="happytohelp-chat-header-edit-inline">
                             <FontAwesomeIcon icon={faAngleDown}/>
                         </span>}
-                        {!currentAgent.is_ai && <div className="happytohelp-insight-agent-info"><span className="happytohelp-insight-agent-seperator-tiny">•</span>{humanResponse}
+                        {!currentAgent.is_ai && <div className="happytohelp-insight-agent-info">{humanResponse}
                         </div>}
                     </span>
                 </div>

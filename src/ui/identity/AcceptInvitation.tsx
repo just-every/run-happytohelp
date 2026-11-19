@@ -12,19 +12,28 @@ export default function AcceptInvitation() {
     const [revision, setRevision] = useState(0);
     const { token, info, failure } = useLinkStatus('invitation', revision);
     const [error, setError] = useState(''), [busy, setBusy] = useState(false), [joined, setJoined] = useState<'member' | null>(null);
+    const [newPasswordSignIn, setNewPasswordSignIn] = useState('');
     const signIn = `/login?returnTo=${encodeURIComponent('/accept-invitation?token=' + (token ?? ''))}`;
 
     // A new person chooses a name and password. Someone who registered in the meantime is sent to sign in instead.
     const createAccount = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        if (busy || !info?.email) return;
         setBusy(true); setError('');
         const form = new FormData(event.currentTarget);
         try {
             const result = await postJson('/api/identity/accept-token', { token, name: form.get('name'), password: form.get('password') });
+            if (result.loginRequired) {
+                setNewPasswordSignIn('/login?' + new URLSearchParams({login_hint: info.email, returnTo: result.destination}));
+                return;
+            }
             location.assign(result.twoFactor ? '/two-factor?returnTo=' + encodeURIComponent(result.destination) : result.destination);
         }
-        catch (problem: any) { if (problem.status === 409) setRevision(value => value + 1); else setError(problem.message); }
-        finally { setBusy(false); }
+        catch (problem: any) {
+            if (problem.status === 409) setRevision(value => value + 1);
+            else setError(problem.message);
+            setBusy(false);
+        }
     };
     // A signed-in invitee accepts as that account, then moves into the workspace.
     const acceptAsMember = async () => {
@@ -35,6 +44,12 @@ export default function AcceptInvitation() {
         setBusy(true); setError('');
         try { await postJson('/api/identity/switch-project', { projectId: info?.projectId }); location.assign(`/projects/${encodeURIComponent(info?.projectId ?? '')}/conversations`); } catch (problem: any) { setError(problem.message); setBusy(false); }
     };
+
+    if (newPasswordSignIn) return <IdentityFrame>
+        <h1>Sign in with your new password</h1>
+        <p className="id-lede">You’ve joined {info?.workspace}. Sign in to open your inbox.</p>
+        <div className="id-actions"><a className="pill pill--ink" href={newPasswordSignIn}>Sign in</a></div>
+    </IdentityFrame>;
 
     if (joined === 'member') return <IdentityFrame>
         <h1>You have joined {info?.workspace}</h1>

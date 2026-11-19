@@ -31,7 +31,7 @@ function AvailabilityNow({ data, saved }) {
     const away = state.opensAt ? `Away. Back ${backAt(state.opensAt, { timeZone: state.timezone, now, withZone: true })}.` : state.live ? 'Away. No teammate who can reply is online.' : state.scheduled ? 'Away. Choose days and an opening time before the closing time.' : 'Away until you turn “Accept new conversations” back on.';
     const presence = !presenceSettings(data).enabled ? '' : online.error ? `Who is online is unavailable: ${online.error}` : !online.data ? '' : online.data.assistant ? state.available ? `${online.data.assistant.name} answers visitors, so the widget stays available when nobody is online.` : `${online.data.assistant.name} keeps answering visitors while your team is away.` : people.length ? `Online now: ${people.map(person => person.name || 'Teammate').join(', ')}.` : 'Nobody who can reply is online.';
     return <p className={`availability-now${state.available ? ' availability-now--open' : ' availability-now--away'}`} role="status">
-        <strong>Right now:</strong> {state.available ? 'Available.' : away}{state.calendar ? <> SLA calendar “{state.calendar.name}” governs hours, holidays and closed dates in {zone}; manage it in Settings → Workflows.</> : state.scheduled && <> Hours are in {zone}; change the timezone in <Link to={`/projects/${data.id}/edit`}>Workspace</Link>.</>}{presence && <> {presence}</>}
+        <strong>Right now:</strong> {state.available ? 'Available.' : away}{state.calendar ? <> SLA calendar “{state.calendar.name}” governs hours, holidays and closed dates in {zone}; manage it in Settings → Advanced → Workflows.</> : state.scheduled && <> Hours are in {zone}; change the timezone in <Link to={`/projects/${data.id}/edit`}>Workspace</Link>.</>}{presence && <> {presence}</>}
     </p>;
 }
 
@@ -42,7 +42,7 @@ export default function AvailabilitySettings({ data, change, field, saved }) {
         <Section title="When your team is away" description="Outside your hours, with “Accept new conversations” off, or when no teammate who can reply is online, the chat widget says your team is away, shows the reopening time or your Human response time, and asks for the visitor’s email so your reply reaches them. Their conversation still reaches your inbox, and the away message is posted once in it. An AI assistant that answers visitors keeps answering.">
             <AvailabilityNow data={data} saved={saved} />
         </Section>
-        <Section title="Schedule" description="A matching SLA calendar overrides these opening hours, including its holidays and closed dates. Manage calendars and policy order in Settings → Workflows. These hours apply when no SLA calendar matches.">
+        <Section title="Schedule" description="A matching SLA calendar overrides these opening hours, including its holidays and closed dates. Manage calendars and policy order in Settings → Advanced → Workflows. These hours apply when no SLA calendar matches.">
             {field('is_availability_schedule_enabled', 'Use opening hours', 'checkbox')}
             <label className="form-label">Days</label>
             <div className="project-days">{DAYS.map((day, i) => <label key={day}><input type="checkbox" checked={(schedule.days || []).includes(i + 1)} onChange={e => scheduleChange('days', e.target.checked ? [...(schedule.days || []), i + 1] : (schedule.days || []).filter(v => v !== i + 1))} />{day}</label>)}</div>

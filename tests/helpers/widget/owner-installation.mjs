@@ -17,7 +17,7 @@ export async function ownerInstallationBrowser() {
  try {
   site=createServer((_request,response)=>{response.setHeader('Content-Type','text/html');response.end(`<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChargeDesk</title></head><body><h1>ChargeDesk</h1><p>Questions about your workspace? Chat with our support team.</p>${snippet}</body></html>`);});await new Promise(resolve=>site.listen(0,'127.0.0.1',resolve));const website=`http://127.0.0.1:${site.address().port}`;
   const owner={email:'synthetic-hh-widget@example.test',password:'synthetic-hh-widget-password',name:'ChargeDesk',ownerName:'Owner'};
-  const {projectId}=await api('/api/identity/bootstrap',{...owner,allowedOrigin:website}),{token}=await api('/api/identity/login',owner),manage=`/api/management/projects/${projectId}`;
+  const {projectId,userId}=await api('/api/identity/bootstrap',{...owner,allowedOrigin:website}),{token}=await api('/api/identity/login',owner),manage=`/api/management/projects/${projectId}`;
   const initialWidget=await api(manage+'/widget-settings',undefined,token);
   assert.equal(initialWidget.previewAgent.name,owner.name+' support','a placeholder account is presented to customers as business support');
   assert.equal((await api(manage+'/widget-owner-name',undefined,token)).name,'Owner','the public fallback leaves the actual account name for onboarding');
@@ -25,6 +25,38 @@ export async function ownerInstallationBrowser() {
   await page.goto(origin+`/projects/${projectId}/activation`);await page.getByLabel('Your name',{exact:true}).waitFor();assert.equal(await page.getByLabel('Your name',{exact:true}).inputValue(),'');await proof('setup-name');
   await page.getByLabel('Your name',{exact:true}).fill('Sam Ortiz');await page.getByRole('button',{name:'Save and continue',exact:true}).click();await page.getByTestId('setup-list').waitFor();
   assert.equal((await api(manage+'/widget-owner-name',undefined,token)).name,'Sam Ortiz');assert.equal((await api(manage+'/widget-settings',undefined,token)).previewAgent.name,'Sam Ortiz','the actual reply name is retained after onboarding');
+  await page.locator('.navbar-profile-name').filter({hasText:'Sam Ortiz'}).waitFor();
+  await page.locator('[data-local-trial]').click();
+  const trialLink=page.getByRole('link',{name:'Open test chat',exact:true});
+  await trialLink.waitFor();
+  assert.equal(await page.locator('[data-skipped="widget_seen"]').count(),1);
+  assert.equal(await page.locator('[data-skipped="model_key"]').count(),1);
+  const trialOpened=context.waitForEvent('page');
+  await trialLink.click();
+  const trial=await trialOpened;
+  const trialEmail=trial.getByLabel('Your email, so we can reply',{exact:true});
+  await trialEmail.waitFor();
+  const trialHeader=trial.locator('.happytohelp-chat-header');
+  assert.equal(await trialHeader.locator('.happytohelp-agent-avatar').innerText(),'C');
+  assert.doesNotMatch(await trialHeader.innerText(),/^\s*•|\n\s*•/);
+  const followupProof=[];
+  for(const viewport of Object.values(viewports)){
+   await page.setViewportSize(viewport);await trial.setViewportSize(viewport);
+   followupProof.push({width:viewport.width,trialLinkVisible:await trialLink.isVisible(),liveComposerVisible:await trial.locator('textarea[name="content"]').isVisible(),supportAvatar:await trialHeader.locator('.happytohelp-agent-avatar').innerText(),responseLine:await trialHeader.locator('.happytohelp-insight-agent-info').innerText()});
+  }
+  await page.setViewportSize(viewports.desktop);await trial.setViewportSize(viewports.desktop);
+  await trialEmail.fill('synthetic-trial-visitor@example.test');
+  const trialMessage='My local test message';
+  await trial.locator('textarea[name="content"]').fill(trialMessage);
+  const trialDelivery=trial.waitForResponse(response=>/\/api\/conversations\/[^/]+\/messages$/.test(new URL(response.url()).pathname)&&response.request().method()==='POST');
+  await trial.getByRole('button',{name:'Send message',exact:true}).click();
+  const delivered=await trialDelivery;
+  assert.equal(delivered.status(),200);
+  const trialTicket=new URL(delivered.url()).pathname.split('/')[3];
+  const inboxTicket=await api(`/api/dashboard/projects/${projectId}/conversations/${trialTicket}`,undefined,token);
+  assert.equal(inboxTicket.data.project_id,projectId,'the trial creates an Inbox ticket for this workspace');
+  await trial.close();
+  await writeFile(shot('followup-dom.json'),JSON.stringify({observations:followupProof,testMessageAdmitted:true,workspaceInboxConfirmed:true},null,2)+'\n');
   await page.goto(origin+`/projects/${projectId}/widget-settings`);await page.locator('.widget-code').waitFor();
   const address=page.getByLabel('Your website address',{exact:true});await address.fill('https://chargedesk.example.test');
   const copy=page.getByRole('button',{name:'Copy anonymous installation code',exact:true});assert.equal(await copy.isDisabled(),true);assert.doesNotMatch(await page.locator('.widget-code__snippet').first().innerText(),/<script/);await proof('widget-code-unsaved');
@@ -60,6 +92,12 @@ export async function ownerInstallationBrowser() {
   await page.getByRole('button',{name:`Remove address ${website}`,exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'Remove address',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});
   assert.equal((await fetch(origin+`/api/widget/settings?widgetKey=${widget}`,{headers:{Origin:website}})).status,403,'removing an approval closes the added address');
   assert.equal((await fetch(origin+`/api/widget/settings?widgetKey=${widget}`,{headers:{Origin:'https://different.example'}})).status,200,'removal keeps the primary address');
+  const audit=(await api(manage+'/audit?limit=200',undefined,token)).data;
+  for(const [action,address] of [['widget.primary_address_changed','https://different.example'],['widget.address_allowed',website],['widget.address_removed',website]]){
+   const events=audit.filter(row=>row.action===action&&row.detail.address===address);
+   assert.equal(events.length,1,`${action} records the actual address change once`);
+   assert.equal(events[0].actor_id,userId);
+  }
   const article=await api(`/api/knowledge/${projectId}/articles`,{title:'Workspace help',slug:'workspace-help',content:'Find your workspace support here.',is_published:true},token);
   await page.goto(origin+`/projects/${projectId}/articles/${article.id||article.data?.id}`);await page.getByRole('link',{name:'Open published article',exact:true}).waitFor();await proof('article-editor');
   const foreign=await runtime.seedTenant({name:'Other support',email:'synthetic-widget-other@example.test',allowedOrigin:origin});
@@ -67,6 +105,15 @@ export async function ownerInstallationBrowser() {
   assert.equal((await approve({address:'https://unapproved.example'})).status,401);
   assert.equal((await approve({address:'https://unapproved.example'},foreign.token)).status,403,'a foreign owner cannot approve an address');
   assert.equal((await approve({address:'file:///unapproved'},token)).status,400);
+  for(const address of ['https://*','https://*.example.test']){
+   assert.equal((await approve({address},token)).status,400);
+   const refused=await fetch(origin+manage+'/widget-settings',{method:'PUT',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({...savedWidget,allowed_origin:address})});
+   assert.equal(refused.status,400);
+  }
+  await runtime.execute(`UPDATE project_settings SET settings_json=json_set(settings_json,'$.widget_allowed_addresses',json_array('https://*.legacy.example')) WHERE project_id='${projectId}'`);
+  const removedLegacy=await api(manage+'/widget-addresses',{address:'https://*.legacy.example'},token,'DELETE');
+  assert.equal(removedLegacy.removed,true);
+  assert.deepEqual((await api(manage+'/widget-addresses',undefined,token)).allowedAddresses,[],'older inert addresses remain removable');
   await context.clearCookies();await context.addCookies([{name:'h2h_session',value:foreign.token,url:origin}]);
   await page.goto(origin+`/projects/${foreign.projectId}/activation`);await page.getByLabel('Your name',{exact:true}).waitFor();assert.equal(await page.getByLabel('Your name',{exact:true}).inputValue(),'Other support','a real sign-in name is pre-filled');await proof('setup-prefilled');await page.getByRole('link',{name:'your profile',exact:true}).click();await page.locator('input[type=file]').waitFor({state:'attached'});
   assert.deepEqual(errors,[]);await writeFile(shot('receipt.json'),JSON.stringify({result:'passed',assertionWidth:1440,screenshotWidths:[1440,390],decisions:['D1','D2','D3','D17','D19','D23','D24'],flows:['saved address gates snippet and developer handoff','name persists before install','public slug resolves','local request uses chat','required email gates real message','header names actual reply','denied address stays denied on cancel','confirmed address admits session and socket while keeping prior address']},null,2)+'\n');passed=true;

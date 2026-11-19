@@ -20,6 +20,7 @@ const LABELS={
  'password.changed':'Password changed','password.change_refused':'Password change refused','password.reset':'Password reset','account.email_changed':'Sign-in email changed','owner.created':'Workspace owner created','owner.recovered':'Owner recovered access with the installation key','owner.recovery_refused':'Owner recovery refused',
  'member.invited':'Teammate invited','member.invitation_reissued':'Invitation link issued again','member.password_reset_issued':'Teammate password reset link issued','member.joined':'Teammate joined','member.removed':'Teammate removed','member.role_changed':'Role changed','role.created':'Custom role created','role.updated':'Custom role changed','role.deleted':'Custom role deleted','permission.denied':'Refused by role',
  'contact.erased':'Customer erased','audit.exported':'Security log exported','reports.exported':'Report exported','conversation.transcript_sent':'Transcript emailed','project.deleted':'Workspace deleted',
+ 'widget.address_allowed':'Website address allowed','widget.address_removed':'Website address removed','widget.primary_address_changed':'Main website address changed',
  'availability.presence_changed':'Away when nobody is online changed',
  'import.started':'Import started','import.apply':'Import applied','import.resume':'Import resumed','import.undo':'Import undone',
  'conversation.assigned':'Conversation assigned','conversation.unassigned':'Conversation unassigned','conversation.resolved':'Conversation resolved','conversation.reopened':'Conversation reopened',
@@ -40,7 +41,7 @@ const describe=row=>{
  const [resource,method]=row.action.split('.');
  return RESOURCES[resource]?`${RESOURCES[resource]} ${{post:'created',patch:'updated',put:'saved',delete:'removed'}[method]||human(method)}`:'Workspace activity recorded';
 };
-const explain=row=>{const detail=row.detail||{};return [REASONS[detail.reason],typeof detail.removed==='number'&&`${detail.removed} removed, ${detail.keptUnderHold??0} kept under hold`].filter(Boolean).join(' · ')};
+const explain=row=>{const detail=row.detail||{};return [row.action.startsWith('widget.') && detail.address,REASONS[detail.reason],typeof detail.removed==='number'&&`${detail.removed} removed, ${detail.keptUnderHold??0} kept under hold`].filter(Boolean).join(' · ')};
 
 
 /** Settings → Security log: the workspace's append-only record, its export, retention and legal holds. */

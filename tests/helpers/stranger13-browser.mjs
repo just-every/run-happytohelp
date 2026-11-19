@@ -50,14 +50,14 @@ export const workspaceCreationBrowser=()=>withWorkspace('workspace',async({runti
  const toggle=page.getByRole('button',{name:/^Switch workspace:/})
  await toggle.click();const workspaceMenu=page.locator('.navbar-workspace-menu')
  await workspaceMenu.getByRole('link',{name:'Create workspace',exact:true}).waitFor();await capture('switcher')
- await workspaceMenu.getByRole('link',{name:'Create workspace',exact:true}).click();await page.getByRole('button',{name:'Create project',exact:true}).waitFor()
+ await workspaceMenu.getByRole('link',{name:'Create workspace',exact:true}).click();await page.getByRole('button',{name:'Create workspace',exact:true}).waitFor()
  await page.goto(runtime.origin+`/projects/${fixture.projectId}/conversations`)
  await page.getByRole('button',{name:'Account menu',exact:true}).filter({visible:true}).click()
  const account=page.locator('.native-account-dropdown').filter({visible:true});await account.getByRole('link',{name:'Create workspace',exact:true}).waitFor();await capture('account')
  const accountToggle=page.getByRole('button',{name:'Account menu',exact:true}).filter({visible:true});if(await accountToggle.getAttribute('aria-expanded')!=='true')await accountToggle.click()
  await account.getByRole('link',{name:'Create workspace',exact:true}).click()
  await page.getByLabel('Name',{exact:true}).fill('Synthetic second workspace');await page.getByLabel('Website',{exact:true}).fill(runtime.origin);await page.getByLabel('Widget website origin',{exact:true}).fill(runtime.origin)
- await page.getByRole('button',{name:'Create project',exact:true}).click();await page.waitForURL('**/activation')
+ await page.getByRole('button',{name:'Create workspace',exact:true}).click();await page.waitForURL('**/activation')
  await page.locator('[data-need="widget_seen"] [data-field="snippet"]').waitFor();assert.ok((await page.locator('[data-need="widget_seen"] [data-field="snippet"]').innerText()).includes(runtime.origin+'/widget.js'));const newId=new URL(page.url()).pathname.split('/')[2]
  assert.notEqual(newId,fixture.projectId)
  const workspaces=(await fixture.api('/api/management/projects')).data

@@ -54,9 +54,17 @@ export async function homepageJourney({page,origin,shot}){
  assert.match(await source.getAttribute('href'),/^https:\/\/github\.com\//)
  const guide=await publishedSections({page,shot})
  await noPromotions(page,source)
+ const footer=page.locator('.site-footer')
+ assert.equal(await footer.locator('a[href="/contact"]').count(),0,'the footer offers no dead local contact route')
+ const footerProof=[]
+ const observeFooter=()=>footer.evaluate(footer=>({width:innerWidth,destinations:Array.from(footer.querySelectorAll('a'),anchor=>anchor.getAttribute('href'))}))
+ footerProof.push(await observeFooter())
  await auditPage(page,shot('homepage-1440.png'))
  await page.setViewportSize(viewports.mobile)
  await auditPage(page,shot('homepage-390.png'))
+ footerProof.push(await observeFooter())
+ const {writeFile}=await import('node:fs/promises')
+ await writeFile(shot('followup-footer-dom.json'),JSON.stringify(footerProof,null,2)+'\n')
  await page.setViewportSize(viewports.desktop)
  // Follow the move-in invitation as well as the hero's documentation route.
  await guide.click()

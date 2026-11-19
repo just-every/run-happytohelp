@@ -266,7 +266,7 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 #### PUBLIC-002 — Free product promise
 
-**Requirement.** “Not just better. Free.” (100% free and open source, free as in code and free as in cost, MIT licensed, “No seats. No plans. No fees.”, each promise after a line icon in a pale aqua circle, with the MIT license drawn as an ink card over a wordless code editor, “free of charge” and the rights highlighted in aqua);
+**Requirement.** “Yours to run and change.” (100% free and open source, free as in code and free as in cost, MIT licensed, “No seats. No plans. No fees.”, each promise after a line icon in a pale aqua circle, with the MIT license drawn as an ink card over a wordless code editor, “free of charge” and the rights highlighted in aqua);
 
 **Acceptance.**
 1. The Free section retains the no-seats, no-plans, no-fees promise, MIT license, aqua icon circles and ink license over a wordless editor.

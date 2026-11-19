@@ -1,9 +1,9 @@
 # First-run setup
 
 Prepare the first owner through [Install](INSTALLER.md), using
-`pnpm exec rer setup --owner-email you@example.com --answers .seed/local-answers.json`.
+`rer setup --owner-email you@example.com --answers .seed/local-answers.json`.
 Setup creates the native owner and first workspace before it exits. Start with
-`pnpm exec rer dev` and wait for `RER_READY`. Open `RER_OPEN` to enter as the
+`rer dev` and wait for `RER_READY`. Open `RER_OPEN` to enter as the
 real local owner and reach **Setup**.
 The owner decision retains native passwords, prior account/workspace data and
 HappyToHelp's own tenant/permission checks.

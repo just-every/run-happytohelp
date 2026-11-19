@@ -6,7 +6,7 @@ import {activationConfiguration} from './activation/configuration'
 import {activationFacts} from './activation/facts'
 import {activationSnapshot} from './activation/snapshot'
 import {finishCheck,readReceipts,startCheck} from './activation/store'
-import {setSkip,skipLocalTrial,skippable} from './activation/skips'
+import {setSkip,skipLocalTrial,skippable,localTrialSteps,storedSkips} from './activation/skips'
 import {stepIds,type StepId,type Probe} from './activation/types'
 import {runChecks} from './activation/checks'
 import {reconcileStarter} from './activation/starter'
@@ -26,6 +26,10 @@ async function ownerScope(c:Parameters<typeof scope>[0]) {
 async function snapshotResponse(c:Context<AppEnv>,projectId:string) {
  const [config,receipts]=await Promise.all([activationConfiguration(c.env,projectId),readReceipts(c.env,projectId)])
  const facts=await activationFacts(c.env,config,receipts,String(c.env.APP_ORIGIN||new URL(c.req.url).origin))
+ const skips=storedSkips(config.settings)
+ if(config.environment==='local'&&facts.widget.key&&localTrialSteps.every(step=>skips.has(step))){
+  facts.localTrialUrl=`/help/${encodeURIComponent(projectId)}/requests#launch-chat`
+ }
  c.header('Cache-Control','no-store')
  return c.json({data:activationSnapshot(config,receipts,facts)})
 }

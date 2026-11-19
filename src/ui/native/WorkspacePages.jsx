@@ -59,7 +59,7 @@ export default function WorkspacePages({ settings, pages = {} }) {
     if(section==='delegation')title=recordId==='authorize'?'Connect to Slate':'Connected applications';
     if(section==='github-settings')title='Workspace';
     if(section==='admin')title=settings.isPlatformAdmin?adminTitles[segments[1]||'projects']||'Admin':'Administration';
-    if(settings.projectUnavailable)title='Project not found';
+    if(settings.projectUnavailable)title='Workspace not found';
     else if(foreignUser)title='Not found';
     const header=<h1 className="header-title">{title}</h1>;
     // A page the account cannot open is a centred notice under its drawing, titled there; it has no page header.

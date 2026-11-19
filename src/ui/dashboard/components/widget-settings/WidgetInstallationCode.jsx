@@ -67,10 +67,7 @@ export default function WidgetInstallationCode({website}) {
     return (
         <div className="widget-code">
             <section className="widget-code__section" aria-labelledby="widget-code-install-heading">
-                <div className="widget-code__section-heading">
-                    <h2 id="widget-code-install-heading"><span aria-hidden="true">2.</span> Add this code to every page</h2>
-                    <p>Add this script to every page where you want the widget to appear.</p>
-                </div>
+                <h2 id="widget-code-install-heading" className="widget-code__step-heading"><span aria-hidden="true">2.</span> Add this code to every page</h2>
                 <CodeSnippet
                     disabled={!website}
                     unavailable="Enter your website address first, so the chat works on your site"

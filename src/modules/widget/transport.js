@@ -284,7 +284,7 @@ export class WidgetTransport {
           delete this.session.pendingCommands[data.local_id];
           this.save();
           error.definitiveRejection = true;
-          if (admissionAttempt || error.detail.reason !== 'conversation_changed_or_admission_denied') throw error;
+          if (admissionAttempt || error.detail.reason !== 'conversation_changed') throw error;
           const transcript = await this.refresh();
           if (transcript.messages.some(message => message.local_id === data.local_id)) throw error;
           command = {...command, expectedRevision: this.revision, expectedLastMessageId: this.lastMessageId};

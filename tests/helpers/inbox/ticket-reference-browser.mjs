@@ -18,6 +18,8 @@ export async function ticketReferenceBrowser(){
   const hide=page.getByRole('button',{name:'Hide conversation panel',exact:true});if(await hide.isVisible())await hide.click()
   await page.getByRole('button',{name:'Actions',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:'Reference reply',exact:true}).click()
   const preview=page.getByRole('region',{name:'Saved reply preview',exact:true});await preview.waitFor()
+  const bounds=await preview.evaluate(node=>({maxHeight:parseFloat(getComputedStyle(node).maxHeight),viewport:innerHeight}))
+  assert.ok(Number.isFinite(bounds.maxHeight)&&bounds.maxHeight<=bounds.viewport,'the preview itself is bounded by the viewport')
   const reply=await preview.innerText()
   assert.ok(reply.includes('Your support request '+reference+': '+origin+path),'preview renders the short reference and the working full UUID link')
   assert.ok(!reply.includes('Your support request '+ticket.id),'the reference itself is not a UUID')

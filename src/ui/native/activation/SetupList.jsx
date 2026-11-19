@@ -19,7 +19,7 @@ export default function SetupList({projectId,role}) {
  const {data,error,checkAgain,busy,skip,skipBusy,tryLocally}=useSetup(projectId),needsId=useId(),optionalId=useId(),skippedId=useId(),setId=useId();
  if(!data)return <section className="setup-list" data-testid="setup-list" aria-busy={!error}>{error?<p role="alert">{error}</p>:<p className="sl-quiet" role="status">Looking at your setup…</p>}</section>;
  const needs=needsOf(data),later=optionalOf(data),left=skippedOf(data),rows=setRows(data),looked=lastLooked(data);
- const confirmed=data.done,applicable=data.applicableTotal;
+ const confirmed=data.done,applicable=data.applicableTotal,trialUrl=data.facts?.localTrialUrl;
  const cards=items=><ol className="sl-needs">{items.map(item=><NeedItem key={item.id} {...{data,item,projectId}} onSkip={skip} skipBusy={skipBusy}/>)}</ol>;
  return <section className="setup-list" data-testid="setup-list" data-confirmed={confirmed} data-applicable={applicable} data-environment={data.environment}>
   {data.environment === 'local' && <LocalMailBanner/>}
@@ -29,7 +29,12 @@ export default function SetupList({projectId,role}) {
    {localTrial(data)&&<button type="button" className="btn btn-primary sl-trial" data-local-trial disabled={skipBusy} onClick={tryLocally}>Try locally without a website or AI key</button>}
    {error&&<p role="alert" className="sl-error">{error}</p>}
   </header>
-  {(needs.length>0||later.length===0)&&<section className="sl-section" data-section="needs-you" aria-labelledby={needsId}>
+  {trialUrl && <section className="sl-section">
+   <div className="sl-title"><h2>Try your widget</h2></div>
+   <p>Send yourself a test message and look for it in your inbox.</p>
+   <a className="btn btn-primary" href={trialUrl} target="_blank" rel="noopener">Open test chat</a>
+  </section>}
+  {(needs.length>0||later.length===0&&!trialUrl)&&<section className="sl-section" data-section="needs-you" aria-labelledby={needsId}>
    <div className="sl-title"><h2 id={needsId}>Needs you</h2>{needs.length>0&&<span className="h2h-count" data-count aria-label={`${needs.length} ${needs.length===1?'item':'items'}`}>{needs.length}</span>}</div>
    {needs.length>0?cards(needs)
     :<div className="sl-empty"><p data-empty>Nothing needs you right now.</p><p>We’ll tell you here if anything changes.</p></div>}

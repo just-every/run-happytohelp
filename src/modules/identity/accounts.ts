@@ -106,15 +106,23 @@ accounts.post('/accept-token',async c=>{
  await runAll(c.env.DB,await accountAudit(c.env.DB,userId,{category:token.kind==='invite'?'access':'auth',action:token.kind==='invite'?'member.joined':'password.reset',actor:{type:'user',id:userId},source:'dashboard'}))
  // Only the successful invitation consumer signs in. Password resets keep their existing sign-in boundary.
  if(token.kind!=='invite')return c.json({accepted:true,loginRequired:true})
- const session=id()+id(),sessionHash=await hashToken(session),twoFactor=await signInFactor(c.env.DB,userId,token.project_id,role)
+ const destination=`/projects/${encodeURIComponent(token.project_id)}/conversations`
+ const session=id()+id(),sessionHash=await hashToken(session)
+ let twoFactor:Awaited<ReturnType<typeof signInFactor>>
  // Choosing this new account's password is its primary proof, with the same lifetime, cookie and
  // factor policy as /login. Required enrollment still prevents workspace access until it is complete.
- await c.env.DB.batch([
-  c.env.DB.prepare('INSERT INTO sessions VALUES(?,?,?,?,NULL,?,NULL)').bind(sessionHash,userId,token.project_id,role,now+86400000),
-  ...(twoFactor==='verify'?[]:[sessionFactorStatement(c.env.DB,sessionHash,userId,'password',now)]),
-  ...await accountAudit(c.env.DB,userId,{category:'auth',action:twoFactor?'sign_in.password_accepted':'sign_in.succeeded',actor:{type:'user',id:userId},source:'dashboard',detail:{method:'password',...(twoFactor?{twoFactor}:{})}}),
- ])
+ try {
+  twoFactor=await signInFactor(c.env.DB,userId,token.project_id,role)
+  await c.env.DB.batch([
+   c.env.DB.prepare('INSERT INTO sessions VALUES(?,?,?,?,NULL,?,NULL)').bind(sessionHash,userId,token.project_id,role,now+86400000),
+   ...(twoFactor==='verify'?[]:[sessionFactorStatement(c.env.DB,sessionHash,userId,'password',now)]),
+   ...await accountAudit(c.env.DB,userId,{category:'auth',action:twoFactor?'sign_in.password_accepted':'sign_in.succeeded',actor:{type:'user',id:userId},source:'dashboard',detail:{method:'password',...(twoFactor?{twoFactor}:{})}}),
+  ])
+ } catch {
+  // The invitation and password are already committed. Let the teammate sign in separately.
+  return c.json({accepted:true,loginRequired:true,destination})
+ }
  c.header('Set-Cookie',sessionCookie(session,c.req.url))
- return c.json({accepted:true,token:session,actor:{id:userId,projectId:token.project_id,role},destination:`/projects/${encodeURIComponent(token.project_id)}/conversations`,...(twoFactor?{twoFactor}:{})})
+ return c.json({accepted:true,token:session,actor:{id:userId,projectId:token.project_id,role},destination,...(twoFactor?{twoFactor}:{})})
 })
 accounts.post('/accept-invitation',async c=>{const actor=await requireActor(c);if(actor.role==='contact')throw new HTTPException(403);const b=await c.req.json(),tokenHash=await hashToken(requiredString(b.token,'token'));return c.json(await acceptExistingInvitation(c.env,actor.id,c.get('sessionHash'),tokenHash))})

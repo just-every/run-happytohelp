@@ -246,7 +246,7 @@ export async function hubspotBrowser({browser, directory}) {
         await panel().getByRole('button', {name: 'Cancel mapping', exact: true}).click();
         await openTicket(otherTicket.id); await panel().getByText('Unmapped — choose source IDs on the customer record.', {exact: true}).waitFor();
         assert.equal(await panel().getByText('Priority response', {exact: true}).count(), 0);
-        await page.goto(runtime.origin + `/projects/${foreign.projectId}/hubspot-settings`); await page.getByText('Project not found', {exact: true}).first().waitFor();
+        await page.goto(runtime.origin + `/projects/${foreign.projectId}/hubspot-settings`); await page.getByRole('heading', {name: 'Workspace not found', exact: true}).waitFor();
         assert.equal(await page.getByRole('region', {name: 'HubSpot context'}).count(), 0);
         await openCustomer(); await fresh();
         // The same built component serves an operator with no customer/integration permissions.

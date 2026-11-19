@@ -62,6 +62,7 @@ export default function EmailSettings({data, status, field, role, projectId,onRe
  if(status?.managed)return <ManagedEmail managed={status.managed} {...{field,role,projectId,onRefresh}}/>;
  const receiving = status?.receiving || {reason: 'no_address', address: null}, domain = domainOf(receiving.address);
  const [chip, copy] = receivingCopy(receiving, domain), localTrial = status?.sending?.mode === 'local' || receiving.reason === 'local';
+ const emailReady = status?.sending?.mode === 'remote' && receiving.ready;
  const steps = `1. Put this installation online before connecting email. Use an address on a domain you control, never a local-trial domain.
 2. Choose an email provider in installation setup, verify your sending domain and install its private credentials. Publish the configuration; saving a workspace address alone does not enable email.
 3. For Cloudflare Email Routing, enable Email Routing on the receiving domain and add the MX records it supplies. Under Routing rules, route the support address to this HappyToHelp Worker. Save that address in Settings → Email.
@@ -69,11 +70,13 @@ export default function EmailSettings({data, status, field, role, projectId,onRe
 5. For Gmail or Microsoft, use Add mailbox and send the provider’s setup steps to the person managing that account. After configuration, authorize the mailbox and test sending and receiving.`;
  return <>
   {localTrial && <LocalMailBanner/>}
-  <p>Customers can already chat with you. To also get emails at {receiving.address && !localTrial ? <b>{receiving.address}</b> : 'your support address'}, a technical person sets up your domain’s email.</p>
-  <DeveloperHandoff what="Your domain’s email needs to be connected." unlocks="This lets customers write to your support address." subject="Connect our support email to HappyToHelp" steps={steps}>
+  {emailReady ? <p>Sending email is set up. A mail server was found for <b>{receiving.address}</b>.</p> : <>
+  <p>{localTrial ? 'To send and receive email, first put HappyToHelp online.' : <>{status?.sending?.mode !== 'remote' && 'Sending email needs to be connected. '}{!receiving.ready && <>To receive email at {receiving.address ? <b>{receiving.address}</b> : 'your support address'}, ask your technical person to connect it.</>}</>}</p>
+  <DeveloperHandoff what={receiving.ready ? 'Sending email needs to be connected.' : 'Your domain’s email needs to be connected.'} unlocks={receiving.ready ? 'This lets you send email from HappyToHelp.' : 'This lets customers write to your support address.'} subject="Connect our support email to HappyToHelp" steps={steps}>
    <pre tabIndex={0}>{steps}</pre><p><a href="/docs/email#hosted-installation">Complete email setup guide</a></p>
    {!localTrial && <RoutingSteps receiving={receiving} installation={status?.installation} localTrial={false}/>}
   </DeveloperHandoff>
+  </>}
   <Section title="Send Email">
    <Sending sending={status?.sending} installation={status?.installation} role={role} projectId={projectId}/>
    <div className="settings-grid">{field('email_from_address', 'Support Email From Address', 'email')}{field('email_from_name', 'Support Email From Name')}</div>

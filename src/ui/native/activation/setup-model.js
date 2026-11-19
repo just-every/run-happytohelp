@@ -10,7 +10,7 @@ export const needOrder = ['widget_seen', 'model_key', 'sender_dns'];
 
 // The settings page each row's Change link opens, and how that page is named in the link's accessible label.
 export const pages = {
- workspace: ['settings', 'Settings'], widget: ['widget-settings', 'Widget settings'], email: ['email-settings', 'Email settings'],
+ workspace: ['settings', 'Settings'], widget: ['widget-settings', 'Chat widget'], email: ['email-settings', 'Email settings'],
  ai: ['ais', 'AI settings'],
 };
 const rowPage = {visitor_email:'widget',workspace: 'workspace', widget_origin: 'widget', colour: 'widget', widget_seen: 'widget', owner_mail: 'email', inbound_address: 'email', sender_dns: 'email', spend_ceilings: 'ai', starter_assistant: 'ai', model_key: 'ai'};
@@ -100,7 +100,7 @@ export const localTrial = data => data.environment === 'local' && modelKeyState(
 function ceilingsValue(data) {
  const limits = data.facts?.ceilings;
  if (limits && limits.spendUsdPerProject != null && limits.repliesPerProject != null) {
-  return `${aiBilling} ${dailySafetyLimit(limits.repliesPerProject, limits.spendUsdPerProject)}`;
+  return `${aiBilling} ${dailySafetyLimit(limits.repliesPerProject, limits.spendUsdPerProject, limits.repliesPerInstallation, limits.resetUtc)}`;
  }
  return null;
 }
@@ -111,14 +111,16 @@ function rowFor(data, id) {
  const base = {id, label: rowLabels[id], change: pages[rowPage[id]], state: 'set', value: ''};
  const withObservation = (fallback, value) => ({...base, value, state: observed ? 'confirmed' : problem ? 'problem' : own?.state === 'unavailable' ? 'unavailable' : own?.state === 'pending' || own?.state === 'checking' || own?.state === 'unknown' ? 'waiting' : fallback});
  switch (id) {
-  case 'visitor_email': return {...base,value:facts.widget?.requireEmail ? 'Your widget asks visitors for an email before chat. Turn off Require email in Settings → Widget settings → Settings → Required contact details to allow anonymous chat.' : 'Your widget allows chat without an email. Change Require email in Settings → Widget settings → Settings → Required contact details.',change:[...pages.widget,'settings']};
+  case 'visitor_email': return {...base,value:facts.widget?.requireEmail ? 'Your widget asks visitors for an email before chat. Turn off Require email in Settings → Chat widget → Settings → Required contact details to allow anonymous chat.' : 'Your widget allows chat without an email. Change Require email in Settings → Chat widget → Settings → Required contact details.',change:[...pages.widget,'settings']};
   case 'workspace': return facts.workspaceName ? {...base, value: facts.workspaceNamed === false ? `${facts.workspaceName}. We chose this name; change it to your business name, which your help centre and emails show.` : facts.workspaceName} : null;
   case 'colour': return facts.colour?.hex ? {...base, value: facts.colour.source === 'site' ? `Picked from ${hostOf(facts.website)}` : 'Your workspace colour', swatch: facts.colour.hex} : null;
   case 'starter_assistant': return facts.starterAssistant ? {...base, value: `${facts.starterAssistant.name}. ${['confirmed', 'unchecked', 'checking', 'unknown', 'blocked'].includes(modelKeyState(data)) ? 'Answers visitors by itself, within your daily limits.' : 'Answers visitors by itself once AI is connected, within your daily limits.'}`} : null;
   case 'widget_origin': {
    // A first deploy sets the website to the app's own address, which is right only for a test: say so, as the widget need does.
    const app = hostOf(facts.widget?.apiOrigin), testing = Boolean(facts.website) && hostOf(facts.website) === app;
-   return {...withObservation('set', !facts.website ? sentence(own?.detail || '') : testing ? `${facts.website}. This is HappyToHelp’s own address, so the widget answers only here, which suits a test. Enter your website’s address to use it there.` : `${facts.website}. Your widget works only here.`), change: [...pages.widget, 'settings']};
+   const allowed = facts.widget?.hasAdditionalAddresses ? 'Your widget also works on your other allowed addresses.' : 'This is the only website address you’ve allowed.';
+   const site = testing ? ' This is HappyToHelp’s own address. Enter your website’s address under Your website address to use it there.' : '';
+   return {...withObservation('set', facts.website ? `${facts.website}. ${allowed}${site}` : sentence(own?.detail || '')), change: [...pages.widget, 'settings']};
   }
   case 'owner_mail': {
    if(facts.mail?.managed&&!observed)return {...base,state:facts.mail.managed.error?'problem':'set',value:facts.mail.managed.error|| (facts.mail.managed.lastOutboundAcceptanceAt?'The provider accepted an email for you. Use an emailed sign-in link to confirm it arrived.':'Your assigned address sends account and support email once Run Edit Run activates it.')};

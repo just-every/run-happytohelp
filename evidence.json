@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "179bb09148dadbcd3cc42a1bea761333f6304765",
+      "bytes": 1767,
+      "path": "CHECKS.md",
+      "sha256": "dc0c659883d4ae5e002a310ba28be5bd1e26b6b5111f45491075e9449c3adbcd"
+    },
+    {
+      "blob": "db30eb374e8f168000a3f045f0da29294a6fb1ff",
+      "bytes": 36744,
+      "path": "CI.json",
+      "sha256": "0c4df06bd3cfbc9d6a95bb3cb748d43fd1da4d25e84089fcbdc00732632722d2"
+    },
+    {
+      "blob": "b4dd6d71d179c6ccdd7e95f9d85c0bf7067fd0e5",
+      "bytes": 5229,
+      "path": "DOCS-BROWSER.json",
+      "sha256": "ecc7a84e0de98e1027d1b367fa542105dea1dcd96f1500aa98e2b61a630d6cef"
+    },
+    {
+      "blob": "7308da74b76ad27eb3fe4e668b44de2a1cc40ad4",
+      "bytes": 3332,
+      "path": "REPORT.md",
+      "sha256": "61e05d8e4f5131b6b8df49a8b7843c0245db6f1c5de82d9e4ee50e5308250cda"
+    }
+  ],
+  "product_branch": "cloud/hh-docs-1",
+  "product_head": "d845c2095b61a69df817205a43b612b0c8ec01f3",
+  "ref": "refs/heads/evidence/hh-docs-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-docs-1"
+}

@@ -1,0 +1,179 @@
+{
+  "sha": "d845c2095b61a69df817205a43b612b0c8ec01f3",
+  "docsBuild": {
+    "publishedRoutes": [
+      "/docs",
+      "/docs/getting-started",
+      "/docs/install",
+      "/docs/setup",
+      "/docs/local-agent",
+      "/docs/agent-fix",
+      "/docs/agent-door",
+      "/docs/run-locally",
+      "/docs/operations",
+      "/docs/managed-conversation-mail",
+      "/docs/integrations",
+      "/docs/moving-in",
+      "/docs/limits",
+      "/docs/privacy",
+      "/docs/updates-and-recovery",
+      "/docs/inbound-email-recovery",
+      "/docs/legacy-entry-points",
+      "/docs/companies-and-csv",
+      "/docs/website-knowledge",
+      "/docs/help-center",
+      "/docs/request-forms",
+      "/docs/customer-portal",
+      "/docs/customer-satisfaction",
+      "/docs/away",
+      "/docs/tickets",
+      "/docs/reports",
+      "/docs/email",
+      "/docs/workflows",
+      "/docs/help-before-they-ask",
+      "/docs/plugins",
+      "/docs/connected-applications",
+      "/docs/account-security",
+      "/docs/macros-and-teamwork",
+      "/docs/notifications",
+      "/docs/triage",
+      "/docs/feedback-and-assurance",
+      "/docs/support-channels",
+      "/docs/security",
+      "/docs/changelog"
+    ],
+    "problems": []
+  },
+  "browserReads": [
+    {
+      "route": "/docs/agent-door",
+      "status": 200,
+      "width": 1440,
+      "contentWidth": 1440,
+      "heading": "Support agent access",
+      "supportGuidance": [
+        "For help connecting a support agent, use Contact support in chat in the app’s Help Center."
+      ],
+      "contributorHeading": null,
+      "contributorCommands": [],
+      "contactPaths": []
+    },
+    {
+      "route": "/docs/getting-started",
+      "status": 200,
+      "width": 1440,
+      "contentWidth": 1440,
+      "heading": "Get started with HappyToHelp",
+      "supportGuidance": [
+        "For help getting started, use Contact support in chat in the app’s Help Center."
+      ],
+      "contributorHeading": null,
+      "contributorCommands": [],
+      "contactPaths": []
+    },
+    {
+      "route": "/docs/managed-conversation-mail",
+      "status": 200,
+      "width": 1440,
+      "contentWidth": 1440,
+      "heading": "Managed conversation mail v1",
+      "supportGuidance": [
+        "For help with managed conversation mail, use Contact support in chat in the app’s Help Center."
+      ],
+      "contributorHeading": null,
+      "contributorCommands": [],
+      "contactPaths": []
+    },
+    {
+      "route": "/docs/support-channels",
+      "status": 200,
+      "width": 1440,
+      "contentWidth": 1440,
+      "heading": "Support channels",
+      "supportGuidance": [
+        "For help connecting a channel, use Contact support in chat in the app’s Help Center."
+      ],
+      "contributorHeading": null,
+      "contributorCommands": [],
+      "contactPaths": []
+    },
+    {
+      "route": "/docs/install",
+      "status": 200,
+      "width": 1440,
+      "contentWidth": 1440,
+      "heading": "Install HappyToHelp",
+      "supportGuidance": [],
+      "contributorHeading": "Contributor checkout",
+      "contributorCommands": [
+        "pnpm install --frozen-lockfile\npnpm run describe --json\npnpm run check --profile first-party"
+      ],
+      "contactPaths": []
+    },
+    {
+      "route": "/docs/agent-door",
+      "status": 200,
+      "width": 390,
+      "contentWidth": 390,
+      "heading": "Support agent access",
+      "supportGuidance": [
+        "For help connecting a support agent, use Contact support in chat in the app’s Help Center."
+      ],
+      "contributorHeading": null,
+      "contributorCommands": [],
+      "contactPaths": []
+    },
+    {
+      "route": "/docs/getting-started",
+      "status": 200,
+      "width": 390,
+      "contentWidth": 390,
+      "heading": "Get started with HappyToHelp",
+      "supportGuidance": [
+        "For help getting started, use Contact support in chat in the app’s Help Center."
+      ],
+      "contributorHeading": null,
+      "contributorCommands": [],
+      "contactPaths": []
+    },
+    {
+      "route": "/docs/managed-conversation-mail",
+      "status": 200,
+      "width": 390,
+      "contentWidth": 390,
+      "heading": "Managed conversation mail v1",
+      "supportGuidance": [
+        "For help with managed conversation mail, use Contact support in chat in the app’s Help Center."
+      ],
+      "contributorHeading": null,
+      "contributorCommands": [],
+      "contactPaths": []
+    },
+    {
+      "route": "/docs/support-channels",
+      "status": 200,
+      "width": 390,
+      "contentWidth": 390,
+      "heading": "Support channels",
+      "supportGuidance": [
+        "For help connecting a channel, use Contact support in chat in the app’s Help Center."
+      ],
+      "contributorHeading": null,
+      "contributorCommands": [],
+      "contactPaths": []
+    },
+    {
+      "route": "/docs/install",
+      "status": 200,
+      "width": 390,
+      "contentWidth": 390,
+      "heading": "Install HappyToHelp",
+      "supportGuidance": [],
+      "contributorHeading": "Contributor checkout",
+      "contributorCommands": [
+        "pnpm install --frozen-lockfile\npnpm run describe --json\npnpm run check --profile first-party"
+      ],
+      "contactPaths": []
+    }
+  ]
+}

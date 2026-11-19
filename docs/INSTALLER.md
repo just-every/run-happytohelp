@@ -30,12 +30,16 @@ npx -y @runeditrun/rer dev just-every/run-happytohelp
 To set it up without starting it, use
 `npx -y @runeditrun/rer setup just-every/run-happytohelp`.
 
-For source work, select Node **22.20.0** and pnpm **10.12.4**:
+### Contributor checkout
+
+For source work, install Node **22.20.0** and pnpm **10.12.4** in your
+development environment. From the repository checkout root, install the locked
+dependencies and run the repository scripts:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm exec rer describe --json
-pnpm exec rer check --profile first-party
+pnpm run describe --json
+pnpm run check --profile first-party
 ```
 
 This installs frozen dependencies without creating an owner or starting the app.

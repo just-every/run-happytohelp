@@ -56,6 +56,26 @@ async function emittedDocs(page,origin,site){
   assert.equal(actual.body,actual.source,'built page body matches current Markdown: '+expected.source)
   assert.deepEqual(actual.headings,actual.expected,'built heading sequence and GitHub-compatible ids: '+expected.source)
   assert.deepEqual(actual.links,actual.expectedLinks,'published links become docs routes, other repository files become GitHub links')
+  const retiredLinks=await page.locator('a[href]').evaluateAll(links=>links
+   .map(link=>new URL(link.getAttribute('href'),document.baseURI))
+   .filter(url=>(url.origin===location.origin||/(^|\.)happytohelp\.com$/.test(url.hostname))&&
+    url.pathname.replace(/\/$/,'').toLowerCase()==='/contact')
+   .map(url=>url.href))
+  assert.deepEqual(retiredLinks,[],'docs and navigation avoid the retired contact page: '+expected.href)
+  if(expected.href==='/docs/install'){
+   const unscopedCommands=await page.locator('.docs-prose').evaluate(article=>{
+    let checkoutLevel=0
+    return [...article.children].flatMap(block=>{
+     if(/^H[1-6]$/.test(block.tagName)){
+      const level=Number(block.tagName[1])
+      if(level<=checkoutLevel)checkoutLevel=0
+      if(/\bcontributor\b/i.test(block.innerText)&&/\bcheckout\b/i.test(block.innerText))checkoutLevel=level
+     }
+     return !checkoutLevel&&/\bpnpm\s+exec\s+rer\b/.test(block.innerText)?[block.innerText]:[]
+    })
+   })
+   assert.deepEqual(unscopedCommands,[],'the installer does not offer checkout-only rer commands to one-line installer users')
+  }
   assert.equal(await page.locator('.docs-prose [style],.docs-prose script,.docs-prose [onclick],.docs-prose [onerror]').count(),0,'escaped HTML and class-only highlighting')
   for(const table of await page.locator('.docs-table').all()){assert.equal(await table.getAttribute('role'),'region');assert.equal(await table.getAttribute('tabindex'),'0');assert.ok(await table.getAttribute('aria-label'))}
   const nav=page.locator('.docs-sidebar')

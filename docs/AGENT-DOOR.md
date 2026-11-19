@@ -122,3 +122,5 @@ approval and review displays. Native teammate erasure removes that teammate’s
 drafts and anonymizes their draft-operation attribution while preserving other
 sponsors and approvers. Operational identifiers remain. Native exports retain
 the draft content, ownership and opaque version; restoring them admits no send.
+
+For help connecting a support agent, use **Contact support in chat** in the app’s Help Center.

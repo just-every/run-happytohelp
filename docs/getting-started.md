@@ -39,3 +39,5 @@ Continue with [first-run setup](SETUP-WORKFLOW.md) to connect your website and
 try the customer widget. The [local command reference](../RUN-LOCALLY.md) covers
 preview, export and recovery. For private setup answers and contributor options,
 use the [advanced installation reference](INSTALLER.md#private-setup-answers).
+
+For help getting started, use **Contact support in chat** in the app’s Help Center.

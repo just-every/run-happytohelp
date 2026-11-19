@@ -1645,7 +1645,7 @@
       "executable": false
     },
     "docs/AGENT-DOOR.md": {
-      "sha256": "841380fc135225cd301eeeabd86910206798cf328c21f3a818febc232c9d618c",
+      "sha256": "319818cacec8dae4e0805c052e8b69e413db1025ab5134214302790bbbec0f27",
       "executable": false
     },
     "docs/AGENT-FIX.md": {
@@ -1721,7 +1721,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "65761c571cf99c5cc67211501471c53a7abe9c83835c3abb7971172336d4c46b",
+      "sha256": "87cbf0c11918f3de7456075927fbaf391659eb1f1bcb4dc06e5da5177528cdaa",
       "executable": false
     },
     "docs/help-before-they-ask.md": {
@@ -1741,7 +1741,7 @@
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "a6bdc62c01768c598ea73290bb89636c80a152217775dc5cedc86b02ed5a1544",
+      "sha256": "925a9de84f38e0e3f3c56555588b1227d8b4db520daafd5e967e6506ee007bcc",
       "executable": false
     },
     "docs/knowledge-upgrade-report.md": {
@@ -1777,7 +1777,7 @@
       "executable": false
     },
     "docs/managed-conversation-mail.md": {
-      "sha256": "9db8ae6f8addfc89f41e7ee320c4035e6805cd380c527567b037b039f5838190",
+      "sha256": "83d468c18cf5361fcc4443ecfd7e05775955687f71e2447872c50ed83818f2e2",
       "executable": false
     },
     "docs/mobile-api.md": {
@@ -1829,7 +1829,7 @@
       "executable": false
     },
     "docs/SETUP-WORKFLOW.md": {
-      "sha256": "640fb06a50ceb251046687d3f9a3c289904b2399ba9e58b58931f3ad5711428e",
+      "sha256": "0fad793d73a7b6a5593d32dd6e60be307b9517242dc30282c67247fa42250802",
       "executable": false
     },
     "docs/site.json": {
@@ -1841,7 +1841,7 @@
       "executable": false
     },
     "docs/support-channels.md": {
-      "sha256": "b16c19bba3062327a63fd788f282d1abf915de4946ad4faa63ca90020d82d681",
+      "sha256": "fd3444038c936d4faebb349b5b26e1ff3457055e4744a2461648967e13734472",
       "executable": false
     },
     "docs/tickets.md": {
@@ -2993,7 +2993,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "1a2824971e9286d4679e4417736e1e5cfcf807d8d469b8806d386b577cd497ec",
+      "sha256": "529e0bfbb2f4dd3462663adc066c13b041336ea3ff661ecd44178aa16ef11070",
       "executable": false
     },
     "RELEASE.json": {
@@ -17333,7 +17333,7 @@
       "executable": false
     },
     "tests/helpers/public-docs-journey.mjs": {
-      "sha256": "2b68f1ffa0a2cd17a62fcfee1d4dbaa7d75c76de3e64878308811a25ae16d507",
+      "sha256": "7d8615facd8554a5b9551b691a055d9aee450c6841427791d3709a9fa53f4d15",
       "executable": false
     },
     "tests/helpers/public-site-journey.mjs": {

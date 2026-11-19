@@ -373,12 +373,14 @@ Reports and its analytics CSVs exclude empty widget conversations.
 
 ## Contributor setup
 
-For work on the source, select Node **22.20.0** and pnpm **10.12.4**:
+For source work, install Node **22.20.0** and pnpm **10.12.4** in your
+development environment. From the repository checkout root, install the locked
+dependencies and run the repository scripts:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm exec rer describe --json
-pnpm exec rer check --profile first-party
+pnpm run describe --json
+pnpm run check --profile first-party
 ```
 
 ## Verify
@@ -396,12 +398,13 @@ require separate evidence. Preserve [the current holds](HANDOVER.md#acceptance-b
 
 ### Local size check
 
-After `pnpm run build`, run `pnpm exec rer size --write-statements .local-evidence/size/statements`.
+From the contributor checkout after `pnpm run build`, run
+`pnpm run rer size --write-statements .local-evidence/size/statements`.
 The seed-owned [declaration](size-check.json) uses disposable local D1 installs of
 the built application, native owner and widget sessions, and the declared minute
 schedule. It checks inbox/list/search, conversation and transcript reads, message
 admission, sockets, reports, knowledge, outbound tickets and the AI draft route.
-`pnpm exec rer check --profile first-party` validates the declaration.
+`pnpm run check --profile first-party` validates the declaration.
 
 The large fixture carries 162,000 contacts, 161,893 conversations, 27,000 messages
 and outbox rows, 2,835 media rows and 3,034 pending workflow events. The small

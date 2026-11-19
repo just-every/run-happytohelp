@@ -14,7 +14,7 @@ If you installed locally, you already have an owner account. Go to
 
 For a scripted setup of a fresh checkout, create a
 [private answers file](INSTALLER.md#private-setup-answers) with your website and
-owner password. From the checkout, run:
+owner password. With the installer’s `rer` command available, run from the checkout:
 
 ```sh
 rer setup --owner-email you@example.com --answers .seed/local-answers.json

@@ -162,3 +162,5 @@ Signed provider fixtures qualify dispatch, response, rerating, opt-out and
 erasure locally. Live Twilio/Meta delivery, consent and A2P/template-registration
 receipts remain UNMET-EXTERNAL. See [Customer satisfaction](customer-satisfaction.md)
 for survey settings, reporting and the separate live mail qualification gap.
+
+For help connecting a channel, use **Contact support in chat** in the app’s Help Center.

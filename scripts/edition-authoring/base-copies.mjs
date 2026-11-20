@@ -17,7 +17,8 @@ import {requireMaterializedCopies, preflightRefresh} from './copy-checkout.mjs';
 import {completeModuleCopies} from './module-closure.mjs';
 import {editionMigrations} from './edition-migrations.mjs';
 import {adoptWorkflowTemplates, completeWorkflowHelpers} from './workflow-copies.mjs';
-import {archiveReader, apiReader} from './archive-source.mjs';
+import {archiveReader} from './archive-source.mjs';
+import {apiReader} from './api-source.mjs';
 
 export const RECORD = 'base-copies.json';
 const commit = /^[a-f0-9]{40}$/, sha256 = /^[a-f0-9]{64}$/;
@@ -101,12 +102,13 @@ export function options(args, count) {
   return result;
 }
 
-// Share the authenticated immutable API reader for recording and refreshing.
+// Share immutable GitHub acquisition for recording and refreshing.
 function apiSource(record, root, revision) {
   const declared = record.repository ?? baseRepository(root);
   const repository = /^(?:https:\/\/github\.com\/)?([\w.-]+\/[\w.-]+?)(?:\.git)?$/.exec(declared)?.[1];
   if (!repository) throw Error('--from-api requires a GitHub Base repository');
-  return {read: apiReader(repository, revision), head: revision, close() {}};
+  const read = apiReader(repository, revision);
+  return {read, head: revision, close: read.close};
 }
 
 export function validate(record) {

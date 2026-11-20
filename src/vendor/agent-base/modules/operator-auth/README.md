@@ -575,6 +575,12 @@ app shows the explicit mark, or the `--rer-logo` its theme declares, as an
 `<img>` with the product name as its alt text. With neither mark declaration,
 it shows the product name as text alone.
 
+Explicit `rer dev --as PERSONA` links carry a 15-minute grant signed with the
+checkout's key and bound to the origin and selected account. The same POST
+exchanges the grant for a dev session and a cookie that admits that session
+only. Persona switching and dev-minted credentials still require the
+checkout-wide gate. Reset invalidates both forms of local entry.
+
 `dev/` is the dev layer: **server-only and local-only**. Import it only from a
 local-only Worker entry (a Vite-serve or local `wrangler dev` entry), never
 from the deployed main; its `DEV_LAYER_MARKER` lets `rer build` refuse any output

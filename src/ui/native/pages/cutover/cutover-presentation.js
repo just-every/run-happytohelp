@@ -2,6 +2,10 @@ import moment from 'moment';
 
 /** Plain words for the API's values, and the one-line counts each source shows. */
 export const sourceNames = { zendesk: 'Zendesk', legacy: 'Legacy HappyToHelp', email: 'Email route', widget: 'Website widget' };
+export const sourceGuides = {
+    email: { href: 'https://happytohelp.com/docs/email#turn-on-live-mail-later', label: 'How to turn on live mail' },
+    widget: { href: 'https://happytohelp.com/docs/install#try-the-customer-widget-locally', label: 'Try the customer widget locally' },
+};
 export const stateLabels = { incumbent: 'With the old tool', seed: 'Switched here', retired: 'Old tool retired' };
 export const checkLabels = { passed: 'Check passed', failed: 'Check failed', not_run: 'Not checked' };
 export const sourceOptions = Object.entries(sourceNames).map(([value, label]) => ({ value, label }));

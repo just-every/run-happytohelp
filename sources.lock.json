@@ -13449,7 +13449,7 @@
       "executable": false
     },
     "src/ui/native/pages/cutover/cutover-presentation.js": {
-      "sha256": "5e94f344594b54d1fa8a0df6f8e76bdba923c63d637ae49540d01e9f5f215f37",
+      "sha256": "037891c652d2009c9f72e84f2329e3221c2f46a3f06eab1a3832691d175b1cf0",
       "executable": false
     },
     "src/ui/native/pages/cutover/cutover.css": {
@@ -13465,7 +13465,7 @@
       "executable": false
     },
     "src/ui/native/pages/cutover/CutoverSource.jsx": {
-      "sha256": "69c1dfed4a10d155cced45b4567e3b7a5801fcd5700b5ed2a6175186da552924",
+      "sha256": "74f0674a87e0f66382a6784f45dd45050b3bd9900e5830f614afe7ca4c9cc3a2",
       "executable": false
     },
     "src/ui/native/pages/delegation-shared.js": {
@@ -16613,7 +16613,7 @@
       "executable": false
     },
     "tests/helpers/email/setup-browser.mjs": {
-      "sha256": "e29432ebe711e8a1dbba3a4bfdbce1ba2d726636d87571c24134de7a4666d016",
+      "sha256": "2ff14b483f5bf2e56f1789b675345a63a5b15625a2c05770fa3cacd4e65a71de",
       "executable": false
     },
     "tests/helpers/email/transports.mjs": {

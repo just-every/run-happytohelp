@@ -1,7 +1,7 @@
 import React from 'react';
 import Moment from '../../Moment';
 import { Section } from '../forms';
-import { checkLabels, countsParts, sourceNames, stateLabels, timeFormat } from './cutover-presentation';
+import { checkLabels, countsParts, sourceGuides, sourceNames, stateLabels, timeFormat } from './cutover-presentation';
 
 const When = ({ at }) => <Moment date={at} format={timeFormat(at)}/>;
 
@@ -28,10 +28,11 @@ function Step({ step }) {
     </li>;
 }
 
-/** One move-in source: its name and where it stands, its live counts, then every step recorded for it, newest first. */
 export default function CutoverSource({ source }) {
+    const guide = sourceGuides[source.id];
     return <Section card title={<>{sourceNames[source.id]}<span className={`cutover-state cutover-state--${source.state}`}>{stateLabels[source.state]}</span></>}>
         <CountsLine source={source}/>
+        {guide && <p className="settings-note mb-0"><a href={guide.href} target="_blank" rel="noopener noreferrer">{guide.label}</a></p>}
         {source.steps.length > 0 && <ol className="cutover-steps" aria-label={`${sourceNames[source.id]} steps`}>{source.steps.map(step => <Step key={step.id} step={step}/>)}</ol>}
     </Section>;
 }

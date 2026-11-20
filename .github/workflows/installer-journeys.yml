@@ -158,6 +158,7 @@ jobs:
             ${{ runner.temp }}/rer-apt/archives/*.deb
           key: h2h-ubuntu24-temp-v1-${{ runner.arch }}-browser-false-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
       - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
       - name: Export two legacy projects and import each twice
         env:
           LEGACY_TEST_MYSQL_HOST: 127.0.0.1

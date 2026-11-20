@@ -1557,7 +1557,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "890640763fa57331f735990cc0721de9c26b4673c320ea3c29821e3109bddf12",
+      "sha256": "bfb81fba3d1f2504273067432a947407161ffc85a10b20122952d26b232b6c85",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {

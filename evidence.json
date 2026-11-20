@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "ef3fc9cc90a4054a85b85ac82fef05bc8282b0ff",
+      "bytes": 104852,
+      "path": "RECEIPTS.json",
+      "sha256": "9d6af25efa88924c1accd9352b254c9df6a5b92555ec59b21350d2fd76b33f72"
+    },
+    {
+      "blob": "3ada794a9d0bd84b0cfcf957816d8b0546b971ee",
+      "bytes": 5482,
+      "path": "REPORT.md",
+      "sha256": "a2545175efb49e8bd00f346208f1eef52934276d2d2adfdf8281851acbdacd26"
+    },
+    {
+      "blob": "11fd8b4dd51c8b94860b1bbda3fff16503f0774a",
+      "bytes": 1231,
+      "path": "native-readers.json",
+      "sha256": "392bce3c38404f9bda87097d6830f5a0c9b2e256acd6032421cfe2ae6c12c586"
+    }
+  ],
+  "product_branch": "cloud/hh-ci-legacy-export-build-1",
+  "product_head": "1ffe9e063072f94e01a5d116f20b2317ca824b77",
+  "ref": "refs/heads/evidence/hh-ci-legacy-export-build-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-ci-legacy-export-build-1"
+}

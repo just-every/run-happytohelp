@@ -21,6 +21,7 @@ import {archiveReader} from './archive-source.mjs';
 import {apiReader} from './api-source.mjs';
 
 export const RECORD = 'base-copies.json';
+export const MIGRATION_IGNORE_GUIDE = 'https://github.com/runeditrun/base/blob/main/modules/catalogue-ordering/ADOPTING.md#fresh-schema-and-populated-cutover';
 const commit = /^[a-f0-9]{40}$/, sha256 = /^[a-f0-9]{64}$/;
 const FILE_MODES = ['100644', '100755'];
 // Unrecorded-copy detection skips files under this many bytes: a one-line file such
@@ -31,6 +32,7 @@ const DEFAULT_DISCOVERY_IGNORES = new Set(['LICENSE', 'CLAUDE.md']);
 const modeOf = executable => executable ? '100755' : '100644';
 const within = (name, prefix) => name === prefix || name.startsWith(prefix + '/');
 const mapped = (name, from, to) => to + name.slice(from.length);
+export const isMigrationPath = name => name.split('/').slice(0, -1).includes('migrations');
 
 function baseRepository(root) {
   const recipe = path.join(root, 'edition.json');
@@ -513,8 +515,8 @@ export function refreshCopies(root, {positional: [revision], record: recordPath,
     // A migration a database may already have applied is never rewritten in place:
     // the schema change it brings belongs in a new migration of the seed's own.
     const applied = plans.flatMap(({copy, sources}) => sources.map(([source, {object}]) => [mapped(source, copy.originPath, copy.path), object])
-      .filter(([name, object]) => name.split('/').slice(0, -1).includes('migrations') && local(name) && local(name) !== upstream.get(object)).map(([name]) => name));
-    if (applied.length) throw Error(`Refusing to rewrite migrations that may already be applied: ${applied.join(', ')}. Base changed these files after they were copied; keep them as they are, drop them from ${recordPath}, and add a new migration for the change instead.`);
+      .filter(([name, object]) => isMigrationPath(name) && local(name) && local(name) !== upstream.get(object)).map(([name]) => name));
+    if (applied.length) throw Error(`Refusing to rewrite migrations that may already be applied: ${applied.join(', ')}. Base changed these files after they were copied. Preserve their filenames and bytes, remove their copy entries from ${recordPath}, and add a new migration for the change. If the preserved bytes still match Base, add each exact path to the ignore array in ${recordPath}. See ${MIGRATION_IGNORE_GUIDE}.`);
     // A file already owned by the edition can become byte-equal when Base adds
     // its own implementation. Preserve ownership explicitly for discovery; it
     // must never enter the copy write plan merely because the bytes now match.

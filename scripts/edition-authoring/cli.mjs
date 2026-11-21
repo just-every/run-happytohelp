@@ -5,7 +5,7 @@ import {release, verifyReceipt} from './release.mjs';
 import {changes, extract, compare} from './updates.mjs';
 import {manifest} from './manifest.mjs';
 import {snapshot, source, merge} from './sources.mjs';
-import {options, adaptCopy, recordCopy, refreshCopies, verifyCopies} from './base-copies.mjs';
+import {options, adaptCopy, recordCopy, refreshCopies, verifyCopies, isMigrationPath, MIGRATION_IGNORE_GUIDE} from './base-copies.mjs';
 import {json, tracked, writeTree, fresh} from './files.mjs';
 
 import {resolveSources} from './lock.mjs';
@@ -77,6 +77,9 @@ try {
   else if (command === 'verify-base') {
     result = verifyCopies(root, options(args.slice(1), 0));
     if (!result.ok) process.exitCode = 1;
+    for (const {path} of result.unrecordedCopies.filter(copy => isMigrationPath(copy.path))) {
+      console.error(`${path} matches Base and is outside the recorded copies. If this is an applied, seed-owned migration, preserve its filename and bytes and add its exact path to the ignore array in ${result.record}. See ${MIGRATION_IGNORE_GUIDE}.`);
+    }
   } else if (command === 'record-base') result = recordCopy(root, options(args.slice(1), 3));
   else if (command === 'adapt-base') result = adaptCopy(root, options(args.slice(1), 1));
   else if (command === 'refresh-base') result = refreshCopies(root, options(args.slice(1), 1));

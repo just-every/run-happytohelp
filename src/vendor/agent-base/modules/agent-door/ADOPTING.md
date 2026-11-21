@@ -99,6 +99,12 @@ with its existing authoring command after staging intentional changes. See the
 [edition authoring guide](../../export/EDITION-AUTHORING.md) for offline refresh,
 adaptations and copy verification.
 
+If an applied migration matches Base byte for byte and sits outside the copy
+inventory, add its exact path to the `ignore` array in `base-copies.json`. This
+covers migrations removed from the inventory to preserve applied SQL and
+one-time forward migrations. Preserve the migration's filename and bytes. See
+the [exact-path ignore rule](../catalogue-ordering/ADOPTING.md#fresh-schema-and-populated-cutover).
+
 ## Refreshing a copy older than 0.2.96
 
 The tagged schemas in `rer-v0.2.93` and `rer-v0.2.94` are identical.

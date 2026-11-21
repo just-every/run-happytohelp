@@ -16,7 +16,7 @@ export const EXCHANGE_SCRIPT = `(() => {
       method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body)
     });
     if (!response.ok) {
-      document.body.insertAdjacentHTML('beforeend', ${JSON.stringify('<p role="alert">This link no longer opens the app. Run ~/.local/bin/rer dev again for a fresh one.</p>' + `<p>${terminalHelpHtml}</p>`)});
+      document.querySelector('main').insertAdjacentHTML('beforeend', ${JSON.stringify('<p role="alert">This link no longer opens the app. Run ~/.local/bin/rer dev again for a fresh one.</p>' + `<p>${terminalHelpHtml}</p>`)});
       return;
     }
     const next = signature ? (await response.json()).location : fragment.get('next') ||

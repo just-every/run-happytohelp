@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "a1b3801ecb3c1ad5263135138c10aa7afccebc2843cc57102264d681288617b0"
+    "sha256": "4afb54aff4bb60a05f902e67bb9b20f8478c2d6cb76819ce8e17f142224c25b8"
   },
   "components": [
     {
@@ -1605,7 +1605,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "a245b5387b74a43392e22f386e1ed616c96b0e68a5391b124f5f549fd29052b8",
+      "sha256": "7b453e1d930eb868056604056e897dc3b609ce080481c373ccaa131d186d1613",
       "executable": false
     },
     "CHANGELOG.md": {
@@ -2917,11 +2917,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "de17f93f212932781b7306b9f8bcfbb76d240ca8b98661d3fbbf1e49832d9b5e",
+      "sha256": "551acf8a31dd721111466e5ed222666881fa891fa2ea2f17c26cb30d833368e5",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "c79c96babb3c446fc3c990ffee612688ce78ff23d7c990ec28c7770bbf0b5c0a",
+      "sha256": "f7c9ed42de4a6ab977858e76b925849128ee9154f3ec5ceb15e5aa36dbb19009",
       "executable": false
     },
     "public/fonts/fonts.css": {
@@ -3245,11 +3245,11 @@
       "executable": false
     },
     "scripts/edition-authoring/base-copies.mjs": {
-      "sha256": "bd1ad7bb65bc31c25f0e3b402d940e3a04fb09d1587e0fc16014a32343366438",
+      "sha256": "8568c95f6adf07d8d6d1b136fa140223ffe0a544ba292ce05b5532d5efb807cf",
       "executable": false
     },
     "scripts/edition-authoring/cli.mjs": {
-      "sha256": "87bff33255838dbbcdb017c034380002b3cffe65b7fb098dc05f20544d1931fc",
+      "sha256": "2812198aa88c81ee4c0ba2f178947a328b2ccfcfab9d183fb948e4961c821d61",
       "executable": false
     },
     "scripts/edition-authoring/copy-checkout.mjs": {
@@ -9413,7 +9413,7 @@
       "executable": false
     },
     "src/modules/operator-auth/dev-gate-script.mjs": {
-      "sha256": "939d1911b862638a7e358ca6f41a78af213f66aa319799a77c82b909a6fb16f6",
+      "sha256": "2cefa49df99a8cce920ce1b585c6c6ff50c3ebd83019d4def131aea888a79e7a",
       "executable": false
     },
     "src/modules/operator-auth/dev-gate.mjs": {
@@ -14425,7 +14425,7 @@
       "executable": false
     },
     "src/vendor/agent-base/modules/agent-door/ADOPTING.md": {
-      "sha256": "db0b4718bc6578e01cb50cb6bbac46c732ecb7e2ce9ce2743fbaba26b3674c20",
+      "sha256": "01cf396d792a748386c72cefb89f48a4454db48752e42fe35c5bb0153d487506",
       "executable": false
     },
     "src/vendor/agent-base/modules/agent-door/adoption/penny/0106_agent_erasure_custody.sql": {
@@ -15149,7 +15149,7 @@
       "executable": false
     },
     "src/vendor/agent-base/modules/operator-auth/dev-gate-script.mjs": {
-      "sha256": "939d1911b862638a7e358ca6f41a78af213f66aa319799a77c82b909a6fb16f6",
+      "sha256": "2cefa49df99a8cce920ce1b585c6c6ff50c3ebd83019d4def131aea888a79e7a",
       "executable": false
     },
     "src/vendor/agent-base/modules/operator-auth/dev-gate.mjs": {
@@ -15877,7 +15877,7 @@
       "executable": false
     },
     "src/vendor/base/modules/operator-auth/dev-gate-script.mjs": {
-      "sha256": "939d1911b862638a7e358ca6f41a78af213f66aa319799a77c82b909a6fb16f6",
+      "sha256": "2cefa49df99a8cce920ce1b585c6c6ff50c3ebd83019d4def131aea888a79e7a",
       "executable": false
     },
     "src/vendor/base/modules/operator-auth/dev-gate.mjs": {

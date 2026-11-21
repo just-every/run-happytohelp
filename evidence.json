@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "735023625a556f97359769defa48c1390d72332a",
+      "bytes": 4374,
+      "path": "REPORT.md",
+      "sha256": "fe4f23920a94f58e4025aa9646deeada658c8cddf878e42eb2b61eb7892351f0"
+    },
+    {
+      "blob": "26e81a8f32e0979f3e556edba8ae9a3b6aa25742",
+      "bytes": 6054,
+      "path": "verification-receipt.json",
+      "sha256": "d2cc674e2429a2cf007b9af9b802a1897ca825cfae2d511f4dbe1df14f67ee10"
+    },
+    {
+      "blob": "d9bf62b28603ab80e69cca57346dab0055efdaef",
+      "bytes": 7242,
+      "path": "verify-ci-receipt.json",
+      "sha256": "6241e76350d24bb9fd67a390fe162bfb604abf3f705fd93254d4502b561cdcf5"
+    }
+  ],
+  "product_branch": "cloud/hh-verify-base-ignores-1",
+  "product_head": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+  "ref": "refs/heads/evidence/hh-verify-base-ignores-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-verify-base-ignores-1"
+}

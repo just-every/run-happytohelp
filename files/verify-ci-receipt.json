@@ -1,0 +1,235 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "expected_product_head": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+  "run_id": 44907979368,
+  "run_attempt": 1,
+  "trigger": "push",
+  "discovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_branch": "cloud/hh-verify-base-ignores-1",
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44907979368",
+      "id": 44907979368,
+      "name": "Verify",
+      "run_attempt": 1,
+      "status": "in_progress"
+    }
+  ],
+  "prior_status_polls": [
+    {
+      "conclusion": null,
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44907979368",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44907979368",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44907979368",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44907979368",
+      "status": "in_progress"
+    }
+  ],
+  "final_status": {
+    "conclusion": "success",
+    "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44907979368",
+    "status": "completed"
+  },
+  "total_jobs": 16,
+  "job_conclusions": {
+    "skipped": 2,
+    "success": 14
+  },
+  "jobs": [
+    {
+      "completed_at": "2026-11-21T13:16:11Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857536858,
+      "name": "plan",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:15:53Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:16:34Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857537030,
+      "name": "contract-docs",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:15:53Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:17:16Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857619994,
+      "name": "build",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:16:13Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:16:11Z",
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857621230,
+      "name": "slow",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:16:11Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:20:27Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857884302,
+      "name": "size-check",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:17:19Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:30:07Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857884394,
+      "name": "Verify / support-workflow-browser",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:17:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:36:20Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857884434,
+      "name": "Verify / support-and-recovery",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:17:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:32:50Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857884437,
+      "name": "Verify / assistant-and-knowledge",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:17:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:35:11Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857884453,
+      "name": "Verify / import-and-reports",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:17:18Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:35:47Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857884463,
+      "name": "Verify / identity-and-repair-browser",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:17:19Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:40:45Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857884487,
+      "name": "Verify / public-and-import-browser",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:17:19Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:41:19Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857884493,
+      "name": "Verify / connections-and-computers",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:17:19Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:34:58Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136857884502,
+      "name": "Verify / identity-and-desk",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:17:19Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:20:27Z",
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136858677895,
+      "name": "nightly-proof",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:20:27Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:41:24Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136863887653,
+      "name": "full-push-proof",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:41:22Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-21T13:41:33Z",
+      "conclusion": "success",
+      "failed_steps": [],
+      "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+      "id": 136863908291,
+      "name": "verify",
+      "run_attempt": 1,
+      "started_at": "2026-11-21T13:41:26Z",
+      "status": "completed"
+    }
+  ]
+}

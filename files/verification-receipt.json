@@ -1,0 +1,202 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "branch": "cloud/hh-verify-base-ignores-1",
+  "before_sha": "c9f4904b175366d0226fc2a4c33348d6e4f8ffc9",
+  "head_sha": "90e82986d345e1e9f91068ba8b1ea99b88cc2822",
+  "parent_sha": "c9f4904b175366d0226fc2a4c33348d6e4f8ffc9",
+  "candidate_commit_count": 1,
+  "schema_version": 1,
+  "copied_entries": {
+    "before": 441,
+    "after": 441
+  },
+  "ignored_paths": {
+    "before": [
+      "docs/licenses/base-MIT.txt"
+    ],
+    "after": [
+      "docs/licenses/base-MIT.txt",
+      "migrations/277_agent_door.sql",
+      "migrations/316_agent_door_relay_privacy.sql"
+    ]
+  },
+  "pinned_base_ref": [
+    "c21583b3c700fd5d58e3fae820662ee0bf430af6"
+  ],
+  "before_online_node_24": {
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "verify-base"
+    ],
+    "exit_code": 1,
+    "output": {
+      "ok": false,
+      "origin": "fresh clone of the recorded repository",
+      "copy_count": 441,
+      "drift": [],
+      "unrecordedCopies": [
+        {
+          "path": "migrations/277_agent_door.sql",
+          "originPath": "modules/agent-door/tests/fixtures/schema-0.2.93/agent-door.sql",
+          "revision": "c21583b3c700fd5d58e3fae820662ee0bf430af6"
+        },
+        {
+          "path": "migrations/316_agent_door_relay_privacy.sql",
+          "originPath": "default-seed/migrations/core/0043_agent_door_relay_privacy.sql",
+          "revision": "c21583b3c700fd5d58e3fae820662ee0bf430af6"
+        }
+      ]
+    }
+  },
+  "after_online_node_24": {
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "verify-base"
+    ],
+    "exit_code": 0,
+    "output": {
+      "ok": true,
+      "origin": "fresh clone of the recorded repository",
+      "copy_count": 441,
+      "drift": [],
+      "unrecordedCopies": []
+    }
+  },
+  "after_offline_node_24": {
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "verify-base",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "output": {
+      "ok": true,
+      "origin": "not checked (--offline): local bytes against recorded SHA-256 only",
+      "copy_count": 441,
+      "drift": [],
+      "unrecordedCopies": []
+    }
+  },
+  "after_online_node_22": {
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "verify-base"
+    ],
+    "exit_code": 0,
+    "output": {
+      "ok": true,
+      "origin": "fresh clone of the recorded repository",
+      "copy_count": 441,
+      "drift": [],
+      "unrecordedCopies": []
+    }
+  },
+  "after_offline_node_22": {
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "verify-base",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "output": {
+      "ok": true,
+      "origin": "not checked (--offline): local bytes against recorded SHA-256 only",
+      "copy_count": 441,
+      "drift": [],
+      "unrecordedCopies": []
+    }
+  },
+  "source_lock": {
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "lock"
+    ],
+    "exit_code": 0,
+    "diff": "diff --git a/sources.lock.json b/sources.lock.json\nindex b0d3816a..27b1ffaf 100644\n--- a/sources.lock.json\n+++ b/sources.lock.json\n@@ -1608 +1608 @@\n-      \"sha256\": \"750ab9a2209c5f15a53a2b479937cec1fa568f444a6b20d9bc3f095bcddf9f83\",\n+      \"sha256\": \"a245b5387b74a43392e22f386e1ed616c96b0e68a5391b124f5f549fd29052b8\","
+  },
+  "checks_on_pinned_node_22": [
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit_code": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check",
+      "exit_code": 0
+    }
+  ],
+  "changed_files": [
+    "base-copies.json",
+    "sources.lock.json"
+  ],
+  "diff_stat": "base-copies.json  | 4 +++-\n sources.lock.json | 2 +-\n 2 files changed, 4 insertions(+), 2 deletions(-)",
+  "migrations": [
+    {
+      "path": "migrations/277_agent_door.sql",
+      "originPath": "modules/agent-door/tests/fixtures/schema-0.2.93/agent-door.sql",
+      "revision": "c21583b3c700fd5d58e3fae820662ee0bf430af6",
+      "before_sha256": "016d8a98b964385f5c4a13447361c3c783910a76aaf4606b0e0081482bc819cc",
+      "after_sha256": "016d8a98b964385f5c4a13447361c3c783910a76aaf4606b0e0081482bc819cc"
+    },
+    {
+      "path": "migrations/316_agent_door_relay_privacy.sql",
+      "originPath": "default-seed/migrations/core/0043_agent_door_relay_privacy.sql",
+      "revision": "c21583b3c700fd5d58e3fae820662ee0bf430af6",
+      "before_sha256": "fb9e276013234f2f3afbd10dc654e93edc361b2165fd4cb2c0273ce44ab70a7a",
+      "after_sha256": "fb9e276013234f2f3afbd10dc654e93edc361b2165fd4cb2c0273ce44ab70a7a"
+    }
+  ],
+  "contract_status_changes": [],
+  "contract_progress_before_and_after": [
+    "| Core | 4 | 71 | 11 | 86 |",
+    "| Agent surface | 0 | 0 | 5 | 5 |",
+    "| Later | 0 | 0 | 0 | 0 |",
+    "| Full target | 4 | 71 | 16 | 91 |"
+  ],
+  "candidate_identity_passed": true,
+  "candidate_trailer_count": 0,
+  "publication_scan": "The fleet lander runs the full publication scan.",
+  "before_online_node_22": {
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "verify-base"
+    ],
+    "exit_code": 1,
+    "output": {
+      "ok": false,
+      "origin": "fresh clone of the recorded repository",
+      "drift": [],
+      "unrecordedCopies": [
+        {
+          "path": "migrations/277_agent_door.sql",
+          "originPath": "modules/agent-door/tests/fixtures/schema-0.2.93/agent-door.sql",
+          "revision": "c21583b3c700fd5d58e3fae820662ee0bf430af6"
+        },
+        {
+          "path": "migrations/316_agent_door_relay_privacy.sql",
+          "originPath": "default-seed/migrations/core/0043_agent_door_relay_privacy.sql",
+          "revision": "c21583b3c700fd5d58e3fae820662ee0bf430af6"
+        }
+      ],
+      "copy_count": 441
+    }
+  }
+}

@@ -59,8 +59,7 @@ type Reason = 'hover' | 'focus' | 'touch';
  */
 export function installTooltips(root: Document | ShadowRoot, container?: Element | ShadowRoot): () => void {
     const doc = root.ownerDocument ?? root as Document;
-    const view = doc.defaultView;
-    if (!view) return () => {};
+    if (!doc.defaultView) return () => {};
     const tip = doc.createElement('div');
     tip.className = 'ui-tooltip';
     tip.setAttribute('role', 'tooltip');
@@ -68,6 +67,18 @@ export function installTooltips(root: Document | ShadowRoot, container?: Element
     // The top layer keeps it above modal <dialog>s and outside any transformed or clipping ancestor.
     tip.setAttribute('popover', 'manual');
     (container ?? (root === doc ? doc.body : root)).appendChild(tip);
+    const unbind = bindTooltips(root, tip);
+    return () => {
+        unbind();
+        tip.remove();
+    };
+}
+
+/** Attach tooltip behavior to an existing layer whose caller owns its DOM lifetime. */
+export function bindTooltips(root: Document | ShadowRoot, tip: HTMLElement): () => void {
+    const doc = root.ownerDocument ?? root as Document;
+    const view = doc.defaultView;
+    if (!view) return () => {};
 
     let shown: HTMLElement | null = null;
     let reason: Reason | null = null;
@@ -274,6 +285,5 @@ export function installTooltips(root: Document | ShadowRoot, container?: Element
     return () => {
         hide(); endPress();
         for (const [target, type, listener, options] of listeners) target.removeEventListener(type, listener, options);
-        tip.remove();
     };
 }

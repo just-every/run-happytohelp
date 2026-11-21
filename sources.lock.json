@@ -10245,11 +10245,11 @@
       "executable": false
     },
     "src/modules/tooltip/tooltip.ts": {
-      "sha256": "eae2c372d0d8d73abea4f817927bba83c68f05c54fa4ef858f4bba711a8e3ea9",
+      "sha256": "b69b61f16e3818bc603255373feade433c0d1a1297d4775087843c90a5b6f69b",
       "executable": false
     },
     "src/modules/tooltip/TooltipLayer.tsx": {
-      "sha256": "7858d309d34a9374a2b11b00c3c06d85d2386ac9959c14676ef6273490e0f449",
+      "sha256": "baab3f7d58e9de9668d51a6d482039154d59e6be0436bdac2a5f0677fd9f3976",
       "executable": false
     },
     "src/modules/training-runs/baseline.js": {
@@ -17241,7 +17241,7 @@
       "executable": false
     },
     "tests/helpers/legacy-worker/profiler.mjs": {
-      "sha256": "58a19f238cc5188b430f41520f693d7aaab495ea9ee52fa03dd06389844d72a8",
+      "sha256": "206e81454d9784cec58dd8563e9a7ed62c2b29e335b31c699fb5240762ba3eb7",
       "executable": false
     },
     "tests/helpers/legacy-worker/runtime.mjs": {

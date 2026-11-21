@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "5ba68451c25283599be1ac84781a59c97f30bc4f",
+      "bytes": 1590940,
+      "path": "PUBLICATION.json",
+      "sha256": "56df090b2b7bef9716a68d94fe71adf7445957013eb617e54bebff90b2b581f5"
+    },
+    {
+      "blob": "1b628c84e406fc249d2db7d1f0c1bba88cb3d2da",
+      "bytes": 39145,
+      "path": "RECEIPTS.json",
+      "sha256": "ec8e3d8c552159010c933f71f64e503d0bce062a2e8705f0e23f94a689ec4654"
+    },
+    {
+      "blob": "c8674c2fa4733a663fa2ea96db9e2341a39190bf",
+      "bytes": 7914,
+      "path": "REPORT.md",
+      "sha256": "39ab06d845a9efb959ba0151845d8f09a709ffe569d3dd4da711a08b67760d85"
+    },
+    {
+      "blob": "33deec495e4906028d0e374497f4d9a4c953cdde",
+      "bytes": 40531,
+      "path": "VERIFY-CI.json",
+      "sha256": "31beab5c740f44237e29cc148b466bda5399d2eff89d6effdeff2f345164ee14"
+    },
+    {
+      "blob": "ec5d5e8b3f6eea4fe673c52043dee4b32049cf6c",
+      "bytes": 873439,
+      "path": "homepage-after-1440.png",
+      "sha256": "f05d192996e9aa15082173df75688bd3d82d11e79b5defbffb64b2b6cfae8a94"
+    },
+    {
+      "blob": "f2349519e4c378d439f6a5212e73eea6e3c41d1e",
+      "bytes": 735905,
+      "path": "homepage-after-390.png",
+      "sha256": "573749d9902ab245b7456eab9f904dd103b757fe672315c589345251c9cbbb5b"
+    },
+    {
+      "blob": "ec5d5e8b3f6eea4fe673c52043dee4b32049cf6c",
+      "bytes": 873439,
+      "path": "homepage-before-1440.png",
+      "sha256": "f05d192996e9aa15082173df75688bd3d82d11e79b5defbffb64b2b6cfae8a94"
+    },
+    {
+      "blob": "f2349519e4c378d439f6a5212e73eea6e3c41d1e",
+      "bytes": 735905,
+      "path": "homepage-before-390.png",
+      "sha256": "573749d9902ab245b7456eab9f904dd103b757fe672315c589345251c9cbbb5b"
+    }
+  ],
+  "product_branch": "cloud/hh-verify-hydration-1",
+  "product_head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8",
+  "ref": "refs/heads/evidence/hh-verify-hydration-1",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "hh-verify-hydration-1"
+}

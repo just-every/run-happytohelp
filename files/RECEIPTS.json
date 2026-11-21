@@ -1,0 +1,1060 @@
+{
+  "baseline": "c9f4904b175366d0226fc2a4c33348d6e4f8ffc9",
+  "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8",
+  "parent": "c9f4904b175366d0226fc2a4c33348d6e4f8ffc9",
+  "branch": "cloud/hh-verify-hydration-1",
+  "versions": {
+    "chromiumVersion": "154.0.8037.57",
+    "Node": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.127",
+    "browser": "VM Chromium at /usr/bin/chromium",
+    "platform": "Linux"
+  },
+  "checks": [
+    {
+      "name": "before-build",
+      "stage": "baseline",
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "head": "c9f4904b175366d0226fc2a4c33348d6e4f8ffc9",
+      "output": [
+        "Your application is built",
+        "build: complete (exit 0)"
+      ]
+    },
+    {
+      "name": "before-home-hydration",
+      "stage": "baseline",
+      "command": "node node_modules/@runeditrun/rer/cli/hydration/check.mjs --pages / --details",
+      "exit": 1,
+      "head": "c9f4904b175366d0226fc2a4c33348d6e4f8ffc9",
+      "output": [
+        "Page sections did not hydrate as separate units:",
+        "  / plain load: the page did not settle (timeout)"
+      ],
+      "hydration": {
+        "served": "production build as ~/.local/bin/rer deploy hosts it",
+        "pages": [
+          {
+            "path": "/",
+            "sections": [
+              "header.site-header (div:0>header:1)",
+              "section#top (div:0>main:2>section:0)",
+              "section#free (div:0>main:2>section:1)",
+              "section#product (div:0>main:2>section:3)",
+              "section#move-in (div:0>main:2>section:5)",
+              "section#get-started (div:0>main:2>section:6)",
+              "footer.site-footer (div:0>footer:3)"
+            ],
+            "intros": [
+              "div:0>main:2>section:0>div:0>svg:4>path:0 h2h-flourish",
+              "div:0>main:2>section:0>div:1>figure:0>div:2>svg:1>path:0 h2h-flourish",
+              "div:0>main:2>section:0>div:1>figure:0>div:2>svg:1>path:1 h2h-flourish"
+            ],
+            "loads": 1,
+            "advisories": [],
+            "cases": []
+          }
+        ],
+        "loads": 1,
+        "ms": 33934
+      }
+    },
+    {
+      "name": "before-legacy",
+      "stage": "baseline",
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"an owner runs a bounded legacy package\" tests/journeys/legacy.mjs",
+      "exit": 0,
+      "head": "c9f4904b175366d0226fc2a4c33348d6e4f8ffc9",
+      "output": [
+        "ok 1 - an owner runs a bounded legacy package through HTTP and queue, stops in-flight writes, resumes two real Worker deaths and replays zero rows",
+        "  ---",
+        "  duration_ms: 73732.100439",
+        "  type: 'test'",
+        "  ...",
+        "1..1",
+        "# tests 1",
+        "# suites 0",
+        "# pass 1",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# todo 0",
+        "# duration_ms 73895.966203"
+      ]
+    },
+    {
+      "name": "before-verify",
+      "stage": "baseline",
+      "command": "pnpm exec rer verify",
+      "exit": 1,
+      "head": "c9f4904b175366d0226fc2a4c33348d6e4f8ffc9",
+      "output": [
+        "not ok 1 - a visitor gets a source-linked answer from published knowledge, durable replay and a human handoff under current authority",
+        "  ---",
+        "  duration_ms: 105757.065993",
+        "  type: 'test'",
+        "  location: '[REDACTED]/tests/journeys/ai.mjs:7:1'",
+        "  failureType: 'testCodeFailure'",
+        "  error: 'PUT /api/management/projects/p-ai/widget-settings: expected 200, got 409: {\"error\":\"Workspace settings changed while saving. Please try again.\"}'",
+        "  code: 'ERR_TEST_FAILURE'",
+        "  stack: |-",
+        "    Object.call (file://[REDACTED]/tests/journeys/kit/app.mjs:36:239)",
+        "    process.processTicksAndRejections (node:internal/process/task_queues:105:5)",
+        "    async Promise.all (index 14)",
+        "    async replyModes (file://[REDACTED]/tests/helpers/ai/configured-execution.mjs:290:4)",
+        "not ok 28 - the support agent door binds Business ids to native people, preserves scoped reads and native transactions, enforces policy, replay, revision, Pause and consent, keeps agent ticket work off customer threads and erases its copies of erased people and customers",
+        "  ---",
+        "  duration_ms: 136562.708609",
+        "  type: 'test'",
+        "  location: '[REDACTED]/tests/journeys/delegation.mjs:44:1'",
+        "  failureType: 'testCodeFailure'",
+        "  error: |-",
+        "    []",
+        "    ",
+        "    403 !== 400",
+        "    ",
+        "  code: 'ERR_ASSERTION'",
+        "  name: 'AssertionError'",
+        "not ok 55 - an owner publishes searchable help and removes it through article and workspace lifecycle while drafts and foreign records stay private",
+        "  ---",
+        "  duration_ms: 469339.307118",
+        "  type: 'test'",
+        "  location: '[REDACTED]/tests/journeys/knowledge.mjs:7:1'",
+        "  failureType: 'testCodeFailure'",
+        "  error: 'fetch failed'",
+        "  code: 'ERR_TEST_FAILURE'",
+        "  name: 'TypeError'",
+        "  stack: |-",
+        "    node:internal/deps/undici/undici:13510:13",
+        "    async Object.call (file://[REDACTED]/tests/journeys/kit/http.mjs:6:18)",
+        "    async Object.call (file://[REDACTED]/tests/helpers/c2-diagnostics/http.mjs:9:18)",
+        "# tests 91",
+        "# suites 0",
+        "# pass 88",
+        "# fail 3",
+        "# cancelled 0",
+        "# skipped 0",
+        "# todo 0",
+        "# duration_ms 4866975.701257",
+        " ELIFECYCLE  Command failed with exit code 1.",
+        " ELIFECYCLE  Command failed with exit code 1.",
+        "Job queue uses 2 slots (this client requested 1); set \"slots\" in /home/agent/.rer/jobs/config.json to change the shared limit.",
+        "Verifying application: exit 1, signal none.",
+        "Command: pnpm",
+        "Last output (up to 40 lines):",
+        "  type: 'test'",
+        "  ...",
+        "# tests 91",
+        "# suites 0",
+        "# pass 88",
+        "# fail 3",
+        "# cancelled 0",
+        "# skipped 0",
+        "# todo 0",
+        "# duration_ms 4866975.701257",
+        " ELIFECYCLE  Command failed with exit code 1.",
+        " ELIFECYCLE  Command failed with exit code 1.",
+        "Log: [REDACTED]/.seed/installer/commands-2402/install.log",
+        "verify: failed (exit 1)"
+      ]
+    },
+    {
+      "name": "candidate-build",
+      "stage": "candidate",
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8",
+      "output": [
+        "Your application is built",
+        "build: complete (exit 0)"
+      ]
+    },
+    {
+      "name": "candidate-hydration",
+      "stage": "candidate",
+      "command": "node node_modules/@runeditrun/rer/cli/hydration/check.mjs --details",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8",
+      "output": [],
+      "hydration": {
+        "served": "production build as ~/.local/bin/rer deploy hosts it",
+        "pages": [
+          {
+            "path": "/",
+            "sections": [
+              "header.site-header (div:1>header:1)",
+              "section#top (div:1>main:2>section:0)",
+              "section#free (div:1>main:2>section:1)",
+              "section#product (div:1>main:2>section:3)",
+              "section#move-in (div:1>main:2>section:5)",
+              "section#get-started (div:1>main:2>section:6)",
+              "footer.site-footer (div:1>footer:3)"
+            ],
+            "intros": [
+              "div:1>main:2>section:0>div:0>svg:4>path:0 h2h-flourish",
+              "div:1>main:2>section:0>div:1>figure:0>div:2>svg:1>path:0 h2h-flourish",
+              "div:1>main:2>section:0>div:1>figure:0>div:2>svg:1>path:1 h2h-flourish"
+            ],
+            "loads": 10,
+            "advisories": [],
+            "cases": [
+              {
+                "case": "edit in header.site-header (div:1>header:1), released after the intros",
+                "edit": "text \"HappyToHelp\"",
+                "replaced": 30,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 139,
+                "recovered": 1
+              },
+              {
+                "case": "edit in section#top (div:1>main:2>section:0), released after the intros",
+                "edit": "split \"Open source alternative to\"",
+                "replaced": 83,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 162,
+                "recovered": 1
+              },
+              {
+                "case": "edit in section#top (div:1>main:2>section:0), released mid-intro",
+                "edit": "split \"Open source alternative to\"",
+                "released": "50% through the intro window (1080-2930 ms)",
+                "replaced": 83,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 112,
+                "recovered": 1
+              },
+              {
+                "case": "edit in section#free (div:1>main:2>section:1), released after the intros",
+                "edit": "split \"MIT License\"",
+                "replaced": 88,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 149,
+                "recovered": 1
+              },
+              {
+                "case": "edit in section#product (div:1>main:2>section:3), released after the intros",
+                "edit": "split \"Suggestions\"",
+                "replaced": 98,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 156,
+                "recovered": 1
+              },
+              {
+                "case": "edit in section#move-in (div:1>main:2>section:5), released after the intros",
+                "edit": "split \"Codex or Claude can help.\"",
+                "replaced": 45,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 154,
+                "recovered": 1
+              },
+              {
+                "case": "edit in section#get-started (div:1>main:2>section:6), released after the intros",
+                "edit": "split \"Ready when you are.\"",
+                "replaced": 7,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 154,
+                "recovered": 1
+              },
+              {
+                "case": "edit in footer.site-footer (div:1>footer:3), released after the intros",
+                "edit": "text \"HappyToHelp\"",
+                "replaced": 32,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 148,
+                "recovered": 1
+              },
+              {
+                "case": "plain load with prefers-reduced-motion: reduce",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 33,
+                "recovered": 0
+              }
+            ]
+          },
+          {
+            "path": "/docs",
+            "sections": [
+              "header.site-header (div:1>header:1)",
+              "nav.docs-sidebar[aria-label=\"Documentation\"] (div:1>div:2>nav:0)",
+              "nav.docs-menu[aria-label=\"Documentation\"] (div:1>div:2>main:1>nav:0)",
+              "header.docs-page-head (div:1>div:2>main:1>header:1)",
+              "nav.docs-pager[aria-label=\"Previous and next pages\"] (div:1>div:2>main:1>nav:4)",
+              "nav.docs-toc[aria-label=\"On this page\"] (div:1>div:2>nav:2)",
+              "footer.site-footer (div:1>footer:3)"
+            ],
+            "intros": [
+              "div:1>div:2>main:1>header:1>div:1>svg:1>path:0 h2h-flourish"
+            ],
+            "loads": 15,
+            "advisories": [],
+            "cases": [
+              {
+                "case": "edit in header.site-header (div:1>header:1), released after the intros",
+                "edit": "text \"HappyToHelp\"",
+                "replaced": 30,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 68,
+                "recovered": 1
+              },
+              {
+                "case": "edit in nav.docs-sidebar[aria-label=\"Documentation\"] (div:1>div:2>nav:0), released after the intros",
+                "edit": "text \"Start here\"",
+                "replaced": 95,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 88,
+                "recovered": 1
+              },
+              {
+                "case": "edit in nav.docs-menu[aria-label=\"Documentation\"] (div:1>div:2>main:1>nav:0), released after the intros",
+                "edit": "split \"Docs menu\"",
+                "replaced": 99,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 79,
+                "recovered": 1
+              },
+              {
+                "case": "edit in header.docs-page-head (div:1>div:2>main:1>header:1), released after the intros",
+                "edit": "text \"Start here\"",
+                "replaced": 6,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 79,
+                "recovered": 1
+              },
+              {
+                "case": "edit in header.docs-page-head (div:1>div:2>main:1>header:1), released mid-intro",
+                "edit": "text \"Start here\"",
+                "released": "52% through the intro window (361-1261 ms)",
+                "replaced": 6,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 57,
+                "recovered": 1
+              },
+              {
+                "case": "edit in nav.docs-pager[aria-label=\"Previous and next pages\"] (div:1>div:2>main:1>nav:4), released after the intros",
+                "edit": "text \"Next\"",
+                "replaced": 4,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 69,
+                "recovered": 1
+              },
+              {
+                "case": "edit in nav.docs-toc[aria-label=\"On this page\"] (div:1>div:2>nav:2), released after the intros",
+                "edit": "text \"On this page\"",
+                "replaced": 34,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 71,
+                "recovered": 1
+              },
+              {
+                "case": "edit in footer.site-footer (div:1>footer:3), released after the intros",
+                "edit": "text \"HappyToHelp\"",
+                "replaced": 32,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 81,
+                "recovered": 1
+              },
+              {
+                "case": "edit in text outside every section, released after the intros",
+                "edit": "split \"For a new deployment, use the\"",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 47,
+                "recovered": 0
+              },
+              {
+                "case": "Cloudflare email rewrite decoded before hydration, released after the intros",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 59,
+                "recovered": 0
+              },
+              {
+                "case": "Cloudflare email rewrite decoded before hydration, released mid-intro",
+                "released": "50% through the intro window (566-1466 ms)",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 53,
+                "recovered": 0
+              },
+              {
+                "case": "Cloudflare email rewrite with its anchors present at hydration, released after the intros",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 53,
+                "recovered": 0
+              },
+              {
+                "case": "Cloudflare email rewrite with its anchors present at hydration, released mid-intro",
+                "released": "57% through the intro window (823-1723 ms)",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 38,
+                "recovered": 0
+              },
+              {
+                "case": "plain load with prefers-reduced-motion: reduce",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 40,
+                "recovered": 0
+              }
+            ]
+          },
+          {
+            "path": "/login",
+            "sections": [
+              "header.id-header (div:1>header:0)",
+              "footer.id-footer (div:1>footer:2)"
+            ],
+            "intros": [
+              "div:1>main:1>figure:1>svg:2>path:0 id-pen"
+            ],
+            "loads": 5,
+            "advisories": [],
+            "cases": [
+              {
+                "case": "edit in header.id-header (div:1>header:0), released after the intros",
+                "edit": "text \"HappyToHelp\"",
+                "replaced": 25,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 135,
+                "recovered": 1
+              },
+              {
+                "case": "edit in footer.id-footer (div:1>footer:2), released after the intros",
+                "edit": "text \"Back to home\"",
+                "replaced": 2,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 134,
+                "recovered": 1
+              },
+              {
+                "case": "edit in text outside every section, released after the intros",
+                "edit": "split \"Is my order on its way?\"",
+                "replaced": 39,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 155,
+                "recovered": 1
+              },
+              {
+                "case": "plain load with prefers-reduced-motion: reduce",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 44,
+                "recovered": 0
+              }
+            ]
+          },
+          {
+            "path": "/docs/install",
+            "sections": [
+              "header.site-header (div:1>header:1)",
+              "nav.docs-sidebar[aria-label=\"Documentation\"] (div:1>div:2>nav:0)",
+              "nav.docs-menu[aria-label=\"Documentation\"] (div:1>div:2>main:1>nav:0)",
+              "header.docs-page-head (div:1>div:2>main:1>header:1)",
+              "nav.docs-pager[aria-label=\"Previous and next pages\"] (div:1>div:2>main:1>nav:4)",
+              "nav.docs-toc[aria-label=\"On this page\"] (div:1>div:2>nav:2)",
+              "footer.site-footer (div:1>footer:3)"
+            ],
+            "intros": [
+              "div:1>div:2>main:1>header:1>div:1>svg:1>path:0 h2h-flourish"
+            ],
+            "loads": 15,
+            "advisories": [],
+            "cases": [
+              {
+                "case": "edit in header.site-header (div:1>header:1), released after the intros",
+                "edit": "text \"HappyToHelp\"",
+                "replaced": 30,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 82,
+                "recovered": 1
+              },
+              {
+                "case": "edit in nav.docs-sidebar[aria-label=\"Documentation\"] (div:1>div:2>nav:0), released after the intros",
+                "edit": "text \"Start here\"",
+                "replaced": 95,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 80,
+                "recovered": 1
+              },
+              {
+                "case": "edit in nav.docs-menu[aria-label=\"Documentation\"] (div:1>div:2>main:1>nav:0), released after the intros",
+                "edit": "split \"Docs menu\"",
+                "replaced": 99,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 83,
+                "recovered": 1
+              },
+              {
+                "case": "edit in header.docs-page-head (div:1>div:2>main:1>header:1), released after the intros",
+                "edit": "text \"Start here\"",
+                "replaced": 6,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 82,
+                "recovered": 1
+              },
+              {
+                "case": "edit in header.docs-page-head (div:1>div:2>main:1>header:1), released mid-intro",
+                "edit": "text \"Start here\"",
+                "released": "52% through the intro window (475-1375 ms)",
+                "replaced": 6,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 53,
+                "recovered": 1
+              },
+              {
+                "case": "edit in nav.docs-pager[aria-label=\"Previous and next pages\"] (div:1>div:2>main:1>nav:4), released after the intros",
+                "edit": "text \"Next\"",
+                "replaced": 4,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 89,
+                "recovered": 1
+              },
+              {
+                "case": "edit in nav.docs-toc[aria-label=\"On this page\"] (div:1>div:2>nav:2), released after the intros",
+                "edit": "text \"On this page\"",
+                "replaced": 27,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 71,
+                "recovered": 1
+              },
+              {
+                "case": "edit in footer.site-footer (div:1>footer:3), released after the intros",
+                "edit": "text \"HappyToHelp\"",
+                "replaced": 32,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 80,
+                "recovered": 1
+              },
+              {
+                "case": "edit in text outside every section, released after the intros",
+                "edit": "split \"That clones HappyToHelp into\"",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 63,
+                "recovered": 0
+              },
+              {
+                "case": "Cloudflare email rewrite decoded before hydration, released after the intros",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 75,
+                "recovered": 0
+              },
+              {
+                "case": "Cloudflare email rewrite decoded before hydration, released mid-intro",
+                "released": "50% through the intro window (467-1367 ms)",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 69,
+                "recovered": 0
+              },
+              {
+                "case": "Cloudflare email rewrite with its anchors present at hydration, released after the intros",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 66,
+                "recovered": 0
+              },
+              {
+                "case": "Cloudflare email rewrite with its anchors present at hydration, released mid-intro",
+                "released": "63% through the intro window (507-1407 ms)",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 43,
+                "recovered": 0
+              },
+              {
+                "case": "plain load with prefers-reduced-motion: reduce",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 40,
+                "recovered": 0
+              }
+            ]
+          },
+          {
+            "path": "/setup",
+            "sections": [
+              "section.setup-panel[aria-label=\"Set up HappyToHelp\"] (div:1>main:0>section:2)"
+            ],
+            "intros": [
+              "div:1>main:0>div:3>svg:0>path:0 h2h-setup-flourish"
+            ],
+            "loads": 3,
+            "advisories": [],
+            "cases": [
+              {
+                "case": "edit in section.setup-panel[aria-label=\"Set up HappyToHelp\"] (div:1>main:0>section:2), released after the intros",
+                "edit": "split \"We’ll name your workspace for you.\"",
+                "replaced": 21,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 127,
+                "recovered": 1
+              },
+              {
+                "case": "plain load with prefers-reduced-motion: reduce",
+                "replaced": 0,
+                "replacedOutside": 0,
+                "replays": 0,
+                "framesMissingSection": 0,
+                "frames": 34,
+                "recovered": 0
+              }
+            ]
+          }
+        ],
+        "notChecked": [
+          "/projects answered 307 to /login?returnTo=%2Fprojects"
+        ],
+        "loads": 48,
+        "ms": 70523
+      }
+    },
+    {
+      "name": "candidate-legacy",
+      "stage": "candidate",
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"an owner runs a bounded legacy package\" tests/journeys/legacy.mjs",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8",
+      "output": [
+        "ok 1 - an owner runs a bounded legacy package through HTTP and queue, stops in-flight writes, resumes two real Worker deaths and replays zero rows",
+        "  ---",
+        "  duration_ms: 121149.036268",
+        "  type: 'test'",
+        "  ...",
+        "1..1",
+        "# tests 1",
+        "# suites 0",
+        "# pass 1",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# todo 0",
+        "# duration_ms 121351.832351"
+      ]
+    },
+    {
+      "name": "simulated-legacy",
+      "stage": "candidate",
+      "command": "node --import /tmp/hh-timer-probe.mjs --test --test-concurrency=1 --test-name-pattern=\"an owner runs a bounded legacy package\" tests/journeys/legacy.mjs",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8",
+      "output": [
+        "ok 1 - an owner runs a bounded legacy package through HTTP and queue, stops in-flight writes, resumes two real Worker deaths and replays zero rows",
+        "  ---",
+        "  duration_ms: 108992.674156",
+        "  type: 'test'",
+        "  ...",
+        "# Inspector timers under simulated load per CPU: {\"30000\":1008,\"75000\":503,\"120000\":503}",
+        "1..1",
+        "# tests 1",
+        "# suites 0",
+        "# pass 1",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# todo 0",
+        "# duration_ms 109148.032493"
+      ]
+    },
+    {
+      "name": "candidate-touch",
+      "stage": "candidate",
+      "command": "node /tmp/hh-touch-proof.mjs",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8",
+      "output": [
+        "390px: touch long press opens the tooltip in the popover top layer, clears the trigger and suppresses navigation. A plain tap opens navigation."
+      ]
+    },
+    {
+      "name": "candidate-tooltip-browser",
+      "stage": "candidate",
+      "command": "node --test --test-concurrency=1 --test-name-pattern='an owner connects Zendesk twice|two brands save their appearance|a new owner finds the source' tests/journeys/move-in-browser.mjs tests/journeys/inbox-browser.mjs tests/journeys/public-browser.mjs",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8",
+      "output": [
+        "ok 1 - two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening",
+        "  ---",
+        "  duration_ms: 900173.022279",
+        "  type: 'test'",
+        "  ...",
+        "# Zendesk Connect: both presses POSTed and navigated to their returned authorize URL from the same page load",
+        "ok 2 - an owner connects Zendesk twice, reviews an export, imports and filters its history, detects a repeat and undoes the import",
+        "  ---",
+        "  duration_ms: 378273.678996",
+        "  type: 'test'",
+        "  ...",
+        "# PUBLIC_PROOF PUBLIC-003 desktop invitation right=604.2 drawing left=690.6",
+        "ok 3 - a new owner finds the source and installation guide from the public product page, and recovers from a missing documentation page",
+        "  ---",
+        "  duration_ms: 294633.022903",
+        "  type: 'test'",
+        "  ...",
+        "1..3",
+        "# tests 3",
+        "# suites 0",
+        "# pass 3",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# todo 0",
+        "# duration_ms 1585282.688221"
+      ]
+    },
+    {
+      "name": "candidate-verify",
+      "stage": "candidate",
+      "command": "pnpm exec rer verify",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8",
+      "output": [
+        "# tests 91",
+        "# suites 0",
+        "# pass 91",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# todo 0",
+        "# duration_ms 4693776.927416",
+        "",
+        "> happytohelp@0.4.32 test:browsers [REDACTED]",
+        "> node --test --test-concurrency=2 tests/journeys/public-browser.mjs tests/journeys/identity-browser.mjs tests/journeys/inbox-browser.mjs tests/journeys/move-in-browser.mjs tests/journeys/delegation-browser.mjs tests/journeys/erasure-browser.mjs tests/journeys/workflows-browser.mjs",
+        "",
+        "TAP version 13",
+        "# Subtest: a paired computer publishes the requested help article; the operator reviews its draft with Use, sends once, and the visitor receives the same reply after reload",
+        "ok 1 - a paired computer publishes the requested help article; the operator reviews its draft with Use, sends once, and the visitor receives the same reply after reload",
+        "  ---",
+        "# tests 31",
+        "# suites 0",
+        "# pass 31",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# todo 0",
+        "# duration_ms 5042835.735506",
+        "Serving the production build as ~/.local/bin/rer deploy hosts it",
+        "Checking that page sections hydrate as separate units",
+        "Hydration check: 5 page(s), 48 load(s)",
+        "  /: 10 load(s), 7 section(s)",
+        "  /docs: 15 load(s), 7 section(s)",
+        "  /login: 5 load(s), 2 section(s)",
+        "  /docs/install: 15 load(s), 7 section(s)",
+        "  /setup: 3 load(s), 1 section(s)",
+        "  not checked: /projects answered 307 to /login?returnTo=%2Fprojects",
+        "Agent sponsor probes: undeclared=inactive,excluded; no points run for these states.",
+        "Agent capabilities (legacy): declared=tools,policy,pause,audit,idempotency,events,resources,prompts,subscriptions; refused=; unscoped=multiSponsor,mailEdges,resourceRefresh,timedLifecycle,dualHost,queuedLifecycle,ownerNativeApi.",
+        "PASS BASE-AGENT-013.surface.schema",
+        "PASS BASE-AGENT-013.surface.seed",
+        "PASS BASE-AGENT-013.surface.specialist",
+        "PASS BASE-AGENT-013.surface.tools",
+        "verify: complete (exit 0)"
+      ]
+    },
+    {
+      "name": "typecheck",
+      "stage": "candidate",
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8"
+    },
+    {
+      "name": "first-party",
+      "stage": "candidate",
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8"
+    },
+    {
+      "name": "regenerated-check",
+      "stage": "precommit",
+      "command": "node src/site/base/contract-docs.mjs check after regeneration",
+      "exit": 0
+    },
+    {
+      "name": "base-generated",
+      "stage": "candidate",
+      "command": "node src/site/base/contract-docs.mjs check",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8"
+    },
+    {
+      "name": "seed-generated",
+      "stage": "candidate",
+      "command": "node scripts/contract-docs.mjs check",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8"
+    },
+    {
+      "name": "base-offline",
+      "stage": "candidate",
+      "command": "node scripts/edition-authoring/cli.mjs verify-base --offline",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8"
+    },
+    {
+      "name": "source-lock",
+      "stage": "candidate",
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8"
+    },
+    {
+      "name": "lock-regenerate",
+      "stage": "precommit",
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "name": "publication",
+      "stage": "candidate",
+      "command": "node node_modules/@runeditrun/rer/scripts/publish-check.mjs --repo <clean exact-HEAD worktree> --ref 648bda0019d013cf2ae0f0b1576947eb8ce35dd8 --public-base https://github.com/just-every/run-happytohelp.git#main --project just-every/happytohelp --repository https://github.com/just-every/run-happytohelp.git --timeout-seconds 1200",
+      "exit": 0,
+      "head": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8"
+    }
+  ],
+  "browser": {
+    "before": [
+      {
+        "stage": "before",
+        "width": 1440,
+        "status": 200,
+        "pending": [
+          {
+            "tag": "DIV",
+            "className": "ui-tooltip",
+            "parent": "BODY"
+          }
+        ],
+        "tooltipOwned": false,
+        "tooltipParent": "BODY",
+        "tooltipPopover": "manual",
+        "tooltipDisplay": "none",
+        "pageErrors": 0
+      },
+      {
+        "stage": "before",
+        "width": 390,
+        "status": 200,
+        "pending": [
+          {
+            "tag": "DIV",
+            "className": "ui-tooltip",
+            "parent": "BODY"
+          }
+        ],
+        "tooltipOwned": false,
+        "tooltipParent": "BODY",
+        "tooltipPopover": "manual",
+        "tooltipDisplay": "none",
+        "pageErrors": 0
+      }
+    ],
+    "after": [
+      {
+        "stage": "after",
+        "width": 1440,
+        "status": 200,
+        "pending": [],
+        "tooltipOwned": true,
+        "tooltipParent": "BODY",
+        "tooltipPopover": "manual",
+        "tooltipDisplay": "none",
+        "pageErrors": 0
+      },
+      {
+        "stage": "after",
+        "width": 390,
+        "status": 200,
+        "pending": [],
+        "tooltipOwned": true,
+        "tooltipParent": "BODY",
+        "tooltipPopover": "manual",
+        "tooltipDisplay": "none",
+        "pageErrors": 0
+      }
+    ],
+    "pixels": [
+      {
+        "width": 1440,
+        "dimensions": [
+          1440,
+          3940
+        ],
+        "differingPixels": 0,
+        "beforeSha256": "f05d192996e9aa15082173df75688bd3d82d11e79b5defbffb64b2b6cfae8a94",
+        "afterSha256": "f05d192996e9aa15082173df75688bd3d82d11e79b5defbffb64b2b6cfae8a94"
+      },
+      {
+        "width": 390,
+        "dimensions": [
+          390,
+          6563
+        ],
+        "differingPixels": 0,
+        "beforeSha256": "573749d9902ab245b7456eab9f904dd103b757fe672315c589345251c9cbbb5b",
+        "afterSha256": "573749d9902ab245b7456eab9f904dd103b757fe672315c589345251c9cbbb5b"
+      }
+    ]
+  },
+  "standaloneHydration": [
+    "Hydration check: 5 page(s), 48 load(s)",
+    "  /: 10 load(s), 7 section(s)",
+    "  /docs: 15 load(s), 7 section(s)",
+    "  /login: 5 load(s), 2 section(s)",
+    "  /docs/install: 15 load(s), 7 section(s)",
+    "  /setup: 3 load(s), 1 section(s)",
+    "  not checked: /projects answered 307 to /login?returnTo=%2Fprojects"
+  ],
+  "legacyHostLoad": {
+    "platform": "linux",
+    "load": 5.04,
+    "cpus": 4
+  },
+  "offlineBase": {
+    "ok": true,
+    "copyRecords": 441,
+    "adapted": 5,
+    "drift": 0,
+    "unrecordedCopies": 0
+  },
+  "beforeAfter": {
+    "explicitJourneyRegistrations": [
+      133,
+      133
+    ],
+    "contractTotal": [
+      91,
+      91
+    ],
+    "contractDone": [
+      4,
+      4
+    ],
+    "contractPartial": [
+      71,
+      71
+    ],
+    "contractMissing": [
+      16,
+      16
+    ]
+  },
+  "publication": {
+    "status": "PASS",
+    "complete": true
+  },
+  "publicationFirstAttempt": {
+    "exit": 1,
+    "findings": [
+      {
+        "rule": "destination.invalid",
+        "path": "edition.json",
+        "commit": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8",
+        "commits": [
+          "648bda0019d013cf2ae0f0b1576947eb8ce35dd8"
+        ],
+        "scope": "newly-public",
+        "scopes": [
+          "newly-public"
+        ]
+      }
+    ]
+  },
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "648bda0019d013cf2ae0f0b1576947eb8ce35dd8",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44914473327",
+    "id": 44914473327,
+    "status": "completed"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "repository": "just-every/run-happytohelp",
+  "productBranch": "cloud/sd-hh-release-0-4-32",
+  "productHead": "c9f4904b175366d0226fc2a4c33348d6e4f8ffc9",
+  "productTransport": "pushed and read back through Git",
+  "candidateVerify": {
+    "conclusion": null,
+    "head_sha": "c9f4904b175366d0226fc2a4c33348d6e4f8ffc9",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44894371505",
+    "status": "in_progress",
+    "name": "Verify",
+    "id": 44894371505,
+    "observedAt": "2026-11-21T10:46:58+00:00"
+  },
+  "mainVerify": {
+    "conclusion": null,
+    "head_sha": "ea02bafd06b5a123879b5c3a36d14b3d136225c9",
+    "html_url": "https://github.com/just-every/run-happytohelp/actions/runs/44893206320",
+    "id": 44893206320,
+    "name": "Verify",
+    "status": "in_progress",
+    "observedAt": "2026-11-21T10:37:03+00:00"
+  },
+  "githubCallsUsed": 10,
+  "githubCallBudget": 10,
+  "terminalProductStatus": "PUSHED"
+}

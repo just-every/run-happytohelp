@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "32448ccb59a69bcff4f131c3bb0d72c232628546",
+      "bytes": 944,
+      "path": "CI.json",
+      "sha256": "3433fb57101a2f142e62985f25403bcf44c6b482c53ef159611319ff4107f690"
+    },
+    {
+      "blob": "7efed9c5455e4253ec282f2c391c203ff1f958be",
+      "bytes": 5277,
+      "path": "REPORT.md",
+      "sha256": "8e359cf74f114bf3f2672419c148d5db316a91fc66b8c8793095a416b1600801"
+    },
+    {
+      "blob": "798ff22311523a843cc8ca9af7c1ec58cc69feef",
+      "bytes": 2369,
+      "path": "VALIDATION.md",
+      "sha256": "190fc3db79ab3d3b25d8756640571f740557f3760e2d08fb0699daf087879d45"
+    }
+  ],
+  "product_branch": "cloud/sd-hh-release-0-4-32",
+  "product_head": "c9f4904b175366d0226fc2a4c33348d6e4f8ffc9",
+  "ref": "refs/heads/evidence/sd-hh-release-0-4-32",
+  "repository": "just-every/run-happytohelp",
+  "schema": 1,
+  "tag": "sd-hh-release-0-4-32"
+}

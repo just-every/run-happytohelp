@@ -8273,6 +8273,8 @@
     }
   ],
   "ignore": [
-    "docs/licenses/base-MIT.txt"
+    "docs/licenses/base-MIT.txt",
+    "migrations/277_agent_door.sql",
+    "migrations/316_agent_door_relay_privacy.sql"
   ]
 }

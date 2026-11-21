@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import os from 'node:os'
 import WebSocket from 'ws'
 /** Inspector's V8 sampling profiler measures executing isolate stacks. Idle
  * samples are excluded; this is sampled CPU, never request or D1 wall duration. */
@@ -9,7 +10,17 @@ export async function isolateProfiler(mf){
  const socket=new WebSocket(target.webSocketDebuggerUrl),pending=new Map();let sequence=0
  await new Promise((resolve,reject)=>{socket.once('open',resolve);socket.once('error',reject)})
  socket.on('message',bytes=>{const message=JSON.parse(String(bytes)),wait=pending.get(message.id);if(!wait)return;pending.delete(message.id);clearTimeout(wait.timer);message.error?wait.reject(new Error(message.error.message)):wait.resolve(message.result)})
- const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence,timer=setTimeout(()=>{pending.delete(id);reject(new Error('Inspector timeout'))},30000);pending.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}))})
+ const send = (method, params = {}) => new Promise((resolve, reject) => {
+  const id = ++sequence
+  const loadPerCpu = os.loadavg()[0] / os.availableParallelism()
+  const timeoutMs = 30000 * Math.max(1, Math.min(4, loadPerCpu))
+  const timer = setTimeout(() => {
+   pending.delete(id)
+   reject(new Error('Inspector timeout'))
+  }, timeoutMs)
+  pending.set(id, {resolve, reject, timer})
+  socket.send(JSON.stringify({id, method, params}))
+ })
  await send('Profiler.enable');await send('Profiler.setSamplingInterval',{interval:100})
  return {async measure(run){
   let heap=await send('Runtime.getHeapUsage'),maxHeapBytes=heap.usedSize+(heap.backingStorageSize??0),screening=Promise.resolve()

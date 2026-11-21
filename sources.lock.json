@@ -1721,7 +1721,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "87cbf0c11918f3de7456075927fbaf391659eb1f1bcb4dc06e5da5177528cdaa",
+      "sha256": "8ec8736daf2950550df95c76eb00e3f1b7479a7adfdb699fa8c1db1fa76d69d7",
       "executable": false
     },
     "docs/help-before-they-ask.md": {
@@ -1741,7 +1741,7 @@
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "925a9de84f38e0e3f3c56555588b1227d8b4db520daafd5e967e6506ee007bcc",
+      "sha256": "31cbf659375eebda4840dc12e58cc0d04519797303a9141b3b11056eae91df7a",
       "executable": false
     },
     "docs/knowledge-upgrade-report.md": {
@@ -1829,7 +1829,7 @@
       "executable": false
     },
     "docs/SETUP-WORKFLOW.md": {
-      "sha256": "0fad793d73a7b6a5593d32dd6e60be307b9517242dc30282c67247fa42250802",
+      "sha256": "9b3eff7f7abb34678012af176beb7962e6df9adefe9eb526986207265fc45757",
       "executable": false
     },
     "docs/site.json": {
@@ -8325,7 +8325,7 @@
       "executable": false
     },
     "src/modules/management/activation/snapshot.ts": {
-      "sha256": "84c6cedd19a1fab2db792eb08715a45e0d892cc71729fc9ee75f4eda2348c722",
+      "sha256": "c5b65249c7fbe4a55fe4272a66b5f1745196d20acdc9fffeaf431d665f2ef3e9",
       "executable": false
     },
     "src/modules/management/activation/starter.ts": {
@@ -13017,7 +13017,7 @@
       "executable": false
     },
     "src/ui/native/activation/setup-model.js": {
-      "sha256": "c13dda15f223fa4f642ce2fcde5db128bea56977bed08767a986e823fb35f514",
+      "sha256": "4108b2234fa78857f36f6807273bb67f5e069b6055496e85d953322a30b62370",
       "executable": false
     },
     "src/ui/native/activation/setup-store.js": {
@@ -14141,7 +14141,7 @@
       "executable": false
     },
     "src/ui/native/setup-help/AiKeyHandoff.jsx": {
-      "sha256": "0d5b5fa57680ef7dfeb612a421d296f51ad42778dc1952f6f8212a8b2b16835f",
+      "sha256": "5c2343f17c9f18ba0e964b1b6aad0abacb532d1c2b46ac0ce271a47535b78ddf",
       "executable": false
     },
     "src/ui/native/setup-help/CopyCommand.jsx": {
@@ -16705,7 +16705,7 @@
       "executable": false
     },
     "tests/helpers/first-run/activation.mjs": {
-      "sha256": "4a59bc4784e178bb4ba5a52a66bdfed9b96c7aa4e3e4a9acde097205ef17d8fa",
+      "sha256": "dfba07215ab9a98fb633a877fbc720f3e8dd0de1af19bea67798d95724962025",
       "executable": false
     },
     "tests/helpers/first-run/demo.mjs": {
@@ -16721,7 +16721,7 @@
       "executable": false
     },
     "tests/helpers/first-run/outcomes.mjs": {
-      "sha256": "d9975c282b002f402532405fabddc974518b8950901d3daff60d244b4550e394",
+      "sha256": "076a7f82443ba69f17a7983b27256c265fa508b6c8e1234682dd5948363d1e17",
       "executable": false
     },
     "tests/helpers/first-run/provisioning.mjs": {
@@ -17561,7 +17561,7 @@
       "executable": false
     },
     "tests/helpers/widget/owner-installation.mjs": {
-      "sha256": "63733c2feb37e3efc206d12266e2796d4a0c2f80f830ca831d3cf8dffcc798bc",
+      "sha256": "3c9afad783625b6bcfb9774cae23159118789c15b900eae091c051758c82befe",
       "executable": false
     },
     "tests/helpers/widget/socket.mjs": {

@@ -104,7 +104,9 @@ Rerunning setup keeps an existing `.dev.vars` as it is. The one exception: a
 checkout set up before `INBOUND_EMAIL_TOKEN` existed gains that single generated
 line on its next setup, and no existing value is changed or rotated. New answers,
 such as an AI key, are not applied to an existing `.dev.vars`; add the key there
-yourself or deploy it as an installation secret.
+yourself or deploy it as an installation secret. After editing `.dev.vars`,
+[restart your local copy](getting-started.md#restart-after-changing-a-local-setting)
+so it reads the new value.
 
 `INBOUND_EMAIL_DOMAIN` is an optional variable for hosted installations: the domain
 that workspace reply mailboxes are created under (for example `in.example.com`).

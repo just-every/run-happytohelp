@@ -32,8 +32,14 @@ npx -y @runeditrun/rer dev just-every/run-happytohelp
 
 ## Next time
 
-Run the same start line from the same folder to reopen your copy. For a server
-you can stop with Ctrl+C, use `rer dev --foreground` from the checkout.
+Run the same start line from the same folder to reopen your copy.
+
+### Restart after changing a local setting
+
+If the start command returned you to the shell, open the `run-happytohelp`
+checkout in your terminal and run `rer dev --stop && rer dev`. If you started
+the app with `rer dev --foreground`, press Ctrl+C in that terminal, then run
+`rer dev --foreground` again. Open the new `RER_OPEN` link after restart.
 
 Continue with [first-run setup](SETUP-WORKFLOW.md) to connect your website and
 try the customer widget. The [local command reference](../RUN-LOCALLY.md) covers

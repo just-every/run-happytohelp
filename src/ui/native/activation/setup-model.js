@@ -123,12 +123,13 @@ function rowFor(data, id) {
    return {...withObservation('set', facts.website ? `${facts.website}. ${allowed}${site}` : sentence(own?.detail || '')), change: [...pages.widget, 'settings']};
   }
   case 'owner_mail': {
+   if (local && own?.applicable === false) return {...base, state: 'unavailable', value: 'Email is off on this computer.'};
    if(facts.mail?.managed&&!observed)return {...base,state:facts.mail.managed.error?'problem':'set',value:facts.mail.managed.error|| (facts.mail.managed.lastOutboundAcceptanceAt?'The provider accepted an email for you. Use an emailed sign-in link to confirm it arrived.':'Your assigned address sends account and support email once Run Edit Run activates it.')};
    if (facts.mail?.mode === 'unavailable') {
     const names = own?.state === 'unavailable' ? requiredNames(own.detail) : '';
     return {...base, state: 'unavailable', value: `Outbound email is off for this installation, so we can’t email you.${names ? ` Turning it on needs ${names}.` : ''}`};
    }
-   return withObservation('set', facts.mail?.mode === 'local' ? 'Email is off on this computer.' : observed ? `${/delivered/i.test(own.receiptRef || '') ? 'Delivered' : 'Received'}. ${own.checkedAt ? `Confirmed ${utc(own.checkedAt)}.` : ''}`.trim() : 'Not confirmed yet. Signing in with an emailed link, or the test on the Email page, confirms it.');
+   return withObservation('set', observed ? `${/delivered/i.test(own.receiptRef || '') ? 'Delivered' : 'Received'}. ${own.checkedAt ? `Confirmed ${utc(own.checkedAt)}.` : ''}`.trim() : 'Not confirmed yet. Signing in with an emailed link, or the test on the Email page, confirms it.');
   }
   case 'inbound_address': {
    if(facts.mail?.managed){const m=facts.mail.managed;return {...base,state:m.error?'problem':m.observed?'confirmed':'set',value:`${m.address||'Your managed address'}. ${m.error|| (m.observed?'Email has arrived here.':m.routeActive?'Route active; waiting for the first email.':'Run Edit Run is activating the route. No email setup is needed.')}`};}

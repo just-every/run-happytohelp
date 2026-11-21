@@ -13,7 +13,7 @@ export async function ownerInstallationBrowser() {
  const errors=[];page.on('pageerror',error=>errors.push(error.message));let site,snippet='',passed=false;
  const api=async(path,body,token,method=body===undefined?'GET':'POST',headers={})=>{const response=await fetch(origin+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{ }),...headers},body:body===undefined?undefined:JSON.stringify(body)});assert.ok(response.ok,`${method} ${path}: ${response.status}`);return response.json();};
  const send=async()=>{const pending=page.waitForResponse(response=>/\/api\/conversations\/[^/]+\/messages$/.test(new URL(response.url()).pathname)&&response.request().method()==='POST');await page.getByRole('button',{name:'Send message',exact:true}).click();const receipt=await pending;assert.equal(receipt.status(),200,'the widget message is durably admitted');await receipt.finished();};
- const proof=async name=>{for(const viewport of Object.values(viewports)){await page.setViewportSize(viewport);await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await page.screenshot({path:shot(`after-${name}-${viewport.width}.png`),fullPage:true,animations:'disabled'});}await page.setViewportSize(viewports.desktop);};
+ const proof=async(name,target=page)=>{for(const viewport of Object.values(viewports)){await target.setViewportSize(viewport);await target.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await target.screenshot({path:shot(`after-${name}-${viewport.width}.png`),fullPage:true,animations:'disabled'});}await target.setViewportSize(viewports.desktop);};
  try {
   site=createServer((_request,response)=>{response.setHeader('Content-Type','text/html');response.end(`<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChargeDesk</title></head><body><h1>ChargeDesk</h1><p>Questions about your workspace? Chat with our support team.</p>${snippet}</body></html>`);});await new Promise(resolve=>site.listen(0,'127.0.0.1',resolve));const website=`http://127.0.0.1:${site.address().port}`;
   const owner={email:'synthetic-hh-widget@example.test',password:'synthetic-hh-widget-password',name:'ChargeDesk',ownerName:'Owner'};
@@ -67,12 +67,51 @@ export async function ownerInstallationBrowser() {
   await page.getByRole('tab',{name:'Settings',exact:true}).click();assert.equal(await page.getByLabel('Your website address',{exact:true}).inputValue(),website);await proof('widget-settings');
   await page.goto(origin+`/projects/${projectId}/articles`);await page.getByRole('link',{name:'Open your help center',exact:true}).waitFor();assert.equal(await page.getByLabel('Your help center address',{exact:true}).inputValue(),'chargedesk');await page.getByRole('button',{name:'Save address',exact:true}).click();await page.getByText('Address saved.',{exact:true}).waitFor();
   const helpAddress=await page.getByRole('link',{name:'Open your help center',exact:true}).getAttribute('href');assert.ok(helpAddress.endsWith('/help/chargedesk'));await page.getByRole('button',{name:'Copy address',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),helpAddress,'Copy address uses the actual saved public alias');assert.doesNotMatch(await page.locator('.knowledge-empty').innerText(),new RegExp(projectId));assert.equal((await fetch(origin+'/help/chargedesk')).status,200);await proof('knowledge');
-  await page.goto(origin+`/help/chargedesk/requests`);await page.getByRole('heading',{name:'Contact support',exact:true}).waitFor();assert.equal(await page.locator('#customer-request').count(),0);assert.doesNotMatch(await page.locator('main').innerText(),/mail outbox|spam protection|hosted installation/);await proof('request-form');await page.getByRole('link',{name:'chat',exact:true}).click();await page.getByLabel('Your email, so we can reply',{exact:true}).waitFor();
+  const visitor=await browser.newContext({viewport:viewports.desktop});
+  try {
+   const requestPage=await visitor.newPage();
+   await requestPage.goto(origin+`/help/chargedesk/requests`);
+   await requestPage.getByRole('heading',{name:'Contact support',exact:true}).waitFor();
+   assert.equal(await requestPage.locator('#customer-request').count(),0);
+   assert.doesNotMatch(await requestPage.locator('main').innerText(),/mail outbox|spam protection|hosted installation/);
+   await proof('request-form',requestPage);
+   await requestPage.getByRole('button',{name:'Open chat',exact:true}).waitFor();
+   await requestPage.getByRole('link',{name:'chat',exact:true}).click();
+   await requestPage.getByLabel('Your email, so we can reply',{exact:true}).waitFor();
+  } finally {await visitor.close();}
   await page.goto(origin+`/projects/${projectId}/edit?tab=forms`);await page.getByText('Email is off on this computer, so no emails are sent or received. Chat works.',{exact:true}).waitFor();await proof('request-form-settings');
+  await page.goto(origin+`/projects/${projectId}/activation`);
+  for(const id of ['widget_seen','model_key']){
+   await page.locator(`[data-skipped="${id}"] [data-undo]`).click();
+   await page.locator(`[data-need="${id}"]`).waitFor();
+  }
+  const widgetPing=page.waitForResponse(response=>response.url().endsWith('/widget-events')&&response.ok()&&response.request().postDataJSON()?.action==='pingActive');
   await page.goto(website);await page.getByRole('button',{name:'Open chat',exact:true}).waitFor();await proof('widget-launcher');assert.equal(await page.locator('.happytohelp-button .happytohelp-agent-avatar').count(),0);
   await page.getByRole('button',{name:'Open chat',exact:true}).click();await page.getByLabel('Your email, so we can reply',{exact:true}).waitFor();assert.match(await page.locator('.happytohelp-chat-header').innerText(),/ChargeDesk support/);assert.doesNotMatch(await page.locator('.happytohelp-chat-header').innerText(),/Owner|Human/);assert.equal(await page.getByRole('button',{name:'Close contact details',exact:true}).count(),0);await proof('widget-first-open');
   await page.locator('textarea[name="content"]').fill('Can you help with my workspace?');await page.getByRole('button',{name:'Send message',exact:true}).click();await page.getByText('Please add an email we can reach you at.',{exact:true}).waitFor();
   await page.getByLabel('Your email, so we can reply',{exact:true}).fill('synthetic-widget-customer@example.test');await send();await page.getByText('Can you help with my workspace?',{exact:true}).waitFor();
+  await widgetPing;
+  const setup=await context.newPage();
+  try {
+   await setup.goto(origin+`/projects/${projectId}/activation`);
+   await setup.locator('[data-set="widget_seen"][data-state="confirmed"]').waitFor();
+   const ai=setup.locator('[data-need="model_key"]');
+   await ai.getByRole('button',{name:'Show me how',exact:true}).click();
+   const details=ai.locator('details');
+   await details.locator('summary').click();
+   const managedRestart=/rer dev --stop && rer dev\b/;
+   assert.match(await details.innerText(),managedRestart);
+   const handoff=await ai.getByRole('link',{name:'Send these steps to my developer',exact:true}).getAttribute('href');
+   assert.match(new URL(handoff).searchParams.get('body'),managedRestart);
+   await proof('setup-ai-restart',setup);
+   await setup.locator('[data-need="model_key"] [data-skip]').click();
+   await setup.locator('[data-setup-state="ready"]').waitFor();
+   const list=setup.getByTestId('setup-list');
+   assert.equal(await list.getAttribute('data-confirmed'),'3');
+   assert.equal(await list.getAttribute('data-applicable'),await list.getAttribute('data-confirmed'),'every check the local trial can complete is confirmed');
+   assert.equal(await list.locator('[data-set="owner_mail"]').getAttribute('data-state'),'unavailable');
+   await proof('setup-local-mail',setup);
+  } finally {await setup.close();}
   const session=await page.evaluate(()=>Object.entries(localStorage).filter(([key])=>key.startsWith('rer-widget:')).map(([,value])=>JSON.parse(value))[0]);
   const transcript=await api(`/api/conversations/${session.conversationId}/messages`,undefined,token);
   await api(`/api/conversations/${session.conversationId}/messages`,{localId:'synthetic-widget-owner-reply',content:'I can help with your workspace.',expectedRevision:transcript.revision,expectedLastMessageId:transcript.lastMessageId},token);

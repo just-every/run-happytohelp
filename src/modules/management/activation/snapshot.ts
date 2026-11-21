@@ -7,7 +7,8 @@ import {stepIds,stepLabels,stepPaths,providerObservationMs,type ActivationFacts,
 /**
  * What only the owner can do stays under Needs you until it is observed `done`. Sender DNS is one of those only on a
  * hosted Resend installation; another hosted provider has no status API here (a row, not counted) and a local trial
- * hides it. Receiving replies is not counted locally. The AI key is the owner's to add until one is installed; a key
+ * hides it. Email to the owner is unavailable locally, and receiving replies is not counted locally without a receipt.
+ * The AI key is the owner's to add until one is installed; a key
  * for a provider with no metadata check here can never be confirmed, so it is a row, not counted. Anything observed
  * `done` counts. The help article is never a need or counted: the assistant also answers from the owner's own site,
  * so whether an article is published says nothing about whether it can answer.
@@ -25,6 +26,7 @@ export function placement(id:StepId,state:ProbeState,config:Configuration):{plac
   const resend=config.providerName==='resend'
   return {placement:resend&&!done?'needs_you':'set',applicable:resend||done}
  }
+ if(id==='owner_mail')return {placement:'set',applicable:!local}
  if(id==='inbound_address')return {placement:'set',applicable:!local||done}
  return {placement:'set',applicable:true}
 }

@@ -38,7 +38,8 @@ export async function activationJourney(){
   const snapshot=async()=>(await snapshotTables(app,tables)).map(rows=>rows.map(r=>JSON.stringify(r)).sort())
   const pureRead=async()=>{const before=await snapshot(),calls=app.requests.length,data=await setup();assert.deepEqual(await snapshot(),before,'Setup GET writes no table');assert.equal(app.requests.length,calls,'Setup GET calls no provider');return data}
   const empty=await pureRead()
-  assert.equal(empty.total,8);assert.equal(empty.done,0);assert.equal(empty.applicableTotal,5)
+  assert.equal(empty.total,8);assert.equal(empty.done,0);assert.equal(empty.applicableTotal,4)
+  assert.equal(row(empty,'owner_mail').applicable,false)
   assert.ok(empty.steps.every(s=>s.state==='not_checked'&&s.checkedAt===null))
   assert.equal(row(empty,'published_article').placement,'hidden');assert.equal(row(empty,'published_article').applicable,false)
   assert.equal(empty.facts.ceilings.source,'defaults')
@@ -47,6 +48,7 @@ export async function activationJourney(){
   assert.match(row(await setup(),'owner_mail').detail,/suppressed/)
   await app.configure(hosted)
   const configured=await pureRead();assert.equal(configured.done,0,'installed keys, defaults and starter preset are not observations')
+  assert.equal(row(configured,'owner_mail').applicable,true)
   assert.equal(configured.facts.ai.keyInstalled,true)
   const roles=await app.seedWorkspace('activation-roles'),rolePath=`/api/management/projects/${roles.projectId}/activation`
   for(const token of [undefined,roles.tokens.operator,owner.token]){

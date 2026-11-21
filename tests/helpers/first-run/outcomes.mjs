@@ -96,6 +96,18 @@ export async function builtOutcomes(){
   await page.goto(`${runtime.origin}/projects/${first.projectId}/activation`)
   await page.locator('[data-need="widget_seen"] [data-skip]').click()
   await page.locator('[data-skipped="widget_seen"] [data-undo]').waitFor()
+  for(const id of ['model_key','sender_dns']){
+   await page.locator(`[data-need="${id}"] [data-skip]`).click()
+   await page.locator(`[data-skipped="${id}"]`).waitFor()
+  }
+  const list=page.getByTestId('setup-list')
+  await list.locator('[data-set="owner_mail"][data-state="waiting"]').waitFor()
+  assert.equal(await list.getAttribute('data-applicable'),'4','configured email remains in the count while delivery is unconfirmed')
+  await proof('setup-mail-on')
+  for(const id of ['sender_dns','model_key']){
+   await page.locator(`[data-skipped="${id}"] [data-undo]`).click()
+   await page.locator(`[data-need="${id}"]`).waitFor()
+  }
   await page.goto(`${runtime.origin}/projects/${first.projectId}/edit`)
   assert.equal(await page.getByLabel('Name',{exact:true}).inputValue(),'Acme Widgets & Co')
   await page.getByLabel('Name',{exact:true}).fill('Acme Care')

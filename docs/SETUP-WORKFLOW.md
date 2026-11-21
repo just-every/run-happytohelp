@@ -102,7 +102,8 @@ a problem is not hidden by a skip.
 Mail to you is confirmed by using an emailed sign-in link, or by the provider's
 reported outcome for the welcome email or the test you send from the Email page
 (**Send me a test**). Provider acceptance is pending, and suppressed local mail
-never confirms delivery. GET inspection performs no provider work. The page's
+never confirms delivery. On a local trial, **Email to you** shows as unavailable
+and is outside the confirmation count. GET inspection performs no provider work. The page's
 own checks read metadata and DNS, never send mail and never request a generation. Only your
 explicit action sends mail, to your own mailbox; uncertain work is never replayed
 automatically. See [the activation module](../src/modules/management/activation/README.md)

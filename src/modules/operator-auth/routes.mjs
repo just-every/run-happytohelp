@@ -1,3 +1,4 @@
+import { terminalHelp } from './terminal-guidance.mjs';
 import { rejectedResponse } from './rejected-response.mjs';
 import { identitySettingsPage } from './accounts/settings-page.mjs';
 import { settingsRefusalPage } from './page.mjs';
@@ -9,7 +10,7 @@ import { securityHeaders, requireLoopback } from './http.mjs';
 import { safeReturnTo } from './policy.mjs';
 import { readInput, readParameters } from './input.mjs';
 import { OWNER_SIGNIN_PATH } from './owner-signin-grant.mjs';
-const ONE_CLICK_REFUSED = 'This sign-in link did not open here. Open the link from the app itself, or run rer dev --as followed by the email address from the project folder.';
+const ONE_CLICK_REFUSED = 'This sign-in link did not open here. Open the link from the app itself, or run ~/.local/bin/rer dev --as followed by the email address from the project folder.' + ' ' + terminalHelp;
 function json(value, status = 200) { return Response.json(value, { status, headers: securityHeaders() }); }
 function seeOther(location, cookie) { return new Response(null, { status: 303, headers: { ...securityHeaders(), ...(cookie ? { 'Set-Cookie': cookie } : {}), Location: location } }); }
 // A native HTML form (the sign-in page before any script) gets a page back; an

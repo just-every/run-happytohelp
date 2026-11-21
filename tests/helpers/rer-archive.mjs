@@ -42,11 +42,12 @@ export function compareArchive(before,after,added=[]){
  assert.deepEqual(after.objects,before.objects,'all R2 bytes and metadata survive');
 }
 
-// Native session admission advances authority once; every business row remains unchanged.
+// Rer signs in to check readiness before the journey signs in explicitly.
+// Each native session advances authority once; every business row stays unchanged.
 export function compareDevEntryArchive(before,after){
  const expected=structuredClone(before);
  const previous=before.rows.integration_authority_epoch.map(JSON.parse),next=after.rows.integration_authority_epoch.map(JSON.parse);
- assert.deepEqual(next,previous.map(row=>({...row,revision:row.revision+1})));
+ assert.deepEqual(next,previous.map(row=>({...row,revision:row.revision+2})),'readiness and explicit owner sign-in each advance native authority once');
  expected.rows.integration_authority_epoch=after.rows.integration_authority_epoch;
  compareArchive(expected,after);
 }

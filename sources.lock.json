@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "2d7314037316290ed4a4d73eeebbebc6a5081a2885d0ef02adda239c45bf2892",
+      "sha256": "ef53a01320002ac1b980dc2a2df6265b56d6fd11a8f85ff9480a8b5f60d090d0",
       "executable": false
     },
     "CLAUDE.md": {
@@ -7669,7 +7669,7 @@
       "executable": false
     },
     "src/modules/knowledge/http-door.ts": {
-      "sha256": "baff0f508b57e6e53126415f11e28ff44aaf7ac9237ebf9b3f463383f76da482",
+      "sha256": "c342087fe4c2710b3c20144dc591c40390637dc8daaaf0d51489133a0a2f7b5f",
       "executable": false
     },
     "src/modules/knowledge/import-jobs.ts": {
@@ -8265,7 +8265,7 @@
       "executable": false
     },
     "src/modules/macros/routes.ts": {
-      "sha256": "a6743fa3de83bf6bae6c00e202486bd41bd741502ecb7ee91e9125dd240f98ca",
+      "sha256": "d39fe01376ffc01196264b75d547f77cac6260e95f429c54696592459cd03f49",
       "executable": false
     },
     "src/modules/macros/schema.ts": {
@@ -8273,7 +8273,7 @@
       "executable": false
     },
     "src/modules/macros/store.ts": {
-      "sha256": "3b1cf35ed818ba923a66022937b8033c7fe81fe4c3e586b266a4a67eada090dc",
+      "sha256": "375743a02b5987fe4c4d965a14c6546537ae3ab43c2ed83cfaa14e83ac799866",
       "executable": false
     },
     "src/modules/management/activation.ts": {
@@ -11625,7 +11625,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/Conversation.jsx": {
-      "sha256": "088b75d557e026d4cf1fa88aa35ad6548697cb6199e2e5f505cf8eaff1d623c1",
+      "sha256": "49f5a2b5836feecaf9c51b1f50c038ba7290c53451c4c66b8dc760c6046745a9",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ai-controls.css": {
@@ -12613,7 +12613,7 @@
       "executable": false
     },
     "src/ui/dashboard/utils/savedReplyEdit.js": {
-      "sha256": "f9b1f40ce78fd4d128b4b38a50b3517ad7306beef0f733a2f0f22ddeddf090d9",
+      "sha256": "648643ac2b44fae19d3a3f9ec30ebe4b66a03b7f4ad2dd7b3d974aeaecb817c4",
       "executable": false
     },
     "src/ui/dashboard/utils/submitInstructionsOnEnter.js": {
@@ -13725,7 +13725,7 @@
       "executable": false
     },
     "src/ui/native/pages/macros/MacrosPage.jsx": {
-      "sha256": "850627913b8b25215c61202e562f50df0d64d82a9ed2f2684ddbf32e13a4e34b",
+      "sha256": "c6df8032a7d8bf850c529c5fee078db1054df6c51d052f4871adf4247f8144d9",
       "executable": false
     },
     "src/ui/native/pages/management-parity.css": {

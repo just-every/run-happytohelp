@@ -18,9 +18,15 @@ export function readSavedReplyEdit(key) {
 export function writeSavedReplyEdit(key, edit) {
     if (!key) return;
     try {
-        if (edit) sessionStorage.setItem(key, JSON.stringify(edit));
+        if (edit) sessionStorage.setItem(key, JSON.stringify({ ...edit, revision: crypto.randomUUID() }));
         else sessionStorage.removeItem(key);
     } catch {
         // The live composer still works when the browser blocks tab storage.
+    }
+}
+
+export function clearSentReplyEdit(key, sentEdit) {
+    if (sentEdit && JSON.stringify(readSavedReplyEdit(key)) === JSON.stringify(sentEdit)) {
+        writeSavedReplyEdit(key, null);
     }
 }

@@ -17,7 +17,7 @@ export const macroRoutes=new Hono<AppEnv>()
 const base='/projects/:projectId/macros'
 const authority=(c:any)=>({sessionHash:c.get('sessionHash'),source:requestSource(c)})
 macroRoutes.get(base,async c=>{const actor=await scope(c) as Actor;return c.json(await listMacros(c.env,actor,c.req.query('search')??'',Number(c.req.query('page')??1),Number(c.req.query('limit')??50),c.req.query('sort')??'title',c.req.query('direction')??'asc'))})
-macroRoutes.post(base,async c=>{const actor=await scope(c) as Actor;return c.json({data:await saveMacro(c.env,actor,await c.req.json(),authority(c))},201)})
+macroRoutes.post(base,async c=>{const actor=await scope(c) as Actor;return c.json({data:await saveMacro(c.env,actor,await c.req.json(),authority(c),undefined,c.req.header('Idempotency-Key'))},201)})
 macroRoutes.get(`${base}/attachment-options`,async c=>{
  const actor=await scope(c) as Actor
  await ticketAuthority(c.env,actor,authority(c),'conversations.reply')

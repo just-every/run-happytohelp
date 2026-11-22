@@ -45,6 +45,7 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  }
  await next()
  let errorData:any
+ let savedReplyId:string|undefined
  try{
  const nativeProject=context().projectId
  if(nativeProject&&c.res.ok&&!['GET','HEAD','OPTIONS'].includes(c.req.method)&&/^\/api\/knowledge\/[^/]+\/articles(?:\/|$)/.test(c.req.path)){
@@ -64,10 +65,12 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  const baseReaders=publicKnowledge?accessReaders(await resolveHelpAccess(rawEnv,projectId,c.req.raw)):authority&&c.req.path.startsWith('/api/v1/articles')&&c.req.query('contact_id')?readerSet([{kind:'contact',id:c.req.query('contact_id')!}]):member?memberReaders(actor.id):actor?.role==='contact'?readerSet([{kind:'contact',id:actor.contactId||actor.id}]):conversation?currentTicketReaders(projectId,conversation,{}):anonymousReaders
  let data:any=await c.res.json()
  if(c.res.status>=400)errorData=data
+ if(c.res.status===201&&c.req.method==='POST'&&/^\/api\/(?:management|dashboard)\/projects\/[^/]+\/macros$/.test(c.req.path))savedReplyId=data.data.id
  // A read renders the references already stored in its text and writes nothing: copied runs were turned into
  // references when the text was written (write boundary, upgrade), so a GET creates no block and refreshes no index.
+ // A newly saved reply also returns stored text from its guarded write batch.
  const readOnly=c.req.method==='GET'||c.req.method==='HEAD'
- if(!readOnly&&!sourceRead&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseResponse(rawEnv,projectId,data,conversation,privateComposer)
+ if(!readOnly&&!sourceRead&&!savedReplyId&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseResponse(rawEnv,projectId,data,conversation,privateComposer)
  const referenceScope=await createReferenceReadScope(rawEnv,projectId,referenceIds(JSON.stringify(data)))
  async function render(value:any,inherited:Readers,cid?:string):Promise<any>{
   if(Array.isArray(value))return Promise.all(value.map(row=>render(row,inherited,cid)))
@@ -85,6 +88,13 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  }
  const output=await render(data,baseReaders,conversation),headers=new Headers(c.res.headers);headers.delete('Content-Length');c.res=new Response(JSON.stringify(output),{status:c.res.status,headers})
  }catch(error){
+  if(savedReplyId){
+   // The saved reply committed. Confirm its identity without exposing unrendered fields.
+   console.error('Saved reply created; reference projection failed',error instanceof Error?error.name:'unknown')
+   const headers=new Headers(c.res.headers);headers.delete('Content-Length')
+   c.res=new Response(JSON.stringify({data:{id:savedReplyId},refresh_required:true}),{status:201,headers})
+   return
+  }
   if(c.res.status<400)throw error
   // A durable command may already have returned an honest failure outcome.
   // Projection must neither replace its status nor disclose unrendered prose

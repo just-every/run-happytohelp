@@ -26,7 +26,7 @@ import { HandleTimerProvider } from './tickets/useHandleTimer';
 import TicketActionDialogs from './composer/TicketActionDialogs';
 import {nativeRequest} from '../../native/transport';
 import {mergeReferences} from '../../native/knowledge-references/reference-text';
-import {readSavedReplyEdit, savedReplyEditKey, writeSavedReplyEdit} from '../utils/savedReplyEdit';
+import {clearSentReplyEdit, readSavedReplyEdit, savedReplyEditKey, writeSavedReplyEdit} from '../utils/savedReplyEdit';
 
 function Conversation({ projectId, conversationId, conversation, buckets }) {
     const {
@@ -81,6 +81,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const draftAdoptionRef = useRef(null);
     const draftEditVersion = useRef(0);
     const savedReplyRef = useRef(null);
+    const pendingSendRef = useRef(null);
 
     activeConversationIdRef.current = conversationId;
 
@@ -188,6 +189,9 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
 
         const sentEditVersion = draftEditVersion.current;
         const sentConversationId = conversationId;
+        const sentEdit = readSavedReplyEdit(savedEditKey);
+        const send = {};
+        pendingSendRef.current = send;
         setIsSending(true);
         const message = {
             content: messageContent,
@@ -205,25 +209,32 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
 
         try {
             await sendAction('sendMessage', message, conversationProjectId);
-            setDraftError('');
             // An acknowledgement owns only the draft it sent. Edits made while
             // the request was pending belong to the next reply.
-            if (activeConversationIdRef.current === sentConversationId && draftEditVersion.current === sentEditVersion) {
-                savedReplyRef.current = null;
-                updateDraftContent('');
-                writeSavedReplyEdit(savedEditKey, null);
-                setDraftOrigin(null);
-                setEscalationDraftId(null);
-                setFiles([]);
+            clearSentReplyEdit(savedEditKey, sentEdit);
+            if (activeConversationIdRef.current === sentConversationId && pendingSendRef.current === send) {
+                setDraftError('');
+                if (draftEditVersion.current === sentEditVersion) {
+                    savedReplyRef.current = null;
+                    updateDraftContent('');
+                    setDraftOrigin(null);
+                    setEscalationDraftId(null);
+                    setFiles([]);
+                }
             }
         } catch (error) {
-            if (error.data?.reason === 'conversation_changed') {
-                setDraftError('');
-                refreshConversation();
-            } else setDraftError(error.message);
+            if (activeConversationIdRef.current === sentConversationId && pendingSendRef.current === send) {
+                if (error.data?.reason === 'conversation_changed') {
+                    setDraftError('');
+                    refreshConversation();
+                } else setDraftError(error.message);
+            }
             throw error;
         } finally {
-            setIsSending(false);
+            if (activeConversationIdRef.current === sentConversationId && pendingSendRef.current === send) {
+                pendingSendRef.current = null;
+                setIsSending(false);
+            }
         }
         if (sendAndClose) {
             sendPluginEvent('resolveConversation', conversation);
@@ -237,6 +248,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         draftEditVersion.current++;
         draftAdoptionRef.current = null;
         savedReplyRef.current = null;
+        pendingSendRef.current = null;
         setDraftError('');
         setContent('');
         setKnowledgeReferences([]);
@@ -274,7 +286,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 // A newer server draft belongs to a different use. If our own
                 // clear already reached the server, restore only what we typed
                 // afterward, without reviving the discarded template or media.
-                const matches = local && (local.id === null || draft?.usage_id === local.id || (!draft && local.discarded));
+                const matches = local && (draft ? draft.usage_id === local.id : local.id === null || local.discarded);
                 if (local && !matches) writeSavedReplyEdit(savedEditKey, null);
                 if (draft?.reply_type === 'note') setNoteMacro({content:draft.content,media:draft.media || []});
                 else if (matches) {
@@ -304,7 +316,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         const savedReply = savedReplyRef.current;
         const discard = savedReply && !savedReply.discarded && !nextContent.trim();
         if (discard) savedReply.discarded = true;
-        writeSavedReplyEdit(savedEditKey, {id: null, ...savedReply, content: nextContent});
+        writeSavedReplyEdit(savedEditKey, savedReply || nextContent.trim() ? {id: null, ...savedReply, content: nextContent} : null);
         if (discard) {
             nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft?usage_id=${encodeURIComponent(savedReply.id)}`, { method: 'DELETE', keepalive: true })
                 .catch(error => setDraftError(`Couldn’t discard your saved macro draft: ${error.message}`));

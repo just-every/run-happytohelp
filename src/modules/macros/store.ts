@@ -6,6 +6,7 @@ import {definition,type MacroDefinition,type MacroScope} from './schema'
 import {validateFieldValue} from '../tickets/fields'
 import {assertMacroFieldsReadable} from './read-access'
 import {validateAttachments} from './attachments'
+import {hashToken} from '../../platform/auth'
 export function macroData(row:any){return {...row,actions:JSON.parse(row.actions_json),scope:JSON.parse(row.scope_json)}}
 const selection=`SELECT v.*,m.created_by owner_id,m.created_at created_at,
  CASE WHEN o.target_id IS NOT NULL THEN coalesce(o.display_name,'Imported author') ELSE (SELECT name FROM users WHERE id=m.created_by) END created_by_name,
@@ -57,7 +58,7 @@ async function validReferences(env:Env,actor:Actor,data:MacroDefinition){
  for(const [id,value] of Object.entries(data.actions.fields??{})){const field=await env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id=?').bind(actor.projectId,id).first<any>();if(!field)invalid('Choose a workspace field');if(!fieldAllowed(field,access)||!fieldAllowed(field,access,true))throw new HTTPException(403,{message:'This saved reply field is not writable by your role'});validateFieldValue(field,value);if(field.type==='account'&&value!==null&&value!==undefined&&!await env.DB.prepare('SELECT 1 FROM companies WHERE project_id=? AND id=? AND merged_into IS NULL').bind(actor.projectId,value).first())invalid(`${field.name}: Choose an available account`)}
  await validateAttachments(env,actor,data.actions.attachments??[],true)
 }
-export async function saveMacro(env:Env,actor:Actor,input:unknown,authority:TicketAuthority,id?:string){
+export async function saveMacro(env:Env,actor:Actor,input:unknown,authority:TicketAuthority,id?:string,createKey?:string){
  const b=object(input),existing=id?await env.DB.prepare('SELECT m.*,h.version FROM macros m JOIN macro_heads h ON h.macro_id=m.id WHERE m.id=? AND m.project_id=? AND h.archived_at IS NULL').bind(id,actor.projectId).first<any>():null
  if(id&&!existing)throw new HTTPException(404)
  if(existing&&b.expected_version!==undefined&&!Number.isSafeInteger(b.expected_version))invalid('expected_version is invalid')
@@ -70,7 +71,12 @@ export async function saveMacro(env:Env,actor:Actor,input:unknown,authority:Tick
  const guard=await ticketAuthority(env,actor,authority,personal?'conversations.reply':'settings.manage')
  if(!personal&&!['owner','admin'].includes(actor.role))throw new HTTPException(403,{message:'Only a workspace owner or admin may manage shared saved replies'})
  await validReferences(env,actor,data)
- const macroId=id??crypto.randomUUID(),version=(existing?.version??0)+1,now=Date.now()
+ if(createKey!==undefined&&!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(createKey))invalid('Idempotency-Key must be a UUIDv4')
+ // Reserve one identity per creator and submission. The suffix distinguishes
+ // a replay from a different definition even when storage protected copied text.
+ const keyPrefix=createKey&&await hashToken(JSON.stringify([actor.projectId,actor.id,createKey.toLowerCase()]))
+ const macroId=id??(keyPrefix?keyPrefix+'-'+await hashToken(JSON.stringify([createKey!.toLowerCase(),data])):crypto.randomUUID())
+ const version=(existing?.version??0)+1,now=Date.now()
  // The new immutable version is inserted only from the guarded current head. The
  // head moves only when that exact new version exists; a stale writer creates none.
  const statements=existing?[
@@ -78,16 +84,17 @@ export async function saveMacro(env:Env,actor:Actor,input:unknown,authority:Tick
   env.DB.prepare('UPDATE macro_heads SET version=? WHERE macro_id=? AND version=? AND EXISTS(SELECT 1 FROM macro_versions WHERE macro_id=? AND version=? AND created_at=? AND created_by=?)').bind(version,macroId,existing.version,macroId,version,now,actor.id),
   env.DB.prepare('UPDATE macros SET title=?,content=?,updated_at=? WHERE id=? AND EXISTS(SELECT 1 FROM macro_heads WHERE macro_id=? AND version=?)').bind(data.title,data.content,now,macroId,macroId,version),
  ]:[
-  env.DB.prepare(`INSERT INTO macros(id,project_id,title,content,created_by,created_at,updated_at) SELECT ?,?,?,?,?,?,? WHERE EXISTS(${guard.sql})`).bind(macroId,actor.projectId,data.title,data.content,actor.id,now,now,...guard.params),
-  env.DB.prepare('UPDATE macro_versions SET actions_json=?,scope_json=? WHERE macro_id=? AND version=1 AND created_by=?').bind(JSON.stringify(data.actions),JSON.stringify(data.scope),macroId,actor.id),
+  env.DB.prepare(`INSERT INTO macros(id,project_id,title,content,created_by,created_at,updated_at) SELECT ?,?,?,?,?,?,? WHERE EXISTS(${guard.sql})${keyPrefix?' AND NOT EXISTS(SELECT 1 FROM macros WHERE id GLOB ?)':''}`).bind(macroId,actor.projectId,data.title,data.content,actor.id,now,now,...guard.params,...(keyPrefix?[keyPrefix+'-*']:[])),
+  env.DB.prepare('UPDATE macro_versions SET actions_json=?,scope_json=? WHERE macro_id=? AND version=1 AND created_by=? AND changes()=1').bind(JSON.stringify(data.actions),JSON.stringify(data.scope),macroId,actor.id),
  ]
  // Return the stored version from the same transaction, including any stored
  // reference tokens. A separate read could fail after the save committed.
  const result=await env.DB.batch([...statements,
-  env.DB.prepare(`${selection} WHERE m.id=? AND m.project_id=?`).bind(macroId,actor.projectId),
+  env.DB.prepare(`${selection} WHERE m.id=? AND m.project_id=?${keyPrefix?` AND m.created_by=? AND EXISTS(${guard.sql})`:''}`).bind(macroId,actor.projectId,...(keyPrefix?[actor.id,...guard.params]:[])),
  ])
- if(!result[0].meta.changes)throw new HTTPException(409,{message:'The saved reply or your permissions changed. Reload before saving.'})
- return {...macroData(result.at(-1)!.results[0]),id:macroId}
+ const row=result.at(-1)!.results[0] as any
+ if(!result[0].meta.changes&&!(keyPrefix&&row?.current_version===1&&row.archived_at===null))throw new HTTPException(409,{message:'The saved reply or your permissions changed. Reload before saving.'})
+ return {...macroData(row),id:macroId}
 }
 export async function archiveMacro(env:Env,actor:Actor,id:string,expected:number,authority:TicketAuthority){
  const {row}=await readMacro(env,actor,id),personal=JSON.parse(row.scope_json).visibility==='personal'

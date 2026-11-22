@@ -33,10 +33,15 @@ rer check --profile first-party
 
 Every new verb supports `--help`, `--cwd PATH`, `--non-interactive` and `--json`.
 Setup also accepts `--owner-name`, `--port`, `--host` and a private JSON `--answers`
-file using the installer model's names. Dev accepts `--port` and
-`--host`. Explicit ports never
-drift. Hosts are exactly 127.0.0.1, localhost or ::1. Setup rejects a conflicting
-saved owner or origin and preserves existing data and exact private settings.
+file using the installer model's names. Dev also accepts `--port` and `--host`.
+Hosts are exactly 127.0.0.1, localhost or ::1.
+
+An existing installation keeps its saved origin, including its hostname and
+port. If that port is busy, wait until it is free or stop the service using it
+if you started that service. Then run `rer dev` again from the same checkout. To move this installation,
+run `rer setup --port 8788` with a free port, then run `rer dev`. Leave out
+`--host` so setup keeps the saved hostname. Changing between `localhost` and
+`127.0.0.1` during setup is refused. The port move keeps the existing data.
 
 ```sh
 rer reset --yes
@@ -66,8 +71,9 @@ rer deploy --dry-run
 
 The current release validates the deployment configuration and builds locally.
 The dry run needs no provider credentials, sends no mail and makes no remote
-requests. Its report lists any inputs needed for a real deploy and leaves remote
-resources, credential validity and existing secrets unchecked.
+requests. Check the owner name separately from the dry-run report. For a first
+deploy with no saved owner name, pass `--owner-name "Your name"`. The dry run
+leaves remote resources, credential validity and existing secrets unchecked.
 
 To inspect an existing Worker, run the separate
 [read-only provider preflight](docs/INSTALLER.md#read-only-provider-preflight)

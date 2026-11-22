@@ -1721,7 +1721,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "ae14435aac2dc42930d00417badd90856b01bcac9ef76d5809aa601e1641fe48",
+      "sha256": "1da0f62345a62c7c45639b19ee84f8ef8117ec00ec056401a42d492dade9d18a",
       "executable": false
     },
     "docs/help-before-they-ask.md": {
@@ -1741,7 +1741,7 @@
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "2ab64bd46a0d4fdd74214f6f38f2077fdd66a1b01f26e8443159488c738697da",
+      "sha256": "fd3d35711999470474ea7a3344443505d00eac1dc312636270b96f4bc6863603",
       "executable": false
     },
     "docs/knowledge-upgrade-report.md": {
@@ -2917,11 +2917,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "1755e3aa0ef651bf26198d35cff5a18ad4b536003d38b770bba0d32c9faad698",
+      "sha256": "361a14b2d9ab8753638801df47592e89502afc74eb485519b6e70436bfd0189b",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "f7c9ed42de4a6ab977858e76b925849128ee9154f3ec5ceb15e5aa36dbb19009",
+      "sha256": "2fe82d1a4ac928435a800e80fe23062a818fb24683f6c7ee8832589e94287bf7",
       "executable": false
     },
     "public/fonts/fonts.css": {
@@ -3013,7 +3013,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "92952d2f660866f7724f6f2a84b85f1a7f14a9652ff35195a8f38f08b0fde26f",
+      "sha256": "09da7a5dc60776f4304109ac5b78e413ff7f5de8a7d1a00a592ee887a6dcd53b",
       "executable": false
     },
     "scripts/build-local-agent.cjs": {
@@ -11457,7 +11457,7 @@
       "executable": false
     },
     "src/site/run.ts": {
-      "sha256": "ea94a7ca142ede81e9bdd4da2379a5ff4b0cc6061176244c65c81d856274e95d",
+      "sha256": "ea3f55af15b3f95b1bb2661ddb0bacf7cdb1502ec17c5588e0919bf44716ae49",
       "executable": false
     },
     "src/ui/dashboard/api.jsx": {
@@ -11701,7 +11701,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationForm.jsx": {
-      "sha256": "71c318ccb849ef98dd2c5cf8d0917cce54cbeb2f3a23ceaa2b0a2ca4fc0fdc5a",
+      "sha256": "bf19c05351fbfd256121a07615e0e8ac8ae71bf53237a9c1444093370aa1a94c",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationHeader.jsx": {
@@ -11709,7 +11709,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationItem.jsx": {
-      "sha256": "765be76e8b4299e2fa9bf124dedd2034defc0ad4578aff618e91a1dc20b450dd",
+      "sha256": "1005ca0e993108bc916381e4a2aa57604c8bcfa73f16b50ad3f3f0124993e9e3",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationItemMeta.jsx": {
@@ -11933,7 +11933,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/MacrosPicker.jsx": {
-      "sha256": "ecaf50a9138f3a77de9d753d2f1da9ab84a435ace03c6201d91bb237cd21f2d3",
+      "sha256": "91c00ba16ad0751519e19ac81a9c513b223f09efdf3e833e86fa198b9e548082",
       "executable": false
     },
     "src/ui/dashboard/components/Media.jsx": {

@@ -135,9 +135,9 @@ the local owner. Native password sign-in remains available. Use `rer dev --stop`
 to stop the managed app, or `rer dev --foreground` to keep it in the terminal and
 stop with Ctrl+C.
 
-Choose an explicit loopback port with `--port 8788`, using the same saved origin
-for setup. See [Local command reference](../RUN-LOCALLY.md) for preview and
-bounded serving. Sign-in takes you to the workspace Setup page described in
+Choose an explicit loopback port with `--port 8788` when you start a fresh
+checkout. For an existing installation with a busy port, follow the
+[local restart guidance](../RUN-LOCALLY.md). Sign-in takes you to the workspace Setup page described in
 [First-run setup](SETUP-WORKFLOW.md).
 
 ## Try the customer widget locally
@@ -228,8 +228,9 @@ It validates the input shape and builds locally. It makes no provider requests,
 sends no mail and makes no deployment. No Cloudflare credentials, mail provider,
 verified sender, sending token or real `OWNER_EMAIL` are required. The completion
 report explicitly says no Cloudflare requests were made and nothing was changed
-remotely; missing production inputs are listed as needed for a real deploy.
-If a first deploy has no saved owner name, pass `--owner-name "Your name"`.
+remotely and lists missing production inputs. Check the owner name separately
+from this report. If a first deploy has no saved owner name, pass
+`--owner-name "Your name"`.
 Remote resources, credential validity and existing secret bindings remain unchecked
 by the dry run. The separate command below can inspect an existing Worker. `rer deploy --environment
 production` requires owner authorization and the private credentials/declaration

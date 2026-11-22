@@ -60,6 +60,7 @@ function ConversationItem({ conversation }) {
     // The row's Close and its Select tickets checkbox (ConversationsList) are described by the contact's name.
     const nameId = conversationNameId(conversation.id);
     const subject = !isDemo && conversation.subject;
+    const message = conversation.matched_message || conversation.last_message;
 
     // The action is a sibling of the row link (a button inside an anchor is invalid). It shows on hover and keyboard
     // focus, in the time's place.
@@ -90,10 +91,10 @@ function ConversationItem({ conversation }) {
                             </div>
                             <div className="conversation-item-preview">
                                 { (subject || conversation.last_message) && <div className="conversation-item-text">
-                                    { subject && <span className="conversation-item-subject">{ subject }</span> }
+                                    { subject && <span className="conversation-item-subject" aria-hidden={ subject === message?.content }>{ subject }</span> }
                                     { conversation.last_message && <span className="conversation-item-message">
                                         { !conversation.matched_message && conversation.last_message.agent && <span className="conversation-item-author">{ conversation.last_message.agent.name }: </span> }
-                                        { (conversation.matched_message || conversation.last_message).content }
+                                        { message.content }
                                     </span> }
                                 </div> }
                                 { conversation.agent && <span className="conversation-item-agent" role="img" title={ `Assigned to ${ conversation.agent.name }` } aria-label={ `Assigned to ${ conversation.agent.name }` }>

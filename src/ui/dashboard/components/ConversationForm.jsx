@@ -233,6 +233,12 @@ export default function ConversationForm({
         setHelper(null);
     };
 
+    const captureDraft = () => {
+        const version = draftVersionRef?.current;
+        const { content } = latestDraft.current;
+        return () => mounted.current && draftVersionRef?.current === version && latestDraft.current.content === content;
+    };
+
     const handleComposerSurfaceClick = event => {
         const target = event.target;
         if (!(target instanceof Element) || !composerRef.current?.contains(target)) return;
@@ -271,7 +277,8 @@ export default function ConversationForm({
                 <div className="flex-grow-1 d-flex flex-column">
                     { sendError && <p className="conversation-composer__error" role="alert">{ sendError }</p> }
                     <div className={ `chat-entry-form${ loadingContent.length > 0 ? (loadingContent === '-loading-' ? ' loading loading-start' : ' loading') : '' }` }>
-                        { helper === 'macros' && <MacrosPicker projectId={ projectId } onPicked={ insertReply } /> }
+                        { helper === 'macros' && <MacrosPicker projectId={ projectId } captureDraft={ captureDraft }
+                            onPicked={ insertReply } onSkipped={ () => setHelper(null) } /> }
                         { helper === 'articles' && <ArticlePicker projectId={ projectId } conversationId={ conversationId } cc={parseEmailRecipients(emailRecipients.cc)} bcc={parseEmailRecipients(emailRecipients.bcc)} onPicked={ insertReply } /> }
                         { loadingContent.length > 0 && <div className="form-control form-control-flush loading-content" aria-live="polite">
                             <div className="loading-content-bg"></div>

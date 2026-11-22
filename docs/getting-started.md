@@ -42,6 +42,11 @@ checkout in your terminal and run `rer dev --stop && rer dev`. If you started
 the app with `rer dev --foreground`, press Ctrl+C in that terminal, then run
 `rer dev --foreground` again. Open the new `RER_OPEN` link after restart.
 
+If the saved port is busy, rerun `rer dev` after that port is free. To move
+this checkout to a free port, run `rer setup --port 8788` with a free port
+and leave out `--host`. Then run `rer dev` again. See the
+[local command reference](../RUN-LOCALLY.md).
+
 Continue with [first-run setup](SETUP-WORKFLOW.md) to connect your website and
 try the customer widget. The [local command reference](../RUN-LOCALLY.md) covers
 preview, export and recovery. For private setup answers and contributor options,

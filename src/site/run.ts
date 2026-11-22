@@ -2,6 +2,7 @@ import type { RunData } from './base/run-site'
 import { runPricing } from './base/run-pricing'
 import data from './run.json'
 
+// Use the published HappyToHelp release and its rer version for the public launch command.
 const { releaseTag, releaseRer, ...runData } = data
 export const run: RunData = {
   ...runData,

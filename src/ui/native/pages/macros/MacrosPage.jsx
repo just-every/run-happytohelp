@@ -16,9 +16,9 @@ import '../management-parity.css';
 const empty=()=>({title:'',content:'',actions:{},scope:{visibility:'shared',roles:[],groups:[],brands:[]}});
 export default function MacrosPage({projectId,recordId}){
  const path=`/api/management/projects/${projectId}/macros`,base=`/projects/${projectId}/macros`,navigate=useNavigate(),{markDirty,markSaved}=useUnsavedChanges(),{ask,dialog}=useConfirmation();
- const routeLocation=useDashboardLocation(),textareaRef=useRef(null),optionsRef=useRef(null);
+ const routeLocation=useDashboardLocation(),textareaRef=useRef(null),optionsRef=useRef(null),createKey=useRef(null);
  const [items,setItems]=useState(null),[draft,setDraft]=useState(null),[settings,setSettings]=useState(null),[members,setMembers]=useState([]),[tags,setTags]=useState([]),[attachments,setAttachments]=useState([]),[query,setQuery]=useState({search:'',page:1,sort:'title',direction:'asc'}),[pagination,setPagination]=useState(null),[error,setError]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false);
- useEffect(()=>{let active=true;setError('');setDraft(null);setSaved(Boolean(recordId)&&routeLocation.state?.savedReplyCreated===recordId);Promise.all([nativeRequest(`/api/management/projects/${projectId}/ticket-settings`),nativeRequest(`/api/management/projects/${projectId}/agents`),nativeRequest(`/api/dashboard/projects/${projectId}/tags`),nativeRequest(`${path}/attachment-options`)]).then(([s,m,t,a])=>{if(active){setSettings(s.data);setMembers(m.data);setTags(t.data);setAttachments(a.data);if(recordId==='create')setDraft({...empty(),scope:{...empty().scope,visibility:s.data.permissions.settings?'shared':'personal'}})}}).catch(e=>{if(active)setError(e.message)});if(recordId&&recordId!=='create')nativeRequest(`${path}/${recordId}`).then(r=>{if(active)setDraft(r.data)}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[projectId,recordId]);
+ useEffect(()=>{let active=true;createKey.current=null;setError('');setDraft(null);setSaved(Boolean(recordId)&&routeLocation.state?.savedReplyCreated===recordId);Promise.all([nativeRequest(`/api/management/projects/${projectId}/ticket-settings`),nativeRequest(`/api/management/projects/${projectId}/agents`),nativeRequest(`/api/dashboard/projects/${projectId}/tags`),nativeRequest(`${path}/attachment-options`)]).then(([s,m,t,a])=>{if(active){setSettings(s.data);setMembers(m.data);setTags(t.data);setAttachments(a.data);if(recordId==='create')setDraft({...empty(),scope:{...empty().scope,visibility:s.data.permissions.settings?'shared':'personal'}})}}).catch(e=>{if(active)setError(e.message)});if(recordId&&recordId!=='create')nativeRequest(`${path}/${recordId}`).then(r=>{if(active)setDraft(r.data)}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[projectId,recordId]);
  useEffect(()=>{if(recordId)return;const abort=new AbortController();setError('');nativeRequest(`${path}?${new URLSearchParams(query)}`,{signal:abort.signal}).then(r=>{setItems(r.data);setPagination(r.pagination)}).catch(e=>{if(!abort.signal.aborted)setError(e.message)});return()=>abort.abort()},[path,query,recordId]);
  const currentDraft=useRef(null),mounted=useRef(true);
  currentDraft.current={projectId,recordId,draft};
@@ -35,7 +35,17 @@ export default function MacrosPage({projectId,recordId}){
   change('content',draft.content.slice(0,offset+start)+token+draft.content.slice(offset+end));
   requestAnimationFrame(()=>{input?.focus();input?.setSelectionRange(start+token.length,start+token.length);});
  };
- const save=async e=>{e.preventDefault();setBusy(true);setError('');try{const {references,...definition}=draft;const result=await nativeRequest(draft.id?`${path}/${draft.id}`:path,{method:draft.id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...definition,content:separateReferences(definition.content,references),expected_version:draft.version})});markSaved();setDraft(result.data);setSaved(true);if(!draft.id)await navigate({to:`${base}/${result.data.id}`,state:{savedReplyCreated:result.data.id}})}catch(e){setError(e.message)}finally{setBusy(false)}};
+ const save=async e=>{
+  e.preventDefault();setBusy(true);setError('');
+  try{
+   const {references,...definition}=draft,headers={'Content-Type':'application/json'};
+   if(!draft.id)headers['Idempotency-Key']=createKey.current??=crypto.randomUUID();
+   const result=await nativeRequest(draft.id?`${path}/${draft.id}`:path,{method:draft.id?'PUT':'POST',headers,body:JSON.stringify({...definition,content:separateReferences(definition.content,references),expected_version:draft.version})});
+   markSaved();setSaved(true);
+   if(draft.id)setDraft(result.data);
+   else await navigate({to:`${base}/${result.data.id}`,state:{savedReplyCreated:result.data.id}});
+  }catch(e){setError(e.message)}finally{setBusy(false)}
+ };
  const remove=()=>ask({title:`Delete ${draft.title}?`,body:<p>It will no longer be available in the picker. Version history and past usage remain.</p>,run:async()=>{await nativeRequest(`${path}/${draft.id}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({expected_version:draft.version})});markSaved();await navigate({to:base})}});
  return <><Feedback error={error} saved={saved}/>{!recordId?<ManagementLists section="macros" {...{items,base,projectId,pagination,query}} onQuery={setQuery}/>:!draft||!settings?<p role="status">Loading…</p>:<div className="workspace-settings"><form onSubmit={save}>
  <Section title="Reply" description="Write an answer you can reuse in conversations.">

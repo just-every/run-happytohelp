@@ -124,13 +124,13 @@ jobs:
       - run: pnpm run typecheck
       - run: pnpm exec rer check --profile first-party
       - run: pnpm run build
-      - name: Run reviewed light readers and build the run site
+      - name: Run reviewed light readers
         if: ${{ needs.plan.outputs.coverage == 'light' }}
         env:
           LIGHT_READERS: ${{ needs.plan.outputs.readers }}
-        run: |
-          node scripts/ci/verify-lifecycle.mjs --light
-          pnpm run build --site
+        run: node scripts/ci/verify-lifecycle.mjs --light
+      - name: Build the Run site
+        run: pnpm run build --site
       - name: Package internal build output
         run: >-
           tar -czf "$RUNNER_TEMP/happytohelp-build.tar.gz"

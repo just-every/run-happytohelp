@@ -3,7 +3,7 @@
 Paste this line into your terminal to install the latest published HappyToHelp release.
 
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
+repo=https://github.com/just-every/run-happytohelp; release=$(curl -fsS -o /dev/null -w '%{redirect_url}' "$repo/releases/latest") && git clone --branch "${release##*/}" --depth 1 "$repo" && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev
 ```
 
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
@@ -23,7 +23,7 @@ until you configure a mail provider. No email or AI account is needed to begin.
 With Node 22 or later, you can use this alternative:
 
 ```sh
-npx -y @runeditrun/rer dev just-every/run-happytohelp
+repo=https://github.com/just-every/run-happytohelp; release=$(curl -fsS -o /dev/null -w '%{redirect_url}' "$repo/releases/latest") && git clone --branch "${release##*/}" --depth 1 "$repo" && cd run-happytohelp && npx -y @runeditrun/rer dev
 ```
 
 ## Next time

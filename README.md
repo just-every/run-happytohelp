@@ -68,11 +68,11 @@ Start the latest published HappyToHelp release with this command. Git is
 required. The installer brings Node.js and pnpm.
 
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
+repo=https://github.com/just-every/run-happytohelp; release=$(curl -fsS -o /dev/null -w '%{redirect_url}' "$repo/releases/latest") && git clone --branch "${release##*/}" --depth 1 "$repo" && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev
 ```
 
-Rer selects the latest published release, installs dependencies, sets up a local
-owner and starts the app.
+The command clones the latest published tag into `run-happytohelp`. Rer installs
+dependencies, sets up a local owner and starts the app.
 To start it again later, run `cd run-happytohelp && rer dev`.
 
 A first local start usually takes about a minute. On a busy computer it can take
@@ -81,7 +81,7 @@ longer: `rer dev` prints progress every 20 seconds, with the limit to allow.
 If you already have **Node.js 22 or later** (with npm) and Git, the alternative is:
 
 ```sh
-npx -y @runeditrun/rer dev just-every/run-happytohelp
+repo=https://github.com/just-every/run-happytohelp; release=$(curl -fsS -o /dev/null -w '%{redirect_url}' "$repo/releases/latest") && git clone --branch "${release##*/}" --depth 1 "$repo" && cd run-happytohelp && npx -y @runeditrun/rer dev
 ```
 
 To prepare a checkout without starting it, use the [private setup answers](docs/INSTALLER.md#private-setup-answers).

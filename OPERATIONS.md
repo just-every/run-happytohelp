@@ -213,10 +213,11 @@ These prerequisites apply to a **live deployment**. They are the deploy-kit
 owner-account instructions that rer's deploy message points to.
 
 The command derives resource names and the application origin from the
-project/environment and the owner's account. Configure private
-`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` in the process environment;
-never pass or print token values. The token needs the declared Workers, D1, R2
-and Queues capabilities. Enable R2 before provisioning. Commit source before a
+project/environment and the owner's account. Set both `CLOUDFLARE_ACCOUNT_ID`
+and `CLOUDFLARE_API_TOKEN` together in the process environment or together in one
+private `--env-file`. Rer rejects Cloudflare credentials split between those
+sources. Keep the token out of command arguments and output. The token needs
+the declared Workers, D1, R2 and Queues capabilities. Enable R2 before provisioning. Commit source before a
 real deployment.
 
 1. In the [Cloudflare dashboard](https://dash.cloudflare.com/), open the
@@ -225,7 +226,7 @@ real deployment.
 2. Add the four account permissions below, keep **Account Resources** on that
    one account, create the token and copy it.
 3. Copy the **Account ID** (see [Find your account ID](#find-your-account-id)).
-4. Put both in a private file only you can read, and pass it to rer:
+4. If you’re using an env file, put both values in a file only you can read. Clear any exported Cloudflare credentials before running the command:
 
    ```sh
    umask 077

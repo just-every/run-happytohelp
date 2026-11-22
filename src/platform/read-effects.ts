@@ -1,5 +1,5 @@
 import type {Context,MiddlewareHandler} from 'hono'
-import {d1Overloaded,mayDispatchAgain} from './d1-overload'
+import {d1TemporarilyUnavailable,mayDispatchAgain} from './d1-overload'
 /** A read (GET, HEAD) that meets D1's overload is dispatched again as a whole (d1-overload.ts), and a read answered
  * 503 is asked again by its caller. So a read's side effect never runs among its reads:
  * - a record it makes (an analytics event, a read receipt, an audit row) is held until the dispatch has answered,
@@ -36,7 +36,7 @@ export const readEffects:MiddlewareHandler=async(c,next)=>{
  const scope:Held={statements:new Map()}
  held.set(request,scope)
  try{await next()}finally{held.delete(request)}
- if(!scope.statements.size||c.res.status===503||c.error&&d1Overloaded(c.error))return
+ if(!scope.statements.size||c.res.status===503||c.error&&d1TemporarilyUnavailable(c.error))return
  for(const [db,list] of scope.statements){
   const results=await db.batch(list.map(entry=>entry.statement))
   list.forEach((entry,index)=>entry.check?.(results[index]))

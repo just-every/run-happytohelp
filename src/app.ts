@@ -90,7 +90,10 @@ app.onError(async(error,c) => {
  if(error instanceof HTTPException) return rejectedResponse(c.req.raw,error.res?error.getResponse():c.json({error:error.message},error.status))
  const status=(error as Error & {status?:number}).status
  if(status && [400,401,403,404,409,413,422,429,503].includes(status)) return rejectedResponse(c.req.raw,c.json({error:error.message},status as 400))
- console.error('Request failed',error.name)
+ // D1 messages and bound values can include private text. Keep only a category
+ // and the matched route pattern for correlating failures across requests.
+ const kind=/^D1_[A-Z_]+:/.exec(error.message)?.[0].slice(0,-1)
+ console.error('Request failed', {method:c.req.method,route:c.req.routePath,kind:kind??error.name})
  return rejectedResponse(c.req.raw,c.json({error:'Request failed. Check server diagnostics.'},500))
 })
 app.get('/health',async c=>{

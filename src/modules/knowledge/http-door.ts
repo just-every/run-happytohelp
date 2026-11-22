@@ -11,12 +11,18 @@ import {renderKnowledgeFields,referenceIds,referenceVisibility} from './referenc
 import {knowledgeWriteEnvironment} from './write-boundary'
 import {dispatchKnowledgeUpgrades} from './upgrade-progress'
 import {requireActor} from '../../platform/auth'
-const schemas=new WeakMap<object,Promise<boolean>>()
+const readySchemas=new WeakSet<object>()
 // Signing in reads and writes no knowledge row, so a pending content upgrade never holds it: an imported owner has no
 // password and enters by the emailed link. Every other route stays fenced; add a path here only after reading it touches no knowledge data.
 const identityEntry=new Set(['session','login','setup','setup-status','auth-options','sign-in-options','magic-link','magic-link/consume'].map(name=>'/api/identity/'+name))
-// A failed probe (for example D1 answering "overloaded") is not cached: the next request asks again.
-export const knowledgeSchemaReady=(env:Env)=>{let ready=schemas.get(env.DB);if(!ready){const db=env.DB;ready=db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='knowledge_reply_blocks'").first().then(Boolean,error=>{schemas.delete(db);throw error});schemas.set(db,ready)}return ready}
+// Cache only an observed schema. A concurrent request owns its own D1 operation.
+export async function knowledgeSchemaReady(env:Env){
+ const db=env.DB
+ if(readySchemas.has(db))return true
+ const ready=Boolean(await db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='knowledge_reply_blocks'").first())
+ if(ready)readySchemas.add(db)
+ return ready
+}
 /** HTTP's shared door covers all text-bearing fields, including JSON columns and
  * nested list/preview responses. Controller authorization still owns ticket access. */
 export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>){
@@ -41,7 +47,12 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  let errorData:any
  try{
  const nativeProject=context().projectId
- if(nativeProject&&c.res.status<400&&!['GET','HEAD','OPTIONS'].includes(c.req.method)&&/^\/api\/knowledge\/[^/]+\/articles(?:\/|$)/.test(c.req.path))await updateKnowledgeIndex(rawEnv,nativeProject,100)
+ if(nativeProject&&c.res.ok&&!['GET','HEAD','OPTIONS'].includes(c.req.method)&&/^\/api\/knowledge\/[^/]+\/articles(?:\/|$)/.test(c.req.path)){
+  // Publication has committed. Its dirty marker stays until the index batch
+  // succeeds, and protected writes still fence themselves on that marker.
+  try{await updateKnowledgeIndex(rawEnv,nativeProject,100)}
+  catch(error){console.error('Article saved; knowledge index refresh failed',error instanceof Error?error.name:'unknown')}
+ }
  if(c.req.path==='/api/local-agents/claim'||c.req.path==='/api/local-agents/heartbeat'||c.req.path.startsWith('/api/local-agents/jobs/')||c.req.path.startsWith('/api/delegation/v1/')||c.req.method==='GET'&&/^\/api\/portal\/[^/]+\/tickets(?:\/|$)/.test(c.req.path))return
  if(!c.res.headers.get('Content-Type')?.includes('application/json'))return
  const {projectId}=context(),actor=c.get('actor'),authority=(c as any).get('authority')

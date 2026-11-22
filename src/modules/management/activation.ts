@@ -47,7 +47,11 @@ activation.post(`${path}/check`,async c=>{
  // An untouched starter follows the provider whose key is installed before its key is validated.
  if(ids.includes('model_key')&&await reconcileStarter(c.env,actor.projectId,config.settings))config=await activationConfiguration(c.env,actor.projectId)
  await runChecks(c.env,config,ids,body.auto===true)
- return snapshotResponse(c,actor.projectId)
+ try{return await snapshotResponse(c,actor.projectId)}
+ catch(error){
+  console.error('Setup checks finished; snapshot refresh failed',error instanceof Error?error.name:'unknown')
+  return c.json({refresh_required:true},200)
+ }
 })
 activation.post(`${path}/skip`,async c=>{
  const actor=await ownerScope(c),body=await c.req.json().catch(()=>null)

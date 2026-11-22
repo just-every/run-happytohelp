@@ -1,5 +1,5 @@
-// Keep edits in this tab until the operator sends or abandons the reply. The
-// server's draft id ties the edit to the exact saved reply the operator used.
+// Keep the active draft in this tab, even before a saved reply has arrived.
+// When there is a server draft, its ID ties attachments to the correct use.
 export function savedReplyEditKey(projectId, conversationId, operatorId) {
     return operatorId && projectId && conversationId
         ? `h2h:saved-reply-edit:${JSON.stringify([projectId, conversationId, operatorId])}` : null;
@@ -9,7 +9,7 @@ export function readSavedReplyEdit(key) {
     if (!key) return null;
     try {
         const edit = JSON.parse(sessionStorage.getItem(key));
-        return typeof edit?.id === 'string' && typeof edit.content === 'string' ? edit : null;
+        return (edit?.id === null || typeof edit?.id === 'string') && typeof edit.content === 'string' ? edit : null;
     } catch {
         return null;
     }

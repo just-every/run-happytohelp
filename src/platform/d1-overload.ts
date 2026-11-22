@@ -1,10 +1,9 @@
 import type {ErrorHandler,Hono} from 'hono'
 import {busyPage,busyPageHeaders} from '../modules/public-site/busy-page'
-/** D1 refuses work with "D1 DB is overloaded" (too many resources consumed within its 10 s window, or
- * requests queued too long). Any request may meet it on a large workspace, at any of its D1 calls. A read
- * (GET, HEAD) is dispatched again as a whole after a short wait, middleware and authentication included; a
- * read still refused, and a write (never re-run), answers 503 with Retry-After and a JSON error, never 500
- * (a browser's own page load or native form post gets a busy page instead, never a JSON body). */
+/** D1 can refuse work under load or during a transient storage interruption.
+ * Retry the whole read after a short wait, including middleware and authentication.
+ * If the read is still unavailable, answer 503 with Retry-After. Writes are never
+ * re-run. Only an explicit overload refusal gets the busy response for a write. */
 const waits=[250,500,1000]
 /** Seconds the client waits after the retries above were also refused. */
 export const overloadRetryAfter=3
@@ -12,12 +11,14 @@ const overloaded=new WeakSet<Request>()
 const sleep=(ms:number)=>new Promise(resolve=>setTimeout(resolve,ms))
 const read=(request:Request)=>request.method==='GET'||request.method==='HEAD'
 
-export function d1Overloaded(error:unknown){
+export function d1TemporarilyUnavailable(error:unknown,readOnly=true){
  const seen=new Set<unknown>()
  for(let cause=error;cause&&typeof cause==='object'&&!seen.has(cause);cause=(cause as {cause?:unknown}).cause){
   seen.add(cause)
   const message=(cause as {message?:unknown}).message
-  if(typeof message==='string'&&message.includes('D1 DB is overloaded'))return true
+  if(typeof message!=='string')continue
+  if(message.includes('D1 DB is overloaded'))return true
+  if(readOnly&&/^D1_ERROR:\s*(?:Network connection lost|D1 DB reset because its code was updated|Internal error (?:in D1 DB storage|while starting up D1 DB storage) caused object to be reset|Cannot resolve D1 DB due to transient issue on remote node)\b/i.test(message))return true
  }
  return false
 }
@@ -33,7 +34,7 @@ export const overloadAnswer=(request:Request)=>({body:{error:busyMessage(request
 
 /** The error handler's check: a request that met an overload is marked for the dispatch to retry. */
 export function overloadedRequest(request:Request,error:unknown){
- if(!d1Overloaded(error))return false
+ if(!d1TemporarilyUnavailable(error,read(request)))return false
  overloaded.add(request)
  return true
 }
@@ -81,7 +82,7 @@ export async function guardOverload(request:Request,run:()=>Promise<Response>){
  for(let attempt=0;;attempt++){
   try{return await run()}
   catch(error){
-   if(!d1Overloaded(error))throw error
+   if(!d1TemporarilyUnavailable(error,read(request)))throw error
    if(!read(request)||attempt>=waits.length)return busyResponse(request)
    await sleep(waits[attempt])
   }

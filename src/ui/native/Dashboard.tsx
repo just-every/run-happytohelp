@@ -3,7 +3,7 @@ import { Suspense, useEffect } from 'react';
 import { busyWait, isBusy } from '../dashboard/utils/busy';
 import DashboardClient, { DashboardContent as PageContent, type DashboardContentProps } from './DashboardClient';
 import { withVisualEdits } from '../../editor/VisualEditBoundary';
-import { Link, useMatches, useRouter } from '@tanstack/react-router';
+import { Link, useMatches, useRouter, useRouterState } from '@tanstack/react-router';
 import { BrandLockup } from '../homepage/BrandLockup';
 import { DashboardSettingsContext, useDashboardSessionVersion, invalidateDashboardSession, useWorkspaceBusy } from './dashboard-state';
 import '../homepage/outfit.css';
@@ -28,6 +28,13 @@ export function DashboardPending({ busy: waiting = false }: { busy?: boolean }) 
 export function DashboardError({ error }: { error: unknown }) {
     const router = useRouter();
     const busy = isBusy(error);
+    const {pathname, state} = useRouterState({select: value => value.location});
+    const recordId = pathname.split('/').at(-1);
+    const write = state as {savedReplyCreated?: string; articleWrite?: {id: string; published: boolean}};
+    const confirmedWrite = recordId && (
+        write.savedReplyCreated === recordId && pathname.includes('/macros/') ? 'Saved reply saved.'
+        : write.articleWrite?.id === recordId && pathname.includes('/articles/')
+            ? (write.articleWrite.published ? 'Article published.' : 'Article saved as a draft.') : '');
     useEffect(() => { delete (window as any).chatSettings; }, []);
     // A busy database or a dropped answer is a wait, not a failure: read the workspace again after its Retry-After.
     useEffect(() => {
@@ -40,7 +47,8 @@ export function DashboardError({ error }: { error: unknown }) {
     const expired = (error as { status?: number } | null)?.status === 401;
     return <main className="h2h-identity dashboard-state"><header className="id-header"><h1 className="dashboard-error-brand"><BrandLockup home="/" /></h1></header>
         <div className="dashboard-state__body"><QuestionBubble />
-            <p className="dashboard-state__message" role="alert">{error instanceof Error ? error.message : 'The workspace could not be loaded.'}</p>
+            {confirmedWrite && <p className="dashboard-state__message" role="status">{confirmedWrite}</p>}
+            <p className="dashboard-state__message" role="alert">{confirmedWrite ? 'Couldn’t open its details. Try again to reload the page.' : error instanceof Error ? error.message : 'The workspace could not be loaded.'}</p>
             {expired ? <div className="id-actions"><Link className="pill pill--ink" to="/login">Sign in</Link></div>
                 : <div className="id-actions"><button type="button" className="pill pill--ink" onClick={() => { void router.invalidate(); }}>Try again</button><span className="id-links"><Link to="/">Back to the inbox</Link></span></div>}
         </div>

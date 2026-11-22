@@ -9,7 +9,9 @@ repo=https://github.com/just-every/run-happytohelp; release=$(curl -fsS -o /dev/
 
 The command clones the latest published tag into `run-happytohelp`. Rer installs
 dependencies, sets up a local owner and starts the app.
-To start it again later, run `cd run-happytohelp && rer dev`.
+To start it again later, run `cd run-happytohelp && rer dev`. If your shell
+can’t find `rer`, use `~/.local/bin/rer dev` from the checkout. Run
+`~/.local/bin/rer cli path` for help adding it to your PATH.
 
 A first local start usually takes about a minute. On a busy computer it can take
 longer: `rer dev` prints progress every 20 seconds, with the limit to allow.

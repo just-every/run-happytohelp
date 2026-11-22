@@ -56,6 +56,9 @@ routes.get('/:id/messages',async c=>{const {actor,conversation}=await access(c);
  return c.json({...(actor.role==='contact'?{widget:await widgetConversationState(c.env,actor.projectId,String(conversation.id),actor.contactId!)}:{}),...(mergedInto?{mergedInto}:{}),messages:messages.results,revision:conversation.revision,lastMessageId:conversation.last_message_id,resolution:await resolutionState(c.env,String(conversation.project_id),String(conversation.id))})})
 routes.post('/:id/messages',async c=>{
  const started=performance.now(),{actor,conversation}=await access(c),accessed=performance.now(),b=await c.req.json()
+ // Dashboard sends identify the rendered ticket separately from the route.
+ // Existing API and widget clients can still address their ticket by URL alone.
+ if(b?.expectedConversationId!==undefined&&b.expectedConversationId!==conversation.id)return c.json({accepted:false,reason:'composer_target_mismatch'},409)
  // `email:` local ids identify inbound email claims; a client may not mint one to
  // pre-empt an inbound message's admission or borrow its classification. `erased:`
  // ids are written by contact erasure and must stay unique within a conversation.

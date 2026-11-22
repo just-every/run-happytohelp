@@ -26,3 +26,6 @@ test('an operator finds a merge by requester or subject and explicitly chooses t
 
 import {ticketReferenceBrowser} from '../helpers/inbox/ticket-reference-browser.mjs'
 test('a saved reply previews the short support reference and working link on a widget ticket, matching its operator header and page title',ticketReferenceBrowser)
+
+import {replySwitchBrowser} from '../helpers/inbox/reply-switch-browser.mjs'
+test('a quick inbox reply waits for the selected customer and the server refuses a mismatched composer',replySwitchBrowser)

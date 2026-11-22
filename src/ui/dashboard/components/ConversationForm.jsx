@@ -32,6 +32,7 @@ ConversationForm.propTypes = {
     focusRequest: PropTypes.number,
     isEnabled: PropTypes.bool,
     isResolved: PropTypes.bool,
+    isSwitching: PropTypes.bool,
     loadingContent: PropTypes.string,
     noteDraft: PropTypes.node,
     onAddNote: PropTypes.func,
@@ -67,6 +68,7 @@ export default function ConversationForm({
     focusRequest,
     isEnabled,
     isResolved,
+    isSwitching,
     loadingContent,
     noteDraft,
     onAddNote,
@@ -171,7 +173,7 @@ export default function ConversationForm({
 
         setSendError(''); setBlockedReferences([]);
         const sentVersion = draftVersionRef?.current;
-        onSendMessage(separateReferences(content,editorReferences), sendAndClose, {cc:parseEmailRecipients(emailRecipients.cc),bcc:parseEmailRecipients(emailRecipients.bcc),...(sender.mailboxId?{mailboxId:sender.mailboxId}:{}),...(sender.fromAddress?{fromAddress:sender.fromAddress}:{})}).then(() => {
+        onSendMessage(conversationId, separateReferences(content,editorReferences), sendAndClose, {cc:parseEmailRecipients(emailRecipients.cc),bcc:parseEmailRecipients(emailRecipients.bcc),...(sender.mailboxId?{mailboxId:sender.mailboxId}:{}),...(sender.fromAddress?{fromAddress:sender.fromAddress}:{})}).then(() => {
             setEmailRecipients(noRecipients);
         }, error => { if (typeof error.data?.content === 'string' && draftVersionRef?.current === sentVersion) changeContent(error.data.content); setBlockedReferences(error.data?.blockedReferences || []); setSendError(error.data?.reason === 'ticket_closed_followup_required'
             ? 'Not sent: this ticket was closed and is final. A customer reply opens a new ticket.'
@@ -233,12 +235,6 @@ export default function ConversationForm({
         setHelper(null);
     };
 
-    const captureDraft = () => {
-        const version = draftVersionRef?.current;
-        const { content } = latestDraft.current;
-        return () => mounted.current && draftVersionRef?.current === version && latestDraft.current.content === content;
-    };
-
     const handleComposerSurfaceClick = event => {
         const target = event.target;
         if (!(target instanceof Element) || !composerRef.current?.contains(target)) return;
@@ -277,8 +273,7 @@ export default function ConversationForm({
                 <div className="flex-grow-1 d-flex flex-column">
                     { sendError && <p className="conversation-composer__error" role="alert">{ sendError }</p> }
                     <div className={ `chat-entry-form${ loadingContent.length > 0 ? (loadingContent === '-loading-' ? ' loading loading-start' : ' loading') : '' }` }>
-                        { helper === 'macros' && <MacrosPicker projectId={ projectId } captureDraft={ captureDraft }
-                            onPicked={ insertReply } onSkipped={ () => setHelper(null) } /> }
+                        { helper === 'macros' && <MacrosPicker projectId={ projectId } conversationId={ conversationId } onPicked={ insertReply } /> }
                         { helper === 'articles' && <ArticlePicker projectId={ projectId } conversationId={ conversationId } cc={parseEmailRecipients(emailRecipients.cc)} bcc={parseEmailRecipients(emailRecipients.bcc)} onPicked={ insertReply } /> }
                         { loadingContent.length > 0 && <div className="form-control form-control-flush loading-content" aria-live="polite">
                             <div className="loading-content-bg"></div>
@@ -292,7 +287,7 @@ export default function ConversationForm({
                             textareaRef={ textareaRef }
                             references={ editorReferences }
                             className="form-control form-control-flush"
-                            placeholder={ finalReason || 'Type your reply…' }
+                            placeholder={ isSwitching ? 'Loading…' : finalReason || 'Type your reply…' }
                             aria-label="Reply to conversation"
                             onKeyDown={ handleKeyDown }
                             onChange={ changeContent }
@@ -300,7 +295,7 @@ export default function ConversationForm({
                             minRows={ 1 }
                             maxRows={ 10 }
                             readOnly={ isComposerLocked }
-                            disabled={ Boolean(finalReason) }
+                            disabled={ isSwitching || Boolean(finalReason) }
                         />
                     </div>
 
@@ -313,7 +308,7 @@ export default function ConversationForm({
                         </div> }
                         <div className="col-auto flex-grow-1 d-flex gap-2 justify-content-end">
                             { !isEnabled && !helper && <span className="btn btn-ico rounded-circle text-gray-600 active" role="status" aria-live="polite">
-                                <span className="visually-hidden">Uploading attachment</span>
+                                <span className="visually-hidden">{isSwitching ? 'Loading conversation' : 'Uploading attachment'}</span>
                                 <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
                             </span> }
                             <ConversationDraftStatus />
@@ -332,7 +327,7 @@ export default function ConversationForm({
                                     onSendAndClose={ () => sendMessage(true) }
                                     ticketMenu={ ticketMenu }
                                 />
-                                <button type="submit" className={ `btn btn-primary${ hasContent && !canSend ? ' conversation-composer__send--blocked' : '' }` } disabled={ !canSend }>
+                                <button type="submit" className={ `btn btn-primary${ (isSwitching || hasContent) && !canSend ? ' conversation-composer__send--blocked' : '' }` } disabled={ !canSend }>
                                     <ReplyIcon name="send" /> Send
                                 </button>
                             </div>

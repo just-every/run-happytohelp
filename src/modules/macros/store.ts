@@ -81,9 +81,13 @@ export async function saveMacro(env:Env,actor:Actor,input:unknown,authority:Tick
   env.DB.prepare(`INSERT INTO macros(id,project_id,title,content,created_by,created_at,updated_at) SELECT ?,?,?,?,?,?,? WHERE EXISTS(${guard.sql})`).bind(macroId,actor.projectId,data.title,data.content,actor.id,now,now,...guard.params),
   env.DB.prepare('UPDATE macro_versions SET actions_json=?,scope_json=? WHERE macro_id=? AND version=1 AND created_by=?').bind(JSON.stringify(data.actions),JSON.stringify(data.scope),macroId,actor.id),
  ]
- const result=await env.DB.batch(statements)
+ // Return the stored version from the same transaction, including any stored
+ // reference tokens. A separate read could fail after the save committed.
+ const result=await env.DB.batch([...statements,
+  env.DB.prepare(`${selection} WHERE m.id=? AND m.project_id=?`).bind(macroId,actor.projectId),
+ ])
  if(!result[0].meta.changes)throw new HTTPException(409,{message:'The saved reply or your permissions changed. Reload before saving.'})
- return {...macroData(await env.DB.prepare(`${selection} WHERE m.id=? AND m.project_id=?`).bind(macroId,actor.projectId).first()),id:macroId}
+ return {...macroData(result.at(-1)!.results[0]),id:macroId}
 }
 export async function archiveMacro(env:Env,actor:Actor,id:string,expected:number,authority:TicketAuthority){
  const {row}=await readMacro(env,actor,id),personal=JSON.parse(row.scope_json).visibility==='personal'

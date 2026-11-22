@@ -29,6 +29,8 @@ repo=https://github.com/just-every/run-happytohelp; release=$(curl -fsS -o /dev/
 ## Next time
 
 Open the `run-happytohelp` checkout and run `rer dev` to reopen your copy.
+If your shell can’t find `rer`, use `~/.local/bin/rer dev` from the checkout.
+Run `~/.local/bin/rer cli path` for help adding it to your PATH.
 If you started with npx, run `npx -y @runeditrun/rer dev` there.
 
 ### Restart after changing a local setting

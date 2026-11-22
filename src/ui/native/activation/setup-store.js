@@ -16,8 +16,14 @@ function createStore(projectId) {
  const waiting = data => Boolean(data?.steps?.some(step => step.placement === 'skipped' || (step.applicable && step.state !== 'done')));
  const post = async auto => {
   const result = await nativeRequest(`${path}/check`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(auto ? {auto: true} : {}), cache: 'no-store'});
-  if (!stopped) set({data: result.data, error: ''});
-  return result.data;
+  if (stopped) return;
+  if (!result.refresh_required) { set({data: result.data, error: ''}); return; }
+  try {
+   const {data} = await nativeRequest(path, {cache: 'no-store'});
+   if (!stopped) set({data, error: ''});
+  } catch {
+   if (!stopped) set({error: 'Checks finished. Reload Setup to see the latest results.'});
+  }
  };
  // A single request at a time: a poll that lands while another is running joins it instead of repeating it.
  const observe = auto => {

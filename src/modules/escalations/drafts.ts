@@ -14,6 +14,7 @@ export function draftRoutes(onCommittedMessage:(env:Env,message:Record<string,un
  routes.post(ticketPrefix+'/drafts/:draftId/send',async c=>{
   const {actor,conversation}=await escalationAccess(c,'conversations.reply'),body=await requestBody(c),draftId=c.req.param('draftId'),content=string(body.content,'customer update',100000)
   if(!draftId)throw new HTTPException(404)
+  if(body.expectedConversationId!==undefined&&body.expectedConversationId!==conversation.id)return c.json({accepted:false,reason:'composer_target_mismatch'},409)
   const draft=await c.env.DB.prepare(`SELECT d.*,i.closed FROM escalation_drafts d JOIN escalation_issues i ON i.id=d.issue_id WHERE d.id=? AND d.project_id=? AND d.conversation_id=?`).bind(draftId,actor.projectId,conversation.id).first<any>()
   if(!draft||!draft.closed||draft.state==='cancelled')throw new HTTPException(409,{message:'This engineering update is no longer available for approval'})
   // An explicit Send approves this edited text. A repeated request must retain

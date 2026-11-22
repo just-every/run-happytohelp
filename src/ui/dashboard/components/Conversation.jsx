@@ -1,4 +1,5 @@
 import { ConversationSuggestionsProvider } from '../contexts/ConversationSuggestionsContext';
+import { useRouter, useRouterState } from '@tanstack/react-router';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Api from "../api";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
@@ -17,7 +18,7 @@ import ConversationBody from "./ConversationBody";
 import '../styles/components/Conversation.scss';
 import NoteModal from "./NoteModal";
 import { useUnsavedChanges } from '../../native/NavigationGuard';
-import { useDashboardSettings } from '../../native/dashboard-state';
+import { useDashboardLocation, useDashboardSettings } from '../../native/dashboard-state';
 import { NotesOnlyComposer, useCan } from './ConversationAccess';
 import ConversationCollaboration from './collaboration/ConversationCollaboration';
 import { CollaborationProvider } from './collaboration/useCollaboration';
@@ -48,6 +49,9 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     } = useContext(ChatContext);
     const assistant = useConversationAssistant();
     const settings = useDashboardSettings();
+    const router = useRouter();
+    const renderedPath = useDashboardLocation().pathname;
+    const navigationPath = useRouterState({ select: state => state.location.pathname });
     const [ isSending, setIsSending ] = useState(false);
     const [ atTop, setAtTop ] = useState(true);
     const [ files, setFiles ] = useState([]);
@@ -133,7 +137,9 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     };
     const visibleTranscriptError = transcriptError?.conversationId === conversationId && !transcriptError.busy;
     const isTranscriptBusy = transcriptError?.conversationId === conversationId && Boolean(transcriptError.busy);
-    const isComposerEnabled = isConversationReady && buckets.length > 0 && !isLoading && !isSending && !conversation?.merged_into;
+    const isSwitchingConversation = navigationPath !== renderedPath;
+    const isComposerEnabled = !isSwitchingConversation && conversation?.id === conversationId
+        && isConversationReady && buckets.length > 0 && !isLoading && !isSending && !conversation.merged_into;
     const cancelDraftAdoption = () => {
         if (draftAdoptionRef.current) {
             draftAdoptionRef.current = null;
@@ -172,10 +178,12 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setFiles(currentFiles => currentFiles.filter(item => item.id !== file.id));
     };
 
-    const handleSendMessage = async (messageContent, sendAndClose = false, email) => {
-        const lastBucket = buckets[buckets.length - 1];
-        if (!lastBucket) {
-            return Promise.reject(new Error('Conversation history is not ready.'));
+    const handleSendMessage = async (expectedConversationId, messageContent, sendAndClose = false, email) => {
+        // A blocking route loader can keep the previous ticket mounted after the
+        // router has selected the next one. Check the live location at dispatch.
+        if (!isComposerEnabled || router.latestLocation.pathname !== renderedPath
+            || expectedConversationId !== conversationId) {
+            throw new Error('Wait for the selected conversation to load before sending.');
         }
 
         const sentEditVersion = draftEditVersion.current;
@@ -185,6 +193,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             content: messageContent,
             authoring: draftOrigin || {kind: 'human'},
             conversation_id: conversationId,
+            expectedConversationId,
             media_ids: files.map(file => file.id),
             local_id: uuidv4(),
             escalation_draft_id: escalationDraftId,
@@ -201,8 +210,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             // the request was pending belong to the next reply.
             if (activeConversationIdRef.current === sentConversationId && draftEditVersion.current === sentEditVersion) {
                 savedReplyRef.current = null;
-                writeSavedReplyEdit(savedEditKey, null);
                 updateDraftContent('');
+                writeSavedReplyEdit(savedEditKey, null);
                 setDraftOrigin(null);
                 setEscalationDraftId(null);
                 setFiles([]);
@@ -265,13 +274,16 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 // A newer server draft belongs to a different use. If our own
                 // clear already reached the server, restore only what we typed
                 // afterward, without reviving the discarded template or media.
-                const matches = local && (draft?.usage_id === local.id || (!draft && local.discarded));
+                const matches = local && (local.id === null || draft?.usage_id === local.id || (!draft && local.discarded));
                 if (local && !matches) writeSavedReplyEdit(savedEditKey, null);
                 if (draft?.reply_type === 'note') setNoteMacro({content:draft.content,media:draft.media || []});
                 else if (matches) {
-                    savedReplyRef.current = {id: local.id, discarded: local.discarded};
+                    savedReplyRef.current = local.id === null ? null : {id: local.id, discarded: local.discarded};
                     setContent(local.content);
-                    if (!local.discarded) { setKnowledgeReferences(draft.references || []); setFiles(draft.media || []); }
+                    if (draft?.usage_id === local.id && !local.discarded) {
+                        setKnowledgeReferences(draft.references || []);
+                        setFiles(draft.media || []);
+                    }
                 } else if (draft) {
                     savedReplyRef.current = {id: draft.usage_id, discarded: false};
                     setContent(draft.content); setKnowledgeReferences(draft.references || []); setFiles(draft.media || []);
@@ -291,10 +303,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         else if (!nextContent.trim()) setDraftOrigin(null);
         const savedReply = savedReplyRef.current;
         const discard = savedReply && !savedReply.discarded && !nextContent.trim();
-        if (savedReply) {
-            if (discard) savedReply.discarded = true;
-            writeSavedReplyEdit(savedEditKey, {...savedReply, content: nextContent});
-        }
+        if (discard) savedReply.discarded = true;
+        writeSavedReplyEdit(savedEditKey, {id: null, ...savedReply, content: nextContent});
         if (discard) {
             nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft?usage_id=${encodeURIComponent(savedReply.id)}`, { method: 'DELETE', keepalive: true })
                 .catch(error => setDraftError(`Couldn’t discard your saved macro draft: ${error.message}`));
@@ -443,7 +453,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                             references={knowledgeReferences}
                             onReferencesChange={incoming => setKnowledgeReferences(current => mergeReferences(current,incoming))}
                             focusRequest={ draftFocusRequest?.conversationId === conversationId ? draftFocusRequest.version : 0 }
-                            conversationId={ conversationId }
+                            conversationId={ conversation.id }
                             projectId={ conversationProjectId }
                             loadingContent={ draftLoadingContent }
                             onSendMessage={ handleSendMessage }
@@ -457,6 +467,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                             isResolved={ Boolean(conversation.resolved_at) }
                             finalReason={ conversation.status_category === 'closed' ? 'This ticket is closed and final, so it takes no more replies. A customer reply opens a new ticket.' : null }
                             isEnabled={ isComposerEnabled }
+                            isSwitching={ isSwitchingConversation }
                             presence={ presence }
                             noteDraft={ noteDraft }
                             draftError={ draftError }

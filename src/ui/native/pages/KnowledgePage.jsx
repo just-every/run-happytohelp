@@ -1,4 +1,5 @@
 import { useUnsavedChanges } from '../NavigationGuard';
+import { useDashboardLocation } from '../dashboard-state';
 import { useNavigate } from '@tanstack/react-router';
 import React, { useEffect, useState } from 'react';
 import { nativeRequest } from '../transport';
@@ -40,6 +41,8 @@ function parseExclusions(value) {
 export default function KnowledgePage({ projectId, section, recordId, project }) {
     const { markDirty, markSaved } = useUnsavedChanges();
     const navigate = useNavigate();
+    const articleWrite = useDashboardLocation().state?.articleWrite;
+    const createdArticle = section === 'articles' && articleWrite?.id === recordId ? articleWrite : null;
     const { ask, dialog } = useConfirmation();
     const path = '/api/knowledge/' + projectId + '/' + section;
     const [categories, setCategories] = useState([]);
@@ -73,9 +76,9 @@ export default function KnowledgePage({ projectId, section, recordId, project })
         setPages([]);
         setError('');
         setSaved(false);
-        setSavedStatus('');
+        setSavedStatus(createdArticle ? (createdArticle.published ? 'Published' : 'Saved as draft') : '');
         setFieldErrors({});
-        load().catch(loadError => setError(loadError.message));
+        load().catch(loadError => setError(createdArticle ? 'Couldn’t load the saved article. Reload to see its details.' : loadError.message));
         if (recordId === 'create') {
             setDraft({
                 status: 'draft',
@@ -192,13 +195,17 @@ export default function KnowledgePage({ projectId, section, recordId, project })
             }
             markSaved();
             if (!draft.id) {
-                await navigate({ to: '/projects/' + projectId + '/' + section + '/' + result.id, replace: true });
+                await navigate({ to: '/projects/' + projectId + '/' + section + '/' + result.id, replace: true,
+                    ...(section === 'articles' ? {state: {articleWrite: {id: result.id, published: isPublished}}} : {}) });
                 return;
             }
 
             setSaved(true);
             setSavedStatus(section === 'articles' ? (isPublished ? 'Published' : 'Saved as draft') : '');
-            await load();
+            if (section === 'articles') {
+                setDraft(current => ({...current, is_published: isPublished, status: body.status}));
+                await load().catch(() => setError('Couldn’t refresh the saved article. Reload to see its latest details.'));
+            } else await load();
         } catch (saveError) {
             setError(saveError.message);
         } finally {
@@ -285,7 +292,7 @@ export default function KnowledgePage({ projectId, section, recordId, project })
             >
                 {isArticle && <ArticleEditorActions
                     isPublished={articleReady && Boolean(draft.is_published)}
-                    savedStatus={!articleReady ? (error ? 'Unavailable' : 'Loading…') : savedStatus}
+                    savedStatus={savedStatus || (!articleReady ? (error ? 'Unavailable' : 'Loading…') : '')}
                     busy={busy}
                     unavailable={!articleReady}
                     onPublish={event => save(event, true)}

@@ -27,12 +27,15 @@ is **My workspace**. You can choose these values in the answers file or change
 them later. Running setup again preserves the existing owner.
 
 For a [hosted installation](../OPERATIONS.md#deploy-to-your-cloudflare-account),
-`rer deploy` creates the owner named by `OWNER_EMAIL`. Sign in by email. To recover
+`rer deploy` creates the owner for `OWNER_EMAIL`. If the checkout has no saved
+owner name, pass `--owner-name "Your name"`. Sign in by email. To recover
 an empty installation that still needs an owner, open `/setup` on your hosted
 HappyToHelp address over HTTPS. Enter your email, password, website and private
 setup token. After creating the owner, sign in with that password. Keep tokens and
 passwords out of shell arguments, URLs, recordings and logs.
 Once the owner is created or restored from a backup, the recovery form closes.
+
+For hosted setup with email off, the [sign-in command](../OPERATIONS.md#sign-in-without-mail) prints the first-owner sign-in link on its own line. Pass it to the business harness as `tools[].sign_in` in `session.report` and keep it out of chat and files.
 
 Pressing **Create workspace** is your explicit action, and it may send you one
 welcome email at the address you gave. It goes through the same durable send path
@@ -41,17 +44,19 @@ unknown is reported as unknown and never replayed. Local mail uses rer dev v2;
 it is suppressed without storage or external sending. Setup succeeds whatever
 happens to that email.
 
-### The widget website origin
+### Your website address
 
 The website hosting the widget is separate from the HappyToHelp app origin.
 Supply an exact HTTP(S) origin: scheme and hostname, with an explicit port when
 needed, but no path, query, credentials or fragment. The widget is admitted on
 the saved website origin and always on the HappyToHelp app's own origin. Configure
-the external website through **Settings → Widget → Settings**; keep the app address
+**Your website address** in **Settings → Widget → Settings** or **Code**. Keep the app address
 in the installation snippet. Do not expose an operator token or the server
 verification secret to customer code. See [the local widget walkthrough](INSTALLER.md#try-the-customer-widget-locally).
 
 ## After setup
+
+To publish a help-center article, open **Inbox → Knowledge → Create Article**.
 
 The workspace is already set up when you arrive. Every new workspace (the first
 owner's, one created while signed in and one created by email-verified

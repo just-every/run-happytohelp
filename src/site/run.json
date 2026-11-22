@@ -5,5 +5,6 @@
   "licence": "MIT",
   "docs": true,
   "paths": { "product": null },
-  "leadLine": "One command installs and starts your local workspace."
+  "releaseTag": "v0.4.32",
+  "releaseRer": "0.2.127"
 }

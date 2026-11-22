@@ -77,25 +77,24 @@ Start the free local app with this single copy-and-run command. You do not need
 Node.js or npm installed first; the installer brings its own. Git is required.
 
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
+git clone --branch v0.4.32 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | RER_VERSION=0.2.127 sh -s -- dev
 ```
 
-That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
-Node and pnpm, installs dependencies, sets up a local owner and starts the app.
+This clones the HappyToHelp v0.4.32 tag into `run-happytohelp` and uses rer
+0.2.127 from its release notes. Rer provisions the pinned Node and pnpm,
+installs dependencies, sets up a local owner and starts the app.
 To start it again later, run `cd run-happytohelp && rer dev`.
 
 If you already have **Node.js 22 or later** (with npm) and Git, the alternative is:
 
 ```sh
-npx -y @runeditrun/rer dev just-every/run-happytohelp
+git clone --branch v0.4.32 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && npx -y @runeditrun/rer@0.2.127 dev
 ```
 
-To set it up without starting it, use
-`npx -y @runeditrun/rer setup just-every/run-happytohelp`.
+To prepare a checkout without starting it, use the [private setup answers](docs/INSTALLER.md#private-setup-answers).
 
-Normal setup and launch install the app's dependencies and build its local assets;
-they do not download Chromium. Dev uses its local
-address for the chat widget and generates a private owner password. Continue in
+A first launch can download the checkout’s headless Chromium for the owner-entry
+check. Dev uses its local address for the chat widget and generates a private owner password. Continue in
 the app, or open the private `RER_OPEN` link to reach **Setup** as the owner.
 No private answers, email service or AI account are needed. Use `rer dev --stop`
 from the checkout to stop the managed app.
@@ -197,7 +196,7 @@ remains separately unqualified.
 In rer’s deploy summary, `MAIL_PROVIDER` and `MAIL_FROM` correspond to HappyToHelp’s `EMAIL_PROVIDER` and `EMAIL_FROM` ([deployment configuration](OPERATIONS.md)).
 
 ```sh
-rer deploy --environment production --env-file ~/happytohelp-production.env
+rer deploy --environment production --owner-name "Your name" --env-file ~/happytohelp-production.env
 ```
 
 Deployment
@@ -205,7 +204,8 @@ provisions declared resources, applies migrations, publishes and checks health
 through Base deploy-kit. After a healthy deploy, `rer deploy` claims the owner named
 by `OWNER_EMAIL` (a real setup owner, or the value you supply privately) with a one-time
 token it then removes. Open your Worker's address and sign in by email as that
-owner to reach **Setup**. The owner's name is derived from their email. A Workers
+owner to reach **Setup**. On the first deploy, pass the owner's display name with
+`--owner-name` if the checkout has no saved owner name. A Workers
 hostname does not name your business: a `workers.dev` website defaults to
 **My workspace** regardless of owner email. An explicitly chosen native workspace
 name takes precedence; you can change it in Project settings.
@@ -252,7 +252,7 @@ from **Skipped**. The system runs its own checks while Setup is open, and what i
 confirms is counted ("N of M confirmed", without what you skipped): mail to you,
 sender DNS, inbound mail, model access, spend ceilings, widget origin and an
 authenticated widget visit. Saved settings alone do not complete them. Add the widget through **Settings →
-Widget**, set its exact [website origin](docs/SETUP-WORKFLOW.md#the-widget-website-origin),
+Widget**, set its exact [website origin](docs/SETUP-WORKFLOW.md#your-website-address),
 publish useful articles and invite teammates through **Settings → Agents**. Fresh installs ask widget visitors
 for an email before sending a message. To turn this off, open **Settings → Widget
 → Settings → Required contact details** and disable **Require email**. An explicitly

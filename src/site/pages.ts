@@ -10,6 +10,7 @@ import { runPageHtml, siteNotFoundHtml, type SiteBuild, type SiteContext } from 
 import { hostingPageHtml } from './base/hosting-page'
 import { identity } from './identity'
 import { run } from './run'
+import { withReleaseHosting, withReleaseLaunch } from './release-launch'
 
 export function sitePages({ contract, hosting = null, styles = [] }: Partial<SiteContext> = {}): SiteBuild {
   const docs = buildSite(process.cwd())
@@ -20,8 +21,8 @@ export function sitePages({ contract, hosting = null, styles = [] }: Partial<Sit
     pages: [
       { path: '/', html: document(renderToStaticMarkup(createElement(Homepage)), 'HappyToHelp — Customer Support, Solved.') },
       ...docs.pages.map(page => ({ path: page.href, html: document(renderToStaticMarkup(createElement(DocsPage, { page, sections: docs.sections, repository: docs.repository, version: 0 })), 'HappyToHelp docs') })),
-      { path: '/run', html: runPageHtml(identity, run, contract) },
-      { path: '/docs/hosting', html: hostingPageHtml(identity, run, hosting, contract) },
+      { path: '/run', html: withReleaseLaunch(runPageHtml(identity, run, contract)) },
+      { path: '/docs/hosting', html: withReleaseHosting(hostingPageHtml(identity, run, hosting, contract)) },
       ...(contract ? [{ path: '/contract', html: contractPageHtml(identity, run, contract) }] : []),
       { path: '/404', html: siteNotFoundHtml(identity, run, contract) },
     ],

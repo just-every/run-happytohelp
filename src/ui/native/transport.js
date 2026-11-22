@@ -101,7 +101,7 @@ export async function sendCommand(projectId, conversationId, action, data) {
 }
 
 /** Reconnect uses the persisted event cursor. Never repeats a mutation on a reconnect. `onOpen` runs on every (re)connection. */
-function connectSocket(resourcePath, cursorKey, onFrame, onReconnect, onError, onOpen) {
+function connectSocket(resourcePath, cursorKey, onFrame, onReconnect, onError, onOpen, onClose) {
     let socket, timer, stopped = false, connected = false, attempt = 0;
     const key = cursorKey;
     let cursor = sessionStorage.getItem(key) || '';
@@ -111,7 +111,13 @@ function connectSocket(resourcePath, cursorKey, onFrame, onReconnect, onError, o
         if (cursor) url.searchParams.set('after', cursor);
         if (window.chatSettings.socketToken) url.searchParams.set('token', window.chatSettings.socketToken);
         socket = new WebSocket(url);
-        socket.onopen = () => { attempt = 0; if (connected) onReconnect(); connected = true; onOpen?.(); };
+        socket.onopen = () => {
+            if (stopped) return;
+            attempt = 0;
+            if (connected) onReconnect();
+            connected = true;
+            onOpen?.();
+        };
         socket.onmessage = event => {
             try {
                 const frame = JSON.parse(event.data);
@@ -121,7 +127,16 @@ function connectSocket(resourcePath, cursorKey, onFrame, onReconnect, onError, o
         };
         // A socket closed on purpose (teardown) is not an outage: report only failures that will reconnect.
         socket.onerror = () => { if (!stopped) onError(new Error('Live connection unavailable; reconnecting.')); };
-        socket.onclose = event => { if (!stopped && event.code === 1008) { stopped = true; onError(Object.assign(new Error('This ticket is unavailable. Your access or its group may have changed.'), {status: 404})); return; } if (!stopped) timer = setTimeout(open, Math.min(15000, 500 * 2 ** attempt++)); };
+        socket.onclose = event => {
+            if (stopped) return;
+            onClose?.();
+            if (event.code === 1008) {
+                stopped = true;
+                onError(Object.assign(new Error('This ticket is unavailable. Your access or its group may have changed.'), {status: 404}));
+                return;
+            }
+            timer = setTimeout(open, Math.min(15000, 500 * 2 ** attempt++));
+        };
     };
     open();
     const dispose = () => { stopped = true; clearTimeout(timer); socket?.close(); };
@@ -129,8 +144,9 @@ function connectSocket(resourcePath, cursorKey, onFrame, onReconnect, onError, o
     return dispose;
 }
 
-export function connectConversation(conversationId, onFrame, onReconnect, onError) {
-    return connectSocket(`/api/conversations/${encodeURIComponent(conversationId)}/socket`, `h2h-event:${conversationId}`, onFrame, onReconnect, onError);
+export function connectConversation(conversationId, onFrame, onReconnect, onError, onConnectionChange) {
+    return connectSocket(`/api/conversations/${encodeURIComponent(conversationId)}/socket`, `h2h-event:${conversationId}`, onFrame, onReconnect, onError,
+        () => onConnectionChange(true), () => onConnectionChange(false));
 }
 
 // Workspace presence: every project stream reports how long this person has been idle, on connecting and every

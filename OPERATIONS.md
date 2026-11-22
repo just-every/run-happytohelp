@@ -2,25 +2,8 @@
 
 ## Run it on your computer
 
-Start the free local app with this single copy-and-run command. You do not need
-Node.js or npm installed first; the installer brings its own. Git is required.
-
-```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
-```
-
-That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
-Node and pnpm, installs dependencies, sets up a local owner and starts the app.
+Use the [getting-started guide](docs/getting-started.md) to install the published release.
 To start it again later, run `cd run-happytohelp && rer dev`.
-
-If you already have **Node.js 22 or later** (with npm) and Git, the alternative is:
-
-```sh
-npx -y @runeditrun/rer dev just-every/run-happytohelp
-```
-
-To set it up without starting it, use
-`npx -y @runeditrun/rer setup just-every/run-happytohelp`.
 
 Dev uses its local address for the chat widget and generates a private owner
 password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
@@ -515,8 +498,8 @@ a sign-in link** and open the message in that owner's mailbox. With
 `MAIL_PROVIDER=none`, use [Sign in without mail](#sign-in-without-mail) with the
 original owner's email; a native password already set also works. No sender
 repair or mail provider is needed for that command. Sign-in opens **Setup**.
-The owner's name is derived from that actual email, and a
-`workers.dev` website defaults to **My workspace** regardless of the owner email.
+On the first deploy, pass the owner's display name with `--owner-name` if the
+checkout has no saved owner name. A `workers.dev` website defaults to **My workspace**.
 An explicitly chosen native workspace name takes precedence. You can set the
 business website and name in Project settings. Running `rer deploy` again preserves the existing owner and workspace.
 

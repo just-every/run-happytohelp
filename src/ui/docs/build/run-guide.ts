@@ -1,14 +1,14 @@
-import { PATHS, startLine } from '../../../site/base/run-site';
-import { run } from '../../../site/run';
+import { PATHS } from '../../../site/base/run-site';
+import { releaseNodeStart, releaseStart } from '../../../site/run';
 
-// Keep the readable Markdown's launch examples in step with the same RunData
+// Keep the readable Markdown's launch examples in step with the same release
 // used by /run and /docs/hosting. Other Markdown, including the legacy install
 // reference, is rendered unchanged.
 export function runGuide(markdown: string): string {
   const sections: Record<string, string> = {
-    start: `\`\`\`sh\n${startLine(run)}\n\`\`\``,
+    start: `\`\`\`sh\n${releaseStart}\n\`\`\``,
     requirements: PATHS.self.requirements,
-    alternative: `\`\`\`sh\n${run.clone}\n\`\`\``,
+    alternative: `\`\`\`sh\n${releaseNodeStart}\n\`\`\``,
   };
   for (const [name, value] of Object.entries(sections)) {
     const section = new RegExp(`<!-- rer:${name} -->[\\s\\S]*?<!-- /rer:${name} -->`);

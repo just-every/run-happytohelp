@@ -277,25 +277,8 @@ give consent again. Otherwise, normal sign-in sessions work as before.
 
 ### On your computer
 
-Start the free local app with this single copy-and-run command. You do not need
-Node.js or npm installed first; the installer brings its own. Git is required.
-
-```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
-```
-
-That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
-Node and pnpm, installs dependencies, sets up a local owner and starts the app.
+Use the [getting-started guide](getting-started.md) to install the published release.
 To start it again later, run `cd run-happytohelp && rer dev`.
-
-If you already have **Node.js 22 or later** (with npm) and Git, the alternative is:
-
-```sh
-npx -y @runeditrun/rer dev just-every/run-happytohelp
-```
-
-To set it up without starting it, use
-`npx -y @runeditrun/rer setup just-every/run-happytohelp`.
 
 Dev uses its local address for the chat widget and generates a private owner
 password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the

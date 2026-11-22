@@ -10,6 +10,7 @@ import useInboxRefresh from '../hooks/useInboxRefresh';
 import { affectsInboxListing } from '../utils/inboxRefreshScheduler';
 import { mergeConversationSuggestionMetadata } from '../hooks/replySuggestionLifecycle';
 import {mergeMessageReadReceipts} from '../utils/messageReadReceipts';
+import { isOlderConversationSnapshot } from '../components/conversationRequestLifecycle';
 
 
 import Favcount from '../favcount';
@@ -65,6 +66,7 @@ export const Provider = (props) => {
     const [initialChildrenMounted, setInitialChildrenMounted] = useState(null);
     const [ lastConnected, setLastConnected ] = useState(0);
     const [socketEvent, setSocketEvent] = useState(null);
+    const [socketConnection, setSocketConnection] = useState(null);
     const conversationSocket = useRef(null);
     const sendSocket = useCallback(frame => conversationSocket.current?.send(frame) || false, []);
     const [ activeConversationId, setActiveConversationId ] = useState(initialActiveConversationId);
@@ -80,6 +82,7 @@ export const Provider = (props) => {
     const conversationProjects = useRef({});
     const [ isMainVisible, setIsMainVisible ] = useState(false);
     const [ resolutionErrors, setResolutionErrors ] = useState({});
+    const resolving = useRef(new Map());
     const [ unreadMessages, setUnreadMessages ] = useState([]);
     const isWindowFocused = useWindowFocus();
     const pluginsRef = useRef([]);
@@ -194,27 +197,27 @@ export const Provider = (props) => {
         });
     }
 
-    // Shown optimistically; a refusal restores what the server holds and keeps its message for the header and row.
-    const resolveConversation = (conversation, resolved) => {
-        if (resolved === undefined) {
-            resolved = true;
-        }
-
-        const previous = { resolved_at: conversation.resolved_at ?? null };
+    const resolveConversation = (conversation, resolved = true) => {
+        const pending = resolving.current.get(conversation.id);
+        if (pending) return pending;
         setResolutionErrors(({ [conversation.id]: _, ...rest }) => rest);
-        updateConversation(conversation.id, { resolved_at: resolved ? new Date() : null });
 
-        return Api.update(`/projects/${ conversation.project_id }/conversations/${ conversation.id }`, { resolved })
+        const request = Api.update(`/projects/${ conversation.project_id }/conversations/${ conversation.id }`, { resolved })
             .then(data => {
                 updateConversation(data.data.id, data.data);
                 sendPluginEvent('resolveConversation', data.data);
             })
             .catch(error => {
-                updateConversation(conversation.id, previous);
-                const message = `Could not ${ resolved ? 'close' : 'reopen' } this conversation: ${ error.message || 'the server refused the change' }.`;
+                // The response can fail after the write commits. Re-read the ticket without sending the mutation again.
+                setLastConnected(Date.now());
+                const message = error.committed ? 'The change was saved, but the server could not confirm the latest ticket status.'
+                    : `Could not ${ resolved ? 'close' : 'reopen' } this conversation: ${ error.message || 'the server refused the change' }.`;
                 setResolutionErrors(errors => ({ ...errors, [conversation.id]: message }));
                 throw Object.assign(error, { displayMessage: message });
-            });
+            })
+            .finally(() => resolving.current.delete(conversation.id));
+        resolving.current.set(conversation.id, request);
+        return request;
     }
 
     const updateConversation = (conversationId, updated, options = {}) => {
@@ -230,7 +233,7 @@ export const Provider = (props) => {
             const newLists = {};
             Object.keys(lists).forEach(listKey => {
                 newLists[listKey] = lists[listKey].map(conversation => {
-                    if (conversation.id === conversationId) {
+                    if (conversation.id === conversationId && !isOlderConversationSnapshot(updated, conversation)) {
                         return mergeConversationSuggestionMetadata(conversation, updated, options);
                     }
 
@@ -242,7 +245,7 @@ export const Provider = (props) => {
         });
 
         setConversationData(_conversationData => {
-            if (!_conversationData[conversationId]) {
+            if (!_conversationData[conversationId] || isOlderConversationSnapshot(updated, _conversationData[conversationId])) {
                 return _conversationData;
             }
 
@@ -485,6 +488,7 @@ export const Provider = (props) => {
     useEffect(() => {
         if (!activeConversationId || !activeProjectId) return;
         setSocketEvent(null);
+        setSocketConnection(null);
         const connection = connectConversation(activeConversationId, frame => {
             if (frame.type === 'presence') {
                 setSocketEvent(frame);
@@ -534,7 +538,7 @@ export const Provider = (props) => {
                 window.dispatchEvent(new CustomEvent('h2h:ticket-unavailable', {detail: {conversationId: activeConversationId, error}}));
                 refreshInboxData();
             } else console.warn(error.message);
-        });
+        }, connected => setSocketConnection({ conversationId: activeConversationId, connected }));
         conversationSocket.current = connection;
         return () => { conversationSocket.current = null; connection(); };
     }, [activeConversationId, activeProjectId]);
@@ -653,6 +657,7 @@ export const Provider = (props) => {
         projectIdFor,
         lastConnected,
         socketEvent,
+        socketConnected: socketConnection && socketConnection.conversationId === activeConversationId ? socketConnection.connected : null,
         sendSocket,
         initialInboxListId: initialInboxList?.id,
         initialInboxReadsId: initialInboxReads?.id,

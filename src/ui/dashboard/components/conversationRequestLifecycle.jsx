@@ -14,6 +14,13 @@ function isAbortedRequest(error) {
     return error?.name === 'AbortError';
 }
 
+// A refresh can start before a write and finish after its acknowledgement.
+function isOlderConversationSnapshot(incoming, current) {
+    return incoming.ticket_version < current?.ticket_version || (
+        incoming.ticket_version === current?.ticket_version && incoming.revision < current?.revision
+    );
+}
+
 async function fetchInitialConversationBuckets({
     conversationId,
     projectId,
@@ -50,4 +57,5 @@ export {
     fetchInitialConversationBuckets,
     hasNextPage,
     isAbortedRequest,
+    isOlderConversationSnapshot,
 };

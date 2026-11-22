@@ -3,6 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {invalid,refuse} from '@runeditrun/rer/errors';
 import {deployEnvironment} from '@runeditrun/rer/internal/cli/deploy-inputs.mjs';
+import {deployOwnerInput} from '@runeditrun/rer/internal/cli/deploy-owner-input.mjs';
 import {requireProductionAuth} from '@runeditrun/rer/internal/cli/production-auth.mjs';
 import {neededForRealDeploy} from '@runeditrun/rer/internal/cli/deploy-needs.mjs';
 import {deployProductDirectory,deployProductArguments} from '@runeditrun/rer/internal/cli/deploy-product.mjs';
@@ -27,6 +28,7 @@ export async function offlineDeploy(path,lifecycle,context){
  if(nativeMailgun){
   try{validateRuntimeEnvironment(env);}catch(error){if(error?.constructor!==Error)throw error;signIn=error.message;}
  }else ({signIn}=await requireProductionAuth({root,declaration,env,setupManifest,setupSeed,adapter:lifecycle,declarationPath:path,options})??{});
+ const {neededForRealDeploy:ownerNeeds}=await deployOwnerInput(context);
  const productDirectory=deployProductDirectory(declaration);
  await withoutLocalSettings(root,{settings:lifecycle.settings,operationToken},()=>lifecycle.run(root,{},store,()=>{},signal,{verb:'build',operationToken}));
  await checkBuild();
@@ -44,5 +46,5 @@ export async function offlineDeploy(path,lifecycle,context){
  const needed=neededForRealDeploy({declaration,env,signIn});
  store.report('deploy: offline dry run complete; no provider requests, mail or deployment. Target resources, credentials and existing secret bindings were not checked.');
  for(const item of needed)store.report(`deploy: needed for a real deploy: ${item}`,{names:item.match(/\b[A-Z][A-Z0-9_]+\b/g)??[]});
- return {dryRun:true,deployed:false,providerChecked:false};
+ return {dryRun:true,deployed:false,providerChecked:false,neededForRealDeploy:ownerNeeds};
 }

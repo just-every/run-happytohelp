@@ -4,16 +4,16 @@ Start the free local app with this single copy-and-run command. You do not need
 Node.js or npm installed first; the installer brings its own. Git is required.
 
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
+git clone --branch v0.4.32 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | RER_VERSION=0.2.127 sh -s -- dev
 ```
 
-That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
-Node and pnpm, installs dependencies, sets up a local owner and starts the app.
+This clones the HappyToHelp v0.4.32 tag into `run-happytohelp` and uses rer
+0.2.127 from its release notes. Rer provisions the pinned Node and pnpm,
+installs dependencies, sets up a local owner and starts the app.
 To start it again later, run `cd run-happytohelp && rer dev`.
 
-Normal setup and launch install the app's dependencies and build its local assets;
-they do not download Chromium. Dev uses its local
-address for the chat widget and generates a private owner password. Continue in
+A first launch can download the checkout’s headless Chromium for the owner-entry
+check. Dev uses its local address for the chat widget and generates a private owner password. Continue in
 the app, or open the private `RER_OPEN` link to reach **Setup** as the owner.
 No private answers, email service or AI account are needed. Use `rer dev --stop`
 from the checkout to stop the managed app.
@@ -24,11 +24,10 @@ If you already have **Node.js 22 or later** (with npm) and Git, check with
 `node --version`, then start the same app with:
 
 ```sh
-npx -y @runeditrun/rer dev just-every/run-happytohelp
+git clone --branch v0.4.32 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && npx -y @runeditrun/rer@0.2.127 dev
 ```
 
-To set it up without starting it, use
-`npx -y @runeditrun/rer setup just-every/run-happytohelp`.
+To prepare a checkout without starting it, use [private setup answers](#private-setup-answers).
 
 ### Contributor checkout
 
@@ -159,7 +158,7 @@ Use a real page to send a customer message, then reply from your workspace inbox
    python3 -m http.server "$PORT" --bind 127.0.0.1
    ```
 
-3. In **Settings → Widget → Settings**, set **Widget website origin** to the
+3. In **Settings → Widget → Settings**, set **Your website address** to the
    address it printed, such as `http://127.0.0.1:52817`, and save. Use the actual origin if your server differs:
    scheme, hostname and optional port, without a path. `localhost` and `127.0.0.1`
    are different hosts, and different ports are different origins.
@@ -230,6 +229,7 @@ sends no mail and makes no deployment. No Cloudflare credentials, mail provider,
 verified sender, sending token or real `OWNER_EMAIL` are required. The completion
 report explicitly says no Cloudflare requests were made and nothing was changed
 remotely; missing production inputs are listed as needed for a real deploy.
+If a first deploy has no saved owner name, pass `--owner-name "Your name"`.
 Remote resources, credential validity and existing secret bindings remain unchecked
 by the dry run. The separate command below can inspect an existing Worker. `rer deploy --environment
 production` requires owner authorization and the private credentials/declaration
@@ -325,8 +325,9 @@ _Preflight guidance: Run Edit Run fleet, 17 November 2026._
 ### Outbound email off
 
 Set `MAIL_PROVIDER=none` with a real `OWNER_EMAIL` in the private `--env-file` (or
-environment) to deploy an installation that sends nothing. It is the only input:
-supplying `EMAIL_*`, `MAIL_*`, `MAILGUN_*` or mailbox settings with it is refused.
+environment) to deploy an installation that sends nothing. Supply `--owner-name`
+if the checkout has no saved owner name. The mail-off choice excludes additional
+`EMAIL_*`, `MAIL_*`, `MAILGUN_*` and mailbox settings.
 `none` is never assumed from a missing value; leave `MAIL_PROVIDER` out and a
 deploy still needs a mail provider. The owner then signs in with
 `node scripts/hosted-signin.mjs`, described under Sign in without mail in

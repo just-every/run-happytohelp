@@ -4,6 +4,7 @@ import {
     fetchInitialConversationBuckets,
     hasNextPage as hasNextResponsePage,
     isAbortedRequest,
+    isOlderConversationSnapshot,
 } from '../components/conversationRequestLifecycle';
 import { busyWait, isBusy } from '../utils/busy';
 
@@ -177,10 +178,8 @@ function useConversationLoading({
             signal: controller.signal,
             isCurrent: () => requestIsCurrent(request),
             onConversation: nextConversation => {
-                setConversationData(conversationData => ({
-                    ...conversationData,
-                    [nextConversation.id]: nextConversation,
-                }));
+                setConversationData(current => isOlderConversationSnapshot(nextConversation, current[nextConversation.id])
+                    ? current : { ...current, [nextConversation.id]: nextConversation });
             },
         })
             .then(result => {

@@ -39,6 +39,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         sendPluginEvent,
         lastConnected,
         socketEvent,
+        socketConnected,
         sendSocket,
         transcriptError,
         retryTranscriptMessages,
@@ -364,7 +365,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     }
 
     const messages = buckets.flatMap(bucket => bucket.messages || []);
-    const presence = canFollow && <ConversationCollaboration projectId={conversationProjectId} conversationId={conversationId} currentUserId={currentAgent?.id} socketEvent={socketEvent} sendSocket={sendSocket} hasDraft={Boolean(draftContent.trim() || draftFiles.length)} isTyping={isTyping}/>;
+    const presence = canFollow && <ConversationCollaboration projectId={conversationProjectId} conversationId={conversationId} currentUserId={currentAgent?.id} connected={socketConnected} socketEvent={socketEvent} sendSocket={sendSocket} hasDraft={Boolean(draftContent.trim() || draftFiles.length)} isTyping={isTyping}/>;
     const noteDraft = noteMacro && !isNoteModalVisible && <p className="conversation-note-draft" role="status">
         <i className="fe fe-lock" aria-hidden="true" /> Saved internal note draft <button className="btn btn-link btn-sm" type="button" onClick={()=>setIsNoteModalVisible(true)}>Review note</button>
     </p>;

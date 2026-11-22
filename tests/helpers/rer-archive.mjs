@@ -6,6 +6,7 @@ import {createHash} from 'node:crypto';
 import {parseJsonc} from '@runeditrun/rer/jsonc';
 import {catalogue,policy} from '@runeditrun/rer/modules/portability/catalogue';
 import {archivePolicy} from '../../scripts/installer/portability-policy.mjs';
+import {stepIds} from '../../src/modules/management/activation/types.ts';
 
 // Open real D1/R2 only after rer has stopped its application owner.
 export async function archiveStorage(root,visit){
@@ -42,12 +43,29 @@ export function compareArchive(before,after,added=[]){
  assert.deepEqual(after.objects,before.objects,'all R2 bytes and metadata survive');
 }
 
+// The readiness browser opens Setup, which automatically observes the current workspace.
+// Keep existing receipts by key and admit only checks started in this dev session.
+function expectedSetupReceipts(before,after,{projectId,startedAt,stoppedAt}){
+ const key=({project_id,step_id})=>JSON.stringify([project_id,step_id]);
+ const expected=new Map(before.map(line=>[key(JSON.parse(line)),line]));
+ for(const line of after){
+  const row=JSON.parse(line),id=key(row);
+  if(expected.get(id)===line)continue;
+  assert.ok(row.project_id===projectId,'Setup observes only the signed-in workspace');
+  assert.ok(stepIds.includes(row.step_id)&&row.step_id!=='published_article','Setup records only automatically observed steps');
+  assert.ok(Number.isInteger(row.checked_at)&&row.checked_at>=startedAt&&row.checked_at<=stoppedAt,'Setup receipt belongs to this dev session');
+  expected.set(id,line);
+ }
+ return [...expected.values()].sort();
+}
+
 // Rer signs in to check readiness before the journey signs in explicitly.
-// Each native session advances authority once; every business row stays unchanged.
-export function compareDevEntryArchive(before,after){
+// Each native session advances authority once. Offline comparisons remain exact.
+export function compareDevEntryArchive(before,after,setupObservation){
  const expected=structuredClone(before);
  const previous=before.rows.integration_authority_epoch.map(JSON.parse),next=after.rows.integration_authority_epoch.map(JSON.parse);
  assert.deepEqual(next,previous.map(row=>({...row,revision:row.revision+2})),'readiness and explicit owner sign-in each advance native authority once');
  expected.rows.integration_authority_epoch=after.rows.integration_authority_epoch;
+ expected.rows.activation_receipts=expectedSetupReceipts(before.rows.activation_receipts,after.rows.activation_receipts,setupObservation);
  compareArchive(expected,after);
 }

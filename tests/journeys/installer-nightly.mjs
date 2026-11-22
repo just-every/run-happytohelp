@@ -5,7 +5,8 @@ import {reproducibleBuild} from '../helpers/installer/reproducible.mjs'
 import {browserJourney} from '../helpers/delegation-journey/browser.mjs'
 import {evidence} from './kit/browser.mjs'
 
-// Slow qualification journeys from fresh checkouts: nightly, release tags and on demand, never on every push.
+// The native command journey also runs on full branch push verification. Other
+// fresh-checkout qualification runs nightly, on release tags and on demand.
 test('a fresh clone installs with the rer commands, keeps its owner and data through export, import and restore, and resets to a fresh owner',{timeout:60*60_000},freshInstallJourney)
 test('the README path from a fresh clone: setup twice, owner entry at 1440, a complete D1 and R2 round trip into another fresh clone, and a confirmed reset',{timeout:60*60_000},readmeRestoreJourney)
 test('two fresh installs at unrelated paths build byte-identical delivery artifacts that name no builder path',{timeout:15*60_000},reproducibleBuild)

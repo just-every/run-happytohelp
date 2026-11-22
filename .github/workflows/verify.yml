@@ -161,7 +161,7 @@ jobs:
     if: ${{ needs.plan.outputs.coverage == 'full' && needs.plan.outputs.tier != 'nightly' }}
     name: Verify / ${{ matrix.name }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: ${{ matrix.name == 'public-and-import-browser' && needs.plan.outputs.tier == 'push' && 60 || 30 }}
     strategy:
       fail-fast: false
       matrix:
@@ -240,6 +240,13 @@ jobs:
         env:
           H2H_CI_COMMANDS: ${{ matrix.commands }}
         run: node scripts/ci/run-checks.mjs
+      - name: Run complete fresh-clone journey
+        if: ${{ matrix.name == 'public-and-import-browser' && needs.plan.outputs.tier == 'push' && github.event_name == 'push' }}
+        env:
+          H2H_CI_COMMANDS: pnpm run test:installer-nightly --test-name-pattern=installs.with.the.rer
+        run: |
+          bash scripts/ci/ensure-disk-space.sh
+          node scripts/ci/run-checks.mjs
       - name: Confirm checks preserve source
         if: ${{ !cancelled() }}
         run: git diff --exit-code && test -z "$(git ls-files --others --exclude-standard)"

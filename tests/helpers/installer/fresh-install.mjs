@@ -26,9 +26,9 @@ import {readDurableObjects} from '../../../scripts/installer/durable-objects.mjs
 
 // Dev requests consume abuse limits and cron advances scheduler scan positions.
 // Only these runtime-progress rows may change across a dev session. Keep the
-// export/import oracle exact, including these tables, and compare every business
-// row, workflow definition/event/action, owner and setting without exclusions.
-function compareRestoredDevEntry(before,after){
+// export/import oracle exact, including these tables. Check Setup observations
+// and authority separately, then compare the remaining business data exactly.
+function compareRestoredDevEntry(before,after,setupObservation){
  const stable=snapshot=>{
   const copy=structuredClone(snapshot);
   for(const table of ['abuse_counters','workflow_queue_turns','workflow_scheduler_cursors','sla_scheduler_cursors']){
@@ -37,7 +37,7 @@ function compareRestoredDevEntry(before,after){
   }
   return copy;
  };
- compareDevEntryArchive(stable(before),stable(after));
+ compareDevEntryArchive(stable(before),stable(after),setupObservation);
 }
 
 // Use the same committed bundle that platform adoption consumes, through its public API.
@@ -265,12 +265,13 @@ try{
  const restoredLedgers=await ledgerSnapshot();
  let restoredPrivate;
  for(let i=0;i<2;i++){
-  const since=Date.now();await run(root,setup);
+  await run(root,setup);
   const afterSetup=await archiveSnapshot(root);
   compareArchive(restoredData,afterSetup);
-  await start();await signIn();await stop();
+  const startedAt=Date.now();await start();const {projectId:setupProjectId}=await signIn();await stop();
+  const stoppedAt=Date.now();
   const afterSignIn=await archiveSnapshot(root);
-  compareRestoredDevEntry(afterSetup,afterSignIn);
+  compareRestoredDevEntry(afterSetup,afterSignIn,{projectId:setupProjectId,startedAt,stoppedAt});
   restoredData=afterSignIn;
   assert.deepEqual(await ledgerSnapshot(),restoredLedgers,'post-restore setup preserves every migration ledger row');
   const currentPrivate=await readFile(join(root,'.dev.vars'));
@@ -282,12 +283,12 @@ try{
  assert.ok((await json('/api/management/projects',undefined,restored.token)).data.some(row=>row.id===project.id));
  // Login legitimately advances the portable integration authority epoch.
  // Snapshot after login so replay/read checks still compare every portable row.
- await stop();const beforeRestoredReads=await archiveSnapshot(root),readStart=Date.now();await start();
+ await stop();const beforeRestoredReads=await archiveSnapshot(root),startedAt=Date.now();await start();
  await verifyPortableData(origin,portable,restored.token,json);
  await verifyVoicePortable(origin,portable,restored.token,json);
- await signIn();
- await stop();assert.equal(await migrationCount(),1);
- compareRestoredDevEntry(beforeRestoredReads,await archiveSnapshot(root));
+ const {projectId:setupProjectId}=await signIn();
+ await stop();const stoppedAt=Date.now();assert.equal(await migrationCount(),1);
+ compareRestoredDevEntry(beforeRestoredReads,await archiveSnapshot(root),{projectId:setupProjectId,startedAt,stoppedAt});
  assert.deepEqual(await ledgerSnapshot(),restoredLedgers,'post-restore reads and refused replays preserve migration history');
  // Every dry-run invocation uses the real command/build with the network edge
  // refusing every request, including read-only provider inspection.

@@ -61,7 +61,7 @@ export async function answerAndReport({origin,brand,visitor,page,shot}){
  await auditPage(page,shot('alpha-rated-conversation.png'))
  await page.goto(base+'/reports')
  await page.getByRole('heading',{name:'Daily volume',exact:true}).waitFor()
- await page.getByLabel('Range',{exact:true}).selectOption('7')
+ await page.getByRole('form',{name:'Conversation report filters'}).getByRole('combobox').selectOption('7')
  await page.getByRole('button',{name:'Apply range',exact:true}).click()
  await page.locator('.csat-panel').getByText('Alpha resolved my question',{exact:true}).waitFor()
  const workload=page.locator('section[aria-labelledby="team-workload-heading"]')

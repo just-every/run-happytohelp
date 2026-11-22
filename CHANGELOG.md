@@ -8,6 +8,21 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.33 — 2026-11-22
+
+An update from v0.4.32 covering local owner entry, hosted setup guidance and live Inbox updates.
+
+- **Local owner sign-in:** wait for `RER_READY` and open the private `RER_OPEN` link to reach Setup signed in as the local owner. The release uses rer 0.2.128 and refreshes the Base copies to `6de49b64`. If the local link expires, the owner entry page shows how to get a fresh one.
+- **Hosted deployment and first-owner sign-in:** when there is no saved owner name, supply `--owner-name "Your name"` on the first deploy. The offline dry run lists the required owner input. For hosted setup with email off, the sign-in command prints the first-owner link on its own line for the agent to pass privately as `tools[].sign_in` in `session.report`.
+- **Inbox:** choosing **Solve and ask for a rating** updates the open ticket to **Solved** without a reload, and the visitor still receives the rating prompt. The live collaboration warning appears on a socket failure and stays hidden during the initial connection. The tooltip layer attaches to the rendered page without a hydration mismatch.
+- **Quick start and Setup guides:** the Run page, README and install guides give commands for the same tagged checkout and rer version. Setup guidance uses **Your website address** for the widget and points to **Inbox → Knowledge → Create Article** for help-center publishing.
+- **Migrations:** the 200 SQL files are byte-identical to v0.4.32. The two applied agent-door migrations are recorded as seed-owned in the Base copy inventory.
+
+Update from v0.4.32 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody before updating. Stop the old Worker and retain native owners, memberships, permissions, support history, files, erasure fences and every applied migration identity. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.128. A v0.4.32 installation applies no migrations. Its 200 SQL files are byte-identical to this release. Older installations must first apply every missing published migration once in filename order before this Worker serves HTTP or queue traffic. From v0.4.26, apply 333_report_cohorts.sql, 334_media_message_reads.sql, 335_socket_replay_projection.sql and 336_solved_time_rule_reads.sql; from v0.4.25 or v0.4.24, first apply the missing 330_identity_recovery.sql even when 331 and 332 are already recorded. Retain prior release buyer steps, including 332's conditional cleanup, the report and replay backfills, and report projection reconstruction after portable restore. Keep the durable recovery revocation watermark on rollback; portable restore requires fresh Managed recovery and custody binding. Build and run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. The dry run needs no provider credentials and makes no provider requests; it does not qualify remote readiness. Legacy v1 remains cleanup-only and incomplete cleanup remains pending. Updating starts no import, repairs no earlier imported assignment, activates no mail provider and grants no historical user access. No reset, production import, recovery adoption, cutover or production deployment is authorized by this preparation.
+
+_Run Edit Run fleet, 2026-11-22._
+
+
 ## 0.4.32 — 2026-11-21
 
 An update from the latest published release, v0.4.31. This release updates the restore and setup experience, improves imports from Zendesk, connected mailboxes and older HappyToHelp workspaces, and fixes several day-to-day support workflows.

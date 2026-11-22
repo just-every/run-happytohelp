@@ -4,11 +4,11 @@ Start the free local app with this single copy-and-run command. You do not need
 Node.js or npm installed first; the installer brings its own. Git is required.
 
 ```sh
-git clone --branch v0.4.32 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | RER_VERSION=0.2.127 sh -s -- dev
+git clone --branch v0.4.33 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | RER_VERSION=0.2.128 sh -s -- dev
 ```
 
-This clones the HappyToHelp v0.4.32 tag into `run-happytohelp` and uses rer
-0.2.127 from its release notes. Rer provisions the pinned Node and pnpm,
+This clones the HappyToHelp v0.4.33 tag into `run-happytohelp` and uses rer
+0.2.128 from its release notes. Rer provisions the pinned Node and pnpm,
 installs dependencies, sets up a local owner and starts the app.
 To start it again later, run `cd run-happytohelp && rer dev`.
 
@@ -24,7 +24,7 @@ If you already have **Node.js 22 or later** (with npm) and Git, check with
 `node --version`, then start the same app with:
 
 ```sh
-git clone --branch v0.4.32 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && npx -y @runeditrun/rer@0.2.127 dev
+git clone --branch v0.4.33 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && npx -y @runeditrun/rer@0.2.128 dev
 ```
 
 To prepare a checkout without starting it, use [private setup answers](#private-setup-answers).

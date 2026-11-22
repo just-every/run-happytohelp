@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "70c9849a1f2676cf011315d54fde4860dfe73bf7368e26f2504397f86cc4b987",
+      "sha256": "f4dcc424e82f1af1c6a8600740ada51570948cb4fedbbb057b4bf34644fff977",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1721,7 +1721,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "54ad9c88dde3d5b6ce1d6081f09b21d81008ea4d46f4e83edd9a14a56f98525f",
+      "sha256": "ae14435aac2dc42930d00417badd90856b01bcac9ef76d5809aa601e1641fe48",
       "executable": false
     },
     "docs/help-before-they-ask.md": {
@@ -1741,7 +1741,7 @@
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "3bd13198da339a4ea550a1b389b26c7a0a6709f3b67d11634203de77caa4ea83",
+      "sha256": "2ab64bd46a0d4fdd74214f6f38f2077fdd66a1b01f26e8443159488c738697da",
       "executable": false
     },
     "docs/knowledge-upgrade-report.md": {
@@ -2917,7 +2917,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "551acf8a31dd721111466e5ed222666881fa891fa2ea2f17c26cb30d833368e5",
+      "sha256": "1755e3aa0ef651bf26198d35cff5a18ad4b536003d38b770bba0d32c9faad698",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -2993,11 +2993,11 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "e2394693e32f8797a99ba417d576364e295de78fcaaa1d80eb57f9fd59c5df1a",
+      "sha256": "b808e244fdf95e47e3f283f5f020a45dca08eab882eb173d41cf3cf3dd2401b2",
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "45db05236255febbd97b9446535ce401f4f47a6958ec8585d92dd4664b1d112d",
+      "sha256": "7b78e2ef3db3067a1e8bd9c29c1894215557227ac8a6c08fbc0f6299ce9c0b00",
       "executable": false
     },
     "rer-project.json": {
@@ -4357,7 +4357,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "0614aeec476c22385f88783e0a35488628c88b20f20f8c598d0f89afd3f60b2d",
+      "sha256": "5c60f5797496aac26b8885fe25a4311d9db9eef9f88ef55ccf5c695c87e48000",
       "executable": false
     },
     "size-check.json": {
@@ -11453,7 +11453,7 @@
       "executable": false
     },
     "src/site/run.json": {
-      "sha256": "d5113acebdb9ba26bdd128bf2eef40787b0d50cb888708d2754db7ef3741cc32",
+      "sha256": "90156f57a96ae12eaec2523e696db12ac14fb38170a1cb0c309ce14f59bd771e",
       "executable": false
     },
     "src/site/run.ts": {

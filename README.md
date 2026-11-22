@@ -39,22 +39,13 @@ Hono, D1, R2, Queues and Durable Objects.
 
 ## Releases and upgrades
 
-For a new deployment, use the [latest published release](https://github.com/just-every/run-happytohelp/releases/latest),
-following the acquisition commands below. Read the release notes on that page
-and `RELEASE.json` in the selected release checkout for its version-specific
-buyer steps. This README does not pin a deployment version. For an existing installation, follow
-[Updates and recovery](docs/INDEPENDENT-RELEASE.md), keep your backups and apply
-the selected release's buyer steps before its Worker serves traffic. See
-[the changelog](CHANGELOG.md) for release history.
+For a new deployment, get the source from the [latest published release](https://github.com/just-every/run-happytohelp/releases/latest).
+Read its release notes and `RELEASE.json` for version-specific buyer steps.
+For an existing installation, follow [Updates and recovery](docs/INDEPENDENT-RELEASE.md),
+keep your backups and apply the selected release's buyer steps before its Worker
+serves traffic. See [the changelog](CHANGELOG.md) for release history.
 
-Version 0.4.0 adds Move in for reviewed support-history imports, resolution
-feedback with workspace-calendar Reports, Connections with scoped API tokens,
-signed webhook events and Slack delivery, and the `rer` local
-path. Native passwords, owners and data
-are kept. Before the updated Worker serves traffic, back up and apply the ten
-additive migrations `0110_move_in.sql` to `119_local_portability.sql` in order;
-an existing 0.3 installation follows [Upgrading from 0.3.x](OPERATIONS.md#upgrading-from-03x).
-[The changelog](CHANGELOG.md) lists every change. Known limits:
+Known limits:
 
 - Accessibility is on a confirmed owner **HOLD**; no WCAG conformance is claimed.
 - `rer export` archives cover D1, R2 and **Durable Object** storage (with a
@@ -77,18 +68,18 @@ Start the free local app with this single copy-and-run command. You do not need
 Node.js or npm installed first; the installer brings its own. Git is required.
 
 ```sh
-git clone --branch v0.4.32 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | RER_VERSION=0.2.127 sh -s -- dev
+git clone --branch v0.4.33 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | RER_VERSION=0.2.128 sh -s -- dev
 ```
 
-This clones the HappyToHelp v0.4.32 tag into `run-happytohelp` and uses rer
-0.2.127 from its release notes. Rer provisions the pinned Node and pnpm,
+This clones the HappyToHelp v0.4.33 tag into `run-happytohelp` and uses rer
+0.2.128 from its release notes. Rer provisions the pinned Node and pnpm,
 installs dependencies, sets up a local owner and starts the app.
 To start it again later, run `cd run-happytohelp && rer dev`.
 
 If you already have **Node.js 22 or later** (with npm) and Git, the alternative is:
 
 ```sh
-git clone --branch v0.4.32 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && npx -y @runeditrun/rer@0.2.127 dev
+git clone --branch v0.4.33 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && npx -y @runeditrun/rer@0.2.128 dev
 ```
 
 To prepare a checkout without starting it, use the [private setup answers](docs/INSTALLER.md#private-setup-answers).

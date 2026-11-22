@@ -1,10 +1,10 @@
 # Get started with HappyToHelp
 
-Paste this line into your terminal to install HappyToHelp v0.4.32 with rer 0.2.127.
+Paste this line into your terminal to install HappyToHelp v0.4.33 with rer 0.2.128.
 
 <!-- rer:start -->
 ```sh
-git clone --branch v0.4.32 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | RER_VERSION=0.2.127 sh -s -- dev
+git clone --branch v0.4.33 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | RER_VERSION=0.2.128 sh -s -- dev
 ```
 <!-- /rer:start -->
 
@@ -26,14 +26,14 @@ With Node 22 or later, you can use this alternative:
 
 <!-- rer:alternative -->
 ```sh
-git clone --branch v0.4.32 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && npx -y @runeditrun/rer@0.2.127 dev
+git clone --branch v0.4.33 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && npx -y @runeditrun/rer@0.2.128 dev
 ```
 <!-- /rer:alternative -->
 
 ## Next time
 
 Open the `run-happytohelp` checkout and run `rer dev` to reopen your copy.
-If you started with npx, run `npx -y @runeditrun/rer@0.2.127 dev` there.
+If you started with npx, run `npx -y @runeditrun/rer@0.2.128 dev` there.
 
 ### Restart after changing a local setting
 

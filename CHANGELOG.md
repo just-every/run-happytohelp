@@ -8,6 +8,22 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.34 — 2026-11-22
+
+An update from v0.4.33 covering saved replies, the public quick start and local owner-entry guidance.
+
+- **Saved replies:** if you edit a public reply while a saved reply is loading, the editor keeps your edits. If the saved reply has already been staged, HappyToHelp discards that use so it cannot reappear after a reload.
+- **Inbox:** when the ticket subject matches the message preview, assistive technology reads the text once.
+- **Run page and walkthrough:** the install command and walkthrough use the same published HappyToHelp tag and its rer version. The public quick start stays on v0.4.33 with rer 0.2.128 until v0.4.34 is published.
+- **Local owner entry:** this checkout pins rer 0.2.129. Wait for `RER_READY` and open the private `RER_OPEN` link to enter Setup as the owner. If the saved port is busy, free it before restarting or run `rer setup --port 8788` with a free port and omit `--host` to retain the saved hostname and data. Chromium readiness can still time out in an isolated browser home on macOS.
+- **Hosted setup:** check the owner name separately from the offline dry-run report. Pass `--owner-name` on the first deploy if there is no saved owner name.
+- **Migrations:** the 200 SQL files are byte-identical to v0.4.33.
+
+Update from v0.4.33 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody before updating. Stop the old Worker and retain native owners, memberships, permissions, support history, files, erasure fences and every applied migration identity. Use Node 22.20.0, pnpm 10.12.4 and pinned rer 0.2.129. A v0.4.33 installation applies no migrations. Its 200 SQL files are byte-identical to this release. Older installations must first apply every missing published migration once in filename order before this Worker serves HTTP or queue traffic. From v0.4.26, apply 333_report_cohorts.sql, 334_media_message_reads.sql, 335_socket_replay_projection.sql and 336_solved_time_rule_reads.sql; from v0.4.25 or v0.4.24, first apply the missing 330_identity_recovery.sql even when 331 and 332 are already recorded. Retain prior release buyer steps, including 332's conditional cleanup, the report and replay backfills, and report projection reconstruction after portable restore. Keep the durable recovery revocation watermark on rollback; portable restore requires fresh Managed recovery and custody binding. Build and run `rer deploy --dry-run` against the retained installation before any separately authorized deployment. The dry run runs locally without provider credentials. Check the owner name separately. If the first hosted deploy has no saved name, pass `--owner-name` with the owner's display name. Legacy v1 remains cleanup-only and incomplete cleanup remains pending. Updating starts no import, repairs no earlier imported assignment, activates no mail provider and grants no historical user access. No reset, production import, recovery adoption, cutover or production deployment is authorized by this preparation.
+
+_Run Edit Run fleet, 2026-11-22._
+
+
 ## 0.4.33 — 2026-11-22
 
 An update from v0.4.32 covering local owner entry, hosted setup guidance and live Inbox updates.

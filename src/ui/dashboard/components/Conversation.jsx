@@ -25,6 +25,7 @@ import { HandleTimerProvider } from './tickets/useHandleTimer';
 import TicketActionDialogs from './composer/TicketActionDialogs';
 import {nativeRequest} from '../../native/transport';
 import {mergeReferences} from '../../native/knowledge-references/reference-text';
+import {readSavedReplyEdit, savedReplyEditKey, writeSavedReplyEdit} from '../utils/savedReplyEdit';
 
 function Conversation({ projectId, conversationId, conversation, buckets }) {
     const {
@@ -75,13 +76,13 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const activeConversationIdRef = useRef(conversationId);
     const draftAdoptionRef = useRef(null);
     const draftEditVersion = useRef(0);
-    // The usage of the saved public macro draft in the composer; clearing the composer discards it.
-    const macroDraftUsageRef = useRef(null);
+    const savedReplyRef = useRef(null);
 
     activeConversationIdRef.current = conversationId;
 
     // In the global inbox the conversation dictates the project, not the page.
     const conversationProjectId = (conversation && conversation.project_id) || projectId;
+    const savedEditKey = savedReplyEditKey(conversationProjectId, conversationId, currentAgent?.id);
     // A role without reply permission (a collaborator) gets notes and follow instead of the reply box;
     // the agent's view stays as approved.
     const canReply = useCan(conversationProjectId, 'conversations.reply'), canFollow = useCan(conversationProjectId, 'conversations.follow');
@@ -115,16 +116,17 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     });
     useEffect(() => {
         if (![401,403,404].includes(loadError?.status)) return;
-        draftEditVersion.current++; draftAdoptionRef.current = null; macroDraftUsageRef.current = null;
+        draftEditVersion.current++; draftAdoptionRef.current = null; savedReplyRef.current = null;
+        writeSavedReplyEdit(savedEditKey, null);
         setContent(''); setFiles([]); setLoadingContent(''); setDraftOrigin(null); setKnowledgeReferences([]);
         setDraftError(''); setDraftFocusRequest(null); setIsTyping(false);
         setEscalationDraftId(null); setNoteMacro(null); setIsNoteModalVisible(false);
         setTicketDialog(null); setIsSending(false); setPanelAlert(false);
-    }, [loadError]);
+    }, [loadError, savedEditKey]);
     const applyMacroDraft = (text, metadata) => {
         if (metadata.reply_type === 'note') { setNoteMacro({content:text,media:metadata.media || []}); setIsNoteModalVisible(true); }
         else {
-            macroDraftUsageRef.current = metadata.usage_id || null;
+            savedReplyRef.current = metadata.usage_id ? {id: metadata.usage_id, discarded: false} : null;
             if (metadata.media?.length) setFiles(current => [...current,...metadata.media.filter(file=>!current.some(existing=>existing.id===file.id))]);
         }
         refreshConversation();
@@ -198,7 +200,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             // An acknowledgement owns only the draft it sent. Edits made while
             // the request was pending belong to the next reply.
             if (activeConversationIdRef.current === sentConversationId && draftEditVersion.current === sentEditVersion) {
-                macroDraftUsageRef.current = null;
+                savedReplyRef.current = null;
+                writeSavedReplyEdit(savedEditKey, null);
                 updateDraftContent('');
                 setDraftOrigin(null);
                 setEscalationDraftId(null);
@@ -224,7 +227,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         draftConversationIdRef.current = conversationId;
         draftEditVersion.current++;
         draftAdoptionRef.current = null;
-        macroDraftUsageRef.current = null;
+        savedReplyRef.current = null;
         setDraftError('');
         setContent('');
         setKnowledgeReferences([]);
@@ -247,7 +250,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         // Erasure removes saved drafts and closes their ticket door. The retained
         // transcript is still readable, so do not request that unavailable draft.
         if (isContactErased) {
-            macroDraftUsageRef.current = null;
+            savedReplyRef.current = null;
+            writeSavedReplyEdit(savedEditKey, null);
             setDraftError(''); setContent(''); setFiles([]); setNoteMacro(null);
             return;
         }
@@ -256,12 +260,25 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft`)
             .then(result => {
                 const draft = result.data;
-                if (!active || !draft || draftEditVersion.current !== editVersion) return;
-                if (draft.reply_type === 'note') setNoteMacro({content:draft.content,media:draft.media || []});
-                else { macroDraftUsageRef.current = draft.usage_id; setContent(draft.content); setKnowledgeReferences(draft.references || []); setFiles(draft.media || []); }
+                if (!active || draftEditVersion.current !== editVersion) return;
+                const local = readSavedReplyEdit(savedEditKey);
+                // A newer server draft belongs to a different use. If our own
+                // clear already reached the server, restore only what we typed
+                // afterward, without reviving the discarded template or media.
+                const matches = local && (draft?.usage_id === local.id || (!draft && local.discarded));
+                if (local && !matches) writeSavedReplyEdit(savedEditKey, null);
+                if (draft?.reply_type === 'note') setNoteMacro({content:draft.content,media:draft.media || []});
+                else if (matches) {
+                    savedReplyRef.current = {id: local.id, discarded: local.discarded};
+                    setContent(local.content);
+                    if (!local.discarded) { setKnowledgeReferences(draft.references || []); setFiles(draft.media || []); }
+                } else if (draft) {
+                    savedReplyRef.current = {id: draft.usage_id, discarded: false};
+                    setContent(draft.content); setKnowledgeReferences(draft.references || []); setFiles(draft.media || []);
+                }
             }).catch(error => { if (active) setDraftError(`Couldn’t load your saved macro draft: ${error.message}`); });
         return () => { active = false; };
-    }, [conversationProjectId,conversationId,isConversationReady,isContactErased]);
+    }, [conversationProjectId,conversationId,isConversationReady,isContactErased,savedEditKey]);
 
     const updateDraftContent = (nextContent, attachments, origin) => {
         draftEditVersion.current++;
@@ -272,10 +289,14 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setContent(nextContent);
         if (origin !== undefined) setDraftOrigin(origin);
         else if (!nextContent.trim()) setDraftOrigin(null);
-        if (!nextContent.trim() && macroDraftUsageRef.current) {
-            const usage = macroDraftUsageRef.current;
-            macroDraftUsageRef.current = null;
-            nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft?usage_id=${encodeURIComponent(usage)}`, { method: 'DELETE' })
+        const savedReply = savedReplyRef.current;
+        const discard = savedReply && !savedReply.discarded && !nextContent.trim();
+        if (savedReply) {
+            if (discard) savedReply.discarded = true;
+            writeSavedReplyEdit(savedEditKey, {...savedReply, content: nextContent});
+        }
+        if (discard) {
+            nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft?usage_id=${encodeURIComponent(savedReply.id)}`, { method: 'DELETE', keepalive: true })
                 .catch(error => setDraftError(`Couldn’t discard your saved macro draft: ${error.message}`));
         }
         if (Array.isArray(attachments)) {

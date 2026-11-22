@@ -13,8 +13,8 @@ export default function Reports({projectId}) {
     const peak=Math.max(1,...(report?.daily||[]).map(day=>day.conversations));
     return <div className="reports-page">
         <p>Conversations with at least one message, created in this workspace during the selected calendar range. Internal-note-only tickets, call logs without a public message, empty widget conversations and imported history (legacy imports and Move in) are excluded from this report and its CSVs.</p>
-        <form onSubmit={apply} className="reports-range" aria-label="Report range">
-            <label>Range<select aria-label="Range" className="form-select" value={period} onChange={event=>setPeriod(event.target.value)}><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="custom">Custom</option></select></label>
+        <form onSubmit={apply} className="reports-range" aria-label="Conversation report filters">
+            <label>Conversation range<select className="form-select" value={period} onChange={event=>setPeriod(event.target.value)}><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="custom">Custom</option></select></label>
             {period==='custom'&&<><label>Start (inclusive)<input type="date" className="form-control" required value={start} onChange={event=>setStart(event.target.value)}/></label><label>End (exclusive)<input type="date" className="form-control" required value={end} onChange={event=>setEnd(event.target.value)}/></label></>}
             <button className="btn btn-primary" disabled={loading} type="submit">Apply range</button>
         </form>

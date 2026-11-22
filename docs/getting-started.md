@@ -1,19 +1,17 @@
 # Get started with HappyToHelp
 
-Paste this line into your terminal to install HappyToHelp v0.4.33 with rer 0.2.128.
+Paste this line into your terminal to install the latest published HappyToHelp release.
 
-<!-- rer:start -->
 ```sh
-git clone --branch v0.4.33 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | RER_VERSION=0.2.128 sh -s -- dev
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
 ```
-<!-- /rer:start -->
 
-<!-- rer:requirements -->
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
-<!-- /rer:requirements -->
 
 The command gets HappyToHelp, installs its dependencies, prepares its database
-and creates your local owner account. The first start takes a few minutes.
+and creates your local owner account.
+A first local start usually takes about a minute. On a busy computer it can take
+longer: `rer dev` prints progress every 20 seconds, with the limit to allow.
 Wait for `RER_READY`, then open the `RER_OPEN` link to enter signed in and finish
 your workspace setup.
 
@@ -24,16 +22,14 @@ until you configure a mail provider. No email or AI account is needed to begin.
 
 With Node 22 or later, you can use this alternative:
 
-<!-- rer:alternative -->
 ```sh
-git clone --branch v0.4.33 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && npx -y @runeditrun/rer@0.2.128 dev
+npx -y @runeditrun/rer dev just-every/run-happytohelp
 ```
-<!-- /rer:alternative -->
 
 ## Next time
 
 Open the `run-happytohelp` checkout and run `rer dev` to reopen your copy.
-If you started with npx, run `npx -y @runeditrun/rer@0.2.128 dev` there.
+If you started with npx, run `npx -y @runeditrun/rer dev` there.
 
 ### Restart after changing a local setting
 

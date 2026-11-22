@@ -136,7 +136,8 @@ function rowFor(data, id) {
    // Replies by email: customers answer an emailed reply by pressing Reply. Each reason says what is true and where to act.
    const mailbox = facts.inboundAddress, lead = mailbox ? `${mailbox}. ` : '', reason = facts.inbound?.receiving;
    if (reason === 'workers_dev' || facts.inbound?.customDomainRequired) return {...base, state: 'unavailable', value: `${lead}This address can’t receive email: workers.dev addresses have no mail server. Customers answer in the chat for now. To let them reply by email, use an address on your own domain; the Email page shows how.`};
-   if (own && own.applicable === false) return {...base, state: 'unavailable', value: `${lead}${local ? 'Email is off on this computer.' : 'Replies by email are not available with this mail provider.'}`};
+   if (local && own?.applicable === false) return {...base, state: 'unavailable', value: `${lead}Email is off on this computer.`};
+   if (reason === 'local' && !observed) return {...base, state: 'unavailable', value: `${lead}This is a local test address. Add a receiving address on the Email page to accept replies.`};
    if (facts.inbound && !facts.inbound.gateway) return {...base, state: 'unavailable', value: `${lead}This installation has no inbound token, so it can’t receive email. Run rer setup in your checkout, then deploy again.`};
    if (!mailbox) return {...base, state: 'unavailable', value: 'Customers answer your emails in the chat for now. To let them reply by email, set a receiving address on the Email page.'};
    if (facts.inbound && !facts.inbound.enabled) return {...base, state: 'off', value: `${lead}Conversation email is off. Turn it on in Email settings.`};

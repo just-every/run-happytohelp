@@ -13,7 +13,7 @@ function createStore(projectId) {
  const listeners = new Set();
  const set = patch => { state = {...state, ...patch}; listeners.forEach(listener => listener()); };
  // A skipped step is still watched: an observation beats a skip, so a widget seen later turns into a confirmed row on its own.
- const waiting = data => Boolean(data?.steps?.some(step => step.placement === 'needs_you' || step.placement === 'skipped'));
+ const waiting = data => Boolean(data?.steps?.some(step => step.placement === 'skipped' || (step.applicable && step.state !== 'done')));
  const post = async auto => {
   const result = await nativeRequest(`${path}/check`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(auto ? {auto: true} : {}), cache: 'no-store'});
   if (!stopped) set({data: result.data, error: ''});

@@ -72,7 +72,7 @@ function ConversationItem({ conversation }) {
             <div className="card">
                 <div className="card-body">
                     <div className="row">
-                        <div className="col-auto">
+                        <div className="col-auto" aria-hidden="true">
                             { conversation.contact && <ContactAvatar contact={ conversation.contact } projectId={ conversation.project_id } presentation="conversation-profile" /> }
                         </div>
                         <div className="col overflow-hidden">

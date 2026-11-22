@@ -359,6 +359,8 @@ once to claim the owner named by `OWNER_EMAIL`, then removes it; entering it at
 
 ## Build the release package yourself
 
+When preparing a release, check that the README, installer guides and Run page direct readers to the latest published release.
+
 The **artifact** is the deployable package of your installation. You only need
 it if you deliver builds yourself or want to check a published build. To build
 it, run `pnpm exec rer build` or `pnpm exec rer verify`. Both run the pinned Base producer

@@ -4,7 +4,7 @@ import useSetup from './useSetup';
 import NeedItem from './NeedItem';
 import SkippedRow from './SkippedRow';
 import SetRow from './SetRow';
-import {lastLooked,localTrial,needs as needsOf,optional as optionalOf,setRows,skipped as skippedOf,utc} from './setup-model';
+import {lastLooked,localTrial,needs as needsOf,optional as optionalOf,rowLabels,setRows,skipped as skippedOf,utc} from './setup-model';
 import './setup-list.css';
 import LocalMailBanner from '../setup-help/LocalMailBanner';
 
@@ -20,12 +20,13 @@ export default function SetupList({projectId,role}) {
  if(!data)return <section className="setup-list" data-testid="setup-list" aria-busy={!error}>{error?<p role="alert">{error}</p>:<p className="sl-quiet" role="status">Looking at your setup…</p>}</section>;
  const needs=needsOf(data),later=optionalOf(data),left=skippedOf(data),rows=setRows(data),looked=lastLooked(data);
  const confirmed=data.done,applicable=data.applicableTotal,trialUrl=data.facts?.localTrialUrl;
+ const remaining=data.steps.filter(item=>item.applicable&&item.state!=='done').map(item=>rowLabels[item.id]||item.label);
  const cards=items=><ol className="sl-needs">{items.map(item=><NeedItem key={item.id} {...{data,item,projectId}} onSkip={skip} skipBusy={skipBusy}/>)}</ol>;
  return <section className="setup-list" data-testid="setup-list" data-confirmed={confirmed} data-applicable={applicable} data-environment={data.environment}>
   {data.environment === 'local' && <LocalMailBanner/>}
   <header className="sl-head">
    <p className="sl-lede">{lede(needs.length,left.length>0)}</p>
-   <p className="sl-quiet" role="status"><span className="sl-dots" aria-hidden="true">{Array.from({length:applicable},(_,index)=><i key={index} className={index<confirmed?'on':undefined}/>)}</span><span>{confirmed} of {applicable} confirmed. We check on our own, so there’s nothing to press.{looked&&<> Last looked at <time dateTime={looked}>{utc(looked)}</time>.</>}</span></p>
+   <p className="sl-quiet" role="status"><span className="sl-dots" aria-hidden="true">{Array.from({length:applicable},(_,index)=><i key={index} className={index<confirmed?'on':undefined}/>)}</span><span>{confirmed} of {applicable} confirmed.{remaining.length>0&&<> Still to confirm — {remaining.join(', ')}.</>}{looked&&<> Last looked at <time dateTime={looked}>{utc(looked)}</time>.</>}</span></p>
    {localTrial(data)&&<button type="button" className="btn btn-primary sl-trial" data-local-trial disabled={skipBusy} onClick={tryLocally}>Try locally without a website or AI key</button>}
    {error&&<p role="alert" className="sl-error">{error}</p>}
   </header>

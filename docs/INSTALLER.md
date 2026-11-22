@@ -1,16 +1,18 @@
 # Install HappyToHelp
 
-Start the free local app with this single copy-and-run command. You do not need
-Node.js or npm installed first; the installer brings its own. Git is required.
+Start the latest published HappyToHelp release with this command. Git is
+required. The installer brings Node.js and pnpm.
 
 ```sh
-git clone --branch v0.4.33 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | RER_VERSION=0.2.128 sh -s -- dev
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
 ```
 
-This clones the HappyToHelp v0.4.33 tag into `run-happytohelp` and uses rer
-0.2.128 from its release notes. Rer provisions the pinned Node and pnpm,
-installs dependencies, sets up a local owner and starts the app.
+Rer selects the latest published release, installs dependencies, sets up a local
+owner and starts the app.
 To start it again later, run `cd run-happytohelp && rer dev`.
+
+A first local start usually takes about a minute. On a busy computer it can take
+longer: `rer dev` prints progress every 20 seconds, with the limit to allow.
 
 A first launch can download the checkout’s headless Chromium for the owner-entry
 check. Dev uses its local address for the chat widget and generates a private owner password. Continue in
@@ -24,7 +26,7 @@ If you already have **Node.js 22 or later** (with npm) and Git, check with
 `node --version`, then start the same app with:
 
 ```sh
-git clone --branch v0.4.33 --depth 1 https://github.com/just-every/run-happytohelp && cd run-happytohelp && npx -y @runeditrun/rer@0.2.128 dev
+npx -y @runeditrun/rer dev just-every/run-happytohelp
 ```
 
 To prepare a checkout without starting it, use [private setup answers](#private-setup-answers).

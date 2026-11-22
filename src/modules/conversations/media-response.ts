@@ -10,7 +10,7 @@ export function mediaResponseHeaders(storedType:string,filename:string):Record<s
  const contentType=/^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/.test(type)?type:'application/octet-stream'
  const disposition=inlineTypes.has(contentType)?'inline':'attachment'
  return {
-  'Content-Type':contentType,
+  'Content-Type':contentType==='text/plain'?'text/plain; charset=utf-8':contentType,
   'Content-Disposition':`${disposition}; filename*=UTF-8''${encodeURIComponent(filename)}`,
   'X-Content-Type-Options':'nosniff',
   'Content-Security-Policy':"sandbox; default-src 'none'",

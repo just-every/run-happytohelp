@@ -6,7 +6,6 @@ import { manifestPath, readManifest } from './manifest.ts';
 import type { ManifestPage } from './manifest.ts';
 import { renderPage } from './render.ts';
 import type { RenderedPage } from './render.ts';
-import { runGuide } from './run-guide.ts';
 
 // The whole docs site from the tree as it is: every page listed in docs/site.json rendered, every link and anchor
 // checked across pages, and nothing that names a build machine's paths. The Vite plugin and the tests share this.
@@ -39,8 +38,7 @@ export function buildSite(root: string): Site {
   const files = [join(root, manifestPath), join(root, 'package.json')];
   const read = (source: string) => {
     files.push(join(root, source));
-    const markdown = readFileSync(join(root, source), 'utf8');
-    return source === 'docs/getting-started.md' ? runGuide(markdown) : markdown;
+    return readFileSync(join(root, source), 'utf8');
   };
   const pages: SitePage[] = manifest.pages.map(page => ({ ...page, ...renderPage(read(page.source), context(page.source)) }));
   const problems: string[] = [];

@@ -2,18 +2,19 @@ import type {Configuration} from './configuration'
 import {metadataProviders} from './model-probe'
 import {storedSkips} from './skips'
 import {checkLeaseMs} from './store'
+import type {widgetVisit} from './local-probes'
 import {stepIds,stepLabels,stepPaths,providerObservationMs,type ActivationFacts,type ActivationSnapshot,type ActivationStep,type Placement,type ProbeState,type Receipt,type StepId} from './types'
 
 /**
  * What only the owner can do stays under Needs you until it is observed `done`. Sender DNS is one of those only on a
  * hosted Resend installation; another hosted provider has no status API here (a row, not counted) and a local trial
- * hides it. Email to the owner is unavailable locally, and receiving replies is not counted locally without a receipt.
+ * hides it. Mail checks count when the installation can send or receive, or when a receipt confirms them.
  * The AI key is the owner's to add until one is installed; a key
  * for a provider with no metadata check here can never be confirmed, so it is a row, not counted. Anything observed
  * `done` counts. The help article is never a need or counted: the assistant also answers from the owner's own site,
  * so whether an article is published says nothing about whether it can answer.
  */
-export function placement(id:StepId,state:ProbeState,config:Configuration):{placement:Placement;applicable:boolean} {
+function placement(id:StepId,state:ProbeState,config:Configuration,facts:ActivationFacts):{placement:Placement;applicable:boolean} {
  const done=state==='done',local=config.environment==='local'
  if(id==='model_key') {
   const unconfirmable=!done&&Boolean(config.provider)&&!metadataProviders.has(config.provider!)&&typeof config.key==='string'&&Boolean(config.key.trim())
@@ -26,8 +27,12 @@ export function placement(id:StepId,state:ProbeState,config:Configuration):{plac
   const resend=config.providerName==='resend'
   return {placement:resend&&!done?'needs_you':'set',applicable:resend||done}
  }
- if(id==='owner_mail')return {placement:'set',applicable:!local}
- if(id==='inbound_address')return {placement:'set',applicable:!local||done}
+ if(id==='owner_mail')return {placement:'set',applicable:done||(!local&&config.mailMode==='remote')}
+ if(id==='inbound_address') {
+  const {enabled,gateway,customDomainRequired,receiving}=facts.inbound
+  const canReceive=Boolean(facts.mail.managed)||(!local&&enabled&&gateway&&Boolean(facts.inboundAddress)&&!customDomainRequired&&receiving!=='local')
+  return {placement:'set',applicable:done||canReceive}
+ }
  return {placement:'set',applicable:true}
 }
 
@@ -54,9 +59,14 @@ function observed(id:StepId,row:Receipt|undefined,config:Configuration,now:numbe
  return {...base,state:row.state,checkedAt,detail:row.detail,receiptRef:row.receipt_ref}
 }
 
-export function activationSnapshot(config:Configuration,receipts:Receipt[],facts:ActivationFacts,now=Date.now()):ActivationSnapshot {
+export function activationSnapshot(config:Configuration,receipts:Receipt[],facts:ActivationFacts,visit:Awaited<ReturnType<typeof widgetVisit>>,now=Date.now()):ActivationSnapshot {
  const skips=storedSkips(config.settings)
- const steps=stepIds.map(id=>{const step=observed(id,receipts.find(row=>row.step_id===id),config,now);return {...step,...skipped(placement(id,step.state,config),step.state,skips.has(id))}})
+ const steps=stepIds.map(id=>{
+  const stored=observed(id,receipts.find(row=>row.step_id===id),config,now)
+  const step=id==='widget_seen'&&visit?{...stored,...visit}:stored
+  return {...step,...skipped(placement(id,step.state,config,facts),step.state,skips.has(id))}
+ })
+ const checkedAt=Math.max(visit?Date.parse(visit.checkedAt):0,...receipts.map(row=>row.checked_at))
  return {projectId:config.projectId,total:8,done:steps.filter(step=>step.state==='done'&&step.applicable).length,applicableTotal:steps.filter(step=>step.applicable).length,
-  environment:config.environment,checkedAt:receipts.length?new Date(Math.max(...receipts.map(row=>row.checked_at))).toISOString():null,steps,facts}
+  environment:config.environment,checkedAt:checkedAt?new Date(checkedAt).toISOString():null,steps,facts}
 }

@@ -13,6 +13,7 @@ import {reconcileStarter} from './activation/starter'
 import {sendOwnerTestMail} from './activation/mail-probes'
 import {ProbeFailure} from './activation/provider-http'
 import {ensureOwnerContact} from './provisioning/public-contact'
+import {widgetVisit} from './activation/local-probes'
 
 export const activation=new Hono<AppEnv>()
 const path='/projects/:projectId/activation'
@@ -25,13 +26,16 @@ async function ownerScope(c:Parameters<typeof scope>[0]) {
 /** The snapshot as stored now. Reads only: no provider request and no write. */
 async function snapshotResponse(c:Context<AppEnv>,projectId:string) {
  const [config,receipts]=await Promise.all([activationConfiguration(c.env,projectId),readReceipts(c.env,projectId)])
- const facts=await activationFacts(c.env,config,receipts,String(c.env.APP_ORIGIN||new URL(c.req.url).origin))
+ const [facts,visit]=await Promise.all([
+  activationFacts(c.env,config,receipts,String(c.env.APP_ORIGIN||new URL(c.req.url).origin)),
+  widgetVisit(c.env,config),
+ ])
  const skips=storedSkips(config.settings)
  if(config.environment==='local'&&facts.widget.key&&localTrialSteps.every(step=>skips.has(step))){
   facts.localTrialUrl=`/help/${encodeURIComponent(projectId)}/requests#launch-chat`
  }
  c.header('Cache-Control','no-store')
- return c.json({data:activationSnapshot(config,receipts,facts)})
+ return c.json({data:activationSnapshot(config,receipts,facts,visit)})
 }
 activation.get(path,async c=>snapshotResponse(c,(await ownerScope(c)).projectId))
 activation.post(`${path}/check`,async c=>{

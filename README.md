@@ -43,7 +43,8 @@ For a new deployment, get the source from the [latest published release](https:/
 Use the published release notes and `RELEASE.json` from that tagged checkout for version-specific buyer steps.
 For an existing installation, follow [Updates and recovery](docs/INDEPENDENT-RELEASE.md),
 keep your backups and apply the selected release's buyer steps before its Worker
-serves traffic. See [the changelog](CHANGELOG.md) for release history.
+serves traffic. The [changelog](CHANGELOG.md) records source changes.
+[GitHub Releases](https://github.com/just-every/run-happytohelp/releases) lists the versions available to install.
 
 Known limits:
 

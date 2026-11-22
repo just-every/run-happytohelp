@@ -8,6 +8,21 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.36 — 2026-11-22
+
+- **Saved replies.** Edits to an inserted public saved reply survive a reload in the same tab. Clearing the reply and then typing preserves the new text without bringing back the discarded template.
+- **Quick start.** The README, installation guides and Run page resolve the latest published GitHub Release before cloning. The guides also explain first-start progress and the Chromium owner-entry check.
+- **Setup.** A visit to the configured website with the installed widget can confirm the widget row automatically. Setup names the remaining checks and explains when a receiving address is local or cannot receive replies.
+- **Inbox.** The conversation list announces the visitor email once to screen readers.
+- **Attachments.** Plain-text downloads declare UTF-8 so accented characters are displayed correctly.
+- **Reports.** Conversation metrics and their date-range filter appear before Team workload.
+- **Rer 0.2.131.** First local start reports progress every 20 seconds, checks owner entry with Chromium on macOS and serves a retryable response while the app starts. Cloudflare deploy progress includes the current D1 migration and total for the database.
+
+Update from v0.4.35 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.35 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-22._
+
+
 ## 0.4.35 — 2026-11-22
 
 v0.4.34 was tagged but never published because its installer verification failed. v0.4.35 includes the changes recorded in the v0.4.34 changelog entry.

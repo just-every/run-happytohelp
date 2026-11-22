@@ -1,6 +1,6 @@
 {
-  "version": "0.4.36",
-  "previousVersion": "0.4.35",
+  "version": "0.4.37",
+  "previousVersion": "0.4.36",
   "date": "2026-11-22",
   "contractChanges": {},
   "proseChanges": [
@@ -8,52 +8,52 @@
       "document": "README.md",
       "change": "changed",
       "date": "2026-11-22",
-      "summary": "The quick start resolves the latest published GitHub Release and the release links distinguish published builds from source history.",
-      "was": "The quick start named a specific HappyToHelp tag.",
-      "now": "The quick start resolves the latest published GitHub Release and the release links distinguish published builds from source history.",
-      "ownerAction": "Select a published release and read its upgrade instructions."
+      "summary": "The release links explain that quick start follows the latest published release, and the local run guide shows how to reopen a checkout if rer is missing from PATH.",
+      "was": "The release links distinguished source changes from published builds, and the local run guide assumed rer was on PATH.",
+      "now": "The release links explain that quick start follows the latest published release, and the local run guide shows how to reopen a checkout if rer is missing from PATH.",
+      "ownerAction": "Use the latest published release for a new install. Open the existing checkout and run ~/.local/bin/rer dev if rer is missing from your PATH."
     },
     {
       "document": "docs/INSTALLER.md",
       "change": "changed",
       "date": "2026-11-22",
-      "summary": "The quick start resolves the latest published release and explains first-start progress and the local owner-entry check.",
-      "was": "The quick start named a specific tag and rer version.",
-      "now": "The quick start resolves the latest published release and explains first-start progress and the local owner-entry check.",
-      "ownerAction": "Wait for RER_OPEN before opening your local workspace."
+      "summary": "The guide explains how to reopen a checkout when the shell cannot find rer.",
+      "was": "The installer guide assumed rer was on PATH when reopening a checkout.",
+      "now": "The guide explains how to reopen a checkout when the shell cannot find rer.",
+      "ownerAction": "Open the existing checkout and run ~/.local/bin/rer dev if rer is missing from your PATH."
     },
     {
       "document": "docs/getting-started.md",
       "change": "changed",
       "date": "2026-11-22",
-      "summary": "The walkthrough starts the latest published release and explains first-start progress.",
-      "was": "The walkthrough named a specific HappyToHelp tag.",
-      "now": "The walkthrough starts the latest published release and explains first-start progress.",
-      "ownerAction": "Run the quick-start command and wait for RER_OPEN."
+      "summary": "The guide explains how to reopen a checkout when the shell cannot find rer.",
+      "was": "The walkthrough assumed rer was on PATH when reopening a checkout.",
+      "now": "The guide explains how to reopen a checkout when the shell cannot find rer.",
+      "ownerAction": "Open the existing checkout and run ~/.local/bin/rer dev if rer is missing from your PATH."
     },
     {
-      "document": "docs/INDEPENDENT-RELEASE.md",
+      "document": "OPERATIONS.md",
       "change": "changed",
       "date": "2026-11-22",
-      "summary": "The release build guide asks maintainers to confirm that installation guidance follows the latest published release.",
-      "was": "The release build guide began with artifact instructions.",
-      "now": "The release build guide asks maintainers to confirm that installation guidance follows the latest published release.",
-      "ownerAction": "Use the published release to select the source for a new installation."
+      "summary": "Both Cloudflare credentials must come from the process environment or from the same private env file.",
+      "was": "The guide did not explain that rer rejects credentials split between the environment and an env file.",
+      "now": "Both Cloudflare credentials must come from the process environment or from the same private env file.",
+      "ownerAction": "When using a private env file, clear any exported Cloudflare credentials before running rer."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
       "date": "2026-11-22",
-      "summary": "Records the v0.4.36 changes and the upgrade steps from v0.4.35.",
-      "was": "The latest entry covered v0.4.35.",
-      "now": "Records the v0.4.36 changes and the upgrade steps from v0.4.35.",
-      "ownerAction": "Update from v0.4.35 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.35 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding."
+      "summary": "Records the v0.4.37 changes and the upgrade steps from v0.4.36.",
+      "was": "The latest entry covered v0.4.36.",
+      "now": "Records the v0.4.37 changes and the upgrade steps from v0.4.36.",
+      "ownerAction": "Update from v0.4.36 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.36 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding."
     }
   ],
   "extensionPointChanges": [],
   "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.35 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.35 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.",
-  "publicReleaseNotes": "- **Saved replies.** Edits to an inserted public saved reply survive a reload in the same tab. Clearing the reply and then typing preserves the new text without bringing back the discarded template.\n- **Quick start.** The README, installation guides and Run page resolve the latest published GitHub Release before cloning. The guides also explain first-start progress and the Chromium owner-entry check.\n- **Setup.** A visit to the configured website with the installed widget can confirm the widget row automatically. Setup names the remaining checks and explains when a receiving address is local or cannot receive replies.\n- **Inbox.** The conversation list announces the visitor email once to screen readers.\n- **Attachments.** Plain-text downloads declare UTF-8 so accented characters are displayed correctly.\n- **Reports.** Conversation metrics and their date-range filter appear before Team workload.\n- **Rer 0.2.131.** First local start reports progress every 20 seconds, checks owner entry with Chromium on macOS and serves a retryable response while the app starts. Cloudflare deploy progress includes the current D1 migration and total for the database.\n\nUpdate from v0.4.35 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.35 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.\n\n_Run Edit Run fleet, 2026-11-22._",
+  "agentUpdateInstructions": "Update from v0.4.36 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.36 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.",
+  "publicReleaseNotes": "- **Inbox.** The composer stays bound to the conversation it displays. Sending is paused while another conversation loads, so a reply cannot go to the previous customer during a switch. The server returns HTTP 409 when a supplied composer conversation ID differs from the target conversation and leaves the draft intact.\n- **Saved replies.** Text typed while a saved reply is loading survives a reload of the same ticket in the same tab. Saving a new saved reply now reads back the stored version in the same database transaction as the write.\n- **Worker.** A completed Setup check remains successful if its result cannot be read immediately. A committed article save or publication remains successful if the subsequent knowledge index refresh fails. The dashboard can show the completed write and let the operator reload its details.\n- **Quick start.** The README and installation guides continue to select the latest published GitHub Release. For an existing checkout, they show how to reopen it if the shell cannot find `rer`.\n- **Hosted setup.** The operations guide explains how to supply Cloudflare credentials together in the process environment or in one private env file.\n\nUpdate from v0.4.36 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.36 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.\n\n_Run Edit Run fleet, 2026-11-22._",
   "migrations": [],
   "pendingMigrations": []
 }

@@ -8,6 +8,19 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.37 — 2026-11-22
+
+- **Inbox.** The composer stays bound to the conversation it displays. Sending is paused while another conversation loads, so a reply cannot go to the previous customer during a switch. The server returns HTTP 409 when a supplied composer conversation ID differs from the target conversation and leaves the draft intact.
+- **Saved replies.** Text typed while a saved reply is loading survives a reload of the same ticket in the same tab. Saving a new saved reply now reads back the stored version in the same database transaction as the write.
+- **Worker.** A completed Setup check remains successful if its result cannot be read immediately. A committed article save or publication remains successful if the subsequent knowledge index refresh fails. The dashboard can show the completed write and let the operator reload its details.
+- **Quick start.** The README and installation guides continue to select the latest published GitHub Release. For an existing checkout, they show how to reopen it if the shell cannot find `rer`.
+- **Hosted setup.** The operations guide explains how to supply Cloudflare credentials together in the process environment or in one private env file.
+
+Update from v0.4.36 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.36 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-22._
+
+
 ## 0.4.36 — 2026-11-22
 
 - **Saved replies.** Edits to an inserted public saved reply survive a reload in the same tab. Clearing the reply and then typing preserves the new text without bringing back the discarded template.

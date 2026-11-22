@@ -45,6 +45,7 @@ For an existing installation, follow [Updates and recovery](docs/INDEPENDENT-REL
 keep your backups and apply the selected release's buyer steps before its Worker
 serves traffic. The [changelog](CHANGELOG.md) records source changes.
 [GitHub Releases](https://github.com/just-every/run-happytohelp/releases) lists the versions available to install.
+The quick-start commands below select the latest published release there.
 
 Known limits:
 

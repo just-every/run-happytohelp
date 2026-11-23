@@ -31,11 +31,11 @@ export async function mountedOrderingJourney(){
   for(const consumer of Object.values(cron.consumers))assert.equal(consumer.completed,true)
   await app.configure({})
   const schemaMissing=[]
-  for(const prefix of ['328_','329_','331_']){
-   // Open the schema as it existed before this prerequisite, including only
-   // migrations that could have been applied at that point.
-   const cutoff=Number.parseInt(prefix,10)
-   const old=await startApp({captureQueue:true,cf:false,migrate:name=>Number.parseInt(name,10)<cutoff})
+  // Withhold one prerequisite and its dependents while applying the rest of the schema.
+  const dependents={'328_':[],'329_':['331_','332_','337_'],'331_':['332_']}
+  for(const [prefix,later] of Object.entries(dependents)){
+   const omitted=[prefix,...later]
+   const old=await startApp({captureQueue:true,cf:false,migrate:name=>!omitted.some(migration=>name.startsWith(migration))})
    try{const w=await old.seedWorkspace('schema-'+prefix),p=await packageFixture(join(scratch,'schema-'+prefix),'synthetic-schema-source'),response=await old.call(`/api/move-in/projects/${w.projectId}/legacy-import/${p.manifestSha256}/manifest`,{token:w.tokens.owner,method:'PUT',raw:true,body:p.bytes,headers:{'Content-Type':'application/json','X-Manifest-SHA256':p.manifestSha256}});assert.equal(response.status,503);assert.equal((await (await old.files).list({prefix:'legacy-package/'})).objects.length,0);schemaMissing.push({migration:prefix,status:response.status,retainedBodies:0})}finally{await old.close()}
   }
   if(process.env.H2H_EVIDENCE_DIR){await mkdir(process.env.H2H_EVIDENCE_DIR,{recursive:true});await writeFile(join(process.env.H2H_EVIDENCE_DIR,'mounted-ordering.json'),JSON.stringify({facts,cron,schemaMissing},null,2)+'\n')}

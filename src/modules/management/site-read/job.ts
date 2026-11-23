@@ -12,6 +12,11 @@ export const STALE_RUNNING_MS = 5 * 60_000
 const LOST_QUEUE_MS = 5 * 60_000
 const GIVE_UP_MS = 24 * 3_600_000
 
+const state = "json_extract(settings_json,'$.site_read.state')"
+const at = "json_extract(settings_json,'$.site_read.at')"
+// Wake lost queued reads as soon as either queued recovery action can apply.
+export const siteReadRecoveryDue = `${state} IN ('queued','running') AND ${at}<?1-${Math.min(STALE_RUNNING_MS,LOST_QUEUE_MS,GIVE_UP_MS)}`
+
 const HOME_MAX = 512_000
 const PAGE_MAX = 512_000
 const SITEMAP_MAX = 256_000
@@ -92,7 +97,6 @@ export async function consumeSiteRead(job: Job, env: Env): Promise<boolean> {
 export async function recoverSiteReads(env: Env): Promise<void> {
  if(!cronRoom(env,3))return
  const now = Date.now()
- const state = "json_extract(settings_json,'$.site_read.state')", at = "json_extract(settings_json,'$.site_read.at')"
  await env.DB.prepare(`UPDATE project_settings SET settings_json=json_set(settings_json,'$.site_read.state','uncertain','$.site_read.reason','interrupted','$.site_read.at',?),updated_at=? WHERE ${state}='running' AND ${at}<?`)
   .bind(now, now, now - STALE_RUNNING_MS).run()
  await env.DB.prepare(`UPDATE project_settings SET settings_json=json_set(settings_json,'$.site_read.state','failed','$.site_read.reason','not_started','$.site_read.at',?),updated_at=? WHERE ${state}='queued' AND ${at}<?`)

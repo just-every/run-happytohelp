@@ -4,6 +4,6 @@ export const readyIntentSql=`e.erased_at IS NULL AND (d.kind<>'slack' OR e.event
 export async function scheduledProjects(env:Env,limit=4){
  const cursor=await env.DB.prepare('SELECT project_id FROM native_integration_dispatch_cursor WHERE id=1').first<{project_id:string}>()
  const select=async(after:string)=>(await env.DB.prepare(`SELECT DISTINCT i.project_id FROM native_integration_intents i JOIN native_integration_events e ON e.id=i.event_id AND e.project_id=i.project_id JOIN native_integration_destinations d ON d.id=i.destination_id AND d.project_id=i.project_id LEFT JOIN integration_deliveries v ON v.id=i.id AND v.namespace=i.project_id WHERE i.project_id>? AND ${readyIntentSql} AND (i.prepared_at IS NULL OR v.state='queued' AND v.next_at<=? OR v.state='sending' AND v.claim_until<=?) ORDER BY i.project_id LIMIT ?`).bind(after,Date.now(),Date.now(),limit).all<{project_id:string}>()).results
- const projects=await select(cursor?.project_id||'');return projects.length?projects:select('')
+ const projects=await select(cursor?.project_id||'');return projects.length||!cursor?.project_id?projects:select('')
 }
 export async function advanceDispatchCursor(env:Env,project:string){await env.DB.prepare('INSERT INTO native_integration_dispatch_cursor(id,project_id) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET project_id=excluded.project_id').bind(project).run()}

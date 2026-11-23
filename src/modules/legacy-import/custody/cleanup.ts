@@ -84,9 +84,9 @@ export async function discoverCleanup(env:Pick<Env,'DB'|'FILES'|'JOBS'>,limit=10
  if(fence){
   rows=(await env.DB.prepare(`SELECT * FROM legacy_package_custody WHERE manifest_sha256 IN (${associatedPage()}) ORDER BY manifest_sha256 LIMIT ?3`).bind(fence.project_id,fence.cleanup_after,limit).all<Custody>()).results
  }else{
-  rows=(await env.DB.prepare(`SELECT * FROM legacy_package_custody WHERE status IN ('admitting','ready') AND expires_at<=${dbNow} ORDER BY expires_at,manifest_sha256 LIMIT ?`).bind(limit).all<Custody>()).results
+  rows=(await env.DB.prepare(`SELECT * FROM legacy_package_custody INDEXED BY legacy_package_admission_due WHERE status IN ('admitting','ready') AND expires_at<=${dbNow} ORDER BY expires_at,manifest_sha256 LIMIT ?`).bind(limit).all<Custody>()).results
  }
- if(!rows.length)rows=(await env.DB.prepare(`SELECT * FROM legacy_package_custody WHERE status IN ('invalidated','purging','purged') AND next_cleanup_at<=${dbNow} AND (cleanup_until IS NULL OR cleanup_until<=${dbNow}) ORDER BY next_cleanup_at,manifest_sha256 LIMIT ?`).bind(limit).all<Custody>()).results
+ if(!rows.length)rows=(await env.DB.prepare(`SELECT * FROM legacy_package_custody INDEXED BY legacy_package_cleanup_due WHERE status IN ('invalidated','purging','purged') AND next_cleanup_at<=${dbNow} AND (cleanup_until IS NULL OR cleanup_until<=${dbNow}) ORDER BY next_cleanup_at,manifest_sha256 LIMIT ?`).bind(limit).all<Custody>()).results
  for(const c of rows){const closed=['admitting','ready'].includes(c.status)?await closeCustody(env,c.manifest_sha256,await invalidReason(env,c)):c;if(closed)await enqueueCleanup(env,closed)}
  if(fence){
   // Cursor advances only over the fenced scope's page, never over another task's SHA.

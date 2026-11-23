@@ -20,8 +20,13 @@ export async function dispatchKnowledgeJob(env:Env,job:Job,delaySeconds?:number)
 export async function recoverKnowledgeJobs(env:Env){
  if(!cronRoom(env,4))return
  const cutoff=Date.now()-staleAfter
- await env.DB.prepare("UPDATE knowledge_datasets SET status='failed',error='Interrupted ingestion; provider outcome may be uncertain. Inspect before explicit refresh; never automatically replay.',claim_token=NULL,next_refresh_at=NULL WHERE status='processing' AND (ingest_started_at IS NULL OR ingest_started_at<?)").bind(cutoff).run()
- await env.DB.prepare("UPDATE knowledge_imports SET status='failed',error='Interrupted import page; retained cursor requires explicit inspection',processing_started_at=NULL WHERE status='processing' AND (processing_started_at IS NULL OR processing_started_at<?)").bind(cutoff).run()
+ const staleDataset="status='processing' AND coalesce(ingest_started_at,-1)<?1"
+ const staleImport="status='processing' AND coalesce(processing_started_at,-1)<?1"
+ const stale=await env.DB.prepare(`SELECT
+  EXISTS(SELECT 1 FROM knowledge_datasets WHERE ${staleDataset}) AS dataset,
+  EXISTS(SELECT 1 FROM knowledge_imports WHERE ${staleImport}) AS import_page`).bind(cutoff).first<{dataset:number;import_page:number}>()
+ if(stale?.dataset)await env.DB.prepare(`UPDATE knowledge_datasets SET status='failed',error='Interrupted ingestion; provider outcome may be uncertain. Inspect before explicit refresh; never automatically replay.',claim_token=NULL,next_refresh_at=NULL WHERE ${staleDataset}`).bind(cutoff).run()
+ if(stale?.import_page)await env.DB.prepare(`UPDATE knowledge_imports SET status='failed',error='Interrupted import page; retained cursor requires explicit inspection',processing_started_at=NULL WHERE ${staleImport}`).bind(cutoff).run()
  const datasets=await env.DB.prepare("SELECT id,project_id,claim_token,status,ingest_cursor FROM knowledge_datasets WHERE claim_token IS NOT NULL AND status IN ('ingesting','crawling') AND EXISTS(SELECT 1 FROM projects p WHERE p.id=knowledge_datasets.project_id AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)) LIMIT 100").all<any>()
  for(const row of datasets.results){
   if(!cronRoom(env,4))break

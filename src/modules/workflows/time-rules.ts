@@ -19,11 +19,14 @@ const anchors:Record<string,string>={
  last_customer_reply_at:"(SELECT max(m.created_at) FROM messages m WHERE m.conversation_id=c.id AND m.actor_role='contact')",
  last_operator_reply_at:"(SELECT max(m.created_at) FROM messages m WHERE m.conversation_id=c.id AND m.actor_role NOT IN ('contact','system'))",
 }
+export const dueTimeRule = (hour:string)=>`r.state='published' AND r.kind='time' AND coalesce(sc.hour=${hour} AND sc.version=r.published_version AND sc.complete=1,0)=0 AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=r.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
+export const timeRuleCursor = 'LEFT JOIN workflow_scheduler_cursors sc ON sc.rule_id=r.id'
+
 /** Rules are served least recently first, one per workspace before any workspace's
  * second, so one workspace's backlog never holds another's tickets. */
 const dueRules=`SELECT * FROM (SELECT r.id,r.project_id,r.position,r.published_version,v.definition_json,sc.hour cursor_hour,sc.version cursor_version,sc.after_id cursor_after,sc.complete cursor_complete,coalesce(sc.updated_at,0) served_at,coalesce(q.turn,0) workspace_served,row_number() OVER (PARTITION BY r.project_id ORDER BY coalesce(sc.updated_at,0),r.position,r.id) turn
- FROM workflow_rules r JOIN workflow_rule_versions v ON v.rule_id=r.id AND v.version=r.published_version LEFT JOIN workflow_scheduler_cursors sc ON sc.rule_id=r.id LEFT JOIN workflow_queue_turns q ON q.queue='time-rules' AND q.project_id=r.project_id
- WHERE r.state='published' AND r.kind='time' AND coalesce(sc.hour=?1 AND sc.version=r.published_version AND sc.complete=1,0)=0 AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=r.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL))
+ FROM workflow_rules r JOIN workflow_rule_versions v ON v.rule_id=r.id AND v.version=r.published_version ${timeRuleCursor} LEFT JOIN workflow_queue_turns q ON q.queue='time-rules' AND q.project_id=r.project_id
+ WHERE ${dueTimeRule('?1')})
  ORDER BY turn,workspace_served,served_at,project_id,position,id LIMIT 20`
 /** An hourly pass reads only tickets whose anchor is due and whose current episode has
  * not run; a pass that does not finish in its hour continues where it stopped. */

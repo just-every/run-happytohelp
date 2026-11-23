@@ -19,7 +19,9 @@ import {recoverTicketContinuations} from './modules/tickets/continuation'
 import {cronConsumer,CronDeferred} from './platform/cron-budget'
 import {dispatchOutbox,recoverOutbox,recoverOutboxPage} from './outbox-recovery'
 import {boundedDatabase} from './platform/d1-budget'
+import {scheduledRecoveryWork} from './platform/scheduled-recovery'
 import {scheduledReservations} from './platform/scheduled-budget'
+import {scheduledWorkflowWork} from './modules/workflows/scheduled-work'
 import {runWorkflows,workflowEnvironment} from './modules/workflows/runtime'
 import {withWorkflowInvocation} from './modules/workflows/invocation'
 import {dispatchIntegrations} from './modules/api-integrations/dispatch'
@@ -43,7 +45,7 @@ import { consumeJob as consumeBrand,recoverBrandJobs } from './modules/site-prev
 import { handleLeadJob,recoverLeadJobs } from './modules/integrations'
 import { consumeSiteRead,recoverSiteReads } from './modules/management/site-read'
 import { pruneCounters } from './platform/usage-counters'
-import {dispatchSurveys} from './modules/outcomes/survey-delivery'
+import {dispatchSurveys,hasScheduledSurveyWork} from './modules/outcomes/survey-delivery'
 
 export async function consumeJob(job:Job|LegacyCleanupJob,env:Env) {
  if(job.type===CUSTODY_JOB){if(/^[0-9a-f]{64}$/.test(job.id)&&Number.isSafeInteger(job.generation)){const c=await getCustody(env.DB,job.id);if(!c||c.generation!==job.generation||!['invalidated','purging','purged'].includes(c.status))return;const step=await cleanupStep(env,job.id,Number(job.generation));await cleanupCopyIntents(env,job.id,250-step.rows)};return}
@@ -85,28 +87,31 @@ export async function runScheduled(env:Env) {
  const budget=boundedDatabase(env.DB,scheduledReservations.jobs)
  env=withWorkflowInvocation(await workflowEnvironment({...env,DB:budget.database}))
  let allocated=0
- const visit=async(name:string,share:number,run:(env:Env)=>Promise<unknown>,ceiling=Infinity)=>{
+ const visit=async(name:string,share:number,run:(env:Env)=>Promise<unknown>,{ceiling=Infinity,needed=true}={})=>{
   allocated+=share
+  if(!needed)return
   // Unused earlier credit is available, but every later allocation stays reserved.
   const available=Math.min(allocated-budget.statements,Math.max(3,ceiling-budget.statements))
   try{await run(cronConsumer(env,available))}catch(error){if(!(error instanceof CronDeferred))console.error(`${name} recovery failed`,error)}
  }
- await visit('Workflow',720,runWorkflows)
- await visit('Survey',70,dispatchSurveys)
+ await visit('Workflow',720,async env=>{const scope=await scheduledWorkflowWork(env);if(scope)await runWorkflows(env,scope)})
+ await visit('Survey',70,async env=>{if(await hasScheduledSurveyWork(env))await dispatchSurveys(env)})
  // The Amazon SES reader's private copies expire every tick, whether or not the reader is configured.
  await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env);await recoverLegacyMailS3(env);await expireLegacyMailS3Raw(env)})
  await visit('Voice media',2,expireVoiceMedia)
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.
- await visit('Outbox',3,dispatchOutbox,700)
+ await visit('Outbox',3,dispatchOutbox,{ceiling:700})
  await visit('Generation',10,async env=>{await remindObligations(env);await recoverQueuedGenerations(env,generationEffects);await dispatchTriage(env)})
  await visit('Knowledge',15,async env=>{await dispatchKnowledgeUpgrades(env,2);await refreshDueDatasets(env)})
- await visit('Context',5,recoverContextJobs)
- await visit('Ticket continuation',1,recoverTicketContinuations)
- await visit('Training',25,recoverTrainingRuns)
- await visit('Local result',5,env=>recoverLocalResultEffects(env,localComputerIntegration))
- await visit('Brand',6,recoverBrandJobs)
- await visit('Site read',7,recoverSiteReads)
+ let recovery:Awaited<ReturnType<typeof scheduledRecoveryWork>>|undefined
+ try{recovery=await scheduledRecoveryWork(env)}catch(error){console.error('Job recovery discovery failed',error)}
+ await visit('Context',5,recoverContextJobs,{needed:!recovery||Boolean(recovery.context)})
+ await visit('Ticket continuation',1,recoverTicketContinuations,{needed:!recovery||Boolean(recovery.tickets)})
+ await visit('Training',25,recoverTrainingRuns,{needed:!recovery||Boolean(recovery.training)})
+ await visit('Local result',5,env=>recoverLocalResultEffects(env,localComputerIntegration),{needed:!recovery||Boolean(recovery.local)})
+ await visit('Brand',6,recoverBrandJobs,{needed:!recovery||Boolean(recovery.brand)})
+ await visit('Site read',7,recoverSiteReads,{needed:!recovery||Boolean(recovery.site)})
  await visit('Lead',12,recoverLeadJobs)
  await visit('Counter',1,pruneCounters)
  // Discovery consumes only unused jobs credit, after all existing reservations.

@@ -2908,6 +2908,10 @@
       "sha256": "1efaa947aeb5b435a2562ec79eadf08b8c84ff8da68d9b5f232dee8ae7f6f80e",
       "executable": false
     },
+    "migrations/337_scheduled_recovery_reads.sql": {
+      "sha256": "d1ada2488354bc65874ec074ccd7ccb718d794de1b0579f777228eb9a6773db0",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2997,7 +3001,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "858dfe6775034dabe7e1ba0a8280fb7c51419ff1d21733285dab12aa9687b57d",
+      "sha256": "35207f94fb8e788f893f0cd57ad1f09223be4cbf98f998d7e9623ce31cc5afc3",
       "executable": false
     },
     "rer-project.json": {
@@ -4713,7 +4717,7 @@
       "executable": false
     },
     "src/jobs.ts": {
-      "sha256": "5783aad8193492c6a8c33009bf49b1237904898d0ae2afdc2fbd23ffe42db14b",
+      "sha256": "bd605b7228eac10096af937c1dbfe5526a9fe574d8d12face008b812257df350",
       "executable": false
     },
     "src/message-effects.ts": {
@@ -5377,7 +5381,7 @@
       "executable": false
     },
     "src/modules/api-integrations/scheduling.ts": {
-      "sha256": "f4168f208b64d3536f48a8376468b5c00a276ba0695f7dcd8bded15f068250c1",
+      "sha256": "a5c2a8e7bef8d1577cddce32a299c4fcaebce2d1c87d59ac767c3b8fbe0a6418",
       "executable": false
     },
     "src/modules/api-integrations/settings.ts": {
@@ -7061,7 +7065,7 @@
       "executable": false
     },
     "src/modules/integrations/email-maintenance.ts": {
-      "sha256": "6c6cb8a286e6920bcbcf870d67a0477bb3a2b87ae23e37578c5ec9d666864fd7",
+      "sha256": "b4a9cd7b08aa8503edea1360299954c91377e5d00482dbf2203b710c3887b281",
       "executable": false
     },
     "src/modules/integrations/email-migration-reply.ts": {
@@ -7173,7 +7177,7 @@
       "executable": false
     },
     "src/modules/integrations/leads.ts": {
-      "sha256": "61a7fef7807f906632b449453d25243ffc3f7fb95e1f67726383bd0b872537df",
+      "sha256": "4a548bf576270a1761eb7d3098eb246b60bcc5165335fffdf321ecd6e2cc9668",
       "executable": false
     },
     "src/modules/integrations/legacy-mail-s3/admit.ts": {
@@ -7285,7 +7289,7 @@
       "executable": false
     },
     "src/modules/integrations/mailboxes/sync.ts": {
-      "sha256": "bf03b2d31ca5cd3fdbfd6b50ce26fb6b5d9dff45a2d9d5177936dc667ec686dc",
+      "sha256": "9b6d8bd1aa6584efb4ca04efa4f84d62d6b6372e051ddb536e1d18ffdb913805",
       "executable": false
     },
     "src/modules/integrations/mailboxes/types.ts": {
@@ -7341,7 +7345,7 @@
       "executable": false
     },
     "src/modules/integrations/notification-teammate-delivery.ts": {
-      "sha256": "006fab6ae7b28200c781bafdb10a8f01e303e94c9b819dc80f5d64882bb83c9b",
+      "sha256": "497e2175f007a19e785f834d78bf951d6c69009cc98d6124d78e8bd701679969",
       "executable": false
     },
     "src/modules/integrations/notification-teammates.ts": {
@@ -7353,7 +7357,7 @@
       "executable": false
     },
     "src/modules/integrations/operator-activity.ts": {
-      "sha256": "2c89e09c025453014e3c5d92058f1a597133abc8fc1e432c16dbc1e800372970",
+      "sha256": "fe8cda7bc1c690ad3b95ca4c58b708750d1a1e58e4e1e38535b04217c4ecd8f2",
       "executable": false
     },
     "src/modules/integrations/operator-notifications.ts": {
@@ -7477,7 +7481,7 @@
       "executable": false
     },
     "src/modules/integrations/teammate-slack/drain.ts": {
-      "sha256": "f07a230505afa1cffac9eaa4e34eeac247ca64462bbc21e549407deb0f787bb6",
+      "sha256": "85773d2e30f721315a30c130f4bd605a6511b7657be2787baf0278e58f8fbe30",
       "executable": false
     },
     "src/modules/integrations/teammate-slack/guard.ts": {
@@ -7513,7 +7517,7 @@
       "executable": false
     },
     "src/modules/integrations/teammate-teams/drain.ts": {
-      "sha256": "dff218af79f2eb29724b322ba4e21a06ec5002f94cfabb1a37c75d6fd4d3917f",
+      "sha256": "f1365d32b1fdd1f45dcb319461e0467fee2419135cbc2c8b68e219bff1017862",
       "executable": false
     },
     "src/modules/integrations/teammate-teams/guard.ts": {
@@ -7669,7 +7673,7 @@
       "executable": false
     },
     "src/modules/knowledge/http-door.ts": {
-      "sha256": "c342087fe4c2710b3c20144dc591c40390637dc8daaaf0d51489133a0a2f7b5f",
+      "sha256": "7fad7dc6656489ea1ee7c09332fa02949fc54104475640080312ffd86be8fb93",
       "executable": false
     },
     "src/modules/knowledge/import-jobs.ts": {
@@ -7769,7 +7773,7 @@
       "executable": false
     },
     "src/modules/knowledge/recovery.ts": {
-      "sha256": "8ae611bfdfab9ed29ebb9256929c19fc22499c740358ffb18d20c315efac1aa6",
+      "sha256": "e7f1ebdd089ffe655d2e595b291d769be88b16f3144042cbe73dd31ec2002cff",
       "executable": false
     },
     "src/modules/knowledge/reference-policy.ts": {
@@ -7885,7 +7889,7 @@
       "executable": false
     },
     "src/modules/legacy-import/custody/cleanup.ts": {
-      "sha256": "d4d844670a776ce18e8dd850c693c0ebc52bb5a6eb3795f6e8f525816b02cf8d",
+      "sha256": "cc4f5cc1b85ae12e558fc9e382ce7e5cbc9a5f6ad9d0d74f84bcfd29900fcd41",
       "executable": false
     },
     "src/modules/legacy-import/custody/fence.ts": {
@@ -8113,7 +8117,7 @@
       "executable": false
     },
     "src/modules/legacy-import/worker/fence.ts": {
-      "sha256": "24ba31b73292d30d47a2393f51a9806a173bb7abf866b7980933d8fc1937cd6e",
+      "sha256": "a2dba30291ccf9c7634dbe59db522d66c9fa1a9a42b87b3269cdbc31bb23a00e",
       "executable": false
     },
     "src/modules/legacy-import/worker/json-rows.ts": {
@@ -8765,7 +8769,7 @@
       "executable": false
     },
     "src/modules/management/site-read/job.ts": {
-      "sha256": "3668ddeda0c17587d0653243f25ba4da259295196cf4eb47a9e98819d475b079",
+      "sha256": "0ea51f500e8fef335ad53f4767568fd8a11f4daac504e9da0a9ff4b6559065f3",
       "executable": false
     },
     "src/modules/management/site-read/parse.ts": {
@@ -9653,7 +9657,7 @@
       "executable": false
     },
     "src/modules/outcomes/survey-delivery.ts": {
-      "sha256": "28ea3663f149008687fdaad3bca210606661ba8f51ff48477d2316f39b455685",
+      "sha256": "d96f7f7feae84ac919d6df21082d4e57530f7a0f5cc63f39db3ebec62ffbe574",
       "executable": false
     },
     "src/modules/outcomes/survey-html.ts": {
@@ -10373,7 +10377,7 @@
       "executable": false
     },
     "src/modules/voice/media.ts": {
-      "sha256": "35d29661528234dbba1bc852c9d2ed26804b650867970fb4053321acae69c32c",
+      "sha256": "71ce74f848ad0218d221ed769906a11c6d66033bc51011778d2a1122ebf9b90b",
       "executable": false
     },
     "src/modules/voice/model.ts": {
@@ -10445,7 +10449,7 @@
       "executable": false
     },
     "src/modules/widget/campaigns/retention.ts": {
-      "sha256": "6e40adb74f2a99d8fbf56eeb6f7acceeadbf70e1bd0aa286a62dcfb6d7f1a91c",
+      "sha256": "8bc2deda15f81314095590ac8c70b2dcd408102414e05eb56aebaae23306eb9a",
       "executable": false
     },
     "src/modules/widget/campaigns/routes.ts": {
@@ -11025,7 +11029,7 @@
       "executable": false
     },
     "src/modules/workflows/runtime.ts": {
-      "sha256": "c5af26e7c25e6c855967d7a8016f6309e4264ec2da83c9c64778c132dbc232f9",
+      "sha256": "86a3e391c8df3e58f02e7a0b2ceb96af932ca7a09ae1b7c42ef9a12d8c21e193",
       "executable": false
     },
     "src/modules/workflows/schedule-authority.ts": {
@@ -11034,6 +11038,10 @@
     },
     "src/modules/workflows/schedule-mail.ts": {
       "sha256": "63a6129f2af03e6899afb34bc321ae37985c7514473e02b45f3e92a68cb0a00d",
+      "executable": false
+    },
+    "src/modules/workflows/scheduled-work.ts": {
+      "sha256": "25d1c9ceca523e771f5f420fe88cb0d970701aff4e75f9eb0d2eeaef8d571a2a",
       "executable": false
     },
     "src/modules/workflows/schedules-model.ts": {
@@ -11081,7 +11089,7 @@
       "executable": false
     },
     "src/modules/workflows/time-rules.ts": {
-      "sha256": "795002e671debd3557bb713d754476032385057641799b4d6232a10aea55d052",
+      "sha256": "fae6aef655eb6caf0e5fece8bb03ca1586d4f474b841dfc58e689bf0f52ea261",
       "executable": false
     },
     "src/modules/workflows/webhook.ts": {
@@ -11210,6 +11218,10 @@
     },
     "src/platform/scheduled-budget.ts": {
       "sha256": "fc46b2079e4b79fa0715353ce70600e02bac8e59d47816b07b11a16e165b097c",
+      "executable": false
+    },
+    "src/platform/scheduled-recovery.ts": {
+      "sha256": "3d7bf370e59af9a629c5cbcd9c360a137561fee453528e537c39d0445dbc8c18",
       "executable": false
     },
     "src/platform/scheduled.ts": {

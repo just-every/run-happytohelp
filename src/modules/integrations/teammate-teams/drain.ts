@@ -13,15 +13,23 @@ const retryDelays=[60000,300000,900000,3600000]
 interface Claimed {notice_id:string;project_id:string;user_id:string;conversation_id:string;kind:string;connection_id:string;attempts:number}
 const finish=(env:Env,id:string,state:string,detail:string|null,now:number,next:number|null=null)=>env.DB.prepare("UPDATE teammate_teams_deliveries SET state=?,next_attempt_at=?,detail=?,updated_at=? WHERE notice_id=? AND state='sending'").bind(state,next,detail,now,id).run()
 
+/** Fresh notices require consent; old in-flight deliveries still settle after revocation. */
+async function hasDueWork(env:Env,now:number){
+ return Boolean(await env.DB.prepare(`SELECT 1 WHERE EXISTS(
+  SELECT 1 FROM teammate_teams_consent
+  UNION ALL SELECT 1 FROM teammate_teams_deliveries WHERE state IN ('sending','pending')
+   AND (state='sending' AND started_at<? OR state='pending' AND next_attempt_at<=?)
+ )`).bind(now-interruptedAfter,now).first())
+}
 /** Scheduled post-pass only: never on a request path and never inline with the notice
  * commit. It spends settled spare credit, in order: interrupted sends become
  * uncertain, due rate-limit retries, then newly committed notices. */
 export async function drainTeammateTeams(env:Env,options:{now?:number;room:()=>number}){
  const now=options.now??Date.now()
- if(options.room()<teamsNoticeCost)return 0
- await env.DB.prepare("UPDATE teammate_teams_deliveries SET state='uncertain',next_attempt_at=NULL,detail='Delivery was interrupted. Check Teams; it is never sent again.',updated_at=? WHERE state='sending' AND started_at<?").bind(now,now-interruptedAfter).run()
+ if(options.room()<teamsNoticeCost||!await hasDueWork(env,now))return 0
+ await env.DB.prepare("UPDATE teammate_teams_deliveries SET state='uncertain',next_attempt_at=NULL,detail='Delivery was interrupted. Check Teams; it is never sent again.',updated_at=? WHERE state='sending' AND state IN ('sending','pending') AND started_at<?").bind(now,now-interruptedAfter).run()
  let sent=0
- const due=await env.DB.prepare("SELECT notice_id,project_id,user_id,conversation_id,kind,connection_id,attempts FROM teammate_teams_deliveries WHERE state='pending' AND next_attempt_at<=? ORDER BY next_attempt_at,notice_id LIMIT ?").bind(now,perTick).all<Claimed>()
+ const due=await env.DB.prepare("SELECT notice_id,project_id,user_id,conversation_id,kind,connection_id,attempts FROM teammate_teams_deliveries WHERE state='pending' AND state IN ('sending','pending') AND next_attempt_at<=? ORDER BY next_attempt_at,notice_id LIMIT ?").bind(now,perTick).all<Claimed>()
  for(const row of due.results){
   if(options.room()<teamsNoticeCost||sent>=perTick)return sent
   const claim=await env.DB.prepare(`UPDATE teammate_teams_deliveries SET state='sending',attempts=attempts+1,started_at=?,next_attempt_at=NULL,updated_at=? WHERE notice_id=? AND state='pending' AND attempts<?

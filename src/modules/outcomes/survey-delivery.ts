@@ -22,6 +22,15 @@ export async function scheduleConversationSurvey(env:Env,projectId:string,conver
  await scheduleSurveys(env,[{project_id:projectId,conversation_id:conversationId}],now)
  await scheduleMessagingSurveys(env,now,{projectId,conversationId})
 }
+/** An enabled workspace can discover new invitations. Existing sends still
+ * need recovery after surveys are turned off. */
+export async function hasScheduledSurveyWork(env:Env){
+ return Boolean(await env.DB.prepare(`SELECT 1 WHERE EXISTS(
+  SELECT 1 FROM csat_settings WHERE enabled=1
+  UNION ALL SELECT 1 FROM csat_surveys INDEXED BY csat_surveys_live WHERE state IN ('pending','sending')
+  UNION ALL SELECT 1 FROM support_channel_sends WHERE state='sending' AND message_id LIKE 'csat:%'
+ )`).first())
+}
 /** Bounded poll seam for scheduled/queue execution. Sending/unknown commands are
  * reconciliation-only, including a process lost between claim and provider call. */
 export async function dispatchSurveys(env:Env,options:{now?:number;projectId?:string;conversationId?:string}={}){

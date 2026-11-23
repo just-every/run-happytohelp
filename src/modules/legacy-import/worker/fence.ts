@@ -22,7 +22,7 @@ export async function discover(env:Env){
  const {cronRoom}=await import('../../../platform/cron-budget')
  const {enqueue}=await import('./state')
  if(!cronRoom(env,2))return
- const rows=await env.DB.prepare(`SELECT * FROM legacy_import_worker_runs WHERE state IN ('queued','running') AND next_at<=${dbNow} AND (lease_until IS NULL OR lease_until<=${dbNow}) ORDER BY next_at,id LIMIT 10`).all<Run>()
+ const rows=await env.DB.prepare(`SELECT * FROM legacy_import_worker_runs INDEXED BY legacy_worker_resume_due WHERE state IN ('queued','running') AND next_at<=${dbNow} AND (lease_until IS NULL OR lease_until<=${dbNow}) ORDER BY next_at,id LIMIT 10`).all<Run>()
  if(!rows.results.length)return
  await env.DB.prepare(`UPDATE legacy_import_worker_runs SET next_at=${dbNow} WHERE id IN (SELECT value FROM json_each(?)) AND state IN ('queued','running') AND (lease_until IS NULL OR lease_until<=${dbNow})`).bind(JSON.stringify(rows.results.map(row=>row.id))).run()
  for(const run of rows.results)await enqueue(env,{...run,next_at:0})

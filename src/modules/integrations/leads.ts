@@ -53,4 +53,8 @@ export async function handleLeadJob(env:Env,job:Job){
  }
 }
 
-export async function recoverLeadJobs(env:Env){await env.DB.prepare("UPDATE lead_jobs SET state=CASE WHEN provider_started=1 THEN 'uncertain' ELSE 'failed' END,error='Interrupted lead processing requires review',finished_at=? WHERE state='running' AND started_at<?").bind(Date.now(),Date.now()-180000).run();await env.DB.prepare("UPDATE leads SET status='failed',error='Interrupted lead processing requires review' WHERE status='processing' AND EXISTS(SELECT 1 FROM lead_jobs j WHERE j.lead_id=leads.id AND j.state IN ('uncertain','failed'))").run();const queued=await env.DB.prepare("SELECT id FROM lead_jobs WHERE state='queued' ORDER BY created_at LIMIT 100").all<{id:string}>();for(const row of queued.results)await env.JOBS.send({type:'lead.process',id:row.id,projectId:'platform'});return queued.results.length}
+export async function recoverLeadJobs(env:Env){
+ if(!await env.DB.prepare(`SELECT 1 WHERE EXISTS(SELECT 1 FROM lead_jobs WHERE state='running')
+  OR EXISTS(SELECT 1 FROM leads WHERE status='processing')
+  OR EXISTS(SELECT 1 FROM lead_jobs WHERE state='queued')`).first())return 0
+ await env.DB.prepare("UPDATE lead_jobs SET state=CASE WHEN provider_started=1 THEN 'uncertain' ELSE 'failed' END,error='Interrupted lead processing requires review',finished_at=? WHERE state='running' AND started_at<?").bind(Date.now(),Date.now()-180000).run();await env.DB.prepare("UPDATE leads SET status='failed',error='Interrupted lead processing requires review' WHERE status='processing' AND EXISTS(SELECT 1 FROM lead_jobs j WHERE j.lead_id=leads.id AND j.state IN ('uncertain','failed'))").run();const queued=await env.DB.prepare("SELECT id FROM lead_jobs WHERE state='queued' ORDER BY created_at LIMIT 100").all<{id:string}>();for(const row of queued.results)await env.JOBS.send({type:'lead.process',id:row.id,projectId:'platform'});return queued.results.length}

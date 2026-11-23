@@ -14,18 +14,26 @@ import {requireActor} from '../../platform/auth'
 const readySchemas=new WeakSet<object>()
 // Signing in reads and writes no knowledge row, so a pending content upgrade never holds it: an imported owner has no
 // password and enters by the emailed link. Every other route stays fenced; add a path here only after reading it touches no knowledge data.
-const identityEntry=new Set(['session','login','setup','setup-status','auth-options','sign-in-options','magic-link','magic-link/consume'].map(name=>'/api/identity/'+name))
+const identityEntry=new Set(['session','login','setup','auth-options','sign-in-options','magic-link','magic-link/consume'].map(name=>'/api/identity/'+name))
 // Cache only an observed schema. A concurrent request owns its own D1 operation.
 export async function knowledgeSchemaReady(env:Env){
  const db=env.DB
  if(readySchemas.has(db))return true
- const ready=Boolean(await db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='knowledge_reply_blocks'").first())
- if(ready)readySchemas.add(db)
- return ready
+ try{
+  // Preparing the statement verifies the table even when it has no rows.
+  await db.prepare('SELECT 1 FROM knowledge_reply_blocks LIMIT 0').first()
+ }catch(error){
+  if(error instanceof Error && /\bno such table: (?:main\.)?knowledge_reply_blocks\b/.test(error.message))return false
+  throw error
+ }
+ readySchemas.add(db)
+ return true
 }
 /** HTTP's shared door covers all text-bearing fields, including JSON columns and
  * nested list/preview responses. Controller authorization still owns ticket access. */
 export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>){
+ // This Boolean deployment probe has no knowledge fields or writes.
+ if(c.req.path==='/api/identity/setup-status'){await next();return}
  // Uploaded message files are the author's material. Their native ticket and
  // private-note access rules also apply while stored text is being upgraded.
  if(/^\/api\/(?:conversations\/[^/]+\/media(?:\/[^/]+)?|portal\/[^/]+\/tickets\/[^/]+\/attachments(?:\/[^/]+)?|(?:management|dashboard)\/projects\/[^/]+\/media)$/.test(c.req.path)){await next();return}
@@ -34,7 +42,9 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  const context=()=>{const actor=c.get('actor'),authority=(c as any).get('authority');return {projectId:c.req.param('projectId')||c.req.param('project')||authority?.projectId||actor?.projectId,authorContactId:actor?.role==='contact'?actor.contactId||actor.id:undefined,conversationId:c.req.param('conversationId')||(/\/conversations\//.test(c.req.path)?c.req.param('id'):undefined)}}
  c.env=knowledgeWriteEnvironment(c.env,context)
  const requestedProject=context().projectId
- const pending=await rawEnv.DB.prepare('SELECT project_id FROM knowledge_upgrade_reports WHERE completed_at IS NULL AND (?1 IS NULL OR project_id=?1) ORDER BY project_id LIMIT 1').bind(requestedProject||null).first<{project_id:string}>()
+ const pending=await (requestedProject
+  ?rawEnv.DB.prepare('SELECT project_id FROM knowledge_upgrade_reports WHERE completed_at IS NULL AND project_id=?').bind(requestedProject)
+  :rawEnv.DB.prepare('SELECT project_id FROM knowledge_upgrade_reports WHERE completed_at IS NULL ORDER BY project_id LIMIT 1')).first<{project_id:string}>()
  if(pending&&!identityEntry.has(c.req.path)){
   let member=false
   const credential=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]

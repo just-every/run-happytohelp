@@ -35,6 +35,7 @@ export async function acceptTranscript(env:Env,n:VoiceNumber,call:any,b:any,live
 /** Bounded hourly cleanup. Reads and webhook writes enforce expiry immediately. */
 export async function expireVoiceMedia(env:Env){
  const now=Date.now(),ids=`SELECT id FROM voice_calls WHERE media_expires_at<=? AND (recording_cipher IS NOT NULL OR transcript IS NOT NULL OR summary LIKE 'Transcript highlights%') LIMIT 100`
+ if(!await env.DB.prepare(ids).bind(now).first())return
  await env.DB.batch([
  env.DB.prepare(`DELETE FROM voice_transcript_segments WHERE call_id IN (${ids})`).bind(now),
  env.DB.prepare(`UPDATE voice_calls SET recording_cipher=NULL,transcript=NULL,summary='',updated_at=? WHERE id IN (${ids})`).bind(now,now),

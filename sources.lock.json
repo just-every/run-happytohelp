@@ -2912,6 +2912,10 @@
       "sha256": "d1ada2488354bc65874ec074ccd7ccb718d794de1b0579f777228eb9a6773db0",
       "executable": false
     },
+    "migrations/338_scheduled_recovery_writes.sql": {
+      "sha256": "8b9ee10fe76a173ecd12a340ee6a027d0c35bb924a29be43506098adbf9636d8",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false

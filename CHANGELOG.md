@@ -11,7 +11,7 @@ updating and backing up an installation, see
 ## 0.4.37 — 2026-11-22
 
 - **Inbox.** The composer stays bound to the conversation it displays. Sending is paused while another conversation loads, so a reply cannot go to the previous customer during a switch. The server returns HTTP 409 when a supplied composer conversation ID differs from the target conversation and leaves the draft intact.
-- **Saved replies.** Text typed while a saved reply is loading survives a reload of the same ticket in the same tab. After a saved reply is created, the API returns HTTP 201 with its ID even if knowledge reference rendering fails. Retrying the same dashboard submission reuses that saved reply.
+- **Saved replies.** Edits made before a saved reply finishes inserting survive a reload of the same ticket in the same tab. Once a new saved reply is stored, the API returns HTTP 201 with its ID even if knowledge references cannot be rendered. Retrying the same dashboard submission with the same `Idempotency-Key` returns the original ID and leaves a single saved reply.
 - **Worker.** A completed Setup check remains successful if its result cannot be read immediately. A committed article save or publication remains successful if the subsequent knowledge index refresh fails. The dashboard can show the completed write and let the operator reload its details.
 - **Quick start.** The README and installation guides continue to select the latest published GitHub Release. For an existing checkout, they show how to reopen it if the shell cannot find `rer`.
 - **Hosted setup.** The operations guide explains how to supply Cloudflare credentials together in the process environment or in one private env file.

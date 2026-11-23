@@ -8,6 +8,20 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.38 — 2026-11-23
+
+- **Quick start.** The release checkout command works in zsh and Bash on the Run page and in all seven copies in the README and installation guides. It reports when it cannot find a published release with a version tag.
+- **Run page.** The copy button uses the updated published-release command shown on the page.
+- **Inbox.** If a saved draft fails to load, operators can retry or continue without it. The composer unlocks when the read returns a 4xx response or a retry fails.
+- **Saved replies.** Archiving a saved reply clears drafts made from it, so operators can still reply on those conversations.
+- **Pending replies.** When an operator switches to another conversation and back during a send, the composer waits for the result. A sent reply stays out of the composer. If the send fails, the draft returns and can be sent once.
+- **Hosted setup.** A dry run can finish with the local trial owner and reports what a real deployment needs, including the option to set `MAIL_PROVIDER=none` and use the one-time owner link.
+
+Update from v0.4.37 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.37 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-23._
+
+
 ## 0.4.37 — 2026-11-22
 
 - **Inbox.** The composer stays bound to the conversation it displays. Sending is paused while another conversation loads, so a reply cannot go to the previous customer during a switch. The server returns HTTP 409 when a supplied composer conversation ID differs from the target conversation and leaves the draft intact.

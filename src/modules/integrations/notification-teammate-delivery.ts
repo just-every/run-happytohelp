@@ -39,7 +39,10 @@ export async function deliverTeammateNotice(env:Env,row:Notice){
 export async function dispatchPendingTeammateNotifications(env:Env,options:{projectId?:string;conversationId?:string}={}){
  // Provider-blocked mail is dormant until configuration changes. Its inbox entry
  // already exists; it must never occupy the active delivery window every tick.
- const pending=await env.DB.prepare(`SELECT * FROM notification_inbox WHERE (state='pending' ${emailConfigured(env)?"OR state='awaiting_provider'":''}) ${options.projectId?'AND project_id=?':''} ${options.conversationId?'AND conversation_id=?':''} ORDER BY created_at,id LIMIT 100`)
+ const ready=emailConfigured(env)
+  ? "INDEXED BY notification_inbox_provider_ready WHERE state IN ('pending','awaiting_provider')"
+  : "INDEXED BY notification_inbox_pending WHERE state='pending'"
+ const pending=await env.DB.prepare(`SELECT * FROM notification_inbox ${ready} ${options.projectId?'AND project_id=?':''} ${options.conversationId?'AND conversation_id=?':''} ORDER BY created_at,id LIMIT 100`)
  .bind(...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<Notice>()
  // Includes reply-address proof, provider failure bookkeeping and final state.
  let visited=0

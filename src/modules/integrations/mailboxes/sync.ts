@@ -101,7 +101,9 @@ export async function syncConnectedMailboxes(env:Env,receive:MailboxReceiver,opt
  const limit=Math.max(1,Math.min(20,Math.floor(options.limit||4)))
  const eligible=`FROM mailbox_connections m WHERE m.status='connected' AND m.provider<>'forwarding' AND coalesce(json_extract(m.cursor_json,'$.mode'),'live')<>'history' AND (m.sync_lock_until IS NULL OR m.sync_lock_until<?)
  AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
- const now=Date.now(),[healthy,retries]=await env.DB.batch<{project_id:string;id:string}>([
+ const now=Date.now()
+ if(!await env.DB.prepare('SELECT 1 '+eligible+' LIMIT 1').bind(now).first())return []
+ const [healthy,retries]=await env.DB.batch<{project_id:string;id:string}>([
   env.DB.prepare(`SELECT m.project_id,m.id ${eligible} AND m.error_code IS NULL ORDER BY coalesce(m.last_sync_at,0),m.id LIMIT ?`).bind(now,limit),
   env.DB.prepare(`SELECT m.project_id,m.id ${eligible} AND m.error_code IS NOT NULL AND m.updated_at<=? ORDER BY m.updated_at+?,m.id LIMIT ?`).bind(now,now-FAILURE_BACKOFF_MS,FAILURE_BACKOFF_MS,limit),
  ])

@@ -18,6 +18,7 @@ export async function queueOperatorActivity(env:Env,message:any,projectId:string
 }
 
 export async function batchOperatorActivity(env:Env,now:number,projectId?:string,conversationId?:string){
+ if(!await env.DB.prepare('SELECT 1 FROM operator_notification_activity WHERE batch_id IS NULL LIMIT 1').first())return
  const rows=await env.DB.prepare(`SELECT a.project_id,a.conversation_id FROM operator_notification_activity a
  JOIN conversations c ON c.id=a.conversation_id AND c.project_id=a.project_id
  WHERE a.batch_id IS NULL AND c.updated_at<=? AND NOT EXISTS(SELECT 1 FROM messages m WHERE m.conversation_id=c.id AND m.created_at>?)

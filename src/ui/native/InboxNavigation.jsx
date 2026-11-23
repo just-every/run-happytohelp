@@ -44,7 +44,7 @@ export default function InboxNavigation({ id, settings, inboxActive, open }) {
     const projectId = settings.isGlobalInbox ? null : settings.project?.id;
     const queue = Boolean(projectId) && !settings.project?.is_demo;
     const source = inboxSource(settings.isGlobalInbox, projectId);
-    const { counts, version, savedViews, savedViewsError } = useInboxNavigation(source);
+    const { counts, version, savedViews, savedViewsError, entryView } = useInboxNavigation(source);
     const { publishSavedViews, viewChosen } = useInboxNavigationActions();
     const { setOpen } = useMobileNavigation();
     const [ allViews, setAllViews ] = useState(false);
@@ -61,7 +61,7 @@ export default function InboxNavigation({ id, settings, inboxActive, open }) {
 
     const to = inboxActive ? pathname : projectId ? `/projects/${ projectId }/conversations` : '/conversations';
     const keep = inboxActive ? search : {};
-    const place = inboxActive ? inboxPlace(search, counts, queue) : null;
+    const place = inboxActive ? inboxPlace(search, entryView, queue) : null;
     // Leaving the Snoozed place drops it; "Include snoozed" stays with the list like its other filters.
     const snoozed = keep.snoozed === 'only' ? undefined : keep.snoozed;
     const choose = () => { setOpen(false); viewChosen(); };

@@ -1,4 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { defaultInboxView } from '../dashboard/components/inboxViewDefinitions';
+import { workspaceScopeKey } from './workspace-scope';
 
 // The rail's Inbox group lives in the shell, beside the page rather than inside it. Whichever page holds the workspace's
 // live counts (the inbox's ChatContext, or WorkspaceLiveCounts on every other page, both through useInboxRefresh)
@@ -8,7 +10,13 @@ import React, { createContext, useCallback, useContext, useMemo, useRef, useStat
 const InboxNavigationState = createContext(null);
 const InboxNavigationActions = createContext(null);
 
-export function InboxNavigationProvider({ children }) {
+export function InboxNavigationProvider({ children, settings, inboxActive }) {
+    const inbox = inboxActive ? workspaceScopeKey(settings) : null;
+    const initialView = defaultInboxView(settings.inboxViewCounts);
+    const [ entry, setEntry ] = useState(() => ({ inbox, view: initialView }));
+    // Pick the default on entry. Assignment counts can change without changing
+    // the list the operator is working from.
+    if (entry.inbox !== inbox) setEntry({ inbox, view: initialView });
     const [ published, setPublished ] = useState({ source: null, counts: {}, version: 0 });
     const [ saved, setSaved ] = useState({ source: null, views: null, error: '' });
     // `null` follows the page: open on the inbox. A choice (the chevron, or the list title) holds until the next one.
@@ -22,7 +30,7 @@ export function InboxNavigationProvider({ children }) {
     }, []);
     const viewChosen = useCallback(() => choiceListeners.current.forEach(listener => listener()), []);
     const actions = useMemo(() => ({ publish, publishSavedViews, setExpanded, onViewChosen, viewChosen }), [ publish, publishSavedViews, onViewChosen, viewChosen ]);
-    const state = useMemo(() => ({ published, saved, expanded }), [ published, saved, expanded ]);
+    const state = useMemo(() => ({ published, saved, expanded, entry }), [ published, saved, expanded, entry ]);
     return <InboxNavigationActions.Provider value={ actions }><InboxNavigationState.Provider value={ state }>{ children }</InboxNavigationState.Provider></InboxNavigationActions.Provider>;
 }
 
@@ -33,7 +41,7 @@ function required(value) {
 
 /** What the group and the list head show for `source`: its counts, data version and saved views (null until read). */
 export function useInboxNavigation(source) {
-    const { published, saved, expanded } = required(useContext(InboxNavigationState));
+    const { published, saved, expanded, entry } = required(useContext(InboxNavigationState));
     const live = published.source === source, read = saved.source === source;
     return {
         counts: live ? published.counts : {},
@@ -41,6 +49,7 @@ export function useInboxNavigation(source) {
         savedViews: read ? saved.views : null,
         savedViewsError: read ? saved.error : '',
         expanded,
+        entryView: entry.view,
     };
 }
 

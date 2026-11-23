@@ -43,7 +43,7 @@ export default function DashboardClient({ settings }) {
         window.addEventListener('workspace-appearance',update);
         return () => { window.removeEventListener('workspace-appearance',update); delete document.body.dataset.theme; };
     }, [settings]);
-    return <NavigationGuard><MobileNavigationProvider><InboxNavigationProvider>
+    return <NavigationGuard><MobileNavigationProvider><InboxNavigationProvider settings={settings} inboxActive={isInbox}>
         <a className="workspace-skip-link" href="#workspace-main">Skip to main content</a>
         <Navigation settings={settings} />
         {/* The inbox holds these connections itself, with its listing. */}

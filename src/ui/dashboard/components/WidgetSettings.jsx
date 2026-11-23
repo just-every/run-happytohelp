@@ -32,13 +32,17 @@ export default function WidgetSettings({ projectId }) {
     const [savedWebsite, setSavedWebsite] = useState(allowedOrigin);
     const save = async event => {
         event.preventDefault(); setSaveError(''); setSaved(false);
-        const body = settingsToSave(savedSettings.current, edits(), previewBrand);
-        const payload = editedFields.current.has('allowed_origin') ? {...body, allowed_origin: getValues('allowed_origin')} : body;
+        const websiteOnly = event.nativeEvent.submitter?.value === 'website' || activeTab === 'code';
+        const body = websiteOnly ? savedSettings.current : settingsToSave(savedSettings.current, edits(), previewBrand);
+        const payload = websiteOnly || editedFields.current.has('allowed_origin') ? {...body, allowed_origin: getValues('allowed_origin')} : body;
         try {
             const result = await nativeRequest(`/api/management/projects/${projectId}/widget-settings`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
             if (result.allowedOrigin) {setSavedWebsite(result.allowedOrigin);setValue('allowed_origin', result.allowedOrigin);}
-            savedSettings.current = body; editedFields.current.clear();
-            markSaved(); setSaved(true);
+            savedSettings.current = body;
+            if (websiteOnly) editedFields.current.delete('allowed_origin');
+            else editedFields.current.clear();
+            if (!editedFields.current.size) markSaved();
+            setSaved(true);
         } catch(error) { setSaveError(error.message.startsWith('Your website address:') ? error.message.includes('scheme, hostname') ? 'Use your website’s main address, without a page name, for example https://chargedesk.com.' : 'Enter a complete website address starting with https://. For a test on this computer, http://localhost is also allowed.' : error.message); }
     };
     const changed = event => {

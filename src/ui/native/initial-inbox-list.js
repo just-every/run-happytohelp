@@ -20,7 +20,7 @@ const abortError = signal => signal?.reason || new DOMException('Request aborted
 export function createInitialInboxList(raw, location) {
     if (!raw) return undefined;
     // A first page cut off in transit is busy (the list waits and reads it live), never a real error.
-    let remaining = Promise.resolve(raw.outcome).catch(error => ({error: {
+    let remaining = Promise.resolve(raw.outcome).catch(error => error?.name === 'AbortError' ? undefined : ({error: {
         message: error instanceof Error ? error.message : String(error), ...(error?.transport ? {transport: true} : {}),
     }}));
     const key = filterKey(raw.filter), path = location.pathname, search = location.searchStr;
@@ -36,6 +36,7 @@ export function createInitialInboxList(raw, location) {
             remaining = undefined;
             const outcome = await pending;
             if (scope.signal?.aborted || !scope.isCurrent()) throw abortError(scope.signal);
+            if (!outcome) return undefined;
             if (outcome.error) {
                 const error = Object.assign(new Error(outcome.error.message), outcome.error);
                 if (error.status === 401 && typeof window !== 'undefined' && window.chatSettings) {

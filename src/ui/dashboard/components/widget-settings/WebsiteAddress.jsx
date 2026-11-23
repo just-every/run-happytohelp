@@ -17,6 +17,6 @@ export default function WebsiteAddress({projectId, register, value, numbered = f
   {!numbered && <details><summary>Details for your developer</summary><p>Use the scheme, hostname and optional port, without a path, query or fragment.</p></details>}
   {addresses.length>0&&<details><summary>Other allowed addresses</summary><ul>{addresses.map(address=><li key={address} style={{overflowWrap:'anywhere'}}>{address}{canManage&&<> <button type="button" className="btn btn-white btn-sm" onClick={()=>remove(address)}>Remove address<span className="visually-hidden"> {address}</span></button></>}</li>)}</ul></details>}
   {error&&<p role="alert">{error}</p>}{dialog}
-  {numbered && <button type="submit" className="btn btn-primary mt-3">Save website address</button>}
+  <button type="submit" name="widget_save" value="website" className="btn btn-primary mt-3">Save website address</button>
  </section>;
 }

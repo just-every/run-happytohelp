@@ -110,6 +110,21 @@ export async function loadDashboard({ location, abortController, parentMatchProm
         if ('status' in result) return fail(Object.assign(new Error(result.message), { status: result.status, retryAfter: result.retryAfter }));
         return result;
     };
+
+    const read = () => readDashboardBootstrap(dashboardBootstrapInput(location), signal);
+    const bootstrap = parentMatchPromise.then(async parent => {
+        signal.throwIfAborted();
+        const initial = parent.loaderData;
+        // The workspace parent can be shared by consecutive navigations. Use
+        // this leaf's location and lifetime when the parent's read is stale.
+        if (initial?.href !== location.href || initial.signal?.aborted) return read();
+        try {
+            return await initial.bootstrap;
+        } catch (error: any) {
+            if (!signal.aborted && (initial.signal?.aborted || error?.name === 'AbortError')) return read();
+            throw error;
+        }
+    });
     let settings: any;
     let projectUnavailable: string | undefined;
     let initialConversation: InitialConversation | undefined;
@@ -117,13 +132,9 @@ export async function loadDashboard({ location, abortController, parentMatchProm
     let initialTags: {path: string; outcome: Promise<any>} | undefined;
     let initialManagement: {path: string; outcome: Promise<any>} | undefined;
     try {
-        const bootstrap = parentMatchPromise.then(parent => {
-            if (!parent.loaderData) throw new Error('The workspace could not be loaded.');
-            return parent.loaderData.bootstrap;
-        });
         const [result] = await Promise.all([busyWhenCut(bootstrap, signal), code]);
         signal.throwIfAborted();
-        const current = await untilFree(result, () => readDashboardBootstrap(dashboardBootstrapInput(location), signal), signal);
+        const current = await untilFree(result, read, signal);
         ({ settings, projectUnavailable, initialConversation, initialInboxList, initialTags, initialManagement } = requireBootstrap(current));
         // The URL names the workspace: bind the session to it before any page reads its data.
         if (urlProjectId && !projectUnavailable && settings.sessionProjectId !== urlProjectId) {

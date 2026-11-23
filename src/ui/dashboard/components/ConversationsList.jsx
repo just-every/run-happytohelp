@@ -36,7 +36,9 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
     const navigate = useNavigate();
     const projectId = settings.isGlobalInbox ? null : settings.project?.id;
     const ticketQueue = Boolean(projectId) && !settings.project?.is_demo;
-    const place = inboxPlace(searchParams, inboxViewCounts, ticketQueue);
+    const { savedViews, entryView } = useInboxNavigation(inboxSource(settings.isGlobalInbox, projectId));
+    const place = inboxPlace(searchParams, entryView, ticketQueue);
+    const rowSearch = place.kind === 'view' && !liveSearch.view ? { ...liveSearch, view: place.view } : liveSearch;
     const selectedView = place.view;
     const searchQuery = searchParams.q == null ? '' : String(searchParams.q);
     const filter = useMemo(() => ({...(searchParams.company?{company:String(searchParams.company)}:{}),...inboxViewFilter(selectedView, searchQuery, searchParams.assigned_to, searchParams.search_scope),...(searchParams.tag?{tag:String(searchParams.tag)}:{}),...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{})}), [ selectedView, searchQuery, searchParams.company, searchParams.tag, searchParams.assigned_to, searchParams.search_scope, searchParams.snoozed ]);
@@ -77,14 +79,13 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
         scrollEdgeRef(element);
     }, [ rootRef, scrollEdgeRef ]);
 
-    const { savedViews } = useInboxNavigation(inboxSource(settings.isGlobalInbox, projectId));
     const { onViewChosen } = useInboxNavigationActions();
     // A view chosen from the phone's menu sheet shows its list, even from an open conversation.
     useEffect(() => onViewChosen(() => { if (window.matchMedia('(max-width: 1199.98px)').matches) setIsMainVisible(false); }), [ onViewChosen, setIsMainVisible ]);
 
     // A search keeps a view explicit (its default follows the counts); a saved view or the Snoozed place stays as it is.
     const handleSearch = (query, scope) => {
-        const livePlace = inboxPlace(liveSearch, inboxViewCounts, ticketQueue);
+        const livePlace = inboxPlace(liveSearch, entryView, ticketQueue);
         navigate({ search: { ...liveSearch, view: livePlace.kind === 'view' ? livePlace.view : liveSearch.view, q: query.trim() || undefined, search_scope: query.trim() && scope === 'view' ? 'view' : undefined } });
     };
 
@@ -110,7 +111,7 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
             {creatingTicket && <CreateEmailTicket projectId={projectId} onHide={()=>setCreatingTicket(false)} onCreated={conversation=>{refreshInboxData();if(conversation?.id)navigate({to:`/projects/${conversation.project_id||projectId}/conversations/${conversation.id}`});}}/>}
             {ticketQueue && selecting && <TicketBulkActions key={projectId} projectId={projectId} loaded={conversations} selected={selected} onSelect={setSelected} onDone={() => { setSelecting(false); setSelected({}); }} onApplied={refreshInboxData}/>}
             <div className="conversation-list-items" ref={ setListRefs }>
-                { conversations.map(conversation => selecting && ticketQueue ? <div className="ticket-bulk-row" key={conversation.id}><input className="form-check-input" type="checkbox" {...tooltip('Select ticket', {describedBy: conversationNameId(conversation.id)})} checked={Boolean(selected[conversation.id])} disabled={!selected[conversation.id] && Object.keys(selected).length >= 100} onChange={event => { const checked = event.target.checked; setSelected(current => { const next = { ...current }; if (checked) next[conversation.id] = { id: conversation.id, subject: conversation.subject, ticket_version: conversation.ticket_version }; else delete next[conversation.id]; return next; }); }}/><ConversationItem conversation={conversation}/></div> : <ConversationItem key={conversation.id} conversation={conversation}/>) }
+                { conversations.map(conversation => selecting && ticketQueue ? <div className="ticket-bulk-row" key={conversation.id}><input className="form-check-input" type="checkbox" {...tooltip('Select ticket', {describedBy: conversationNameId(conversation.id)})} checked={Boolean(selected[conversation.id])} disabled={!selected[conversation.id] && Object.keys(selected).length >= 100} onChange={event => { const checked = event.target.checked; setSelected(current => { const next = { ...current }; if (checked) next[conversation.id] = { id: conversation.id, subject: conversation.subject, ticket_version: conversation.ticket_version }; else delete next[conversation.id]; return next; }); }}/><ConversationItem conversation={conversation} rowSearch={rowSearch}/></div> : <ConversationItem key={conversation.id} conversation={conversation} rowSearch={rowSearch}/>) }
                 { isInitialLoading && !isBusy && conversations.length === 0 && <p className="text-center" role="status">Loading conversations...</p> }
                 { !isInitialLoading && !isBusy && !refreshError && !hasNextPage && conversations.length === 0 && (
                     searchQuery.trim()

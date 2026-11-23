@@ -30,7 +30,7 @@ export type DashboardBootstrapResult = {
     initialTags?: { path: string; outcome: Promise<InitialReadOutcome> };
     initialManagement?: { path: string; outcome: Promise<InitialReadOutcome> };
 } | { status: number; message: string; retryAfter?: number };
-export type WorkspaceBootstrap = { bootstrap: Promise<DashboardBootstrapResult> };
+export type WorkspaceBootstrap = { href: string; signal?: AbortSignal; bootstrap: Promise<DashboardBootstrapResult> };
 
 function validateBootstrapInput(input: DashboardBootstrapInput): DashboardBootstrapInput {
     if (!input || typeof input !== 'object' || Array.isArray(input)
@@ -90,10 +90,10 @@ export function dashboardBootstrapInput(location: ParsedLocation): DashboardBoot
 
 /** A nested outcome streams after the answer's first part. Once that answer's body has ended or been cut, one
  * still pending would wait forever: it settles as a transport failure (busy) instead. */
-function settledBy<T>(outcome: Promise<T>, ended: Promise<void>): Promise<T> {
+function settledBy<T>(outcome: Promise<T>, ended: Promise<void>, signal: AbortSignal): Promise<T> {
     const settled = Promise.race([outcome, ended.then(() => new Promise<never>((_, reject) => {
         // Frames that arrived with the body's end are decoded within the same turn; a later macrotask sees them.
-        setTimeout(() => reject(transportFailure(new Error('The answer ended before this read arrived.'))), 0);
+        setTimeout(() => reject(signal.aborted ? signal.reason : transportFailure(new Error('The answer ended before this read arrived.'))), 0);
     }))]);
     // A navigation that never takes this read leaves it unobserved; its consumer still sees the rejection.
     settled.catch(() => {});
@@ -105,9 +105,16 @@ function settledBy<T>(outcome: Promise<T>, ended: Promise<void>): Promise<T> {
 export async function readDashboardBootstrap(data: DashboardBootstrapInput, signal: AbortSignal): Promise<DashboardBootstrapResult> {
     let end!: () => void;
     const ended = new Promise<void>(resolve => { end = resolve; });
-    const result = await fetchDashboardBootstrap({ data, signal, fetch: (input, init) => transportFetch(input, init, end) });
+    const finish = () => {
+        signal.removeEventListener('abort', finish);
+        end();
+    };
+    if (signal.aborted) finish();
+    else signal.addEventListener('abort', finish, {once: true});
+    const result = await fetchDashboardBootstrap({ data, signal, fetch: (input, init) => transportFetch(input, init, finish) })
+        .catch(error => { finish(); throw error; });
     if ('status' in result) return result;
-    const nested = <R extends { outcome: Promise<any> }>(read: R | undefined) => read && { ...read, outcome: settledBy(read.outcome, ended) };
+    const nested = <R extends { outcome: Promise<any> }>(read: R | undefined) => read && { ...read, outcome: settledBy(read.outcome, ended, signal) };
     return { ...result, initialInboxList: nested(result.initialInboxList), initialTags: nested(result.initialTags),
         initialManagement: nested(result.initialManagement) };
 }
@@ -118,5 +125,8 @@ export function loadWorkspaceBootstrap({ location, abortController }: {
     location: ParsedLocation; abortController: AbortController;
 }): WorkspaceBootstrap {
     const data = dashboardBootstrapInput(location), signal = abortController.signal;
-    return { bootstrap: import.meta.env.SSR ? fetchDashboardBootstrap({ data, signal }) : readDashboardBootstrap(data, signal) };
+    const bootstrap = import.meta.env.SSR ? fetchDashboardBootstrap({ data, signal }) : readDashboardBootstrap(data, signal);
+    // A superseded navigation can leave this streamed promise without a consumer.
+    void bootstrap.catch(() => {});
+    return { href: location.href, ...(import.meta.env.SSR ? {} : { signal }), bootstrap };
 }

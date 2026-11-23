@@ -16,8 +16,9 @@ can’t find `rer`, use `~/.local/bin/rer dev` from the checkout. Run
 A first local start usually takes about a minute. On a busy computer it can take
 longer: `rer dev` prints progress every 20 seconds, with the limit to allow.
 
-A first launch can download the checkout’s headless Chromium for the owner-entry
-check. Dev uses its local address for the chat widget and generates a private owner password. Continue in
+The first launch downloads Playwright’s headless Chromium if it is missing from
+your browser cache. Rer uses it to check that the owner can enter the app. Dev
+uses its local address for the chat widget and generates a private owner password. Continue in
 the app, or open the private `RER_OPEN` link to reach **Setup** as the owner.
 No private answers, email service or AI account are needed. Use `rer dev --stop`
 from the checkout to stop the managed app.

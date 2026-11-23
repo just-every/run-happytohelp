@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from '@tanstack/react-router';
+import { Link, useRouter } from '@tanstack/react-router';
 import { useDashboardLocation, useDashboardSettings } from '../../native/dashboard-state';
 import useInboxRoute from '../hooks/useInboxRoute';
 import moment from 'moment';
@@ -20,7 +20,7 @@ import { tooltip } from '../../../modules/tooltip/tooltip';
 // then a quiet line for what is not the everyday default (ConversationItemMeta; a second only when its parts need it).
 export const conversationNameId = id => `conversation-${ id }-name`;
 
-function ConversationItem({ conversation }) {
+function ConversationItem({ conversation, rowSearch }) {
     const {
         setIsMainVisible,
         resolveConversation,
@@ -29,7 +29,8 @@ function ConversationItem({ conversation }) {
         getProject,
     } = useContext(ChatContext)
     const { urlProjectId, urlConversationId } = useInboxRoute();
-    const { search } = useDashboardLocation();
+    const { pathname, search } = useDashboardLocation();
+    const router = useRouter();
     const settings = useDashboardSettings();
 
     // The global inbox has no project in its URL - conversations live under /conversations
@@ -43,9 +44,14 @@ function ConversationItem({ conversation }) {
     const lastMessageDate = conversation.last_message?.created_at;
     const lastMessageIsToday = lastMessageDate && moment(lastMessageDate).isSame(moment(), 'day');
 
-    const handleClick = () => {
+    const handleClick = event => {
+        if (event.button || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
         setIsMainVisible(true);
-    }
+        // On a phone the selected row also opens the conversation pane. The
+        // settled selection needs no revalidation simply to reveal it again.
+        const live = router.latestLocation;
+        if (pathname === conversationUrl && live.pathname === pathname) event.preventDefault();
+    };
 
     const handleResolve = (event, resolved) => {
         event.preventDefault();
@@ -66,7 +72,7 @@ function ConversationItem({ conversation }) {
     // focus, in the time's place.
     return (
         <div className="conversation-item-wrap">
-        <Link to={conversationUrl} search={search}
+        <Link to={conversationUrl} search={rowSearch}
               onClick={handleClick}
               className={ 'conversation-item text-reset nav-link p-0 ' + (urlConversationId === conversation.id ? 'active' : '') }>
             <div className="card">
@@ -120,6 +126,7 @@ function ConversationItem({ conversation }) {
 
 ConversationItem.propTypes = {
     conversation: PropTypes.object,
+    rowSearch: PropTypes.object,
 };
 
 export default ConversationItem;

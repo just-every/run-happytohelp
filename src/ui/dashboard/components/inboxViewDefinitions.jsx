@@ -31,8 +31,8 @@ export function inboxViewPhrase(view) {
  * `?snoozed=only` with no view of its own and lists every open snoozed conversation, as its count does; "Snoozed only"
  * chosen in Filters beside a view narrows that view instead. `view` is the view whose filter the list applies.
  */
-export function inboxPlace(search, inboxViewCounts, queue) {
-    const view = normalizeInboxView(search.view, inboxViewCounts);
+export function inboxPlace(search, entryView, queue) {
+    const view = INBOX_VIEWS.some(item => item.id === search.view) ? search.view : entryView;
     if (queue && search.saved_view) return { kind: 'saved', id: String(search.saved_view), view };
     if (queue && search.snoozed === 'only' && !INBOX_VIEWS.some(item => item.id === search.view)) return { kind: 'snoozed', id: 'snoozed', view: 'open' };
     return { kind: 'view', id: view, view };

@@ -33,6 +33,7 @@ ConversationForm.propTypes = {
     isEnabled: PropTypes.bool,
     isResolved: PropTypes.bool,
     isSwitching: PropTypes.bool,
+    isSendingReply: PropTypes.bool,
     draftLoadState: PropTypes.oneOf(['loading', 'error']),
     onRetryDraftRead: PropTypes.func,
     onContinueWithoutDraft: PropTypes.func,
@@ -72,6 +73,7 @@ export default function ConversationForm({
     isEnabled,
     isResolved,
     isSwitching,
+    isSendingReply,
     draftLoadState,
     onRetryDraftRead,
     onContinueWithoutDraft,
@@ -112,7 +114,8 @@ export default function ConversationForm({
     const isLoading = Boolean(loadingContent);
     const isComposerLocked = isLoading || Boolean(finalReason);
     const isComposerUnavailable = isSwitching || Boolean(draftLoadState);
-    const loadingLabel = isSwitching ? 'Loading conversation' : draftLoadState === 'loading' ? 'Loading draft' : 'Uploading attachment';
+    const loadingLabel = isSwitching ? 'Loading conversation' : draftLoadState === 'loading' ? 'Loading draft'
+        : isSendingReply ? 'Sending reply' : 'Uploading attachment';
     const placeholder = isSwitching ? 'Loading…' : finalReason || (
         draftLoadState === 'loading' ? 'Loading draft…' : draftLoadState === 'error' ? 'Draft unavailable' : 'Type your reply…'
     );

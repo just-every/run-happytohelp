@@ -16,16 +16,18 @@ import {publicContactProof} from '../helpers/public-site/contact.mjs'
 const root=fileURLToPath(new URL('../..',import.meta.url))
 async function withRuntime(options,body){const runtime=await createRuntime(options);let success=false;try{await body(runtime,client(runtime.origin));success=true}finally{await runtime.close(success)}}
 
-test('public release commands avoid zsh parameter modifiers in fetch refspecs',async()=>{
+test('public install commands select a detached published tag in sh and zsh',async()=>{
  await withRuntime({},async(_runtime,{request})=>{
   for(const path of ['/run','/docs','/docs/getting-started','/docs/install']){
    const response=await request(path)
    assert.equal(response.status,200,path)
    const html=await response.text()
    const commands=[...html.matchAll(/<code\b[^>]*>([\s\S]*?)<\/code>|\bdata-copy="([^"]*)"/g)]
-    .map(match=>match[1]??match[2]).filter(command=>command.includes('/releases/latest'))
+    .map(match=>(match[1]??match[2]).replace(/<[^>]+>/g,'')).filter(command=>command.includes('just-every/run-happytohelp') && /rer dev|install\.sh/.test(command))
    assert.ok(commands.length,`release command on ${path}`)
    for(const command of commands){
+    assert.ok(command.includes('/releases/latest'),`select the published release on ${path}`)
+    assert.match(command,/checkout -q --detach/,`detach at the tag on ${path}`)
     assert.doesNotMatch(command,/\$[a-zA-Z_][a-zA-Z_0-9]*:[a-zA-Z]/,`brace shell variables before a colon on ${path}`)
    }
   }

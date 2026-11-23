@@ -13,6 +13,7 @@ import ConversationAssistant from "./ConversationAssistant";
 import { v4 as uuidv4 } from 'uuid';
 import useConversationAssistant from "../hooks/useConversationAssistant";
 import useConversationLoading from '../hooks/useConversationLoading';
+import useInboxRoute from '../hooks/useInboxRoute';
 import ConversationBody from "./ConversationBody";
 
 import '../styles/components/Conversation.scss';
@@ -30,10 +31,10 @@ import {clearSentReplyEdit, readSavedReplyEdit, savedReplyEditKey, writeSavedRep
 
 // A request can outlive a ticket view, including a return through the Inbox list.
 const pendingReplySends = new Map();
+const pendingReplyUploads = new Map();
 
-function restorePlainReply(key, setContent) {
-    const local = readSavedReplyEdit(key);
-    if (local?.id === null || local?.discarded) setContent(local.content);
+function mergeDraftFiles(current, additions) {
+    return [...new Map([...current, ...additions].map(file => [file.id, file])).values()];
 }
 
 function Conversation({ projectId, conversationId, conversation, buckets }) {
@@ -58,11 +59,17 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const assistant = useConversationAssistant();
     const settings = useDashboardSettings();
     const router = useRouter();
+    const { urlConversationId } = useInboxRoute();
     const renderedPath = useDashboardLocation().pathname;
     const navigationPath = useRouterState({ select: state => state.location.pathname });
     const [ isSending, setIsSending ] = useState(false);
     const [ atTop, setAtTop ] = useState(true);
     const [ files, setFiles ] = useState([]);
+    const filesRef = useRef(files);
+    const setDraftFiles = nextFiles => {
+        filesRef.current = nextFiles;
+        setFiles(nextFiles);
+    };
     const [ content, setContent ] = useState('');
     const [knowledgeReferences,setKnowledgeReferences] = useState([]);
     const [ draftOrigin, setDraftOrigin ] = useState(null);
@@ -82,7 +89,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const [ ticketDialog, setTicketDialog ] = useState(null);
     const [ panelReads, setPanelReads ] = useState(0);
     const [ panelAlert, setPanelAlert ] = useState(false);
-    const { setDirty } = useUnsavedChanges();
+    const { setDirty } = useUnsavedChanges(true);
     useEffect(() => {
         setDirty(Boolean(content.trim() || files.length || loadingContent || isSending));
     }, [content, files.length, loadingContent, isSending, setDirty]);
@@ -91,14 +98,19 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const draftAdoptionRef = useRef(null);
     const draftEditVersion = useRef(0);
     const savedReplyRef = useRef(null);
-    const activeDraftKeyRef = useRef(null);
+    const activeDraftViewRef = useRef(null);
 
     activeConversationIdRef.current = conversationId;
 
     // In the global inbox the conversation dictates the project, not the page.
     const conversationProjectId = (conversation && conversation.project_id) || projectId;
     const savedEditKey = savedReplyEditKey(conversationProjectId, conversationId, currentAgent?.id);
-    activeDraftKeyRef.current = savedEditKey;
+    const draftView = useMemo(() => ({key: savedEditKey}), [savedEditKey]);
+    activeDraftViewRef.current = draftView;
+    useEffect(() => {
+        activeDraftViewRef.current = draftView;
+        return () => { activeDraftViewRef.current = null; };
+    }, [draftView]);
     // A role without reply permission (a collaborator) gets notes and follow instead of the reply box;
     // the agent's view stays as approved.
     const canReply = useCan(conversationProjectId, 'conversations.reply'), canFollow = useCan(conversationProjectId, 'conversations.follow');
@@ -107,12 +119,28 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const currentDraftRead = draftRead?.key === savedEditKey ? draftRead : null;
     const draftReadError = isContactErased ? null : currentDraftRead?.error;
     const draftLoadState = isContactErased ? null : currentDraftRead?.locked ? 'error' : currentDraftRead ? null : 'loading';
+    const restoreLocalReply = (local, draft) => {
+        setContent(local.content);
+        setDraftFiles(local.files ?? draft?.media ?? []);
+        setDraftOrigin(local.origin ?? null);
+        setEscalationDraftId(local.escalationDraftId ?? null);
+    };
+    const restorePlainReply = () => {
+        const local = readSavedReplyEdit(savedEditKey);
+        if (local?.id === null || local?.discarded) restoreLocalReply(local);
+    };
+    const persistReply = (text, media, origin, escalation) => {
+        const saved = savedReplyRef.current;
+        writeSavedReplyEdit(savedEditKey, saved || text.trim() || media.length
+            ? {id: null, ...saved, content: text, files: media, origin, escalationDraftId: escalation}
+            : null);
+    };
     const retryDraftRead = () => {
         setDraftRead(null);
         setDraftReadAttempt({key: savedEditKey});
     };
     const continueWithoutDraft = () => {
-        restorePlainReply(savedEditKey, setContent);
+        restorePlainReply();
         setDraftRead({...currentDraftRead, locked: false});
     };
     // Ticket and workflow tools stay hidden in a demo project.
@@ -145,7 +173,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         if (![401,403,404].includes(loadError?.status)) return;
         draftEditVersion.current++; draftAdoptionRef.current = null; savedReplyRef.current = null;
         writeSavedReplyEdit(savedEditKey, null);
-        setContent(''); setFiles([]); setLoadingContent(''); setDraftOrigin(null); setKnowledgeReferences([]);
+        setContent(''); setDraftFiles([]); setLoadingContent(''); setDraftOrigin(null); setKnowledgeReferences([]);
         setDraftError(''); setDraftRead(null); setDraftFocusRequest(null); setIsTyping(false);
         setEscalationDraftId(null); setNoteMacro(null); setIsNoteModalVisible(false);
         setTicketDialog(null); setIsSending(false); setPanelAlert(false);
@@ -154,13 +182,14 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         if (metadata.reply_type === 'note') { setNoteMacro({content:text,media:metadata.media || []}); setIsNoteModalVisible(true); }
         else {
             savedReplyRef.current = metadata.usage_id ? {id: metadata.usage_id, discarded: false} : null;
-            if (metadata.media?.length) setFiles(current => [...current,...metadata.media.filter(file=>!current.some(existing=>existing.id===file.id))]);
+            if (metadata.media?.length) setDraftFiles(mergeDraftFiles(filesRef.current, metadata.media));
         }
         refreshConversation();
     };
     const visibleTranscriptError = transcriptError?.conversationId === conversationId && !transcriptError.busy;
     const isTranscriptBusy = transcriptError?.conversationId === conversationId && Boolean(transcriptError.busy);
-    const isSwitchingConversation = navigationPath !== renderedPath;
+    const isSwitchingConversation = navigationPath !== renderedPath || urlConversationId !== conversationId;
+    const isSendingReply = pendingReplySends.has(savedEditKey);
     const isComposerEnabled = !isSwitchingConversation && conversation?.id === conversationId
         && !draftLoadState && isConversationReady && buckets.length > 0 && !isLoading && !isSending && !conversation.merged_into;
     const cancelDraftAdoption = () => {
@@ -171,34 +200,48 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     };
 
     const handleSendFile = selectedFiles => {
-        if (!selectedFiles?.length) return;
+        if (!selectedFiles?.length || pendingReplyUploads.has(savedEditKey)) return;
         cancelDraftAdoption();
         setDraftError('');
-        const uploadConversationId = conversationId;
         setIsSending(true);
 
         const params = new FormData();
         params.append('file', selectedFiles[0]);
         params.append('conversation_id', conversationId);
 
-        Api.create(`/projects/${ conversationProjectId }/media`, params)
+        const upload = Api.create(`/projects/${ conversationProjectId }/media`, params)
             .then(data => {
-                if (activeConversationIdRef.current === uploadConversationId) {
-                    setFiles(currentFiles => [ ...currentFiles, data.data ]);
-                    setIsSending(false);
+                const local = readSavedReplyEdit(savedEditKey);
+                const nextFiles = mergeDraftFiles(local?.files ?? [], [data.data]);
+                // The upload can finish after the operator has opened another
+                // ticket. Append to the draft it was started from.
+                if (activeDraftViewRef.current === draftView) {
+                    draftEditVersion.current++;
+                    setDraftFiles(nextFiles);
                 }
+                writeSavedReplyEdit(savedEditKey, {
+                    id: null, content: '', ...local, files: nextFiles,
+                });
             })
             .catch(error => {
-                if (activeConversationIdRef.current === uploadConversationId) {
+                if (activeDraftViewRef.current === draftView) {
                     setDraftError(`Attachment “${selectedFiles[0].name}” wasn’t added: ${error.message || 'the upload failed'}. Select it again to retry.`);
-                    setIsSending(false);
                 }
+            })
+            .finally(() => {
+                pendingReplyUploads.delete(savedEditKey);
+                if (activeDraftViewRef.current === draftView) setIsSending(false);
             });
+        persistReply(content, filesRef.current, draftOrigin, escalationDraftId);
+        pendingReplyUploads.set(savedEditKey, upload);
     };
 
     const handleRemoveFile = file => {
         cancelDraftAdoption();
-        setFiles(currentFiles => currentFiles.filter(item => item.id !== file.id));
+        const nextFiles = filesRef.current.filter(item => item.id !== file.id);
+        draftEditVersion.current++;
+        persistReply(content, nextFiles, draftOrigin, escalationDraftId);
+        setDraftFiles(nextFiles);
     };
 
     const handleSendMessage = async (expectedConversationId, messageContent, sendAndClose = false, email) => {
@@ -213,7 +256,6 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         const sentEdit = readSavedReplyEdit(savedEditKey);
         let settleSend;
         pendingReplySends.set(savedEditKey, new Promise(resolve => { settleSend = resolve; }));
-        let delivered = false;
         setIsSending(true);
         const message = {
             content: messageContent,
@@ -231,23 +273,25 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
 
         try {
             await sendAction('sendMessage', message, conversationProjectId);
-            delivered = true;
             // An acknowledgement owns only the draft it sent. Edits made while
             // the request was pending belong to the next reply.
             clearSentReplyEdit(savedEditKey, sentEdit);
-            if (activeDraftKeyRef.current === savedEditKey) {
+            if (activeDraftViewRef.current?.key === savedEditKey) {
                 setDraftError('');
                 setDraftRead(current => current?.key === savedEditKey && current.error ? {key: savedEditKey} : current);
                 if (draftEditVersion.current === sentEditVersion) {
                     savedReplyRef.current = null;
-                    updateDraftContent('');
+                    draftEditVersion.current++;
+                    setContent('');
+                    setIsTyping(false);
+                    clearTimeout(typingTimer.current);
                     setDraftOrigin(null);
                     setEscalationDraftId(null);
-                    setFiles([]);
+                    setDraftFiles([]);
                 }
             }
         } catch (error) {
-            if (activeDraftKeyRef.current === savedEditKey) {
+            if (activeDraftViewRef.current?.key === savedEditKey) {
                 if (error.data?.reason === 'conversation_changed') {
                     setDraftError('');
                     refreshConversation();
@@ -256,8 +300,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             throw error;
         } finally {
             pendingReplySends.delete(savedEditKey);
-            settleSend(delivered);
-            if (activeDraftKeyRef.current === savedEditKey) setIsSending(false);
+            settleSend();
+            if (activeDraftViewRef.current?.key === savedEditKey) setIsSending(false);
         }
         if (sendAndClose) {
             sendPluginEvent('resolveConversation', conversation);
@@ -280,7 +324,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setEscalationDraftId(null);
         setDraftFocusRequest(null);
         setLoadingContent('');
-        setFiles([]);
+        setDraftFiles([]);
         setIsSending(false);
         setIsAssistantDisabled(false);
         setIsNoteModalVisible(false);
@@ -297,21 +341,16 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         if (isContactErased) {
             savedReplyRef.current = null;
             writeSavedReplyEdit(savedEditKey, null);
-            setDraftError(''); setContent(''); setFiles([]); setNoteMacro(null);
+            setDraftError(''); setContent(''); setDraftFiles([]); setNoteMacro(null);
             return;
         }
         let active = true;
         const editVersion = draftEditVersion.current;
         const read = () => nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft`);
-        const pending = pendingReplySends.get(savedEditKey);
-        // During a return to a ticket, wait for its send to settle before restoring.
-        // A successful send can invalidate the server draft we just read.
-        const result = pending ? Promise.allSettled([read(), pending]).then(([draft, send]) => {
-            if (!active) return;
-            if (send.value) return read();
-            if (draft.status === 'rejected') throw draft.reason;
-            return draft.value;
-        }) : read();
+        // A pending write can change the stored draft. On return, read it
+        // once the write has settled and only while this view still needs it.
+        const pending = pendingReplySends.get(savedEditKey) ?? pendingReplyUploads.get(savedEditKey);
+        const result = pending ? pending.then(() => active ? read() : undefined) : read();
         result.then(result => {
                 if (!active) return;
                 setDraftRead({key: savedEditKey});
@@ -326,44 +365,44 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 if (draft?.reply_type === 'note') setNoteMacro({content:draft.content,media:draft.media || []});
                 else if (matches) {
                     savedReplyRef.current = local.id === null ? null : {id: local.id, discarded: local.discarded};
-                    setContent(local.content);
-                    if (draft?.usage_id === local.id && !local.discarded) {
-                        setKnowledgeReferences(draft.references || []);
-                        setFiles(draft.media || []);
-                    }
+                    const sameDraft = draft?.usage_id === local.id && !local.discarded;
+                    restoreLocalReply(local, sameDraft ? draft : null);
+                    if (sameDraft) setKnowledgeReferences(draft.references || []);
                 } else if (draft) {
                     savedReplyRef.current = {id: draft.usage_id, discarded: false};
-                    setContent(draft.content); setKnowledgeReferences(draft.references || []); setFiles(draft.media || []);
+                    setContent(draft.content); setKnowledgeReferences(draft.references || []); setDraftFiles(draft.media || []);
                 }
             }).catch(error => {
                 if (!active) return;
                 const definitive = error.status >= 400 && error.status < 500;
                 const locked = !definitive && draftReadAttempt?.key !== savedEditKey;
-                if (!locked && draftEditVersion.current === editVersion) restorePlainReply(savedEditKey, setContent);
+                if (!locked && draftEditVersion.current === editVersion) restorePlainReply();
                 setDraftRead({key: savedEditKey, locked, error: `Couldn’t load your saved macro draft: ${error.message}`});
             });
         return () => { active = false; };
     }, [conversationProjectId,conversationId,isConversationReady,isContactErased,savedEditKey,draftReadAttempt]);
 
-    const updateDraftContent = (nextContent, attachments, origin) => {
+    const updateDraftContent = (nextContent, attachments, origin, escalation = escalationDraftId) => {
         draftEditVersion.current++;
         setIsTyping(Boolean(nextContent)); clearTimeout(typingTimer.current);
         typingTimer.current = setTimeout(() => setIsTyping(false), 1500);
         cancelDraftAdoption();
         draftConversationIdRef.current = conversationId;
         setContent(nextContent);
-        if (origin !== undefined) setDraftOrigin(origin);
-        else if (!nextContent.trim()) setDraftOrigin(null);
+        const nextOrigin = origin ?? (nextContent.trim() ? draftOrigin : null);
+        const nextFiles = Array.isArray(attachments)
+            ? mergeDraftFiles(filesRef.current, attachments)
+            : filesRef.current;
+        setDraftOrigin(nextOrigin);
+        setDraftFiles(nextFiles);
+        setEscalationDraftId(escalation);
         const savedReply = savedReplyRef.current;
         const discard = savedReply && !savedReply.discarded && !nextContent.trim();
         if (discard) savedReply.discarded = true;
-        writeSavedReplyEdit(savedEditKey, savedReply || nextContent.trim() ? {id: null, ...savedReply, content: nextContent} : null);
+        persistReply(nextContent, nextFiles, nextOrigin, escalation);
         if (discard) {
             nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft?usage_id=${encodeURIComponent(savedReply.id)}`, { method: 'DELETE', keepalive: true })
                 .catch(error => setDraftError(`Couldn’t discard your saved macro draft: ${error.message}`));
-        }
-        if (Array.isArray(attachments)) {
-            setFiles(currentFiles => Array.from(new Map([ ...currentFiles, ...attachments ].map(file => [ file.id, file ])).values()));
         }
     };
     const insertAssistantDraft = async (nextContent, attachments, localResult) => {
@@ -420,8 +459,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     // An escalation's customer update goes to the composer for review; a compact panel sheet steps aside for it.
     const reviewEscalationDraft = draft => {
         if (!isComposerEnabled || router.latestLocation.pathname !== renderedPath) return false;
-        updateDraftContent(draft.content, [], {kind:'human'});
-        setEscalationDraftId(draft.id);
+        updateDraftContent(draft.content, [], {kind:'human'}, draft.id);
         assistant.releaseDraft();
         setDraftFocusRequest(previous => ({conversationId, version: (previous?.version || 0) + 1}));
         return true;
@@ -523,6 +561,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                             finalReason={ conversation.status_category === 'closed' ? 'This ticket is closed and final, so it takes no more replies. A customer reply opens a new ticket.' : null }
                             isEnabled={ isComposerEnabled }
                             isSwitching={ isSwitchingConversation }
+                            isSendingReply={ isSendingReply }
                             draftLoadState={ draftLoadState }
                             onRetryDraftRead={ retryDraftRead }
                             onContinueWithoutDraft={ continueWithoutDraft }

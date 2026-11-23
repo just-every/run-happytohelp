@@ -8,7 +8,7 @@ import {pathToFileURL} from 'node:url';
 import {DatabaseSync} from 'node:sqlite';
 import {collectMigrations} from '../../scripts/migrations.mjs';
 import {createRuntime} from './emitted-runtime.mjs';
-import {baselines, repository} from './upgrade-baselines.mjs';
+import {baselines, populate03, repository} from './upgrade-baselines.mjs';
 import {findDatabase, snapshot, schema, bucketSnapshot} from './upgrade-snapshot.mjs';
 import {expectedMigrationRows, expectedSchema, schemaExceptions} from './upgrade-exceptions.mjs';
 import {readBack, priorState} from './upgrade-readback.mjs';
@@ -22,6 +22,7 @@ import {restoredOwnerEntryReady} from './recovery/knowledge-ready.mjs';
 const run = promisify(execFile);
 const root = resolve(new URL('../..', import.meta.url).pathname);
 const release = JSON.parse(await readFile(join(root, 'RELEASE.json'), 'utf8'));
+assert.match(release.previousVersion ?? '', /^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$/, 'RELEASE.json must name the previous version');
 const evidence = process.env.H2H_EVIDENCE_DIR;
 const command = async (file, args, cwd) => {
   try { return (await run(file, args, {cwd, maxBuffer: 64 * 1024 * 1024})).stdout; }
@@ -30,41 +31,54 @@ const command = async (file, args, cwd) => {
 
 // Fetch the published baseline into its own throwaway repository: no private
 // clone, lazy blob fetch or change to this checkout's Git state is involved.
-async function extract(baseline, directory) {
+async function extract(ref, directory) {
   const git = join(directory, 'baseline.git'), archive = join(directory, 'source.tar'), source = join(directory, 'source');
   await command('git', ['init', '--quiet', '--bare', git], directory);
-  await command('git', ['--git-dir', git, 'fetch', '--quiet', '--no-tags', '--depth=1', repository, baseline.commit], directory);
-  assert.equal((await command('git', ['--git-dir', git, 'rev-parse', baseline.commit + '^{tree}'], directory)).trim(), baseline.tree);
+  await command('git', ['--git-dir', git, 'fetch', '--quiet', '--no-tags', '--depth=1', repository, ref], directory);
+  const commit = (await command('git', ['--git-dir', git, 'rev-parse', 'FETCH_HEAD^{commit}'], directory)).trim();
+  const tree = (await command('git', ['--git-dir', git, 'rev-parse', `${commit}^{tree}`], directory)).trim();
   await mkdir(source);
-  await command('git', ['--git-dir', git, 'archive', '--format=tar', '--output=' + archive, baseline.commit], directory);
+  await command('git', ['--git-dir', git, 'archive', '--format=tar', '--output=' + archive, commit], directory);
   await command('tar', ['-xf', archive, '-C', source]);
-  return source;
+  return {source, commit, tree};
 }
 
 async function upgrade(label) {
-  const baseline = baselines[label];
-  assert.ok(baseline, `Unknown baseline ${label}`);
+  const isPredecessor = label === release.previousVersion;
+  const baseline = Object.hasOwn(baselines, label) ? baselines[label] : undefined;
+  assert.ok(baseline || isPredecessor, `Unknown baseline ${label}`);
+  const ref = isPredecessor ? `refs/tags/v${label}` : baseline.commit;
   const started = Date.now(), directory = await mkdtemp(join(tmpdir(), `h2h-upgrade-${label}-`));
   let previous, current, runtimeDirectory, success = false;
   try {
-    const source = await extract(baseline, directory);
+    const {source, commit, tree} = await extract(ref, directory);
+    if (baseline) {
+      assert.equal(commit, baseline.commit);
+      assert.equal(tree, baseline.tree);
+    }
+    if (isPredecessor) {
+      const manifest = JSON.parse(await readFile(join(source, 'RELEASE.json'), 'utf8'));
+      assert.equal(manifest.version, label, 'The predecessor tag must match its release manifest');
+    }
     await command('pnpm', ['install', '--frozen-lockfile'], source);
     await command('pnpm', ['run', 'build'], source);
+    const applied = JSON.parse(await command(process.execPath, ['scripts/migrations.mjs'], source)).files;
+    if (baseline) assert.equal(applied.length, baseline.migrations);
     const {createRuntime: createBaseline} = await import(pathToFileURL(join(source, 'tests/helpers/emitted-runtime.mjs')));
     previous = await createBaseline();
-    assert.equal(previous.migrationCount, baseline.migrations);
-    const data = await baseline.populate(previous.origin, previous);
+    assert.equal(previous.migrationCount, applied.length);
+    const populate = baseline?.populate ?? populate03;
+    const data = await populate(previous.origin, previous);
     // close(false) keeps the baseline's state (its helper reports it as retained); it is upgraded in place here.
     runtimeDirectory = previous.directory; await previous.close(false); previous = undefined;
     const state = join(runtimeDirectory, 'state');
     const database = await findDatabase(join(state, 'v3/d1'));
     const before = snapshot(database), beforeSchema = schema(database), beforeFiles = await bucketSnapshot(join(state, 'v3/r2'));
     const prior = priorState(database, data.owner.email);
-    if (baseline.tables) assert.equal(Object.keys(before).length, baseline.tables);
+    if (baseline?.tables) assert.equal(Object.keys(before).length, baseline.tables);
     for (const table of ['projects', 'users', 'memberships', 'sessions', 'contacts', 'conversations', 'messages', 'knowledge_articles']) assert.ok(before[table].rows.length > 0, `${table} must contain real journey rows`);
     // Applied migration names and bytes are immutable.
     const headMigrations = await collectMigrations();
-    const applied = JSON.parse(await command(process.execPath, ['scripts/migrations.mjs'], source)).files;
     for (const name of applied) assert.equal(await readFile(join(source, '.generated/migrations', name), 'utf8'), await readFile(join(headMigrations.directory, name), 'utf8'), `Applied migration changed: ${name}`);
     for (const name of headMigrations.files) await copyFile(join(headMigrations.directory, name), join(runtimeDirectory, 'migrations', name));
     await command(process.execPath, [join(root, 'node_modules/wrangler/bin/wrangler.js'), 'd1', 'migrations', 'apply', 'DB', '--local', '--config', join(runtimeDirectory, 'wrangler.json'), '--persist-to', state], runtimeDirectory);
@@ -86,8 +100,8 @@ async function upgrade(label) {
       return {table, beforeRows: value.rowCount, afterRows: after[table]?.rowCount, identical, matchesExpected: JSON.stringify(expected[table] ?? value.rows) === JSON.stringify(after[table]?.rows), ...(identical ? {} : {removedRows: value.rows.filter(row => !after[table]?.rows.includes(row)), addedRows: after[table]?.rows.filter(row => !value.rows.includes(row))})};
     });
     const receipt = {
-      baseline: label, baselineCommit: baseline.commit, baselineTree: baseline.tree, sourceCommit: (await command('git', ['rev-parse', 'HEAD'], root)).trim(),
-      populatedThroughApi: Object.keys(data), baselineTables: Object.keys(before).length, baselineMigrations: baseline.migrations, finalTables: Object.keys(after).length, finalMigrations: after.d1_migrations.rowCount,
+      baseline: label, baselineCommit: commit, baselineTree: tree, sourceCommit: (await command('git', ['rev-parse', 'HEAD'], root)).trim(),
+      populatedThroughApi: Object.keys(data), baselineTables: Object.keys(before).length, baselineMigrations: applied.length, finalTables: Object.keys(after).length, finalMigrations: after.d1_migrations.rowCount,
       appliedByUpgrade: added, appliedOrder: order, appliedMigrationBytesUnchanged: applied.length,
       rowsWithData: Object.fromEntries(Object.entries(before).filter(([, value]) => value.rowCount).map(([table, value]) => [table, value.rowCount])),
       comparison, failures: comparison.filter(row => !row.matchesExpected).map(row => row.table), migrationExceptions: exceptions,
@@ -97,10 +111,13 @@ async function upgrade(label) {
     assert.deepEqual(order, added, 'Upgrade applied exactly the missing migrations in order');
     assert.deepEqual(receipt.failures, [], 'Pre-existing application rows changed outside exact migration exceptions');
     assert.deepEqual(changedSchema, [], 'Prior schema changed outside the listed replacements');
-    // Published release metadata stays immutable. Its groups declare membership;
-    // Wrangler applies flat names by numeric prefix, then code-unit filename.
-    if (baseline.previous) {
-      const declared = [...release.migrations, ...release.pendingMigrations].map(migration => migration.id)
+    // Older manifests can also declare pending source migrations. Both lists
+    // declare membership; Wrangler orders their filenames by numeric prefix.
+    if (isPredecessor) {
+      const {migrations, pendingMigrations = []} = release;
+      assert.ok(Array.isArray(migrations), 'RELEASE.json migrations must be an array');
+      assert.ok(Array.isArray(pendingMigrations), 'RELEASE.json pendingMigrations must be an array when present');
+      const declared = [...migrations, ...pendingMigrations].map(migration => migration.id)
         .sort((a, b) => parseInt(a, 10) - parseInt(b, 10) || (a < b ? -1 : a > b ? 1 : 0));
       assert.deepEqual(order, declared, 'The previous release receives exactly the listed release and pending source migrations in order');
     }
@@ -127,5 +144,7 @@ async function upgrade(label) {
   }
 }
 
-export async function releaseUpgrades(labels=Object.keys(baselines)){for (const label of labels) await upgrade(label)}
+export async function releaseUpgrades(labels = [release.previousVersion, ...Object.keys(baselines)]) {
+  for (const label of new Set(labels)) await upgrade(label);
+}
 

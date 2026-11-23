@@ -1573,7 +1573,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "fc137bd86bb616f1f9246c47c437a21eabed0fa69bda9e935bdaf4859f98362f",
+      "sha256": "30fb008ad34bb74e67144661701747f495ee13ebe7f99aba01e3090d8e1c8f1c",
       "executable": false
     },
     ".gitignore": {
@@ -17469,7 +17469,7 @@
       "executable": false
     },
     "tests/helpers/release-upgrade.mjs": {
-      "sha256": "1859ffbb709cb299358c38e7597712936fa2fd45d6c7030b617e6f6edf65aa25",
+      "sha256": "20e0f882ec6f21f39d62ba28477be36d9c1ab2553fd8342bc2fd5ac34fb075f5",
       "executable": false
     },
     "tests/helpers/reports-portable.mjs": {
@@ -17565,7 +17565,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-baselines.mjs": {
-      "sha256": "8d047df580bcb9ec58ccc99c575bd4db5767bc500b2c4ea543071d90b6fc7e94",
+      "sha256": "3bfb420bc9ab60612f2181fa1d3d7fa0d18ab01eb7b79b7603db1a354bfce97b",
       "executable": false
     },
     "tests/helpers/upgrade-data-expectations.mjs": {
@@ -17849,7 +17849,7 @@
       "executable": false
     },
     "tests/journeys/upgrade-nightly.mjs": {
-      "sha256": "f8af1880d467448a22b03d434d0de6bf8766aa3611e47c6a0e2b78a33bfcf6d3",
+      "sha256": "3b6641131c42eea63f73c8b7e6be5cf9a4dc70700e7783e16a97e204418cd553",
       "executable": false
     },
     "tests/journeys/upgrade.mjs": {

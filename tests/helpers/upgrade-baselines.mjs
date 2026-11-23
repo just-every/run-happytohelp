@@ -5,8 +5,8 @@ import {interruptedErasure} from './upgrade-interrupted-erasure.mjs';
 // repository. The 0.3.0 and 0.3 fix-line trees equal the private release sources
 // 160aee3f56898ac091097655aaa1c06a802f75c9 and 751c36e3404aa2cf49db8a6b25452393030dc940;
 // the 0.4.0 tree equals private 0452618504dd286cfb6a75fabefa279d08bc7428.
-// `previous` marks RELEASE.json's previousVersion line, which must receive exactly
-// the listed release migrations and keep every prior schema definition.
+// The release manifest names the immediate predecessor separately from these
+// pinned historical baselines.
 export const repository = 'https://github.com/just-every/run-happytohelp';
 export const baselines = {
   '0.2.1': {commit: '59c6e2e1beb321e9f1cb5493efd05e20fc068638', tree: 'a6d7254014b1ea996b386d765c4c6813b79c3f60', migrations: 37, tables: 97, populate: populate021},
@@ -21,7 +21,7 @@ export const baselines = {
   '0.4.4': {commit: '99ffbbea844632d883a46f95df74ef2502cafdc5', tree: '854b431d4449e52e7e85e7e87b016c6a79e17b9d', migrations: 73, populate: populate03},
   '0.4.5': {commit: 'a614393281f71fd604fcfe3eddac3d238f52e10b', tree: '9838e58df00436a6e669809c453021f3be67993a', migrations: 73, populate: populate03},
   '0.4.6': {commit: '14cdfcb01553081c84932e9132d70e578f318d9e', tree: 'f7f5f0994c1bb34702636f2422928edd20f47878', migrations: 88, populate: populate03},
-  '0.4.28': {commit: '41fb40246d2e69f928be397c48d952d147c39160', tree: 'bbef357df6a94dc92f84c94774143e030eb343fb', migrations: 200, previous: true, populate: populate03},
+  '0.4.28': {commit: '41fb40246d2e69f928be397c48d952d147c39160', tree: 'bbef357df6a94dc92f84c94774143e030eb343fb', migrations: 200, populate: populate03},
   '0.4.26': {commit: '2f597575d4ccb19cdd4cfa0de5e635757737a1aa', tree: '3c116911e12f104ef875952a93ee01f66616991b', migrations: 196, populate: populate03},
   '0.4.25': {commit: '333af4b0580c4284616783f1d79fcc9aad3aefc5', tree: '4d73aed9e44bfd052495c92b4e9b9f8446f46dc6', migrations: 195, populate: populate03},
   '0.4.24': {commit: '6acf8a4c50dfeb94ca9ab705b1e386d282ea8e0f', tree: '3fef27a02c18080ab8e6b83c840be986b79a5720', migrations: 195, populate: populate03},
@@ -73,7 +73,7 @@ async function populate021(origin) {
 // password, an accepted member and a pending invitation, two workspaces with
 // saved appearance, contacts, a visitor conversation with an attachment and
 // operator replies, and a published article in a category.
-async function populate03(origin) {
+export async function populate03(origin) {
   const call = client(origin);
   const owner = {email: 'owner-03@example.test', password: 'synthetic-upgrade-03-owner-password'};
   const setup = await call('/api/identity/bootstrap', {body: {name: 'Upgrade 0.3 desk', ownerName: 'Upgrade Owner', email: owner.email, password: owner.password, allowedOrigin: origin, primaryColor: '#204b3a'}});

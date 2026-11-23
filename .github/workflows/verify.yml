@@ -240,6 +240,11 @@ jobs:
         env:
           H2H_CI_COMMANDS: ${{ matrix.commands }}
         run: node scripts/ci/run-checks.mjs
+      - name: Upgrade the release manifest's predecessor
+        if: ${{ matrix.name == 'connections-and-computers' && needs.plan.outputs.tier == 'push' }}
+        run: |
+          previous_release=$(node -p "require('./RELEASE.json').previousVersion")
+          H2H_UPGRADE_RELEASES="$previous_release" node --test tests/journeys/upgrade-nightly.mjs
       - name: Run complete fresh-clone journey
         if: ${{ matrix.name == 'public-and-import-browser' && needs.plan.outputs.tier == 'push' && github.event_name == 'push' }}
         env:

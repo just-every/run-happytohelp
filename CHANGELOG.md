@@ -8,6 +8,22 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.39 — 2026-11-23
+
+- **Inbox replies.** Clicking another customer's row with unsent text preserves the draft in the original conversation. Switching within Inbox needs no discard confirmation. The outgoing composer is disabled while the selected conversation loads, so the next reply goes to the selected customer.
+- **Hosted Inbox.** The Inbox stays usable after a successful send when reselecting a conversation supersedes a streamed workspace read.
+- **Inbox views.** The Open view stays selected when live assignment counts change, preventing an unexpected jump to Yours.
+- **Widget setup.** Saving the website address from the install-code tab keeps other widget edits pending until you save them separately.
+- **Scheduled recovery.** Migration 337 adds indexes for pending work so recovery jobs read less completed history and skip work when there is nothing due.
+- **D1 writes.** Migration 338 removes the live-poll index write on each mailbox poll. It also narrows email and SLA recovery indexes to work those jobs handle and removes a duplicate suspended-mail index, reducing per-event writes against the shared 100,000-write daily D1 budget.
+- **Published releases.** The Run page, walkthrough and install command continue to check out the exact tag of the latest published GitHub Release.
+- **Local setup.** The installer guide explains that first launch downloads Playwright’s headless Chromium if it is missing from the browser cache and that rer uses it to check owner entry.
+
+Update from v0.4.38 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. From v0.4.38, apply `337_scheduled_recovery_reads.sql` and then `338_scheduled_recovery_writes.sql` once before serving HTTP or queue traffic. For older installations, first follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-23._
+
+
 ## 0.4.38 — 2026-11-23
 
 - **Quick start.** The release checkout command works in zsh and Bash on the Run page and in all seven copies in the README and installation guides. It reports when it cannot find a published release with a version tag.

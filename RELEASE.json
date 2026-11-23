@@ -1,6 +1,6 @@
 {
-  "version": "0.4.38",
-  "previousVersion": "0.4.37",
+  "version": "0.4.39",
+  "previousVersion": "0.4.38",
   "date": "2026-11-23",
   "contractChanges": {},
   "proseChanges": [
@@ -8,52 +8,43 @@
       "document": "README.md",
       "change": "changed",
       "date": "2026-11-23",
-      "summary": "The release checkout command works in zsh and Bash on the Run page and in all seven copies in the README and installation guides. It reports when it cannot find a published release with a version tag.",
-      "was": "The quick start selected the latest published GitHub Release and cloned its tag.",
-      "now": "The release checkout command works in zsh and Bash on the Run page and in all seven copies in the README and installation guides. It reports when it cannot find a published release with a version tag.",
-      "ownerAction": "Copy the latest published-release command into zsh or Bash."
+      "summary": "The quick start clarifies that it resolves GitHub’s latest published release and checks out that exact tag.",
+      "was": "The quick start described fetching and checking out the tag for the latest published release.",
+      "now": "The quick start clarifies that it resolves GitHub’s latest published release and checks out that exact tag.",
+      "ownerAction": "Use the quick-start command to install the latest published release."
     },
     {
       "document": "docs/INSTALLER.md",
       "change": "changed",
       "date": "2026-11-23",
-      "summary": "The release checkout command works in zsh and Bash on the Run page and in all seven copies in the README and installation guides. It reports when it cannot find a published release with a version tag.",
-      "was": "The installer guide cloned the tag selected by GitHub's latest published release redirect.",
-      "now": "The release checkout command works in zsh and Bash on the Run page and in all seven copies in the README and installation guides. It reports when it cannot find a published release with a version tag.",
-      "ownerAction": "Copy the latest published-release command into zsh or Bash."
-    },
-    {
-      "document": "docs/getting-started.md",
-      "change": "changed",
-      "date": "2026-11-23",
-      "summary": "The release checkout command works in zsh and Bash on the Run page and in all seven copies in the README and installation guides. It reports when it cannot find a published release with a version tag.",
-      "was": "The walkthrough cloned the tag selected by GitHub's latest published release redirect.",
-      "now": "The release checkout command works in zsh and Bash on the Run page and in all seven copies in the README and installation guides. It reports when it cannot find a published release with a version tag.",
-      "ownerAction": "Copy the latest published-release command into zsh or Bash."
+      "summary": "The installer guide explains that first launch downloads Playwright’s headless Chromium if it is missing from the browser cache and that rer uses it to check owner entry.",
+      "was": "The guide said first launch can download the checkout’s headless Chromium for the owner-entry check.",
+      "now": "The installer guide explains that first launch downloads Playwright’s headless Chromium if it is missing from the browser cache and that rer uses it to check owner entry.",
+      "ownerAction": "Allow the first launch to finish downloading Chromium if needed."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
       "date": "2026-11-23",
-      "summary": "Records the v0.4.38 changes and the upgrade steps from v0.4.37.",
-      "was": "The latest entry covered v0.4.37.",
-      "now": "Records the v0.4.38 changes and the upgrade steps from v0.4.37.",
-      "ownerAction": "Update from v0.4.37 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.37 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding."
+      "summary": "Records the v0.4.39 changes and the upgrade steps from v0.4.38.",
+      "was": "The latest entry covered v0.4.38.",
+      "now": "Records the v0.4.39 changes and the upgrade steps from v0.4.38.",
+      "ownerAction": "Update from v0.4.38 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. From v0.4.38, apply `337_scheduled_recovery_reads.sql` and then `338_scheduled_recovery_writes.sql` once before serving HTTP or queue traffic. For older installations, first follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding."
     }
   ],
   "extensionPointChanges": [],
   "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.37 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.37 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.",
-  "publicReleaseNotes": "- **Quick start.** The release checkout command works in zsh and Bash on the Run page and in all seven copies in the README and installation guides. It reports when it cannot find a published release with a version tag.\n- **Run page.** The copy button uses the updated published-release command shown on the page.\n- **Inbox.** If a saved draft fails to load, operators can retry or continue without it. The composer unlocks when the read returns a 4xx response or a retry fails.\n- **Saved replies.** Archiving a saved reply clears drafts made from it, so operators can still reply on those conversations.\n- **Pending replies.** When an operator switches to another conversation and back during a send, the composer waits for the result. A sent reply stays out of the composer. If the send fails, the draft returns and can be sent once.\n- **Hosted setup.** A dry run can finish with the local trial owner and reports what a real deployment needs, including the option to set `MAIL_PROVIDER=none` and use the one-time owner link.\n\nUpdate from v0.4.37 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.37 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.\n\n_Run Edit Run fleet, 2026-11-23._",
-  "migrations": [],
-  "pendingMigrations": [
+  "agentUpdateInstructions": "Update from v0.4.38 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. From v0.4.38, apply `337_scheduled_recovery_reads.sql` and then `338_scheduled_recovery_writes.sql` once before serving HTTP or queue traffic. For older installations, first follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.",
+  "publicReleaseNotes": "- **Inbox replies.** Clicking another customer's row with unsent text preserves the draft in the original conversation. Switching within Inbox needs no discard confirmation. The outgoing composer is disabled while the selected conversation loads, so the next reply goes to the selected customer.\n- **Hosted Inbox.** The Inbox stays usable after a successful send when reselecting a conversation supersedes a streamed workspace read.\n- **Inbox views.** The Open view stays selected when live assignment counts change, preventing an unexpected jump to Yours.\n- **Widget setup.** Saving the website address from the install-code tab keeps other widget edits pending until you save them separately.\n- **Scheduled recovery.** Migration 337 adds indexes for pending work so recovery jobs read less completed history and skip work when there is nothing due.\n- **D1 writes.** Migration 338 removes the live-poll index write on each mailbox poll. It also narrows email and SLA recovery indexes to work those jobs handle and removes a duplicate suspended-mail index, reducing per-event writes against the shared 100,000-write daily D1 budget.\n- **Published releases.** The Run page, walkthrough and install command continue to check out the exact tag of the latest published GitHub Release.\n- **Local setup.** The installer guide explains that first launch downloads Playwright’s headless Chromium if it is missing from the browser cache and that rer uses it to check owner entry.\n\nUpdate from v0.4.38 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. From v0.4.38, apply `337_scheduled_recovery_reads.sql` and then `338_scheduled_recovery_writes.sql` once before serving HTTP or queue traffic. For older installations, first follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.\n\n_Run Edit Run fleet, 2026-11-23._",
+  "migrations": [
     {
       "id": "337_scheduled_recovery_reads.sql",
-      "buyerSteps": "For a checkout containing this migration, apply it after all earlier migrations and before starting the updated Worker. It adds recovery indexes to existing tables without rewriting data."
+      "buyerSteps": "Apply after all earlier migrations and before starting the updated Worker. It adds recovery indexes to existing tables without rewriting data."
     },
     {
       "id": "338_scheduled_recovery_writes.sql",
       "buyerSteps": "Apply this after 337 and before starting the updated Worker. It narrows recovery indexes and removes a duplicate suspended email expiry index without rewriting retained records."
     }
-  ]
+  ],
+  "pendingMigrations": []
 }

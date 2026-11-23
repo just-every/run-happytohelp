@@ -33,6 +33,8 @@ ConversationForm.propTypes = {
     isEnabled: PropTypes.bool,
     isResolved: PropTypes.bool,
     isSwitching: PropTypes.bool,
+    draftLoadState: PropTypes.oneOf(['loading', 'error']),
+    onRetryDraftRead: PropTypes.func,
     loadingContent: PropTypes.string,
     noteDraft: PropTypes.node,
     onAddNote: PropTypes.func,
@@ -69,6 +71,8 @@ export default function ConversationForm({
     isEnabled,
     isResolved,
     isSwitching,
+    draftLoadState,
+    onRetryDraftRead,
     loadingContent,
     noteDraft,
     onAddNote,
@@ -105,6 +109,11 @@ export default function ConversationForm({
     const hasContent = Boolean(content?.trim() || files.length);
     const isLoading = Boolean(loadingContent);
     const isComposerLocked = isLoading || Boolean(finalReason);
+    const isComposerUnavailable = isSwitching || Boolean(draftLoadState);
+    const loadingLabel = isSwitching ? 'Loading conversation' : draftLoadState === 'loading' ? 'Loading draft' : 'Uploading attachment';
+    const placeholder = isSwitching ? 'Loading…' : finalReason || (
+        draftLoadState === 'loading' ? 'Loading draft…' : draftLoadState === 'error' ? 'Draft unavailable' : 'Type your reply…'
+    );
     const unresolved = [...new Set([...(content || '').matchAll(/{{\s*([^{}]+?)\s*}}/g)].map(match=>match[1].split('|')[0].trim()))];
     const canSend = Boolean(isEnabled && !helper && !isComposerLocked && hasContent && !unresolved.length && !recipientError);
     const textareaContent = isLoading && loadingContent !== '-loading-' ? loadingContent : content;
@@ -202,7 +211,7 @@ export default function ConversationForm({
     });
 
     usePluginMessageEvent(event => {
-        changeContent(event.data.payload);
+        if (!isComposerUnavailable) changeContent(event.data.payload);
     }, 'setMessageContent');
 
     const openNoteModal = () => {
@@ -254,7 +263,9 @@ export default function ConversationForm({
         <div ref={ composerRef } className="chat-footer container-xxl" onClick={ handleComposerSurfaceClick }>
             { presence }
             { noteDraft }
-            { draftError && <p className="conversation-composer__error" role="alert">{ draftError }</p> }
+            { draftError && <p className="conversation-composer__error" role="alert">
+                { draftError }{ draftLoadState === 'error' && <> <button type="button" className="btn btn-link btn-sm" onClick={onRetryDraftRead}>Retry</button></> }
+            </p> }
             <RecipientChips cc={ emailRecipients.cc } bcc={ emailRecipients.bcc } sender={ sender } mailboxes={ mailboxes }
                 disabled={ !isEnabled || isComposerLocked }
                 onEdit={ () => setRecipientsOpen(true) }
@@ -283,11 +294,11 @@ export default function ConversationForm({
                         {referencePreview.pending && editorReferences.length > 0 && <p role="status" className="knowledge-reference-notice">Checking article visibility…</p>}
                         {referencePreview.error && <p role="alert" className="conversation-composer__error">Could not check article visibility: {referencePreview.error}</p>}
                         <ReferenceEditor
-                            aria-busy={referencePreview.pending}
+                            aria-busy={referencePreview.pending || draftLoadState === 'loading'}
                             textareaRef={ textareaRef }
                             references={ editorReferences }
                             className="form-control form-control-flush"
-                            placeholder={ isSwitching ? 'Loading…' : finalReason || 'Type your reply…' }
+                            placeholder={ placeholder }
                             aria-label="Reply to conversation"
                             onKeyDown={ handleKeyDown }
                             onChange={ changeContent }
@@ -295,7 +306,7 @@ export default function ConversationForm({
                             minRows={ 1 }
                             maxRows={ 10 }
                             readOnly={ isComposerLocked }
-                            disabled={ isSwitching || Boolean(finalReason) }
+                            disabled={ isComposerUnavailable || Boolean(finalReason) }
                         />
                     </div>
 
@@ -307,8 +318,8 @@ export default function ConversationForm({
                             { files.map(file => <FormMedia key={ file.id } media={ file } onRemove={ onFileRemove } />) }
                         </div> }
                         <div className="col-auto flex-grow-1 d-flex gap-2 justify-content-end">
-                            { !isEnabled && !helper && <span className="btn btn-ico rounded-circle text-gray-600 active" role="status" aria-live="polite">
-                                <span className="visually-hidden">{isSwitching ? 'Loading conversation' : 'Uploading attachment'}</span>
+                            { !isEnabled && !helper && draftLoadState !== 'error' && <span className="btn btn-ico rounded-circle text-gray-600 active" role="status" aria-live="polite">
+                                <span className="visually-hidden">{loadingLabel}</span>
                                 <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
                             </span> }
                             <ConversationDraftStatus />
@@ -327,7 +338,7 @@ export default function ConversationForm({
                                     onSendAndClose={ () => sendMessage(true) }
                                     ticketMenu={ ticketMenu }
                                 />
-                                <button type="submit" className={ `btn btn-primary${ (isSwitching || hasContent) && !canSend ? ' conversation-composer__send--blocked' : '' }` } disabled={ !canSend }>
+                                <button type="submit" className={ `btn btn-primary${ (isComposerUnavailable || hasContent) && !canSend ? ' conversation-composer__send--blocked' : '' }` } disabled={ !canSend }>
                                     <ReplyIcon name="send" /> Send
                                 </button>
                             </div>

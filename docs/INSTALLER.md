@@ -4,7 +4,7 @@ Start the latest published HappyToHelp release with this command. Git is
 required. The installer brings Node.js and pnpm.
 
 ```sh
-repo=https://github.com/just-every/run-happytohelp; release=$(curl -fsS -o /dev/null -w '%{redirect_url}' "$repo/releases/latest") && git clone --branch "${release##*/}" --depth 1 "$repo" && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev
+repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$tag" && mkdir run-happytohelp && cd run-happytohelp && git init -q && git remote add origin "$repo" && git fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && git checkout -q --detach "refs/tags/$tag^{commit}" && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev
 ```
 
 The command clones the latest published tag into `run-happytohelp`. Rer installs
@@ -28,7 +28,7 @@ If you already have **Node.js 22 or later** (with npm) and Git, check with
 `node --version`, then start the same app with:
 
 ```sh
-repo=https://github.com/just-every/run-happytohelp; release=$(curl -fsS -o /dev/null -w '%{redirect_url}' "$repo/releases/latest") && git clone --branch "${release##*/}" --depth 1 "$repo" && cd run-happytohelp && npx -y @runeditrun/rer dev
+repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$tag" && mkdir run-happytohelp && cd run-happytohelp && git init -q && git remote add origin "$repo" && git fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && git checkout -q --detach "refs/tags/$tag^{commit}" && npx -y @runeditrun/rer dev
 ```
 
 To prepare a checkout without starting it, use [private setup answers](#private-setup-answers).

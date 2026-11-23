@@ -14,6 +14,8 @@ export function withReleaseLaunch(html: string): string {
       block.replace(/<[^>]+>/g, '') === escape(run.clone) ? `<code>${command(releaseNodeStart)}</code>` : block)
     .replace('<code>$HOME/.local/bin/rer dev just-every/run-happytohelp</code>', () =>
       `<code>${command(`${releaseCheckout} && "$HOME/.local/bin/rer" dev`)}</code>`)
+    .replaceAll('>rer installs itself<', '>Gets the published release<')
+    .replaceAll('>Gets HappyToHelp<', '>Installs rer<')
     .replaceAll(PATHS.self.note, 'A first local start usually takes about a minute. On a busy computer it can take longer: <code>rer dev</code> prints progress every 20 seconds, with the limit to allow.')
 }
 

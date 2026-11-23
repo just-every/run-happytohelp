@@ -8,6 +8,8 @@ export const run: RunData = {
   pricing: runPricing,
 }
 
-export const releaseCheckout = `repo=${run.repository}; release=$(curl -fsS -o /dev/null -w '%{redirect_url}' "$repo/releases/latest") && git clone --branch "\${release##*/}" --depth 1 "$repo" && cd run-happytohelp`
+// Resolve the published GitHub release before fetching its exact tag.
+const findRelease = String.raw`tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p')`
+export const releaseCheckout = `repo=${run.repository}; ${findRelease} && test -n "$tag" && mkdir run-happytohelp && cd run-happytohelp && git init -q && git remote add origin "$repo" && git fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && git checkout -q --detach "refs/tags/$tag^{commit}"`
 export const releaseStart = `${releaseCheckout} && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev`
 export const releaseNodeStart = `${releaseCheckout} && npx -y @runeditrun/rer dev`

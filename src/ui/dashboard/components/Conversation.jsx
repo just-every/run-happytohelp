@@ -60,6 +60,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const [ draftOrigin, setDraftOrigin ] = useState(null);
     const [ draftFocusRequest, setDraftFocusRequest ] = useState(null);
     const [ draftError, setDraftError ] = useState('');
+    const [ draftRead, setDraftRead ] = useState(null);
+    const [ draftReadAttempt, setDraftReadAttempt ] = useState(0);
     const [ escalationDraftId, setEscalationDraftId ] = useState(null);
     const [isTyping, setIsTyping] = useState(false);
     const typingTimer = useRef(null);
@@ -93,6 +95,13 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const canReply = useCan(conversationProjectId, 'conversations.reply'), canFollow = useCan(conversationProjectId, 'conversations.follow');
     const canManage = useCan(conversationProjectId, 'conversations.manage');
     const isContactErased = Boolean(conversation?.contact?.is_erased || conversation?.contact?.is_erasing);
+    const currentDraftRead = draftRead?.key === savedEditKey ? draftRead : null;
+    const draftReadError = isContactErased ? null : currentDraftRead?.error;
+    const draftLoadState = isContactErased ? null : draftReadError ? 'error' : currentDraftRead ? null : 'loading';
+    const retryDraftRead = () => {
+        setDraftRead(null);
+        setDraftReadAttempt(attempt => attempt + 1);
+    };
     // Ticket and workflow tools stay hidden in a demo project.
     const isDemo = Boolean((settings.projects?.[conversationProjectId] || settings.project)?.is_demo);
     const {
@@ -124,7 +133,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         draftEditVersion.current++; draftAdoptionRef.current = null; savedReplyRef.current = null;
         writeSavedReplyEdit(savedEditKey, null);
         setContent(''); setFiles([]); setLoadingContent(''); setDraftOrigin(null); setKnowledgeReferences([]);
-        setDraftError(''); setDraftFocusRequest(null); setIsTyping(false);
+        setDraftError(''); setDraftRead(null); setDraftFocusRequest(null); setIsTyping(false);
         setEscalationDraftId(null); setNoteMacro(null); setIsNoteModalVisible(false);
         setTicketDialog(null); setIsSending(false); setPanelAlert(false);
     }, [loadError, savedEditKey]);
@@ -140,7 +149,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const isTranscriptBusy = transcriptError?.conversationId === conversationId && Boolean(transcriptError.busy);
     const isSwitchingConversation = navigationPath !== renderedPath;
     const isComposerEnabled = !isSwitchingConversation && conversation?.id === conversationId
-        && isConversationReady && buckets.length > 0 && !isLoading && !isSending && !conversation.merged_into;
+        && !draftLoadState && isConversationReady && buckets.length > 0 && !isLoading && !isSending && !conversation.merged_into;
     const cancelDraftAdoption = () => {
         if (draftAdoptionRef.current) {
             draftAdoptionRef.current = null;
@@ -250,6 +259,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         savedReplyRef.current = null;
         pendingSendRef.current = null;
         setDraftError('');
+        setDraftRead(null);
         setContent('');
         setKnowledgeReferences([]);
         setDraftOrigin(null);
@@ -280,8 +290,10 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         const editVersion = draftEditVersion.current;
         nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft`)
             .then(result => {
+                if (!active) return;
+                setDraftRead({key: savedEditKey});
+                if (draftEditVersion.current !== editVersion) return;
                 const draft = result.data;
-                if (!active || draftEditVersion.current !== editVersion) return;
                 const local = readSavedReplyEdit(savedEditKey);
                 // A newer server draft belongs to a different use. If our own
                 // clear already reached the server, restore only what we typed
@@ -300,9 +312,11 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                     savedReplyRef.current = {id: draft.usage_id, discarded: false};
                     setContent(draft.content); setKnowledgeReferences(draft.references || []); setFiles(draft.media || []);
                 }
-            }).catch(error => { if (active) setDraftError(`Couldn’t load your saved macro draft: ${error.message}`); });
+            }).catch(error => {
+                if (active) setDraftRead({key: savedEditKey, error: `Couldn’t load your saved macro draft: ${error.message}`});
+            });
         return () => { active = false; };
-    }, [conversationProjectId,conversationId,isConversationReady,isContactErased,savedEditKey]);
+    }, [conversationProjectId,conversationId,isConversationReady,isContactErased,savedEditKey,draftReadAttempt]);
 
     const updateDraftContent = (nextContent, attachments, origin) => {
         draftEditVersion.current++;
@@ -419,7 +433,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             conversationId={ conversationId }
             message={ draftContent }
             draftOrigin={ draftOrigin }
-            disabled={ isAssistantDisabled || !isConversationReady || isLoading || isSending }
+            disabled={ isAssistantDisabled || Boolean(draftLoadState) || !isConversationReady || isLoading || isSending }
             onMessageChange={ updateDraftContent }
             onLoadingMessageChange={ nextLoadingContent => {
                 draftConversationIdRef.current = conversationId;
@@ -480,11 +494,13 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                             finalReason={ conversation.status_category === 'closed' ? 'This ticket is closed and final, so it takes no more replies. A customer reply opens a new ticket.' : null }
                             isEnabled={ isComposerEnabled }
                             isSwitching={ isSwitchingConversation }
+                            draftLoadState={ draftLoadState }
+                            onRetryDraftRead={ retryDraftRead }
                             presence={ presence }
                             noteDraft={ noteDraft }
-                            draftError={ draftError }
+                            draftError={ draftReadError || draftError }
                             ticketMenu={ ticketMenu }
-                        /> : <NotesOnlyComposer onAddNote={ () => setIsNoteModalVisible(true) } presence={ presence } noteDraft={ noteDraft } draftError={ draftError } ticketMenu={ ticketMenu } /> }
+                        /> : <NotesOnlyComposer onAddNote={ () => setIsNoteModalVisible(true) } presence={ presence } noteDraft={ noteDraft } draftError={ draftReadError || draftError } ticketMenu={ ticketMenu } /> }
                 </div>
 
                 { assistant.isVisible && <button type="button" className="conversation-assistant-backdrop" onClick={ assistant.close } aria-label="Close conversation panel overlay" tabIndex={ -1 } /> }

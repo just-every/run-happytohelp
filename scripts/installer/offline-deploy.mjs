@@ -6,6 +6,7 @@ import {deployEnvironment} from '@runeditrun/rer/internal/cli/deploy-inputs.mjs'
 import {deployOwnerInput} from '@runeditrun/rer/internal/cli/deploy-owner-input.mjs';
 import {requireProductionAuth} from '@runeditrun/rer/internal/cli/production-auth.mjs';
 import {neededForRealDeploy} from '@runeditrun/rer/internal/cli/deploy-needs.mjs';
+import {switchableDefaults} from '@runeditrun/rer/internal/cli/deploy-settings.mjs';
 import {deployProductDirectory,deployProductArguments} from '@runeditrun/rer/internal/cli/deploy-product.mjs';
 import {withoutLocalSettings,refuseLocalEnvOutput} from '@runeditrun/rer/internal/cli/local-env.mjs';
 import {refuseLocalModels} from '@runeditrun/rer/internal/modules/deploy-kit/local-only.mjs';
@@ -14,7 +15,7 @@ import {ownerPlan,ownerWorkerName,localOnlyBinding} from '@runeditrun/rer/intern
 
 /** Validate the actual declaration and packaged build without resolving a remote
  * target. Provider state and existing secret bindings deliberately remain unknown. */
-export async function offlineDeploy(path,lifecycle,context){
+export async function offlineDeploy(path,lifecycle,context,ownerNeed){
  const {root,options,store,signal,operationToken,setupManifest,setupSeed,localOnlyKeys=[],checkBuild=async()=>{}}=context;
  if(options.remove||options.setSecret||options.unsetSecret||options.rotateSecret||options.reopenInstallationKey)
   throw invalid('Use deployment changes and --dry-run on separate runs.');
@@ -38,13 +39,14 @@ export async function offlineDeploy(path,lifecycle,context){
  const environment=options.environment??'production',worker=ownerWorkerName(declaration.project,environment);
  // This reserved origin is used only for local shape validation, never reported
  // as a reachable deployment or used for a request.
- const plan=ownerPlan({project:declaration.project,environment,worker,origin:`https://${worker}.example.invalid`},declaration,artifact,{localOnlyKeys,env});
+ const publicDefaults=await switchableDefaults(declaration);
+ const plan=ownerPlan({project:declaration.project,environment,worker,origin:`https://${worker}.example.invalid`},declaration,artifact,{localOnlyKeys,env,publicDefaults});
  const names=plan.secrets.filter(item=>!item.optional||typeof env[item.environment]==='string'&&env[item.environment].trim()).map(item=>item.binding).sort();
  store.report(`deploy: secret bindings (${names.length}): ${names.join(', ')||'none'}`,{names});
  const variables=Object.keys(plan.vars??{}).sort();
  store.report(`deploy: public bindings (${variables.length}): ${variables.join(', ')||'none'}`,{names:variables});
- const needed=neededForRealDeploy({declaration,env,signIn});
- store.report('deploy: offline dry run complete; no provider requests, mail or deployment. Target resources, credentials and existing secret bindings were not checked.');
- for(const item of needed)store.report(`deploy: needed for a real deploy: ${item}`,{names:item.match(/\b[A-Z][A-Z0-9_]+\b/g)??[]});
- return {dryRun:true,deployed:false,providerChecked:false,neededForRealDeploy:ownerNeeds};
+ const needs=[...neededForRealDeploy({declaration,env,signIn}),...(ownerNeeds??[])];
+ if(signIn)needs.push('For sign-in without email, set MAIL_PROVIDER=none and use the one-time owner link instead of supplying sending-provider inputs. See OPERATIONS.md#sign-in-without-mail.');
+ if(ownerNeed)needs.push(ownerNeed);
+ return {dryRun:true,deployed:false,providerChecked:false,neededForRealDeploy:needs};
 }

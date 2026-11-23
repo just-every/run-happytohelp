@@ -41,6 +41,7 @@ ConversationSidebar.propTypes = {
     liveKey: PropTypes.any,
     onAlertChange: PropTypes.func,
     onReviewEscalationDraft: PropTypes.func,
+    isDraftDisabled: PropTypes.bool,
     onTicketChanged: PropTypes.func.isRequired,
 };
 
@@ -66,7 +67,7 @@ function HandleTimeBadge() {
     return running ? `Running · ${ handleDuration(total) }` : total >= 1000 ? handleDuration(total) : null;
 }
 
-function TicketPanel({ conversation, record = null, workflows = null, isShown, requestedSection, requestVersion, reads, liveKey, onAlertChange, onReviewEscalationDraft, onTicketChanged }) {
+function TicketPanel({ conversation, record = null, workflows = null, isShown, requestedSection, requestVersion, reads, liveKey, onAlertChange, onReviewEscalationDraft, isDraftDisabled, onTicketChanged }) {
     const { updateConversation, plugins, pluginsRef, agentsFor, aisFor } = useContext(ChatContext);
     const [ isContactModalVisible, setIsContactModalVisible ] = useState(false);
     const [ isEmailConversationTranscriptModalVisible, setIsEmailConversationTranscriptModalVisible ] = useState(false);
@@ -150,7 +151,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
             { workflows && section('schedules', 'Schedules', <WorkflowPanel conversation={ conversation } workflows={ workflows } onBadge={ badgeSetters.schedules } />, badges.schedules) }
             { section('feedback', 'Product feedback', <FeedbackPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } active={ open.has('feedback') } />) }
             { ['sms','whatsapp','instagram','messenger','slack','teams'].includes(conversation.channel) && section('support-channel', 'Support channel', <TicketChannel projectId={conversation.project_id} conversationId={conversation.id} refreshKey={liveKey}/>) }
-            { section('escalations', 'Escalations', <EscalationsPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } reads={ reads } onDraft={ onReviewEscalationDraft } onBadge={ badgeSetters.escalations } onUpdates={ setEscalationUpdates } />, badges.escalations) }
+            { section('escalations', 'Escalations', <EscalationsPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } reads={ reads } onDraft={ onReviewEscalationDraft } isDraftDisabled={ isDraftDisabled } onBadge={ badgeSetters.escalations } onUpdates={ setEscalationUpdates } />, badges.escalations) }
             { section('merges', 'Merges and partner threads', <ConversationActions conversation={ conversation } refreshKey={ liveKey } reads={ reads } onChanged={ onTicketChanged } onBadge={ badgeSetters.merges } />, badges.merges) }
             { manage && section('problem', 'Problem and incidents', <ProblemPanel projectId={ conversation.project_id } conversationId={ conversation.id } ticket={ ticket } onChanged={ () => record.reload() } onBadge={ badgeSetters.problem } />, badges.problem) }
             { manage && section('handle-time', 'Handle time', <HandleTimer />, <HandleTimeBadge />) }

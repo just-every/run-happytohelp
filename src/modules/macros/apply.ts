@@ -51,10 +51,23 @@ export async function discardDraft(env:Env,actor:Actor,conversationId:string,usa
  const result=await env.DB.prepare('DELETE FROM macro_drafts WHERE project_id=? AND conversation_id=? AND actor_id=? AND coalesce(draft_id,usage_id)=?').bind(actor.projectId,conversationId,actor.id,usageId).run()
  return result.meta.changes>0
 }
-export async function readDraft(env:Env,actor:Actor,conversationId:string,usageId?:string){
- const row=await env.DB.prepare(`SELECT * FROM macro_drafts WHERE project_id=? AND conversation_id=? AND actor_id=? ${usageId?'AND coalesce(draft_id,usage_id)=?':''}`).bind(actor.projectId,conversationId,actor.id,...(usageId?[usageId]:[])).first<any>()
- if(row?.usage_id){const usage=await env.DB.prepare('SELECT macro_id,version FROM macro_usage WHERE id=? AND actor_id=? AND project_id=?').bind(row.usage_id,actor.id,actor.projectId).first<any>();if(!usage)throw new HTTPException(404);await readMacro(env,actor,usage.macro_id);const definition=await env.DB.prepare('SELECT content,actions_json FROM macro_versions WHERE macro_id=? AND version=? AND project_id=?').bind(usage.macro_id,usage.version,actor.projectId).first<any>();if(!definition)throw new HTTPException(404);await assertMacroFieldsReadable(env,actor,definition)}
+export async function readDraft(env:Env,actor:Actor,conversationId:string,brandId:string){
+ const row=await env.DB.prepare('SELECT * FROM macro_drafts WHERE project_id=? AND conversation_id=? AND actor_id=?').bind(actor.projectId,conversationId,actor.id).first<any>()
  if(!row)return null
+ if(row.usage_id){
+  try{
+   const usage=await env.DB.prepare('SELECT macro_id,version FROM macro_usage WHERE id=? AND actor_id=? AND project_id=?').bind(row.usage_id,actor.id,actor.projectId).first<any>()
+   if(!usage)throw new HTTPException(404)
+   await readMacro(env,actor,usage.macro_id,brandId)
+   const definition=await env.DB.prepare('SELECT content,actions_json FROM macro_versions WHERE macro_id=? AND version=? AND project_id=?').bind(usage.macro_id,usage.version,actor.projectId).first<any>()
+   if(!definition)throw new HTTPException(404)
+   await assertMacroFieldsReadable(env,actor,definition)
+  }catch(error){
+   if(!(error instanceof HTTPException)||![403,404].includes(error.status))throw error
+   await discardDraft(env,actor,conversationId,row.usage_id)
+   return null
+  }
+ }
  const media=(await env.DB.prepare(`SELECT media.id,media.filename,media.content_type,media.size FROM media WHERE media.project_id=? AND media.conversation_id=? AND media.uploaded_by=? AND media.id IN(SELECT value FROM json_each(?)) AND ${macroAttachmentAvailableSql()}`).bind(actor.projectId,conversationId,actor.id,row.media_ids_json).all<any>()).results
  return {content:row.content,reply_type:row.reply_type,unresolved:JSON.parse(row.unresolved_json),media_ids:media.map(m=>m.id),media,usage_id:row.draft_id??row.usage_id}
 }

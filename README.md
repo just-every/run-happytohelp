@@ -70,7 +70,7 @@ Start the latest published HappyToHelp release with this command. Git is
 required. The installer brings Node.js and pnpm.
 
 ```sh
-repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$tag" && mkdir run-happytohelp && cd run-happytohelp && git init -q && git remote add origin "$repo" && git fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && git checkout -q --detach "refs/tags/$tag^{commit}" && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev
+(repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p'); test -n "$tag" || { echo 'No published HappyToHelp release found with a vX.Y.Z tag.' >&2; exit 1; }; checkout=$(mktemp -d ./.happytohelp-release.XXXXXX) && trap 'rm -rf "$checkout"' EXIT && git -C "$checkout" init -q && git -C "$checkout" remote add origin "$repo" && git -C "$checkout" fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && mkdir run-happytohelp && mv "$checkout/.git" run-happytohelp/.git && git -C run-happytohelp checkout -q --detach "refs/tags/$tag^{commit}") && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev
 ```
 
 The command clones the latest published tag into `run-happytohelp`. Rer installs
@@ -85,7 +85,7 @@ longer: `rer dev` prints progress every 20 seconds, with the limit to allow.
 If you already have **Node.js 22 or later** (with npm) and Git, the alternative is:
 
 ```sh
-repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$tag" && mkdir run-happytohelp && cd run-happytohelp && git init -q && git remote add origin "$repo" && git fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && git checkout -q --detach "refs/tags/$tag^{commit}" && npx -y @runeditrun/rer dev
+(repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p'); test -n "$tag" || { echo 'No published HappyToHelp release found with a vX.Y.Z tag.' >&2; exit 1; }; checkout=$(mktemp -d ./.happytohelp-release.XXXXXX) && trap 'rm -rf "$checkout"' EXIT && git -C "$checkout" init -q && git -C "$checkout" remote add origin "$repo" && git -C "$checkout" fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && mkdir run-happytohelp && mv "$checkout/.git" run-happytohelp/.git && git -C run-happytohelp checkout -q --detach "refs/tags/$tag^{commit}") && cd run-happytohelp && npx -y @runeditrun/rer dev
 ```
 
 To prepare a checkout without starting it, use the [private setup answers](docs/INSTALLER.md#private-setup-answers).
@@ -133,7 +133,7 @@ building or deploying. For an existing hosted installation, use
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md) instead.
 
 ```sh
-repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$tag" && mkdir run-happytohelp-release && cd run-happytohelp-release && git init -q && git remote add origin "$repo" && git fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && git checkout -q --detach "refs/tags/$tag^{commit}"
+(repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p'); test -n "$tag" || { echo 'No published HappyToHelp release found with a vX.Y.Z tag.' >&2; exit 1; }; checkout=$(mktemp -d ./.happytohelp-release.XXXXXX) && trap 'rm -rf "$checkout"' EXIT && git -C "$checkout" init -q && git -C "$checkout" remote add origin "$repo" && git -C "$checkout" fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && mkdir run-happytohelp-release && mv "$checkout/.git" run-happytohelp-release/.git && git -C run-happytohelp-release checkout -q --detach "refs/tags/$tag^{commit}") && cd run-happytohelp-release
 ```
 
 The release tag comes from GitHub's latest **published** release, rather than the

@@ -29,3 +29,10 @@ test('a saved reply previews the short support reference and working link on a w
 
 import {replySwitchBrowser} from '../helpers/inbox/reply-switch-browser.mjs'
 test('a quick inbox reply waits for the selected customer and the server refuses a mismatched composer',replySwitchBrowser)
+
+import {draftRecoveryBrowser,pendingReplyBrowser} from '../helpers/inbox/draft-recovery-browser.mjs'
+import {escalationDraftBrowser} from '../helpers/inbox/escalation-draft-browser.mjs'
+
+test('an operator can send a local reply after a saved reply is archived or draft restoration fails',draftRecoveryBrowser)
+test('a pending reply stays out of the composer when an operator returns to its ticket',pendingReplyBrowser)
+test('an escalation customer update waits for the selected ticket draft before it can be reviewed and sent',escalationDraftBrowser)

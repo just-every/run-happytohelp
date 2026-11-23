@@ -33,9 +33,14 @@ export async function nativeRequest(path, init = {}) {
                 await response.body?.cancel();
                 busy = {retryAfter: seconds};
             } else {
-                // A complete answer that is not JSON is a real error, as before.
                 const text = response.status === 204 ? null : await response.text();
-                body = text === null ? null : JSON.parse(text);
+                try {
+                    body = text === null ? null : JSON.parse(text);
+                } catch (error) {
+                    if (response.ok) throw error;
+                }
+                // A proxy can refuse a request with an empty or non-JSON body.
+                if (!response.ok) body ??= {};
                 break;
             }
         } catch (error) {

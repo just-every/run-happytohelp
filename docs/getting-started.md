@@ -3,7 +3,7 @@
 Paste this line into your terminal to install the latest published HappyToHelp release.
 
 ```sh
-repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$tag" && mkdir run-happytohelp && cd run-happytohelp && git init -q && git remote add origin "$repo" && git fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && git checkout -q --detach "refs/tags/$tag^{commit}" && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev
+(repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p'); test -n "$tag" || { echo 'No published HappyToHelp release found with a vX.Y.Z tag.' >&2; exit 1; }; checkout=$(mktemp -d ./.happytohelp-release.XXXXXX) && trap 'rm -rf "$checkout"' EXIT && git -C "$checkout" init -q && git -C "$checkout" remote add origin "$repo" && git -C "$checkout" fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && mkdir run-happytohelp && mv "$checkout/.git" run-happytohelp/.git && git -C run-happytohelp checkout -q --detach "refs/tags/$tag^{commit}") && cd run-happytohelp && curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev
 ```
 
 macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
@@ -23,7 +23,7 @@ until you configure a mail provider. No email or AI account is needed to begin.
 With Node 22 or later, you can use this alternative:
 
 ```sh
-repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$tag" && mkdir run-happytohelp && cd run-happytohelp && git init -q && git remote add origin "$repo" && git fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && git checkout -q --detach "refs/tags/$tag^{commit}" && npx -y @runeditrun/rer dev
+(repo=https://github.com/just-every/run-happytohelp; tag=$(curl -fsS -o /dev/null -w '%{redirect_url}\n' "$repo/releases/latest" | sed -nE 's|^.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p'); test -n "$tag" || { echo 'No published HappyToHelp release found with a vX.Y.Z tag.' >&2; exit 1; }; checkout=$(mktemp -d ./.happytohelp-release.XXXXXX) && trap 'rm -rf "$checkout"' EXIT && git -C "$checkout" init -q && git -C "$checkout" remote add origin "$repo" && git -C "$checkout" fetch -q --depth 1 --no-tags origin "refs/tags/$tag:refs/tags/$tag" && mkdir run-happytohelp && mv "$checkout/.git" run-happytohelp/.git && git -C run-happytohelp checkout -q --detach "refs/tags/$tag^{commit}") && cd run-happytohelp && npx -y @runeditrun/rer dev
 ```
 
 ## Next time

@@ -10,17 +10,17 @@ import './escalations.css';
  * that installs integrations, the workspace connections. New escalations start from "+" › Escalate to engineering….
  * `onBadge` reports the linked count and `onUpdates` how many customer updates wait for review.
  */
-export default function EscalationsPanel({projectId, conversationId, onDraft, refreshKey, reads, onBadge, onUpdates}) {
+export default function EscalationsPanel({projectId, conversationId, onDraft, isDraftDisabled, refreshKey, reads, onBadge, onUpdates}) {
     const canInstall = useCan(projectId, 'integrations.install');
     const canManage = useCan(projectId, 'conversations.manage');
     const canReply = useCan(projectId, 'conversations.reply');
     const base = `/api/escalations/projects/${encodeURIComponent(projectId)}`;
     const conversationBase = `${base}/conversations/${encodeURIComponent(conversationId)}`;
     // Key the stateful body to the ticket so a changed ticket never exposes old context.
-    return <EscalationsBody key={conversationBase} {...{base, conversationBase, canInstall, canManage, canReply, onDraft, refreshKey, reads, onBadge, onUpdates}}/>;
+    return <EscalationsBody key={conversationBase} {...{base, conversationBase, canInstall, canManage, canReply, onDraft, isDraftDisabled, refreshKey, reads, onBadge, onUpdates}}/>;
 }
 
-function EscalationsBody({base, conversationBase, canInstall, canManage, canReply, onDraft, refreshKey, reads, onBadge, onUpdates}) {
+function EscalationsBody({base, conversationBase, canInstall, canManage, canReply, onDraft, isDraftDisabled, refreshKey, reads, onBadge, onUpdates}) {
     const [data, setData] = useState(null), [connections, setConnections] = useState([]);
     const [loading, setLoading] = useState(true), [error, setError] = useState(''), [connectionError, setConnectionError] = useState('');
     const [adopted, setAdopted] = useState(''), [refresh, setRefresh] = useState(0);
@@ -52,7 +52,7 @@ function EscalationsBody({base, conversationBase, canInstall, canManage, canRepl
             {drafts.length > 0 && <section className="escalation-drafts" aria-label="Draft customer updates">
                 <strong>Customer updates to review</strong>
                 <p className="escalation-hint">Nothing is sent until you review and edit the draft in the reply composer, then click Send to approve and send it.</p>
-                {drafts.map(draft => <div className="escalation-draft" key={draft.id}><p>{draft.content}</p>{canReply && onDraft && <button className="btn btn-sm btn-outline-primary" type="button" data-section-focus onClick={() => {onDraft({id: draft.id, content: draft.content}); setAdopted(draft.id);}}>Review customer update</button>}{adopted === draft.id && <p className="escalation-hint" role="status">Draft placed in the reply composer. Review and edit it, then click Send to approve and send.</p>}</div>)}
+                {drafts.map(draft => <div className="escalation-draft" key={draft.id}><p>{draft.content}</p>{canReply && onDraft && <button className="btn btn-sm btn-outline-primary" type="button" data-section-focus disabled={isDraftDisabled} onClick={() => {if(onDraft({id: draft.id, content: draft.content}))setAdopted(draft.id);}}>Review customer update</button>}{adopted === draft.id && <p className="escalation-hint" role="status">Draft placed in the reply composer. Review and edit it, then click Send to approve and send.</p>}</div>)}
             </section>}
         </>}
         {connectionError && <p className="escalation-error" role="alert">Connections could not be loaded: {connectionError}</p>}

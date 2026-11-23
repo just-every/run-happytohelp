@@ -3,8 +3,8 @@ import {writeFile} from 'node:fs/promises'
 import {createRuntime} from './emitted-runtime.mjs'
 import {launchBrowser,viewports,evidence} from '../journeys/kit/browser.mjs'
 
-export async function strangerFixture({vars={}}={}){
- const runtime=await createRuntime({vars:{H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test',...vars}}),origin=runtime.origin,browser=await launchBrowser()
+export async function strangerFixture({vars={},outboundFixture}={}){
+ const runtime=await createRuntime({outboundFixture,vars:{H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test',...vars}}),origin=runtime.origin,browser=await launchBrowser()
  const owner={email:'synthetic-hh-owner@example.test',password:'synthetic-hh-owner-password',name:'Damage support',ownerName:'Owner'}
  const api=async(path,body,token,method=body===undefined?'GET':'POST',headers={})=>{
   const response=await fetch(origin+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{ }),...headers},body:body===undefined?undefined:JSON.stringify(body)})

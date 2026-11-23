@@ -35,6 +35,7 @@ ConversationForm.propTypes = {
     isSwitching: PropTypes.bool,
     draftLoadState: PropTypes.oneOf(['loading', 'error']),
     onRetryDraftRead: PropTypes.func,
+    onContinueWithoutDraft: PropTypes.func,
     loadingContent: PropTypes.string,
     noteDraft: PropTypes.node,
     onAddNote: PropTypes.func,
@@ -73,6 +74,7 @@ export default function ConversationForm({
     isSwitching,
     draftLoadState,
     onRetryDraftRead,
+    onContinueWithoutDraft,
     loadingContent,
     noteDraft,
     onAddNote,
@@ -264,7 +266,10 @@ export default function ConversationForm({
             { presence }
             { noteDraft }
             { draftError && <p className="conversation-composer__error" role="alert">
-                { draftError }{ draftLoadState === 'error' && <> <button type="button" className="btn btn-link btn-sm" onClick={onRetryDraftRead}>Retry</button></> }
+                { draftError }{ draftLoadState === 'error' && <>
+                    <button type="button" className="btn btn-link btn-sm" onClick={onRetryDraftRead}>Retry</button>
+                    <button type="button" className="btn btn-link btn-sm" onClick={onContinueWithoutDraft}>Continue without the saved draft</button>
+                </> }
             </p> }
             <RecipientChips cc={ emailRecipients.cc } bcc={ emailRecipients.bcc } sender={ sender } mailboxes={ mailboxes }
                 disabled={ !isEnabled || isComposerLocked }

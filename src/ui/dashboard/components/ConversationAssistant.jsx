@@ -149,6 +149,7 @@ export default function ConversationAssistant({
                         liveKey={ liveKey }
                         onAlertChange={ onAlertChange }
                         onReviewEscalationDraft={ onReviewEscalationDraft }
+                        isDraftDisabled={ isDraftDisabled }
                         onTicketChanged={ onTicketChanged }
                     />
                 </div>

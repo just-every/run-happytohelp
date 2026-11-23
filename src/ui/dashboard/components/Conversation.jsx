@@ -28,6 +28,14 @@ import {nativeRequest} from '../../native/transport';
 import {mergeReferences} from '../../native/knowledge-references/reference-text';
 import {clearSentReplyEdit, readSavedReplyEdit, savedReplyEditKey, writeSavedReplyEdit} from '../utils/savedReplyEdit';
 
+// A request can outlive a ticket view, including a return through the Inbox list.
+const pendingReplySends = new Map();
+
+function restorePlainReply(key, setContent) {
+    const local = readSavedReplyEdit(key);
+    if (local?.id === null || local?.discarded) setContent(local.content);
+}
+
 function Conversation({ projectId, conversationId, conversation, buckets }) {
     const {
         currentAgent,
@@ -61,7 +69,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const [ draftFocusRequest, setDraftFocusRequest ] = useState(null);
     const [ draftError, setDraftError ] = useState('');
     const [ draftRead, setDraftRead ] = useState(null);
-    const [ draftReadAttempt, setDraftReadAttempt ] = useState(0);
+    const [ draftReadAttempt, setDraftReadAttempt ] = useState(null);
     const [ escalationDraftId, setEscalationDraftId ] = useState(null);
     const [isTyping, setIsTyping] = useState(false);
     const typingTimer = useRef(null);
@@ -83,13 +91,14 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const draftAdoptionRef = useRef(null);
     const draftEditVersion = useRef(0);
     const savedReplyRef = useRef(null);
-    const pendingSendRef = useRef(null);
+    const activeDraftKeyRef = useRef(null);
 
     activeConversationIdRef.current = conversationId;
 
     // In the global inbox the conversation dictates the project, not the page.
     const conversationProjectId = (conversation && conversation.project_id) || projectId;
     const savedEditKey = savedReplyEditKey(conversationProjectId, conversationId, currentAgent?.id);
+    activeDraftKeyRef.current = savedEditKey;
     // A role without reply permission (a collaborator) gets notes and follow instead of the reply box;
     // the agent's view stays as approved.
     const canReply = useCan(conversationProjectId, 'conversations.reply'), canFollow = useCan(conversationProjectId, 'conversations.follow');
@@ -97,10 +106,14 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const isContactErased = Boolean(conversation?.contact?.is_erased || conversation?.contact?.is_erasing);
     const currentDraftRead = draftRead?.key === savedEditKey ? draftRead : null;
     const draftReadError = isContactErased ? null : currentDraftRead?.error;
-    const draftLoadState = isContactErased ? null : draftReadError ? 'error' : currentDraftRead ? null : 'loading';
+    const draftLoadState = isContactErased ? null : currentDraftRead?.locked ? 'error' : currentDraftRead ? null : 'loading';
     const retryDraftRead = () => {
         setDraftRead(null);
-        setDraftReadAttempt(attempt => attempt + 1);
+        setDraftReadAttempt({key: savedEditKey});
+    };
+    const continueWithoutDraft = () => {
+        restorePlainReply(savedEditKey, setContent);
+        setDraftRead({...currentDraftRead, locked: false});
     };
     // Ticket and workflow tools stay hidden in a demo project.
     const isDemo = Boolean((settings.projects?.[conversationProjectId] || settings.project)?.is_demo);
@@ -192,15 +205,15 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         // A blocking route loader can keep the previous ticket mounted after the
         // router has selected the next one. Check the live location at dispatch.
         if (!isComposerEnabled || router.latestLocation.pathname !== renderedPath
-            || expectedConversationId !== conversationId) {
+            || expectedConversationId !== conversationId || pendingReplySends.has(savedEditKey)) {
             throw new Error('Wait for the selected conversation to load before sending.');
         }
 
         const sentEditVersion = draftEditVersion.current;
-        const sentConversationId = conversationId;
         const sentEdit = readSavedReplyEdit(savedEditKey);
-        const send = {};
-        pendingSendRef.current = send;
+        let settleSend;
+        pendingReplySends.set(savedEditKey, new Promise(resolve => { settleSend = resolve; }));
+        let delivered = false;
         setIsSending(true);
         const message = {
             content: messageContent,
@@ -218,11 +231,13 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
 
         try {
             await sendAction('sendMessage', message, conversationProjectId);
+            delivered = true;
             // An acknowledgement owns only the draft it sent. Edits made while
             // the request was pending belong to the next reply.
             clearSentReplyEdit(savedEditKey, sentEdit);
-            if (activeConversationIdRef.current === sentConversationId && pendingSendRef.current === send) {
+            if (activeDraftKeyRef.current === savedEditKey) {
                 setDraftError('');
+                setDraftRead(current => current?.key === savedEditKey && current.error ? {key: savedEditKey} : current);
                 if (draftEditVersion.current === sentEditVersion) {
                     savedReplyRef.current = null;
                     updateDraftContent('');
@@ -232,7 +247,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 }
             }
         } catch (error) {
-            if (activeConversationIdRef.current === sentConversationId && pendingSendRef.current === send) {
+            if (activeDraftKeyRef.current === savedEditKey) {
                 if (error.data?.reason === 'conversation_changed') {
                     setDraftError('');
                     refreshConversation();
@@ -240,10 +255,9 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             }
             throw error;
         } finally {
-            if (activeConversationIdRef.current === sentConversationId && pendingSendRef.current === send) {
-                pendingSendRef.current = null;
-                setIsSending(false);
-            }
+            pendingReplySends.delete(savedEditKey);
+            settleSend(delivered);
+            if (activeDraftKeyRef.current === savedEditKey) setIsSending(false);
         }
         if (sendAndClose) {
             sendPluginEvent('resolveConversation', conversation);
@@ -257,7 +271,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         draftEditVersion.current++;
         draftAdoptionRef.current = null;
         savedReplyRef.current = null;
-        pendingSendRef.current = null;
+        setDraftReadAttempt(null);
         setDraftError('');
         setDraftRead(null);
         setContent('');
@@ -288,8 +302,17 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         }
         let active = true;
         const editVersion = draftEditVersion.current;
-        nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft`)
-            .then(result => {
+        const read = () => nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft`);
+        const pending = pendingReplySends.get(savedEditKey);
+        // During a return to a ticket, wait for its send to settle before restoring.
+        // A successful send can invalidate the server draft we just read.
+        const result = pending ? Promise.allSettled([read(), pending]).then(([draft, send]) => {
+            if (!active) return;
+            if (send.value) return read();
+            if (draft.status === 'rejected') throw draft.reason;
+            return draft.value;
+        }) : read();
+        result.then(result => {
                 if (!active) return;
                 setDraftRead({key: savedEditKey});
                 if (draftEditVersion.current !== editVersion) return;
@@ -313,7 +336,11 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                     setContent(draft.content); setKnowledgeReferences(draft.references || []); setFiles(draft.media || []);
                 }
             }).catch(error => {
-                if (active) setDraftRead({key: savedEditKey, error: `Couldn’t load your saved macro draft: ${error.message}`});
+                if (!active) return;
+                const definitive = error.status >= 400 && error.status < 500;
+                const locked = !definitive && draftReadAttempt?.key !== savedEditKey;
+                if (!locked && draftEditVersion.current === editVersion) restorePlainReply(savedEditKey, setContent);
+                setDraftRead({key: savedEditKey, locked, error: `Couldn’t load your saved macro draft: ${error.message}`});
             });
         return () => { active = false; };
     }, [conversationProjectId,conversationId,isConversationReady,isContactErased,savedEditKey,draftReadAttempt]);
@@ -392,10 +419,12 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     }), [ conversation, isDemo, openPanel ]);
     // An escalation's customer update goes to the composer for review; a compact panel sheet steps aside for it.
     const reviewEscalationDraft = draft => {
+        if (!isComposerEnabled || router.latestLocation.pathname !== renderedPath) return false;
         updateDraftContent(draft.content, [], {kind:'human'});
         setEscalationDraftId(draft.id);
         assistant.releaseDraft();
         setDraftFocusRequest(previous => ({conversationId, version: (previous?.version || 0) + 1}));
+        return true;
     };
     const isDraftCurrent = draftConversationIdRef.current === conversationId;
     const draftContent = isDraftCurrent ? content : '';
@@ -496,11 +525,12 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                             isSwitching={ isSwitchingConversation }
                             draftLoadState={ draftLoadState }
                             onRetryDraftRead={ retryDraftRead }
+                            onContinueWithoutDraft={ continueWithoutDraft }
                             presence={ presence }
                             noteDraft={ noteDraft }
-                            draftError={ draftReadError || draftError }
+                            draftError={ draftError || draftReadError }
                             ticketMenu={ ticketMenu }
-                        /> : <NotesOnlyComposer onAddNote={ () => setIsNoteModalVisible(true) } presence={ presence } noteDraft={ noteDraft } draftError={ draftReadError || draftError } ticketMenu={ ticketMenu } /> }
+                        /> : <NotesOnlyComposer onAddNote={ () => setIsNoteModalVisible(true) } presence={ presence } noteDraft={ noteDraft } draftError={ draftError || draftReadError } ticketMenu={ ticketMenu } /> }
                 </div>
 
                 { assistant.isVisible && <button type="button" className="conversation-assistant-backdrop" onClick={ assistant.close } aria-label="Close conversation panel overlay" tabIndex={ -1 } /> }

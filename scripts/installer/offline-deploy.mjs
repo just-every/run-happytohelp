@@ -47,6 +47,6 @@ export async function offlineDeploy(path,lifecycle,context,ownerNeed){
  store.report(`deploy: public bindings (${variables.length}): ${variables.join(', ')||'none'}`,{names:variables});
  const needs=[...neededForRealDeploy({declaration,env,signIn}),...(ownerNeeds??[])];
  if(signIn)needs.push('For sign-in without email, set MAIL_PROVIDER=none and use the one-time owner link instead of supplying sending-provider inputs. See OPERATIONS.md#sign-in-without-mail.');
- if(ownerNeed)needs.push(ownerNeed);
+ if(ownerNeed&&!needs.includes('OWNER_EMAIL'))needs.push(ownerNeed);
  return {dryRun:true,deployed:false,providerChecked:false,neededForRealDeploy:needs};
 }

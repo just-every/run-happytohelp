@@ -70,6 +70,6 @@ for(const action of ['preview','apply'] as const)macroRoutes.post(`${base}/:macr
  }
  return c.json({data:{results}})
 })
-macroRoutes.get('/projects/:projectId/conversations/:conversationId/macro-draft',async c=>{const actor=await scope(c) as Actor;await getTicket(c.env,actor,c.req.param('conversationId'));return c.json({data:await readDraft(c.env,actor,c.req.param('conversationId'))})})
+macroRoutes.get('/projects/:projectId/conversations/:conversationId/macro-draft',async c=>{const actor=await scope(c) as Actor;const ticket=await getTicket(c.env,actor,c.req.param('conversationId'));return c.json({data:await readDraft(c.env,actor,ticket.id,ticket.brand_id??actor.projectId)})})
 // Clearing the composer discards the operator's own draft of that macro use, so a reload never brings it back.
 macroRoutes.delete('/projects/:projectId/conversations/:conversationId/macro-draft',async c=>{const actor=await scope(c) as Actor;await getTicket(c.env,actor,c.req.param('conversationId'));return c.json({data:{discarded:await discardDraft(c.env,actor,c.req.param('conversationId'),c.req.query('usage_id'))}})})

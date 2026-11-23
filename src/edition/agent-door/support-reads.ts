@@ -25,8 +25,9 @@ export async function savedReply(env:Env,ctx:ToolContext,id:string){
 }
 export async function ownDraft(env:Env,ctx:ToolContext,id:string){
  const actor=await staffProject(env,ctx)
- await actorFor(env,ctx,'conversations.reply');await conversationRead(env,ctx,id)
- return redacted({draft:await nativeRead(()=>readDraft(env,actor,id))})
+ await actorFor(env,ctx,'conversations.reply')
+ const {ticket}=await conversationRead(env,ctx,id)
+ return redacted({draft:await nativeRead(()=>readDraft(env,actor,id,ticket.brand_id??actor.projectId))})
 }
 /** Explicit projection, including nested schedule fields. Arbitrary settings JSON,
  * provider/connection fields and unknown future configuration never cross MCP. */

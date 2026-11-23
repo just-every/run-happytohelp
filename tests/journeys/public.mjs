@@ -16,6 +16,22 @@ import {publicContactProof} from '../helpers/public-site/contact.mjs'
 const root=fileURLToPath(new URL('../..',import.meta.url))
 async function withRuntime(options,body){const runtime=await createRuntime(options);let success=false;try{await body(runtime,client(runtime.origin));success=true}finally{await runtime.close(success)}}
 
+test('public release commands avoid zsh parameter modifiers in fetch refspecs',async()=>{
+ await withRuntime({},async(_runtime,{request})=>{
+  for(const path of ['/run','/docs','/docs/getting-started','/docs/install']){
+   const response=await request(path)
+   assert.equal(response.status,200,path)
+   const html=await response.text()
+   const commands=[...html.matchAll(/<code\b[^>]*>([\s\S]*?)<\/code>|\bdata-copy="([^"]*)"/g)]
+    .map(match=>match[1]??match[2]).filter(command=>command.includes('/releases/latest'))
+   assert.ok(commands.length,`release command on ${path}`)
+   for(const command of commands){
+    assert.doesNotMatch(command,/\$[a-zA-Z_][a-zA-Z_0-9]*:[a-zA-Z]/,`brace shell variables before a colon on ${path}`)
+   }
+  }
+ })
+})
+
 test('a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing',async()=>{
  const slug='retained-help-slug'
  await withRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-public-form-mail',EMAIL_FROM:'support@public-forms.example.test',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:slug,'127.0.0.1':slug})},outboundFixture:new URL('../helpers/public-site/form-mail-edge.mjs',import.meta.url).href},async(runtime,{request})=>{

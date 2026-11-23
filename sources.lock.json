@@ -2057,7 +2057,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "23b577335fe852f0bb3f5c26670c03a8be75cfcdf011f8f041709ef0cc1aadd0",
+      "sha256": "fd0fd06e25badfdf62334ebdc34df98b0e8f23bdbe8ddece449f8422f132f1bb",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2089,7 +2089,7 @@
       "executable": false
     },
     "management/integration/recipe.json": {
-      "sha256": "cdfda43cff8b92d53ded7f188fe8fbfe08e94ae51717536e2f51004db3f49448",
+      "sha256": "978c1029f4cde0703eeb93b6adb12b8f5b158961093c745803e862eaa5eabf59",
       "executable": false
     },
     "management/integration/revision.ts": {

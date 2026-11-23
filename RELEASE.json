@@ -50,6 +50,10 @@
     {
       "id": "337_scheduled_recovery_reads.sql",
       "buyerSteps": "For a checkout containing this migration, apply it after all earlier migrations and before starting the updated Worker. It adds recovery indexes to existing tables without rewriting data."
+    },
+    {
+      "id": "338_scheduled_recovery_writes.sql",
+      "buyerSteps": "Apply this after 337 and before starting the updated Worker. It narrows recovery indexes and removes a duplicate suspended email expiry index without rewriting retained records."
     }
   ]
 }

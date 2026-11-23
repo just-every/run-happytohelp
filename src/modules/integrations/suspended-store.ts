@@ -32,7 +32,7 @@ export async function suspendEmail(env:Env,input:IncomingEmail,context:{projectI
 /** Called by the email scheduled integration and before reads. Deletion and its
  * count-only audit row commit together; no customer text enters the audit. */
 export async function expireSuspendedEmails(env:Env,now=Date.now()){
- const projects=(await env.DB.prepare('SELECT project_id,COUNT(*) count FROM suspended_emails WHERE expires_at<=? GROUP BY project_id').bind(now).all<{project_id:string;count:number}>()).results
+ const projects=(await env.DB.prepare('SELECT project_id,COUNT(*) count FROM suspended_emails INDEXED BY suspended_mail_retention WHERE expires_at<=? GROUP BY project_id').bind(now).all<{project_id:string;count:number}>()).results
  for(const project of projects){
   if(!cronRoom(env,4))break
   const rows=(await env.DB.prepare('SELECT input_json FROM suspended_emails WHERE project_id=? AND expires_at<=?').bind(project.project_id,now).all<{input_json:string}>()).results

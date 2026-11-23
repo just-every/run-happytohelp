@@ -20,7 +20,10 @@ export async function syncMailbox(env:Env,projectId:string,mailboxId:string,rece
  if(row.status!=='connected'&&!(options.backfill&&row.status==='needs_backfill'))throw new HTTPException(409,{message:'Mailbox must be reconnected before syncing'})
  const lease=crypto.randomUUID(),now=Date.now()
  const auditActor=options.actorId?{type:'user' as const,id:options.actorId}:{type:'system' as const},auditSource=options.actorId?'dashboard' as const:'system' as const
- const claim=await env.DB.prepare(`UPDATE mailbox_connections SET sync_lock=?,sync_lock_until=?,status='connected' WHERE id=? AND project_id=? AND credential_version=? AND (sync_lock_until IS NULL OR sync_lock_until<?) AND status IN ('connected','needs_backfill')
+ // A live poll only takes the lease. Backfill alone can restore a mailbox to connected.
+ const claimStatus=options.backfill?",status='connected'":""
+ const eligibleStatus=options.backfill?"status IN ('connected','needs_backfill')":"status='connected'"
+ const claim=await env.DB.prepare(`UPDATE mailbox_connections SET sync_lock=?,sync_lock_until=?${claimStatus} WHERE id=? AND project_id=? AND credential_version=? AND (sync_lock_until IS NULL OR sync_lock_until<?) AND ${eligibleStatus}
  AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=? AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`)
  .bind(lease,now+15*60000,mailboxId,projectId,row.credential_version,now,projectId).run()
  if(!claim.meta.changes)throw new HTTPException(409,{message:'Mailbox sync is already running or connection changed'})

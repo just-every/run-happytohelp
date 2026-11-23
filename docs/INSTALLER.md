@@ -18,8 +18,10 @@ longer: `rer dev` prints progress every 20 seconds, with the limit to allow.
 
 The first launch downloads Playwright’s headless Chromium if it is missing from
 your browser cache. Rer uses it to check that the owner can enter the app. Dev
-uses its local address for the chat widget and generates a private owner password. Continue in
-the app, or open the private `RER_OPEN` link to reach **Setup** as the owner.
+uses its local address for the chat widget and generates a private owner password.
+Continue in the app, or open the private `RER_OPEN` link to enter as the owner.
+If Setup asks what customers should call you, enter your name and select
+**Save and continue** to open the checklist.
 No private answers, email service or AI account are needed. Use `rer dev --stop`
 from the checkout to stop the managed app.
 
@@ -142,8 +144,8 @@ stop with Ctrl+C.
 
 Choose an explicit loopback port with `--port 8788` when you start a fresh
 checkout. For an existing installation with a busy port, follow the
-[local restart guidance](../RUN-LOCALLY.md). Sign-in takes you to the workspace Setup page described in
-[First-run setup](SETUP-WORKFLOW.md).
+[local restart guidance](../RUN-LOCALLY.md). If Setup asks for your customer-facing
+name, save it to open the checklist described in [First-run setup](SETUP-WORKFLOW.md).
 
 ## Try the customer widget locally
 

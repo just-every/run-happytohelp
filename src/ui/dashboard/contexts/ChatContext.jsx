@@ -479,8 +479,11 @@ export const Provider = (props) => {
                 else if (frame.type === 'access_changed') { setLastConnected(Date.now()); refreshInboxData(); }
                 else refreshInboxData();
             },
-                () => { refreshInboxData(); setLastConnected(Date.now()); },
-                error => console.warn(error.message)));
+                () => setLastConnected(Date.now()),
+                error => console.warn(error.message),
+                // The previous workspace page may have advanced the project cursor
+                // after the initial inbox read. Reconcile when this list starts listening.
+                refreshInboxData));
         }, PROJECT_SOCKET_SETTLE_MS);
         return () => { clearTimeout(timer); close.forEach(dispose => dispose()); };
     }, [connectedProjectIds.join(',')]);

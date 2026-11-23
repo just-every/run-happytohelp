@@ -172,10 +172,13 @@ function watchActivity() {
     for (const type of ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart', 'focus']) window.addEventListener(type, active, {capture: true, passive: true});
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') active(); });
 }
-export function connectProject(projectId, onFrame, onReconnect, onError) {
+export function connectProject(projectId, onFrame, onReconnect, onError, onOpen) {
     watchActivity();
     const report = () => connection.send({type: 'presence', idleMs: Math.max(0, Date.now() - lastActivity)});
-    const connection = connectSocket(`/api/projects/${encodeURIComponent(projectId)}/socket`, `h2h-project-event:${projectId}`, onFrame, onReconnect, onError, report);
+    const connection = connectSocket(`/api/projects/${encodeURIComponent(projectId)}/socket`, `h2h-project-event:${projectId}`, onFrame, onReconnect, onError, () => {
+        report();
+        onOpen?.();
+    });
     const heartbeat = setInterval(report, PRESENCE_HEARTBEAT_MS);
     presenceReporters.add(report);
     const dispose = () => { clearInterval(heartbeat); presenceReporters.delete(report); connection(); };

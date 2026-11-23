@@ -19,6 +19,7 @@ ConversationAssistant.propTypes = {
     conversation: PropTypes.object.isRequired,
     conversationId: PropTypes.string,
     draftError: PropTypes.string,
+    isCompactOpen: PropTypes.bool,
     isDraftDisabled: PropTypes.bool,
     isVisible: PropTypes.bool,
     liveKey: PropTypes.any,
@@ -40,6 +41,7 @@ export default function ConversationAssistant({
     conversation,
     conversationId,
     draftError,
+    isCompactOpen,
     isDraftDisabled,
     isVisible,
     liveKey,
@@ -95,7 +97,7 @@ export default function ConversationAssistant({
         <aside
             id="conversation-assistant"
             ref={ panelRef }
-            className={ `conversation-assistant${isVisible ? ' is-open' : ''}` }
+            className={ `conversation-assistant${isVisible ? ' is-open' : ''}${isCompactOpen ? ' is-compact-open' : ''}` }
             aria-label="Conversation panel"
             aria-hidden={ !isVisible }>
             <div className={ `conversation-assistant__header${isScrolled ? ' is-scrolled' : ''}` }>

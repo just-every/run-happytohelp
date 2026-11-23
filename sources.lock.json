@@ -1741,7 +1741,7 @@
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "cb42d0aab5a8f95f4fa810d1fc29d66323448454a4e90017ff7140256ce50f69",
+      "sha256": "761f99b9ac65379cc167b1a3d58de3745565981cdd882d562d2d1193bc432071",
       "executable": false
     },
     "docs/knowledge-upgrade-report.md": {
@@ -11641,7 +11641,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/Conversation.jsx": {
-      "sha256": "2ade5959e4eddc038dbba73d8c1a92133939d7fa62a381531cfd4cc841f07f1a",
+      "sha256": "1aba43e4d5e07530d961e6a155a819f44ccb93dc52cfc45afb976d76f76cc8db",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ai-controls.css": {
@@ -11701,7 +11701,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationAssistant.jsx": {
-      "sha256": "91f718cce4fc1d46002d2d882587130066176c4e4bef466b9614616dca118225",
+      "sha256": "09049a5c22694b7fb82ee59fbd1129949002cbc3b5222acf3128d6b28081112f",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationBody.jsx": {
@@ -12285,7 +12285,7 @@
       "executable": false
     },
     "src/ui/dashboard/contexts/ChatContext.jsx": {
-      "sha256": "e001f6f9335285e4b2d303932b4ad0927f644e58ec21cbe8485cbe103b45b963",
+      "sha256": "ed901541a738c0d607fc2fde44df4ea69afe2e084679c38c1b044c48a3428a6b",
       "executable": false
     },
     "src/ui/dashboard/contexts/ConversationSuggestionsContext.jsx": {
@@ -12309,7 +12309,7 @@
       "executable": false
     },
     "src/ui/dashboard/hooks/useConversationAssistant.jsx": {
-      "sha256": "306abdc6fd1837944e0deb52bd8679d6b26fa11a42f896704bf3ac5fbd2193db",
+      "sha256": "0218c82efc7a5c4d2edc192ff92ec7758caccb9895fc3865d5720ca04a223842",
       "executable": false
     },
     "src/ui/dashboard/hooks/useConversationDelegations.jsx": {
@@ -12473,7 +12473,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-assistant.scss": {
-      "sha256": "9f48cb58804695329922e5eb4dfa4070e4628bc4828a19d9bbbe35f50581b8b2",
+      "sha256": "1bea2e581ec55381471baffe2f568ea4425c3c5ec547c827da0085646326c9f5",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-avatars.scss": {
@@ -14245,11 +14245,11 @@
       "executable": false
     },
     "src/ui/native/transport.d.ts": {
-      "sha256": "f8ce53270411acac09d7db6348abb4c0cf73da5734ff8a4d9b2e2842c7575276",
+      "sha256": "676a9790fa5bcde3804cb133a939bf1d8447373c2679f64dfd136d1bb01f8e86",
       "executable": false
     },
     "src/ui/native/transport.js": {
-      "sha256": "6ff6e310e13d072c9a6aa79a9c49b9d84e2fc5afb24e74d97c58febaa178a88e",
+      "sha256": "38faaeae9e62b10f0548fd2d33a8ba5656bee28de851078014b601acd9152425",
       "executable": false
     },
     "src/ui/native/widget-setup/CustomerNameStep.jsx": {

@@ -5,7 +5,8 @@ const desktopQuery = '(min-width: 1280px)';
 const isDesktop = () => typeof window !== 'undefined' && window.matchMedia(desktopQuery).matches;
 
 export default function useConversationAssistant() {
-    const [ isVisible, setIsVisible ] = useState(isDesktop);
+    const [ visibleMode, setVisibleMode ] = useState(() => isDesktop() ? 'desktop' : null);
+    const isVisible = visibleMode !== null;
     const toggleRef = useRef(null);
     const closeRef = useRef(null);
     const panelRef = useRef(null);
@@ -15,7 +16,7 @@ export default function useConversationAssistant() {
     const [ request, setRequest ] = useState({ tab: 'ai', section: null, version: 0 });
 
     const close = useCallback(() => {
-        setIsVisible(false);
+        setVisibleMode(null);
         returnFocusRef.current?.focus();
     }, []);
 
@@ -23,11 +24,12 @@ export default function useConversationAssistant() {
     // compact sheet. The composer owns the next focus, not the panel toggle.
     const releaseDraft = useCallback(() => {
         openedFromToggle.current = false;
-        if (!isDesktop()) setIsVisible(false);
+        setVisibleMode(mode => mode === 'compact' ? null : mode);
     }, []);
 
     const toggle = useCallback(() => {
-        if (isVisible) {
+        const mode = isDesktop() ? 'desktop' : 'compact';
+        if (visibleMode === mode) {
             close();
             return;
         }
@@ -35,8 +37,8 @@ export default function useConversationAssistant() {
         setRequest(current => ({ tab: 'ai', section: null, version: current.version + 1 }));
         returnFocusRef.current = toggleRef.current;
         openedFromToggle.current = true;
-        setIsVisible(true);
-    }, [ close, isVisible ]);
+        setVisibleMode(mode);
+    }, [ close, visibleMode ]);
 
     // Opens the panel (an overlay below 1280 px) on a tab and expands one of its sections, which takes focus.
     // Closing a compact overlay returns focus to the control that asked (the menu toggle it came from), or to the
@@ -47,18 +49,18 @@ export default function useConversationAssistant() {
         returnFocusRef.current = asker?.closest?.('.dropdown-menu')?.parentElement?.querySelector('.dropdown-toggle') || asker || toggleRef.current;
         openedFromToggle.current = false;
         setRequest(current => ({ tab, section, version: current.version + 1 }));
-        setIsVisible(true);
+        setVisibleMode(isDesktop() ? 'desktop' : 'compact');
     }, []);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia(desktopQuery);
-        const syncViewport = event => {
-            // A wide assistant is a permanent workspace column. Returning to a
-            // compact viewport closes its sheet until the agent explicitly opens it.
-            setIsVisible(event.matches);
+        const syncViewport = () => {
+            // Only an explicit action in the compact viewport can open the sheet.
+            setVisibleMode(mediaQuery.matches ? 'desktop' : null);
         };
 
         mediaQuery.addEventListener('change', syncViewport);
+        syncViewport();
         return () => mediaQuery.removeEventListener('change', syncViewport);
     }, []);
 
@@ -110,6 +112,7 @@ export default function useConversationAssistant() {
 
     return {
         isVisible,
+        isCompactOpen: visibleMode === 'compact',
         requestedTab: request.tab,
         requestedSection: request.section,
         requestedTabVersion: request.version,

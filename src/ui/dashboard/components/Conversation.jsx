@@ -572,13 +572,14 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                         /> : <NotesOnlyComposer onAddNote={ () => setIsNoteModalVisible(true) } presence={ presence } noteDraft={ noteDraft } draftError={ draftError || draftReadError } ticketMenu={ ticketMenu } /> }
                 </div>
 
-                { assistant.isVisible && <button type="button" className="conversation-assistant-backdrop" onClick={ assistant.close } aria-label="Close conversation panel overlay" tabIndex={ -1 } /> }
+                { assistant.isCompactOpen && <button type="button" className="conversation-assistant-backdrop" onClick={ assistant.close } aria-label="Close conversation panel overlay" tabIndex={ -1 } /> }
                 <ConversationAssistant
                     closeButtonRef={ assistant.closeRef }
                     draftError={ draftError }
                     isDraftDisabled={ !isComposerEnabled }
                     conversation={ conversation }
                     conversationId={ conversationId }
+                    isCompactOpen={ assistant.isCompactOpen }
                     isVisible={ assistant.isVisible }
                     onClose={ assistant.close }
                     onInsertDraft={ insertAssistantDraft }

@@ -1,7 +1,7 @@
 {
-  "version": "0.4.40",
+  "version": "0.4.41",
   "previousVersion": "0.4.39",
-  "date": "2026-11-23",
+  "date": "2026-11-24",
   "contractChanges": {},
   "proseChanges": [
     {
@@ -16,16 +16,16 @@
     {
       "document": "CHANGELOG.md",
       "change": "changed",
-      "date": "2026-11-23",
-      "summary": "Records the v0.4.40 changes and the upgrade steps from v0.4.39.",
-      "was": "The latest entry covered v0.4.39.",
-      "now": "Records the v0.4.40 changes and the upgrade steps from v0.4.39.",
+      "date": "2026-11-24",
+      "summary": "v0.4.40 was tagged but never published because its release-upgrade check failed. The changes recorded in the 0.4.40 changelog entry are included in v0.4.41.",
+      "was": "The latest published entry covered v0.4.39.",
+      "now": "v0.4.40 was tagged but never published because its release-upgrade check failed. The changes recorded in the 0.4.40 changelog entry are included in v0.4.41. The installer’s release-upgrade test uses the predecessor tag declared in `RELEASE.json` and accepts manifests that omit `pendingMigrations`.",
       "ownerAction": "Update from v0.4.39 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.39 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding."
     }
   ],
   "extensionPointChanges": [],
   "breaking": false,
   "agentUpdateInstructions": "Update from v0.4.39 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.39 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.",
-  "publicReleaseNotes": "- **Live Inbox.** The Inbox refreshes when its live connection opens, so new conversations with text or attachments appear without a page reload.\n- **Mobile Inbox.** An open desktop conversation keeps its transcript and reply composer visible when the window narrows to 390 px.\n- **Local setup.** The installer guide explains that selecting **Save and continue** after entering your customer-facing name opens the Setup checklist.\n\nUpdate from v0.4.39 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.39 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.\n\n_Run Edit Run fleet, 2026-11-23._",
+  "publicReleaseNotes": "v0.4.40 was tagged but never published because its release-upgrade check failed. The changes recorded in the 0.4.40 changelog entry are included in v0.4.41.\n\n- **Installer upgrade verification.** The installer’s release-upgrade test uses the predecessor tag declared in `RELEASE.json` and accepts manifests that omit `pendingMigrations`.\n\nUpdate from v0.4.39 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.39 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.\n\n_Run Edit Run fleet, 2026-11-24._",
   "migrations": []
 }

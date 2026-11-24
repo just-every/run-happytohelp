@@ -8,6 +8,16 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.41 — 2026-11-24
+
+v0.4.40 was tagged but never published because its release-upgrade check failed. The changes recorded in the 0.4.40 changelog entry are included in v0.4.41.
+
+- **Installer upgrade verification.** The installer’s release-upgrade test uses the predecessor tag declared in `RELEASE.json` and accepts manifests that omit `pendingMigrations`.
+
+Update from v0.4.39 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.39 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-24._
+
 ## 0.4.40 — 2026-11-23
 
 - **Live Inbox.** The Inbox refreshes when its live connection opens, so new conversations with text or attachments appear without a page reload.

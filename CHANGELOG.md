@@ -8,6 +8,20 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.42 — 2026-11-24
+
+- **Visitor read acknowledgements.** The hosted widget acknowledges a delivered reply even if an operator socket closes. In the hosted reproduction, acknowledgement failures fell from 19 in 24 attempts to zero.
+- **Widget ratings.** Thumbs-up and thumbs-down rating buttons render correctly in the hosted widget.
+- **Draft discard.** Choosing **Discard** when leaving a conversation clears that conversation’s browser and server drafts, so the text stays cleared on return.
+- **First check.** The README and setup guides explain how to send one signed-out test message with an email address at `/contact` and confirm it reaches **Inbox**.
+- **Owner entry.** The README and installer guide explain how to open the private `RER_OPEN` link from plain `rer dev`. The README also points hosted owners to their installation’s `/login` page.
+- **Hosted setup.** The README and setup guide explain that hosted deployment requires a real `OWNER_EMAIL` and rejects reserved addresses before deployment.
+- **Import completion.** The README and moving-in guide explain that an import is complete when its row under **Your imports** reads `<file> — Complete`. The Zendesk importer evidence digest and size now match the updated guide.
+
+Update from v0.4.41 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. An installation on v0.4.41 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-24._
+
 ## 0.4.41 — 2026-11-24
 
 v0.4.40 was tagged but never published because its release-upgrade check failed. The changes recorded in the 0.4.40 changelog entry are included in v0.4.41.

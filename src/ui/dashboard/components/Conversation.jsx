@@ -32,6 +32,7 @@ import {clearSentReplyEdit, readSavedReplyEdit, savedReplyEditKey, writeSavedRep
 // A request can outlive a ticket view, including a return through the Inbox list.
 const pendingReplySends = new Map();
 const pendingReplyUploads = new Map();
+const pendingMacroApplies = new Map();
 
 function mergeDraftFiles(current, additions) {
     return [...new Map([...current, ...additions].map(file => [file.id, file])).values()];
@@ -89,10 +90,9 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const [ ticketDialog, setTicketDialog ] = useState(null);
     const [ panelReads, setPanelReads ] = useState(0);
     const [ panelAlert, setPanelAlert ] = useState(false);
-    const { setDirty } = useUnsavedChanges(true);
-    useEffect(() => {
-        setDirty(Boolean(content.trim() || files.length || loadingContent || isSending));
-    }, [content, files.length, loadingContent, isSending, setDirty]);
+    const [draftReset, setDraftReset] = useState(0);
+    const [discardingDraft, setDiscardingDraft] = useState(null);
+    const [applyingMacro, setApplyingMacro] = useState(null);
     const draftConversationIdRef = useRef(conversationId);
     const activeConversationIdRef = useRef(conversationId);
     const draftAdoptionRef = useRef(null);
@@ -105,7 +105,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     // In the global inbox the conversation dictates the project, not the page.
     const conversationProjectId = (conversation && conversation.project_id) || projectId;
     const savedEditKey = savedReplyEditKey(conversationProjectId, conversationId, currentAgent?.id);
-    const draftView = useMemo(() => ({key: savedEditKey}), [savedEditKey]);
+    const draftView = useMemo(() => ({key: savedEditKey, discarded: false}), [savedEditKey, draftReset]);
+    const draftPath = `/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft`;
     activeDraftViewRef.current = draftView;
     useEffect(() => {
         activeDraftViewRef.current = draftView;
@@ -134,6 +135,71 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         writeSavedReplyEdit(savedEditKey, saved || text.trim() || media.length
             ? {id: null, ...saved, content: text, files: media, origin, escalationDraftId: escalation}
             : null);
+    };
+    const deleteSavedDraft = id => {
+        if (draftView.deleting?.id === id) return draftView.deleting.promise;
+        const promise = nativeRequest(`${draftPath}?usage_id=${encodeURIComponent(id)}`, { method: 'DELETE', keepalive: true })
+            .finally(() => { if (draftView.deleting?.promise === promise) draftView.deleting = null; });
+        draftView.deleting = {id, promise};
+        return promise;
+    };
+    const discardReply = () => {
+        if (draftView.discardPending) return draftView.discardPending;
+        const upload = pendingReplyUploads.get(savedEditKey);
+        const clear = () => {
+            draftView.discarded = true;
+            if (pendingReplyUploads.get(savedEditKey) === upload) pendingReplyUploads.delete(savedEditKey);
+            writeSavedReplyEdit(savedEditKey, null);
+            if (activeDraftViewRef.current !== draftView) return true;
+            setDirty(false);
+            draftEditVersion.current++;
+            draftAdoptionRef.current = null;
+            savedReplyRef.current = null;
+            clearTimeout(typingTimer.current);
+            setContent(''); setDraftFiles([]); setKnowledgeReferences([]); setDraftOrigin(null);
+            setEscalationDraftId(null); setDraftFocusRequest(null); setLoadingContent('');
+            setIsTyping(false); setIsSending(false); setDraftError(''); setDraftRead({key: savedEditKey});
+            setDraftReset(reset => reset + 1);
+            return true;
+        };
+        const id = savedReplyRef.current?.id ?? readSavedReplyEdit(savedEditKey)?.id;
+        const applying = pendingMacroApplies.get(savedEditKey);
+        const readCompleted = draftRead?.key === savedEditKey && !draftRead.error;
+        if (!id && !applying && readCompleted) return clear();
+        setDiscardingDraft(draftView);
+        draftView.discardPending = (async () => {
+            try {
+                // Apply can replace the stored draft. Use the ID it actually wrote.
+                const applied = await applying?.catch(() => null);
+                let target = applied?.draft ? applied.usage_id : id;
+                if ((applying && !applied) || (!target && !readCompleted)) {
+                    target = (await nativeRequest(draftPath)).data?.usage_id;
+                }
+                if (target) await deleteSavedDraft(target);
+                return clear();
+            } catch (error) {
+                if (activeDraftViewRef.current === draftView) setDraftError(`Couldn’t discard your saved draft: ${error.message}`);
+                return false;
+            } finally {
+                draftView.discardPending = null;
+                setDiscardingDraft(current => current === draftView ? null : current);
+            }
+        })();
+        return draftView.discardPending;
+    };
+    const { setDirty } = useUnsavedChanges(true, discardReply);
+    useEffect(() => {
+        setDirty(Boolean(content.trim() || files.length || loadingContent || isSending || applyingMacro === savedEditKey));
+    }, [content, files.length, loadingContent, isSending, applyingMacro, savedEditKey, setDirty]);
+    const runMacroApply = request => {
+        if (draftView.discardPending || draftView.discarded || pendingMacroApplies.has(savedEditKey)) return null;
+        const applying = request();
+        pendingMacroApplies.set(savedEditKey, applying);
+        setApplyingMacro(savedEditKey);
+        return applying.finally(() => {
+            pendingMacroApplies.delete(savedEditKey);
+            setApplyingMacro(current => current === savedEditKey ? null : current);
+        });
     };
     const retryDraftRead = () => {
         setDraftRead(null);
@@ -179,6 +245,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setTicketDialog(null); setIsSending(false); setPanelAlert(false);
     }, [loadError, savedEditKey]);
     const applyMacroDraft = (text, metadata) => {
+        if (draftView.discarded) return;
         if (metadata.reply_type === 'note') { setNoteMacro({content:text,media:metadata.media || []}); setIsNoteModalVisible(true); }
         else {
             savedReplyRef.current = metadata.usage_id ? {id: metadata.usage_id, discarded: false} : null;
@@ -191,7 +258,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const isSwitchingConversation = navigationPath !== renderedPath || urlConversationId !== conversationId;
     const isSendingReply = pendingReplySends.has(savedEditKey);
     const isComposerEnabled = !isSwitchingConversation && conversation?.id === conversationId
-        && !draftLoadState && isConversationReady && buckets.length > 0 && !isLoading && !isSending && !conversation.merged_into;
+        && !draftLoadState && isConversationReady && buckets.length > 0 && !isLoading && !isSending
+        && discardingDraft !== draftView && !conversation.merged_into;
     const cancelDraftAdoption = () => {
         if (draftAdoptionRef.current) {
             draftAdoptionRef.current = null;
@@ -200,7 +268,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     };
 
     const handleSendFile = selectedFiles => {
-        if (!selectedFiles?.length || pendingReplyUploads.has(savedEditKey)) return;
+        if (!selectedFiles?.length || pendingReplyUploads.has(savedEditKey) || draftView.discardPending || draftView.discarded) return;
         cancelDraftAdoption();
         setDraftError('');
         setIsSending(true);
@@ -211,6 +279,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
 
         const upload = Api.create(`/projects/${ conversationProjectId }/media`, params)
             .then(data => {
+                if (pendingReplyUploads.get(savedEditKey) !== upload) return;
                 const local = readSavedReplyEdit(savedEditKey);
                 const nextFiles = mergeDraftFiles(local?.files ?? [], [data.data]);
                 // The upload can finish after the operator has opened another
@@ -224,11 +293,12 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 });
             })
             .catch(error => {
-                if (activeDraftViewRef.current === draftView) {
+                if (pendingReplyUploads.get(savedEditKey) === upload && activeDraftViewRef.current === draftView) {
                     setDraftError(`Attachment “${selectedFiles[0].name}” wasn’t added: ${error.message || 'the upload failed'}. Select it again to retry.`);
                 }
             })
             .finally(() => {
+                if (pendingReplyUploads.get(savedEditKey) !== upload) return;
                 pendingReplyUploads.delete(savedEditKey);
                 if (activeDraftViewRef.current === draftView) setIsSending(false);
             });
@@ -247,7 +317,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const handleSendMessage = async (expectedConversationId, messageContent, sendAndClose = false, email) => {
         // A blocking route loader can keep the previous ticket mounted after the
         // router has selected the next one. Check the live location at dispatch.
-        if (!isComposerEnabled || router.latestLocation.pathname !== renderedPath
+        if (!isComposerEnabled || draftView.discardPending || draftView.discarded || router.latestLocation.pathname !== renderedPath
             || expectedConversationId !== conversationId || pendingReplySends.has(savedEditKey)) {
             throw new Error('Wait for the selected conversation to load before sending.');
         }
@@ -346,13 +416,13 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         }
         let active = true;
         const editVersion = draftEditVersion.current;
-        const read = () => nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft`);
+        const read = () => nativeRequest(draftPath);
         // A pending write can change the stored draft. On return, read it
         // once the write has settled and only while this view still needs it.
-        const pending = pendingReplySends.get(savedEditKey) ?? pendingReplyUploads.get(savedEditKey);
-        const result = pending ? pending.then(() => active ? read() : undefined) : read();
+        const pending = pendingReplySends.get(savedEditKey) ?? pendingReplyUploads.get(savedEditKey) ?? pendingMacroApplies.get(savedEditKey);
+        const result = pending ? pending.catch(() => {}).then(() => active ? read() : undefined) : read();
         result.then(result => {
-                if (!active) return;
+                if (!active || draftView.discarded) return;
                 setDraftRead({key: savedEditKey});
                 if (draftEditVersion.current !== editVersion) return;
                 const draft = result.data;
@@ -373,16 +443,17 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                     setContent(draft.content); setKnowledgeReferences(draft.references || []); setDraftFiles(draft.media || []);
                 }
             }).catch(error => {
-                if (!active) return;
+                if (!active || draftView.discarded) return;
                 const definitive = error.status >= 400 && error.status < 500;
                 const locked = !definitive && draftReadAttempt?.key !== savedEditKey;
                 if (!locked && draftEditVersion.current === editVersion) restorePlainReply();
                 setDraftRead({key: savedEditKey, locked, error: `Couldn’t load your saved macro draft: ${error.message}`});
             });
         return () => { active = false; };
-    }, [conversationProjectId,conversationId,isConversationReady,isContactErased,savedEditKey,draftReadAttempt]);
+    }, [draftPath,isConversationReady,isContactErased,savedEditKey,draftReadAttempt]);
 
     const updateDraftContent = (nextContent, attachments, origin, escalation = escalationDraftId) => {
+        if (draftView.discarded) return;
         draftEditVersion.current++;
         setIsTyping(Boolean(nextContent)); clearTimeout(typingTimer.current);
         typingTimer.current = setTimeout(() => setIsTyping(false), 1500);
@@ -401,7 +472,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         if (discard) savedReply.discarded = true;
         persistReply(nextContent, nextFiles, nextOrigin, escalation);
         if (discard) {
-            nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft?usage_id=${encodeURIComponent(savedReply.id)}`, { method: 'DELETE', keepalive: true })
+            deleteSavedDraft(savedReply.id)
                 .catch(error => setDraftError(`Couldn’t discard your saved macro draft: ${error.message}`));
         }
     };
@@ -496,13 +567,14 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
 
     return (
         <ConversationSuggestionsProvider
-            key={ conversationId }
+            key={ `${conversationId}:${draftReset}` }
             conversationId={ conversationId }
             message={ draftContent }
             draftOrigin={ draftOrigin }
             disabled={ isAssistantDisabled || Boolean(draftLoadState) || !isConversationReady || isLoading || isSending }
             onMessageChange={ updateDraftContent }
             onLoadingMessageChange={ nextLoadingContent => {
+                if (draftView.discarded) return;
                 draftConversationIdRef.current = conversationId;
                 setLoadingContent(nextLoadingContent);
             } }>
@@ -555,11 +627,13 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                             onAddNote={ () => setIsNoteModalVisible(true) }
                             onContentChange={ updateDraftContent }
                             onMacroApplied={applyMacroDraft}
+                            runMacroApply={runMacroApply}
                             onAssistantDisabledChange={ setIsAssistantDisabled }
                             files={ draftFiles }
                             isResolved={ Boolean(conversation.resolved_at) }
                             finalReason={ conversation.status_category === 'closed' ? 'This ticket is closed and final, so it takes no more replies. A customer reply opens a new ticket.' : null }
                             isEnabled={ isComposerEnabled }
+                            isDiscarding={ discardingDraft === draftView }
                             isSwitching={ isSwitchingConversation }
                             isSendingReply={ isSendingReply }
                             draftLoadState={ draftLoadState }

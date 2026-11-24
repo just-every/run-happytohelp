@@ -30,6 +30,7 @@ ConversationForm.propTypes = {
     files: PropTypes.array,
     finalReason: PropTypes.string,
     focusRequest: PropTypes.number,
+    isDiscarding: PropTypes.bool,
     isEnabled: PropTypes.bool,
     isResolved: PropTypes.bool,
     isSwitching: PropTypes.bool,
@@ -46,6 +47,7 @@ ConversationForm.propTypes = {
     onFileSelect: PropTypes.func,
     onSendMessage: PropTypes.func,
     onMacroApplied: PropTypes.func,
+    runMacroApply: PropTypes.func,
     presence: PropTypes.node,
     projectId: PropTypes.string,
     ticketMenu: PropTypes.object.isRequired,
@@ -70,6 +72,7 @@ export default function ConversationForm({
     files,
     finalReason,
     focusRequest,
+    isDiscarding,
     isEnabled,
     isResolved,
     isSwitching,
@@ -86,6 +89,7 @@ export default function ConversationForm({
     onFileSelect,
     onSendMessage,
     onMacroApplied,
+    runMacroApply,
     presence,
     projectId,
     ticketMenu,
@@ -113,7 +117,7 @@ export default function ConversationForm({
     const hasContent = Boolean(content?.trim() || files.length);
     const isLoading = Boolean(loadingContent);
     const isComposerLocked = isLoading || Boolean(finalReason);
-    const isComposerUnavailable = isSwitching || Boolean(draftLoadState);
+    const isComposerUnavailable = isSwitching || isDiscarding || Boolean(draftLoadState);
     const loadingLabel = isSwitching ? 'Loading conversation' : draftLoadState === 'loading' ? 'Loading draft'
         : isSendingReply ? 'Sending reply' : 'Uploading attachment';
     const placeholder = isSwitching ? 'Loading…' : finalReason || (
@@ -292,7 +296,7 @@ export default function ConversationForm({
                 <div className="flex-grow-1 d-flex flex-column">
                     { sendError && <p className="conversation-composer__error" role="alert">{ sendError }</p> }
                     <div className={ `chat-entry-form${ loadingContent.length > 0 ? (loadingContent === '-loading-' ? ' loading loading-start' : ' loading') : '' }` }>
-                        { helper === 'macros' && <MacrosPicker projectId={ projectId } conversationId={ conversationId } onPicked={ insertReply } /> }
+                        { helper === 'macros' && <MacrosPicker projectId={ projectId } conversationId={ conversationId } onPicked={ insertReply } runApply={ runMacroApply } /> }
                         { helper === 'articles' && <ArticlePicker projectId={ projectId } conversationId={ conversationId } cc={parseEmailRecipients(emailRecipients.cc)} bcc={parseEmailRecipients(emailRecipients.bcc)} onPicked={ insertReply } /> }
                         { loadingContent.length > 0 && <div className="form-control form-control-flush loading-content" aria-live="polite">
                             <div className="loading-content-bg"></div>

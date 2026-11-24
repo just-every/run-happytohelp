@@ -123,7 +123,16 @@ export class ConversationSocket extends DurableObject<Env>{
     if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');continue}
     if(event.operatorOnly===true&&actor.role==='contact')continue
     if(actor.role!=='contact'&&!await this.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND ${ticketScopeSql('?')}`).bind(event.conversationId,actor.actor_id).first())continue
-    const scope=await this.env.DB.prepare('SELECT project_id FROM conversations WHERE id=?').bind(event.conversationId).first<{project_id:string}>();if(!scope)continue;const readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id);const rendered=await renderKnowledgeFields(this.env,scope.project_id,await canonicaliseFields(this.env,scope.project_id,event),readers);if(actor.role!=='contact'){if(!await this.authorized(a)){await this.releaseOnline(ws);ws.close(1008,'Session revoked');continue}if(!await this.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND ${ticketScopeSql('?')}`).bind(event.conversationId,actor.actor_id).first())continue}ws.send(JSON.stringify(rendered))
+    const scope=await this.env.DB.prepare('SELECT project_id FROM conversations WHERE id=?').bind(event.conversationId).first<{project_id:string}>()
+    if(!scope)continue
+    const readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id)
+    const rendered=await renderKnowledgeFields(this.env,scope.project_id,await canonicaliseFields(this.env,scope.project_id,event),readers)
+    if(actor.role!=='contact'){
+     if(!await this.authorized(a)){await this.releaseOnline(ws);ws.close(1008,'Session revoked');continue}
+     if(!await this.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND ${ticketScopeSql('?')}`).bind(event.conversationId,actor.actor_id).first())continue
+    }
+    // Inbox navigation can close this socket during the authorization reads.
+    if(ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify(rendered))
    }
    return new Response('ok')
   }

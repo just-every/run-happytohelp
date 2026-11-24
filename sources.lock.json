@@ -5573,7 +5573,7 @@
       "executable": false
     },
     "src/modules/conversations/reads.ts": {
-      "sha256": "ccfa022117f493e6df4368061ca2de624f87721a154a84172339d8c1431e1f99",
+      "sha256": "93e8d534634f55663be39503cd544305eb97499892bd3a508896e18fafe95a1b",
       "executable": false
     },
     "src/modules/conversations/routes.ts": {
@@ -5581,7 +5581,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "bae3f6bc2d584319dab7bb0460de30f4a192ac3a4c0421a73fa078e6d40c8071",
+      "sha256": "a4f60718608c92aea6a0ce95a4aa5f2aeca1d2ae12d00d02dcdcde5579250390",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
@@ -8809,7 +8809,7 @@
       "executable": false
     },
     "src/modules/management/widget-events.ts": {
-      "sha256": "f459d846891880567a53ca08f567a5408e70b72fc28de246eb983283b3a27cab",
+      "sha256": "62160806524e7ee3f614d13c80aed8190082430b21d64942adf2ef08bf3bdc52",
       "executable": false
     },
     "src/modules/management/widget-events/contact.ts": {
@@ -8821,7 +8821,7 @@
       "executable": false
     },
     "src/modules/management/widget-events/conversation.ts": {
-      "sha256": "4560a8c2194be0b047d287548387899b068d2523391565ab253472b83fb577ec",
+      "sha256": "2d3ab847eb361664b66734cbaecd15ff4e36ac02b1d68250950b31c44f3dda51",
       "executable": false
     },
     "src/modules/management/widget-events/insight.ts": {
@@ -10429,7 +10429,7 @@
       "executable": false
     },
     "src/modules/widget/asset-origin.ts": {
-      "sha256": "7a16f83f06402af9fd7fc2cbe8abdecaff722d826e7b9ccff598ecada017d0f9",
+      "sha256": "2962edbb13b9dc9def039ad2126bb0d46a71c25e01e1ab26a78925eb8569fe95",
       "executable": false
     },
     "src/modules/widget/availability-text.d.ts": {
@@ -11641,7 +11641,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/Conversation.jsx": {
-      "sha256": "1aba43e4d5e07530d961e6a155a819f44ccb93dc52cfc45afb976d76f76cc8db",
+      "sha256": "9520a3333fa67a01c9c145063ff7baf94306286ddd82fae39b45ec39e2212449",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ai-controls.css": {
@@ -11717,7 +11717,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationForm.jsx": {
-      "sha256": "1790eb484cd5fafea22265094821fe889e56e683f5310e11a08ebd1385d32254",
+      "sha256": "5cc95742a8b8377554730730d2b99eb66aa12ea5a9c1ffae4bb668086ceb4a67",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationHeader.jsx": {
@@ -11949,7 +11949,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/MacrosPicker.jsx": {
-      "sha256": "ca3a538ba740ed7b7e91d4bb7393b115818095f62f9d7b15d201a2b2aa6a364a",
+      "sha256": "e7924db826fdf7c7b528604be004d34bc98cd6b91bbf7938c56f2d6eeefabc2b",
       "executable": false
     },
     "src/ui/dashboard/components/Media.jsx": {
@@ -13305,7 +13305,7 @@
       "executable": false
     },
     "src/ui/native/NavigationGuard.tsx": {
-      "sha256": "95a8d18275781dc8c321fd6d1b3925f29bc547dfea95baa82a645457f123e013",
+      "sha256": "b4fc9c9532cd6f4391e50766c1023540356c7a4c0c9e36c5c6e546f53514464d",
       "executable": false
     },
     "src/ui/native/PageHeader.jsx": {
@@ -17637,7 +17637,7 @@
       "executable": false
     },
     "tests/helpers/widget/socket.mjs": {
-      "sha256": "bec582ae6480154f3230224a0484711a122b890b315653f5b7404c114e7fab3e",
+      "sha256": "881cd26bb21e87355245c42c3b244cee48cf1f4275fa058e44c4a8d226ea97a8",
       "executable": false
     },
     "tests/helpers/widget/sockets.mjs": {
@@ -17857,7 +17857,7 @@
       "executable": false
     },
     "tests/journeys/widget.mjs": {
-      "sha256": "8b83b77153559d80cf7c60b7af61ef4897597549056b224ef641fd699d384c91",
+      "sha256": "3489dce671599933aff9f779cc4a98378b3c3dd6a7957fb0bebe1697296b79f5",
       "executable": false
     },
     "tests/journeys/workflows-browser.mjs": {

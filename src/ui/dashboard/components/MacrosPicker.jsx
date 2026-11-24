@@ -4,8 +4,8 @@ import {Link} from '@tanstack/react-router';
 import {nativeRequest} from '../../native/transport';
 import MacroPreview from './macros/MacroPreview';
 import {referenceSummary} from '../../native/knowledge-references/reference-text';
-MacrosPicker.propTypes={onPicked:PropTypes.func.isRequired,projectId:PropTypes.string.isRequired,conversationId:PropTypes.string.isRequired};
-export default function MacrosPicker({onPicked,projectId:macrosProjectId,conversationId}){
+MacrosPicker.propTypes={onPicked:PropTypes.func.isRequired,runApply:PropTypes.func.isRequired,projectId:PropTypes.string.isRequired,conversationId:PropTypes.string.isRequired};
+export default function MacrosPicker({onPicked,runApply,projectId:macrosProjectId,conversationId}){
  const [macros,setMacros]=useState([]),[hasLoaded,setHasLoaded]=useState(false),[error,setError]=useState(''),[search,setSearch]=useState(''),[page,setPage]=useState(1),[pagination,setPagination]=useState(null),[selected,setSelected]=useState(null),[preview,setPreview]=useState(null),[busy,setBusy]=useState(false);
  const path=`/api/dashboard/projects/${macrosProjectId}/macros`;
  const open=useRef(false);
@@ -26,7 +26,8 @@ export default function MacrosPicker({onPicked,projectId:macrosProjectId,convers
  };
  const apply=async(macro,review)=>{
   setBusy(true);setError('');try{
-   const item=await result(macro,'apply',{tickets:[{id:review.id,expected_version:review.expected_version}],command_id:crypto.randomUUID()});
+   const item=await runApply(()=>result(macro,'apply',{tickets:[{id:review.id,expected_version:review.expected_version}],command_id:crypto.randomUUID()}));
+   if(!item)return;
    if(item.draft){
     if(open.current){
      onPicked(item.draft.content,{...item.draft,references:item.references || item.draft.references || [],usage_id:item.usage_id});

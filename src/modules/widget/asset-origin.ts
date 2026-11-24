@@ -25,6 +25,7 @@ export async function widgetAssetOrigin(request:Request,response:Response,apiOri
  const etag=`"${Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join('')}"`
  const headers=new Headers(response.headers)
  for(const name of ['Content-Length','Content-Encoding','Last-Modified','Content-Range','Accept-Ranges'])headers.delete(name)
+ headers.set('Content-Type','text/javascript; charset=utf-8')
  headers.set('ETag',etag)
  headers.set('Cache-Control','public, max-age=300, s-maxage=300, stale-while-revalidate=60')
  const matches=request.headers.get('If-None-Match')?.split(',').some(tag=>tag.trim()==='*'||tag.trim().replace(/^W\//,'')===etag)

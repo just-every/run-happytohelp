@@ -10,7 +10,9 @@ import {assertModelConfigured} from '../../ai-support/configuration'
 import type { WidgetCommand } from './types'
 
 export async function markAsRead({ c, actor, conversation, data }: WidgetCommand) {
-  await recordMessageReads(c.env,actor,conversation,data.ids)
+  // Only the durable write is part of the acknowledgement. An operator's
+  // connection can disappear while the live notification is in flight.
+  await recordMessageReads(c.env,actor,conversation,data.ids,activity=>c.executionCtx.waitUntil(activity))
   return c.json({ read: true })
 }
 

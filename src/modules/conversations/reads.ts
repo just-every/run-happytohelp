@@ -10,16 +10,20 @@ export async function recordMessageReads(env:Env,actor:Actor,conversation:{id:st
  const selected=ids===undefined?null:[...new Set(ids as string[])]
  if(selected?.length===0)return []
  const contact=actor.role==='contact',now=Date.now()
- const predicate=`m.conversation_id=? AND m.project_id=? AND m.revision<=? AND ${contact?"m.actor_role<>'contact'":"m.actor_role='contact'"}${selected?` AND m.id IN (${selected.map(()=>'?').join(',')})`:''}`
- const args=[conversation.id,actor.projectId,conversation.revision,...(selected||[])]
+ // One bound JSON array keeps a catch-up read within D1's parameter limit.
+ const selectedMessages=selected?' AND m.id IN (SELECT value FROM json_each(?))':''
+ const predicate=`m.conversation_id=? AND m.project_id=? AND m.revision<=? AND ${contact?"m.actor_role<>'contact'":"m.actor_role='contact'"}${selectedMessages}`
+ const args=[conversation.id,actor.projectId,conversation.revision,...(selected?[JSON.stringify(selected)]:[])]
  const recorded=await env.DB.batch<any>([
   env.DB.prepare(`INSERT OR IGNORE INTO context_tracked_events(id,project_id,subject_id,local_id,type,payload,created_at) SELECT lower(hex(randomblob(16))),m.project_id,c.contact_id,'read:'||m.id||':'||?,'MESSAGE_READ',json_object('message_id',m.id,'reader_id',?,'reader_role',?,'conversation_id',c.id),? FROM messages m JOIN conversations c ON c.id=m.conversation_id WHERE ${predicate}`).bind(actor.id,actor.id,contact?'contact':'operator',now,...args),
-  env.DB.prepare(`INSERT INTO conversation_reads(conversation_id,user_id,revision) SELECT ?,?,coalesce(max(m.revision),0) FROM messages m WHERE m.conversation_id=? AND m.project_id=? AND m.revision<=?${selected?` AND m.id IN (${selected.map(()=>'?').join(',')})`:''} ON CONFLICT(conversation_id,user_id) DO UPDATE SET revision=max(revision,excluded.revision)`).bind(conversation.id,actor.id,...args),
+  env.DB.prepare(`INSERT INTO conversation_reads(conversation_id,user_id,revision) SELECT ?,?,coalesce(max(m.revision),0) FROM messages m WHERE m.conversation_id=? AND m.project_id=? AND m.revision<=?${selectedMessages} ON CONFLICT(conversation_id,user_id) DO UPDATE SET revision=excluded.revision WHERE excluded.revision>conversation_reads.revision`).bind(conversation.id,actor.id,...args),
   env.DB.prepare(`SELECT m.id message_id,e.created_at read_at FROM messages m JOIN context_tracked_events e ON e.project_id=m.project_id AND e.type='MESSAGE_READ' AND json_valid(e.payload) AND json_extract(e.payload,'$.message_id')=m.id AND json_extract(e.payload,'$.reader_id')=? WHERE ${predicate}`).bind(actor.id,...args),
  ])
  const receipts:MessageReadReceipt[]=recorded[2].results.map(row=>({messageId:row.message_id,readerId:actor.id,readerRole:contact?'contact':'operator',readAt:new Date(Number(row.read_at)).toISOString()}))
- const activity=publishActivity(env,actor.projectId,conversation.id,'read',{reads:receipts})
- if(defer)defer(activity);else await activity
+ if(recorded[0].meta.changes){
+  const activity=publishActivity(env,actor.projectId,conversation.id,'read',{reads:receipts})
+  if(defer)defer(activity.catch(()=>{console.error('Live read receipt delivery failed; the receipt is saved')}));else await activity
+ }
  return receipts
 }
 

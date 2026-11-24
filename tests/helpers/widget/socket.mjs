@@ -3,6 +3,45 @@ import {startApp,sha} from '../../journeys/kit/app.mjs'
 import {campaignsJourney} from './campaigns.mjs'
 import {socketClient} from './sockets.mjs'
 
+export async function visitorReadJourney(){
+ const app=await startApp()
+ try{
+  const {projectId,widgetKey,allowedOrigin,tokens,users}=await app.seedWorkspace('visitor-reads')
+  await app.presenceAwayOff(projectId)
+  const headers={Origin:allowedOrigin}
+  const visitor=(await app.call('/api/identity/widget/session',{headers,body:{widgetKey},status:201})).data
+  const {id}=await app.ok('/api/conversations',{token:visitor.token,body:{projectId}})
+  const path=`/api/conversations/${id}`
+  await app.ok(`${path}/messages`,{token:visitor.token,body:{localId:'opening',content:'Can you check the shipping address?',expectedRevision:0}})
+  const now=Date.now()
+  // Previously stored replies can all be displayed when a visitor comes back.
+  const history=Array.from({length:99},(_,index)=>`previous-reply-${index+1}`)
+  await app.db.batch([
+   ...history.map((messageId,index)=>app.db.prepare(`INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at)
+     VALUES(?,?,?,?,?,'operator',?,?,?)`).bind(messageId,projectId,id,messageId,users.owner,'Prior shipping update',index+2,now)),
+   app.db.prepare('UPDATE conversations SET revision=?,last_message_id=? WHERE id=?').bind(history.length+1,history.at(-1),id),
+  ])
+  const stream=await socketClient(app)(`${path}/socket?token=${visitor.token}`,headers)
+  assert.equal(stream.status,101)
+  const {message}=await app.ok(`${path}/messages`,{token:tokens.owner,body:{localId:'replacement',content:'The replacement will go to your corrected address.',expectedRevision:history.length+1,expectedLastMessageId:history.at(-1)}})
+  const delivery=await stream.next(frame=>frame.type==='message'&&frame.message.id===message.id)
+  const acknowledge=ids=>app.call(`${path}/widget-events`,{token:visitor.token,headers,body:{action:'markAsRead',data:{ids}},status:200})
+  const ids=[...history,delivery.message.id]
+  for(const response of await Promise.all([acknowledge(ids),acknowledge(ids)]))assert.deepEqual(response.data,{read:true})
+  const receipt=()=>app.first(`SELECT count(*) total,min(created_at) first_read FROM context_tracked_events WHERE subject_id=? AND type='MESSAGE_READ' AND local_id=?`,visitor.contactId,`read:${message.id}:${visitor.contactId}`)
+  const first=await receipt()
+  assert.equal(first.total,1)
+  assert.ok(first.first_read>=now)
+  await acknowledge([message.id])
+  assert.deepEqual(await receipt(),first)
+  const invalid=await app.call(`${path}/widget-events`,{token:visitor.token,headers,body:{action:'markAsRead',data:{ids:[null]}},status:400})
+  assert.ok(invalid.data.error)
+  const operator=await app.call(`${path}/widget-events`,{token:tokens.owner,body:{action:'markAsRead',data:{ids}},status:403})
+  assert.ok(operator.data.error)
+  stream.socket.close()
+ }finally{await app.close()}
+}
+
 // Conversation sockets on the real application: scoped REST and socket admission by token, origin and membership,
 // durable replay without operator-only data, the operator project stream, private notes live only to operators,
 // first-read receipts live to teammates, and a revoked session closing its socket.

@@ -2,32 +2,35 @@ import { createContext, useCallback, useContext, useEffect, useId, useMemo, useR
 import { useBlocker } from '@tanstack/react-router';
 import { isInboxPath, projectIdFromPath } from './workspace-scope';
 
-type Guard = { confirmNavigation: () => boolean; setDirty: (id: string, dirty: boolean, inboxDraft?: boolean) => void };
+type Discard = () => boolean | Promise<boolean>;
+type DirtyEditor = { inboxDraft: boolean; discard?: Discard };
+type Guard = { confirmNavigation: Discard; setDirty: (id: string, editor?: DirtyEditor) => void };
 const GuardContext = createContext<Guard | null>(null);
 
 /** One guard covers route changes and session-changing navigation commands. */
 export function NavigationGuard({ children }: { children: ReactNode }) {
-    const drafts = useRef(new Map<string, boolean>());
-    const setDirty = useCallback((id: string, dirty: boolean, inboxDraft = false) => {
-        if (dirty) drafts.current.set(id, inboxDraft);
+    const drafts = useRef(new Map<string, DirtyEditor>());
+    const setDirty = useCallback((id: string, editor?: DirtyEditor) => {
+        if (editor) drafts.current.set(id, editor);
         else drafts.current.delete(id);
     }, []);
     const confirm = useCallback((preserveInboxDraft = false) => {
-        if (![...drafts.current.values()].some(inboxDraft => !preserveInboxDraft || !inboxDraft)) return true;
+        const editors = [...drafts.current.values()].filter(editor => !preserveInboxDraft || !editor.inboxDraft);
+        if (!editors.length) return true;
         if (!window.confirm('Discard unsaved changes and leave this page?')) return false;
-        // The editor clears its registration on save/unmount. A failed navigation
-        // or session request must leave the existing draft protected.
+        const discards = editors.flatMap(editor => editor.discard ? [editor.discard] : []);
+        if (discards.length) return Promise.all(discards.map(discard => discard())).then(results => results.every(Boolean));
         return true;
     }, []);
     const confirmNavigation = useCallback(() => confirm(), [confirm]);
     useBlocker({
-        shouldBlockFn: ({ current, next }) => {
+        shouldBlockFn: async ({ current, next }) => {
             if (current.pathname === next.pathname) return false;
             // Reply drafts are saved in the tab per conversation. Other editors
             // still need confirmation, including when leaving this inbox.
             const sameInbox = isInboxPath(current.pathname, {}) && isInboxPath(next.pathname, {})
                 && projectIdFromPath(current.pathname) === projectIdFromPath(next.pathname);
-            return !confirm(sameInbox);
+            return !await confirm(sameInbox);
         },
         enableBeforeUnload: () => drafts.current.size > 0,
     });
@@ -41,13 +44,17 @@ export function useNavigationGuard() {
     return guard;
 }
 
-export function useUnsavedChanges(inboxDraft = false) {
+export function useUnsavedChanges(inboxDraft = false, discard?: Discard) {
     const { setDirty } = useNavigationGuard();
     const id = useId();
-    useEffect(() => () => setDirty(id, false), [id, setDirty]);
+    const discardRef = useRef(discard);
+    discardRef.current = discard;
+    const hasDiscard = Boolean(discard);
+    const editor = useMemo(() => ({ inboxDraft, discard: hasDiscard ? () => discardRef.current?.() ?? true : undefined }), [inboxDraft, hasDiscard]);
+    useEffect(() => () => setDirty(id), [id, setDirty]);
     return useMemo(() => ({
-        markDirty: () => setDirty(id, true, inboxDraft),
-        markSaved: () => setDirty(id, false),
-        setDirty: (dirty: boolean) => setDirty(id, dirty, inboxDraft),
-    }), [id, inboxDraft, setDirty]);
+        markDirty: () => setDirty(id, editor),
+        markSaved: () => setDirty(id),
+        setDirty: (dirty: boolean) => setDirty(id, dirty ? editor : undefined),
+    }), [id, editor, setDirty]);
 }

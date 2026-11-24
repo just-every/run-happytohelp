@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "c4eb508d48504318ca196121cff008d571acb82fb41dea604bd751e8954d8842",
+      "sha256": "e48fe4f1d11146917d2cddc497193f01806acc101b07ce3cd876c9206e3910ce",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2057,7 +2057,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "21a091836cc6bac7b22336263ba0fcd024f82d0bebd8ae054870244f77b68f15",
+      "sha256": "e431a380194da3617b30d9b0feed5948637ce4e32d50833de15a1d44eed8ae50",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2089,7 +2089,7 @@
       "executable": false
     },
     "management/integration/recipe.json": {
-      "sha256": "44fe5b34b182878388fac9a122ec29e079ced2017671860cd9a82699ce5f9103",
+      "sha256": "722ba1f165602dc70df49585f95c15960fb3d715860b04989732173811185e20",
       "executable": false
     },
     "management/integration/revision.ts": {
@@ -2925,7 +2925,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "e241ebd3b6a46d0f95f79527c7dfabfc790a8990d54da58ab097d9e6fa74070d",
+      "sha256": "3fa1da09e7553f83b4cb5816290eff774fd20ce5239a8ef169fd08e59a22b09a",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -3005,7 +3005,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "901968be0d2fadd3a3016152a4740a3888b50e4fe28be4246ad0b16a54cbfe73",
+      "sha256": "4fd43be80134a3eb3fa15e2bdc6ffd5f6660d7e7227b8fe9913f9a25db59c70f",
       "executable": false
     },
     "rer-project.json": {
@@ -4365,7 +4365,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "a5e46d2c80516a7df7bb321690470c466637da42175e48379c4e9aea7d9d883b",
+      "sha256": "07f41bc4fe51107a65810261b780f325119d5db216be72336497040ae6e2e23d",
       "executable": false
     },
     "size-check.json": {
@@ -5309,7 +5309,7 @@
       "executable": false
     },
     "src/modules/api-integrations/dispatch.ts": {
-      "sha256": "470a94b08d625d0db744c898177284caf4ca1576ad812fcbc862f992f28c0fb0",
+      "sha256": "a790f065a462b5b5d5ac9011aea9133156d0d3ee05f3c6b6972fad95191932bf",
       "executable": false
     },
     "src/modules/api-integrations/egress.ts": {
@@ -5385,7 +5385,7 @@
       "executable": false
     },
     "src/modules/api-integrations/scheduling.ts": {
-      "sha256": "a5c2a8e7bef8d1577cddce32a299c4fcaebce2d1c87d59ac767c3b8fbe0a6418",
+      "sha256": "8694f0df7672250dc7ae053729459ef00ade3b9417fd661639135d6b94d4dd7e",
       "executable": false
     },
     "src/modules/api-integrations/settings.ts": {
@@ -5485,7 +5485,7 @@
       "executable": false
     },
     "src/modules/collaboration/presence.ts": {
-      "sha256": "5e82c6f76234584d5a9a4e92f5825a2ae37df034704e6cbdf299d9d33a180cb4",
+      "sha256": "575b4b741717530ddfdbabbb173bce0cbc1a8cc59408d4d1cd64efde6a6b87ab",
       "executable": false
     },
     "src/modules/collaboration/routes.ts": {
@@ -5581,7 +5581,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "a4f60718608c92aea6a0ce95a4aa5f2aeca1d2ae12d00d02dcdcde5579250390",
+      "sha256": "c9d296ac19e7f0238d4da2e75b94b0e1c5324cb908d8cbc5426f92cf47351012",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
@@ -9661,7 +9661,7 @@
       "executable": false
     },
     "src/modules/outcomes/survey-delivery.ts": {
-      "sha256": "d96f7f7feae84ac919d6df21082d4e57530f7a0f5cc63f39db3ebec62ffbe574",
+      "sha256": "938ea661aad88b05b659de57d24a7414d2c27b48454b4670fa0ac793cfbb1e07",
       "executable": false
     },
     "src/modules/outcomes/survey-html.ts": {
@@ -9673,7 +9673,7 @@
       "executable": false
     },
     "src/modules/outcomes/survey-messaging.ts": {
-      "sha256": "6d825d2e12165d04c81d8dd7c87e4d53425eea8c0a0cbcbf2737e5b2c2c7c54a",
+      "sha256": "8dc57142c1fc2d1fb543cdcc921e32cfc1480007fe5565c764a40fb3eae49b61",
       "executable": false
     },
     "src/modules/outcomes/survey-routes.ts": {
@@ -11045,7 +11045,7 @@
       "executable": false
     },
     "src/modules/workflows/scheduled-work.ts": {
-      "sha256": "25d1c9ceca523e771f5f420fe88cb0d970701aff4e75f9eb0d2eeaef8d571a2a",
+      "sha256": "ab1e71cc7370d892d66777e0247447079c383927c795bf98e91c990a8e86c145",
       "executable": false
     },
     "src/modules/workflows/schedules-model.ts": {
@@ -11065,7 +11065,7 @@
       "executable": false
     },
     "src/modules/workflows/sla-backstop.ts": {
-      "sha256": "c927f96c3973db579f825e7569df93ac87bea337179db8c86b430aafb19b0dbf",
+      "sha256": "ef006959e99d5c1eb0d34ee1671575b60e91140d162a71ed86fd22751d46213d",
       "executable": false
     },
     "src/modules/workflows/sla-clocks.ts": {
@@ -12109,7 +12109,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/useHandleTimer.js": {
-      "sha256": "2da646141140f25e20d2c1b05ff3b4ec46b4ea834020fe480c8169378e3794a5",
+      "sha256": "105ff6b77f37bac2299ebe259f28d5a88b402da1fb98adbe1e247183478ee8df",
       "executable": false
     },
     "src/ui/dashboard/components/transcriptActorPalette.jsx": {
@@ -17757,7 +17757,7 @@
       "executable": false
     },
     "tests/journeys/inbox.mjs": {
-      "sha256": "40b186e262a8b94aaec955a695205ff2eeb6ff574eec90d4bc68fe25aaedb411",
+      "sha256": "2bc24a7ed4ffd3ec1994409ea42836b8755e6482daf1eed191903d3f566857fa",
       "executable": false
     },
     "tests/journeys/installer-nightly.mjs": {

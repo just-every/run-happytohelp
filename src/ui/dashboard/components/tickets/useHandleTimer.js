@@ -20,10 +20,14 @@ export function HandleTimerProvider({conversation, enabled, children}) {
         if (!enabled) return undefined;
         let active = true;
         const refresh = () => nativeRequest(path).then(value => { if (active) { setTimer({...value, receivedAt: Date.now()}); setTick(Date.now()); } }).catch(failure => { if (active) setError(failure.message); });
+        // The running total ticks locally; the poll only picks up changes made elsewhere,
+        // so a hidden tab stops polling and catches up when it is shown again.
+        const visible = () => { if (document.visibilityState === 'visible') refresh(); };
         refresh();
-        const poll = setInterval(refresh, 15000);
+        const poll = setInterval(visible, 60000);
         window.addEventListener('focus', refresh);
-        return () => { active = false; clearInterval(poll); window.removeEventListener('focus', refresh); };
+        document.addEventListener('visibilitychange', visible);
+        return () => { active = false; clearInterval(poll); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', visible); };
     }, [path, enabled, conversation.status_category, conversation.is_resolved]);
     useEffect(() => {
         if (!timer?.running) return undefined;

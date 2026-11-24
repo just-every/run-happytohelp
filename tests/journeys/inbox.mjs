@@ -5,6 +5,7 @@ import {ticketsJourney} from '../helpers/inbox/tickets.mjs'
 import {queueBulkJourney} from '../helpers/inbox/queue-bulk.mjs'
 import {statusLifecycleJourney} from '../helpers/inbox/status-lifecycle.mjs'
 import {brandsJourney} from '../helpers/inbox/brands.mjs'
+import {scheduledReadBudgetJourney} from '../helpers/scheduled-read-budget.mjs'
 
 test('a replacement request moves through scoped fields, a reviewed macro, shared queue work, private collaboration, routing, schedules and durable automations before closure and erasure',async()=>{
  const app=await startApp()
@@ -50,3 +51,4 @@ test('SLA field conditions admit only fields readable by every current workspace
 
 import {ticketReferenceSearch} from '../helpers/inbox/ticket-reference-search.mjs'
 test('inbox finds every readable exact ticket reference prefix without leaking tenant or operator-scoped tickets',ticketReferenceSearch)
+test('a month of support history with SLA, surveys and a webhook on keeps each scheduled minute to a flat, small D1 read cost',{timeout:300_000},scheduledReadBudgetJourney)

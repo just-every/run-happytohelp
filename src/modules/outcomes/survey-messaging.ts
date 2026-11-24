@@ -10,7 +10,8 @@ import {channelRequest} from '../support-channels/request'
 import {liveCycleSql,surveyJoins,activeSurveySql,type Survey} from './survey-store'
 import {surveySigningConfigured,surveyURL,type SurveySurface} from './survey-links'
 import {surveyCopy} from './survey-html'
-type Filter={projectId?:string;conversationId?:string}
+/** Scheduled discovery names the resolutions it walked; a targeted call names its conversation. */
+type Filter={projectId?:string;conversationId?:string;resolutionIds?:string[]}
 const native=`EXISTS(SELECT 1 FROM support_channel_threads st JOIN support_channel_connections sc ON sc.id=st.connection_id AND sc.project_id=st.project_id WHERE st.conversation_id=c.id AND st.project_id=c.project_id AND st.contact_id=ct.id AND sc.provider=c.channel)
  AND c.channel IN ('sms','whatsapp','instagram','messenger')
  AND NOT EXISTS(SELECT 1 FROM move_in_conversations m WHERE m.conversation_id=c.id)
@@ -20,14 +21,15 @@ const native=`EXISTS(SELECT 1 FROM support_channel_threads st JOIN support_chann
 /** Snapshot the original channel, never its phone number or page-scoped identity.
  * Refused invitations retain a terminal, inspectable reason in the send ledger. */
 export async function scheduleMessagingSurveys(env:Env,now:number,filter:Filter={}){
+ if(filter.resolutionIds&&!filter.resolutionIds.length)return
  await env.DB.prepare(`INSERT OR IGNORE INTO csat_surveys(id,project_id,resolution_id,conversation_id,contact_id,recipient,channel,scale,locale,due_at,expires_at,state,created_at,updated_at)
  SELECT lower(hex(randomblob(16))),r.project_id,r.id,c.id,r.contact_id,'',c.channel,cfg.scale,cfg.locale,r.resolved_at+cfg.delay_minutes*60000,r.resolved_at+cfg.delay_minutes*60000+cfg.expires_days*86400000,'pending',?,?
  FROM conversation_resolutions r JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id JOIN contacts ct ON ct.id=r.contact_id AND ct.project_id=r.project_id JOIN csat_settings cfg ON cfg.project_id=r.project_id
  WHERE ${liveCycleSql} AND ${native} AND cfg.enabled=1 AND r.resolved_at>=cfg.enabled_at
  AND NOT EXISTS(SELECT 1 FROM csat_responses v WHERE v.resolution_id=r.id)
  AND NOT EXISTS(SELECT 1 FROM csat_surveys s WHERE s.resolution_id=r.id)
- ${filter.projectId?'AND r.project_id=?':''} ${filter.conversationId?'AND c.id=?':''}
- ORDER BY r.resolved_at LIMIT 50`).bind(now,now,...(filter.projectId?[filter.projectId]:[]),...(filter.conversationId?[filter.conversationId]:[])).run()
+ ${filter.projectId?'AND r.project_id=?':''} ${filter.conversationId?'AND c.id=?':''} ${filter.resolutionIds?'AND r.id IN (SELECT value FROM json_each(?))':''}
+ ORDER BY r.resolved_at LIMIT 50`).bind(now,now,...(filter.projectId?[filter.projectId]:[]),...(filter.conversationId?[filter.conversationId]:[]),...(filter.resolutionIds?[JSON.stringify(filter.resolutionIds)]:[])).run()
 }
 async function refusal(env:Env,row:Survey,now:number){
  const live=await env.DB.prepare(`SELECT s.id ${surveyJoins} WHERE s.id=? AND ${activeSurveySql} AND ${native} AND EXISTS(SELECT 1 FROM csat_settings cfg WHERE cfg.project_id=s.project_id AND cfg.enabled=1)`).bind(row.id,now).first()

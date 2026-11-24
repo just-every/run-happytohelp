@@ -31,19 +31,36 @@ export async function hasScheduledSurveyWork(env:Env){
   UNION ALL SELECT 1 FROM support_channel_sends WHERE state='sending' AND message_id LIKE 'csat:%'
  )`).first())
 }
+const WALK=50,SETTLE=600000
+type Walked={id:string;project_id:string;conversation_id:string;resolved_at:number}
+/** Scheduled discovery backstops the transition hook without rereading history: it
+ * walks resolutions in resolved order from a stored cursor, starting no earlier than
+ * the first enabled workspace, nor before an invitation could still be answered. The
+ * cursor only passes a resolution once its invitation would be due, so eligibility
+ * that settles before then is still seen. */
+async function surveyWalk(env:Env,now:number){
+ const start=await env.DB.prepare('SELECT max(min(cfg.enabled_at),?-max(cfg.delay_minutes*60000+cfg.expires_days*86400000)) earliest,max(cfg.delay_minutes) delay_minutes,k.resolved_at,k.resolution_id FROM csat_settings cfg LEFT JOIN csat_discovery_cursor k ON k.id=1 WHERE cfg.enabled=1').bind(now).first<{earliest:number|null;delay_minutes:number;resolved_at:number|null;resolution_id:string|null}>()
+ if(start?.earliest==null)return {rows:[] as Walked[],advance:async()=>{}}
+ const from=start.resolved_at!=null&&start.resolved_at>=start.earliest?[start.resolved_at,start.resolution_id]:[start.earliest-1,'']
+ const rows=(await env.DB.prepare(`SELECT id,project_id,conversation_id,resolved_at FROM conversation_resolutions INDEXED BY conversation_resolutions_survey_walk WHERE reopened_at IS NULL AND (resolved_at,id)>(?,?) ORDER BY resolved_at,id LIMIT ${WALK}`).bind(...from).all<Walked>()).results
+ const settled=rows.filter(row=>row.resolved_at<=now-start.delay_minutes*60000-SETTLE).at(-1)
+ return {rows,advance:async()=>{if(settled)await env.DB.prepare('INSERT INTO csat_discovery_cursor(id,resolved_at,resolution_id) VALUES(1,?,?) ON CONFLICT(id) DO UPDATE SET resolved_at=excluded.resolved_at,resolution_id=excluded.resolution_id').bind(settled.resolved_at,settled.id).run()}}
+}
 /** Bounded poll seam for scheduled/queue execution. Sending/unknown commands are
  * reconciliation-only, including a process lost between claim and provider call. */
 export async function dispatchSurveys(env:Env,options:{now?:number;projectId?:string;conversationId?:string}={}){
- const now=options.now??Date.now()
- const messaging=await dispatchMessagingSurveys(env,now,options)
+ const now=options.now??Date.now(),targeted=Boolean(options.projectId||options.conversationId)
+ const walk=targeted||!cronRoom(env,9)?null:await surveyWalk(env,now)
+ const messaging=await dispatchMessagingSurveys(env,now,targeted?options:{resolutionIds:walk?.rows.map(row=>row.id)??[]})
  if(!cronRoom(env,3))return {processed:messaging,configured:false}
- const candidates=await env.DB.prepare(`SELECT r.project_id,r.conversation_id FROM conversation_resolutions r JOIN csat_settings cfg ON cfg.project_id=r.project_id JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id JOIN contacts ct ON ct.id=r.contact_id AND ct.project_id=r.project_id
- WHERE ${liveCycleSql} AND ${surveyRecipientSql} AND NOT EXISTS(SELECT 1 FROM csat_responses v WHERE v.resolution_id=r.id) AND cfg.enabled=1 AND r.resolved_at>=cfg.enabled_at AND r.reopened_at IS NULL AND NOT EXISTS(SELECT 1 FROM csat_surveys s WHERE s.resolution_id=r.id)
- ${options.projectId?'AND r.project_id=?':''} ${options.conversationId?'AND r.conversation_id=?':''} ORDER BY r.resolved_at LIMIT 50`)
- .bind(...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<{project_id:string;conversation_id:string}>()
  // One bounded page, with the same live-cycle and recipient guards checked in
  // the insert itself. Discovery must not spend one statement per invitation.
- if(candidates.results.length&&cronRoom(env,3))await scheduleSurveys(env,candidates.results,now)
+ const candidates=targeted?(await env.DB.prepare(`SELECT r.project_id,r.conversation_id FROM conversation_resolutions r JOIN csat_settings cfg ON cfg.project_id=r.project_id JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id JOIN contacts ct ON ct.id=r.contact_id AND ct.project_id=r.project_id
+ WHERE ${liveCycleSql} AND ${surveyRecipientSql} AND NOT EXISTS(SELECT 1 FROM csat_responses v WHERE v.resolution_id=r.id) AND cfg.enabled=1 AND r.resolved_at>=cfg.enabled_at AND r.reopened_at IS NULL AND NOT EXISTS(SELECT 1 FROM csat_surveys s WHERE s.resolution_id=r.id)
+ ${options.projectId?'AND r.project_id=?':''} ${options.conversationId?'AND r.conversation_id=?':''} ORDER BY r.resolved_at LIMIT 50`)
+ .bind(...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<Candidate>()).results:walk?.rows??[]
+ if(candidates.length&&cronRoom(env,3))await scheduleSurveys(env,candidates,now)
+ if(walk&&cronRoom(env,3))await walk.advance()
  await env.DB.prepare(`UPDATE csat_surveys SET state='cancelled',revoked_at=COALESCE(revoked_at,?),updated_at=? WHERE channel='email' AND state='pending' AND (expires_at<=? OR NOT EXISTS(
  SELECT 1 ${surveyJoins} WHERE s.id=csat_surveys.id AND ${liveCycleSql} AND ${surveyRecipientSql} AND lower(trim(ct.email))=s.recipient AND EXISTS(SELECT 1 FROM csat_settings cfg WHERE cfg.project_id=s.project_id AND cfg.enabled=1)))`).bind(now,now,now).run()
  if(!emailConfigured(env)||!surveySigningConfigured(env))return {processed:messaging,configured:false}

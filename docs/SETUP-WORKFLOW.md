@@ -27,7 +27,9 @@ is **My workspace**. You can choose these values in the answers file or change
 them later. Running setup again preserves the existing owner.
 
 For a [hosted installation](../OPERATIONS.md#deploy-to-your-cloudflare-account),
-`rer deploy` creates the owner for `OWNER_EMAIL`. If the checkout has no saved
+`rer deploy` creates the owner for `OWNER_EMAIL`, which must be a real address: the deploy
+refuses `example.com`, `example.net` and `example.org` addresses, `owner@run-happytohelp.test`
+and any address ending in `.test`, `.invalid`, `.localhost` or `.example`. If the checkout has no saved
 owner name, pass `--owner-name "Your name"`. Sign in by email. To recover
 an empty installation that still needs an owner, open `/setup` on your hosted
 HappyToHelp address over HTTPS. Enter your email, password, website and private
@@ -55,6 +57,10 @@ in the installation snippet. Do not expose an operator token or the server
 verification secret to customer code. See [the local widget walkthrough](INSTALLER.md#try-the-customer-widget-locally).
 
 ## After setup
+
+The first check after a new install is one test conversation: signed out, open `/contact` on
+the installation's own address, send a message with an email address, and confirm it appears
+in **Inbox**.
 
 To publish a help-center article, open **Inbox → Knowledge → Create Article**.
 

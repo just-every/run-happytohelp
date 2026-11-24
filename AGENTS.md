@@ -11,7 +11,10 @@ pnpm install --frozen-lockfile
 pnpm exec rer dev --foreground
 ```
 
-Wait for `RER_READY`, then open `RER_OPEN` to enter as the real local owner.
+Wait for `RER_READY`, then open `RER_OPEN` to enter as the real local owner. That
+private link is the owner-entry route (a copy, owner-readable only, is kept in
+`.rer/local/open-url`). Do not start dev with `--as owner`: it stops with "entry
+exchange not observed" and announces no link.
 The local dev entry uses the native owner, sessions and permissions and opens
 **Setup**. Local visitor and teammate mail is suppressed without storage or
 external sending. Keep the local entry URL private. Stop dev with Ctrl+C before verification or data operations.
@@ -29,6 +32,13 @@ pnpm exec rer describe
 Reset erases the printed local inventory; export your data **before** resetting
 if you need it. Import requires an empty destination and retains native owners.
 Deploy requires explicit owner authorization and private account configuration.
+The hosted deploy needs a real `OWNER_EMAIL` and refuses a reserved address before it
+deploys anything: `owner@run-happytohelp.test`, any `example.com`, `example.net` or
+`example.org` address, and any address ending in `.test`, `.invalid`, `.localhost` or
+`.example`. After a new install, the first check is one test conversation: signed out,
+open `/contact` on the installation's own address, send a message with an email
+address and confirm it appears in **Inbox**. An import is finished when its own row
+under **Your imports** on the Move in page reads `<file> — Complete`.
 NATIVE-001 requires a zero-outbound dry-run and a separately started read-only provider preflight with owner consent and a scoped token. Run `pnpm run preflight:provider --account-id ACCOUNT_ID --worker WORKER --consent-read-only` with `CLOUDFLARE_API_TOKEN` in the process environment (Workers Scripts: Read on that account); see the installer guide. Live qualification remains UNMET-EXTERNAL.
 `--dry-run` validates and builds locally without provider requests or credentials.
 It sends no mail and changes no provider resources. Its receipt explicitly leaves

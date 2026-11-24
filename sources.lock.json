@@ -1601,7 +1601,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "7845d5c06f3ab561c4caa9bf6bfcc06859f83fd45368a7b59552b37111783a99",
+      "sha256": "f65309ad5cfefa2aefa34676ac805ed24adb6492e5fda3639e1d64990849bce2",
       "executable": false
     },
     "base-copies.json": {
@@ -1741,7 +1741,7 @@
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "761f99b9ac65379cc167b1a3d58de3745565981cdd882d562d2d1193bc432071",
+      "sha256": "452a23e903c6707941a0b09ffeb9c962d17f8b506712c2df0fa04ff3fcd4967d",
       "executable": false
     },
     "docs/knowledge-upgrade-report.md": {
@@ -1793,7 +1793,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "37aad17a7c253b856065c4c0c289ff193186128abfb6565cbfcc05e9d1f19492",
+      "sha256": "63ac36fde5088d404dd7e4644bc6cbb3497e8efa5f1dd0e6aa9dbaaac2ab5f3f",
       "executable": false
     },
     "docs/NAVIGATION.md": {
@@ -1829,7 +1829,7 @@
       "executable": false
     },
     "docs/SETUP-WORKFLOW.md": {
-      "sha256": "62e2917d5151aa2392ad795620960c93ec117bfcb2162bf5024fd7be40c0ae34",
+      "sha256": "3ce2cbd5551414d178d170b3b04d5741941c4c7621cdee5c664d234b9a194cec",
       "executable": false
     },
     "docs/site.json": {
@@ -2921,7 +2921,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "ec9e6f69e761204d2145abad596a1005d4202eac50596719d24c6d589ed4f00c",
+      "sha256": "204cd05937dba357ab00ab6adc39070c873a1e1b4fd53c437dfcced1c5480a8f",
       "executable": false
     },
     "package.json": {
@@ -3001,7 +3001,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "3062a8ec0c14dd1873fbfccf62f07e99593d6563fb011542833088b64d475407",
+      "sha256": "290a0c289320c911d10389179fbc9d78e9e8f838f3a5f57e9b333c48248a0629",
       "executable": false
     },
     "RELEASE.json": {
@@ -3021,7 +3021,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "09da7a5dc60776f4304109ac5b78e413ff7f5de8a7d1a00a592ee887a6dcd53b",
+      "sha256": "bfdc8c902ad786d94ddd76d0bf0e42ff206b857fab3146ef7daaf24fcc8e5283",
       "executable": false
     },
     "scripts/build-local-agent.cjs": {

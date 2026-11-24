@@ -19,7 +19,9 @@ Prepare private answers as described in [Install](docs/INSTALLER.md#private-setu
 Setup builds, applies local migrations, prepares the real first owner and stops
 its temporary app. Dev provides Vite assets and HMR and stays in the foreground
 with `--foreground`. It prints `RER_READY URL` after real health checks and
-`RER_OPEN` for entry as the local owner. Native password sign-in is retained.
+`RER_OPEN` for entry as the local owner (a copy, owner-readable only, is kept in
+`.rer/local/open-url`). Native password sign-in is retained. `rer dev --as owner` stops
+with "entry exchange not observed"; use the `RER_OPEN` link of plain `rer dev`.
 JSON and non-interactive commands never open a browser or ask stdin questions.
 Stop dev with Ctrl-C before:
 
@@ -84,7 +86,10 @@ remains **UNMET-EXTERNAL** and remote provisioning is separately unqualified.
 
 A real `rer deploy` requires the owner-account credentials and committed source
 described in [Operations](OPERATIONS.md#deploy-to-your-cloudflare-account). A new
-hosted installation needs a real `OWNER_EMAIL` that can receive sign-in mail.
+hosted installation needs a real `OWNER_EMAIL` that can receive sign-in mail; the deploy
+refuses `example.com`, `example.net` and `example.org` addresses (so `you@example.com` in
+the setup commands is a placeholder), `owner@run-happytohelp.test` and any address ending in
+`.test`, `.invalid`, `.localhost` or `.example`.
 Supply private email settings such as `EMAIL_PROVIDER`, `EMAIL_FROM` and
 `EMAIL_API_KEY` when the hosted installation uses its own outbound email
 provider. For an installation that does not send email, see

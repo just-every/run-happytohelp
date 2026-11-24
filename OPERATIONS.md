@@ -270,8 +270,9 @@ provider's inputs. To deploy without sending, use
 [Deploy with outbound email off](#deploy-with-outbound-email-off). Provider and
 sender are stored as secret bindings too, so the deployment declaration contains
 no account-specific values. Rer supplies the owner email (`OWNER_EMAIL`) from real local setup, or from the environment
-when you set it. Deploy refuses the local placeholder `owner@run-happytohelp.test`
-and other reserved trial domains because they cannot receive sign-in mail. Supply
+when you set it. Deploy refuses the local placeholder `owner@run-happytohelp.test`,
+any `example.com`, `example.net` or `example.org` address, and any address ending in
+`.test`, `.invalid`, `.localhost` or `.example` because they cannot receive sign-in mail; it stops before deploying anything. Supply
 a real owner email privately in `OWNER_EMAIL` or an owned 0600 `--env-file` for
 live deployment. The credential-free dry run can list that missing input without
 requiring it. Rer generates missing setup/encryption secrets. It also deploys

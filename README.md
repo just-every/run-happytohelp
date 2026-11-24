@@ -92,7 +92,10 @@ To prepare a checkout without starting it, use the [private setup answers](docs/
 
 A first launch can download the checkout’s headless Chromium for the owner-entry
 check. Dev uses its local address for the chat widget and generates a private owner password. Continue in
-the app, or open the private `RER_OPEN` link to reach **Setup** as the owner.
+the app, or open the private `RER_OPEN` link to reach **Setup** as the owner. Plain
+`rer dev` prints that link after `RER_READY` and keeps a copy, owner-readable only,
+in `.rer/local/open-url`; do not start dev with `--as owner`, which stops with
+"entry exchange not observed" and announces no link.
 No private answers, email service or AI account are needed. Use `rer dev --stop`
 from the checkout to stop the managed app.
 
@@ -203,13 +206,18 @@ owner to reach **Setup**. On the first deploy, pass the owner's display name wit
 hostname does not name your business: a `workers.dev` website defaults to
 **My workspace** regardless of owner email. An explicitly chosen native workspace
 name takes precedence; you can change it in Project settings.
-Deploy refuses the local placeholder `owner@run-happytohelp.test`: it has no mailbox.
+The hosted deploy needs a real `OWNER_EMAIL` and refuses a reserved address before
+it deploys anything: the local placeholder `owner@run-happytohelp.test`, any
+`example.com`, `example.net` or `example.org` address (so the `you@example.com` in
+this guide's setup commands is a placeholder to replace), and any address ending in
+`.test`, `.invalid`, `.localhost` or `.example`. None has a mailbox.
 For a real deployment, supply `OWNER_EMAIL` privately in your environment or an
 owned 0600 `--env-file`. The local dry run can list missing production inputs
 without requiring them.
 `rer signin --environment production` directs you to this installation's `/login`
 page. HappyToHelp uses its native email/password sign-in; the command cannot mint
-an owner link. If mail fails, follow the working mail recovery in
+an owner link. The owner-entry route is the private `RER_OPEN` link on a local
+checkout and that `/login` page on a hosted installation. If mail fails, follow the working mail recovery in
 [operations](OPERATIONS.md#claim-your-new-installation).
 `rer deploy --environment NAME --remove --yes`
 removes that environment's created Worker, D1, R2 and queues in one pass,
@@ -252,6 +260,11 @@ for an email before sending a message. To turn this off, open **Settings → Wid
 → Settings → Required contact details** and disable **Require email**. An explicitly
 saved choice is retained. When an address is collected, operator replies can then use it on a hosted
 installation with email sending configured.
+
+The first check after a new install is one test conversation: signed out, open
+`/contact` on the installation's own address, send a message with an email address,
+and confirm that conversation appears in **Inbox**. `/contact` answers "Contact
+support unavailable" until the installation has its owner.
 
 ## Set up AI replies
 
@@ -314,7 +327,9 @@ When you are done, delete the demo workspace from its settings.
 Owner/admin **Move in** reviews five kinds: conversations, contacts, tags, saved
 replies and articles. Inspect per-kind plans, rejections, omissions, conflicts and
 publication changes; approve, resume a stopped batch, follow report links, repeat
-or undo through the same current role checks. Original source IDs, timestamps and
+or undo through the same current role checks. An import is finished when its own row
+under **Your imports** reads `<file> — Complete` (a space, an em dash and a space between
+them); while it runs the row reads `<file> — Importing`. Original source IDs, timestamps and
 private notes remain attributed; published articles stay published and drafts stay
 drafts. Apply and undo are inert: no mail, widget messages, model work, assignment
 or connection notifications. [The moving-in guide](docs/moving-in.md) explains

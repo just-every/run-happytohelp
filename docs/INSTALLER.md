@@ -138,7 +138,8 @@ preserve the same owner, data and exact existing private settings. Conflicting
 saved email or origin is refused; preserve data before any recovery or reset.
 
 Dev reports `RER_READY` after real health checks. Open `RER_OPEN` to enter as
-the local owner. Native password sign-in remains available. Use `rer dev --stop`
+the local owner; do not start dev with `--as owner`, which stops with "entry exchange
+not observed" and announces no link. Native password sign-in remains available. Use `rer dev --stop`
 to stop the managed app, or `rer dev --foreground` to keep it in the terminal and
 stop with Ctrl+C.
 
@@ -177,7 +178,9 @@ Use a real page to send a customer message, then reply from your workspace inbox
    the widget and send a message. In your signed-in app,
    open **Inbox**, choose the conversation and reply. Check the reply in the
    visitor's widget. Local visitor and teammate email is suppressed without
-   storage or sending.
+   storage or sending. On any new install, the quickest first check needs no test
+   page: signed out, open `/contact` on the installation's own address, send one
+   message with an email address and confirm it appears in **Inbox**.
 
 The website origin is where your customer page runs. The app origin is the
 `RER_READY` address serving HappyToHelp, its API and `widget.js`; keep that app

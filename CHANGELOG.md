@@ -8,6 +8,18 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.43 — 2026-11-25
+
+- **Scheduled D1 reads.** The minute cron no longer rereads history when SLA policies, CSAT surveys or webhook and Slack destinations are on. With 30 days of history and all three on, a steady run read about 46,000 to 70,000 D1 rows at 600 conversations and 128,000 to 162,000 at 1,200. It now reads about 80 to 160 rows at either size. Migration 339 adds partial indexes for open tickets, open SLA alerts, unprepared integration intents, live deliveries and survey discovery, plus the survey cursor table.
+- **SLA backstop.** The rolling SLA rebuild reads only open tickets and tickets with an open alert. After a full pass it waits up to an hour before the next one, and starts again straight away when an SLA policy or business calendar changes.
+- **Survey discovery.** New CSAT invitations are found from a cursor over resolutions instead of every resolution each minute. A resolution is still rechecked until its invitation would be due.
+- **Ticket updates.** Migration 340 stops a reply from moving Inbox count buckets that its old and new times share. A reply read about 1,260 rows and wrote about 470; it now reads about 100 and writes about 150. A ticket edit rebuilds report cohort rows only when a reported field changes.
+- **Operator tabs.** Handle time refreshes every 60 seconds while the tab is visible, and on focus, instead of every 15 seconds in hidden tabs too. Presence sweeps and heartbeats reuse a socket’s authorization for up to a minute; replays, events and other commands still check the session each time.
+
+Update from v0.4.42 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. From v0.4.42, apply `339_flat_scheduled_reads.sql` and then `340_ticket_update_writes.sql` once before serving HTTP or queue traffic. For older installations, first follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-25._
+
 ## 0.4.42 — 2026-11-24
 
 - **Visitor read acknowledgements.** The hosted widget acknowledges a delivered reply even if an operator socket closes. In the hosted reproduction, acknowledgement failures fell from 19 in 24 attempts to zero.

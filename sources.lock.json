@@ -1557,7 +1557,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "bfb81fba3d1f2504273067432a947407161ffc85a10b20122952d26b232b6c85",
+      "sha256": "add065518ab6ce0042b011038a378098848bde96f4f90e50d98d3270d640aabd",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1573,7 +1573,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "30fb008ad34bb74e67144661701747f495ee13ebe7f99aba01e3090d8e1c8f1c",
+      "sha256": "b810c037239aec85b1b5a2b52e99a245112d8ec31f9febe3cc9a86652accf5a9",
       "executable": false
     },
     ".gitignore": {
@@ -1605,7 +1605,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "7b453e1d930eb868056604056e897dc3b609ce080481c373ccaa131d186d1613",
+      "sha256": "320a6b7d83bd1d3b5f67343d161566aa7dbc3cc4558bfb1f07319d1994dd8999",
       "executable": false
     },
     "CHANGELOG.md": {
@@ -3069,15 +3069,15 @@
       "executable": false
     },
     "scripts/ci/verify-evidence.mjs": {
-      "sha256": "57a7a8b3c15eeb10bc204f41995943e284f1fc8b4696d506ec09427fdb91cd43",
+      "sha256": "8260e91015494b6c3ded12fefa17edf6bf50f64623b7e8a992be455c3735bfe5",
       "executable": false
     },
     "scripts/ci/verify-inventory.mjs": {
-      "sha256": "5961f54bb17be4aa4af9c9c794ac91459c0e3f984ff040d637f0fc519357e1ef",
+      "sha256": "dbe515ab34b59f6bcadaa2003c0a3a52d9e417e32bf2a81b1d55aa6a3430c3c6",
       "executable": false
     },
     "scripts/ci/verify-lifecycle.mjs": {
-      "sha256": "800fe928bccc5c1c09078feaecab5659d1593355d2e44614aa0739c0a0c988cf",
+      "sha256": "2800fb9cb4b9b9af72b83bb3447b8f094a802872e3e20bcc687db7f6f4881c02",
       "executable": false
     },
     "scripts/ci/verify-light.mjs": {
@@ -3085,7 +3085,7 @@
       "executable": false
     },
     "scripts/ci/verify-plan.mjs": {
-      "sha256": "345e82c52ff6f251a94b4382db3fd4e6b4960cd53e2cdac53f60ba593b7b284a",
+      "sha256": "abe8fbbf83f828c2a53da06df572df3d4eb4cada558c9fa55cc579df5429185d",
       "executable": false
     },
     "scripts/contract-docs.mjs": {

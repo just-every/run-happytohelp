@@ -71,9 +71,16 @@ export function githubEvidence(env, fetch = globalThis.fetch) {
   return required.every(name => jobs.filter(job => job.name === name || job.name.endsWith(` / ${name}`)).length === 1
    && jobs.some(job => (job.name === name || job.name.endsWith(` / ${name}`)) && succeeded(job)));
  };
+ // The newest listed run that qualifies and proves every required job: a later reuse run on the same SHA
+ // (a fast-forward of main) must not hide the full proof that it reused.
+ const proven = async (current, sha, qualifies, required) => {
+  const runs = (await list(`actions/workflows/${current.workflow_id}/runs?head_sha=${sha}`, 'workflow_runs', runShape))
+   .filter(value => eligible(value, current, sha) && succeeded(value) && qualifies(value)).sort((a, b) => b.id - a.id);
+  for (const value of runs) if (await proof(value, required)) return value;
+ };
  // Preserve the seed's C3 requirement that every prior push on this SHA is green.
  const pushesClear = async (current, sha) => (await list(
   `actions/workflows/${current.workflow_id}/runs?head_sha=${sha}`, 'workflow_runs', runShape))
   .filter(value => eligible(value, current, sha) && value.event === 'push').every(succeeded);
- return { get, run, newest, proof, sameRepository, pushesClear };
+ return { get, run, newest, proof, proven, sameRepository, pushesClear };
 }

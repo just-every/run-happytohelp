@@ -33,7 +33,7 @@
       },
       "acknowledged": {
         ".github/workflows/verify.yml": {
-          "sha256": "55228cc8da224ea8fb08871d76e3366dc147d0653801a3862c5fec0103c4063b",
+          "sha256": "b810c037239aec85b1b5a2b52e99a245112d8ec31f9febe3cc9a86652accf5a9",
           "mode": "100644"
         }
       }
@@ -174,7 +174,7 @@
       },
       "acknowledged": {
         "scripts/ci/verify-evidence.mjs": {
-          "sha256": "57a7a8b3c15eeb10bc204f41995943e284f1fc8b4696d506ec09427fdb91cd43",
+          "sha256": "8260e91015494b6c3ded12fefa17edf6bf50f64623b7e8a992be455c3735bfe5",
           "mode": "100644"
         }
       }
@@ -220,7 +220,7 @@
       },
       "acknowledged": {
         "scripts/ci/verify-plan.mjs": {
-          "sha256": "345e82c52ff6f251a94b4382db3fd4e6b4960cd53e2cdac53f60ba593b7b284a",
+          "sha256": "abe8fbbf83f828c2a53da06df572df3d4eb4cada558c9fa55cc579df5429185d",
           "mode": "100644"
         }
       }

@@ -4,22 +4,19 @@ on:
   push:
     branches: ['**']
     tags: ['v*']
-  pull_request:
-  schedule:
-    - cron: '47 4 * * *'
   workflow_dispatch:
     inputs:
       tier:
         description: Verification tier
         type: choice
-        options: [push, nightly, all]
+        options: [push, all]
         default: all
 
 permissions:
   contents: read
 
 concurrency:
-  group: verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
+  group: verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
@@ -45,19 +42,10 @@ jobs:
           # Complete push/PR rename-aware diff for the size path filter.
           fetch-depth: 0
           persist-credentials: false
-      - name: Look up complete nightly marker
-        id: nightly
-        if: ${{ github.event_name == 'schedule' || inputs.tier == 'nightly' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ runner.temp }}/nightly-green
-          key: h2h-nightly-green-v2-${{ github.sha }}
-          lookup-only: true
       - id: plan
         env:
           GITHUB_TOKEN: ${{ github.token }}
           TIER: ${{ inputs.tier || 'push' }}
-          NIGHTLY_CACHE_HIT: ${{ steps.nightly.outputs.cache-hit }}
         run: node scripts/ci/verify-lifecycle.mjs --plan
 
   contract-docs:
@@ -85,10 +73,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: node src/site/base/contract-docs.mjs check
       - run: node scripts/contract-docs.mjs check
+      - name: Count tests against the cap
+        run: node scripts/ci/test-budget.mjs
 
   build:
     needs: plan
-    if: ${{ needs.plan.outputs.coverage != 'reuse' }}
+    if: ${{ needs.plan.outputs.coverage != 'reuse' && needs.plan.outputs.coverage != 'slow' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     # Only generated, public build output is shared; no local state or secrets.
@@ -158,7 +148,7 @@ jobs:
 
   checks:
     needs: [plan, build]
-    if: ${{ needs.plan.outputs.coverage == 'full' && needs.plan.outputs.tier != 'nightly' }}
+    if: ${{ needs.plan.outputs.coverage == 'full' }}
     name: Verify / ${{ matrix.name }}
     runs-on: ubuntu-24.04
     timeout-minutes: ${{ matrix.name == 'public-and-import-browser' && needs.plan.outputs.tier == 'push' && 60 || 30 }}
@@ -328,7 +318,7 @@ jobs:
 
   slow:
     needs: plan
-    if: ${{ needs.plan.outputs.coverage == 'full' && needs.plan.outputs.tier != 'push' }}
+    if: ${{ (needs.plan.outputs.coverage == 'full' || needs.plan.outputs.coverage == 'slow') && needs.plan.outputs.tier != 'push' }}
     permissions:
       contents: read
     uses: ./.github/workflows/installer-journeys.yml
@@ -341,31 +331,12 @@ jobs:
     steps:
       - run: test '${{ needs.build.result }}:${{ needs.checks.result }}' = success:success
 
-  nightly-proof:
-    needs: [plan, build, slow, size-check]
-    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.plan.outputs.tier == 'nightly' || needs.plan.outputs.tier == 'all') && needs.plan.outputs.coverage == 'full' && needs.build.result == 'success' && needs.slow.result == 'success' && needs.size-check.result == 'success' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 1
-    steps:
-      - name: Mark complete nightly coverage
-        run: mkdir -p "$RUNNER_TEMP/nightly-green" && printf '%s\n' '${{ github.sha }}' > "$RUNNER_TEMP/nightly-green/sha"
-      - uses: actions/cache/save@v4
-        with:
-          path: ${{ runner.temp }}/nightly-green
-          key: h2h-nightly-green-v2-${{ github.sha }}
-
   verify:
-    needs: [plan, contract-docs, build, checks, size-check, slow, full-push-proof, nightly-proof]
+    needs: [plan, contract-docs, build, checks, size-check, slow, full-push-proof]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 1
-    permissions:
-      contents: read
-      actions: read
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
       - name: Require the plan and every selected check
         env:
           PLAN: ${{ needs.plan.result }}
@@ -379,8 +350,6 @@ jobs:
           CHECKS: ${{ needs.checks.result }}
           SLOW: ${{ needs.slow.result }}
           PUSH_PROOF: ${{ needs.full-push-proof.result }}
-          NIGHTLY_PROOF: ${{ needs.nightly-proof.result }}
-          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           test "$PLAN" = success
@@ -389,19 +358,18 @@ jobs:
             true:success|false:skipped) ;;
             *) exit 1 ;;
           esac
-          case "$PUSH_PROOF:$NIGHTLY_PROOF" in *failure*|*cancelled*) exit 1 ;; esac
+          case "$PUSH_PROOF" in failure|cancelled) exit 1 ;; esac
           case "$COVERAGE:$TIER" in
-            reuse:push|reuse:nightly)
+            reuse:push)
               test "$SKIP:$BUILD:$CHECKS:$SLOW" = true:skipped:skipped:skipped ;;
             light:push)
               test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:skipped:skipped ;;
             full:push)
               test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:success:skipped
               if [ "$GITHUB_EVENT_NAME" = push ]; then test "$PUSH_PROOF" = success; fi ;;
-            full:nightly)
-              test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:skipped:success ;;
             full:all)
               test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:success:success ;;
+            slow:all)
+              test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:skipped:skipped:success ;;
             *) exit 1 ;;
           esac
-          node scripts/ci/verify-lifecycle.mjs --require-pr

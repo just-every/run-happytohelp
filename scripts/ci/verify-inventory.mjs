@@ -12,7 +12,7 @@ export const pushNames = [
   "identity-and-repair-browser",
   "public-and-import-browser"
 ];
-export const nightlyNames = [
+export const slowNames = [
   "native-command-and-portability",
   "readme-clone-and-restore",
   "reproducible-build",
@@ -24,8 +24,7 @@ export const nightlyNames = [
   "release-upgrades"
 ];
 export const pushProof = ['plan', 'build', 'full-push-proof', 'verify', ...pushNames.map(name => `Verify / ${name}`)];
-export const nightlyProof = ['plan', 'nightly-proof', 'verify', 'legacy-export', ...nightlyNames.map(name => `Installer / ${name}`)];
-export const verificationPlan = { push: pushNames.map(name => ({name})), nightly: nightlyNames.map(name => ({name})) };
+export const verificationPlan = { push: pushNames.map(name => ({name})), slow: slowNames.map(name => ({name})) };
 
 export function checkPushInventory(workflow, scripts) {
   const shards = parse(workflow).jobs.checks.strategy.matrix.include;

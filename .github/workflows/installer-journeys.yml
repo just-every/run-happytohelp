@@ -2,7 +2,7 @@ name: Installer and README journeys
 
 # Fresh-clone installs/restores, two-location reproducibility and release upgrades are
 # retained on Verify's reusable slow qualification lane.
-# Verify selects nightly on Monday/Thursday and all coverage on release tags.
+# Verify runs it once per release tag (and on a manual all-tier dispatch); there is no nightly run.
 on:
   workflow_call:
 

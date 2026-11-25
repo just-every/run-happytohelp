@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "55f9910297b253cfcb94b71a432a84db9b972718c098f573b1c17264b535cdea",
+      "sha256": "ee467b2e930815369a4b3e826caf40005da10e63cde4947f9a288cafab6c8064",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2057,7 +2057,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "33fb0d555cb3aad420c04661b9686e5657bba61fcd85cdc643c144bcc60557fd",
+      "sha256": "bdde78384489753a98df442afb1d9cd49d6522ce7922e00d79c2a2cc27687e51",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2089,7 +2089,7 @@
       "executable": false
     },
     "management/integration/recipe.json": {
-      "sha256": "1f2f46a1c3a83f9ffff9d1932269c99b6704842578b0d19a2909c95f4068d06e",
+      "sha256": "028dd3bcce7eaa00f8bf76bbcf72f466d4cdc339fc8f30d5f8f56855a04b9c0f",
       "executable": false
     },
     "management/integration/revision.ts": {
@@ -2924,6 +2924,10 @@
       "sha256": "1a87df0c96f31aa769b821b888051db43d5699491a134af65c72ac1242fd1d0e",
       "executable": false
     },
+    "migrations/341_open_ticket_poll_reads.sql": {
+      "sha256": "6b8c5d43ed1c76eb3c013f35d4343bcf18acb5d9a4334c6116bd91dd81ef1085",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -3013,7 +3017,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "28493dc4c298c60d4db7abc6ee810d9c0be1ae131877ff84c1c0f1df8e256e88",
+      "sha256": "8d81641d43b77189bd9c0bc57b6d05da66d0e9c56dbbdac6bdbde8ea90a16955",
       "executable": false
     },
     "rer-project.json": {
@@ -17513,7 +17517,7 @@
       "executable": false
     },
     "tests/helpers/scheduled-read-budget.mjs": {
-      "sha256": "0d247360f6c6d8eb26c8555374b0693751dd5e5a063aa30b276769481bce7237",
+      "sha256": "91653fd151bcb41512f658c63753de78da5c99660feb71e49030c6b8c6c1b0c2",
       "executable": false
     },
     "tests/helpers/search-index.mjs": {
@@ -17597,7 +17601,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "159edb3666b6029bda588ebe52d98830e7b46492fdbd6c8830d63b61e77d3857",
+      "sha256": "934915b349f4be58c3d835617a2dff68f60e8d1c7df73305590b4e5842317076",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

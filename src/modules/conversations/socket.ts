@@ -9,7 +9,7 @@ import {DurableObject} from 'cloudflare:workers'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
 import {pendingFactor,policyRoles,type FactorMethod} from '../identity/two-factor/state'
-import {mergePresence,presenceFrame,teammateOnline,ONLINE_IDLE_REPORT_MAX_MS,PRESENCE_SWEEP_MS,PRESENCE_TTL_MS,type OnlineState,type SocketAttachment as Attachment,type SocketActor} from '../collaboration/presence'
+import {mergePresence,presenceFrame,teammateOnline,ONLINE_IDLE_REPORT_MAX_MS,PRESENCE_SWEEP_MS,SWEEP_AUTHORIZATION_MS,PRESENCE_TTL_MS,type OnlineState,type SocketAttachment as Attachment,type SocketActor} from '../collaboration/presence'
 import {recordOnline} from '../collaboration/presence-store'
 
 export class ConversationSocket extends DurableObject<Env>{
@@ -27,6 +27,18 @@ export class ConversationSocket extends DurableObject<Env>{
   if(!row)return null
   if(row.role!=='contact'&&pendingFactor({factorAt:row.factorAt,factorMethod:row.factorMethod,hasFactor:!!row.hasFactor,required:policyRoles(row.twoFactorRoles).includes(row.policyRole||row.role),installation:row.factorMethod==='installation'}))return null
   return row
+ }
+ /** Record a live authorization on the attachment for the presence sweep to reuse. */
+ remember(a:Attachment,actor:SocketActor){a.authorized={at:Date.now(),actor:{actor_id:actor.actor_id,role:actor.role,name:actor.name}}}
+ /** The presence sweep runs every few seconds per open ticket and sends only presence,
+  * so it reuses a socket's authorization for up to a minute. A socket's own commands,
+  * replays and every delivery still check the session live, so revoked access still
+  * closes a stream at its next frame and never receives ticket content. */
+ async sweepActor(ws:WebSocket,a:Attachment):Promise<SocketActor|null>{
+  if(a.authorized&&a.authorized.at>Date.now()-SWEEP_AUTHORIZATION_MS)return a.authorized.actor
+  const actor=await this.authorized(a)
+  if(actor){this.remember(a,actor);ws.serializeAttachment(a)}
+  return actor
  }
  async replay(ws:WebSocket){
   const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
@@ -75,7 +87,7 @@ export class ConversationSocket extends DurableObject<Env>{
    const a=ws.deserializeAttachment() as Attachment
    if(!a.conversationId)continue
    conversationId=a.conversationId
-   const actor=await this.authorized(a)
+   const actor=await this.sweepActor(ws,a)
    if(!actor){delete a.presence;ws.serializeAttachment(a);ws.close(1008,'Session revoked');continue}
    if(actor.role==='contact')continue
    receivers.push(ws)
@@ -143,6 +155,7 @@ export class ConversationSocket extends DurableObject<Env>{
   const a:Attachment={conversationId:conversationId||undefined,projectId:projectId||undefined,tokenHash:await hashToken(token),cursor:Math.max(0,Number(url.searchParams.get('after'))||0)}
   const actor=await this.authorized(a)
   if(!actor)return new Response('Unauthorized',{status:401})
+  this.remember(a,actor)
   if(conversationId&&actor.role!=='contact')a.presence={expiresAt:Date.now()+PRESENCE_TTL_MS,typing:false,draft:false}
   const pair=new WebSocketPair();this.ctx.acceptWebSocket(pair[1]);pair[1].serializeAttachment(a)
   await this.replay(pair[1]);if(a.presence)await this.publishPresence()
@@ -154,6 +167,7 @@ export class ConversationSocket extends DurableObject<Env>{
   if(!command||typeof command!=='object')return
   const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
   if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');await this.publishPresence(ws);return}
+  this.remember(a,actor);ws.serializeAttachment(a)
   // On the project stream, presence is the workspace's: how long this person has been idle, as their dashboard saw it.
   if(command.type==='presence'&&a.projectId&&!a.conversationId){
    if(typeof command.idleMs!=='number'||!Number.isFinite(command.idleMs)){await this.releaseOnline(ws);ws.close(1003,'Invalid command');return}

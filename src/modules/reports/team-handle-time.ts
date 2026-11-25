@@ -4,13 +4,12 @@ type HandleRow={dimension:'agent'|'form'|'intent';id:string|null;label:string;du
 export async function teamHandleTime(context:TeamReportContext){
  // Attribute all work performed in the interval, including older tickets. The
  // session owner is the agent who did the work, regardless of later assignment.
- const {results}=await statement(context,`, sessions AS (
+ const {results}=await statement(context,`, sessions AS MATERIALIZED (
  SELECT s.id,s.user_id,s.conversation_id,
  CASE WHEN s.adjusted_duration_ms IS NULL THEN MAX(0,MIN(COALESCE(s.ended_at,?7),?3,?7)-MAX(s.started_at,?2))
  WHEN s.ended_at=s.started_at THEN CASE WHEN s.started_at>=?2 AND s.started_at<?3 THEN s.adjusted_duration_ms ELSE 0 END
  ELSE s.adjusted_duration_ms*1.0*MAX(0,MIN(s.ended_at,?3,?7)-MAX(s.started_at,?2))/(s.ended_at-s.started_at) END duration_ms
- FROM ticket_handle_sessions s JOIN scoped c ON c.project_id=s.project_id AND c.id=s.conversation_id
- WHERE s.started_at<?3 AND s.started_at<=?7 AND (COALESCE(s.ended_at,?7)>?2 OR (s.ended_at=s.started_at AND s.started_at>=?2))
+ FROM handled s WHERE s.conversation_id IN (SELECT id FROM scoped)
  ), dimensions AS (
  SELECT s.id session_id,'agent' dimension,s.user_id key,COALESCE(u.name,s.user_id) label,s.duration_ms FROM sessions s LEFT JOIN users u ON u.id=s.user_id
  UNION ALL SELECT s.id,'form',f.form_id,COALESCE(json_extract(r.config_json,'$.name'),json_extract(r.config_json,'$.title'),f.form_id,'No form'),s.duration_ms FROM sessions s LEFT JOIN request_form_submissions f ON f.project_id=?1 AND f.conversation_id=s.conversation_id LEFT JOIN request_forms r ON r.project_id=f.project_id AND r.id=f.form_id

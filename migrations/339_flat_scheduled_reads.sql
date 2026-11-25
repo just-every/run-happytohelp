@@ -20,3 +20,8 @@ CREATE INDEX IF NOT EXISTS integration_deliveries_live
 CREATE INDEX IF NOT EXISTS conversation_resolutions_survey_walk
  ON conversation_resolutions(resolved_at,id) WHERE reopened_at IS NULL;
 CREATE TABLE IF NOT EXISTS csat_discovery_cursor(id INTEGER PRIMARY KEY CHECK(id=1),resolved_at INTEGER NOT NULL,resolution_id TEXT NOT NULL);
+
+-- Team reports: handle sessions that ended inside a report interval, so earlier work
+-- is found without walking every session recorded before the interval's end.
+CREATE INDEX IF NOT EXISTS ticket_handle_ended
+ ON ticket_handle_sessions(project_id,ended_at);

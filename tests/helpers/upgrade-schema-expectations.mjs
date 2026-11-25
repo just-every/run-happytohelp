@@ -3,6 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration: '340_ticket_update_writes.sql', names: ['inbox_entry_retimed', 'reporting_conversation_update'], change: 'Retime skips each count bucket the old and new times share; the report cohort rebuild runs only when one of its columns changes value; every statement and bucket is otherwise retained'},
   {migration: '335_socket_replay_projection.sql', names: ['conversation_outbox'], change: 'Adds only nullable message_json TEXT and media_json TEXT; every prior column definition and row is retained'},
   {migration: '328_legacy_workspace_adoption.sql', names: ['move_in_notes'], change: 'Adds only nullable bucket_id TEXT; every prior column definition and row is retained'},
   {migration: '331_legacy_cleanup_seeding.sql', names: ['legacy_package_custody'], change: 'Adds only cleanup_only INTEGER NOT NULL DEFAULT 0 and seeding_complete INTEGER NOT NULL DEFAULT 1, each constrained to 0 or 1; every prior column definition and row is retained'},
@@ -69,6 +70,7 @@ export function expectedSchema(before, after, added) {
     if (added.includes('181_context_message_subjects.sql') && name === 'context_message_added') wanted = {...entry, sql: messageSubjectTrigger};
     if (added.includes('182_import_kit_reversal_retirement.sql') && name === 'ik_d1_stream_revision_update') wanted = {...entry, sql: streamRetirementTrigger};
     if (added.includes('293_knowledge_references.sql') && knowledgeUpgradeTriggers[name]) wanted = {...entry, sql: knowledgeUpgradeTriggers[name]};
+    if (added.includes('340_ticket_update_writes.sql') && sameValueTriggers[name]) wanted = {...wanted, sql: sameValueTriggers[name](wanted.sql)};
     if (added.includes('121_move_in_categories.sql')) {
       if (name === 'edition_category_insert') {
         if (after[name] !== undefined) changed.push(name);
@@ -80,6 +82,18 @@ export function expectedSchema(before, after, added) {
   }
   return changed;
 }
+
+// 340: a retime branch also requires that the other time falls in a different bucket,
+// and the report cohort rebuild gains a WHEN on its own columns.
+const bucketBranch = /SELECT '(\w)' family,'(\w)' k1,(.*?) k2 WHERE \((typeof\((OLD|NEW)\.(\w+)\)='integer' AND (?:OLD|NEW)\.\w+ BETWEEN -4398046511104 AND 4398046511104)\)/g;
+const cohortColumns = ['project_id','created_at','status_category','assigned_to','group_id','brand_id','channel','contact_id'].map(column => `NEW.${column} IS NOT OLD.${column}`);
+const sameValueTriggers = {
+  inbox_entry_retimed: sql => sql.replace(bucketBranch, (match, family, k1, expression, guard, side, column) => {
+    const other = text => text.replaceAll(`${side}.${column}`, `${side === 'OLD' ? 'NEW' : 'OLD'}.${column}`);
+    return `SELECT '${family}' family,'${k1}' k1,${expression} k2 WHERE (${guard}) AND NOT (${other(guard)} AND ${expression}=${other(expression)})`;
+  }),
+  reporting_conversation_update: sql => sql.replace(' ON conversations BEGIN', ` ON conversations\n WHEN ${cohortColumns.slice(0, 4).join(' OR ')}\n OR ${cohortColumns.slice(4).join(' OR ')} BEGIN`),
+};
 
 // 241 keeps every other byte of both triggers, including 195's boundaries.
 const awayReply = "(SELECT actor_role FROM messages WHERE id=NEW.last_message_id) IS NOT 'system'";

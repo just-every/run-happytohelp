@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "86e971ed3136655303254094b70021f457cda7b97e1eb19af378603738c02d07",
+      "sha256": "55f9910297b253cfcb94b71a432a84db9b972718c098f573b1c17264b535cdea",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2057,7 +2057,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "e431a380194da3617b30d9b0feed5948637ce4e32d50833de15a1d44eed8ae50",
+      "sha256": "33fb0d555cb3aad420c04661b9686e5657bba61fcd85cdc643c144bcc60557fd",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2089,7 +2089,7 @@
       "executable": false
     },
     "management/integration/recipe.json": {
-      "sha256": "722ba1f165602dc70df49585f95c15960fb3d715860b04989732173811185e20",
+      "sha256": "1f2f46a1c3a83f9ffff9d1932269c99b6704842578b0d19a2909c95f4068d06e",
       "executable": false
     },
     "management/integration/revision.ts": {
@@ -2917,7 +2917,7 @@
       "executable": false
     },
     "migrations/339_flat_scheduled_reads.sql": {
-      "sha256": "daf75bc4edf7f3f9f6923ab06a4f56ea44117d42fa63da972fba8e222a92b96a",
+      "sha256": "4c5ae383201005ca8368462b88a493fe74ecec5eb6735575b5900e260fc99f39",
       "executable": false
     },
     "migrations/340_ticket_update_writes.sql": {
@@ -3013,7 +3013,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "1fe473125b80bd808ede8b2cc2eeb3cb8175a33abeb9720948b3299b6ab83bb5",
+      "sha256": "28493dc4c298c60d4db7abc6ee810d9c0be1ae131877ff84c1c0f1df8e256e88",
       "executable": false
     },
     "rer-project.json": {
@@ -5493,7 +5493,7 @@
       "executable": false
     },
     "src/modules/collaboration/presence.ts": {
-      "sha256": "5e82c6f76234584d5a9a4e92f5825a2ae37df034704e6cbdf299d9d33a180cb4",
+      "sha256": "db9b4c672e1c53bde890a7756cb89ba9aa3c350ddfa2dc8b78cf3ff9d5ed64f2",
       "executable": false
     },
     "src/modules/collaboration/routes.ts": {
@@ -5589,7 +5589,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "a4f60718608c92aea6a0ce95a4aa5f2aeca1d2ae12d00d02dcdcde5579250390",
+      "sha256": "eec87e47a5f36a708248c34c66163e71bf691c272ebafb6f4ec97b241dbbf78d",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
@@ -9953,7 +9953,7 @@
       "executable": false
     },
     "src/modules/reports/team-handle-time.ts": {
-      "sha256": "0347a9ebcdf89e5485f24e7066ec9f595a244ee8076fdc1385d5f33d159185b8",
+      "sha256": "1e0a247667c7e060ad4c143e3a1c692b639c7806de644b23ec7709e380fa6cd1",
       "executable": false
     },
     "src/modules/reports/team-read.ts": {
@@ -9965,7 +9965,7 @@
       "executable": false
     },
     "src/modules/reports/team-scope.ts": {
-      "sha256": "636e548de2986edbc08c695afa336e2924444af79cefd75c57709a31a7511466",
+      "sha256": "7e2cfd0ae0ab5f7292ce60fe0ec61e611059d00a439ebf0729b085f55ce3fb86",
       "executable": false
     },
     "src/modules/reports/team-service.ts": {

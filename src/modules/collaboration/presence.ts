@@ -10,7 +10,9 @@ export const ONLINE_HEARTBEAT_MS=20_000,ONLINE_TTL_MS=90_000,ONLINE_CLOSE_GRACE_
 /** A reported idle time is at most a day: older activity is simply idle. */
 export const ONLINE_IDLE_REPORT_MAX_MS=86_400_000
 export type OnlineState={userId:string;activeAt:number;seenAt:number}
-export type SocketAttachment={conversationId?:string;projectId?:string;tokenHash:string;cursor:number;presence?:PresenceState;online?:OnlineState}
+/** A presence sweep reuses a socket's last live authorization this long. */
+export const SWEEP_AUTHORIZATION_MS=60_000
+export type SocketAttachment={conversationId?:string;projectId?:string;tokenHash:string;cursor:number;presence?:PresenceState;online?:OnlineState;authorized?:{at:number;actor:SocketActor}}
 export type SocketActor={actor_id:string;role:string;name:string|null}
 export type PresencePeer={id:string;name:string;typing:boolean;draft:boolean;expiresAt:number}
 export function presenceFrame(conversationId:string,peers:PresencePeer[]){return {type:'presence',operatorOnly:true,conversationId,peers,expiresAt:Date.now()+PRESENCE_TTL_MS}}

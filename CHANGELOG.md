@@ -8,6 +8,24 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.44 — 2026-11-25
+
+v0.4.43 was tagged and skipped before publication. Upgrade directly from v0.4.42.
+
+- **Scheduled D1 reads.** In the read-cost comparison with SLA policies, CSAT surveys and a webhook active, the minute cron read 53,891, 112,891 and 271,291 D1 rows at 600, 1,200 and 3,000 conversations respectively. It read 99 rows at all three sizes with this change. Integration discovery reads only unprepared intents and deliveries still queued or claimed.
+- **SLA backstop.** The rolling rebuild reads only open tickets and tickets with an open alert, and rests for up to an hour between passes. Editing an SLA policy or business calendar restarts the pass so tickets on earlier pages get the updated settings.
+- **Survey discovery.** A stored cursor walks recent resolutions. Each workspace’s CSAT invitation uses its own delay. The shortest enabled delay controls how long the cron rechecks a page, so a longer delay in another workspace no longer holds back invitations that are due.
+- **Ticket updates.** In the reply benchmark, D1 reads fell from about 1,260 to 100 and writes fell from about 470 to 150.
+- **Handle time.** The Handle time panel refreshes every 60 seconds while the tab is visible. It also refreshes when the tab becomes visible or regains focus.
+- **Open-ticket polls.** Across the same three workspace sizes, a Handle time poll dropped from 1,819–9,019 D1 rows to 20 and a local-agent delegations poll dropped from 817–4,017 to 17. The device list counts only live and queued jobs for each device.
+- **Team reports.** Handle time in team reports and scheduled team report emails reads only sessions that overlap the selected dates. A 30-day team report went from up to 8.97 million D1 reads to 51,682.
+- **Ticket presence.** The five-second presence sweep reuses a stream’s authorization for up to a minute. Presence updates can continue during that interval after access is revoked or narrowed. Commands, replays and ticket deliveries still check access live.
+- **Database migrations.** Migration 339 adds indexes for open tickets, open SLA alerts, unprepared integration intents, live deliveries, survey discovery and handle-session end times. It also adds the survey discovery cursor table. Migration 340 replaces the Inbox count and report cohort triggers so they skip unchanged count buckets and rebuild report rows only when a field used by the report changes. Migration 341 adds poll indexes for handle sessions by ticket and start time, local-agent jobs by ticket and by device and status, and devices by operator. It drops `ticket_handle_conversation`, as recorded in the upgrade schema expectations.
+
+Update from v0.4.42 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. From v0.4.42, apply `339_flat_scheduled_reads.sql`, `340_ticket_update_writes.sql` and then `341_open_ticket_poll_reads.sql` once before serving HTTP or queue traffic. For older installations, first follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-25._
+
 ## 0.4.43 — 2026-11-25
 
 - **Scheduled D1 reads.** With SLA policies, CSAT surveys and a webhook active, the minute cron read 53,891, 112,891 and 271,291 D1 rows at 600, 1,200 and 3,000 conversations respectively. It now reads 99 at all three sizes. Integration discovery reads only unprepared intents and deliveries still queued or claimed.

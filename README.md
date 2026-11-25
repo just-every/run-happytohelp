@@ -43,8 +43,8 @@ For a new deployment, get the source from the [latest published release](https:/
 Use the published release notes and the tagged checkout’s `RELEASE.json` for version-specific install and upgrade steps.
 For an existing installation, follow [Updates and recovery](docs/INDEPENDENT-RELEASE.md),
 keep your backups and apply the migrations listed in the tagged release’s
-`RELEASE.json` in filename order before its Worker serves traffic. The [changelog](CHANGELOG.md) also records changes awaiting publication.
-[GitHub Releases](https://github.com/just-every/run-happytohelp/releases) lists the versions available to install.
+`RELEASE.json` in filename order before its Worker serves traffic.
+[GitHub Releases](https://github.com/just-every/run-happytohelp/releases) lists published versions available to install. The [changelog](CHANGELOG.md) also records unpublished versions, including skipped tags.
 The quick-start commands below resolve GitHub’s latest published release and check out its exact tag.
 
 Known limits:

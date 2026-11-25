@@ -1,3 +1,4 @@
+import {dueTimeRule,timeRuleCursor} from './time-rule-due'
 import type {Env} from '../../platform/env'
 import {evaluateConditions,columnPrefilter} from './conditions'
 import {ruleTicket,type RuleDefinition} from './rule-model'
@@ -19,9 +20,6 @@ const anchors:Record<string,string>={
  last_customer_reply_at:"(SELECT max(m.created_at) FROM messages m WHERE m.conversation_id=c.id AND m.actor_role='contact')",
  last_operator_reply_at:"(SELECT max(m.created_at) FROM messages m WHERE m.conversation_id=c.id AND m.actor_role NOT IN ('contact','system'))",
 }
-export const dueTimeRule = (hour:string)=>`r.state='published' AND r.kind='time' AND coalesce(sc.hour=${hour} AND sc.version=r.published_version AND sc.complete=1,0)=0 AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=r.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
-export const timeRuleCursor = 'LEFT JOIN workflow_scheduler_cursors sc ON sc.rule_id=r.id'
-
 /** Rules are served least recently first, one per workspace before any workspace's
  * second, so one workspace's backlog never holds another's tickets. */
 const dueRules=`SELECT * FROM (SELECT r.id,r.project_id,r.position,r.published_version,v.definition_json,sc.hour cursor_hour,sc.version cursor_version,sc.after_id cursor_after,sc.complete cursor_complete,coalesce(sc.updated_at,0) served_at,coalesce(q.turn,0) workspace_served,row_number() OVER (PARTITION BY r.project_id ORDER BY coalesce(sc.updated_at,0),r.position,r.id) turn

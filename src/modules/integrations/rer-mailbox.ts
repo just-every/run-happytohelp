@@ -50,9 +50,9 @@ export async function processRerMailbox(env:Env,projectId:string){
   ])
  }
 }
-export async function recoverRerMailboxes(env:Env){
+export async function recoverRerMailboxes(env:Env,sweepOrphans=true){
  if(!rerMail(env)||!cronRoom(env,3))return
- await expireRerMailRaw(env)
+ await expireRerMailRaw(env,sweepOrphans)
  const unbound=await env.DB.prepare(`SELECT id FROM projects WHERE NOT EXISTS(SELECT 1 FROM rer_mailboxes WHERE project_id=projects.id) AND NOT EXISTS(SELECT 1 FROM project_settings WHERE project_id=projects.id AND json_extract(settings_json,'$.deleted_at') IS NOT NULL) ORDER BY created_at,id LIMIT 10`).all<{id:string}>()
  for(const row of unbound.results){if(!cronRoom(env,5))break;await seedMissingRerMailbox(env,row.id)}
  if(!cronRoom(env,2))return

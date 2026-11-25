@@ -1,0 +1,1 @@
+export const isAgentPath=(path:string)=>path==='/mcp'||path==='/agents'||path.startsWith('/agents/')||path==='/api/rer/agent-decisions'||path==='/api/rer/agent-policy'||path==='/api/rer/business-settings'||path.startsWith('/.well-known/oauth-protected-resource')

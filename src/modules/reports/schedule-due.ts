@@ -1,0 +1,1 @@
+export const reportDueSql=(now:string)=>`SELECT 1 FROM report_schedules s LEFT JOIN project_settings ps ON ps.project_id=s.project_id WHERE s.paused=0 AND json_extract(coalesce(ps.settings_json,'{}'),'$.deleted_at') IS NULL AND (s.next_run_at<=${now} OR s.timezone<>coalesce(json_extract(ps.settings_json,'$.timezone'),'UTC'))`

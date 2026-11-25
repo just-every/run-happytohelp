@@ -1,3 +1,4 @@
+import {surveyWalkStartSql} from './survey-walk-due'
 import {dispatchMessagingSurveys} from './survey-messaging'
 import {cronRoom} from '../../platform/cron-budget'
 import type {Env} from '../../platform/env'
@@ -33,7 +34,7 @@ type Walked={id:string;project_id:string;conversation_id:string;resolved_at:numb
  * workspace's due time. The shortest enabled delay controls how long to recheck
  * the page, so longer delays cannot hold back invitations that are already due. */
 async function surveyWalk(env:Env,now:number){
- const start=await env.DB.prepare('SELECT max(min(cfg.enabled_at),?-max(cfg.delay_minutes*60000+cfg.expires_days*86400000)) earliest,min(cfg.delay_minutes) delay_minutes,k.resolved_at,k.resolution_id FROM csat_settings cfg LEFT JOIN csat_discovery_cursor k ON k.id=1 WHERE cfg.enabled=1').bind(now).first<{earliest:number|null;delay_minutes:number;resolved_at:number|null;resolution_id:string|null}>()
+ const start=await env.DB.prepare(surveyWalkStartSql('?')).bind(now).first<{earliest:number|null;delay_minutes:number;resolved_at:number|null;resolution_id:string|null}>()
  if(start?.earliest==null)return {rows:[] as Walked[],advance:async()=>{}}
  const from=start.resolved_at!=null&&start.resolved_at>=start.earliest?[start.resolved_at,start.resolution_id]:[start.earliest-1,'']
  const rows=(await env.DB.prepare(`SELECT id,project_id,conversation_id,resolved_at FROM conversation_resolutions INDEXED BY conversation_resolutions_survey_walk WHERE reopened_at IS NULL AND (resolved_at,id)>(?,?) ORDER BY resolved_at,id LIMIT ${WALK}`).bind(...from).all<Walked>()).results

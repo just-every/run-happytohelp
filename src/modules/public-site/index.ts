@@ -5,22 +5,13 @@ import {requestFormPages} from './request-pages'
 import { Hono } from 'hono'
 import type { AppEnv, Env } from '../../platform/env'
 import { notFoundResponse, rejectedResponse } from '../../base/rejected-response'
-import { helpCenterRoutes, reserved, resolvePublicProject } from './help-center'
+import { helpCenterRoutes, resolvePublicProject } from './help-center'
 import { missingHelpCenterPage } from './not-found'
 import { answerOverloads } from '../../platform/d1-overload'
 import { readEffects } from '../../platform/read-effects'
 import {installationContact,withInstallationContact} from './installation-contact'
 import {shell} from './shell'
 export { publicHelpHostResponse } from './help-host'
-
-export async function isPublicSitePath(path: string, env: Env) {
- if (path==='/contact'||path.startsWith('/portal/') || path.startsWith('/help/') || path.startsWith('/api/public-site/')) return true
- const parts = path.split('/').filter(Boolean)
- if (!parts.length || parts.length > 2 || reserved.has(parts[0])) return false
- let key: string
- try { key = decodeURIComponent(parts[0]) } catch { return false }
- return !!await resolvePublicProject(env, key, true)
-}
 
 export const publicSiteRoutes = new Hono<AppEnv>()
 // Outermost, so a page's view and search records follow the HTML step's reads below (platform/read-effects.ts).

@@ -1,8 +1,7 @@
 import {ticketScopeSql} from '../../access/ticket-scope'
 import {notificationTicketSql} from '../triggers/eligibility'
-import {noticeSourceSql} from '../teammate-slack/guard'
+import {noticeSourceSql} from '../teammate-notice-work'
 import {installationSql} from './authority'
-export {noticeSourceSql}
 const relation=`CASE n.kind WHEN 'assignment' THEN c.assigned_to=n.user_id WHEN 'customer_updated' THEN c.assigned_to=n.user_id
  WHEN 'group' THEN (c.assigned_to IS NULL AND EXISTS(SELECT 1 FROM ticket_group_members gm WHERE gm.project_id=c.project_id AND gm.group_id=c.group_id AND gm.user_id=n.user_id))
  WHEN 'follower' THEN EXISTS(SELECT 1 FROM conversation_followers f WHERE f.conversation_id=c.id AND f.user_id=n.user_id)

@@ -1,32 +1,25 @@
+import {freshTeammateNotices,teammateNoticeDueSql,noticeInterruptionMs} from '../teammate-notice-work'
 import type {Env} from '../../../platform/env'
 import {teamsToken,serviceUrl} from '../../support-channels/teams'
 import type {Connection} from '../../support-channels/model'
 import {boundedFetch} from '../../support-channels/network'
 import {notificationLabels} from '../notification-kinds'
-import {noticeGuardSql,noticeSourceSql} from './guard'
+import {noticeGuardSql} from './guard'
 
 
 /** Statements one notice may cost: claim, authority, destination, link, recheck, outcome. */
 export const teamsNoticeCost=14
-const maxAttempts=5,perTick=5,interruptedAfter=10*60*1000
+const maxAttempts=5,perTick=5,interruptedAfter=noticeInterruptionMs
 const retryDelays=[60000,300000,900000,3600000]
 interface Claimed {notice_id:string;project_id:string;user_id:string;conversation_id:string;kind:string;connection_id:string;attempts:number}
 const finish=(env:Env,id:string,state:string,detail:string|null,now:number,next:number|null=null)=>env.DB.prepare("UPDATE teammate_teams_deliveries SET state=?,next_attempt_at=?,detail=?,updated_at=? WHERE notice_id=? AND state='sending'").bind(state,next,detail,now,id).run()
 
-/** Fresh notices require consent; old in-flight deliveries still settle after revocation. */
-async function hasDueWork(env:Env,now:number){
- return Boolean(await env.DB.prepare(`SELECT 1 WHERE EXISTS(
-  SELECT 1 FROM teammate_teams_consent
-  UNION ALL SELECT 1 FROM teammate_teams_deliveries WHERE state IN ('sending','pending')
-   AND (state='sending' AND started_at<? OR state='pending' AND next_attempt_at<=?)
- )`).bind(now-interruptedAfter,now).first())
-}
 /** Scheduled post-pass only: never on a request path and never inline with the notice
  * commit. It spends settled spare credit, in order: interrupted sends become
  * uncertain, due rate-limit retries, then newly committed notices. */
 export async function drainTeammateTeams(env:Env,options:{now?:number;room:()=>number}){
  const now=options.now??Date.now()
- if(options.room()<teamsNoticeCost||!await hasDueWork(env,now))return 0
+ if(options.room()<teamsNoticeCost||!await env.DB.prepare(`SELECT 1 WHERE EXISTS(${teammateNoticeDueSql('teams','?1')})`).bind(now).first())return 0
  await env.DB.prepare("UPDATE teammate_teams_deliveries SET state='uncertain',next_attempt_at=NULL,detail='Delivery was interrupted. Check Teams; it is never sent again.',updated_at=? WHERE state='sending' AND state IN ('sending','pending') AND started_at<?").bind(now,now-interruptedAfter).run()
  let sent=0
  const due=await env.DB.prepare("SELECT notice_id,project_id,user_id,conversation_id,kind,connection_id,attempts FROM teammate_teams_deliveries WHERE state='pending' AND state IN ('sending','pending') AND next_attempt_at<=? ORDER BY next_attempt_at,notice_id LIMIT ?").bind(now,perTick).all<Claimed>()
@@ -38,11 +31,7 @@ export async function drainTeammateTeams(env:Env,options:{now?:number;room:()=>n
   if(!claim.meta.changes){await env.DB.prepare("UPDATE teammate_teams_deliveries SET state='cancelled',next_attempt_at=NULL,detail='No longer eligible; nothing further was sent.',updated_at=? WHERE notice_id=? AND state='pending'").bind(now,row.notice_id).run();continue}
   await deliver(env,{...row,attempts:row.attempts+1},now);sent++
  }
- const fresh=await env.DB.prepare(`SELECT n.id notice_id,n.project_id,n.user_id,n.conversation_id,n.kind,k.connection_id,0 attempts FROM teammate_teams_consent k
-  JOIN teammate_teams_links l ON l.project_id=k.project_id AND l.connection_id=k.connection_id
-  JOIN teammate_teams_preferences p ON p.project_id=l.project_id AND p.user_id=l.user_id AND p.enabled=1
-  JOIN notification_inbox n ON n.project_id=l.project_id AND n.user_id=l.user_id AND n.kind=p.kind AND n.created_at>l.verified_at AND n.created_at>p.enabled_at AND n.created_at>=k.enabled_at
-  WHERE ${noticeSourceSql('n')} AND NOT EXISTS(SELECT 1 FROM teammate_teams_deliveries d WHERE d.notice_id=n.id) ORDER BY n.created_at,n.id LIMIT ?`).bind(perTick).all<Claimed>()
+ const fresh=await env.DB.prepare(`SELECT n.id notice_id,n.project_id,n.user_id,n.conversation_id,n.kind,k.connection_id,0 attempts ${freshTeammateNotices('teams')} ORDER BY n.created_at,n.id LIMIT ?`).bind(perTick).all<Claimed>()
  for(const row of fresh.results){
   if(options.room()<teamsNoticeCost||sent>=perTick)break
   const claim=await env.DB.prepare(`INSERT OR IGNORE INTO teammate_teams_deliveries(notice_id,project_id,user_id,conversation_id,kind,connection_id,state,attempts,started_at,created_at,updated_at)

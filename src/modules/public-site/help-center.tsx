@@ -1,3 +1,4 @@
+import {reserved} from './path'
 import {renderPublicKnowledgeHtml} from '../knowledge/public-html'
 import {listForms} from '../forms/store'
 import {createReadReceipt} from '../knowledge/read-attribution'
@@ -24,7 +25,6 @@ const articleComponents: React.ComponentProps<typeof Markdown>['components'] = {
  pre: ({children}) => <pre tabIndex={0} role="region" aria-label="Code block">{children}</pre>,
  table: ({children}) => <div className="help-center-table-scroll" tabIndex={0} role="region" aria-label="Article table"><table>{children}</table></div>,
 }
-export const reserved=new Set(['api','auth','health','setup','login','logout','projects','conversations','contacts','contact','settings','dashboard','marketing','features','resources','company','pricing','waitlist','demo','help','portal','docs','run','contract','site-assets','widget.js','_serverFn'])
 export async function resolvePublicProject(env:Env,key:string,includeDeleted=false){const project=await env.DB.prepare('SELECT p.id,p.name,(SELECT settings_json FROM project_settings s WHERE s.project_id=p.id) settings_json FROM projects p LEFT JOIN public_project_aliases a ON a.project_id=p.id WHERE (p.id=? OR a.slug=?) AND (?=1 OR NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,\'$.deleted_at\') IS NOT NULL)) LIMIT 1').bind(key,key,includeDeleted?1:0).first<{id:string,name:string,settings_json:string}>();if(!project)return null;return {id:project.id,name:project.name,brand:publicAppearance(JSON.parse(project.settings_json||'{}'),project.name)}}
 export const helpCenterRoutes=new Hono<AppEnv>()
 helpCenterRoutes.get('/api/public-site/projects/:projectId/alias',async c=>{

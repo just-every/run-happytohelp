@@ -1,3 +1,4 @@
+import {STALE_RUNNING_MS,LOST_QUEUE_MS,GIVE_UP_MS,readStateSql as state,readAtSql as at} from './recovery-window'
 import type {Env, Job} from '../../../platform/env'
 import {cronRoom} from '../../../platform/cron-budget'
 import {publicOrigin, SiteFetcher, SiteReadStop} from './fetch'
@@ -7,16 +8,6 @@ import {writeSiteSource} from './source'
 import {applySiteIdentity, claimRead, finishRead, type SiteReadRecord} from './state'
 
 const READ_BUDGET_MS = 90_000
-/** A read that has been `running` longer than this is not coming back; it is marked uncertain and never repeated. */
-export const STALE_RUNNING_MS = 5 * 60_000
-const LOST_QUEUE_MS = 5 * 60_000
-const GIVE_UP_MS = 24 * 3_600_000
-
-const state = "json_extract(settings_json,'$.site_read.state')"
-const at = "json_extract(settings_json,'$.site_read.at')"
-// Wake lost queued reads as soon as either queued recovery action can apply.
-export const siteReadRecoveryDue = `${state} IN ('queued','running') AND ${at}<?1-${Math.min(STALE_RUNNING_MS,LOST_QUEUE_MS,GIVE_UP_MS)}`
-
 const HOME_MAX = 512_000
 const PAGE_MAX = 512_000
 const SITEMAP_MAX = 256_000

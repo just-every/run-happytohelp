@@ -1,3 +1,4 @@
+import {MAILGUN_MAX_FUTURE_MS,MAILGUN_MAX_AGE_MS} from './mailgun-window'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -13,10 +14,6 @@ import {emailExplicitlyOff} from './email-provider'
  * hours old is fresh, and a token is claimed atomically so a replay is refused. A
  * forward that ends in anything but 200 releases its token so the retry can succeed.
  */
-export const MAILGUN_MAX_FUTURE_MS=5*60*1000
-export const MAILGUN_MAX_AGE_MS=9*60*60*1000
-/** A claim is needed only while a signed timestamp can still pass the freshness check. */
-export const MAILGUN_CLAIM_RETENTION_MS=MAILGUN_MAX_FUTURE_MS+MAILGUN_MAX_AGE_MS+60*1000
 export interface MailgunSignature {timestamp:string;token:string;signature:string}
 const refuse=()=>new HTTPException(403,{message:'Mailgun signature refused'})
 

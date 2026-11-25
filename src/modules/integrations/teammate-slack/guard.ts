@@ -1,11 +1,6 @@
+import {noticeSourceSql} from '../teammate-notice-work'
 import {ticketScopeSql} from '../../access/ticket-scope'
 import {notificationTicketSql} from '../triggers/eligibility'
-import {teammateKinds} from '../notification-kinds'
-
-const kindList=teammateKinds.map(kind=>`'${kind}'`).join(',')
-/** Only committed teammate notices. Action rows (`ticket-notice:…`), escalation and
- * follow-up rows, SLA alerts and acknowledgments never match; an unknown id form fails closed. */
-export const noticeSourceSql=(n='n')=>`((substr(${n}.id,1,12)='team-notice:' OR substr(${n}.id,1,11)='assignment:') AND ${n}.kind IN (${kindList}) AND ${n}.state<>'action')`
 const relation=`CASE n.kind WHEN 'assignment' THEN c.assigned_to=n.user_id WHEN 'customer_updated' THEN c.assigned_to=n.user_id
  WHEN 'group' THEN (c.assigned_to IS NULL AND EXISTS(SELECT 1 FROM ticket_group_members gm WHERE gm.project_id=c.project_id AND gm.group_id=c.group_id AND gm.user_id=n.user_id))
  WHEN 'follower' THEN EXISTS(SELECT 1 FROM conversation_followers f WHERE f.conversation_id=c.id AND f.user_id=n.user_id)

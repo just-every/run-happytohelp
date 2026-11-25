@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { nativeRequest } from '../../native/transport';
 import QrCode from './QrCode';
-import { assertPasskey, createPasskey, passkeyDomain, passkeysAvailable } from './webauthn-client';
+import { assertPasskey, createPasskey, loopbackAddress, passkeyDomain, passkeysAvailable } from './webauthn-client';
 import './two-factor.css';
 
 /** The same two-factor parts render on the public sign-in pages and inside the dashboard, in each one's own controls. */
@@ -61,7 +61,9 @@ export function AuthenticatorSetup({ look, onDone, onCancel }: { look: Look; onD
 export function PasskeySetup({ look, onDone }: { look: Look; onDone: (codes: string[] | null) => void }) {
     const [error, setError] = useState(''), [busy, setBusy] = useState(false);
     if (!passkeysAvailable()) return <p className="tf-muted">This browser cannot use passkeys or security keys.</p>;
-    if (!passkeyDomain()) return <p className="tf-muted">Passkeys need this app’s domain name. Open it by name (for example localhost) instead of an IP address.</p>;
+    if (!passkeyDomain()) return loopbackAddress()
+        ? <p className="tf-muted">Passkeys need a domain name, and this copy runs on {location.hostname}. From your HappyToHelp checkout, restart it on localhost with <code>rer dev --stop && rer dev --host localhost</code> and open the RER_OPEN link it prints. Your data stays. Start it with <code>--host localhost</code> each time.</p>
+        : <p className="tf-muted">Passkeys need this app’s domain name. Open it by name instead of an IP address.</p>;
     const register = async () => {
         setBusy(true); setError('');
         try { const options = await post('/api/identity/two-factor/webauthn/options', {}); const credential = await createPasskey(options); const result = await post('/api/identity/two-factor/webauthn', { credential, label: 'Passkey' }); onDone(result.recoveryCodes); }

@@ -3033,7 +3033,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "bfdc8c902ad786d94ddd76d0bf0e42ff206b857fab3146ef7daaf24fcc8e5283",
+      "sha256": "988cd97941ee267b528fcffa9058e4643f843159a5428f70f2ad7ea842135df8",
       "executable": false
     },
     "scripts/build-local-agent.cjs": {
@@ -4073,7 +4073,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "eef31e42e7a3e32490c3eae78b7be6128ac2c7a85d332c0dabfe6cbe401631d7",
+      "sha256": "7b22b544d2df0085fdcb3df5ad4d6bdf94c84724903a36ca793f6a7a8ac66fc7",
       "executable": false
     },
     "scripts/installer/mail-deploy-policy.mjs": {
@@ -13073,7 +13073,7 @@
       "executable": false
     },
     "src/ui/identity/two-factor/parts.tsx": {
-      "sha256": "60ccd772ce2d020414c23b5a590f39895312702f2133d361dd7b961499de2ec5",
+      "sha256": "b9a489c1b7dcccf7708f35177fa3239a83d6f97cb8fd3bdb03a2c62a0ee72b4a",
       "executable": false
     },
     "src/ui/identity/two-factor/QrCode.tsx": {
@@ -13085,7 +13085,7 @@
       "executable": false
     },
     "src/ui/identity/two-factor/webauthn-client.ts": {
-      "sha256": "47cadfcbab8b1ae09be58172657d97433d11e741edcbf562d321b1777272acbd",
+      "sha256": "95a59a289ec11890a8569a678966ea005369c9f5a4333a364ed7eba3b2f1a308",
       "executable": false
     },
     "src/ui/identity/TwoFactor.tsx": {

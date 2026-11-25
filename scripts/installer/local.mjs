@@ -120,7 +120,10 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
 // Local setup keeps the entered-password hook; hosted deploy has no installer input.
 // Give rer its standard claim contract so it observes 303/409 and retires the token.
 const hostedLifecycle={...adapter,mailOffSignIn,hooks:{...adapter.hooks,owner:{path:'/auth/bootstrap',tokenKey:'H2H_SETUP_TOKEN',returnTo:'/setup'}}};
+// A fresh local install binds localhost: passkeys need a domain name as their
+// relying party, and 127.0.0.1 cannot hold one. A saved origin keeps its host.
 export const commandAdapter=createCommandAdapter(adapter,{
+ host:'localhost',
  deployPolicy:mailDeployPolicy,
  generatedOutputs:['.generated','migrations/core','delivery-artifact','management/integration/deployment-spec.json','management/integration/managed-deploy.json',nativeSetupPath,'public/downloads','public/widget.js'],
  site:{entry:'src/site/pages.ts',config:'vite.site.config.ts',output:'.rer/site',declaration:'deploy-site.json'},

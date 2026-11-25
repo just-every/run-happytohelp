@@ -9,7 +9,7 @@ import {DurableObject} from 'cloudflare:workers'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
 import {pendingFactor,policyRoles,type FactorMethod} from '../identity/two-factor/state'
-import {mergePresence,presenceFrame,teammateOnline,ONLINE_IDLE_REPORT_MAX_MS,PRESENCE_AUTHORIZATION_MS,PRESENCE_SWEEP_MS,PRESENCE_TTL_MS,type OnlineState,type SocketAttachment as Attachment,type SocketActor} from '../collaboration/presence'
+import {mergePresence,presenceFrame,teammateOnline,ONLINE_IDLE_REPORT_MAX_MS,PRESENCE_SWEEP_MS,PRESENCE_TTL_MS,type OnlineState,type SocketAttachment as Attachment,type SocketActor} from '../collaboration/presence'
 import {recordOnline} from '../collaboration/presence-store'
 
 export class ConversationSocket extends DurableObject<Env>{
@@ -27,15 +27,6 @@ export class ConversationSocket extends DurableObject<Env>{
   if(!row)return null
   if(row.role!=='contact'&&pendingFactor({factorAt:row.factorAt,factorMethod:row.factorMethod,hasFactor:!!row.hasFactor,required:policyRoles(row.twoFactorRoles).includes(row.policyRole||row.role),installation:row.factorMethod==='installation'}))return null
   return row
- }
- /** Presence carries no ticket content, so its sweeps and heartbeats reuse a socket's
-  * authorization for a minute instead of reading D1 every few seconds. Replays, events
-  * and every other command still check the session live. */
- async presenceActor(ws:WebSocket,a:Attachment):Promise<SocketActor|null>{
-  if(a.authorized&&a.authorized.at>Date.now()-PRESENCE_AUTHORIZATION_MS)return a.authorized.actor
-  const actor=await this.authorized(a)
-  if(actor){a.authorized={at:Date.now(),actor:{actor_id:actor.actor_id,role:actor.role,name:actor.name}};ws.serializeAttachment(a)}
-  return actor
  }
  async replay(ws:WebSocket){
   const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
@@ -84,7 +75,7 @@ export class ConversationSocket extends DurableObject<Env>{
    const a=ws.deserializeAttachment() as Attachment
    if(!a.conversationId)continue
    conversationId=a.conversationId
-   const actor=await this.presenceActor(ws,a)
+   const actor=await this.authorized(a)
    if(!actor){delete a.presence;ws.serializeAttachment(a);ws.close(1008,'Session revoked');continue}
    if(actor.role==='contact')continue
    receivers.push(ws)
@@ -161,7 +152,7 @@ export class ConversationSocket extends DurableObject<Env>{
   if(typeof message!=='string'||message.length>4096){ws.close(1003,'Invalid command');return}
   let command:any;try{command=JSON.parse(message)}catch{ws.close(1003,'Invalid JSON');return}
   if(!command||typeof command!=='object')return
-  const a=ws.deserializeAttachment() as Attachment,actor=command.type==='presence'?await this.presenceActor(ws,a):await this.authorized(a)
+  const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
   if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');await this.publishPresence(ws);return}
   // On the project stream, presence is the workspace's: how long this person has been idle, as their dashboard saw it.
   if(command.type==='presence'&&a.projectId&&!a.conversationId){

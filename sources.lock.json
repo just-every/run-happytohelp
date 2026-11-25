@@ -1609,7 +1609,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "e48fe4f1d11146917d2cddc497193f01806acc101b07ce3cd876c9206e3910ce",
+      "sha256": "86e971ed3136655303254094b70021f457cda7b97e1eb19af378603738c02d07",
       "executable": false
     },
     "CLAUDE.md": {
@@ -3013,7 +3013,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "4fd43be80134a3eb3fa15e2bdc6ffd5f6660d7e7227b8fe9913f9a25db59c70f",
+      "sha256": "1fe473125b80bd808ede8b2cc2eeb3cb8175a33abeb9720948b3299b6ab83bb5",
       "executable": false
     },
     "rer-project.json": {
@@ -5493,7 +5493,7 @@
       "executable": false
     },
     "src/modules/collaboration/presence.ts": {
-      "sha256": "575b4b741717530ddfdbabbb173bce0cbc1a8cc59408d4d1cd64efde6a6b87ab",
+      "sha256": "5e82c6f76234584d5a9a4e92f5825a2ae37df034704e6cbdf299d9d33a180cb4",
       "executable": false
     },
     "src/modules/collaboration/routes.ts": {
@@ -5589,7 +5589,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "c9d296ac19e7f0238d4da2e75b94b0e1c5324cb908d8cbc5426f92cf47351012",
+      "sha256": "a4f60718608c92aea6a0ce95a4aa5f2aeca1d2ae12d00d02dcdcde5579250390",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {

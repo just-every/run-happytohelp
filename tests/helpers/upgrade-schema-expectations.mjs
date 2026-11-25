@@ -3,6 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration: '341_open_ticket_poll_reads.sql', names: ['ticket_handle_conversation'], change: 'Drops the (project_id,conversation_id) handle-session index; ticket_handle_conversation_recent leads with the same two columns and also orders by start time; no rows change'},
   {migration: '340_ticket_update_writes.sql', names: ['inbox_entry_retimed', 'reporting_conversation_update'], change: 'Retime skips each count bucket the old and new times share; the report cohort rebuild runs only when one of its columns changes value; every statement and bucket is otherwise retained'},
   {migration: '335_socket_replay_projection.sql', names: ['conversation_outbox'], change: 'Adds only nullable message_json TEXT and media_json TEXT; every prior column definition and row is retained'},
   {migration: '328_legacy_workspace_adoption.sql', names: ['move_in_notes'], change: 'Adds only nullable bucket_id TEXT; every prior column definition and row is retained'},
@@ -71,6 +72,11 @@ export function expectedSchema(before, after, added) {
     if (added.includes('182_import_kit_reversal_retirement.sql') && name === 'ik_d1_stream_revision_update') wanted = {...entry, sql: streamRetirementTrigger};
     if (added.includes('293_knowledge_references.sql') && knowledgeUpgradeTriggers[name]) wanted = {...entry, sql: knowledgeUpgradeTriggers[name]};
     if (added.includes('340_ticket_update_writes.sql') && sameValueTriggers[name]) wanted = {...wanted, sql: sameValueTriggers[name](wanted.sql)};
+    // 341: ticket_handle_conversation_recent replaces this index, whose columns are its prefix.
+    if (added.includes('341_open_ticket_poll_reads.sql') && name === 'ticket_handle_conversation') {
+      if (after[name] !== undefined) changed.push(name);
+      continue;
+    }
     if (added.includes('121_move_in_categories.sql')) {
       if (name === 'edition_category_insert') {
         if (after[name] !== undefined) changed.push(name);

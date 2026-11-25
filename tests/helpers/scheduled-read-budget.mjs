@@ -3,11 +3,13 @@ import {startApp} from '../journeys/kit/app.mjs'
 
 // A small team on Workers Free shares 5,000,000 D1 rows read a day across every
 // tool on its account. The minute cron must stay far below that at defaults and
-// must not read more as the workspace keeps more history.
-const DAY=86400000,STEADY_CEILING=2_000,PAGE_CEILING=8_000
+// must not read more as the workspace keeps more history. An open ticket's own polls
+// (handle timer every minute, local-agent work every 15 seconds) read only that ticket.
+const DAY=86400000,STEADY_CEILING=2_000,PAGE_CEILING=8_000,POLL_CEILING=200
 
 // Thirty days of support history: mostly solved conversations, each with a
-// customer message and a reply, resolved, surveyed and announced to a webhook.
+// customer message and a reply, a handle session and a finished local-agent job,
+// resolved, surveyed and announced to a webhook.
 async function seedHistory(app,{projectId,users},{from,count,days=30}){
  const now=Date.now(),statements=[],closed=[]
  for(let n=from;n<from+count;n++){
@@ -17,7 +19,9 @@ async function seedHistory(app,{projectId,users},{from,count,days=30}){
   if(!open&&created<=now-4*DAY)closed.push(id)
   statements.push(
    app.db.prepare("INSERT INTO contacts(id,project_id,name,email,created_at,metadata_json) VALUES(?,?,?,?,?,'{}')").bind(contact,projectId,`Customer ${n}`,`customer-${n}@example.test`,created),
-   app.db.prepare('INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,status_id,status_category,subject,resolved_at,ticket_version) VALUES(?,?,?,?,?,?,?,?,?,1)').bind(id,projectId,contact,created,created+3600000,status,status,`Order question ${n}`,resolved))
+   app.db.prepare('INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,status_id,status_category,subject,resolved_at,ticket_version) VALUES(?,?,?,?,?,?,?,?,?,1)').bind(id,projectId,contact,created,created+3600000,status,status,`Order question ${n}`,resolved),
+   app.db.prepare('INSERT INTO ticket_handle_sessions(id,project_id,conversation_id,user_id,started_at,ended_at) VALUES(?,?,?,?,?,?)').bind(`history-session-${n}`,projectId,id,users.operator,created+60000,created+600000),
+   app.db.prepare("INSERT INTO local_jobs(id,project_id,conversation_id,operator_id,device_id,request_id,mode,instructions,status,created_at,completed_at) VALUES(?,?,?,?,'history-laptop',?,'investigate','Check the order','completed',?,?)").bind(`history-job-${n}`,projectId,id,users.operator,`history-request-${n}`,new Date(created+60000).toISOString(),new Date(created+120000).toISOString()))
   for(const [m,role] of [[0,'contact'],[1,'operator']]){
    const message=`${id}-m${m}`
    statements.push(
@@ -45,6 +49,16 @@ async function minutes(app,count){
  return rows
 }
 
+// The polls an operator's open ticket makes, each with the D1 rows it read.
+async function ticketPolls(app,{projectId,tokens},ticket){
+ const rows={}
+ for(const [name,path] of [['timer',`/api/dashboard/projects/${projectId}/conversations/${ticket}/timer`],['delegations',`/api/projects/${projectId}/conversations/${ticket}/delegations`],['local agents',`/api/projects/${projectId}/local-agents`]]){
+  const response=await app.request(path,{token:tokens.operator,headers:{'x-test-meter-d1':'1'}});await response.text()
+  assert.equal(response.status,200,`${name} poll answers`);rows[name]=Number(response.headers.get('x-test-d1-rows-read'))
+ }
+ return rows
+}
+
 export async function scheduledReadBudgetJourney(){
  const app=await startApp()
  try{
@@ -54,15 +68,18 @@ export async function scheduledReadBudgetJourney(){
    app.db.prepare("INSERT INTO workflow_calendars(project_id,id,name,timezone,weekly_json,holidays,closures_json,active,updated_at) VALUES(?,'hours','Business hours','UTC',?,'none','[]',1,?)").bind(projectId,week,now-31*DAY),
    app.db.prepare("INSERT INTO sla_policies(project_id,id,name,calendar_id,position,conditions_json,first_response_minutes,next_response_minutes,resolution_minutes,pause_on_hold,approaching_minutes,active,updated_at) VALUES(?,'standard','Standard','hours',0,'{}',60,120,1440,1,15,1,?)").bind(projectId,now-31*DAY),
    app.db.prepare("INSERT INTO native_integration_destinations(id,project_id,kind,name,mode,events_json,secret_ciphertext,enabled,created_at) VALUES('orders-hook',?,'webhook','Orders',NULL,?,'sealed',1,?)").bind(projectId,JSON.stringify(['conversation.created','message.created','conversation.resolved']),now-31*DAY),
-   app.db.prepare("INSERT INTO csat_settings(project_id,enabled,scale,delay_minutes,expires_days,locale,enabled_at,updated_at) VALUES(?,1,'five',60,14,'en',?,?)").bind(projectId,now-31*DAY,now-31*DAY)])
+   app.db.prepare("INSERT INTO csat_settings(project_id,enabled,scale,delay_minutes,expires_days,locale,enabled_at,updated_at) VALUES(?,1,'five',60,14,'en',?,?)").bind(projectId,now-31*DAY,now-31*DAY),
+   app.db.prepare("INSERT INTO local_devices(id,user_id,project_id,token_hash,name,provider,capabilities,last_seen_at) VALUES('history-laptop',?,?,'history-laptop-token','Laptop','codex','[]',?)").bind(workspace.users.operator,projectId,new Date(now).toISOString())])
   await seedHistory(app,workspace,{from:0,count:600})
   // The first minutes finish one SLA lap and one survey walk, a page at a time.
   const warm=await minutes(app,20)
   assert.ok(Math.max(...warm)<=PAGE_CEILING,`every scheduled page is bounded: ${warm}`)
-  const small=await minutes(app,3)
+  const small=await minutes(app,3),smallPolls=await ticketPolls(app,workspace,'history-0')
   await seedHistory(app,workspace,{from:600,count:600})
-  const large=await minutes(app,3)
+  const large=await minutes(app,3),largePolls=await ticketPolls(app,workspace,'history-0')
   console.log(`Scheduled D1 rows read per run: 600 conversations ${small}; 1,200 conversations ${large}`)
+  console.log(`Open-ticket poll D1 rows: 600 conversations ${JSON.stringify(smallPolls)}; 1,200 conversations ${JSON.stringify(largePolls)}`)
   for(const [label,rows] of [['600',small],['1,200',large]])assert.ok(Math.max(...rows)<=STEADY_CEILING,`${label} conversations: a steady minute reads ${rows} rows`)
+  for(const [label,polls] of [['600',smallPolls],['1,200',largePolls]])for(const [name,rows] of Object.entries(polls))assert.ok(rows<=POLL_CEILING,`${label} conversations: the open ticket's ${name} poll reads ${rows} rows`)
  }finally{await app.close()}
 }

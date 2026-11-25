@@ -3068,6 +3068,10 @@
       "sha256": "0b060966dedf9ecedcb02be565a289059925b0726342c140bdfaeaabe8f605f8",
       "executable": false
     },
+    "scripts/ci/test-budget.mjs": {
+      "sha256": "01b22ff1d6b1fca6833db630df6f614280069a6df64823be932f6dcfc2faabf4",
+      "executable": false
+    },
     "scripts/ci/verify-evidence.mjs": {
       "sha256": "8260e91015494b6c3ded12fefa17edf6bf50f64623b7e8a992be455c3735bfe5",
       "executable": false
@@ -16146,6 +16150,10 @@
     },
     "src/vendor/base/modules/sendgrid-email/src/sender.ts": {
       "sha256": "03012f6d403842f8d7527f0f5d86d9c0afd4e8f63430cbe34fbe4adfc977dff6",
+      "executable": false
+    },
+    "test-budget.json": {
+      "sha256": "7962454dfd02f23d5e024c44c4f0658081e4b107f6c4feeeddc024460c14a355",
       "executable": false
     },
     "tests/connections/api.mjs": {

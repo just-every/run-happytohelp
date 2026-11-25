@@ -68,6 +68,7 @@
         "AI_DAILY_CEILINGS",
         "FORMS_TURNSTILE_SITE_KEY",
         "MAIL_PROVIDER",
+        "MAIL_RECIPIENTS",
         "MAIL_FROM",
         "MAIL_RELAY_URL",
         "H2H_RER_MAIL_VERSION",

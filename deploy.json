@@ -239,6 +239,11 @@
       "binding": "MAIL_PROVIDER",
       "environment": "MAIL_PROVIDER",
       "optional": true
+    },
+    {
+      "binding": "MAIL_RECIPIENTS",
+      "environment": "MAIL_RECIPIENTS",
+      "optional": true
     }
   ],
   "vars": {

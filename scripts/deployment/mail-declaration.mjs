@@ -3,7 +3,7 @@ import {deploymentMailEnvironment,mailInputNames,outboundEmailOff} from './envir
 // names. Both declarations share resource identity and the same deployment kit.
 export const managedDeployPath='management/integration/managed-deploy.json';
 export const nativeSetupPath='management/integration/native-setup.json';
-export const publicMailNames=['MAIL_MODE','MAIL_PROVIDER','EMAIL_PROVIDER','EMAIL_API_KEY_NAME','MAILGUN_DOMAIN','MAILGUN_REGION','EMAIL_ACCOUNT_ID','MAIL_FROM','MAIL_RELAY_URL','H2H_RER_MAIL_VERSION','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL'];
+export const publicMailNames=['MAIL_MODE','MAIL_PROVIDER','MAIL_RECIPIENTS','EMAIL_PROVIDER','EMAIL_API_KEY_NAME','MAILGUN_DOMAIN','MAILGUN_REGION','EMAIL_ACCOUNT_ID','MAIL_FROM','MAIL_RELAY_URL','H2H_RER_MAIL_VERSION','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL'];
 /** Apply the selected state to the actual upload declaration, including aliases. */
 export function selectedMailDeclaration(declaration,inputs){
  const env=deploymentMailEnvironment(inputs),off=outboundEmailOff(env);

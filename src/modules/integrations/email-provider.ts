@@ -17,8 +17,9 @@ import {mailgunConfiguration} from './mailgun-configuration.mjs'
 export type EmailProvider = 'resend'|'cloudflare'|'sendgrid'|'mailgun'|'rer'
 const providers:readonly EmailProvider[]=['resend','cloudflare','sendgrid','mailgun']
 
-/** An explicit installation choice wins over credentials saved for later. */
-export function emailExplicitlyOff(env:Env){return env.MAIL_MODE==='off'||!env.MAIL_MODE&&['none','disabled','off'].includes(String(env.MAIL_PROVIDER||'').trim().toLowerCase())}
+/** An explicit installation choice wins over credentials saved for later. MAIL_RECIPIENTS=owner keeps every
+ * mail off except the owner's own sign-in link (src/modules/identity/owner-signin-mail.ts). */
+export function emailExplicitlyOff(env:Env){return env.MAIL_RECIPIENTS==='owner'||env.MAIL_MODE==='off'||!env.MAIL_MODE&&['none','disabled','off'].includes(String(env.MAIL_PROVIDER||'').trim().toLowerCase())}
 /** The selected provider is explicit when supplied; the legacy default remains Resend. */
 export function selectedEmailProvider(env:Env):EmailProvider|null{
  if(emailExplicitlyOff(env))return null

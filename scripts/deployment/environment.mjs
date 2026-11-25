@@ -12,7 +12,7 @@ export const secretNames = [
 export const variableNames = [
  'EMAIL_PROVIDER','EMAIL_API_KEY_NAME','MAILGUN_DOMAIN','MAILGUN_REGION','EMAIL_ACCOUNT_ID','INBOUND_EMAIL_DOMAIN',
  'LEGACY_MAIL_S3_BUCKET','LEGACY_MAIL_S3_PREFIX','LEGACY_MAIL_S3_REPLAY_PREFIX','LEGACY_MAIL_S3_MAILBOX','LEGACY_AWS_REGION',
- 'MAIL_MODE','MAIL_PROVIDER','MAIL_FROM','MAIL_RELAY_URL','H2H_RER_MAIL_VERSION','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL',
+ 'MAIL_MODE','MAIL_PROVIDER','MAIL_RECIPIENTS','MAIL_FROM','MAIL_RELAY_URL','H2H_RER_MAIL_VERSION','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL',
  'RER_OWNER_CLAIM_ISSUER','RER_OWNER_CLAIM_INSTALLATION_ID','RER_OWNER_CLAIM_APP_ORIGIN','RER_OWNER_CLAIM_PUBLIC_KEYS','RER_BUSINESS_TRUST','RER_IMPORT_DOOR',
  'RER_INSTALLATION_ID','RER_MANAGEMENT_ORIGIN','H2H_SETUP_OWNER_EMAIL','WIDGET_ORIGIN','REGISTRATION_ENABLED','LEAD_MODEL','CONTEXT_MODEL','KNOWLEDGE_EMBEDDING_MODEL','QDRANT_URL',
  'APIFY_CRAWLER_ACTOR_ID','GITHUB_CLIENT_ID','GITHUB_PROJECT_ID','PREVIEW_ORIGIN',
@@ -117,6 +117,8 @@ function validateLegacyMailS3(env){
 export function validateRuntimeEnvironment(env){
  if(env.H2H_LOCAL==='true')throw new Error('Local development mail configuration cannot be deployed')
  validateRemoteMailSelection(env)
+ if(configured(env,'MAIL_RECIPIENTS')&&!['any','owner'].includes(env.MAIL_RECIPIENTS))throw new Error('MAIL_RECIPIENTS must be any or owner')
+ if(env.MAIL_RECIPIENTS==='owner'&&deploymentMailEnvironment(env).MAIL_PROVIDER==='rer')throw new Error('MAIL_RECIPIENTS=owner needs your own provider (resend, cloudflare, sendgrid or mailgun), not managed mail')
  validateLegacyMailS3(env)
  if(configured(env,'PUBLIC_HELP_HOSTS')){
   const hosts=JSON.parse(env.PUBLIC_HELP_HOSTS)

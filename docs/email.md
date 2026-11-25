@@ -24,6 +24,18 @@ With Off selected, sign-in links, password resets, invitations, notifications, r
 
 You can keep provider values in private local configuration or the platform's encrypted store while Off is selected. Saving or rotating a key does not activate email. Activation requires changing the provider choice and publishing the installation configuration.
 
+### Send only the owner's sign-in link
+
+Set `MAIL_RECIPIENTS=owner` together with your own provider (`MAIL_PROVIDER` of `resend`, `cloudflare`, `sendgrid` or `mailgun`, its key and a verified `EMAIL_FROM`) and the installation sends exactly one kind of message: the owner's own sign-in link, to the configured owner address (`H2H_SETUP_OWNER_EMAIL`, else `OWNER_EMAIL`) and nobody else. The owner opens **Email me a sign-in link** on the sign-in page, enters that address and receives a single-use link that expires after 15 minutes; an account with a second factor still proves it. Any other address, a teammate's included, gets no mail and the same answer. Everything else behaves exactly as **Outbound email off** above: password resets, invitations, notifications, replies and surveys send nothing. The default, `any`, keeps ordinary behaviour. Managed email (`MAIL_PROVIDER=rer`) is refused with `MAIL_RECIPIENTS=owner`.
+
+For a native deployment, put `MAIL_PROVIDER` (for example `sendgrid`), `MAIL_RECIPIENTS=owner`, `EMAIL_FROM` and `EMAIL_API_KEY` in your private `--env-file` next to the owner and installation inputs you already keep there, and run a full deployment from its checkout:
+
+```sh
+rer deploy --environment production --env-file <file>
+```
+
+First check: on the sign-in page choose **Email me a sign-in link**, enter the owner address, open the mail and press **Sign in**; then ask for a link for any other address and confirm no mail arrives.
+
 ### Turn Mailgun on
 
 Choose **Your email provider**, then **Mailgun**, and enter the verified sending domain, region, sender address and domain-scoped sending key. Enter the separate HTTP webhook signing key to receive Mailgun forwards; incoming Mailgun mail refuses without it. The Routes administration key is not a sending or signing key.

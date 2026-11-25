@@ -8,6 +8,7 @@ import { serverSecret } from '../../platform/db'
 import { emailConfigured, sendEmail } from '../integrations/email'
 import {emailMode,emailOffMessage} from '../integrations/email-provider'
 import { sessionCookie } from './session'
+import { ownerSigninAddress, sendOwnerSignin } from './owner-signin-mail'
 import { signInFactor } from './two-factor/sign-in'
 import { sessionFactorStatement } from './two-factor/state'
 import { accountAudit, runAll } from './two-factor/factors'
@@ -38,8 +39,8 @@ magicLink.post('/magic-link', async c => {
  sameOrigin(c.req.raw)
  c.header('Cache-Control', 'no-store')
  if(emailMode(c.env)==='local')throw new HTTPException(503,{message:'Local development signs in automatically through rer dev. Use your password instead.'})
- const origin = linkOrigin(c.env)
- if (!origin || !emailConfigured(c.env)) throw new HTTPException(503, { message: `${emailOffMessage} No sign-in link was sent: use your password, or ask whoever runs this installation for a sign-in link.` })
+ const origin = linkOrigin(c.env), owner = ownerSigninAddress(c.env)
+ if (!origin || !(owner || emailConfigured(c.env))) throw new HTTPException(503, { message: `${emailOffMessage} No sign-in link was sent: use your password, or ask whoever runs this installation for a sign-in link.` })
  const body = await c.req.json().catch(() => null)
  const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
  if (email.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HTTPException(400, { message: 'Enter a valid email address.' })
@@ -49,6 +50,8 @@ magicLink.post('/magic-link', async c => {
  // Account lookup and email submission both run after the neutral response. Unknown
  // addresses do not expose database or provider latency through the request duration.
  c.executionCtx.waitUntil((async () => {
+  // Owner-only mail: any address but the configured owner's gets nothing, behind the same neutral answer.
+  if (owner && email !== owner) return
   const member = await c.env.DB.prepare(`SELECT u.id,u.email,m.project_id FROM users u LEFT JOIN memberships m ON m.user_id=u.id LEFT JOIN projects p ON p.id=m.project_id WHERE lower(u.email)=? AND (m.project_id IS NULL OR (p.id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=p.id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL))) ORDER BY m.project_id LIMIT 1`).bind(email).first<{ id: string; email: string; project_id: string | null }>()
   if (!member) return
   const token = serverSecret(), hash = await hashToken(token)
@@ -57,7 +60,9 @@ magicLink.post('/magic-link', async c => {
   url.searchParams.set('returnTo',loginDestination(body.returnTo,origin))
   url.hash = new URLSearchParams({ token }).toString()
   try {
-   await sendEmail(c.env, { to: member.email, subject: 'Sign in to HappyToHelp', text: `Open this link, then press Sign in within 15 minutes: ${url.href}\nIf you did not request this link, ignore this email.`, projectId: member.project_id || undefined, idempotencyKey: `magic-signin:${hash}` })
+   const message = { subject: 'Sign in to HappyToHelp', text: `Open this link, then press Sign in within 15 minutes: ${url.href}\nIf you did not request this link, ignore this email.`, idempotencyKey: `magic-signin:${hash}` }
+   if (owner) await sendOwnerSignin(c.env, { ...message, to: member.email.trim().toLowerCase() })
+   else await sendEmail(c.env, { ...message, to: member.email, projectId: member.project_id || undefined })
   } catch {
    // Preserve failed/uncertain email receipts. Never replay an ambiguous submission.
    await c.env.DB.prepare('UPDATE magic_signins SET consumed_at=? WHERE token_hash=?').bind(Date.now(), hash).run()

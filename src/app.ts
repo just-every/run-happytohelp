@@ -2,7 +2,7 @@ import {packageInRoutes} from './modules/legacy-import/package-in/routes'
 import {handleImportDoor} from './modules/move-in/door'
 import {businessProject} from './edition/agent-door/project.ts'
 import {cutoverStatus} from './modules/cutover-status/routes'
-import {handleAgentRequest} from './edition/agent-door/index.ts'
+import {isAgentPath} from './edition/agent-door/path'
 import {helpscoutWebhooks} from './modules/api-integrations/helpscout'
 import {assuranceRoutes} from './modules/assurance/routes'
 import {channels} from './modules/support-channels/routes'
@@ -48,7 +48,7 @@ import {surveySettings,publicSurveys} from './modules/outcomes/survey-routes'
 import {formSettings,publicForms} from './modules/forms'
 import {portalApi} from './modules/portal/routes'
 import {surveyReports} from './modules/reports/surveys'
-import {notificationRequestEnvironment} from './modules/integrations/notification-request'
+import {notificationRequestEnvironment} from './modules/integrations/notification-budget'
 
 import {delegation} from './edition/delegation/routes'
 import {consent} from './edition/delegation/consent'
@@ -62,7 +62,7 @@ import {voiceRoutes} from './modules/voice/routes'
 export const app = new Hono<AppEnv>()
 // Outermost: a read's held records are written after every other D1 statement of its dispatch (platform/read-effects.ts).
 app.use('*',readEffects)
-app.use('*',async(c,next)=>{const response=await handleAgentRequest(c.req.raw,c.env);if(response)return response;await next()})
+app.use('*',async(c,next)=>{if(isAgentPath(c.req.path)){const {handleAgentRequest}=await import('./edition/agent-door/index.ts');const response=await handleAgentRequest(c.req.raw,c.env);if(response)return response}await next()})
 app.use('/api/rer/import/*',async(c,next)=>{const response=await handleImportDoor(c.req.raw,c.env);if(response)return response;await next()})
 app.route('/api/rer/cutover-status',cutoverStatus)
 app.use('/api/identity/widget/profile',visitorProfileCredential)
@@ -70,9 +70,8 @@ app.use('/api/*',knowledgeHttpDoor)
 app.use('/delegation/*',knowledgeHttpDoor)
 app.use('/api/*',async(c,next)=>{
  c.env=notificationRequestEnvironment(c.env)
- const origin=new URL(c.req.url);
  // A configured canonical origin wins; otherwise capture the actual app URL for queued work.
- if(!c.env.APP_ORIGIN)c.env={...c.env,APP_ORIGIN:origin.origin,H2H_LOCAL:undefined};
+ if(!c.env.APP_ORIGIN)c.env={...c.env,APP_ORIGIN:new URL(c.req.url).origin,H2H_LOCAL:undefined};
  await next();
 })
 app.route('/api/rer/business-project',businessProject)

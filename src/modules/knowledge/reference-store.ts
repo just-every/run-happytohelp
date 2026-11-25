@@ -11,7 +11,8 @@ import {HTTPException} from 'hono/http-exception'
 import {observedArticleSourceSql,type ObservedArticleSource} from './source-identity'
 export const unavailableKnowledge='[Knowledge unavailable]'
 export const tokenPattern=/⟦k:([a-f0-9]{32})⟧/g
-export const referenceIds=(text:string)=>[...new Set([...text.matchAll(tokenPattern)].map(match=>match[1]))]
+export const referenceIds=(text:string)=>text.includes('⟦k:')?[...new Set([...text.matchAll(tokenPattern)].map(match=>match[1]))]:[]
+export const needsKnowledgeRendering=(text:string)=>text[0]==='['||text[0]==='{'||text.includes('⟦k:')
 export const referenceToken=(id:string)=>`⟦k:${id}⟧`
 export interface KnowledgeBlock {id:string;project_id:string;kind:'text'|'link'|'copy'|'answer';payload_json:string;sources_json:string;generation_id:string|null;author_contact_id:string|null}
 interface BlockInput {kind:KnowledgeBlock['kind'];text:string;title?:string;url?:string;sources:string[];sourceIdentities?:ObservedArticleSource[];generationId?:string;authorContactId?:string}

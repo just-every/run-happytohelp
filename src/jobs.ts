@@ -83,8 +83,9 @@ export async function consumeJob(job:Job|LegacyCleanupJob,env:Env) {
  * An exception in one never takes away another consumer's turn. The workflow
  * maximum (720), tail allocations (220) request 940; the outer jobs ceiling is 937, including the local clock read.
  * The other parallel scheduled consumers reserve the remaining 63 statements. */
-export async function runScheduled(env:Env) {
- const budget=boundedDatabase(env.DB,scheduledReservations.jobs)
+export async function runScheduled(env:Env,maintenance=true,discoveryStatements=0) {
+ const jobLimit=scheduledReservations.jobs-discoveryStatements
+ const budget=boundedDatabase(env.DB,jobLimit)
  env=withWorkflowInvocation(await workflowEnvironment({...env,DB:budget.database}))
  let allocated=0
  const visit=async(name:string,share:number,run:(env:Env)=>Promise<unknown>,{ceiling=Infinity,needed=true}={})=>{
@@ -97,7 +98,7 @@ export async function runScheduled(env:Env) {
  await visit('Workflow',720,async env=>{const scope=await scheduledWorkflowWork(env);if(scope)await runWorkflows(env,scope)})
  await visit('Survey',70,async env=>{if(await hasScheduledSurveyWork(env))await dispatchSurveys(env)})
  // The Amazon SES reader's private copies expire every tick, whether or not the reader is configured.
- await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env);await recoverLegacyMailS3(env);await expireLegacyMailS3Raw(env)})
+ await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env,maintenance);await recoverLegacyMailS3(env);await expireLegacyMailS3Raw(env)})
  await visit('Voice media',2,expireVoiceMedia)
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.
@@ -113,9 +114,9 @@ export async function runScheduled(env:Env) {
  await visit('Brand',6,recoverBrandJobs,{needed:!recovery||Boolean(recovery.brand)})
  await visit('Site read',7,recoverSiteReads,{needed:!recovery||Boolean(recovery.site)})
  await visit('Lead',12,recoverLeadJobs)
- await visit('Counter',1,pruneCounters)
+ await visit('Counter',1,pruneCounters,{needed:maintenance})
  // Discovery consumes only unused jobs credit, after all existing reservations.
- const legacyRoom=scheduledReservations.jobs-budget.statements
+ const legacyRoom=jobLimit-budget.statements
  if(legacyRoom>=26)await discoverCleanup(cronConsumer(env,24),1)
- if(scheduledReservations.jobs-budget.statements>=2)await discoverLegacy(cronConsumer(env,2))
+ if(jobLimit-budget.statements>=2)await discoverLegacy(cronConsumer(env,2))
 }

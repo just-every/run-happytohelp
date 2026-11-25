@@ -1,10 +1,6 @@
 import {customerMailboxHistorySql} from '../move-in/mailbox-privacy'
 import {ticketScopeSql} from '../access/ticket-scope'
-import {createReferenceReadScope} from '../knowledge/reference-read'
-import {referenceIds,renderKnowledgeFields,referenceVisibility} from '../knowledge/reference-store'
-import {canonicaliseFields} from '../knowledge/canonicaliser'
 import {memberReaders,readerSet} from '../knowledge/door'
-import {currentTicketReaders} from '../knowledge/readers'
 import {DurableObject} from 'cloudflare:workers'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -52,6 +48,7 @@ export class ConversationSocket extends DurableObject<Env>{
   // in this one bounded page statement. Current knowledge and authority stay live.
   const rows={results:page.results.map(row=>{if(!row.message_json||!row.media_json)throw new Error('Socket replay projection is missing');return {eventId:row.eventId,...JSON.parse(row.message_json),media:JSON.parse(row.media_json)}})}
   if(actor.role==='contact')for(const row of rows.results)delete row.content_raw
+  const {createReferenceReadScope,referenceIds,renderKnowledgeFields,referenceVisibility,currentTicketReaders}=await import('./socket-knowledge')
   const scopes=new Map<string,Awaited<ReturnType<typeof createReferenceReadScope>>>()
   for(const projectId of new Set(rows.results.map(row=>String(row.project_id))))scopes.set(projectId,await createReferenceReadScope(this.env,projectId,referenceIds(JSON.stringify(rows.results.filter(row=>row.project_id===projectId)))))
   const prepared=await Promise.all(rows.results.map(async row=>{
@@ -138,6 +135,7 @@ export class ConversationSocket extends DurableObject<Env>{
     const scope=await this.env.DB.prepare('SELECT project_id FROM conversations WHERE id=?').bind(event.conversationId).first<{project_id:string}>()
     if(!scope)continue
     const readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id)
+    const {renderKnowledgeFields,canonicaliseFields}=await import('./socket-knowledge')
     const rendered=await renderKnowledgeFields(this.env,scope.project_id,await canonicaliseFields(this.env,scope.project_id,event),readers)
     if(actor.role!=='contact'){
      if(!await this.authorized(a)){await this.releaseOnline(ws);ws.close(1008,'Session revoked');continue}

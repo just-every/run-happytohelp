@@ -1,46 +1,21 @@
-// Demo mode first: it guards fetch before any other module can keep it (DEMO.md).
-import {isAgentPath} from './edition/agent-door/index.ts'
+// Install the demo's effect guard before loading any event handlers.
 import {withDemo} from './vendor/base/modules/demo/index.mjs'
-import {demoOwner,seedDemo} from './demo'
-import {canonicalNavigation} from './platform/canonical-navigation'
-import {withCompiledAssetCache} from './edition/asset-cache'
-import {withWorkspaceModulePreloads} from './edition/module-preloads'
-import {withDocumentHeaders} from './platform/document-headers'
-import {withDocumentRecovery} from './platform/document-recovery'
-import {consumeQueue} from './queue'
-import {guardOverload} from './platform/d1-overload'
-import start from '@tanstack/react-start/server-entry'
-import type { Env,Job } from './platform/env'
-import { app } from './app'
-import {runScheduledInvocation} from './platform/scheduled'
-import { dispatch } from './base/dispatch'
-import { publicSiteRoutes,isPublicSitePath,publicHelpHostResponse } from './modules/public-site'
-import { handleEmail } from './modules/integrations'
-import { headerSurface,withSecurityHeaders } from './platform/security-headers'
-import { delegationDocument,isDelegationDocument } from './edition/delegation/document'
-import {loginDocument} from './modules/identity/login-document'
-import {staticAssetResponse} from './base/static-assets'
-import {widgetAssetOrigin,widgetAssetRequest} from './modules/widget/asset-origin'
-import {legacyDocumentationResponse} from './modules/public-site/legacy-docs'
-import {runtimeSitePage} from './modules/public-site/runtime-pages'
-import {withInstallationContact} from './modules/public-site/installation-contact'
-export { ConversationSocket } from './modules/conversations/socket'
-// vite dev only: TanStack Start memoizes its module-load promise inside the first document request's runner call, so a client abort mid-load wedges every later document; keep the render alive past a disconnect.
-async function keepDevRenderAlive(request:Request,execution:ExecutionContext):Promise<Response>{const response=start.fetch(request);if(import.meta.env.DEV)execution.waitUntil(Promise.resolve(response).then(()=>{},()=>{}));return response}
-async function route(request:Request,env:Env,execution:ExecutionContext,path:string,publicSite:boolean):Promise<Response>{
+import type {Env,Job} from './platform/env'
+import {scheduledTick} from './platform/scheduled-tick'
+export {ConversationSocket} from './modules/conversations/socket'
 
- if(isAgentPath(path))return app.fetch(request,env,execution);
- if(path==='/auth/bootstrap'||path==='/auth/owner-claim'||path==='/auth/signout')return app.fetch(request,env,execution);
- const login=await loginDocument(request,env,request=>app.fetch(request,env,execution));if(login)return login;
- if(isDelegationDocument(request))return delegationDocument(request,env,execution,()=>keepDevRenderAlive(request,execution));if(path.startsWith('/delegation/'))return app.fetch(request,env,execution);if(path.startsWith('/preview/'))return app.fetch(request,env,execution);if(publicSite)return publicSiteRoutes.fetch(request,env,execution);return dispatch(request,()=>app.fetch(request,env,execution),()=>keepDevRenderAlive(request,execution))
-}
-async function entry(request:Request,env:Env,execution:ExecutionContext):Promise<Response>{if(import.meta.env.DEV && import.meta.env.RER_LOCAL_ORIGIN && env.H2H_LOCAL==='true' && !env.RER_INSTALLATION_ID)env={...env,APP_ORIGIN:import.meta.env.RER_LOCAL_ORIGIN};const canonical=canonicalNavigation(request,env);if(canonical)return canonical;const asset=await staticAssetResponse(widgetAssetRequest(request,env.APP_ORIGIN),env);if(asset)return withDocumentHeaders(withCompiledAssetCache(request,await widgetAssetOrigin(request,asset,env.APP_ORIGIN)));const documentation=legacyDocumentationResponse(request);if(documentation)return withDocumentHeaders(withSecurityHeaders(documentation,'application',env));const helpHost=await publicHelpHostResponse(request,env);if(helpHost)return withDocumentHeaders(withSecurityHeaders(await withInstallationContact(request,helpHost,env,true),'embeddable',env));const page=runtimeSitePage(request);if(page)return withDocumentHeaders(withSecurityHeaders(await withInstallationContact(request,page,env),'application',env));const path=new URL(request.url).pathname,publicSite=!path.startsWith('/preview/')&&await isPublicSitePath(path,env);
- return withDocumentHeaders(withSecurityHeaders(withDocumentRecovery(request,withWorkspaceModulePreloads(request,await withInstallationContact(request,await route(request,env,execution,path,publicSite),env))),headerSurface(path,publicSite),env))}
 export default withDemo({
- // An overload thrown before the application answers (public site and help host lookups) is retried, then 503.
- fetch:(request:Request,env:Env,execution:ExecutionContext)=>guardOverload(request,()=>entry(request,env,execution)),
- async queue(batch:MessageBatch<Job>,env:Env){await consumeQueue(batch,env)},
- // Jobs keep their 940 envelope; mail, then audit, borrow only settled credit.
- async scheduled(_event:ScheduledController,env:Env){await runScheduledInvocation(env)},
- email:handleEmail,
-} satisfies ExportedHandler<Env,Job>,{seed:seedDemo,owner:demoOwner})
+ async fetch(request:Request,env:Env,execution:ExecutionContext){
+  return (await import('./server-fetch')).fetchRequest(request,env,execution)
+ },
+ async queue(batch:MessageBatch<Job>,env:Env){
+  await (await import('./queue')).consumeQueue(batch,env)
+ },
+ scheduled:scheduledTick,
+ async email(message:ForwardableEmailMessage,env:Env,execution:ExecutionContext){
+  await (await import('./modules/conversation-actions/partner-gateway')).handleEmail(message,env,execution)
+ },
+} satisfies ExportedHandler<Env,Job>,{
+ seed:async(...args:Parameters<typeof import('./demo').seedDemo>)=>(await import('./demo')).seedDemo(...args),
+ owner:async(...args:Parameters<typeof import('./demo').demoOwner>)=>(await import('./demo')).demoOwner(...args),
+})

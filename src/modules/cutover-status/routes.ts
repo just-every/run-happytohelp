@@ -1,7 +1,7 @@
 import {Hono} from 'hono'
 import {DoorError,verifyRerGrant} from '@runeditrun/rer/modules/import-kit/door'
 import type {AppEnv} from '../../platform/env'
-import {installationTrust} from '../../edition/agent-door/index'
+import {installationTrust} from '../../edition/agent-door/trust'
 
 /** A signed aggregate read of the installation's native Business workspace. */
 export const cutoverStatus=new Hono<AppEnv>()

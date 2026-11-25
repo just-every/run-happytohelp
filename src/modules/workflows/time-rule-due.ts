@@ -1,0 +1,2 @@
+export const dueTimeRule = (hour:string)=>`r.state='published' AND r.kind='time' AND coalesce(sc.hour=${hour} AND sc.version=r.published_version AND sc.complete=1,0)=0 AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=r.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
+export const timeRuleCursor = 'LEFT JOIN workflow_scheduler_cursors sc ON sc.rule_id=r.id'

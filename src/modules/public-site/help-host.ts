@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import type { AppEnv, Env } from '../../platform/env'
-import { renderHelpCenter, reserved, resolvePublicProject } from './help-center'
+import { renderHelpCenter, resolvePublicProject } from './help-center'
+import {reserved} from './path'
 import { answerOverloads } from '../../platform/d1-overload'
 import { readEffects } from '../../platform/read-effects'
 

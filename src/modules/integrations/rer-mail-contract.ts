@@ -3,6 +3,7 @@ import {HTTPException} from 'hono/http-exception'
 
 export const rerMail=(env:Env)=>env.MAIL_MODE?env.MAIL_MODE==='rer':env.MAIL_PROVIDER==='rer'
 export const managedMailAddress=(value:unknown)=>typeof value==='string'?value.toLowerCase():null
+export function rerConfigured(env:Env){return env.H2H_RER_MAIL_VERSION==='1'&&Boolean(env.MAIL_API_KEY&&env.MAIL_RELAY_URL&&env.RER_MAILBOX_ID&&env.RER_MAIL_ADDRESS&&env.RER_MAIL_INGRESS_KEY&&env.RER_MAIL_CONTROL_URL&&env.INBOUND_EMAIL_TOKEN&&env.INTEGRATION_ENCRYPTION_KEY)&&managedMailAddress(env.MAIL_FROM)===managedMailAddress(env.RER_MAIL_ADDRESS)}
 export const maxMailBytes=24*1024*1024
 export const canonical=(value:unknown):string=>JSON.stringify(value&&typeof value==='object'?Array.isArray(value)?value.map(item=>JSON.parse(canonical(item))):Object.fromEntries(Object.entries(value).sort(([a],[b])=>a.localeCompare(b)).map(([key,item])=>[key,JSON.parse(canonical(item))])):value)
 export async function rawDigest(raw:Uint8Array){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',Uint8Array.from(raw).buffer))].map(v=>v.toString(16).padStart(2,'0')).join('')}

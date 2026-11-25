@@ -1,10 +1,9 @@
+import {RETENTION_LIMITS,DAY,retentionDays,held,auditDueSql} from './retention-due'
+export {RETENTION_LIMITS} from './retention-due'
 import type {Env} from '../../platform/env'
 import {cronConsumer,cronRoom} from '../../platform/cron-budget'
 import {scheduledReservations} from '../../platform/scheduled-budget'
 import {auditStatement} from './record'
-
-export const RETENTION_LIMITS={min:90,max:3650}
-const DAY=86400000
 
 /**
  * Removes security-log rows older than each workspace's retention, never one a legal
@@ -15,12 +14,10 @@ const DAY=86400000
 export async function purgeExpiredAudit(env:Env,now=Date.now(),statementLimit:number=scheduledReservations.audit){
  // The floor is discovery plus one complete purge; settled credit admits more.
  env=cronConsumer(env,statementLimit)
- const retentionDays="CAST(json_extract(settings_json,'$.audit_retention_days') AS INTEGER)"
- const held=`EXISTS(SELECT 1 FROM audit_holds h WHERE h.project_id=audit_events.project_id AND h.released_at IS NULL AND audit_events.at>=h.starts_at AND (h.ends_at IS NULL OR audit_events.at<=h.ends_at))`
  // The existing purge audit is also a durable turn: a workspace with freshly
  // expiring rows yields to those still waiting. Row order breaks initial ties.
- const projects=(await env.DB.prepare(`SELECT project_id,${retentionDays} days FROM project_settings WHERE json_extract(settings_json,'$.audit_retention_days') IS NOT NULL AND ${retentionDays}>=? AND EXISTS(SELECT 1 FROM audit_events WHERE audit_events.project_id=project_settings.project_id AND at<?-${retentionDays}*? AND NOT ${held})
- ORDER BY coalesce((SELECT max(turn.at) FROM audit_events turn WHERE turn.project_id=project_settings.project_id AND turn.action='audit.purged'),0),project_settings.rowid LIMIT 50`).bind(RETENTION_LIMITS.min,now,DAY).all<{project_id:string;days:number}>()).results
+ const projects=(await env.DB.prepare(`SELECT project_id,${retentionDays} days ${auditDueSql('?2','?1')}
+ ORDER BY coalesce((SELECT max(turn.at) FROM audit_events turn WHERE turn.project_id=project_settings.project_id AND turn.action='audit.purged'),0),project_settings.rowid LIMIT 50`).bind(RETENTION_LIMITS.min,now).all<{project_id:string;days:number}>()).results
  for(const {project_id:projectId,days} of projects){
   if(!Number.isInteger(days)||days<RETENTION_LIMITS.min)continue
   if(!cronRoom(env,5))break

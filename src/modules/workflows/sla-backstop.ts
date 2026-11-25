@@ -6,14 +6,15 @@ import type {Spent} from './budget'
 const PAGE=40
 /** A finished lap rests this long before the next, unless a policy or calendar changes first. */
 export const SLA_BACKSTOP_REST=3600000
+const settingsChanged=`EXISTS(SELECT 1 FROM sla_policies policy WHERE policy.project_id=p.id AND policy.updated_at>k.updated_at)
+  OR EXISTS(SELECT 1 FROM workflow_calendars cal WHERE cal.project_id=p.id AND cal.updated_at>k.updated_at)`
 /** Workspaces whose rolling lap is due: one is mid-lap, has never run, rested a full
  * interval, or changed a policy or calendar since its last page. `rested` is the rest cutoff. */
 export const slaBackstopDueSql=(rested:string)=>`SELECT p.id FROM projects p LEFT JOIN sla_scheduler_cursors k ON k.id='tickets:'||p.id
  LEFT JOIN workflow_queue_turns q ON q.queue='sla-backstop' AND q.project_id=p.id
  WHERE (EXISTS(SELECT 1 FROM sla_policies policy WHERE policy.project_id=p.id AND policy.active=1) OR EXISTS(SELECT 1 FROM ticket_sla_state state WHERE state.project_id=p.id))
  AND (k.id IS NULL OR k.after_id<>'' OR k.updated_at<=${rested}
-  OR EXISTS(SELECT 1 FROM sla_policies policy WHERE policy.project_id=p.id AND policy.updated_at>k.updated_at)
-  OR EXISTS(SELECT 1 FROM workflow_calendars cal WHERE cal.project_id=p.id AND cal.updated_at>k.updated_at))`
+  OR ${settingsChanged})`
 /** Only tickets that can hold a running clock are candidates: open tickets through a
  * partial index and any ticket with an open alert. A page reads at most two short
  * index ranges, so its cost follows the open queue, never the closed history. */
@@ -28,12 +29,17 @@ export async function runSlaBackstop(env:Env,now=workflowNow(env),spent?:Spent){
  if(!project)return {processed:0}
  await env.DB.prepare("INSERT INTO workflow_queue_turns(queue,project_id,turn) SELECT 'sla-backstop',?,coalesce(max(turn),0)+1 FROM workflow_queue_turns WHERE queue='sla-backstop' ON CONFLICT(queue,project_id) DO UPDATE SET turn=excluded.turn").bind(project.id).run()
  const cursorId=`tickets:${project.id}`
- const cursor=await env.DB.prepare("SELECT after_id FROM sla_scheduler_cursors WHERE id=?").bind(cursorId).first<{after_id:string}>()
- const candidates=(await env.DB.prepare(page).bind(project.id,cursor?.after_id??'').all<{id:string;live:number}>()).results
+ const cursor=await env.DB.prepare(`SELECT k.after_id,k.updated_at,(${settingsChanged}) changed
+  FROM projects p JOIN sla_scheduler_cursors k ON k.id=? WHERE p.id=?`).bind(cursorId,project.id).first<{after_id:string;updated_at:number;changed:number}>()
+ // Settings edits affect the tickets on earlier pages too, so restart this lap.
+ const from=cursor&&!cursor.changed?cursor.after_id:''
+ const candidates=(await env.DB.prepare(page).bind(project.id,from).all<{id:string;live:number}>()).results
  const ids=candidates.filter(row=>row.live).map(row=>row.id)
  await syncSlaTickets(env,ids,now)
  // A short page ends the lap; the empty cursor then rests until the next one is due.
  const after=candidates.length<PAGE?'':candidates[candidates.length-1].id
- await env.DB.prepare("INSERT INTO sla_scheduler_cursors(id,after_id,updated_at) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET after_id=excluded.after_id,updated_at=excluded.updated_at").bind(cursorId,after,now).run()
+ await env.DB.prepare(`INSERT INTO sla_scheduler_cursors(id,after_id,updated_at) VALUES(?,?,?)
+  ON CONFLICT(id) DO UPDATE SET after_id=excluded.after_id,updated_at=excluded.updated_at
+  WHERE sla_scheduler_cursors.after_id=? AND sla_scheduler_cursors.updated_at=?`).bind(cursorId,after,now,cursor?.after_id??null,cursor?.updated_at??null).run()
  return {processed:ids.length}
 }

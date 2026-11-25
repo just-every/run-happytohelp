@@ -1,4 +1,4 @@
-import {scheduleMessagingSurveys,dispatchMessagingSurveys} from './survey-messaging'
+import {dispatchMessagingSurveys} from './survey-messaging'
 import {cronRoom} from '../../platform/cron-budget'
 import type {Env} from '../../platform/env'
 import {emailConfigured,sendEmail} from '../integrations/email'
@@ -7,9 +7,8 @@ import {liveCycleSql,surveyRecipientSql,surveyJoins,type Survey} from './survey-
 import {surveySigningConfigured,surveyURL} from './survey-links'
 import {surveyCopy} from './survey-html'
 const mailbox=(value:string)=>value.length<=254&&/^[^\s@<>(),:;"\\]+@[^\s@<>(),:;"\\]+\.[^\s@<>(),:;"\\]+$/.test(value)
-/** The sole transition hook; the dispatcher also discovers missed native commits.
- * Enabled-at excludes old closed history, and UNIQUE(resolution_id) fences repeats. */
 type Candidate={project_id:string;conversation_id:string}
+/** Enabled-at excludes old closed history, and UNIQUE(resolution_id) fences repeats. */
 async function scheduleSurveys(env:Env,rows:Candidate[],now:number){
  const candidates=rows.map(row=>({...row,id:crypto.randomUUID()}))
  await env.DB.prepare(`INSERT OR IGNORE INTO csat_surveys(id,project_id,resolution_id,conversation_id,contact_id,recipient,scale,locale,due_at,expires_at,state,created_at,updated_at)
@@ -17,10 +16,6 @@ async function scheduleSurveys(env:Env,rows:Candidate[],now:number){
  FROM json_each(?) candidate JOIN conversation_resolutions r ON r.project_id=json_extract(candidate.value,'$.project_id') AND r.conversation_id=json_extract(candidate.value,'$.conversation_id') JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id JOIN contacts ct ON ct.id=r.contact_id AND ct.project_id=r.project_id JOIN csat_settings cfg ON cfg.project_id=r.project_id
  WHERE cfg.enabled=1 AND r.resolved_at>=cfg.enabled_at AND ${liveCycleSql} AND ${surveyRecipientSql}
  AND ct.email IS NOT NULL AND NOT EXISTS(SELECT 1 FROM csat_responses v WHERE v.resolution_id=r.id)`).bind(now,now,JSON.stringify(candidates)).run()
-}
-export async function scheduleConversationSurvey(env:Env,projectId:string,conversationId:string,now=Date.now()){
- await scheduleSurveys(env,[{project_id:projectId,conversation_id:conversationId}],now)
- await scheduleMessagingSurveys(env,now,{projectId,conversationId})
 }
 /** An enabled workspace can discover new invitations. Existing sends still
  * need recovery after surveys are turned off. */
@@ -33,13 +28,12 @@ export async function hasScheduledSurveyWork(env:Env){
 }
 const WALK=50,SETTLE=600000
 type Walked={id:string;project_id:string;conversation_id:string;resolved_at:number}
-/** Scheduled discovery backstops the transition hook without rereading history: it
- * walks resolutions in resolved order from a stored cursor, starting no earlier than
- * the first enabled workspace, nor before an invitation could still be answered. The
- * cursor only passes a resolution once its invitation would be due, so eligibility
- * that settles before then is still seen. */
+/** The minute cron walks recent resolutions in order within the enabled settings'
+ * combined invitation window. Each page offers invitations with their own
+ * workspace's due time. The shortest enabled delay controls how long to recheck
+ * the page, so longer delays cannot hold back invitations that are already due. */
 async function surveyWalk(env:Env,now:number){
- const start=await env.DB.prepare('SELECT max(min(cfg.enabled_at),?-max(cfg.delay_minutes*60000+cfg.expires_days*86400000)) earliest,max(cfg.delay_minutes) delay_minutes,k.resolved_at,k.resolution_id FROM csat_settings cfg LEFT JOIN csat_discovery_cursor k ON k.id=1 WHERE cfg.enabled=1').bind(now).first<{earliest:number|null;delay_minutes:number;resolved_at:number|null;resolution_id:string|null}>()
+ const start=await env.DB.prepare('SELECT max(min(cfg.enabled_at),?-max(cfg.delay_minutes*60000+cfg.expires_days*86400000)) earliest,min(cfg.delay_minutes) delay_minutes,k.resolved_at,k.resolution_id FROM csat_settings cfg LEFT JOIN csat_discovery_cursor k ON k.id=1 WHERE cfg.enabled=1').bind(now).first<{earliest:number|null;delay_minutes:number;resolved_at:number|null;resolution_id:string|null}>()
  if(start?.earliest==null)return {rows:[] as Walked[],advance:async()=>{}}
  const from=start.resolved_at!=null&&start.resolved_at>=start.earliest?[start.resolved_at,start.resolution_id]:[start.earliest-1,'']
  const rows=(await env.DB.prepare(`SELECT id,project_id,conversation_id,resolved_at FROM conversation_resolutions INDEXED BY conversation_resolutions_survey_walk WHERE reopened_at IS NULL AND (resolved_at,id)>(?,?) ORDER BY resolved_at,id LIMIT ${WALK}`).bind(...from).all<Walked>()).results

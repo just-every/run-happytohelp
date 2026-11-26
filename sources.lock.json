@@ -1569,7 +1569,7 @@
       "executable": false
     },
     ".github/workflows/run-demo.yml": {
-      "sha256": "41365ec7c002e9451166313b085f9e64ed2e3ea002c27f3d5ead845bc9c302b2",
+      "sha256": "eb4a29c588e48e208c6453ee4e67faec004678d3d71bf9640c1f90f31aa6ea97",
       "executable": false
     },
     ".github/workflows/verify.yml": {
@@ -1605,7 +1605,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "320a6b7d83bd1d3b5f67343d161566aa7dbc3cc4558bfb1f07319d1994dd8999",
+      "sha256": "6e9533cd914248dd399060e3a67e9bd5b6ef7b3c72f56c604a88b15896e98d88",
       "executable": false
     },
     "CHANGELOG.md": {
@@ -12925,7 +12925,7 @@
       "executable": false
     },
     "src/ui/homepage/Hero.tsx": {
-      "sha256": "dfd8c9a5d0b6cf92692e1cfd9bbd610823e9a9110554046fe26f47dafdfc7215",
+      "sha256": "3460544a6f70f372f932d62f4e56d306c4a5c562a474236686af9f6a69bc777b",
       "executable": false
     },
     "src/ui/homepage/homepage.css": {
@@ -12961,7 +12961,7 @@
       "executable": false
     },
     "src/ui/homepage/repository.ts": {
-      "sha256": "7422a4340c5f9660322c4ecd73379e4b8a40215a7f1815178cfe90fc16f0bc37",
+      "sha256": "2d046be4f20a34fdbc33e81c82902add8523efefa04791f697635b23209bfbe9",
       "executable": false
     },
     "src/ui/homepage/reveal/observer.ts": {
@@ -17505,7 +17505,7 @@
       "executable": false
     },
     "tests/helpers/public-site-journey.mjs": {
-      "sha256": "7d17f0d37dac05d5e796d7f6bd10de9cbd31d44e6c7eefd59e0fc8a0c88aba01",
+      "sha256": "4513ba268000a14d232f977a6d9736b1d9452fadec0738925be05b59b453114a",
       "executable": false
     },
     "tests/helpers/public-site-motion.mjs": {
@@ -17785,7 +17785,7 @@
       "executable": false
     },
     "tests/homepage-browser.mjs": {
-      "sha256": "a70745545cf0137c1ca32d6bf71c6afab1787a71b184cb8aa661ca40d85d5786",
+      "sha256": "31fb2c72c23d99e1f3bf2d96cc21fce50e6b3d0ce4fdacf8f631bd6470efe5e4",
       "executable": false
     },
     "tests/journeys/ai-live.mjs": {

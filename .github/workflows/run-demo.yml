@@ -1,8 +1,9 @@
 # Adoption note: add it only when the seed's demo is adopted (DEMO.md "Hosting the demo")
 name: Run demo
 on:
-  push:
-    branches: [main]
+  # Each published release deploys its own tag (seed-release.sh publishes with a user token, so this fires).
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       test_only:
@@ -20,7 +21,6 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || vars.RUN_DEMO_DEPLOY == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: run-demo

@@ -13,7 +13,16 @@
       },
       "originFiles": [
         "export/run-demo.yml"
-      ]
+      ],
+      "adapted": {
+        ".github/workflows/run-demo.yml": "993480b411ce4bc49afa5d41b9ca54c80fb5ef8b"
+      },
+      "acknowledged": {
+        ".github/workflows/run-demo.yml": {
+          "sha256": "eb4a29c588e48e208c6453ee4e67faec004678d3d71bf9640c1f90f31aa6ea97",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": ".github/workflows/verify.yml",

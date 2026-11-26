@@ -128,7 +128,7 @@ async function presentation(page,repository){
  for(const link of await page.getByRole('link',{name:'Get the code',exact:true}).all())assert.equal(await link.getAttribute('href'),repository)
  assert.equal(await page.getByRole('link',{name:'MIT licence',exact:true}).getAttribute('href'),repository+'/blob/main/LICENSE')
  assert.equal(await page.getByRole('link',{name:'Read the installation guide',exact:true}).getAttribute('href'),'/docs/install')
- assert.equal(await style(page.locator('.hero-copy .text-link'),'text-decoration-color'),'rgb(90, 216, 236)')
+ assert.equal(await style(page.locator('.hero-copy').getByRole('link',{name:'Read the docs',exact:true}),'text-decoration-color'),'rgb(90, 216, 236)')
  for(const blob of await page.locator('.d-blob').all())assert.equal(await style(blob,'fill'),'rgb(232, 249, 252)')
  const accents=await page.locator('.h2h-home *').evaluateAll(nodes=>{
   const aqua=['rgb(143, 227, 238)','rgb(90, 216, 236)','rgb(214, 245, 250)','rgb(232, 249, 252)'],problems=[]

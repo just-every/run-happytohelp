@@ -35,10 +35,12 @@ async function noPromotions(page,source){
  assert.doesNotMatch(text,/\b(?:providers?|OpenAI|Anthropic|OpenRouter|Cohere|Mistral|Groq|Gemini API)\b|\b(?:powered|sponsored|backed) by\b|\b(?:try|choose|buy|subscribe to) (?:Codex|Claude)\b/i,'the page carries no provider promotion')
  assert.doesNotMatch(text,/\brun[\s-]*edit[\s-]*run\b|\b(?:sponsors?|sponsorship|affiliate|advertisement|advertising)\b|\b(?:also|you should) (?:try|visit|use)\b/i,'the page carries no unrelated-service promotion')
  const repository=new URL(await source.getAttribute('href'))
+ const demo=new URL(await page.locator('.hero-copy').getByRole('link',{name:'Try the demo',exact:true}).getAttribute('href'))
+ assert.match(demo.origin,/^https:\/\/demo\./,'the hero offers the hosted demo')
  for(const link of await page.locator('.h2h-home a[href]').all()){
   const destination=new URL(await link.getAttribute('href'),page.url())
-  if(destination.origin===new URL(page.url()).origin)continue
-  assert.ok(destination.origin===repository.origin&&(destination.pathname===repository.pathname||destination.pathname.startsWith(repository.pathname+'/')),'outbound homepage links stay with the offered source and its licence, without unrelated-service promotions')
+  if(destination.origin===new URL(page.url()).origin||destination.href===demo.href)continue
+  assert.ok(destination.origin===repository.origin&&(destination.pathname===repository.pathname||destination.pathname.startsWith(repository.pathname+'/')),'outbound homepage links stay with the offered source, its licence and its demo, without unrelated-service promotions')
  }
 }
 

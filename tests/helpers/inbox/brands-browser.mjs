@@ -6,7 +6,7 @@ import {widgetIdentityBrowser} from '../widget/identity-browser.mjs'
 import {nativeSettingsBrowser} from '../identity/native-settings-browser.mjs'
 
 export async function brandsBrowser(){
- const runtime=await createRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({'alpha.localhost':'brand-alpha-help','beta.localhost':'brand-beta-help'})}})
+ const runtime=await createRuntime({queueConsumers:true,vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({'alpha.localhost':'brand-alpha-help','beta.localhost':'brand-beta-help'})}})
  const origin=runtime.origin,browser=await launchBrowser(),shot=await evidence('brands'),errors=[]
  const context=await browser.newContext({viewport:viewports.desktop,acceptDownloads:true}),page=await context.newPage()
  page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))

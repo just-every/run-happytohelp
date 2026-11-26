@@ -5609,7 +5609,7 @@
       "executable": false
     },
     "src/modules/conversations/routes.ts": {
-      "sha256": "b5f130dc382113de26609b822f1d2ddf40825fd46138b77f0cbb2faeb206e6dc",
+      "sha256": "1e84cdf29dcf3d667a8e515d05d0e7818823bcfb5743faeb6946f339d4e07495",
       "executable": false
     },
     "src/modules/conversations/socket-knowledge.ts": {
@@ -5621,7 +5621,7 @@
       "executable": false
     },
     "src/modules/conversations/visitor-reply-context.ts": {
-      "sha256": "609ca1c4a55b5fc5e23ee35b2febf488185ac517223fab4271d44645feec7b53",
+      "sha256": "8b9abbde4c3e484b62d92bd7c8cdcfec0584a7e6d8057ffe7ca76beb31b4565a",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
@@ -17081,7 +17081,7 @@
       "executable": false
     },
     "tests/helpers/inbox/brands-browser.mjs": {
-      "sha256": "270ad999466e7a12a12ef438bf6c4a15fb9c01e8ba3163940d6374f5ca8b13b5",
+      "sha256": "3e57753a683d1fd4f0ccc1170aac121ae9926c9f8919d9e0b0ccfcd3a74cb9b5",
       "executable": false
     },
     "tests/helpers/inbox/brands-mailbox-outcomes.mjs": {

@@ -21,6 +21,7 @@ import { mediaResponseHeaders } from './media-response'
 import {messageData} from '../management/dashboard-data'
 import {customerTicket} from '../tickets/customer'
 import type {DeferEmailDelivery} from '../integrations/email'
+import {emailConfigured} from '../integrations/email-config'
 import {customerMergeTarget,assertWritableConversation} from '../conversation-actions/merge-read'
 import {macroAttachmentAvailableSql} from '../macros/attachments'
 import {stageEmailMessageOptions} from '../integrations/email-command-options'
@@ -78,9 +79,9 @@ routes.post('/:id/messages',async c=>{
  if(actor.role==='contact')await enforceRateLimits(c.env,[['messagesPerConversationMinute',conversation.id],['messagesPerContactHour',actor.contactId!]])
  await stageEmailMessageOptions(c.env,actor,conversation,b)
  const admitting=performance.now(),result=await admitMessage(c.env,{...b,actor,projectId:actor.projectId,conversationId:conversation.id,generationId:undefined,sessionHash:c.get('sessionHash')}),admitted=performance.now()
- // Assistants, triage, event rules, routing and SLAs keep inline admission.
- // Time rules already run on a schedule. Ordinary chat uses its outbox row.
- if(actor.role==='contact'&&onCommittedMessage&&!conversation.inline_effects){
+ // Ordinary chat uses its outbox row. Configured mail and workspace actions
+ // whose recipients or timing depend on the current ticket still run inline.
+ if(actor.role==='contact'&&onCommittedMessage&&!conversation.inline_effects&&!emailConfigured(c.env)){
   const outboxId=result[messageOutbox]
   if(outboxId!==undefined){
    // The response contains the just-admitted row from the guarded write.

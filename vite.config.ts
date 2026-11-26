@@ -9,7 +9,7 @@ import { archiveOutputGuard } from '@runeditrun/rer/archive-output'
 import { reproducibleOutput } from './scripts/delivery/reproducible-output.ts'
 import { workspaceModulePreloads } from './scripts/delivery/module-preloads.ts'
 import { replyIconAssets } from './scripts/delivery/reply-icons.ts'
-import { buildInputs } from './scripts/delivery/build-inputs.ts'
+import { buildInputs, hostedDemoMigrations } from './scripts/delivery/build-inputs.ts'
 import { docsSite } from './src/ui/docs/build/plugin.ts'
 import {widgetDevAsset} from './scripts/widget-dev-asset'
 import { demoSockets } from './src/vendor/base/modules/demo/vite.mjs'
@@ -166,6 +166,7 @@ function workspaceChunk(moduleId: string) {
 
 export default defineConfig(({ command, isPreview }) => {
  const localOrigin = command === 'serve' && !isPreview ? process.env.RER_DEV_ORIGIN : undefined;
+ const hostedDemo = command === 'build' && process.env.H2H_HOSTED_DEMO_BUILD === '1';
  if(localOrigin && (!/^http:\/\/(?:127\.0\.0\.1|localhost|\[::1\]):[0-9]+$/.test(localOrigin)))throw Error('Unsafe local development origin');
  return {
  define: {
@@ -189,7 +190,7 @@ export default defineConfig(({ command, isPreview }) => {
    deny: ['**/.rer/**', '**/.seed/**', '**/exports/**', '**/*.rer'],
   },
  },
- plugins: [demoSockets(),buildInputs(),widgetDevAsset(localOrigin),replyIconAssets(),{
+ plugins: [demoSockets(),buildInputs(hostedDemo),widgetDevAsset(localOrigin),replyIconAssets(),{
   name: 'connector-download-headers',
   configureServer(server) {
     server.middlewares.use((req, res, next) => {
@@ -202,5 +203,16 @@ export default defineConfig(({ command, isPreview }) => {
       next()
     })
   },
-}, cloudflare({ inspectorPort: 0, ...(localOrigin?{config:{main:'src/dev/server.ts',vars:{RER_DEV_KEY:process.env.RER_DEV_KEY||'',RER_DEV_IDENTITY:process.env.RER_DEV_IDENTITY||'on',...local('RER_DEMO'),...local('RER_DEMO_EXPIRES')}}}:{}), persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, remoteBindings: false, configPath: process.env.H2H_WRANGLER_CONFIG, viteEnvironment: { name: 'ssr' } }), docsSite(), tanstackStart(), react(), workspaceModulePreloads(), reproducibleOutput(), archiveOutputGuard()] };
+}, cloudflare({
+ inspectorPort: 0,
+ config(config) {
+  if (hostedDemo) {
+   const db = config.d1_databases.find(db => db.binding === 'DB');
+   if (!db) throw new Error('Hosted demo requires the DB binding');
+   db.migrations_dir = hostedDemoMigrations;
+  }
+  if (localOrigin) return {main:'src/dev/server.ts',vars:{RER_DEV_KEY:process.env.RER_DEV_KEY||'',RER_DEV_IDENTITY:process.env.RER_DEV_IDENTITY||'on',...local('RER_DEMO'),...local('RER_DEMO_EXPIRES')}};
+ },
+ persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, remoteBindings: false, configPath: process.env.H2H_WRANGLER_CONFIG, viteEnvironment: { name: 'ssr' },
+}), docsSite(), tanstackStart(), react(), workspaceModulePreloads(), reproducibleOutput(), archiveOutputGuard()] };
 })

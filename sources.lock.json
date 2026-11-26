@@ -1569,7 +1569,7 @@
       "executable": false
     },
     ".github/workflows/run-demo.yml": {
-      "sha256": "eb4a29c588e48e208c6453ee4e67faec004678d3d71bf9640c1f90f31aa6ea97",
+      "sha256": "d45041ac583f86d63662d387786459b3d0e754cdf9293d151772bc7c334de2bf",
       "executable": false
     },
     ".github/workflows/verify.yml": {
@@ -3209,7 +3209,7 @@
       "executable": false
     },
     "scripts/delivery/build-inputs.ts": {
-      "sha256": "6d5832233e5f5dfe02fe1af9232a9f8c4a2c7e05e65f4382f45ad7e842ddcc28",
+      "sha256": "3edcf3291b56a2064e2fc558d654e9001883cbf10d312201f6d7a154c788c1df",
       "executable": false
     },
     "scripts/delivery/build.mjs": {
@@ -4345,7 +4345,7 @@
       "executable": false
     },
     "scripts/migrations.mjs": {
-      "sha256": "5e1edb029cd0828b3bf19a4cea5780110da12e77d9b2f121b74e71cadc8503af",
+      "sha256": "4a396db7bccec51c36a4d07413a5d8645e7d5c3792fff101679667427126a38f",
       "executable": false
     },
     "scripts/pack-zendesk-offline.mjs": {
@@ -4508,8 +4508,12 @@
       "sha256": "effcc293d16726021c6b8665ff23490557f6ace0244a5219b3d7f3a05bbdcf6d",
       "executable": false
     },
+    "src/demo/conversation-rows.ts": {
+      "sha256": "8e6b6beeca8e836b06a6cc25268b08e32b1f90d1b29158095a46865f36b65354",
+      "executable": false
+    },
     "src/demo/conversations.ts": {
-      "sha256": "505c53736bfd808dbbe3ba2e1333dc0333dc5e3f589af76535c26c4000829436",
+      "sha256": "f412af03284ead6fc85ab7ac01a12bedc7617d9a80ea2c86296391f60acc010a",
       "executable": false
     },
     "src/demo/help-center.ts": {
@@ -18445,7 +18449,7 @@
       "executable": false
     },
     "vite.config.ts": {
-      "sha256": "8c5c9a8da417e85be1b02ded4bc14e774eeb3ac317a980ec1a9109bca9538ea4",
+      "sha256": "dc111e142cf4e6bda60244f98790ecaf7a82415a00a66f60ac3cd8ab319bc3b0",
       "executable": false
     },
     "vite.site.config.ts": {

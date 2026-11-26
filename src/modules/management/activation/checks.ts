@@ -28,11 +28,11 @@ async function fresh(env:Env,config:Configuration,id:StepId,row:Receipt|undefine
  return !(id==='owner_mail'&&row.state!=='done'&&await usedSignInLink(env,config))
 }
 
-function probe(env:Env,config:Configuration,id:StepId):Promise<Probe> {
- return id==='model_key'?checkModel(config):id==='owner_mail'?checkOwnerMail(env,config):id==='sender_dns'?checkSenderDns(env,config):localProbe(env,config,id)
+function probe(env:Env,config:Configuration,id:StepId,token:string):Promise<Probe> {
+ return id==='model_key'?checkModel(env,config,token):id==='owner_mail'?checkOwnerMail(env,config):id==='sender_dns'?checkSenderDns(env,config):localProbe(env,config,id)
 }
 
-/** Run the checks for these steps. Checks never send mail and never request generation; uncertain work is not replayed.
+/** Run the checks for these steps. The model check requests one short reply with no tool execution. Checks never send mail.
  * The help article step is never observed: it is not a need and does not count. */
 export async function runChecks(env:Env,config:Configuration,requested:StepId[],auto:boolean) {
  const ids=requested.filter(id=>id!=='published_article')
@@ -42,7 +42,7 @@ export async function runChecks(env:Env,config:Configuration,requested:StepId[],
   if(auto&&await fresh(env,config,id,receipts.find(row=>row.step_id===id),now))return
   const token=await startCheck(env,config,id);if(!token)return
   let result:Probe,observedUnder=config
-  try {result=await probe(env,config,id)}
+  try {result=await probe(env,config,id,token)}
   catch(error){result=error instanceof ProbeFailure?error.probe:{state:'unknown',detail:'The check could not complete. Its outcome remains unknown; no provider work was replayed.'}}
   // A verified proposed sender is adopted in the same observation, which then describes the sender now in use.
   if(id==='sender_dns'&&result.state==='done'&&await adoptProposedSender(env,config)) {

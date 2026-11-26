@@ -6,14 +6,21 @@ import {openaiStream} from '../openai-stream.mjs'
 import {demoOnboarding} from './demo.mjs'
 
 // One installation moves from a local first owner to configured support. Only
-// model metadata/completion, mail acceptance/status and the website are edges.
+// model reply, mail acceptance/status and the website are edges.
 export async function provisioningJourney(){
  const mail=[],modelCalls=[],state={delivered:false,uncertain:false,modelStatus:200}
  const app=await startApp({origin:'http://127.0.0.1:8787',captureQueue:true,bindings:{H2H_LOCAL:'true',H2H_SETUP_TOKEN:'synthetic-happytohelp-1',APP_ORIGIN:'http://127.0.0.1:8787',WORKSPACE_NAME:'Installer workspace',OWNER_NAME:'Installer owner',EMAIL_FROM:'support@local.test',EMAIL_PROVIDER:'development',INBOUND_EMAIL_TOKEN:'synthetic-happytohelp-2'},outbound:async(request)=>{
   const url=new URL(request.url)
   if(url.hostname==='api.openai.com'){
-   if(url.pathname.startsWith('/v1/models/'))return Response.json(state.modelStatus===200?{id:decodeURIComponent(url.pathname.split('/').at(-1)),object:'model'}:{error:'Rejected model credential'},{status:state.modelStatus})
-   modelCalls.push(await request.json());return openaiStream('Returns are free within 30 days.',{input_tokens:5,output_tokens:9})
+   const body=await request.json()
+   if(body.tool_choice==='none'){
+    assert.ok(body.tools.some(tool=>tool.name==='search_knowledge'),'Setup submits the reply tools')
+    if(state.modelStatus!==200)return Response.json({error:{code:'invalid_api_key',message:'Rejected model credential'}},{status:state.modelStatus})
+    return openaiStream('OK')
+   }
+   modelCalls.push(body)
+   if(state.replyError)return Response.json({error:{message:'Test provider is unavailable'}},{status:503})
+   return openaiStream('Returns are free within 30 days.',{input_tokens:5,output_tokens:9})
   }
   if(url.hostname==='api.resend.com'){
    if(request.method==='POST'){mail.push(await request.json());if(state.uncertain)throw new Error('Connection lost after mail acceptance');return Response.json({id:'mail-'+mail.length})}
@@ -111,6 +118,32 @@ export async function provisioningJourney(){
    assert.deepEqual(row.installationReplies,{limit},'the shared limit is visible without exposing usage outside this workspace')
   }
   assert.equal((await app.call(`/api/dashboard/projects/${p}/ai-spend`,{token:next.token})).status,403)
+
+  // A provider refusal returns the starter's visitor to the same team queue as
+  // a keyless chat. The customer sees the ordinary away reply, the owner the error.
+  state.replyError=true
+  await app.configure({AI_DAILY_CEILINGS:JSON.stringify({repliesPerInstallation:100,repliesPerProject:100})})
+  await app.ok(manage+'/settings',{token,method:'PUT',body:{is_available:false,unavailable_message:'Our desk is closed for the evening.'}})
+  const stranger=(await app.call('/api/identity/widget/session',{headers:{Origin:'https://owner.example'},body:{widgetKey:fresh.facts.widget.key},status:201})).data
+  const interrupted=(await app.call('/api/conversations',{token:stranger.token,body:{projectId:p},status:201})).data
+  const messages=`/api/conversations/${interrupted.id}/messages`
+  const visitor=()=>app.ok(messages,{token:stranger.token})
+  assert.equal((await visitor()).widget.ai_id,starter.id)
+  await app.ok(messages,{token:stranger.token,body:{localId:crypto.randomUUID(),content:'How can I start a return?',expectedRevision:0,expectedLastMessageId:null}})
+  const work=await app.takeJobs(),calls=modelCalls.length
+  await app.runJobs(work);await app.runJobs(work)
+  assert.equal(modelCalls.length,calls+1,'the failed provider call is not replayed')
+  const handedBack=await visitor()
+  assert.equal(handedBack.widget.ai_id,null)
+  assert.equal(handedBack.messages.filter(message=>message.content.includes('Our desk is closed for the evening.')).length,1)
+  assert.doesNotMatch(JSON.stringify(handedBack),/Test provider is unavailable/)
+  const inbox=`/api/dashboard/projects/${p}/conversations`
+  const inView=async view=>(await app.ok(inbox+'?view='+view,{token})).data.find(item=>item.id===interrupted.id)
+  assert.equal(await inView('ai'),undefined)
+  assert.ok(await inView('open'))
+  const queued=await inView('unassigned')
+  assert.match(queued.metadata.suggestions.error,/Test provider is unavailable/)
+  state.replyError=false
 
   state.uncertain=true;await app.configure({EMAIL_API_KEY:'synthetic-happytohelp-7'})
   assert.equal(row(await setup('/test-mail',{}),'owner_mail').state,'unknown')

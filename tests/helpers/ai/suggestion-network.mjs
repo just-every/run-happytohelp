@@ -12,7 +12,7 @@ export default async request=>{
  if(packet?.schema==='happytohelp.customer-reply-context.v1'&&!packet.conversation)return openaiStream('Thanks for your message.')
  if(JSON.stringify(body).includes('trace-browser')&&body.tools?.some(t=>t.name==='search_knowledge')){
   const calls=body.input.filter(item=>item.type==='function_call')
-  if(!calls.some(item=>item.name==='search_knowledge'))return openaiToolCall('search_knowledge',{query:'refund'},'trace-search')
+  if(!calls.some(item=>item.name==='search_knowledge'))return openaiToolCall('search_knowledge',{query:'refund',locale:null},'trace-search')
   if(!calls.some(item=>item.name==='cite_knowledge')){
    const output=body.input.find(item=>item.type==='function_call_output'&&item.call_id==='call-trace-search')?.output||'[]'
    const rows=JSON.parse(output.slice(output.indexOf('[')))

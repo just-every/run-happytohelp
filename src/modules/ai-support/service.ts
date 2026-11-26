@@ -9,6 +9,7 @@ import { generationCurrentness } from './generation-currentness';
 import { executeGenerationProvider } from './generation-provider';
 import { requireGenerationEffects, type GenerationEffects } from './generation-effects';
 import { generationKindSql } from './reply-mode';
+import { returnFailedStarterReply } from './reply-failure';
 export { onCustomerMessage } from './customer-message';
 export { recoverQueuedGenerations } from './generation-queue';
 export async function handleGeneration(env: Env, job: Job, effects: GenerationEffects) {
@@ -21,6 +22,7 @@ export async function handleGeneration(env: Env, job: Job, effects: GenerationEf
     env={...env,APP_ORIGIN:env.APP_ORIGIN||JSON.parse(row.options_json||'{}').application_origin};
     if (['completed', 'cancelled', 'superseded', 'failed', 'uncertain'].includes(row.state)) {
         await reconcileTerminalAttempt(env, row.id);
+        if (row.state === 'uncertain') await returnFailedStarterReply(env, row, effects);
         return true;
     }
     if (row.state === 'running') {
@@ -84,6 +86,7 @@ export async function handleGeneration(env: Env, job: Job, effects: GenerationEf
             await effects.publishSuggestions(env, row.project_id, row.conversation_id);
         const terminal = await env.DB.prepare('SELECT state,error FROM ai_generations WHERE id=?').bind(row.id).first();
         await effects.emit(env, row, { type: 'generation.terminal', operatorOnly: true, generationId: row.id, ...terminal });
+        if (terminal?.state === 'uncertain') await returnFailedStarterReply(env, row, effects);
         if (row.kind === 'reply' && terminal?.state !== 'completed')
             await effects.emit(env, row, { type: 'reply_cancelled', payload: { local_id: `generation:${row.id}` } });
     }

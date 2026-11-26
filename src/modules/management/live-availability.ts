@@ -30,10 +30,10 @@ export function visitorAssistant(env:Env,projectId:string){
 /** Whether the team is available, from the schedule and switch (judged `at`), then live presence (judged now): while
  * they say open and presence-based away is on, the team is away when no teammate who may reply is online, unless the
  * workspace's visitor assistant answers visitors (enabled, its provider key installed, AI replies automatic). */
-export async function teamAvailability(env:Env,projectId:string,settings:any,at=workflowNow(env)):Promise<Availability>{
+export async function teamAvailability(env:Env,projectId:string,settings:any,at=workflowNow(env),{teamOnly=false}:{teamOnly?:boolean}={}):Promise<Availability>{
  const base=await businessHours(env,projectId,settings,at),presence=presenceSettings(settings)
  if(!base.available||!presence.enabled)return base
- const assistant=replyMode(settings)==='auto'?await visitorAssistant(env,projectId):null
+ const assistant=!teamOnly&&replyMode(settings)==='auto'?await visitorAssistant(env,projectId):null
  if(assistant&&modelReady(env,assistant.model))return base
  return withPresence(base,settings,{online:(await onlineTeammates(env,projectId,presence.idleMinutes)).length})
 }

@@ -31,7 +31,7 @@ export async function answersJourney(){
   let searched
   const answering=(cite,{before}={})=>{let turn=0;return async body=>{
    turn++;assert.ok(!toolNames(body).includes('propose_knowledge_change')&&!toolNames(body).includes('read_verified_resolution'),'customer-facing generations cannot inspect other customer cases or create knowledge drafts');assert.ok(toolNames(body).includes('cite_knowledge')&&toolNames(body).includes('switch_agent'),'the assistant can cite and hand off')
-   if(turn===1)return openaiToolCall('search_knowledge',{query:'refund'},'search')
+   if(turn===1)return openaiToolCall('search_knowledge',{query:'refund',locale:null},'search')
    if(turn===2){searched=JSON.stringify(body.input);return openaiToolCall('cite_knowledge',{sources:cite()},'cite')}
    await before?.();return 'Refunds are available within 30 days.'
   }}
@@ -95,7 +95,7 @@ export async function answersJourney(){
   const privateAnswer=async(visitor,{revoke=false,cite=true}={})=>{
    let turn=0,observed
    ai.respond=async body=>{
-    if(++turn===1)return openaiToolCall('search_knowledge',{query:'privatemarker'},'private-search')
+    if(++turn===1)return openaiToolCall('search_knowledge',{query:'privatemarker',locale:null},'private-search')
     observed=JSON.stringify(body.input)
     if(turn===2&&cite&&observed.includes('reset the export queue'))return openaiToolCall('cite_knowledge',{sources:[{id:'article:'+privateArticle,sourceVersion:privateVersion}]},'private-cite')
     if(revoke)await app.db.prepare('UPDATE contacts SET is_verified=0 WHERE id=?').bind(visitor.contactId).run()

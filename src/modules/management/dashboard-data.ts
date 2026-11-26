@@ -6,6 +6,7 @@ import {messagesData} from './dashboard-messages'
 import {ticketPresentation} from '../tickets/presentation'
 import {mergedAlias} from '../conversation-actions/merge-read'
 import {compareValues} from './inbox-order'
+import {presentSuggestions,suggestionGenerationSql} from '../ai-support/presentation'
 export {messagesData} from './dashboard-messages'
 export const iso=(n:any)=>n?new Date(n).toISOString():null
 export const person=(p:any)=>{
@@ -20,12 +21,6 @@ export async function messageData(env:Env,row:any,channel?:string){return (await
 export function participantData(contact:any,participant:any){const {participant_id,participant_joined_via,conversation_id,...profile}=contact;return {...person(profile),contact_id:contact.id,pivot:{id:participant.id,conversation_id:participant.conversation_id,contact_id:contact.id,joined_via:participant.joined_via}}}
 
 function resolution(row:any){return row?{id:row.id,ordinal:row.ordinal,resolvedAt:new Date(row.resolved_at).toISOString(),outcome:row.outcome,rating:row.value===null?null:{value:row.value,scale:row.rating_scale??'thumbs',score:row.rating_score??row.value,recovery:row.rating_recovery??'unknown',comment:row.comment,updatedAt:new Date(row.rating_updated_at).toISOString(),revision:row.rating_revision}}:null}
-function suggestions(row:any){
- if(!row)return null
- const stored=JSON.parse(row.output_json||'{}'),options=JSON.parse(row.options_json||'{}'),loading=['queued','running'].includes(row.state)
- return {...(row.state==='completed'?stored.result||{}:{}),generation_id:row.id,generation_sequence:row.sequence,client_request_id:options.client_request_id||row.id,display_request_version:options.display_request_version??null,loading,loading_message:loading?options.loading_message||'':'',status:loading?'loading':row.state==='completed'?'complete':row.state==='superseded'?'superseded':'error',error:['failed','uncertain','cancelled'].includes(row.state)?row.error||row.state:'',tool_response:row.state==='completed'&&options.tool?stored.result?.response||'':'',generation_deadline_at:new Date(new Date(row.created_at).getTime()+180000).toISOString()}
-}
-
 /** The caller supplies authorized conversations (at most one inbox page, whole `conversations` rows).
  * Hydrate all relations together so a page does not create N+1 D1 requests. Each relation is read through the
  * values the rows already hold (one json_each row and the related row each), never by reading the conversations
@@ -44,7 +39,7 @@ export async function conversationsData(env:Env,rows:any[],userId:string,withHis
   // Each conversation's own links (the primary key, in its own workspace), never the workspace's.
   env.DB.prepare("SELECT ct.conversation_id,ct.project_id,ct.tag_id FROM json_each(?) page CROSS JOIN conversation_tags ct ON ct.conversation_id=page.value->>0 AND +ct.project_id=page.value->>1").bind(pairs),
   env.DB.prepare(`SELECT r.conversation_id hydration_conversation_id,r.id,r.ordinal,r.resolved_at,r.outcome,v.value,v.comment,v.updated_at rating_updated_at,v.revision rating_revision,cs.scale rating_scale,cs.score rating_score,cs.recovery rating_recovery FROM conversations c JOIN conversation_resolutions r ON r.conversation_id=c.id AND r.project_id=c.project_id LEFT JOIN conversation_ratings v ON v.resolution_id=r.id LEFT JOIN csat_responses cs ON cs.resolution_id=r.id AND cs.project_id=r.project_id WHERE c.id IN (${selected}) AND c.resolved_at IS NOT NULL AND r.reopened_at IS NULL AND r.id=(SELECT latest.id FROM conversation_resolutions latest WHERE latest.conversation_id=c.id AND latest.project_id=c.project_id AND latest.reopened_at IS NULL ORDER BY latest.ordinal DESC LIMIT 1)`).bind(ids),
-  env.DB.prepare("SELECT page.value->>0 hydration_conversation_id,g.rowid sequence,g.* FROM json_each(?) page CROSS JOIN ai_generations g ON g.rowid=(SELECT latest.rowid FROM ai_generations latest WHERE latest.project_id=page.value->>1 AND latest.conversation_id=page.value->>0 AND latest.kind='suggestions' ORDER BY latest.rowid DESC LIMIT 1)").bind(pairs),
+  env.DB.prepare(`SELECT page.value->>0 hydration_conversation_id,g.rowid sequence,g.* FROM json_each(?) page CROSS JOIN ai_generations g ON g.rowid=(SELECT latest.rowid FROM ai_generations latest WHERE latest.project_id=page.value->>1 AND latest.conversation_id=page.value->>0 AND ${suggestionGenerationSql('latest')} ORDER BY latest.rowid DESC LIMIT 1)`).bind(pairs),
   env.DB.prepare(`SELECT cp.conversation_id hydration_conversation_id,u.*,cp.id participant_id,cp.joined_via participant_joined_via,cp.conversation_id FROM contacts u JOIN conversation_participants cp ON cp.contact_id=u.id JOIN conversations c ON c.id=cp.conversation_id AND c.project_id=u.project_id WHERE cp.conversation_id IN (${selected}) ORDER BY cp.created_at,cp.id`).bind(ids),
   env.DB.prepare("SELECT o.target_id hydration_conversation_id,o.source_user_id,o.display_name FROM json_each(?) page CROSS JOIN legacy_actor_origins o ON o.project_id=page.value->>1 AND o.target_id=page.value->>0 AND o.target_table='conversations' AND o.field='assigned_to'").bind(pairs)
  ])
@@ -62,7 +57,7 @@ export async function conversationsData(env:Env,rows:any[],userId:string,withHis
  const lastMessages=byId(messages)
  return rows.map((row,index)=>{
   const key=String(row.id),contact=person(contacts.get(String(row.contact_id))),agent=row.assigned_to?person(agents.get(String(row.assigned_to))):null,last=lastMessages.get(String(row.last_message_id)),ai=ais.get(key)||null
-  return {...row,historical_assignment:historicalAssignments.get(key)||null,...tickets.get(key),...workflows.get(key),merged_into:aliases[index]?.target_id??null,imported:imported.get(key)||null,tags:tags.get(key)||[],resolution:resolution(resolutions.get(key)),...(withHistory?{resolutionHistory:histories[index]}:{}),contact,agent,agent_id:agent?.id,ai,ai_id:ai?.id||null,metadata:{suggestions:suggestions(generation.get(key))},last_message_at:last?.created_at||null,last_message:last||null,created_at:iso(row.created_at),updated_at:iso(row.updated_at),resolved_at:iso(row.resolved_at),unread_contact_messages_count:unread.get(key)||0,participants:(participants.get(key)||[]).map((p:any)=>participantData(p,{id:p.participant_id,conversation_id:row.id,joined_via:p.participant_joined_via}))}
+  return {...row,historical_assignment:historicalAssignments.get(key)||null,...tickets.get(key),...workflows.get(key),merged_into:aliases[index]?.target_id??null,imported:imported.get(key)||null,tags:tags.get(key)||[],resolution:resolution(resolutions.get(key)),...(withHistory?{resolutionHistory:histories[index]}:{}),contact,agent,agent_id:agent?.id,ai,ai_id:ai?.id||null,metadata:{suggestions:presentSuggestions(generation.get(key))},last_message_at:last?.created_at||null,last_message:last||null,created_at:iso(row.created_at),updated_at:iso(row.updated_at),resolved_at:iso(row.resolved_at),unread_contact_messages_count:unread.get(key)||0,participants:(participants.get(key)||[]).map((p:any)=>participantData(p,{id:p.participant_id,conversation_id:row.id,joined_via:p.participant_joined_via}))}
  })
 }
 /** Each conversation's tags ({id,name}) in tag name order (normalized_name, BINARY: code point order), from its

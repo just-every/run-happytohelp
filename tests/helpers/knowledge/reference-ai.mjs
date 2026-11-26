@@ -88,13 +88,13 @@ export async function referenceAi({k,body,article,category,a,b,c,send,grants,cal
    projected(request)
    if(++turn===1){
     excludes(request,[body,secondaryBody],'initial model context contains no knowledge bodies')
-    return openaiToolCall('search_knowledge',{query:'indigo'},'reference-primary')
+    return openaiToolCall('search_knowledge',{query:'indigo',locale:null},'reference-primary')
    }
    if(turn===2){
     const sources=toolOutput(request,'reference-primary');primarySource=sources.find(source=>source.id==='article:'+article)
     assert.ok(primarySource,'the entitled knowledge tool retrieves the original article')
     assert.equal(primarySource.content,body,'article bodies reach the model through the authorized knowledge tool')
-    return openaiToolCall('search_knowledge',{query:'marigold'},'reference-uncited')
+    return openaiToolCall('search_knowledge',{query:'marigold',locale:null},'reference-uncited')
    }
    if(turn===3){
     const source=toolOutput(request,'reference-uncited').find(item=>item.id==='article:'+secondary)
@@ -123,7 +123,7 @@ export async function referenceAi({k,body,article,category,a,b,c,send,grants,cal
   const deniedStart=requests.length
   answerProvider=request=>{
    excludes(request,[body,body.split('. ')[0],secondaryBody,answer],'every model round uses all current recipients, including an unentitled participant')
-   if(++deniedTurns===1)return openaiToolCall('search_knowledge',{query:'indigo'},'reference-denied')
+   if(++deniedTurns===1)return openaiToolCall('search_knowledge',{query:'indigo',locale:null},'reference-denied')
    assert.equal(deniedTurns,2)
    assert.deepEqual(toolOutput(request,'reference-denied'),[],'knowledge retrieval cannot issue the restricted source for the changed audience')
    return openaiStream('A teammate can help with your next question.')

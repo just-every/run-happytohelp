@@ -19,14 +19,14 @@ export const AWAY_AUTHOR='away',AWAY_REPLY='away:reply'
  * outcomes or automations (migration 241, workflows/time-rules.ts and rule-model.ts).
  * It is posted only directly after the message that earned it, judged by the schedule at that message's time and by
  * presence when its effects run. */
-export async function postAwayReply(env:Env,message:Record<string,unknown>,actor:Actor){
+export async function postAwayReply(env:Env,message:Record<string,unknown>,actor:Actor,options:{teamOnly?:boolean}={}){
  if(actor.role!=='contact'||String(message.local_id||'').startsWith('email:'))return null
  const row=await env.DB.prepare(`SELECT c.revision,p.name,s.settings_json,ct.email,json_extract(ct.metadata_json,'$.provided_email') provided_email,
   (c.assigned_to IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 WHERE ca.conversation_id=c.id) AND ${customerAiSql('c.project_id')}) assistant
   FROM conversations c JOIN projects p ON p.id=c.project_id JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id LEFT JOIN project_settings s ON s.project_id=c.project_id
   WHERE c.id=? AND c.project_id=? AND c.last_message_id=? AND NOT EXISTS(SELECT 1 FROM messages WHERE conversation_id=c.id AND local_id=?)`).bind(message.conversation_id,actor.projectId,message.id,AWAY_REPLY).first<any>()
  if(!row||row.assistant)return null
- const settings=JSON.parse(row.settings_json||'{}'),sentAt=Number(message.created_at),state=await teamAvailability(env,actor.projectId,settings,sentAt)
+ const settings=JSON.parse(row.settings_json||'{}'),sentAt=Number(message.created_at),state=await teamAvailability(env,actor.projectId,settings,sentAt,options)
  if(state.available)return null
  const configured=String(state.message||'').trim(),mail=emailMode(env)==='remote',known=Boolean(row.email||row.provided_email)
  const back=state.opensAt?backAt(state.opensAt,{timeZone:state.timezone,now:sentAt,withZone:true}):''

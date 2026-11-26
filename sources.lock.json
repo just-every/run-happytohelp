@@ -17693,7 +17693,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-baselines.mjs": {
-      "sha256": "3bfb420bc9ab60612f2181fa1d3d7fa0d18ab01eb7b79b7603db1a354bfce97b",
+      "sha256": "501f8f4aa3c6184a5b38d12896df0b98f46b4f14db12d6f98a3dc9f2d3220240",
       "executable": false
     },
     "tests/helpers/upgrade-data-expectations.mjs": {

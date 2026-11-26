@@ -23,6 +23,7 @@ export function validatePublicMailSettings(env:Record<string,string>){
    let url:URL;try{url=new URL(env[name]);}catch{throw new Error(`${name} must be a valid URL`);}
    if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash)throw new Error(`${name} must be HTTPS without credentials or query parameters`);
   }
+  if(owner&&new URL(env.MAIL_RELAY_URL).pathname!=='/api/managed-mail/send')throw new Error('MAIL_RECIPIENTS=owner with managed mail needs the platform relay, MAIL_RELAY_URL ending /api/managed-mail/send');
   return;
  }
  if(selection?.trim()&&!['direct','own',...nativeProviders].includes(selection))throw new Error('Unsupported MAIL_PROVIDER');

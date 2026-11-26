@@ -247,9 +247,11 @@
     }
   ],
   "vars": {
-    "MAIL_PROVIDER": "direct"
+    "MAIL_PROVIDER": "direct",
+    "MAIL_RECIPIENTS": "any"
   },
   "publicSettings": [
-    "MAIL_PROVIDER"
+    "MAIL_PROVIDER",
+    "MAIL_RECIPIENTS"
   ]
 }

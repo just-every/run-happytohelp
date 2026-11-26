@@ -1633,7 +1633,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "7e6c23d58b5eae35e24d9c21c9058d17a6d835204fb988556678d7a737419d86",
+      "sha256": "b3ac5b8c98770320e3f2c4b835edfd991621aaafb55a9c6622e9abcad419853b",
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
@@ -1713,7 +1713,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "a7782a70786da11f41852b42eb4e2a24fc0e1186393c06e3f1d9b83dc403a9c2",
+      "sha256": "a462c9c234be705dd0b4494b0f06355ce78e4ca9f4146a0cadd368ad2ef152e5",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -2057,7 +2057,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "bdde78384489753a98df442afb1d9cd49d6522ce7922e00d79c2a2cc27687e51",
+      "sha256": "ff4c471c77db0446123d88eefb6f3f6dbbab185ec6c6d13ed1087f1a63621621",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2069,11 +2069,11 @@
       "executable": false
     },
     "management/integration/mail-environment.ts": {
-      "sha256": "583cecec457c5d27dd93c6b403c549cd52e4490ce2bbd9e098c4c11bce62f54a",
+      "sha256": "b7c9664964ed61a34fd94fe5fac0e8a9ed929018a9d4028326304b03732011ef",
       "executable": false
     },
     "management/integration/managed-deploy.json": {
-      "sha256": "97adc2a0d81d01a08a5fc8e46e189e288e8f1868cf530cf3e071b22e62e11638",
+      "sha256": "56f57baac4e4243e2d627311e47fe27342b4999cb3ea7f9ca00e2cf79cee1f68",
       "executable": false
     },
     "management/integration/native-setup.json": {
@@ -3241,7 +3241,7 @@
       "executable": false
     },
     "scripts/deployment/environment.mjs": {
-      "sha256": "16e6082917178683cc26786222704cf6f628058f915f64c0dbc9cb465596a923",
+      "sha256": "c1be07120a8fc5a8eeec6a5d22cb89addd968796287228aabcd8ea7538a20472",
       "executable": false
     },
     "scripts/deployment/mail-declaration.mjs": {
@@ -6081,7 +6081,7 @@
       "executable": false
     },
     "src/modules/identity/owner-signin-mail.ts": {
-      "sha256": "3f7ba6fcc914f8d75a9096c3ec98a772396472c1670ac48e3be4fd163c9efce9",
+      "sha256": "b86adf66c8fbba096b532904c5ff1f92023c7020aceb1f14c43f0e5c51568491",
       "executable": false
     },
     "src/modules/identity/README.md": {
@@ -7445,7 +7445,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mail-contract.ts": {
-      "sha256": "8c28522d5512f0705739f1943ccbb6a2e7c8f7057d97f8e2f98478fb5109efc9",
+      "sha256": "1f2ffa5f616c20a471982f3514b7042f9f61de1fc41643b88be1206faee463af",
       "executable": false
     },
     "src/modules/integrations/rer-mail-hold.ts": {
@@ -7482,6 +7482,10 @@
     },
     "src/modules/integrations/rer-mailbox.ts": {
       "sha256": "092cdf50f8d69862b1581d537c598b1a9e97b8aa8dd44e2943a08c9214cbc714",
+      "executable": false
+    },
+    "src/modules/integrations/rer-relay-mail.ts": {
+      "sha256": "bd6ddb139e19635c5cf831dc3393605be1b3592afbf5bc32d3594d43e0c303f5",
       "executable": false
     },
     "src/modules/integrations/routes.ts": {
@@ -16965,7 +16969,7 @@
       "executable": false
     },
     "tests/helpers/identity/owner-only-mail.mjs": {
-      "sha256": "5aa98460c00dd115046595661cabe973f02afe0447a5d325a5a0ecdfe9e99f96",
+      "sha256": "4de515e7d9e67d8c872d3270ab4a1569a7f4e5dbea90dd54bfa084077efd6896",
       "executable": false
     },
     "tests/helpers/identity/recovery-authority/authenticator.mjs": {
@@ -17849,7 +17853,7 @@
       "executable": false
     },
     "tests/journeys/identity.mjs": {
-      "sha256": "ad03288437adb0600bb2e8189a7cf7d19549e3708f6087435cfebcb8ad07198f",
+      "sha256": "a81a293ebcf490c07e34591dd4ae275d46c90d34c16dfbacd74244106f9799a6",
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {
@@ -18425,7 +18429,7 @@
       "executable": false
     },
     "wrangler.jsonc": {
-      "sha256": "dbf7383917359bb7783b8cba26657d5c8269a3b84d65b56591ec1eeaa4feeefe",
+      "sha256": "65a6f6c13786558795964a6996a9832b03b705f6f70e7fbea9ab3ce9113850c8",
       "executable": false
     }
   }

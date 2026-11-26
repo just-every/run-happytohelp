@@ -15,12 +15,15 @@ export function validatePublicMailSettings(env:Record<string,string>){
  if(env.MAIL_MODE==='off'||['off','none','disabled'].includes(env.MAIL_PROVIDER))return;
  const selection=env.MAIL_MODE==='own'?'own':env.MAIL_MODE==='rer'?'rer':env.MAIL_PROVIDER;
  if(selection==='rer'){
-  for(const name of ['MAIL_FROM','MAIL_RELAY_URL','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL'])if(!configured(env,name))throw new Error(`Managed email requires ${name}`);
-  if(env.H2H_RER_MAIL_VERSION!=='1'||env.MAIL_FROM.toLowerCase()!==env.RER_MAIL_ADDRESS.toLowerCase())throw new Error('Managed conversation mail requires version 1 and the assigned address');
-  for(const name of ['MAIL_RELAY_URL','RER_MAIL_CONTROL_URL']){
+  // MAIL_RECIPIENTS=owner uses only the platform's owner-only relay; conversation mail needs its mailbox too.
+  const owner=env.MAIL_RECIPIENTS==='owner';
+  for(const name of owner?['MAIL_FROM','MAIL_RELAY_URL']:['MAIL_FROM','MAIL_RELAY_URL','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL'])if(!configured(env,name))throw new Error(`Managed email requires ${name}`);
+  if(!owner&&(env.H2H_RER_MAIL_VERSION!=='1'||env.MAIL_FROM.toLowerCase()!==env.RER_MAIL_ADDRESS.toLowerCase()))throw new Error('Managed conversation mail requires version 1 and the assigned address');
+  for(const name of owner?['MAIL_RELAY_URL']:['MAIL_RELAY_URL','RER_MAIL_CONTROL_URL']){
    let url:URL;try{url=new URL(env[name]);}catch{throw new Error(`${name} must be a valid URL`);}
    if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash)throw new Error(`${name} must be HTTPS without credentials or query parameters`);
   }
+  if(owner&&new URL(env.MAIL_RELAY_URL).pathname!=='/api/managed-mail/send')throw new Error('MAIL_RECIPIENTS=owner with managed mail needs the platform relay, MAIL_RELAY_URL ending /api/managed-mail/send');
   return;
  }
  if(selection?.trim()&&!['direct','own',...nativeProviders].includes(selection))throw new Error('Unsupported MAIL_PROVIDER');

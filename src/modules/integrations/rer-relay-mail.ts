@@ -2,8 +2,9 @@ import type {Env} from '../../platform/env'
 import {mailService,rerSelected} from './rer-mail-contract'
 
 /** The platform's owner-only relay (MAIL_PROVIDER=rer with MAIL_RECIPIENTS=owner): MAIL_RELAY_URL is
- * `<platform>/api/managed-mail/send` and MAIL_API_KEY its private installation credential. The relay itself
- * refuses any `to` but the Business owner's verified address and chooses the sender. */
+ * `<platform>/api/managed-mail/send` and MAIL_API_KEY its private installation credential; the relay chooses
+ * the sender. Only a Business sender key limits recipients at the relay, so the binding guard is the local
+ * owner check in src/modules/identity/owner-signin-mail.ts, which runs before every request. */
 export const ownerRelayMail=(env:Env)=>env.MAIL_RECIPIENTS==='owner'&&rerSelected(env)
 export function relayConfigured(env:Env){
  if(typeof env.MAIL_API_KEY!=='string'||!env.MAIL_API_KEY.trim())return false

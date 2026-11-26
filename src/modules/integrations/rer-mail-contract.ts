@@ -1,7 +1,10 @@
 import type {Env} from '../../platform/env'
 import {HTTPException} from 'hono/http-exception'
 
-export const rerMail=(env:Env)=>env.MAIL_MODE?env.MAIL_MODE==='rer':env.MAIL_PROVIDER==='rer'
+export const rerSelected=(env:Env)=>env.MAIL_MODE?env.MAIL_MODE==='rer':env.MAIL_PROVIDER==='rer'
+/** Managed conversation mail. MAIL_RECIPIENTS=owner never runs it: there the platform relay carries only the
+ * owner's own sign-in link (rer-relay-mail.ts) and every other mail stays off. */
+export const rerMail=(env:Env)=>env.MAIL_RECIPIENTS!=='owner'&&rerSelected(env)
 export const managedMailAddress=(value:unknown)=>typeof value==='string'?value.toLowerCase():null
 export function rerConfigured(env:Env){return env.H2H_RER_MAIL_VERSION==='1'&&Boolean(env.MAIL_API_KEY&&env.MAIL_RELAY_URL&&env.RER_MAILBOX_ID&&env.RER_MAIL_ADDRESS&&env.RER_MAIL_INGRESS_KEY&&env.RER_MAIL_CONTROL_URL&&env.INBOUND_EMAIL_TOKEN&&env.INTEGRATION_ENCRYPTION_KEY)&&managedMailAddress(env.MAIL_FROM)===managedMailAddress(env.RER_MAIL_ADDRESS)}
 export const maxMailBytes=24*1024*1024

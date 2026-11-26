@@ -91,13 +91,6 @@ function validateRemoteMailSelection(env){
 function runtimeUrl(value,name){
  try{return new URL(value)}catch{throw new Error(`${name} must be a valid URL`)}
 }
-/** Validate only this invocation's mail choice; saved private settings stay untouched. */
-export function validateLocalSetupEnvironment(env){
- if(env.EMAIL_PROVIDER!=='development'){validateRemoteMailSelection(env);return}
- if(env.H2H_LOCAL!=='true'||env.RER_INSTALLATION_ID)throw new Error('Development mail requires trusted local configuration')
- const origin=runtimeUrl(env.APP_ORIGIN||'','Development mail origin');
- if(origin.origin!==env.APP_ORIGIN||origin.protocol!=='http:'||origin.hostname!=='127.0.0.1')throw new Error('Development mail requires an exact loopback HTTP origin')
-}
 /** The Amazon SES reader is off unless its required inputs are all set; a partial set or a malformed value is refused,
  * so a typo is caught at deploy time rather than leaving the reader quietly off or reading the wrong place. */
 const legacyMailS3Required=['LEGACY_MAIL_S3_BUCKET','LEGACY_MAIL_S3_PREFIX','LEGACY_MAIL_S3_MAILBOX','LEGACY_AWS_REGION','LEGACY_AWS_ACCESS_KEY_ID','LEGACY_AWS_SECRET_ACCESS_KEY']

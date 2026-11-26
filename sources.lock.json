@@ -3241,7 +3241,7 @@
       "executable": false
     },
     "scripts/deployment/environment.mjs": {
-      "sha256": "adc806343b1c3b14157510f62ce8510fb3e1e86bfd2855dd3929231503624d4a",
+      "sha256": "16e6082917178683cc26786222704cf6f628058f915f64c0dbc9cb465596a923",
       "executable": false
     },
     "scripts/deployment/mail-declaration.mjs": {

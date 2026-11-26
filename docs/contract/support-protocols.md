@@ -161,9 +161,10 @@ step is confirmed only by an observation, never by a saved configuration, an
 installer default or a preset, so a workspace with nothing observed yet is zero
 of its applicable steps. The system runs its own checks: while an owner is signed
 in the page asks the server to observe, bounded by freshness windows. These
-checks are non-generative metadata, domain and DNS reads and never send mail.
-They distinguish saved configuration from observed sender DNS, authenticated
-model metadata, an inbound receipt, effective runtime ceilings, allowed origin
+checks never send mail. The model check requests a short test reply with the
+reply tool schemas and no access to visitor data or executable tools. It
+distinguishes a successful model reply from a saved key. Other checks observe
+sender DNS, an inbound receipt, effective runtime ceilings, allowed origin
 and an authenticated widget ping; whether an article is published is not one of
 them (that step stays among the eight ids but is hidden and never counted). Mail to the owner
 is confirmed by a used emailed sign-in link, or by the provider's reported outcome

@@ -1,5 +1,5 @@
 import type {Configuration} from './configuration'
-import {metadataProviders} from './model-probe'
+import {modelProbeProviders} from './model-probe'
 import {storedSkips} from './skips'
 import {checkLeaseMs} from './store'
 import type {widgetVisit} from './local-probes'
@@ -10,14 +10,14 @@ import {stepIds,stepLabels,stepPaths,providerObservationMs,type ActivationFacts,
  * hosted Resend installation; another hosted provider has no status API here (a row, not counted) and a local trial
  * hides it. Mail checks count when the installation can send or receive, or when a receipt confirms them.
  * The AI key is the owner's to add until one is installed; a key
- * for a provider with no metadata check here can never be confirmed, so it is a row, not counted. Anything observed
+ * for a provider with no model check here can never be confirmed, so it is a row, not counted. Anything observed
  * `done` counts. The help article is never a need or counted: the assistant also answers from the owner's own site,
  * so whether an article is published says nothing about whether it can answer.
  */
 function placement(id:StepId,state:ProbeState,config:Configuration,facts:ActivationFacts):{placement:Placement;applicable:boolean} {
  const done=state==='done',local=config.environment==='local'
  if(id==='model_key') {
-  const unconfirmable=!done&&Boolean(config.provider)&&!metadataProviders.has(config.provider!)&&typeof config.key==='string'&&Boolean(config.key.trim())
+  const unconfirmable=!done&&Boolean(config.provider)&&!modelProbeProviders.has(config.provider!)&&typeof config.key==='string'&&Boolean(config.key.trim())
   return unconfirmable?{placement:'set',applicable:false}:{placement:done?'set':'needs_you',applicable:true}
  }
  if(id==='published_article')return {placement:'hidden',applicable:false}

@@ -1,37 +1,50 @@
+import type {Env} from '../../../platform/env'
 import type {Configuration} from './configuration'
 import type {Probe} from './types'
-import {providerJson,bearer} from './provider-http'
-// @ts-ignore Use the same model identity mapping as the generation adapter.
-import {findModel} from '../../ai-support/vendor/ensemble/data/model_data.js'
+import {contextToolDefinitions} from '../../ai-support/tools'
+import {handoffToolDefinition} from '../../ai-support/handoff'
+import {repositoryTools} from '../../ai-support/repository-tools'
+// @ts-ignore Retained Ensemble worker runtime.
+import {withWorkerRuntime} from '../../ai-support/vendor/ensemble/worker-runtime.js'
+// @ts-ignore Retained model execution and suggestion tool.
+import {runStream,TASKS} from '../../ai-support/llm/orchestrator.js'
+// @ts-ignore Retained suggestion tool.
+import {replyIconTool} from '../../ai-support/assist/icons.js'
 
-/** Providers whose key can be checked here with a non-generative metadata request. Any other provider's key is installed but unconfirmable. */
-export const metadataProviders:ReadonlySet<string>=new Set(['openai','anthropic','google','openrouter'])
+export const modelProbeProviders:ReadonlySet<string>=new Set(['openai','anthropic','google','openrouter'])
 
-/** Non-generative metadata APIs. These calls do not ask a model to generate tokens.
- * https://platform.openai.com/docs/api-reference/models/retrieve
- * https://platform.claude.com/docs/en/api/models/retrieve
- * https://ai.google.dev/api/models
- * https://openrouter.ai/docs/api/api-reference/models/list-models-filtered-by-user-provider-preferences-privacy-settings-and-guardrails
- */
-export async function checkModel(config:Configuration):Promise<Probe> {
- const {assistant,model,provider,secretName,key}=config
+/** Confirms the selected model accepts the same tool definitions as a reply. The
+ * probe passes no visitor data and gives the model no executable tools. */
+export async function checkModel(env:Env,config:Configuration,token:string):Promise<Probe> {
+ const {assistant,model,provider,secretName,key,projectId}=config
  if(!assistant?.is_enabled)return {state:'pending',detail:'Choose an enabled default visitor assistant in AI settings.'}
- if(!secretName)return {state:'unavailable',detail:'The selected model provider is not supported by this installation.'}
+ if(!secretName||!provider)return {state:'unavailable',detail:'The selected model provider is not supported by this installation.'}
  if(typeof key!=='string'||!key.trim())return {state:'unavailable',detail:`CONFIGURATION_REQUIRED: ${secretName}. Add this secret to the installation, then check again.`}
- let body:any
- const encoded=encodeURIComponent(model)
- if(provider==='openai')body=await providerJson(`https://api.openai.com/v1/models/${encoded}`,bearer(key))
- else if(provider==='anthropic')body=await providerJson(`https://api.anthropic.com/v1/models/${encoded}`,{'x-api-key':key,'anthropic-version':'2023-06-01'})
- else if(provider==='google')body=await providerJson(`https://generativelanguage.googleapis.com/v1beta/models/${encoded}`,{'x-goog-api-key':key})
- else if(provider==='openrouter') {
-  body=await providerJson('https://openrouter.ai/api/v1/key',bearer(key))
-  if(!body.data||typeof body.data.label!=='string')return {state:'unknown',detail:'The provider did not return an authenticated key record.'}
-  const selected=findModel(model)?.openrouter_id||model
-  const models=await providerJson('https://openrouter.ai/api/v1/models/user',bearer(key))
-  if(!Array.isArray(models.data))return {state:'unknown',detail:'The provider did not return its available model list.'}
-  if(!models.data.some((row:any)=>row?.id===selected))return {state:'failed',detail:`The selected model ${selected} is not available under this OpenRouter account. Choose an available model in AI settings, then check again.`}
-  return {state:'done',detail:`${provider} authenticated ${secretName} and returned available model metadata for ${selected}. A real reply still needs its own proof.`,receiptRef:`provider:${provider}:model:${selected}`}
- } else return {state:'unavailable',detail:`${provider} is selected and ${secretName} is installed. This provider has no supported non-generative validation here; key presence is not validation.`}
- if(provider==='google'?body.name!==`models/${model}`:body.id!==model)return {state:'unknown',detail:'The provider did not return a model identity.'}
- return {state:'done',detail:`${provider} authenticated ${secretName} and returned model metadata for ${model}. This does not generate an answer.`,receiptRef:`provider:${provider}:model:${body.id||body.name}`}
+ if(!modelProbeProviders.has(provider))return {state:'unavailable',detail:`${provider} is selected and ${secretName} is installed. Setup cannot check this provider automatically.`}
+ const repositories=await repositoryTools(env,projectId,'contact',new Set())
+ const tools=[
+  ...Object.values(contextToolDefinitions),
+  handoffToolDefinition,
+  replyIconTool().definition,
+  ...repositories.map(tool=>tool.definition),
+ ].map(definition=>({definition}))
+ let code:string|undefined
+ try {
+  const result=await withWorkerRuntime({apiKey:env.OPENAI_API_KEY,files:env.FILES,scope:`projects/${projectId}/setup/${token}`,settings:env},()=>runStream({
+   project_id:projectId,task:TASKS.USER_REPLY,
+   messages:[{role:'user',content:'This is a connection check. Reply with OK without using any tools.'}],
+   tools,options:{model,abortSignal:AbortSignal.timeout(30_000),maxToolCalls:0,
+    modelSettings:{tool_choice:'none',max_tokens:512,...(provider!=='openai'||/^gpt-5\.[12456]/.test(model)?{thinking_budget:0}:{})}},
+   trace:{onEvent(event:{type:string;code?:string}){if(event.type==='error'&&event.code)code=event.code}},
+  }))
+  if(!result?.response?.trim())return {state:'unknown',detail:'The model returned no answer to the Setup check.'}
+  return {state:'done',detail:`The provider returned a test reply from ${model} with the reply tool schemas.`,receiptRef:`provider:${provider}:model:${model}`}
+ } catch(error) {
+  const message=String(error)
+  if(['invalid_api_key','authentication_error'].includes(code||'')||/\b401\b/.test(message))
+   return {state:'failed',detail:'Your provider did not accept the key.'}
+  if(code==='invalid_function_parameters'||/invalid schema for function/i.test(message))
+   return {state:'failed',detail:'The provider rejected the assistant’s tool schema.'}
+  return {state:'unknown',detail:'The provider could not complete a test reply. Check the selected model and provider account.'}
+ }
 }

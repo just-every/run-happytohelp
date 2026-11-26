@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type, FunctionCallingConfigMode, Modality, MediaResolution, } from '@google/genai/web';
+import { GoogleGenAI, FunctionCallingConfigMode, Modality, MediaResolution, } from '@google/genai/web';
 import { v4 as uuidv4 } from 'uuid';
 import { BaseModelProvider } from './base_provider.js';
 import { costTracker } from '../utils/cost_tracker.js';
@@ -11,107 +11,6 @@ import { hasEventHandler } from '../utils/event_controller.js';
 import { truncateLargeValues } from '../utils/truncate_utils.js';
 import { findModel } from '../data/model_data.js';
 import { normalizeGeminiUsage } from '../utils/provider_usage.js';
-function convertParameterToGeminiFormat(param) {
-    let type;
-    switch (param.type) {
-        case 'string':
-            type = Type.STRING;
-            break;
-        case 'integer':
-            type = Type.INTEGER;
-            break;
-        case 'number':
-            type = Type.NUMBER;
-            break;
-        case 'boolean':
-            type = Type.BOOLEAN;
-            break;
-        case 'object':
-            type = Type.OBJECT;
-            break;
-        case 'array':
-            type = Type.ARRAY;
-            break;
-        case 'null':
-            type = Type.STRING;
-            console.warn("Mapping 'null' type to STRING");
-            break;
-        default:
-            console.warn(`Unsupported parameter type '${param.type}'. Defaulting to STRING.`);
-            type = Type.STRING;
-    }
-    const result = { type, description: param.description };
-    if (type === Type.ARRAY) {
-        if (param.items) {
-            let itemType;
-            let itemEnum;
-            let itemProperties;
-            if (typeof param.items === 'object') {
-                itemType = param.items.type;
-                itemEnum = param.items.enum;
-                if ('properties' in param.items) {
-                    itemProperties = param.items.properties;
-                }
-            }
-            if (itemType === 'object' || itemProperties) {
-                result.items = { type: Type.STRING };
-                result.description = `${result.description || 'Array parameter'} (Each item should be a JSON-encoded object)`;
-                if (itemProperties) {
-                    const propNames = Object.keys(itemProperties);
-                    result.description += `. Expected properties: ${propNames.join(', ')}`;
-                }
-            }
-            else if (itemType) {
-                result.items = {
-                    type: itemType === 'string'
-                        ? Type.STRING
-                        : itemType === 'number'
-                            ? Type.NUMBER
-                            : itemType === 'boolean'
-                                ? Type.BOOLEAN
-                                : itemType === 'null'
-                                    ? Type.STRING
-                                    : Type.STRING,
-                };
-                if (itemEnum) {
-                    if (typeof itemEnum === 'function') {
-                        console.warn('Gemini provider does not support async enum functions in array items');
-                    }
-                    else {
-                        result.items.enum = itemEnum;
-                    }
-                }
-            }
-            else {
-                result.items = { type: Type.STRING };
-            }
-        }
-        else {
-            result.items = { type: Type.STRING };
-        }
-    }
-    else if (type === Type.OBJECT) {
-        if (param.properties && typeof param.properties === 'object') {
-            result.properties = {};
-            for (const [propName, propSchema] of Object.entries(param.properties)) {
-                result.properties[propName] = convertParameterToGeminiFormat(propSchema);
-            }
-        }
-        else {
-            result.properties = {};
-        }
-    }
-    else if (param.enum) {
-        if (typeof param.enum === 'function') {
-            console.warn('Gemini provider does not support async enum functions. Enum will be omitted.');
-        }
-        else {
-            result.format = 'enum';
-            result.enum = param.enum;
-        }
-    }
-    return result;
-}
 async function resolveAsyncEnums(params) {
     if (!params || typeof params !== 'object') {
         return params;
@@ -153,24 +52,10 @@ async function convertToGeminiFunctionDeclarations(tools) {
             return null;
         }
         const resolvedParams = await resolveAsyncEnums(tool.definition?.function?.parameters);
-        const toolParams = resolvedParams?.properties;
-        const properties = {};
-        if (toolParams) {
-            for (const [name, param] of Object.entries(toolParams)) {
-                properties[name] = convertParameterToGeminiFormat(param);
-            }
-        }
-        else {
-            console.warn(`Tool ${tool.definition?.function?.name || 'Unnamed Tool'} has missing or invalid parameters definition.`);
-        }
         return {
             name: tool.definition.function.name,
             description: tool.definition.function.description,
-            parameters: {
-                type: Type.OBJECT,
-                properties,
-                required: Array.isArray(resolvedParams?.required) ? resolvedParams.required : [],
-            },
+            parametersJsonSchema: resolvedParams,
         };
     }));
     return declarations.filter(Boolean);

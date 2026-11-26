@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {startApp} from '../../journeys/kit/app.mjs'
+import {openaiStream} from '../openai-stream.mjs'
 import {snapshotTables} from './table-snapshot.mjs'
 
 const row=(data,id)=>data.steps.find(item=>item.id===id)
@@ -8,13 +9,17 @@ const local={H2H_LOCAL:'true',APP_ORIGIN:'http://127.0.0.1:8787',EMAIL_PROVIDER:
 const hosted={H2H_LOCAL:undefined,APP_ORIGIN:'https://app.example',OPENAI_API_KEY:modelKey,EMAIL_PROVIDER:'resend',EMAIL_API_KEY:mailKey}
 const bootstrap={email:'owner@activation.test',password:'synthetic-activation-password',name:'Activation support',allowedOrigin:'https://activation.test',setupToken:'synthetic-activation-claim'}
 
-// Only provider metadata, mail and DNS are faked. Clock aging changes stored
+// Only model generation, mail and DNS are faked. Clock aging changes stored
 // observation times, never the state or result that the public routes produced.
 export async function activationJourney(){
  const state={model:200,domain:200,event:'queued',uncertain:false},mail=[]
  const app=await startApp({captureQueue:true,origin:'http://127.0.0.1:8787',bindings:{...local,H2H_SETUP_TOKEN:bootstrap.setupToken},outbound:async request=>{
   const url=new URL(request.url)
-  if(url.hostname==='api.openai.com'){assert.equal(request.method,'GET','checks never generate');return Response.json(state.model===200?{id:decodeURIComponent(url.pathname.split('/').at(-1))}:{error:'Rejected credential'},{status:state.model})}
+  if(url.hostname==='api.openai.com'){
+   assert.equal(request.method,'POST')
+   if(state.model===200)return openaiStream('OK')
+   return Response.json({error:{code:'invalid_api_key',message:'Rejected credential'}},{status:state.model})
+  }
   if(url.hostname==='api.sendgrid.com'){const body=await request.json();mail.push({subject:body.subject,text:body.content.find(c=>c.type==='text/plain').value});return new Response(null,{status:202,headers:{'x-message-id':'activation-grid'}})}
   if(url.hostname==='api.resend.com'){
    if(request.method==='POST'){mail.push(await request.json());if(state.uncertain)throw Error('Lost response after acceptance');return Response.json({id:'activation-mail-'+mail.length})}

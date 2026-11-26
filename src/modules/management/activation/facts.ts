@@ -3,7 +3,7 @@ import type {Env} from '../../../platform/env'
 import {aiCeilings} from '../../../platform/limit-config'
 import {DEFAULT_WORKSPACE_COLOUR} from '../workspace-colour'
 import {keyInstalled,modelProvider,modelSecrets,type Configuration} from './configuration'
-import {metadataProviders} from './model-probe'
+import {modelProbeProviders} from './model-probe'
 import {starterMarker,starterProfile,untouched} from './starter'
 import {senderSwitch,senderDnsDomain} from './sender'
 import type {ActivationFacts,ColourSource,Receipt,SenderRecord} from './types'
@@ -41,7 +41,7 @@ export async function activationFacts(env:Env,config:Configuration,receipts:Rece
   mail:{managed:await rerMailboxStatus(env,config.projectId),mode:config.mailMode,ownerSignin:Boolean(ownerSigninAddress(env)),provider,statusApi:provider==='resend',sender:config.sender,proposedSender:config.proposedSender,senderDnsDomain:senderDnsDomain(config),
    senderSwitch:switched&&switched.to===config.sender?{from:switched.from,to:switched.to,at:new Date(switched.at).toISOString()}:null},
   ai:{assistantId:config.assistant?.id||null,provider:config.provider,secretName:config.secretName,keyInstalled:Object.keys(modelSecrets).some(provider=>keyInstalled(env,provider)),
-   checkable:Boolean(config.provider&&metadataProviders.has(config.provider))},
+   checkable:Boolean(config.provider&&modelProbeProviders.has(config.provider))},
   starterAssistant:starter&&marker?{id:starter.id,name:starter.name,model:starter.model,provider:modelProvider(starter.model),edited:!untouched(starter,marker.seed)}:null,
   inboundAddress:config.email?.inbound_address||null,
   inbound:{enabled:Boolean(config.email?.is_enabled),gateway:typeof env.INBOUND_EMAIL_TOKEN==='string'&&Boolean(env.INBOUND_EMAIL_TOKEN),customDomainRequired:inboundNeedsCustomDomain(config.email?.inbound_address),receiving:(await receivingState(env,config.email?.inbound_address)).reason},

@@ -32,7 +32,7 @@ export async function referenceErasure(){
   // for erasure even though it has no customer-author visibility exception.
   await call(`/api/knowledge/${p}/articles`,{body:{title:'Ordinary recovery guidance',content:'Ordinary recovery guidance is available to every customer.',status:'published'},status:201})
   let turn=0
-  k.provider=()=>++turn===1?openaiToolCall('search_knowledge',{query:'Ordinary recovery guidance'},'erasure-public'):openaiStream(body)
+  k.provider=()=>++turn===1?openaiToolCall('search_knowledge',{query:'Ordinary recovery guidance',locale:null},'erasure-public'):openaiStream(body)
   await app.configure({OPENAI_API_KEY:'synthetic-erasure-model-network'})
   const assistant=(await call(`/api/management/projects/${p}/ais`,{body:{name:'Recovery assistant',role:'support',prompt:'Help with recovery using read-only knowledge.',model:'gpt-5.6-luna',is_enabled:true},status:201})).data.data
   const ticket=(await app.first('SELECT id FROM conversations WHERE project_id=? AND contact_id=?',p,erased.contactId)).id

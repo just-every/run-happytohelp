@@ -15,7 +15,7 @@ export async function agent001Outcomes(a){
  try{
   let turn=0
   ai.respond=body=>{
-   if(++turn===1)return openaiToolCall('search_knowledge',{query:'zqxunanswerablemarker'},'no-evidence')
+   if(++turn===1)return openaiToolCall('search_knowledge',{query:'zqxunanswerablemarker',locale:null},'no-evidence')
    assert.deepEqual(output(body,'no-evidence'),[],'an empty search issues no evidence')
    return 'I cannot find approved guidance. Please ask a teammate.'
   }
@@ -73,7 +73,7 @@ export async function agent001Outcomes(a){
   // response is in flight fences that old generation before the tool executes.
   for(const intervention of ['operator','customer']){
    const visitor=await a.visitor();let round=0,intervened=false
-   ai.respond=()=>++round===1?openaiToolCall('search_knowledge',{query:'refund'},'before-takeover'):openaiToolCall('cite_knowledge',{sources:[]},'after-takeover')
+   ai.respond=()=>++round===1?openaiToolCall('search_knowledge',{query:'refund',locale:null},'before-takeover'):openaiToolCall('cite_knowledge',{sources:[]},'after-takeover')
    ai.before=async()=>{
     if(round!==1||intervened)return
     intervened=true
@@ -103,7 +103,7 @@ export async function agent001Outcomes(a){
    try{
     let round=0
     ai.respond=()=>{
-     if(stage==='after-search'&&++round===1)return openaiToolCall('search_knowledge',{query:'refund'},'before-disconnect')
+     if(stage==='after-search'&&++round===1)return openaiToolCall('search_knowledge',{query:'refund',locale:null},'before-disconnect')
      if(stage==='after-search')throw new DOMException('Provider connection lost between tools','TimeoutError')
      let sent=false
      return new Response(new ReadableStream({pull(controller){

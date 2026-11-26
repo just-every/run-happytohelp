@@ -8,8 +8,13 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
-## 0.4.43 — 2026-11-25
+## 0.4.44 — 2026-11-26
 
+v0.4.43 was tagged but never published. Its changes are included in v0.4.44 and listed below.
+
+- **Owner sign-in mail.** `MAIL_RECIPIENTS=owner`, with your own email provider, sends one kind of message: the owner’s own sign-in link, to the configured owner address (`H2H_SETUP_OWNER_EMAIL`, else `OWNER_EMAIL`). The owner chooses **Email me a sign-in link** on the sign-in page and receives a single-use link that expires after 15 minutes. Any other address, a teammate’s included, gets no mail and the same answer. Password resets, invitations, notifications, replies and surveys stay off, exactly as with outbound email off. The default, `any`, keeps ordinary behaviour, and managed email (`MAIL_PROVIDER=rer`) is refused with `MAIL_RECIPIENTS=owner` at deploy. Setup steps are in `docs/email.md`.
+- **Cron cursors across settings.** When an SLA policy or business calendar changes mid-lap, the SLA rebuild restarts from the first ticket, so tickets on pages it had already passed pick up the change. Two overlapping runs no longer overwrite each other’s cursor. With CSAT surveys on in several workspaces, survey discovery rechecks recent resolutions by the shortest enabled delay, so a workspace with a longer delay no longer holds back invitations that are already due elsewhere.
+- **CI.** Verify runs once per commit on push, and no longer on pull requests or a daily schedule. A release tag whose commit already passed on push runs only the slow tier: installer journeys, legacy export and every-release upgrades. CI counts the tests and fails when the count passes the cap in `test-budget.json`.
 - **Scheduled D1 reads.** With SLA policies, CSAT surveys and a webhook active, the minute cron read 53,891, 112,891 and 271,291 D1 rows at 600, 1,200 and 3,000 conversations respectively. It now reads 99 at all three sizes. Integration discovery reads only unprepared intents and deliveries still queued or claimed.
 - **SLA backstop.** The rolling SLA rebuild reads only open tickets and tickets with an open alert. After a full pass it waits up to an hour before the next one, and starts again when an SLA policy or business calendar changes.
 - **Survey discovery.** A stored cursor lets the cron advance through resolutions in order. Each resolution is still rechecked until its invitation would be due.
@@ -22,7 +27,7 @@ updating and backing up an installation, see
 
 Update from v0.4.42 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.131. From v0.4.42, apply `339_flat_scheduled_reads.sql`, `340_ticket_update_writes.sql` and then `341_open_ticket_poll_reads.sql` once before serving HTTP or queue traffic. For older installations, first follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
 
-_Run Edit Run fleet, 2026-11-25._
+_Run Edit Run fleet, 2026-11-26._
 
 ## 0.4.42 — 2026-11-24
 

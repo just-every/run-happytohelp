@@ -16,7 +16,7 @@ test('a mailbox-only owner proves the account email, exports through the fresh s
 test('custom roles restrict native and delegated knowledge and ticket actions, and security retention and legal holds preserve accountable history',rolesAuditJourney)
 
 test('an installation with outbound email off refuses every sign-in mail in words, contacts no provider, and admits an owner through a deploy-credential grant once',mailOffJourney)
-test('with owner-only mail the configured owner receives a single-use sign-in link while a teammate or stranger gets nothing behind the same answer, and other mail stays off',ownerOnlyMailJourney)
+test('with owner-only mail, through their own provider or the platform relay, the configured owner receives a single-use sign-in link while a teammate or stranger gets nothing behind the same answer, and other mail stays off',ownerOnlyMailJourney)
 test('while a knowledge upgrade is pending, setup, sign-in options and the emailed sign-in link answer normally and knowledge stays closed to anyone without a member session',upgradeFenceJourney)
 
 import {assuranceJourney} from '../helpers/assurance/journeys.mjs'

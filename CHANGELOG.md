@@ -8,6 +8,16 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.47 — 2026-11-27
+
+- **Owner sign-in relay delivery records.** Each owner sign-in email attempt through the Run Edit Run relay creates an `email_deliveries` row. The outcome records the relay’s HTTP status and any machine-readable error code, such as `business_mail_recipient_forbidden`. The row excludes recipients, message content and credentials.
+
+- **Hosted demo deployment.** Run Edit Run 0.2.137 lets the demo deploy with the owner-only mail setting.
+
+Update from v0.4.46 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.137. An installation on v0.4.46 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-27._
+
 ## 0.4.46 — 2026-11-27
 
 - **Lower Worker CPU.** The Worker does less work during Inbox loads, chat messages and scheduled recovery. In the chat benchmark, the 90th-percentile Worker time per message fell from 16.1 to 11.3 ms and D1 reads per chat POST fell from 988 to 770. The Inbox page shell is now built ahead of time, and the Inbox recovery check runs on the workspace read.

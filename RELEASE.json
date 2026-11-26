@@ -1,40 +1,40 @@
 {
-  "version": "0.4.45",
-  "previousVersion": "0.4.44",
-  "date": "2026-11-26",
+  "version": "0.4.46",
+  "previousVersion": "0.4.45",
+  "date": "2026-11-27",
   "contractChanges": {},
   "proseChanges": [
     {
-      "document": "docs/email.md",
+      "document": "README.md",
       "change": "changed",
-      "date": "2026-11-26",
-      "summary": "Adds the managed-relay form of owner-only sign-in mail: with `MAIL_RECIPIENTS=owner`, `MAIL_PROVIDER=rer` sends the owner’s own sign-in link through the platform’s owner-only relay, with no DNS.",
-      "was": "Owner-only sign-in mail needed your own email provider.",
-      "now": "Adds the managed-relay form of owner-only sign-in mail: with `MAIL_RECIPIENTS=owner`, `MAIL_PROVIDER=rer` sends the owner’s own sign-in link through the platform’s owner-only relay, with no DNS.",
-      "ownerAction": "Optional: on a Business with no mail provider of its own, set `MAIL_RECIPIENTS=owner` with `MAIL_PROVIDER=rer`, `MAIL_FROM`, `MAIL_RELAY_URL` and `MAIL_API_KEY` as the platform assigns them, and the owner address in `H2H_SETUP_OWNER_EMAIL` (else `OWNER_EMAIL`), then run a full deployment."
+      "date": "2026-11-27",
+      "summary": "Setup confirms the starter assistant’s model connection when the model returns a short test reply with the assistant’s tools attached.",
+      "was": "Setup confirmed the key with the provider.",
+      "now": "Setup confirms the starter assistant’s model connection when the model returns a short test reply with the assistant’s tools attached.",
+      "ownerAction": "None."
     },
     {
-      "document": "RUN-LOCALLY.md",
+      "document": "docs/contract/support-protocols.md",
       "change": "changed",
-      "date": "2026-11-26",
-      "summary": "A local copy moves to another host once with `rer setup --host`, which keeps its data, and plain `rer dev` follows the saved address.",
-      "was": "A moved port kept the host, and the host could not be changed during setup.",
-      "now": "A local copy moves to another host once with `rer setup --host`, which keeps its data, and plain `rer dev` follows the saved address.",
-      "ownerAction": "None for an existing copy. To change the local host, run `rer dev --stop && rer setup --host localhost && rer dev` (or `127.0.0.1`, or `::1`), then add a new passkey."
+      "date": "2026-11-27",
+      "summary": "The model check requests a short test reply with the reply tool schemas and no access to visitor data or executable tools; a successful model reply is distinguished from a saved key.",
+      "was": "The checks were described as non-generative metadata reads.",
+      "now": "The model check requests a short test reply with the reply tool schemas and no access to visitor data or executable tools; a successful model reply is distinguished from a saved key.",
+      "ownerAction": "None."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
-      "date": "2026-11-26",
-      "summary": "Records the v0.4.45 changes and the upgrade steps from v0.4.44.",
-      "was": "The latest entry covered v0.4.44.",
-      "now": "Records the v0.4.45 changes and the upgrade steps from v0.4.44.",
-      "ownerAction": "Update from v0.4.44 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.136. An installation on v0.4.44 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding."
+      "date": "2026-11-27",
+      "summary": "Records the v0.4.46 changes and the upgrade steps from v0.4.45.",
+      "was": "The latest entry covered v0.4.45.",
+      "now": "Records the v0.4.46 changes and the upgrade steps from v0.4.45.",
+      "ownerAction": "Update from v0.4.45 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.136. An installation on v0.4.45 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding."
     }
   ],
   "extensionPointChanges": [],
   "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.44 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.136. An installation on v0.4.44 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.",
-  "publicReleaseNotes": "- **Owner sign-in mail through the platform relay.** `MAIL_RECIPIENTS=owner` now also works with `MAIL_PROVIDER=rer`, for a Business with no mail provider of its own: the owner’s own sign-in link goes through the platform’s owner-only relay, with no DNS to set up. The platform assigns `MAIL_FROM`, `MAIL_RELAY_URL` (its `/api/managed-mail/send`) and the private `MAIL_API_KEY`. Deploy now requires the owner address (`H2H_SETUP_OWNER_EMAIL`, else `OWNER_EMAIL`) in this mode instead of deploying with nothing to send, and `MAIL_RECIPIENTS` is a public setting that defaults to `any`. Conversation mail and every other message stay off. Setup steps are in `docs/email.md`.\n- **Sign-in link kept when the send is uncertain.** When the relay answers 504 or times out, the message may still arrive, so the sign-in link is no longer spent and the same link still signs in once. A send the relay refuses still spends the link.\n- **Owner-only mail shown as on.** With `MAIL_RECIPIENTS=owner` and a provider configured, **Settings → Email** and the Setup “Email to you” row now say that sign-in links are sent to the owner only and all other email is off, where they used to read “off”.\n- **Passkey step.** The passkey step says a passkey belongs to the address it was made on.\n- **Local host.** The local guides explain that `rer setup --host 127.0.0.1` (or `localhost`, or `::1`) moves a local copy to another host once and keeps its data, that plain `rer dev` follows the saved address, and that a passkey must be added again after moving hosts (rer 0.2.136).\n- **Hosted demo.** The hosted demo is deployed at each published release, and the homepage offers a “Try the demo” link to it.\n\nUpdate from v0.4.44 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.136. An installation on v0.4.44 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.\n\n_Run Edit Run fleet, 2026-11-26._",
+  "agentUpdateInstructions": "Update from v0.4.45 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.136. An installation on v0.4.45 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.",
+  "publicReleaseNotes": "- **Lower Worker CPU.** The Worker does less work during Inbox loads, chat messages and scheduled recovery. In the chat benchmark, the 90th-percentile Worker time per message fell from 16.1 to 11.3 ms and D1 reads per chat POST fell from 988 to 770. The Inbox page shell is now built ahead of time, and the Inbox recovery check runs on the workspace read.\n- **Chat replies keep their order.** With outbound email configured, or with workspace rules that depend on the current ticket, a visitor’s message still runs those steps inline, in order. Ordinary chat uses its queued delivery.\n- **Setup confirms the starter AI with a real reply.** Setup asks the model for a short test reply with the assistant’s tool schemas attached, so a key that is saved but cannot answer a chat is no longer shown as confirmed. The provider check sends no visitor data and no executable tools.\n- **A failed AI reply returns the chat to the team.** When the starter assistant’s reply request fails, the conversation goes back to the unassigned team queue with the away reply, instead of waiting on a reply that never arrives.\n\nUpdate from v0.4.45 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.136. An installation on v0.4.45 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.\n\n_Run Edit Run fleet, 2026-11-27._",
   "migrations": []
 }

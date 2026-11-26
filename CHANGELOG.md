@@ -8,6 +8,17 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.46 — 2026-11-27
+
+- **Lower Worker CPU.** The Worker does less work during Inbox loads, chat messages and scheduled recovery. In the chat benchmark, the 90th-percentile Worker time per message fell from 16.1 to 11.3 ms and D1 reads per chat POST fell from 988 to 770. The Inbox page shell is now built ahead of time, and the Inbox recovery check runs on the workspace read.
+- **Chat replies keep their order.** With outbound email configured, or with workspace rules that depend on the current ticket, a visitor’s message still runs those steps inline, in order. Ordinary chat uses its queued delivery.
+- **Setup confirms the starter AI with a real reply.** Setup asks the model for a short test reply with the assistant’s tool schemas attached, so a key that is saved but cannot answer a chat is no longer shown as confirmed. The provider check sends no visitor data and no executable tools.
+- **A failed AI reply returns the chat to the team.** When the starter assistant’s reply request fails, the conversation goes back to the unassigned team queue with the away reply, instead of waiting on a reply that never arrives.
+
+Update from v0.4.45 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.136. An installation on v0.4.45 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-27._
+
 ## 0.4.45 — 2026-11-26
 
 - **Owner sign-in mail through the platform relay.** `MAIL_RECIPIENTS=owner` now also works with `MAIL_PROVIDER=rer`, for a Business with no mail provider of its own: the owner’s own sign-in link goes through the platform’s owner-only relay, with no DNS to set up. The platform assigns `MAIL_FROM`, `MAIL_RELAY_URL` (its `/api/managed-mail/send`) and the private `MAIL_API_KEY`. Deploy now requires the owner address (`H2H_SETUP_OWNER_EMAIL`, else `OWNER_EMAIL`) in this mode instead of deploying with nothing to send, and `MAIL_RECIPIENTS` is a public setting that defaults to `any`. Conversation mail and every other message stay off. Setup steps are in `docs/email.md`.

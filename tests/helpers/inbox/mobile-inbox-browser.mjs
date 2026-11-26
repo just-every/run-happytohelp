@@ -39,7 +39,7 @@ export async function mobileInbox(){
   // A view switch whose workspace read is reset in transit waits as busy and then shows the view, never the alert:
   // the reply assigned the conversation to its sender, so Yours lists it.
   let resets=0,alerted=false
-  await page.route(url=>url.pathname.startsWith('/_serverFn/'),route=>{resets++;return route.abort('connectionreset')},{times:1})
+  await page.route(url=>url.pathname==='/api/management/bootstrap'&&url.searchParams.get('inbox')==='project',route=>{resets++;return route.abort('connectionreset')},{times:1})
   await page.getByRole('button',{name:'Toggle navigation',exact:true}).click()
   await page.getByRole('navigation',{name:'Inbox views',exact:true}).getByRole('link',{name:/^Yours/}).click()
   const busy=page.locator('.dashboard-busy[role="status"]'),watch=async()=>{alerted||=await page.locator('[role="alert"]:visible').count()>0;await page.waitForTimeout(100)}

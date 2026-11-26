@@ -7489,7 +7489,7 @@
       "executable": false
     },
     "src/modules/integrations/routes.ts": {
-      "sha256": "5808a73048b037577b274d55735eea2f54dec56e82cead956dbc01a8ebd3f08f",
+      "sha256": "4e02dac28df9973ffb88846942d12059275f9c3d596df3c6f40c8318df2edd05",
       "executable": false
     },
     "src/modules/integrations/secrets.ts": {
@@ -8349,7 +8349,7 @@
       "executable": false
     },
     "src/modules/management/activation/facts.ts": {
-      "sha256": "782a8af2bfe3bf5a1138e217413c76f9b9b6d6a479a32e58133a4be8dceff61b",
+      "sha256": "49a581257a61319233169472fa89caed4670b50c997407a27c3c6fc55aaf6194",
       "executable": false
     },
     "src/modules/management/activation/inbound-domain.ts": {
@@ -8405,7 +8405,7 @@
       "executable": false
     },
     "src/modules/management/activation/types.ts": {
-      "sha256": "dee1e725ef7cfd7d44758b9e60e6a236f5053a5edb26ad7433b9f11df4a87840",
+      "sha256": "5e680783a77e6080c9bfa30d0fb2a1d1ab692708ae18b4236d5df46113f41d1a",
       "executable": false
     },
     "src/modules/management/admin.ts": {
@@ -13145,7 +13145,7 @@
       "executable": false
     },
     "src/ui/native/activation/setup-model.js": {
-      "sha256": "60bf1ea582b989f3920cbbd4c60c02ab4b39e160f73c8b45fb041927c7851d75",
+      "sha256": "4fc8cb8a98ed47573d5893ef615f3d34733299a0a181094d904c96d7d87a3c5a",
       "executable": false
     },
     "src/ui/native/activation/setup-store.js": {
@@ -13669,7 +13669,7 @@
       "executable": false
     },
     "src/ui/native/pages/EmailSettings.jsx": {
-      "sha256": "63e5ca78be3a2c7084221c72ed9f908519242299c460ddcb5136532cb697cc20",
+      "sha256": "9654f9ba5565cb841d85e5a5bc9b44ab28824f9e58aef093ce0ce0fa1055a19b",
       "executable": false
     },
     "src/ui/native/pages/forms.jsx": {
@@ -16969,7 +16969,7 @@
       "executable": false
     },
     "tests/helpers/identity/owner-only-mail.mjs": {
-      "sha256": "eb3348b8a0e51e51b5d159ddff429838e9075b1c60840251a6c60b40c4283eb2",
+      "sha256": "e2c820e91d2b0717b31fa84abc96004eb963791950181c3b4fcbec5f76114972",
       "executable": false
     },
     "tests/helpers/identity/recovery-authority/authenticator.mjs": {

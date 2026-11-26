@@ -17129,7 +17129,7 @@
       "executable": false
     },
     "tests/helpers/inbox/mobile-inbox-browser.mjs": {
-      "sha256": "9a70cb84eed59ed3c7100b240001f75c5f0b5a7b4e0704fdfd8e7b3700f5ac02",
+      "sha256": "16c898a77eb31663686a7151b2bd3e17c2f14eef178d154ea71f705bf4f712ad",
       "executable": false
     },
     "tests/helpers/inbox/new-ticket-brand-orderings.mjs": {

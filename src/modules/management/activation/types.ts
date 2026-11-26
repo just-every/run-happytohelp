@@ -41,11 +41,12 @@ export type ActivationFacts = {
  /** The project's allowed widget origin. */
  website:string|null
  colour:{hex:string; source:ColourSource}
- /** `local` suppresses email without storage; `statusApi` says whether the provider reports delivery status here.
+ /** `ownerSignin` is MAIL_RECIPIENTS=owner with a working provider: only the owner's sign-in link is mailed, `mode` stays `unavailable`.
+  * `local` suppresses email without storage; `statusApi` says whether the provider reports delivery status here.
   * `sender` is the address mail goes out from now; `proposedSender` the workspace's own address whose domain sender_dns
   * checks while mail still goes out from the installation sender; `senderDnsDomain` is the domain sender_dns checks now, which
   * is the chosen sender's own once the owner has set one; `senderSwitch` is set once that domain was verified and mail switched to it from the installation sender. */
- mail:{mode:'local'|'remote'|'unavailable'; managed?:{address:string|null;state:string;configured:boolean;routeActive:boolean;observed:boolean;lastInboundAt:number|null;lastOutboundAcceptanceAt:number|null;error:string|null}|null; provider:'resend'|'cloudflare'|'sendgrid'|'mailgun'|'rer'|null; statusApi:boolean; sender:string|null
+ mail:{mode:'local'|'remote'|'unavailable'; ownerSignin:boolean; managed?:{address:string|null;state:string;configured:boolean;routeActive:boolean;observed:boolean;lastInboundAt:number|null;lastOutboundAcceptanceAt:number|null;error:string|null}|null; provider:'resend'|'cloudflare'|'sendgrid'|'mailgun'|'rer'|null; statusApi:boolean; sender:string|null
   proposedSender:string|null; senderDnsDomain:string|null; senderSwitch:{from:string; to:string; at:string}|null}
  /** The assistant the `model_key` step validates (the default visitor assistant) and its provider's secret name.
   * `keyInstalled` is true when the installation holds any supported provider key (presence only, never the key).

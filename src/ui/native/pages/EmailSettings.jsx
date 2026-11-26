@@ -13,6 +13,7 @@ const domainOf = address => String(address || '').split('@')[1] || '';
 function Sending({sending, installation, role, projectId}) {
  if (sending?.mode === 'local') return null;
  if (sending?.mode === 'remote') return <><div className="sh-state" data-sending="ready"><span className="h2h-chip"><i className="fe fe-check" aria-hidden="true"/>Working</span><p>Sending is set up: mail goes out through {providers[sending.provider] || 'your email service'}{sending.from ? <> from <b>{sending.from}</b></> : null}.</p></div>{role === 'owner' && <OwnerTestMail projectId={projectId}/>}</>;
+ if (sending?.ownerSignin) return <p data-sending="owner-only">Sign-in links are sent to the owner only. All other email is off.</p>;
  return <p data-sending="missing">Sending email is off. Ask your technical person to connect your email service.</p>;
 
 }

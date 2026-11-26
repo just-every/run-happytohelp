@@ -9,6 +9,7 @@ import {senderSwitch,senderDnsDomain} from './sender'
 import type {ActivationFacts,ColourSource,Receipt,SenderRecord} from './types'
 import {inboundNeedsCustomDomain} from './inbound-domain'
 import {receivingState} from '../../integrations/inbound-capability'
+import {ownerSigninAddress} from '../../identity/owner-signin-mail'
 
 function colour(settings:any):{hex:string;source:ColourSource} {
  const chosen=typeof settings.primary_color==='string'&&/^#[0-9a-f]{6}$/i.test(settings.primary_color)?settings.primary_color.toLowerCase():null
@@ -37,7 +38,7 @@ export async function activationFacts(env:Env,config:Configuration,receipts:Rece
   workspaceNamed:!(typeof settings.derived?.name==='string'&&settings.derived.name===config.project?.name),
   website:config.project?.allowed_origin||null,
   colour:colour(settings),
-  mail:{managed:await rerMailboxStatus(env,config.projectId),mode:config.mailMode,provider,statusApi:provider==='resend',sender:config.sender,proposedSender:config.proposedSender,senderDnsDomain:senderDnsDomain(config),
+  mail:{managed:await rerMailboxStatus(env,config.projectId),mode:config.mailMode,ownerSignin:Boolean(ownerSigninAddress(env)),provider,statusApi:provider==='resend',sender:config.sender,proposedSender:config.proposedSender,senderDnsDomain:senderDnsDomain(config),
    senderSwitch:switched&&switched.to===config.sender?{from:switched.from,to:switched.to,at:new Date(switched.at).toISOString()}:null},
   ai:{assistantId:config.assistant?.id||null,provider:config.provider,secretName:config.secretName,keyInstalled:Object.keys(modelSecrets).some(provider=>keyInstalled(env,provider)),
    checkable:Boolean(config.provider&&metadataProviders.has(config.provider))},

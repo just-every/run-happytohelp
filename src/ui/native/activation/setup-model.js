@@ -125,6 +125,7 @@ function rowFor(data, id) {
   case 'owner_mail': {
    if (local && own?.applicable === false) return {...base, state: 'unavailable', value: 'Email is off on this computer.'};
    if(facts.mail?.managed&&!observed)return {...base,state:facts.mail.managed.error?'problem':'set',value:facts.mail.managed.error|| (facts.mail.managed.lastOutboundAcceptanceAt?'The provider accepted an email for you. Use an emailed sign-in link to confirm it arrived.':'Your assigned address sends account and support email once Run Edit Run activates it.')};
+   if (facts.mail?.ownerSignin) return {...base, state: 'set', value: 'Sign-in links are sent to the owner only. All other email is off.'};
    if (facts.mail?.mode === 'unavailable') {
     const names = own?.state === 'unavailable' ? requiredNames(own.detail) : '';
     return {...base, state: 'unavailable', value: `Outbound email is off for this installation, so we can’t email you.${names ? ` Turning it on needs ${names}.` : ''}`};

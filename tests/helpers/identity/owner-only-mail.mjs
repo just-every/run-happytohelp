@@ -68,6 +68,12 @@ async function ownerOnlyMail(provider){
    assert.equal((await identity('/magic-link/consume',{token:linkToken(seen[1])})).status,400)
   }
 
+  // Settings → Email and Setup say owner-only sign-in mail is on, not just that sending is off.
+  const manage=`/api/management/projects/${workspace.projectId}`
+  assert.equal((await app.call(manage+'/email-settings',{token:workspace.tokens.owner,status:200})).data.sending.ownerSignin,true)
+  const facts=(await app.call(manage+'/activation',{token:workspace.tokens.owner,status:200})).data.data.facts
+  assert.equal(facts.mail.ownerSignin,true);assert.equal(facts.mail.mode,'unavailable')
+
   // Every other mail stays off, as with MAIL_PROVIDER=none.
   const reset=await identity('/forgot-password',{email:owner})
   assert.equal(reset.status,503);assert.match(reset.data.error,/Outbound email is off for this installation/)

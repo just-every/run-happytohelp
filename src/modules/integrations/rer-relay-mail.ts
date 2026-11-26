@@ -13,15 +13,16 @@ export function relayConfigured(env:Env){
  try{mailService(env.MAIL_RELAY_URL);return true}catch{return false}
 }
 
-/** Claim the attempt before sending. The receipt uses the existing error column for the HTTP status and
- * machine-readable error code; the recipient, subject and message are excluded from the stored fields. */
+/** Claim the attempt before sending, recording recipient and subject as the provider path does (the activation
+ * check matches a used sign-in link to its delivery by recipient). Acceptance leaves the error column empty; any
+ * other answer stores the relay's HTTP status and machine-readable error code there. The message is never stored. */
 export async function sendRelayMail(env:Env,input:Pick<EmailInput,'to'|'subject'|'text'|'idempotencyKey'>){
  const relay=mailService(env.MAIL_RELAY_URL)
  const {idempotencyKey,to,subject,text}=input
  const body=JSON.stringify({to,subject,text}),intentHash=await hashToken(body),now=Date.now()
  const claim=await env.DB.prepare(`INSERT INTO email_deliveries
   (id,project_id,recipient,subject,intent_hash,state,provider_id,error,created_at,updated_at)
-  VALUES(?,NULL,'','',?,'sending',NULL,NULL,?,?) ON CONFLICT(id) DO NOTHING`).bind(idempotencyKey,intentHash,now,now).run()
+  VALUES(?,NULL,?,?,?,'sending',NULL,NULL,?,?) ON CONFLICT(id) DO NOTHING`).bind(idempotencyKey,to,subject,intentHash,now,now).run()
  if(!claim.meta.changes)throw new Error('relay_uncertain')
 
  let response:Response|undefined
@@ -38,10 +39,10 @@ export async function sendRelayMail(env:Env,input:Pick<EmailInput,'to'|'subject'
   typeof value==='string'&&format.test(value)&&(!key||!value.includes(key))&&!value.toLowerCase().includes(to)&&!text.includes(value)
  const providerId=state==='sent'&&safeReceiptField(receipt?.messageId,/^[a-zA-Z0-9._:@<>=+-]{1,256}$/)?receipt.messageId:null
  const code=safeReceiptField(receipt?.error,/^[a-z][a-z0-9_]{0,95}$/)?receipt.error:null
- const outcome=status===undefined?'Relay did not answer':`Relay HTTP ${status}${code?' '+code:''}`
+ const error=state==='sent'?null:status===undefined?'Relay did not answer':`Relay HTTP ${status}${code?' '+code:''}`
  try{
   await env.DB.prepare('UPDATE email_deliveries SET state=?,provider_id=?,error=?,updated_at=? WHERE id=?')
-   .bind(state,providerId,outcome,Date.now(),idempotencyKey).run()
+   .bind(state,providerId,error,Date.now(),idempotencyKey).run()
  }catch{
   console.error('Could not record the managed mail relay outcome')
   // Keep the link valid if the provider accepted the message or could still deliver it.

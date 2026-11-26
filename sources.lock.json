@@ -1721,7 +1721,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "6f07aed27788b8aad69b3267be080bc7a283fb1ef4e6dfe67c1eb760fc87d649",
+      "sha256": "7e73fad0dba028930ff6bafcc606496abe6b5f830ff6e08761f7b560aa7a7051",
       "executable": false
     },
     "docs/help-before-they-ask.md": {
@@ -3033,7 +3033,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "4f0fed5af48116f1800163b8b11a69e461131d18c9d3615509f6bd33605f3b3f",
+      "sha256": "dffcc075b39bcf5a480708ab3af3345fe039875c2f1b0ea17876b11bbbaf3a13",
       "executable": false
     },
     "scripts/build-local-agent.cjs": {

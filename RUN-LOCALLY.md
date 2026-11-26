@@ -40,11 +40,20 @@ Hosts are exactly 127.0.0.1, localhost or ::1. A new installation uses
 `localhost`, because passkeys need a domain name and cannot use an IP address.
 
 An existing installation keeps its saved origin, including its hostname and
-port. If that port is busy, wait until it is free or stop the service using it
-if you started that service. Then run `rer dev` again from the same checkout. To move this installation,
-run `rer setup --port 8788` with a free port, then run `rer dev`. Leave out
-`--host` so setup keeps the saved hostname. Changing between `localhost` and
-`127.0.0.1` during setup is refused. The port move keeps the existing data.
+port, so a plain `rer dev` needs no `--host` or `--port`. If that port is busy,
+wait until it is free or stop the service using it if you started that service.
+Then run `rer dev` again from the same checkout.
+
+To move this installation, stop dev and run `rer setup --port 8788` with a free
+port, or `rer setup --host 127.0.0.1` (or `localhost`, or `::1`). Setting up
+again with a new host or port keeps the existing data; then run `rer dev`, which
+follows the saved origin. Set the host once, not on every start. A front-door
+address cannot be moved this way. Setup refuses it.
+
+A passkey belongs to the host it was made on. WebAuthn needs a domain name, so a
+passkey added while the app is served on `localhost` cannot be used after
+`rer setup --host 127.0.0.1`. After moving hosts, add a new passkey. `rer dev`
+still opens signed in as the owner.
 
 ```sh
 rer reset --yes

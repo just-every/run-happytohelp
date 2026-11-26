@@ -1713,7 +1713,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "a462c9c234be705dd0b4494b0f06355ce78e4ca9f4146a0cadd368ad2ef152e5",
+      "sha256": "4537f31fbd168ad5e570116d99e379b62f184a0da270c40ce83e06c731eca975",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -4053,7 +4053,7 @@
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
-      "sha256": "1043f42d2aaaf3b7f191b30f2b34d0083b8f7705daf80ea7f4157a8e7d1c7e07",
+      "sha256": "26ef74c5b2d755d7523b2afc3bdaf9c0951167439da4b232edfe7a4a0c8923c3",
       "executable": false
     },
     "scripts/installer/hosted-export.mjs": {
@@ -4085,7 +4085,7 @@
       "executable": false
     },
     "scripts/installer/mail-transition.mjs": {
-      "sha256": "b8c8db882d48b732cf3537af14f277b7de7f222868d8b868a49b1a3e041aaaa9",
+      "sha256": "84a400a16e8a4c7e9d5c1da778e1c66d9f5be7184141dcc199b5da3e7969b604",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {
@@ -17853,7 +17853,7 @@
       "executable": false
     },
     "tests/journeys/deploy-nightly.mjs": {
-      "sha256": "f17679b00717dda839081f2f1e4af7555869d1b0b17400a3663d3f499c70e175",
+      "sha256": "d4bd3f1f95361ceab1b359515802de230730d81742158712eb729c92b31a26fd",
       "executable": false
     },
     "tests/journeys/email.mjs": {

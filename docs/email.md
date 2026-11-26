@@ -189,7 +189,7 @@ For an already deployed installation, install each provider input from the priva
 pnpm exec rer deploy --environment production --env-file /path/to/private-mail.env --set-secret SETTING_NAME
 ```
 
-Repeat for both client inputs and, only if not already installed, `INTEGRATION_ENCRYPTION_KEY`. The same command installs the IMAP settings below. A changed hostname or sending-provider choice requires a full deployment with the same private file, without `--set-secret`. Saving a secret alone does not enable an Off installation or change its origin.
+Repeat for both client inputs and, only if not already installed, `INTEGRATION_ENCRYPTION_KEY`. The same command installs the IMAP settings below. For a hostname or sending-provider change, run a full deployment with the same private file. When you switch between Run Edit Run and your own provider, the installer automatically replaces the held mail key once it has recorded the previous deployment’s mail inputs. Saving a secret alone does not enable an Off installation or change its origin.
 
 ### Google Gmail setup
 

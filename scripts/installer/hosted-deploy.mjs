@@ -55,9 +55,12 @@ export function hostedDeploy(path,lifecycle){
    // Keep the explicit off switch in the upload; saving credentials alone cannot enable mail.
    const custom=await hostedDeclaration(context.root,declaration,env.H2H_PUBLIC_ORIGIN,env);
    if(context.options.dryRun)return offlineDeploy(custom||path,lifecycle,context,ownerNeed);
-   await transitionMailBindings(context,declaration,env);
-   if(env.EMAIL_PROVIDER==='mailgun'&&!off&&env.MAIL_PROVIDER!=='rer')return nativeMailgunDeploy(custom||path,lifecycle,context);
-   if(custom)return ownerDeploy(custom,lifecycle)(context);
+   const selected=custom||path;
+   const upload=()=>env.EMAIL_PROVIDER==='mailgun'&&!off&&env.MAIL_PROVIDER!=='rer'
+    ?nativeMailgunDeploy(selected,lifecycle,context)
+    :(custom?ownerDeploy(custom,lifecycle):deploy)(context);
+   if(context.options.rotateSecret)return upload();
+   return transitionMailBindings(context,{basePath:path,declaration,path:selected,env},upload);
   }
   return deploy(context);
  },{managesHostedOwner:true}),'declaration',{get:()=>process.env.MAIL_PROVIDER==='rer'?managedDeployPath:deploy.declaration});

@@ -63,9 +63,11 @@ magicLink.post('/magic-link', async c => {
    const message = { subject: 'Sign in to HappyToHelp', text: `Open this link, then press Sign in within 15 minutes: ${url.href}\nIf you did not request this link, ignore this email.`, idempotencyKey: `magic-signin:${hash}` }
    if (owner) await sendOwnerSignin(c.env, { ...message, to: member.email.trim().toLowerCase() })
    else await sendEmail(c.env, { ...message, to: member.email, projectId: member.project_id || undefined })
-  } catch {
-   // Preserve failed/uncertain email receipts. Never replay an ambiguous submission.
-   await c.env.DB.prepare('UPDATE magic_signins SET consumed_at=? WHERE token_hash=?').bind(Date.now(), hash).run()
+  } catch (error) {
+   // Never replay an ambiguous submission. A refused send spends the link; an uncertain one (relay or provider
+   // timeout, 5xx) may still arrive, so its link stays valid until used or expired.
+   const uncertain = error instanceof Error && error.message === 'relay_uncertain' || (await c.env.DB.prepare('SELECT state FROM email_deliveries WHERE id=?').bind(`magic-signin:${hash}`).first<{ state: string }>())?.state === 'uncertain'
+   if (!uncertain) await c.env.DB.prepare('UPDATE magic_signins SET consumed_at=? WHERE token_hash=?').bind(Date.now(), hash).run()
   }
  })())
  return c.json({ accepted: true, message: 'If this address belongs to a HappyToHelp account, check your inbox for a sign-in link. You can also use your password.' }, 202)

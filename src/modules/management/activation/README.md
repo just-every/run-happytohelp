@@ -64,8 +64,7 @@ eight, run now, behind the per-step 60-second lease. With `auto` (the Setup page
 own checks) a step is left as it is while its observation is fresh: provider-backed
 steps (model, sender DNS, owner mail) for 15 minutes once done and 60 seconds
 otherwise; local steps until they are done. A changed configuration always runs
-again, and a used sign-in link is always picked up. Checks are non-generative
-metadata, domain and DNS reads; they never send mail and never request generation.
+again, and a used sign-in link is always picked up. The model check requests one short test reply with reply tool schemas, without visitor data or executable tools. Other checks read status and DNS. Checks never send mail.
 
 Before the model check, an untouched starter assistant (equal to the `starter_ai`
 seed in project settings) whose provider has no key moves to the starter model of a

@@ -49,7 +49,7 @@ export type ActivationFacts = {
   proposedSender:string|null; senderDnsDomain:string|null; senderSwitch:{from:string; to:string; at:string}|null}
  /** The assistant the `model_key` step validates (the default visitor assistant) and its provider's secret name.
   * `keyInstalled` is true when the installation holds any supported provider key (presence only, never the key).
-  * `checkable` is true when that provider's key can be checked automatically (`metadataProviders` in model-probe.ts). */
+  * `checkable` is true when that provider's key can be checked automatically (`modelProbeProviders` in model-probe.ts). */
  ai:{assistantId:string|null; provider:string|null; secretName:string|null; keyInstalled:boolean; checkable:boolean}
  /** The provisioned starter assistant (`starter_ai`), while it exists. `edited` once it differs from what it was created with. */
  starterAssistant:{id:string; name:string; model:string; provider:string|null; edited:boolean}|null

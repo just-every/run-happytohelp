@@ -25,6 +25,18 @@
       "upstream_patch_includes_override": false
     },
     {
+      "path": "model_providers/claude.js",
+      "description": "Allow the Setup probe to send tool schemas while disabling tool calls.",
+      "tests": ["tests/journeys/first-run.mjs"],
+      "upstream_patch_includes_override": false
+    },
+    {
+      "path": "model_providers/gemini.js",
+      "description": "Send function parameters as JSON Schema to preserve nested properties, required fields and nullable types.",
+      "tests": ["tests/journeys/ai.mjs"],
+      "upstream_patch_includes_override": false
+    },
+    {
       "path": "model_providers/openrouter.js",
       "description": "Attribute independent HappyToHelp provider requests to the open-source application rather than the original company SaaS. Uses the installer owner supplied provider API key.",
       "tests": [

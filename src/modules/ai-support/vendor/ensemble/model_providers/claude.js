@@ -592,6 +592,7 @@ export class ClaudeProvider extends BaseModelProvider {
             };
             if (tools && tools.length > 0) {
                 requestParams.tools = await convertToClaudeTools(tools);
+                if (settings?.tool_choice === 'none') requestParams.tool_choice = { type: 'none' };
             }
             if (!requestParams.messages || requestParams.messages.length === 0) {
                 console.warn('Claude API Warning: No user or assistant messages provided after filtering. Adding default message.');

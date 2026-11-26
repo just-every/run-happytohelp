@@ -66,11 +66,10 @@ export function modelKeyState(data) {
 /** `waiting|checking|problem|review` plus the words shown beside it, for one needs-you step. */
 export function needStatus(data, item) {
  const {id, state, detail} = item, facts = data.facts || {};
- if (id === 'model_key' && state === 'failed') return {status: 'problem', text: 'Your provider did not accept the key.'};
  if (id === 'model_key' && modelKeyState(data) === 'blocked') return {status: 'waiting', text: 'Your provider refused the key check.'};
  if (state === 'failed') return {status: 'problem', text: detail};
  if (state === 'checking') return {status: 'checking', text: 'Checking now'};
- if (id === 'model_key') return modelKeyState(data) === 'blocked' ? {status: 'waiting', text: sentence(detail)} : {status: 'waiting', text: facts.ai?.keyInstalled ? 'Waiting for your provider key to be checked' : 'Waiting for a key'};
+ if (id === 'model_key') return modelKeyState(data) === 'blocked' ? {status: 'waiting', text: sentence(detail)} : {status: 'waiting', text: facts.ai?.keyInstalled ? 'Waiting for a test reply' : 'Waiting for a key'};
  if (id === 'widget_seen') return {status: 'waiting', text: 'Waiting for the first visit. We’ll spot it.'};
  if (id === 'sender_dns') return state === 'unavailable' ? {status: 'waiting', text: 'Waiting for an email key'} : (facts.senderRecords || []).length ? {status: 'waiting', text: 'Waiting for DNS records'} : {status: 'waiting', text: 'Waiting for the sending domain'};
  return {status: 'waiting', text: 'Waiting'};
@@ -149,9 +148,9 @@ function rowFor(data, id) {
    const mode = modelKeyState(data);
    if (mode === 'unchecked') return {...base, state: 'unchecked', value: 'Your provider key is installed. It can’t be checked automatically for this provider, so it stays unconfirmed.'};
    if (mode === 'unassigned') return {...base, state: 'waiting', value: sentence(own?.detail || '')};
-   if (mode === 'unknown') return {...base, state: 'unknown', value: `A key is installed, but right now we can’t tell whether the provider accepts it. We’ll try again on our own.${own.detail ? ` ${sentence(own.detail)}` : ''}`};
-   if (mode === 'checking') return {...base, state: 'checking', value: 'A key is installed. Checking it with the provider now.'};
-   return withObservation('set', observed ? `Connected. ${facts.starterAssistant?.model ? `Your starter assistant uses ${facts.starterAssistant.model}.` : ''}`.trim() : sentence(own?.detail || ''));
+   if (mode === 'unknown') return {...base, state: 'unknown', value: `The model hasn’t answered the Setup check yet. We’ll try again on our own.${own.detail ? ` ${sentence(own.detail)}` : ''}`};
+   if (mode === 'checking') return {...base, state: 'checking', value: 'Asking the provider for a test reply.'};
+   return withObservation('set', observed ? `The provider returned a test reply. ${facts.starterAssistant?.model ? `Your starter assistant uses ${facts.starterAssistant.model}.` : ''}`.trim() : sentence(own?.detail || ''));
   }
   case 'widget_seen': return withObservation('set', observed ? `Seen on ${hostOf(facts.website)}${own.checkedAt ? `, ${utc(own.checkedAt)}` : ''}.` : sentence(own?.detail || ''));
   case 'sender_dns': if(facts.mail?.managed)return {...base,state:facts.mail.managed.configured?'set':'waiting',value:facts.mail.managed.address?`${facts.mail.managed.address}. Provided by Run Edit Run.`:'Run Edit Run is assigning your email address.'};return withObservation('set', observed ? 'Your sending address is verified.' : own?.state === 'unavailable' ? 'Cannot be checked automatically for this provider.' : sentence(own?.detail || ''));

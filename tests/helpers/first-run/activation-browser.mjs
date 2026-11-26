@@ -12,7 +12,7 @@ export default async function activationEdge(request){
   if(request.method==='POST'){console.log('ACTIVATION_MAIL_EDGE_ACCEPTED');throw Error('Lost provider response after acceptance')}
   if(url.pathname==='/domains')return Response.json({data:[],has_more:false})
  }
- if(url.hostname==='api.openai.com'){assert.equal(request.method,'GET');return Response.json({error:'Rejected credential'},{status:401})}
+ if(url.hostname==='api.openai.com'){assert.equal(request.method,'POST');return Response.json({error:{code:'invalid_api_key',message:'Rejected credential'}},{status:401})}
  throw Error('Unexpected built activation edge '+url.hostname)
 }
 

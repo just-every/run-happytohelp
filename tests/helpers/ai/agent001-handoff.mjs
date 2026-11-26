@@ -13,7 +13,7 @@ export async function agent001Handoff(a){
  const visitor=await a.visitor();let turn=0
  ai.respond=()=>{
   turn++
-  if(turn===1)return openaiToolCall('search_knowledge',{query:'handoffmarker'},'handoff-search')
+  if(turn===1)return openaiToolCall('search_knowledge',{query:'handoffmarker',locale:null},'handoff-search')
   if(turn===2)return openaiToolCall('cite_knowledge',{sources:[ref]},'handoff-cite')
   if(turn===3)return openaiToolCall('switch_agent',{agent_id:'nonexistent-person'},'failed-handoff')
   return openaiToolCall('switch_agent',{agent_id:'human'},'handoff-human')
@@ -88,7 +88,7 @@ export async function agent001Handoff(a){
   const calls=a.providerCalls();await a.run()
   assert.equal((await a.generations(cid)).length,0);assert.equal(a.providerCalls(),calls,'email must not acquire a default answerer')
   turn=0;ai.respond=()=>{
-   if(++turn===1)return openaiToolCall('search_knowledge',{query:'handoffmarker'},'mail-search')
+   if(++turn===1)return openaiToolCall('search_knowledge',{query:'handoffmarker',locale:null},'mail-search')
    if(turn===2)return openaiToolCall('cite_knowledge',{sources:[ref]},'mail-cite')
    return 'A teammate reviews the refund request.'
   }

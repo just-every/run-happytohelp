@@ -287,8 +287,8 @@ and Setup say a key is missing.
    - **On your own computer:** add a line such as `OPENAI_API_KEY=your-key` to
      a file named `.dev.vars` in the `run-happytohelp` folder, then restart the app.
 3. **Setup notices the key.** While the starter assistant is untouched it uses a
-   model of whichever provider's key is installed, and Setup confirms the key with
-   the provider. To use a different assistant, open **Settings → AI**, add one
+   model of whichever provider's key is installed. Setup confirms the connection
+   when the model returns a short test reply with the assistant’s tools attached. To use a different assistant, open **Settings → AI**, add one
    (or choose **Customize** on an existing one), enter the **Model** it uses and
    keep it **Enabled**. Then, under **Responder defaults**, choose which assistant
    answers visitors, and with **AI replies** whether its replies are sent

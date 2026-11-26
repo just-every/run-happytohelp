@@ -50,7 +50,7 @@ export async function activationConfiguration(env:Env, projectId:string) {
  const values:Record<StepId,unknown>={
   owner_mail:[mailIdentity,owners.results],sender_dns:proposedSender&&!senderOverridden?[mailIdentity,proposedSender]:mailIdentity,
   inbound_address:[email?.inbound_address,email?.is_enabled,email?.updated_at,env.MAIL_MODE,env.MAIL_PROVIDER,env.INBOUND_EMAIL_TOKEN,env.MAILGUN_WEBHOOK_SIGNING_KEY,inboundNeedsCustomDomain(email?.inbound_address)],
-  model_key:[assistantId,model,assistant?.is_enabled,provider,key],spend_ceilings:env.AI_DAILY_CEILINGS||null,
+  model_key:[assistantId,model,assistant?.is_enabled,provider,key,"reply-probe"],spend_ceilings:env.AI_DAILY_CEILINGS||null,
   published_article:null,widget_origin:[project?.allowed_origin,env.PREVIEW_ORIGIN,env.APP_ORIGIN],widget_seen:[project?.allowed_origin,env.PREVIEW_ORIGIN,env.APP_ORIGIN],
  }
  const fingerprints=Object.fromEntries(await Promise.all(Object.entries(values).map(async([id,value])=>[id,await hashToken(JSON.stringify(value)??'null')])) ) as Record<StepId,string>

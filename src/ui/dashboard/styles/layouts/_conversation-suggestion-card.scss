@@ -184,6 +184,7 @@ body.conversation-workspace #chat .conversation-suggestions__error {
     color: var(--ink);
     background: var(--note);
     font-size: 15px;
+    overflow-wrap: anywhere;
 
     .btn-link {
         flex-shrink: 0;

@@ -6,9 +6,10 @@ import {assignmentNotificationStatement} from '../integrations/notifications'
 import {dispatchRequestAssignment} from '../integrations/notification-request'
 import {publishActivity} from '../conversations/activity'
 import {activeSourceProjectSql} from '../knowledge/public-sources'
+export const handoffToolDefinition={type:'function',function:{name:'switch_agent',description:'Hand this conversation to a human teammate. Pass agent_id="human" to select an active project teammate, or their exact user ID. This changes assignment only; it performs no customer account action.',parameters:{type:'object',properties:{agent_id:{type:'string'}},required:['agent_id'],additionalProperties:false}}}
 /** Assignment is the only mutation a customer-facing model may request. */
 export function handoffTool(env:Env,row:Generation,effects:GenerationEffects){
- return {allowSummary:false,definition:{type:'function',function:{name:'switch_agent',description:'Hand this conversation to a human teammate. Pass agent_id="human" to select an active project teammate, or their exact user ID. This changes assignment only; it performs no customer account action.',parameters:{type:'object',properties:{agent_id:{type:'string'}},required:['agent_id'],additionalProperties:false}}},function:async(agentId:string)=>{
+ return {allowSummary:false,definition:handoffToolDefinition,function:async(agentId:string)=>{
   const user=await env.DB.prepare("SELECT u.id,u.name FROM memberships m JOIN users u ON u.id=m.user_id WHERE m.project_id=? AND (?='human' OR m.user_id=?) ORDER BY CASE m.role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END,u.id LIMIT 1").bind(row.project_id,agentId,agentId).first<{id:string;name:string}>()
   if(!user)return {transferred:false,reason:'No matching human teammate'}
   const receipt=crypto.randomUUID(),now=Date.now(),accepted='EXISTS(SELECT 1 FROM ai_handoff_receipts WHERE id=?)'

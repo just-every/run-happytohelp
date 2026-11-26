@@ -3,7 +3,8 @@ import type { ParsedLocation } from '@tanstack/react-router';
 import { delegationAccount } from './delegation-loader';
 import { isInboxPath, projectIdFromPath } from './workspace-scope';
 import type {InboxListSearch,InitialInboxListData} from './initial-inbox-list';
-import { transportFailure, transportFetch } from '../dashboard/utils/busy';
+import { isBusy, transportFailure, transportFetch } from '../dashboard/utils/busy';
+import { readWorkspace } from './dashboard-bootstrap-reads';
 
 export type DashboardBootstrapInput = {
     projectId?: string;
@@ -30,7 +31,8 @@ export type DashboardBootstrapResult = {
     initialTags?: { path: string; outcome: Promise<InitialReadOutcome> };
     initialManagement?: { path: string; outcome: Promise<InitialReadOutcome> };
 } | { status: number; message: string; retryAfter?: number };
-export type WorkspaceBootstrap = { href: string; signal?: AbortSignal; bootstrap: Promise<DashboardBootstrapResult> };
+export type WorkspaceBootstrap = { href: string; signal?: AbortSignal; bootstrap?: Promise<DashboardBootstrapResult> };
+const projectInboxList = (data:DashboardBootstrapInput) => data.inbox==='project'&&!data.conversationId;
 
 function validateBootstrapInput(input: DashboardBootstrapInput): DashboardBootstrapInput {
     if (!input || typeof input !== 'object' || Array.isArray(input)
@@ -103,6 +105,19 @@ function settledBy<T>(outcome: Promise<T>, ended: Promise<void>, signal: AbortSi
 /** The workspace read from the browser. A transport failure rejects with the busy marker, and every nested
  * outcome settles even when the answer is cut mid-stream. */
 export async function readDashboardBootstrap(data: DashboardBootstrapInput, signal: AbortSignal): Promise<DashboardBootstrapResult> {
+    if (projectInboxList(data)) return readWorkspace(data, async path => {
+        try {
+            const response = await transportFetch(path, { cache: 'no-store', credentials: 'same-origin', signal });
+            let body:any;
+            try { body = await response.json(); }
+            catch (error) { if (response.ok || isBusy(error)) throw error; }
+            if (response.ok) return { result: body };
+            return { error: { status: response.status, message: body?.error?.message || body?.error || `Request failed (${response.status})`,
+                data: body, retryAfter: Number(response.headers.get('Retry-After')) || undefined } };
+        } catch (error) {
+            return { error: { status: isBusy(error) ? 503 : undefined, message: error instanceof Error ? error.message : String(error) } };
+        }
+    });
     let end!: () => void;
     const ended = new Promise<void>(resolve => { end = resolve; });
     const finish = () => {
@@ -125,6 +140,9 @@ export function loadWorkspaceBootstrap({ location, abortController }: {
     location: ParsedLocation; abortController: AbortController;
 }): WorkspaceBootstrap {
     const data = dashboardBootstrapInput(location), signal = abortController.signal;
+    // The list already renders in the browser. Let its same-origin requests
+    // fetch the workspace and rows without serializing them into the document.
+    if (import.meta.env.SSR && projectInboxList(data)) return { href: location.href };
     const bootstrap = import.meta.env.SSR ? fetchDashboardBootstrap({ data, signal }) : readDashboardBootstrap(data, signal);
     // A superseded navigation can leave this streamed promise without a consumer.
     void bootstrap.catch(() => {});

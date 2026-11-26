@@ -3,7 +3,9 @@ import {cronRoom,CronDeferred} from './platform/cron-budget'
 import {notificationContactsSql} from './modules/integrations/notification-contacts'
 import {applyMessageEffects} from './message-effects'
 import {openRerMailHold} from './modules/integrations/rer-mail-hold'
+import {publishResolution} from './modules/outcomes/state'
 const RETRY_MS=60*60*1000
+const minimumEffectStatements=120
 const liveProject="EXISTS(SELECT 1 FROM projects p WHERE p.id=o.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=o.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)"
 // The estimate selects the same proven audience as R4. Human replies may honour
 // all collected participant addresses; arbitrary inbound Cc headers cannot.
@@ -12,14 +14,15 @@ const audience=`(SELECT count(*) FROM (${notificationContactsSql} WHERE c.id=t.i
 type Message=Record<string,unknown>&{outbox_id:number;id:string;conversation_id:string;effect_contacts:number;effect_teammates:number;queue_only?:number}
 type Page={project_id:string;conversation_id:string;last_id:number}
 function job(projectId:string,message:Message):Job{return {type:'outbox.recover',id:message.id,projectId,conversationId:message.conversation_id,outboxId:message.outbox_id}}
-async function effects(env:Env,projectId:string,message:Message){
+async function effects(env:Env,projectId:string,message:Message,visitorChat=false){
  const actor:Actor={id:String(message.actor_id),projectId,role:message.actor_role==='contact'?'contact':'operator',...(message.actor_role==='contact'?{contactId:String(message.actor_id)}:{})}
  // Fixed effects and one requester fit 120; an additional customer can earn a
  // notice and a relay (80), each teammate one notice (30). Completion stays back.
- const statements=120+80*Math.max(0,Number(message.effect_contacts)-1)+30*Number(message.effect_teammates)
+ const statements=minimumEffectStatements+80*Math.max(0,Number(message.effect_contacts)-1)+30*Number(message.effect_teammates)
  if(!cronRoom(env,statements+1))throw new CronDeferred()
- // Journal recovery owns workflow credit; delivery jobs never add rule attempts.
- try{await applyMessageEffects(env,message,actor,undefined,{workflow:false})}catch(error){
+ // Cron already ran the workflow pass. A chat handed directly to this job
+ // gets its first ordered workflow pass before notifications and delivery.
+ try{await applyMessageEffects(env,message,actor,undefined,{workflow:visitorChat})}catch(error){
   if(error instanceof CronDeferred||error instanceof Error&&error.message==='WORKER_D1_STATEMENT_LIMIT'||Date.now()-Number(message.created_at)<=RETRY_MS)throw error
   console.error('Message follow-up abandoned',message.id)
  }
@@ -37,9 +40,9 @@ async function complete(env:Env,projectId:string,conversationId:string,done:Mess
 export async function dispatchOutbox(env:Env){
  const pending=await env.DB.prepare("SELECT project_id,conversation_id,MAX(id) last_id FROM conversation_outbox WHERE delivered_at IS NULL AND EXISTS(SELECT 1 FROM projects p WHERE p.id=conversation_outbox.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=conversation_outbox.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) GROUP BY project_id,conversation_id ORDER BY MIN(created_at),conversation_id LIMIT 100").all<{project_id:string;conversation_id:string;last_id:number}>()
  for(const row of pending.results){
-  // Every selected conversation gets a turn even when the read no longer fits.
-  // The queue expands its durable page into independent message jobs.
-  if(!cronRoom(env,2)){
+  // Keep the page lookup and completion in reserve. If no message can run
+  // inline, let the existing page worker read only the job identifiers.
+  if(!cronRoom(env,minimumEffectStatements+2)){
    try{await env.JOBS.send({type:'outbox.page',id:row.conversation_id,projectId:row.project_id,lastId:row.last_id})}catch{console.error('Outbox page dispatch pending')}
    continue
   }
@@ -63,9 +66,10 @@ export async function recoverOutboxPage(env:Env,row:Page){
 }
 /** Queue invocations reconcile one exact persisted message, never a reconstructed
  * send. The outbox remains pending until effects and both broadcasts complete. */
-export async function recoverOutbox(env:Env,projectId:string,conversationId:string,outboxId:number,messageId:string){
+export async function recoverOutbox(env:Env,projectId:string,conversationId:string,outboxId:number,messageId:string,visitorChat=false){
  const message=await env.DB.prepare(`SELECT o.id outbox_id,m.*,0 effect_contacts,0 effect_teammates FROM conversation_outbox o JOIN messages m ON m.id=o.message_id WHERE o.project_id=? AND o.conversation_id=? AND o.id=? AND o.message_id=? AND o.delivered_at IS NULL AND ${liveProject}`).bind(projectId,conversationId,outboxId,messageId).first<Message>()
  if(!message)return
- await effects(env,projectId,message)
+ await effects(env,projectId,message,visitorChat)
+ if(visitorChat)await publishResolution(env,projectId,conversationId)
  if(!await complete(env,projectId,conversationId,[message]))throw new Error('Message broadcast pending')
 }

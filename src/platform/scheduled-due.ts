@@ -33,8 +33,7 @@ const projectJobs=`SELECT 1 FROM (
 ) jobs WHERE jobs.project_id IS NULL OR EXISTS(SELECT 1 FROM projects p WHERE p.id=jobs.project_id
  AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=p.id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL))`
 
-const minuteWork=(maintenance:string)=>`SELECT CASE
- WHEN (${workflowScopeSql}) IS NOT NULL THEN 1
+const minuteWork=(maintenance:string)=>`SELECT coalesce((${workflowScopeSql}),CASE
  WHEN EXISTS(${projectJobs}) THEN 1
  WHEN EXISTS(SELECT 1 FROM operator_notifications WHERE state='pending') THEN 1
  WHEN EXISTS(SELECT 1 FROM operator_notification_activity a JOIN conversations c ON c.id=a.conversation_id AND c.project_id=a.project_id
@@ -77,7 +76,7 @@ const minuteWork=(maintenance:string)=>`SELECT CASE
  WHEN EXISTS(${teammateNoticeDueSql('slack',now)}) THEN 1
  WHEN EXISTS(${teammateNoticeDueSql('teams',now)}) THEN 1
  ${maintenance}
- ELSE 0 END AS work, EXISTS(SELECT 1 FROM abuse_counters WHERE ${expiredCounterSql(now)}) AS counters`
+ ELSE 0 END) AS work, EXISTS(SELECT 1 FROM abuse_counters WHERE ${expiredCounterSql(now)}) AS counters`
 const queries=maintenanceDueSql(now).map(minuteWork)
 
 export async function scheduledWork(env:Env,at:number,workflowAt:number,minute:number){
@@ -86,5 +85,5 @@ export async function scheduledWork(env:Env,at:number,workflowAt:number,minute:n
  return (await env.DB.prepare(queries[minute%queries.length]!).bind(
   ...workflowDueBindings(workflowAt),at,new Date(at-240000).toISOString(),
   Number(emailConfigured(env)),Number(rerMail(env)),Number(ses),Number(surveySigningConfigured(env)),
- ).first<{work:number;counters:number}>())!
+ ).first<{work:0|1|'all'|'time';counters:number}>())!
 }

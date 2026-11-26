@@ -17,7 +17,7 @@ try{
   store.addSecrets(secrets);
   const env=buildEnvironment(bindings);
   // vite build writes the migrations and public assets first (scripts/delivery/build-inputs.ts).
-  for(const [command,args] of [['pnpm',['exec','vite','build']],[process.execPath,['scripts/delivery/build.mjs','--clean']]]){
+  for(const [command,args] of [['pnpm',['exec','vite','build']],[process.execPath,['scripts/delivery/build-inbox-shell.mjs']],[process.execPath,['scripts/delivery/build.mjs','--clean']]]){
    await store.run('Building application',command,args,{cwd:root,env,signal:cancellation.signal});
   }
  });

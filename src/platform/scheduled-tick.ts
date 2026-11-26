@@ -12,7 +12,7 @@ export async function scheduledTick(event:ScheduledController,env:Env){
  const clock=await workflowEnvironment(env)
  const {work,counters}=await scheduledWork(clock,now,workflowNow(clock),minute)
  if(work){
-  await (await import('./scheduled')).runScheduledInvocation(clock,{now,maintenance,discoveryStatements})
+  await (await import('./scheduled')).runScheduledInvocation(clock,{now,maintenance,discoveryStatements,workflowScope:work===1?null:work})
   return
  }
  if(counters)await pruneCounters(clock,now)

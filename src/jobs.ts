@@ -57,7 +57,7 @@ export async function consumeJob(job:Job|LegacyCleanupJob,env:Env) {
  if(job.type==='reports.schedule'){await dispatchScheduledReports(env);return}
  if(job.type==='outbox.page'){if(!Number.isSafeInteger(job.lastId))throw new Error('Invalid persisted outbox page');await recoverOutboxPage(env,{project_id:job.projectId,conversation_id:job.id,last_id:Number(job.lastId)});return}
  if(job.type==='local.effects'){await recoverLocalResultEffects(env,localComputerIntegration,job.id);return}
- if(job.type==='outbox.recover'){if(typeof job.conversationId!=='string'||!Number.isSafeInteger(job.outboxId))throw new Error('Invalid persisted outbox job');await recoverOutbox(env,job.projectId,job.conversationId,Number(job.outboxId),job.id);return}
+ if(job.type==='outbox.recover'){if(typeof job.conversationId!=='string'||!Number.isSafeInteger(job.outboxId))throw new Error('Invalid persisted outbox job');await recoverOutbox(env,job.projectId,job.conversationId,Number(job.outboxId),job.id,job.visitorChat===true);return}
  if(job.type!=='lead.process'&&!await isProjectActive(env,job.projectId))return
  if(job.type===LEGACY_JOB){await advanceLegacy(env,job);return}
  if(job.type==='integrations'){await dispatchIntegrations(env,job.projectId);return}
@@ -82,7 +82,7 @@ export async function consumeJob(job:Job|LegacyCleanupJob,env:Env) {
  * An exception in one never takes away another consumer's turn. The workflow
  * maximum (720), tail allocations (220) request 940; the outer jobs ceiling is 937, including the local clock read.
  * The other parallel scheduled consumers reserve the remaining 63 statements. */
-export async function runScheduled(env:Env,maintenance=true,discoveryStatements=0) {
+export async function runScheduled(env:Env,maintenance=true,discoveryStatements=0,workflowScope?:'all'|'time'|null) {
  const jobLimit=scheduledReservations.jobs-discoveryStatements
  const budget=boundedDatabase(env.DB,jobLimit)
  env=withWorkflowInvocation(await workflowEnvironment({...env,DB:budget.database}))
@@ -94,7 +94,7 @@ export async function runScheduled(env:Env,maintenance=true,discoveryStatements=
   const available=Math.min(allocated-budget.statements,Math.max(3,ceiling-budget.statements))
   try{await run(cronConsumer(env,available))}catch(error){if(!(error instanceof CronDeferred))console.error(`${name} recovery failed`,error)}
  }
- await visit('Workflow',720,async env=>{const scope=await scheduledWorkflowWork(env);if(scope)await runWorkflows(env,scope)})
+ await visit('Workflow',720,async env=>{const scope=workflowScope===undefined?await scheduledWorkflowWork(env):workflowScope;if(scope)await runWorkflows(env,scope)})
  await visit('Survey',70,async env=>{if(await hasScheduledSurveyWork(env))await dispatchSurveys(env)})
  // The Amazon SES reader's private copies expire every tick, whether or not the reader is configured.
  await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env,maintenance);await recoverLegacyMailS3(env);await expireLegacyMailS3Raw(env)})

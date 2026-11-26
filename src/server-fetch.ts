@@ -14,6 +14,7 @@ import {staticAssetResponse} from './base/static-assets'
 import {widgetAssetOrigin,widgetAssetRequest} from './modules/widget/asset-origin'
 import {legacyDocumentationResponse} from './modules/public-site/legacy-docs'
 import {withInstallationContact} from './modules/public-site/installation-contact'
+import {inboxDocument,projectInboxPath} from './platform/inbox-document'
 
 async function renderDocument(request:Request,execution:ExecutionContext){
  const {default:start}=await import('@tanstack/react-start/server-entry')
@@ -25,6 +26,7 @@ async function renderDocument(request:Request,execution:ExecutionContext){
 
 async function route(request:Request,env:Env,execution:ExecutionContext,path:string,publicSite:boolean):Promise<Response>{
  const api=async(input=request)=>(await import('./app')).app.fetch(input,env,execution)
+ if(!import.meta.env.DEV&&env.ASSETS&&(request.method==='GET'||request.method==='HEAD')&&projectInboxPath.test(path))return inboxDocument(request,env,api)
  if(isAgentPath(path)||path==='/auth/bootstrap'||path==='/auth/owner-claim'||path==='/auth/signout')return api()
  if(path==='/login'&&request.method==='POST'){
   const login=await loginDocument(request,env,api)

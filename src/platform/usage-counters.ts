@@ -50,7 +50,3 @@ export async function readCounter(env: Env, window: CounterWindow, subject: stri
  const row = await env.DB.prepare('SELECT used FROM abuse_counters WHERE key=? AND window_start=?').bind(position.key, position.windowStart).first<{ used: number }>()
  return { used: row?.used ?? 0, ...position }
 }
-
-export async function pruneCounters(env: Env, now = Date.now()) {
- await env.DB.prepare('DELETE FROM abuse_counters WHERE expires_at<=?').bind(now).run()
-}

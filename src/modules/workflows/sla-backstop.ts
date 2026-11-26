@@ -15,7 +15,7 @@ const page=`SELECT k.id,(${liveSlaTicketSql()} AND (${customerSlaMessageSql()} O
 /** A slow rolling rebuild of every SLA ticket from its journal, behind the due-time
  * check: it catches what no event marks, such as a contact's plan changing policy. */
 export async function runSlaBackstop(env:Env,now=workflowNow(env),spent?:Spent){
- const project=await env.DB.prepare(`${slaBackstopDueSql('?1')} ORDER BY coalesce(q.turn,0),p.id LIMIT 1`).bind(now-SLA_BACKSTOP_REST).first<{id:string}>()
+ const project=await env.DB.prepare(`${slaBackstopDueSql('?1',true)} ORDER BY coalesce(q.turn,0),p.id LIMIT 1`).bind(now-SLA_BACKSTOP_REST).first<{id:string}>()
  if(!project)return {processed:0}
  await env.DB.prepare("INSERT INTO workflow_queue_turns(queue,project_id,turn) SELECT 'sla-backstop',?,coalesce(max(turn),0)+1 FROM workflow_queue_turns WHERE queue='sla-backstop' ON CONFLICT(queue,project_id) DO UPDATE SET turn=excluded.turn").bind(project.id).run()
  const cursorId=`tickets:${project.id}`

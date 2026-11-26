@@ -1633,7 +1633,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "7e6c23d58b5eae35e24d9c21c9058d17a6d835204fb988556678d7a737419d86",
+      "sha256": "b3ac5b8c98770320e3f2c4b835edfd991621aaafb55a9c6622e9abcad419853b",
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
@@ -1713,7 +1713,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "81780d51b4aa79d1357a7cbface3a9e0ae36a6b3da5acbfc7692131bdfcad2b9",
+      "sha256": "a462c9c234be705dd0b4494b0f06355ce78e4ca9f4146a0cadd368ad2ef152e5",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -2057,7 +2057,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "bdde78384489753a98df442afb1d9cd49d6522ce7922e00d79c2a2cc27687e51",
+      "sha256": "ff4c471c77db0446123d88eefb6f3f6dbbab185ec6c6d13ed1087f1a63621621",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2069,11 +2069,11 @@
       "executable": false
     },
     "management/integration/mail-environment.ts": {
-      "sha256": "3e4918d24099dd7812c308115ac14bc58c152acdddb98b61843a2191a363a63e",
+      "sha256": "b7c9664964ed61a34fd94fe5fac0e8a9ed929018a9d4028326304b03732011ef",
       "executable": false
     },
     "management/integration/managed-deploy.json": {
-      "sha256": "97adc2a0d81d01a08a5fc8e46e189e288e8f1868cf530cf3e071b22e62e11638",
+      "sha256": "56f57baac4e4243e2d627311e47fe27342b4999cb3ea7f9ca00e2cf79cee1f68",
       "executable": false
     },
     "management/integration/native-setup.json": {
@@ -3241,7 +3241,7 @@
       "executable": false
     },
     "scripts/deployment/environment.mjs": {
-      "sha256": "2560c00e257fc44c0b0a855c600a7c78441eb5d19ec76007708a8c287a7454fd",
+      "sha256": "47e2106d92d21538d5befdc626e2ee0f809597480f05db181663b67162fc776e",
       "executable": false
     },
     "scripts/deployment/mail-declaration.mjs": {
@@ -7461,7 +7461,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-relay-mail.ts": {
-      "sha256": "0dc2bae06bc67e8b0b7f05550c725b5287726605cc5b1750d5a50cd24e360e1a",
+      "sha256": "bd6ddb139e19635c5cf831dc3393605be1b3592afbf5bc32d3594d43e0c303f5",
       "executable": false
     },
     "src/modules/integrations/routes.ts": {
@@ -18361,7 +18361,7 @@
       "executable": false
     },
     "wrangler.jsonc": {
-      "sha256": "dbf7383917359bb7783b8cba26657d5c8269a3b84d65b56591ec1eeaa4feeefe",
+      "sha256": "65a6f6c13786558795964a6996a9832b03b705f6f70e7fbea9ab3ce9113850c8",
       "executable": false
     }
   }

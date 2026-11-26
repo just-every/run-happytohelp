@@ -77,6 +77,7 @@ function validateRemoteMailSelection(env){
   for(const name of owner?['MAIL_FROM','MAIL_RELAY_URL','MAIL_API_KEY']:['MAIL_FROM','MAIL_RELAY_URL','MAIL_API_KEY','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL','RER_MAIL_INGRESS_KEY','INBOUND_EMAIL_TOKEN','INTEGRATION_ENCRYPTION_KEY'])if(!configured(env,name))throw new Error(`Managed email requires ${name}`)
   if(!owner&&(env.H2H_RER_MAIL_VERSION!=='1'||env.MAIL_FROM.toLowerCase()!==env.RER_MAIL_ADDRESS.toLowerCase()))throw new Error('Managed conversation mail requires version 1 and the assigned address')
   for(const name of owner?['MAIL_RELAY_URL']:['MAIL_RELAY_URL','RER_MAIL_CONTROL_URL']){const url=runtimeUrl(env[name],name);if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash)throw new Error(`${name} must be HTTPS without credentials or query parameters`)}
+  if(owner&&runtimeUrl(env.MAIL_RELAY_URL,'MAIL_RELAY_URL').pathname!=='/api/managed-mail/send')throw new Error('MAIL_RECIPIENTS=owner with managed mail needs the platform relay, MAIL_RELAY_URL ending /api/managed-mail/send')
   return
  }
  env=deploymentMailEnvironment(env)
@@ -120,6 +121,7 @@ export function validateRuntimeEnvironment(env){
  if(env.H2H_LOCAL==='true')throw new Error('Local development mail configuration cannot be deployed')
  validateRemoteMailSelection(env)
  if(configured(env,'MAIL_RECIPIENTS')&&!['any','owner'].includes(env.MAIL_RECIPIENTS))throw new Error('MAIL_RECIPIENTS must be any or owner')
+ if(env.MAIL_RECIPIENTS==='owner'&&!/^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(String(env.H2H_SETUP_OWNER_EMAIL||env.OWNER_EMAIL||'').trim()))throw new Error('MAIL_RECIPIENTS=owner needs the owner address in H2H_SETUP_OWNER_EMAIL or OWNER_EMAIL')
  validateLegacyMailS3(env)
  if(configured(env,'PUBLIC_HELP_HOSTS')){
   const hosts=JSON.parse(env.PUBLIC_HELP_HOSTS)

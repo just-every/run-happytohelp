@@ -11,10 +11,18 @@ const chunks=await readdir(join(server,'assets'));
 const modules=[config.main,...chunks.filter(name=>name.endsWith('.js')).map(name=>join('assets',name))]
  .map(name=>({type:'ESModule',path:join(server,name)}));
 
+// Start stamps route hydration with the current time. Freeze that clock in
+// this isolate so identical Worker builds also emit identical shell bytes.
+const entry={type:'ESModule',path:join(server,'render-inbox-shell.js'),contents:`
+ Date.now=()=>0;
+ const {default:worker}=await import(${JSON.stringify('./'+config.main)});
+ export default worker;
+`};
+
 // Use Start's shell mode in a build-only isolate. The neutral mask path
 // avoids application loaders and public contact decoration at the root URL.
 const runtime=new Miniflare(convertV4MiniflareOptions({
- name:config.name,modulesRoot:server,modules,
+ name:config.name,modulesRoot:server,modules:[entry,...modules],
  compatibilityDate:config.compatibility_date,compatibilityFlags:config.compatibility_flags,
  bindings:{TSS_PRERENDERING:'true'},
 }));

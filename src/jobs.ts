@@ -19,7 +19,7 @@ import {recoverTicketContinuations} from './modules/tickets/continuation'
 import {cronConsumer,CronDeferred} from './platform/cron-budget'
 import {dispatchOutbox,recoverOutbox,recoverOutboxPage} from './outbox-recovery'
 import {boundedDatabase} from './platform/d1-budget'
-import {scheduledRecoveryWork} from './platform/scheduled-recovery'
+import {pruneCounters,scheduledRecoveryWork} from './platform/scheduled-recovery'
 import {scheduledReservations} from './platform/scheduled-budget'
 import {scheduledWorkflowWork} from './modules/workflows/scheduled-work'
 import {runWorkflows,workflowEnvironment} from './modules/workflows/runtime'
@@ -44,7 +44,6 @@ import { localComputerIntegration } from './edition/local-computer'
 import { consumeJob as consumeBrand,recoverBrandJobs } from './modules/site-preview/brand'
 import { handleLeadJob,recoverLeadJobs } from './modules/integrations'
 import { consumeSiteRead,recoverSiteReads } from './modules/management/site-read'
-import { pruneCounters } from './platform/usage-counters'
 import {dispatchSurveys,hasScheduledSurveyWork} from './modules/outcomes/survey-delivery'
 
 export async function consumeJob(job:Job|LegacyCleanupJob,env:Env) {
@@ -114,7 +113,7 @@ export async function runScheduled(env:Env,maintenance=true,discoveryStatements=
  await visit('Brand',6,recoverBrandJobs,{needed:!recovery||Boolean(recovery.brand)})
  await visit('Site read',7,recoverSiteReads,{needed:!recovery||Boolean(recovery.site)})
  await visit('Lead',12,recoverLeadJobs)
- await visit('Counter',1,pruneCounters,{needed:maintenance})
+ await visit('Counter',1,pruneCounters)
  // Discovery consumes only unused jobs credit, after all existing reservations.
  const legacyRoom=jobLimit-budget.statements
  if(legacyRoom>=26)await discoverCleanup(cronConsumer(env,24),1)

@@ -14,9 +14,13 @@ export async function expireRerMailRaw(env:Env,sweepOrphans=true){
    env.DB.prepare("UPDATE rer_mail_ingress SET raw_key='' WHERE delivery_id=? AND raw_key=?").bind(row.delivery_id,row.object_key),
   ])
  }
+ if(sweepOrphans)await expireRerMailOrphans(env)
+}
+
+export async function expireRerMailOrphans(env:Env){
  // A process can die after its R2 put but before the reference transaction.
  // Remove only old unreferenced objects; never guess from a filename alone.
- if(!sweepOrphans||!cronRoom(env,1))return
+ if(!cronRoom(env,1))return
  const page=await env.FILES.list({prefix:'rer-mail/',limit:50}),old=page.objects.filter(object=>object.uploaded.getTime()<Date.now()-7*86400000)
  if(!old.length)return
  const retained=(await env.DB.prepare('SELECT object_key FROM rer_mail_raw_objects WHERE object_key IN (SELECT value FROM json_each(?))').bind(JSON.stringify(old.map(object=>object.key))).all<{object_key:string}>()).results

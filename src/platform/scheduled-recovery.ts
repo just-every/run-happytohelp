@@ -17,3 +17,8 @@ export async function scheduledRecoveryWork(env:Env){
  const columns=Object.entries(probes('?1')).map(([name,sql])=>`EXISTS(${sql}) AS ${name}`).join(',')
  return (await env.DB.prepare(`SELECT ${columns}`).bind(Date.now()).first<{context:number;tickets:number;training:number;local:number;brand:number;site:number}>())!
 }
+
+export const expiredCounterSql=(now:string)=>`expires_at<=${now}`
+export async function pruneCounters(env:Env,now=Date.now()){
+ await env.DB.prepare(`DELETE FROM abuse_counters WHERE ${expiredCounterSql('?')}`).bind(now).run()
+}

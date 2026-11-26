@@ -9,8 +9,8 @@ import {slaBackstopDueSql,SLA_BACKSTOP_REST} from './sla-backstop-due'
 export const workflowScopeSql=`CASE WHEN EXISTS(SELECT 1 FROM ticket_sla_state INDEXED BY ticket_sla_state_due WHERE next_check_at<=?1)
   OR EXISTS(${slaBackstopDueSql('?5')})
   OR EXISTS(SELECT 1 FROM sla_alerts WHERE notification_state='sending' AND notification_started_at<?2
-   OR notification_state='pending' AND coalesce(notification_next_attempt_at,0)<=?1)
-  OR EXISTS(SELECT 1 FROM sla_alerts WHERE slack_state='sending' AND slack_started_at<?2
+   OR notification_state='pending' AND coalesce(notification_next_attempt_at,0)<=?1
+   OR slack_state='sending' AND slack_started_at<?2
    OR slack_state='pending' AND coalesce(slack_next_attempt_at,0)<=?1)
   OR EXISTS(SELECT 1 FROM workflow_events WHERE state='pending' AND coalesce(next_attempt_at,0)<=?1 AND coalesce(lease_until,0)<=?1)
   OR EXISTS(SELECT 1 FROM workflow_runs INDEXED BY workflow_runs_active_due WHERE state IN ('running','pending') AND coalesce(next_attempt_at,0)<=?1 AND coalesce(lease_until,0)<=?1)

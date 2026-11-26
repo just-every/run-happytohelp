@@ -4745,7 +4745,7 @@
       "executable": false
     },
     "src/jobs.ts": {
-      "sha256": "02925903c1820247a97b4b92fc21b14ca0cc0d31f52da878bd7b7ff99290d15f",
+      "sha256": "73552a5f79e7fc2a464e2be0e855751650cd26f5c59d4d0c4035f1866e8c5e6d",
       "executable": false
     },
     "src/message-effects.ts": {
@@ -7457,7 +7457,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mail-retention.ts": {
-      "sha256": "09c6ce11e3b72499956de82406ef1557fd0cafd1e2189d419c691e9d5cbcb25e",
+      "sha256": "d95efaf80450e1817f67cc9deeb746576037dc7c2ec151a72f386cdc3bb0ebc6",
       "executable": false
     },
     "src/modules/integrations/rer-mail-routes.ts": {
@@ -11109,7 +11109,7 @@
       "executable": false
     },
     "src/modules/workflows/scheduled-work.ts": {
-      "sha256": "e4f9bf82f48883c4fd9fe24b64ab4ecd6339ff6f3b11041493ab3f373b483916",
+      "sha256": "e69225f1090f6a28645de1e342c3f9fd1d20eeb60116017d89956f5bd9585ae7",
       "executable": false
     },
     "src/modules/workflows/schedules-model.ts": {
@@ -11129,11 +11129,11 @@
       "executable": false
     },
     "src/modules/workflows/sla-backstop-due.ts": {
-      "sha256": "05b7bf893da5cbe3ca0d7d3070919c14e99bb81438cad8f64f1efd5966a38c0e",
+      "sha256": "9f80396ffeed905ec01bbf46cca00f7a0ec4ac7e989b9458afc85f13f208636e",
       "executable": false
     },
     "src/modules/workflows/sla-backstop.ts": {
-      "sha256": "9bc591966f234da1fd13f4470ef1bbf2fc72d455373f94e33bb7cac92ebad92a",
+      "sha256": "d754277db071621e94fdeb53ce8e58c91e0b5bd8831407bcc43beda3a0e13400",
       "executable": false
     },
     "src/modules/workflows/sla-clocks.ts": {
@@ -11297,15 +11297,19 @@
       "executable": false
     },
     "src/platform/scheduled-due.ts": {
-      "sha256": "23991874d26b3d8cd6632265cd430a66e9882aeb2c2c77696b6344c2458ee1d6",
+      "sha256": "45c9c6e386efc2763b3f7f532eb4c6751f54fdfcfed4fea6c7315aab79a6ce09",
+      "executable": false
+    },
+    "src/platform/scheduled-maintenance-due.ts": {
+      "sha256": "4bf28f8a1e485572da3e9507deaa7a71738c24c80fc6ae522da64eadd04e469f",
       "executable": false
     },
     "src/platform/scheduled-recovery.ts": {
-      "sha256": "48df89c3df44da64220229ed5a617ff099368b81f95f739efd2e09b76b94ea94",
+      "sha256": "6078b68a108e6021d7f9a9f199c39ae4f2c7522b8322405741b7d1aa895cb30e",
       "executable": false
     },
     "src/platform/scheduled-tick.ts": {
-      "sha256": "c3b9f11af4ce2563c8fb0df86053bd1f01be9bb2f20e817f275a9146a0666eae",
+      "sha256": "fbdfdda89de6fbc2152d9538265c9d5a81379d9ac14a5f94d89c9909953c6ef9",
       "executable": false
     },
     "src/platform/scheduled.ts": {
@@ -11321,7 +11325,7 @@
       "executable": false
     },
     "src/platform/usage-counters.ts": {
-      "sha256": "d8c6e1c3196c827f94e9fb643f826fc0be36311655054684f3ef4d610fa69e61",
+      "sha256": "e5d3abceadfbe1eb2057efd60f3ee7a1f7126b40005d9743ecbe661618602c06",
       "executable": false
     },
     "src/queue.ts": {
@@ -17861,7 +17865,7 @@
       "executable": false
     },
     "tests/journeys/kit/app-worker.ts": {
-      "sha256": "1925931f8a8cf8e3b95416e7ea2c0ec7143a947851cb424f5c0c832dd54f290c",
+      "sha256": "13a624c17535f05afd2e8a55e4f308f1eb640098c660ef9cd2c9f1a6e84a8d3a",
       "executable": false
     },
     "tests/journeys/kit/app.mjs": {

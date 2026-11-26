@@ -1,6 +1,6 @@
 import {app} from '../../../src/app'
 import {consumeQueue} from '../../../src/queue'
-import {runScheduledTick} from '../../../src/platform/scheduled-tick'
+import {runScheduledInvocation} from '../../../src/platform/scheduled'
 import {routeRule} from '../../../src/modules/access/route-permissions'
 import {handleEmail} from '../../../src/modules/integrations'
 import {isPublicSitePath} from '../../../src/modules/public-site/path'
@@ -120,7 +120,7 @@ const worker={
    // integration sees the same time as the edge; application policy is untouched.
    const moved=after>=86400000||request.headers.get('x-test-clock')==='advance';if(moved)Date.now=()=>originalNow()+after
    const meter=scheduledMeter(env.DB)
-   try{await runScheduledTick({...env,DB:meter.database('invocation')},Date.now()+(moved?0:after),{now:Date.now()+(moved?0:after),consumerEnv:(name,input)=>({...input,DB:meter.database(name,input.DB)})});for(const consumer of Object.values(meter.consumers))consumer.completed=true;delete meter.consumers.invocation;return Response.json({ran:true,...meter.counts,consumers:meter.consumers})}finally{Date.now=originalNow}}
+   try{await runScheduledInvocation({...env,DB:meter.database('invocation')},{now:Date.now()+(moved?0:after),consumerEnv:(name,input)=>({...input,DB:meter.database(name,input.DB)})});for(const consumer of Object.values(meter.consumers))consumer.completed=true;delete meter.consumers.invocation;return Response.json({ran:true,...meter.counts,consumers:meter.consumers})}finally{Date.now=originalNow}}
   // x-test-door: public reaches the Worker entry's public doors (src/server.ts) in its order, under its overload
   // guard: a configured help host, then a public site path (help center, portal, request forms, alias API), then the
   // application (the native form posts those pages make).

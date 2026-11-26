@@ -7501,7 +7501,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-relay-mail.ts": {
-      "sha256": "ed932522b172551e4cfd5838a2057505706b8716670a471b41174a419bf10674",
+      "sha256": "545cbcf68c4b9bf13161d9fee49fbc6a19a68224f2c5117643cdfc7f483fd215",
       "executable": false
     },
     "src/modules/integrations/routes.ts": {
@@ -16997,7 +16997,7 @@
       "executable": false
     },
     "tests/helpers/identity/owner-only-mail.mjs": {
-      "sha256": "1e574bab3b4a1846e46ee65d87fcc28b387c5babcf9dc85042e336838f3f580f",
+      "sha256": "22986bde8f895bea43f9c2b2165087afb71c800dea3f698bd68551f14dc4c445",
       "executable": false
     },
     "tests/helpers/identity/recovery-authority/authenticator.mjs": {

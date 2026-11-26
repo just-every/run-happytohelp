@@ -8,6 +8,19 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.45 — 2026-11-26
+
+- **Owner sign-in mail through the platform relay.** `MAIL_RECIPIENTS=owner` now also works with `MAIL_PROVIDER=rer`, for a Business with no mail provider of its own: the owner’s own sign-in link goes through the platform’s owner-only relay, with no DNS to set up. The platform assigns `MAIL_FROM`, `MAIL_RELAY_URL` (its `/api/managed-mail/send`) and the private `MAIL_API_KEY`. Deploy now requires the owner address (`H2H_SETUP_OWNER_EMAIL`, else `OWNER_EMAIL`) in this mode instead of deploying with nothing to send, and `MAIL_RECIPIENTS` is a public setting that defaults to `any`. Conversation mail and every other message stay off. Setup steps are in `docs/email.md`.
+- **Sign-in link kept when the send is uncertain.** When the relay answers 504 or times out, the message may still arrive, so the sign-in link is no longer spent and the same link still signs in once. A send the relay refuses still spends the link.
+- **Owner-only mail shown as on.** With `MAIL_RECIPIENTS=owner` and a provider configured, **Settings → Email** and the Setup “Email to you” row now say that sign-in links are sent to the owner only and all other email is off, where they used to read “off”.
+- **Passkey step.** The passkey step says a passkey belongs to the address it was made on.
+- **Local host.** The local guides explain that `rer setup --host 127.0.0.1` (or `localhost`, or `::1`) moves a local copy to another host once and keeps its data, that plain `rer dev` follows the saved address, and that a passkey must be added again after moving hosts (rer 0.2.136).
+- **Hosted demo.** The hosted demo is deployed at each published release, and the homepage offers a “Try the demo” link to it.
+
+Update from v0.4.44 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.136. An installation on v0.4.44 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-26._
+
 ## 0.4.44 — 2026-11-26
 
 v0.4.43 was tagged but never published. Its changes are included in v0.4.44 and listed below.

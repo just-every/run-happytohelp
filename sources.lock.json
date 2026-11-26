@@ -2937,11 +2937,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "37bf34346af95b1b67e0d2a0e8428d4a9883db33f39171aa86701ffce23a5784",
+      "sha256": "af2deb196f0bdc6cb7ca091d934d8604b2b66914b369a5af1c99de956f019488",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "205e6198b7b5578ab78959d2fbabe734d8cafc91d236ab7d99726723c72a94c7",
+      "sha256": "f514795e843db946f93459115c88f1d7bc19bcfacca6385b6f18ca32bfa6cdf1",
       "executable": false
     },
     "public/fonts/fonts.css": {

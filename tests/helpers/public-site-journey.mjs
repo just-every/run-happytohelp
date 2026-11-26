@@ -75,7 +75,9 @@ async function presentation(page,repository){
  const copyText=await text(page.locator('main'))
  assert.doesNotMatch(copyText,/(?:\$|€|£)\s*\d|\b(?:pricing|paid plan|per seat|per month|hosting|hosted by|powered by|Run Edit Run|Cloudflare|AWS|Azure|Vercel|OpenRouter)\b/i,'no price, hosting, provider or unrelated-service promotion')
  const destinations=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('href')))
- for(const href of destinations.filter(href=>/^https?:/.test(href)))assert.ok(href===repository||href.startsWith(repository+'/'),'every external destination belongs to the selected repository')
+ const demo=await page.locator('.hero-copy').getByRole('link',{name:'Try the demo',exact:true}).getAttribute('href')
+ assert.match(demo,/^https:\/\/demo\.[^/]+$/,'the hero offers the hosted demo')
+ for(const href of destinations.filter(href=>/^https?:/.test(href)&&href!==demo))assert.ok(href===repository||href.startsWith(repository+'/'),'every external destination belongs to the selected repository, besides its demo')
 
  // PUBLIC-003: numbered frameless desk, finished move-in, ordered closing and matching signatures.
  const parts=page.locator('.parts > li')

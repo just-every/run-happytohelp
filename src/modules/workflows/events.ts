@@ -9,6 +9,15 @@ import {boundedDatabase} from '../../platform/d1-budget'
 import type {Spent} from './budget'
 import {workflowInvocation,servedWorkflowEvents} from './invocation'
 const delays=[1,5,15,60],attemptLimit=5
+const routingKinds=new Set(['created','customer_reply','changed'])
+const generatedSources=new Set(['rule','automation','schedule','rer'])
+const liveTicket=(project:string,conversation:string)=>`c.project_id=${project} AND c.id=${conversation} AND ${conversationHasMessages()} AND NOT EXISTS(SELECT 1 FROM contact_erasures er WHERE er.project_id=c.project_id AND er.contact_id=c.contact_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) AND NOT EXISTS(SELECT 1 FROM move_in_conversations mi WHERE mi.project_id=c.project_id AND mi.conversation_id=c.id) AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations li WHERE li.project_id=c.project_id AND li.conversation_id=c.id)`
+const effectsAbsent=(event:string)=>`NOT EXISTS(SELECT 1 FROM workflow_rules WHERE project_id=${event}.project_id AND state='published')
+ AND NOT EXISTS(SELECT 1 FROM sla_policies p JOIN workflow_calendars cal ON cal.project_id=p.project_id AND cal.id=p.calendar_id WHERE p.project_id=${event}.project_id AND p.active=1 AND cal.active=1)
+ AND NOT EXISTS(SELECT 1 FROM ticket_sla_state WHERE project_id=${event}.project_id AND conversation_id=${event}.conversation_id)
+ AND NOT EXISTS(SELECT 1 FROM sla_alerts WHERE project_id=${event}.project_id AND conversation_id=${event}.conversation_id AND state='open')`
+const conversationEvents=`SELECT e.*,${effectsAbsent('e')} AS no_effects FROM workflow_events e WHERE +state='pending' AND project_id=(SELECT project_id FROM conversations WHERE id=?1) AND conversation_id=?1 AND (?2 IS NULL OR last_tick IS NULL OR last_tick<>?2) AND coalesce(next_attempt_at,0)<=?3 AND coalesce(lease_until,0)<=?3 ORDER BY id LIMIT ?4`
+const touchTurn=(env:Env,projectId:string)=>env.DB.prepare("INSERT INTO workflow_queue_turns(queue,project_id,turn) VALUES('events',?,(SELECT coalesce(max(turn),0)+1 FROM workflow_queue_turns WHERE queue='events')) ON CONFLICT(queue,project_id) DO UPDATE SET turn=excluded.turn").bind(projectId).run()
 /** Workspace turns survive completed events and clock ties. Inline recovery uses the
  * same due/lease predicate as cron, so it cannot bypass a deferred attempt. */
 // The recovery pass favours an unacknowledged message within each workspace.
@@ -17,11 +26,20 @@ const delays=[1,5,15,60],attemptLimit=5
 const dueEvents=`SELECT * FROM (SELECT e.*,coalesce(q.turn,0) workspace_turn,row_number() OVER (PARTITION BY e.project_id ORDER BY CASE WHEN ?4=1 AND EXISTS(SELECT 1 FROM conversation_outbox o WHERE o.project_id=e.project_id AND o.conversation_id=e.conversation_id AND o.delivered_at IS NULL) THEN 0 ELSE 1 END,e.id) turn FROM workflow_events e LEFT JOIN workflow_queue_turns q ON q.project_id=e.project_id AND q.queue='events' WHERE e.state='pending' AND (?2 IS NULL OR e.last_tick IS NULL OR e.last_tick<>?2) AND e.source NOT IN ('rule','automation','schedule','rer') AND coalesce(e.next_attempt_at,0)<=?1 AND coalesce(e.lease_until,0)<=?1) ORDER BY turn,workspace_turn,id LIMIT ?3`
 export async function processWorkflowEvents(input:Env,conversationId?:string,limit=20,spent?:Spent,outboxFirst=false){
  const tick=workflowInvocation(input),served=servedWorkflowEvents(input);if(!spent&&inCron(input))spent=()=>!cronRoom(input,250);else if(tick&&!spent)spent=()=>false
- const now=workflowNow(input),rows=await input.DB.prepare(conversationId?`SELECT * FROM workflow_events WHERE +state='pending' AND project_id=(SELECT project_id FROM conversations WHERE id=?1) AND conversation_id=?1 AND (?2 IS NULL OR last_tick IS NULL OR last_tick<>?2) AND coalesce(next_attempt_at,0)<=?3 AND coalesce(lease_until,0)<=?3 ORDER BY id LIMIT ?4`:dueEvents).bind(...(conversationId?[conversationId,tick??null,now,limit]:[now,tick??null,limit,outboxFirst?1:0])).all<any>()
+ const now=workflowNow(input),rows=await input.DB.prepare(conversationId?conversationEvents:dueEvents).bind(...(conversationId?[conversationId,tick??null,now,limit]:[now,tick??null,limit,outboxFirst?1:0])).all<any>()
  let processed=0
  for(const event of rows.results){
   if(spent?.())break
   if(served?.has(event.id))continue
+  const native=!generatedSources.has(event.source),route=native&&!event.routing_done&&routingKinds.has(event.kind)
+  if(event.no_effects&&!inCron(input)&&event.attempts<attemptLimit){
+   // An unconfigured desk has nothing to hydrate, route or time. Recheck
+   // configuration and live ticket authority in the journal write itself.
+   const done=await input.DB.prepare(`UPDATE workflow_events SET state='complete',rules_done=max(rules_done,?1),routing_done=max(routing_done,?2),time_reset_done=max(time_reset_done,?1),attempts=attempts+?2,error=NULL,next_attempt_at=NULL,lease_token=NULL,lease_until=NULL,last_tick=coalesce(?6,last_tick)
+    WHERE id=?3 AND state='pending' AND attempts=?4 AND coalesce(next_attempt_at,0)<=?5 AND coalesce(lease_until,0)<=?5
+    AND EXISTS(SELECT 1 FROM conversations c WHERE ${liveTicket('workflow_events.project_id','workflow_events.conversation_id')}) AND ${effectsAbsent('workflow_events')}`).bind(Number(native),Number(route),event.id,event.attempts,now,tick??null).run()
+   if(done.meta.changes){served?.add(event.id);await touchTurn(input,event.project_id);processed++;continue}
+  }
   // Journal work is capped separately from a rule run's 80-statement quantum.
   // Five durable outcome writes and the shared queue read fit inside 71. The reserve protects its outcome;
   // a continuation is not another failed attempt and never repeats committed effects.
@@ -29,21 +47,21 @@ export async function processWorkflowEvents(input:Env,conversationId?:string,lim
   const claim=await env.DB.prepare("UPDATE workflow_events SET lease_token=?,lease_until=?,last_tick=coalesce(?,last_tick),attempts=attempts+CASE WHEN attempts<5 THEN 1 ELSE 0 END WHERE id=? AND state='pending' AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?").bind(lease,now+120000,tick??null,event.id,now,now).run()
   if(!claim.meta.changes)continue
   served?.add(event.id)
-  await env.DB.prepare("INSERT INTO workflow_queue_turns(queue,project_id,turn) VALUES('events',?,(SELECT coalesce(max(turn),0)+1 FROM workflow_queue_turns WHERE queue='events')) ON CONFLICT(queue,project_id) DO UPDATE SET turn=excluded.turn").bind(event.project_id).run()
+  await touchTurn(env,event.project_id)
   const update=async(sql:string,...args:unknown[])=>input.DB.prepare(`UPDATE workflow_events SET ${sql} WHERE id=? AND lease_token=? AND state='pending'`).bind(...args,event.id,lease).run()
   let retainedAttempt=false
   const defer=async(reason:string)=>{retainedAttempt=true;const attempts=event.attempts+1;await update('state=?,attempts=?,next_attempt_at=?,error=?',attempts>=attemptLimit?'not_routed':'pending',attempts,attempts>=attemptLimit?null:now+delays[attempts-1]*60000,attempts>=attemptLimit?`${reason}. Stopped after ${attemptLimit} attempts; ticket remains in its responsible queue.`:reason)}
   try{
    if(event.attempts>=attemptLimit&&!event.routing_done){retainedAttempt=true;await update("state='not_routed',next_attempt_at=NULL,error=?",`Workflow processing was interrupted. Stopped after ${attemptLimit} attempts; ticket remains in its responsible queue.`);continue}
-   const live=await env.DB.prepare(`SELECT c.id FROM conversations c WHERE c.project_id=? AND c.id=? AND ${conversationHasMessages()} AND NOT EXISTS(SELECT 1 FROM contact_erasures er WHERE er.project_id=c.project_id AND er.contact_id=c.contact_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) AND NOT EXISTS(SELECT 1 FROM move_in_conversations mi WHERE mi.project_id=c.project_id AND mi.conversation_id=c.id) AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations li WHERE li.project_id=c.project_id AND li.conversation_id=c.id)`).bind(event.project_id,event.conversation_id).first()
+   const live=await env.DB.prepare(`SELECT c.id FROM conversations c WHERE ${liveTicket('?','?')}`).bind(event.project_id,event.conversation_id).first()
    if(!live){await update("state='cancelled',error='Historical import, erased contact or unavailable workspace'");continue}
-   if(!['rule','automation','schedule','rer'].includes(event.source)){
+   if(native){
     if(!event.rules_done){
      const done=await runEventRules(env,event,spent?()=>spent()||meter.statements>=55:undefined,input)
      if(done===false)continue
      await update('rules_done=1');event.rules_done=1
     }
-    if(!event.routing_done&&['created','customer_reply','changed'].includes(event.kind)){
+    if(route){
      // Route from a fresh quantum; its transaction is attempted once, never in a loop.
      if(spent&&meter.statements>38)continue
      if(event.attempts>=attemptLimit){await update("state='not_routed',next_attempt_at=NULL,error=?",`Routing was interrupted. Stopped after ${attemptLimit} attempts; ticket remains in its responsible queue.`);continue}

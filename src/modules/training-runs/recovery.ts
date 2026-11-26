@@ -45,8 +45,8 @@ async function stopDeletedTraining(env:Env){
 export async function recoverTrainingRuns(env:Env){
  if(!cronRoom(env,3))return
  await stopDeletedTraining(env)
- const rows=await env.DB.prepare("SELECT * FROM training_runs WHERE status IN ('planning','queued','running') AND EXISTS(SELECT 1 FROM projects p WHERE p.id=training_runs.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=training_runs.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) ORDER BY created_at LIMIT 100").all()
- for(const run of rows.results as any[]){
+ const rows=await env.DB.prepare("SELECT id,project_id,status FROM training_runs WHERE status IN ('planning','queued','running') AND EXISTS(SELECT 1 FROM projects p WHERE p.id=training_runs.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=training_runs.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) ORDER BY created_at LIMIT 100").all<{id:string;project_id:string;status:string}>()
+ for(const run of rows.results){
   if(run.status==='planning'){
    if(await finishTrainingPlanning(env,run))await env.JOBS.send({type:'training',id:run.id,projectId:run.project_id})
   }else if(run.status==='queued'){

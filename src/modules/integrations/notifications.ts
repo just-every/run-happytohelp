@@ -65,7 +65,7 @@ export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:Defer
  const operatorActivity=!prior&&message.actor_role==='contact'?await queueOperatorActivity(env,message,actor.projectId):null
  if(operatorActivity?.state==='automatic')return operatorActivity
  if(!prior&&message.actor_role==='contact'){
-  await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'request_received',eventId:String(message.id),actorId:senderId})
+  if(configured)await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'request_received',eventId:String(message.id),actorId:senderId})
   await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'customer_updated',eventId:String(message.id),actorId:senderId})
  }
  if(!prior&&message.actor_role!=='contact')await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'ticket_updated',eventId:String(message.id),actorId:senderId})

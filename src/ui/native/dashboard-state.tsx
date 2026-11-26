@@ -117,7 +117,7 @@ export async function loadDashboard({ location, abortController, parentMatchProm
         const initial = parent.loaderData;
         // The workspace parent can be shared by consecutive navigations. Use
         // this leaf's location and lifetime when the parent's read is stale.
-        if (initial?.href !== location.href || initial.signal?.aborted) return read();
+        if (initial?.href !== location.href || initial.signal?.aborted || !initial.bootstrap) return read();
         try {
             return await initial.bootstrap;
         } catch (error: any) {

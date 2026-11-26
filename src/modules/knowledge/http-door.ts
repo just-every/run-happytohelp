@@ -29,6 +29,19 @@ export async function knowledgeSchemaReady(env:Env){
  readySchemas.add(db)
  return true
 }
+
+// JSON columns can themselves contain encoded references, and the renderer
+// also normalizes their JSON. Empty canonical containers are already final.
+function needsProjection(value:unknown):boolean{
+ if(typeof value==='string')return value!=='{}'&&value!=='[]'&&needsKnowledgeRendering(value)
+ if(!value||typeof value!=='object')return false
+ if(Array.isArray(value))return value.some(needsProjection)
+ for(const [key,item] of Object.entries(value)){
+  if(key==='__proto__'||key==='knowledge_citation'||key==='knowledge_provenance'||needsKnowledgeRendering(key)||needsProjection(item))return true
+ }
+ return false
+}
+
 /** HTTP's shared door covers all text-bearing fields, including JSON columns and
  * nested list/preview responses. Controller authorization still owns ticket access. */
 export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>){
@@ -73,14 +86,21 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  const conversation=context().conversationId
  const publicKnowledge=c.req.path.startsWith('/api/knowledge/public/'),sourceRead=c.req.path.startsWith('/api/knowledge/')||c.req.path.startsWith('/api/v1/articles')
  const baseReaders=publicKnowledge?accessReaders(await resolveHelpAccess(rawEnv,projectId,c.req.raw)):authority&&c.req.path.startsWith('/api/v1/articles')&&c.req.query('contact_id')?readerSet([{kind:'contact',id:c.req.query('contact_id')!}]):member?memberReaders(actor.id):actor?.role==='contact'?readerSet([{kind:'contact',id:actor.contactId||actor.id}]):conversation?currentTicketReaders(projectId,conversation,{}):anonymousReaders
- let data:any=await c.res.json()
+ const readOnly=c.req.method==='GET'||c.req.method==='HEAD'
+ const committed=c.get('knowledgeCommitted')
+ const original=c.res
+ const body=await original.text()
+ let data:any=JSON.parse(body)
  if(c.res.status>=400)errorData=data
+ if((readOnly||committed)&&original.ok&&!needsProjection(data)){
+  c.res=new Response(body,original)
+  return
+ }
  if(c.res.status===201&&c.req.method==='POST'&&/^\/api\/(?:management|dashboard)\/projects\/[^/]+\/macros$/.test(c.req.path))savedReplyId=data.data.id
  // A read renders the references already stored in its text and writes nothing: copied runs were turned into
  // references when the text was written (write boundary, upgrade), so a GET creates no block and refreshes no index.
  // A newly saved reply also returns stored text from its guarded write batch.
- const readOnly=c.req.method==='GET'||c.req.method==='HEAD'
- if(!readOnly&&!sourceRead&&!savedReplyId&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseResponse(rawEnv,projectId,data,conversation,privateComposer)
+ if(!readOnly&&!sourceRead&&!savedReplyId&&!committed&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseResponse(rawEnv,projectId,data,conversation,privateComposer)
  const referenceScope=await createReferenceReadScope(rawEnv,projectId,referenceIds(JSON.stringify(data)))
  async function render(value:any,inherited:Readers,cid?:string):Promise<any>{
   if(Array.isArray(value))return Promise.all(value.map(row=>render(row,inherited,cid)))

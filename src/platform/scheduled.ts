@@ -12,7 +12,7 @@ import {drainTeammateSlack,noticeCost} from '../modules/integrations/teammate-sl
 import {drainTeammateTeams,teamsNoticeCost} from '../modules/integrations/teammate-teams'
 
 type Consumer='cron'|'notifications'|'reports'|'audit'
-export interface ScheduledOptions {now?:number;maintenance?:boolean;discoveryStatements?:number;consumerEnv?:(name:Consumer,env:Env)=>Env}
+export interface ScheduledOptions {now?:number;maintenance?:boolean;discoveryStatements?:number;workflowScope?:'all'|'time'|null;consumerEnv?:(name:Consumer,env:Env)=>Env}
 /** Serial handoff makes unused reservations spendable without double admission.
  * The outer meter also counts discovery and failures, even when a consumer throws.
  * Each later consumer still gets its turn after a failure in an earlier one. */
@@ -24,7 +24,7 @@ export async function runScheduledInvocation(env:Env,options:ScheduledOptions={}
   const input={...env,DB:budget.database}
   try{await task(options.consumerEnv?.(name,input)??input)}catch(error){errors.push(error)}
  }
- await run('cron',input=>runScheduled(input,options.maintenance,options.discoveryStatements))
+ await run('cron',input=>runScheduled(input,options.maintenance,options.discoveryStatements,options.workflowScope))
  await run('notifications',input=>dispatchOperatorNotifications(input,{now:options.now,statementLimit:limit-budget.statements-scheduledReservations.audit-scheduledReservations.reports}))
  await run('reports',input=>enqueueScheduledReports(input,options.now))
  await run('audit',input=>purgeExpiredAudit(input,options.now,limit-budget.statements))

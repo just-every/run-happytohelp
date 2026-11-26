@@ -15,6 +15,7 @@ import { deploymentHealth } from './base/deployment-health'
 import { release } from './platform/release'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
+import { TrieRouter } from 'hono/router/trie-router'
 import type { AppEnv } from './platform/env'
 import { projectCors } from './platform/cors'
 import { overloadAnswer,overloadedRequest,overloadRetryAfter,retryOverloaded } from './platform/d1-overload'
@@ -59,7 +60,9 @@ import {createEscalationRoutes} from './modules/escalations/routes'
 
 import {voiceRoutes} from './modules/voice/routes'
 
-export const app = new Hono<AppEnv>()
+// Build the route trie once as routes register. SmartRouter otherwise visits
+// the whole route table on the first request to construct its RegExp matchers.
+export const app = new Hono<AppEnv>({router:new TrieRouter()})
 // Outermost: a read's held records are written after every other D1 statement of its dispatch (platform/read-effects.ts).
 app.use('*',readEffects)
 app.use('*',async(c,next)=>{if(isAgentPath(c.req.path)){const {handleAgentRequest}=await import('./edition/agent-door/index.ts');const response=await handleAgentRequest(c.req.raw,c.env);if(response)return response}await next()})

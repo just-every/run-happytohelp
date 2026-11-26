@@ -41,8 +41,11 @@ the app with `rer dev --foreground`, press Ctrl+C in that terminal, then run
 `rer dev --foreground` again. Open the new `RER_OPEN` link after restart.
 
 If the saved port is busy, rerun `rer dev` after that port is free. To move
-this checkout to a free port, run `rer setup --port 8788` with a free port
-and leave out `--host`. Then run `rer dev` again. See the
+this checkout to a free port, run `rer setup --port 8788` with a free port. To
+move it to another host, run `rer setup --host 127.0.0.1` (or `localhost`, or
+`::1`). Either move keeps your data, and plain `rer dev` follows the saved
+address, so there is no need to pass `--host` on each start. A passkey belongs to
+the host it was made on: after moving hosts, add a new one. See the
 [local command reference](../RUN-LOCALLY.md).
 
 Continue with [first-run setup](SETUP-WORKFLOW.md) to connect your website and

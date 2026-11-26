@@ -178,8 +178,8 @@ importers:
         specifier: 5.20260908.1
         version: 5.20260908.1
       '@runeditrun/rer':
-        specifier: 0.2.141
-        version: 0.2.141
+        specifier: 0.2.142
+        version: 0.2.142
       '@tanstack/router-generator':
         specifier: 1.167.40
         version: 1.167.40
@@ -1038,8 +1038,8 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@runeditrun/rer@0.2.141':
-    resolution: {integrity: sha512-7LFMv/SOTPsw3fVT5ubLWyNegIlxI9mNBjxXHjAw/lx7ktRN1LXqfakDYjeG/P1PbdA3z7XqF740Pqa/eWsN4Q==}
+  '@runeditrun/rer@0.2.142':
+    resolution: {integrity: sha512-1BmTlU57qJYJydxTj9MS2S46hb2gkmQOjD2oabR8eOGXCawvppzvX6p7DHiNRzPt4EwNe7y7Zjkm6vRcL9QafQ==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -3545,7 +3545,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@runeditrun/rer@0.2.141': {}
+  '@runeditrun/rer@0.2.142': {}
 
   '@selderee/plugin-htmlparser2@0.12.0(selderee@0.12.0)':
     dependencies:

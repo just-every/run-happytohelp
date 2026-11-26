@@ -2937,11 +2937,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "3fa1da09e7553f83b4cb5816290eff774fd20ce5239a8ef169fd08e59a22b09a",
+      "sha256": "eac25e10545b23d2ae902817208e7666f67222c7ecefe5e1d124e23a47968808",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "babec63b283437d0d2a6b6fed8288b9375b0d7ecf41654fa5233ad4d73056697",
+      "sha256": "205e6198b7b5578ab78959d2fbabe734d8cafc91d236ab7d99726723c72a94c7",
       "executable": false
     },
     "public/fonts/fonts.css": {
@@ -3033,7 +3033,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "988cd97941ee267b528fcffa9058e4643f843159a5428f70f2ad7ea842135df8",
+      "sha256": "4f0fed5af48116f1800163b8b11a69e461131d18c9d3615509f6bd33605f3b3f",
       "executable": false
     },
     "scripts/build-local-agent.cjs": {
@@ -13073,7 +13073,7 @@
       "executable": false
     },
     "src/ui/identity/two-factor/parts.tsx": {
-      "sha256": "b9a489c1b7dcccf7708f35177fa3239a83d6f97cb8fd3bdb03a2c62a0ee72b4a",
+      "sha256": "418041e94bc878a8b9300ec9edea92f14601f12e30bb27872cec3097b4d1516d",
       "executable": false
     },
     "src/ui/identity/two-factor/QrCode.tsx": {
@@ -13085,7 +13085,7 @@
       "executable": false
     },
     "src/ui/identity/two-factor/webauthn-client.ts": {
-      "sha256": "95a59a289ec11890a8569a678966ea005369c9f5a4333a364ed7eba3b2f1a308",
+      "sha256": "8dee6b46ba0a4151bb688b38f402366310fb18171e96fd99c2ee53659ca321cc",
       "executable": false
     },
     "src/ui/identity/TwoFactor.tsx": {

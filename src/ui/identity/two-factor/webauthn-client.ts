@@ -6,7 +6,7 @@ const toText = (buffer: ArrayBuffer) => btoa(String.fromCharCode(...new Uint8Arr
 export const passkeysAvailable = () => typeof window !== 'undefined' && Boolean(window.PublicKeyCredential) && Boolean(navigator.credentials);
 /** Passkeys bind to a domain name; an address such as 127.0.0.1 cannot hold one. */
 export const passkeyDomain = () => typeof location !== 'undefined' && !/^\d+\.\d+\.\d+\.\d+$|^\[/.test(location.hostname);
-/** A local copy started on a loopback address (rer dev before it defaulted to localhost). */
+/** A local copy served on a loopback address, such as one set up before rer dev defaulted to localhost. */
 export const loopbackAddress = () => typeof location !== 'undefined' && /^127\.\d+\.\d+\.\d+$|^\[::1\]$/.test(location.hostname);
 
 export async function createPasskey(options: any) {

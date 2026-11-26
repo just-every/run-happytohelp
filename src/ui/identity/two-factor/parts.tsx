@@ -62,7 +62,7 @@ export function PasskeySetup({ look, onDone }: { look: Look; onDone: (codes: str
     const [error, setError] = useState(''), [busy, setBusy] = useState(false);
     if (!passkeysAvailable()) return <p className="tf-muted">This browser cannot use passkeys or security keys.</p>;
     if (!passkeyDomain()) return loopbackAddress()
-        ? <p className="tf-muted">Passkeys need a domain name, and this copy runs on {location.hostname}. From your HappyToHelp checkout, restart it on localhost with <code>rer dev --stop && rer dev --host localhost</code> and open the RER_OPEN link it prints. Your data stays. Start it with <code>--host localhost</code> each time.</p>
+        ? <p className="tf-muted">Passkeys need a domain name, and this copy runs on {location.hostname}. To move it to localhost and keep your data, run <code>rer dev --stop && rer setup --host localhost && rer dev</code> in your HappyToHelp checkout, then open the RER_OPEN link it prints.</p>
         : <p className="tf-muted">Passkeys need this app’s domain name. Open it by name instead of an IP address.</p>;
     const register = async () => {
         setBusy(true); setError('');

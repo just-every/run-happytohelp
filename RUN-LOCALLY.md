@@ -38,10 +38,6 @@ Setup also accepts `--owner-name`, `--port`, `--host` and a private JSON `--answ
 file using the installer model's names. Dev also accepts `--port` and `--host`.
 Hosts are exactly 127.0.0.1, localhost or ::1. A new installation uses
 `localhost`, because passkeys need a domain name and cannot use an IP address.
-An installation first set up on `127.0.0.1` can still add passkeys without a
-reset: run `rer dev --stop`, then `rer dev --host localhost`, and open the new
-`RER_OPEN` link. The data stays. Start it with `--host localhost` each time,
-because a passkey works only on the name it was added on.
 
 An existing installation keeps its saved origin, including its hostname and
 port. If that port is busy, wait until it is free or stop the service using it

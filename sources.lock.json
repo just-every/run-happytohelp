@@ -1713,7 +1713,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "a7782a70786da11f41852b42eb4e2a24fc0e1186393c06e3f1d9b83dc403a9c2",
+      "sha256": "81780d51b4aa79d1357a7cbface3a9e0ae36a6b3da5acbfc7692131bdfcad2b9",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -2069,7 +2069,7 @@
       "executable": false
     },
     "management/integration/mail-environment.ts": {
-      "sha256": "583cecec457c5d27dd93c6b403c549cd52e4490ce2bbd9e098c4c11bce62f54a",
+      "sha256": "3e4918d24099dd7812c308115ac14bc58c152acdddb98b61843a2191a363a63e",
       "executable": false
     },
     "management/integration/managed-deploy.json": {
@@ -3241,7 +3241,7 @@
       "executable": false
     },
     "scripts/deployment/environment.mjs": {
-      "sha256": "adc806343b1c3b14157510f62ce8510fb3e1e86bfd2855dd3929231503624d4a",
+      "sha256": "2560c00e257fc44c0b0a855c600a7c78441eb5d19ec76007708a8c287a7454fd",
       "executable": false
     },
     "scripts/deployment/mail-declaration.mjs": {
@@ -6065,7 +6065,7 @@
       "executable": false
     },
     "src/modules/identity/owner-signin-mail.ts": {
-      "sha256": "3f7ba6fcc914f8d75a9096c3ec98a772396472c1670ac48e3be4fd163c9efce9",
+      "sha256": "b86adf66c8fbba096b532904c5ff1f92023c7020aceb1f14c43f0e5c51568491",
       "executable": false
     },
     "src/modules/identity/README.md": {
@@ -7421,7 +7421,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mail-contract.ts": {
-      "sha256": "856126352b5e21314e46c15051d002185537eecf267968c5a3f3bb8b9d474cf9",
+      "sha256": "4f3272bbd004c8834aa6067e0a75902ed173b2a0663084deb3629146a0ecabd7",
       "executable": false
     },
     "src/modules/integrations/rer-mail-hold.ts": {
@@ -7458,6 +7458,10 @@
     },
     "src/modules/integrations/rer-mailbox.ts": {
       "sha256": "9a750d87f61a478334ad93b1665583e5f9f27ac3611edae27aad9a5c8f91184a",
+      "executable": false
+    },
+    "src/modules/integrations/rer-relay-mail.ts": {
+      "sha256": "0dc2bae06bc67e8b0b7f05550c725b5287726605cc5b1750d5a50cd24e360e1a",
       "executable": false
     },
     "src/modules/integrations/routes.ts": {
@@ -16897,7 +16901,7 @@
       "executable": false
     },
     "tests/helpers/identity/owner-only-mail.mjs": {
-      "sha256": "5aa98460c00dd115046595661cabe973f02afe0447a5d325a5a0ecdfe9e99f96",
+      "sha256": "4de515e7d9e67d8c872d3270ab4a1569a7f4e5dbea90dd54bfa084077efd6896",
       "executable": false
     },
     "tests/helpers/identity/recovery-authority/authenticator.mjs": {
@@ -17781,7 +17785,7 @@
       "executable": false
     },
     "tests/journeys/identity.mjs": {
-      "sha256": "ad03288437adb0600bb2e8189a7cf7d19549e3708f6087435cfebcb8ad07198f",
+      "sha256": "a81a293ebcf490c07e34591dd4ae275d46c90d34c16dfbacd74244106f9799a6",
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {

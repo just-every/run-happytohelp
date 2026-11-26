@@ -3204,6 +3204,10 @@
       "sha256": "8819f7f91b7781905796ea35b01dd1a55e08ed3893ff6d8aafaf03d2f35c1c9a",
       "executable": false
     },
+    "scripts/delivery/build-inbox-shell.mjs": {
+      "sha256": "a04343ec2e721d7edc9fefcc9b20f7c07c183603b76b4ba392014089529bbd62",
+      "executable": false
+    },
     "scripts/delivery/build-inputs.ts": {
       "sha256": "6d5832233e5f5dfe02fe1af9232a9f8c4a2c7e05e65f4382f45ad7e842ddcc28",
       "executable": false
@@ -5614,6 +5618,10 @@
     },
     "src/modules/conversations/socket.ts": {
       "sha256": "8a39fb49d7d468bbf46f510d131424db06385dff4f83c8286eb30dfba74e683b",
+      "executable": false
+    },
+    "src/modules/conversations/visitor-reply-context.ts": {
+      "sha256": "609ca1c4a55b5fc5e23ee35b2febf488185ac517223fab4271d44645feec7b53",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
@@ -11224,6 +11232,10 @@
       "sha256": "479475a920a0770ca7dd32e81416165180036bcd5f57b8b8521b81c32d42b745",
       "executable": false
     },
+    "src/platform/dashboard-session.ts": {
+      "sha256": "d5022cc7dce562e4b65704b48eac77b715010b409a6c3fee985b77287fd77869",
+      "executable": false
+    },
     "src/platform/db.ts": {
       "sha256": "6e3d49fe1d7be847fe385a03de0b5d3891dd819b948996c1c62228c4211bea40",
       "executable": false
@@ -11242,6 +11254,10 @@
     },
     "src/platform/env.ts": {
       "sha256": "9a36aa4c87363df353badbecf2b771b5b3eab86552fa870c6686ed78acc90912",
+      "executable": false
+    },
+    "src/platform/inbox-document.ts": {
+      "sha256": "b66ced0e3900b95743a13b68e44b5e2e6008e16ebba9fc57a52cae0500570d37",
       "executable": false
     },
     "src/platform/integration-authority.ts": {

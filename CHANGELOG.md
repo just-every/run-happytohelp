@@ -14,9 +14,9 @@ updating and backing up an installation, see
 
 - **Mail provider switches.** A full deployment replaces the held mail key when switching between Run Edit Run and your own provider, once the installer has recorded the previous deployment’s mail settings.
 
-- **Hosted demo deployment.** Run Edit Run 0.2.137 lets the demo deploy with the owner-only mail setting.
+- **Hosted demo deployment.** The hosted demo deploys with the owner-only mail setting and batches database migrations and sample inbox data during startup.
 
-Update from v0.4.46 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.137. An installation on v0.4.46 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+Update from v0.4.46 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.141. An installation on v0.4.46 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
 
 _Run Edit Run fleet, 2026-11-27._
 

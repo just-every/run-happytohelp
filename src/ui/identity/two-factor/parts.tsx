@@ -70,7 +70,7 @@ export function PasskeySetup({ look, onDone }: { look: Look; onDone: (codes: str
         catch (failure: any) { setError(failure.name === 'NotAllowedError' ? 'The passkey request was cancelled or timed out.' : failure.message); }
         setBusy(false);
     };
-    return <div className="tf-step"><Problem>{error}</Problem><button type="button" className={looks[look].primary} disabled={busy} onClick={register}>{busy ? 'Waiting for your device…' : 'Add a passkey or security key'}</button></div>;
+    return <div className="tf-step"><p className="tf-muted">A passkey belongs to the address it is made on ({location.hostname}); if you move this app to another address later, add a new one there.</p><Problem>{error}</Problem><button type="button" className={looks[look].primary} disabled={busy} onClick={register}>{busy ? 'Waiting for your device…' : 'Add a passkey or security key'}</button></div>;
 }
 
 /**

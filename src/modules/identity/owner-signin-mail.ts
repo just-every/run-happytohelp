@@ -20,6 +20,6 @@ export function ownerSigninAddress(env:Env){
 export async function sendOwnerSignin(env:Env,input:Pick<EmailInput,'to'|'subject'|'text'|'idempotencyKey'>){
  const owner=ownerSigninAddress(env)
  if(!owner||input.to!==owner)throw new Error('recipient_not_owner')
- if(ownerRelayMail(env))return sendRelayMail(env,{to:owner,subject:input.subject,text:input.text})
+ if(ownerRelayMail(env))return sendRelayMail(env,{...input,to:owner})
  return sendEmail(transport(env),{to:owner,subject:input.subject,text:input.text,idempotencyKey:input.idempotencyKey})
 }

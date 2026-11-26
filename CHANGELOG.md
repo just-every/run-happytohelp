@@ -12,6 +12,8 @@ updating and backing up an installation, see
 
 - **Owner sign-in relay delivery records.** Each owner sign-in email attempt through the Run Edit Run relay creates an `email_deliveries` row. The outcome records the relay’s HTTP status and any machine-readable error code, such as `business_mail_recipient_forbidden`. The row excludes recipients, message content and credentials.
 
+- **Mail provider switches.** A full deployment replaces the held mail key when switching between Run Edit Run and your own provider, once the installer has recorded the previous deployment’s mail settings.
+
 - **Hosted demo deployment.** Run Edit Run 0.2.137 lets the demo deploy with the owner-only mail setting.
 
 Update from v0.4.46 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.137. An installation on v0.4.46 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.

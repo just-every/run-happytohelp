@@ -6093,7 +6093,7 @@
       "executable": false
     },
     "src/modules/identity/owner-signin-mail.ts": {
-      "sha256": "b86adf66c8fbba096b532904c5ff1f92023c7020aceb1f14c43f0e5c51568491",
+      "sha256": "4fae973fcee1e69c0def07e26e6547e7025ce17327d81aba9c3a910e7d956763",
       "executable": false
     },
     "src/modules/identity/README.md": {
@@ -7497,7 +7497,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-relay-mail.ts": {
-      "sha256": "c7c78f119f8f5135e7522e2744374f1a104b7da658a79e309a90bde2b6c0d49c",
+      "sha256": "ed932522b172551e4cfd5838a2057505706b8716670a471b41174a419bf10674",
       "executable": false
     },
     "src/modules/integrations/routes.ts": {
@@ -16993,7 +16993,7 @@
       "executable": false
     },
     "tests/helpers/identity/owner-only-mail.mjs": {
-      "sha256": "e2c820e91d2b0717b31fa84abc96004eb963791950181c3b4fcbec5f76114972",
+      "sha256": "1e574bab3b4a1846e46ee65d87fcc28b387c5babcf9dc85042e336838f3f580f",
       "executable": false
     },
     "tests/helpers/identity/recovery-authority/authenticator.mjs": {

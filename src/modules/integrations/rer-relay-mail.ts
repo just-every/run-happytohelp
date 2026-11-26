@@ -1,5 +1,7 @@
+import {hashToken} from '../../platform/auth'
 import type {Env} from '../../platform/env'
-import {mailService,rerSelected} from './rer-mail-contract'
+import type {EmailInput} from './email'
+import {mailJson,mailService,rerSelected} from './rer-mail-contract'
 
 /** The platform's owner-only relay (MAIL_PROVIDER=rer with MAIL_RECIPIENTS=owner): MAIL_RELAY_URL is
  * `<platform>/api/managed-mail/send` and MAIL_API_KEY its private installation credential; the relay chooses
@@ -11,28 +13,41 @@ export function relayConfigured(env:Env){
  try{mailService(env.MAIL_RELAY_URL);return true}catch{return false}
 }
 
-/** One request, never redirected: the credential goes only to the configured HTTPS relay. HTTP 202 is sent.
- * A fetch error, timeout or 5xx leaves the outcome unknown (the relay may still deliver): `relay_uncertain`.
- * Any other answer is a refusal and nothing was sent: `relay_refused`. Logged by status alone (never the key,
- * the address or the message). */
-export async function sendRelayMail(env:Env,input:{to:string;subject:string;text:string}){
+/** Claim the attempt before sending. The receipt uses the existing error column for the HTTP status and
+ * machine-readable error code; the recipient, subject and message are excluded from the stored fields. */
+export async function sendRelayMail(env:Env,input:Pick<EmailInput,'to'|'subject'|'text'|'idempotencyKey'>){
  const relay=mailService(env.MAIL_RELAY_URL)
- let response:Response
+ const {idempotencyKey,to,subject,text}=input
+ const body=JSON.stringify({to,subject,text}),intentHash=await hashToken(body),now=Date.now()
+ const claim=await env.DB.prepare(`INSERT INTO email_deliveries
+  (id,project_id,recipient,subject,intent_hash,state,provider_id,error,created_at,updated_at)
+  VALUES(?,NULL,'','',?,'sending',NULL,NULL,?,?) ON CONFLICT(id) DO NOTHING`).bind(idempotencyKey,intentHash,now,now).run()
+ if(!claim.meta.changes)throw new Error('relay_uncertain')
+
+ let response:Response|undefined
  try{
-  response=await fetch(relay,{method:'POST',redirect:'manual',headers:{Authorization:`Bearer ${env.MAIL_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({to:input.to,subject:input.subject,text:input.text}),signal:AbortSignal.timeout(20000)})
- }catch(error){
-  console.error(`Managed mail relay did not answer (${error instanceof Error?error.name:'error'}); delivery outcome unknown`)
-  throw new Error('relay_uncertain')
+  response=await fetch(relay,{method:'POST',redirect:'manual',headers:{Authorization:`Bearer ${env.MAIL_API_KEY}`,'Content-Type':'application/json'},body,signal:AbortSignal.timeout(20000)})
+ }catch{
+  console.error('Managed mail relay did not answer; delivery outcome unknown')
  }
- if(response.status!==202){
-  await response.body?.cancel()
-  if(response.status>=500){
-   console.error(`Managed mail relay could not confirm the message (${response.status}); delivery outcome unknown`)
-   throw new Error('relay_uncertain')
-  }
-  console.error(`Managed mail relay refused the message (${response.status}); nothing was sent`)
-  throw new Error('relay_refused')
+ const status=response?.status
+ const receipt=response?await mailJson(response).catch(()=>null) as {messageId?:unknown;error?:unknown}|null:null
+ const state=status===202?'sent':status===undefined||status>=500?'uncertain':'failed'
+ const key=env.MAIL_API_KEY?.trim()
+ const safeReceiptField=(value:unknown,format:RegExp):value is string=>
+  typeof value==='string'&&format.test(value)&&(!key||!value.includes(key))&&!value.toLowerCase().includes(to)&&!text.includes(value)
+ const providerId=state==='sent'&&safeReceiptField(receipt?.messageId,/^[a-zA-Z0-9._:@<>=+-]{1,256}$/)?receipt.messageId:null
+ const code=safeReceiptField(receipt?.error,/^[a-z][a-z0-9_]{0,95}$/)?receipt.error:null
+ const outcome=status===undefined?'Relay did not answer':`Relay HTTP ${status}${code?' '+code:''}`
+ try{
+  await env.DB.prepare('UPDATE email_deliveries SET state=?,provider_id=?,error=?,updated_at=? WHERE id=?')
+   .bind(state,providerId,outcome,Date.now(),idempotencyKey).run()
+ }catch{
+  console.error('Could not record the managed mail relay outcome')
+  // Keep the link valid if the provider accepted the message or could still deliver it.
+  throw new Error(state==='failed'?'relay_refused':'relay_uncertain')
  }
- const receipt=await response.json().catch(()=>null) as {messageId?:unknown}|null
- return typeof receipt?.messageId==='string'?receipt.messageId:null
+ if(state==='uncertain')throw new Error('relay_uncertain')
+ if(state==='failed')throw new Error('relay_refused')
+ return providerId
 }

@@ -18,7 +18,7 @@ export async function browserJourney(evidence){
  const scratch=await mkdtemp(join(tmpdir(),'h2h-agent-fix-rer-')),checkout=join(scratch,'checkout');
  const fixture=await customerFixture();let server,browser;const captions=[],checks=[],socketDeliveries=[];
  const socket=createServer();await new Promise(resolve=>socket.listen(0,'127.0.0.1',resolve));const port=socket.address().port;await new Promise(resolve=>socket.close(resolve));
- const origin=`http://127.0.0.1:${port}`,email='agent-fix@example.test',password=randomBytes(24).toString('base64url');
+ const origin=`http://localhost:${port}`,email='agent-fix@example.test',password=randomBytes(24).toString('base64url');
  let success=false,stage='clone',freshInstalledRer=false,automaticOwnerEntry=false;
  try{
   await promisify(execFile)('git',['clone','--quiet','--no-local','--depth','1',resolve('.'),checkout]);

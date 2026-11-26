@@ -16,7 +16,7 @@ export async function recoveryRestoreJourney(){
  process.env.CLOUDFLARE_CF_FETCH_ENABLED='false'
  const scratch=await mkdtemp(join(tmpdir(),'h2h-identity-restore-')),checkout=join(scratch,'checkout'),email='recovery-restore@example.test',password='synthetic-recovery-restore-password',key=randomBytes(32).toString('hex')
  const reservation=createServer();await new Promise(done=>reservation.listen(0,'127.0.0.1',done));const port=reservation.address().port;await new Promise(done=>reservation.close(done))
- const origin=`http://127.0.0.1:${port}`;let server,serverReady=false
+ const origin=`http://localhost:${port}`;let server,serverReady=false
  const call=async(path,body,token,capability)=>{const response=await fetch(origin+path,{method:body===undefined?'GET':'POST',headers:{Origin:origin,...(body===undefined?{}:{'Content-Type':'application/json'}),...(token?{Authorization:'Bearer '+token}:{}),...(capability?{'X-Recovery-Capability':capability}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});const data=await response.json();return {response,data}}
  const ok=async(...args)=>{const result=await call(...args);assert.ok(result.response.ok,`${args[0]} returned ${result.response.status}`);return result.data}
  const start=async()=>{serverReady=false;server=command(checkout,['dev']);await server.waitFor(event=>event.event==='ready',240000);serverReady=true}

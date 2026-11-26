@@ -139,7 +139,7 @@ let server,success=false;
 const socket=createServer();await new Promise(resolve=>socket.listen(0,'127.0.0.1',resolve));
 const port=socket.address().port;await new Promise(resolve=>socket.close(resolve));
 const email='rer-journey@example.test',password=randomBytes(24).toString('base64url');
-const origin=`http://127.0.0.1:${port}`;
+const origin=`http://localhost:${port}`;
 const setup=['setup','--owner-email',email,'--answers','.seed/local-answers.json','--port',String(port)];
 const json=async(path,body,token,cookie)=>{
  const response=await fetch(origin+path,{method:body?'POST':'GET',headers:{Origin:origin,...(cookie?{Cookie:cookie}:{}),...(body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})},...(body?{body:JSON.stringify(body)}:{})});

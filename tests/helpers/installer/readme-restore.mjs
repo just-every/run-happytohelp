@@ -32,7 +32,7 @@ async function fresh(name){
  assert.equal(installed.code,0,'fresh clone installs its own frozen dependencies');return root;
 }
 try{
- const root=await fresh('source'),port=await freePort(),origin=`http://127.0.0.1:${port}`,password=randomBytes(24).toString('base64url');
+ const root=await fresh('source'),port=await freePort(),origin=`http://localhost:${port}`,password=randomBytes(24).toString('base64url');
  await mkdir(join(root,'.seed'),{mode:0o700,recursive:true});const answer={WORKSPACE_NAME:'CLI support',WIDGET_ORIGIN:origin,PRIMARY_COLOR:'#7c3aed',OWNER_NAME:'CLI owner',OWNER_EMAIL:'owner@example.test',OWNER_PASSWORD:password,EMAIL_PROVIDER:'later'};
  await writeFile(join(root,'.seed/local-answers.json'),JSON.stringify(answer),{mode:0o600});
  await command(root,['setup','--answers','.seed/local-answers.json','--port',String(port),'--non-interactive'],env);receipt.commands.push('setup');

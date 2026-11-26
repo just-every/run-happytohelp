@@ -16609,7 +16609,7 @@
       "executable": false
     },
     "tests/helpers/delegation-journey/browser.mjs": {
-      "sha256": "5353e4e62a999b8756d2f15a118af0441cad24b0cd3e08734be2a0653ef8e035",
+      "sha256": "3b095e984fafc2b3e5145e1555578e0b6942c99dd53012c31ba244879f501316",
       "executable": false
     },
     "tests/helpers/delegation-journey/case.mjs": {
@@ -16721,7 +16721,7 @@
       "executable": false
     },
     "tests/helpers/email/local-mail.mjs": {
-      "sha256": "83731030dc8cc64664bdb120b5de6326c3a6a38995134a717b06f77b3405976f",
+      "sha256": "3f16684b022f745c48f47e5eea5cbb04b344d1a8e8b257fa419be520014cb92e",
       "executable": false
     },
     "tests/helpers/email/mailbox-history.mjs": {
@@ -17005,7 +17005,7 @@
       "executable": false
     },
     "tests/helpers/identity/recovery-restore/journey.mjs": {
-      "sha256": "d3ff7b36fb1b63a547a46c1d55b6fc94e43200a9ef291ad48ab8e605898ba94d",
+      "sha256": "483908f4cdb05eaada0739de3f00c6de9fcad010dbf73a89d9fafea586b09811",
       "executable": false
     },
     "tests/helpers/identity/recovery-restore/storage.mjs": {
@@ -17197,7 +17197,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "7198204cfd8655a9d69f29b2b2d851017275513be6101a21a33256929967ebd9",
+      "sha256": "f8bb612dec93958a175fd30070779bff91b7618e234ce245d35f59fb3739c710",
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {
@@ -17213,7 +17213,7 @@
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {
-      "sha256": "622b80a120d36a205798b286df283de43a7832aa02311e6d925decd2c27b0c52",
+      "sha256": "461a9760a7af75264709a3c204cdad6ae608c36f74c5cf48b5587a40862393cc",
       "executable": false
     },
     "tests/helpers/installer/reproducible.mjs": {

@@ -109,7 +109,7 @@ async function devEntry(){
   for(const file of stdout.split('\0').filter(Boolean)){await mkdir(dirname(join(root,file)),{recursive:true});await copyFile(join(source,file),join(root,file))}
   await cp(join(source,'node_modules'),join(root,'node_modules'),{recursive:true,verbatimSymlinks:true})
   const socket=createServer();await new Promise(done=>socket.listen(0,'127.0.0.1',done));const port=socket.address().port;await new Promise(done=>socket.close(done))
-  const origin=`http://127.0.0.1:${port}`
+  const origin=`http://localhost:${port}`
   await mkdir(join(root,'.seed'),{recursive:true,mode:0o700})
   await writeFile(join(root,'.seed/local-mail-answers.json'),JSON.stringify({WORKSPACE_NAME:'Local support',WIDGET_ORIGIN:origin,OWNER_PASSWORD:randomBytes(24).toString('base64url'),EMAIL_PROVIDER:'later'}),{mode:0o600})
   await run(root,['setup','--owner-email','local-owner@example.test','--answers','.seed/local-mail-answers.json','--port',String(port)])

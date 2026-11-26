@@ -14,7 +14,7 @@ import { HTTPException } from 'hono/http-exception'
 import type { AppEnv,Env,Actor } from '../../platform/env'
 import { requireActor,requireProject } from '../../platform/auth'
 import { requiredString,id } from '../../platform/db'
-import { admitMessage,reservedLocalId } from './admission'
+import { admitMessage,messageOutbox,reservedLocalId } from './admission'
 import { attachInboundOrigins } from '../integrations/inbound-origin'
 import { clientAddress,enforceRateLimits } from '../../platform/rate-limits'
 import { mediaResponseHeaders } from './media-response'
@@ -32,7 +32,19 @@ const defaultResponderSql="SELECT a.id,a.model FROM ai_profiles a JOIN project_s
 /** A default assistant answers a new conversation only when its provider is ready. Without a key the conversation
  * stays with the humans: no automatic reply is requested, so none fails. An explicit request for AI still fails explicitly. */
 async function readyResponder(env:Env,projectId:string,contactId:string){const responder=await env.DB.prepare(defaultResponderSql).bind(projectId,contactId).first<{id:string;model:string}>();return responder&&(!responderReady||responderReady(env,responder.model))?responder.id:null}
-async function access(c:any){const actor=await requireActor(c);const conversation=await c.env.DB.prepare(`SELECT c.*,${actor.role==='contact'?'1':ticketScopeSql('?')} native_scope_allowed FROM conversations c WHERE c.id=? AND c.project_id=? ${actor.role==='contact'?`AND ${customerMailboxHistorySql()}`:''}`).bind(...(actor.role==='contact'?[]:[actor.id]),c.req.param('id'),actor.projectId).first();if(!conversation||(actor.role==='contact'&&conversation.contact_id!==actor.contactId))throw new HTTPException(404);if(actor.role!=='contact'&&!conversation.native_scope_allowed)throw new HTTPException(404);delete conversation.native_scope_allowed;return {actor,conversation}}
+async function access(c:any,messageWrite=false){
+ const id=c.req.param('id'),actor=await requireActor(c,messageWrite?id:undefined)
+ if(messageWrite&&actor.role==='contact'){
+  const conversation=c.get('visitorReply')
+  if(!conversation)throw new HTTPException(404)
+  return {actor,conversation}
+ }
+ const conversation=await c.env.DB.prepare(`SELECT c.*,${actor.role==='contact'?'1':ticketScopeSql('?')} native_scope_allowed FROM conversations c WHERE c.id=? AND c.project_id=? ${actor.role==='contact'?`AND ${customerMailboxHistorySql()}`:''}`).bind(...(actor.role==='contact'?[]:[actor.id]),id,actor.projectId).first()
+ if(!conversation||(actor.role==='contact'&&conversation.contact_id!==actor.contactId))throw new HTTPException(404)
+ if(actor.role!=='contact'&&!conversation.native_scope_allowed)throw new HTTPException(404)
+ delete conversation.native_scope_allowed
+ return {actor,conversation}
+}
 routes.get('/',async c=>{const actor=await requireActor(c);const rows=await c.env.DB.prepare(`SELECT c.* FROM conversations c WHERE c.project_id=? ${actor.role==='contact'?`AND c.contact_id=? AND ${customerMailboxHistorySql()}`:`AND ${ticketScopeSql('?')}`} ORDER BY updated_at DESC LIMIT 200`).bind(actor.projectId,...(actor.role==='contact'?[actor.contactId!]:[actor.id])).all();const system=noRequesterId(actor.projectId),missing=actor.role!=='contact'&&rows.results.some((row:any)=>row.requester_id===system)?await requesterReadFields(c.env,{project_id:actor.projectId,requester_id:system}):{};return c.json({conversations:actor.role==='contact'?rows.results.map(customerTicket):rows.results.map((row:any)=>row.requester_id===system?{...row,...missing}:row)})})
 routes.post('/',async c=>{const b=await c.req.json();const actor=await requireProject(c,requiredString(b.projectId,'projectId'));if(actor.role!=='contact')await requireDestinationScope(c.env,actor,null);const contactId=actor.role==='contact'?actor.contactId:requiredString(b.contactId,'contactId');if(actor.role==='contact')await enforceRateLimits(c.env,[['conversationsPerContactHour',contactId!],['conversationsPerIpHour',`${actor.projectId}|${clientAddress(c.req)}`],['conversationsPerProjectHour',actor.projectId]]);const now=workflowNow(await workflowEnvironment(c.env)),conversationId=id(),responder=await readyResponder(c.env,actor.projectId,contactId!);const result=await c.env.DB.batch([c.env.DB.prepare(`INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,submitter_id,submitter_type,ticket_actor_id,ticket_actor_type,ticket_source) SELECT ?,project_id,id,?,?,?,?,?,?,? FROM contacts WHERE id=? AND project_id=? AND ${realContactSql()} ${actor.role==='contact'?'':`AND ${ticketScopeSql('?','contacts','NULL')}`}`).bind(conversationId,now,now,actor.id,actor.role==='contact'?'contact':'agent',actor.id,actor.role==='contact'?'contact':'user',actor.role==='contact'?'widget':'dashboard',contactId!,actor.projectId,...(actor.role==='contact'?[]:[actor.id])),...(responder?[c.env.DB.prepare(`INSERT INTO conversation_ai(conversation_id,ai_id) SELECT ?,responder.id FROM (${defaultResponderSql}) responder WHERE responder.id=? AND EXISTS(SELECT 1 FROM conversations WHERE id=?)`).bind(conversationId,actor.projectId,contactId!,responder,conversationId)]:[]),trackingStatement(c.env,conversationId,true)]);if(!result[0].meta.changes)throw new HTTPException(404);const created=await c.env.DB.prepare('SELECT * FROM conversations WHERE id=?').bind(conversationId).first();return c.json(actor.role==='contact'?customerTicket(created):created,201)})
 routes.get('/:id',async c=>{const {actor,conversation}=await access(c);return c.json(actor.role==='contact'?customerTicket(conversation):{...conversation,...await requesterReadFields(c.env,conversation)})})
@@ -55,7 +67,7 @@ routes.get('/:id/messages',async c=>{const {actor,conversation}=await access(c);
  const mergedInto=actor.role==='contact'?await customerMergeTarget(c.env,actor.projectId,conversation.id,actor.contactId||actor.id):null
  return c.json({...(actor.role==='contact'?{widget:await widgetConversationState(c.env,actor.projectId,String(conversation.id),actor.contactId!)}:{}),...(mergedInto?{mergedInto}:{}),messages:messages.results,revision:conversation.revision,lastMessageId:conversation.last_message_id,resolution:await resolutionState(c.env,String(conversation.project_id),String(conversation.id))})})
 routes.post('/:id/messages',async c=>{
- const started=performance.now(),{actor,conversation}=await access(c),accessed=performance.now(),b=await c.req.json()
+ const started=performance.now(),{actor,conversation}=await access(c,true),accessed=performance.now(),b=await c.req.json()
  // Dashboard sends identify the rendered ticket separately from the route.
  // Existing API and widget clients can still address their ticket by URL alone.
  if(b?.expectedConversationId!==undefined&&b.expectedConversationId!==conversation.id)return c.json({accepted:false,reason:'composer_target_mismatch'},409)
@@ -66,6 +78,20 @@ routes.post('/:id/messages',async c=>{
  if(actor.role==='contact')await enforceRateLimits(c.env,[['messagesPerConversationMinute',conversation.id],['messagesPerContactHour',actor.contactId!]])
  await stageEmailMessageOptions(c.env,actor,conversation,b)
  const admitting=performance.now(),result=await admitMessage(c.env,{...b,actor,projectId:actor.projectId,conversationId:conversation.id,generationId:undefined,sessionHash:c.get('sessionHash')}),admitted=performance.now()
+ // Assistants, triage, event rules, routing and SLAs keep inline admission.
+ // Time rules already run on a schedule. Ordinary chat uses its outbox row.
+ if(actor.role==='contact'&&onCommittedMessage&&!conversation.inline_effects){
+  const outboxId=result[messageOutbox]
+  if(outboxId!==undefined){
+   // The response contains the just-admitted row from the guarded write.
+   // The HTTP door still renders references for the current reader.
+   c.set('knowledgeCommitted',true)
+   try{await c.env.JOBS.send({type:'outbox.recover',id:String(result.message.id),projectId:actor.projectId,conversationId:String(result.message.conversation_id),outboxId,visitorChat:true})}
+   catch{console.error('Chat delivery remains on the durable outbox for scheduled recovery')}
+  }
+  c.header('Server-Timing',`access;dur=${(accessed-started).toFixed(1)},admission;dur=${(admitted-admitting).toFixed(1)}`)
+  return c.json(result,result.accepted?200:409)
+ }
  let generationError:string|undefined
  // Operator replies acknowledge only after notification preparation and the
  // durable sending claim. Retain the actual provider attempt through settlement;

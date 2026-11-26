@@ -53,12 +53,24 @@ function visibleText(input:string){
  }
  return {text:chars.join(''),starts,ends}
 }
+const simpleText=/^[\x00-\x7f\u2013\u2014\u2018-\u201f\u2026]*$/
+const inlineMarkup=/[<&*_~`\[\]\\]/
+const asciiWord=/[a-z0-9](?:[a-z0-9\p{P}]*[a-z0-9])?/giu
+const punctuation=/\p{P}/gu
+
 export function knowledgeWords(input:string):Word[]{
+ // In plain ASCII with common typographic punctuation, case folding is
+ // lowercase and punctuation disappears. Keep the source offsets of each run.
+ if(simpleText.test(input)&&!inlineMarkup.test(input)){
+  const words:Word[]=[]
+  for(const match of input.matchAll(asciiWord))words.push({word:match[0].replace(punctuation,'').toLowerCase(),start:match.index!,end:match.index!+match[0].length})
+  return words
+ }
  const visible=visibleText(input),chars:string[]=[],starts:number[]=[],ends:number[]=[]
  // Normalize whole graphemes after markup/entity decoding, so a combining mark
  // separated by inline markup still composes with its base character.
  for(const {segment,index} of graphemes.segment(visible.text)){
-  const folded=unicodeCaseFold(segment.normalize('NFKC')).normalize('NFKC').replace(/\p{P}/gu,'')
+  const folded=unicodeCaseFold(segment.normalize('NFKC')).normalize('NFKC').replace(punctuation,'')
   chars.push(folded)
   for(let unit=0;unit<folded.length;unit++){starts.push(visible.starts[index]);ends.push(visible.ends[index+segment.length-1])}
  }

@@ -13,17 +13,17 @@ export function presenceSettings(settings:any){
 }
 
 const weekdays=['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
-function zone(value:unknown){try{const name=String(value||'UTC');new Intl.DateTimeFormat('en-US',{timeZone:name});return name}catch{return 'UTC'}}
-function wall(at:number,timeZone:string){
- const parts=new Intl.DateTimeFormat('en-GB',{timeZone,year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(at)
+function zone(value:unknown){try{const name=String(value||'UTC');if(name!=='UTC')new Intl.DateTimeFormat('en-US',{timeZone:name});return name}catch{return 'UTC'}}
+function wall(at:number,formatter:Intl.DateTimeFormat){
+ const parts=formatter.formatToParts(at)
  const get=(type:string)=>parts.find(part=>part.type===type)?.value||''
  return {year:Number(get('year')),month:Number(get('month')),day:Number(get('day')),hour:Number(get('hour')),minute:Number(get('minute')),second:Number(get('second')),weekday:weekdays.indexOf(get('weekday'))+1}
 }
 // The instant a wall-clock time happens in a timezone. A time skipped by a DST change resolves to the hour after it.
-function instant(year:number,month:number,day:number,hour:number,minute:number,timeZone:string){
+function instant(year:number,month:number,day:number,hour:number,minute:number,formatter:Intl.DateTimeFormat){
  const target=Date.UTC(year,month-1,day,hour,minute)
  let at=target
- for(let pass=0;pass<2;pass++){const seen=wall(at,timeZone);at+=target-Date.UTC(seen.year,seen.month-1,seen.day,seen.hour,seen.minute,seen.second)}
+ for(let pass=0;pass<2;pass++){const seen=wall(at,formatter);at+=target-Date.UTC(seen.year,seen.month-1,seen.day,seen.hour,seen.minute,seen.second)}
  return at
 }
 
@@ -46,13 +46,14 @@ function hours(settings:any,now:Date):Availability{
  const valid=/^\d{2}:\d{2}$/.test(schedule.time_from)&&/^\d{2}:\d{2}$/.test(schedule.time_to)&&schedule.time_to>schedule.time_from&&days.length>0
  if(!valid)return {available:false,message,scheduled:true,timezone,opensAt:null,changesAt:null,live}
  const [fromHour,fromMinute]=schedule.time_from.split(':').map(Number),[toHour,toMinute]=schedule.time_to.split(':').map(Number)
- const today=wall(at,timezone)
+ const formatter=new Intl.DateTimeFormat('en-GB',{timeZone:timezone,year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'})
+ const today=wall(at,formatter)
  // Today and the next seven days cover every weekly schedule's next opening and closing.
  for(let offset=0;offset<=7;offset++){
   const date=new Date(Date.UTC(today.year,today.month-1,today.day+offset)),weekday=(date.getUTCDay()+6)%7+1
   if(!days.includes(weekday))continue
   const [year,month,day]=[date.getUTCFullYear(),date.getUTCMonth()+1,date.getUTCDate()]
-  const opens=instant(year,month,day,fromHour,fromMinute,timezone),closes=instant(year,month,day,toHour,toMinute,timezone)
+  const opens=instant(year,month,day,fromHour,fromMinute,formatter),closes=instant(year,month,day,toHour,toMinute,formatter)
   if(at<opens)return {available:false,message,scheduled:true,timezone,opensAt:opens,changesAt:opens,live}
   if(at<closes)return {available:true,message,scheduled:true,timezone,opensAt:null,changesAt:closes,live}
  }

@@ -111,18 +111,21 @@ export async function populate03(origin) {
   assert.equal(new Set(messages.map(message => message.id)).size, messages.length, 'distinct predecessor message identities');
   assert.equal(new Set(messages.map(message => message.local_id)).size, messages.length, 'distinct predecessor command identities');
   const hasAway = messages.length === authored.length + 1;
+  const awayIndex = hasAway ? messages.findIndex(message => message.local_id === 'away:reply') : -1;
   if (hasAway) {
-    // The unchanged no-presence fixture earns this standard notice in releases
-    // with presence-based away; older releases retain the four authored rows.
-    const away = messages[1];
-    const expected = {local_id: 'away:reply', actor_role: 'system', actor_id: 'away', project_id: projectId, conversation_id: conversation.id, revision: authored[0].revision + 1, content: "Thanks for your message. Upgrade Desk is away right now. We'll reply here. Responds within 24 hours"};
+    // Queued effects can reach a later visitor message first. The notice must
+    // directly follow the visitor message that earned it.
+    assert.ok(awayIndex > 0, 'the extra predecessor message is an away reply after a visitor message');
+    const away = messages[awayIndex], visitorMessage = messages[awayIndex - 1];
+    assert.equal(visitorMessage.actor_role, 'contact');
+    const expected = {local_id: 'away:reply', actor_role: 'system', actor_id: 'away', project_id: projectId, conversation_id: conversation.id, revision: visitorMessage.revision + 1, content: "Thanks for your message. Upgrade Desk is away right now. We'll reply here. Responds within 24 hours"};
     assert.ok(away.id);
     for (const [field, value] of Object.entries(expected)) assert.equal(away[field], value, `predecessor away reply: ${field}`);
     if ('media' in away) assert.deepEqual(away.media, []);
-    transcript.splice(1, 0, expected.content);
+    transcript.splice(awayIndex, 0, expected.content);
   }
   for (const [index, expected] of authored.entries()) {
-    const message = messages[index + (hasAway && index > 0 ? 1 : 0)];
+    const message = messages[index + (hasAway && index >= awayIndex ? 1 : 0)];
     for (const [field, value] of Object.entries(expected)) assert.equal(message[field], value, `predecessor authored message ${index}: ${field}`);
     if ('media' in message) assert.deepEqual(message.media.map(item => item.id), index === 0 ? [media.id] : []);
   }

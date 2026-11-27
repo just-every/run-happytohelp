@@ -8,6 +8,16 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.51 — 2026-11-27
+
+- **Owner pages on Workers Free.** The existing `ConversationSocket` Durable Object renders sign-in and selected workspace pages and handles heavier reads for Inbox, tickets, contacts, reports, knowledge and settings. The object also handles sign-in and activation requests that could exceed the Worker’s CPU allowance.
+
+- **Project and ticket WebSockets.** The Worker forwards each upgrade directly to the Durable Object that owns the connection. That object checks access and accepts the hibernating WebSocket. Hosted Worker CPU for project upgrades fell from 13 to 2 ms warm and from 8 to 1 ms on a fresh isolate. Ticket upgrades fell from 8 to 2 ms warm and from 10 to 2 ms on a fresh isolate. All four measurements fit the Workers Free 10 ms allowance.
+
+Update from v0.4.50 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.142. The existing Wrangler migration `v1` already provisions `ConversationSocket` on v0.4.50. Keep that migration and the `CONVERSATIONS` binding in the deployment. The update adds no Wrangler or D1 migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-27._
+
 ## 0.4.50 — 2026-11-27
 
 - **Scheduled work and Queue deliveries on Workers Free.** The existing `ConversationSocket` Durable Object runs the scheduled pass and each delivered job. Scheduled tick dispatch now uses zero Queue operations. In hosted measurements, Cron CPU fell from 0–2 ms to 0–1 ms across 11 ticks. Queue delivery CPU fell from 12–128 ms to a maximum of 0 ms across 18 deliveries. The Durable Object used 30–168 ms for each scheduled pass (35 ms median) and 17–53 ms for each delivered job.

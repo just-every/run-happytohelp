@@ -29,3 +29,7 @@ Durable Object (`request-dispatch.ts` and `dispatch-door.ts`, object names `send
 `inbox:<project id>`), which runs the application's route and returns its answer. A send's admission and follow-up
 and an inbox page's shaping therefore use the Durable Object CPU allowance, not the request's (10 ms on Workers Free).
 These objects store nothing and hold no sockets. Vite dev and a demo visitor's copy call the routes directly.
+
+The minute Cron tick asks the `scheduled:pass` object of this class to run its due work
+(`src/platform/scheduled-door.ts`), for the same reason: the pass costs more CPU than a Cron invocation or a Queue
+delivery holds on Workers Free. That object also stores nothing and holds no sockets.

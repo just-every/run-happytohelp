@@ -8,6 +8,7 @@ import {pendingFactor,policyRoles,type FactorMethod} from '../identity/two-facto
 import {mergePresence,presenceFrame,teammateOnline,ONLINE_IDLE_REPORT_MAX_MS,PRESENCE_SWEEP_MS,SWEEP_AUTHORIZATION_MS,PRESENCE_TTL_MS,type OnlineState,type SocketAttachment as Attachment,type SocketActor} from '../collaboration/presence'
 import {recordOnline} from '../collaboration/presence-store'
 import {isDispatched,receiveDispatched} from './dispatch-door'
+import {isScheduledPass,receiveScheduledPass} from '../../platform/scheduled-door'
 
 export class ConversationSocket extends DurableObject<Env>{
  async authorized(a:Attachment):Promise<SocketActor|null>{
@@ -113,6 +114,7 @@ export class ConversationSocket extends DurableObject<Env>{
  async fetch(request:Request){
   const url=new URL(request.url)
   if(isDispatched(url))return receiveDispatched(request,this.env,this.ctx)
+  if(isScheduledPass(url))return receiveScheduledPass(request,this.env)
   if(url.pathname==='/access-change'){
    const target=await request.json() as {roleId?:string;userId?:string}
    for(const ws of this.ctx.getWebSockets()){

@@ -129,7 +129,7 @@ const worker={
   return app.fetch(request,env,context)
  },
  async queue(batch:MessageBatch<any>,env:Env){await consumeQueue(batch,env)},
- // The deployed Cron entry (src/server.ts), reached through Miniflare's scheduled trigger; its job is captured like any other.
+ // The deployed Cron entry (src/server.ts), reached through Miniflare's scheduled trigger; its pass runs in the Durable Object.
  async scheduled(event:ScheduledController,env:Env){await scheduledTick(event,bindings(env))},
  // The deployed Email Worker entry (src/server.ts), reached through Miniflare's local email trigger.
  async email(message:ForwardableEmailMessage,env:Env,context:ExecutionContext){return handleEmail(message as any,bindings(env),context)},

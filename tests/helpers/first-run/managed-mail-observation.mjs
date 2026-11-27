@@ -24,9 +24,9 @@ export async function managedReadOnlyJourney(){
    }
    assert.equal(edge.controls.length,calls,phase+' reads do no control-service work')
    assert.deepEqual(await snapshot(),before,phase+' reads write no rows')
-   // The deployed tick hands the due mailbox work to the queue, which runs it.
-   await app.tick();assert.ok((await app.drainJobs())>0,'the tick queues its due work')
-   assert.equal((await i.settings()).managed.state,'active','cron still adopts or retries')
+   // The deployed tick has its Durable Object run the due pass; the mailbox job that pass queues is delivered by the queue itself.
+   await app.tick()
+   await app.until(async()=>(await i.settings()).managed.state==='active',{message:'cron to adopt or retry'})
   }finally{await i.close()}
  }
 }

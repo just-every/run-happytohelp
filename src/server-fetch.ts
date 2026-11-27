@@ -16,20 +16,14 @@ import {legacyDocumentationResponse} from './modules/public-site/legacy-docs'
 import {withInstallationContact} from './modules/public-site/installation-contact'
 import {inboxDocument,projectInboxPath} from './platform/inbox-document'
 import {dispatchRequest} from './modules/conversations/request-dispatch'
-
-async function renderDocument(request:Request,execution:ExecutionContext){
- const {default:start}=await import('@tanstack/react-start/server-entry')
- const response=start.fetch(request)
- // In Vite dev a client disconnect during Start's first render can strand its module-load promise.
- if(import.meta.env.DEV)execution.waitUntil(Promise.resolve(response).then(()=>{},()=>{}))
- return response
-}
+import {renderDocument} from './platform/render-document'
 
 async function route(request:Request,env:Env,execution:ExecutionContext,path:string,publicSite:boolean):Promise<Response>{
  const api=async(input=request)=>(await import('./app')).app.fetch(input,env,execution)
- if(!import.meta.env.DEV&&env.ASSETS&&(request.method==='GET'||request.method==='HEAD')&&projectInboxPath.test(path))return inboxDocument(request,env,api)
- // The built Worker hands a message send, a project's inbox list, a widget session and a conversation start to a
- // Durable Object (modules/conversations/request-dispatch.ts).
+ if(!import.meta.env.DEV&&env.ASSETS&&(request.method==='GET'||request.method==='HEAD')&&projectInboxPath.test(path)){
+  return inboxDocument(request,env,async input=>(await dispatchRequest(input,env,new URL(input.url).pathname))??api(input))
+ }
+ // The built Worker hands expensive application requests to the existing Durable Object.
  if(!import.meta.env.DEV){const dispatched=await dispatchRequest(request,env,path);if(dispatched)return dispatched}
  if(isAgentPath(path)||path==='/auth/bootstrap'||path==='/auth/owner-claim'||path==='/auth/signout')return api()
  if(path==='/login'&&request.method==='POST'){

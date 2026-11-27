@@ -5593,7 +5593,7 @@
       "executable": false
     },
     "src/modules/conversations/dispatch-door.ts": {
-      "sha256": "6263aaf399246c1f8b502de7535ccb0a940cdf32a30dd62e0999a571b042a3c3",
+      "sha256": "6ee8250a0ff988d516110893f0979d1b554c5cc8ee4bffabcdf71489dc65c4ae",
       "executable": false
     },
     "src/modules/conversations/draft-erasure.ts": {
@@ -5625,7 +5625,7 @@
       "executable": false
     },
     "src/modules/conversations/request-dispatch.ts": {
-      "sha256": "3d6bb7268329b5d5e635647b2744cafbdb7e2368ed5d1a4513f20a0f02ec2f52",
+      "sha256": "2db1c41fef08481619651bba1b0c87e7d4bbccdafb5dcb551f353a004aa56c5f",
       "executable": false
     },
     "src/modules/conversations/routes.ts": {
@@ -11328,6 +11328,10 @@
       "sha256": "1d2bb3590dbd04bd36a148e7e311e96763d8457cff4df58d643f6878533e1b3e",
       "executable": false
     },
+    "src/platform/render-document.ts": {
+      "sha256": "35ee108bd114a8bb723debbddd5e52fe521d916647fcc8437f903547be6a13eb",
+      "executable": false
+    },
     "src/platform/reply-icon-assets.d.ts": {
       "sha256": "2db4594208b5f9995e30bafe2f3e3a743d47ddb0ef1f14f23b2bc0b87fb01c47",
       "executable": false
@@ -11509,11 +11513,11 @@
       "executable": false
     },
     "src/server-fetch.ts": {
-      "sha256": "ec9aa7e791647251ef90c69276075d626f57eeb0b01afd701942b3d50de4d382",
+      "sha256": "4a0b740ce1755c31798c6e845f0805f28feea10131b521411fc9c2437ac562b6",
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "03af0b222fc200657785d18db8bd32a39558be7c3d486496d4cbc07864e8c7c1",
+      "sha256": "d61365432d368e158f09da753fc3ef607ac38cb508888964fcfd8180fa221ff4",
       "executable": false
     },
     "src/site/base/contract-anchor.mjs": {
@@ -16993,7 +16997,7 @@
       "executable": false
     },
     "tests/helpers/identity/magic-browser.mjs": {
-      "sha256": "09421d747ea40fff588b32c16801c849225ac53dd2b99e5fe7b46b295ec8cfb4",
+      "sha256": "110fd117c6ea7ee2f054df7ff679bc369282c2c7801b61e5ada72b4a7676f84c",
       "executable": false
     },
     "tests/helpers/identity/mail-edge.mjs": {

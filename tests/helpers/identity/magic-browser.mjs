@@ -6,7 +6,13 @@ import {auditPage,viewports} from '../../journeys/kit/browser.mjs'
 export async function magicSignIn({runtime,browser,origin,tenant,shot}){
  const context=await browser.newContext({viewport:viewports.desktop}),page=await context.newPage()
  page.setDefaultTimeout(20000)
- await page.goto(origin+'/login')
+ const destination=`/projects/${tenant.projectId}/contacts?visitors=show`
+ const protectedDocument=await context.request.get(origin+destination,{maxRedirects:0})
+ assert.equal(protectedDocument.status(),307)
+ const login=new URL(protectedDocument.headers().location,origin)
+ assert.equal(login.pathname,'/login')
+ assert.equal(login.searchParams.get('returnTo'),destination)
+ await page.goto(origin+destination)
  await page.getByRole('link',{name:'Email me a sign-in link',exact:true}).click()
  await page.getByLabel('Email',{exact:true}).fill('unknown@security.example.test')
  const requested=page.waitForResponse(r=>r.url().endsWith('/api/identity/magic-link')&&r.request().method()==='POST')
@@ -32,7 +38,7 @@ export async function magicSignIn({runtime,browser,origin,tenant,shot}){
  await page.getByRole('button',{name:'Sign in',exact:true}).waitFor()
  assert.equal((await context.request.get(origin+'/api/identity/session')).status(),401,'opening the link does not consume it')
  await page.getByRole('button',{name:'Sign in',exact:true}).click()
- await page.waitForURL(url=>url.pathname.startsWith('/projects/'+tenant.projectId+'/'))
+ await page.waitForURL(url=>url.pathname+url.search===destination)
  assert.equal((await context.request.get(origin+'/api/identity/session')).status(),200)
  await auditPage(page,shot('magic-signed-in.png'))
  const replay=await browser.newContext({viewport:viewports.desktop})

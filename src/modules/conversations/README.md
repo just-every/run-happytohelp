@@ -24,11 +24,14 @@ The operator project stream also carries workspace presence: a dashboard's `{typ
 folded per teammate into `operator_presence` (see `src/modules/management/README.md`); conversation streams keep their
 per-conversation viewing and typing presence.
 
-The built Worker hands `POST /api/conversations/:id/messages` and `GET /api/dashboard/projects/:id/conversations` to a
-Durable Object (`request-dispatch.ts` and `dispatch-door.ts`, object names `send:<conversation id>` and
-`inbox:<project id>`), which runs the application's route and returns its answer. A send's admission and follow-up
-and an inbox page's shaping therefore use the Durable Object CPU allowance, not the request's (10 ms on Workers Free).
-These objects store nothing and hold no sockets. Vite dev and a demo visitor's copy call the routes directly.
+The built Worker hands `POST /api/conversations/:id/messages`, `GET /api/dashboard/projects/:id/conversations`, a
+widget visitor's `POST /api/identity/widget/session` and a conversation start (`POST /api/conversations`) to a Durable
+Object (`request-dispatch.ts` and `dispatch-door.ts`, object names `send:<conversation id>`, `inbox:<project id>`,
+`widget:<widget key>` and `start:<project id>`, the last two read from the request's JSON body), which runs the
+application's route and returns its answer. A send's admission and follow-up, an inbox page's shaping, and the
+application's load on an isolate's first request therefore use the Durable Object CPU allowance, not the request's
+(10 ms on Workers Free). These objects store nothing and hold no sockets. Vite dev and a demo visitor's copy call the
+routes directly.
 
 The minute Cron tick asks the `scheduled:pass` object of this class to run its due work
 (`src/platform/scheduled-door.ts`), and the Queue consumer asks a `job:<type>:<id>` object to run each message's job

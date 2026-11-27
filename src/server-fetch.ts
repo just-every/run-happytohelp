@@ -28,8 +28,9 @@ async function renderDocument(request:Request,execution:ExecutionContext){
 async function route(request:Request,env:Env,execution:ExecutionContext,path:string,publicSite:boolean):Promise<Response>{
  const api=async(input=request)=>(await import('./app')).app.fetch(input,env,execution)
  if(!import.meta.env.DEV&&env.ASSETS&&(request.method==='GET'||request.method==='HEAD')&&projectInboxPath.test(path))return inboxDocument(request,env,api)
- // The built Worker hands a message send and a project's inbox list to a Durable Object (modules/conversations/request-dispatch.ts).
- if(!import.meta.env.DEV){const dispatched=dispatchRequest(request,env,path);if(dispatched)return dispatched}
+ // The built Worker hands a message send, a project's inbox list, a widget session and a conversation start to a
+ // Durable Object (modules/conversations/request-dispatch.ts).
+ if(!import.meta.env.DEV){const dispatched=await dispatchRequest(request,env,path);if(dispatched)return dispatched}
  if(isAgentPath(path)||path==='/auth/bootstrap'||path==='/auth/owner-claim'||path==='/auth/signout')return api()
  if(path==='/login'&&request.method==='POST'){
   const login=await loginDocument(request,env,api)

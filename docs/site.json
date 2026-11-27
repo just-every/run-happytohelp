@@ -219,6 +219,10 @@
   ],
   "githubOnly": [
     {
+      "source": "RELEASE.md",
+      "reason": "Current release notes and upgrade steps for repository readers"
+    },
+    {
       "source": "docs/knowledge-upgrade-report.md",
       "reason": "Knowledge upgrade report route authorization and privacy decisions for maintainers"
     },

@@ -18,8 +18,6 @@ const dispatched:[method:string,path:RegExp,object:string,bodyField?:string,door
  ['GET',/^\/api\/escalations\/projects\/([^/]{1,200})\/(?:connections|conversations\/[^/]{1,200})$/,'inbox'],
  ['GET',/^\/api\/feedback\/projects\/([^/]{1,200})\/penny-connection$/,'inbox'],
  ['GET',/^\/api\/outcomes\/projects\/([^/]{1,200})\/results$/,'reports'],
- ['GET',/^\/api\/projects\/([^/]{1,200})\/socket$/,'project-socket'],
- ['GET',/^\/api\/conversations\/([^/]{1,200})\/socket$/,'ticket-socket'],
  ['GET',/^\/api\/management\/(bootstrap)$/,'workspace'],
  ['GET',/^\/api\/identity\/(auth-options|editor-config|session|sign-in-options)$/,'identity'],
  ['GET',/^\/api\/management\/projects\/([^/]{1,200})\/(?:activation|companies|contacts|crm\/hubspot|mailboxes|settings|widget-addresses|widget-owner-name)$/,'settings'],

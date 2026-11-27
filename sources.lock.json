@@ -5625,7 +5625,7 @@
       "executable": false
     },
     "src/modules/conversations/request-dispatch.ts": {
-      "sha256": "54cd19475b935a375afbf1d52b10826fcc9394626bcb8e8208bc47f2c4f48116",
+      "sha256": "28d427185dfc99072f5b6fdce5ba24abbafc2e623587b61d2f007fd073744c8b",
       "executable": false
     },
     "src/modules/conversations/routes.ts": {

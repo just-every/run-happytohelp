@@ -56,6 +56,7 @@ export async function verifyFreshLogin(runtime, state) {
   const login = await json(await call(runtime, '/api/identity/login', {email: credentials.email, password: credentials.password}), 200);
   assert.notEqual(login.token, state.owner.token, 'Fresh password login must create a new session');
   await verifyAccess(runtime, state, login.token);
+  return login.token;
 }
 
 export async function verifyRestoredApi(runtime,state){

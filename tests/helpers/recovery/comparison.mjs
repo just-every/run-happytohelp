@@ -11,6 +11,7 @@ import {assertCutoverDerived} from '../cutover/oracle.mjs';
 import {restoredKnowledgeReady} from './knowledge-ready.mjs';
 import {snapshot, compareSnapshots, summarize, sha256} from './snapshot.mjs';
 import {seedJourney, verifyAccess, verifyFreshLogin, verifyRestoredApi, eraseRecoveryIssuer, setupToken, call} from './journey.mjs';
+import {mergeAfterRestore} from './r4-data.mjs';
 
 // Native export of a populated packaged install, restored into a fresh destination and compared row by row and object by object.
 export async function recoveryComparison(buildDirectory, outputDirectory, profile='first-run'){
@@ -136,10 +137,11 @@ try {
   await restoredKnowledgeReady(restored,journey.owner.projectId);
   assert.equal((await call(restored,'/api/mobile/v1/session',undefined,mobile.token)).status,401,'credential-free restore never revives a mobile capability');
   await verifyAccess(restored, journey, journey.owner.token);
-  await verifyFreshLogin(restored, journey);
+  const freshOwnerToken = await verifyFreshLogin(restored, journey);
   assert.equal((await (await call(restored,doorSetting,undefined,journey.owner.token)).json()).enabled,false,'restored door stays closed after owner sign-in despite Business bindings');
   for(const action of ['uploads','plan','apply','status','reconcile','undo','cancel','archive','restore-check']){const response=await call(restored,'/api/rer/import/'+action,{});assert.equal(response.status,404,action+': '+await response.text());}
   await verifyRestoredApi(restored, journey);
+  await mergeAfterRestore(restored, journey, freshOwnerToken);
   await restored.close();
   const receipt = {
     profile, sourceSha: build.sourceSha, artifactSha256: build.artifactSha256, startedAt, finishedAt: new Date().toISOString(), node: process.version,

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
+import {setTimeout} from 'node:timers/promises';
 
 const digest = value => createHash('sha256').update(value).digest('hex');
 const kinds = ['assignment', 'group', 'follower', 'mention', 'customer_updated'];
@@ -13,6 +14,25 @@ function api(runtime, token, projectId) {
     const result = await response.json();
     return result.data ?? result;
   };
+}
+
+async function waitForAwayReply(request, conversationId) {
+  // A visitor send returns after admission. With no teammate online, the queued
+  // away reply advances the ticket version before these tickets are ready to merge.
+  const deadline = Date.now() + 30_000;
+  do {
+    const transcript = await request(`/api/conversations/${conversationId}/messages`, undefined, 'GET', true);
+    if (transcript.messages.some(message => message.actor_role === 'system' && message.actor_id === 'away')) return;
+    await setTimeout(100);
+  } while (Date.now() < deadline);
+  assert.fail('The queued away reply did not reach the transcript before merge');
+}
+
+async function mergeTickets(request, sourceId, targetId) {
+  const [source, target] = await Promise.all([sourceId, targetId].map(id => request(`/conversations/${id}/ticket`)));
+  const path = `/conversations/${targetId}/merge`;
+  const preview = await request(path + '/preview', {source_id: sourceId, source_version: source.ticket_version, target_version: target.ticket_version});
+  return request(path, preview);
 }
 
 /** Populate native R4 state before the existing every-row/every-object snapshot.
@@ -85,18 +105,33 @@ export async function seedRecoveryR4(runtime, {owner, visitor, conversation, med
     const created = await request('/api/conversations', {projectId: owner.projectId, contactId: visitor.contactId}, 'POST', true);
     const send = api(runtime, visitor.token, owner.projectId);
     await send(`/api/conversations/${created.id}/messages`, {localId: `recovery-${created.id}`, content: text, expectedRevision: 0}, 'POST', true);
-    return request(`/conversations/${created.id}/ticket`);
+    return created.id;
   };
-  const target = await duplicate('Recovery survivor: two reports concern the same replacement.'), source = await duplicate('Recovery duplicate: retain the separate source transcript.');
-  const merged = await request(`/conversations/${target.id}/merge`, {source_id: source.id, source_version: source.ticket_version, target_version: target.ticket_version});
+  const mergeTarget = await duplicate('Recovery survivor: two reports concern the same replacement.');
+  const mergeSource = await duplicate('Recovery duplicate: retain the separate source transcript.');
+  await Promise.all([mergeSource, mergeTarget].map(id => waitForAwayReply(request, id)));
+  const merged = await mergeTickets(request, mergeSource, mergeTarget);
   const teammateRequest = api(runtime, teammateToken, owner.projectId);
   const notices = await teammateRequest('/notification-inbox');
   const mention = notices.find(row => row.kind === 'mention' && row.conversation_id === conversation.id);
   assert.ok(mention, 'The native mention must create the persisted teammate notification');
   await teammateRequest(`/notification-inbox/${mention.id}/read`, {}, 'PUT');
-  const r4 = {identity:{contactId:visitor.contactId,linkedId:ids.identity},readNoticeId: mention.id, actorId, teammateToken, teammateId: ids.teammate, macroId: macro.id, draft: draft.draft, noteId: note.id, mergeId: merged.id, mergeTarget: target.id, mergeSource: source.id, partner: {...ids, bytes: partnerBytes}};
+  const r4 = {identity:{contactId:visitor.contactId,linkedId:ids.identity},readNoticeId: mention.id, actorId, teammateToken, teammateId: ids.teammate, macroId: macro.id, draft: draft.draft, noteId: note.id, mergeId: merged.id, mergeTarget, mergeSource, partner: {...ids, bytes: partnerBytes}};
   await verifyRecoveryR4(runtime, {owner, conversation, r4}, owner.token);
   return r4;
+}
+
+/** After comparing backups and proving the original merge survived, use the
+ * restored tickets and a fresh owner session to undo and confirm a new merge. */
+export async function mergeAfterRestore(runtime, {owner, r4}, token) {
+  const request = api(runtime, token, owner.projectId);
+  const path = `/conversations/${r4.mergeTarget}/merges`;
+  const undone = await request(`${path}/${r4.mergeId}/undo`, {});
+  assert.equal(undone.undone, true);
+  const merged = await mergeTickets(request, r4.mergeSource, r4.mergeTarget);
+  assert.notEqual(merged.id, r4.mergeId);
+  const active = (await request(path)).filter(row => row.undone_at === null);
+  assert.deepEqual(active.map(row => [row.id, row.source_id]), [[merged.id, r4.mergeSource]]);
 }
 
 /** Reads supplement the exact snapshot comparison with retained native authority,

@@ -6,6 +6,7 @@ import {publicAppearance} from '../widget/appearance.js'
 import {backAt,humanResponseTime} from '../widget/availability-text.js'
 import {workflowNow} from '../workflows/clock'
 import {customerAiSql} from '../ai-support/reply-mode'
+import {writableConversationSql} from '../conversation-actions/merge-read'
 
 /** The away reply's author, and its local id: one per conversation, since a conversation's local ids are unique,
  * even when the outbox replays the visitor's message. Clients may not mint `away:` ids (admission.ts). */
@@ -36,7 +37,7 @@ export async function postAwayReply(env:Env,message:Record<string,unknown>,actor
  const id=crypto.randomUUID(),now=workflowNow(env)
  const admitted=await admitMessage(env,{[atomicMessage]:true,projectId:actor.projectId,conversationId:String(message.conversation_id),operatorId:actor.id,messages:[{content}],commit:([normalisedContent])=>[
   env.DB.prepare(`INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) SELECT ?,c.project_id,c.id,?,?,'system',?,c.revision+1,? FROM conversations c
-   WHERE c.id=? AND c.project_id=? AND c.revision=? AND c.last_message_id=? AND NOT EXISTS(SELECT 1 FROM messages WHERE conversation_id=c.id AND local_id=?)`)
+   WHERE c.id=? AND c.project_id=? AND c.revision=? AND c.last_message_id=? AND ${writableConversationSql()} AND NOT EXISTS(SELECT 1 FROM messages WHERE conversation_id=c.id AND local_id=?)`)
    .bind(id,AWAY_REPLY,AWAY_AUTHOR,normalisedContent,now,message.conversation_id,actor.projectId,row.revision,message.id,AWAY_REPLY),
   env.DB.prepare('UPDATE conversations SET revision=revision+1,last_message_id=?,updated_at=? WHERE id=? AND EXISTS(SELECT 1 FROM messages WHERE id=?)').bind(id,now,message.conversation_id,id),
   // Delivered on insert: open widgets and inboxes receive it through the socket, and no follow-up ever runs for it.

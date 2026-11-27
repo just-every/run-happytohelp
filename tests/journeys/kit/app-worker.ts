@@ -1,6 +1,7 @@
 import {app} from '../../../src/app'
 import {consumeQueue} from '../../../src/queue'
 import {runScheduledInvocation} from '../../../src/platform/scheduled'
+import {scheduledTick} from '../../../src/platform/scheduled-tick'
 import {routeRule} from '../../../src/modules/access/route-permissions'
 import {handleEmail} from '../../../src/modules/integrations'
 import {isPublicSitePath} from '../../../src/modules/public-site/path'
@@ -128,6 +129,8 @@ const worker={
   return app.fetch(request,env,context)
  },
  async queue(batch:MessageBatch<any>,env:Env){await consumeQueue(batch,env)},
+ // The deployed Cron entry (src/server.ts), reached through Miniflare's scheduled trigger; its job is captured like any other.
+ async scheduled(event:ScheduledController,env:Env){await scheduledTick(event,bindings(env))},
  // The deployed Email Worker entry (src/server.ts), reached through Miniflare's local email trigger.
  async email(message:ForwardableEmailMessage,env:Env,context:ExecutionContext){return handleEmail(message as any,bindings(env),context)},
 }

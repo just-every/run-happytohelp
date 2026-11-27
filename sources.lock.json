@@ -11273,7 +11273,7 @@
       "executable": false
     },
     "src/platform/env.ts": {
-      "sha256": "9a36aa4c87363df353badbecf2b771b5b3eab86552fa870c6686ed78acc90912",
+      "sha256": "bbd7ec75020f48ab8dcfa1ac21d5fa7b0c384f762785262cc7e78a899ff9ec54",
       "executable": false
     },
     "src/platform/inbox-document.ts": {
@@ -11340,6 +11340,10 @@
       "sha256": "eee3d0573c87fe47019337b5eea50bfd2cb89af40941b1aae4a4a67bca65b0bd",
       "executable": false
     },
+    "src/platform/scheduled-job.ts": {
+      "sha256": "0a29718723ee9bdce05097a2e5e7e2c4eb29ccbffe643515fc1d3e9a78b90752",
+      "executable": false
+    },
     "src/platform/scheduled-maintenance-due.ts": {
       "sha256": "4bf28f8a1e485572da3e9507deaa7a71738c24c80fc6ae522da64eadd04e469f",
       "executable": false
@@ -11349,7 +11353,7 @@
       "executable": false
     },
     "src/platform/scheduled-tick.ts": {
-      "sha256": "2a11055614d3557a8facaabaf0736a870c8180661fe7166daaf0a382e6ec8fa8",
+      "sha256": "f16f88594d4707caf06625efbfa4d3ff3826d6a6eb02fc7ab0f5b5b466ec16b1",
       "executable": false
     },
     "src/platform/scheduled.ts": {
@@ -11369,7 +11373,7 @@
       "executable": false
     },
     "src/queue.ts": {
-      "sha256": "6611251c7123e130bc46c9a4d55169690adab46c3a1fd0bb21ce195aad22f824",
+      "sha256": "1201912c8a5b2935127c83e3919b19f8cd4dcb4cc5e3fc6f805b26754ab4c3ac",
       "executable": false
     },
     "src/router.tsx": {
@@ -16909,7 +16913,7 @@
       "executable": false
     },
     "tests/helpers/first-run/managed-mail-observation.mjs": {
-      "sha256": "2885e30058fc0b1a65a315c4ea21e77f3780cd5775fb1063a0a52c11b785e36c",
+      "sha256": "8a37349aa03bfacb7196f7229656f1d7e07e00693212e195c2f8274002cc35a0",
       "executable": false
     },
     "tests/helpers/first-run/managed-mail.mjs": {
@@ -17909,11 +17913,11 @@
       "executable": false
     },
     "tests/journeys/kit/app-worker.ts": {
-      "sha256": "13a624c17535f05afd2e8a55e4f308f1eb640098c660ef9cd2c9f1a6e84a8d3a",
+      "sha256": "6225763f63fac22e803672d030a4b529a5a19ebfe18507ae2fa35aee4db5e891",
       "executable": false
     },
     "tests/journeys/kit/app.mjs": {
-      "sha256": "a5a65ceb9b0c94fcea4b6eb941c5491363d03204f0d253f0fab380f61f938af4",
+      "sha256": "3ca93e3d468b154725311529b60ab012baceb0ae6b7f6a1ffd9d234976e8afdb",
       "executable": false
     },
     "tests/journeys/kit/browser.mjs": {

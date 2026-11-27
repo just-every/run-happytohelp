@@ -60,6 +60,8 @@ export async function startApp({bindings={},outbound,origin='https://app.example
   // Inbound mail through the Worker's email entry, as Email Routing delivers it.
   async email(raw,{from,to,direct=false}){if(direct){const response=await mf.dispatchFetch(`http://localhost/_test/email?${new URLSearchParams({from,to})}`,{method:'POST',body:raw});const text=await response.text();return {status:response.status,text,...(response.ok?JSON.parse(text):{})}}const response=await mf.dispatchFetch(`http://localhost/cdn-cgi/local/email?${new URLSearchParams({from,to})}`,{method:'POST',body:raw});const text=await response.text();try{return {status:response.status,...JSON.parse(text)}}catch{return {status:response.status,text}}},
   async scheduled(headers,{after=0}={}){return (await call('/_test/scheduled',{body:{after},status:200,headers})).data},
+  // The deployed minute tick through Miniflare's Cron trigger: it only hands due work to the queue.
+  async tick(){const result=await (await mf.getWorker()).scheduled({cron:'* * * * *',scheduledTime:new Date()});if(result.outcome!=='ok')throw new Error('scheduled tick: '+result.outcome)},
   // A lead turned presence-based away off: the schedule and switch alone decide availability, as for a team that
   // answers without the dashboard open. Presence itself: tests/helpers/widget/presence.mjs.
   async presenceAwayOff(projectId){await db.prepare(`INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES(?,json_object('is_presence_away_enabled',json('false')),?) ON CONFLICT(project_id) DO UPDATE SET settings_json=json_set(settings_json,'$.is_presence_away_enabled',json('false'))`).bind(projectId,Date.now()).run()},

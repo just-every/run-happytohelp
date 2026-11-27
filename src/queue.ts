@@ -1,14 +1,18 @@
 import {knowledgeWriteEnvironment} from './modules/knowledge/write-boundary'
 import {consumeTicketContinuation} from './modules/tickets/continuation'
-import type {Env,Job,LegacyCleanupJob} from './platform/env'
+import type {Env,Job,LegacyCleanupJob,ScheduledJob} from './platform/env'
 import {boundedDatabase,queueStatements} from './platform/d1-budget'
 import {consumeJob} from './jobs'
+import {runScheduledJob} from './platform/scheduled-job'
 import {withWorkflowInvocation} from './modules/workflows/invocation'
-export async function consumeQueue(batch:MessageBatch<Job|LegacyCleanupJob>,env:Env){
- const budget=boundedDatabase(env.DB,queueStatements.limit,queueStatements.reserve)
+export async function consumeQueue(batch:MessageBatch<Job|LegacyCleanupJob|ScheduledJob>,env:Env){
+ const scheduled=env,budget=boundedDatabase(env.DB,queueStatements.limit,queueStatements.reserve)
  env=withWorkflowInvocation({...env,DB:budget.database})
  for(const message of batch.messages){
   const job=message.body
+  // A tick's work keeps its own statement budget. A failed pass is not retried:
+  // the next minute's tick discovers whatever is still due, as a failed Cron did.
+  if(job.type==='scheduled.tick'){try{await runScheduledJob(job as ScheduledJob,scheduled)}catch(error){console.error('Scheduled work failed',job.id,error)}message.ack();continue}
   try{
    // Tombstone cleanup has no native workspace/session capability and must not
    // acquire the ordinary knowledge-write boundary or project activity guard.

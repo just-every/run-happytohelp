@@ -24,7 +24,7 @@ async function route(request:Request,env:Env,execution:ExecutionContext,path:str
   return inboxDocument(request,env,async input=>(await dispatchRequest(input,env,new URL(input.url).pathname))??api(input))
  }
  // The built Worker hands expensive application requests to the existing Durable Object.
- if(!import.meta.env.DEV){const dispatched=await dispatchRequest(request,env,path);if(dispatched)return dispatched}
+ if(!import.meta.env.DEV&&!publicSite){const dispatched=await dispatchRequest(request,env,path);if(dispatched)return dispatched}
  if(isAgentPath(path)||path==='/auth/bootstrap'||path==='/auth/owner-claim'||path==='/auth/signout')return api()
  if(path==='/login'&&request.method==='POST'){
   const login=await loginDocument(request,env,api)

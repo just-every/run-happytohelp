@@ -8,9 +8,10 @@ import {dispatchDoor,dispatchedUrl,renderDoor} from './dispatch-door'
 // An object is named by the path's subject, or by a field of the JSON body (a body without it is answered here).
 const dispatched:[method:string,path:RegExp,object:string,bodyField?:string,door?:string][]=[
  ['POST',/^\/api\/conversations\/([^/]{1,200})\/messages$/,'send'],
- ['GET',/^\/api\/dashboard\/(conversations)$/,'inbox-global'],
- ['GET',/^\/api\/dashboard\/projects\/([^/]{1,200})\/conversations(?:\/counts|\/[^/]{1,200}\/(?:collaboration|macro-draft|workflows))?$/,'inbox'],
- ['GET',/^\/api\/dashboard\/projects\/([^/]{1,200})\/reports(?:\/team)?$/,'reports'],
+ ['GET',/^\/api\/dashboard\/(conversations)(?:\/counts)?$/,'inbox-global'],
+ ['GET',/^\/api\/dashboard\/projects\/([^/]{1,200})\/conversations(?:\/counts|\/[^/]{1,200}\/(?:collaboration|macro-draft|timer|workflows))?$/,'inbox'],
+ ['GET',/^\/api\/dashboard\/projects\/([^/]{1,200})\/(?:reports(?:\/team)?|report-schedules)$/,'reports'],
+ ['GET',/^\/api\/knowledge\/([^/]{1,200})\/articles$/,'knowledge'],
  ['GET',/^\/api\/escalations\/projects\/([^/]{1,200})\/connections$/,'inbox'],
  ['GET',/^\/api\/projects\/([^/]{1,200})\/socket$/,'project-socket'],
  ['GET',/^\/api\/management\/(bootstrap)$/,'workspace'],

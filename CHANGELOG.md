@@ -8,6 +8,16 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.48 — 2026-11-27
+
+- **Relay delivery rows keep the recipient and subject.** An owner sign-in email sent through the Run Edit Run relay is recorded with its recipient and subject, as with your own provider, so the sign-in activation check can match a used link to its delivery. An accepted send leaves the error column empty; a refused, uncertain or unanswered send records the relay’s HTTP status and any error code there. The message itself is never stored.
+
+- **Hosted demo start failures.** The hosted demo deploys with Run Edit Run 0.2.142: a demo copy whose start fails late is now recorded and ended instead of holding its place.
+
+Update from v0.4.47 without resetting. Back up D1, R2, Durable Object state, private settings and installation encryption custody. Stop the old Worker before updating and retain native owners, memberships, permissions, support history, files, erasure fences and all applied migration identities. Use Node 22.20.0, pnpm 10.12.4 and rer 0.2.142. An installation on v0.4.47 needs no new migrations. For older installations, follow the upgrade steps in the intervening published releases and apply each missing migration once in filename order before serving HTTP or queue traffic. Run `rer deploy --dry-run` against the retained installation before deploying. On the first hosted deploy, supply `--owner-name` if the installation has no saved owner name. Retain the durable recovery revocation watermark on rollback. Portable restore requires fresh Managed recovery and custody binding.
+
+_Run Edit Run fleet, 2026-11-27._
+
 ## 0.4.47 — 2026-11-27
 
 - **Owner sign-in relay delivery records.** Each owner sign-in email attempt through the Run Edit Run relay creates an `email_deliveries` row. The outcome records the relay’s HTTP status and any machine-readable error code, such as `business_mail_recipient_forbidden`. The row excludes recipients, message content and credentials.

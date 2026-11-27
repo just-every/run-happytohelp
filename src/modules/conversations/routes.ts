@@ -25,6 +25,7 @@ import {emailConfigured} from '../integrations/email-config'
 import {customerMergeTarget,assertWritableConversation} from '../conversation-actions/merge-read'
 import {macroAttachmentAvailableSql} from '../macros/attachments'
 import {stageEmailMessageOptions} from '../integrations/email-command-options'
+import {upgradeSocket} from './socket-door'
 /** `responderReady` says whether an assistant's model can reach its provider. Without it every default assistant is assigned. */
 export function createConversationRoutes(onCommittedMessage?:(env:Env,message:Record<string,unknown>,actor:Actor,defer?:DeferEmailDelivery)=>Promise<unknown>,responderReady?:(env:Env,model:string)=>boolean){
 const routes=new Hono<AppEnv>()
@@ -127,11 +128,19 @@ routes.post('/:id/media',async c=>{
  return c.json({id:mediaId,filename,contentType,size:data.byteLength},201)
 })
 routes.get('/:id/media/:mediaId',async c=>{const {actor,conversation}=await access(c);const importedBytes=await hasSuppliedAttachmentSchema(c.env);const row=await c.env.DB.prepare(`SELECT * FROM media WHERE id=? AND conversation_id=? AND ${macroAttachmentAvailableSql()} AND (?<>'contact' OR (message_id IS NOT NULL OR uploaded_by=?) AND NOT EXISTS(SELECT 1 FROM conversation_note_media nm WHERE nm.media_id=media.id) ${importedBytes?'AND NOT EXISTS(SELECT 1 FROM move_in_attachment_bytes a WHERE a.media_id=media.id AND a.note_id IS NOT NULL)':''})`).bind(c.req.param('mediaId'),conversation.id,actor.role,actor.id).first<{object_key:string;filename:string;content_type:string}>();if(!row)throw new HTTPException(404);const supplied=importedBytes?await c.env.DB.prepare('SELECT base64 FROM move_in_attachment_bytes WHERE media_id=? AND project_id=? AND conversation_id=?').bind(c.req.param('mediaId'),actor.projectId,conversation.id).first<{base64:string}>():null;if(supplied)return new Response(Buffer.from(supplied.base64,'base64'),{headers:mediaResponseHeaders(row.content_type,row.filename)});if(!importedBytes&&row.object_key.startsWith('import-bytes/'))throw new HTTPException(404);const object=await c.env.FILES.get(row.object_key);if(!object)throw new HTTPException(404);return new Response(object.body,{headers:mediaResponseHeaders(row.content_type,row.filename)})})
-routes.get('/:id/socket',async c=>{const token=c.req.query('token');const {actor,conversation}=await access(c);const origin=c.req.header('Origin');if(origin&&origin!==new URL(c.req.url).origin&&!await widgetAddressAllowed(c.env,actor.projectId,origin))throw new HTTPException(403);const headers=new Headers(c.req.raw.headers);headers.delete('X-Project-Id');headers.set('X-Conversation-Id',conversation.id);headers.set('X-Session-Token',token||c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]||'');headers.set('X-Actor-Id',actor.id);return c.env.CONVERSATIONS.get(c.env.CONVERSATIONS.idFromName(conversation.id)).fetch(new Request(c.req.raw,{headers}))})
+routes.get('/:id/socket',async c=>{
+ const {actor,conversation}=await access(c),origin=c.req.header('Origin')
+ if(origin&&origin!==new URL(c.req.url).origin&&!await widgetAddressAllowed(c.env,actor.projectId,origin))throw new HTTPException(403)
+ return upgradeSocket(c,{conversationId:conversation.id})
+})
 
 return routes
 }
 export const routes=createConversationRoutes()
 
 export const projectSocketRoutes=new Hono<AppEnv>()
-projectSocketRoutes.get('/:projectId/socket',async c=>{const actor=await requireActor(c);const projectId=c.req.param('projectId');if(actor.role==='contact'||!await c.env.DB.prepare('SELECT 1 FROM memberships WHERE project_id=? AND user_id=?').bind(projectId,actor.id).first())throw new HTTPException(403);const origin=c.req.header('Origin');if(origin&&origin!==new URL(c.req.url).origin)throw new HTTPException(403);const token=c.req.query('token')||c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1];const headers=new Headers(c.req.raw.headers);headers.delete('X-Conversation-Id');headers.set('X-Project-Id',projectId);headers.set('X-Session-Token',token!);return c.env.CONVERSATIONS.get(c.env.CONVERSATIONS.idFromName(`project:${projectId}`)).fetch(new Request(c.req.raw,{headers}))})
+projectSocketRoutes.get('/:projectId/socket',async c=>{
+ const actor=await requireActor(c),projectId=c.req.param('projectId')
+ if(actor.role==='contact'||!await c.env.DB.prepare('SELECT 1 FROM memberships WHERE project_id=? AND user_id=?').bind(projectId,actor.id).first())throw new HTTPException(403)
+ return upgradeSocket(c,{projectId})
+})

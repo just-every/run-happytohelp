@@ -27,6 +27,7 @@ import { demoOwnerClaim } from './demo/owner-claim'
 import { routes as identity } from './modules/identity/routes'
 import { visitorProfileCredential } from './modules/identity/widget-profile'
 import { createConversationRoutes,projectSocketRoutes } from './modules/conversations/routes'
+import {forwardSocket} from './modules/conversations/socket-door'
 import { routes as ai } from './modules/ai-support/routes'
 import { routes as knowledge } from './modules/knowledge'
 import { routes as context } from './modules/customer-context'
@@ -151,4 +152,5 @@ app.notFound(c => notFoundResponse(c.req.raw))
 // Every caller (the Worker entry, the dashboard document's server functions and their reads) dispatches
 // here, so a read that met D1's overload is retried as a whole, middleware and authentication included.
 const dispatchOnce=app.fetch
-app.fetch=(request,env,executionCtx)=>retryOverloaded(request,()=>dispatchOnce(request,env,executionCtx))
+export const dispatchApplicationRequest:(typeof app)['fetch']=(request,env,executionCtx)=>retryOverloaded(request,()=>dispatchOnce(request,env,executionCtx))
+app.fetch=(request,env,executionCtx)=>(env&&forwardSocket(request,env as AppEnv['Bindings'],new URL(request.url).pathname))??dispatchApplicationRequest(request,env,executionCtx)

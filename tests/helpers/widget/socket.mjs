@@ -61,12 +61,15 @@ export async function socketJourney(){
   await app.db.prepare("UPDATE messages SET content_raw='Private original email body' WHERE id=?").bind(first.message.id).run()
   assert.equal((await app.call(`/api/conversations/${conversation.id}/messages`,{token:other.token})).status,404,'another visitor cannot read the conversation')
   const path=`/api/conversations/${conversation.id}/socket`
-  assert.equal((await socketTo(`${path}?token=${contact.token}`,{Origin:'https://foreign.example'})).status,403,'a foreign origin cannot open the socket')
+  await app.seedWorkspace('another widget',{allowedOrigin:'https://foreign.example'})
+  assert.equal((await socketTo(`${path}?token=${contact.token}`,{Origin:'https://foreign.example'})).status,403,'an origin approved only by another project cannot open the socket')
   const visitor=await socketTo(`${path}?token=${contact.token}`,{Origin:'https://widget.example'});assert.equal(visitor.status,101)
   const replay=await visitor.next();assert.equal(replay.type,'message');assert.equal(replay.message.content,'Persistent message');assert.equal('content_raw' in replay.message,false,'the original email body is operator-only')
   const metadata=file=>({id:file.id,filename:file.filename,content_type:'text/plain',size:file.size})
   assert.deepEqual(replay.message.media,files.map(metadata),'visitor replay retains attachment order and metadata without the internal grouping key')
-  assert.equal((await socketTo(`${path}?token=${other.token}&after=${replay.eventId}`,{Origin:'https://widget.example'})).status,404,'a durable cursor conveys no replay authority to another visitor')
+  assert.equal((await socketTo(`${path}?token=${other.token}&after=${replay.eventId}`,{Origin:'https://widget.example',
+   'X-H2H-Dispatched-Url':`https://app.example${path}?token=${contact.token}`,
+  })).status,404,'a durable cursor and a caller-supplied forwarding header convey no replay authority')
   // The operator project stream announces conversation activity; a visitor token cannot open it.
   const project=await socketTo(`/api/projects/${p}/socket`,{Cookie:`h2h_session=${owner}`,Origin:'https://app.example'});assert.equal(project.status,101)
   const projectFrame=await project.next();assert.equal(projectFrame.type,'conversation');assert.equal(projectFrame.conversationId,conversation.id);assert.equal(projectFrame.message.content_raw,'Private original email body');assert.deepEqual(projectFrame.message.media,files.map(metadata),'dashboard replay has the same attachments');project.socket.close()

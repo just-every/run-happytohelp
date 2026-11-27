@@ -4397,7 +4397,7 @@
       "executable": false
     },
     "src/app.ts": {
-      "sha256": "1ea7cfd47ee665fbbd36f09ea4396633c00d031521961927a28e5e6741407141",
+      "sha256": "ba2f742e7d6271caf08c22ce246c085ff99be8c58fdd9ec4f8311c4a19ec5f36",
       "executable": false
     },
     "src/base/contract-anchor.mjs": {
@@ -5629,7 +5629,11 @@
       "executable": false
     },
     "src/modules/conversations/routes.ts": {
-      "sha256": "1e84cdf29dcf3d667a8e515d05d0e7818823bcfb5743faeb6946f339d4e07495",
+      "sha256": "775402a04442f5bc08d76b2fbf861e0eb388b49c011c40a552cd25c0a0b2f400",
+      "executable": false
+    },
+    "src/modules/conversations/socket-door.ts": {
+      "sha256": "291af7e3905366d808e4b50b728f0faa31cc61b95cf9a29f4f2e36d849cac6eb",
       "executable": false
     },
     "src/modules/conversations/socket-knowledge.ts": {
@@ -5637,7 +5641,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "546ff5411696a0d369303a715fa0112fe1a512b9f03223d9b4755a616de5eac7",
+      "sha256": "9a2257471efb83eb8ea04e14b6a8cdc76ae2fdbc1262273dac3a4f8427ae6a4a",
       "executable": false
     },
     "src/modules/conversations/visitor-reply-context.ts": {
@@ -11213,7 +11217,7 @@
       "executable": false
     },
     "src/platform/auth.ts": {
-      "sha256": "e736c8ab7dd3788e2a82a8315be4f562fb4b9b231d2d688bb17ff282b24ff71b",
+      "sha256": "c0845cb4917199d18f6187da03ae8110438712fefa2d563d4b2b05469105d245",
       "executable": false
     },
     "src/platform/canonical-navigation.ts": {
@@ -11513,7 +11517,7 @@
       "executable": false
     },
     "src/server-fetch.ts": {
-      "sha256": "f63a7a63cc8faad43309b7dbd8b5cd6a07039474ba8c7896a58b6d32cbff3a7c",
+      "sha256": "8e531e28eaef6d8a17a13abb564754cec2bd61c235c615dc6516fa7110dd79c7",
       "executable": false
     },
     "src/server.ts": {
@@ -17793,7 +17797,7 @@
       "executable": false
     },
     "tests/helpers/widget/socket.mjs": {
-      "sha256": "881cd26bb21e87355245c42c3b244cee48cf1f4275fa058e44c4a8d226ea97a8",
+      "sha256": "f72d7e8fc70977a4fa481437edea5fc07e67419ca7f6d8281a8924b1f3b23ad6",
       "executable": false
     },
     "tests/helpers/widget/sockets.mjs": {

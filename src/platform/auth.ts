@@ -8,6 +8,9 @@ import {jsonResponse} from './json-response'
 import {visitorReplyContextSql,type VisitorReplyContext} from '../modules/conversations/visitor-reply-context'
 const encoder=new TextEncoder()
 const hex=Array.from({length:256},(_,byte)=>byte.toString(16).padStart(2,'0'))
+// A local-only gate can admit a request at the Worker entry before its socket is handed to the object.
+export const localEntryAdmitted=Symbol('localEntryAdmitted')
+export type LocalAdmission={ [localEntryAdmitted]?: true }
 export async function hashToken(token: string) {
  let hash=''
  for(const byte of new Uint8Array(await crypto.subtle.digest('SHA-256',encoder.encode(token))))hash+=hex[byte]
@@ -24,7 +27,7 @@ export async function requireActor(c: Context<AppEnv>,visitorReplyId?:string): P
  if(!token) throw new HTTPException(401,{message:'Authentication required'})
  // Dev bearer tokens remain native sessions, but require this checkout's gate on every request.
  // Production and preview never register a gate, so copied dev cookies cannot admit there.
- if(token.startsWith('dev_')&&!await devAdmitted(c.req.raw))throw new HTTPException(401,{message:'Local development entry required'})
+ if(token.startsWith('dev_')&&!(c.env as LocalAdmission)[localEntryAdmitted]&&!await devAdmitted(c.req.raw))throw new HTTPException(401,{message:'Local development entry required'})
  // Base workspace credentials authorize only the scoped API, never a native
  // actor. Conceal native resources without looking up token validity or scope.
  if(/^int_[a-f0-9]{64}$/.test(token))throw new HTTPException(404,{message:'Not found'})

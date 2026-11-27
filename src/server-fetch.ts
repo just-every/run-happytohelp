@@ -16,9 +16,12 @@ import {legacyDocumentationResponse} from './modules/public-site/legacy-docs'
 import {withInstallationContact} from './modules/public-site/installation-contact'
 import {inboxDocument,projectInboxPath} from './platform/inbox-document'
 import {dispatchRequest} from './modules/conversations/request-dispatch'
+import {forwardSocket} from './modules/conversations/socket-door'
 import {renderDocument} from './platform/render-document'
 
 async function route(request:Request,env:Env,execution:ExecutionContext,path:string,publicSite:boolean):Promise<Response>{
+ const socket=forwardSocket(request,env,path)
+ if(socket)return socket
  const api=async(input=request)=>(await import('./app')).app.fetch(input,env,execution)
  if(!import.meta.env.DEV&&env.ASSETS&&(request.method==='GET'||request.method==='HEAD')&&projectInboxPath.test(path)){
   return inboxDocument(request,env,async input=>(await dispatchRequest(input,env,new URL(input.url).pathname))??api(input))

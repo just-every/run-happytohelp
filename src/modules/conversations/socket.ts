@@ -10,6 +10,7 @@ import {recordOnline} from '../collaboration/presence-store'
 import {isDispatched,receiveDispatched} from './dispatch-door'
 import {isScheduledPass,receiveScheduledPass} from '../../platform/scheduled-door'
 import {isJob,receiveJob} from '../../platform/job-door'
+import {receiveSocket,socketDoor,type SocketScope} from './socket-door'
 
 export class ConversationSocket extends DurableObject<Env>{
  async authorized(a:Attachment):Promise<SocketActor|null>{
@@ -113,6 +114,7 @@ export class ConversationSocket extends DurableObject<Env>{
   await this.syncOnline(a.projectId,userId,ws)
  }
  async fetch(request:Request){
+  if(request.url===socketDoor)return receiveSocket(request,this.env,this.ctx,(original,scope,token)=>this.upgrade(original,scope,token))
   const url=new URL(request.url)
   if(isDispatched(url))return receiveDispatched(request,this.env,this.ctx)
   if(isScheduledPass(url))return receiveScheduledPass(request,this.env)
@@ -153,10 +155,12 @@ export class ConversationSocket extends DurableObject<Env>{
    return new Response('ok')
   }
   if(url.pathname==='/broadcast'){for(const ws of this.ctx.getWebSockets())try{await this.replay(ws)}catch{await this.releaseOnline(ws);ws.close(1011,'Delivery failed')}return new Response('ok')}
+  return new Response('Not found',{status:404})
+ }
+ private async upgrade(request:Request,{conversationId,projectId}:SocketScope,token:string){
   if(request.headers.get('Upgrade')!=='websocket')return new Response('WebSocket required',{status:426})
-  const conversationId=request.headers.get('X-Conversation-Id'),projectId=request.headers.get('X-Project-Id'),token=request.headers.get('X-Session-Token')
-  if((!conversationId&&!projectId)||!token)return new Response('Unauthorized',{status:401})
-  const a:Attachment={conversationId:conversationId||undefined,projectId:projectId||undefined,tokenHash:await hashToken(token),cursor:Math.max(0,Number(url.searchParams.get('after'))||0)}
+  if(!token)return new Response('Unauthorized',{status:401})
+  const a:Attachment={conversationId,projectId,tokenHash:await hashToken(token),cursor:Math.max(0,Number(new URL(request.url).searchParams.get('after'))||0)}
   const actor=await this.authorized(a)
   if(!actor)return new Response('Unauthorized',{status:401})
   this.remember(a,actor)

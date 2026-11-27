@@ -152,6 +152,10 @@ export async function customerScreenOutcomes(){
   await page.getByRole('link',{name:'Alternate support history',exact:true}).waitFor()
   assert.match(await page.locator('.identity-links__meta').textContent(),/Linked by Screen Reviewer · .*\d{4}/)
   await page.locator('.identity-links__list .identity-links__evidence').filter({hasText:evidenceText}).waitFor()
+  const customerView=await fetch(runtime.origin+B+'/contacts/'+primary.contactId+'/identity-links',{
+   headers:{Authorization:'Bearer '+primary.token},
+  })
+  assert.equal(customerView.status,403,'a linked customer cannot read the operator’s identity review')
   await capture('customer-linked')
   await page.getByRole('button',{name:'Unlink Avery alternate',exact:true}).click()
   region=page.getByRole('region',{name:'Unlink Avery alternate',exact:true})

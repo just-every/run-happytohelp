@@ -21,14 +21,16 @@ const dispatched:[method:string,path:RegExp,object:string,bodyField?:string,door
  ['GET',/^\/api\/management\/(bootstrap)$/,'workspace'],
  ['GET',/^\/api\/identity\/(auth-options|editor-config|session|sign-in-options)$/,'identity'],
  ['GET',/^\/api\/management\/projects\/([^/]{1,200})\/(?:activation|companies|contacts|crm\/hubspot|mailboxes|settings|widget-addresses|widget-owner-name)$/,'settings'],
+ ['GET',/^\/api\/management\/projects\/([^/]{1,200})\/contacts\/[^/]{1,200}\/identity-links$/,'settings'],
  ['GET',/^\/api\/management\/projects\/([^/]{1,200})\/conversations\/[^/]{1,200}\/email-followups$/,'inbox'],
  ['POST',/^\/api\/management\/projects\/([^/]{1,200})\/activation\/check$/,'settings'],
  ['POST',/^\/api\/identity\/(magic-link(?:\/consume)?)$/,'signin'],
  ['POST',/^\/api\/identity\/widget\/session$/,'widget','widgetKey'],
  ['POST',/^\/api\/conversations$/,'start','projectId'],
+ ['GET',/^(\/)$/,'workspace',undefined,renderDoor],
  ['GET',/^\/(login(?:\/magic)?)\/?$/,'signin',undefined,renderDoor],
  ['GET',/^\/(conversations)(?:\/[^/]{1,200})?\/?$/,'workspace',undefined,renderDoor],
- ['GET',/^\/projects\/((?!create\/)[^/]{1,200})\/(?:activation|articles|contacts|conversations\/[^/]{1,200}|edit|reports)\/?$/,'workspace',undefined,renderDoor],
+ ['GET',/^\/projects\/((?!create\/)[^/]{1,200})\/(?:activation|articles|contacts|conversations\/[^/]{1,200}|edit|reports|settings)\/?$/,'workspace',undefined,renderDoor],
  ['GET',/^\/(_serverFn)\/[a-f0-9]{64}$/,'workspace',undefined,renderDoor],
 ]
 async function bodyField(request:Request,field:string){

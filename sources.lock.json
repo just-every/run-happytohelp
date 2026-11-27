@@ -5617,7 +5617,7 @@
       "executable": false
     },
     "src/modules/conversations/README.md": {
-      "sha256": "f09e93c482eb226f7c8d21a41e5544709e28bdf84d6de2c796c645e7af9dbed8",
+      "sha256": "e9179d36f7e21717d7b999f962d6ad6e3611d324b658d04d0a5946ca48d5d11d",
       "executable": false
     },
     "src/modules/conversations/reads.ts": {
@@ -5637,7 +5637,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "ccd89cc3e6780e989fada24fab6297bb4983947b5899ffc124aecb8b933de327",
+      "sha256": "546ff5411696a0d369303a715fa0112fe1a512b9f03223d9b4755a616de5eac7",
       "executable": false
     },
     "src/modules/conversations/visitor-reply-context.ts": {
@@ -11336,6 +11336,10 @@
       "sha256": "fc46b2079e4b79fa0715353ce70600e02bac8e59d47816b07b11a16e165b097c",
       "executable": false
     },
+    "src/platform/scheduled-door.ts": {
+      "sha256": "11076cb2a82449a36a5620279ccf7cfc24e4c478bdd28b036d0d02fa864727a0",
+      "executable": false
+    },
     "src/platform/scheduled-due.ts": {
       "sha256": "eee3d0573c87fe47019337b5eea50bfd2cb89af40941b1aae4a4a67bca65b0bd",
       "executable": false
@@ -11505,7 +11509,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "6a6adca145bd79f604519c45f039571792dfeb2ca17a877db300d846b09c0dda",
+      "sha256": "03af0b222fc200657785d18db8bd32a39558be7c3d486496d4cbc07864e8c7c1",
       "executable": false
     },
     "src/site/base/contract-anchor.mjs": {
@@ -17909,7 +17913,7 @@
       "executable": false
     },
     "tests/journeys/kit/app-worker.ts": {
-      "sha256": "cd58dbdd07e239262ce7dbf7a334dbe1be023ec32ba6fce63a53facc5d62fe39",
+      "sha256": "aac86ef54cbec26d23ea4dd89421115bc8921b13ec554c48e3f2befe4dc40c85",
       "executable": false
     },
     "tests/journeys/kit/app.mjs": {

@@ -1,5 +1,6 @@
 import {app} from '../../../src/app'
 import {consumeQueue} from '../../../src/queue'
+import {deliverJobs} from '../../../src/platform/job-door'
 import {runScheduledInvocation} from '../../../src/platform/scheduled'
 import {scheduledTick} from '../../../src/platform/scheduled-tick'
 import {routeRule} from '../../../src/modules/access/route-permissions'
@@ -128,7 +129,8 @@ const worker={
   if(request.headers.get('x-test-door')==='public')return guardOverload(request,async()=>await publicHelpHostResponse(request,env)??(await isPublicSitePath(path,env)?publicSiteRoutes.fetch(request,env,context):app.fetch(request,env,context)))
   return app.fetch(request,env,context)
  },
- async queue(batch:MessageBatch<any>,env:Env){await consumeQueue(batch,env)},
+ // The deployed Queue entry (src/server.ts): each message's job runs in the Durable Object.
+ async queue(batch:MessageBatch<any>,env:Env){await deliverJobs(batch,env)},
  // The deployed Cron entry (src/server.ts), reached through Miniflare's scheduled trigger; its pass runs in the Durable Object.
  async scheduled(event:ScheduledController,env:Env){await scheduledTick(event,bindings(env))},
  // The deployed Email Worker entry (src/server.ts), reached through Miniflare's local email trigger.

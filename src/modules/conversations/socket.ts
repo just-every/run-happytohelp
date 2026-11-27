@@ -9,6 +9,7 @@ import {mergePresence,presenceFrame,teammateOnline,ONLINE_IDLE_REPORT_MAX_MS,PRE
 import {recordOnline} from '../collaboration/presence-store'
 import {isDispatched,receiveDispatched} from './dispatch-door'
 import {isScheduledPass,receiveScheduledPass} from '../../platform/scheduled-door'
+import {isJob,receiveJob} from '../../platform/job-door'
 
 export class ConversationSocket extends DurableObject<Env>{
  async authorized(a:Attachment):Promise<SocketActor|null>{
@@ -115,6 +116,7 @@ export class ConversationSocket extends DurableObject<Env>{
   const url=new URL(request.url)
   if(isDispatched(url))return receiveDispatched(request,this.env,this.ctx)
   if(isScheduledPass(url))return receiveScheduledPass(request,this.env)
+  if(isJob(url))return receiveJob(request,this.env)
   if(url.pathname==='/access-change'){
    const target=await request.json() as {roleId?:string;userId?:string}
    for(const ws of this.ctx.getWebSockets()){

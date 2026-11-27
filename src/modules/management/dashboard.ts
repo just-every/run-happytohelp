@@ -20,10 +20,11 @@ export const dashboard=new Hono<AppEnv>()
 export async function dashboardAccess(c:any){const actor=await requireActor(c);if(actor.role==='contact')throw new HTTPException(403);const row=await c.env.DB.prepare(`SELECT c.*,m.role membership_role,${ticketScopeSql('m.user_id')} scope_allowed FROM conversations c JOIN memberships m ON m.project_id=c.project_id WHERE c.id=? AND m.user_id=? AND EXISTS(SELECT 1 FROM projects p WHERE p.id=c.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,"$.deleted_at") IS NOT NULL)`).bind(c.req.param('conversationId'),actor.id).first();if(!row||c.req.param('projectId')&&row.project_id!==c.req.param('projectId'))throw new HTTPException(404);if(!row.scope_allowed)throw new HTTPException(404);delete row.scope_allowed;return {actor:{...actor,projectId:row.project_id,role:row.membership_role},conversation:row}}
 for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  dashboard.get(prefix,async c=>{
- const a=await requireActor(c)
- if(a.role==='contact')throw new HTTPException(403)
  const project=c.req.param('projectId')
+ // A project's list is authenticated by its scope check; the list itself keeps the session's own actor.
  if(project)await scope(c)
+ const a=project?c.get('actor'):await requireActor(c)
+ if(a.role==='contact')throw new HTTPException(403)
  const page=Math.max(1,parseInt(c.req.query('page')||'1')||1),search=inboxSearchTerm(c),match=search?inboxSearchCondition(search):undefined
  if(!search)return c.json(await inboxList(c,a,project,page))
  const conditions=["EXISTS(SELECT 1 FROM memberships m WHERE m.project_id=c.project_id AND m.user_id=?)",hasMessages,"NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)"],params:any[]=[a.id,a.id]

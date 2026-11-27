@@ -7,6 +7,7 @@ import {hashToken} from '../../platform/auth'
 import {pendingFactor,policyRoles,type FactorMethod} from '../identity/two-factor/state'
 import {mergePresence,presenceFrame,teammateOnline,ONLINE_IDLE_REPORT_MAX_MS,PRESENCE_SWEEP_MS,SWEEP_AUTHORIZATION_MS,PRESENCE_TTL_MS,type OnlineState,type SocketAttachment as Attachment,type SocketActor} from '../collaboration/presence'
 import {recordOnline} from '../collaboration/presence-store'
+import {isSend,receiveSend} from './send-door'
 
 export class ConversationSocket extends DurableObject<Env>{
  async authorized(a:Attachment):Promise<SocketActor|null>{
@@ -111,6 +112,7 @@ export class ConversationSocket extends DurableObject<Env>{
  }
  async fetch(request:Request){
   const url=new URL(request.url)
+  if(isSend(url))return receiveSend(request,this.env,this.ctx)
   if(url.pathname==='/access-change'){
    const target=await request.json() as {roleId?:string;userId?:string}
    for(const ws of this.ctx.getWebSockets()){

@@ -23,3 +23,8 @@ that durable metadata, suppress provisional and erased links, and set noopener.
 The operator project stream also carries workspace presence: a dashboard's `{type:'presence',idleMs}` reports are
 folded per teammate into `operator_presence` (see `src/modules/management/README.md`); conversation streams keep their
 per-conversation viewing and typing presence.
+
+The built Worker hands `POST /api/conversations/:id/messages` to the conversation's own Durable Object
+(`send-dispatch.ts` and `send-door.ts`, object name `send:<conversation id>`), which runs the application's route and returns its answer.
+Admission and the message's follow-up therefore use the Durable Object CPU allowance, not the request's (10 ms on
+Workers Free). The object stores nothing and holds no sockets. Vite dev and a demo visitor's copy call the route directly.

@@ -31,5 +31,6 @@ and an inbox page's shaping therefore use the Durable Object CPU allowance, not 
 These objects store nothing and hold no sockets. Vite dev and a demo visitor's copy call the routes directly.
 
 The minute Cron tick asks the `scheduled:pass` object of this class to run its due work
-(`src/platform/scheduled-door.ts`), for the same reason: the pass costs more CPU than a Cron invocation or a Queue
-delivery holds on Workers Free. That object also stores nothing and holds no sockets.
+(`src/platform/scheduled-door.ts`), and the Queue consumer asks a `job:<type>:<id>` object to run each message's job
+(`src/platform/job-door.ts`), for the same reason: the pass and a job cost more CPU than a Cron invocation or a Queue
+delivery holds on Workers Free. Those objects also store nothing and hold no sockets.

@@ -5625,7 +5625,7 @@
       "executable": false
     },
     "src/modules/conversations/request-dispatch.ts": {
-      "sha256": "073eac7b1cb8fd422dbfc2013fabf7665a9477cab6792e1b2e49bb4f8886444e",
+      "sha256": "cf2745e0d5bc765461edd47e5d3f4dc9a1012a3bc8e2ba6a78f3462a8135a8df",
       "executable": false
     },
     "src/modules/conversations/routes.ts": {
@@ -5633,7 +5633,7 @@
       "executable": false
     },
     "src/modules/conversations/socket-door.ts": {
-      "sha256": "291af7e3905366d808e4b50b728f0faa31cc61b95cf9a29f4f2e36d849cac6eb",
+      "sha256": "b601b346f78bb1abb21ec403b8be788efe948c116daad7865eb29fb40deac303",
       "executable": false
     },
     "src/modules/conversations/socket-knowledge.ts": {
@@ -11521,7 +11521,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "5910b8648584268e1d4deb5174629aacb42773b68a8b25f0bc612680dad4b3d6",
+      "sha256": "8f90f6c8a8a2f8779c1d4cc5fa3aef37edb7f6c269f56cd2854d713fdb5fd5aa",
       "executable": false
     },
     "src/site/base/contract-anchor.mjs": {

@@ -17,7 +17,7 @@ export async function fetchEntry(request:Request,env:Env,execution:ExecutionCont
   if(asset)return withDocumentHeaders(withCompiledAssetCache(request,asset))
  }
  // Vite and the binding-free build renderer run locally. A hosted demo already runs inside its visitor's object.
- if(import.meta.env.DEV||demoMode(env)||!env.CONVERSATIONS)
+ if(import.meta.env.DEV||demoMode(env)||env.TSS_PRERENDERING==='true')
   return (await import('../../server-fetch')).fetchRequest(request,env,execution)
 
  // Hibernating sockets belong to their original conversation/project object. An installation with custom help

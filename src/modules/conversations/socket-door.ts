@@ -1,7 +1,7 @@
 import {devAdmitted} from '@runeditrun/rer/modules/operator-auth/dev-admission'
 import type {Context} from 'hono'
 import {getPath,getQueryParam,tryDecodeURIComponent} from 'hono/utils/url'
-import {localEntryAdmitted,type LocalAdmission} from '../../platform/auth'
+import type {LocalAdmission} from '../../platform/auth'
 import type {AppEnv,Env} from '../../platform/env'
 import {dispatchedUrl,originalRequest} from './dispatch-door'
 
@@ -44,7 +44,10 @@ export async function receiveSocket(forwarded:Request,env:Env,state:DurableObjec
  const {dispatchApplicationRequest}=await import('../../app')
  const socketEnv:SocketEnvironment={...env,[acceptSocket]:upgrade}
  const request=originalRequest(forwarded)
- if(request.headers.get(localEntryHeader)==='1')socketEnv[localEntryAdmitted]=true
+ if(request.headers.get(localEntryHeader)==='1'){
+  const auth=await import('../../platform/auth')
+  socketEnv[auth.localEntryAdmitted]=true
+ }
  request.headers.delete(localEntryHeader)
  return dispatchApplicationRequest(request,socketEnv,{waitUntil:work=>state.waitUntil(work),passThroughOnException(){}} as ExecutionContext)
 }

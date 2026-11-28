@@ -79,7 +79,7 @@ test('a native support session admits and replays one transcript with its own fi
   assert.deepEqual(await inbox(),{unassigned:empty.unassigned+1,mine:empty.mine,listed:true})
   const initial=(await call(path,{token:visitor.token,status:200})).data;assert.equal(initial.messages.length,1);assert.equal(initial.revision,1);assert.equal(initial.messages[0].media[0].id,media.id)
   const download=await fetch(runtime.origin+`/api/conversations/${conversation.id}/media/${media.id}`,{headers:{Authorization:'Bearer '+visitor.token}});assert.equal(download.status,200);assert.equal(download.headers.get('Content-Type'),'text/plain; charset=utf-8');assert.match(download.headers.get('Content-Disposition'),/^inline;/);assert.match(download.headers.get('Content-Disposition'),/receipt\.txt/);assert.equal(await download.text(),attachmentText)
-  assert.equal((await call(path,{token:other.token})).status,404);assert.equal((await call(`/api/conversations/${conversation.id}`,{token:other.token})).status,404)
+  assert.equal((await call(path,{token:other.token,headers:{'X-H2H-Dispatched-Url':runtime.origin+'/api/identity/session'}})).status,404,'forwarding keeps the requested transcript and its visitor check');assert.equal((await call(`/api/conversations/${conversation.id}`,{token:other.token})).status,404)
   // Media uploaded to another workspace's conversation cannot be attached here.
   const otherProject=(await call(`/api/identity/projects/${other.projectId}`,{token:other.token})).data,otherVisitor=(await call('/api/identity/widget/session',{body:{widgetKey:otherProject.widget_key},headers:{Origin:runtime.origin},status:201})).data
   const otherConversation=(await call('/api/conversations',{body:{projectId:other.projectId},token:otherVisitor.token,status:201})).data

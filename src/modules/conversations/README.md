@@ -24,14 +24,12 @@ The operator project stream also carries workspace presence: a dashboard's `{typ
 folded per teammate into `operator_presence` (see `src/modules/management/README.md`); conversation streams keep their
 per-conversation viewing and typing presence.
 
-The built Worker hands `POST /api/conversations/:id/messages`, `GET /api/dashboard/projects/:id/conversations`, a
-widget visitor's `POST /api/identity/widget/session` and a conversation start (`POST /api/conversations`) to a Durable
-Object (`request-dispatch.ts` and `dispatch-door.ts`, object names `send:<conversation id>`, `inbox:<project id>`,
-`widget:<widget key>` and `start:<project id>`, the last two read from the request's JSON body), which runs the
-application's route and returns its answer. A send's admission and follow-up, an inbox page's shaping, and the
-application's load on an isolate's first request therefore use the Durable Object CPU allowance, not the request's
-(10 ms on Workers Free). These objects store nothing and hold no sockets. Vite dev and a demo visitor's copy call the
-routes directly.
+The built Worker serves compiled files from the asset binding and forwards application requests to a pool of
+`http:<shard>` objects of the existing ConversationSocket class. The objects store no application state.
+Each runs the full HTTP entry with the original URL, method, headers and body. Native admission, session checks,
+help-host policy and rendering all execute there. The widget script also uses this path to produce its
+installation-specific bytes and validator. Project and conversation sockets still terminate on their owning
+objects. Vite dev, the build renderer and a demo visitor's copy run the HTTP entry directly.
 
 The minute Cron tick asks the `scheduled:pass` object of this class to run its due work
 (`src/platform/scheduled-door.ts`), and the Queue consumer asks a `job:<type>:<id>` object to run each message's job

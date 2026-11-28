@@ -4,22 +4,22 @@ import type {Env,Job} from './platform/env'
 import {scheduledTick} from './platform/scheduled-tick'
 import {deliverJobs} from './platform/job-door'
 import {ConversationSocket as Socket} from './modules/conversations/socket'
-import {originalRequest,renderDoor} from './modules/conversations/dispatch-door'
+import {originalRequest,dispatchDoor} from './modules/conversations/dispatch-door'
+import {fetchEntry} from './modules/conversations/request-dispatch'
 
 // Only the built application entry has Start's renderer. The socket and HTTP API
 // can run on their own without loading the frontend's build manifest.
 export class ConversationSocket extends Socket {
  async fetch(request:Request){
-  if(request.url!==renderDoor)return super.fetch(request)
-  const {renderDocument}=await import('./platform/render-document')
-  return renderDocument(originalRequest(request),this.ctx)
+  if(request.url!==dispatchDoor)return super.fetch(request)
+  const {fetchRequest}=await import('./server-fetch')
+  const execution={waitUntil:(work:Promise<unknown>)=>this.ctx.waitUntil(work),passThroughOnException(){}} as ExecutionContext
+  return fetchRequest(originalRequest(request),this.env,execution)
  }
 }
 
 export default withDemo({
- async fetch(request:Request,env:Env,execution:ExecutionContext){
-  return (await import('./server-fetch')).fetchRequest(request,env,execution)
- },
+ fetch:fetchEntry,
  async queue(batch:MessageBatch<Job>,env:Env){
   await deliverJobs(batch,env)
  },

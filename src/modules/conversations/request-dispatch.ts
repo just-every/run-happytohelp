@@ -1,60 +1,42 @@
 import type {Env} from '../../platform/env'
+import {canonicalNavigation} from '../../platform/canonical-navigation'
+import {withDocumentHeaders} from '../../platform/document-headers'
+import {withSecurityHeaders} from '../../platform/security-headers'
+import {withCompiledAssetCache} from '../../edition/asset-cache'
+import {staticAssetResponse} from '../../base/static-assets'
 import {demoMode} from '../../demo/mode'
-import {overloadAnswer} from '../../platform/d1-overload'
-import {dispatchDoor,dispatchedUrl,renderDoor} from './dispatch-door'
+import {dispatchDoor,dispatchedUrl} from './dispatch-door'
+import {forwardSocket} from './socket-door'
 
-// A message send, inbox reads and first loads of the app or Start renderer can exceed Workers Free's
-// CPU allowance. The existing object runs the original handler with the caller's request and authority.
-// An object is named by the path's subject, or by a field of the JSON body (a body without it is answered here).
-const dispatched:[method:string,path:RegExp,object:string,bodyField?:string,door?:string][]=[
- ['POST',/^\/api\/conversations\/([^/]{1,200})\/messages$/,'send'],
- ['GET',/^\/api\/dashboard\/(conversations)(?:\/counts)?$/,'inbox-global'],
- ['GET',/^\/api\/dashboard\/projects\/([^/]{1,200})\/conversations(?:\/counts)?$/,'inbox'],
- ['GET',/^\/api\/dashboard\/projects\/([^/]{1,200})\/(?:tags|ticket-settings|ticket-views)$/,'inbox'],
- ['GET',/^\/api\/dashboard\/projects\/([^/]{1,200})\/conversations\/[^/]{1,200}(?:\/(?:buckets|collaboration|macro-draft|merged-history|merges|partner-forwards|routing|sla|ticket(?:\/problem)?|timer|triage|workflows))?$/,'inbox'],
- ['POST',/^\/api\/dashboard\/projects\/([^/]{1,200})\/conversations\/[^/]{1,200}\/actions$/,'inbox'],
- ['GET',/^\/api\/dashboard\/projects\/([^/]{1,200})\/(?:reports(?:\/team)?|report-schedules)$/,'reports'],
- ['GET',/^\/api\/knowledge\/([^/]{1,200})\/(?:articles|categories)$/,'knowledge'],
- ['GET',/^\/api\/escalations\/projects\/([^/]{1,200})\/(?:connections|conversations\/[^/]{1,200})$/,'inbox'],
- ['GET',/^\/api\/feedback\/projects\/([^/]{1,200})\/penny-connection$/,'inbox'],
- ['GET',/^\/api\/outcomes\/projects\/([^/]{1,200})\/results$/,'reports'],
- ['GET',/^\/api\/management\/(bootstrap)$/,'workspace'],
- ['GET',/^\/api\/identity\/(auth-options|editor-config|session|sign-in-options)$/,'identity'],
- ['GET',/^\/api\/management\/projects\/([^/]{1,200})\/(?:activation|companies|contacts|crm\/hubspot|mailboxes|settings|widget-addresses|widget-owner-name)$/,'settings'],
- ['GET',/^\/api\/management\/projects\/([^/]{1,200})\/contacts\/[^/]{1,200}\/identity-links$/,'settings'],
- ['GET',/^\/api\/management\/projects\/([^/]{1,200})\/conversations\/[^/]{1,200}\/email-followups$/,'inbox'],
- ['POST',/^\/api\/management\/projects\/([^/]{1,200})\/activation\/check$/,'settings'],
- ['POST',/^\/api\/identity\/(magic-link(?:\/consume)?)$/,'signin'],
- ['POST',/^\/api\/identity\/widget\/session$/,'widget','widgetKey'],
- ['POST',/^\/api\/conversations$/,'start','projectId'],
- ['GET',/^(\/)$/,'workspace',undefined,renderDoor],
- ['GET',/^\/(login(?:\/magic)?)\/?$/,'signin',undefined,renderDoor],
- ['GET',/^\/(conversations)(?:\/[^/]{1,200})?\/?$/,'workspace',undefined,renderDoor],
- ['GET',/^\/projects\/((?!create\/)[^/]{1,200})\/(?:activation|articles|contacts|conversations\/[^/]{1,200}|edit|reports|settings)\/?$/,'workspace',undefined,renderDoor],
- ['GET',/^\/(_serverFn)\/[a-f0-9]{64}$/,'workspace',undefined,renderDoor],
-]
-async function bodyField(request:Request,field:string){
- const value=(await request.clone().json().catch(()=>null) as Record<string,unknown>|null)?.[field]
- return typeof value==='string'&&value.length>0&&value.length<=200?value:undefined
-}
+export async function fetchEntry(request:Request,env:Env,execution:ExecutionContext):Promise<Response>{
+ const canonical=canonicalNavigation(request,env)
+ if(canonical)return canonical
+ const {pathname}=new URL(request.url)
+ if(pathname!=='/widget.js'){
+  const asset=await staticAssetResponse(request,env)
+  if(asset)return withDocumentHeaders(withCompiledAssetCache(request,asset))
+ }
+ // Vite and the binding-free build renderer run locally. A hosted demo already runs inside its visitor's object.
+ if(import.meta.env.DEV||demoMode(env)||!env.CONVERSATIONS)
+  return (await import('../../server-fetch')).fetchRequest(request,env,execution)
 
-/** The object's answer to a dispatched request, or null for every other request. A demo visitor's copy already
- * runs inside a Durable Object, so its requests stay where they are. */
-export async function dispatchRequest(request:Request,env:Env,path:string):Promise<Response|null>{
- // The build-only asset renderer has no application bindings. The demo is already inside an object.
- if(!env.CONVERSATIONS||demoMode(env))return null
- const route=dispatched.find(([method,pattern])=>request.method===method&&pattern.test(path))
- if(!route)return null
- const [,pattern,object,field,door=dispatchDoor]=route,subject=field?await bodyField(request,field):pattern.exec(path)![1]
- if(!subject)return null
- // The entry alone names the address the client asked for; a client's own copy of the header is replaced.
- const forwarded=new Request(door,request)
+ // Hibernating sockets belong to their original conversation/project object. An installation with custom help
+ // hosts checks its host policy inside the application before it opens a socket.
+ if(!env.PUBLIC_HELP_HOSTS){
+  const socket=forwardSocket(request,env,pathname)
+  if(socket)return withSecurityHeaders(await socket,'application',env)
+ }
+
+ // Spread HTTP traffic over reusable objects without reading a body, choosing a tenant or storing session state.
+ const shard=crypto.randomUUID()[0]
+ const stub=env.CONVERSATIONS.get(env.CONVERSATIONS.idFromName('http:'+shard))
+ const forwarded=new Request(dispatchDoor,request)
  forwarded.headers.set(dispatchedUrl,request.url)
- // An object that cannot be reached (it is reset while a release replaces its code) answers busy. A send that
- // had already committed is replayed, not repeated, when the client sends it again with the same local id.
- return env.CONVERSATIONS.get(env.CONVERSATIONS.idFromName(`${object}:${subject}`)).fetch(forwarded).catch(()=>{
-  console.error('Durable Object unavailable for a dispatched request')
+ try{return await stub.fetch(forwarded)}
+ catch(error){
+  if(!(error instanceof Error&&('retryable' in error||'overloaded' in error)))throw error
+  const {overloadAnswer}=await import('../../platform/d1-overload')
   const answer=overloadAnswer(request)
-  return Response.json(answer.body,{status:answer.status,headers:{...answer.headers,'Cache-Control':'no-store'}})
- })
+  return withSecurityHeaders(Response.json(answer.body,{status:answer.status,headers:{...answer.headers,'Cache-Control':'no-store'}}),'application',env)
+ }
 }

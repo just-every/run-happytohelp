@@ -1,6 +1,4 @@
 import {isAgentPath} from './edition/agent-door/path'
-import {canonicalNavigation} from './platform/canonical-navigation'
-import {withCompiledAssetCache} from './edition/asset-cache'
 import {withWorkspaceModulePreloads} from './edition/module-preloads'
 import {withDocumentHeaders} from './platform/document-headers'
 import {withDocumentRecovery} from './platform/document-recovery'
@@ -15,7 +13,6 @@ import {widgetAssetOrigin,widgetAssetRequest} from './modules/widget/asset-origi
 import {legacyDocumentationResponse} from './modules/public-site/legacy-docs'
 import {withInstallationContact} from './modules/public-site/installation-contact'
 import {inboxDocument,projectInboxPath} from './platform/inbox-document'
-import {dispatchRequest} from './modules/conversations/request-dispatch'
 import {forwardSocket} from './modules/conversations/socket-door'
 import {renderDocument} from './platform/render-document'
 
@@ -24,10 +21,8 @@ async function route(request:Request,env:Env,execution:ExecutionContext,path:str
  if(socket)return socket
  const api=async(input=request)=>(await import('./app')).app.fetch(input,env,execution)
  if(!import.meta.env.DEV&&env.ASSETS&&(request.method==='GET'||request.method==='HEAD')&&projectInboxPath.test(path)){
-  return inboxDocument(request,env,async input=>(await dispatchRequest(input,env,new URL(input.url).pathname))??api(input))
+  return inboxDocument(request,env,api)
  }
- // The built Worker hands expensive application requests to the existing Durable Object.
- if(!import.meta.env.DEV&&!publicSite){const dispatched=await dispatchRequest(request,env,path);if(dispatched)return dispatched}
  if(isAgentPath(path)||path==='/auth/bootstrap'||path==='/auth/owner-claim'||path==='/auth/signout')return api()
  if(path==='/login'&&request.method==='POST'){
   const login=await loginDocument(request,env,api)
@@ -46,10 +41,11 @@ async function route(request:Request,env:Env,execution:ExecutionContext,path:str
 async function entry(request:Request,env:Env,execution:ExecutionContext):Promise<Response>{
  if(import.meta.env.DEV&&import.meta.env.RER_LOCAL_ORIGIN&&env.H2H_LOCAL==='true'&&!env.RER_INSTALLATION_ID)
   env={...env,APP_ORIGIN:import.meta.env.RER_LOCAL_ORIGIN}
- const canonical=canonicalNavigation(request,env)
- if(canonical)return canonical
- const asset=await staticAssetResponse(widgetAssetRequest(request,env.APP_ORIGIN),env)
- if(asset)return withDocumentHeaders(withCompiledAssetCache(request,await widgetAssetOrigin(request,asset,env.APP_ORIGIN)))
+ // Unlike other compiled files, the widget script embeds this installation's origin and has its own validator.
+ if(new URL(request.url).pathname==='/widget.js'){
+  const asset=await staticAssetResponse(widgetAssetRequest(request,env.APP_ORIGIN),env)
+  if(asset)return withDocumentHeaders(await widgetAssetOrigin(request,asset,env.APP_ORIGIN))
+ }
  const documentation=legacyDocumentationResponse(request)
  if(documentation)return withDocumentHeaders(withSecurityHeaders(documentation,'application',env))
  if(env.PUBLIC_HELP_HOSTS){

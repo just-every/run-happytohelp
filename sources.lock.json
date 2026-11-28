@@ -5593,7 +5593,7 @@
       "executable": false
     },
     "src/modules/conversations/dispatch-door.ts": {
-      "sha256": "6ee8250a0ff988d516110893f0979d1b554c5cc8ee4bffabcdf71489dc65c4ae",
+      "sha256": "0edd55536b6799029582e3eedd6088acfdbf9dd205bc37822742c7381835201f",
       "executable": false
     },
     "src/modules/conversations/draft-erasure.ts": {
@@ -5617,7 +5617,7 @@
       "executable": false
     },
     "src/modules/conversations/README.md": {
-      "sha256": "ee01344b636b8ed933a89f64776b7688a14982f31b0209e3c7d44c0782c77630",
+      "sha256": "94c0bb11a4066ece62990848c672b25d7abc5d89fa3b08e485a8ec8e64eeaaf3",
       "executable": false
     },
     "src/modules/conversations/reads.ts": {
@@ -5625,7 +5625,7 @@
       "executable": false
     },
     "src/modules/conversations/request-dispatch.ts": {
-      "sha256": "74f03ac28970d77144ebaa2dadc63be94f9780acb3fe27fcb3146c3caa31fcd5",
+      "sha256": "073eac7b1cb8fd422dbfc2013fabf7665a9477cab6792e1b2e49bb4f8886444e",
       "executable": false
     },
     "src/modules/conversations/routes.ts": {
@@ -5641,7 +5641,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "9a2257471efb83eb8ea04e14b6a8cdc76ae2fdbc1262273dac3a4f8427ae6a4a",
+      "sha256": "9bf59652b61e0bd9bc1d6919b5cf96ababfb7fbc2530b93475a6cf58e3171409",
       "executable": false
     },
     "src/modules/conversations/visitor-reply-context.ts": {
@@ -11517,11 +11517,11 @@
       "executable": false
     },
     "src/server-fetch.ts": {
-      "sha256": "8e531e28eaef6d8a17a13abb564754cec2bd61c235c615dc6516fa7110dd79c7",
+      "sha256": "96db95d4824ec351cfed5a2b576df1e09a3ecb1e0f63c4b04aea59e60386378e",
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "d61365432d368e158f09da753fc3ef607ac38cb508888964fcfd8180fa221ff4",
+      "sha256": "5910b8648584268e1d4deb5174629aacb42773b68a8b25f0bc612680dad4b3d6",
       "executable": false
     },
     "src/site/base/contract-anchor.mjs": {
@@ -18005,7 +18005,7 @@
       "executable": false
     },
     "tests/journeys/runtime.mjs": {
-      "sha256": "a04f2bbae4352b5e0a7aad0bc507bec40ef731717bd4721c8306fd13effb4515",
+      "sha256": "78f81340d8039872a58bd1f733cfa7e552c0ff2657ff10d9ce0a42dcf1a51857",
       "executable": false
     },
     "tests/journeys/upgrade-nightly.mjs": {

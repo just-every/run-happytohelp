@@ -9896,6 +9896,10 @@
       "sha256": "39eab43a8713c10a2895a37c7d50f18ddf16ca5ee043b9b435038db1367b36a8",
       "executable": false
     },
+    "src/modules/public-site/help-host-config.ts": {
+      "sha256": "d9870f61ee3d87b249bbe58b6299ae226e9d67173a946ef2fa7a9f102ca41142",
+      "executable": false
+    },
     "src/modules/public-site/help-host.ts": {
       "sha256": "9db5a3fe109a0b9342ccd872332443b9fe368be85d9f0cdcaeea0db56173cbdb",
       "executable": false

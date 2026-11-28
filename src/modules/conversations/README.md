@@ -29,7 +29,8 @@ The built Worker serves compiled files from the asset binding and forwards appli
 Each runs the full HTTP entry with the original URL, method, headers and body. Native admission, session checks,
 help-host policy and rendering all execute there. The widget script also uses this path to produce its
 installation-specific bytes and validator. Project and conversation sockets still terminate on their owning
-objects. Vite dev, the build renderer and a demo visitor's copy run the HTTP entry directly.
+objects; the Worker forwards them there directly, except on a configured custom help host, whose host policy runs
+first in a pool object. Vite dev, the build renderer and a demo visitor's copy run the HTTP entry directly.
 
 The minute Cron tick asks the `scheduled:pass` object of this class to run its due work
 (`src/platform/scheduled-door.ts`), and the Queue consumer asks a `job:<type>:<id>` object to run each message's job

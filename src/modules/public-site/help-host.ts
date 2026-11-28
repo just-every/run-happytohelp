@@ -4,22 +4,7 @@ import { renderHelpCenter, resolvePublicProject } from './help-center'
 import {reserved} from './path'
 import { answerOverloads } from '../../platform/d1-overload'
 import { readEffects } from '../../platform/read-effects'
-
-/** Deployment configuration only: no suffix inference, workspace domain setting or forwarded header lookup. */
-function configuredProject(request: Request, env: Env): string | null {
- if (typeof env.PUBLIC_HELP_HOSTS !== 'string' || !env.PUBLIC_HELP_HOSTS.trim()) return null
- let hosts: unknown
- try { hosts = JSON.parse(env.PUBLIC_HELP_HOSTS) } catch { return null }
- if (!hosts || typeof hosts !== 'object' || Array.isArray(hosts)) return null
- const hostname = new URL(request.url).hostname
- // An installation's ordinary public homepage and Run entry always retain their own routing.
- if (typeof env.APP_ORIGIN === 'string') {
-  try { if (new URL(env.APP_ORIGIN).hostname === hostname) return null } catch { return null }
- }
- if (!Object.hasOwn(hosts, hostname)) return null
- const project = (hosts as Record<string, unknown>)[hostname]
- return typeof project === 'string' && project.trim() === project && project.length > 0 && project.length <= 200 ? project : null
-}
+import { configuredHelpProject as configuredProject } from './help-host-config'
 
 // These unprefixed native document routes must keep their application authority even on a help host.
 const applicationPaths = new Set(['auth','admin','users','register','verify-email','accept-invitation','forgot-password','reset-password','two-factor','owner-recovery','delegation','preview','activation','articles','datasets','categories','ais','agents','macros','plugins','edit','email-settings','api-settings','webhook-settings','hubspot-settings','slack-settings','support-channels','delivery-log','github-settings','widget-settings','local-agent','training-runs','reports','move-in','insights'])

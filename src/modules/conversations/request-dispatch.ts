@@ -7,6 +7,7 @@ import {staticAssetResponse} from '../../base/static-assets'
 import {demoMode} from '../../demo/mode'
 import {dispatchDoor,dispatchedUrl} from './dispatch-door'
 import {forwardSocket} from './socket-door'
+import {configuredHelpProject} from '../public-site/help-host-config'
 
 export async function fetchEntry(request:Request,env:Env,execution:ExecutionContext):Promise<Response>{
  const canonical=canonicalNavigation(request,env)
@@ -20,9 +21,10 @@ export async function fetchEntry(request:Request,env:Env,execution:ExecutionCont
  if(import.meta.env.DEV||demoMode(env)||env.TSS_PRERENDERING==='true')
   return (await import('../../server-fetch')).fetchRequest(request,env,execution)
 
- // Hibernating sockets belong to their original conversation/project object. An installation with custom help
- // hosts checks its host policy inside the application before it opens a socket.
- if(!env.PUBLIC_HELP_HOSTS){
+ // Hibernating sockets belong to their original conversation/project object. Only a configured custom help host
+ // checks its host policy inside the application first; a socket proxied through a pool object would keep that
+ // object billed for the connection's lifetime, so every other host connects from here.
+ if(!configuredHelpProject(request,env)){
   const socket=forwardSocket(request,env,pathname)
   if(socket)return withSecurityHeaders(await socket,'application',env)
  }
